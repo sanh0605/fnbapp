@@ -71,3 +71,27 @@ fnbapp/
 
 ## Lịch sử thay đổi
 - 2025-04: Khởi tạo dự án, hoàn thành màn hình POS v3
+
+## Hệ thống phân quyền
+
+### Đăng nhập
+- Tất cả vai trò dùng: tài khoản + mật khẩu
+- Sau đăng nhập: tự điều hướng theo vai trò
+
+### Vai trò và quyền hạn
+
+| Tính năng                      | Nhân viên | Quản lý | Chủ |
+|-------------------------------|:---------:|:-------:|:---:|
+| POS bán hàng                  | ✓ | ✓ | ✓ |
+| Xem tồn kho                   | ✓ | ✓ | ✓ |
+| Nhập / cập nhật tồn kho       | — | ✓ | ✓ |
+| Xem doanh thu trong ngày      | — | ✓ | ✓ |
+| Báo cáo doanh thu & tài chính | — | ✓ | ✓ |
+| Lịch trình địa điểm           | — | ✓ | ✓ |
+| Quản lý công thức pha chế     | — | — | ✓ |
+| Quản lý menu & giá            | — | — | ✓ |
+| Cài đặt tài khoản thanh toán  | — | — | ✓ |
+
+### Ghi chú
+- Phân quyền có thể mở rộng thêm trong tương lai
+- Hệ thống thiết kế linh hoạt, dễ thêm vai trò mới
