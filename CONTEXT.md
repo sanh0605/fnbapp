@@ -44,6 +44,13 @@ fnbapp/
   badge trạng thái mạng offline/online
 - TODO: điền số tài khoản ACB và tên chủ tài khoản vào PAYMENT_CONFIG
 
+### [x] Auth — Đăng nhập & phân quyền (hoàn thành)
+- Files: `src/auth/login.html`, `src/auth/auth.js`
+- 3 vai trò: Chủ (owner) / Quản lý (manager) / Nhân viên (staff)
+- Đăng nhập bằng tài khoản + mật khẩu
+- Tự điều hướng đúng theo vai trò sau đăng nhập
+- TODO: đổi mật khẩu mặc định trước khi dùng thật
+
 ### [ ] Inventory — Quản lý nguyên liệu
 - Tồn kho theo nguyên liệu
 - Cảnh báo khi gần hết
