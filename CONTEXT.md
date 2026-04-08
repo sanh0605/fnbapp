@@ -36,10 +36,13 @@ fnbapp/
 
 ### [x] POS — Màn hình bán hàng (hoàn thành)
 - File: `src/pos/index.html`
+- Phiên bản: v2
 - Tính năng: chọn món theo danh mục, thêm/bớt số lượng,
   bottom sheet giỏ hàng, ghi chú từng món,
-  thanh toán tiền mặt/chuyển khoản, badge trạng thái mạng
-- Phiên bản hiện tại: v3
+  chọn hình thức thanh toán (tiền mặt / chuyển khoản),
+  QR động VietQR ACB (cần điền số tài khoản),
+  badge trạng thái mạng offline/online
+- TODO: điền số tài khoản ACB và tên chủ tài khoản vào PAYMENT_CONFIG
 
 ### [ ] Inventory — Quản lý nguyên liệu
 - Tồn kho theo nguyên liệu
