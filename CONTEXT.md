@@ -36,10 +36,9 @@ fnbapp/
 
 ### [x] POS — Màn hình bán hàng (hoàn thành)
 - File: `src/pos/index.html`
-- Phiên bản: v3
-- Menu thực tế: 6 món (cà phê đen, cà phê sữa, cà phê sữa tươi,
-  cà phê kem muối, matcha latte, cacao latte)
-- Tích hợp phân quyền auth.js
+- Phiên bản: v4
+- Menu thực tế: 6 món với giá thực tế
+- Tích hợp auth.js, ghi nhận đơn hàng vào fnb_orders
 - Tự động trừ tồn kho bán thành phẩm sau mỗi đơn
 - TODO: điền số tài khoản ACB vào PAYMENT_CONFIG
 
@@ -58,9 +57,15 @@ fnbapp/
 - Tính tự động số ly có thể pha theo tồn kho hiện tại
 - Cảnh báo màu vàng/đỏ khi gần hết
 
-### [ ] Revenue — Theo dõi doanh thu
-- Doanh thu theo ngày, tuần, tháng
-- Biểu đồ trực quan
+### [x] Revenue — Theo dõi doanh thu (hoàn thành)
+- File: `src/revenue/index.html`
+- Xem theo: ngày / tuần / tháng / năm / tuỳ chọn
+- Biểu đồ cột tự động đổi theo kỳ xem
+- Khung giờ bán: 06:00 — 10:00, thứ 2 — thứ 6
+- Bảng chi tiết doanh thu từng món + tỷ lệ %
+- So sánh với kỳ trước (tăng/giảm %)
+- Xuất báo cáo CSV
+- Dữ liệu đọc từ fnb_orders (POS ghi nhận sau mỗi đơn)
 
 ### [ ] Finance — Báo cáo tài chính
 - Báo cáo P&L (lãi lỗ)
