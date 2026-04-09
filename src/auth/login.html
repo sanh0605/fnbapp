@@ -7,85 +7,32 @@
   <title>FNB App — Đăng nhập</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-      background:#f5f5f0;color:#1a1a18;
-      min-height:100dvh;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;
-      max-width:480px;margin:0 auto;padding:24px 20px;
-    }
-
-    /* ── LOGO ── */
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;max-width:480px;margin:0 auto;padding:24px 20px}
     .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:36px}
-    .logo-icon{
-      width:64px;height:64px;border-radius:20px;
-      background:#1D9E75;
-      display:flex;align-items:center;justify-content:center;
-    }
+    .logo-icon{width:64px;height:64px;border-radius:20px;background:#1D9E75;display:flex;align-items:center;justify-content:center}
     .logo-icon svg{width:34px;height:34px}
     .logo-name{font-size:22px;font-weight:700;color:#1a1a18;letter-spacing:-.5px}
     .logo-sub{font-size:13px;color:#888}
-
-    /* ── CARD ── */
-    .card{
-      width:100%;background:#fff;
-      border-radius:20px;border:0.5px solid #e8e6e0;
-      padding:24px 20px;display:flex;flex-direction:column;gap:16px;
-    }
+    .card{width:100%;background:#fff;border-radius:20px;border:0.5px solid #e8e6e0;padding:24px 20px;display:flex;flex-direction:column;gap:16px}
     .card-title{font-size:16px;font-weight:600;color:#1a1a18;margin-bottom:4px}
-
-    /* ── FORM ── */
     .field{display:flex;flex-direction:column;gap:6px}
     .field label{font-size:12px;color:#888;font-weight:500}
-    .field input{
-      width:100%;padding:12px 14px;
-      border:0.5px solid #e8e6e0;border-radius:12px;
-      font-size:15px;color:#1a1a18;background:#f5f5f0;
-      font-family:inherit;transition:border-color .15s;
-    }
+    .field input{width:100%;padding:12px 14px;border:0.5px solid #e8e6e0;border-radius:12px;font-size:15px;color:#1a1a18;background:#f5f5f0;font-family:inherit;transition:border-color .15s}
     .field input:focus{outline:none;border-color:#1D9E75;background:#fff}
     .field input::placeholder{color:#bbb}
-
-    /* Password toggle */
     .pw-wrap{position:relative}
     .pw-wrap input{padding-right:44px}
-    .pw-toggle{
-      position:absolute;right:12px;top:50%;transform:translateY(-50%);
-      background:none;border:none;cursor:pointer;color:#888;
-      padding:4px;display:flex;align-items:center;justify-content:center;
-    }
-
-    /* ── ERROR ── */
-    .error-msg{
-      font-size:13px;color:#A32D2D;background:#FCEBEB;
-      border-radius:10px;padding:10px 14px;
-      display:none;align-items:center;gap:8px;
-    }
+    .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888;padding:4px;display:flex;align-items:center;justify-content:center}
+    .error-msg{font-size:13px;color:#A32D2D;background:#FCEBEB;border-radius:10px;padding:10px 14px;display:none;align-items:center;gap:8px}
     .error-msg.show{display:flex}
-
-    /* ── SUBMIT ── */
-    .submit-btn{
-      width:100%;padding:14px;border-radius:14px;border:none;
-      background:#1D9E75;color:#fff;
-      font-size:15px;font-weight:600;cursor:pointer;
-      font-family:inherit;transition:background .15s;
-      margin-top:4px;
-    }
+    .submit-btn{width:100%;padding:14px;border-radius:14px;border:none;background:#1D9E75;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;margin-top:4px}
     .submit-btn:active{background:#0F6E56}
     .submit-btn:disabled{background:#d8d6d0;cursor:default}
-
-    /* ── LOADING ── */
     .loading{display:none;flex-direction:column;align-items:center;gap:12px;padding:8px 0}
     .loading.show{display:flex}
-    .spinner{
-      width:28px;height:28px;border:2.5px solid #e8e6e0;
-      border-top-color:#1D9E75;border-radius:50%;
-      animation:spin .7s linear infinite;
-    }
+    .spinner{width:28px;height:28px;border:2.5px solid #e8e6e0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     .loading-text{font-size:13px;color:#888}
-
-    /* ── VERSION ── */
     .version{font-size:11px;color:#bbb;margin-top:24px}
   </style>
 </head>
@@ -106,192 +53,97 @@
   </div>
 
   <div class="card">
-    <div>
-      <div class="card-title">Đăng nhập</div>
-    </div>
-
+    <div><div class="card-title">Đăng nhập</div></div>
     <div class="field">
       <label>Tài khoản</label>
       <input type="text" id="username" placeholder="Nhập tài khoản"
         autocomplete="username" autocapitalize="none" spellcheck="false">
     </div>
-
     <div class="field">
       <label>Mật khẩu</label>
       <div class="pw-wrap">
         <input type="password" id="password" placeholder="Nhập mật khẩu"
           autocomplete="current-password">
         <button class="pw-toggle" onclick="togglePw()" tabindex="-1" type="button">
-          <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
             <circle cx="12" cy="12" r="3"/>
           </svg>
         </button>
       </div>
     </div>
-
     <div class="error-msg" id="errorMsg">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <span id="errorText">Tài khoản hoặc mật khẩu không đúng</span>
     </div>
-
     <div class="loading" id="loading">
       <div class="spinner"></div>
       <div class="loading-text">Đang đăng nhập...</div>
     </div>
-
     <button class="submit-btn" id="submitBtn" onclick="login()">Đăng nhập</button>
   </div>
 
-  <div class="version">FNB App v1.0 — Xe cà phê lưu động</div>
+  <div class="version">FNB App v1.0</div>
 
   <script>
     // ══════════════════════════════════════════
     // DANH SÁCH TÀI KHOẢN
-    // Chủ cửa hàng có thể thêm/sửa/xoá tài khoản
-    // trong phần Cài đặt sau khi đăng nhập
-    //
-    // Vai trò: 'owner' | 'manager' | 'staff'
+    // TODO: Đổi mật khẩu mặc định trước khi dùng thật
     // ══════════════════════════════════════════
     const ACCOUNTS = [
-      {
-        username: 'admin',
-        password: 'admin123',   // TODO: đổi mật khẩu sau khi cài đặt
-        role: 'owner',
-        name: 'Chủ cửa hàng',
-      },
-      {
-        username: 'manager',
-        password: 'manager123', // TODO: đổi mật khẩu sau khi cài đặt
-        role: 'manager',
-        name: 'Quản lý',
-      },
-      {
-        username: 'staff',
-        password: 'staff123',   // TODO: đổi mật khẩu sau khi cài đặt
-        role: 'staff',
-        name: 'Nhân viên',
-      },
+      { username:'admin',   password:'admin123',   role:'owner',   name:'Chủ cửa hàng' },
+      { username:'manager', password:'manager123', role:'manager', name:'Quản lý'       },
+      { username:'staff',   password:'staff123',   role:'staff',   name:'Nhân viên'     },
     ];
 
-    // Phân quyền theo vai trò
-    // Dùng để kiểm tra trong toàn bộ app
     const PERMISSIONS = {
-      owner: [
-        'pos', 'inventory_view', 'inventory_edit',
-        'revenue', 'finance', 'schedule',
-        'recipe', 'menu', 'payment_settings', 'user_settings',
-      ],
-      manager: [
-        'pos', 'inventory_view', 'inventory_edit',
-        'revenue', 'finance', 'schedule',
-      ],
-      staff: [
-        'pos', 'inventory_view',
-      ],
+      owner:   ['pos','inventory_view','inventory_edit','revenue','finance','schedule','recipe','menu','payment_settings','user_settings'],
+      manager: ['pos','inventory_view','inventory_edit','revenue','finance','schedule'],
+      staff:   ['pos','inventory_view'],
     };
 
-    // Trang điều hướng sau đăng nhập theo vai trò
-    const REDIRECT = {
-      owner:   '../pos/index.html',
-      manager: '../pos/index.html',
-      staff:   '../pos/index.html',
-    };
-
-    // ── ĐĂNG NHẬP ──
-    function login() {
+    function login(){
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
-
-      if (!username || !password) {
-        showError('Vui lòng nhập đầy đủ tài khoản và mật khẩu');
-        return;
-      }
-
-      showLoading(true);
-      hideError();
-
-      // Giả lập độ trễ xác thực (thực tế sẽ gọi API)
+      if(!username || !password){ showError('Vui lòng nhập đầy đủ tài khoản và mật khẩu'); return; }
+      showLoading(true); hideError();
       setTimeout(() => {
-        const account = ACCOUNTS.find(
-          a => a.username === username && a.password === password
-        );
-
-        if (!account) {
-          showLoading(false);
-          showError('Tài khoản hoặc mật khẩu không đúng');
-          document.getElementById('password').value = '';
-          return;
-        }
-
-        // Lưu session vào localStorage
-        const session = {
+        const account = ACCOUNTS.find(a => a.username===username && a.password===password);
+        if(!account){ showLoading(false); showError('Tài khoản hoặc mật khẩu không đúng'); document.getElementById('password').value=''; return; }
+        localStorage.setItem('fnb_session', JSON.stringify({
           username: account.username,
           name:     account.name,
           role:     account.role,
           permissions: PERMISSIONS[account.role],
           loginAt:  new Date().toISOString(),
-        };
-        localStorage.setItem('fnb_session', JSON.stringify(session));
-
-        // Điều hướng theo vai trò
-        window.location.href = REDIRECT[account.role];
+        }));
+        // Redirect về Home
+        window.location.href = '../home/index.html';
       }, 600);
     }
 
-    // ── HIỂN THỊ / ẨN PASSWORD ──
-    function togglePw() {
-      const input = document.getElementById('password');
-      const icon  = document.getElementById('eyeIcon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = `
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>`;
+    function togglePw(){
+      const input=document.getElementById('password'), icon=document.getElementById('eyeIcon');
+      if(input.type==='password'){
+        input.type='text';
+        icon.innerHTML=`<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
       } else {
-        input.type = 'password';
-        icon.innerHTML = `
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-          <circle cx="12" cy="12" r="3"/>`;
+        input.type='password';
+        icon.innerHTML=`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
       }
     }
 
-    // ── HELPERS ──
-    function showError(msg) {
-      document.getElementById('errorText').textContent = msg;
-      document.getElementById('errorMsg').classList.add('show');
-    }
-    function hideError() {
-      document.getElementById('errorMsg').classList.remove('show');
-    }
-    function showLoading(show) {
-      document.getElementById('loading').classList.toggle('show', show);
-      document.getElementById('submitBtn').style.display = show ? 'none' : 'block';
-    }
+    function showError(msg){ document.getElementById('errorText').textContent=msg; document.getElementById('errorMsg').classList.add('show'); }
+    function hideError(){ document.getElementById('errorMsg').classList.remove('show'); }
+    function showLoading(show){ document.getElementById('loading').classList.toggle('show',show); document.getElementById('submitBtn').style.display=show?'none':'block'; }
 
-    // Enter để đăng nhập
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') login();
-    });
+    document.addEventListener('keydown', e => { if(e.key==='Enter') login(); });
 
-    // Kiểm tra session còn hiệu lực không
-    // Nếu đã đăng nhập rồi thì chuyển thẳng vào app
-    const existing = localStorage.getItem('fnb_session');
-    if (existing) {
-      try {
-        const session = JSON.parse(existing);
-        if (session.role) window.location.href = REDIRECT[session.role];
-      } catch(e) {
-        localStorage.removeItem('fnb_session');
-      }
-    }
+    // Nếu đã đăng nhập → về home
+    try {
+      const s = JSON.parse(localStorage.getItem('fnb_session')||'null');
+      if(s?.role) window.location.href = '../home/index.html';
+    } catch(e){ localStorage.removeItem('fnb_session'); }
   </script>
 </body>
 </html>
