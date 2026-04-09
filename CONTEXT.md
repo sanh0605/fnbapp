@@ -67,10 +67,13 @@ fnbapp/
 - Xuất báo cáo CSV
 - Dữ liệu đọc từ fnb_orders (POS ghi nhận sau mỗi đơn)
 
-### [ ] Finance — Báo cáo tài chính
-- Báo cáo P&L (lãi lỗ)
-- Bảng cân đối kế toán
-- Chi phí, vốn, khấu hao xe
+### [x] Finance — Báo cáo tài chính (hoàn thành)
+- File: `src/finance/index.html`
+- Tab P&L: doanh thu → COGS → lãi gộp → OPEX → lãi ròng
+- Tab Chi phí: thêm/sửa/xoá danh mục, cố định / một lần
+- Tab Giá vốn: nhập giá nguyên liệu, tính bình quân gia quyền tự động
+- Xuất báo cáo CSV
+- Xem theo: ngày / tuần / tháng / năm / tuỳ chọn
 
 ### [ ] Schedule — Lịch trình địa điểm
 - Lịch bán theo địa điểm
