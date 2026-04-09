@@ -182,7 +182,7 @@
 <script>
   Auth.require('pos');
   const session = Auth.getSession();
-  if (session) document.getElementById('userName').textContent = session.name;
+  if(session) document.getElementById('userName').textContent = session.name;
 
   // ══════════════════════════════════════════
   // CẤU HÌNH THANH TOÁN
@@ -194,67 +194,62 @@
   };
   // ══════════════════════════════════════════
 
-  // ══════════════════════════════════════════
-  // MENU — chỉnh sửa giá và món trong phần
-  // Cài đặt của app (chỉ chủ mới có quyền)
-  // ══════════════════════════════════════════
   const MENU = [
     {
-      id: 1, name: 'Cà phê đen', price: 18000,
-      cat: 'Cà phê', icon: '☕', bg: '#FAEEDA',
-      // Nguyên liệu tiêu thụ mỗi ly (dùng cho module tồn kho)
-      ingredients: [
-        { id: 'cot_ca_phe', amount: 60, unit: 'ml' },
-        { id: 'nuoc_duong',  amount: 20, unit: 'ml' },
+      id:1, name:'Cà phê đen', price:18000,
+      cat:'Cà phê', icon:'☕', bg:'#FAEEDA',
+      ingredients:[
+        {id:'cot_ca_phe', amount:60, unit:'ml'},
+        {id:'nuoc_duong',  amount:20, unit:'ml'},
       ]
     },
     {
-      id: 2, name: 'Cà phê sữa', price: 20000,
-      cat: 'Cà phê', icon: '☕', bg: '#FAC77540',
-      ingredients: [
-        { id: 'cot_ca_phe', amount: 50, unit: 'ml' },
-        { id: 'sua_dac',    amount: 20, unit: 'g'  },
+      id:2, name:'Cà phê sữa', price:20000,
+      cat:'Cà phê', icon:'☕', bg:'#FAC77540',
+      ingredients:[
+        {id:'cot_ca_phe', amount:50, unit:'ml'},
+        {id:'sua_dac',    amount:20, unit:'g' },
       ]
     },
     {
-      id: 3, name: 'Cà phê sữa tươi', price: 22000,
-      cat: 'Cà phê', icon: '☕', bg: '#EF9F2730',
-      ingredients: [
-        { id: 'cot_ca_phe', amount: 30,  unit: 'ml' },
-        { id: 'sua_dac',    amount: 30,  unit: 'g'  },
-        { id: 'sua_tuoi',   amount: 70,  unit: 'ml' },
+      id:3, name:'Cà phê sữa tươi', price:22000,
+      cat:'Cà phê', icon:'☕', bg:'#EF9F2730',
+      ingredients:[
+        {id:'cot_ca_phe', amount:30, unit:'ml'},
+        {id:'sua_dac',    amount:30, unit:'g' },
+        {id:'sua_tuoi',   amount:70, unit:'ml'},
       ]
     },
     {
-      id: 4, name: 'Cà phê kem muối', price: 24000,
-      cat: 'Cà phê', icon: '☕', bg: '#B5D4F440',
-      ingredients: [
-        { id: 'cot_ca_phe', amount: 50, unit: 'ml' },
-        { id: 'sua_dac',    amount: 20, unit: 'g'  },
-        { id: 'kem_muoi',   amount: 30, unit: 'g'  },
+      id:4, name:'Cà phê kem muối', price:24000,
+      cat:'Cà phê', icon:'☕', bg:'#B5D4F440',
+      ingredients:[
+        {id:'cot_ca_phe', amount:50, unit:'ml'},
+        {id:'sua_dac',    amount:20, unit:'g' },
+        {id:'kem_muoi',   amount:30, unit:'g' },
       ]
     },
     {
-      id: 5, name: 'Matcha latte', price: 23000,
-      cat: 'Matcha & Cacao', icon: '🍵', bg: '#C0DD9740',
-      ingredients: [
-        { id: 'cot_matcha', amount: 40, unit: 'ml' },
-        { id: 'sua_dac',    amount: 30, unit: 'g'  },
-        { id: 'sua_tuoi',   amount: 70, unit: 'ml' },
+      id:5, name:'Matcha latte', price:23000,
+      cat:'Matcha & Cacao', icon:'🍵', bg:'#C0DD9740',
+      ingredients:[
+        {id:'cot_matcha', amount:40, unit:'ml'},
+        {id:'sua_dac',    amount:30, unit:'g' },
+        {id:'sua_tuoi',   amount:70, unit:'ml'},
       ]
     },
     {
-      id: 6, name: 'Cacao latte', price: 23000,
-      cat: 'Matcha & Cacao', icon: '🍫', bg: '#BA751730',
-      ingredients: [
-        { id: 'cot_cacao',  amount: 40, unit: 'ml' },
-        { id: 'sua_dac',    amount: 30, unit: 'g'  },
-        { id: 'sua_tuoi',   amount: 70, unit: 'ml' },
+      id:6, name:'Cacao latte', price:23000,
+      cat:'Matcha & Cacao', icon:'🍫', bg:'#BA751730',
+      ingredients:[
+        {id:'cot_cacao',  amount:40, unit:'ml'},
+        {id:'sua_dac',    amount:30, unit:'g' },
+        {id:'sua_tuoi',   amount:70, unit:'ml'},
       ]
     },
   ];
 
-  const CATS = ['Tất cả', ...new Set(MENU.map(m => m.cat))];
+  const CATS=['Tất cả',...new Set(MENU.map(m=>m.cat))];
   let activeCat='Tất cả', cart={}, notes={}, orderN=1, expanded=false, payMethod=null;
   const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
   const getTotal = () => Object.keys(cart).reduce((s,k) => s + MENU.find(m=>m.id==k).price * cart[k], 0);
@@ -288,17 +283,8 @@
     }).join('');
   }
 
-  function add(id){
-    cart[id]=(cart[id]||0)+1;
-    if(!notes[id])notes[id]='';
-    payMethod=null; update();
-    toast('+1 '+MENU.find(m=>m.id===id).name);
-  }
-  function chg(id,d){
-    cart[id]=(cart[id]||0)+d;
-    if(cart[id]<=0){delete cart[id];delete notes[id];}
-    payMethod=null; update();
-  }
+  function add(id){cart[id]=(cart[id]||0)+1;if(!notes[id])notes[id]='';payMethod=null;update();toast('+1 '+MENU.find(m=>m.id===id).name);}
+  function chg(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0){delete cart[id];delete notes[id];}payMethod=null;update();}
   function clearAll(){cart={};notes={};payMethod=null;update();if(expanded)toggleCart();}
   function update(){renderMenu();renderCartItems();updateCartBar();updatePaymentUI();}
 
@@ -379,8 +365,12 @@
   function confirmPay(){
     if(!document.getElementById('confirmBtn').classList.contains('active'))return;
     const total=getTotal(), methodName=payMethod==='cash'?'Tiền mặt':'Chuyển khoản';
+    const orderNum='#'+String(orderN).padStart(3,'0');
 
-    // Trừ nguyên liệu bán thành phẩm khi bán
+    // ── GHI NHẬN ĐƠN HÀNG (cho module doanh thu) ──
+    saveOrder(orderNum, total, methodName);
+
+    // ── TRỪ TỒN KHO BÁN THÀNH PHẨM ──
     deductIngredients();
 
     toast(`✓ ${methodName} — ${fmt(total)}`);
@@ -394,16 +384,36 @@
     update();
   }
 
+  // Lưu đơn hàng vào localStorage để module doanh thu đọc
+  function saveOrder(orderNum, total, method){
+    const orders = JSON.parse(localStorage.getItem('fnb_orders')||'[]');
+    const items = Object.keys(cart).map(id => {
+      const item = MENU.find(m=>m.id==id);
+      return { id: item.id, name: item.name, qty: cart[id], price: item.price };
+    });
+    orders.push({
+      ts:       new Date().toISOString(),
+      orderNum,
+      total,
+      method,
+      items,
+      staff:    Auth.getSession()?.name || '',
+    });
+    // Giữ tối đa 10.000 đơn gần nhất
+    if(orders.length > 10000) orders.splice(0, orders.length - 10000);
+    localStorage.setItem('fnb_orders', JSON.stringify(orders));
+  }
+
   // Trừ tồn kho bán thành phẩm sau mỗi đơn
   function deductIngredients(){
-    const inv = JSON.parse(localStorage.getItem('fnb_semi_stock') || '{}');
+    const inv = JSON.parse(localStorage.getItem('fnb_semi_stock')||'{}');
     Object.keys(cart).forEach(id => {
       const item = MENU.find(m=>m.id==id);
       const qty  = cart[id];
       if(!item.ingredients) return;
       item.ingredients.forEach(ing => {
         if(inv[ing.id] != null){
-          inv[ing.id] = Math.max(0, (inv[ing.id] || 0) - ing.amount * qty);
+          inv[ing.id] = Math.max(0, (inv[ing.id]||0) - ing.amount * qty);
         }
       });
     });
