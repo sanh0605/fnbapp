@@ -75,10 +75,13 @@ fnbapp/
 - Xuất báo cáo CSV
 - Xem theo: ngày / tuần / tháng / năm / tuỳ chọn
 
-### [ ] Schedule — Lịch trình địa điểm
-- Lịch bán theo địa điểm
-- Bản đồ
-- Thông báo cho khách hàng thân thiết
+### [x] Schedule — Lịch trình (hoàn thành)
+- File: `src/schedule/index.html`
+- Check-in / check-out ca bán hàng
+- Theo dõi đúng giờ / trễ theo khung 06:00 — 10:00
+- Ngưỡng chấp nhận trễ: 15 phút
+- Lịch sử các ca đã bán kèm doanh thu từng ngày
+- Thống kê 30 ngày: tỷ lệ đúng giờ, ca trễ, thời gian TB
 
 ## Cách làm việc với Claude
 1. Đính kèm file `CONTEXT.md` này vào đầu mỗi cuộc trò chuyện mới
