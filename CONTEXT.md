@@ -36,13 +36,12 @@ fnbapp/
 
 ### [x] POS — Màn hình bán hàng (hoàn thành)
 - File: `src/pos/index.html`
-- Phiên bản: v2
-- Tính năng: chọn món theo danh mục, thêm/bớt số lượng,
-  bottom sheet giỏ hàng, ghi chú từng món,
-  chọn hình thức thanh toán (tiền mặt / chuyển khoản),
-  QR động VietQR ACB (cần điền số tài khoản),
-  badge trạng thái mạng offline/online
-- TODO: điền số tài khoản ACB và tên chủ tài khoản vào PAYMENT_CONFIG
+- Phiên bản: v3
+- Menu thực tế: 6 món (cà phê đen, cà phê sữa, cà phê sữa tươi,
+  cà phê kem muối, matcha latte, cacao latte)
+- Tích hợp phân quyền auth.js
+- Tự động trừ tồn kho bán thành phẩm sau mỗi đơn
+- TODO: điền số tài khoản ACB vào PAYMENT_CONFIG
 
 ### [x] Auth — Đăng nhập & phân quyền (hoàn thành)
 - Files: `src/auth/login.html`, `src/auth/auth.js`
@@ -51,10 +50,13 @@ fnbapp/
 - Tự điều hướng đúng theo vai trò sau đăng nhập
 - TODO: đổi mật khẩu mặc định trước khi dùng thật
 
-### [ ] Inventory — Quản lý nguyên liệu
-- Tồn kho theo nguyên liệu
-- Cảnh báo khi gần hết
-- Tự động trừ khi bán món
+### [x] Inventory — Quản lý nguyên liệu (hoàn thành)
+- File: `src/inventory/index.html`
+- 3 tab: nguyên liệu thô / bán thành phẩm / ly có thể pha
+- Nhập kho nguyên liệu thô
+- Pha bán thành phẩm (tự trừ nguyên liệu thô)
+- Tính tự động số ly có thể pha theo tồn kho hiện tại
+- Cảnh báo màu vàng/đỏ khi gần hết
 
 ### [ ] Revenue — Theo dõi doanh thu
 - Doanh thu theo ngày, tuần, tháng
