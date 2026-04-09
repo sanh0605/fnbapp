@@ -83,6 +83,15 @@ fnbapp/
 - Lịch sử các ca đã bán kèm doanh thu từng ngày
 - Thống kê 30 ngày: tỷ lệ đúng giờ, ca trễ, thời gian TB
 
+### [x] Home — Dashboard (hoàn thành)
+- File: `src/home/index.html`
+- Màn hình chính sau khi đăng nhập
+- Hiển thị theo vai trò (nhân viên / quản lý / chủ)
+- Banner doanh thu hôm nay + quick stats tháng này
+- Cảnh báo check-in nếu chưa check-in sau 06:00
+- Nút POS lớn + grid module theo quyền
+- auth.js và login.html cập nhật redirect về Home
+
 ## Cách làm việc với Claude
 1. Đính kèm file `CONTEXT.md` này vào đầu mỗi cuộc trò chuyện mới
 2. Đính kèm thêm file code cần chỉnh sửa nếu có
