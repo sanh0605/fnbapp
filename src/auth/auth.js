@@ -47,13 +47,12 @@ const Auth = (() => {
   }
 
   function getLoginPath() {
-    const depth = window.location.pathname.split('/').filter(Boolean).length - 1;
-    return '../'.repeat(Math.max(depth, 1)) + 'auth/login.html';
+    // Tất cả pages đều ở src/{module}/index.html — auth luôn cách 1 cấp
+    return '../auth/login.html';
   }
 
   function getHomePath() {
-    const depth = window.location.pathname.split('/').filter(Boolean).length - 1;
-    return '../'.repeat(Math.max(depth, 1)) + 'home/index.html';
+    return '../home/index.html';
   }
 
   function showIf(permission, element) {

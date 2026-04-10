@@ -23,7 +23,8 @@ fnbapp/
 │   ├── pos/index.html
 │   ├── inventory/index.html
 │   ├── purchasing/index.html
-│   ├── contacts/index.html        ← module mới
+│   ├── contacts/index.html
+│   ├── menu/index.html
 │   ├── revenue/index.html
 │   ├── finance/index.html
 │   ├── schedule/index.html
@@ -213,7 +214,8 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 | Revenue | src/revenue/ | ✓ |
 | Finance | src/finance/ | ✓ |
 | Schedule | src/schedule/ | ✓ |
-| Settings  | src/settings/  | ✓ Done |
+| Menu      | src/menu/      | ✓ Done (tách từ Settings) |
+| Settings  | src/settings/  | ✓ Done (Menu → trang riêng) |
 | Contacts  | src/contacts/  | ✓ Done (NCC · KH · NQ · Khác) — cần Migration 005 |
 
 ---

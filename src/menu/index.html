@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>FNB App — Menu</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+    .header{background:#fff;padding:10px 16px 8px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
+    .back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;text-decoration:none;flex-shrink:0}
+    .header-title{font-size:15px;font-weight:600;flex:1}
+    .section-add{padding:5px 12px;border-radius:20px;border:0.5px solid #1D9E75;background:#E1F5EE;color:#085041;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .content{flex:1;overflow-y:auto;padding:14px 14px 32px;display:flex;flex-direction:column;gap:14px}
+    .card-list{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;overflow:hidden}
+    .card-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:0.5px solid #e8e6e0;cursor:pointer}
+    .card-row:last-child{border-bottom:none}
+    .card-row:active{background:#f5f5f0}
+    .card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .card-info{flex:1;min-width:0}
+    .card-name{font-size:14px;font-weight:500}
+    .card-sub{font-size:12px;color:#888;margin-top:2px}
+    .card-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px}
+    .badge-active{background:#E1F5EE;color:#085041}
+    .badge-inactive{background:#FCEBEB;color:#A32D2D}
+    .chevron{color:#bbb;flex-shrink:0}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
+    .overlay.show{display:flex}
+    .sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;max-height:90dvh;overflow-y:auto}
+    .sheet-title{font-size:15px;font-weight:600}
+    .sheet-btn{padding:13px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+    .sheet-btn.primary{background:#1D9E75;color:#fff}
+    .sheet-btn.primary:active{background:#0F6E56}
+    .sheet-btn.danger{background:#FCEBEB;color:#A32D2D}
+    .sheet-btn.secondary{background:#f5f5f0;color:#1a1a18;border:0.5px solid #e8e6e0}
+    .divider{height:0.5px;background:#e8e6e0;margin:4px 0}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:#888;font-weight:500}
+    .field input,.field select{width:100%;padding:11px 14px;border:0.5px solid #e8e6e0;border-radius:12px;font-size:15px;color:#1a1a18;background:#f5f5f0;font-family:inherit}
+    .field input:focus,.field select:focus{outline:none;border-color:#1D9E75;background:#fff}
+    .recipe-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid #e8e6e0}
+    .recipe-row:last-child{border-bottom:none}
+    .recipe-name{flex:1;font-size:13px;color:#888}
+    .recipe-inputs{display:flex;gap:6px;align-items:center}
+    .recipe-inputs input{width:70px;padding:6px 8px;border:0.5px solid #e8e6e0;border-radius:8px;font-size:13px;background:#f5f5f0;font-family:inherit;text-align:right}
+    .recipe-unit{font-size:12px;color:#888;white-space:nowrap}
+    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;gap:8px;color:#bbb;font-size:13px}
+    .toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:400}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="../home/index.html" class="back-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </a>
+  <span class="header-title">Menu & Sản phẩm</span>
+  <button class="section-add" onclick="showProduct()">+ Thêm</button>
+</div>
+
+<div class="content" id="content"><div style="text-align:center;padding:32px;color:#bbb;font-size:13px">Đang tải...</div></div>
+
+<!-- Sản phẩm sheet -->
+<div class="overlay" id="productOverlay" onclick="hideProduct()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title" id="productSheetTitle">Thêm sản phẩm</div>
+    <input type="hidden" id="editProductId">
+    <div class="field"><label>Tên sản phẩm</label><input type="text" id="pName" placeholder="Cà phê đen"></div>
+    <div class="field"><label>Danh mục</label><input type="text" id="pCategory" placeholder="Cà phê"></div>
+    <div class="field"><label>Giá bán (₫)</label><input type="number" id="pPrice" placeholder="0" min="0" step="500"></div>
+    <div class="field"><label>Icon (emoji)</label><input type="text" id="pIcon" placeholder="☕"></div>
+    <div class="field"><label>Màu nền (hex)</label><input type="text" id="pColor" placeholder="#FAEEDA"></div>
+    <div class="field"><label>Trạng thái</label>
+      <select id="pActive">
+        <option value="true">Đang bán</option>
+        <option value="false">Tạm ngưng</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:13px;font-weight:600">Công thức nguyên liệu</div>
+    <div id="recipeEditor"></div>
+    <button class="sheet-btn primary" onclick="saveProduct()">Lưu sản phẩm</button>
+    <button class="sheet-btn danger" id="delProductBtn" style="display:none" onclick="deleteProduct()">Xoá sản phẩm</button>
+    <button class="sheet-btn secondary" onclick="hideProduct()">Huỷ</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../lib/supabase.js"></script>
+<script src="../auth/auth.js"></script>
+<script>
+  Auth.require('menu');
+  const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+
+  let PRODUCTS=[], RAW_MATERIALS=[], SEMI_PRODUCTS=[];
+  let editingProductId=null, currentRecipes=[];
+
+  async function init(){
+    try {
+      [PRODUCTS, RAW_MATERIALS, SEMI_PRODUCTS] = await Promise.all([
+        DB.select('products','select=*&order=sort_order.asc'),
+        DB.select('raw_materials','select=*&order=name.asc'),
+        DB.select('semi_products','select=*&order=name.asc'),
+      ]);
+      render();
+    } catch(e){
+      document.getElementById('content').innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`;
+    }
+  }
+
+  function render(){
+    const el = document.getElementById('content');
+    if(!PRODUCTS.length){ el.innerHTML='<div class="empty">Chưa có sản phẩm nào</div>'; return; }
+    el.innerHTML = `<div class="card-list">
+      ${PRODUCTS.map(p=>`<div class="card-row" onclick="showProduct('${p.id}')">
+        <div class="card-icon" style="background:${p.color||'#f5f5f0'}">${p.icon||'☕'}</div>
+        <div class="card-info">
+          <div class="card-name">${p.name}</div>
+          <div class="card-sub">${fmt(p.price)} · ${p.category}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="card-badge ${p.active?'badge-active':'badge-inactive'}">${p.active?'Đang bán':'Tạm ngưng'}</span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  async function showProduct(id){
+    editingProductId = id||null;
+    const title = document.getElementById('productSheetTitle');
+    const del   = document.getElementById('delProductBtn');
+    if(id){
+      const p = PRODUCTS.find(x=>x.id===id);
+      if(!p) return;
+      title.textContent = 'Chỉnh sửa sản phẩm';
+      document.getElementById('pName').value     = p.name;
+      document.getElementById('pCategory').value = p.category;
+      document.getElementById('pPrice').value    = p.price;
+      document.getElementById('pIcon').value     = p.icon;
+      document.getElementById('pColor').value    = p.color;
+      document.getElementById('pActive').value   = String(p.active);
+      const recipes = await DB.select('product_recipes', `product_id=eq.${id}&select=*`);
+      currentRecipes = recipes.map(r=>({...r}));
+      del.style.display = 'block';
+    } else {
+      title.textContent = 'Thêm sản phẩm';
+      ['pName','pCategory','pIcon','pColor'].forEach(x=>document.getElementById(x).value='');
+      document.getElementById('pPrice').value  = '';
+      document.getElementById('pActive').value = 'true';
+      currentRecipes = [];
+      del.style.display = 'none';
+    }
+    renderRecipeEditor();
+    document.getElementById('productOverlay').classList.add('show');
+  }
+  function hideProduct(){ document.getElementById('productOverlay').classList.remove('show'); }
+
+  function renderRecipeEditor(){
+    const el = document.getElementById('recipeEditor');
+    const allIngredients = [
+      ...SEMI_PRODUCTS.map(s=>({id:s.id, name:s.name, type:'semi', unit:s.unit})),
+      ...RAW_MATERIALS.map(r=>({id:r.id, name:r.name, type:'raw',  unit:r.unit})),
+    ];
+    // expose to window so inline onchange handlers can access it
+    window._allIngredients = allIngredients;
+    el.innerHTML =
+      currentRecipes.map((r,i)=>`<div class="recipe-row">
+        <div class="recipe-name">
+          <select onchange="currentRecipes[${i}].ingredient_id=this.value;currentRecipes[${i}].ingredient_type=window._allIngredients.find(x=>x.id===this.value)?.type||'semi'"
+            style="width:100%;padding:4px 6px;border:0.5px solid #e8e6e0;border-radius:6px;font-size:12px;font-family:inherit">
+            ${allIngredients.map(ing=>`<option value="${ing.id}" ${r.ingredient_id===ing.id?'selected':''}>${ing.name} (${ing.unit})</option>`).join('')}
+          </select>
+        </div>
+        <div class="recipe-inputs">
+          <input type="number" value="${r.amount}" min="0" step="any" onchange="currentRecipes[${i}].amount=parseFloat(this.value)||0">
+          <span class="recipe-unit">${allIngredients.find(x=>x.id===r.ingredient_id)?.unit||''}</span>
+          <button onclick="currentRecipes.splice(${i},1);renderRecipeEditor()"
+            style="width:24px;height:24px;border-radius:50%;border:none;background:#e8e6e0;cursor:pointer;font-size:14px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
+        </div>
+      </div>`).join('')+
+      `<button onclick="currentRecipes.push({ingredient_id:window._allIngredients[0]?.id||'',ingredient_type:'semi',amount:0,unit:''});renderRecipeEditor()"
+        style="width:100%;padding:8px;border:0.5px dashed #d8d6d0;border-radius:10px;background:transparent;font-size:13px;color:#888;cursor:pointer;font-family:inherit;margin-top:4px">+ Thêm nguyên liệu</button>`;
+  }
+
+  async function saveProduct(){
+    const name     = document.getElementById('pName').value.trim();
+    const category = document.getElementById('pCategory').value.trim();
+    const price    = parseInt(document.getElementById('pPrice').value)||0;
+    const icon     = document.getElementById('pIcon').value.trim()||'☕';
+    const color    = document.getElementById('pColor').value.trim()||'#FAEEDA';
+    const active   = document.getElementById('pActive').value === 'true';
+    if(!name||!category){ toast('Vui lòng nhập tên và danh mục'); return; }
+    try {
+      let productId = editingProductId;
+      if(editingProductId){
+        await DB.update('products', `id=eq.${editingProductId}`, {name,category,price,icon,color,active});
+        await DB.delete('product_recipes', `product_id=eq.${editingProductId}`);
+      } else {
+        const res = await DB.insert('products', {name,category,price,icon,color,active,sort_order:PRODUCTS.length+1});
+        productId = res[0].id;
+      }
+      for(const r of currentRecipes.filter(x=>x.ingredient_id&&x.amount>0)){
+        const allIng = [...SEMI_PRODUCTS.map(s=>({id:s.id,unit:s.unit,type:'semi'})),...RAW_MATERIALS.map(x=>({id:x.id,unit:x.unit,type:'raw'}))];
+        const ing = allIng.find(x=>x.id===r.ingredient_id);
+        await DB.insert('product_recipes',{product_id:productId,ingredient_id:r.ingredient_id,ingredient_type:r.ingredient_type||ing?.type||'semi',amount:r.amount,unit:ing?.unit||''},false);
+      }
+      hideProduct(); toast('✓ Đã lưu sản phẩm');
+      PRODUCTS = await DB.select('products','select=*&order=sort_order.asc');
+      render();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  async function deleteProduct(){
+    if(!editingProductId) return;
+    try {
+      await DB.delete('products', `id=eq.${editingProductId}`);
+      hideProduct(); toast('Đã xoá sản phẩm');
+      PRODUCTS = await DB.select('products','select=*&order=sort_order.asc');
+      render();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  function toast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg;t.style.opacity='1';
+    clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2500);
+  }
+
+  init();
+</script>
+</body>
+</html>

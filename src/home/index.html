@@ -109,13 +109,14 @@
       const todayEnd=new Date(today);todayEnd.setHours(23,59,59,999);
       const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
 
-      const[todayOrders,monthOrders,rawStock,semiStock,supplies,scheduleToday]=await Promise.all([
+      const[todayOrders,monthOrders,rawStock,semiStock,supplies,scheduleToday,activeProducts]=await Promise.all([
         DB.select('orders',`created_at=gte.${todayStart.toISOString()}&created_at=lte.${todayEnd.toISOString()}&select=total`),
         DB.select('orders',`created_at=gte.${monthStart.toISOString()}&select=total`),
         DB.select('raw_stock','select=id,quantity'),
         DB.select('semi_stock','select=id,quantity'),
         DB.select('supplies','select=id,quantity,warn_at,category'),
         DB.select('schedule_logs',`date=eq.${todayKey}&select=*`),
+        DB.select('products','active=eq.true&select=id'),
       ]);
 
       const todayRev=todayOrders.reduce((s,o)=>s+o.total,0);
@@ -137,7 +138,7 @@
       const refOpen=new Date(today);refOpen.setHours(6,0,0,0);
       const shouldCheckin=!checkedIn&&today>=refOpen;
 
-      renderDashboard({todayRev,monthRev,todayCount,totalLow,checkedIn,checkedOut,shouldCheckin});
+      renderDashboard({todayRev,monthRev,todayCount,totalLow,checkedIn,checkedOut,shouldCheckin,activeProductCount:activeProducts.length});
     } catch(e){
       document.getElementById('scroll').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi: ${e.message}</div>`;
     }
@@ -208,6 +209,11 @@
       <div><div class="mc-name">Tài chính</div><div class="mc-stat">P&L · Chi phí · Giá vốn</div><span class="mc-badge badge-purple">Tháng ${today.getMonth()+1}</span></div>
     </a>`;
 
+    if(isOwner) html+=`<a href="../menu/index.html" class="module-card">
+      <div class="mc-icon" style="background:#FAEEDA"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>
+      <div><div class="mc-name">Menu</div><div class="mc-stat">Sản phẩm & công thức</div><span class="mc-badge badge-yellow">${d.activeProductCount} sản phẩm</span></div>
+    </a>`;
+
     if(isOwner) html+=`<a href="../contacts/index.html" class="module-card">
       <div class="mc-icon" style="background:#FDF3E1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
       <div><div class="mc-name">Liên lạc</div><div class="mc-stat">NCC · Khách · Nhượng quyền</div><span class="mc-badge badge-yellow">Quản lý</span></div>
@@ -216,7 +222,7 @@
     // Cài đặt — tất cả roles
     html+=`<a href="../settings/index.html" class="module-card">
       <div class="mc-icon" style="background:#f5f5f0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-      <div><div class="mc-name">Cài đặt</div><div class="mc-stat">${isOwner?'Tài khoản · Menu · Hệ thống':'Đổi mật khẩu'}</div><span class="mc-badge badge-gray">${Auth.getRole()}</span></div>
+      <div><div class="mc-name">Cài đặt</div><div class="mc-stat">${isOwner?'Tài khoản · QR · Hệ thống':'Đổi mật khẩu'}</div><span class="mc-badge badge-gray">${Auth.getRole()}</span></div>
     </a>`;
 
     html+=`</div>`;
