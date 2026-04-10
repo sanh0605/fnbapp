@@ -23,6 +23,7 @@ fnbapp/
 │   ├── pos/index.html
 │   ├── inventory/index.html
 │   ├── purchasing/index.html
+│   ├── contacts/index.html        ← module mới
 │   ├── revenue/index.html
 │   ├── finance/index.html
 │   ├── schedule/index.html
@@ -73,10 +74,21 @@ Seed mẫu:
 - sku_items: NVL-SUA-MLK (Sữa tươi Mlekovita → map_to: sua_tuoi)
 - sku_units: ml/hộp/thùng cho Mlekovita
 
-Quản lý qua Settings (owner only):
-- Nhà cung cấp: CRUD đầy đủ, mã tự sinh NCC-001/002..., hỗ trợ direct/shopee/lazada/tiktok/other
-- SKU: CRUD đầy đủ, mã tự sinh NVL-/VTU-/CCU-XXX theo loại, map_to dropdown raw_materials/supplies
-- Đơn vị tính SKU: thêm/xoá sku_units (unit_name, to_base, description) inline trong sheet SKU
+Quản lý:
+- SKU: tab "Danh mục SKU" trong Inventory (owner only), mã tự sinh NVL-/VTU-/CCU-XXX
+- Đơn vị tính SKU: thêm/xoá sku_units inline trong sheet SKU
+- Nhà cung cấp & liên lạc: module Contacts riêng (xem Migration 005)
+
+### Migration 005 — Contacts (cần chạy trong Supabase Dashboard)
+```sql
+ALTER TABLE suppliers
+  ADD COLUMN IF NOT EXISTS contact_type text NOT NULL DEFAULT 'nha_cung_cap';
+```
+Sau migration, bảng `suppliers` dùng chung cho tất cả loại liên lạc:
+- `nha_cung_cap` — nhà cung cấp (NCC-XXX), dùng trong Purchasing
+- `khach_hang`   — khách hàng (KH-XXX), dùng cho tích điểm sau này
+- `nhuong_quyen` — đối tác nhượng quyền (NQ-XXX)
+- `khac`         — khác (KC-XXX)
 
 ---
 
@@ -138,7 +150,8 @@ Còn nợ = Tổng - Đã TT
 | Lịch trình | — | ✓ | ✓ |
 | Quản lý nguyên liệu | — | ✓ | ✓ |
 | Quản lý SKU & đơn vị tính | — | — | ✓ |
-| Quản lý nhà cung cấp | — | — | ✓ |
+| Xem Liên lạc | — | ✓ | ✓ |
+| Quản lý Liên lạc (CRUD) | — | — | ✓ |
 | Quản lý menu & giá | — | — | ✓ |
 | Quản lý công thức | — | — | ✓ |
 | Tạo/sửa/xoá tài khoản | — | — | ✓ |
@@ -200,7 +213,8 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 | Revenue | src/revenue/ | ✓ |
 | Finance | src/finance/ | ✓ |
 | Schedule | src/schedule/ | ✓ |
-| Settings | src/settings/ | ✓ Done (suppliers + SKU qua Settings) |
+| Settings  | src/settings/  | ✓ Done |
+| Contacts  | src/contacts/  | ✓ Done (NCC · KH · NQ · Khác) — cần Migration 005 |
 
 ---
 

@@ -94,6 +94,32 @@
 <div class="tabs" id="tabBar"></div>
 <div class="content" id="content"><div class="empty">Đang tải...</div></div>
 
+<!-- SKU sheet -->
+<div class="overlay" id="skuOverlay" onclick="hideSku()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title" id="skuSheetTitle">Thêm SKU</div>
+    <div class="field"><label>Mã SKU</label><input type="text" id="skuCode" placeholder="NVL-001"></div>
+    <div class="field"><label>Tên SKU</label><input type="text" id="skuName" placeholder="Sữa tươi Mlekovita"></div>
+    <div class="field"><label>Loại</label>
+      <select id="skuType" onchange="onSkuTypeChange()">
+        <option value="raw">Nguyên liệu thô (NVL)</option>
+        <option value="supply">Vật tư tiêu hao (VTU)</option>
+        <option value="equipment">Dụng cụ thiết bị (CCU)</option>
+      </select>
+    </div>
+    <div class="field"><label>Map về nguyên liệu / vật tư</label>
+      <select id="skuMapTo" onchange="onSkuMapToChange()"></select>
+    </div>
+    <div class="field"><label>Đơn vị cơ bản</label><input type="text" id="skuBaseUnit" placeholder="ml" readonly style="color:#888"></div>
+    <div style="height:0.5px;background:#e8e6e0;margin:4px 0"></div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Đơn vị tính</div>
+    <div id="skuUnitsEditor"></div>
+    <button class="sheet-btn primary" onclick="saveSku()">Lưu SKU</button>
+    <button class="sheet-btn secondary" id="delSkuBtn" style="display:none;background:#FCEBEB;color:#A32D2D;border:none" onclick="deleteSku()">Xoá SKU này</button>
+    <button class="sheet-btn secondary" onclick="hideSku()">Huỷ</button>
+  </div>
+</div>
+
 <!-- Pha bán thành phẩm -->
 <div class="overlay" id="brewOverlay" onclick="hideBrew()">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -110,12 +136,13 @@
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('inventory_view');
-  const canEdit  = Auth.can('inventory_edit');
-  const canViewRaw = Auth.can('inventory_edit'); // manager/owner thấy nguyên liệu thô tổng
-  const session  = Auth.getSession();
+  const canEdit    = Auth.can('inventory_edit');
+  const canViewRaw = Auth.can('inventory_edit');
+  const isOwner    = Auth.getRole() === 'owner';
+  const session    = Auth.getSession();
 
   let activeTab = 1;
-  let RAW_MATERIALS=[], SEMI_PRODUCTS=[], SEMI_RECIPES=[], SUPPLIES=[];
+  let RAW_MATERIALS=[], SEMI_PRODUCTS=[], SEMI_RECIPES=[], SUPPLIES=[], SKU_ITEMS=[];
   let rawStockData={}, semiStockData={}, productsData=[], productRecipes=[];
 
   async function init(){
@@ -132,6 +159,7 @@
         loads.push(DB.select('raw_stock','select=*'));
         loads.push(DB.select('semi_recipes','select=*'));
       }
+      if(isOwner) loads.push(DB.select('sku_items','select=*&order=sku_code.asc'));
       const res = await Promise.all(loads);
       SEMI_PRODUCTS = res[0];
       res[1].forEach(s=>semiStockData[s.id]=s);
@@ -142,6 +170,9 @@
         RAW_MATERIALS = res[5];
         res[6].forEach(r=>rawStockData[r.id]=r);
         SEMI_RECIPES = res[7];
+        if(isOwner) SKU_ITEMS = res[8]||[];
+      } else if(isOwner){
+        SKU_ITEMS = res[5]||[];
       }
       setupUI();
       renderContent();
@@ -158,6 +189,7 @@
     tabs.push({id:3,label:'Vật tư'});
     tabs.push({id:4,label:'Ly có thể pha'});
     if(canViewRaw) tabs.push({id:5,label:'Lịch sử nhập'});
+    if(isOwner) tabs.push({id:6,label:'Danh mục SKU'});
 
     activeTab = tabs[0].id;
     document.getElementById('tabBar').innerHTML = tabs.map(t=>
@@ -190,6 +222,7 @@
     else if(activeTab===3) renderSupplies();
     else if(activeTab===4) renderCanMake();
     else if(activeTab===5&&canViewRaw) renderReceipts();
+    else if(activeTab===6&&isOwner) renderSku();
   }
 
   function renderRaw(){
@@ -378,6 +411,146 @@
     const t=document.getElementById('toast');
     t.textContent=msg;t.style.opacity='1';
     clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2200);
+  }
+
+  // ── DANH MỤC SKU (owner only) ──
+  let editingSkuId=null, currentSkuUnits=[];
+
+  function skuTypeLabel(t){ return {raw:'Nguyên liệu',supply:'Vật tư',equipment:'Thiết bị'}[t]||t||''; }
+  function skuTypeBg(t)   { return {raw:'#E1F5EE',supply:'#E6F1FB',equipment:'#F5F0FF'}[t]||'#f5f5f0'; }
+  function skuTypeIcon(t) { return {raw:'🌿',supply:'📦',equipment:'🔧'}[t]||'📦'; }
+  function skuMapName(s){
+    if(!s.map_to_id) return '';
+    return RAW_MATERIALS.find(x=>x.id===s.map_to_id)?.name || SUPPLIES.find(x=>x.id===s.map_to_id)?.name || '';
+  }
+  function nextSkuCode(type){
+    const prefix = type==='raw'?'NVL':type==='supply'?'VTU':'CCU';
+    const nums = SKU_ITEMS.filter(s=>(s.sku_code||'').startsWith(prefix+'-')).map(s=>parseInt(s.sku_code.slice(4))||0);
+    return prefix+'-'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');
+  }
+  function buildSkuMapOptions(type){
+    const items = type==='supply'
+      ? SUPPLIES.map(x=>({id:x.id,name:x.name,unit:x.unit}))
+      : RAW_MATERIALS.map(x=>({id:x.id,name:x.name,unit:x.unit}));
+    return '<option value="">— Không map —</option>'+items.map(x=>`<option value="${x.id}" data-unit="${x.unit||''}">${x.name}</option>`).join('');
+  }
+
+  function renderSku(){
+    const el = document.getElementById('content');
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span class="section-title">Danh mục SKU</span>
+      <button onclick="showSku()" style="padding:5px 12px;border-radius:20px;border:0.5px solid #1D9E75;background:#E1F5EE;color:#085041;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit">+ Thêm SKU</button>
+    </div>`+
+    (SKU_ITEMS.length ? SKU_ITEMS.map(s=>`
+      <div class="stock-card" style="cursor:pointer" onclick="showSku('${s.id}')">
+        <div class="stock-icon" style="background:${skuTypeBg(s.type)}">${skuTypeIcon(s.type)}</div>
+        <div class="stock-info">
+          <div class="stock-name">${s.sku_code} · ${s.name}</div>
+          <div class="stock-detail">${skuTypeLabel(s.type)}${skuMapName(s)?' → '+skuMapName(s):''} · ${s.base_unit||'—'}</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>`).join('') : '<div class="empty">Chưa có SKU nào</div>');
+  }
+
+  function onSkuTypeChange(){
+    const type = document.getElementById('skuType').value;
+    if(!editingSkuId) document.getElementById('skuCode').value = nextSkuCode(type);
+    document.getElementById('skuMapTo').innerHTML = buildSkuMapOptions(type);
+    document.getElementById('skuBaseUnit').value = '';
+  }
+  function onSkuMapToChange(){
+    const opt = document.getElementById('skuMapTo').selectedOptions[0];
+    document.getElementById('skuBaseUnit').value = opt?.dataset?.unit||'';
+  }
+
+  async function showSku(id){
+    editingSkuId = id||null; currentSkuUnits = [];
+    const title = document.getElementById('skuSheetTitle');
+    const del   = document.getElementById('delSkuBtn');
+    const type  = id?(SKU_ITEMS.find(x=>x.id===id)?.type||'raw'):'raw';
+    document.getElementById('skuMapTo').innerHTML = buildSkuMapOptions(type);
+    if(id){
+      const s = SKU_ITEMS.find(x=>x.id===id);
+      if(!s) return;
+      title.textContent = 'Chỉnh sửa SKU';
+      document.getElementById('skuCode').value = s.sku_code||'';
+      document.getElementById('skuCode').readOnly = true;
+      document.getElementById('skuName').value = s.name||'';
+      document.getElementById('skuType').value = s.type||'raw';
+      document.getElementById('skuMapTo').innerHTML = buildSkuMapOptions(s.type||'raw');
+      document.getElementById('skuMapTo').value = s.map_to_id||'';
+      document.getElementById('skuBaseUnit').value = s.base_unit||'';
+      del.style.display='block';
+      try{ currentSkuUnits = await DB.select('sku_units',`sku_id=eq.${id}&select=*&order=to_base.asc`); }catch(e){ currentSkuUnits=[]; }
+    } else {
+      title.textContent = 'Thêm SKU';
+      document.getElementById('skuCode').value = nextSkuCode('raw');
+      document.getElementById('skuCode').readOnly = false;
+      document.getElementById('skuName').value = '';
+      document.getElementById('skuType').value = 'raw';
+      document.getElementById('skuBaseUnit').value = '';
+      del.style.display='none';
+    }
+    renderSkuUnitsEditor();
+    document.getElementById('skuOverlay').classList.add('show');
+  }
+  function hideSku(){ document.getElementById('skuOverlay').classList.remove('show'); }
+
+  function renderSkuUnitsEditor(){
+    const base = document.getElementById('skuBaseUnit').value||'đơn vị';
+    document.getElementById('skuUnitsEditor').innerHTML =
+      currentSkuUnits.map((u,i)=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e8e6e0">
+          <input type="text" value="${u.unit_name||''}" placeholder="ml/hộp/thùng" onchange="currentSkuUnits[${i}].unit_name=this.value"
+            style="flex:1;padding:5px 8px;border:0.5px solid #e8e6e0;border-radius:6px;font-size:12px;font-family:inherit">
+          <input type="number" value="${u.to_base||1}" min="0" step="any" onchange="currentSkuUnits[${i}].to_base=parseFloat(this.value)||1"
+            style="width:64px;padding:5px 8px;border:0.5px solid #e8e6e0;border-radius:6px;font-size:12px;font-family:inherit;text-align:right">
+          <span style="font-size:12px;color:#888;white-space:nowrap">${base}</span>
+          <button onclick="currentSkuUnits.splice(${i},1);renderSkuUnitsEditor()"
+            style="width:24px;height:24px;border-radius:50%;border:none;background:#e8e6e0;cursor:pointer;font-size:14px;color:#888">×</button>
+        </div>
+        <input type="text" value="${u.description||''}" placeholder="Mô tả (tuỳ chọn)" onchange="currentSkuUnits[${i}].description=this.value"
+          style="width:100%;padding:5px 8px;border:0.5px solid #e8e6e0;border-radius:6px;font-size:12px;font-family:inherit;color:#888;margin-bottom:4px">`
+      ).join('')+
+      `<button onclick="currentSkuUnits.push({unit_name:'',to_base:1,description:''});renderSkuUnitsEditor()"
+        style="width:100%;padding:8px;border:0.5px dashed #d8d6d0;border-radius:10px;background:transparent;font-size:13px;color:#888;cursor:pointer;font-family:inherit;margin-top:4px">+ Thêm đơn vị</button>`;
+  }
+
+  async function saveSku(){
+    const sku_code  = document.getElementById('skuCode').value.trim();
+    const name      = document.getElementById('skuName').value.trim();
+    const type      = document.getElementById('skuType').value;
+    const map_to_id = document.getElementById('skuMapTo').value||null;
+    const base_unit = document.getElementById('skuBaseUnit').value.trim();
+    if(!sku_code||!name){ toast('Vui lòng nhập mã và tên SKU'); return; }
+    try {
+      let skuId = editingSkuId;
+      if(editingSkuId){
+        await DB.update('sku_items',`id=eq.${editingSkuId}`,{name,type,map_to_id,base_unit});
+      } else {
+        const res = await DB.insert('sku_items',{sku_code,name,type,map_to_id,base_unit});
+        skuId = res[0].id;
+      }
+      if(skuId){
+        await DB.delete('sku_units',`sku_id=eq.${skuId}`);
+        for(const u of currentSkuUnits.filter(x=>x.unit_name))
+          await DB.insert('sku_units',{sku_id:skuId,unit_name:u.unit_name,to_base:u.to_base||1,description:u.description||''},false);
+      }
+      hideSku(); toast('✓ Đã lưu SKU');
+      SKU_ITEMS = await DB.select('sku_items','select=*&order=sku_code.asc');
+      renderSku();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  async function deleteSku(){
+    if(!editingSkuId) return;
+    try {
+      await DB.delete('sku_units',`sku_id=eq.${editingSkuId}`);
+      await DB.delete('sku_items',`id=eq.${editingSkuId}`);
+      hideSku(); toast('Đã xoá SKU');
+      SKU_ITEMS = await DB.select('sku_items','select=*&order=sku_code.asc');
+      renderSku();
+    } catch(e){ toast('Lỗi: '+e.message); }
   }
 
   init();

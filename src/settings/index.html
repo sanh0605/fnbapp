@@ -146,65 +146,6 @@
   </div>
 </div>
 
-<!-- Nhà cung cấp sheet -->
-<div class="overlay" id="supplierOverlay" onclick="hideSupplier()">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-title" id="supplierSheetTitle">Thêm nhà cung cấp</div>
-    <input type="hidden" id="editSupplierId">
-    <div class="field"><label>Mã NCC</label><input type="text" id="sCode" placeholder="NCC-001"></div>
-    <div class="field"><label>Tên nhà cung cấp</label><input type="text" id="sName" placeholder="Nhà cung cấp ABC"></div>
-    <div class="field"><label>Số điện thoại</label><input type="tel" id="sPhone" placeholder="0901234567"></div>
-    <div class="field"><label>Email</label><input type="text" id="sEmail" placeholder="ncc@example.com"></div>
-    <div class="field"><label>Địa chỉ</label><input type="text" id="sAddress" placeholder="123 Đường..."></div>
-    <div class="field"><label>Kênh mua hàng</label>
-      <select id="sPlatform">
-        <option value="direct">Trực tiếp</option>
-        <option value="shopee">Shopee</option>
-        <option value="lazada">Lazada</option>
-        <option value="tiktok">TikTok Shop</option>
-        <option value="other">Khác</option>
-      </select>
-    </div>
-    <div class="field"><label>Link shop / sàn TMĐT</label><input type="text" id="sPlatformUrl" placeholder="https://..."></div>
-    <div class="field"><label>Ghi chú</label><input type="text" id="sNote" placeholder=""></div>
-    <div class="field"><label>Trạng thái</label>
-      <select id="sActive">
-        <option value="true">Đang hợp tác</option>
-        <option value="false">Ngưng hợp tác</option>
-      </select>
-    </div>
-    <button class="sheet-btn primary" onclick="saveSupplier()">Lưu nhà cung cấp</button>
-    <button class="sheet-btn danger" id="delSupplierBtn" style="display:none" onclick="deleteSupplier()">Xoá nhà cung cấp này</button>
-    <button class="sheet-btn secondary" onclick="hideSupplier()">Huỷ</button>
-  </div>
-</div>
-
-<!-- SKU sheet -->
-<div class="overlay" id="skuOverlay" onclick="hideSku()">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-title" id="skuSheetTitle">Thêm SKU</div>
-    <input type="hidden" id="editSkuId">
-    <div class="field"><label>Mã SKU</label><input type="text" id="skuCode" placeholder="NVL-001"></div>
-    <div class="field"><label>Tên SKU</label><input type="text" id="skuName" placeholder="Sữa tươi Mlekovita"></div>
-    <div class="field"><label>Loại</label>
-      <select id="skuType" onchange="onSkuTypeChange()">
-        <option value="raw">Nguyên liệu thô (NVL)</option>
-        <option value="supply">Vật tư tiêu hao (VTU)</option>
-        <option value="equipment">Dụng cụ thiết bị (CCU)</option>
-      </select>
-    </div>
-    <div class="field"><label>Map về nguyên liệu / vật tư</label>
-      <select id="skuMapTo" onchange="onSkuMapToChange()"></select>
-    </div>
-    <div class="field"><label>Đơn vị cơ bản</label><input type="text" id="skuBaseUnit" placeholder="ml" readonly style="color:#888"></div>
-    <div class="divider"></div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Đơn vị tính</div>
-    <div id="skuUnitsEditor"></div>
-    <button class="sheet-btn primary" onclick="saveSku()">Lưu SKU</button>
-    <button class="sheet-btn danger" id="delSkuBtn" style="display:none" onclick="deleteSku()">Xoá SKU này</button>
-    <button class="sheet-btn secondary" onclick="hideSku()">Huỷ</button>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -217,7 +158,7 @@
   const isOwner = role === 'owner';
   const fmt     = n => n.toLocaleString('vi-VN') + ' ₫';
 
-  let USERS=[], PRODUCTS=[], RAW_MATERIALS=[], SEMI_PRODUCTS=[], SETTINGS={}, SUPPLIERS=[], SKU_ITEMS=[], SUPPLIES=[];
+  let USERS=[], PRODUCTS=[], RAW_MATERIALS=[], SEMI_PRODUCTS=[], SETTINGS={};
   let editingUserId=null, editingProductId=null, currentRecipes=[];
 
   async function init(){
@@ -228,18 +169,13 @@
         DB.select('raw_materials','select=*&order=name.asc'),
         DB.select('semi_products','select=*&order=name.asc'),
       ];
-      if(isOwner){
-        loads.push(DB.select('users','select=*&order=role.asc,name.asc'));
-        loads.push(DB.select('suppliers','select=*&order=code.asc'));
-        loads.push(DB.select('sku_items','select=*&order=sku_code.asc'));
-        loads.push(DB.select('supplies','select=*&order=name.asc'));
-      }
+      if(isOwner) loads.push(DB.select('users','select=*&order=role.asc,name.asc'));
       const results = await Promise.all(loads);
       results[0].forEach(s=>SETTINGS[s.key]=s.value);
       PRODUCTS = results[1];
       RAW_MATERIALS = results[2];
       SEMI_PRODUCTS = results[3];
-      if(isOwner){ USERS=results[4]||[]; SUPPLIERS=results[5]||[]; SKU_ITEMS=results[6]||[]; SUPPLIES=results[7]||[]; }
+      if(isOwner) USERS = results[4]||[];
       render();
     } catch(e){ document.getElementById('content').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi: ${e.message}</div>`; }
   }
@@ -355,49 +291,6 @@
             <input type="number" id="lateGrace" value="${SETTINGS.late_grace_minutes||15}" min="0" max="60">
           </div>
           <button class="save-btn" onclick="saveSystemSettings()">Lưu cài đặt hệ thống</button>
-        </div>
-      </div>`;
-    }
-
-    // ── QUẢN LÝ NHÀ CUNG CẤP (owner only) ──
-    if(isOwner){
-      html += `<div>
-        <div class="section-header">
-          <span class="section-title">Nhà cung cấp</span>
-          <button class="section-add" onclick="showSupplier()">+ Thêm</button>
-        </div>
-        <div class="card-list" style="margin-top:8px">
-          ${SUPPLIERS.length ? SUPPLIERS.map(s=>`<div class="card-row" onclick="showSupplier('${s.id}')">
-            <div class="card-icon" style="background:#FDF3E1">🏪</div>
-            <div class="card-info">
-              <div class="card-name">${s.code} · ${s.name}</div>
-              <div class="card-sub">${[s.phone, platformLabel(s.platform)].filter(Boolean).join(' · ')}</div>
-            </div>
-            <div style="display:flex;gap:6px;align-items:center">
-              <span class="card-badge ${s.active!==false?'badge-active':'badge-inactive'}">${s.active!==false?'Hoạt động':'Ngưng'}</span>
-              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </div>`).join('') : '<div class="empty"><span>Chưa có nhà cung cấp nào</span></div>'}
-        </div>
-      </div>`;
-    }
-
-    // ── QUẢN LÝ SKU (owner only) ──
-    if(isOwner){
-      html += `<div>
-        <div class="section-header">
-          <span class="section-title">Danh mục SKU</span>
-          <button class="section-add" onclick="showSku()">+ Thêm</button>
-        </div>
-        <div class="card-list" style="margin-top:8px">
-          ${SKU_ITEMS.length ? SKU_ITEMS.map(s=>`<div class="card-row" onclick="showSku('${s.id}')">
-            <div class="card-icon" style="background:${skuTypeBg(s.type)}">${skuTypeIcon(s.type)}</div>
-            <div class="card-info">
-              <div class="card-name">${s.sku_code} · ${s.name}</div>
-              <div class="card-sub">${skuTypeLabel(s.type)}${skuMapName(s)?' → '+skuMapName(s):''} · ${s.base_unit||''}</div>
-            </div>
-            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>`).join('') : '<div class="empty"><span>Chưa có SKU nào</span></div>'}
         </div>
       </div>`;
     }
@@ -614,210 +507,6 @@
     const t=document.getElementById('toast');
     t.textContent=msg;t.style.opacity='1';
     clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2500);
-  }
-
-  // ── HELPER SUPPLIER & SKU ──
-  function platformLabel(p){ return {direct:'Trực tiếp',shopee:'Shopee',lazada:'Lazada',tiktok:'TikTok',other:'Khác'}[p]||p||''; }
-  function skuTypeLabel(t){ return {raw:'Nguyên liệu',supply:'Vật tư',equipment:'Thiết bị'}[t]||t||''; }
-  function skuTypeBg(t){ return {raw:'#E1F5EE',supply:'#E6F1FB',equipment:'#F5F0FF'}[t]||'#f5f5f0'; }
-  function skuTypeIcon(t){ return {raw:'🌿',supply:'📦',equipment:'🔧'}[t]||'📦'; }
-  function skuMapName(s){
-    if(!s.map_to_id) return '';
-    const r = RAW_MATERIALS.find(x=>x.id===s.map_to_id);
-    if(r) return r.name;
-    const sp = SUPPLIES.find(x=>x.id===s.map_to_id);
-    return sp?sp.name:'';
-  }
-  function nextSupplierCode(){
-    const nums = SUPPLIERS.map(s=>parseInt((s.code||'').replace('NCC-',''))||0);
-    return 'NCC-'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');
-  }
-  function nextSkuCode(type){
-    const prefix = type==='raw'?'NVL':type==='supply'?'VTU':'CCU';
-    const nums = SKU_ITEMS.filter(s=>(s.sku_code||'').startsWith(prefix+'-')).map(s=>parseInt(s.sku_code.slice(4))||0);
-    return prefix+'-'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');
-  }
-  function buildSkuMapOptions(type){
-    const items = type==='supply'
-      ? SUPPLIES.map(x=>({id:x.id,name:x.name,unit:x.unit}))
-      : RAW_MATERIALS.map(x=>({id:x.id,name:x.name,unit:x.unit}));
-    return '<option value="">— Không map —</option>'+items.map(x=>`<option value="${x.id}" data-unit="${x.unit||''}">${x.name}</option>`).join('');
-  }
-
-  // ── NHÀ CUNG CẤP ──
-  let editingSupplierId = null;
-  function showSupplier(id){
-    editingSupplierId = id||null;
-    const title = document.getElementById('supplierSheetTitle');
-    const del   = document.getElementById('delSupplierBtn');
-    if(id){
-      const s = SUPPLIERS.find(x=>x.id===id);
-      if(!s) return;
-      title.textContent = 'Chỉnh sửa nhà cung cấp';
-      document.getElementById('sCode').value        = s.code||'';
-      document.getElementById('sName').value        = s.name||'';
-      document.getElementById('sPhone').value       = s.phone||'';
-      document.getElementById('sEmail').value       = s.email||'';
-      document.getElementById('sAddress').value     = s.address||'';
-      document.getElementById('sPlatform').value    = s.platform||'direct';
-      document.getElementById('sPlatformUrl').value = s.platform_url||'';
-      document.getElementById('sNote').value        = s.note||'';
-      document.getElementById('sActive').value      = String(s.active!==false);
-      del.style.display = 'block';
-    } else {
-      title.textContent = 'Thêm nhà cung cấp';
-      document.getElementById('sCode').value = nextSupplierCode();
-      ['sName','sPhone','sEmail','sAddress','sPlatformUrl','sNote'].forEach(x=>document.getElementById(x).value='');
-      document.getElementById('sPlatform').value = 'direct';
-      document.getElementById('sActive').value   = 'true';
-      del.style.display = 'none';
-    }
-    document.getElementById('supplierOverlay').classList.add('show');
-  }
-  function hideSupplier(){ document.getElementById('supplierOverlay').classList.remove('show'); }
-
-  async function saveSupplier(){
-    const code = document.getElementById('sCode').value.trim();
-    const name = document.getElementById('sName').value.trim();
-    if(!code||!name){ toast('Vui lòng nhập mã và tên NCC'); return; }
-    const data = {
-      code, name,
-      phone:        document.getElementById('sPhone').value.trim(),
-      email:        document.getElementById('sEmail').value.trim(),
-      address:      document.getElementById('sAddress').value.trim(),
-      platform:     document.getElementById('sPlatform').value,
-      platform_url: document.getElementById('sPlatformUrl').value.trim(),
-      note:         document.getElementById('sNote').value.trim(),
-      active:       document.getElementById('sActive').value === 'true',
-    };
-    try {
-      if(editingSupplierId){
-        await DB.update('suppliers', `id=eq.${editingSupplierId}`, data);
-      } else {
-        await DB.insert('suppliers', data, false);
-      }
-      hideSupplier(); toast('✓ Đã lưu nhà cung cấp');
-      SUPPLIERS = await DB.select('suppliers','select=*&order=code.asc');
-      render();
-    } catch(e){ toast('Lỗi: '+e.message); }
-  }
-
-  async function deleteSupplier(){
-    if(!editingSupplierId) return;
-    try {
-      await DB.delete('suppliers', `id=eq.${editingSupplierId}`);
-      hideSupplier(); toast('Đã xoá nhà cung cấp');
-      SUPPLIERS = await DB.select('suppliers','select=*&order=code.asc');
-      render();
-    } catch(e){ toast('Lỗi: '+e.message); }
-  }
-
-  // ── SKU ──
-  let editingSkuId = null, currentSkuUnits = [];
-
-  function onSkuTypeChange(){
-    const type = document.getElementById('skuType').value;
-    if(!editingSkuId) document.getElementById('skuCode').value = nextSkuCode(type);
-    const sel = document.getElementById('skuMapTo');
-    sel.innerHTML = buildSkuMapOptions(type);
-    document.getElementById('skuBaseUnit').value = '';
-  }
-
-  function onSkuMapToChange(){
-    const sel = document.getElementById('skuMapTo');
-    const opt = sel.options[sel.selectedIndex];
-    document.getElementById('skuBaseUnit').value = opt?.dataset?.unit||'';
-  }
-
-  async function showSku(id){
-    editingSkuId = id||null;
-    currentSkuUnits = [];
-    const title = document.getElementById('skuSheetTitle');
-    const del   = document.getElementById('delSkuBtn');
-    const type  = id ? (SKU_ITEMS.find(x=>x.id===id)?.type||'raw') : 'raw';
-    document.getElementById('skuMapTo').innerHTML = buildSkuMapOptions(type);
-    if(id){
-      const s = SKU_ITEMS.find(x=>x.id===id);
-      if(!s) return;
-      title.textContent = 'Chỉnh sửa SKU';
-      document.getElementById('skuCode').value  = s.sku_code||'';
-      document.getElementById('skuCode').readOnly = true;
-      document.getElementById('skuName').value  = s.name||'';
-      document.getElementById('skuType').value  = s.type||'raw';
-      document.getElementById('skuMapTo').innerHTML = buildSkuMapOptions(s.type||'raw');
-      document.getElementById('skuMapTo').value = s.map_to_id||'';
-      document.getElementById('skuBaseUnit').value = s.base_unit||'';
-      del.style.display = 'block';
-      try { currentSkuUnits = await DB.select('sku_units',`sku_id=eq.${id}&select=*&order=to_base.asc`); } catch(e){ currentSkuUnits=[]; }
-    } else {
-      title.textContent = 'Thêm SKU';
-      document.getElementById('skuCode').value = nextSkuCode('raw');
-      document.getElementById('skuCode').readOnly = false;
-      document.getElementById('skuName').value = '';
-      document.getElementById('skuType').value = 'raw';
-      document.getElementById('skuBaseUnit').value = '';
-      del.style.display = 'none';
-    }
-    renderSkuUnitsEditor();
-    document.getElementById('skuOverlay').classList.add('show');
-  }
-  function hideSku(){ document.getElementById('skuOverlay').classList.remove('show'); }
-
-  function renderSkuUnitsEditor(){
-    const baseUnit = document.getElementById('skuBaseUnit').value||'đơn vị';
-    const el = document.getElementById('skuUnitsEditor');
-    el.innerHTML = currentSkuUnits.map((u,i)=>`
-      <div class="recipe-row">
-        <div class="recipe-name">
-          <input type="text" value="${u.unit_name||''}" placeholder="ml / hộp / thùng" onchange="currentSkuUnits[${i}].unit_name=this.value" style="width:100%;padding:5px 8px;border:0.5px solid #e8e6e0;border-radius:6px;font-size:12px;font-family:inherit">
-        </div>
-        <div class="recipe-inputs">
-          <input type="number" value="${u.to_base||1}" min="0" step="any" onchange="currentSkuUnits[${i}].to_base=parseFloat(this.value)||1">
-          <span class="recipe-unit">${baseUnit}</span>
-          <button onclick="currentSkuUnits.splice(${i},1);renderSkuUnitsEditor()" style="width:24px;height:24px;border-radius:50%;border:none;background:#e8e6e0;cursor:pointer;font-size:14px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
-        </div>
-      </div>
-      <div style="padding:0 0 6px">
-        <input type="text" value="${u.description||''}" placeholder="Mô tả (tuỳ chọn)" onchange="currentSkuUnits[${i}].description=this.value" style="width:100%;padding:5px 8px;border:0.5px solid #e8e6e0;border-radius:6px;font-size:12px;font-family:inherit;color:#888">
-      </div>`).join('')+`<button onclick="currentSkuUnits.push({unit_name:'',to_base:1,description:''});renderSkuUnitsEditor()" style="width:100%;padding:8px;border:0.5px dashed #d8d6d0;border-radius:10px;background:transparent;font-size:13px;color:#888;cursor:pointer;font-family:inherit;margin-top:4px">+ Thêm đơn vị tính</button>`;
-  }
-
-  async function saveSku(){
-    const sku_code  = document.getElementById('skuCode').value.trim();
-    const name      = document.getElementById('skuName').value.trim();
-    const type      = document.getElementById('skuType').value;
-    const map_to_id = document.getElementById('skuMapTo').value||null;
-    const base_unit = document.getElementById('skuBaseUnit').value.trim();
-    if(!sku_code||!name){ toast('Vui lòng nhập mã và tên SKU'); return; }
-    try {
-      let skuId = editingSkuId;
-      if(editingSkuId){
-        await DB.update('sku_items', `id=eq.${editingSkuId}`, {name, type, map_to_id, base_unit});
-      } else {
-        const res = await DB.insert('sku_items', {sku_code, name, type, map_to_id, base_unit});
-        skuId = res[0].id;
-      }
-      if(skuId){
-        await DB.delete('sku_units', `sku_id=eq.${skuId}`);
-        for(const u of currentSkuUnits.filter(x=>x.unit_name)){
-          await DB.insert('sku_units', {sku_id:skuId, unit_name:u.unit_name, to_base:u.to_base||1, description:u.description||''}, false);
-        }
-      }
-      hideSku(); toast('✓ Đã lưu SKU');
-      SKU_ITEMS = await DB.select('sku_items','select=*&order=sku_code.asc');
-      render();
-    } catch(e){ toast('Lỗi: '+e.message); }
-  }
-
-  async function deleteSku(){
-    if(!editingSkuId) return;
-    try {
-      await DB.delete('sku_units', `sku_id=eq.${editingSkuId}`);
-      await DB.delete('sku_items', `id=eq.${editingSkuId}`);
-      hideSku(); toast('Đã xoá SKU');
-      SKU_ITEMS = await DB.select('sku_items','select=*&order=sku_code.asc');
-      render();
-    } catch(e){ toast('Lỗi: '+e.message); }
   }
 
   init();
