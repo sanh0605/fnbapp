@@ -398,11 +398,6 @@
 
   async function deductSupplies(items, bag){
     try {
-      // Lấy tồn kho supplies hiện tại
-      const supplies = await DB.select('supplies', 'select=id,quantity');
-      const supMap = {};
-      supplies.forEach(s => supMap[s.id] = parseFloat(s.quantity)||0);
-
       // Lấy product_recipes để biết vật tư từng món
       const productIds = items.map(i => i.id).join(',');
       const recipes = await DB.select('product_recipes',
@@ -423,11 +418,40 @@
         deductions[bag.type] = (deductions[bag.type]||0) + bag.count;
       }
 
-      // Cập nhật lên Supabase
-      for(const [id, qty] of Object.entries(deductions)){
-        if(supMap[id] != null){
-          const newQty = Math.max(0, supMap[id] - qty);
-          await DB.update('supplies', `id=eq.${id}`, { quantity: newQty, updated_at: new Date().toISOString() });
+      // Trừ FIFO từ supply_batches → cập nhật supplies.quantity
+      for(const [supplyId, totalQty] of Object.entries(deductions)){
+        let remaining = totalQty;
+
+        // Lấy các lô còn hàng, cũ nhất trước (FIFO)
+        const batches = await DB.select('supply_batches',
+          `supply_id=eq.${supplyId}&remaining_qty=gt.0&order=purchase_date.asc,created_at.asc&select=*`
+        );
+
+        if(batches && batches.length){
+          for(const batch of batches){
+            if(remaining <= 0) break;
+            const have = parseFloat(batch.remaining_qty)||0;
+            const take = Math.min(have, remaining);
+            await DB.update('supply_batches', `id=eq.${batch.id}`, {
+              remaining_qty: have - take,
+            });
+            remaining -= take;
+          }
+          // Tính lại tổng tồn từ tất cả các lô
+          const allBatches = await DB.select('supply_batches',`supply_id=eq.${supplyId}&select=remaining_qty`);
+          const totalRemaining = (allBatches||[]).reduce((s,b)=>s+(parseFloat(b.remaining_qty)||0),0);
+          await DB.update('supplies', `id=eq.${supplyId}`, {
+            quantity: Math.max(0, totalRemaining),
+            updated_at: new Date().toISOString(),
+          });
+        } else {
+          // Fallback: không có lô → trừ thẳng vào supplies.quantity
+          const cur = await DB.select('supplies',`id=eq.${supplyId}&select=quantity`);
+          const curQty = cur&&cur.length?parseFloat(cur[0].quantity)||0:0;
+          await DB.update('supplies', `id=eq.${supplyId}`, {
+            quantity: Math.max(0, curQty - totalQty),
+            updated_at: new Date().toISOString(),
+          });
         }
       }
 

@@ -671,10 +671,22 @@ async function receiveInventory(poId){
     } else {
       const stocks = await DB.select('supplies',`id=eq.${item.item_id}&select=quantity`);
       const cur = stocks&&stocks.length?stocks[0]:{quantity:0};
+      const addQty = parseFloat(item.base_qty)||0;
+      const unitCost = addQty>0?(parseFloat(item.amount_after_discount)||parseFloat(item.total_price)||0)/addQty:0;
       await DB.update('supplies',`id=eq.${item.item_id}`,{
-        quantity:(parseFloat(cur.quantity)||0)+(parseFloat(item.base_qty)||0),
+        quantity:(parseFloat(cur.quantity)||0)+addQty,
         updated_at:new Date().toISOString(),
       });
+      if(addQty>0){
+        await DB.insert('supply_batches',{
+          supply_id: item.item_id,
+          po_id: poId,
+          initial_qty: addQty,
+          remaining_qty: addQty,
+          purchase_date: new Date().toISOString().split('T')[0],
+          unit_cost: unitCost,
+        },false);
+      }
     }
   }
 }
