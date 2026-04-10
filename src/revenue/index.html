@@ -1,3 +1,4 @@
+<!-- revenue/index.html -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -8,97 +9,61 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
-
-    /* ── HEADER ── */
     .header{background:#fff;padding:10px 16px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
     .header-left{display:flex;align-items:center;gap:10px}
     .back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;text-decoration:none;flex-shrink:0}
     .header-title{font-size:15px;font-weight:600;color:#1a1a18}
     .export-btn{padding:6px 14px;border-radius:20px;border:0.5px solid #e8e6e0;background:#f5f5f0;font-size:12px;font-weight:500;color:#888;cursor:pointer;font-family:inherit}
-    .export-btn:active{background:#e8e6e0}
-
-    /* ── PERIOD SELECTOR ── */
     .period-bar{background:#fff;padding:10px 14px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
     .period-bar::-webkit-scrollbar{display:none}
     .period-btn{padding:6px 14px;border-radius:20px;border:0.5px solid #d8d6d0;background:transparent;color:#888;font-size:13px;white-space:nowrap;cursor:pointer;transition:all .15s;font-family:inherit}
     .period-btn.active{background:#1D9E75;border-color:#1D9E75;color:#fff}
-
-    /* ── DATE NAV ── */
     .date-nav{background:#fff;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
     .nav-arrow{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888}
     .nav-arrow:active{background:#e8e6e0}
-    .date-label{font-size:14px;font-weight:500;color:#1a1a18;cursor:pointer}
+    .date-label{font-size:14px;font-weight:500;color:#1a1a18}
     .today-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
-
-    /* ── CONTENT ── */
     .content{flex:1;overflow-y:auto;padding:12px 14px 24px;display:flex;flex-direction:column;gap:12px}
-
-    /* ── METRIC CARDS ── */
     .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .metric-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:13px 14px}
     .metric-card.full{grid-column:span 2}
     .metric-label{font-size:11px;color:#888;font-weight:500;margin-bottom:6px}
-    .metric-value{font-size:22px;font-weight:700;color:#1a1a18}
+    .metric-value{font-size:20px;font-weight:700;color:#1a1a18}
     .metric-value.green{color:#1D9E75}
-    .metric-sub{font-size:12px;color:#888;margin-top:4px;display:flex;align-items:center;gap:4px}
+    .metric-sub{font-size:12px;color:#888;margin-top:4px}
     .trend-up{color:#1D9E75}
     .trend-down{color:#E24B4A}
-    .trend-flat{color:#888}
-
-    /* ── CHART ── */
     .chart-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px}
     .chart-title{font-size:13px;font-weight:500;color:#1a1a18;margin-bottom:12px}
     .chart-wrap{position:relative;height:160px}
-    canvas{width:100%!important}
-
-    /* ── TABLE ── */
     .table-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;overflow:hidden}
     .table-header{padding:12px 14px;border-bottom:0.5px solid #e8e6e0;display:flex;justify-content:space-between;align-items:center}
     .table-title{font-size:13px;font-weight:500;color:#1a1a18}
-    .table-body{}
     .table-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid #e8e6e0}
     .table-row:last-child{border-bottom:none}
     .tr-rank{font-size:12px;font-weight:600;color:#888;min-width:18px}
     .tr-icon{font-size:18px;flex-shrink:0}
-    .tr-info{flex:1;min-width:0}
+    .tr-info{flex:1}
     .tr-name{font-size:13px;font-weight:500;color:#1a1a18}
     .tr-qty{font-size:12px;color:#888;margin-top:1px}
     .tr-revenue{font-size:13px;font-weight:600;color:#1a1a18;text-align:right}
     .tr-pct{font-size:11px;color:#888;text-align:right;margin-top:1px}
-
-    /* ── HOURLY ── */
-    .hourly-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px}
-    .hourly-title{font-size:13px;font-weight:500;color:#1a1a18;margin-bottom:12px}
-    .hourly-bars{display:flex;align-items:flex-end;gap:4px;height:80px}
-    .h-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
-    .h-bar{width:100%;background:#E1F5EE;border-radius:4px 4px 0 0;min-height:2px;transition:height .3s}
-    .h-label{font-size:9px;color:#888;white-space:nowrap}
-
-    /* ── CUSTOM DATE ── */
+    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 0;gap:8px;color:#bbb;font-size:13px}
     .custom-row{display:flex;gap:8px;align-items:center}
     .custom-row input[type=date]{flex:1;padding:9px 12px;border:0.5px solid #e8e6e0;border-radius:10px;font-size:13px;color:#1a1a18;background:#f5f5f0;font-family:inherit}
-    .custom-row input[type=date]:focus{outline:none;border-color:#1D9E75}
     .custom-apply{padding:9px 16px;border-radius:10px;border:none;background:#1D9E75;color:#fff;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit}
-    .custom-apply:active{background:#0F6E56}
-
-    /* ── EMPTY STATE ── */
-    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 0;gap:8px;color:#bbb;font-size:13px}
-
-    .section-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin:4px 2px 0}
   </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-left">
-    <a href="../pos/index.html" class="back-btn">
+    <a href="../home/index.html" class="back-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
     <span class="header-title">Doanh thu</span>
   </div>
   <button class="export-btn" onclick="exportCSV()">Xuất CSV</button>
 </div>
-
 <div class="period-bar">
   <button class="period-btn active" id="p-day"    onclick="setPeriod('day')">Hôm nay</button>
   <button class="period-btn"        id="p-week"   onclick="setPeriod('week')">Tuần này</button>
@@ -106,7 +71,6 @@
   <button class="period-btn"        id="p-year"   onclick="setPeriod('year')">Năm này</button>
   <button class="period-btn"        id="p-custom" onclick="setPeriod('custom')">Tuỳ chọn</button>
 </div>
-
 <div class="date-nav" id="dateNav">
   <button class="nav-arrow" onclick="shiftPeriod(-1)">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -119,389 +83,188 @@
     </button>
   </div>
 </div>
-
-<div class="content" id="content"></div>
+<div class="content" id="content"><div class="empty">Đang tải...</div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="../lib/supabase.js"></script>
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('revenue');
-
-  // ── CẤU HÌNH ──
-  const OPEN_HOUR  = 6;
-  const CLOSE_HOUR = 10;
-  const WORK_DAYS  = [1,2,3,4,5]; // Thứ 2-6 (0=CN, 6=T7)
-
-  const MENU = [
-    {id:1, name:'Cà phê đen',      icon:'☕', price:18000},
-    {id:2, name:'Cà phê sữa',      icon:'☕', price:20000},
-    {id:3, name:'Cà phê sữa tươi', icon:'☕', price:22000},
-    {id:4, name:'Cà phê kem muối', icon:'☕', price:24000},
-    {id:5, name:'Matcha latte',     icon:'🍵', price:23000},
-    {id:6, name:'Cacao latte',      icon:'🍫', price:23000},
+  const MENU=[
+    {id:1,name:'Cà phê đen',icon:'☕',price:18000},
+    {id:2,name:'Cà phê sữa',icon:'☕',price:20000},
+    {id:3,name:'Cà phê sữa tươi',icon:'☕',price:22000},
+    {id:4,name:'Cà phê kem muối',icon:'☕',price:24000},
+    {id:5,name:'Matcha latte',icon:'🍵',price:23000},
+    {id:6,name:'Cacao latte',icon:'🍫',price:23000},
   ];
-
-  const fmt    = n => n.toLocaleString('vi-VN') + ' ₫';
-  const fmtNum = n => n.toLocaleString('vi-VN');
-
-  // ── STATE ──
-  let period  = 'day';
-  let cursor  = new Date();
-  let customFrom = null, customTo = null;
+  const fmt=n=>n.toLocaleString('vi-VN')+' ₫';
+  const toISO=d=>d.toISOString();
+  let period='day',cursor=new Date(),customFrom=null,customTo=null,chartInstance=null;
   cursor.setHours(0,0,0,0);
 
-  // ── DỮ LIỆU ──
-  function getOrders(){
-    return JSON.parse(localStorage.getItem('fnb_orders') || '[]');
-  }
-
-  // Lọc đơn theo khoảng thời gian
-  function filterOrders(from, to){
-    return getOrders().filter(o => {
-      const d = new Date(o.ts);
-      return d >= from && d < to;
-    });
-  }
-
-  // Tính khoảng thời gian hiện tại
   function getRange(){
-    const d = new Date(cursor);
-    let from, to;
-    if(period === 'day'){
-      from = new Date(d); from.setHours(0,0,0,0);
-      to   = new Date(d); to.setHours(23,59,59,999);
-    } else if(period === 'week'){
-      const day = d.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      from = new Date(d); from.setDate(d.getDate() + diff); from.setHours(0,0,0,0);
-      to   = new Date(from); to.setDate(from.getDate() + 6); to.setHours(23,59,59,999);
-    } else if(period === 'month'){
-      from = new Date(d.getFullYear(), d.getMonth(), 1);
-      to   = new Date(d.getFullYear(), d.getMonth()+1, 0, 23,59,59,999);
-    } else if(period === 'year'){
-      from = new Date(d.getFullYear(), 0, 1);
-      to   = new Date(d.getFullYear(), 11, 31, 23,59,59,999);
-    } else {
-      from = customFrom || new Date(d); from.setHours(0,0,0,0);
-      to   = customTo   || new Date(d); to.setHours(23,59,59,999);
-    }
-    return { from, to };
+    const d=new Date(cursor);
+    let from,to;
+    if(period==='day'){from=new Date(d);from.setHours(0,0,0,0);to=new Date(d);to.setHours(23,59,59,999);}
+    else if(period==='week'){const day=d.getDay(),diff=day===0?-6:1-day;from=new Date(d);from.setDate(d.getDate()+diff);from.setHours(0,0,0,0);to=new Date(from);to.setDate(from.getDate()+6);to.setHours(23,59,59,999);}
+    else if(period==='month'){from=new Date(d.getFullYear(),d.getMonth(),1);to=new Date(d.getFullYear(),d.getMonth()+1,0,23,59,59,999);}
+    else if(period==='year'){from=new Date(d.getFullYear(),0,1);to=new Date(d.getFullYear(),11,31,23,59,59,999);}
+    else{from=customFrom||new Date(d);from.setHours(0,0,0,0);to=customTo||new Date(d);to.setHours(23,59,59,999);}
+    return{from,to};
   }
 
-  // Tính khoảng trước đó (để so sánh)
-  function getPrevRange(){
-    const { from, to } = getRange();
-    const diff = to - from + 1;
-    return { from: new Date(from - diff), to: new Date(to - diff) };
-  }
-
-  // ── PERIOD ──
   function setPeriod(p){
-    period = p;
-    ['day','week','month','year','custom'].forEach(x =>
-      document.getElementById('p-'+x).classList.toggle('active', x===p)
-    );
-    document.getElementById('dateNav').style.display = p==='custom' ? 'none' : 'flex';
-    cursor = new Date(); cursor.setHours(0,0,0,0);
-    render();
+    period=p;
+    ['day','week','month','year','custom'].forEach(x=>document.getElementById('p-'+x).classList.toggle('active',x===p));
+    document.getElementById('dateNav').style.display=p==='custom'?'none':'flex';
+    cursor=new Date();cursor.setHours(0,0,0,0);
+    loadAndRender();
   }
-
   function shiftPeriod(dir){
-    if(period==='day')        cursor.setDate(cursor.getDate() + dir);
-    else if(period==='week')  cursor.setDate(cursor.getDate() + dir*7);
-    else if(period==='month') cursor.setMonth(cursor.getMonth() + dir);
-    else if(period==='year')  cursor.setFullYear(cursor.getFullYear() + dir);
-    render();
+    if(period==='day') cursor.setDate(cursor.getDate()+dir);
+    else if(period==='week') cursor.setDate(cursor.getDate()+dir*7);
+    else if(period==='month') cursor.setMonth(cursor.getMonth()+dir);
+    else if(period==='year') cursor.setFullYear(cursor.getFullYear()+dir);
+    loadAndRender();
   }
-
-  function goToday(){
-    cursor = new Date(); cursor.setHours(0,0,0,0);
-    render();
-  }
-
-  function updateDateLabel(){
-    const { from, to } = getRange();
-    const opts = { day:'numeric', month:'numeric', year:'numeric' };
-    let label = '';
-    if(period==='day')
-      label = from.toLocaleDateString('vi-VN', opts);
-    else if(period==='week')
-      label = `${from.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric'})} — ${to.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'})}`;
-    else if(period==='month')
-      label = from.toLocaleDateString('vi-VN',{month:'long',year:'numeric'});
-    else if(period==='year')
-      label = `Năm ${from.getFullYear()}`;
-    document.getElementById('dateLabel').textContent = label;
-  }
-
-  // ── RENDER ──
-  function render(){
-    updateDateLabel();
-    const { from, to }     = getRange();
-    const { from:pf, to:pt } = getPrevRange();
-    const orders  = filterOrders(from, to);
-    const pOrders = filterOrders(pf, pt);
-
-    const revenue  = orders.reduce((s,o) => s + o.total, 0);
-    const pRevenue = pOrders.reduce((s,o) => s + o.total, 0);
-    const orderCount  = orders.length;
-    const pOrderCount = pOrders.length;
-    const avgOrder = orderCount > 0 ? Math.round(revenue / orderCount) : 0;
-
-    const el = document.getElementById('content');
-
-    // Custom date picker
-    let customHTML = '';
-    if(period === 'custom'){
-      customHTML = `<div class="custom-row">
-        <input type="date" id="customFrom" value="${toDateInput(customFrom||new Date())}">
-        <span style="font-size:13px;color:#888">—</span>
-        <input type="date" id="customTo" value="${toDateInput(customTo||new Date())}">
-        <button class="custom-apply" onclick="applyCustom()">Xem</button>
-      </div>`;
-    }
-
-    el.innerHTML = customHTML + buildMetrics(revenue, pRevenue, orderCount, pOrderCount, avgOrder);
-    renderCharts(orders, from, to);
-    renderTable(orders, revenue);
-    renderHourly(orders);
-  }
-
-  function toDateInput(d){
-    const dd = new Date(d);
-    return `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
-  }
-
+  function goToday(){cursor=new Date();cursor.setHours(0,0,0,0);loadAndRender();}
   function applyCustom(){
-    const f = document.getElementById('customFrom').value;
-    const t = document.getElementById('customTo').value;
-    if(!f || !t) return;
-    customFrom = new Date(f); customFrom.setHours(0,0,0,0);
-    customTo   = new Date(t); customTo.setHours(23,59,59,999);
-    render();
+    const f=document.getElementById('cF').value,t=document.getElementById('cT').value;
+    if(!f||!t)return;
+    customFrom=new Date(f);customFrom.setHours(0,0,0,0);
+    customTo=new Date(t);customTo.setHours(23,59,59,999);
+    loadAndRender();
+  }
+  function updateDateLabel(){
+    const{from,to}=getRange();
+    let label='';
+    if(period==='day') label=from.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'});
+    else if(period==='week') label=`${from.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric'})} — ${to.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'})}`;
+    else if(period==='month') label=from.toLocaleDateString('vi-VN',{month:'long',year:'numeric'});
+    else if(period==='year') label=`Năm ${from.getFullYear()}`;
+    document.getElementById('dateLabel').textContent=label;
+  }
+  function toDateInput(d){const dd=new Date(d);return `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;}
+
+  async function loadAndRender(){
+    updateDateLabel();
+    document.getElementById('content').innerHTML='<div class="empty">Đang tải...</div>';
+    const{from,to}=getRange();
+    try {
+      const orders=await DB.select('orders',
+        `created_at=gte.${toISO(from)}&created_at=lte.${toISO(to)}&select=*&order=created_at.asc`
+      );
+      render(orders,from,to);
+    } catch(e){
+      document.getElementById('content').innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`;
+    }
   }
 
-  // ── METRICS ──
-  function trendHTML(curr, prev){
-    if(prev === 0) return `<span class="trend-flat">—</span>`;
-    const pct = Math.round((curr - prev) / prev * 100);
-    if(pct > 0)  return `<span class="trend-up">▲ ${pct}%</span> so với kỳ trước`;
-    if(pct < 0)  return `<span class="trend-down">▼ ${Math.abs(pct)}%</span> so với kỳ trước`;
-    return `<span class="trend-flat">= 0%</span> so với kỳ trước`;
-  }
-
-  function buildMetrics(revenue, pRevenue, orders, pOrders, avg){
-    return `
+  function render(orders,from,to){
+    const revenue=orders.reduce((s,o)=>s+o.total,0);
+    const orderCount=orders.length;
+    const avg=orderCount>0?Math.round(revenue/orderCount):0;
+    const el=document.getElementById('content');
+    let customHTML='';
+    if(period==='custom') customHTML=`<div class="custom-row">
+      <input type="date" id="cF" value="${toDateInput(customFrom||new Date())}">
+      <span style="font-size:13px;color:#888">—</span>
+      <input type="date" id="cT" value="${toDateInput(customTo||new Date())}">
+      <button class="custom-apply" onclick="applyCustom()">Xem</button>
+    </div>`;
+    el.innerHTML=customHTML+`
       <div class="metrics-grid">
         <div class="metric-card full">
           <div class="metric-label">Doanh thu</div>
           <div class="metric-value green">${fmt(revenue)}</div>
-          <div class="metric-sub">${trendHTML(revenue, pRevenue)}</div>
+          <div class="metric-sub">${orderCount} đơn hàng</div>
         </div>
         <div class="metric-card">
           <div class="metric-label">Số đơn</div>
-          <div class="metric-value">${fmtNum(orders)}</div>
-          <div class="metric-sub">${trendHTML(orders, pOrders)}</div>
+          <div class="metric-value">${orderCount.toLocaleString('vi-VN')}</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Trung bình / đơn</div>
-          <div class="metric-value">${orders > 0 ? fmt(avg) : '—'}</div>
-          <div class="metric-sub" style="color:#bbb">mỗi đơn hàng</div>
+          <div class="metric-label">Trung bình/đơn</div>
+          <div class="metric-value" style="font-size:16px">${orderCount>0?fmt(avg):'—'}</div>
         </div>
       </div>
       <div id="chartSlot"></div>
-      <div id="tableSlot"></div>
-      <div id="hourlySlot"></div>`;
+      <div id="tableSlot"></div>`;
+    renderChart(orders,from,to);
+    renderTable(orders,revenue);
   }
 
-  // ── CHART ──
-  let chartInstance = null;
-  function renderCharts(orders, from, to){
-    const slot = document.getElementById('chartSlot');
-    if(!slot) return;
-
-    // Tạo labels theo period
-    let labels = [], data = [];
-    if(period === 'day'){
-      // Theo giờ (6h-10h, mỗi 30 phút)
-      const slots = [];
-      for(let h = OPEN_HOUR; h <= CLOSE_HOUR; h++){
-        slots.push(`${String(h).padStart(2,'0')}:00`);
-        if(h < CLOSE_HOUR) slots.push(`${String(h).padStart(2,'0')}:30`);
+  function renderChart(orders,from,to){
+    const slot=document.getElementById('chartSlot');
+    if(!slot)return;
+    let labels=[],data=[];
+    if(period==='day'){
+      for(let h=6;h<=10;h++){
+        labels.push(String(h).padStart(2,'0')+':00');
+        data.push(orders.filter(o=>{const d=new Date(o.created_at);return d.getHours()===h&&d.getMinutes()<30;}).reduce((s,o)=>s+o.total,0));
+        if(h<10){labels.push(String(h).padStart(2,'0')+':30');data.push(orders.filter(o=>{const d=new Date(o.created_at);return d.getHours()===h&&d.getMinutes()>=30;}).reduce((s,o)=>s+o.total,0));}
       }
-      labels = slots;
-      data   = slots.map(slot => {
-        const [hh, mm] = slot.split(':').map(Number);
-        return orders.filter(o => {
-          const d = new Date(o.ts);
-          return d.getHours() === hh && (mm===0 ? d.getMinutes() < 30 : d.getMinutes() >= 30);
-        }).reduce((s,o) => s + o.total, 0);
+    } else if(period==='week'){
+      ['T2','T3','T4','T5','T6','T7','CN'].forEach((d,i)=>{
+        labels.push(d);
+        const start=new Date(from);start.setDate(from.getDate()+i);
+        data.push(orders.filter(o=>new Date(o.created_at).toDateString()===start.toDateString()).reduce((s,o)=>s+o.total,0));
       });
-    } else if(period === 'week'){
-      const days = ['T2','T3','T4','T5','T6','T7','CN'];
-      const start = new Date(from);
-      labels = []; data = [];
-      for(let i=0;i<7;i++){
-        const d = new Date(start); d.setDate(start.getDate()+i);
-        labels.push(days[i]);
-        const dayOrders = orders.filter(o => {
-          const od = new Date(o.ts);
-          return od.toDateString() === d.toDateString();
-        });
-        data.push(dayOrders.reduce((s,o) => s+o.total, 0));
-      }
-    } else if(period === 'month'){
-      const daysInMonth = new Date(from.getFullYear(), from.getMonth()+1, 0).getDate();
-      for(let i=1;i<=daysInMonth;i++){
-        labels.push(String(i));
-        const dayOrders = orders.filter(o => new Date(o.ts).getDate() === i);
-        data.push(dayOrders.reduce((s,o) => s+o.total, 0));
-      }
+    } else if(period==='month'){
+      const days=new Date(from.getFullYear(),from.getMonth()+1,0).getDate();
+      for(let i=1;i<=days;i++){labels.push(String(i));data.push(orders.filter(o=>new Date(o.created_at).getDate()===i).reduce((s,o)=>s+o.total,0));}
     } else {
-      const months = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
-      labels = months;
-      data   = months.map((_, i) => {
-        return orders.filter(o => new Date(o.ts).getMonth() === i).reduce((s,o) => s+o.total, 0);
+      ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'].forEach((m,i)=>{
+        labels.push(m);data.push(orders.filter(o=>new Date(o.created_at).getMonth()===i).reduce((s,o)=>s+o.total,0));
       });
     }
-
-    slot.innerHTML = `<div class="chart-card">
-      <div class="chart-title">${period==='day'?'Doanh thu theo giờ':period==='week'?'Doanh thu 7 ngày':period==='month'?'Doanh thu theo ngày':'Doanh thu theo tháng'}</div>
-      <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
-    </div>`;
-
+    slot.innerHTML=`<div class="chart-card"><div class="chart-title">Biểu đồ doanh thu</div><div class="chart-wrap"><canvas id="rChart"></canvas></div></div>`;
     if(chartInstance) chartInstance.destroy();
-    const ctx = document.getElementById('revenueChart');
-    if(!ctx) return;
-
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets:[{
-          data,
-          backgroundColor: data.map(v => v > 0 ? '#1D9E75' : '#e8e6e0'),
-          borderRadius: 6,
-          borderSkipped: false,
-        }]
-      },
-      options:{
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins:{ legend:{display:false}, tooltip:{
-          callbacks:{ label: ctx => fmt(ctx.parsed.y) }
-        }},
-        scales:{
-          x:{ grid:{display:false}, ticks:{font:{size:10}, color:'#888', maxRotation:0} },
-          y:{ display:false, grid:{display:false} }
-        }
-      }
-    });
+    const ctx=document.getElementById('rChart');
+    if(!ctx)return;
+    chartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data,backgroundColor:data.map(v=>v>0?'#1D9E75':'#e8e6e0'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.parsed.y)}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888',maxRotation:0}},y:{display:false,grid:{display:false}}}}});
   }
 
-  // ── TABLE ──
-  function renderTable(orders, totalRevenue){
-    const slot = document.getElementById('tableSlot');
-    if(!slot) return;
-
-    // Tổng hợp theo món
-    const summary = MENU.map(item => {
-      const itemOrders = orders.flatMap(o => (o.items||[]).filter(i => i.id === item.id));
-      const qty = itemOrders.reduce((s,i) => s + i.qty, 0);
-      const rev = qty * item.price;
-      return { ...item, qty, rev };
-    }).filter(i => i.qty > 0).sort((a,b) => b.rev - a.rev);
-
-    if(!summary.length){
-      slot.innerHTML = `<div class="table-card">
-        <div class="table-header"><span class="table-title">Doanh thu theo món</span></div>
-        <div class="empty">Chưa có đơn hàng nào</div>
-      </div>`;
-      return;
-    }
-
-    slot.innerHTML = `<div class="table-card">
-      <div class="table-header">
-        <span class="table-title">Doanh thu theo món</span>
-        <span style="font-size:12px;color:#888">${summary.length} món</span>
-      </div>
-      <div class="table-body">
-        ${summary.map((item, i) => {
-          const pct = totalRevenue > 0 ? Math.round(item.rev / totalRevenue * 100) : 0;
-          return `<div class="table-row">
-            <span class="tr-rank">${i+1}</span>
-            <span class="tr-icon">${item.icon}</span>
-            <div class="tr-info">
-              <div class="tr-name">${item.name}</div>
-              <div class="tr-qty">${fmtNum(item.qty)} ly</div>
-            </div>
-            <div>
-              <div class="tr-revenue">${fmt(item.rev)}</div>
-              <div class="tr-pct">${pct}%</div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
+  function renderTable(orders,totalRevenue){
+    const slot=document.getElementById('tableSlot');
+    if(!slot)return;
+    const summary=MENU.map(item=>{
+      const items=orders.flatMap(o=>(o.items||[]).filter(i=>i.id===item.id));
+      const qty=items.reduce((s,i)=>s+(i.qty||0),0);
+      return{...item,qty,rev:qty*item.price};
+    }).filter(i=>i.qty>0).sort((a,b)=>b.rev-a.rev);
+    if(!summary.length){slot.innerHTML='<div class="empty">Chưa có đơn hàng nào</div>';return;}
+    slot.innerHTML=`<div class="table-card">
+      <div class="table-header"><span class="table-title">Doanh thu theo món</span><span style="font-size:12px;color:#888">${summary.length} món</span></div>
+      ${summary.map((item,i)=>{
+        const pct=totalRevenue>0?Math.round(item.rev/totalRevenue*100):0;
+        return `<div class="table-row">
+          <span class="tr-rank">${i+1}</span>
+          <span class="tr-icon">${item.icon}</span>
+          <div class="tr-info"><div class="tr-name">${item.name}</div><div class="tr-qty">${item.qty.toLocaleString('vi-VN')} ly</div></div>
+          <div><div class="tr-revenue">${fmt(item.rev)}</div><div class="tr-pct">${pct}%</div></div>
+        </div>`;
+      }).join('')}
     </div>`;
   }
 
-  // ── HOURLY (chỉ hiện khi xem ngày) ──
-  function renderHourly(orders){
-    const slot = document.getElementById('hourlySlot');
-    if(!slot || period !== 'day') { if(slot) slot.innerHTML=''; return; }
-
-    const slots = [];
-    for(let h=OPEN_HOUR; h<=CLOSE_HOUR; h++){
-      slots.push({label:`${String(h).padStart(2,'0')}:00`, h, m:0});
-      if(h < CLOSE_HOUR) slots.push({label:`${String(h).padStart(2,'0')}:30`, h, m:30});
-    }
-    const counts = slots.map(s =>
-      orders.filter(o => {
-        const d = new Date(o.ts);
-        return d.getHours()===s.h && (s.m===0 ? d.getMinutes()<30 : d.getMinutes()>=30);
-      }).length
-    );
-    const maxCount = Math.max(...counts, 1);
-
-    slot.innerHTML = `<div class="hourly-card">
-      <div class="hourly-title">Đơn hàng theo giờ (${String(OPEN_HOUR).padStart(2,'0')}:00 — ${String(CLOSE_HOUR).padStart(2,'0')}:00)</div>
-      <div class="hourly-bars">
-        ${slots.map((s,i) => `
-          <div class="h-bar-wrap">
-            <div class="h-bar" style="height:${Math.round(counts[i]/maxCount*100)}%;background:${counts[i]>0?'#1D9E75':'#e8e6e0'}"></div>
-            <span class="h-label">${s.label}</span>
-          </div>`).join('')}
-      </div>
-    </div>`;
-  }
-
-  // ── EXPORT CSV ──
-  function exportCSV(){
-    const { from, to } = getRange();
-    const orders = filterOrders(from, to);
-    if(!orders.length){ alert('Không có dữ liệu để xuất.'); return; }
-    const rows = [['Thời gian','Đơn số','Tổng tiền','Phương thức','Món']];
-    orders.forEach(o => {
-      const items = (o.items||[]).map(i => `${i.name} x${i.qty}`).join('; ');
-      rows.push([
-        new Date(o.ts).toLocaleString('vi-VN'),
-        o.orderNum || '',
-        o.total,
-        o.method || '',
-        items,
-      ]);
+  async function exportCSV(){
+    const{from,to}=getRange();
+    const orders=await DB.select('orders',`created_at=gte.${toISO(from)}&created_at=lte.${toISO(to)}&select=*&order=created_at.asc`);
+    if(!orders.length){alert('Không có dữ liệu');return;}
+    const rows=[['Thời gian','Đơn số','Tổng tiền','Phương thức','Nhân viên','Món']];
+    orders.forEach(o=>{
+      const items=(o.items||[]).map(i=>`${i.name} x${i.qty}`).join('; ');
+      rows.push([new Date(o.created_at).toLocaleString('vi-VN'),o.order_num||'',o.total,o.method||'',o.staff_name||'',items]);
     });
-    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = `doanh-thu-${toDateInput(from)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
+    const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`doanh-thu-${toDateInput(from)}.csv`;a.click();URL.revokeObjectURL(url);
   }
 
-  // ── INIT ──
-  render();
+  loadAndRender();
 </script>
 </body>
 </html>

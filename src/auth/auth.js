@@ -1,56 +1,40 @@
-/**
- * auth.js — Hệ thống phân quyền FNB App
- *
- * Cách dùng: thêm vào đầu mỗi trang cần bảo vệ
- *
- *   <script src="../auth/auth.js"></script>
- *   <script>
- *     Auth.require('pos');           // cần quyền 'pos' mới vào được
- *     Auth.requireRole('owner');     // chỉ chủ mới vào được
- *   </script>
- */
+// src/auth/auth.js
+// Hệ thống phân quyền FNB App — dùng Supabase
 
 const Auth = (() => {
+  const PERMISSIONS = {
+    owner:   ['pos','inventory_view','inventory_edit','revenue','finance','schedule','recipe','menu','payment_settings','user_settings'],
+    manager: ['pos','inventory_view','inventory_edit','revenue','finance','schedule'],
+    staff:   ['pos','inventory_view'],
+  };
 
   function getSession() {
-    try {
-      const raw = localStorage.getItem('fnb_session');
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) { return null; }
+    try { return JSON.parse(localStorage.getItem('fnb_session') || 'null'); }
+    catch { return null; }
+  }
+
+  function setSession(user) {
+    localStorage.setItem('fnb_session', JSON.stringify({
+      id:          user.id,
+      username:    user.username,
+      name:        user.name,
+      role:        user.role,
+      permissions: PERMISSIONS[user.role] || [],
+      loginAt:     new Date().toISOString(),
+    }));
   }
 
   function isLoggedIn() { return getSession() !== null; }
-
-  function getRole() {
-    const s = getSession();
-    return s ? s.role : null;
-  }
-
-  function getName() {
-    const s = getSession();
-    return s ? s.name : '';
-  }
+  function getRole()    { return getSession()?.role || null; }
+  function getName()    { return getSession()?.name || ''; }
 
   function can(permission) {
     const s = getSession();
-    if (!s) return false;
-    return s.permissions && s.permissions.includes(permission);
+    return s?.permissions?.includes(permission) || false;
   }
 
   function require(permission) {
-    if (!isLoggedIn()) {
-      window.location.href = getLoginPath();
-      return false;
-    }
-    if (permission && !can(permission)) {
-      window.location.href = getLoginPath();
-      return false;
-    }
-    return true;
-  }
-
-  function requireRole(role) {
-    if (!isLoggedIn() || getRole() !== role) {
+    if (!isLoggedIn() || (permission && !can(permission))) {
       window.location.href = getLoginPath();
       return false;
     }
@@ -63,28 +47,18 @@ const Auth = (() => {
   }
 
   function getLoginPath() {
-    const depth = window.location.pathname.split('/').length - 2;
+    const depth = window.location.pathname.split('/').filter(Boolean).length - 1;
     return '../'.repeat(Math.max(depth, 1)) + 'auth/login.html';
   }
 
   function getHomePath() {
-    const depth = window.location.pathname.split('/').length - 2;
+    const depth = window.location.pathname.split('/').filter(Boolean).length - 1;
     return '../'.repeat(Math.max(depth, 1)) + 'home/index.html';
   }
 
   function showIf(permission, element) {
-    if (!element) return;
-    element.style.display = can(permission) ? '' : 'none';
+    if (element) element.style.display = can(permission) ? '' : 'none';
   }
 
-  function showIfRole(role, element) {
-    if (!element) return;
-    element.style.display = getRole() === role ? '' : 'none';
-  }
-
-  return {
-    getSession, isLoggedIn, getRole, getName,
-    can, require, requireRole, logout,
-    showIf, showIfRole, getHomePath,
-  };
+  return { getSession, setSession, isLoggedIn, getRole, getName, can, require, logout, getHomePath, showIf };
 })();

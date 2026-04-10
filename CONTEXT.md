@@ -34,6 +34,22 @@ fnbapp/
 
 ## Tiến độ modules
 
+### [x] Auth — Đăng nhập & phân quyền (hoàn thành)
+- Files: `src/auth/login.html`, `src/auth/auth.js`
+- 3 vai trò: Chủ (owner) / Quản lý (manager) / Nhân viên (staff)
+- Đăng nhập bằng tài khoản + mật khẩu
+- Tự điều hướng đúng theo vai trò sau đăng nhập
+- TODO: đổi mật khẩu mặc định trước khi dùng thật
+
+### [x] Home — Dashboard (hoàn thành)
+- File: `src/home/index.html`
+- Màn hình chính sau khi đăng nhập
+- Hiển thị theo vai trò (nhân viên / quản lý / chủ)
+- Banner doanh thu hôm nay + quick stats tháng này
+- Cảnh báo check-in nếu chưa check-in sau 06:00
+- Nút POS lớn + grid module theo quyền
+- auth.js và login.html cập nhật redirect về Home
+
 ### [x] POS — Màn hình bán hàng (hoàn thành)
 - File: `src/pos/index.html`
 - Phiên bản: v4
@@ -41,13 +57,6 @@ fnbapp/
 - Tích hợp auth.js, ghi nhận đơn hàng vào fnb_orders
 - Tự động trừ tồn kho bán thành phẩm sau mỗi đơn
 - TODO: điền số tài khoản ACB vào PAYMENT_CONFIG
-
-### [x] Auth — Đăng nhập & phân quyền (hoàn thành)
-- Files: `src/auth/login.html`, `src/auth/auth.js`
-- 3 vai trò: Chủ (owner) / Quản lý (manager) / Nhân viên (staff)
-- Đăng nhập bằng tài khoản + mật khẩu
-- Tự điều hướng đúng theo vai trò sau đăng nhập
-- TODO: đổi mật khẩu mặc định trước khi dùng thật
 
 ### [x] Inventory — Quản lý nguyên liệu (hoàn thành)
 - File: `src/inventory/index.html`
@@ -82,15 +91,6 @@ fnbapp/
 - Ngưỡng chấp nhận trễ: 15 phút
 - Lịch sử các ca đã bán kèm doanh thu từng ngày
 - Thống kê 30 ngày: tỷ lệ đúng giờ, ca trễ, thời gian TB
-
-### [x] Home — Dashboard (hoàn thành)
-- File: `src/home/index.html`
-- Màn hình chính sau khi đăng nhập
-- Hiển thị theo vai trò (nhân viên / quản lý / chủ)
-- Banner doanh thu hôm nay + quick stats tháng này
-- Cảnh báo check-in nếu chưa check-in sau 06:00
-- Nút POS lớn + grid module theo quyền
-- auth.js và login.html cập nhật redirect về Home
 
 ## Cách làm việc với Claude
 1. Đính kèm file `CONTEXT.md` này vào đầu mỗi cuộc trò chuyện mới

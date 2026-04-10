@@ -19,7 +19,7 @@
     .net-label{color:#888}
     .order-badge{font-size:12px;font-weight:500;color:#888;background:#f5f5f0;padding:3px 8px;border-radius:20px}
     .logout-btn{width:30px;height:30px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;transition:all .15s;flex-shrink:0}
-    .logout-btn:active{background:#FCEBEB;border-color:#F09595;color:#A32D2D}
+    .logout-btn:active{background:#FCEBEB;color:#A32D2D}
     .cat-bar{background:#fff;padding:10px 14px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
     .cat-bar::-webkit-scrollbar{display:none}
     .cat-pill{padding:6px 16px;border-radius:20px;border:0.5px solid #d8d6d0;background:transparent;color:#888;font-size:13px;white-space:nowrap;cursor:pointer;transition:all .15s;font-family:inherit}
@@ -57,7 +57,6 @@
     .cart-header-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0 10px;border-bottom:0.5px solid #e8e6e0}
     .cart-title{font-size:15px;font-weight:600;color:#1a1a18}
     .clear-all-btn{font-size:12px;color:#888;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 8px;border-radius:6px}
-    .clear-all-btn:active{background:#f5f5f0}
     .ci{border-bottom:0.5px solid #e8e6e0;padding:10px 0}
     .ci-top{display:flex;align-items:center;gap:8px}
     .ci-name{flex:1;font-size:14px;font-weight:500;color:#1a1a18}
@@ -71,7 +70,6 @@
     .pay-method-label{font-size:12px;color:#888;margin-bottom:6px}
     .pay-method-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .pay-method-btn{padding:11px;border-radius:12px;border:0.5px solid #d8d6d0;background:#f5f5f0;font-size:13px;font-weight:500;cursor:pointer;color:#1a1a18;font-family:inherit;transition:all .15s;text-align:center}
-    .pay-method-btn:active{background:#e8e6e0}
     .pay-method-btn.selected{background:#E1F5EE;border-color:#1D9E75;color:#085041}
     .qr-section{display:none;flex-direction:column;align-items:center;gap:8px;background:#f5f5f0;border-radius:12px;padding:14px}
     .qr-section.show{display:flex}
@@ -91,13 +89,10 @@
     .logout-sheet-title{font-size:15px;font-weight:600;color:#1a1a18;text-align:center}
     .logout-sheet-sub{font-size:13px;color:#888;text-align:center}
     .logout-confirm-btn{padding:14px;border-radius:12px;border:none;background:#FCEBEB;color:#A32D2D;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
-    .logout-confirm-btn:active{background:#F7C1C1}
     .logout-cancel-btn{padding:14px;border-radius:12px;border:0.5px solid #e8e6e0;background:#f5f5f0;color:#1a1a18;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
-    .logout-cancel-btn:active{background:#e8e6e0}
   </style>
 </head>
 <body>
-
 <div class="status-bar">
   <div class="status-left">
     <span class="status-title">Bán hàng</span>
@@ -109,19 +104,13 @@
       <span class="net-label" id="netLabel">Online</span>
     </div>
     <span class="order-badge" id="orderBadge">#001</span>
-    <button class="logout-btn" onclick="showLogout()" title="Đăng xuất">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
+    <button class="logout-btn" onclick="showLogout()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
   </div>
 </div>
-
 <div class="cat-bar" id="catBar"></div>
 <div class="menu-list" id="menuList"></div>
-
 <div class="bottom-cart" id="bottomCart">
   <div class="handle"></div>
   <div class="cart-collapsed" onclick="toggleCart()">
@@ -132,8 +121,7 @@
         <span class="count-badge" id="countBadge" style="display:none">0</span>
       </div>
     </div>
-    <button class="cart-toggle-btn" id="cartToggleBtn" disabled
-      onclick="event.stopPropagation();toggleCart()">
+    <button class="cart-toggle-btn" id="cartToggleBtn" disabled onclick="event.stopPropagation();toggleCart()">
       <span id="cartBtnContent">Xem giỏ hàng</span>
     </button>
   </div>
@@ -145,10 +133,7 @@
     <div id="cartItems"></div>
   </div>
   <div class="cart-footer">
-    <div class="total-row">
-      <span>Tổng cộng</span>
-      <span id="footerTotal">0 ₫</span>
-    </div>
+    <div class="total-row"><span>Tổng cộng</span><span id="footerTotal">0 ₫</span></div>
     <div>
       <div class="pay-method-label">Chọn hình thức thanh toán</div>
       <div class="pay-method-grid">
@@ -166,7 +151,6 @@
     <button class="confirm-btn" id="confirmBtn" onclick="confirmPay()">Xác nhận thanh toán</button>
   </div>
 </div>
-
 <div class="overlay" id="logoutOverlay" onclick="hideLogout()">
   <div class="logout-sheet" onclick="event.stopPropagation()">
     <div class="logout-sheet-title">Đăng xuất?</div>
@@ -175,96 +159,52 @@
     <button class="logout-cancel-btn" onclick="hideLogout()">Huỷ</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
+<script src="../lib/supabase.js"></script>
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('pos');
   const session = Auth.getSession();
-  if(session) document.getElementById('userName').textContent = session.name;
+  if (session) document.getElementById('userName').textContent = session.name;
 
   // ══════════════════════════════════════════
   // CẤU HÌNH THANH TOÁN
-  // TODO: Điền thông tin tài khoản ACB của bạn
-  const PAYMENT_CONFIG = {
-    bankId:      'ACB',
-    accountNo:   'XXXXXXXXXX',
-    accountName: 'NGUYEN VAN A',
-  };
+  // TODO: Điền thông tin tài khoản ACB
+  const PAYMENT_CONFIG = { bankId:'ACB', accountNo:'XXXXXXXXXX', accountName:'NGUYEN VAN A' };
   // ══════════════════════════════════════════
 
   const MENU = [
-    {
-      id:1, name:'Cà phê đen', price:18000,
-      cat:'Cà phê', icon:'☕', bg:'#FAEEDA',
-      ingredients:[
-        {id:'cot_ca_phe', amount:60, unit:'ml'},
-        {id:'nuoc_duong',  amount:20, unit:'ml'},
-      ]
-    },
-    {
-      id:2, name:'Cà phê sữa', price:20000,
-      cat:'Cà phê', icon:'☕', bg:'#FAC77540',
-      ingredients:[
-        {id:'cot_ca_phe', amount:50, unit:'ml'},
-        {id:'sua_dac',    amount:20, unit:'g' },
-      ]
-    },
-    {
-      id:3, name:'Cà phê sữa tươi', price:22000,
-      cat:'Cà phê', icon:'☕', bg:'#EF9F2730',
-      ingredients:[
-        {id:'cot_ca_phe', amount:30, unit:'ml'},
-        {id:'sua_dac',    amount:30, unit:'g' },
-        {id:'sua_tuoi',   amount:70, unit:'ml'},
-      ]
-    },
-    {
-      id:4, name:'Cà phê kem muối', price:24000,
-      cat:'Cà phê', icon:'☕', bg:'#B5D4F440',
-      ingredients:[
-        {id:'cot_ca_phe', amount:50, unit:'ml'},
-        {id:'sua_dac',    amount:20, unit:'g' },
-        {id:'kem_muoi',   amount:30, unit:'g' },
-      ]
-    },
-    {
-      id:5, name:'Matcha latte', price:23000,
-      cat:'Matcha & Cacao', icon:'🍵', bg:'#C0DD9740',
-      ingredients:[
-        {id:'cot_matcha', amount:40, unit:'ml'},
-        {id:'sua_dac',    amount:30, unit:'g' },
-        {id:'sua_tuoi',   amount:70, unit:'ml'},
-      ]
-    },
-    {
-      id:6, name:'Cacao latte', price:23000,
-      cat:'Matcha & Cacao', icon:'🍫', bg:'#BA751730',
-      ingredients:[
-        {id:'cot_cacao',  amount:40, unit:'ml'},
-        {id:'sua_dac',    amount:30, unit:'g' },
-        {id:'sua_tuoi',   amount:70, unit:'ml'},
-      ]
-    },
+    {id:1,name:'Cà phê đen',      price:18000,cat:'Cà phê',icon:'☕',bg:'#FAEEDA',
+     ingredients:[{id:'cot_ca_phe',amount:60},{id:'nuoc_duong',amount:20}]},
+    {id:2,name:'Cà phê sữa',      price:20000,cat:'Cà phê',icon:'☕',bg:'#FAC77540',
+     ingredients:[{id:'cot_ca_phe',amount:50},{id:'sua_dac',amount:20}]},
+    {id:3,name:'Cà phê sữa tươi', price:22000,cat:'Cà phê',icon:'☕',bg:'#EF9F2730',
+     ingredients:[{id:'cot_ca_phe',amount:30},{id:'sua_dac',amount:30},{id:'sua_tuoi',amount:70}]},
+    {id:4,name:'Cà phê kem muối', price:24000,cat:'Cà phê',icon:'☕',bg:'#B5D4F440',
+     ingredients:[{id:'cot_ca_phe',amount:50},{id:'sua_dac',amount:20},{id:'kem_muoi',amount:30}]},
+    {id:5,name:'Matcha latte',    price:23000,cat:'Matcha & Cacao',icon:'🍵',bg:'#C0DD9740',
+     ingredients:[{id:'cot_matcha',amount:40},{id:'sua_dac',amount:30},{id:'sua_tuoi',amount:70}]},
+    {id:6,name:'Cacao latte',     price:23000,cat:'Matcha & Cacao',icon:'🍫',bg:'#BA751730',
+     ingredients:[{id:'cot_cacao',amount:40},{id:'sua_dac',amount:30},{id:'sua_tuoi',amount:70}]},
   ];
 
   const CATS=['Tất cả',...new Set(MENU.map(m=>m.cat))];
-  let activeCat='Tất cả', cart={}, notes={}, orderN=1, expanded=false, payMethod=null;
-  const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
-  const getTotal = () => Object.keys(cart).reduce((s,k) => s + MENU.find(m=>m.id==k).price * cart[k], 0);
+  let activeCat='Tất cả',cart={},notes={},orderN=1,expanded=false,payMethod=null;
+  const fmt=n=>n.toLocaleString('vi-VN')+' ₫';
+  const getTotal=()=>Object.keys(cart).reduce((s,k)=>s+MENU.find(m=>m.id==k).price*cart[k],0);
 
   function renderCats(){
-    document.getElementById('catBar').innerHTML = CATS.map(c =>
+    document.getElementById('catBar').innerHTML=CATS.map(c=>
       `<button class="cat-pill${c===activeCat?' active':''}" onclick="setCat('${c}')">${c}</button>`
     ).join('');
   }
   function setCat(c){activeCat=c;renderCats();renderMenu();}
 
   function renderMenu(){
-    const items = activeCat==='Tất cả' ? MENU : MENU.filter(m=>m.cat===activeCat);
-    document.getElementById('menuList').innerHTML = items.map(item => {
-      const qty=cart[item.id]||0, out=item.stock===0;
+    const items=activeCat==='Tất cả'?MENU:MENU.filter(m=>m.cat===activeCat);
+    document.getElementById('menuList').innerHTML=items.map(item=>{
+      const qty=cart[item.id]||0,out=item.stock===0;
       return `<div class="menu-row${out?' out':''}">
         <div class="micon" style="background:${item.bg}">${item.icon}</div>
         <div class="minfo">
@@ -289,11 +229,11 @@
   function update(){renderMenu();renderCartItems();updateCartBar();updatePaymentUI();}
 
   function updateCartBar(){
-    const count=Object.keys(cart).reduce((s,k)=>s+cart[k],0), total=getTotal();
+    const count=Object.keys(cart).reduce((s,k)=>s+cart[k],0),total=getTotal();
     document.getElementById('cartTotal').textContent=fmt(total);
     document.getElementById('footerTotal').textContent=fmt(total);
     const badge=document.getElementById('countBadge');
-    badge.textContent=count; badge.style.display=count>0?'inline':'none';
+    badge.textContent=count;badge.style.display=count>0?'inline':'none';
     const btn=document.getElementById('cartToggleBtn');
     btn.disabled=count===0;
     const content=document.getElementById('cartBtnContent');
@@ -326,17 +266,15 @@
         </div>
         <div class="ci-bottom">
           <input class="ci-note" placeholder="Ghi chú: ít đường, không đá..."
-            value="${notes[id]||''}" oninput="notes[${id}]=this.value"
-            onclick="event.stopPropagation()">
+            value="${notes[id]||''}" oninput="notes[${id}]=this.value" onclick="event.stopPropagation()">
         </div>
       </div>`;
     }).join('');
   }
 
   function selectMethod(method){payMethod=method;updatePaymentUI();}
-
   function updatePaymentUI(){
-    const total=getTotal(), hasItems=Object.keys(cart).length>0;
+    const total=getTotal(),hasItems=Object.keys(cart).length>0;
     document.getElementById('btnCash').classList.toggle('selected',payMethod==='cash');
     document.getElementById('btnTransfer').classList.toggle('selected',payMethod==='transfer');
     const qr=document.getElementById('qrSection');
@@ -362,16 +300,28 @@
     updateCartBar();
   }
 
-  function confirmPay(){
+  async function confirmPay(){
     if(!document.getElementById('confirmBtn').classList.contains('active'))return;
-    const total=getTotal(), methodName=payMethod==='cash'?'Tiền mặt':'Chuyển khoản';
+    const total=getTotal(),methodName=payMethod==='cash'?'Tiền mặt':'Chuyển khoản';
     const orderNum='#'+String(orderN).padStart(3,'0');
+    const items=Object.keys(cart).map(id=>{
+      const item=MENU.find(m=>m.id==id);
+      return{id:item.id,name:item.name,qty:cart[id],price:item.price};
+    });
 
-    // ── GHI NHẬN ĐƠN HÀNG (cho module doanh thu) ──
-    saveOrder(orderNum, total, methodName);
+    // Lưu đơn lên Supabase
+    try {
+      await DB.insert('orders',{
+        order_num:  orderNum,
+        total,
+        method:     methodName,
+        items:      items,
+        staff_name: session?.name||'',
+      }, false);
+    } catch(e){ console.warn('Lỗi lưu đơn:', e); }
 
-    // ── TRỪ TỒN KHO BÁN THÀNH PHẨM ──
-    deductIngredients();
+    // Trừ tồn kho bán thành phẩm
+    deductSemiStock(items);
 
     toast(`✓ ${methodName} — ${fmt(total)}`);
     cart={};notes={};payMethod=null;
@@ -384,40 +334,25 @@
     update();
   }
 
-  // Lưu đơn hàng vào localStorage để module doanh thu đọc
-  function saveOrder(orderNum, total, method){
-    const orders = JSON.parse(localStorage.getItem('fnb_orders')||'[]');
-    const items = Object.keys(cart).map(id => {
-      const item = MENU.find(m=>m.id==id);
-      return { id: item.id, name: item.name, qty: cart[id], price: item.price };
-    });
-    orders.push({
-      ts:       new Date().toISOString(),
-      orderNum,
-      total,
-      method,
-      items,
-      staff:    Auth.getSession()?.name || '',
-    });
-    // Giữ tối đa 10.000 đơn gần nhất
-    if(orders.length > 10000) orders.splice(0, orders.length - 10000);
-    localStorage.setItem('fnb_orders', JSON.stringify(orders));
-  }
+  async function deductSemiStock(items){
+    // Đọc tồn kho hiện tại
+    try {
+      const stocks = await DB.select('semi_stock','select=id,quantity');
+      const stockMap = {};
+      stocks.forEach(s=>stockMap[s.id]=s.quantity);
 
-  // Trừ tồn kho bán thành phẩm sau mỗi đơn
-  function deductIngredients(){
-    const inv = JSON.parse(localStorage.getItem('fnb_semi_stock')||'{}');
-    Object.keys(cart).forEach(id => {
-      const item = MENU.find(m=>m.id==id);
-      const qty  = cart[id];
-      if(!item.ingredients) return;
-      item.ingredients.forEach(ing => {
-        if(inv[ing.id] != null){
-          inv[ing.id] = Math.max(0, (inv[ing.id]||0) - ing.amount * qty);
+      for(const orderItem of items){
+        const menuItem=MENU.find(m=>m.id===orderItem.id);
+        if(!menuItem?.ingredients) continue;
+        for(const ing of menuItem.ingredients){
+          if(stockMap[ing.id]!=null){
+            const newQty=Math.max(0,(stockMap[ing.id]||0)-ing.amount*orderItem.qty);
+            await DB.update('semi_stock',`id=eq.${ing.id}`,{quantity:newQty,updated_at:new Date().toISOString()});
+            stockMap[ing.id]=newQty;
+          }
         }
-      });
-    });
-    localStorage.setItem('fnb_semi_stock', JSON.stringify(inv));
+      }
+    } catch(e){ console.warn('Lỗi trừ tồn kho:', e); }
   }
 
   function toast(msg){
@@ -427,8 +362,7 @@
   }
 
   function showLogout(){
-    const s=Auth.getSession();
-    document.getElementById('logoutSub').textContent=s?`Đang đăng nhập: ${s.name}`:'';
+    document.getElementById('logoutSub').textContent=session?`Đang đăng nhập: ${session.name}`:'';
     document.getElementById('logoutOverlay').classList.add('show');
   }
   function hideLogout(){document.getElementById('logoutOverlay').classList.remove('show');}
@@ -442,7 +376,6 @@
   window.addEventListener('online',updateNetStatus);
   window.addEventListener('offline',updateNetStatus);
   updateNetStatus();
-
   renderCats();renderMenu();
 </script>
 </body>

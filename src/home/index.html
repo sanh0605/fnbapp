@@ -9,10 +9,7 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
-
-    /* ── HEADER ── */
     .header{background:#fff;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
-    .header-left{}
     .greeting{font-size:13px;color:#888}
     .header-name{font-size:18px;font-weight:700;color:#1a1a18;margin-top:2px}
     .header-right{display:flex;align-items:center;gap:10px}
@@ -20,35 +17,31 @@
     .net-dot.offline{background:#E24B4A}
     .logout-btn{width:34px;height:34px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888}
     .logout-btn:active{background:#FCEBEB;color:#A32D2D}
-
-    /* ── SCROLL CONTENT ── */
-    .scroll{flex:1;overflow-y:auto;padding:14px 14px 32px;display:flex;flex-direction:column;gap:14px}
-
-    /* ── TODAY BANNER ── */
+    .scroll{flex:1;overflow-y:auto;padding:14px 14px 32px;display:flex;flex-direction:column;gap:12px}
     .today-banner{background:#1D9E75;border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-decoration:none}
     .today-banner:active{background:#0F6E56}
-    .tb-left{}
     .tb-label{font-size:12px;color:#9FE1CB;font-weight:500}
     .tb-revenue{font-size:26px;font-weight:700;color:#fff;margin-top:2px}
     .tb-sub{font-size:12px;color:#9FE1CB;margin-top:3px}
-    .tb-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
     .tb-orders{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:#fff}
-    .tb-arrow{color:#9FE1CB}
-
-    /* ── CHECKIN ALERT ── */
     .checkin-alert{background:#FAEEDA;border-radius:14px;padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;border:0.5px solid #FAC775}
-    .checkin-alert:active{background:#FAC77540}
     .alert-icon{width:36px;height:36px;border-radius:10px;background:#EF9F2730;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .alert-info{flex:1}
     .alert-title{font-size:13px;font-weight:600;color:#633806}
     .alert-sub{font-size:12px;color:#BA7517;margin-top:2px}
-
-    /* ── SECTION TITLE ── */
+    .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .stat-chip{background:#fff;border-radius:12px;border:0.5px solid #e8e6e0;padding:10px 12px}
+    .sc-label{font-size:11px;color:#888;margin-bottom:4px}
+    .sc-value{font-size:16px;font-weight:700;color:#1a1a18}
+    .sc-value.green{color:#1D9E75}
+    .sc-value.red{color:#E24B4A}
     .section-title{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px}
-
-    /* ── MODULE GRID ── */
+    .pos-btn{background:#1a1a18;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none}
+    .pos-btn:active{background:#333}
+    .pos-icon{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .pos-title{font-size:16px;font-weight:700;color:#fff}
+    .pos-sub{font-size:12px;color:#888;margin-top:2px}
     .module-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .module-card{background:#fff;border-radius:16px;border:0.5px solid #e8e6e0;padding:14px;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+    .module-card{background:#fff;border-radius:16px;border:0.5px solid #e8e6e0;padding:14px;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;gap:10px}
     .module-card:active{background:#f5f5f0}
     .mc-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center}
     .mc-name{font-size:14px;font-weight:600;color:#1a1a18}
@@ -59,59 +52,32 @@
     .badge-yellow{background:#FAEEDA;color:#633806}
     .badge-blue{background:#E6F1FB;color:#0C447C}
     .badge-gray{background:#f5f5f0;color:#888}
-
-    /* ── QUICK STATS ROW ── */
-    .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-    .stat-chip{background:#fff;border-radius:12px;border:0.5px solid #e8e6e0;padding:10px 12px}
-    .sc-label{font-size:11px;color:#888;margin-bottom:4px}
-    .sc-value{font-size:16px;font-weight:700;color:#1a1a18}
-    .sc-value.green{color:#1D9E75}
-    .sc-value.red{color:#E24B4A}
-
-    /* ── POS BUTTON (full width) ── */
-    .pos-btn{background:#1a1a18;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;transition:background .15s}
-    .pos-btn:active{background:#333}
-    .pos-icon{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .pos-info{flex:1}
-    .pos-title{font-size:16px;font-weight:700;color:#fff}
-    .pos-sub{font-size:12px;color:#888;margin-top:2px}
-    .pos-arrow{color:#888}
-
-    /* ── OVERLAY ── */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
     .overlay.show{display:flex}
     .sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
     .sheet-title{font-size:15px;font-weight:600;color:#1a1a18;text-align:center}
     .sheet-sub{font-size:13px;color:#888;text-align:center}
-    .sheet-btn{padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center}
+    .sheet-btn{padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
     .sheet-btn.red{background:#FCEBEB;color:#A32D2D}
-    .sheet-btn.red:active{background:#F7C1C1}
     .sheet-btn.gray{background:#f5f5f0;color:#1a1a18;border:0.5px solid #e8e6e0}
-    .sheet-btn.gray:active{background:#e8e6e0}
   </style>
 </head>
 <body>
-
 <div class="header">
-  <div class="header-left">
+  <div>
     <div class="greeting" id="greeting">Chào buổi sáng</div>
     <div class="header-name" id="headerName">FNB App</div>
   </div>
   <div class="header-right">
     <div class="net-dot" id="netDot"></div>
     <button class="logout-btn" onclick="showLogout()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
   </div>
 </div>
 
-<div class="scroll" id="scroll"></div>
+<div class="scroll" id="scroll"><div style="text-align:center;padding:32px;color:#bbb;font-size:13px">Đang tải...</div></div>
 
-<!-- Logout sheet -->
 <div class="overlay" id="logoutOverlay" onclick="hideLogout()">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheet-title">Đăng xuất?</div>
@@ -121,231 +87,101 @@
   </div>
 </div>
 
+<script src="../lib/supabase.js"></script>
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('pos');
+  const session=Auth.getSession();
+  const fmt=n=>n.toLocaleString('vi-VN')+' ₫';
+  const toKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const today=new Date(),todayKey=toKey(today);
 
-  const session = Auth.getSession();
-  const role    = Auth.getRole();
-  const fmt     = n => n.toLocaleString('vi-VN') + ' ₫';
-  const toKey   = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const today   = new Date();
-  const todayKey = toKey(today);
+  const hour=today.getHours();
+  document.getElementById('greeting').textContent=hour<12?'Chào buổi sáng':hour<18?'Chào buổi chiều':'Chào buổi tối';
+  document.getElementById('headerName').textContent=session?.name||'FNB App';
 
-  // ── GREETING ──
-  const hour = today.getHours();
-  const greeting = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
-  document.getElementById('greeting').textContent = greeting;
-  document.getElementById('headerName').textContent = session?.name || 'FNB App';
+  function updateNet(){document.getElementById('netDot').className='net-dot'+(navigator.onLine?'':' offline');}
+  window.addEventListener('online',updateNet);window.addEventListener('offline',updateNet);updateNet();
 
-  // ── NETWORK ──
-  function updateNet(){
-    const online = navigator.onLine;
-    document.getElementById('netDot').className = 'net-dot' + (online?'':' offline');
-  }
-  window.addEventListener('online', updateNet);
-  window.addEventListener('offline', updateNet);
-  updateNet();
+  async function loadDashboard(){
+    try {
+      const monthStart=new Date(today.getFullYear(),today.getMonth(),1).toISOString();
+      const todayStart=new Date(today);todayStart.setHours(0,0,0,0);
+      const todayEnd=new Date(today);todayEnd.setHours(23,59,59,999);
 
-  // ── DATA ──
-  function getData(){
-    const orders    = JSON.parse(localStorage.getItem('fnb_orders')         || '[]');
-    const semiStock = JSON.parse(localStorage.getItem('fnb_semi_stock')     || '{}');
-    const rawStock  = JSON.parse(localStorage.getItem('fnb_raw_stock')      || '{}');
-    const schLogs   = JSON.parse(localStorage.getItem('fnb_schedule_logs')  || '[]');
-    const expenses  = JSON.parse(localStorage.getItem('fnb_expenses')       || '[]');
+      const[todayOrders,monthOrders,rawStock,semiStock,scheduleToday]=await Promise.all([
+        DB.select('orders',`created_at=gte.${todayStart.toISOString()}&created_at=lte.${todayEnd.toISOString()}&select=total`),
+        DB.select('orders',`created_at=gte.${monthStart}&select=total`),
+        DB.select('raw_stock','select=id,quantity'),
+        DB.select('semi_stock','select=id,quantity'),
+        DB.select('schedule_logs',`date=eq.${todayKey}&select=*`),
+      ]);
 
-    const todayOrders = orders.filter(o => toKey(new Date(o.ts)) === todayKey);
-    const todayRev    = todayOrders.reduce((s,o) => s+o.total, 0);
-    const todayCount  = todayOrders.length;
+      const todayRev=todayOrders.reduce((s,o)=>s+o.total,0);
+      const monthRev=monthOrders.reduce((s,o)=>s+o.total,0);
+      const todayCount=todayOrders.length;
 
-    // Tháng này
-    const monthOrders = orders.filter(o => {
-      const d = new Date(o.ts);
-      return d.getMonth()===today.getMonth() && d.getFullYear()===today.getFullYear();
-    });
-    const monthRev = monthOrders.reduce((s,o) => s+o.total, 0);
+      const RAW_WARN={ca_phe_bot:300,cacao_bot:200,matcha_bot:100,bot_kem_muoi:100,sua_dac:300,sua_tuoi:500,duong:500};
+      const SEMI_WARN={cot_ca_phe:200,cot_cacao:200,cot_matcha:200,kem_muoi:100,nuoc_duong:100};
+      const rawMap={};rawStock.forEach(r=>rawMap[r.id]=parseFloat(r.quantity)||0);
+      const semiMap={};semiStock.forEach(s=>semiMap[s.id]=parseFloat(s.quantity)||0);
+      const lowRaw=Object.keys(RAW_WARN).filter(k=>rawMap[k]<=RAW_WARN[k]).length;
+      const lowSemi=Object.keys(SEMI_WARN).filter(k=>semiMap[k]<=SEMI_WARN[k]).length;
+      const totalLow=lowRaw+lowSemi;
 
-    // Tồn kho cảnh báo
-    const RAW_WARN = {ca_phe_bot:300,cacao_bot:200,matcha_bot:100,bot_kem_muoi:100,sua_dac:300,sua_tuoi:500,duong:500};
-    const SEMI_WARN = {cot_ca_phe:200,cot_cacao:200,cot_matcha:200,kem_muoi:100,nuoc_duong:100};
-    const lowRaw  = Object.keys(RAW_WARN).filter(k => (rawStock[k]||0) <= RAW_WARN[k]).length;
-    const lowSemi = Object.keys(SEMI_WARN).filter(k => (semiStock[k]||0) <= SEMI_WARN[k]).length;
-    const totalLow = lowRaw + lowSemi;
+      const todayLog=scheduleToday&&scheduleToday.length?scheduleToday[0]:null;
+      const checkedIn=!!todayLog?.check_in,checkedOut=!!todayLog?.check_out;
+      const refOpen=new Date(today);refOpen.setHours(6,0,0,0);
+      const shouldCheckin=!checkedIn&&today>=refOpen;
 
-    // Check-in hôm nay
-    const todayLog     = schLogs.find(l => l.date === todayKey);
-    const checkedIn    = !!todayLog?.checkIn;
-    const checkedOut   = !!todayLog?.checkOut;
-    const OPEN_HOUR    = 6;
-    const LATE_GRACE   = 15;
-    const refOpen      = new Date(today); refOpen.setHours(OPEN_HOUR,0,0,0);
-    const shouldCheckin = !checkedIn && today >= refOpen;
-
-    // Số ca đúng giờ tháng này
-    const monthLogs = schLogs.filter(l => {
-      const d = new Date(l.date+'T12:00:00');
-      return d.getMonth()===today.getMonth() && d.getFullYear()===today.getFullYear();
-    });
-
-    return {todayRev,todayCount,monthRev,totalLow,lowRaw,lowSemi,checkedIn,checkedOut,shouldCheckin,todayLog,monthLogs};
+      renderDashboard({todayRev,monthRev,todayCount,totalLow,checkedIn,checkedOut,shouldCheckin});
+    } catch(e){
+      document.getElementById('scroll').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi tải dữ liệu: ${e.message}</div>`;
+    }
   }
 
-  // ── RENDER ──
-  function render(){
-    const d = getData();
-    const el = document.getElementById('scroll');
-    const canViewRevenue = Auth.can('revenue');
-    const canViewFinance = Auth.can('finance');
-    const canInventory   = Auth.can('inventory_view');
-    const canEdit        = Auth.can('inventory_edit');
+  function renderDashboard(d){
+    const canRevenue=Auth.can('revenue'),canFinance=Auth.can('finance'),canInventory=Auth.can('inventory_view');
+    let html='';
 
-    let html = '';
-
-    // 1. Cảnh báo check-in
-    if(d.shouldCheckin && !d.checkedOut){
-      html += `<a href="../schedule/index.html" class="checkin-alert">
-        <div class="alert-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="alert-info">
-          <div class="alert-title">${d.checkedIn ? 'Đang bán hàng' : 'Chưa check-in hôm nay!'}</div>
-          <div class="alert-sub">${d.checkedIn ? 'Nhấn để xem lịch trình' : 'Giờ mở bán 06:00 — nhấn để check-in'}</div>
-        </div>
+    if(d.shouldCheckin){
+      html+=`<a href="../schedule/index.html" class="checkin-alert">
+        <div class="alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div><div class="alert-title">${d.checkedIn?'Đang bán hàng':'Chưa check-in hôm nay!'}</div><div class="alert-sub">${d.checkedIn?'Nhấn để xem lịch trình':'Giờ mở bán 06:00 — nhấn để check-in'}</div></div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </a>`;
     }
 
-    // 2. Banner doanh thu hôm nay
-    if(canViewRevenue){
-      html += `<a href="../revenue/index.html" class="today-banner">
-        <div class="tb-left">
-          <div class="tb-label">Doanh thu hôm nay</div>
-          <div class="tb-revenue">${fmt(d.todayRev)}</div>
-          <div class="tb-sub">${d.todayCount} đơn hàng · ${today.toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'numeric'})}</div>
-        </div>
-        <div class="tb-right">
-          <span class="tb-orders">${d.todayCount} đơn</span>
-          <svg class="tb-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
+    if(canRevenue){
+      html+=`<a href="../revenue/index.html" class="today-banner">
+        <div><div class="tb-label">Doanh thu hôm nay</div><div class="tb-revenue">${fmt(d.todayRev)}</div><div class="tb-sub">${d.todayCount} đơn · ${today.toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'numeric'})}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="tb-orders">${d.todayCount} đơn</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9FE1CB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
       </a>`;
-    }
-
-    // 3. Quick stats (tháng này)
-    if(canViewRevenue){
-      html += `<div class="stats-row">
-        <div class="stat-chip">
-          <div class="sc-label">Tháng này</div>
-          <div class="sc-value green" style="font-size:14px">${fmt(d.monthRev)}</div>
-        </div>
-        <div class="stat-chip">
-          <div class="sc-label">Số ca tháng</div>
-          <div class="sc-value">${d.monthLogs.length}</div>
-        </div>
-        <div class="stat-chip">
-          <div class="sc-label">Tồn kho thấp</div>
-          <div class="sc-value${d.totalLow>0?' red':' green'}">${d.totalLow}</div>
-        </div>
+      html+=`<div class="stats-row">
+        <div class="stat-chip"><div class="sc-label">Tháng này</div><div class="sc-value green" style="font-size:14px">${fmt(d.monthRev)}</div></div>
+        <div class="stat-chip"><div class="sc-label">Hôm nay</div><div class="sc-value">${d.todayCount}</div></div>
+        <div class="stat-chip"><div class="sc-label">Tồn kho thấp</div><div class="sc-value${d.totalLow>0?' red':' green'}">${d.totalLow}</div></div>
       </div>`;
     }
 
-    // 4. Nút POS lớn
-    html += `<a href="../pos/index.html" class="pos-btn">
-      <div class="pos-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-          <line x1="6" y1="1" x2="6" y2="4"/>
-          <line x1="10" y1="1" x2="10" y2="4"/>
-          <line x1="14" y1="1" x2="14" y2="4"/>
-        </svg>
-      </div>
-      <div class="pos-info">
-        <div class="pos-title">Bán hàng</div>
-        <div class="pos-sub">Mở màn hình POS</div>
-      </div>
-      <svg class="pos-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    html+=`<a href="../pos/index.html" class="pos-btn">
+      <div class="pos-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+      <div style="flex:1"><div class="pos-title">Bán hàng</div><div class="pos-sub">Mở màn hình POS</div></div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </a>`;
 
-    // 5. Module grid
-    html += `<div class="section-title">Quản lý</div><div class="module-grid">`;
-
-    // Nguyên liệu
-    if(canInventory){
-      const lowBadge = d.totalLow > 0
-        ? `<span class="mc-badge badge-red">${d.totalLow} mục thấp</span>`
-        : `<span class="mc-badge badge-green">Đủ hàng</span>`;
-      html += `<a href="../inventory/index.html" class="module-card">
-        <div class="mc-icon" style="background:#FAEEDA">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-        </div>
-        <div>
-          <div class="mc-name">Nguyên liệu</div>
-          <div class="mc-stat">Tồn kho & pha chế</div>
-          ${lowBadge}
-        </div>
-      </a>`;
-    }
-
-    // Lịch trình
-    html += `<a href="../schedule/index.html" class="module-card">
-      <div class="mc-icon" style="background:#E1F5EE">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
-      <div>
-        <div class="mc-name">Lịch trình</div>
-        <div class="mc-stat">Check-in · Check-out</div>
-        ${d.checkedIn && !d.checkedOut
-          ? `<span class="mc-badge badge-green">Đang bán</span>`
-          : d.checkedOut
-            ? `<span class="mc-badge badge-gray">Xong hôm nay</span>`
-            : `<span class="mc-badge badge-yellow">Chưa check-in</span>`}
-      </div>
-    </a>`;
-
-    // Doanh thu
-    if(canViewRevenue){
-      html += `<a href="../revenue/index.html" class="module-card">
-        <div class="mc-icon" style="background:#E6F1FB">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <div>
-          <div class="mc-name">Doanh thu</div>
-          <div class="mc-stat">Báo cáo bán hàng</div>
-          <span class="mc-badge badge-blue">${fmt(d.todayRev)} hôm nay</span>
-        </div>
-      </a>`;
-    }
-
-    // Tài chính
-    if(canViewFinance){
-      html += `<a href="../finance/index.html" class="module-card">
-        <div class="mc-icon" style="background:#EEEDFE">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
-        <div>
-          <div class="mc-name">Tài chính</div>
-          <div class="mc-stat">P&L · Chi phí · Giá vốn</div>
-          <span class="mc-badge badge-blue">Tháng ${today.getMonth()+1}</span>
-        </div>
-      </a>`;
-    }
-
-    html += `</div>`;
-
-    el.innerHTML = html;
+    html+=`<div class="section-title">Quản lý</div><div class="module-grid">`;
+    if(canInventory) html+=`<a href="../inventory/index.html" class="module-card"><div class="mc-icon" style="background:#FAEEDA"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div><div class="mc-name">Nguyên liệu</div><div class="mc-stat">Tồn kho & pha chế</div>${d.totalLow>0?`<span class="mc-badge badge-red">${d.totalLow} mục thấp</span>`:'<span class="mc-badge badge-green">Đủ hàng</span>'}</div></a>`;
+    html+=`<a href="../schedule/index.html" class="module-card"><div class="mc-icon" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="mc-name">Lịch trình</div><div class="mc-stat">Check-in · Check-out</div>${d.checkedIn&&!d.checkedOut?'<span class="mc-badge badge-green">Đang bán</span>':d.checkedOut?'<span class="mc-badge badge-gray">Xong hôm nay</span>':'<span class="mc-badge badge-yellow">Chưa check-in</span>'}</div></a>`;
+    if(canRevenue) html+=`<a href="../revenue/index.html" class="module-card"><div class="mc-icon" style="background:#E6F1FB"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="mc-name">Doanh thu</div><div class="mc-stat">Báo cáo bán hàng</div><span class="mc-badge badge-blue">${fmt(d.todayRev)} hôm nay</span></div></a>`;
+    if(canFinance) html+=`<a href="../finance/index.html" class="module-card"><div class="mc-icon" style="background:#EEEDFE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div><div class="mc-name">Tài chính</div><div class="mc-stat">P&L · Chi phí · Giá vốn</div><span class="mc-badge badge-blue">Tháng ${today.getMonth()+1}</span></div></a>`;
+    html+=`</div>`;
+    document.getElementById('scroll').innerHTML=html;
   }
 
-  function showLogout(){
-    const s = Auth.getSession();
-    document.getElementById('logoutSub').textContent = s ? `Đang đăng nhập: ${s.name}` : '';
-    document.getElementById('logoutOverlay').classList.add('show');
-  }
-  function hideLogout(){
-    document.getElementById('logoutOverlay').classList.remove('show');
-  }
-
-  render();
+  function showLogout(){document.getElementById('logoutSub').textContent=session?`Đang đăng nhập: ${session.name}`:'';document.getElementById('logoutOverlay').classList.add('show');}
+  function hideLogout(){document.getElementById('logoutOverlay').classList.remove('show');}
+  loadDashboard();
 </script>
 </body>
 </html>

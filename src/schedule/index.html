@@ -1,3 +1,4 @@
+<!-- schedule/index.html -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -8,19 +9,14 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
-
     .header{background:#fff;padding:10px 16px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
     .header-left{display:flex;align-items:center;gap:10px}
-    .back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;text-decoration:none;flex-shrink:0}
+    .back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;text-decoration:none}
     .header-title{font-size:15px;font-weight:600;color:#1a1a18}
-
     .tabs{background:#fff;display:flex;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
     .tab{flex:1;padding:10px 0;font-size:13px;font-weight:500;color:#888;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none}
     .tab.active{color:#1D9E75;border-bottom-color:#1D9E75}
-
     .content{flex:1;overflow-y:auto;padding:14px 14px 32px;display:flex;flex-direction:column;gap:12px}
-
-    /* ── TRẠNG THÁI HÔM NAY ── */
     .today-card{background:#fff;border-radius:16px;border:0.5px solid #e8e6e0;padding:18px;display:flex;flex-direction:column;gap:14px}
     .today-status{display:flex;align-items:center;gap:12px}
     .status-dot-wrap{position:relative}
@@ -34,7 +30,6 @@
     .status-info{flex:1}
     .status-title{font-size:16px;font-weight:600;color:#1a1a18}
     .status-sub{font-size:13px;color:#888;margin-top:3px}
-
     .time-row{display:flex;gap:8px}
     .time-chip{flex:1;background:#f5f5f0;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
     .time-chip-label{font-size:11px;color:#888;font-weight:500}
@@ -42,42 +37,31 @@
     .time-chip-value.green{color:#1D9E75}
     .time-chip-value.red{color:#E24B4A}
     .time-chip-value.muted{color:#bbb}
-
     .duration-bar{height:6px;background:#e8e6e0;border-radius:3px;overflow:hidden}
     .duration-fill{height:100%;border-radius:3px;background:#1D9E75;transition:width .5s}
     .duration-fill.over{background:#E24B4A}
-    .duration-fill.warn{background:#EF9F27}
-
     .checkin-btn{width:100%;padding:16px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
     .checkin-btn.start{background:#1D9E75;color:#fff}
     .checkin-btn.start:active{background:#0F6E56}
     .checkin-btn.end{background:#FCEBEB;color:#A32D2D}
     .checkin-btn.end:active{background:#F7C1C1}
     .checkin-btn:disabled{background:#e8e6e0;color:#bbb;cursor:default}
-
     .location-input{display:flex;gap:8px;align-items:center}
     .location-input input{flex:1;padding:10px 14px;border:0.5px solid #e8e6e0;border-radius:12px;font-size:14px;color:#1a1a18;background:#f5f5f0;font-family:inherit}
     .location-input input:focus{outline:none;border-color:#1D9E75;background:#fff}
-    .location-input input::placeholder{color:#bbb}
-
-    /* ── LỊCH SỬ ── */
     .history-day{display:flex;flex-direction:column;gap:6px}
-    .history-date{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;padding:2px 0}
+    .history-date{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px}
     .history-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:13px 14px;display:flex;gap:12px;align-items:flex-start}
     .history-card.on-time{border-left:3px solid #1D9E75;border-radius:0 14px 14px 0}
     .history-card.late{border-left:3px solid #EF9F27;border-radius:0 14px 14px 0}
-    .history-card.no-show{border-left:3px solid #E24B4A;border-radius:0 14px 14px 0;opacity:.7}
     .h-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
-    .h-info{flex:1;min-width:0}
+    .h-info{flex:1}
     .h-location{font-size:14px;font-weight:500;color:#1a1a18}
     .h-time{font-size:12px;color:#888;margin-top:3px}
     .h-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;display:inline-block;margin-top:4px}
     .h-badge.on-time{background:#E1F5EE;color:#085041}
     .h-badge.late{background:#FAEEDA;color:#633806}
-    .h-badge.no-show{background:#FCEBEB;color:#A32D2D}
     .h-revenue{font-size:13px;font-weight:500;color:#1D9E75;text-align:right;flex-shrink:0}
-
-    /* ── THỐNG KÊ ── */
     .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .stat-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:13px 14px}
     .stat-card.full{grid-column:span 2}
@@ -86,377 +70,190 @@
     .stat-value.green{color:#1D9E75}
     .stat-value.red{color:#E24B4A}
     .stat-sub{font-size:12px;color:#888;margin-top:4px}
-
+    .info-box{background:#E6F1FB;border-radius:10px;padding:10px 14px;font-size:12px;color:#0C447C;line-height:1.6}
     .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 0;gap:8px;color:#bbb;font-size:13px}
     .toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:200}
-    .info-box{background:#E6F1FB;border-radius:10px;padding:10px 14px;font-size:12px;color:#0C447C;line-height:1.6}
   </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-left">
-    <a href="../pos/index.html" class="back-btn">
+    <a href="../home/index.html" class="back-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
     <span class="header-title">Lịch trình</span>
   </div>
   <span id="clockDisplay" style="font-size:13px;font-weight:500;color:#888"></span>
 </div>
-
 <div class="tabs">
   <button class="tab active" id="tab1" onclick="switchTab(1)">Hôm nay</button>
   <button class="tab"        id="tab2" onclick="switchTab(2)">Lịch sử</button>
   <button class="tab"        id="tab3" onclick="switchTab(3)">Thống kê</button>
 </div>
-
-<div class="content" id="content"></div>
+<div class="content" id="content"><div class="empty">Đang tải...</div></div>
 <div class="toast" id="toast"></div>
 
+<script src="../lib/supabase.js"></script>
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('pos');
+  const session=Auth.getSession();
+  const OPEN_HOUR=6,CLOSE_HOUR=10,LATE_GRACE=15;
+  const fmt=n=>n.toLocaleString('vi-VN')+' ₫';
+  const fmtTime=d=>`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  const toKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const today=new Date(),todayKey=toKey(today);
+  let activeTab=1,todayLog=null;
 
-  // ── CẤU HÌNH ──
-  const OPEN_HOUR    = 6;
-  const OPEN_MIN     = 0;
-  const CLOSE_HOUR   = 10;
-  const CLOSE_MIN    = 0;
-  const LATE_GRACE   = 15; // phút trễ được chấp nhận
+  function updateClock(){document.getElementById('clockDisplay').textContent=fmtTime(new Date());}
+  setInterval(updateClock,1000);updateClock();
 
-  const fmt    = n => n.toLocaleString('vi-VN') + ' ₫';
-  const fmtTime = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  const toKey  = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  function switchTab(n){activeTab=n;[1,2,3].forEach(i=>document.getElementById('tab'+i).classList.toggle('active',i===n));loadAndRender();}
 
-  // ── STORAGE ──
-  const getLogs = () => JSON.parse(localStorage.getItem('fnb_schedule_logs') || '[]');
-  const setLogs = d => localStorage.setItem('fnb_schedule_logs', JSON.stringify(d));
-  const getOrders = () => JSON.parse(localStorage.getItem('fnb_orders') || '[]');
-
-  // ── STATE ──
-  let activeTab = 1;
-  const today = new Date();
-  const todayKey = toKey(today);
-
-  function getTodayLog(){
-    return getLogs().find(l => l.date === todayKey) || null;
+  async function loadAndRender(){
+    document.getElementById('content').innerHTML='<div class="empty">Đang tải...</div>';
+    try{
+      if(activeTab===1){
+        const logs=await DB.select('schedule_logs',`date=eq.${todayKey}&select=*`);
+        todayLog=logs&&logs.length?logs[0]:null;
+        renderToday();
+      } else if(activeTab===2) await renderHistory();
+      else await renderStats();
+    } catch(e){document.getElementById('content').innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`;}
   }
 
-  // ── CLOCK ──
-  function updateClock(){
-    const now = new Date();
-    document.getElementById('clockDisplay').textContent = fmtTime(now);
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
-
-  // ── TABS ──
-  function switchTab(n){
-    activeTab = n;
-    [1,2,3].forEach(i => document.getElementById('tab'+i).classList.toggle('active', i===n));
-    render();
-  }
-
-  // ── RENDER ──
-  function render(){
-    if(activeTab===1) renderToday();
-    else if(activeTab===2) renderHistory();
-    else renderStats();
-  }
-
-  // ── TAB 1: HÔM NAY ──
   function renderToday(){
-    const el = document.getElementById('content');
-    const log = getTodayLog();
-    const now = new Date();
-    const openTime  = new Date(today); openTime.setHours(OPEN_HOUR, OPEN_MIN, 0, 0);
-    const closeTime = new Date(today); closeTime.setHours(CLOSE_HOUR, CLOSE_MIN, 0, 0);
-    const lateLimit = new Date(openTime.getTime() + LATE_GRACE * 60000);
+    const now=new Date();
+    const openTime=new Date(today);openTime.setHours(OPEN_HOUR,0,0,0);
+    const closeTime=new Date(today);closeTime.setHours(CLOSE_HOUR,0,0,0);
+    const lateLimit=new Date(openTime.getTime()+LATE_GRACE*60000);
+    let statusTitle='',statusSub='',dotClass='idle',showPulse=false,checkinBtnLabel='',checkinBtnClass='',checkinBtnDisabled=false,durationPct=0,durationBar=false;
 
-    let statusTitle = '', statusSub = '', dotClass = 'idle', showPulse = false;
-    let checkinBtnLabel = '', checkinBtnClass = '', checkinBtnDisabled = false;
-    let durationPct = 0, durationClass = 'ok', durationBar = false;
-
-    if(!log){
-      // Chưa check-in
-      if(now < openTime){
-        statusTitle = 'Chưa đến giờ mở bán';
-        statusSub   = `Giờ mở: ${String(OPEN_HOUR).padStart(2,'0')}:${String(OPEN_MIN).padStart(2,'0')} — ${String(CLOSE_HOUR).padStart(2,'0')}:${String(CLOSE_MIN).padStart(2,'0')}`;
-        dotClass = 'idle'; checkinBtnLabel = 'Bắt đầu ca bán'; checkinBtnClass = 'start';
-        checkinBtnDisabled = false;
-      } else if(now <= closeTime){
-        statusTitle = now > lateLimit ? 'Chưa check-in (đã trễ!)' : 'Chưa bắt đầu ca bán';
-        statusSub   = now > lateLimit ? `Trễ ${Math.round((now-openTime)/60000)} phút` : 'Nhấn nút để bắt đầu';
-        dotClass = 'idle'; checkinBtnLabel = 'Bắt đầu ca bán'; checkinBtnClass = 'start';
-        checkinBtnDisabled = false;
-      } else {
-        statusTitle = 'Đã qua giờ bán hôm nay';
-        statusSub   = 'Không có dữ liệu check-in';
-        dotClass = 'closed'; checkinBtnLabel = 'Bắt đầu ca bán'; checkinBtnClass = 'start';
-        checkinBtnDisabled = true;
-      }
-    } else if(log.checkIn && !log.checkOut){
-      // Đang bán
-      showPulse = true; dotClass = 'open';
-      statusTitle = 'Đang bán hàng';
-      const minsSinceOpen = Math.round((now - new Date(log.checkIn)) / 60000);
-      statusSub = `Đã bán ${minsSinceOpen} phút · ${log.location||'Không có địa điểm'}`;
-      checkinBtnLabel = 'Kết thúc ca bán'; checkinBtnClass = 'end';
-      checkinBtnDisabled = false;
-      const totalMins = (CLOSE_HOUR*60+CLOSE_MIN) - (OPEN_HOUR*60+OPEN_MIN);
-      const elapsed   = Math.round((now - new Date(log.checkIn)) / 60000);
-      durationPct = Math.min(100, Math.round(elapsed / totalMins * 100));
-      durationClass = durationPct >= 100 ? 'over' : durationPct >= 80 ? 'warn' : 'ok';
-      durationBar = true;
-    } else if(log.checkIn && log.checkOut){
-      // Đã xong
-      dotClass = 'closed';
-      const dur = Math.round((new Date(log.checkOut) - new Date(log.checkIn)) / 60000);
-      statusTitle = 'Ca bán đã kết thúc';
-      statusSub   = `${fmtTime(new Date(log.checkIn))} — ${fmtTime(new Date(log.checkOut))} · ${dur} phút`;
-      checkinBtnLabel = 'Ca bán đã xong'; checkinBtnClass = 'start';
-      checkinBtnDisabled = true;
+    if(!todayLog){
+      if(now<openTime){statusTitle='Chưa đến giờ mở bán';statusSub=`Giờ mở: 0${OPEN_HOUR}:00 — ${CLOSE_HOUR}:00`;}
+      else if(now<=closeTime){statusTitle=now>lateLimit?'Chưa check-in (đã trễ!)':'Chưa bắt đầu ca bán';statusSub=now>lateLimit?`Trễ ${Math.round((now-openTime)/60000)} phút`:'Nhấn nút để bắt đầu';}
+      else{statusTitle='Đã qua giờ bán hôm nay';statusSub='Không có dữ liệu check-in';}
+      dotClass='idle';checkinBtnLabel='Bắt đầu ca bán';checkinBtnClass='start';checkinBtnDisabled=now>closeTime;
+    } else if(todayLog.check_in&&!todayLog.check_out){
+      showPulse=true;dotClass='open';statusTitle='Đang bán hàng';
+      const mins=Math.round((now-new Date(todayLog.check_in))/60000);
+      statusSub=`Đã bán ${mins} phút · ${todayLog.location||'Không có địa điểm'}`;
+      checkinBtnLabel='Kết thúc ca bán';checkinBtnClass='end';checkinBtnDisabled=false;
+      const totalMins=(CLOSE_HOUR-OPEN_HOUR)*60;
+      durationPct=Math.min(100,Math.round(mins/totalMins*100));durationBar=true;
+    } else {
+      dotClass='closed';const dur=Math.round((new Date(todayLog.check_out)-new Date(todayLog.check_in))/60000);
+      statusTitle='Ca bán đã kết thúc';statusSub=`${fmtTime(new Date(todayLog.check_in))} — ${fmtTime(new Date(todayLog.check_out))} · ${dur} phút`;
+      checkinBtnLabel='Ca bán đã xong';checkinBtnClass='start';checkinBtnDisabled=true;
     }
 
-    // Doanh thu hôm nay
-    const todayOrders = getOrders().filter(o => toKey(new Date(o.ts)) === todayKey);
-    const todayRevenue = todayOrders.reduce((s,o) => s+o.total, 0);
-
-    // Trạng thái đúng giờ
-    let punctualityBadge = '';
-    if(log?.checkIn){
-      const ci = new Date(log.checkIn);
-      const minsLate = Math.round((ci - openTime) / 60000);
-      if(minsLate <= 0) punctualityBadge = `<span style="font-size:12px;color:#1D9E75;font-weight:500">● Đúng giờ</span>`;
-      else if(minsLate <= LATE_GRACE) punctualityBadge = `<span style="font-size:12px;color:#BA7517;font-weight:500">● Trễ ${minsLate} phút (trong ngưỡng)</span>`;
-      else punctualityBadge = `<span style="font-size:12px;color:#E24B4A;font-weight:500">● Trễ ${minsLate} phút</span>`;
+    let punctuality='';
+    if(todayLog?.check_in){
+      const ci=new Date(todayLog.check_in),minsLate=Math.round((ci-openTime)/60000);
+      if(minsLate<=0) punctuality='<span style="font-size:12px;color:#1D9E75;font-weight:500">● Đúng giờ</span>';
+      else if(minsLate<=LATE_GRACE) punctuality=`<span style="font-size:12px;color:#BA7517;font-weight:500">● Trễ ${minsLate} phút (trong ngưỡng)</span>`;
+      else punctuality=`<span style="font-size:12px;color:#E24B4A;font-weight:500">● Trễ ${minsLate} phút</span>`;
     }
 
-    el.innerHTML = `
+    document.getElementById('content').innerHTML=`
       <div class="today-card">
         <div class="today-status">
           <div class="status-dot-wrap">
             <div class="status-dot ${dotClass}">
               ${showPulse?'<div class="pulse"></div>':''}
-              ${dotClass==='open'
-                ?`<svg viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`
-                :dotClass==='closed'
-                  ?`<svg viewBox="0 0 24 24" fill="none" stroke="#E24B4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`
-                  ?`<svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
-                  :`<svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
-              }
+              ${dotClass==='open'?`<svg viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`:dotClass==='closed'?`<svg viewBox="0 0 24 24" fill="none" stroke="#E24B4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`:`<svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`}
             </div>
           </div>
           <div class="status-info">
             <div class="status-title">${statusTitle}</div>
             <div class="status-sub">${statusSub}</div>
-            ${punctualityBadge ? `<div style="margin-top:4px">${punctualityBadge}</div>` : ''}
+            ${punctuality?`<div style="margin-top:4px">${punctuality}</div>`:''}
           </div>
         </div>
-
-        ${durationBar ? `<div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:#888;margin-bottom:6px">
-            <span>${String(OPEN_HOUR).padStart(2,'0')}:${String(OPEN_MIN).padStart(2,'0')}</span>
-            <span>${durationPct}% ca bán</span>
-            <span>${String(CLOSE_HOUR).padStart(2,'0')}:${String(CLOSE_MIN).padStart(2,'0')}</span>
-          </div>
-          <div class="duration-bar"><div class="duration-fill ${durationClass}" style="width:${durationPct}%"></div></div>
-        </div>` : ''}
-
+        ${durationBar?`<div><div style="display:flex;justify-content:space-between;font-size:12px;color:#888;margin-bottom:6px"><span>0${OPEN_HOUR}:00</span><span>${durationPct}% ca bán</span><span>${CLOSE_HOUR}:00</span></div><div class="duration-bar"><div class="duration-fill${durationPct>=100?' over':''}" style="width:${durationPct}%"></div></div></div>`:''}
         <div class="time-row">
-          <div class="time-chip">
-            <div class="time-chip-label">Check-in</div>
-            <div class="time-chip-value${log?.checkIn?' green':' muted'}">${log?.checkIn ? fmtTime(new Date(log.checkIn)) : '—'}</div>
-          </div>
-          <div class="time-chip">
-            <div class="time-chip-label">Check-out</div>
-            <div class="time-chip-value${log?.checkOut?' red':' muted'}">${log?.checkOut ? fmtTime(new Date(log.checkOut)) : '—'}</div>
-          </div>
-          <div class="time-chip">
-            <div class="time-chip-label">Doanh thu</div>
-            <div class="time-chip-value green" style="font-size:13px">${todayRevenue > 0 ? fmt(todayRevenue) : '—'}</div>
-          </div>
+          <div class="time-chip"><div class="time-chip-label">Check-in</div><div class="time-chip-value${todayLog?.check_in?' green':' muted'}">${todayLog?.check_in?fmtTime(new Date(todayLog.check_in)):'—'}</div></div>
+          <div class="time-chip"><div class="time-chip-label">Check-out</div><div class="time-chip-value${todayLog?.check_out?' red':' muted'}">${todayLog?.check_out?fmtTime(new Date(todayLog.check_out)):'—'}</div></div>
         </div>
-
-        ${!log?.checkOut ? `
-        <div class="location-input">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <input type="text" id="locationInput" placeholder="Địa điểm bán hôm nay..."
-            value="${log?.location||''}" oninput="updateLocation(this.value)">
-        </div>` : ''}
-
-        <button class="checkin-btn ${checkinBtnClass}"
-          ${checkinBtnDisabled?'disabled':''}
-          onclick="handleCheckin()">
-          ${checkinBtnLabel}
-        </button>
+        ${!todayLog?.check_out?`<div class="location-input"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><input type="text" id="locationInput" placeholder="Địa điểm bán hôm nay..." value="${todayLog?.location||''}"></div>`:''}
+        <button class="checkin-btn ${checkinBtnClass}" ${checkinBtnDisabled?'disabled':''} onclick="handleCheckin()">${checkinBtnLabel}</button>
       </div>
-
-      ${!log ? `<div class="info-box">Giờ mở bán quy định: <strong>${String(OPEN_HOUR).padStart(2,'0')}:${String(OPEN_MIN).padStart(2,'0')}</strong> — <strong>${String(CLOSE_HOUR).padStart(2,'0')}:${String(CLOSE_MIN).padStart(2,'0')}</strong>. Trễ trong vòng ${LATE_GRACE} phút được chấp nhận.</div>` : ''}
-    `;
+      ${!todayLog?`<div class="info-box">Giờ mở bán: <strong>0${OPEN_HOUR}:00 — ${CLOSE_HOUR}:00</strong>. Trễ trong vòng ${LATE_GRACE} phút được chấp nhận.</div>`:''}`;
   }
 
-  // ── CHECK-IN / CHECK-OUT ──
-  function handleCheckin(){
-    const logs = getLogs();
-    const existingIdx = logs.findIndex(l => l.date === todayKey);
-    const now = new Date();
-    const location = document.getElementById('locationInput')?.value.trim() || '';
-
-    if(existingIdx < 0){
-      // Tạo mới
-      logs.push({
-        date:     todayKey,
-        checkIn:  now.toISOString(),
-        checkOut: null,
-        location,
-        staff:    Auth.getSession()?.name || '',
-      });
-      toast('✓ Bắt đầu ca bán — ' + fmtTime(now));
-    } else if(!logs[existingIdx].checkOut){
-      // Check-out
-      logs[existingIdx].checkOut = now.toISOString();
-      logs[existingIdx].location = location || logs[existingIdx].location;
-      toast('✓ Kết thúc ca bán — ' + fmtTime(now));
-    }
-    setLogs(logs);
-    render();
+  async function handleCheckin(){
+    const now=new Date(),location=document.getElementById('locationInput')?.value.trim()||'';
+    try{
+      if(!todayLog){
+        const res=await DB.insert('schedule_logs',{date:todayKey,check_in:now.toISOString(),location,staff_name:session?.name||''});
+        todayLog=res&&res.length?res[0]:null;
+        toast('✓ Bắt đầu ca bán — '+fmtTime(now));
+      } else if(!todayLog.check_out){
+        await DB.update('schedule_logs',`id=eq.${todayLog.id}`,{check_out:now.toISOString(),location:location||todayLog.location});
+        todayLog={...todayLog,check_out:now.toISOString()};
+        toast('✓ Kết thúc ca bán — '+fmtTime(now));
+      }
+      renderToday();
+    } catch(e){toast('Lỗi: '+e.message);}
   }
 
-  function updateLocation(val){
-    const logs = getLogs();
-    const idx = logs.findIndex(l => l.date === todayKey);
-    if(idx >= 0){ logs[idx].location = val; setLogs(logs); }
-  }
-
-  // ── TAB 2: LỊCH SỬ ──
-  function renderHistory(){
-    const el = document.getElementById('content');
-    const logs = getLogs().slice().reverse();
-    const orders = getOrders();
-    const openTime = new Date(0); openTime.setHours(OPEN_HOUR, OPEN_MIN, 0, 0);
-
-    if(!logs.length){
-      el.innerHTML = `<div class="empty">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Chưa có lịch sử check-in nào
-      </div>`;
-      return;
-    }
-
-    el.innerHTML = logs.map(log => {
-      const ci = log.checkIn ? new Date(log.checkIn) : null;
-      const co = log.checkOut ? new Date(log.checkOut) : null;
-      const refOpen = new Date(log.date+'T'+String(OPEN_HOUR).padStart(2,'0')+':'+String(OPEN_MIN).padStart(2,'0')+':00');
-      const minsLate = ci ? Math.round((ci - refOpen) / 60000) : null;
-
-      let status, badgeClass, badgeText;
-      if(!ci){ status='no-show'; badgeClass='no-show'; badgeText='Không có dữ liệu'; }
-      else if(minsLate<=LATE_GRACE){ status='on-time'; badgeClass='on-time'; badgeText=minsLate<=0?'Đúng giờ':`Trễ ${minsLate} phút`; }
-      else { status='late'; badgeClass='late'; badgeText=`Trễ ${minsLate} phút`; }
-
-      const dur = ci&&co ? Math.round((co-ci)/60000) : null;
-      const dayRevenue = orders.filter(o=>toKey(new Date(o.ts))===log.date).reduce((s,o)=>s+o.total,0);
-
-      const dateObj = new Date(log.date+'T12:00:00');
-      const dateStr = dateObj.toLocaleDateString('vi-VN',{weekday:'short',day:'numeric',month:'numeric'});
-
+  async function renderHistory(){
+    const logs=await DB.select('schedule_logs','select=*&order=date.desc&limit=30');
+    const el=document.getElementById('content');
+    if(!logs||!logs.length){el.innerHTML='<div class="empty">Chưa có lịch sử check-in nào</div>';return;}
+    el.innerHTML=await Promise.all(logs.map(async log=>{
+      const ci=log.check_in?new Date(log.check_in):null;
+      const co=log.check_out?new Date(log.check_out):null;
+      const refOpen=new Date(log.date+'T0'+OPEN_HOUR+':00:00');
+      const minsLate=ci?Math.round((ci-refOpen)/60000):null;
+      const status=!ci?'no-show':minsLate<=LATE_GRACE?'on-time':'late';
+      const badgeText=!ci?'Không có dữ liệu':minsLate<=0?'Đúng giờ':`Trễ ${minsLate} phút`;
+      const dur=ci&&co?Math.round((co-ci)/60000):null;
+      const dayRevOrders=await DB.select('orders',`created_at=gte.${log.date}T00:00:00&created_at=lte.${log.date}T23:59:59&select=total`);
+      const dayRev=dayRevOrders.reduce((s,o)=>s+o.total,0);
+      const dateStr=new Date(log.date+'T12:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'numeric',month:'numeric'});
       return `<div class="history-day">
         <div class="history-date">${dateStr}</div>
-        <div class="history-card ${status}">
-          <div class="h-icon" style="background:${status==='on-time'?'#E1F5EE':status==='late'?'#FAEEDA':'#FCEBEB'}">
-            ${status==='on-time'?'✓':status==='late'?'⏰':'✗'}
-          </div>
+        <div class="history-card${status==='on-time'?' on-time':status==='late'?' late':''}">
+          <div class="h-icon" style="background:${status==='on-time'?'#E1F5EE':status==='late'?'#FAEEDA':'#FCEBEB'}">${status==='on-time'?'✓':status==='late'?'⏰':'✗'}</div>
           <div class="h-info">
             <div class="h-location">${log.location||'Không có địa điểm'}</div>
-            <div class="h-time">
-              ${ci?fmtTime(ci):'—'} → ${co?fmtTime(co):'Chưa check-out'}
-              ${dur?` · ${dur} phút`:''}
-            </div>
-            <span class="h-badge ${badgeClass}">${badgeText}</span>
-            ${log.staff?`<div style="font-size:11px;color:#bbb;margin-top:3px">${log.staff}</div>`:''}
+            <div class="h-time">${ci?fmtTime(ci):'—'} → ${co?fmtTime(co):'Chưa check-out'}${dur?` · ${dur} phút`:''}</div>
+            <span class="h-badge ${status==='on-time'?'on-time':'late'}">${badgeText}</span>
           </div>
-          <div>
-            <div class="h-revenue">${dayRevenue>0?fmt(dayRevenue):'—'}</div>
-            <div style="font-size:11px;color:#bbb;text-align:right">doanh thu</div>
-          </div>
+          <div><div class="h-revenue">${dayRev>0?fmt(dayRev):'—'}</div></div>
         </div>
       </div>`;
-    }).join('');
+    })).then(rows=>rows.join(''));
   }
 
-  // ── TAB 3: THỐNG KÊ (30 ngày gần nhất) ──
-  function renderStats(){
-    const el = document.getElementById('content');
-    const logs = getLogs();
-    const orders = getOrders();
-    const last30 = logs.filter(l => {
-      const d = new Date(l.date+'T12:00:00');
-      return (Date.now()-d) <= 30*24*60*60*1000;
-    });
-
-    const total     = last30.length;
-    const onTime    = last30.filter(l => {
-      if(!l.checkIn) return false;
-      const ci = new Date(l.checkIn);
-      const ref = new Date(l.date+'T'+String(OPEN_HOUR).padStart(2,'0')+':'+String(OPEN_MIN).padStart(2,'0')+':00');
-      return Math.round((ci-ref)/60000) <= LATE_GRACE;
-    }).length;
-    const late      = last30.filter(l => {
-      if(!l.checkIn) return false;
-      const ci = new Date(l.checkIn);
-      const ref = new Date(l.date+'T'+String(OPEN_HOUR).padStart(2,'0')+':'+String(OPEN_MIN).padStart(2,'0')+':00');
-      return Math.round((ci-ref)/60000) > LATE_GRACE;
-    }).length;
-    const avgDur    = last30.filter(l=>l.checkIn&&l.checkOut).map(l=>Math.round((new Date(l.checkOut)-new Date(l.checkIn))/60000));
-    const avgMins   = avgDur.length ? Math.round(avgDur.reduce((a,b)=>a+b,0)/avgDur.length) : 0;
-    const totalRev  = orders.filter(o=>{
-      const d=new Date(o.ts);
-      return (Date.now()-d)<=30*24*60*60*1000;
-    }).reduce((s,o)=>s+o.total,0);
-    const onTimePct = total > 0 ? Math.round(onTime/total*100) : 0;
-
-    el.innerHTML = `
+  async function renderStats(){
+    const now=new Date(),d30=new Date(now-30*24*60*60*1000);
+    const[logs,orders]=await Promise.all([
+      DB.select('schedule_logs',`date=gte.${toKey(d30)}&select=*`),
+      DB.select('orders',`created_at=gte.${d30.toISOString()}&select=total`),
+    ]);
+    const total=logs.length;
+    const onTime=logs.filter(l=>{if(!l.check_in)return false;const ci=new Date(l.check_in),ref=new Date(l.date+'T0'+OPEN_HOUR+':00:00');return Math.round((ci-ref)/60000)<=LATE_GRACE;}).length;
+    const late=total-onTime;
+    const durs=logs.filter(l=>l.check_in&&l.check_out).map(l=>Math.round((new Date(l.check_out)-new Date(l.check_in))/60000));
+    const avgMins=durs.length?Math.round(durs.reduce((a,b)=>a+b,0)/durs.length):0;
+    const totalRev=orders.reduce((s,o)=>s+o.total,0);
+    const onTimePct=total>0?Math.round(onTime/total*100):0;
+    document.getElementById('content').innerHTML=`
       <div class="info-box">Thống kê 30 ngày gần nhất · ${total} ca đã ghi nhận</div>
       <div class="stat-grid">
-        <div class="stat-card full">
-          <div class="stat-label">Tỷ lệ đúng giờ</div>
-          <div class="stat-value${onTimePct>=80?' green':' red'}">${onTimePct}%</div>
-          <div class="stat-sub">${onTime}/${total} ca đúng giờ</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Số ca đúng giờ</div>
-          <div class="stat-value green">${onTime}</div>
-          <div class="stat-sub">ca</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Số ca trễ</div>
-          <div class="stat-value${late>0?' red':''}">${late}</div>
-          <div class="stat-sub">ca trễ > ${LATE_GRACE} phút</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Thời gian trung bình</div>
-          <div class="stat-value">${avgMins}</div>
-          <div class="stat-sub">phút / ca</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Doanh thu 30 ngày</div>
-          <div class="stat-value green" style="font-size:16px">${fmt(totalRev)}</div>
-          <div class="stat-sub">tổng cộng</div>
-        </div>
-      </div>
-    `;
+        <div class="stat-card full"><div class="stat-label">Tỷ lệ đúng giờ</div><div class="stat-value${onTimePct>=80?' green':' red'}">${onTimePct}%</div><div class="stat-sub">${onTime}/${total} ca đúng giờ</div></div>
+        <div class="stat-card"><div class="stat-label">Ca đúng giờ</div><div class="stat-value green">${onTime}</div><div class="stat-sub">ca</div></div>
+        <div class="stat-card"><div class="stat-label">Ca trễ</div><div class="stat-value${late>0?' red':''}">${late}</div><div class="stat-sub">ca trễ > ${LATE_GRACE} phút</div></div>
+        <div class="stat-card"><div class="stat-label">Thời gian TB</div><div class="stat-value">${avgMins}</div><div class="stat-sub">phút / ca</div></div>
+        <div class="stat-card"><div class="stat-label">Doanh thu 30 ngày</div><div class="stat-value green" style="font-size:16px">${fmt(totalRev)}</div></div>
+      </div>`;
   }
 
-  function toast(msg){
-    const t=document.getElementById('toast');
-    t.textContent=msg;t.style.opacity='1';
-    clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2200);
-  }
-
-  render();
-  // Tự refresh tab hôm nay mỗi phút để cập nhật progress bar
-  setInterval(()=>{ if(activeTab===1) render(); }, 60000);
+  function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2200);}
+  loadAndRender();
+  setInterval(()=>{if(activeTab===1)renderToday();},60000);
 </script>
 </body>
 </html>
