@@ -23,6 +23,7 @@ fnbapp/
 │   ├── pos/index.html
 │   ├── inventory/index.html
 │   ├── purchasing/index.html
+│   ├── assets/index.html
 │   ├── contacts/index.html
 │   ├── menu/index.html
 │   ├── revenue/index.html
@@ -79,6 +80,17 @@ Quản lý:
 - SKU: tab "Danh mục SKU" trong Inventory (owner only), mã tự sinh NVL-/VTU-/CCU-XXX
 - Đơn vị tính SKU: thêm/xoá sku_units inline trong sheet SKU
 - Nhà cung cấp & liên lạc: module Contacts riêng (xem Migration 005)
+
+### Migration 006 — Assets (10/04/2026) ✅
+Bảng mới:
+- `assets` — tài sản (asset_code tự sinh TS-001..., name, asset_type, status, location, assigned_to→users, purchase_date, purchase_price, supplier_id→suppliers, useful_life_months, salvage_value, note, active)
+- RLS enabled, policy allow_all_assets
+
+Tính năng:
+- Khấu hao đường thẳng: (purchase_price - salvage_value) / useful_life_months
+- Group by: loại tài sản hoặc trạng thái
+- Lọc theo status + asset_type, tìm kiếm tên/mã/loại
+- Progress bar giá trị còn lại
 
 ### Migration 005 — Contacts (cần chạy trong Supabase Dashboard)
 ```sql
@@ -150,6 +162,7 @@ Còn nợ = Tổng - Đã TT
 | Báo cáo tài chính P&L | — | ✓ | ✓ |
 | Lịch trình | — | ✓ | ✓ |
 | Quản lý nguyên liệu | — | ✓ | ✓ |
+| Xem & quản lý tài sản | — | ✓ | ✓ |
 | Quản lý SKU & đơn vị tính | — | — | ✓ |
 | Xem Liên lạc | — | ✓ | ✓ |
 | Quản lý Liên lạc (CRUD) | — | — | ✓ |
@@ -216,6 +229,7 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 | Schedule | src/schedule/ | ✓ |
 | Menu      | src/menu/      | ✓ Done (tách từ Settings) |
 | Settings  | src/settings/  | ✓ Done (Menu → trang riêng) |
+| Assets    | src/assets/    | ✓ Done — cần Migration 006 |
 | Contacts  | src/contacts/  | ✓ Done (NCC · KH · NQ · Khác) — cần Migration 005 |
 
 ---

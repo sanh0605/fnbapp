@@ -109,7 +109,7 @@
       const todayEnd=new Date(today);todayEnd.setHours(23,59,59,999);
       const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
 
-      const[todayOrders,monthOrders,rawStock,semiStock,supplies,scheduleToday,activeProducts]=await Promise.all([
+      const[todayOrders,monthOrders,rawStock,semiStock,supplies,scheduleToday,activeProducts,activeAssets]=await Promise.all([
         DB.select('orders',`created_at=gte.${todayStart.toISOString()}&created_at=lte.${todayEnd.toISOString()}&select=total`),
         DB.select('orders',`created_at=gte.${monthStart.toISOString()}&select=total`),
         DB.select('raw_stock','select=id,quantity'),
@@ -117,6 +117,7 @@
         DB.select('supplies','select=id,quantity,warn_at,category'),
         DB.select('schedule_logs',`date=eq.${todayKey}&select=*`),
         DB.select('products','active=eq.true&select=id'),
+        DB.select('assets','active=eq.true&select=id'),
       ]);
 
       const todayRev=todayOrders.reduce((s,o)=>s+o.total,0);
@@ -138,7 +139,7 @@
       const refOpen=new Date(today);refOpen.setHours(6,0,0,0);
       const shouldCheckin=!checkedIn&&today>=refOpen;
 
-      renderDashboard({todayRev,monthRev,todayCount,totalLow,checkedIn,checkedOut,shouldCheckin,activeProductCount:activeProducts.length});
+      renderDashboard({todayRev,monthRev,todayCount,totalLow,checkedIn,checkedOut,shouldCheckin,activeProductCount:activeProducts.length,activeAssetCount:activeAssets.length});
     } catch(e){
       document.getElementById('scroll').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi: ${e.message}</div>`;
     }
@@ -212,6 +213,11 @@
     if(isOwner) html+=`<a href="../menu/index.html" class="module-card">
       <div class="mc-icon" style="background:#FAEEDA"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>
       <div><div class="mc-name">Menu</div><div class="mc-stat">Sản phẩm & công thức</div><span class="mc-badge badge-yellow">${d.activeProductCount} sản phẩm</span></div>
+    </a>`;
+
+    if(canEdit) html+=`<a href="../assets/index.html" class="module-card">
+      <div class="mc-icon" style="background:#EEEDFE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <div><div class="mc-name">Tài sản</div><div class="mc-stat">Dụng cụ · Thiết bị · Xe</div><span class="mc-badge badge-purple">${d.activeAssetCount} tài sản</span></div>
     </a>`;
 
     if(isOwner) html+=`<a href="../contacts/index.html" class="module-card">
