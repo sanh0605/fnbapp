@@ -14,7 +14,7 @@
     .logo-name{font-size:22px;font-weight:700;color:#1a1a18;letter-spacing:-.5px}
     .logo-sub{font-size:13px;color:#888}
     .card{width:100%;background:#fff;border-radius:20px;border:0.5px solid #e8e6e0;padding:24px 20px;display:flex;flex-direction:column;gap:16px}
-    .card-title{font-size:16px;font-weight:600;color:#1a1a18}
+    .card-title{font-size:16px;font-weight:600}
     .field{display:flex;flex-direction:column;gap:6px}
     .field label{font-size:12px;color:#888;font-weight:500}
     .field input{width:100%;padding:12px 14px;border:0.5px solid #e8e6e0;border-radius:12px;font-size:15px;color:#1a1a18;background:#f5f5f0;font-family:inherit;transition:border-color .15s}
@@ -25,9 +25,8 @@
     .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888;padding:4px;display:flex;align-items:center;justify-content:center}
     .error-msg{font-size:13px;color:#A32D2D;background:#FCEBEB;border-radius:10px;padding:10px 14px;display:none;align-items:center;gap:8px}
     .error-msg.show{display:flex}
-    .submit-btn{width:100%;padding:14px;border-radius:14px;border:none;background:#1D9E75;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+    .submit-btn{width:100%;padding:14px;border-radius:14px;border:none;background:#1D9E75;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
     .submit-btn:active{background:#0F6E56}
-    .submit-btn:disabled{background:#d8d6d0;cursor:default}
     .loading{display:none;flex-direction:column;align-items:center;gap:12px;padding:8px 0}
     .loading.show{display:flex}
     .spinner{width:28px;height:28px;border:2.5px solid #e8e6e0;border-top-color:#1D9E75;border-radius:50%;animation:spin .7s linear infinite}
@@ -55,7 +54,8 @@
     <div><div class="card-title">Đăng nhập</div></div>
     <div class="field">
       <label>Tài khoản</label>
-      <input type="text" id="username" placeholder="Nhập tài khoản" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <input type="text" id="username" placeholder="Nhập tài khoản"
+        autocomplete="username" autocapitalize="none" spellcheck="false">
     </div>
     <div class="field">
       <label>Mật khẩu</label>
@@ -82,49 +82,72 @@
   <div class="version">FNB App v2.0 — Powered by Supabase</div>
 
   <script src="../lib/supabase.js"></script>
-  <script src="auth.js"></script>
   <script>
-    // Nếu đã đăng nhập → về home
-    if (Auth.isLoggedIn()) window.location.href = '../home/index.html';
+    const PERMISSIONS = {
+      owner:   ['pos','inventory_view','inventory_edit','revenue','finance','schedule','recipe','menu','payment_settings','user_settings'],
+      manager: ['pos','inventory_view','inventory_edit','revenue','finance','schedule'],
+      staff:   ['pos','inventory_view'],
+    };
 
-    async function login() {
+    // Nếu đã đăng nhập → redirect đúng trang
+    try {
+      const s = JSON.parse(localStorage.getItem('fnb_session')||'null');
+      if(s?.role){
+        window.location.href = s.role === 'staff' ? '../pos/index.html' : '../home/index.html';
+      }
+    } catch(e){ localStorage.removeItem('fnb_session'); }
+
+    async function login(){
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
-      if (!username || !password) { showError('Vui lòng nhập đầy đủ tài khoản và mật khẩu'); return; }
+      if(!username||!password){ showError('Vui lòng nhập đầy đủ tài khoản và mật khẩu'); return; }
       showLoading(true); hideError();
       try {
         const users = await DB.select('users',
           `username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(password)}&active=eq.true&select=*`
         );
-        if (!users || users.length === 0) {
+        if(!users||!users.length){
           showLoading(false);
           showError('Tài khoản hoặc mật khẩu không đúng');
-          document.getElementById('password').value = '';
+          document.getElementById('password').value='';
           return;
         }
-        Auth.setSession(users[0]);
-        window.location.href = '../home/index.html';
-      } catch (e) {
+        const user = users[0];
+        localStorage.setItem('fnb_session', JSON.stringify({
+          id:          user.id,
+          username:    user.username,
+          name:        user.name,
+          role:        user.role,
+          permissions: PERMISSIONS[user.role]||[],
+          loginAt:     new Date().toISOString(),
+        }));
+        // Routing theo role
+        if(user.role === 'staff'){
+          window.location.href = '../pos/index.html';
+        } else {
+          window.location.href = '../home/index.html';
+        }
+      } catch(e){
         showLoading(false);
         showError('Lỗi kết nối. Vui lòng thử lại.');
       }
     }
 
-    function togglePw() {
-      const input = document.getElementById('password'), icon = document.getElementById('eyeIcon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+    function togglePw(){
+      const input=document.getElementById('password'),icon=document.getElementById('eyeIcon');
+      if(input.type==='password'){
+        input.type='text';
+        icon.innerHTML=`<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
       } else {
-        input.type = 'password';
-        icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+        input.type='password';
+        icon.innerHTML=`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
       }
     }
 
-    function showError(msg) { document.getElementById('errorText').textContent = msg; document.getElementById('errorMsg').classList.add('show'); }
-    function hideError()    { document.getElementById('errorMsg').classList.remove('show'); }
-    function showLoading(s) { document.getElementById('loading').classList.toggle('show', s); document.getElementById('submitBtn').style.display = s ? 'none' : 'block'; }
-    document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+    function showError(msg){ document.getElementById('errorText').textContent=msg; document.getElementById('errorMsg').classList.add('show'); }
+    function hideError(){ document.getElementById('errorMsg').classList.remove('show'); }
+    function showLoading(s){ document.getElementById('loading').classList.toggle('show',s); document.getElementById('submitBtn').style.display=s?'none':'block'; }
+    document.addEventListener('keydown', e=>{ if(e.key==='Enter') login(); });
   </script>
 </body>
 </html>
