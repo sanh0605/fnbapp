@@ -81,6 +81,18 @@ Quản lý:
 - Đơn vị tính SKU: thêm/xoá sku_units inline trong sheet SKU
 - Nhà cung cấp & liên lạc: module Contacts riêng (xem Migration 005)
 
+### Migration 007 — Seed SKUs thực tế (11/04/2026) ✅
+Seed dữ liệu thực tế:
+- `raw_materials`: thêm 11 nguyên liệu mới (cà phê robusta/phin đậm, đường trắng, bột cacao DK, milk foam, matcha cozy, sữa đặc Vinamilk/Ngôi Sao/La rosee, sữa tươi TH/Mlekovita)
+- `supplies`: thêm 11 vật tư tiêu hao (ly PET98, nắp, ống hút, muỗng, túi chữ T, túi đôi, giấy lót, găng tay, khăn lau, túi rác, túi lọc) + 37 công cụ dụng cụ (category='equipment')
+- `sku_items`: 60 SKU — NVL-CF/DT/CA/MF/MT/SD/ST (nguyên liệu), VTU-LY/NP/OH/MG/TT/TD/GL/GT/KL/TR/TL (vật tư), CCU-xxx (dụng cụ)
+- `sku_units`: quy đổi đơn vị cho tất cả SKU
+
+Schema đã ALTER trước khi chạy (anh tự chạy trực tiếp trên Supabase):
+- `raw_materials`: thêm cột `icon`, `warn_at`, `color`
+- `sku_items`: thêm cột `type`, `map_to_id`, `map_to_type`, `base_unit`
+- `sku_units`: thêm cột `to_base`, `description`
+
 ### Migration 006 — Assets (10/04/2026) ✅
 Bảng mới:
 - `assets` — tài sản (asset_code tự sinh TS-001..., name, asset_type, status, location, assigned_to→users, purchase_date, purchase_price, supplier_id→suppliers, useful_life_months, salvage_value, note, active)
