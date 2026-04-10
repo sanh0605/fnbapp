@@ -22,7 +22,7 @@ fnbapp/
 │   ├── home/index.html
 │   ├── pos/index.html
 │   ├── inventory/index.html
-│   ├── purchasing/index.html       ← đang viết lại
+│   ├── purchasing/index.html
 │   ├── revenue/index.html
 │   ├── finance/index.html
 │   ├── schedule/index.html
@@ -72,6 +72,11 @@ Seed mẫu:
 - suppliers: NCC-001 (Nhà cung cấp chung)
 - sku_items: NVL-SUA-MLK (Sữa tươi Mlekovita → map_to: sua_tuoi)
 - sku_units: ml/hộp/thùng cho Mlekovita
+
+Quản lý qua Settings (owner only):
+- Nhà cung cấp: CRUD đầy đủ, mã tự sinh NCC-001/002..., hỗ trợ direct/shopee/lazada/tiktok/other
+- SKU: CRUD đầy đủ, mã tự sinh NVL-/VTU-/CCU-XXX theo loại, map_to dropdown raw_materials/supplies
+- Đơn vị tính SKU: thêm/xoá sku_units (unit_name, to_base, description) inline trong sheet SKU
 
 ---
 
@@ -195,7 +200,7 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 | Revenue | src/revenue/ | ✓ |
 | Finance | src/finance/ | ✓ |
 | Schedule | src/schedule/ | ✓ |
-| Settings | src/settings/ | 🔄 Cần thêm SKU & Suppliers |
+| Settings | src/settings/ | ✓ Done (suppliers + SKU qua Settings) |
 
 ---
 
