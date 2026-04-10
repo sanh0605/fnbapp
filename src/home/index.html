@@ -25,6 +25,7 @@
     .tb-sub{font-size:12px;color:#9FE1CB;margin-top:3px}
     .tb-orders{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:#fff}
     .checkin-alert{background:#FAEEDA;border-radius:14px;padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;border:0.5px solid #FAC775}
+    .checkin-alert:active{background:#FAC77540}
     .alert-icon{width:36px;height:36px;border-radius:10px;background:#EF9F2730;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .alert-title{font-size:13px;font-weight:600;color:#633806}
     .alert-sub{font-size:12px;color:#BA7517;margin-top:2px}
@@ -52,11 +53,10 @@
     .badge-yellow{background:#FAEEDA;color:#633806}
     .badge-blue{background:#E6F1FB;color:#0C447C}
     .badge-gray{background:#f5f5f0;color:#888}
+    .badge-purple{background:#EEEDFE;color:#3C3489}
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
     .overlay.show{display:flex}
     .sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
-    .sheet-title{font-size:15px;font-weight:600;color:#1a1a18;text-align:center}
-    .sheet-sub{font-size:13px;color:#888;text-align:center}
     .sheet-btn{padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
     .sheet-btn.red{background:#FCEBEB;color:#A32D2D}
     .sheet-btn.gray{background:#f5f5f0;color:#1a1a18;border:0.5px solid #e8e6e0}
@@ -80,8 +80,8 @@
 
 <div class="overlay" id="logoutOverlay" onclick="hideLogout()">
   <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-title">Đăng xuất?</div>
-    <div class="sheet-sub" id="logoutSub"></div>
+    <div style="font-size:15px;font-weight:600;text-align:center">Đăng xuất?</div>
+    <div style="font-size:13px;color:#888;text-align:center" id="logoutSub"></div>
     <button class="sheet-btn red" onclick="Auth.logout()">Đăng xuất</button>
     <button class="sheet-btn gray" onclick="hideLogout()">Huỷ</button>
   </div>
@@ -105,15 +105,16 @@
 
   async function loadDashboard(){
     try {
-      const monthStart=new Date(today.getFullYear(),today.getMonth(),1).toISOString();
       const todayStart=new Date(today);todayStart.setHours(0,0,0,0);
       const todayEnd=new Date(today);todayEnd.setHours(23,59,59,999);
+      const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
 
-      const[todayOrders,monthOrders,rawStock,semiStock,scheduleToday]=await Promise.all([
+      const[todayOrders,monthOrders,rawStock,semiStock,supplies,scheduleToday]=await Promise.all([
         DB.select('orders',`created_at=gte.${todayStart.toISOString()}&created_at=lte.${todayEnd.toISOString()}&select=total`),
-        DB.select('orders',`created_at=gte.${monthStart}&select=total`),
+        DB.select('orders',`created_at=gte.${monthStart.toISOString()}&select=total`),
         DB.select('raw_stock','select=id,quantity'),
         DB.select('semi_stock','select=id,quantity'),
+        DB.select('supplies','select=id,quantity,warn_at,category'),
         DB.select('schedule_logs',`date=eq.${todayKey}&select=*`),
       ]);
 
@@ -121,13 +122,15 @@
       const monthRev=monthOrders.reduce((s,o)=>s+o.total,0);
       const todayCount=todayOrders.length;
 
-      const RAW_WARN={ca_phe_bot:300,cacao_bot:200,matcha_bot:100,bot_kem_muoi:100,sua_dac:300,sua_tuoi:500,duong:500};
-      const SEMI_WARN={cot_ca_phe:200,cot_cacao:200,cot_matcha:200,kem_muoi:100,nuoc_duong:100};
+      // Tồn kho thấp
       const rawMap={};rawStock.forEach(r=>rawMap[r.id]=parseFloat(r.quantity)||0);
       const semiMap={};semiStock.forEach(s=>semiMap[s.id]=parseFloat(s.quantity)||0);
+      const RAW_WARN={ca_phe_bot:300,cacao_bot:200,matcha_bot:100,bot_kem_muoi:100,sua_dac:300,sua_tuoi:500,duong:500};
+      const SEMI_WARN={cot_ca_phe:200,cot_cacao:200,cot_matcha:200,kem_muoi:100,nuoc_duong:100};
       const lowRaw=Object.keys(RAW_WARN).filter(k=>rawMap[k]<=RAW_WARN[k]).length;
       const lowSemi=Object.keys(SEMI_WARN).filter(k=>semiMap[k]<=SEMI_WARN[k]).length;
-      const totalLow=lowRaw+lowSemi;
+      const lowSupply=supplies.filter(s=>s.category==='consumable'&&(parseFloat(s.quantity)||0)<=(s.warn_at||0)).length;
+      const totalLow=lowRaw+lowSemi+lowSupply;
 
       const todayLog=scheduleToday&&scheduleToday.length?scheduleToday[0]:null;
       const checkedIn=!!todayLog?.check_in,checkedOut=!!todayLog?.check_out;
@@ -136,14 +139,19 @@
 
       renderDashboard({todayRev,monthRev,todayCount,totalLow,checkedIn,checkedOut,shouldCheckin});
     } catch(e){
-      document.getElementById('scroll').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi tải dữ liệu: ${e.message}</div>`;
+      document.getElementById('scroll').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi: ${e.message}</div>`;
     }
   }
 
   function renderDashboard(d){
-    const canRevenue=Auth.can('revenue'),canFinance=Auth.can('finance'),canInventory=Auth.can('inventory_view');
+    const canRevenue=Auth.can('revenue');
+    const canFinance=Auth.can('finance');
+    const canInventory=Auth.can('inventory_view');
+    const canEdit=Auth.can('inventory_edit');
+    const isOwner=Auth.getRole()==='owner';
     let html='';
 
+    // Cảnh báo check-in
     if(d.shouldCheckin){
       html+=`<a href="../schedule/index.html" class="checkin-alert">
         <div class="alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
@@ -152,6 +160,7 @@
       </a>`;
     }
 
+    // Banner doanh thu
     if(canRevenue){
       html+=`<a href="../revenue/index.html" class="today-banner">
         <div><div class="tb-label">Doanh thu hôm nay</div><div class="tb-revenue">${fmt(d.todayRev)}</div><div class="tb-sub">${d.todayCount} đơn · ${today.toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'numeric'})}</div></div>
@@ -164,23 +173,54 @@
       </div>`;
     }
 
+    // Nút POS
     html+=`<a href="../pos/index.html" class="pos-btn">
       <div class="pos-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
       <div style="flex:1"><div class="pos-title">Bán hàng</div><div class="pos-sub">Mở màn hình POS</div></div>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </a>`;
 
+    // Module grid
     html+=`<div class="section-title">Quản lý</div><div class="module-grid">`;
-    if(canInventory) html+=`<a href="../inventory/index.html" class="module-card"><div class="mc-icon" style="background:#FAEEDA"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div><div class="mc-name">Nguyên liệu</div><div class="mc-stat">Tồn kho & pha chế</div>${d.totalLow>0?`<span class="mc-badge badge-red">${d.totalLow} mục thấp</span>`:'<span class="mc-badge badge-green">Đủ hàng</span>'}</div></a>`;
-    html+=`<a href="../schedule/index.html" class="module-card"><div class="mc-icon" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="mc-name">Lịch trình</div><div class="mc-stat">Check-in · Check-out</div>${d.checkedIn&&!d.checkedOut?'<span class="mc-badge badge-green">Đang bán</span>':d.checkedOut?'<span class="mc-badge badge-gray">Xong hôm nay</span>':'<span class="mc-badge badge-yellow">Chưa check-in</span>'}</div></a>`;
-    if(canRevenue) html+=`<a href="../revenue/index.html" class="module-card"><div class="mc-icon" style="background:#E6F1FB"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><div class="mc-name">Doanh thu</div><div class="mc-stat">Báo cáo bán hàng</div><span class="mc-badge badge-blue">${fmt(d.todayRev)} hôm nay</span></div></a>`;
-    if(canFinance) html+=`<a href="../finance/index.html" class="module-card"><div class="mc-icon" style="background:#EEEDFE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div><div class="mc-name">Tài chính</div><div class="mc-stat">P&L · Chi phí · Giá vốn</div><span class="mc-badge badge-blue">Tháng ${today.getMonth()+1}</span></div></a>`;
+
+    if(canInventory) html+=`<a href="../inventory/index.html" class="module-card">
+      <div class="mc-icon" style="background:#FAEEDA"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+      <div><div class="mc-name">Nguyên liệu</div><div class="mc-stat">Tồn kho & pha chế</div>${d.totalLow>0?`<span class="mc-badge badge-red">${d.totalLow} mục thấp</span>`:'<span class="mc-badge badge-green">Đủ hàng</span>'}</div>
+    </a>`;
+
+    if(canEdit) html+=`<a href="../purchasing/index.html" class="module-card">
+      <div class="mc-icon" style="background:#E6F1FB"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+      <div><div class="mc-name">Nhập hàng</div><div class="mc-stat">Phiếu nhập · Giá vốn</div><span class="mc-badge badge-blue">Tạo phiếu nhập</span></div>
+    </a>`;
+
+    html+=`<a href="../schedule/index.html" class="module-card">
+      <div class="mc-icon" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div><div class="mc-name">Lịch trình</div><div class="mc-stat">Check-in · Check-out</div>${d.checkedIn&&!d.checkedOut?'<span class="mc-badge badge-green">Đang bán</span>':d.checkedOut?'<span class="mc-badge badge-gray">Xong hôm nay</span>':'<span class="mc-badge badge-yellow">Chưa check-in</span>'}</div>
+    </a>`;
+
+    if(canRevenue) html+=`<a href="../revenue/index.html" class="module-card">
+      <div class="mc-icon" style="background:#E6F1FB"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div><div class="mc-name">Doanh thu</div><div class="mc-stat">Báo cáo bán hàng</div><span class="mc-badge badge-blue">${fmt(d.todayRev)} hôm nay</span></div>
+    </a>`;
+
+    if(canFinance) html+=`<a href="../finance/index.html" class="module-card">
+      <div class="mc-icon" style="background:#EEEDFE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div><div class="mc-name">Tài chính</div><div class="mc-stat">P&L · Chi phí · Giá vốn</div><span class="mc-badge badge-purple">Tháng ${today.getMonth()+1}</span></div>
+    </a>`;
+
+    // Cài đặt — tất cả roles
+    html+=`<a href="../settings/index.html" class="module-card">
+      <div class="mc-icon" style="background:#f5f5f0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      <div><div class="mc-name">Cài đặt</div><div class="mc-stat">${isOwner?'Tài khoản · Menu · Hệ thống':'Đổi mật khẩu'}</div><span class="mc-badge badge-gray">${Auth.getRole()}</span></div>
+    </a>`;
+
     html+=`</div>`;
     document.getElementById('scroll').innerHTML=html;
   }
 
   function showLogout(){document.getElementById('logoutSub').textContent=session?`Đang đăng nhập: ${session.name}`:'';document.getElementById('logoutOverlay').classList.add('show');}
   function hideLogout(){document.getElementById('logoutOverlay').classList.remove('show');}
+
   loadDashboard();
 </script>
 </body>

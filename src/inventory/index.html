@@ -11,11 +11,12 @@
     .header{background:#fff;padding:10px 16px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
     .header-left{display:flex;align-items:center;gap:10px}
     .back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;text-decoration:none}
-    .header-title{font-size:15px;font-weight:600;color:#1a1a18}
+    .header-title{font-size:15px;font-weight:600}
     .icon-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;font-family:inherit}
     .icon-btn:active{background:#e8e6e0}
-    .tabs{background:#fff;display:flex;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
-    .tab{flex:1;padding:10px 0;font-size:13px;font-weight:500;color:#888;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none}
+    .tabs{background:#fff;display:flex;border-bottom:0.5px solid #e8e6e0;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{flex-shrink:0;padding:10px 16px;font-size:13px;font-weight:500;color:#888;text-align:center;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none}
     .tab.active{color:#1D9E75;border-bottom-color:#1D9E75}
     .content{flex:1;overflow-y:auto;padding:12px 14px 24px;display:flex;flex-direction:column;gap:8px}
     .stock-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:13px 14px;display:flex;align-items:center;gap:12px}
@@ -23,7 +24,7 @@
     .stock-card.danger{border-color:#F09595}
     .stock-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
     .stock-info{flex:1;min-width:0}
-    .stock-name{font-size:14px;font-weight:500;color:#1a1a18}
+    .stock-name{font-size:14px;font-weight:500}
     .stock-detail{font-size:12px;color:#888;margin-top:2px}
     .stock-bar{height:3px;background:#e8e6e0;border-radius:2px;margin-top:6px;overflow:hidden}
     .stock-bar-fill{height:100%;border-radius:2px}
@@ -31,7 +32,7 @@
     .stock-bar-fill.warn{background:#EF9F27}
     .stock-bar-fill.danger{background:#E24B4A}
     .stock-amount{text-align:right;flex-shrink:0}
-    .stock-num{font-size:16px;font-weight:600;color:#1a1a18}
+    .stock-num{font-size:16px;font-weight:600}
     .stock-num.warn{color:#BA7517}
     .stock-num.danger{color:#A32D2D}
     .stock-unit{font-size:11px;color:#888}
@@ -39,28 +40,24 @@
     .can-make-card.zero{opacity:.5}
     .cm-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
     .cm-info{flex:1}
-    .cm-name{font-size:14px;font-weight:500;color:#1a1a18}
+    .cm-name{font-size:14px;font-weight:500}
     .cm-detail{font-size:12px;color:#888;margin-top:2px}
     .cm-count{font-size:20px;font-weight:700;color:#1D9E75;flex-shrink:0}
     .cm-count.zero{color:#888}
     .cm-unit{font-size:11px;color:#888;text-align:right}
-
-    /* Phiếu nhập kho */
     .receipt-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;overflow:hidden}
     .receipt-header{padding:12px 14px;border-bottom:0.5px solid #e8e6e0;display:flex;justify-content:space-between;align-items:center}
-    .receipt-title{font-size:13px;font-weight:500;color:#1a1a18}
+    .receipt-title{font-size:13px;font-weight:500}
     .receipt-row{padding:10px 14px;border-bottom:0.5px solid #e8e6e0;display:flex;gap:10px;align-items:center}
     .receipt-row:last-child{border-bottom:none}
     .receipt-info{flex:1}
-    .receipt-name{font-size:13px;font-weight:500;color:#1a1a18}
+    .receipt-name{font-size:13px;font-weight:500}
     .receipt-detail{font-size:12px;color:#888;margin-top:2px}
-    .receipt-amount{font-size:13px;font-weight:500;color:#1a1a18;text-align:right}
-    .receipt-price{font-size:11px;color:#888;text-align:right}
-
+    .receipt-amount{font-size:13px;font-weight:500;text-align:right}
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
     .overlay.show{display:flex}
     .sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;max-height:85dvh;overflow-y:auto}
-    .sheet-title{font-size:15px;font-weight:600;color:#1a1a18}
+    .sheet-title{font-size:15px;font-weight:600}
     .sheet-sub{font-size:13px;color:#888;margin-top:-8px}
     .field{display:flex;flex-direction:column;gap:6px}
     .field label{font-size:12px;color:#888;font-weight:500}
@@ -71,8 +68,9 @@
     .sheet-btn.primary:active{background:#0F6E56}
     .sheet-btn.secondary{background:#f5f5f0;color:#1a1a18;border:0.5px solid #e8e6e0}
     .brew-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #e8e6e0}
+    .brew-item:last-child{border-bottom:none}
     .brew-info{flex:1}
-    .brew-name{font-size:14px;font-weight:500;color:#1a1a18}
+    .brew-name{font-size:14px;font-weight:500}
     .brew-recipe{font-size:12px;color:#888;margin-top:2px}
     .brew-btn{padding:7px 14px;border-radius:20px;border:0.5px solid #1D9E75;background:#E1F5EE;color:#085041;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit}
     .brew-btn:disabled{opacity:.4;cursor:default}
@@ -90,38 +88,11 @@
     </a>
     <span class="header-title">Nguyên liệu</span>
   </div>
-  <div style="display:flex;gap:8px">
-    <button class="icon-btn" onclick="showImport()" title="Phiếu nhập kho">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
-    <button class="icon-btn" onclick="showBrew()" title="Pha bán thành phẩm">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-    </button>
-  </div>
+  <div style="display:flex;gap:8px" id="headerBtns"></div>
 </div>
-<div class="tabs">
-  <button class="tab active" id="tab1" onclick="switchTab(1)">Nguyên liệu thô</button>
-  <button class="tab"        id="tab2" onclick="switchTab(2)">Bán thành phẩm</button>
-  <button class="tab"        id="tab3" onclick="switchTab(3)">Ly có thể pha</button>
-  <button class="tab"        id="tab4" onclick="switchTab(4)">Lịch sử nhập</button>
-</div>
-<div class="content" id="content"><div class="empty">Đang tải...</div></div>
 
-<!-- Phiếu nhập kho -->
-<div class="overlay" id="importOverlay" onclick="hideImport()">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-title">Phiếu nhập kho</div>
-    <div class="sheet-sub">Nhập nguyên liệu thô — giá vốn BQ tự động cập nhật</div>
-    <div class="field"><label>Nguyên liệu</label><select id="importItem"></select></div>
-    <div class="field"><label>Số lượng nhập</label><input type="number" id="importQty" placeholder="0" min="0" step="any"></div>
-    <div class="field"><label>Giá nhập lần này (₫)</label><input type="number" id="importPrice" placeholder="0" min="0" step="1000"></div>
-    <div class="field"><label>Nhà cung cấp (tuỳ chọn)</label><input type="text" id="importSupplier" placeholder="Tên nhà cung cấp..."></div>
-    <div class="field"><label>Ghi chú</label><input type="text" id="importNote" placeholder="Ghi chú thêm..."></div>
-    <div id="importInfo" style="font-size:13px;color:#888;background:#f5f5f0;border-radius:10px;padding:10px 14px;line-height:1.7"></div>
-    <button class="sheet-btn primary" onclick="doImport()">Tạo phiếu nhập kho</button>
-    <button class="sheet-btn secondary" onclick="hideImport()">Huỷ</button>
-  </div>
-</div>
+<div class="tabs" id="tabBar"></div>
+<div class="content" id="content"><div class="empty">Đang tải...</div></div>
 
 <!-- Pha bán thành phẩm -->
 <div class="overlay" id="brewOverlay" onclick="hideBrew()">
@@ -139,259 +110,238 @@
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('inventory_view');
-  const canEdit = Auth.can('inventory_edit');
-  const session = Auth.getSession();
-
-  const RAW_ITEMS = [
-    {id:'ca_phe_bot',   name:'Cà phê bột',   icon:'☕', unit:'g',  warnAt:300,  bg:'#FAEEDA'},
-    {id:'cacao_bot',    name:'Cacao bột',     icon:'🍫', unit:'g',  warnAt:200,  bg:'#BA751730'},
-    {id:'matcha_bot',   name:'Matcha bột',    icon:'🍵', unit:'g',  warnAt:100,  bg:'#C0DD9740'},
-    {id:'bot_kem_muoi', name:'Bột kem muối',  icon:'🧂', unit:'g',  warnAt:100,  bg:'#B5D4F440'},
-    {id:'sua_dac',      name:'Sữa đặc',       icon:'🥛', unit:'g',  warnAt:300,  bg:'#FAC77540'},
-    {id:'sua_tuoi',     name:'Sữa tươi',      icon:'🍼', unit:'ml', warnAt:500,  bg:'#E6F1FB'},
-    {id:'duong',        name:'Đường',          icon:'🍬', unit:'g',  warnAt:500,  bg:'#FAEEDA'},
-    {id:'nuoc',         name:'Nước',           icon:'💧', unit:'ml', warnAt:2000, bg:'#E6F1FB'},
-  ];
-
-  const SEMI_ITEMS = [
-    {id:'cot_ca_phe',  name:'Cốt cà phê',  icon:'☕', unit:'ml', warnAt:200, bg:'#FAEEDA',
-     recipe:[{id:'ca_phe_bot',amount:200},{id:'nuoc',amount:650}], yields:500},
-    {id:'cot_cacao',   name:'Cốt cacao',   icon:'🍫', unit:'ml', warnAt:200, bg:'#BA751730',
-     recipe:[{id:'cacao_bot',amount:200},{id:'nuoc',amount:1000}], yields:1000},
-    {id:'cot_matcha',  name:'Cốt matcha',  icon:'🍵', unit:'ml', warnAt:200, bg:'#C0DD9740',
-     recipe:[{id:'matcha_bot',amount:100},{id:'nuoc',amount:1000}], yields:1000},
-    {id:'kem_muoi',    name:'Kem muối',     icon:'🧂', unit:'g',  warnAt:100, bg:'#B5D4F440',
-     recipe:[{id:'bot_kem_muoi',amount:100},{id:'sua_tuoi',amount:200}], yields:300},
-    {id:'nuoc_duong',  name:'Nước đường',  icon:'🍬', unit:'ml', warnAt:100, bg:'#FAEEDA',
-     recipe:[{id:'duong',amount:600},{id:'nuoc',amount:1000}], yields:1000},
-  ];
-
-  const PRODUCTS = [
-    {id:1,name:'Cà phê đen',      icon:'☕',bg:'#FAEEDA',   ingredients:[{id:'cot_ca_phe',amount:60},{id:'nuoc_duong',amount:20}]},
-    {id:2,name:'Cà phê sữa',      icon:'☕',bg:'#FAC77540', ingredients:[{id:'cot_ca_phe',amount:50},{id:'sua_dac',amount:20}]},
-    {id:3,name:'Cà phê sữa tươi', icon:'☕',bg:'#EF9F2730', ingredients:[{id:'cot_ca_phe',amount:30},{id:'sua_dac',amount:30},{id:'sua_tuoi',amount:70}]},
-    {id:4,name:'Cà phê kem muối', icon:'☕',bg:'#B5D4F440', ingredients:[{id:'cot_ca_phe',amount:50},{id:'sua_dac',amount:20},{id:'kem_muoi',amount:30}]},
-    {id:5,name:'Matcha latte',    icon:'🍵',bg:'#C0DD9740', ingredients:[{id:'cot_matcha',amount:40},{id:'sua_dac',amount:30},{id:'sua_tuoi',amount:70}]},
-    {id:6,name:'Cacao latte',     icon:'🍫',bg:'#BA751730', ingredients:[{id:'cot_cacao',amount:40},{id:'sua_dac',amount:30},{id:'sua_tuoi',amount:70}]},
-  ];
+  const canEdit  = Auth.can('inventory_edit');
+  const canViewRaw = Auth.can('inventory_edit'); // manager/owner thấy nguyên liệu thô tổng
+  const session  = Auth.getSession();
 
   let activeTab = 1;
-  let rawStockData = {}, semiStockData = {};
+  let RAW_MATERIALS=[], SEMI_PRODUCTS=[], SEMI_RECIPES=[], SUPPLIES=[];
+  let rawStockData={}, semiStockData={}, productsData=[], productRecipes=[];
 
-  function switchTab(n){
-    activeTab=n;
-    [1,2,3,4].forEach(i=>document.getElementById('tab'+i).classList.toggle('active',i===n));
-    loadAndRender();
-  }
-
-  async function loadAndRender(){
-    document.getElementById('content').innerHTML='<div class="empty">Đang tải...</div>';
+  async function init(){
     try {
-      if(activeTab===1||activeTab===2||activeTab===3){
-        const [raw,semi] = await Promise.all([
-          DB.select('raw_stock','select=*'),
-          DB.select('semi_stock','select=*'),
-        ]);
-        raw.forEach(r=>rawStockData[r.id]=r);
-        semi.forEach(s=>semiStockData[s.id]=s);
+      const loads = [
+        DB.select('semi_products','select=*&order=name.asc'),
+        DB.select('semi_stock','select=*'),
+        DB.select('supplies','select=*&order=category.asc,name.asc'),
+        DB.select('products','active=eq.true&select=*&order=sort_order.asc'),
+        DB.select('product_recipes','select=*'),
+      ];
+      if(canViewRaw){
+        loads.push(DB.select('raw_materials','active=eq.true&select=*&order=name.asc'));
+        loads.push(DB.select('raw_stock','select=*'));
+        loads.push(DB.select('semi_recipes','select=*'));
       }
-      if(activeTab===1) renderRaw();
-      else if(activeTab===2) renderSemi();
-      else if(activeTab===3) renderCanMake();
-      else await renderReceipts();
+      const res = await Promise.all(loads);
+      SEMI_PRODUCTS = res[0];
+      res[1].forEach(s=>semiStockData[s.id]=s);
+      SUPPLIES = res[2];
+      productsData = res[3];
+      productRecipes = res[4];
+      if(canViewRaw){
+        RAW_MATERIALS = res[5];
+        res[6].forEach(r=>rawStockData[r.id]=r);
+        SEMI_RECIPES = res[7];
+      }
+      setupUI();
+      renderContent();
     } catch(e){
-      document.getElementById('content').innerHTML=`<div class="empty">Lỗi tải dữ liệu: ${e.message}</div>`;
+      document.getElementById('content').innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`;
     }
   }
 
-  function stockStatus(current, warnAt){
-    if(current<=0) return 'danger';
-    if(current<=warnAt) return 'warn';
-    return 'ok';
+  function setupUI(){
+    // Tabs theo quyền
+    const tabs = [];
+    if(canViewRaw) tabs.push({id:1,label:'Nguyên liệu thô'});
+    tabs.push({id:2,label:'Bán thành phẩm'});
+    tabs.push({id:3,label:'Vật tư'});
+    tabs.push({id:4,label:'Ly có thể pha'});
+    if(canViewRaw) tabs.push({id:5,label:'Lịch sử nhập'});
+
+    activeTab = tabs[0].id;
+    document.getElementById('tabBar').innerHTML = tabs.map(t=>
+      `<button class="tab${t.id===activeTab?' active':''}" id="tab${t.id}" onclick="switchTab(${t.id})">${t.label}</button>`
+    ).join('');
+
+    // Nút header theo quyền
+    const btns = document.getElementById('headerBtns');
+    if(canEdit){
+      btns.innerHTML = `
+        <button class="icon-btn" onclick="showBrew()" title="Pha bán thành phẩm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </button>`;
+    }
+  }
+
+  function switchTab(n){
+    activeTab=n;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    const el = document.getElementById('tab'+n);
+    if(el) el.classList.add('active');
+    renderContent();
+  }
+
+  function stockStatus(qty, warnAt){ return qty<=0?'danger':qty<=warnAt?'warn':'ok'; }
+
+  function renderContent(){
+    if(activeTab===1&&canViewRaw) renderRaw();
+    else if(activeTab===2) renderSemi();
+    else if(activeTab===3) renderSupplies();
+    else if(activeTab===4) renderCanMake();
+    else if(activeTab===5&&canViewRaw) renderReceipts();
   }
 
   function renderRaw(){
     const el=document.getElementById('content');
-    el.innerHTML=RAW_ITEMS.map(item=>{
+    el.innerHTML=RAW_MATERIALS.map(item=>{
       const d=rawStockData[item.id]||{quantity:0,avg_cost:0};
       const amt=parseFloat(d.quantity)||0;
-      const max=item.warnAt*5, pct=Math.min(100,Math.round(amt/max*100));
-      const st=stockStatus(amt,item.warnAt);
-      const avgCostDisplay = d.avg_cost>0 ? `· Giá BQ: ${Math.round(d.avg_cost*1000).toLocaleString('vi-VN')}₫/1000${item.unit}` : '';
+      const max=item.warn_at*5||500, pct=Math.min(100,Math.round(amt/max*100));
+      const st=stockStatus(amt,item.warn_at);
+      const avgText=d.avg_cost>0?` · BQ: ${Math.round(d.avg_cost*1000).toLocaleString('vi-VN')}₫/1000${item.unit}`:'';
       return `<div class="stock-card${st==='ok'?'':' '+st}">
-        <div class="stock-icon" style="background:${item.bg}">${item.icon}</div>
+        <div class="stock-icon" style="background:${item.color||'#f5f5f0'}">${item.icon}</div>
         <div class="stock-info">
           <div class="stock-name">${item.name}</div>
           <div class="stock-bar"><div class="stock-bar-fill ${st}" style="width:${pct}%"></div></div>
-          <div class="stock-detail">Cảnh báo < ${item.warnAt}${item.unit}${avgCostDisplay}</div>
+          <div class="stock-detail">Cảnh báo < ${item.warn_at}${item.unit}${avgText}</div>
         </div>
         <div class="stock-amount">
           <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('vi-VN')}</div>
           <div class="stock-unit">${item.unit}</div>
         </div>
       </div>`;
-    }).join('');
+    }).join('')||'<div class="empty">Chưa có nguyên liệu thô nào</div>';
   }
 
   function renderSemi(){
     const el=document.getElementById('content');
-    el.innerHTML=SEMI_ITEMS.map(item=>{
+    el.innerHTML=SEMI_PRODUCTS.map(item=>{
       const d=semiStockData[item.id]||{quantity:0};
       const amt=parseFloat(d.quantity)||0;
-      const max=item.warnAt*5, pct=Math.min(100,Math.round(amt/max*100));
-      const st=stockStatus(amt,item.warnAt);
-      const recipeText=item.recipe.map(r=>`${r.amount}${RAW_ITEMS.find(x=>x.id===r.id)?.unit||''} ${RAW_ITEMS.find(x=>x.id===r.id)?.name||r.id}`).join(' + ');
+      const max=item.warn_at*5||500, pct=Math.min(100,Math.round(amt/max*100));
+      const st=stockStatus(amt,item.warn_at);
       return `<div class="stock-card${st==='ok'?'':' '+st}">
-        <div class="stock-icon" style="background:${item.bg}">${item.icon}</div>
+        <div class="stock-icon" style="background:${item.color||'#f5f5f0'}">${item.icon}</div>
         <div class="stock-info">
           <div class="stock-name">${item.name}</div>
           <div class="stock-bar"><div class="stock-bar-fill ${st}" style="width:${pct}%"></div></div>
-          <div class="stock-detail">${recipeText} → ${item.yields}${item.unit}</div>
+          <div class="stock-detail">Cảnh báo < ${item.warn_at}${item.unit} · Yield: ${item.yields}${item.unit}/mẻ</div>
         </div>
         <div class="stock-amount">
           <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('vi-VN')}</div>
           <div class="stock-unit">${item.unit}</div>
         </div>
       </div>`;
-    }).join('');
+    }).join('')||'<div class="empty">Chưa có bán thành phẩm nào</div>';
+  }
+
+  function renderSupplies(){
+    const el=document.getElementById('content');
+    const consumables=SUPPLIES.filter(s=>s.category==='consumable');
+    const equipment=SUPPLIES.filter(s=>s.category==='equipment');
+    let html='';
+    if(consumables.length){
+      html+=`<div class="section-title">Vật tư tiêu hao</div>`;
+      html+=consumables.map(s=>{
+        const amt=parseFloat(s.quantity)||0;
+        const st=stockStatus(amt,s.warn_at);
+        const max=s.warn_at*5||100, pct=Math.min(100,Math.round(amt/max*100));
+        return `<div class="stock-card${st==='ok'?'':' '+st}">
+          <div class="stock-icon" style="background:#f5f5f0">📦</div>
+          <div class="stock-info">
+            <div class="stock-name">${s.name}</div>
+            <div class="stock-bar"><div class="stock-bar-fill ${st}" style="width:${pct}%"></div></div>
+            <div class="stock-detail">Cảnh báo < ${s.warn_at} ${s.unit}</div>
+          </div>
+          <div class="stock-amount">
+            <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('vi-VN')}</div>
+            <div class="stock-unit">${s.unit}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    if(equipment.length){
+      html+=`<div class="section-title" style="margin-top:8px">Công cụ dụng cụ</div>`;
+      html+=equipment.map(s=>{
+        const amt=parseFloat(s.quantity)||0;
+        return `<div class="stock-card">
+          <div class="stock-icon" style="background:#E6F1FB">🔧</div>
+          <div class="stock-info"><div class="stock-name">${s.name}</div><div class="stock-detail">Công cụ dụng cụ</div></div>
+          <div class="stock-amount"><div class="stock-num">${amt.toLocaleString('vi-VN')}</div><div class="stock-unit">${s.unit}</div></div>
+        </div>`;
+      }).join('');
+    }
+    el.innerHTML=html||'<div class="empty">Chưa có vật tư nào</div>';
   }
 
   function renderCanMake(){
     const el=document.getElementById('content');
-    el.innerHTML=`<div class="section-title">Dựa trên tồn kho bán thành phẩm hiện tại</div>`+
-    PRODUCTS.map(p=>{
-      const canMake=Math.floor(Math.min(...p.ingredients.map(ing=>{
-        const semi=SEMI_ITEMS.find(s=>s.id===ing.id);
-        if(semi) return (parseFloat(semiStockData[ing.id]?.quantity)||0)/ing.amount;
-        const raw=RAW_ITEMS.find(r=>r.id===ing.id);
-        if(raw) return (parseFloat(rawStockData[ing.id]?.quantity)||0)/ing.amount;
-        return 0;
-      })));
-      const limiting=p.ingredients.map(ing=>{
-        const semi=SEMI_ITEMS.find(s=>s.id===ing.id);
-        const name=semi?semi.name:(RAW_ITEMS.find(r=>r.id===ing.id)?.name||ing.id);
-        const stock=semi?(parseFloat(semiStockData[ing.id]?.quantity)||0):(parseFloat(rawStockData[ing.id]?.quantity)||0);
-        return{name,stock,unit:ing.unit};
-      }).sort((a,b)=>a.stock-b.stock)[0];
+    el.innerHTML=`<div class="section-title">Dựa trên tồn kho bán thành phẩm</div>`+
+    productsData.map(p=>{
+      const recipes=productRecipes.filter(r=>r.product_id===p.id);
+      const canMake=recipes.length?Math.floor(Math.min(...recipes.map(r=>{
+        const semi=SEMI_PRODUCTS.find(s=>s.id===r.ingredient_id);
+        if(semi) return (parseFloat(semiStockData[r.ingredient_id]?.quantity)||0)/r.amount;
+        const raw=RAW_MATERIALS.find(x=>x.id===r.ingredient_id);
+        if(raw) return (parseFloat(rawStockData[r.ingredient_id]?.quantity)||0)/r.amount;
+        return 999;
+      }))):0;
+      const limiting=recipes.map(r=>{
+        const semi=SEMI_PRODUCTS.find(s=>s.id===r.ingredient_id);
+        const name=semi?semi.name:(RAW_MATERIALS.find(x=>x.id===r.ingredient_id)?.name||r.ingredient_id);
+        const stock=semi?(parseFloat(semiStockData[r.ingredient_id]?.quantity)||0):(parseFloat(rawStockData[r.ingredient_id]?.quantity)||0);
+        return{name,stock};
+      }).filter(x=>x.name).sort((a,b)=>a.stock-b.stock)[0];
       return `<div class="can-make-card${canMake===0?' zero':''}">
-        <div class="cm-icon" style="background:${p.bg}">${p.icon}</div>
+        <div class="cm-icon" style="background:${p.color||'#f5f5f0'}">${p.icon||'☕'}</div>
         <div class="cm-info">
           <div class="cm-name">${p.name}</div>
-          <div class="cm-detail">Giới hạn: ${limiting?.name||'—'}</div>
+          <div class="cm-detail">${limiting?`Giới hạn: ${limiting.name}`:'—'}</div>
         </div>
         <div>
           <div class="cm-count${canMake===0?' zero':''}">${canMake}</div>
           <div class="cm-unit">ly</div>
         </div>
       </div>`;
-    }).join('');
+    }).join('')||'<div class="empty">Chưa có sản phẩm nào</div>';
   }
 
   async function renderReceipts(){
     const el=document.getElementById('content');
     try {
-      const receipts=await DB.select('stock_receipts','select=*&order=created_at.desc&limit=50');
-      if(!receipts||!receipts.length){
-        el.innerHTML='<div class="empty">Chưa có phiếu nhập kho nào</div>'; return;
-      }
-      el.innerHTML=`<div class="receipt-card">
-        <div class="receipt-header"><span class="receipt-title">50 phiếu nhập gần nhất</span></div>
-        ${receipts.map(r=>`
-        <div class="receipt-row">
-          <div class="receipt-info">
-            <div class="receipt-name">${r.item_name}</div>
-            <div class="receipt-detail">${r.receipt_num} · ${new Date(r.created_at).toLocaleDateString('vi-VN')}${r.supplier?' · '+r.supplier:''}</div>
+      const pos=await DB.select('purchase_orders','select=*,purchase_order_items(*)&order=created_at.desc&limit=30');
+      if(!pos||!pos.length){el.innerHTML='<div class="empty">Chưa có phiếu nhập nào</div>';return;}
+      el.innerHTML=pos.map(po=>`
+        <div class="receipt-card">
+          <div class="receipt-header">
+            <span class="receipt-title">${po.po_num}</span>
+            <span style="font-size:13px;font-weight:600;color:#1D9E75">${(po.total_amount||0).toLocaleString('vi-VN')} ₫</span>
           </div>
-          <div>
-            <div class="receipt-amount">${parseFloat(r.quantity).toLocaleString('vi-VN')} ${r.unit}</div>
-            <div class="receipt-price">${r.unit_price>0?r.unit_price.toLocaleString('vi-VN')+' ₫/'+r.unit:''}</div>
-          </div>
-        </div>`).join('')}
-      </div>`;
-    } catch(e){ el.innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`; }
-  }
-
-  // ── NHẬP KHO ──
-  function showImport(){
-    if(!canEdit){ toast('Bạn không có quyền nhập kho'); return; }
-    const sel=document.getElementById('importItem');
-    sel.innerHTML=RAW_ITEMS.map(r=>`<option value="${r.id}">${r.name} (${RAW_ITEMS.find(x=>x.id===r.id)?.unit})</option>`).join('');
-    updateImportInfo();
-    sel.onchange=updateImportInfo;
-    ['importQty','importPrice','importSupplier','importNote'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('importOverlay').classList.add('show');
-  }
-  function updateImportInfo(){
-    const id=document.getElementById('importItem').value;
-    const d=rawStockData[id]||{quantity:0,avg_cost:0};
-    const item=RAW_ITEMS.find(r=>r.id===id);
-    document.getElementById('importInfo').innerHTML=
-      `Tồn kho hiện tại: <strong>${(parseFloat(d.quantity)||0).toLocaleString('vi-VN')} ${item?.unit}</strong><br>`+
-      `Giá vốn BQ hiện tại: <strong>${d.avg_cost>0?Math.round(d.avg_cost*1000).toLocaleString('vi-VN')+'₫/1000'+item?.unit:'Chưa có'}</strong>`;
-  }
-  function hideImport(){document.getElementById('importOverlay').classList.remove('show');}
-
-  async function doImport(){
-    const id=document.getElementById('importItem').value;
-    const qty=parseFloat(document.getElementById('importQty').value);
-    const price=parseFloat(document.getElementById('importPrice').value)||0;
-    const supplier=document.getElementById('importSupplier').value.trim();
-    const note=document.getElementById('importNote').value.trim();
-    if(!id||isNaN(qty)||qty<=0){toast('Vui lòng nhập số lượng hợp lệ');return;}
-
-    const item=RAW_ITEMS.find(r=>r.id===id);
-    const d=rawStockData[id]||{quantity:0,avg_cost:0,total_qty_imported:0};
-    const oldQty=parseFloat(d.quantity)||0;
-    const oldAvg=parseFloat(d.avg_cost)||0;
-    const oldTotal=parseFloat(d.total_qty_imported)||0;
-    const pricePerUnit=price/1000;
-    const newAvg=(oldAvg*oldQty+pricePerUnit*qty)/(oldQty+qty);
-    const newQty=oldQty+qty;
-    const receiptNum='PN'+Date.now().toString().slice(-8);
-
-    try {
-      // Tạo phiếu nhập kho
-      await DB.insert('stock_receipts',{
-        receipt_num: receiptNum,
-        item_id:     id,
-        item_name:   item.name,
-        item_type:   'raw',
-        quantity:    qty,
-        unit:        item.unit,
-        unit_price:  price,
-        total_price: Math.round(price/1000*qty),
-        supplier:    supplier||null,
-        note:        note||null,
-        staff_name:  session?.name||'',
-      }, false);
-
-      // Cập nhật tồn kho + giá BQ
-      await DB.upsert('raw_stock',{
-        id,
-        quantity:           newQty,
-        avg_cost:           newAvg,
-        total_qty_imported: oldTotal+qty,
-        updated_at:         new Date().toISOString(),
-      });
-
-      rawStockData[id]={...d, quantity:newQty, avg_cost:newAvg, total_qty_imported:oldTotal+qty};
-      hideImport();
-      toast(`✓ Nhập ${qty}${item.unit} ${item.name} — Phiếu ${receiptNum}`);
-      loadAndRender();
-    } catch(e){ toast('Lỗi: '+e.message); }
+          ${(po.purchase_order_items||[]).map(i=>`<div class="receipt-row">
+            <div class="receipt-info">
+              <div class="receipt-name">${i.item_name}</div>
+              <div class="receipt-detail">${i.input_qty} ${i.input_unit} = ${i.base_qty} ${i.base_unit}</div>
+            </div>
+            <div class="receipt-amount">${i.total_price.toLocaleString('vi-VN')} ₫</div>
+          </div>`).join('')}
+        </div>`).join('');
+    } catch(e){el.innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`;}
   }
 
   // ── PHA BÁN THÀNH PHẨM ──
   function showBrew(){
-    if(!canEdit){ toast('Bạn không có quyền'); return; }
     renderBrewList();
     document.getElementById('brewOverlay').classList.add('show');
   }
-  function hideBrew(){document.getElementById('brewOverlay').classList.remove('show');}
+  function hideBrew(){ document.getElementById('brewOverlay').classList.remove('show'); }
+
   function renderBrewList(){
-    document.getElementById('brewList').innerHTML=SEMI_ITEMS.map(item=>{
-      const canBrew=item.recipe.every(r=>(parseFloat(rawStockData[r.id]?.quantity)||0)>=r.amount);
-      const recipeText=item.recipe.map(r=>`${r.amount}${RAW_ITEMS.find(x=>x.id===r.id)?.unit||''} ${RAW_ITEMS.find(x=>x.id===r.id)?.name||r.id}`).join(' + ');
+    document.getElementById('brewList').innerHTML=SEMI_PRODUCTS.map(item=>{
+      const recipes=SEMI_RECIPES.filter(r=>r.semi_id===item.id);
+      const canBrew=recipes.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
+      const recipeText=recipes.map(r=>`${r.amount}${r.unit} ${RAW_MATERIALS.find(x=>x.id===r.raw_id)?.name||r.raw_id}`).join(' + ');
       return `<div class="brew-item">
         <span style="font-size:24px">${item.icon}</span>
         <div class="brew-info">
@@ -404,21 +354,23 @@
   }
 
   async function doBrew(semiId){
-    const item=SEMI_ITEMS.find(s=>s.id===semiId);
-    const enough=item.recipe.every(r=>(parseFloat(rawStockData[r.id]?.quantity)||0)>=r.amount);
+    const item=SEMI_PRODUCTS.find(s=>s.id===semiId);
+    const recipes=SEMI_RECIPES.filter(r=>r.semi_id===semiId);
+    const enough=recipes.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
     if(!enough){toast('Không đủ nguyên liệu thô!');return;}
     try {
-      for(const r of item.recipe){
-        const newQty=Math.max(0,(parseFloat(rawStockData[r.id]?.quantity)||0)-r.amount);
-        await DB.update('raw_stock',`id=eq.${r.id}`,{quantity:newQty,updated_at:new Date().toISOString()});
-        if(rawStockData[r.id]) rawStockData[r.id].quantity=newQty;
+      for(const r of recipes){
+        const newQty=Math.max(0,(parseFloat(rawStockData[r.raw_id]?.quantity)||0)-r.amount);
+        await DB.update('raw_stock',`id=eq.${r.raw_id}`,{quantity:newQty,updated_at:new Date().toISOString()});
+        if(rawStockData[r.raw_id]) rawStockData[r.raw_id].quantity=newQty;
       }
       const newSemiQty=(parseFloat(semiStockData[semiId]?.quantity)||0)+item.yields;
       await DB.upsert('semi_stock',{id:semiId,quantity:newSemiQty,updated_at:new Date().toISOString()});
       if(semiStockData[semiId]) semiStockData[semiId].quantity=newSemiQty;
+      else semiStockData[semiId]={quantity:newSemiQty};
       toast(`✓ Đã pha ${item.yields}${item.unit} ${item.name}`);
       renderBrewList();
-      loadAndRender();
+      renderContent();
     } catch(e){toast('Lỗi: '+e.message);}
   }
 
@@ -428,7 +380,7 @@
     clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2200);
   }
 
-  loadAndRender();
+  init();
 </script>
 </body>
 </html>

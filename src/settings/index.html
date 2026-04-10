@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>FNB App — Cài đặt</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+    .header{background:#fff;padding:10px 16px 8px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
+    .back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;text-decoration:none}
+    .header-title{font-size:15px;font-weight:600}
+    .content{flex:1;overflow-y:auto;padding:14px 14px 32px;display:flex;flex-direction:column;gap:14px}
+
+    /* SECTION */
+    .section-header{display:flex;justify-content:space-between;align-items:center}
+    .section-title{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px}
+    .section-add{padding:5px 12px;border-radius:20px;border:0.5px solid #1D9E75;background:#E1F5EE;color:#085041;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+
+    /* CARD LIST */
+    .card-list{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;overflow:hidden}
+    .card-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:0.5px solid #e8e6e0;cursor:pointer}
+    .card-row:last-child{border-bottom:none}
+    .card-row:active{background:#f5f5f0}
+    .card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .card-info{flex:1;min-width:0}
+    .card-name{font-size:14px;font-weight:500}
+    .card-sub{font-size:12px;color:#888;margin-top:2px}
+    .card-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px}
+    .badge-owner{background:#EEEDFE;color:#3C3489}
+    .badge-manager{background:#E6F1FB;color:#0C447C}
+    .badge-staff{background:#f5f5f0;color:#888}
+    .badge-active{background:#E1F5EE;color:#085041}
+    .badge-inactive{background:#FCEBEB;color:#A32D2D}
+    .chevron{color:#bbb}
+
+    /* SETTINGS FORM */
+    .settings-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px;display:flex;flex-direction:column;gap:12px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:#888;font-weight:500}
+    .field input,.field select{width:100%;padding:11px 14px;border:0.5px solid #e8e6e0;border-radius:12px;font-size:15px;color:#1a1a18;background:#f5f5f0;font-family:inherit}
+    .field input:focus,.field select:focus{outline:none;border-color:#1D9E75;background:#fff}
+    .save-btn{padding:12px;border-radius:12px;border:none;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+    .save-btn:active{background:#0F6E56}
+
+    /* OVERLAY */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
+    .overlay.show{display:flex}
+    .sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;max-height:90dvh;overflow-y:auto}
+    .sheet-title{font-size:15px;font-weight:600}
+    .sheet-sub{font-size:13px;color:#888;margin-top:-8px}
+    .sheet-btn{padding:13px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+    .sheet-btn.primary{background:#1D9E75;color:#fff}
+    .sheet-btn.primary:active{background:#0F6E56}
+    .sheet-btn.danger{background:#FCEBEB;color:#A32D2D}
+    .sheet-btn.secondary{background:#f5f5f0;color:#1a1a18;border:0.5px solid #e8e6e0}
+    .divider{height:0.5px;background:#e8e6e0;margin:4px 0}
+
+    .info-box{background:#E6F1FB;border-radius:10px;padding:10px 14px;font-size:12px;color:#0C447C;line-height:1.6}
+    .qr-preview{display:flex;flex-direction:column;align-items:center;gap:8px;background:#f5f5f0;border-radius:12px;padding:14px}
+    .qr-preview img{width:160px;height:160px;border-radius:8px;border:0.5px solid #e8e6e0;background:#fff}
+    .recipe-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid #e8e6e0}
+    .recipe-row:last-child{border-bottom:none}
+    .recipe-name{flex:1;font-size:13px;color:#888}
+    .recipe-inputs{display:flex;gap:6px;align-items:center}
+    .recipe-inputs input{width:70px;padding:6px 8px;border:0.5px solid #e8e6e0;border-radius:8px;font-size:13px;background:#f5f5f0;font-family:inherit;text-align:right}
+    .recipe-unit{font-size:12px;color:#888;white-space:nowrap}
+
+    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0;gap:8px;color:#bbb;font-size:13px}
+    .toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:400}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="../home/index.html" class="back-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </a>
+  <span class="header-title">Cài đặt</span>
+</div>
+
+<div class="content" id="content"><div style="text-align:center;padding:32px;color:#bbb;font-size:13px">Đang tải...</div></div>
+
+<!-- Tài khoản sheet -->
+<div class="overlay" id="userOverlay" onclick="hideUser()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title" id="userSheetTitle">Thêm tài khoản</div>
+    <input type="hidden" id="editUserId">
+    <div class="field"><label>Tên hiển thị</label><input type="text" id="uName" placeholder="Nguyễn Văn A"></div>
+    <div class="field"><label>Tài khoản đăng nhập</label><input type="text" id="uUsername" placeholder="staff01" autocapitalize="none"></div>
+    <div class="field"><label>Mật khẩu</label><input type="password" id="uPassword" placeholder="Để trống = không đổi mật khẩu"></div>
+    <div class="field"><label>Vai trò</label>
+      <select id="uRole">
+        <option value="staff">Nhân viên (staff)</option>
+        <option value="manager">Quản lý (manager)</option>
+        <option value="owner">Chủ (owner)</option>
+      </select>
+    </div>
+    <div class="field"><label>Trạng thái</label>
+      <select id="uActive">
+        <option value="true">Đang hoạt động</option>
+        <option value="false">Đã khoá</option>
+      </select>
+    </div>
+    <button class="sheet-btn primary" onclick="saveUser()">Lưu tài khoản</button>
+    <button class="sheet-btn danger" id="delUserBtn" style="display:none" onclick="deleteUser()">Xoá tài khoản này</button>
+    <button class="sheet-btn secondary" onclick="hideUser()">Huỷ</button>
+  </div>
+</div>
+
+<!-- Đổi mật khẩu bản thân -->
+<div class="overlay" id="pwOverlay" onclick="hidePw()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title">Đổi mật khẩu</div>
+    <div class="field"><label>Mật khẩu hiện tại</label><input type="password" id="pwCurrent" placeholder="Nhập mật khẩu hiện tại"></div>
+    <div class="field"><label>Mật khẩu mới</label><input type="password" id="pwNew" placeholder="Mật khẩu mới"></div>
+    <div class="field"><label>Xác nhận mật khẩu mới</label><input type="password" id="pwConfirm" placeholder="Nhập lại mật khẩu mới"></div>
+    <button class="sheet-btn primary" onclick="savePassword()">Đổi mật khẩu</button>
+    <button class="sheet-btn secondary" onclick="hidePw()">Huỷ</button>
+  </div>
+</div>
+
+<!-- Sản phẩm sheet -->
+<div class="overlay" id="productOverlay" onclick="hideProduct()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title" id="productSheetTitle">Thêm sản phẩm</div>
+    <input type="hidden" id="editProductId">
+    <div class="field"><label>Tên sản phẩm</label><input type="text" id="pName" placeholder="Cà phê đen"></div>
+    <div class="field"><label>Danh mục</label><input type="text" id="pCategory" placeholder="Cà phê"></div>
+    <div class="field"><label>Giá bán (₫)</label><input type="number" id="pPrice" placeholder="0" min="0" step="500"></div>
+    <div class="field"><label>Icon (emoji)</label><input type="text" id="pIcon" placeholder="☕"></div>
+    <div class="field"><label>Màu nền (hex)</label><input type="text" id="pColor" placeholder="#FAEEDA"></div>
+    <div class="field"><label>Trạng thái</label>
+      <select id="pActive">
+        <option value="true">Đang bán</option>
+        <option value="false">Tạm ngưng</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:13px;font-weight:600">Công thức nguyên liệu</div>
+    <div id="recipeEditor"></div>
+    <button class="sheet-btn primary" onclick="saveProduct()">Lưu sản phẩm</button>
+    <button class="sheet-btn danger" id="delProductBtn" style="display:none" onclick="deleteProduct()">Xoá sản phẩm</button>
+    <button class="sheet-btn secondary" onclick="hideProduct()">Huỷ</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../lib/supabase.js"></script>
+<script src="../auth/auth.js"></script>
+<script>
+  Auth.require('pos'); // tất cả roles đều vào được, nhưng chức năng bị giới hạn theo role
+  const session = Auth.getSession();
+  const role    = Auth.getRole();
+  const isOwner = role === 'owner';
+  const fmt     = n => n.toLocaleString('vi-VN') + ' ₫';
+
+  let USERS=[], PRODUCTS=[], RAW_MATERIALS=[], SEMI_PRODUCTS=[], SETTINGS={};
+  let editingUserId=null, editingProductId=null, currentRecipes=[];
+
+  async function init(){
+    try {
+      const loads = [
+        DB.select('settings','select=*'),
+        DB.select('products','select=*&order=sort_order.asc'),
+        DB.select('raw_materials','select=*&order=name.asc'),
+        DB.select('semi_products','select=*&order=name.asc'),
+      ];
+      if(isOwner) loads.push(DB.select('users','select=*&order=role.asc,name.asc'));
+      const results = await Promise.all(loads);
+      results[0].forEach(s=>SETTINGS[s.key]=s.value);
+      PRODUCTS = results[1];
+      RAW_MATERIALS = results[2];
+      SEMI_PRODUCTS = results[3];
+      if(isOwner) USERS = results[4]||[];
+      render();
+    } catch(e){ document.getElementById('content').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi: ${e.message}</div>`; }
+  }
+
+  function render(){
+    const el = document.getElementById('content');
+    let html = '';
+
+    // ── ĐỔI MẬT KHẨU (tất cả roles) ──
+    html += `<div>
+      <div class="section-header"><span class="section-title">Tài khoản của tôi</span></div>
+      <div class="card-list" style="margin-top:8px">
+        <div class="card-row" onclick="showPw()">
+          <div class="card-icon" style="background:#E1F5EE">🔑</div>
+          <div class="card-info">
+            <div class="card-name">Đổi mật khẩu</div>
+            <div class="card-sub">${session?.name} · ${role}</div>
+          </div>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+    </div>`;
+
+    // ── QUẢN LÝ TÀI KHOẢN (owner only) ──
+    if(isOwner){
+      html += `<div>
+        <div class="section-header">
+          <span class="section-title">Quản lý tài khoản</span>
+          <button class="section-add" onclick="showUser()">+ Thêm</button>
+        </div>
+        <div class="card-list" style="margin-top:8px">
+          ${USERS.map(u=>`<div class="card-row" onclick="showUser('${u.id}')">
+            <div class="card-icon" style="background:#f5f5f0">👤</div>
+            <div class="card-info">
+              <div class="card-name">${u.name}</div>
+              <div class="card-sub">@${u.username}</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span class="card-badge badge-${u.role}">${u.role}</span>
+              ${!u.active?'<span class="card-badge badge-inactive">Khoá</span>':''}
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    // ── QUẢN LÝ MENU (owner only) ──
+    if(isOwner){
+      html += `<div>
+        <div class="section-header">
+          <span class="section-title">Menu & Sản phẩm</span>
+          <button class="section-add" onclick="showProduct()">+ Thêm</button>
+        </div>
+        <div class="card-list" style="margin-top:8px">
+          ${PRODUCTS.map(p=>`<div class="card-row" onclick="showProduct('${p.id}')">
+            <div class="card-icon" style="background:${p.color||'#f5f5f0'}">${p.icon||'☕'}</div>
+            <div class="card-info">
+              <div class="card-name">${p.name}</div>
+              <div class="card-sub">${fmt(p.price)} · ${p.category}</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span class="card-badge ${p.active?'badge-active':'badge-inactive'}">${p.active?'Đang bán':'Tạm ngưng'}</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    // ── CÀI ĐẶT THANH TOÁN (owner only) ──
+    if(isOwner){
+      const bankId = SETTINGS.bank_id||'ACB';
+      const accountNo = SETTINGS.account_no||'';
+      const accountName = SETTINGS.account_name||'';
+      const content = SETTINGS.transfer_content||'Thanh toan don hang';
+      const qrUrl = accountNo && accountNo !== 'XXXXXXXXXX'
+        ? `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=0&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(accountName)}`
+        : '';
+      html += `<div>
+        <div class="section-header"><span class="section-title">Thanh toán QR</span></div>
+        <div class="settings-card" style="margin-top:8px">
+          <div class="field"><label>Ngân hàng (Bank ID)</label>
+            <select id="bankId">
+              ${['ACB','VCB','TCB','MB','VPB','BIDV','CTG','STB','OCB','MSB','TPB'].map(b=>`<option value="${b}" ${bankId===b?'selected':''}>${b}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Số tài khoản</label><input type="text" id="accountNo" value="${accountNo}" placeholder="Số tài khoản"></div>
+          <div class="field"><label>Tên chủ tài khoản (IN HOA, không dấu)</label><input type="text" id="accountName" value="${accountName}" placeholder="NGUYEN VAN A"></div>
+          <div class="field"><label>Nội dung chuyển khoản mặc định</label><input type="text" id="transferContent" value="${content}" placeholder="Thanh toan don hang"></div>
+          ${qrUrl?`<div class="qr-preview"><img src="${qrUrl}" alt="QR preview"><div style="font-size:12px;color:#888">Preview QR (số tiền thực tế sẽ điền tự động)</div></div>`:''}
+          <button class="save-btn" onclick="savePaymentSettings()">Lưu cài đặt thanh toán</button>
+        </div>
+      </div>`;
+    }
+
+    // ── CÀI ĐẶT HỆ THỐNG (owner only) ──
+    if(isOwner){
+      html += `<div>
+        <div class="section-header"><span class="section-title">Cài đặt hệ thống</span></div>
+        <div class="settings-card" style="margin-top:8px">
+          <div class="field"><label>Giờ mở bán</label>
+            <select id="openHour">
+              ${Array.from({length:12},(_,i)=>i+5).map(h=>`<option value="${h}" ${(SETTINGS.open_hour||'6')==String(h)?'selected':''}>${String(h).padStart(2,'0')}:00</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Giờ đóng bán</label>
+            <select id="closeHour">
+              ${Array.from({length:12},(_,i)=>i+8).map(h=>`<option value="${h}" ${(SETTINGS.close_hour||'10')==String(h)?'selected':''}>${String(h).padStart(2,'0')}:00</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Ngưỡng trễ chấp nhận (phút)</label>
+            <input type="number" id="lateGrace" value="${SETTINGS.late_grace_minutes||15}" min="0" max="60">
+          </div>
+          <button class="save-btn" onclick="saveSystemSettings()">Lưu cài đặt hệ thống</button>
+        </div>
+      </div>`;
+    }
+
+    el.innerHTML = html;
+  }
+
+  // ── TÀI KHOẢN ──
+  function showUser(id){
+    editingUserId = id||null;
+    const title = document.getElementById('userSheetTitle');
+    const del = document.getElementById('delUserBtn');
+    if(id){
+      const u = USERS.find(x=>x.id===id);
+      if(!u) return;
+      title.textContent = 'Chỉnh sửa tài khoản';
+      document.getElementById('uName').value = u.name;
+      document.getElementById('uUsername').value = u.username;
+      document.getElementById('uPassword').value = '';
+      document.getElementById('uRole').value = u.role;
+      document.getElementById('uActive').value = String(u.active);
+      del.style.display = u.id === session?.id ? 'none' : 'block';
+    } else {
+      title.textContent = 'Thêm tài khoản';
+      ['uName','uUsername','uPassword'].forEach(x=>document.getElementById(x).value='');
+      document.getElementById('uRole').value = 'staff';
+      document.getElementById('uActive').value = 'true';
+      del.style.display = 'none';
+    }
+    document.getElementById('userOverlay').classList.add('show');
+  }
+  function hideUser(){ document.getElementById('userOverlay').classList.remove('show'); }
+
+  async function saveUser(){
+    const name = document.getElementById('uName').value.trim();
+    const username = document.getElementById('uUsername').value.trim().toLowerCase();
+    const password = document.getElementById('uPassword').value;
+    const role_val = document.getElementById('uRole').value;
+    const active = document.getElementById('uActive').value === 'true';
+    if(!name||!username){ toast('Vui lòng nhập đầy đủ tên và tài khoản'); return; }
+    try {
+      if(editingUserId){
+        const update = { name, username, role:role_val, active };
+        if(password) update.password = password;
+        await DB.update('users', `id=eq.${editingUserId}`, update);
+      } else {
+        if(!password){ toast('Vui lòng nhập mật khẩu'); return; }
+        await DB.insert('users', { name, username, password, role:role_val, active }, false);
+      }
+      hideUser(); toast('✓ Đã lưu tài khoản');
+      USERS = await DB.select('users','select=*&order=role.asc,name.asc');
+      render();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  async function deleteUser(){
+    if(!editingUserId) return;
+    if(editingUserId === session?.id){ toast('Không thể xoá tài khoản đang đăng nhập'); return; }
+    try {
+      await DB.delete('users', `id=eq.${editingUserId}`);
+      hideUser(); toast('Đã xoá tài khoản');
+      USERS = await DB.select('users','select=*&order=role.asc,name.asc');
+      render();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  // ── ĐỔI MẬT KHẨU ──
+  function showPw(){ ['pwCurrent','pwNew','pwConfirm'].forEach(x=>document.getElementById(x).value=''); document.getElementById('pwOverlay').classList.add('show'); }
+  function hidePw(){ document.getElementById('pwOverlay').classList.remove('show'); }
+
+  async function savePassword(){
+    const current = document.getElementById('pwCurrent').value;
+    const newPw   = document.getElementById('pwNew').value;
+    const confirm = document.getElementById('pwConfirm').value;
+    if(!current||!newPw||!confirm){ toast('Vui lòng điền đầy đủ'); return; }
+    if(newPw !== confirm){ toast('Mật khẩu mới không khớp'); return; }
+    if(newPw.length < 6){ toast('Mật khẩu tối thiểu 6 ký tự'); return; }
+    try {
+      const check = await DB.select('users', `id=eq.${session.id}&password=eq.${encodeURIComponent(current)}&select=id`);
+      if(!check||!check.length){ toast('Mật khẩu hiện tại không đúng'); return; }
+      await DB.update('users', `id=eq.${session.id}`, { password: newPw });
+      hidePw(); toast('✓ Đã đổi mật khẩu thành công');
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  // ── SẢN PHẨM ──
+  async function showProduct(id){
+    editingProductId = id||null;
+    const title = document.getElementById('productSheetTitle');
+    const del = document.getElementById('delProductBtn');
+    if(id){
+      const p = PRODUCTS.find(x=>x.id===id);
+      if(!p) return;
+      title.textContent = 'Chỉnh sửa sản phẩm';
+      document.getElementById('pName').value = p.name;
+      document.getElementById('pCategory').value = p.category;
+      document.getElementById('pPrice').value = p.price;
+      document.getElementById('pIcon').value = p.icon;
+      document.getElementById('pColor').value = p.color;
+      document.getElementById('pActive').value = String(p.active);
+      // Load công thức
+      const recipes = await DB.select('product_recipes', `product_id=eq.${id}&select=*`);
+      currentRecipes = recipes.map(r=>({...r}));
+      del.style.display = 'block';
+    } else {
+      title.textContent = 'Thêm sản phẩm';
+      ['pName','pCategory','pIcon','pColor'].forEach(x=>document.getElementById(x).value='');
+      document.getElementById('pPrice').value = '';
+      document.getElementById('pActive').value = 'true';
+      currentRecipes = [];
+      del.style.display = 'none';
+    }
+    renderRecipeEditor();
+    document.getElementById('productOverlay').classList.add('show');
+  }
+  function hideProduct(){ document.getElementById('productOverlay').classList.remove('show'); }
+
+  function renderRecipeEditor(){
+    const el = document.getElementById('recipeEditor');
+    const allIngredients = [
+      ...SEMI_PRODUCTS.map(s=>({id:s.id, name:s.name, type:'semi', unit:s.unit})),
+      ...RAW_MATERIALS.map(r=>({id:r.id, name:r.name, type:'raw', unit:r.unit})),
+    ];
+    el.innerHTML = `
+      ${currentRecipes.map((r,i)=>`<div class="recipe-row">
+        <div class="recipe-name">
+          <select onchange="currentRecipes[${i}].ingredient_id=this.value;currentRecipes[${i}].ingredient_type=allIngredients.find(x=>x.id===this.value)?.type||'semi'" style="width:100%;padding:4px 6px;border:0.5px solid #e8e6e0;border-radius:6px;font-size:12px;font-family:inherit">
+            ${allIngredients.map(ing=>`<option value="${ing.id}" ${r.ingredient_id===ing.id?'selected':''}>${ing.name} (${ing.unit})</option>`).join('')}
+          </select>
+        </div>
+        <div class="recipe-inputs">
+          <input type="number" value="${r.amount}" min="0" step="any" onchange="currentRecipes[${i}].amount=parseFloat(this.value)||0">
+          <span class="recipe-unit">${allIngredients.find(x=>x.id===r.ingredient_id)?.unit||''}</span>
+          <button onclick="currentRecipes.splice(${i},1);renderRecipeEditor()" style="width:24px;height:24px;border-radius:50%;border:none;background:#e8e6e0;cursor:pointer;font-size:14px;color:#888;display:flex;align-items:center;justify-content:center">×</button>
+        </div>
+      </div>`).join('')}
+      <button onclick="currentRecipes.push({ingredient_id:allIngredients[0]?.id||'',ingredient_type:'semi',amount:0,unit:''});renderRecipeEditor()" style="width:100%;padding:8px;border:0.5px dashed #d8d6d0;border-radius:10px;background:transparent;font-size:13px;color:#888;cursor:pointer;font-family:inherit;margin-top:4px">+ Thêm nguyên liệu</button>`;
+  }
+
+  async function saveProduct(){
+    const name     = document.getElementById('pName').value.trim();
+    const category = document.getElementById('pCategory').value.trim();
+    const price    = parseInt(document.getElementById('pPrice').value)||0;
+    const icon     = document.getElementById('pIcon').value.trim()||'☕';
+    const color    = document.getElementById('pColor').value.trim()||'#FAEEDA';
+    const active   = document.getElementById('pActive').value === 'true';
+    if(!name||!category){ toast('Vui lòng nhập tên và danh mục'); return; }
+    try {
+      let productId = editingProductId;
+      if(editingProductId){
+        await DB.update('products', `id=eq.${editingProductId}`, {name,category,price,icon,color,active});
+        await DB.delete('product_recipes', `product_id=eq.${editingProductId}`);
+      } else {
+        const res = await DB.insert('products', {name,category,price,icon,color,active,sort_order:PRODUCTS.length+1});
+        productId = res[0].id;
+      }
+      // Insert công thức mới
+      for(const r of currentRecipes.filter(x=>x.ingredient_id&&x.amount>0)){
+        const allIngredients=[...SEMI_PRODUCTS.map(s=>({id:s.id,unit:s.unit,type:'semi'})),...RAW_MATERIALS.map(x=>({id:x.id,unit:x.unit,type:'raw'}))];
+        const ing = allIngredients.find(x=>x.id===r.ingredient_id);
+        await DB.insert('product_recipes',{product_id:productId,ingredient_id:r.ingredient_id,ingredient_type:r.ingredient_type||ing?.type||'semi',amount:r.amount,unit:ing?.unit||''},false);
+      }
+      hideProduct(); toast('✓ Đã lưu sản phẩm');
+      PRODUCTS = await DB.select('products','select=*&order=sort_order.asc');
+      render();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  async function deleteProduct(){
+    if(!editingProductId) return;
+    try {
+      await DB.delete('products', `id=eq.${editingProductId}`);
+      hideProduct(); toast('Đã xoá sản phẩm');
+      PRODUCTS = await DB.select('products','select=*&order=sort_order.asc');
+      render();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  // ── THANH TOÁN ──
+  async function savePaymentSettings(){
+    const fields = {
+      bank_id:          document.getElementById('bankId').value,
+      account_no:       document.getElementById('accountNo').value.trim(),
+      account_name:     document.getElementById('accountName').value.trim().toUpperCase(),
+      transfer_content: document.getElementById('transferContent').value.trim()||'Thanh toan don hang',
+    };
+    try {
+      for(const [key,value] of Object.entries(fields)){
+        await DB.upsert('settings',{key,value,updated_at:new Date().toISOString()});
+        SETTINGS[key]=value;
+      }
+      toast('✓ Đã lưu cài đặt thanh toán');
+      render();
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  // ── HỆ THỐNG ──
+  async function saveSystemSettings(){
+    const fields = {
+      open_hour:          document.getElementById('openHour').value,
+      close_hour:         document.getElementById('closeHour').value,
+      late_grace_minutes: document.getElementById('lateGrace').value,
+    };
+    try {
+      for(const [key,value] of Object.entries(fields)){
+        await DB.upsert('settings',{key,value,updated_at:new Date().toISOString()});
+        SETTINGS[key]=value;
+      }
+      toast('✓ Đã lưu cài đặt hệ thống');
+    } catch(e){ toast('Lỗi: '+e.message); }
+  }
+
+  function toast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg;t.style.opacity='1';
+    clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2500);
+  }
+
+  init();
+</script>
+</body>
+</html>

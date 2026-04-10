@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>FNB App — Nhập hàng</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+    .header{background:#fff;padding:10px 16px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
+    .header-left{display:flex;align-items:center;gap:10px}
+    .back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;text-decoration:none}
+    .header-title{font-size:15px;font-weight:600}
+    .new-po-btn{padding:7px 16px;border-radius:20px;border:none;background:#1D9E75;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+    .new-po-btn:active{background:#0F6E56}
+    .tabs{background:#fff;display:flex;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
+    .tab{flex:1;padding:10px 0;font-size:13px;font-weight:500;color:#888;text-align:center;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none}
+    .tab.active{color:#1D9E75;border-bottom-color:#1D9E75}
+    .content{flex:1;overflow-y:auto;padding:12px 14px 32px;display:flex;flex-direction:column;gap:10px}
+
+    /* PHIẾU NHẬP */
+    .po-card{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;overflow:hidden;cursor:pointer}
+    .po-card:active{background:#f5f5f0}
+    .po-header{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start}
+    .po-num{font-size:13px;font-weight:600;color:#1a1a18}
+    .po-date{font-size:12px;color:#888;margin-top:2px}
+    .po-supplier{font-size:12px;color:#888;margin-top:2px}
+    .po-amount{font-size:15px;font-weight:700;color:#1D9E75;text-align:right}
+    .po-items-count{font-size:12px;color:#888;text-align:right;margin-top:2px}
+    .po-items{padding:0 14px 12px;display:flex;flex-direction:column;gap:4px;border-top:0.5px solid #f5f5f0}
+    .po-item-row{display:flex;justify-content:space-between;font-size:12px;color:#888;padding:4px 0}
+    .po-item-name{font-weight:500;color:#1a1a18}
+
+    /* TẠO PHIẾU NHẬP */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
+    .overlay.show{display:flex}
+    .sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;max-height:92dvh;overflow-y:auto}
+    .sheet-title{font-size:15px;font-weight:600}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:#888;font-weight:500}
+    .field input,.field select,.field textarea{width:100%;padding:11px 14px;border:0.5px solid #e8e6e0;border-radius:12px;font-size:15px;color:#1a1a18;background:#f5f5f0;font-family:inherit}
+    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#1D9E75;background:#fff}
+    .field textarea{resize:none;height:72px;font-size:13px}
+
+    /* ITEMS TRONG PHIẾU */
+    .items-section{display:flex;flex-direction:column;gap:8px}
+    .items-title{font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+    .add-item-btn{padding:5px 12px;border-radius:20px;border:0.5px solid #1D9E75;background:#E1F5EE;color:#085041;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+    .po-item-card{background:#f5f5f0;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;position:relative}
+    .po-item-del{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:none;background:#e8e6e0;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .po-item-del:active{background:#FCEBEB;color:#A32D2D}
+    .item-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .item-field{display:flex;flex-direction:column;gap:4px}
+    .item-field label{font-size:11px;color:#888}
+    .item-field input,.item-field select{width:100%;padding:8px 10px;border:0.5px solid #e8e6e0;border-radius:8px;font-size:13px;color:#1a1a18;background:#fff;font-family:inherit}
+    .item-field input:focus,.item-field select:focus{outline:none;border-color:#1D9E75}
+    .conversion-info{font-size:12px;color:#1D9E75;background:#E1F5EE;border-radius:8px;padding:6px 10px}
+    .total-preview{font-size:12px;color:#888;text-align:right}
+
+    .sheet-btn{padding:13px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+    .sheet-btn.primary{background:#1D9E75;color:#fff}
+    .sheet-btn.primary:active{background:#0F6E56}
+    .sheet-btn.secondary{background:#f5f5f0;color:#1a1a18;border:0.5px solid #e8e6e0}
+
+    .section-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px}
+    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 0;gap:8px;color:#bbb;font-size:13px}
+    .info-box{background:#E6F1FB;border-radius:10px;padding:10px 14px;font-size:12px;color:#0C447C;line-height:1.6}
+    .grand-total{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px;display:flex;justify-content:space-between;align-items:center}
+    .grand-total-label{font-size:14px;font-weight:600}
+    .grand-total-value{font-size:20px;font-weight:700;color:#1D9E75}
+    .toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:400}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <a href="../home/index.html" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <span class="header-title">Nhập hàng</span>
+  </div>
+  <button class="new-po-btn" onclick="showNewPO()">+ Tạo phiếu nhập</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" id="tab1" onclick="switchTab(1)">Phiếu nhập</button>
+  <button class="tab"        id="tab2" onclick="switchTab(2)">Thống kê</button>
+</div>
+
+<div class="content" id="content"><div class="empty">Đang tải...</div></div>
+
+<!-- Tạo phiếu nhập -->
+<div class="overlay" id="poOverlay" onclick="e=>e.stopPropagation()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title">Tạo phiếu nhập hàng</div>
+
+    <div class="field">
+      <label>Nhà cung cấp (tuỳ chọn)</label>
+      <input type="text" id="poSupplier" placeholder="Tên nhà cung cấp...">
+    </div>
+    <div class="field">
+      <label>Ghi chú</label>
+      <textarea id="poNote" placeholder="Ghi chú cho phiếu nhập này..."></textarea>
+    </div>
+
+    <div class="items-section">
+      <div class="items-title">
+        <span>Danh sách hàng nhập</span>
+        <button class="add-item-btn" onclick="addItem()">+ Thêm mặt hàng</button>
+      </div>
+      <div id="itemsList"></div>
+    </div>
+
+    <div class="grand-total">
+      <span class="grand-total-label">Tổng tiền phiếu</span>
+      <span class="grand-total-value" id="grandTotal">0 ₫</span>
+    </div>
+
+    <button class="sheet-btn primary" onclick="savePO()">Lưu phiếu nhập</button>
+    <button class="sheet-btn secondary" onclick="hidePO()">Huỷ</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../lib/supabase.js"></script>
+<script src="../auth/auth.js"></script>
+<script>
+  Auth.require('inventory_edit');
+  const session = Auth.getSession();
+  const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+
+  let activeTab = 1;
+  let RAW_MATERIALS = [], SUPPLIES = [], UNIT_CONVERSIONS = [];
+  let poItems = []; // items trong phiếu đang tạo
+
+  // ── INIT ──
+  async function init(){
+    try {
+      [RAW_MATERIALS, SUPPLIES, UNIT_CONVERSIONS] = await Promise.all([
+        DB.select('raw_materials', 'active=eq.true&select=*&order=name.asc'),
+        DB.select('supplies', 'select=*&order=name.asc'),
+        DB.select('unit_conversions', 'select=*'),
+      ]);
+      loadAndRender();
+    } catch(e){ console.error(e); }
+  }
+
+  function switchTab(n){ activeTab=n; [1,2].forEach(i=>document.getElementById('tab'+i).classList.toggle('active',i===n)); loadAndRender(); }
+
+  async function loadAndRender(){
+    document.getElementById('content').innerHTML = '<div class="empty">Đang tải...</div>';
+    try {
+      if(activeTab === 1) await renderPOList();
+      else await renderStats();
+    } catch(e){ document.getElementById('content').innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`; }
+  }
+
+  async function renderPOList(){
+    const pos = await DB.select('purchase_orders', 'select=*&order=created_at.desc&limit=50');
+    const el = document.getElementById('content');
+    if(!pos||!pos.length){ el.innerHTML='<div class="empty">Chưa có phiếu nhập nào.<br>Nhấn "+ Tạo phiếu nhập" để bắt đầu.</div>'; return; }
+
+    // Lấy items của tất cả PO
+    const poIds = pos.map(p=>p.id).join(',');
+    const items = await DB.select('purchase_order_items', `po_id=in.(${poIds})&select=*`);
+    const itemsByPO = {};
+    items.forEach(i => { if(!itemsByPO[i.po_id]) itemsByPO[i.po_id] = []; itemsByPO[i.po_id].push(i); });
+
+    el.innerHTML = pos.map(po => {
+      const poItems = itemsByPO[po.id] || [];
+      return `<div class="po-card">
+        <div class="po-header">
+          <div>
+            <div class="po-num">${po.po_num}</div>
+            <div class="po-date">${new Date(po.created_at).toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+            ${po.supplier?`<div class="po-supplier">NCC: ${po.supplier}</div>`:''}
+          </div>
+          <div>
+            <div class="po-amount">${fmt(po.total_amount)}</div>
+            <div class="po-items-count">${poItems.length} mặt hàng</div>
+          </div>
+        </div>
+        ${poItems.length ? `<div class="po-items">
+          ${poItems.map(i=>`<div class="po-item-row">
+            <span class="po-item-name">${i.item_name}</span>
+            <span>${i.input_qty.toLocaleString('vi-VN')} ${i.input_unit} × ${i.unit_price.toLocaleString('vi-VN')}₫ = ${fmt(i.total_price)}</span>
+          </div>`).join('')}
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  async function renderStats(){
+    const pos = await DB.select('purchase_orders', 'select=total_amount,created_at');
+    const total = pos.reduce((s,p)=>s+p.total_amount,0);
+    const thisMonth = pos.filter(p=>{const d=new Date(p.created_at);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();});
+    const monthTotal = thisMonth.reduce((s,p)=>s+p.total_amount,0);
+    document.getElementById('content').innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">Tháng này</div>
+          <div style="font-size:18px;font-weight:700;color:#1D9E75">${fmt(monthTotal)}</div>
+          <div style="font-size:12px;color:#888;margin-top:4px">${thisMonth.length} phiếu</div>
+        </div>
+        <div style="background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">Tổng cộng</div>
+          <div style="font-size:18px;font-weight:700;color:#1a1a18">${fmt(total)}</div>
+          <div style="font-size:12px;color:#888;margin-top:4px">${pos.length} phiếu</div>
+        </div>
+      </div>`;
+  }
+
+  // ── TẠO PHIẾU NHẬP ──
+  function showNewPO(){
+    poItems = [];
+    document.getElementById('poSupplier').value = '';
+    document.getElementById('poNote').value = '';
+    renderItemsList();
+    updateGrandTotal();
+    document.getElementById('poOverlay').classList.add('show');
+  }
+  function hidePO(){ document.getElementById('poOverlay').classList.remove('show'); }
+
+  function addItem(){
+    poItems.push({ itemType:'raw', itemId:'', itemName:'', inputQty:0, inputUnit:'', convRate:1, baseQty:0, baseUnit:'', unitPrice:0, totalPrice:0 });
+    renderItemsList();
+  }
+
+  function removeItem(idx){ poItems.splice(idx,1); renderItemsList(); updateGrandTotal(); }
+
+  function getAllItems(){
+    const list = [];
+    RAW_MATERIALS.forEach(r => list.push({ type:'raw', id:r.id, name:r.name, baseUnit:r.unit }));
+    SUPPLIES.forEach(s => list.push({ type:s.category==='equipment'?'equipment':'supply', id:s.id, name:s.name, baseUnit:s.unit }));
+    return list;
+  }
+
+  function getUnitsFor(itemType, itemId){
+    const base = getAllItems().find(i=>i.id===itemId);
+    if(!base) return [];
+    const conversions = UNIT_CONVERSIONS.filter(u=>u.item_id===itemId);
+    const units = [{ unit:base.baseUnit, rate:1, desc:`${base.baseUnit} (đơn vị cơ bản)` }];
+    conversions.forEach(c => units.push({ unit:c.input_unit, rate:c.rate, desc:c.description||c.input_unit }));
+    return units;
+  }
+
+  function renderItemsList(){
+    const el = document.getElementById('itemsList');
+    const allItems = getAllItems();
+    if(!poItems.length){
+      el.innerHTML = '<div style="text-align:center;color:#bbb;font-size:13px;padding:16px 0">Chưa có mặt hàng nào. Nhấn "+ Thêm mặt hàng"</div>';
+      return;
+    }
+    el.innerHTML = poItems.map((item, idx) => {
+      const units = getUnitsFor(item.itemType, item.itemId);
+      const selectedUnit = units.find(u=>u.unit===item.inputUnit) || units[0];
+      const convInfo = selectedUnit && selectedUnit.rate !== 1
+        ? `${item.inputQty||0} ${selectedUnit.unit} = ${((item.inputQty||0)*selectedUnit.rate).toLocaleString('vi-VN')} ${allItems.find(i=>i.id===item.itemId)?.baseUnit||''}`
+        : '';
+      return `<div class="po-item-card">
+        <button class="po-item-del" onclick="removeItem(${idx})">×</button>
+        <div class="item-row">
+          <div class="item-field" style="grid-column:span 2">
+            <label>Mặt hàng</label>
+            <select onchange="onItemSelect(${idx},this.value)">
+              <option value="">-- Chọn mặt hàng --</option>
+              <optgroup label="Nguyên liệu thô">
+                ${RAW_MATERIALS.map(r=>`<option value="raw|${r.id}|${r.name}|${r.unit}" ${item.itemId===r.id?'selected':''}>${r.name} (${r.unit})</option>`).join('')}
+              </optgroup>
+              <optgroup label="Vật tư tiêu hao">
+                ${SUPPLIES.filter(s=>s.category==='consumable').map(s=>`<option value="supply|${s.id}|${s.name}|${s.unit}" ${item.itemId===s.id?'selected':''}>${s.name} (${s.unit})</option>`).join('')}
+              </optgroup>
+              <optgroup label="Công cụ dụng cụ">
+                ${SUPPLIES.filter(s=>s.category==='equipment').map(s=>`<option value="equipment|${s.id}|${s.name}|${s.unit}" ${item.itemId===s.id?'selected':''}>${s.name} (${s.unit})</option>`).join('')}
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="item-row">
+          <div class="item-field">
+            <label>Đơn vị tính</label>
+            <select onchange="onUnitSelect(${idx},this.value)">
+              ${units.map(u=>`<option value="${u.unit}" data-rate="${u.rate}" ${item.inputUnit===u.unit?'selected':''}>${u.desc||u.unit}</option>`).join('')}
+            </select>
+          </div>
+          <div class="item-field">
+            <label>Số lượng nhập</label>
+            <input type="number" min="0" step="any" value="${item.inputQty||''}" placeholder="0"
+              oninput="onQtyChange(${idx},this.value)">
+          </div>
+        </div>
+        <div class="item-row">
+          <div class="item-field">
+            <label>Giá nhập (₫/${item.inputUnit||'đơn vị'})</label>
+            <input type="number" min="0" step="1000" value="${item.unitPrice||''}" placeholder="0"
+              oninput="onPriceChange(${idx},this.value)">
+          </div>
+          <div class="item-field">
+            <label>Thành tiền</label>
+            <input type="text" value="${item.totalPrice?fmt(item.totalPrice):''}" readonly style="background:#e8e6e0;color:#888">
+          </div>
+        </div>
+        ${convInfo?`<div class="conversion-info">🔄 ${convInfo}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  function onItemSelect(idx, val){
+    if(!val){ poItems[idx] = {...poItems[idx], itemType:'raw', itemId:'', itemName:'', inputUnit:'', baseUnit:'', convRate:1}; renderItemsList(); return; }
+    const [type, id, name, baseUnit] = val.split('|');
+    const units = getUnitsFor(type, id);
+    const defaultUnit = units[0];
+    poItems[idx] = { ...poItems[idx], itemType:type, itemId:id, itemName:name, baseUnit, inputUnit:defaultUnit?.unit||baseUnit, convRate:defaultUnit?.rate||1 };
+    recalcItem(idx); renderItemsList(); updateGrandTotal();
+  }
+
+  function onUnitSelect(idx, unit){
+    const units = getUnitsFor(poItems[idx].itemType, poItems[idx].itemId);
+    const selected = units.find(u=>u.unit===unit);
+    poItems[idx].inputUnit = unit;
+    poItems[idx].convRate = selected?.rate || 1;
+    recalcItem(idx); renderItemsList(); updateGrandTotal();
+  }
+
+  function onQtyChange(idx, val){ poItems[idx].inputQty = parseFloat(val)||0; recalcItem(idx); updateGrandTotal(); }
+  function onPriceChange(idx, val){ poItems[idx].unitPrice = parseFloat(val)||0; recalcItem(idx); updateGrandTotal(); }
+
+  function recalcItem(idx){
+    const item = poItems[idx];
+    item.baseQty = (item.inputQty||0) * (item.convRate||1);
+    item.totalPrice = Math.round((item.inputQty||0) * (item.unitPrice||0));
+  }
+
+  function updateGrandTotal(){
+    const total = poItems.reduce((s,i)=>s+i.totalPrice,0);
+    document.getElementById('grandTotal').textContent = fmt(total);
+  }
+
+  async function savePO(){
+    const validItems = poItems.filter(i => i.itemId && i.inputQty > 0);
+    if(!validItems.length){ toast('Vui lòng thêm ít nhất 1 mặt hàng hợp lệ'); return; }
+
+    const supplier = document.getElementById('poSupplier').value.trim();
+    const note     = document.getElementById('poNote').value.trim();
+    const total    = validItems.reduce((s,i)=>s+i.totalPrice,0);
+    const poNum    = 'NH' + Date.now().toString().slice(-8);
+
+    try {
+      // Tạo phiếu nhập
+      const poRes = await DB.insert('purchase_orders', {
+        po_num: poNum, supplier: supplier||null, note: note||null,
+        total_amount: total, staff_name: session?.name||'',
+      });
+      const poId = poRes[0].id;
+
+      // Insert items
+      for(const item of validItems){
+        await DB.insert('purchase_order_items', {
+          po_id: poId,
+          item_type: item.itemType,
+          item_id: item.itemId,
+          item_name: item.itemName,
+          input_qty: item.inputQty,
+          input_unit: item.inputUnit,
+          conversion_rate: item.convRate,
+          base_qty: item.baseQty,
+          base_unit: item.baseUnit,
+          unit_price: item.unitPrice,
+          total_price: item.totalPrice,
+        }, false);
+
+        // Cập nhật tồn kho + giá vốn BQ
+        await updateStock(item);
+      }
+
+      hidePO();
+      toast(`✓ Đã lưu phiếu ${poNum} — ${fmt(total)}`);
+      loadAndRender();
+    } catch(e){ toast('Lỗi: ' + e.message); }
+  }
+
+  async function updateStock(item){
+    const pricePerBaseUnit = item.unitPrice / (item.convRate || 1);
+
+    if(item.itemType === 'raw'){
+      // Cập nhật raw_stock với giá vốn BQ gia quyền
+      const stocks = await DB.select('raw_stock', `id=eq.${item.itemId}&select=*`);
+      const current = stocks && stocks.length ? stocks[0] : null;
+      const oldQty  = parseFloat(current?.quantity) || 0;
+      const oldAvg  = parseFloat(current?.avg_cost)  || 0;
+      const oldTotal = parseFloat(current?.total_qty_imported) || 0;
+      const newQty  = oldQty + item.baseQty;
+      const newAvg  = newQty > 0 ? (oldAvg * oldQty + pricePerBaseUnit * item.baseQty) / newQty : 0;
+
+      await DB.upsert('raw_stock', {
+        id: item.itemId,
+        quantity: newQty,
+        avg_cost: newAvg,
+        total_qty_imported: oldTotal + item.baseQty,
+        updated_at: new Date().toISOString(),
+      });
+
+    } else {
+      // Cập nhật supplies
+      const stocks = await DB.select('supplies', `id=eq.${item.itemId}&select=quantity`);
+      const current = stocks && stocks.length ? stocks[0] : null;
+      const oldQty  = parseFloat(current?.quantity) || 0;
+      await DB.update('supplies', `id=eq.${item.itemId}`, {
+        quantity: oldQty + item.baseQty,
+        updated_at: new Date().toISOString(),
+      });
+    }
+  }
+
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(t._tid); t._tid = setTimeout(()=>t.style.opacity='0',2500);
+  }
+
+  init();
+</script>
+</body>
+</html>
