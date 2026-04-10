@@ -21,14 +21,6 @@ WHERE s.id = m.canonical_id;
 -- ============================================================
 -- BƯỚC 2: Cập nhật sku_items — trỏ về id gốc
 -- ============================================================
-UPDATE sku_items SET map_to    = 'ly'      WHERE map_to    = 'ly_pet98_16oz';
-UPDATE sku_items SET map_to    = 'nap'     WHERE map_to    = 'nap_pet98';
-UPDATE sku_items SET map_to    = 'ong_hut' WHERE map_to    = 'ong_hut_den_zin';
-UPDATE sku_items SET map_to    = 'muong'   WHERE map_to    = 'muong_den_15';
-UPDATE sku_items SET map_to    = 'tui_don' WHERE map_to    = 'tui_chu_t';
-UPDATE sku_items SET map_to    = 'tui_doi' WHERE map_to    = 'tui_doi_pe';
-
--- Nếu dùng cột map_to_id (sau ALTER migration 007)
 UPDATE sku_items SET map_to_id = 'ly'      WHERE map_to_id = 'ly_pet98_16oz';
 UPDATE sku_items SET map_to_id = 'nap'     WHERE map_to_id = 'nap_pet98';
 UPDATE sku_items SET map_to_id = 'ong_hut' WHERE map_to_id = 'ong_hut_den_zin';
