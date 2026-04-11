@@ -195,9 +195,8 @@
 Auth.require('inventory_edit');
 const session = Auth.getSession();
 const fmt = n => (n||0).toLocaleString('en-US') + ' ₫';
-  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
+const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
 const fmtN = n => (n||0).toLocaleString('en-US');
-  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
 
 let allPOs = [], filteredPOs = [];
 let currentFilter = 'all', searchQuery = '';
@@ -214,8 +213,8 @@ let payingPOId  = null;
 async function init(){
   try {
     [SUPPLIERS, SKU_ITEMS, SKU_UNITS] = await Promise.all([
-      DB.select('suppliers','active=eq.true&select=*&order=name.asc'),
-      DB.select('sku_items','active=eq.true&select=*&order=name.asc'),
+      DB.select('suppliers','select=*&order=name.asc'),
+      DB.select('sku_items','select=*&order=name.asc'),
       DB.select('sku_units','select=*'),
     ]);
     await loadPOs();

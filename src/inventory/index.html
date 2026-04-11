@@ -198,7 +198,7 @@
   const session    = Auth.getSession();
 
   let activeTab = 1;
-  let RAW_MATERIALS=[], SEMI_PRODUCTS=[], SEMI_RECIPES=[], SUPPLIES=[], SKU_ITEMS=[];
+  let RAW_MATERIALS=[], SEMI_PRODUCTS=[], SEMI_RECIPES=[], SKU_ITEMS=[];
   let rawStockData={}, semiStockData={}, productsData=[], productRecipes=[];
   let unitConvData={}; // { raw_id: [{unit_name, to_base_rate}, ...] }
 
@@ -207,7 +207,6 @@
       const loads = [
         DB.select('semi_products','select=*&order=name.asc'),
         DB.select('semi_stock','select=*'),
-        DB.select('supplies','select=*&order=category.asc,name.asc'),
         DB.select('products','active=eq.true&select=*&order=sort_order.asc'),
         DB.select('product_recipes','select=*'),
       ];
@@ -221,20 +220,19 @@
       const res = await Promise.all(loads);
       SEMI_PRODUCTS = res[0];
       res[1].forEach(s=>semiStockData[s.id]=s);
-      SUPPLIES = res[2];
-      productsData = res[3];
-      productRecipes = res[4];
+      productsData = res[2];
+      productRecipes = res[3];
       if(canViewRaw){
-        RAW_MATERIALS = res[5];
-        res[6].forEach(r=>rawStockData[r.id]=r);
-        SEMI_RECIPES = res[7];
-        (res[8]||[]).forEach(c=>{
+        RAW_MATERIALS = res[4];
+        res[5].forEach(r=>rawStockData[r.id]=r);
+        SEMI_RECIPES = res[6];
+        (res[7]||[]).forEach(c=>{
           if(!unitConvData[c.item_id]) unitConvData[c.item_id]=[];
           unitConvData[c.item_id].push(c);
         });
-        if(isOwner) SKU_ITEMS = res[9]||[];
+        if(isOwner) SKU_ITEMS = res[8]||[];
       } else if(isOwner){
-        SKU_ITEMS = res[5]||[];
+        SKU_ITEMS = res[4]||[];
       }
       setupUI();
       renderContent();
@@ -248,10 +246,8 @@
     const tabs = [];
     if(canViewRaw) tabs.push({id:1,label:'Nguyên liệu thô'});
     tabs.push({id:2,label:'Bán thành phẩm'});
-    tabs.push({id:3,label:'Vật tư'});
     tabs.push({id:4,label:'Ly có thể pha'});
     if(canViewRaw) tabs.push({id:5,label:'Lịch sử'});
-    if(isOwner) tabs.push({id:6,label:'Danh mục SKU'});
 
     activeTab = tabs[0].id;
     document.getElementById('tabBar').innerHTML = tabs.map(t=>
@@ -284,10 +280,8 @@
   function renderContent(){
     if(activeTab===1&&canViewRaw) renderRaw();
     else if(activeTab===2) renderSemi();
-    else if(activeTab===3) renderSupplies();
     else if(activeTab===4) renderCanMake();
     else if(activeTab===5&&canViewRaw) renderReceipts();
-    else if(activeTab===6&&isOwner) renderSku();
   }
 
   function renderRaw(){

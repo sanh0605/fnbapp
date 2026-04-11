@@ -228,6 +228,7 @@
   const isManager = isOwner || Auth.getRole() === 'manager';
   const fmt = n => n.toLocaleString('en-US') + ' ₫';
   const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
+  const DOW=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
 
   // ── STATE ──
   let period = 'day', cursor = new Date(), customFrom = null, customTo = null;
@@ -262,7 +263,7 @@
   function goToday(){cursor=new Date();cursor.setHours(0,0,0,0);loadOrders();}
   function updateDateLabel(){
     const{from,to}=getRange();let label='';
-    if(period==='day') label=fmtDate(from);
+    if(period==='day') label=`${DOW[from.getDay()]}, ${fmtDate(from)}`;
     else if(period==='week') label=`${fmtDate(from).slice(0,5)} — ${fmtDate(to)}`;
     else if(period==='month') label=`${String(from.getMonth()+1).padStart(2,'0')}/${from.getFullYear()}`;
     document.getElementById('dateLabel').textContent=label;
@@ -334,7 +335,7 @@
     let html='';
     Object.keys(groups).sort().reverse().forEach(key=>{
       const d=new Date(key);
-      let dayLabel=d.toDateString()===today.toDateString()?'Hôm nay':d.toDateString()===yesterday.toDateString()?'Hôm qua':fmtDate(d);
+      let dayLabel=d.toDateString()===today.toDateString()?'Hôm nay':d.toDateString()===yesterday.toDateString()?'Hôm qua':`${DOW[d.getDay()]}, ${fmtDate(d)}`;
       const dayRev=groups[key].filter(o=>!o.voided).reduce((s,o)=>s+(o.total||0),0);
       html+=`<div class="day-group-label">${dayLabel} · ${fmt(dayRev)}</div>`;
       groups[key].forEach(o=>{

@@ -62,7 +62,7 @@
     </a>
     <span class="header-title">Doanh thu</span>
   </div>
-  <button class="export-btn" onclick="exportCSV()">Xuất CSV</button>
+  <button class="export-btn" onclick="exportXLSX()">Xuất Excel</button>
 </div>
 <div class="period-bar">
   <button class="period-btn active" id="p-day"    onclick="setPeriod('day')">Hôm nay</button>
@@ -86,6 +86,7 @@
 <div class="content" id="content"><div class="empty">Đang tải...</div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="../lib/supabase.js"></script>
 <script src="../auth/auth.js"></script>
 <script>
@@ -100,6 +101,7 @@
   ];
   const fmt=n=>n.toLocaleString('en-US')+' ₫';
   const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
+  const DOW=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
   const toISO=d=>d.toISOString();
   let period='day',cursor=new Date(),customFrom=null,customTo=null,chartInstance=null;
   cursor.setHours(0,0,0,0);
@@ -140,7 +142,7 @@
   function updateDateLabel(){
     const{from,to}=getRange();
     let label='';
-    if(period==='day') label=fmtDate(from);
+    if(period==='day') label=`${DOW[from.getDay()]}, ${fmtDate(from)}`;
     else if(period==='week') label=`${fmtDate(from).slice(0,5)} — ${fmtDate(to)}`;
     else if(period==='month') label=`${String(from.getMonth()+1).padStart(2,'0')}/${from.getFullYear()}`;
     else if(period==='year') label=`Năm ${from.getFullYear()}`;
@@ -230,39 +232,98 @@
   function renderTable(orders,totalRevenue){
     const slot=document.getElementById('tableSlot');
     if(!slot)return;
-    const summary=MENU.map(item=>{
-      const items=orders.flatMap(o=>(o.items||[]).filter(i=>i.id===item.id));
-      const qty=items.reduce((s,i)=>s+(i.qty||0),0);
-      return{...item,qty,rev:qty*item.price};
-    }).filter(i=>i.qty>0).sort((a,b)=>b.rev-a.rev);
+    // Aggregate trực tiếp từ items trong đơn, không phụ thuộc MENU id
+    const map={};
+    orders.forEach(o=>{
+      (o.items||[]).forEach(i=>{
+        const name=i.name||'?';
+        if(!map[name]) map[name]={name,icon:i.icon||'☕',qty:0,rev:0};
+        map[name].qty+=(i.qty||1);
+        map[name].rev+=(i.price||0)*(i.qty||1);
+      });
+    });
+    const summary=Object.values(map).filter(i=>i.qty>0).sort((a,b)=>b.rev-a.rev);
     if(!summary.length){slot.innerHTML='<div class="empty">Chưa có đơn hàng nào</div>';return;}
     slot.innerHTML=`<div class="table-card">
-      <div class="table-header"><span class="table-title">Doanh thu theo món</span><span style="font-size:12px;color:#888">${summary.length} món</span></div>
+      <div class="table-header">
+        <span class="table-title">Sản phẩm bán chạy</span>
+        <span style="font-size:12px;color:#888">${summary.length} món</span>
+      </div>
       ${summary.map((item,i)=>{
         const pct=totalRevenue>0?Math.round(item.rev/totalRevenue*100):0;
-        return `<div class="table-row">
-          <span class="tr-rank">${i+1}</span>
-          <span class="tr-icon">${item.icon}</span>
-          <div class="tr-info"><div class="tr-name">${item.name}</div><div class="tr-qty">${item.qty.toLocaleString('en-US')} ly</div></div>
-          <div><div class="tr-revenue">${fmt(item.rev)}</div><div class="tr-pct">${pct}%</div></div>
+        const barW=totalRevenue>0?Math.round(item.rev/summary[0].rev*100):0;
+        return `<div class="table-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="tr-rank">${i+1}</span>
+            <span class="tr-icon">${item.icon}</span>
+            <div class="tr-info"><div class="tr-name">${item.name}</div><div class="tr-qty">${item.qty.toLocaleString('en-US')} ly</div></div>
+            <div style="text-align:right;flex-shrink:0">
+              <div class="tr-revenue">${fmt(item.rev)}</div>
+              <div class="tr-pct">${pct}%</div>
+            </div>
+          </div>
+          <div style="height:4px;background:#f0f0ec;border-radius:4px;margin-left:46px">
+            <div style="height:100%;width:${barW}%;background:#1D9E75;border-radius:4px"></div>
+          </div>
         </div>`;
       }).join('')}
     </div>`;
   }
 
-  async function exportCSV(){
+  async function exportXLSX(){
     const{from,to}=getRange();
     const orders=await DB.select('orders',`created_at=gte.${toISO(from)}&created_at=lte.${toISO(to)}&select=*&order=created_at.asc`);
     if(!orders.length){alert('Không có dữ liệu');return;}
-    const rows=[['Thời gian','Đơn số','Tổng tiền','Phương thức','Nhân viên','Món']];
+
+    const wb=XLSX.utils.book_new();
+
+    // ── Sheet 1: Danh sách đơn hàng ──
+    const orderRows=[['Thời gian','Đơn số','Tổng tiền (đ)','Chiết khấu (đ)','Thực thu (đ)','Hình thức','Nhân viên','Món']];
     orders.forEach(o=>{
-      const items=(o.items||[]).map(i=>`${i.name} x${i.qty}`).join('; ');
-      rows.push([fmtDate(new Date(o.created_at),true),o.order_num||'',o.total,o.method||'',o.staff_name||'',items]);
+      const items=(o.items||[]).map(i=>`${i.name} x${i.qty||1}`).join('; ');
+      orderRows.push([
+        fmtDate(new Date(o.created_at),true),
+        o.order_num||'',
+        o.total||0,
+        o.discount_amount||0,
+        o.actual_received||o.total||0,
+        o.method||'',
+        o.staff_name||'',
+        items
+      ]);
     });
-    const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=`doanh-thu-${toDateInput(from)}.csv`;a.click();URL.revokeObjectURL(url);
+    const ws1=XLSX.utils.aoa_to_sheet(orderRows);
+    // Căn độ rộng cột tự động
+    ws1['!cols']=[{wch:18},{wch:10},{wch:14},{wch:14},{wch:14},{wch:12},{wch:14},{wch:50}];
+    XLSX.utils.book_append_sheet(wb,ws1,'Đơn hàng');
+
+    // ── Sheet 2: Tổng hợp theo sản phẩm ──
+    const map={};
+    orders.forEach(o=>{
+      (o.items||[]).forEach(i=>{
+        const name=i.name||'?';
+        if(!map[name])map[name]={name,qty:0,rev:0};
+        map[name].qty+=(i.qty||1);
+        map[name].rev+=(i.price||0)*(i.qty||1);
+      });
+    });
+    const summary=Object.values(map).sort((a,b)=>b.rev-a.rev);
+    const totalRev=orders.reduce((s,o)=>s+(o.total||0),0);
+    const prodRows=[['Thứ hạng','Sản phẩm','Số lượng (ly)','Doanh thu (đ)','Tỷ trọng (%)']];
+    summary.forEach((item,i)=>{
+      const pct=totalRev>0?Math.round(item.rev/totalRev*1000)/10:0;
+      prodRows.push([i+1,item.name,item.qty,item.rev,pct]);
+    });
+    const ws2=XLSX.utils.aoa_to_sheet(prodRows);
+    ws2['!cols']=[{wch:10},{wch:22},{wch:16},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb,ws2,'Sản phẩm');
+
+    // Xuất file
+    const label=period==='day'?toDateInput(from)
+      :period==='week'?`${toDateInput(from)}_${toDateInput(to)}`
+      :period==='month'?`${String(from.getMonth()+1).padStart(2,'0')}-${from.getFullYear()}`
+      :`nam-${from.getFullYear()}`;
+    XLSX.writeFile(wb,`doanh-thu-${label}.xlsx`);
   }
 
   loadAndRender();
