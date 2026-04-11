@@ -475,52 +475,69 @@
       const recipes=SEMI_RECIPES.filter(r=>r.semi_id===item.id);
       const canBrew=recipes.every(r=>!RAW_MATERIALS.find(x=>x.id===r.raw_id)||(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
       const recipeText=recipes.map(r=>`${r.amount}${r.unit} ${RAW_MATERIALS.find(x=>x.id===r.raw_id)?.name||r.raw_id}`).join(' + ');
-      return `<div class="brew-item">
+      return `<div class="brew-item" style="flex-wrap:wrap;gap:6px">
         <span style="font-size:24px">${item.icon}</span>
         <div class="brew-info">
           <div class="brew-name">${item.name}</div>
-          <div class="brew-recipe">${recipeText} → ${item.yields}${item.unit}</div>
+          <div class="brew-recipe">${recipeText} → ${item.yields}${item.unit}/mẻ</div>
         </div>
-        <button class="brew-btn" ${canBrew?'':'disabled'} onclick="doBrew('${item.id}')">Pha</button>
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+          <input id="brewQty_${item.id}" type="number" value="${item.yields}" min="0.1" step="any"
+            oninput="updateBrewBtn('${item.id}')"
+            style="width:64px;padding:5px 8px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;text-align:center;font-family:inherit;outline:none">
+          <span style="font-size:12px;color:#888">${item.unit}</span>
+          <button class="brew-btn" id="brewBtn_${item.id}" ${canBrew?'':'disabled'} onclick="doBrew('${item.id}')">Pha</button>
+        </div>
       </div>`;
     }).join('');
   }
 
+  function updateBrewBtn(semiId){
+    const item=SEMI_PRODUCTS.find(s=>s.id===semiId);
+    if(!item) return;
+    const target=parseFloat(document.getElementById('brewQty_'+semiId)?.value)||0;
+    const ratio=item.yields>0?target/item.yields:0;
+    const recipes=SEMI_RECIPES.filter(r=>r.semi_id===semiId);
+    const tracked=recipes.filter(r=>RAW_MATERIALS.find(x=>x.id===r.raw_id));
+    const canBrew=ratio>0&&tracked.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount*ratio);
+    const btn=document.getElementById('brewBtn_'+semiId);
+    if(btn) btn.disabled=!canBrew;
+  }
+
   async function doBrew(semiId){
     const item=SEMI_PRODUCTS.find(s=>s.id===semiId);
+    const target=parseFloat(document.getElementById('brewQty_'+semiId)?.value)||item.yields;
+    const ratio=target/item.yields; // tỉ lệ so với công thức gốc
     const recipes=SEMI_RECIPES.filter(r=>r.semi_id===semiId);
-    // Chỉ kiểm tra nguyên liệu active (bỏ qua nước và các NVL không cần theo dõi)
     const tracked=recipes.filter(r=>RAW_MATERIALS.find(x=>x.id===r.raw_id));
-    const enough=tracked.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
+    const enough=tracked.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount*ratio);
     if(!enough){toast('Không đủ nguyên liệu thô!');return;}
     try {
       for(const r of tracked){
+        const deduct=r.amount*ratio;
         // 1. Trừ raw_stock tổng
-        const newQty=Math.max(0,(parseFloat(rawStockData[r.raw_id]?.quantity)||0)-r.amount);
+        const newQty=Math.max(0,(parseFloat(rawStockData[r.raw_id]?.quantity)||0)-deduct);
         await DB.update('raw_stock',`id=eq.${r.raw_id}`,{quantity:newQty,updated_at:new Date().toISOString()});
         if(rawStockData[r.raw_id]) rawStockData[r.raw_id].quantity=newQty;
-
         // 2. Phân bổ proportional xuống sku_items.quantity
         const relatedSkus=SKU_ITEMS.filter(s=>s.map_to_id===r.raw_id&&s.map_to_type==='raw');
         if(relatedSkus.length>0){
           const totalSkuQty=relatedSkus.reduce((sum,s)=>sum+(parseFloat(s.quantity)||0),0);
           if(totalSkuQty>0){
             for(const sku of relatedSkus){
-              const skuQty=parseFloat(sku.quantity)||0;
-              if(skuQty<=0) continue;
-              const deduct=Math.min(skuQty,(skuQty/totalSkuQty)*r.amount);
-              const newSkuQty=Math.max(0,skuQty-deduct);
-              await DB.update('sku_items',`id=eq.${sku.id}`,{quantity:newSkuQty});
-              sku.quantity=newSkuQty;
+              const skuQty=parseFloat(sku.quantity)||0; if(skuQty<=0) continue;
+              const nq=Math.max(0,skuQty-(skuQty/totalSkuQty)*deduct);
+              await DB.update('sku_items',`id=eq.${sku.id}`,{quantity:nq});
+              sku.quantity=nq;
             }
           }
         }
       }
-      const newSemiQty=(parseFloat(semiStockData[semiId]?.quantity)||0)+item.yields;
+      const newSemiQty=(parseFloat(semiStockData[semiId]?.quantity)||0)+target;
       await DB.upsert('semi_stock',{id:semiId,quantity:newSemiQty,updated_at:new Date().toISOString()});
       if(semiStockData[semiId]) semiStockData[semiId].quantity=newSemiQty;
       else semiStockData[semiId]={quantity:newSemiQty};
-      toast(`✓ Đã pha ${item.yields}${item.unit} ${item.name}`);
+      toast(`✓ Đã pha ${target}${item.unit} ${item.name}`);
       renderBrewList();
       renderContent();
     } catch(e){toast('Lỗi: '+e.message);}
