@@ -6,12 +6,12 @@
 -- ============================================================
 -- Cập nhật tên + metadata cho các canonical (từ brand cụ thể)
 -- ============================================================
-UPDATE raw_materials SET name='Bột cacao',    icon='🍫', warn_at=200, color='#BA751730', updated_at=NOW() WHERE id='cacao_bot';
-UPDATE raw_materials SET name='Bột matcha',   icon='🍵', warn_at=100, color='#C0DD9740', updated_at=NOW() WHERE id='matcha_bot';
-UPDATE raw_materials SET name='Bột kem muối', icon='🧂', warn_at=200, color='#B5D4F440', updated_at=NOW() WHERE id='bot_kem_muoi';
-UPDATE raw_materials SET name='Bột cà phê',   icon='☕', warn_at=500, color='#FAEEDA',   updated_at=NOW() WHERE id='ca_phe_bot';
-UPDATE raw_materials SET name='Sữa tươi',     icon='🍼', warn_at=500, color='#E6F1FB',   updated_at=NOW() WHERE id='sua_tuoi';
-UPDATE raw_materials SET name='Sữa đặc',      icon='🥛', warn_at=300, color='#FAC77540', updated_at=NOW() WHERE id='sua_dac';
+UPDATE raw_materials SET name='Bột cacao',    icon='🍫', warn_at=200, color='#BA751730' WHERE id='cacao_bot';
+UPDATE raw_materials SET name='Bột matcha',   icon='🍵', warn_at=100, color='#C0DD9740' WHERE id='matcha_bot';
+UPDATE raw_materials SET name='Bột kem muối', icon='🧂', warn_at=200, color='#B5D4F440' WHERE id='bot_kem_muoi';
+UPDATE raw_materials SET name='Bột cà phê',   icon='☕', warn_at=500, color='#FAEEDA'   WHERE id='ca_phe_bot';
+UPDATE raw_materials SET name='Sữa tươi',     icon='🍼', warn_at=500, color='#E6F1FB'   WHERE id='sua_tuoi';
+UPDATE raw_materials SET name='Sữa đặc',      icon='🥛', warn_at=300, color='#FAC77540' WHERE id='sua_dac';
 
 -- ============================================================
 -- NHÓM 1: bot_cacao_dk → cacao_bot
