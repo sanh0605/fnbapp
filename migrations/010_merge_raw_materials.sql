@@ -25,7 +25,7 @@ UPDATE raw_stock dst SET
   updated_at = NOW()
 WHERE dst.id = 'cacao_bot';
 
-UPDATE semi_recipes       SET ingredient_id = 'cacao_bot' WHERE ingredient_id = 'bot_cacao_dk';
+UPDATE semi_recipes       SET raw_id        = 'cacao_bot' WHERE raw_id        = 'bot_cacao_dk';
 UPDATE product_recipes    SET ingredient_id = 'cacao_bot' WHERE ingredient_id = 'bot_cacao_dk' AND ingredient_type='raw';
 UPDATE sku_items          SET map_to_id     = 'cacao_bot' WHERE map_to_id     = 'bot_cacao_dk';
 UPDATE purchase_order_items SET item_id     = 'cacao_bot' WHERE item_id       = 'bot_cacao_dk' AND item_type='raw';
@@ -45,7 +45,7 @@ UPDATE raw_stock dst SET
   updated_at = NOW()
 WHERE dst.id = 'matcha_bot';
 
-UPDATE semi_recipes       SET ingredient_id = 'matcha_bot' WHERE ingredient_id = 'bot_matcha_cozy';
+UPDATE semi_recipes       SET raw_id        = 'matcha_bot' WHERE raw_id        = 'bot_matcha_cozy';
 UPDATE product_recipes    SET ingredient_id = 'matcha_bot' WHERE ingredient_id = 'bot_matcha_cozy' AND ingredient_type='raw';
 UPDATE sku_items          SET map_to_id     = 'matcha_bot' WHERE map_to_id     = 'bot_matcha_cozy';
 UPDATE purchase_order_items SET item_id     = 'matcha_bot' WHERE item_id       = 'bot_matcha_cozy' AND item_type='raw';
@@ -65,7 +65,7 @@ UPDATE raw_stock dst SET
   updated_at = NOW()
 WHERE dst.id = 'bot_kem_muoi';
 
-UPDATE semi_recipes       SET ingredient_id = 'bot_kem_muoi' WHERE ingredient_id = 'bot_milk_foam';
+UPDATE semi_recipes       SET raw_id        = 'bot_kem_muoi' WHERE raw_id        = 'bot_milk_foam';
 UPDATE product_recipes    SET ingredient_id = 'bot_kem_muoi' WHERE ingredient_id = 'bot_milk_foam' AND ingredient_type='raw';
 UPDATE sku_items          SET map_to_id     = 'bot_kem_muoi' WHERE map_to_id     = 'bot_milk_foam';
 UPDATE purchase_order_items SET item_id     = 'bot_kem_muoi' WHERE item_id       = 'bot_milk_foam' AND item_type='raw';
@@ -85,7 +85,7 @@ UPDATE raw_stock dst SET
   updated_at = NOW()
 WHERE dst.id = 'ca_phe_bot';
 
-UPDATE semi_recipes       SET ingredient_id = 'ca_phe_bot' WHERE ingredient_id IN ('ca_phe_robusta','ca_phe_phin_dam');
+UPDATE semi_recipes       SET raw_id        = 'ca_phe_bot' WHERE raw_id        IN ('ca_phe_robusta','ca_phe_phin_dam');
 UPDATE product_recipes    SET ingredient_id = 'ca_phe_bot' WHERE ingredient_id IN ('ca_phe_robusta','ca_phe_phin_dam') AND ingredient_type='raw';
 UPDATE sku_items          SET map_to_id     = 'ca_phe_bot' WHERE map_to_id     IN ('ca_phe_robusta','ca_phe_phin_dam');
 UPDATE purchase_order_items SET item_id     = 'ca_phe_bot' WHERE item_id       IN ('ca_phe_robusta','ca_phe_phin_dam') AND item_type='raw';
@@ -105,7 +105,7 @@ UPDATE raw_stock dst SET
   updated_at = NOW()
 WHERE dst.id = 'sua_tuoi';
 
-UPDATE semi_recipes       SET ingredient_id = 'sua_tuoi' WHERE ingredient_id IN ('sua_tuoi_th','sua_tuoi_mlekovita');
+UPDATE semi_recipes       SET raw_id        = 'sua_tuoi' WHERE raw_id        IN ('sua_tuoi_th','sua_tuoi_mlekovita');
 UPDATE product_recipes    SET ingredient_id = 'sua_tuoi' WHERE ingredient_id IN ('sua_tuoi_th','sua_tuoi_mlekovita') AND ingredient_type='raw';
 UPDATE sku_items          SET map_to_id     = 'sua_tuoi' WHERE map_to_id     IN ('sua_tuoi_th','sua_tuoi_mlekovita');
 UPDATE purchase_order_items SET item_id     = 'sua_tuoi' WHERE item_id       IN ('sua_tuoi_th','sua_tuoi_mlekovita') AND item_type='raw';
@@ -125,7 +125,7 @@ UPDATE raw_stock dst SET
   updated_at = NOW()
 WHERE dst.id = 'sua_dac';
 
-UPDATE semi_recipes       SET ingredient_id = 'sua_dac' WHERE ingredient_id IN ('sua_dac_larosee','sua_dac_vinamilk','sua_dac_ngoisao');
+UPDATE semi_recipes       SET raw_id        = 'sua_dac' WHERE raw_id        IN ('sua_dac_larosee','sua_dac_vinamilk','sua_dac_ngoisao');
 UPDATE product_recipes    SET ingredient_id = 'sua_dac' WHERE ingredient_id IN ('sua_dac_larosee','sua_dac_vinamilk','sua_dac_ngoisao') AND ingredient_type='raw';
 UPDATE sku_items          SET map_to_id     = 'sua_dac' WHERE map_to_id     IN ('sua_dac_larosee','sua_dac_vinamilk','sua_dac_ngoisao');
 UPDATE purchase_order_items SET item_id     = 'sua_dac' WHERE item_id       IN ('sua_dac_larosee','sua_dac_vinamilk','sua_dac_ngoisao') AND item_type='raw';
@@ -145,7 +145,7 @@ UPDATE raw_stock dst SET
   updated_at = NOW()
 WHERE dst.id = 'duong_trang';
 
-UPDATE semi_recipes       SET ingredient_id = 'duong_trang' WHERE ingredient_id = 'duong';
+UPDATE semi_recipes       SET raw_id        = 'duong_trang' WHERE raw_id        = 'duong';
 UPDATE product_recipes    SET ingredient_id = 'duong_trang' WHERE ingredient_id = 'duong' AND ingredient_type='raw';
 UPDATE sku_items          SET map_to_id     = 'duong_trang' WHERE map_to_id     = 'duong';
 UPDATE purchase_order_items SET item_id     = 'duong_trang' WHERE item_id       = 'duong' AND item_type='raw';
