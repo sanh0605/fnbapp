@@ -213,20 +213,13 @@
   // ── STATE ──
   let MENU = [], SETTINGS = {}, activeCat = 'Tất cả';
   let cart = {}, notes = {}, orderN = 1, expanded = false, payMethod = null;
-  let bagCount = 1; // user-editable
+  let supplyCounts = { tui_don: 0, tui_doi: 0, muong: 0 }; // user-editable
 
   const getTotal = () => Object.keys(cart).reduce((s,k) => s + (MENU.find(m=>m.id===k)?.price||0) * cart[k], 0);
   const getTotalQty = () => Object.keys(cart).reduce((s,k) => s + cart[k], 0);
 
-  // Logic túi — type auto theo số ly, count do user chỉnh
-  function getBagType(){
-    const qty = getTotalQty();
-    if(qty === 0) return null;
-    if(qty % 2 === 0) return { id: 'tui_doi', name: 'Túi đôi' };
-    return { id: 'tui_don', name: 'Túi chữ T' };
-  }
-  function changeBagCount(delta){
-    bagCount = Math.max(0, bagCount + delta);
+  function changeSupplyCount(id, delta){
+    supplyCounts[id] = Math.max(0, (supplyCounts[id]||0) + delta);
     renderCartItems();
   }
 
@@ -281,7 +274,7 @@
 
   function add(id){ cart[id]=(cart[id]||0)+1; if(!notes[id])notes[id]=''; payMethod=null; update(); toast('+1 '+MENU.find(m=>m.id===id)?.name); }
   function chg(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0){delete cart[id];delete notes[id];} payMethod=null; update(); }
-  function clearAll(){ cart={}; notes={}; payMethod=null; bagCount=1; update(); if(expanded)toggleCart(); }
+  function clearAll(){ cart={}; notes={}; payMethod=null; supplyCounts={tui_don:0,tui_doi:0,muong:0}; update(); if(expanded)toggleCart(); }
   function update(){ renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
   function updateCartBar(){
@@ -327,27 +320,23 @@
       </div>`;
     }).join('');
 
-    // Hiện túi — editable
-    const bagType = getBagType();
-    if(bagType && bagCount > 0){
-      document.getElementById('bagRow').innerHTML =
-        `<div class="bag-row">
-          <span class="bag-label">🛍️ ${bagType.name}</span>
-          <div style="display:flex;align-items:center;gap:6px">
-            <button class="qb" style="width:26px;height:26px;font-size:16px" onclick="changeBagCount(-1)">−</button>
-            <span style="font-size:13px;font-weight:600;min-width:16px;text-align:center">${bagCount}</span>
-            <button class="qb" style="width:26px;height:26px;font-size:16px" onclick="changeBagCount(1)">+</button>
-          </div>
-        </div>`;
-    } else if(bagType && bagCount === 0){
-      document.getElementById('bagRow').innerHTML =
-        `<div class="bag-row">
-          <span class="bag-label" style="color:#aaa">🛍️ Không lấy túi</span>
-          <button class="qb" style="width:26px;height:26px;font-size:16px" onclick="changeBagCount(1)">+</button>
-        </div>`;
-    } else {
-      document.getElementById('bagRow').innerHTML = '';
-    }
+    // Hiện 3 dòng vật tư chọn tay
+    const supplyRows = [
+      { id:'tui_don', icon:'🛍️', label:'Túi chữ T' },
+      { id:'tui_doi', icon:'🛍️', label:'Túi đôi'   },
+      { id:'muong',   icon:'🥄', label:'Muỗng'      },
+    ];
+    document.getElementById('bagRow').innerHTML = Object.keys(cart).length
+      ? supplyRows.map(s=>`
+          <div class="bag-row">
+            <span class="bag-label">${s.icon} ${s.label}</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="qb" style="width:26px;height:26px;font-size:16px" onclick="changeSupplyCount('${s.id}',-1)">−</button>
+              <span style="font-size:13px;font-weight:600;min-width:18px;text-align:center">${supplyCounts[s.id]||0}</span>
+              <button class="qb" style="width:26px;height:26px;font-size:16px" onclick="changeSupplyCount('${s.id}',1)">+</button>
+            </div>
+          </div>`).join('')
+      : '';
   }
 
   function selectMethod(m){ payMethod=m; updatePaymentUI(); }
@@ -385,8 +374,7 @@
     const total = getTotal();
     const methodName = payMethod==='cash' ? 'Tiền mặt' : 'Chuyển khoản';
     const orderNum = '#' + String(orderN).padStart(3,'0');
-    const bagType = getBagType();
-    const bag = bagType && bagCount > 0 ? { type: bagType.id, count: bagCount } : null;
+    const bag = { ...supplyCounts }; // {tui_don, tui_doi, muong}
 
     const items = Object.keys(cart).map(id => {
       const item = MENU.find(m=>m.id===id);
@@ -408,7 +396,7 @@
     deductSupplies(items, bag);
 
     toast(`✓ ${methodName} — ${fmt(total)}`);
-    cart={}; notes={}; payMethod=null; bagCount=1;
+    cart={}; notes={}; payMethod=null; supplyCounts={tui_don:0,tui_doi:0,muong:0};
     orderN++;
     const num = '#' + String(orderN).padStart(3,'0');
     document.getElementById('orderNum').textContent = num;
@@ -439,9 +427,9 @@
         });
       });
 
-      // Trừ túi
-      if(bag){
-        deductions[bag.type] = (deductions[bag.type]||0) + bag.count;
+      // Cộng vật tư chọn tay (túi, muỗng)
+      for(const [id, cnt] of Object.entries(bag||{})){
+        if(cnt > 0) deductions[id] = (deductions[id]||0) + cnt;
       }
 
       // Trừ FIFO từ supply_batches → cập nhật supplies.quantity
