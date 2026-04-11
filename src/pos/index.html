@@ -69,6 +69,19 @@
 
     .cart-footer{padding:12px 16px 28px;border-top:0.5px solid #e8e6e0;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
     .total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:600}
+    /* Chiết khấu + Thực thu */
+    .disc-block{background:#f5f5f0;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+    .disc-row{display:flex;align-items:center;gap:8px}
+    .disc-lbl{font-size:13px;color:#888;flex-shrink:0;min-width:70px}
+    .disc-type-wrap{display:flex;border:0.5px solid #d8d6d0;border-radius:8px;overflow:hidden;flex-shrink:0}
+    .disc-type{padding:5px 9px;border:none;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#888;transition:all .15s}
+    .disc-type.active{background:#1D9E75;color:#fff}
+    .disc-input{flex:1;border:0.5px solid #d8d6d0;border-radius:8px;padding:6px 10px;font-size:14px;font-weight:600;background:#fff;font-family:inherit;text-align:right;outline:none;min-width:0}
+    .disc-input:focus{border-color:#1D9E75}
+    .actual-input{flex:1;border:0.5px solid #d8d6d0;border-radius:8px;padding:6px 10px;font-size:14px;font-weight:700;background:#fff;font-family:inherit;text-align:right;outline:none;min-width:0;color:#1a1a18}
+    .actual-input:focus{border-color:#1D9E75}
+    .payable-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:0 2px}
+    .change-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:0 2px}
     .pay-method-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .pay-method-btn{padding:11px;border-radius:12px;border:0.5px solid #d8d6d0;background:#f5f5f0;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center}
     .pay-method-btn.selected{background:#E1F5EE;border-color:#1D9E75;color:#085041}
@@ -115,6 +128,10 @@
     <button class="icon-btn" onclick="showStockSheet()" title="Kiểm tra tồn kho">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
     </button>
+    <!-- Nút Đơn bán hàng chỉ hiện với manager/owner -->
+    <a href="../orders/index.html" class="icon-btn" id="ordersBtn" style="display:none" title="Đơn bán hàng">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </a>
     <!-- Nút Home chỉ hiện với manager/owner -->
     <a href="../home/index.html" class="icon-btn" id="homeBtn" style="display:none" title="Về trang chủ">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -149,10 +166,38 @@
       <button class="clear-btn" onclick="clearAll()">Xoá tất cả</button>
     </div>
     <div id="cartItems"></div>
-    <div id="bagRow"></div>
   </div>
   <div class="cart-footer">
-    <div class="total-row"><span>Tổng cộng</span><span id="footerTotal">0 ₫</span></div>
+    <div class="total-row"><span>Tổng cộng</span><span id="footerSubtotal">0 ₫</span></div>
+
+    <!-- Chiết khấu + Thực thu -->
+    <div class="disc-block">
+      <!-- Chiết khấu -->
+      <div class="disc-row">
+        <span class="disc-lbl">Chiết khấu</span>
+        <div class="disc-type-wrap">
+          <button class="disc-type active" id="dtVnd" onclick="setDiscType('vnd')">₫</button>
+          <button class="disc-type"        id="dtPct" onclick="setDiscType('pct')">%</button>
+        </div>
+        <input class="disc-input" id="discInput" type="number" min="0" placeholder="0" oninput="updateDiscount()">
+      </div>
+      <!-- Sau chiết khấu (chỉ hiện khi có CK) -->
+      <div class="payable-row" id="payableRow" style="display:none">
+        <span style="color:#888">Sau chiết khấu</span>
+        <span id="payableAmt" style="font-weight:700;color:#1D9E75;font-size:15px"></span>
+      </div>
+      <!-- Thực thu -->
+      <div class="disc-row">
+        <span class="disc-lbl">Thực thu</span>
+        <input class="actual-input" id="actualInput" type="number" min="0" placeholder="Tự động" oninput="updateActual()">
+      </div>
+      <!-- Tiền thừa (chỉ hiện khi thực thu > cần TT) -->
+      <div class="change-row" id="changeRow" style="display:none">
+        <span style="color:#888">Tiền thừa trả khách</span>
+        <span id="changeAmt" style="color:#1D9E75;font-weight:600"></span>
+      </div>
+    </div>
+
     <div>
       <div style="font-size:12px;color:#888;margin-bottom:6px">Hình thức thanh toán</div>
       <div class="pay-method-grid">
@@ -200,6 +245,7 @@
   // Hiện nút Home cho manager/owner
   if(role === 'manager' || role === 'owner'){
     document.getElementById('homeBtn').style.display = 'flex';
+    document.getElementById('ordersBtn').style.display = 'flex';
   }
   if(session) document.getElementById('userName').textContent = session.name;
 
@@ -208,21 +254,24 @@
   function updateNet(){ netDot.className = 'net-dot' + (navigator.onLine ? '' : ' offline'); }
   window.addEventListener('online', updateNet); window.addEventListener('offline', updateNet); updateNet();
 
-  const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+  const fmt = n => n.toLocaleString('en-US') + ' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
 
   // ── STATE ──
   let MENU = [], SETTINGS = {}, activeCat = 'Tất cả';
   let cart = {}, notes = {}, orderN = 1, expanded = false, payMethod = null;
-  let supplyCounts = { tui_don: 0, tui_doi: 0, muong: 0 }; // user-editable
+  let discountType = 'vnd', discountValue = 0, actualReceived = null;
 
-  const findItem = id => MENU.find(m=>m.id===id);
-  const getTotal = () => Object.keys(cart).reduce((s,k) => s + (findItem(k)?.price||0) * cart[k], 0);
+  const findItem    = id => MENU.find(m=>m.id===id);
+  const getSubtotal = () => Object.keys(cart).reduce((s,k) => s + (findItem(k)?.price||0) * cart[k], 0);
+  const getDiscount = () => {
+    if(!discountValue) return 0;
+    if(discountType === 'pct') return Math.round(getSubtotal() * Math.min(discountValue,100) / 100);
+    return Math.min(discountValue, getSubtotal());
+  };
+  const getPayable  = () => Math.max(0, getSubtotal() - getDiscount());
+  const getTotal    = getPayable; // alias dùng chỗ cũ
   const getTotalQty = () => Object.keys(cart).reduce((s,k) => s + cart[k], 0);
-
-  function changeSupplyCount(id, delta){
-    supplyCounts[id] = Math.max(0, (supplyCounts[id]||0) + delta);
-    renderCartItems();
-  }
 
   // ── LOAD DATA ──
   async function init(){
@@ -233,7 +282,7 @@
       ]);
       MENU = products;
       settings.forEach(s => SETTINGS[s.key] = s.value);
-      renderCats(); renderMenu();
+      renderCats(); renderMenu(); updateCartBar();
     } catch(e){
       document.getElementById('menuList').innerHTML = `<div class="loading">Lỗi tải menu: ${e.message}</div>`;
     }
@@ -250,49 +299,100 @@
   }
   function setCat(c){ activeCat=c; renderCats(); renderMenu(); }
 
+  function renderMenuRow(item){
+    const qty = cart[item.id] || 0;
+    const out = item.active === false;
+    return `<div class="menu-row${out?' out':''}">
+      <div class="micon" style="background:${item.color||'#f5f5f0'}">${item.icon||'☕'}</div>
+      <div class="minfo">
+        <div class="mname">${item.name}</div>
+        <div class="mprice">${fmt(item.price)}</div>
+      </div>
+      ${out ? '' : qty === 0
+        ? `<button class="add-btn" onclick="add('${item.id}')">+</button>`
+        : `<div class="qty-ctrl">
+             <button class="qb" onclick="chg('${item.id}',-1)">−</button>
+             <span class="qn">${qty}</span>
+             <button class="qb" onclick="chg('${item.id}',1)">+</button>
+           </div>`}
+    </div>`;
+  }
+
   function renderMenu(){
-    const items = activeCat==='Tất cả' ? MENU : MENU.filter(m=>m.category===activeCat);
-    if(!items.length){ document.getElementById('menuList').innerHTML='<div class="loading">Không có sản phẩm</div>'; return; }
-    document.getElementById('menuList').innerHTML = items.map(item => {
-      const qty = cart[item.id] || 0;
-      const out = item.active === false;
-      return `<div class="menu-row${out?' out':''}">
-        <div class="micon" style="background:${item.color||'#f5f5f0'}">${item.icon||'☕'}</div>
-        <div class="minfo">
-          <div class="mname">${item.name}</div>
-          <div class="mprice">${fmt(item.price)}</div>
-        </div>
-        ${out ? '' : qty === 0
-          ? `<button class="add-btn" onclick="add('${item.id}')">+</button>`
-          : `<div class="qty-ctrl">
-               <button class="qb" onclick="chg('${item.id}',-1)">−</button>
-               <span class="qn">${qty}</span>
-               <button class="qb" onclick="chg('${item.id}',1)">+</button>
-             </div>`}
-      </div>`;
+    const el = document.getElementById('menuList');
+    if(activeCat !== 'Tất cả'){
+      const items = MENU.filter(m=>m.category===activeCat);
+      if(!items.length){ el.innerHTML='<div class="loading">Không có sản phẩm</div>'; return; }
+      el.innerHTML = items.map(renderMenuRow).join('');
+      return;
+    }
+    // Tất cả → nhóm theo danh mục
+    const cats = [...new Set(MENU.map(m=>m.category))];
+    if(!cats.length){ el.innerHTML='<div class="loading">Không có sản phẩm</div>'; return; }
+    el.innerHTML = cats.map(cat => {
+      const catItems = MENU.filter(m=>m.category===cat);
+      return `<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;padding:6px 2px 4px;margin-top:4px">${cat}</div>`
+        + catItems.map(renderMenuRow).join('');
     }).join('');
   }
 
   function add(id){ cart[id]=(cart[id]||0)+1; if(!notes[id])notes[id]=''; payMethod=null; update(); toast('+1 '+MENU.find(m=>m.id===id)?.name); }
   function chg(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0){delete cart[id];delete notes[id];} payMethod=null; update(); }
-  function clearAll(){ cart={}; notes={}; payMethod=null; supplyCounts={tui_don:0,tui_doi:0,muong:0}; update(); if(expanded)toggleCart(); }
+  function clearAll(){ cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null; document.getElementById('discInput').value=''; document.getElementById('actualInput').value=''; update(); if(expanded)toggleCart(); }
+
+  // ── CHIẾT KHẤU / THỰC THU ──
+  function setDiscType(t){
+    discountType=t;
+    document.getElementById('dtVnd').classList.toggle('active',t==='vnd');
+    document.getElementById('dtPct').classList.toggle('active',t==='pct');
+    document.getElementById('discInput').placeholder = t==='pct'?'0':'0';
+    document.getElementById('discInput').max = t==='pct'?'100':'';
+    updateDiscount();
+  }
+  function updateDiscount(){
+    discountValue = parseFloat(document.getElementById('discInput').value)||0;
+    actualReceived = null; // reset thực thu khi CK thay đổi
+    document.getElementById('actualInput').value = '';
+    renderDiscountUI();
+    updateCartBar();
+    updatePaymentUI();
+  }
+  function updateActual(){
+    actualReceived = parseFloat(document.getElementById('actualInput').value)||null;
+    renderDiscountUI();
+  }
+  function renderDiscountUI(){
+    const subtotal = getSubtotal(), discount = getDiscount(), payable = getPayable();
+    const hasDiscount = discount > 0;
+    document.getElementById('payableRow').style.display = hasDiscount ? 'flex' : 'none';
+    if(hasDiscount) document.getElementById('payableAmt').textContent = fmt(payable);
+    // Actual received
+    const actual = actualReceived !== null ? actualReceived : payable;
+    const change = actual - payable;
+    document.getElementById('changeRow').style.display = change > 0 ? 'flex' : 'none';
+    if(change > 0) document.getElementById('changeAmt').textContent = fmt(change);
+    // QR dùng payable
+    if(document.getElementById('qrSection').classList.contains('show')) updateQR(payable);
+  }
   function update(){ renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
   function updateCartBar(){
-    const count = getTotalQty(), total = getTotal();
-    document.getElementById('cartTotal').textContent = fmt(total);
-    document.getElementById('footerTotal').textContent = fmt(total);
+    const count = getTotalQty(), subtotal = getSubtotal(), payable = getPayable();
+    document.getElementById('cartTotal').textContent = fmt(payable);
+    document.getElementById('footerSubtotal').textContent = fmt(subtotal);
+    renderDiscountUI();
     const badge = document.getElementById('countBadge');
     badge.textContent = count; badge.style.display = count>0?'inline':'none';
     const btn = document.getElementById('cartToggleBtn');
     btn.disabled = count === 0;
     const content = document.getElementById('cartBtnContent');
+    btn.classList.add('icon-only');
     if(expanded){
-      btn.classList.add('icon-only');
-      content.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`;
+      // Icon thu nhỏ (chevrons xuống)
+      content.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 21 6 15"/><polyline points="18 9 12 15 6 9"/></svg>`;
     } else {
-      btn.classList.remove('icon-only');
-      content.textContent = 'Xem giỏ hàng';
+      // Icon phóng to (chevrons lên)
+      content.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/><polyline points="18 21 12 15 6 21"/></svg>`;
     }
   }
 
@@ -300,7 +400,6 @@
     const keys = Object.keys(cart);
     if(!keys.length){
       document.getElementById('cartItems').innerHTML = `<div class="cart-empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Chưa có món nào</div>`;
-      document.getElementById('bagRow').innerHTML = '';
       return;
     }
     document.getElementById('cartItems').innerHTML = keys.map(id => {
@@ -308,7 +407,10 @@
       if(!item) return '';
       return `<div class="ci">
         <div class="ci-top">
-          <span class="ci-name">${item.name}</span>
+          <div style="flex:1;min-width:0">
+            <div class="ci-name">${item.name}</div>
+            <div style="font-size:11px;color:#bbb;margin-top:1px">${fmt(item.price)} / ly</div>
+          </div>
           <div class="qty-ctrl">
             <button class="qb" onclick="chg('${id}',-1)">−</button>
             <span class="qn">${cart[id]}</span>
@@ -320,34 +422,16 @@
           value="${notes[id]||''}" oninput="notes['${id}']=this.value" onclick="event.stopPropagation()">
       </div>`;
     }).join('');
-
-    // Hiện 3 dòng vật tư chọn tay
-    const supplyRows = [
-      { id:'tui_don', icon:'🛍️', label:'Túi chữ T' },
-      { id:'tui_doi', icon:'🛍️', label:'Túi đôi'   },
-      { id:'muong',   icon:'🥄', label:'Muỗng'      },
-    ];
-    document.getElementById('bagRow').innerHTML = Object.keys(cart).length
-      ? supplyRows.map(s=>`
-          <div class="bag-row">
-            <span class="bag-label">${s.icon} ${s.label}</span>
-            <div style="display:flex;align-items:center;gap:6px">
-              <button class="qb" style="width:26px;height:26px;font-size:16px" onclick="changeSupplyCount('${s.id}',-1)">−</button>
-              <span style="font-size:13px;font-weight:600;min-width:18px;text-align:center">${supplyCounts[s.id]||0}</span>
-              <button class="qb" style="width:26px;height:26px;font-size:16px" onclick="changeSupplyCount('${s.id}',1)">+</button>
-            </div>
-          </div>`).join('')
-      : '';
   }
 
   function selectMethod(m){ payMethod=m; updatePaymentUI(); }
 
   function updatePaymentUI(){
-    const total = getTotal(), hasItems = Object.keys(cart).length > 0;
+    const payable = getPayable(), hasItems = Object.keys(cart).length > 0;
     document.getElementById('btnCash').classList.toggle('selected', payMethod==='cash');
     document.getElementById('btnTransfer').classList.toggle('selected', payMethod==='transfer');
     const qr = document.getElementById('qrSection');
-    if(payMethod==='transfer' && hasItems){ qr.classList.add('show'); updateQR(total); }
+    if(payMethod==='transfer' && hasItems){ qr.classList.add('show'); updateQR(payable); }
     else qr.classList.remove('show');
     document.getElementById('confirmBtn').classList.toggle('active', payMethod!==null && hasItems);
   }
@@ -370,13 +454,31 @@
     updateCartBar();
   }
 
+  // ── SWIPE GESTURE ──
+  (function(){
+    const cart = document.getElementById('bottomCart');
+    let startY = 0, startExp = false;
+
+    cart.addEventListener('touchstart', e => {
+      startY   = e.touches[0].clientY;
+      startExp = expanded;
+    }, { passive: true });
+
+    cart.addEventListener('touchend', e => {
+      const dy = startY - e.changedTouches[0].clientY; // dương = vuốt lên
+      if(Math.abs(dy) < 30) return; // bỏ qua tap
+      if(dy > 0 && !startExp) toggleCart();  // vuốt lên → mở
+      if(dy < 0 &&  startExp) toggleCart();  // vuốt xuống → đóng
+    }, { passive: true });
+  })();
+
   async function confirmPay(){
     if(!document.getElementById('confirmBtn').classList.contains('active')) return;
-    const total = getTotal();
+    const subtotal   = getSubtotal();
+    const discount   = getDiscount();
+    const payable    = getPayable();
     const methodName = payMethod==='cash' ? 'Tiền mặt' : 'Chuyển khoản';
-    const orderNum = '#' + String(orderN).padStart(3,'0');
-    const bag = { ...supplyCounts }; // {tui_don, tui_doi, muong}
-
+    const orderNum   = '#' + String(orderN).padStart(3,'0');
     const items = Object.keys(cart).map(id => {
       const item = findItem(id);
       return { id, name:item?.name||'', qty:cart[id], price:item?.price||0 };
@@ -385,19 +487,24 @@
     // Lưu đơn lên Supabase
     try {
       await DB.insert('orders', {
-        order_num:  orderNum,
-        total,
-        method:     methodName,
+        order_num:       orderNum,
+        total:           payable,
+        subtotal,
+        discount_amount: discount || undefined,
+        actual_received: actualReceived || undefined,
+        method:          methodName,
         items,
-        staff_name: session?.name || '',
+        staff_name:      session?.name || '',
       }, false);
     } catch(e){ console.warn('Lỗi lưu đơn:', e); }
 
-    // Trừ vật tư tiêu hao (ly, nắp, ống hút, túi)
-    deductSupplies(items, bag);
+    // Trừ tồn bán thành phẩm (và raw nếu không đủ)
+    deductIngredients(items);
 
-    toast(`✓ ${methodName} — ${fmt(total)}`);
-    cart={}; notes={}; payMethod=null; supplyCounts={tui_don:0,tui_doi:0,muong:0};
+    toast(`✓ ${methodName} — ${fmt(payable)}`);
+    cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
+    document.getElementById('discInput').value='';
+    document.getElementById('actualInput').value='';
     orderN++;
     const num = '#' + String(orderN).padStart(3,'0');
     document.getElementById('orderNum').textContent = num;
@@ -407,92 +514,90 @@
     update();
   }
 
-  async function deductSupplies(items, bag){
+  async function deductIngredients(items){
     try {
       if(!items.length) return;
-
-      // Lấy product_recipes để biết vật tư từng món
       const productIds = items.map(i => i.id).join(',');
-      const recipes = await DB.select('product_recipes',
-        `product_id=in.(${productIds})&ingredient_type=eq.supply&select=*`
-      );
 
-      // Vật tư không auto-trừ (thêm tay)
-      const MANUAL_SUPPLIES = new Set(['muong']);
-
-      // Tính tổng vật tư cần trừ
-      const deductions = {};
-      items.forEach(orderItem => {
-        const itemRecipes = recipes.filter(r => r.product_id === orderItem.id);
-        itemRecipes.forEach(r => {
-          if(MANUAL_SUPPLIES.has(r.ingredient_id)) return; // bỏ qua muỗng
-          deductions[r.ingredient_id] = (deductions[r.ingredient_id]||0) + r.amount * orderItem.qty;
-        });
-      });
-
-      // Cộng vật tư chọn tay (túi, muỗng)
-      for(const [id, cnt] of Object.entries(bag||{})){
-        if(cnt > 0) deductions[id] = (deductions[id]||0) + cnt;
-      }
-
-      // Trừ FIFO từ supply_batches → cập nhật supplies.quantity
-      for(const [supplyId, totalQty] of Object.entries(deductions)){
-        let remaining = totalQty;
-
-        // Lấy các lô còn hàng, cũ nhất trước (FIFO)
-        const batches = await DB.select('supply_batches',
-          `supply_id=eq.${supplyId}&remaining_qty=gt.0&order=purchase_date.asc,created_at.asc&select=*`
-        );
-
-        if(batches && batches.length){
-          for(const batch of batches){
-            if(remaining <= 0) break;
-            const have = parseFloat(batch.remaining_qty)||0;
-            const take = Math.min(have, remaining);
-            await DB.update('supply_batches', `id=eq.${batch.id}`, {
-              remaining_qty: have - take,
-            });
-            remaining -= take;
-          }
-          // Tính lại tổng tồn từ tất cả các lô
-          const allBatches = await DB.select('supply_batches',`supply_id=eq.${supplyId}&select=remaining_qty`);
-          const totalRemaining = (allBatches||[]).reduce((s,b)=>s+(parseFloat(b.remaining_qty)||0),0);
-          await DB.update('supplies', `id=eq.${supplyId}`, {
-            quantity: Math.max(0, totalRemaining),
-            updated_at: new Date().toISOString(),
-          });
-        } else {
-          // Fallback: không có lô → trừ thẳng vào supplies.quantity
-          const cur = await DB.select('supplies',`id=eq.${supplyId}&select=quantity`);
-          const curQty = cur&&cur.length?parseFloat(cur[0].quantity)||0:0;
-          await DB.update('supplies', `id=eq.${supplyId}`, {
-            quantity: Math.max(0, curQty - totalQty),
-            updated_at: new Date().toISOString(),
-          });
-        }
-      }
-
-      // Trừ bán thành phẩm dùng trong công thức sản phẩm
-      const semiRecipes = await DB.select('product_recipes',
+      // 1. Lấy product_recipes → semi ingredients cần dùng
+      const productSemiRecipes = await DB.select('product_recipes',
         `product_id=in.(${productIds})&ingredient_type=eq.semi&select=*`
       );
-      const semiDeductions = {};
+
+      // Tính tổng semi cần trừ cho đơn này
+      const semiNeeded = {}; // { semi_id: qty }
       items.forEach(orderItem => {
-        const itemRecipes = semiRecipes.filter(r => r.product_id === orderItem.id);
-        itemRecipes.forEach(r => {
-          semiDeductions[r.ingredient_id] = (semiDeductions[r.ingredient_id]||0) + r.amount * orderItem.qty;
+        productSemiRecipes.filter(r => r.product_id === orderItem.id).forEach(r => {
+          semiNeeded[r.ingredient_id] = (semiNeeded[r.ingredient_id]||0) + r.amount * orderItem.qty;
         });
       });
-      const semiStocks = await DB.select('semi_stock', 'select=id,quantity');
-      const semiMap = {};
-      semiStocks.forEach(s => semiMap[s.id] = parseFloat(s.quantity)||0);
-      for(const [id, qty] of Object.entries(semiDeductions)){
-        if(semiMap[id] != null){
-          const newQty = Math.max(0, semiMap[id] - qty);
-          await DB.update('semi_stock', `id=eq.${id}`, { quantity: newQty, updated_at: new Date().toISOString() });
+      if(!Object.keys(semiNeeded).length) return;
+
+      // 2. Tải tồn semi hiện tại
+      const semiIds = Object.keys(semiNeeded);
+      const [semiStocks, semiProducts, semiRawRecipes] = await Promise.all([
+        DB.select('semi_stock', `id=in.(${semiIds})&select=id,quantity`),
+        DB.select('semi_products', `id=in.(${semiIds})&select=id,yields`),
+        DB.select('semi_recipes', `semi_id=in.(${semiIds})&select=*`),
+      ]);
+
+      const semiStockMap  = {}; semiStocks.forEach(s  => semiStockMap[s.id]  = parseFloat(s.quantity)||0);
+      const semiYieldsMap = {}; semiProducts.forEach(sp => semiYieldsMap[sp.id] = parseFloat(sp.yields)||1);
+
+      // 3. Trừ semi; phần thiếu → ghi nhận cần trừ raw
+      const rawNeeded = {}; // { raw_id: qty }
+
+      for(const [semiId, needed] of Object.entries(semiNeeded)){
+        const have   = semiStockMap[semiId] || 0;
+        const fromSemi = Math.min(have, needed);
+        const fromRaw  = needed - fromSemi;
+
+        // Cập nhật semi_stock
+        await DB.update('semi_stock', `id=eq.${semiId}`, {
+          quantity:   Math.max(0, have - fromSemi),
+          updated_at: new Date().toISOString(),
+        });
+
+        // Phần còn thiếu → tính lượng raw tương đương
+        if(fromRaw > 0){
+          const yields = semiYieldsMap[semiId] || 1;
+          const ratio  = fromRaw / yields;
+          semiRawRecipes.filter(r => r.semi_id === semiId).forEach(r => {
+            rawNeeded[r.raw_id] = (rawNeeded[r.raw_id]||0) + r.amount * ratio;
+          });
         }
       }
-    } catch(e){ console.warn('Lỗi trừ vật tư:', e); }
+
+      // 4. Trừ raw_stock + FIFO sku_items nếu có
+      if(Object.keys(rawNeeded).length){
+        const rawIds = Object.keys(rawNeeded);
+        const [rawStocks, skuItems] = await Promise.all([
+          DB.select('raw_stock', `id=in.(${rawIds})&select=id,quantity`),
+          DB.select('sku_items', `map_to_type=eq.raw&map_to_id=in.(${rawIds})&select=id,sku_id,map_to_id,quantity`),
+        ]);
+        const rawMap = {}; rawStocks.forEach(r => rawMap[r.id] = parseFloat(r.quantity)||0);
+        for(const [rawId, qty] of Object.entries(rawNeeded)){
+          // Trừ raw_stock tổng
+          await DB.update('raw_stock', `id=eq.${rawId}`, {
+            quantity:   Math.max(0, (rawMap[rawId]||0) - qty),
+            updated_at: new Date().toISOString(),
+          });
+          // FIFO: trừ sku_items từ mã cũ nhất trước
+          const relatedSkus = skuItems
+            .filter(s => s.map_to_id === rawId)
+            .sort((a,b) => (parseFloat(a.quantity)||0)-(parseFloat(b.quantity)||0));
+          let remaining = qty;
+          for(const sku of relatedSkus){
+            const sq = parseFloat(sku.quantity)||0; if(sq<=0) continue;
+            const take = Math.min(sq, remaining);
+            await DB.update('sku_items', `id=eq.${sku.id}`, {quantity: sq - take});
+            sku.quantity = sq - take;
+            remaining -= take;
+            if(remaining <= 0) break;
+          }
+        }
+      }
+    } catch(e){ console.warn('Lỗi trừ nguyên liệu:', e); }
   }
 
   // ── KIỂM TRA TỒN KHO ──
@@ -514,7 +619,7 @@
         return `<div class="stock-row">
           <span class="stock-icon">${sp.icon||'🥤'}</span>
           <span class="stock-name">${sp.name}</span>
-          <span class="stock-qty ${st}">${qty.toLocaleString('vi-VN')} ${sp.unit}</span>
+          <span class="stock-qty ${st}">${qty.toLocaleString('en-US')} ${sp.unit}</span>
         </div>`;
       }).join('');
 
@@ -525,7 +630,7 @@
         return `<div class="stock-row">
           <span class="stock-icon">📦</span>
           <span class="stock-name">${s.name}</span>
-          <span class="stock-qty ${st}">${qty.toLocaleString('vi-VN')} ${s.unit}</span>
+          <span class="stock-qty ${st}">${qty.toLocaleString('en-US')} ${s.unit}</span>
         </div>`;
       }).join('');
 

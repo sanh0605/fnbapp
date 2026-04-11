@@ -92,7 +92,8 @@
 <script>
   Auth.require('pos');
   const session=Auth.getSession();
-  const fmt=n=>n.toLocaleString('vi-VN')+' ₫';
+  const fmt=n=>n.toLocaleString('en-US')+' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
   const toKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const today=new Date(),todayKey=toKey(today);
 
@@ -165,7 +166,7 @@
     // Banner doanh thu
     if(canRevenue){
       html+=`<a href="../revenue/index.html" class="today-banner">
-        <div><div class="tb-label">Doanh thu hôm nay</div><div class="tb-revenue">${fmt(d.todayRev)}</div><div class="tb-sub">${d.todayCount} đơn · ${today.toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'numeric'})}</div></div>
+        <div><div class="tb-label">Doanh thu hôm nay</div><div class="tb-revenue">${fmt(d.todayRev)}</div><div class="tb-sub">${d.todayCount} đơn · ${fmtDate(today)}</div></div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="tb-orders">${d.todayCount} đơn</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9FE1CB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
       </a>`;
       html+=`<div class="stats-row">

@@ -92,7 +92,8 @@
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('menu');
-  const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+  const fmt = n => n.toLocaleString('en-US') + ' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
 
   let PRODUCTS=[], RAW_MATERIALS=[], SEMI_PRODUCTS=[], SUPPLIES=[];
   let editingProductId=null, currentRecipes=[];

@@ -194,8 +194,10 @@
 <script>
 Auth.require('inventory_edit');
 const session = Auth.getSession();
-const fmt = n => (n||0).toLocaleString('vi-VN') + ' ₫';
-const fmtN = n => (n||0).toLocaleString('vi-VN');
+const fmt = n => (n||0).toLocaleString('en-US') + ' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
+const fmtN = n => (n||0).toLocaleString('en-US');
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
 
 let allPOs = [], filteredPOs = [];
 let currentFilter = 'all', searchQuery = '';
@@ -273,8 +275,8 @@ function renderList(){
           <div class="po-num">${po.po_num}</div>
           <div class="po-supplier">${po.suppliers?.name||'—'}</div>
           ${po.platform_order_id?`<div class="po-platform">📦 ${po.platform||'Sàn'}: ${po.platform_order_id}</div>`:''}
-          <div class="po-date">${new Date(po.created_at).toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'})}</div>
-          ${po.debt_due_date?`<div class="po-date" style="color:${new Date(po.debt_due_date)<new Date()?'#E24B4A':'#888'}">Hạn CN: ${new Date(po.debt_due_date).toLocaleDateString('vi-VN')}</div>`:''}
+          <div class="po-date">${fmtDate(new Date(po.created_at))}</div>
+          ${po.debt_due_date?`<div class="po-date" style="color:${new Date(po.debt_due_date)<new Date()?'#E24B4A':'#888'}">Hạn CN: ${fmtDate(new Date(po.debt_due_date))}</div>`:''}
         </div>
         <div class="po-right">
           <div class="po-amount">${fmt(po.total_amount)}</div>
@@ -396,7 +398,7 @@ function renderDraftItems(){
   }
   el.innerHTML = draftItems.map((item,i)=>{
     const units = item.skuId ? SKU_UNITS.filter(u=>u.sku_id===item.skuId) : [];
-    const convInfo = item.qty>0&&item.toBase>1 ? `${item.qty} ${item.skuUnit} = ${(item.qty*item.toBase).toLocaleString('vi-VN')} ${item.baseUnit}` : '';
+    const convInfo = item.qty>0&&item.toBase>1 ? `${item.qty} ${item.skuUnit} = ${(item.qty*item.toBase).toLocaleString('en-US')} ${item.baseUnit}` : '';
     return `<div class="item-card">
       <button class="item-del" onclick="removeDraftItem(${i})">×</button>
       <div class="item-field">
@@ -431,7 +433,7 @@ function renderDraftItems(){
         </div>
         <div class="item-field">
           <label>Chiết khấu (₫)</label>
-          <input class="item-readonly" type="text" readonly value="${((item.amtBefore||0)-(item.amtAfter||0)).toLocaleString('vi-VN')}">
+          <input class="item-readonly" type="text" readonly value="${((item.amtBefore||0)-(item.amtAfter||0)).toLocaleString('en-US')}">
         </div>
       </div>
       ${convInfo?`<div class="item-calc">🔄 ${convInfo}</div>`:''}
@@ -572,7 +574,7 @@ async function showViewPO(poId){
         <span class="po-status-badge badge-${po.status}" style="font-size:12px;padding:4px 10px">${statusLabel}</span>
       </div>
 
-      ${po.debt_due_date?`<div class="warn-box">⏰ Hạn công nợ: ${new Date(po.debt_due_date).toLocaleDateString('vi-VN')}${new Date(po.debt_due_date)<new Date()?' — Đã quá hạn!':''}</div>`:''}
+      ${po.debt_due_date?`<div class="warn-box">⏰ Hạn công nợ: ${fmtDate(new Date(po.debt_due_date))}${new Date(po.debt_due_date)<new Date()?' — Đã quá hạn!':''}</div>`:''}
 
       <!-- ITEMS -->
       <div class="section-title">Danh sách mặt hàng</div>
@@ -614,7 +616,7 @@ async function showViewPO(poId){
         ${payments.map(p=>`<div class="payment-row" style="padding:10px 12px">
           <div class="payment-info">
             <div class="payment-amount">${fmt(p.amount)}</div>
-            <div class="payment-detail">${methodLabel[p.method]||p.method} · ${new Date(p.paid_at).toLocaleDateString('vi-VN')}${p.note?' · '+p.note:''}</div>
+            <div class="payment-detail">${methodLabel[p.method]||p.method} · ${fmtDate(new Date(p.paid_at))}${p.note?' · '+p.note:''}</div>
           </div>
         </div>`).join('')}
       </div>`:''}

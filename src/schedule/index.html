@@ -99,8 +99,10 @@
   Auth.require('pos');
   const session=Auth.getSession();
   const OPEN_HOUR=6,CLOSE_HOUR=10,LATE_GRACE=15;
-  const fmt=n=>n.toLocaleString('vi-VN')+' ₫';
+  const fmt=n=>n.toLocaleString('en-US')+' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
   const fmtTime=d=>`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
   const toKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const today=new Date(),todayKey=toKey(today);
   let activeTab=1,todayLog=null;
@@ -211,7 +213,7 @@
       const dur=ci&&co?Math.round((co-ci)/60000):null;
       const dayRevOrders=await DB.select('orders',`created_at=gte.${log.date}T00:00:00&created_at=lte.${log.date}T23:59:59&select=total`);
       const dayRev=dayRevOrders.reduce((s,o)=>s+o.total,0);
-      const dateStr=new Date(log.date+'T12:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'numeric',month:'numeric'});
+      const dateStr=fmtDate(new Date(log.date+'T12:00:00'));
       return `<div class="history-day">
         <div class="history-date">${dateStr}</div>
         <div class="history-card${status==='on-time'?' on-time':status==='late'?' late':''}">

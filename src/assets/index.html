@@ -149,7 +149,8 @@
 <script>
   Auth.require('inventory_edit');
 
-  const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+  const fmt = n => n.toLocaleString('en-US') + ' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
   const STATUS_LABEL = {active:'Đang dùng', maintenance:'Bảo trì', broken:'Hỏng', disposed:'Đã thanh lý'};
   const STATUS_BADGE = {active:'badge-active', maintenance:'badge-maintenance', broken:'badge-broken', disposed:'badge-disposed'};
 

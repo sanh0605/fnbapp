@@ -119,10 +119,19 @@
     .method-opt{padding:10px;border-radius:10px;border:0.5px solid #d8d6d0;background:#f5f5f0;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center}
     .method-opt.sel{background:#E1F5EE;border-color:#1D9E75;color:#085041}
 
-    /* Tổng */
-    .edit-total{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
-    .et-label{font-size:14px;font-weight:600}
-    .et-value{font-size:22px;font-weight:700;color:#1D9E75}
+    /* Tổng + chiết khấu */
+    .edit-total{background:#fff;border-radius:14px;border:0.5px solid #e8e6e0;padding:14px 16px}
+    .et-row{display:flex;justify-content:space-between;align-items:center}
+    .et-label{font-size:15px;font-weight:700}
+    .et-value{font-size:20px;font-weight:700;color:#1D9E75}
+    .et-sub-label{font-size:13px;color:#888}
+    .et-sub-value{font-size:14px;font-weight:600;color:#444}
+    .et-divider{border:none;border-top:0.5px solid #f0f0ec;margin:10px 0}
+    .et-field-input{border:0.5px solid #d8d6d0;border-radius:8px;padding:6px 10px;font-size:14px;font-weight:600;text-align:right;outline:none;font-family:inherit;background:#fff}
+    .et-field-input:focus{border-color:#1D9E75}
+    .et-change{display:flex;justify-content:space-between;align-items:center;margin-top:10px;background:#E1F5EE;border-radius:8px;padding:8px 12px;display:none}
+    .et-change-lbl{font-size:13px;color:#085041}
+    .et-change-val{font-size:14px;font-weight:700;color:#085041}
 
     /* ── PRODUCT PICKER ── */
     .picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:flex-end;justify-content:center}
@@ -150,9 +159,9 @@
 <!-- ── HEADER + LIST ── -->
 <div class="header">
   <div class="header-left">
-    <a href="../home/index.html" class="back-btn">
+    <button class="back-btn" onclick="history.back()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </a>
+    </button>
     <span class="header-title">Đơn bán hàng</span>
   </div>
 </div>
@@ -199,79 +208,6 @@
 
 <div class="content" id="content"><div class="loading">Đang tải...</div></div>
 
-<!-- ── EDIT OVERLAY ── -->
-<div class="edit-overlay" id="editOverlay">
-  <div class="edit-header">
-    <div class="edit-header-left">
-      <button class="back-btn" onclick="closeEdit()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <span class="edit-title" id="editTitle">Sửa đơn</span>
-    </div>
-    <button class="save-btn" onclick="saveEdit()">Lưu</button>
-  </div>
-  <div class="edit-body">
-
-    <!-- Thông tin đơn -->
-    <div class="edit-section">
-      <div class="edit-section-title">Thông tin đơn</div>
-      <div class="edit-field">
-        <span class="ef-label">Số đơn</span>
-        <input class="ef-input" id="ef-order-num" placeholder="#001">
-      </div>
-      <div class="edit-field">
-        <span class="ef-label">Thời gian</span>
-        <input class="ef-input" id="ef-datetime" type="datetime-local">
-      </div>
-      <div class="edit-field">
-        <span class="ef-label">Nhân viên</span>
-        <input class="ef-input" id="ef-staff" placeholder="Tên nhân viên">
-      </div>
-    </div>
-
-    <!-- Món đặt -->
-    <div class="edit-section">
-      <div class="edit-section-title">Món đặt</div>
-      <div id="editItemsList"></div>
-      <div class="add-item-btn" onclick="openPicker()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Thêm món
-      </div>
-    </div>
-
-    <!-- Hình thức thanh toán -->
-    <div class="edit-section">
-      <div class="edit-section-title">Hình thức thanh toán</div>
-      <div class="method-grid">
-        <button class="method-opt" id="mopt-cash"     onclick="selectEditMethod('Tiền mặt')">Tiền mặt</button>
-        <button class="method-opt" id="mopt-transfer" onclick="selectEditMethod('Chuyển khoản')">Chuyển khoản</button>
-      </div>
-    </div>
-
-    <!-- Tổng -->
-    <div class="edit-total">
-      <span class="et-label">Tổng cộng</span>
-      <span class="et-value" id="editTotal">0 ₫</span>
-    </div>
-
-  </div>
-</div>
-
-<!-- ── PRODUCT PICKER ── -->
-<div class="picker-overlay" id="pickerOverlay" onclick="closePicker()">
-  <div class="picker-sheet" onclick="event.stopPropagation()">
-    <div class="picker-header">
-      <div class="picker-title">Chọn món</div>
-      <div class="picker-search-wrap">
-        <svg class="picker-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input class="picker-search" id="pickerSearch" placeholder="Tìm món..." oninput="filterPicker(this.value)">
-      </div>
-    </div>
-    <div class="picker-list" id="pickerList"></div>
-    <div class="picker-close" onclick="closePicker()">Đóng</div>
-  </div>
-</div>
-
 <!-- ── OVERLAY HUỶ ĐƠN ── -->
 <div class="overlay" id="voidOverlay" onclick="closeVoid()">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -290,18 +226,13 @@
   Auth.require('revenue');
   const isOwner = Auth.getRole() === 'owner';
   const isManager = isOwner || Auth.getRole() === 'manager';
-  const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+  const fmt = n => n.toLocaleString('en-US') + ' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
 
   // ── STATE ──
   let period = 'day', cursor = new Date(), customFrom = null, customTo = null;
   let allOrders = [], filteredOrders = [];
-  let PRODUCTS = [];   // danh sách sản phẩm để picker
   let voidTargetId = null;
-
-  // Edit state
-  let editId = null;
-  let editItems = [];   // [{id, name, qty, price}]
-  let editMethod = '';
 
   cursor.setHours(0,0,0,0);
 
@@ -331,9 +262,9 @@
   function goToday(){cursor=new Date();cursor.setHours(0,0,0,0);loadOrders();}
   function updateDateLabel(){
     const{from,to}=getRange();let label='';
-    if(period==='day') label=from.toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'numeric',year:'numeric'});
-    else if(period==='week') label=`${from.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric'})} — ${to.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'})}`;
-    else if(period==='month') label=from.toLocaleDateString('vi-VN',{month:'long',year:'numeric'});
+    if(period==='day') label=fmtDate(from);
+    else if(period==='week') label=`${fmtDate(from).slice(0,5)} — ${fmtDate(to)}`;
+    else if(period==='month') label=`${String(from.getMonth()+1).padStart(2,'0')}/${from.getFullYear()}`;
     document.getElementById('dateLabel').textContent=label;
   }
   function toDateInput(d){const x=new Date(d);return`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;}
@@ -347,11 +278,7 @@
 
   // ── LOAD ──
   async function init(){
-    const [,prods] = await Promise.allSettled([
-      loadOrders(),
-      DB.select('products','active=eq.true&select=id,name,icon,color,price,category&order=sort_order.asc'),
-    ]);
-    if(prods.status==='fulfilled') PRODUCTS = prods.value || [];
+    await loadOrders();
   }
 
   async function loadOrders(){
@@ -407,13 +334,13 @@
     let html='';
     Object.keys(groups).sort().reverse().forEach(key=>{
       const d=new Date(key);
-      let dayLabel=d.toDateString()===today.toDateString()?'Hôm nay':d.toDateString()===yesterday.toDateString()?'Hôm qua':d.toLocaleDateString('vi-VN',{weekday:'long',day:'numeric',month:'numeric'});
+      let dayLabel=d.toDateString()===today.toDateString()?'Hôm nay':d.toDateString()===yesterday.toDateString()?'Hôm qua':fmtDate(d);
       const dayRev=groups[key].filter(o=>!o.voided).reduce((s,o)=>s+(o.total||0),0);
       html+=`<div class="day-group-label">${dayLabel} · ${fmt(dayRev)}</div>`;
       groups[key].forEach(o=>{
         const items=Array.isArray(o.items)?o.items:[];
         const t=new Date(o.created_at);
-        const timeStr=t.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+        const timeStr=fmtDate(t,true).split(' ')[1];
         const preview=items.map(i=>`${i.name}${i.qty>1?` ×${i.qty}`:''}`).join(', ')||'—';
         const mCls=o.voided?'method-void':o.method==='Tiền mặt'?'method-cash':'method-transfer';
         const mLbl=o.voided?'Đã huỷ':(o.method||'—');
@@ -433,12 +360,15 @@
           </div>
           <div class="order-detail" id="detail-${safeId}">
             ${items.map(i=>`<div class="detail-item">
-              <div><div class="di-name">${i.name||'?'}</div><div class="di-qty">× ${i.qty||1}</div></div>
+              <div>
+                <div class="di-name">${i.name||'?'}</div>
+                <div class="di-qty">${i.price?`${fmt(i.price)} × ${i.qty||1}`:`× ${i.qty||1}`}</div>
+              </div>
               <div class="di-price">${fmt((i.price||0)*(i.qty||1))}</div>
             </div>`).join('')}
             ${o.staff_name?`<div class="detail-staff">Nhân viên: ${o.staff_name}</div>`:''}
             ${!o.voided?`<div class="detail-actions">
-              ${isManager?`<button class="edit-btn" onclick="openEdit('${o.id}',event)">Sửa đơn</button>`:''}
+              ${isManager?`<button class="edit-btn" onclick="goEdit('${o.id}',event)">Sửa đơn</button>`:''}
               ${isOwner?`<button class="void-btn" onclick="promptVoid('${o.id}','${o.order_num||''}',event)">Huỷ đơn</button>`:''}
             </div>`:''}
           </div>
@@ -458,136 +388,9 @@
   }
 
   // ── EDIT ──
-  function toLocalDatetimeInput(isoStr){
-    const d=new Date(isoStr);
-    const pad=n=>String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  function openEdit(id, e){
+  function goEdit(id, e){
     if(e) e.stopPropagation();
-    const o=allOrders.find(x=>x.id===id);
-    if(!o) return;
-    editId=id;
-    editItems=(Array.isArray(o.items)?o.items:[]).map(i=>({...i})); // deep copy
-    editMethod=o.method||'Tiền mặt';
-
-    document.getElementById('editTitle').textContent=`Sửa đơn ${o.order_num||''}`;
-    document.getElementById('ef-order-num').value=o.order_num||'';
-    document.getElementById('ef-datetime').value=toLocalDatetimeInput(o.created_at);
-    document.getElementById('ef-staff').value=o.staff_name||'';
-    selectEditMethod(editMethod);
-    renderEditItems();
-    document.getElementById('editOverlay').classList.add('show');
-  }
-
-  function closeEdit(){
-    document.getElementById('editOverlay').classList.remove('show');
-    editId=null; editItems=[];
-  }
-
-  function selectEditMethod(m){
-    editMethod=m;
-    document.getElementById('mopt-cash').classList.toggle('sel',m==='Tiền mặt');
-    document.getElementById('mopt-transfer').classList.toggle('sel',m==='Chuyển khoản');
-  }
-
-  function editCalcTotal(){
-    return editItems.reduce((s,i)=>{
-      const price=parseFloat(String(i.price).replace(/[^0-9.-]/g,''))||0;
-      return s+price*(i.qty||1);
-    },0);
-  }
-
-  function renderEditItems(){
-    const el=document.getElementById('editItemsList');
-    if(!editItems.length){el.innerHTML='<div style="padding:12px 14px;font-size:13px;color:#bbb">Chưa có món nào</div>';updateEditTotal();return;}
-    el.innerHTML=editItems.map((item,idx)=>`
-      <div class="edit-item-row">
-        <div class="ei-name">
-          <div class="ei-n">${item.name||'?'}</div>
-          <input class="ei-price-input" value="${(item.price||0).toLocaleString('vi-VN')}"
-            onchange="editSetPrice(${idx},this.value)" placeholder="Giá">
-        </div>
-        <div class="ei-ctrl">
-          <button class="eqb" onclick="editChgQty(${idx},-1)">−</button>
-          <span class="eqn">${item.qty||1}</span>
-          <button class="eqb" onclick="editChgQty(${idx},1)">+</button>
-          <button class="eqb del" onclick="editRemoveItem(${idx})">✕</button>
-        </div>
-      </div>`).join('');
-    updateEditTotal();
-  }
-
-  function editChgQty(idx,d){
-    editItems[idx].qty=(editItems[idx].qty||1)+d;
-    if(editItems[idx].qty<=0) editItems.splice(idx,1);
-    renderEditItems();
-  }
-  function editRemoveItem(idx){ editItems.splice(idx,1); renderEditItems(); }
-  function editSetPrice(idx,val){
-    const num=parseFloat(String(val).replace(/[^0-9.]/g,''))||0;
-    editItems[idx].price=num;
-    updateEditTotal();
-  }
-  function updateEditTotal(){
-    document.getElementById('editTotal').textContent=fmt(editCalcTotal());
-  }
-
-  async function saveEdit(){
-    if(!editId) return;
-    const orderNum=document.getElementById('ef-order-num').value.trim();
-    const dtVal=document.getElementById('ef-datetime').value;
-    const staffName=document.getElementById('ef-staff').value.trim();
-    const total=editCalcTotal();
-    const createdAt=dtVal?new Date(dtVal).toISOString():undefined;
-    const payload={
-      order_num:orderNum||undefined,
-      items:editItems,
-      total,
-      method:editMethod,
-      staff_name:staffName||undefined,
-    };
-    if(createdAt) payload.created_at=createdAt;
-    try{
-      await DB.update('orders',`id=eq.${editId}`,payload);
-      // cập nhật local state
-      const o=allOrders.find(x=>x.id===editId);
-      if(o){ Object.assign(o,payload); }
-      closeEdit();
-      renderSummary(); renderList();
-      toast('Đã lưu đơn hàng');
-    }catch(err){ toast('Lỗi: '+err.message); }
-  }
-
-  // ── PRODUCT PICKER ──
-  function openPicker(){
-    document.getElementById('pickerSearch').value='';
-    filterPicker('');
-    document.getElementById('pickerOverlay').classList.add('show');
-  }
-  function closePicker(){ document.getElementById('pickerOverlay').classList.remove('show'); }
-
-  function filterPicker(q){
-    const list=document.getElementById('pickerList');
-    const filtered=q?PRODUCTS.filter(p=>(p.name||'').toLowerCase().includes(q.toLowerCase())):PRODUCTS;
-    if(!filtered.length){list.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:#bbb">Không tìm thấy</div>';return;}
-    list.innerHTML=filtered.map(p=>`
-      <div class="picker-item" onclick="addToPicker('${p.id}')">
-        <div class="picker-icon" style="background:${p.color||'#f5f5f0'}">${p.icon||'☕'}</div>
-        <span class="picker-name">${p.name}</span>
-        <span class="picker-price">${fmt(p.price||0)}</span>
-      </div>`).join('');
-  }
-
-  function addToPicker(productId){
-    const p=PRODUCTS.find(x=>x.id===productId);
-    if(!p) return;
-    const existing=editItems.find(i=>i.id===productId);
-    if(existing){ existing.qty=(existing.qty||1)+1; }
-    else { editItems.push({id:p.id,name:p.name,qty:1,price:p.price||0}); }
-    closePicker();
-    renderEditItems();
+    location.href = `edit.html?id=${id}`;
   }
 
   // ── VOID ──

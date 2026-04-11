@@ -191,6 +191,7 @@
 <script src="../auth/auth.js"></script>
 <script>
   Auth.require('inventory_view');
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
   const canEdit    = Auth.can('inventory_edit');
   const canViewRaw = Auth.can('inventory_edit');
   const isOwner    = Auth.getRole() === 'owner';
@@ -297,12 +298,12 @@
       const max=item.warn_at*5||500, pct=Math.min(100,Math.round(amt/max*100));
       const st=stockStatus(amt,item.warn_at);
       const avgCost=parseFloat(d.avg_cost)||0;
-      const avgText=avgCost>0?` · BQ: ${Math.round(avgCost*1000).toLocaleString('vi-VN')}₫/1000${item.unit}`:'';
+      const avgText=avgCost>0?` · BQ: ${Math.round(avgCost*1000).toLocaleString('en-US')}₫/1000${item.unit}`:'';
       const convs=(unitConvData[item.id]||[]).filter(c=>Number(c.rate)>1);
       const convText=convs.map(c=>{
         const q=amt/Number(c.rate);
         if(!isFinite(q)||q<=0) return '';
-        return `${q%1===0?q.toLocaleString('vi-VN'):q.toFixed(1)} ${c.input_unit}`;
+        return `${q%1===0?q.toLocaleString('en-US'):q.toFixed(1)} ${c.input_unit}`;
       }).filter(Boolean).join(' · ');
       return `<div class="stock-card${st==='ok'?'':' '+st}" onclick="showRawDetail('${item.id}')" style="cursor:pointer">
         <div class="stock-icon" style="background:${item.color||'#f5f5f0'}">${item.icon}</div>
@@ -313,7 +314,7 @@
           ${convText?`<div class="stock-detail" style="color:#555">${convText}</div>`:''}
         </div>
         <div class="stock-amount">
-          <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('vi-VN')}</div>
+          <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('en-US')}</div>
           <div class="stock-unit">${item.unit}</div>
         </div>
       </div>`;
@@ -335,7 +336,7 @@
           <div class="stock-detail">Cảnh báo < ${item.warn_at}${item.unit} · Yield: ${item.yields}${item.unit}/mẻ</div>
         </div>
         <div class="stock-amount">
-          <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('vi-VN')}</div>
+          <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('en-US')}</div>
           <div class="stock-unit">${item.unit}</div>
         </div>
       </div>`;
@@ -361,7 +362,7 @@
             <div class="stock-detail">Cảnh báo < ${s.warn_at} ${s.unit}</div>
           </div>
           <div class="stock-amount">
-            <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('vi-VN')}</div>
+            <div class="stock-num${st==='ok'?'':' '+st}">${amt.toLocaleString('en-US')}</div>
             <div class="stock-unit">${s.unit}</div>
           </div>
         </div>`;
@@ -374,7 +375,7 @@
         return `<div class="stock-card">
           <div class="stock-icon" style="background:#E6F1FB">🔧</div>
           <div class="stock-info"><div class="stock-name">${s.name}</div><div class="stock-detail">Công cụ dụng cụ</div></div>
-          <div class="stock-amount"><div class="stock-num">${amt.toLocaleString('vi-VN')}</div><div class="stock-unit">${s.unit}</div></div>
+          <div class="stock-amount"><div class="stock-num">${amt.toLocaleString('en-US')}</div><div class="stock-unit">${s.unit}</div></div>
         </div>`;
       }).join('');
     }
@@ -428,14 +429,14 @@
           const label=w.item_type==='raw'
             ? RAW_MATERIALS.find(x=>x.id===w.item_id)?.name||w.item_id
             : SEMI_PRODUCTS.find(x=>x.id===w.item_id)?.name||w.item_id;
-          const dt=new Date(w.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+          const dt=fmtDate(new Date(w.created_at),true);
           return `<div class="receipt-card" style="border-left:3px solid #e74c3c">
             <div class="receipt-row">
               <div class="receipt-info">
                 <div class="receipt-name" style="color:#c0392b">🗑 ${label}</div>
                 <div class="receipt-detail">${w.reason} · ${dt}</div>
               </div>
-              <div class="receipt-amount" style="color:#c0392b">−${w.quantity.toLocaleString('vi-VN')} ${w.unit}</div>
+              <div class="receipt-amount" style="color:#c0392b">−${w.quantity.toLocaleString('en-US')} ${w.unit}</div>
             </div>
           </div>`;
         }).join('');
@@ -448,14 +449,14 @@
           <div class="receipt-card">
             <div class="receipt-header">
               <span class="receipt-title">${po.po_num}</span>
-              <span style="font-size:13px;font-weight:600;color:#1D9E75">${(po.total_amount||0).toLocaleString('vi-VN')} ₫</span>
+              <span style="font-size:13px;font-weight:600;color:#1D9E75">${(po.total_amount||0).toLocaleString('en-US')} ₫</span>
             </div>
             ${(po.purchase_order_items||[]).map(i=>`<div class="receipt-row">
               <div class="receipt-info">
                 <div class="receipt-name">${i.item_name}</div>
                 <div class="receipt-detail">${i.input_qty} ${i.input_unit} = ${i.base_qty} ${i.base_unit}</div>
               </div>
-              <div class="receipt-amount">${i.total_price.toLocaleString('vi-VN')} ₫</div>
+              <div class="receipt-amount">${i.total_price.toLocaleString('en-US')} ₫</div>
             </div>`).join('')}
           </div>`).join('');
       }
@@ -519,18 +520,18 @@
         const newQty=Math.max(0,(parseFloat(rawStockData[r.raw_id]?.quantity)||0)-deduct);
         await DB.update('raw_stock',`id=eq.${r.raw_id}`,{quantity:newQty,updated_at:new Date().toISOString()});
         if(rawStockData[r.raw_id]) rawStockData[r.raw_id].quantity=newQty;
-        // 2. Phân bổ proportional xuống sku_items.quantity
-        const relatedSkus=SKU_ITEMS.filter(s=>s.map_to_id===r.raw_id&&s.map_to_type==='raw');
-        if(relatedSkus.length>0){
-          const totalSkuQty=relatedSkus.reduce((sum,s)=>sum+(parseFloat(s.quantity)||0),0);
-          if(totalSkuQty>0){
-            for(const sku of relatedSkus){
-              const skuQty=parseFloat(sku.quantity)||0; if(skuQty<=0) continue;
-              const nq=Math.max(0,skuQty-(skuQty/totalSkuQty)*deduct);
-              await DB.update('sku_items',`id=eq.${sku.id}`,{quantity:nq});
-              sku.quantity=nq;
-            }
-          }
+        // 2. FIFO: ưu tiên SKU ít tồn nhất (hàng cũ, không được nhập thêm) trước
+        const relatedSkus=SKU_ITEMS.filter(s=>s.map_to_id===r.raw_id&&s.map_to_type==='raw')
+          .sort((a,b)=>(parseFloat(a.quantity)||0)-(parseFloat(b.quantity)||0));
+        let remaining=deduct;
+        for(const sku of relatedSkus){
+          const sq=parseFloat(sku.quantity)||0; if(sq<=0) continue;
+          const take=Math.min(sq,remaining);
+          const nq=sq-take;
+          await DB.update('sku_items',`id=eq.${sku.id}`,{quantity:nq});
+          sku.quantity=nq;
+          remaining-=take;
+          if(remaining<=0) break;
         }
       }
       const newSemiQty=(parseFloat(semiStockData[semiId]?.quantity)||0)+target;
@@ -552,8 +553,8 @@
 
     document.getElementById('rawDetailName').textContent = item.icon+' '+item.name;
     document.getElementById('rawDetailStock').textContent =
-      `Tồn kho: ${amt.toLocaleString('vi-VN')} ${item.unit}`
-      +(avgCost>0?` · BQ: ${Math.round(avgCost*1000).toLocaleString('vi-VN')}₫/1000${item.unit}`:'');
+      `Tồn kho: ${amt.toLocaleString('en-US')} ${item.unit}`
+      +(avgCost>0?` · BQ: ${Math.round(avgCost*1000).toLocaleString('en-US')}₫/1000${item.unit}`:'');
 
     // Quy đổi tồn kho theo từng đơn vị (dữ liệu đã load sẵn)
     const convs = (unitConvData[id]||[]).filter(c=>c.rate>1);
@@ -563,9 +564,9 @@
       return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid #f0f0ec">
         <div style="font-size:13px;color:#555">${c.input_unit}</div>
         <div style="text-align:right">
-          <span style="font-size:15px;font-weight:600">${qty%1===0?qty.toLocaleString('vi-VN'):qty.toFixed(1)}</span>
+          <span style="font-size:15px;font-weight:600">${qty%1===0?qty.toLocaleString('en-US'):qty.toFixed(1)}</span>
           <span style="font-size:12px;color:#888"> ${c.input_unit}</span>
-          ${cost>0?`<div style="font-size:11px;color:#aaa">${Math.round(cost).toLocaleString('vi-VN')}₫/${c.input_unit}</div>`:''}
+          ${cost>0?`<div style="font-size:11px;color:#aaa">${Math.round(cost).toLocaleString('en-US')}₫/${c.input_unit}</div>`:''}
         </div>
       </div>`;
     }).join('');
@@ -579,15 +580,15 @@
       const skuUnit = s.input_unit || item.unit;
       const packQty = skuRate > 1 ? skuQty / skuRate : skuQty;
       const cost    = avgCost * skuRate;
-      const baseText = `${skuQty.toLocaleString('vi-VN')} ${item.unit}`;
+      const baseText = `${skuQty.toLocaleString('en-US')} ${item.unit}`;
       const packText = skuRate > 1
-        ? `${packQty%1===0?packQty.toLocaleString('vi-VN'):packQty.toFixed(1)} ${skuUnit}`
+        ? `${packQty%1===0?packQty.toLocaleString('en-US'):packQty.toFixed(1)} ${skuUnit}`
         : '';
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid #f0f0ec">
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
           <div style="font-size:11px;color:#aaa">${s.sku_code}</div>
-          ${cost>0?`<div style="font-size:11px;color:#aaa">${Math.round(cost).toLocaleString('vi-VN')}₫/${skuUnit}</div>`:''}
+          ${cost>0?`<div style="font-size:11px;color:#aaa">${Math.round(cost).toLocaleString('en-US')}₫/${skuUnit}</div>`:''}
         </div>
         <div style="text-align:right;margin-left:12px;flex-shrink:0">
           <div style="font-size:15px;font-weight:700">${baseText}</div>
@@ -636,7 +637,7 @@
         <span style="font-size:20px">${icon}</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
-          <div style="font-size:11px;color:#aaa">${added?'Đã thêm vào danh sách':qty.toLocaleString('vi-VN')+' '+unit}</div>
+          <div style="font-size:11px;color:#aaa">${added?'Đã thêm vào danh sách':qty.toLocaleString('en-US')+' '+unit}</div>
         </div>
         ${added?'<span style="font-size:11px;color:#1D9E75;font-weight:600">✓</span>':
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>'}
@@ -676,7 +677,7 @@
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:24px">${icon}</span>
         <div><div style="font-size:14px;font-weight:600">${name}</div>
-          <div style="font-size:12px;color:#888">Tồn hiện tại: ${cur.toLocaleString('vi-VN')} ${unit}</div></div>
+          <div style="font-size:12px;color:#888">Tồn hiện tại: ${cur.toLocaleString('en-US')} ${unit}</div></div>
       </div>`;
     document.getElementById('woPendingUnit').textContent=unit;
     document.getElementById('woPendingQty').value='';
@@ -706,7 +707,7 @@
         <span style="font-size:20px">${x.icon}</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:500">${x.name}</div>
-          <div style="font-size:12px;color:#c0392b;font-weight:600">−${x.qty.toLocaleString('vi-VN')} ${x.unit}</div>
+          <div style="font-size:12px;color:#c0392b;font-weight:600">−${x.qty.toLocaleString('en-US')} ${x.unit}</div>
         </div>
         <button onclick="removeFromWoCart('${x.id}')"
           style="padding:3px 8px;border-radius:8px;border:0.5px solid #ddd;background:#f5f5f0;color:#888;font-size:12px;cursor:pointer;font-family:inherit">✕</button>

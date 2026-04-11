@@ -161,7 +161,8 @@
 <script>
   Auth.require('finance');
   const session=Auth.getSession();
-  const fmt=n=>n.toLocaleString('vi-VN')+' ₫';
+  const fmt=n=>n.toLocaleString('en-US')+' ₫';
+  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
   const toISO=d=>d.toISOString();
   const toDateInput=d=>{const dd=new Date(d);return `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;};
 
@@ -317,7 +318,7 @@
           const d=rawMap[item.id]||{avg_cost:0,total_qty_imported:0};
           return `<div class="cogs-row">
             <span class="cogs-icon">${item.icon}</span>
-            <div class="cogs-info"><div class="cogs-name">${item.name}</div><div class="cogs-detail">Đã nhập: ${(d.total_qty_imported||0).toLocaleString('vi-VN')}${item.unit}</div></div>
+            <div class="cogs-info"><div class="cogs-name">${item.name}</div><div class="cogs-detail">Đã nhập: ${(d.total_qty_imported||0).toLocaleString('en-US')}${item.unit}</div></div>
             <div><div class="cogs-cost">${d.avg_cost>0?fmt(Math.round(d.avg_cost*1000)):'Chưa có'}</div><div class="cogs-unit">${d.avg_cost>0?`₫ / 1000${item.unit}`:''}</div></div>
           </div>`;
         }).join('')}
@@ -388,7 +389,7 @@
     const revenue=orders.reduce((s,o)=>s+o.total,0);
     const cogs=calcCOGS(orders,rawMap);
     const totalOpex=expenses.reduce((s,e)=>s+calcExpenseAmount(e,from,to),0);
-    const rows=[['Báo cáo P&L',''],['Kỳ',`${from.toLocaleDateString('vi-VN')} — ${to.toLocaleDateString('vi-VN')}`],['',''],['Doanh thu',revenue],['Giá vốn',cogs],['Lãi gộp',revenue-cogs],['Chi phí',totalOpex],['Lãi ròng',revenue-cogs-totalOpex]];
+    const rows=[['Báo cáo P&L',''],['Kỳ',`${fmtDate(from)} — ${fmtDate(to)}`],['',''],['Doanh thu',revenue],['Giá vốn',cogs],['Lãi gộp',revenue-cogs],['Chi phí',totalOpex],['Lãi ròng',revenue-cogs-totalOpex]];
     const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='pl.csv';a.click();URL.revokeObjectURL(url);
