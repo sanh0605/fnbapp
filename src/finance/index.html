@@ -94,7 +94,7 @@
     </a>
     <span class="header-title">Tài chính</span>
   </div>
-  <button class="export-btn" onclick="exportCSV()">Xuất CSV</button>
+  <button class="export-btn" onclick="exportXLSX()">Xuất Excel</button>
 </div>
 <div class="period-bar">
   <button class="period-btn active" id="p-day"    onclick="setPeriod('day')">Hôm nay</button>
@@ -156,6 +156,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="../lib/supabase.js"></script>
 <script src="../auth/auth.js"></script>
 <script>
@@ -165,6 +166,7 @@
   const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
   const toISO=d=>d.toISOString();
   const toDateInput=d=>{const dd=new Date(d);return `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;};
+  const DOW=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
 
   const RAW_ITEMS=[
     {id:'ca_phe_bot',name:'Cà phê bột',icon:'☕',unit:'g'},
@@ -211,43 +213,77 @@
   function shiftPeriod(dir){if(period==='day')cursor.setDate(cursor.getDate()+dir);else if(period==='week')cursor.setDate(cursor.getDate()+dir*7);else if(period==='month')cursor.setMonth(cursor.getMonth()+dir);else if(period==='year')cursor.setFullYear(cursor.getFullYear()+dir);loadAndRender();}
   function goToday(){cursor=new Date();cursor.setHours(0,0,0,0);loadAndRender();}
   function switchTab(n){activeTab=n;[1,2,3].forEach(i=>document.getElementById('tab'+i).classList.toggle('active',i===n));loadAndRender();}
-  function updateDateLabel(){const{from,to}=getRange();let label='';if(period==='day')label=from.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'});else if(period==='week')label=`${from.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric'})} — ${to.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'})}`;else if(period==='month')label=from.toLocaleDateString('vi-VN',{month:'long',year:'numeric'});else if(period==='year')label=`Năm ${from.getFullYear()}`;document.getElementById('dateLabel').textContent=label;}
+  function updateDateLabel(){const{from,to}=getRange();let label='';if(period==='day')label=`${DOW[from.getDay()]}, ${fmtDate(from)}`;else if(period==='week')label=`${from.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric'})} — ${to.toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'numeric'})}`;else if(period==='month')label=from.toLocaleDateString('vi-VN',{month:'long',year:'numeric'});else if(period==='year')label=`Năm ${from.getFullYear()}`;document.getElementById('dateLabel').textContent=label;}
+
+  async function buildCogsCtx(){
+    const[rawStock,productRecipes,semiRecipeRows,semiProducts,allPOs,poItems]=await Promise.all([
+      DB.select('raw_stock','select=*'),
+      DB.select('product_recipes','select=product_id,ingredient_type,ingredient_id,amount'),
+      DB.select('semi_recipes','select=semi_id,raw_id,amount'),
+      DB.select('semi_products','select=id,yields'),
+      DB.select('purchase_orders','select=id,status'),
+      DB.select('purchase_order_items','select=po_id,item_id,item_type,total_price,base_qty'),
+    ]);
+    // avg_cost từ phiếu nhập đã nhận (dùng item_id = raw_stock.id trực tiếp)
+    const receivedIds=new Set(allPOs.filter(p=>['received','completed'].includes(p.status)).map(p=>p.id));
+    const costAcc={};
+    poItems.forEach(poi=>{
+      if(!receivedIds.has(poi.po_id)||poi.item_type!=='raw'||!poi.item_id)return;
+      if(!costAcc[poi.item_id])costAcc[poi.item_id]={cost:0,qty:0};
+      costAcc[poi.item_id].cost+=(poi.total_price||0);
+      costAcc[poi.item_id].qty+=(poi.base_qty||0);
+    });
+    const avgCostMap={};
+    rawStock.forEach(r=>{if(r.avg_cost>0)avgCostMap[r.id]=r.avg_cost;});
+    Object.entries(costAcc).forEach(([id,d])=>{if(d.qty>0)avgCostMap[id]=d.cost/d.qty;});
+    // recipe maps
+    const semiYields={};semiProducts.forEach(sp=>semiYields[sp.id]=sp.yields||1);
+    const semiRawMap={};semiRecipeRows.forEach(sr=>{if(!semiRawMap[sr.semi_id])semiRawMap[sr.semi_id]=[];semiRawMap[sr.semi_id].push({raw_id:sr.raw_id,amount:sr.amount});});
+    const productRecipeMap={};productRecipes.forEach(pr=>{if(!productRecipeMap[pr.product_id])productRecipeMap[pr.product_id]=[];productRecipeMap[pr.product_id].push({type:pr.ingredient_type,id:pr.ingredient_id,amount:pr.amount});});
+    return{rawStock,avgCostMap,productRecipeMap,semiRawMap,semiYields};
+  }
 
   async function loadAndRender(){
     updateDateLabel();
     document.getElementById('content').innerHTML='<div class="empty">Đang tải...</div>';
     const{from,to}=getRange();
     try {
+      const ctx=await buildCogsCtx();
       if(activeTab===1){
-        const[orders,expenses,rawStock]=await Promise.all([
+        const[orders,expenses]=await Promise.all([
           DB.select('orders',`created_at=gte.${toISO(from)}&created_at=lte.${toISO(to)}&select=*`),
           DB.select('expenses','select=*'),
-          DB.select('raw_stock','select=*'),
         ]);
-        renderPL(orders,expenses,rawStock,from,to);
+        renderPL(orders,expenses,ctx,from,to);
       } else if(activeTab===2){
         const expenses=await DB.select('expenses','select=*&order=created_at.desc');
         renderExpenses(expenses,from,to);
       } else {
-        const rawStock=await DB.select('raw_stock','select=*');
-        renderCOGS(rawStock);
+        renderCOGS(ctx);
       }
     } catch(e){document.getElementById('content').innerHTML=`<div class="empty">Lỗi: ${e.message}</div>`;}
   }
 
-  function calcCOGS(orders,rawStockMap){
+  function calcCOGS(orders,ctx){
+    const{productRecipeMap,semiRawMap,semiYields,avgCostMap}=ctx;
     let total=0;
     orders.forEach(o=>{
       (o.items||[]).forEach(item=>{
-        const menuItem=MENU.find(m=>m.id===item.id);
-        if(!menuItem)return;
-        let costPerUnit=0;
-        menuItem.ingredients.forEach(ing=>{
-          const semi=SEMI_RECIPES.find(s=>s.id===ing.id);
-          if(semi){semi.recipe.forEach(r=>{const rawPrice=rawStockMap[r.id]?.avg_cost||0;costPerUnit+=rawPrice*(r.amount/semi.yields)*ing.amount;});}
-          else{costPerUnit+=(rawStockMap[ing.id]?.avg_cost||0)*ing.amount;}
+        const recipes=productRecipeMap[item.id];if(!recipes)return;
+        const qty=item.qty||1;let costPerUnit=0;
+        recipes.forEach(r=>{
+          if(r.type==='raw'){
+            costPerUnit+=(avgCostMap[r.id]||0)*r.amount;
+          } else if(r.type==='semi'){
+            const rawIngs=semiRawMap[r.id]||[];
+            const yields=semiYields[r.id]||1;
+            rawIngs.forEach(sr=>{
+              if(sr.raw_id==='nuoc')return;
+              costPerUnit+=(avgCostMap[sr.raw_id]||0)*(sr.amount/yields)*r.amount;
+            });
+          }
         });
-        total+=costPerUnit*(item.qty||0);
+        total+=costPerUnit*qty;
       });
     });
     return Math.round(total);
@@ -262,10 +298,9 @@
     return 0;
   }
 
-  function renderPL(orders,expenses,rawStock,from,to){
-    const rawMap={};rawStock.forEach(r=>rawMap[r.id]=r);
+  function renderPL(orders,expenses,ctx,from,to){
     const revenue=orders.reduce((s,o)=>s+o.total,0);
-    const cogs=calcCOGS(orders,rawMap);
+    const cogs=calcCOGS(orders,ctx);
     const grossProfit=revenue-cogs;
     const grossMargin=revenue>0?grossProfit/revenue*100:0;
     const expByCat={};
@@ -308,18 +343,20 @@
       <div class="pl-card"><div class="pl-row" style="background:#f5f5f0"><span class="pl-label bold">Tổng chi phí kỳ này</span><span class="pl-value bold red">${fmt(totalOpex)}</span></div></div>`;
   }
 
-  function renderCOGS(rawStock){
-    const rawMap={};rawStock.forEach(r=>rawMap[r.id]=r);
+  function renderCOGS(ctx){
+    const{rawStock,avgCostMap}=ctx;
+    const rawStockById={};rawStock.forEach(r=>rawStockById[r.id]=r);
     document.getElementById('content').innerHTML=`
-      <div class="info-box">Giá vốn tính theo bình quân gia quyền. Cập nhật tự động khi nhập kho trong module Nguyên liệu.</div>
+      <div class="info-box">Giá vốn bình quân tính từ phiếu nhập hàng đã nhận/hoàn tất.</div>
       <div class="pl-card">
         <div class="pl-header">Giá vốn bình quân gia quyền</div>
         ${RAW_ITEMS.map(item=>{
-          const d=rawMap[item.id]||{avg_cost:0,total_qty_imported:0};
+          const avg=avgCostMap[item.id]||0;
+          const rs=rawStockById[item.id]||{};
           return `<div class="cogs-row">
             <span class="cogs-icon">${item.icon}</span>
-            <div class="cogs-info"><div class="cogs-name">${item.name}</div><div class="cogs-detail">Đã nhập: ${(d.total_qty_imported||0).toLocaleString('en-US')}${item.unit}</div></div>
-            <div><div class="cogs-cost">${d.avg_cost>0?fmt(Math.round(d.avg_cost*1000)):'Chưa có'}</div><div class="cogs-unit">${d.avg_cost>0?`₫ / 1000${item.unit}`:''}</div></div>
+            <div class="cogs-info"><div class="cogs-name">${item.name}</div><div class="cogs-detail">Tồn: ${(rs.quantity||0).toLocaleString('en-US')}${item.unit}</div></div>
+            <div><div class="cogs-cost">${avg>0?fmt(Math.round(avg*1000)):'Chưa có'}</div><div class="cogs-unit">${avg>0?`₫/1000${item.unit}`:''}</div></div>
           </div>`;
         }).join('')}
       </div>`;
@@ -378,21 +415,44 @@
     catch(e){toast('Lỗi: '+e.message);}
   }
 
-  async function exportCSV(){
+  async function exportXLSX(){
     const{from,to}=getRange();
-    const[orders,expenses,rawStock]=await Promise.all([
-      DB.select('orders',`created_at=gte.${toISO(from)}&created_at=lte.${toISO(to)}&select=*`),
-      DB.select('expenses','select=*'),
-      DB.select('raw_stock','select=*'),
+    const[ctx,[orders,expenses]]=await Promise.all([
+      buildCogsCtx(),
+      Promise.all([
+        DB.select('orders',`created_at=gte.${toISO(from)}&created_at=lte.${toISO(to)}&select=*`),
+        DB.select('expenses','select=*'),
+      ]),
     ]);
-    const rawMap={};rawStock.forEach(r=>rawMap[r.id]=r);
     const revenue=orders.reduce((s,o)=>s+o.total,0);
-    const cogs=calcCOGS(orders,rawMap);
+    const cogs=calcCOGS(orders,ctx);
     const totalOpex=expenses.reduce((s,e)=>s+calcExpenseAmount(e,from,to),0);
-    const rows=[['Báo cáo P&L',''],['Kỳ',`${fmtDate(from)} — ${fmtDate(to)}`],['',''],['Doanh thu',revenue],['Giá vốn',cogs],['Lãi gộp',revenue-cogs],['Chi phí',totalOpex],['Lãi ròng',revenue-cogs-totalOpex]];
-    const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='pl.csv';a.click();URL.revokeObjectURL(url);
+    const grossProfit=revenue-cogs;
+    const netProfit=grossProfit-totalOpex;
+    // Sheet 1: P&L
+    const pl=[
+      ['Báo cáo P&L',''],
+      ['Kỳ',`${fmtDate(from)} — ${fmtDate(to)}`],
+      [''],
+      ['Doanh thu',revenue],
+      ['Giá vốn hàng bán (COGS)',cogs],
+      ['Lãi gộp',grossProfit],
+      ['Biên gộp (%)',revenue>0?+(grossProfit/revenue*100).toFixed(1):0],
+      ['Chi phí vận hành (OPEX)',totalOpex],
+      ['Lãi ròng',netProfit],
+      ['Biên ròng (%)',revenue>0?+(netProfit/revenue*100).toFixed(1):0],
+    ];
+    // Sheet 2: Chi phí
+    const expRows=[['Tên','Danh mục','Loại','Số tiền','Số tiền kỳ này']];
+    expenses.forEach(e=>expRows.push([e.name,CAT_NAMES[e.category]||e.category,TYPE_NAMES[e.expense_type]||e.expense_type,e.amount,calcExpenseAmount(e,from,to)]));
+    // Sheet 3: Đơn hàng
+    const ordRows=[['Thời gian','Tổng','Số món']];
+    orders.forEach(o=>ordRows.push([fmtDate(new Date(o.created_at),true),o.total,(o.items||[]).reduce((s,i)=>s+(i.qty||1),0)]));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pl),'P&L');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(expRows),'Chi phí');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ordRows),'Đơn hàng');
+    XLSX.writeFile(wb,`tai_chinh_${fmtDate(from)}_${fmtDate(to)}.xlsx`);
   }
 
   function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',2200);}
