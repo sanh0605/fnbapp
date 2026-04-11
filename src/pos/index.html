@@ -215,7 +215,8 @@
   let cart = {}, notes = {}, orderN = 1, expanded = false, payMethod = null;
   let supplyCounts = { tui_don: 0, tui_doi: 0, muong: 0 }; // user-editable
 
-  const getTotal = () => Object.keys(cart).reduce((s,k) => s + (MENU.find(m=>m.id===k)?.price||0) * cart[k], 0);
+  const findItem = id => MENU.find(m=>m.id===id);
+  const getTotal = () => Object.keys(cart).reduce((s,k) => s + (findItem(k)?.price||0) * cart[k], 0);
   const getTotalQty = () => Object.keys(cart).reduce((s,k) => s + cart[k], 0);
 
   function changeSupplyCount(id, delta){
@@ -303,7 +304,7 @@
       return;
     }
     document.getElementById('cartItems').innerHTML = keys.map(id => {
-      const item = MENU.find(m=>m.id===id);
+      const item = findItem(id);
       if(!item) return '';
       return `<div class="ci">
         <div class="ci-top">
@@ -377,7 +378,7 @@
     const bag = { ...supplyCounts }; // {tui_don, tui_doi, muong}
 
     const items = Object.keys(cart).map(id => {
-      const item = MENU.find(m=>m.id===id);
+      const item = findItem(id);
       return { id, name:item?.name||'', qty:cart[id], price:item?.price||0 };
     });
 
@@ -408,6 +409,8 @@
 
   async function deductSupplies(items, bag){
     try {
+      if(!items.length) return;
+
       // Lấy product_recipes để biết vật tư từng món
       const productIds = items.map(i => i.id).join(',');
       const recipes = await DB.select('product_recipes',
@@ -469,7 +472,7 @@
         }
       }
 
-      // Trừ bán thành phẩm
+      // Trừ bán thành phẩm dùng trong công thức sản phẩm
       const semiRecipes = await DB.select('product_recipes',
         `product_id=in.(${productIds})&ingredient_type=eq.semi&select=*`
       );
