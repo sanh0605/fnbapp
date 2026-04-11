@@ -373,7 +373,7 @@
   function renderBrewList(){
     document.getElementById('brewList').innerHTML=SEMI_PRODUCTS.map(item=>{
       const recipes=SEMI_RECIPES.filter(r=>r.semi_id===item.id);
-      const canBrew=recipes.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
+      const canBrew=recipes.every(r=>!RAW_MATERIALS.find(x=>x.id===r.raw_id)||(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
       const recipeText=recipes.map(r=>`${r.amount}${r.unit} ${RAW_MATERIALS.find(x=>x.id===r.raw_id)?.name||r.raw_id}`).join(' + ');
       return `<div class="brew-item">
         <span style="font-size:24px">${item.icon}</span>
@@ -389,10 +389,12 @@
   async function doBrew(semiId){
     const item=SEMI_PRODUCTS.find(s=>s.id===semiId);
     const recipes=SEMI_RECIPES.filter(r=>r.semi_id===semiId);
-    const enough=recipes.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
+    // Chỉ kiểm tra nguyên liệu active (bỏ qua nước và các NVL không cần theo dõi)
+    const tracked=recipes.filter(r=>RAW_MATERIALS.find(x=>x.id===r.raw_id));
+    const enough=tracked.every(r=>(parseFloat(rawStockData[r.raw_id]?.quantity)||0)>=r.amount);
     if(!enough){toast('Không đủ nguyên liệu thô!');return;}
     try {
-      for(const r of recipes){
+      for(const r of tracked){
         const newQty=Math.max(0,(parseFloat(rawStockData[r.raw_id]?.quantity)||0)-r.amount);
         await DB.update('raw_stock',`id=eq.${r.raw_id}`,{quantity:newQty,updated_at:new Date().toISOString()});
         if(rawStockData[r.raw_id]) rawStockData[r.raw_id].quantity=newQty;
