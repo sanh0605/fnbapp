@@ -120,6 +120,16 @@
   </div>
 </div>
 
+<!-- Chi tiết nguyên liệu thô -->
+<div class="overlay" id="rawDetailOverlay" onclick="hideRawDetail()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title" id="rawDetailName"></div>
+    <div class="sheet-sub" id="rawDetailStock"></div>
+    <div id="rawDetailSkus"></div>
+    <button class="sheet-btn secondary" onclick="hideRawDetail()">Đóng</button>
+  </div>
+</div>
+
 <!-- Pha bán thành phẩm -->
 <div class="overlay" id="brewOverlay" onclick="hideBrew()">
   <div class="sheet" onclick="event.stopPropagation()">
@@ -233,7 +243,7 @@
       const max=item.warn_at*5||500, pct=Math.min(100,Math.round(amt/max*100));
       const st=stockStatus(amt,item.warn_at);
       const avgText=d.avg_cost>0?` · BQ: ${Math.round(d.avg_cost*1000).toLocaleString('vi-VN')}₫/1000${item.unit}`:'';
-      return `<div class="stock-card${st==='ok'?'':' '+st}">
+      return `<div class="stock-card${st==='ok'?'':' '+st}" onclick="showRawDetail('${item.id}')" style="cursor:pointer">
         <div class="stock-icon" style="background:${item.color||'#f5f5f0'}">${item.icon}</div>
         <div class="stock-info">
           <div class="stock-name">${item.name}</div>
@@ -408,6 +418,33 @@
       renderContent();
     } catch(e){toast('Lỗi: '+e.message);}
   }
+
+  function showRawDetail(id){
+    const item = RAW_MATERIALS.find(x=>x.id===id);
+    if(!item) return;
+    const d = rawStockData[id]||{quantity:0,avg_cost:0};
+    const amt = parseFloat(d.quantity)||0;
+    const avgText = d.avg_cost>0?` · BQ: ${Math.round(d.avg_cost*1000).toLocaleString('vi-VN')}₫/1000${item.unit}`:'';
+
+    document.getElementById('rawDetailName').textContent = item.icon+' '+item.name;
+    document.getElementById('rawDetailStock').textContent =
+      `Tồn kho: ${amt.toLocaleString('vi-VN')} ${item.unit}${avgText}`;
+
+    const skus = SKU_ITEMS.filter(s=>s.map_to_id===id && s.map_to_type==='raw');
+    document.getElementById('rawDetailSkus').innerHTML = skus.length
+      ? `<div style="font-size:13px;font-weight:600;color:#888;margin-top:4px">Mã SKU liên quan (${skus.length})</div>`
+        + skus.map(s=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid #f0f0ec">
+          <div>
+            <div style="font-size:14px;font-weight:500">${s.name}</div>
+            <div style="font-size:12px;color:#888">${s.sku_code}</div>
+          </div>
+        </div>`).join('')
+      : `<div style="font-size:13px;color:#aaa;text-align:center;padding:16px 0">Chưa có mã SKU nào liên kết</div>`;
+
+    document.getElementById('rawDetailOverlay').classList.add('show');
+  }
+  function hideRawDetail(){ document.getElementById('rawDetailOverlay').classList.remove('show'); }
 
   function toast(msg){
     const t=document.getElementById('toast');
