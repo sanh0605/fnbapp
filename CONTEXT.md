@@ -1,5 +1,5 @@
 # FNB App — CONTEXT.md
-# Cập nhật lần cuối: 10/04/2026
+# Cập nhật lần cuối: 15/04/2026
 
 ## THÔNG TIN DỰ ÁN
 - **Repo GitHub:** github.com/sanh0605/fnbapp (Public)
@@ -16,16 +16,19 @@
 fnbapp/
 ├── index.html
 ├── CONTEXT.md
+├── migrations/          ← SQL migrations 001–016
 ├── src/
 │   ├── lib/supabase.js
 │   ├── auth/auth.js + login.html
 │   ├── home/index.html
 │   ├── pos/index.html
 │   ├── inventory/index.html
+│   ├── supplies/index.html   ← MỚI: Vật tư + Danh mục SKU (tách từ Inventory)
 │   ├── purchasing/index.html
 │   ├── assets/index.html
 │   ├── contacts/index.html
 │   ├── menu/index.html
+│   ├── orders/index.html
 │   ├── revenue/index.html
 │   ├── finance/index.html
 │   ├── schedule/index.html
@@ -80,6 +83,27 @@ Quản lý:
 - SKU: tab "Danh mục SKU" trong Inventory (owner only), mã tự sinh NVL-/VTU-/CCU-XXX
 - Đơn vị tính SKU: thêm/xoá sku_units inline trong sheet SKU
 - Nhà cung cấp & liên lạc: module Contacts riêng (xem Migration 005)
+
+### Migration 014 — Retime orders (15/04/2026) ✅
+Dịch chuyển toàn bộ đơn hàng về khung giờ 08:30–10:00, cách đều nhau trong ngày.
+
+### Migration 015 — Tính lại raw_stock (15/04/2026) ✅
+- BƯỚC 0: Cập nhật ngày lịch sử xuất huỷ → 08/04/2026 20:00 VN (13:00 UTC)
+- BƯỚC 1: Tính lại `raw_stock.quantity` = nhập - huỷ - dùng_pha_BTP - bán_trực_tiếp
+  - `purchased`: sku_items JOIN purchase_order_items JOIN purchase_orders (status received/completed)
+  - `written_off`: stock_writeoffs WHERE item_type='raw'
+  - `brew_raw_used`: (semi_stock + semi đã bán) × (sr.amount / sp.yields), bỏ 'nuoc'
+  - `raw_used_direct`: orders JSON × product_recipes WHERE ingredient_type='raw'
+- BƯỚC 2: Tính lại FIFO `sku_items.quantity` theo raw_stock mới
+
+### Migration 016 — Đánh lại mã đơn toàn cục (15/04/2026) — CẦN CHẠY
+```sql
+WITH ranked AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) AS rn FROM orders
+)
+UPDATE orders o SET order_num = '#' || LPAD(r.rn::text, 3, '0')
+FROM ranked r WHERE o.id = r.id;
+```
 
 ### Migration 007 — Seed SKUs thực tế (11/04/2026) ✅
 Seed dữ liệu thực tế:
@@ -232,17 +256,19 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 | Module | File | Trạng thái |
 |---|---|:---:|
 | Auth | src/auth/ | ✓ |
-| Home | src/home/ | ✓ |
-| POS | src/pos/ | ✓ |
-| Inventory | src/inventory/ | ✓ |
-| Purchasing | src/purchasing/ | 🔄 Đang viết lại (v2) |
-| Revenue | src/revenue/ | ✓ |
-| Finance | src/finance/ | ✓ |
+| Home | src/home/ | ✓ Nhóm: Tồn kho + Báo cáo + Quản lý |
+| POS | src/pos/ | ✓ Order_num toàn cục từ DB |
+| Inventory | src/inventory/ | ✓ Chỉ còn: Nguyên liệu thô + Bán TP |
+| Supplies | src/supplies/ | ✓ MỚI — Vật tư tiêu hao + Dụng cụ + Danh mục SKU |
+| Purchasing | src/purchasing/ | ✓ Fix stuck loading (duplicate fmtDate) |
+| Orders | src/orders/ | ✓ Mã đơn toàn cục, fix huỷ đơn, hiển thị thứ |
+| Revenue | src/revenue/ | ✓ Bảng sản phẩm bán chạy, xuất Excel, hiển thị thứ |
+| Finance | src/finance/ | ✓ COGS từ purchase_order_items, xuất Excel, hiển thị thứ |
 | Schedule | src/schedule/ | ✓ |
-| Menu      | src/menu/      | ✓ Done (tách từ Settings) |
-| Settings  | src/settings/  | ✓ Done (Menu → trang riêng) |
-| Assets    | src/assets/    | ✓ Done — cần Migration 006 |
-| Contacts  | src/contacts/  | ✓ Done (NCC · KH · NQ · Khác) — cần Migration 005 |
+| Menu | src/menu/ | ✓ |
+| Settings | src/settings/ | ✓ |
+| Assets | src/assets/ | ✓ cần Migration 006 |
+| Contacts | src/contacts/ | ✓ cần Migration 005 |
 
 ---
 
@@ -252,3 +278,32 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 - GitHub Pages tự deploy khi push main
 - Giá vốn BQ: `(Tồn cũ × Giá BQ cũ + Qty nhập × Đơn giá thực) ÷ (Tồn cũ + Qty nhập)`
 - Đơn giá thực = amount_after_discount ÷ base_qty
+- `purchase_order_items` columns: `po_id, sku_id, item_type, item_id, item_name, input_qty, input_unit, sku_unit, conversion_rate, to_base_rate, base_qty, base_unit, unit_price, total_price, amount_before_discount, discount_amount, amount_after_discount`
+- `item_id` trong purchase_order_items = raw_stock.id trực tiếp (không cần join qua sku_items để tính COGS)
+- `semi_recipes` dùng cột `raw_id` (không phải ingredient_id), `semi_products` dùng cột `yields` (không phải yield_qty)
+- COGS tính trong Finance: load product_recipes + semi_recipes + semi_products từ DB; avg_cost = Σ(total_price) / Σ(base_qty) từ PO đã received/completed
+- Mã đơn `order_num`: toàn cục, không reset theo ngày. POS đọc max từ DB khi init. Format `#001`, `#002`...
+- Hiển thị thứ: `DOW=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']` dùng trong orders, revenue, finance khi period='day'
+- SheetJS (xlsx.js CDN): dùng cho xuất Excel trong revenue + finance
+
+---
+
+## HOME PAGE — CẤU TRÚC NHÓM
+
+```
+[Banner doanh thu hôm nay]  ← canRevenue
+[Stats 3 cột]               ← canRevenue
+[Nút POS]
+[Nút Đơn bán hàng]          ← canRevenue
+
+TỒNG KHO:
+  Nguyên liệu  Vật tư
+  Tài sản      Nhập hàng
+
+BÁO CÁO:
+  Doanh thu    Tài chính
+
+QUẢN LÝ:
+  Lịch trình   Menu
+  Liên lạc     Cài đặt
+```
