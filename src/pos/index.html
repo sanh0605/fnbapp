@@ -276,12 +276,21 @@
   // ── LOAD DATA ──
   async function init(){
     try {
-      const [products, settings] = await Promise.all([
+      const [products, settings, latestOrders] = await Promise.all([
         DB.select('products', 'active=eq.true&select=*&order=sort_order.asc'),
         DB.select('settings', 'select=*'),
+        DB.select('orders', 'select=order_num&order=created_at.desc&limit=1'),
       ]);
       MENU = products;
       settings.forEach(s => SETTINGS[s.key] = s.value);
+      // Lấy mã đơn toàn cục cuối cùng để tiếp tục đúng số
+      if(latestOrders && latestOrders.length){
+        const m = (latestOrders[0].order_num||'').match(/\d+/);
+        if(m) orderN = parseInt(m[0], 10) + 1;
+      }
+      const num = '#' + String(orderN).padStart(3, '0');
+      document.getElementById('orderNum').textContent = num;
+      document.getElementById('orderBadge').textContent = num;
       renderCats(); renderMenu(); updateCartBar();
     } catch(e){
       document.getElementById('menuList').innerHTML = `<div class="loading">Lỗi tải menu: ${e.message}</div>`;

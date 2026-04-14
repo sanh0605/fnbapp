@@ -404,10 +404,11 @@
   function closeVoid(){ document.getElementById('voidOverlay').classList.remove('show'); voidTargetId=null; }
   async function confirmVoid(){
     if(!voidTargetId) return;
+    const id=voidTargetId;
     closeVoid();
     try{
-      await DB.update('orders',`id=eq.${voidTargetId}`,{voided:true});
-      const o=allOrders.find(x=>x.id===voidTargetId);
+      await DB.update('orders',`id=eq.${id}`,{voided:true});
+      const o=allOrders.find(x=>x.id===id);
       if(o) o.voided=true;
       renderSummary(); renderList();
       toast('Đã huỷ đơn');
