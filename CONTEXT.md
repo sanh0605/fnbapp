@@ -1,5 +1,7 @@
 # FNB App — CONTEXT.md
-# Cập nhật lần cuối: 15/04/2026
+# Cập nhật lần cuối: 15/04/2026 (session 2)
+
+> **⚠️ QUY TẮC BẮT BUỘC CHO AI:** Sau MỖI lần hoàn thành thay đổi (tính năng mới, sửa bug, thay đổi schema, cập nhật module), phải cập nhật file này NGAY LẬP TỨC — cập nhật ngày, trạng thái module, ghi chú kỹ thuật liên quan — rồi commit cùng hoặc ngay sau commit code. Không được để dồn lại cuối session.
 
 ## THÔNG TIN DỰ ÁN
 - **Repo GitHub:** github.com/sanh0605/fnbapp (Public)
@@ -261,7 +263,7 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 | Inventory | src/inventory/ | ✓ Chỉ còn: Nguyên liệu thô + Bán TP |
 | Supplies | src/supplies/ | ✓ MỚI — Vật tư tiêu hao + Dụng cụ + Danh mục SKU |
 | Purchasing | src/purchasing/ | ✓ Fix stuck loading (duplicate fmtDate) |
-| Orders | src/orders/ | ✓ Mã đơn toàn cục, fix huỷ đơn, hiển thị thứ |
+| Orders | src/orders/ | ✓ Mã đơn toàn cục, fix huỷ đơn, hiển thị thứ, breakdown thanh toán, ẩn scrollbar |
 | Revenue | src/revenue/ | ✓ Bảng sản phẩm bán chạy, xuất Excel, hiển thị thứ |
 | Finance | src/finance/ | ✓ COGS từ purchase_order_items, xuất Excel, hiển thị thứ |
 | Schedule | src/schedule/ | ✓ |
@@ -285,6 +287,9 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 - Mã đơn `order_num`: toàn cục, không reset theo ngày. POS đọc max từ DB khi init. Format `#001`, `#002`...
 - Hiển thị thứ: `DOW=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']` dùng trong orders, revenue, finance khi period='day'
 - SheetJS (xlsx.js CDN): dùng cho xuất Excel trong revenue + finance
+- Orders layout: body `height:100dvh;overflow:hidden` + html `height:100%` → scroll trong `.content`. Card cần `flex-shrink:0` để không bị compress trong flex column container
+- Orders scrollbar: ẩn bằng `scrollbar-width:none` + `::-webkit-scrollbar{display:none}`
+- Orders breakdown thanh toán: chip Tiền mặt / Chuyển khoản / Đã huỷ nằm trên search bar, cập nhật theo filter
 
 ---
 
