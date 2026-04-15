@@ -2,7 +2,7 @@
 // Kết nối Supabase — dùng chung toàn bộ app
 
 const SUPABASE_URL  = 'https://zicuawpwyhmtqmzawvau.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppY3Vhd3B3eWhtdHFtemF3dmF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3Njc4MzcsImV4cCI6MjA5MTM0MzgzN30.gWia6lTXfHcwewH62i3xjlcqNpZBwLo7U7ig_v5ZcpM';
+const SUPABASE_ANON = 'sb_publishable_rhbewMyE6ws9G3_DSmEbfg_w0omMwFI';
 
 // ── HTTP helpers ──
 async function sb(path, options = {}) {

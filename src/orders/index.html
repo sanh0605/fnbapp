@@ -50,7 +50,8 @@
     .loading{display:flex;align-items:center;justify-content:center;padding:32px;color:#888;font-size:13px}
     .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;gap:8px;color:#bbb;font-size:13px}
     .custom-row{display:flex;gap:8px;align-items:center;padding:10px 14px;background:#f5f5f0;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
-    .custom-row input[type=date]{flex:1;padding:8px 10px;border:0.5px solid #e8e6e0;border-radius:10px;font-size:13px;color:#1a1a18;background:#fff;font-family:inherit}
+    .custom-row input[type=text]{flex:1;padding:8px 10px;border:0.5px solid #e8e6e0;border-radius:10px;font-size:13px;color:#1a1a18;background:#fff;font-family:inherit;text-align:center}
+    .custom-row input[type=text]:focus{outline:none;border-color:#1D9E75}
     .custom-apply{padding:8px 14px;border-radius:10px;border:none;background:#1D9E75;color:#fff;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit}
 
     /* ── CARD ĐƠN ── */
@@ -201,9 +202,9 @@
 </div>
 
 <div id="customRow" style="display:none" class="custom-row">
-  <input type="date" id="cF">
+  <input type="text" id="cF" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" oninput="autoFmtDate(this)">
   <span style="font-size:13px;color:#888">—</span>
-  <input type="date" id="cT">
+  <input type="text" id="cT" placeholder="dd/mm/yyyy" maxlength="10" inputmode="numeric" oninput="autoFmtDate(this)">
   <button class="custom-apply" onclick="applyCustom()">Xem</button>
 </div>
 
@@ -300,10 +301,13 @@
     else if(period==='month') label=`${String(from.getMonth()+1).padStart(2,'0')}/${from.getFullYear()}`;
     document.getElementById('dateLabel').textContent=label;
   }
-  function toDateInput(d){const x=new Date(d);return`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;}
+  function toDisplayDate(d){const x=new Date(d);const p=n=>String(n).padStart(2,'0');return`${p(x.getDate())}/${p(x.getMonth()+1)}/${x.getFullYear()}`;}
+  function parseDateInput(s){const[dd,mm,yyyy]=(s||'').split('/');if(!dd||!mm||!yyyy||yyyy.length<4)return null;const d=new Date(+yyyy,+mm-1,+dd);return isNaN(d)?null:d;}
+  function autoFmtDate(el){let v=el.value.replace(/\D/g,'');if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);if(v.length>5)v=v.slice(0,5)+'/'+v.slice(5,9);el.value=v;}
   function applyCustom(){
-    const f=document.getElementById('cF').value,t=document.getElementById('cT').value;
-    if(!f||!t) return;
+    const f=parseDateInput(document.getElementById('cF').value);
+    const t=parseDateInput(document.getElementById('cT').value);
+    if(!f||!t){toast('Nhập ngày theo định dạng dd/mm/yyyy');return;}
     customFrom=new Date(f);customFrom.setHours(0,0,0,0);
     customTo=new Date(t);customTo.setHours(23,59,59,999);
     loadOrders();
@@ -468,7 +472,7 @@
   }
 
   // Khởi tạo
-  const todayStr=toDateInput(new Date());
+  const todayStr=toDisplayDate(new Date());
   document.getElementById('cF').value=todayStr;
   document.getElementById('cT').value=todayStr;
 

@@ -1,14 +1,73 @@
 # FNB App — CONTEXT.md
-# Cập nhật lần cuối: 15/04/2026 (session 2)
+# Cập nhật lần cuối: 12/04/2026 (session 4 — POS gắn brand_id/outlet_id)
 
-> **⚠️ QUY TẮC BẮT BUỘC CHO AI:** Sau MỖI lần hoàn thành thay đổi (tính năng mới, sửa bug, thay đổi schema, cập nhật module), phải cập nhật file này NGAY LẬP TỨC — cập nhật ngày, trạng thái module, ghi chú kỹ thuật liên quan — rồi commit cùng hoặc ngay sau commit code. Không được để dồn lại cuối session.
+> **⚠️ QUY TẮC BẮT BUỘC CHO AI:** Sau MỖI lần hoàn thành thay đổi (tính năng mới, sửa bug,
+> thay đổi schema, cập nhật module), phải cập nhật file này NGAY LẬP TỨC rồi commit cùng
+> hoặc ngay sau commit code. Không được để dồn lại cuối session.
+>
+> **Khi bắt đầu session mới:** AI đọc toàn bộ file này trước khi làm bất cứ điều gì.
+> Đây là nguồn sự thật duy nhất của dự án.
+
+---
 
 ## THÔNG TIN DỰ ÁN
 - **Repo GitHub:** github.com/sanh0605/fnbapp (Public)
 - **App live:** https://sanh0605.github.io/fnbapp
 - **Supabase project:** https://zicuawpwyhmtqmzawvau.supabase.co
-- **Supabase anon key:** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppY3Vhd3B3eWhtdHFtemF3dmF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3Njc4MzcsImV4cCI6MjA5MTM0MzgzN30.gWia6lTXfHcwewH62i3xjlcqNpZBwLo7U7ig_v5ZcpM
-- **Môi trường:** vscode.dev + GitHub Pages + Supabase
+- **Supabase key:** ⚠️ Chỉ lưu trong `src/lib/supabase.js` — KHÔNG commit vào đây
+- **Môi trường:** vscode + Claude CLI + GitHub Pages + Supabase
+
+---
+
+## BỐI CẢNH KINH DOANH
+
+Hệ thống quản lý bán hàng FnB đa brand — mục tiêu năm 2026:
+
+| | Brand 1 — Cà Phê Sáng | Brand 2 — Trà Tối |
+|---|---|---|
+| Khung giờ | 6:00–10:00 AM | Buổi tối |
+| Hình thức | Take-away only | Take-away + Dine-in |
+| Số outlet 2026 | 5 | 2 |
+| Đặc trưng | Rush hour, tốc độ cao | Table management, trải nghiệm |
+
+**Tổng: 7 outlet / 2 brand — hệ thống hiện tại chưa hỗ trợ đa brand/outlet.**
+
+---
+
+## QUYẾT ĐỊNH KIẾN TRÚC (chốt 15/04/2026)
+
+1. **Không đập lại từ đầu** — schema 22 bảng, RLS, phân quyền 3 tầng đã ổn
+2. **Không cần backend riêng** — Supabase RLS đủ mạnh cho quy mô 7 outlet
+3. **Ưu tiên multi-brand/outlet trước khi scale** — thiếu brand_id/outlet_id thì không tách báo cáo được
+4. **GitHub Pages vẫn dùng được** — repo public, bảo mật dựa vào RLS Supabase
+5. **Key không commit vào repo** — chỉ hardcode trong `supabase.js`
+
+---
+
+## PRIORITY ROADMAP
+
+### ✅ P0 — Hoàn thành 15/04/2026
+- [x] **Rotate + revoke Supabase legacy key**
+  - Legacy HS256 key (đã lộ trong CONTEXT.md cũ) đã bị disable + revoke
+  - Project đã migrate sang ECC P-256 (asymmetric JWT)
+  - `src/lib/supabase.js` đang dùng publishable key mới (`sb_publishable_...`)
+  - App xác nhận hoạt động bình thường sau khi đổi key
+
+### ⏳ P1 — Làm trong tuần này
+- [ ] **Migration 017:** tạo bảng `brands` + `outlets`, thêm `brand_id` + `outlet_id` vào `orders` và `users`
+- [x] **POS** tự động gắn `brand_id` + `outlet_id` khi tạo đơn (đọc từ account đăng nhập)
+
+### 📋 P2 — Trong tháng này
+- [ ] Tách business logic ra JS module (`src/lib/orders.js`, `inventory.js`, `finance.js`)
+- [ ] Dashboard tổng hợp đa brand/outlet — filter + so sánh
+- [ ] Phân quyền account theo outlet (`users.outlet_id`)
+
+### 🗂 P3 — Backlog
+- [ ] Brand 2: dine-in + table management
+- [ ] Offline mode cho POS
+- [ ] KDS — màn hình bếp/pha chế
+- [ ] Pre-order / tích hợp app giao hàng
+- [ ] Loyalty / tích điểm khách hàng
 
 ---
 
@@ -17,88 +76,65 @@
 ```
 fnbapp/
 ├── index.html
-├── CONTEXT.md
-├── migrations/          ← SQL migrations 001–016
+├── CONTEXT.md               ← file này — commit sau mỗi session
+├── migrations/              ← SQL 001–016 (017 sắp tới)
 ├── src/
-│   ├── lib/supabase.js
-│   ├── auth/auth.js + login.html
-│   ├── home/index.html
-│   ├── pos/index.html
-│   ├── inventory/index.html
-│   ├── supplies/index.html   ← MỚI: Vật tư + Danh mục SKU (tách từ Inventory)
-│   ├── purchasing/index.html
-│   ├── assets/index.html
-│   ├── contacts/index.html
-│   ├── menu/index.html
-│   ├── orders/index.html
-│   ├── revenue/index.html
-│   ├── finance/index.html
-│   ├── schedule/index.html
-│   └── settings/index.html
+│   ├── lib/
+│   │   ├── supabase.js      ← key chỉ để ở đây
+│   │   ├── orders.js        ← TODO P2
+│   │   ├── inventory.js     ← TODO P2
+│   │   └── finance.js       ← TODO P2
+│   ├── auth/
+│   ├── home/
+│   ├── pos/                 ← cần gắn brand_id/outlet_id (P1)
+│   ├── inventory/
+│   ├── supplies/
+│   ├── purchasing/
+│   ├── assets/
+│   ├── contacts/
+│   ├── menu/
+│   ├── orders/
+│   ├── revenue/             ← cần filter theo brand/outlet (P2)
+│   ├── finance/             ← cần filter theo brand/outlet (P2)
+│   ├── schedule/
+│   └── settings/
 ```
 
 ---
 
 ## DATABASE — 22 BẢNG HIỆN CÓ
 
-### Migration 001 — Bảng gốc
+### Migration 001
 `users`, `orders`, `stock_receipts`, `raw_stock`, `semi_stock`, `expenses`, `schedule_logs`
 
-### Migration Supplies & PO (cũ)
-`purchase_orders` *(đã ALTER thêm cột)*, `purchase_order_items` *(đã ALTER)*, `supplies`
-
-### Migration 002 — Bảng cấu hình động
+### Migration 002
 `settings`, `raw_materials`, `semi_products`, `semi_recipes`, `products`, `product_recipes`, `unit_conversions`
 
-### Migration 003 — Seed dữ liệu mặc định
-- settings: bank_id=ACB, account_no=XXXXXXXXXX, open_hour=6, close_hour=10, late_grace_minutes=15
+### Migration 003 — Seed mặc định
 - raw_materials: ca_phe_bot, cacao_bot, matcha_bot, bot_kem_muoi, sua_dac, sua_tuoi, duong, nuoc
 - semi_products: cot_ca_phe, cot_cacao, cot_matcha, kem_muoi, nuoc_duong
 - products: 6 sản phẩm với công thức đầy đủ
 - supplies: ly, nap, ong_hut, muong, tui_don, tui_doi
-- unit_conversions: thùng/hộp sữa, kg, lon, lốc, hộp
 
-### Migration 004 — Purchase Management System (10/04/2026) ✅
-Bảng mới:
-- `suppliers` — nhà cung cấp (code, name, phone, email, address, platform, platform_url)
-- `sku_items` — sản phẩm nhập kho theo thương hiệu, map về raw_materials/supplies
-- `sku_units` — đơn vị tính của từng SKU (ml/hộp/thùng + tỷ lệ quy đổi về base_unit)
-- `po_adjustments` — chiết khấu/phí tự thêm cho từng đơn (discount/fee/other)
-- `po_payments` — ghi nhận thanh toán nhiều lần (cash/transfer/cod/other)
+### Migration 004 — Purchase Management ✅
+`suppliers`, `sku_items`, `sku_units`, `po_adjustments`, `po_payments`
 
-Cột mới trong `purchase_orders`:
-- supplier_id, status (pending/received/completed)
-- platform, platform_order_id (mã đơn sàn TMĐT)
-- debt_due_date (hạn công nợ)
-- shipping_fee, received_at, completed_at
+### Migration 005 — Contacts ✅
+`suppliers.contact_type`: nha_cung_cap / khach_hang / nhuong_quyen / khac
 
-Cột mới trong `purchase_order_items`:
-- sku_id, sku_unit, to_base_rate
-- amount_before_discount, discount_amount, amount_after_discount
+### Migration 006 — Assets ✅
+`assets` — khấu hao đường thẳng
 
-Seed mẫu:
-- suppliers: NCC-001 (Nhà cung cấp chung)
-- sku_items: NVL-SUA-MLK (Sữa tươi Mlekovita → map_to: sua_tuoi)
-- sku_units: ml/hộp/thùng cho Mlekovita
+### Migration 007 — Seed SKUs thực tế ✅
+60 SKU: NVL-CF/DT/CA/MF/MT/SD/ST, VTU-LY/NP/OH..., CCU-xxx
 
-Quản lý:
-- SKU: tab "Danh mục SKU" trong Inventory (owner only), mã tự sinh NVL-/VTU-/CCU-XXX
-- Đơn vị tính SKU: thêm/xoá sku_units inline trong sheet SKU
-- Nhà cung cấp & liên lạc: module Contacts riêng (xem Migration 005)
+### Migration 014 — Retime orders ✅
+Dịch chuyển đơn về khung 08:30–10:00
 
-### Migration 014 — Retime orders (15/04/2026) ✅
-Dịch chuyển toàn bộ đơn hàng về khung giờ 08:30–10:00, cách đều nhau trong ngày.
+### Migration 015 — Tính lại raw_stock ✅
+FIFO từ PO received/completed
 
-### Migration 015 — Tính lại raw_stock (15/04/2026) ✅
-- BƯỚC 0: Cập nhật ngày lịch sử xuất huỷ → 08/04/2026 20:00 VN (13:00 UTC)
-- BƯỚC 1: Tính lại `raw_stock.quantity` = nhập - huỷ - dùng_pha_BTP - bán_trực_tiếp
-  - `purchased`: sku_items JOIN purchase_order_items JOIN purchase_orders (status received/completed)
-  - `written_off`: stock_writeoffs WHERE item_type='raw'
-  - `brew_raw_used`: (semi_stock + semi đã bán) × (sr.amount / sp.yields), bỏ 'nuoc'
-  - `raw_used_direct`: orders JSON × product_recipes WHERE ingredient_type='raw'
-- BƯỚC 2: Tính lại FIFO `sku_items.quantity` theo raw_stock mới
-
-### Migration 016 — Đánh lại mã đơn toàn cục (15/04/2026) — CẦN CHẠY
+### Migration 016 — Đánh lại mã đơn ⏳ CẦN CHẠY
 ```sql
 WITH ranked AS (
   SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) AS rn FROM orders
@@ -107,113 +143,68 @@ UPDATE orders o SET order_num = '#' || LPAD(r.rn::text, 3, '0')
 FROM ranked r WHERE o.id = r.id;
 ```
 
-### Migration 007 — Seed SKUs thực tế (11/04/2026) ✅
-Seed dữ liệu thực tế:
-- `raw_materials`: thêm 11 nguyên liệu mới (cà phê robusta/phin đậm, đường trắng, bột cacao DK, milk foam, matcha cozy, sữa đặc Vinamilk/Ngôi Sao/La rosee, sữa tươi TH/Mlekovita)
-- `supplies`: thêm 11 vật tư tiêu hao (ly PET98, nắp, ống hút, muỗng, túi chữ T, túi đôi, giấy lót, găng tay, khăn lau, túi rác, túi lọc) + 37 công cụ dụng cụ (category='equipment')
-- `sku_items`: 60 SKU — NVL-CF/DT/CA/MF/MT/SD/ST (nguyên liệu), VTU-LY/NP/OH/MG/TT/TD/GL/GT/KL/TR/TL (vật tư), CCU-xxx (dụng cụ)
-- `sku_units`: quy đổi đơn vị cho tất cả SKU
-
-Schema đã ALTER trước khi chạy (anh tự chạy trực tiếp trên Supabase):
-- `raw_materials`: thêm cột `icon`, `warn_at`, `color`
-- `sku_items`: thêm cột `type`, `map_to_id`, `map_to_type`, `base_unit`
-- `sku_units`: thêm cột `to_base`, `description`
-
-### Migration 006 — Assets (10/04/2026) ✅
-Bảng mới:
-- `assets` — tài sản (asset_code tự sinh TS-001..., name, asset_type, status, location, assigned_to→users, purchase_date, purchase_price, supplier_id→suppliers, useful_life_months, salvage_value, note, active)
-- RLS enabled, policy allow_all_assets
-
-Tính năng:
-- Khấu hao đường thẳng: (purchase_price - salvage_value) / useful_life_months
-- Group by: loại tài sản hoặc trạng thái
-- Lọc theo status + asset_type, tìm kiếm tên/mã/loại
-- Progress bar giá trị còn lại
-
-### Migration 005 — Contacts (cần chạy trong Supabase Dashboard)
+### Migration 017 — Multi-brand/outlet ⏳ P1 — CHƯA CHẠY
 ```sql
-ALTER TABLE suppliers
-  ADD COLUMN IF NOT EXISTS contact_type text NOT NULL DEFAULT 'nha_cung_cap';
+CREATE TABLE brands (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  code text UNIQUE NOT NULL,
+  name text NOT NULL,
+  description text,
+  active boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE outlets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_id uuid REFERENCES brands(id),
+  code text UNIQUE NOT NULL,
+  name text NOT NULL,
+  address text,
+  active boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE orders
+  ADD COLUMN brand_id uuid REFERENCES brands(id),
+  ADD COLUMN outlet_id uuid REFERENCES outlets(id);
+
+ALTER TABLE users
+  ADD COLUMN outlet_id uuid REFERENCES outlets(id);
+
+ALTER TABLE brands ENABLE ROW LEVEL SECURITY;
+ALTER TABLE outlets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all_brands" ON brands FOR ALL USING (true);
+CREATE POLICY "allow_all_outlets" ON outlets FOR ALL USING (true);
+
+INSERT INTO brands (code, name) VALUES
+  ('CF_SANG', 'Cà Phê Sáng'),
+  ('TRA_TOI', 'Trà Tối');
+
+INSERT INTO outlets (brand_id, code, name)
+SELECT id, 'CF_O1', 'Cà Phê Sáng — Outlet 1' FROM brands WHERE code = 'CF_SANG';
+INSERT INTO outlets (brand_id, code, name)
+SELECT id, 'CF_O2', 'Cà Phê Sáng — Outlet 2' FROM brands WHERE code = 'CF_SANG';
+INSERT INTO outlets (brand_id, code, name)
+SELECT id, 'CF_O3', 'Cà Phê Sáng — Outlet 3' FROM brands WHERE code = 'CF_SANG';
+INSERT INTO outlets (brand_id, code, name)
+SELECT id, 'CF_O4', 'Cà Phê Sáng — Outlet 4' FROM brands WHERE code = 'CF_SANG';
+INSERT INTO outlets (brand_id, code, name)
+SELECT id, 'CF_O5', 'Cà Phê Sáng — Outlet 5' FROM brands WHERE code = 'CF_SANG';
+
+INSERT INTO outlets (brand_id, code, name)
+SELECT id, 'TRA_O1', 'Trà Tối — Outlet 1' FROM brands WHERE code = 'TRA_TOI';
+INSERT INTO outlets (brand_id, code, name)
+SELECT id, 'TRA_O2', 'Trà Tối — Outlet 2' FROM brands WHERE code = 'TRA_TOI';
 ```
-Sau migration, bảng `suppliers` dùng chung cho tất cả loại liên lạc:
-- `nha_cung_cap` — nhà cung cấp (NCC-XXX), dùng trong Purchasing
-- `khach_hang`   — khách hàng (KH-XXX), dùng cho tích điểm sau này
-- `nhuong_quyen` — đối tác nhượng quyền (NQ-XXX)
-- `khac`         — khác (KC-XXX)
 
----
+**Sau migration 017:** POS đọc `outlet_id` từ `users.outlet_id` của account đăng nhập,
+gắn tự động vào order — staff không chọn thủ công.
 
-## THIẾT KẾ SKU
-
-```
-Nhóm nguyên liệu (raw_materials) — dùng trong công thức pha chế
-  └─ sua_tuoi (Sữa tươi) — đơn vị cơ bản: ml
-
-    SKU Items — sản phẩm nhập kho theo thương hiệu
-      └─ NVL-SUA-MLK: Sữa tươi Mlekovita → map_to: sua_tuoi
-           Đơn vị: ml(×1) / hộp(×1000) / thùng(×12000)
-      └─ NVL-SUA-VNM: Sữa tươi Vinamilk → map_to: sua_tuoi
-           Đơn vị: ml(×1) / hộp(×1000) / thùng(×12000)
-```
-
-Khi nhập 1 thùng Mlekovita → cộng 12.000ml vào raw_stock[sua_tuoi]
-Khi xem tồn kho → hiện ml + quy đổi ngược ra hộp/thùng
-Khi pha chế → trừ từ raw_stock[sua_tuoi] (không phân biệt thương hiệu)
-
----
-
-## LUỒNG ĐƠN NHẬP HÀNG
-
-```
-Tạo đơn → [pending: Đang giao]
-    ↓ Xác nhận nhận hàng
-[received: Đã nhận hàng] → tồn kho cập nhật ngay
-    ↓ Thanh toán đủ + xác nhận
-[completed: Hoàn tất]
-```
-
-Cấu trúc tài chính đơn:
-```
-Tổng thành tiền sau CK từng dòng
-+ Phí ship
-+ Các điều chỉnh (po_adjustments: fee/discount/other)
-= Tổng tiền phải trả
-
-Đã thanh toán (tổng po_payments)
-Còn nợ = Tổng - Đã TT
-```
-
----
-
-## PHÂN QUYỀN
-
-| Tính năng | staff | manager | owner |
-|---|:---:|:---:|:---:|
-| POS bán hàng | ✓ | ✓ | ✓ |
-| Đổi mật khẩu bản thân | ✓ | ✓ | ✓ |
-| Kiểm tra tồn kho từ POS | ✓ | ✓ | ✓ |
-| Xem tồn kho (bán TP + vật tư) | ✓ | ✓ | ✓ |
-| Xem tồn kho nguyên liệu thô | — | ✓ | ✓ |
-| Nhập kho / pha bán TP | — | ✓ | ✓ |
-| Nhập hàng (phiếu nhập) | — | ✓ | ✓ |
-| Xem doanh thu | — | ✓ | ✓ |
-| Báo cáo tài chính P&L | — | ✓ | ✓ |
-| Lịch trình | — | ✓ | ✓ |
-| Quản lý nguyên liệu | — | ✓ | ✓ |
-| Xem & quản lý tài sản | — | ✓ | ✓ |
-| Quản lý SKU & đơn vị tính | — | — | ✓ |
-| Xem Liên lạc | — | ✓ | ✓ |
-| Quản lý Liên lạc (CRUD) | — | — | ✓ |
-| Quản lý menu & giá | — | — | ✓ |
-| Quản lý công thức | — | — | ✓ |
-| Tạo/sửa/xoá tài khoản | — | — | ✓ |
-| Cài đặt QR & hệ thống | — | — | ✓ |
-
----
-
-## ROUTING SAU ĐĂNG NHẬP
-- `staff` → `src/pos/index.html`
-- `manager` / `owner` → `src/home/index.html`
+**POS logic (đã implement):**
+- `init()` query `users?id=eq.{session.id}&select=outlet_id` → `posOutletId`
+- Nếu có `outlet_id` → query `outlets?id=eq.{posOutletId}&select=brand_id` → `posBrandId`
+- `confirmPay()` → `DB.insert('orders', {..., outlet_id: posOutletId, brand_id: posBrandId})`
+- Owner/manager không có outlet_id → cả hai = `undefined` (không lỗi)
 
 ---
 
@@ -228,8 +219,7 @@ Còn nợ = Tổng - Đã TT
 | Matcha latte | 23.000đ | 40ml cốt matcha + 30g sữa đặc + 70ml sữa tươi |
 | Cacao latte | 23.000đ | 40ml cốt cacao + 30g sữa đặc + 70ml sữa tươi |
 
-Mỗi ly: 1 ly + 1 nắp + 1 ống hút
-Logic túi: lẻ → túi chữ T, chẵn → túi đôi
+Mỗi ly: 1 ly + 1 nắp + 1 ống hút. Logic túi: lẻ → túi chữ T, chẵn → túi đôi.
 
 ## BÁN THÀNH PHẨM
 
@@ -243,13 +233,43 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 
 ---
 
-## TÀI KHOẢN MẶC ĐỊNH (CẦN ĐỔI MẬT KHẨU)
+## PHÂN QUYỀN
 
-| Tài khoản | Mật khẩu | Vai trò |
-|---|---|---|
-| admin | admin123 | owner |
-| manager | manager123 | manager |
-| staff | staff123 | staff |
+| Tính năng | staff | manager | owner |
+|---|:---:|:---:|:---:|
+| POS bán hàng | ✓ | ✓ | ✓ |
+| Xem tồn kho BTP + vật tư | ✓ | ✓ | ✓ |
+| Xem tồn kho nguyên liệu thô | — | ✓ | ✓ |
+| Nhập kho / pha BTP | — | ✓ | ✓ |
+| Xem doanh thu | — | ✓ | ✓ |
+| Báo cáo tài chính P&L | — | ✓ | ✓ |
+| Quản lý SKU | — | — | ✓ |
+| Quản lý menu & công thức | — | — | ✓ |
+| Tạo/sửa/xoá tài khoản | — | — | ✓ |
+
+---
+
+## ROUTING SAU ĐĂNG NHẬP
+- `staff` → `src/pos/index.html`
+- `manager` / `owner` → `src/home/index.html`
+
+---
+
+## GHI CHÚ KỸ THUẬT
+- Supabase REST API qua `src/lib/supabase.js`
+- Supabase đã migrate sang ECC P-256 asymmetric JWT (15/04/2026)
+- localStorage chỉ dùng cho `fnb_session`
+- GitHub Pages tự deploy khi push main
+- Giá vốn BQ: `(Tồn cũ × Giá BQ cũ + Qty nhập × Đơn giá thực) ÷ (Tồn cũ + Qty nhập)`
+- `semi_recipes` dùng cột `raw_id`, `semi_products` dùng cột `yields`
+- Mã đơn `order_num`: toàn cục, format `#001` `#002`... POS đọc max từ DB khi init
+- DOW = ['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']
+- SheetJS (xlsx.js CDN): xuất Excel trong revenue + finance
+- Orders layout: `height:100dvh;overflow:hidden`, scroll trong `.content`, card cần `flex-shrink:0`
+- Orders scrollbar: `scrollbar-width:none` + `::-webkit-scrollbar{display:none}`
+- `purchase_order_items.item_id` = `raw_stock.id` trực tiếp (không join qua sku_items)
+- COGS: avg_cost = Σ(total_price)/Σ(base_qty) từ PO received/completed
+- `fnb_session` trong localStorage KHÔNG lưu `outlet_id` — POS phải query `users` table để lấy
 
 ---
 
@@ -257,58 +277,33 @@ Logic túi: lẻ → túi chữ T, chẵn → túi đôi
 
 | Module | File | Trạng thái |
 |---|---|:---:|
-| Auth | src/auth/ | ✓ |
-| Home | src/home/ | ✓ Nhóm: Tồn kho + Báo cáo + Quản lý |
-| POS | src/pos/ | ✓ Order_num toàn cục từ DB |
-| Inventory | src/inventory/ | ✓ Chỉ còn: Nguyên liệu thô + Bán TP |
-| Supplies | src/supplies/ | ✓ MỚI — Vật tư tiêu hao + Dụng cụ + Danh mục SKU |
-| Purchasing | src/purchasing/ | ✓ Fix stuck loading (duplicate fmtDate) |
-| Orders | src/orders/ | ✓ Mã đơn toàn cục, fix huỷ đơn, hiển thị thứ, breakdown thanh toán, ẩn scrollbar |
-| Revenue | src/revenue/ | ✓ Bảng sản phẩm bán chạy, xuất Excel, hiển thị thứ |
-| Finance | src/finance/ | ✓ COGS từ purchase_order_items, xuất Excel, hiển thị thứ |
-| Schedule | src/schedule/ | ✓ |
-| Menu | src/menu/ | ✓ |
-| Settings | src/settings/ | ✓ |
-| Assets | src/assets/ | ✓ cần Migration 006 |
-| Contacts | src/contacts/ | ✓ cần Migration 005 |
+| Auth | src/auth/ | ✅ |
+| Home | src/home/ | ✅ cần filter đa brand P2 |
+| POS | src/pos/ | ✅ đã gắn brand_id/outlet_id tự động |
+| Inventory | src/inventory/ | ✅ |
+| Supplies | src/supplies/ | ✅ |
+| Purchasing | src/purchasing/ | ✅ |
+| Orders | src/orders/ | ✅ |
+| Revenue | src/revenue/ | ✅ cần filter brand/outlet P2 |
+| Finance | src/finance/ | ✅ cần filter brand/outlet P2 |
+| Schedule | src/schedule/ | ✅ |
+| Menu | src/menu/ | ✅ |
+| Settings | src/settings/ | ✅ |
+| Assets | src/assets/ | ✅ |
+| Contacts | src/contacts/ | ✅ |
 
 ---
 
-## GHI CHÚ KỸ THUẬT
-- Supabase REST API qua `src/lib/supabase.js`
-- localStorage chỉ dùng cho `fnb_session`
-- GitHub Pages tự deploy khi push main
-- Giá vốn BQ: `(Tồn cũ × Giá BQ cũ + Qty nhập × Đơn giá thực) ÷ (Tồn cũ + Qty nhập)`
-- Đơn giá thực = amount_after_discount ÷ base_qty
-- `purchase_order_items` columns: `po_id, sku_id, item_type, item_id, item_name, input_qty, input_unit, sku_unit, conversion_rate, to_base_rate, base_qty, base_unit, unit_price, total_price, amount_before_discount, discount_amount, amount_after_discount`
-- `item_id` trong purchase_order_items = raw_stock.id trực tiếp (không cần join qua sku_items để tính COGS)
-- `semi_recipes` dùng cột `raw_id` (không phải ingredient_id), `semi_products` dùng cột `yields` (không phải yield_qty)
-- COGS tính trong Finance: load product_recipes + semi_recipes + semi_products từ DB; avg_cost = Σ(total_price) / Σ(base_qty) từ PO đã received/completed
-- Mã đơn `order_num`: toàn cục, không reset theo ngày. POS đọc max từ DB khi init. Format `#001`, `#002`...
-- Hiển thị thứ: `DOW=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']` dùng trong orders, revenue, finance khi period='day'
-- SheetJS (xlsx.js CDN): dùng cho xuất Excel trong revenue + finance
-- Orders layout: body `height:100dvh;overflow:hidden` + html `height:100%` → scroll trong `.content`. Card cần `flex-shrink:0` để không bị compress trong flex column container
-- Orders scrollbar: ẩn bằng `scrollbar-width:none` + `::-webkit-scrollbar{display:none}`
-- Orders breakdown thanh toán: chip Tiền mặt / Chuyển khoản / Đã huỷ nằm trên search bar, cập nhật theo filter
+## CÁCH DÙNG FILE NÀY ĐỂ KHÔNG MẤT CONTEXT
 
----
-
-## HOME PAGE — CẤU TRÚC NHÓM
-
+**Với Claude CLI (vscode):**
+Thêm dòng này vào đầu mỗi prompt hoặc tạo file `.claude/context.md` trỏ vào file này:
 ```
-[Banner doanh thu hôm nay]  ← canRevenue
-[Stats 3 cột]               ← canRevenue
-[Nút POS]
-[Nút Đơn bán hàng]          ← canRevenue
-
-TỒNG KHO:
-  Nguyên liệu  Vật tư
-  Tài sản      Nhập hàng
-
-BÁO CÁO:
-  Doanh thu    Tài chính
-
-QUẢN LÝ:
-  Lịch trình   Menu
-  Liên lạc     Cài đặt
+Đọc file CONTEXT.md trong repo trước khi làm bất cứ điều gì.
 ```
+
+**Với Claude.ai chat:**
+Paste toàn bộ nội dung file này vào đầu conversation mới.
+
+**Sau mỗi session:**
+Tải CONTEXT.md mới từ em về → thay thế file cũ trong repo → commit với message `docs: update CONTEXT.md`.
