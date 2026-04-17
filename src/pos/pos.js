@@ -216,8 +216,10 @@ Auth.require('pos');
   function update(){ renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
   function updateCartBar(){
-    const count = getTotalQty(), subtotal = getSubtotal();
+    const count = getTotalQty(), subtotal = getSubtotal(), payable = getPayable();
     document.getElementById('footerSubtotal').textContent = fmt(subtotal);
+    document.getElementById('cartTotal').textContent = fmt(payable);
+    document.getElementById('cartInfoTop').textContent = count > 0 ? `${count} món` : 'Chưa có món';
     renderDiscountUI();
     const badge = document.getElementById('cartCount');
     badge.textContent = count;
