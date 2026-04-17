@@ -71,7 +71,10 @@ Auth.require('pos');
   const getTotalQty = () => Object.keys(cart).reduce((s,k) => s + cart[k], 0);
 
   // ── LOAD DATA ──
+  const SKELETON = Array(4).fill(0).map(()=>`<div class="skel-card"><div class="skel-img"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>`).join('');
+
   async function init(){
+    document.getElementById('menuList').innerHTML = SKELETON;
     try {
       if(navigator.onLine){
         // Online: fetch fresh data, cache menu for offline use
@@ -128,6 +131,32 @@ Auth.require('pos');
   }
   function setCat(c){ activeCat=c; renderCats(); renderMenu(); }
 
+  const SVG_PLUS_RED  = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#E03C31"/><line x1="12" y1="6" x2="12" y2="18" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="12" x2="18" y2="12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+  const SVG_MINUS     = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="7" y1="12" x2="17" y2="12" stroke="#E03C31" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+  const SVG_PLUS_GRAY = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="12" y1="7" x2="12" y2="17" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+
+  function getCtrlHtml(id){
+    const item = findItem(id); if(!item) return '';
+    const qty = cart[id] || 0;
+    if(item.active === false) return '';
+    if(qty === 0) return `<button class="mc-add-btn" onclick="add('${id}')">${SVG_PLUS_RED}</button>`;
+    return `<div class="mc-qty">
+      <button class="qb minus" onclick="chg('${id}',-1)">${SVG_MINUS}</button>
+      <span class="qn">${qty}</span>
+      <button class="qb" onclick="chg('${id}',1)">${SVG_PLUS_GRAY}</button>
+    </div>`;
+  }
+
+  function updateMenuCardCtrl(id){
+    const card = document.querySelector(`.menu-card[data-id="${id}"]`);
+    if(!card) return;
+    const qty = cart[id] || 0;
+    card.classList.toggle('in-cart', qty > 0);
+    const bottom = card.querySelector('.mc-bottom');
+    const prices = bottom.querySelector('.mc-prices').outerHTML;
+    bottom.innerHTML = prices + getCtrlHtml(id);
+  }
+
   function renderMenuCard(item){
     const qty      = cart[item.id] || 0;
     const out      = item.active === false;
@@ -140,20 +169,13 @@ Auth.require('pos');
     const priceHtml = hasDisc
       ? `<span class="mc-original">${fmt(item.price)}</span><span class="mc-price">${fmt(dispPrice)}</span>`
       : `<span class="mc-price">${fmt(item.price)}</span>`;
-    const ctrl = out ? '' : qty === 0
-      ? `<button class="mc-add-btn" onclick="add('${item.id}')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#E03C31"/><line x1="12" y1="6" x2="12" y2="18" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="12" x2="18" y2="12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></button>`
-      : `<div class="mc-qty">
-           <button class="qb minus" onclick="chg('${item.id}',-1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="7" y1="12" x2="17" y2="12" stroke="#E03C31" stroke-width="2.5" stroke-linecap="round"/></svg></button>
-           <span class="qn">${qty}</span>
-           <button class="qb" onclick="chg('${item.id}',1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="12" y1="7" x2="12" y2="17" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/></svg></button>
-         </div>`;
-    return `<div class="menu-card${out?' out':''}${qty>0?' in-cart':''}">
+    return `<div class="menu-card${out?' out':''}${qty>0?' in-cart':''}" data-id="${item.id}">
       <div class="mc-img" style="background:${bg}">${thumb}</div>
       <div class="mc-content">
         <div class="mc-name">${item.name}</div>
         <div class="mc-bottom">
           <div class="mc-prices">${priceHtml}</div>
-          ${ctrl}
+          ${getCtrlHtml(item.id)}
         </div>
       </div>
     </div>`;
@@ -175,9 +197,22 @@ Auth.require('pos');
     }).join('');
   }
 
-  function add(id){ cart[id]=(cart[id]||0)+1; if(!notes[id])notes[id]=''; payMethod=null; update(); toast('+1 '+MENU.find(m=>m.id===id)?.name); }
-  function chg(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0){delete cart[id];delete notes[id];} payMethod=null; update(); }
-  function clearAll(){ cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null; document.getElementById('discInput').value=''; document.getElementById('actualInput').value=''; update(); if(expanded)toggleCart(); }
+  function add(id){
+    cart[id]=(cart[id]||0)+1; if(!notes[id])notes[id]=''; payMethod=null;
+    updateMenuCardCtrl(id); renderCartItems(); updateCartBar(); updatePaymentUI();
+    navigator.vibrate?.(20);
+  }
+  function chg(id,d){
+    cart[id]=(cart[id]||0)+d; if(cart[id]<=0){delete cart[id];delete notes[id];} payMethod=null;
+    updateMenuCardCtrl(id); renderCartItems(); updateCartBar(); updatePaymentUI();
+  }
+  function clearAll(){
+    cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
+    document.getElementById('discInput').value=''; document.getElementById('actualInput').value='';
+    renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
+    if(expanded) toggleCart();
+  }
+  function update(){ renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
   // ── CHIẾT KHẤU / THỰC THU ──
   function setDiscType(t){
@@ -215,6 +250,7 @@ Auth.require('pos');
     const subtotal = getSubtotal(), discount = getDiscount(), payable = getPayable();
     const hasDiscount = discount > 0;
     document.getElementById('payableRow').style.display = hasDiscount ? 'flex' : 'none';
+    document.getElementById('actualRow').style.display  = hasDiscount ? 'flex' : 'none';
     if(hasDiscount) document.getElementById('payableAmt').textContent = fmt(payable);
     // Actual received
     const actual = actualReceived !== null ? actualReceived : payable;
@@ -390,13 +426,15 @@ Auth.require('pos');
 
     await new Promise(r => setTimeout(r, 1000));
 
+    btn.classList.remove('success');
+    btn.innerHTML = 'Xác nhận thanh toán';
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
     document.getElementById('discInput').value='';
     document.getElementById('actualInput').value='';
     orderN++;
     expanded = false;
     document.getElementById('bottomCart').classList.remove('expanded');
-    update();
+    renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
   }
 
 
