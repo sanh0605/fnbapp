@@ -6,7 +6,6 @@ const isOwner = role === 'owner';
 const isMgr   = role === 'manager';
 
 // Header
-document.getElementById('userChip').textContent = session?.name || '';
 document.getElementById('greetName').textContent = 'Xin chào, ' + (session?.name || '') + '!';
 document.getElementById('greetRole').textContent =
   isOwner ? 'Chủ quán — Toàn quyền truy cập' :
