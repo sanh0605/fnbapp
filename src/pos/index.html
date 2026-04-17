@@ -117,9 +117,13 @@
     .qr-section img{width:180px;height:180px;border-radius:8px;background:#fff}
     .qr-amount{font-size:18px;font-weight:700;color:#E03C31}
     .qr-hint{font-size:11px;color:#bbb;text-align:center}
-    .confirm-btn{padding:17px;border-radius:16px;border:none;background:#ddd;font-size:16px;font-weight:700;cursor:default;color:#fff;font-family:inherit;width:100%;transition:background .15s}
+    .confirm-btn{padding:17px;border-radius:16px;border:none;background:#ddd;font-size:16px;font-weight:700;cursor:default;color:#fff;font-family:inherit;width:100%;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:10px}
     .confirm-btn.active{background:#E03C31;cursor:pointer}
     .confirm-btn.active:active{background:#C42B21}
+    .confirm-btn.loading{background:#E03C31;opacity:.7;cursor:default;pointer-events:none}
+    .confirm-btn.success{background:#1D9E75;cursor:default;pointer-events:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 
     /* ── MISC ── */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}

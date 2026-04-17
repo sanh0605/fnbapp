@@ -347,7 +347,14 @@ Auth.require('pos');
   })();
 
   async function confirmPay(){
-    if(!document.getElementById('confirmBtn').classList.contains('active')) return;
+    const btn = document.getElementById('confirmBtn');
+    if(!btn.classList.contains('active')) return;
+
+    // Loading state
+    btn.classList.remove('active');
+    btn.classList.add('loading');
+    btn.innerHTML = '<span class="btn-spinner"></span>Đang xử lý...';
+
     const subtotal   = getSubtotal();
     const discount   = getDiscount();
     const payable    = getPayable();
@@ -358,7 +365,6 @@ Auth.require('pos');
       return { id, name:item?.name||'', qty:cart[id], price:item?.price||0 };
     });
 
-    // Tạo payload đơn hàng
     const orderPayload = {
       client_id:       crypto.randomUUID(),
       order_num:       orderNum,
@@ -373,19 +379,21 @@ Auth.require('pos');
       brand_id:        posBrandId  || undefined,
     };
 
-    // 1. Lưu local trước (luôn thành công dù offline)
     try { await IDBService.addPendingOrder(orderPayload); } catch(e){ console.warn('IDB error:', e); }
-
-    // 2. Sync ngay nếu có mạng
     if(navigator.onLine){ syncPendingOrders(); }
-    else { toast('📶 Offline — đơn đã lưu, sẽ sync khi có mạng'); }
+    else { toast('Offline — đơn đã lưu, sẽ sync khi có mạng'); }
 
-    toast(`✓ ${methodName} — ${fmt(payable)}`);
+    // Success state
+    btn.classList.remove('loading');
+    btn.classList.add('success');
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Đã thanh toán';
+
+    await new Promise(r => setTimeout(r, 1000));
+
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
     document.getElementById('discInput').value='';
     document.getElementById('actualInput').value='';
     orderN++;
-    const num = '#' + String(orderN).padStart(3,'0');
     expanded = false;
     document.getElementById('bottomCart').classList.remove('expanded');
     update();
