@@ -294,6 +294,7 @@ Auth.require('pos');
     if(Object.keys(cart).length===0 && !expanded) return;
     expanded = !expanded;
     document.getElementById('bottomCart').classList.toggle('expanded', expanded);
+    document.getElementById('cartInfo').style.visibility = expanded ? 'hidden' : 'visible';
     if(!expanded){ payMethod=null; updatePaymentUI(); }
     updateCartBar();
   }
