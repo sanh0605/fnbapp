@@ -39,3 +39,17 @@ Với task nhiều bước, nêu plan ngắn trước khi làm:
 1. [Bước] → verify: [kiểm tra]
 2. [Bước] → verify: [kiểm tra]
 ```
+
+## 5. Token Efficiency
+
+- Không đọc file nếu nội dung đã có trong context
+- Không re-read file vừa edit — Edit tool đã track state
+- Batch nhiều Edit trong cùng 1 lượt thay vì từng cái một
+- Dùng Grep/Glob thay vì Read toàn bộ file khi chỉ cần tìm 1 đoạn
+- Không đọc file không liên quan đến task
+
+## 6. Confirm Before Code
+
+- Với task mơ hồ hoặc có nhiều cách hiểu: nêu cách hiểu, chờ xác nhận trước khi code
+- Với task lớn (>3 file thay đổi): trình bày plan ngắn, chờ anh duyệt
+- Không tự suy diễn ý định — hỏi thẳng nếu không chắc
