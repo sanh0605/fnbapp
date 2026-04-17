@@ -2,15 +2,10 @@ Auth.require('pos');
   const session = Auth.getSession();
   const role    = Auth.getRole();
 
-  // Hiện nút nav theo role
   if(role === 'manager' || role === 'owner'){
-    document.getElementById('homeBtn').style.display = 'flex';
-    document.getElementById('ordersBtn').style.display = 'flex';
+    document.getElementById('homeBtn').style.display    = 'flex';
+    document.getElementById('ordersBtn').style.display  = 'flex';
     document.getElementById('revenueBtn').style.display = 'flex';
-  }
-  if(role === 'owner'){
-    document.getElementById('menuNavBtn').style.display = 'flex';
-    document.getElementById('settingsBtn').style.display = 'flex';
   }
 
   // Network
@@ -480,11 +475,12 @@ Auth.require('pos');
     } catch(e){ el.innerHTML=`<div class="loading">Lỗi: ${e.message}</div>`; }
   }
 
+
+
   function showLogout(){
     document.getElementById('logoutSub').textContent = session ? `Đang đăng nhập: ${session.name}` : '';
     document.getElementById('logoutOverlay').classList.add('show');
   }
   function hideLogout(){ document.getElementById('logoutOverlay').classList.remove('show'); }
-
 
   init();
