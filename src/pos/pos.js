@@ -12,7 +12,6 @@ Auth.require('pos');
     document.getElementById('menuNavBtn').style.display = 'flex';
     document.getElementById('settingsBtn').style.display = 'flex';
   }
-  if(session) document.getElementById('userName').textContent = session.name;
 
   // Network
   const netDot = document.getElementById('netDot');
@@ -146,22 +145,31 @@ Auth.require('pos');
   }
   function setCat(c){ activeCat=c; renderCats(); renderMenu(); }
 
-  function renderMenuRow(item){
+  function renderMenuCard(item){
     const qty = cart[item.id] || 0;
     const out = item.active === false;
-    return `<div class="menu-row${out?' out':''}">
-      <div class="micon" style="background:${item.color||'#f5f5f0'}">${item.icon||'☕'}</div>
-      <div class="minfo">
-        <div class="mname">${item.name}</div>
-        <div class="mprice">${fmt(item.price)}</div>
+    const bg  = item.color || '#f5f5f0';
+    const thumb = item.image_url
+      ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">${item.icon||'☕'}`
+      : (item.icon || '☕');
+    return `<div class="menu-card${out?' out':''}">
+      <div class="mc-thumb" style="background:${bg}">
+        ${thumb}
+        ${qty > 0 ? `<span class="mc-qty-badge">${qty}</span>` : ''}
       </div>
-      ${out ? '' : qty === 0
-        ? `<button class="add-btn" onclick="add('${item.id}')">+</button>`
-        : `<div class="qty-ctrl">
-             <button class="qb" onclick="chg('${item.id}',-1)">−</button>
-             <span class="qn">${qty}</span>
-             <button class="qb" onclick="chg('${item.id}',1)">+</button>
-           </div>`}
+      <div class="mc-body">
+        <div class="mc-name">${item.name}</div>
+        <div class="mc-foot">
+          <span class="mc-price">${fmt(item.price)}</span>
+          ${out ? '' : qty === 0
+            ? `<button class="mc-add" onclick="event.stopPropagation();add('${item.id}')">+</button>`
+            : `<div class="mc-qty">
+                 <button class="qb" onclick="event.stopPropagation();chg('${item.id}',-1)">−</button>
+                 <span class="qn">${qty}</span>
+                 <button class="qb" onclick="event.stopPropagation();chg('${item.id}',1)">+</button>
+               </div>`}
+        </div>
+      </div>
     </div>`;
   }
 
@@ -170,16 +178,14 @@ Auth.require('pos');
     if(activeCat !== 'Tất cả'){
       const items = MENU.filter(m=>m.category===activeCat);
       if(!items.length){ el.innerHTML='<div class="loading">Không có sản phẩm</div>'; return; }
-      el.innerHTML = items.map(renderMenuRow).join('');
+      el.innerHTML = items.map(renderMenuCard).join('');
       return;
     }
-    // Tất cả → nhóm theo danh mục
     const cats = [...new Set(MENU.map(m=>m.category))];
     if(!cats.length){ el.innerHTML='<div class="loading">Không có sản phẩm</div>'; return; }
     el.innerHTML = cats.map(cat => {
       const catItems = MENU.filter(m=>m.category===cat);
-      return `<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;padding:6px 2px 4px;margin-top:4px">${cat}</div>`
-        + catItems.map(renderMenuRow).join('');
+      return `<div class="cat-header">${cat}</div>` + catItems.map(renderMenuCard).join('');
     }).join('');
   }
 
@@ -228,19 +234,11 @@ Auth.require('pos');
     document.getElementById('cartTotal').textContent = fmt(payable);
     document.getElementById('footerSubtotal').textContent = fmt(subtotal);
     renderDiscountUI();
-    const badge = document.getElementById('countBadge');
-    badge.textContent = count; badge.style.display = count>0?'inline':'none';
-    const btn = document.getElementById('cartToggleBtn');
-    btn.disabled = count === 0;
-    const content = document.getElementById('cartBtnContent');
-    btn.classList.add('icon-only');
-    if(expanded){
-      // Icon thu nhỏ (chevrons xuống)
-      content.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 21 6 15"/><polyline points="18 9 12 15 6 9"/></svg>`;
-    } else {
-      // Icon phóng to (chevrons lên)
-      content.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/><polyline points="18 21 12 15 6 21"/></svg>`;
-    }
+    const badge = document.getElementById('cartCount');
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+    document.getElementById('cartInfoTop').textContent = count > 0 ? `${count} món` : 'Chưa có món';
+    document.getElementById('cartPayBtn').disabled = count === 0;
   }
 
   function renderCartItems(){
