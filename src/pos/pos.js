@@ -216,14 +216,13 @@ Auth.require('pos');
   function update(){ renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
   function updateCartBar(){
-    const count = getTotalQty(), subtotal = getSubtotal(), payable = getPayable();
-    document.getElementById('cartTotal').textContent = fmt(payable);
+    const count = getTotalQty(), subtotal = getSubtotal();
     document.getElementById('footerSubtotal').textContent = fmt(subtotal);
     renderDiscountUI();
     const badge = document.getElementById('cartCount');
     badge.textContent = count;
     badge.style.display = count > 0 ? 'flex' : 'none';
-    document.getElementById('cartInfoTop').textContent = count > 0 ? `${count} món` : 'Chưa có món';
+    document.getElementById('trashBtn').style.visibility = count > 0 ? 'visible' : 'hidden';
     const toggleBtn = document.getElementById('cartToggleBtn');
     toggleBtn.disabled = count === 0;
     toggleBtn.innerHTML = expanded

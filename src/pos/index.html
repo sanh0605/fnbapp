@@ -64,12 +64,11 @@
     .handle{width:40px;height:4px;background:#d8d6d0;border-radius:2px;position:absolute;top:10px;left:50%;transform:translateX(-50%)}
 
     /* Collapsed: 84px — đủ cao cho ngón cái */
-    .cart-collapsed{padding:0 16px;height:84px;flex-shrink:0;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none}
-    .cart-icon-wrap{position:relative;flex-shrink:0}
-    .cart-count{position:absolute;top:-6px;right:-8px;background:#E03C31;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
-    .cart-info{flex:1;min-width:0}
-    .cart-info-top{font-size:11px;color:#999;margin-bottom:3px}
-    .cart-info-total{font-size:20px;font-weight:700;color:#1a1a18}
+    .cart-collapsed{padding:0 16px;height:84px;flex-shrink:0;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+    .cart-icon-circle{width:44px;height:44px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+    .cart-count{position:absolute;top:-6px;right:-6px;background:#E03C31;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+    .cart-action-btn{width:44px;height:44px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#888;padding:0;transition:background .1s}
+    .cart-action-btn:active{background:#e8e6e0}
     /* THANH TOÁN: 52px tall — dễ bấm */
     .cart-toggle-btn{width:44px;height:44px;border-radius:50%;border:none;background:#E03C31;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s;box-shadow:0 2px 8px rgba(224,60,49,.35)}
     .cart-toggle-btn:active{background:#C42B21}
@@ -158,14 +157,14 @@
 <div class="bottom-cart" id="bottomCart">
   <div class="handle"></div>
   <div class="cart-collapsed" onclick="toggleCart()">
-    <div class="cart-icon-wrap">
+    <div class="cart-icon-circle">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       <span class="cart-count" id="cartCount" style="display:none">0</span>
     </div>
-    <div class="cart-info">
-      <div class="cart-info-top" id="cartInfoTop">Chưa có món</div>
-      <div class="cart-info-total" id="cartTotal">0 ₫</div>
-    </div>
+    <div style="flex:1"></div>
+    <button class="cart-action-btn" id="trashBtn" style="visibility:hidden" onclick="event.stopPropagation();clearAll()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </button>
     <button class="cart-toggle-btn" id="cartToggleBtn" disabled onclick="event.stopPropagation();toggleCart()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 6 6 12"/><polyline points="18 18 12 12 6 18"/></svg>
     </button>
