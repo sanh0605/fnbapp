@@ -3,7 +3,7 @@ Auth.require('pos');
   const role    = Auth.getRole();
 
   if(role === 'manager' || role === 'owner'){
-    document.getElementById('homeBtn').style.display    = 'flex';
+    document.getElementById('homeBtn').style.visibility = 'visible';
     document.getElementById('ordersBtn').style.display  = 'flex';
     document.getElementById('revenueBtn').style.display = 'flex';
   }
@@ -48,17 +48,7 @@ Auth.require('pos');
   async function updateSyncBadge(){
     try {
       const q = await IDBService.getPendingOrders();
-      const badge = document.getElementById('orderBadge');
-      if(q.length > 0){
-        badge.textContent = `${q.length} chờ sync`;
-        badge.style.background = '#FAEEDA';
-        badge.style.color = '#633806';
-      } else {
-        const num = '#' + String(orderN).padStart(3,'0');
-        badge.textContent = num;
-        badge.style.background = '';
-        badge.style.color = '';
-      }
+      if(q.length > 0) toast(`📶 ${q.length} đơn chờ sync`);
     } catch(e){}
   }
 
@@ -119,8 +109,6 @@ Auth.require('pos');
         toast('📶 Offline — dùng menu đã lưu');
       }
       const num = '#' + String(orderN).padStart(3, '0');
-      document.getElementById('orderNum').textContent = num;
-      document.getElementById('orderBadge').textContent = num;
       renderCats(); renderMenu(); updateCartBar();
       if(navigator.onLine) syncPendingOrders();
       else updateSyncBadge();
@@ -141,28 +129,31 @@ Auth.require('pos');
   function setCat(c){ activeCat=c; renderCats(); renderMenu(); }
 
   function renderMenuCard(item){
-    const qty = cart[item.id] || 0;
-    const out = item.active === false;
-    const bg  = item.color || '#f5f5f0';
+    const qty      = cart[item.id] || 0;
+    const out      = item.active === false;
+    const bg       = item.color || '#f5f5f0';
+    const hasDisc  = item.discount_price > 0 && item.discount_price < item.price;
+    const dispPrice = hasDisc ? item.discount_price : item.price;
     const thumb = item.image_url
-      ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">${item.icon||'☕'}`
+      ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">`
       : (item.icon || '☕');
-    return `<div class="menu-card${out?' out':''}">
-      <div class="mc-thumb" style="background:${bg}">
-        ${thumb}
-        ${qty > 0 ? `<span class="mc-qty-badge">${qty}</span>` : ''}
-      </div>
-      <div class="mc-body">
+    const priceHtml = hasDisc
+      ? `<span class="mc-original">${fmt(item.price)}</span><span class="mc-price">${fmt(dispPrice)}</span>`
+      : `<span class="mc-price">${fmt(item.price)}</span>`;
+    const ctrl = out ? '' : qty === 0
+      ? `<button class="mc-add-btn" onclick="add('${item.id}')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></button>`
+      : `<div class="mc-qty">
+           <button class="qb minus" onclick="chg('${item.id}',-1)">−</button>
+           <span class="qn">${qty}</span>
+           <button class="qb" onclick="chg('${item.id}',1)">+</button>
+         </div>`;
+    return `<div class="menu-card${out?' out':''}${qty>0?' in-cart':''}">
+      <div class="mc-img" style="background:${bg}">${thumb}</div>
+      <div class="mc-content">
         <div class="mc-name">${item.name}</div>
-        <div class="mc-foot">
-          <span class="mc-price">${fmt(item.price)}</span>
-          ${out ? '' : qty === 0
-            ? `<button class="mc-add" onclick="event.stopPropagation();add('${item.id}')">+</button>`
-            : `<div class="mc-qty">
-                 <button class="qb" onclick="event.stopPropagation();chg('${item.id}',-1)">−</button>
-                 <span class="qn">${qty}</span>
-                 <button class="qb" onclick="event.stopPropagation();chg('${item.id}',1)">+</button>
-               </div>`}
+        <div class="mc-bottom">
+          <div class="mc-prices">${priceHtml}</div>
+          ${ctrl}
         </div>
       </div>
     </div>`;
@@ -233,7 +224,11 @@ Auth.require('pos');
     badge.textContent = count;
     badge.style.display = count > 0 ? 'flex' : 'none';
     document.getElementById('cartInfoTop').textContent = count > 0 ? `${count} món` : 'Chưa có món';
-    document.getElementById('cartPayBtn').disabled = count === 0;
+    const toggleBtn = document.getElementById('cartToggleBtn');
+    toggleBtn.disabled = count === 0;
+    toggleBtn.innerHTML = expanded
+      ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 18 6 12"/><polyline points="18 6 12 12 6 6"/></svg>`
+      : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 6 6 12"/><polyline points="18 18 12 12 6 18"/></svg>`;
   }
 
   function renderCartItems(){
@@ -245,18 +240,26 @@ Auth.require('pos');
     document.getElementById('cartItems').innerHTML = keys.map(id => {
       const item = findItem(id);
       if(!item) return '';
+      const bg = item.color || '#f5f5f0';
+      const thumb = item.image_url
+        ? `<img src="${item.image_url}" alt="">`
+        : (item.icon || '☕');
+      const price = (item.discount_price > 0 && item.discount_price < item.price) ? item.discount_price : item.price;
       return `<div class="ci">
         <div class="ci-top">
-          <div style="flex:1;min-width:0">
+          <div class="ci-thumb" style="background:${bg}">${thumb}</div>
+          <div class="ci-info">
             <div class="ci-name">${item.name}</div>
-            <div style="font-size:11px;color:#bbb;margin-top:1px">${fmt(item.price)} / ly</div>
+            <div class="ci-unit">${fmt(price)}</div>
           </div>
-          <div class="qty-ctrl">
-            <button class="qb" onclick="chg('${id}',-1)">−</button>
-            <span class="qn">${cart[id]}</span>
-            <button class="qb" onclick="chg('${id}',1)">+</button>
+          <div class="ci-right">
+            <div class="mc-qty">
+              <button class="qb minus" onclick="chg('${id}',-1)">−</button>
+              <span class="qn">${cart[id]}</span>
+              <button class="qb" onclick="chg('${id}',1)">+</button>
+            </div>
+            <span class="ci-price">${fmt(price*cart[id])}</span>
           </div>
-          <span class="ci-price">${fmt(item.price*cart[id])}</span>
         </div>
         <input class="ci-note" placeholder="Ghi chú: ít đường, không đá..."
           value="${notes[id]||''}" oninput="notes['${id}']=this.value" onclick="event.stopPropagation()">
@@ -296,19 +299,27 @@ Auth.require('pos');
 
   // ── SWIPE GESTURE ──
   (function(){
-    const cart = document.getElementById('bottomCart');
-    let startY = 0, startExp = false;
+    let startY = 0, startClientY = 0, startExp = false;
+    const THRESHOLD = 40;
 
-    cart.addEventListener('touchstart', e => {
-      startY   = e.touches[0].clientY;
-      startExp = expanded;
+    document.addEventListener('touchstart', e => {
+      startClientY = e.touches[0].clientY;
+      startY       = e.touches[0].clientY;
+      startExp     = expanded;
     }, { passive: true });
 
-    cart.addEventListener('touchend', e => {
-      const dy = startY - e.changedTouches[0].clientY; // dương = vuốt lên
-      if(Math.abs(dy) < 30) return; // bỏ qua tap
-      if(dy > 0 && !startExp) toggleCart();  // vuốt lên → mở
-      if(dy < 0 &&  startExp) toggleCart();  // vuốt xuống → đóng
+    document.addEventListener('touchend', e => {
+      const endY = e.changedTouches[0].clientY;
+      const dy   = startY - endY; // dương = vuốt lên
+      if(Math.abs(dy) < THRESHOLD) return;
+
+      const screenH    = window.innerHeight;
+      const startNear  = startClientY > screenH - 120; // bắt đầu từ vùng 120px dưới
+
+      // Vuốt lên từ vùng bottom → mở cart
+      if(dy > 0 && !startExp && startNear) { toggleCart(); return; }
+      // Vuốt xuống khi cart đang mở → đóng
+      if(dy < 0 && startExp) toggleCart();
     }, { passive: true });
   })();
 
@@ -352,128 +363,11 @@ Auth.require('pos');
     document.getElementById('actualInput').value='';
     orderN++;
     const num = '#' + String(orderN).padStart(3,'0');
-    document.getElementById('orderNum').textContent = num;
-    document.getElementById('orderBadge').textContent = num;
     expanded = false;
     document.getElementById('bottomCart').classList.remove('expanded');
     update();
   }
 
-
-  // ── POS TABS ──
-  let posTab = 'sell';
-
-  function switchPosTab(tab){
-    posTab = tab;
-    ['sell','today','summary'].forEach(t => {
-      document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active', t===tab);
-    });
-    const isSell = tab === 'sell';
-    document.getElementById('catBar').style.display     = isSell ? '' : 'none';
-    document.getElementById('menuList').style.display   = isSell ? '' : 'none';
-    document.getElementById('bottomCart').style.display = isSell ? '' : 'none';
-    document.getElementById('todayView').style.display   = tab==='today'   ? '' : 'none';
-    document.getElementById('summaryView').style.display = tab==='summary' ? '' : 'none';
-    document.getElementById('posTabTitle').textContent   =
-      tab==='today' ? 'Hôm nay' : tab==='summary' ? 'Tổng kết' : 'Bán hàng';
-    if(tab==='today')   loadTodayOrders();
-    if(tab==='summary') loadSummary();
-  }
-
-  function todayRange(){
-    const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const to   = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1).toISOString();
-    return {from, to};
-  }
-
-  async function loadTodayOrders(){
-    const el = document.getElementById('todayView');
-    el.innerHTML = '<div class="loading">Đang tải...</div>';
-    try {
-      const {from, to} = todayRange();
-      const filter = posBrandId ? `&brand_id=eq.${posBrandId}` : (posOutletId ? `&outlet_id=eq.${posOutletId}` : '');
-      const orders = await DB.select('orders',
-        `created_at=gte.${from}&created_at=lt.${to}&select=*&order=created_at.desc${filter}`
-      );
-      if(!orders.length){ el.innerHTML='<div class="loading">Chưa có đơn nào hôm nay</div>'; return; }
-      const canVoid = role==='manager'||role==='owner';
-      el.innerHTML = orders.map(o => {
-        const isVoided = o.voided;
-        const items = Array.isArray(o.items) ? o.items : (typeof o.items==='string' ? JSON.parse(o.items||'[]') : []);
-        const itemsText = items.map(i=>`${i.name||i.id}×${i.qty}`).join(', ') || '—';
-        const time = new Date(o.created_at);
-        const timeStr = `${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`;
-        const method = o.pay_method==='transfer'?'Chuyển khoản':'Tiền mặt';
-        return `<div class="order-card${isVoided?' order-voided':''}">
-          <div class="order-card-row">
-            <div>
-              <span class="order-num">${o.order_num||o.id?.slice(-6)||'—'}</span>
-              <span class="order-time" style="margin-left:8px">${timeStr}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="order-method">${method}</span>
-              <span class="order-total">${isVoided?'<span style="color:#aaa;font-size:12px">Đã huỷ</span>':fmt(o.total)}</span>
-            </div>
-          </div>
-          <div class="order-items">${itemsText}</div>
-          ${canVoid&&!isVoided?`<button class="void-btn" onclick="voidOrder('${o.id}',this)">Huỷ đơn</button>`:''}
-        </div>`;
-      }).join('');
-    } catch(e){ el.innerHTML=`<div class="loading">Lỗi: ${e.message}</div>`; }
-  }
-
-  async function voidOrder(id, btn){
-    if(!confirm('Huỷ đơn này?')) return;
-    try {
-      await DB.update('orders', `id=eq.${id}`, {voided:true});
-      btn.closest('.order-card').classList.add('order-voided');
-      btn.remove();
-      toast('Đã huỷ đơn');
-      if(posTab==='today') loadTodayOrders();
-    } catch(e){ toast('Lỗi: '+e.message); }
-  }
-
-  async function loadSummary(){
-    const el = document.getElementById('summaryView');
-    el.innerHTML = '<div class="loading">Đang tải...</div>';
-    try {
-      const {from, to} = todayRange();
-      const filter = posBrandId ? `&brand_id=eq.${posBrandId}` : (posOutletId ? `&outlet_id=eq.${posOutletId}` : '');
-      const orders = await DB.select('orders',
-        `created_at=gte.${from}&created_at=lt.${to}&voided=eq.false&select=total,method${filter}`
-      );
-      const total   = orders.reduce((s,o)=>s+(parseFloat(o.total)||0),0);
-      const cash    = orders.filter(o=>o.method==='Tiền mặt');
-      const trans   = orders.filter(o=>o.method==='Chuyển khoản');
-      const avg     = orders.length ? total/orders.length : 0;
-      el.innerHTML = `
-        <div class="summary-card">
-          <div class="summary-row summary-big">
-            <span class="summary-label">Tổng doanh thu</span>
-            <span class="summary-value">${fmt(total)}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Tổng đơn</span>
-            <span class="summary-value">${orders.length} đơn</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Trung bình/đơn</span>
-            <span class="summary-value">${fmt(Math.round(avg))}</span>
-          </div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-row">
-            <span class="summary-label">Tiền mặt</span>
-            <span class="summary-value">${fmt(cash.reduce((s,o)=>s+(parseFloat(o.total)||0),0))} <span style="color:#aaa;font-size:12px">(${cash.length} đơn)</span></span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Chuyển khoản</span>
-            <span class="summary-value">${fmt(trans.reduce((s,o)=>s+(parseFloat(o.total)||0),0))} <span style="color:#aaa;font-size:12px">(${trans.length} đơn)</span></span>
-          </div>
-        </div>`;
-    } catch(e){ el.innerHTML=`<div class="loading">Lỗi: ${e.message}</div>`; }
-  }
 
 
 

@@ -10,67 +10,70 @@
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
 
     /* ── HEADER ── */
-    .header{background:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid #ebebeb;flex-shrink:0}
-    .header-left{display:flex;align-items:center;gap:10px}
-    .header-title{font-size:16px;font-weight:700;color:#1a1a18}
-    .header-right{display:flex;align-items:center;gap:6px}
+    .header{background:#fff;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:0.5px solid #ebebeb;flex-shrink:0}
+    .header-left{display:flex;align-items:center;flex-shrink:0;min-width:32px}
+    .header-title{font-size:16px;font-weight:700;color:#1a1a18;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
     .icon-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;text-decoration:none;flex-shrink:0}
     .icon-btn:active{background:#e8e6e0}
     .net-dot{width:7px;height:7px;border-radius:50%;background:#4CAF50;transition:background .4s;flex-shrink:0}
     .net-dot.offline{background:#E03C31}
     .order-badge{font-size:11px;font-weight:600;color:#888;background:#f5f5f0;padding:3px 8px;border-radius:20px}
 
-    /* ── TABS ── */
-    .pos-tab-bar{background:#fff;display:flex;border-bottom:1.5px solid #ebebeb;flex-shrink:0}
-    .pos-tab{flex:1;padding:10px 4px;border:none;background:transparent;font-size:13px;font-weight:500;color:#888;cursor:pointer;font-family:inherit;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s}
-    .pos-tab.active{color:#E03C31;border-bottom-color:#E03C31;font-weight:700}
-
     /* ── CATEGORY PILLS ── */
     .cat-bar{background:#fff;padding:10px 14px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:0.5px solid #ebebeb;flex-shrink:0}
     .cat-bar::-webkit-scrollbar{display:none}
-    .cat-pill{padding:7px 18px;border-radius:20px;border:1px solid #e0e0e0;background:#fff;color:#555;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;transition:all .15s;font-family:inherit;flex-shrink:0}
+    /* min 44px tall tap target */
+    .cat-pill{min-height:44px;padding:0 20px;border-radius:22px;border:1px solid #e0e0e0;background:#fff;color:#555;font-size:14px;font-weight:500;white-space:nowrap;cursor:pointer;transition:all .15s;font-family:inherit;flex-shrink:0;display:flex;align-items:center}
     .cat-pill.active{background:#E03C31;border-color:#E03C31;color:#fff;font-weight:600}
 
-    /* ── MENU GRID ── */
-    .menu-grid{flex:1;overflow-y:auto;padding:12px 12px 100px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start;scrollbar-width:none}
-    .menu-grid::-webkit-scrollbar{display:none}
-    .cat-header{grid-column:1/-1;font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.6px;padding:4px 2px 0;margin-top:4px}
-    .cat-header:first-child{margin-top:0}
+    /* ── MENU LIST (1 cột) ── */
+    .menu-list{flex:1;overflow-y:auto;padding:8px 12px 110px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
+    .menu-list::-webkit-scrollbar{display:none}
+    .cat-header{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.6px;padding:8px 4px 2px}
 
-    .menu-card{background:#fff;border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.07);transition:transform .1s;position:relative;display:flex;flex-direction:column}
-    .menu-card:active{transform:scale(.97)}
+    .menu-card{background:#fff;border-radius:14px;overflow:hidden;display:flex;flex-direction:row;align-items:stretch;box-shadow:0 1px 4px rgba(0,0,0,.06);min-height:80px;position:relative;transition:box-shadow .12s}
+    .menu-card.in-cart{box-shadow:0 0 0 2px #E03C31}
     .menu-card.out{opacity:.4;pointer-events:none}
 
-    .mc-thumb{height:110px;display:flex;align-items:center;justify-content:center;font-size:54px;position:relative;overflow:hidden;flex-shrink:0}
-    .mc-thumb img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-    .mc-qty-badge{position:absolute;top:8px;left:8px;background:#E03C31;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;z-index:1}
+    /* Hình ảnh 25% chiều rộng */
+    .mc-img{width:25%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;overflow:hidden}
+    .mc-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
 
-    .mc-body{padding:8px 10px 10px;flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
-    .mc-name{font-size:13px;font-weight:600;color:#1a1a18;line-height:1.3}
-    .mc-foot{display:flex;align-items:center;justify-content:space-between}
-    .mc-price{font-size:13px;font-weight:700;color:#E03C31}
+    /* Nội dung bên phải */
+    .mc-content{flex:1;padding:12px 12px 10px;display:flex;flex-direction:column;justify-content:space-between;min-width:0;gap:6px}
+    .mc-name{font-size:14px;font-weight:600;color:#1a1a18;line-height:1.3}
 
-    .mc-add{width:28px;height:28px;border-radius:50%;border:1.5px solid #E03C31;background:#fff;color:#E03C31;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0;line-height:1}
-    .mc-add:active{background:#FDECEA}
-    .mc-qty{display:flex;align-items:center;gap:5px}
-    .qb{width:26px;height:26px;border-radius:50%;border:0.5px solid #d8d6d0;background:#f5f5f0;color:#1a1a18;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0}
-    .qb:active{background:#e8e6e0}
-    .qn{font-size:13px;font-weight:600;min-width:16px;text-align:center}
+    .mc-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .mc-prices{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .mc-price{font-size:14px;font-weight:700;color:#E03C31}
+    .mc-original{font-size:11px;color:#bbb;text-decoration:line-through}
+
+    /* Nút + và qty controls — thumb zone phải */
+    .mc-add-btn{width:32px;height:32px;border-radius:50%;border:none;background:#E03C31;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:opacity .12s;box-shadow:0 2px 6px rgba(224,60,49,.35)}
+    .mc-add-btn:active{opacity:.7}
+    .mc-qty{display:flex;align-items:center;gap:4px;flex-shrink:0}
+    .qb{width:32px;height:32px;border-radius:50%;border:none;background:#f5f5f5;color:#1a1a18;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0;transition:background .1s}
+    .qb.minus{color:#E03C31}
+    .qb:active{background:#e8e8e8}
+    .qn{font-size:14px;font-weight:700;min-width:22px;text-align:center}
 
     /* ── BOTTOM CART ── */
-    .bottom-cart{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -2px 20px rgba(0,0,0,.10);transition:height .32s cubic-bezier(.4,0,.2,1);height:76px;overflow:hidden;display:flex;flex-direction:column;z-index:100}
-    .bottom-cart.expanded{height:min(620px,84dvh)}
-    .handle{width:36px;height:4px;background:#d8d6d0;border-radius:2px;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
+    .bottom-cart{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.12);transition:height .32s cubic-bezier(.4,0,.2,1);height:84px;overflow:hidden;display:flex;flex-direction:column;z-index:100}
+    .bottom-cart.expanded{height:min(640px,88dvh)}
+    .handle{width:40px;height:4px;background:#d8d6d0;border-radius:2px;position:absolute;top:10px;left:50%;transform:translateX(-50%)}
 
-    .cart-collapsed{padding:0 16px;height:76px;flex-shrink:0;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none}
+    /* Collapsed: 84px — đủ cao cho ngón cái */
+    .cart-collapsed{padding:0 16px;height:84px;flex-shrink:0;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none}
     .cart-icon-wrap{position:relative;flex-shrink:0}
-    .cart-count{position:absolute;top:-5px;right:-7px;background:#E03C31;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+    .cart-count{position:absolute;top:-6px;right:-8px;background:#E03C31;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
     .cart-info{flex:1;min-width:0}
-    .cart-info-top{font-size:11px;color:#999;margin-bottom:2px}
-    .cart-info-total{font-size:18px;font-weight:700;color:#1a1a18}
-    .cart-pay-btn{background:#E03C31;color:#fff;border:none;border-radius:14px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;flex-shrink:0;transition:background .15s}
-    .cart-pay-btn:active{background:#C42B21}
-    .cart-pay-btn:disabled{background:#ccc;cursor:default}
+    .cart-info-top{font-size:11px;color:#999;margin-bottom:3px}
+    .cart-info-total{font-size:20px;font-weight:700;color:#1a1a18}
+    /* THANH TOÁN: 52px tall — dễ bấm */
+    .cart-toggle-btn{width:44px;height:44px;border-radius:50%;border:none;background:#E03C31;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s;box-shadow:0 2px 8px rgba(224,60,49,.35)}
+    .cart-toggle-btn:active{background:#C42B21}
+    .cart-toggle-btn:disabled{background:#ddd;box-shadow:none;cursor:default}
 
     .cart-detail{flex:1;overflow-y:auto;padding:4px 16px 0;scrollbar-width:none}
     .cart-detail::-webkit-scrollbar{display:none}
@@ -79,8 +82,13 @@
     .clear-btn{font-size:12px;color:#E03C31;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
     .ci{border-bottom:0.5px solid #f0f0ec;padding:10px 0}
     .ci-top{display:flex;align-items:center;gap:8px}
-    .ci-name{flex:1;font-size:14px;font-weight:500}
-    .ci-price{font-size:13px;color:#888;min-width:70px;text-align:right}
+    .ci-thumb{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden}
+    .ci-thumb img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+    .ci-info{flex:1;min-width:0}
+    .ci-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ci-unit{font-size:11px;color:#bbb;margin-top:1px}
+    .ci-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .ci-price{font-size:13px;font-weight:600;color:#1a1a18;min-width:60px;text-align:right}
     .ci-note{width:100%;border:0.5px solid #e8e6e0;border-radius:8px;padding:6px 10px;font-size:12px;background:#f5f5f5;font-family:inherit;margin-top:8px}
     .ci-note:focus{outline:none;border-color:#E03C31}
     .ci-note::placeholder{color:#bbb}
@@ -100,36 +108,16 @@
     .payable-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:0 2px}
     .change-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:0 2px}
     .pay-method-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .pay-method-btn{padding:11px;border-radius:12px;border:1px solid #e0e0e0;background:#f5f5f5;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
+    .pay-method-btn{padding:15px;border-radius:14px;border:1px solid #e0e0e0;background:#f5f5f5;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
     .pay-method-btn.selected{background:#FDECEA;border-color:#E03C31;color:#C42B21;font-weight:600}
     .qr-section{display:none;flex-direction:column;align-items:center;gap:8px;background:#f5f5f5;border-radius:12px;padding:14px}
     .qr-section.show{display:flex}
     .qr-section img{width:180px;height:180px;border-radius:8px;background:#fff}
     .qr-amount{font-size:18px;font-weight:700;color:#E03C31}
     .qr-hint{font-size:11px;color:#bbb;text-align:center}
-    .confirm-btn{padding:14px;border-radius:14px;border:none;background:#ddd;font-size:15px;font-weight:700;cursor:default;color:#fff;font-family:inherit;width:100%;transition:background .15s}
+    .confirm-btn{padding:17px;border-radius:16px;border:none;background:#ddd;font-size:16px;font-weight:700;cursor:default;color:#fff;font-family:inherit;width:100%;transition:background .15s}
     .confirm-btn.active{background:#E03C31;cursor:pointer}
     .confirm-btn.active:active{background:#C42B21}
-
-    /* ── TODAY / SUMMARY ── */
-    .alt-view{flex:1;overflow-y:auto;padding:10px 14px 90px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
-    .alt-view::-webkit-scrollbar{display:none}
-    .order-card{background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-    .order-card-row{display:flex;justify-content:space-between;align-items:center}
-    .order-num{font-size:13px;font-weight:700}
-    .order-time{font-size:12px;color:#888}
-    .order-items{font-size:12px;color:#888;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .order-total{font-size:15px;font-weight:700;color:#E03C31}
-    .order-method{font-size:11px;background:#f5f5f5;padding:2px 8px;border-radius:10px;color:#555}
-    .order-voided{opacity:.45}
-    .order-voided .order-num{text-decoration:line-through}
-    .void-btn{font-size:12px;padding:4px 10px;border-radius:8px;border:0.5px solid #e8e6e0;background:#f5f5f0;color:#c0392b;cursor:pointer;font-family:inherit;margin-top:8px}
-    .summary-card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-    .summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid #f0f0ec}
-    .summary-row:last-child{border-bottom:none}
-    .summary-label{font-size:13px;color:#888}
-    .summary-value{font-size:14px;font-weight:600}
-    .summary-big .summary-value{font-size:20px;color:#E03C31}
 
     /* ── MISC ── */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
@@ -144,14 +132,13 @@
 
 <div class="header">
   <div class="header-left">
-    <a href="../home/index.html" class="icon-btn" id="homeBtn" style="display:none">
+    <button class="icon-btn" id="homeBtn" style="visibility:hidden" onclick="history.back()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    </a>
-    <span class="header-title" id="posTabTitle">Bán hàng</span>
+    </button>
   </div>
+  <span class="header-title" id="posTabTitle">Bán hàng</span>
   <div class="header-right">
     <div class="net-dot" id="netDot"></div>
-    <span class="order-badge" id="orderBadge">#001</span>
     <a href="../orders/index.html" class="icon-btn" id="ordersBtn" style="display:none" title="Đơn hàng">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
     </a>
@@ -164,17 +151,8 @@
   </div>
 </div>
 
-<div class="pos-tab-bar" id="posTabBar">
-  <button class="pos-tab active" id="tabSell"    onclick="switchPosTab('sell')">Bán hàng</button>
-  <button class="pos-tab"        id="tabToday"   onclick="switchPosTab('today')">Hôm nay</button>
-  <button class="pos-tab"        id="tabSummary" onclick="switchPosTab('summary')">Tổng kết</button>
-</div>
-
 <div class="cat-bar" id="catBar"></div>
-<div class="menu-grid" id="menuList"><div class="loading">Đang tải menu...</div></div>
-
-<div class="alt-view" id="todayView"   style="display:none"><div class="loading">Đang tải...</div></div>
-<div class="alt-view" id="summaryView" style="display:none"><div class="loading">Đang tải...</div></div>
+<div class="menu-list" id="menuList"><div class="loading">Đang tải menu...</div></div>
 
 <!-- BOTTOM CART -->
 <div class="bottom-cart" id="bottomCart">
@@ -188,12 +166,15 @@
       <div class="cart-info-top" id="cartInfoTop">Chưa có món</div>
       <div class="cart-info-total" id="cartTotal">0 ₫</div>
     </div>
-    <button class="cart-pay-btn" id="cartPayBtn" disabled onclick="event.stopPropagation();toggleCart()">THANH TOÁN</button>
+    <button class="cart-toggle-btn" id="cartToggleBtn" disabled onclick="event.stopPropagation();toggleCart()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 6 6 12"/><polyline points="18 18 12 12 6 18"/></svg>
+    </button>
   </div>
 
   <div class="cart-detail">
     <div class="cart-header-row">
-      <span class="cart-title">Giỏ hàng · <span id="orderNum">#001</span></span>
+      <span class="cart-title">Giỏ hàng</span>
+      <span id="orderNum" style="display:none">#001</span>
       <button class="clear-btn" onclick="clearAll()">Xoá tất cả</button>
     </div>
     <div id="cartItems"></div>
