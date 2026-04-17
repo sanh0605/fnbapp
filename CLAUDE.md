@@ -1,0 +1,41 @@
+# CLAUDE.md — FNB App
+
+## 1. Think Before Coding
+
+- Nêu rõ assumptions trước khi code — nếu không chắc, hỏi thay vì đoán
+- Khi có nhiều cách hiểu, trình bày các lựa chọn — không tự chọn im lặng
+- Nếu có cách đơn giản hơn, nói ra
+- Nếu bị confused, dừng lại và hỏi rõ thay vì tiến hành sai hướng
+
+## 2. Simplicity First
+
+- Chỉ code đúng những gì được yêu cầu — không thêm tính năng ngoài scope
+- Không tạo abstraction cho code chỉ dùng một chỗ
+- Không thêm "flexibility" hay "configurability" nếu không được yêu cầu
+- Không xử lý error cho tình huống không thể xảy ra
+- Nếu 200 dòng có thể viết lại thành 50, viết lại
+
+## 3. Surgical Changes
+
+- Chỉ chạm vào code liên quan trực tiếp đến yêu cầu
+- Không "cải thiện" code lân cận, comment, hay formatting
+- Không refactor những thứ không bị broken
+- Giữ nguyên style hiện có, kể cả khi có cách khác
+- Nếu phát hiện dead code không liên quan — mention, không tự xóa
+- Khi thay đổi tạo ra orphan (import/variable/function thừa do chính mình tạo): xóa chúng
+
+## 4. Goal-Driven Execution
+
+Với mọi task, xác định tiêu chí thành công trước:
+
+| Thay vì... | Chuyển thành... |
+|---|---|
+| "Thêm validation" | "Viết test cho input lỗi, rồi làm cho pass" |
+| "Fix bug" | "Tái hiện bug bằng test, rồi làm cho pass" |
+| "Refactor X" | "Đảm bảo test pass trước và sau refactor" |
+
+Với task nhiều bước, nêu plan ngắn trước khi làm:
+```
+1. [Bước] → verify: [kiểm tra]
+2. [Bước] → verify: [kiểm tra]
+```
