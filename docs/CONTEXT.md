@@ -1,5 +1,5 @@
 # FNB App — CONTEXT.md
-# Cập nhật lần cuối: 17/04/2026 (reset toàn bộ schema + dọn dẹp codebase)
+# Cập nhật lần cuối: 18/04/2026 (redesign POS UI hoàn chỉnh)
 
 > **QUY TẮC CHO AI:** Đọc file này trước khi làm bất cứ điều gì. Sau mỗi thay đổi, cập nhật file này và commit ngay.
 
@@ -90,7 +90,7 @@ fnbapp/
     │   └── home.js             ← navigation hub, stats hôm nay, feature cards
     ├── pos/
     │   ├── index.html
-    │   └── pos.js              ← 3 tab: Bán hàng / Hôm nay / Tổng kết
+    │   └── pos.js              ← 1 màn bán hàng, bottom-sheet cart, offline IDB
     ├── orders/
     │   ├── index.html
     │   ├── orders.js
@@ -131,6 +131,24 @@ fnbapp/
 
 ---
 
+## POS UI — THIẾT KẾ HIỆN TẠI (18/04/2026)
+
+- **Màu accent:** `#E03C31` (đỏ)
+- **Layout menu:** 1 cột, mỗi card hàng ngang — ảnh 25% trái, tên/giá/ctrl phải
+- **Category pills:** scroll ngang, active = đỏ, min-height 40px
+- **Bottom cart:** fixed bottom, height 84px collapsed / `min(640px,88dvh)` expanded
+  - Collapsed: pill badge đỏ (qty + icon ly nhựa) + tổng tiền `clamp(18px,6vw,28px)` + trash btn + toggle btn
+  - Expanded: divider hiện, tổng tiền ẩn, list món + footer thanh toán
+  - Swipe up (bottom 120px) → mở; swipe down khi đang mở → đóng
+- **Buttons:** touch target 48×48, visual circle 24×24 (SVG embed circle bg)
+- **Confirm button:** loading state (spinner) → success state (xanh ✓ 1s) → reset
+- **Skeleton loading:** 4 card shimmer khi chờ menu load
+- **Chiết khấu:** `actualRow` (Thực thu) chỉ hiện khi có chiết khấu
+- **Performance:** `add()`/`chg()` chỉ update card bị chạm, không re-render toàn menu
+- **Haptic:** `navigator.vibrate(20)` khi thêm món
+
+---
+
 ## GHI CHÚ KỸ THUẬT
 
 - `fnb_session` trong localStorage **không** lưu `outlet_id` — POS phải query `users` table khi init
@@ -150,7 +168,7 @@ fnbapp/
 |---|---|:---:|
 | Auth | src/auth/ | ✅ |
 | Home | src/home/ | ✅ brand filter + stats + feature cards |
-| POS | src/pos/ | ✅ 3 tab + brand/outlet auto-attach + offline IDB |
+| POS | src/pos/ | ✅ 1-col menu + bottom-sheet cart + brand/outlet auto-attach + offline IDB |
 | Orders | src/orders/ | ✅ |
 | Revenue | src/revenue/ | ✅ brand filter |
 | Menu | src/menu/ | ✅ |
