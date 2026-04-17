@@ -1,6 +1,6 @@
 # FNB App — System Architecture
 
-> Last updated: 2026-04-17
+> Last updated: 2026-04-17 (reset schema — 10 tables, removed legacy modules)
 > This is the single source of truth for system structure. Update after each structural change.
 
 ---
@@ -120,6 +120,7 @@ src/
 │   ├── idb-service.js      ← IndexedDB: offline order queue + menu cache
 │   ├── revenue-service.js  ← fetchOrders(from, to, brandFilter)
 │   └── settings-service.js ← fetchInitData, fetchUsers, saveUser, changePassword, saveSettings
+
 ├── auth/
 │   ├── login.html + login.js   ← staff→POS, manager/owner→Home
 │   └── auth.js                 ← Auth singleton, permissions, session

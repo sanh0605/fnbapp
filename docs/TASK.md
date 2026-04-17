@@ -1,52 +1,20 @@
-# TASK MANAGEMENT
+# FNB App — TASK.md
+# Cập nhật lần cuối: 17/04/2026
 
-## TASK-001: IndexedDB Setup
-
-### Goal
-Implement local database for offline-first POS.
-
----
-
-### Requirements
-
-1. Create IndexedDB database:
-   - name: fnb_db
-
-2. Create object stores:
-
-- pending_orders
-  - key: client_id
-  - fields:
-    - client_id (UUID)
-    - payload (order data)
-    - created_at
-    - retries
-
-- cached_menu
-  - key: id
-  - store products/menu for offline use
+Dùng file này để track công việc đang làm trong session hiện tại.
+Xóa task khi hoàn thành, không giữ lại lịch sử.
 
 ---
 
-### Functions Required
+## ĐANG LÀM
 
-- initDB()
-- addPendingOrder(order)
-- getPendingOrders()
-- removePendingOrder(client_id)
-- incrementRetry(client_id)
+_(trống)_
 
 ---
 
-### Constraints
+## BACKLOG ƯU TIÊN
 
-- Must follow ARCHITECTURE.md
-- Must support offline-first
-- Must be reusable (used by POS module)
-
----
-
-### Output
-
-- Code only
-- No explanation
+1. **RLS thực sự** — migrate sang Supabase Auth, dùng `auth.uid()` trong policy thay cho `USING (true)`
+2. **Trà Tối — dine-in** — quản lý bàn, tách flow dine-in và take-away
+3. **KDS** — màn hình bếp/pha chế realtime
+4. **Loyalty** — tích điểm khách hàng
