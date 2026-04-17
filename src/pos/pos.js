@@ -226,7 +226,7 @@ Auth.require('pos');
   }
   function update(){ renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
-  const CUP_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8l1.5 14h5L16 8H8z"/><path d="M6.5 8h11"/><path d="M7.5 8C7.5 6 9.5 4.5 12 4.5S16.5 6 16.5 8"/></svg>`;
+  const CUP_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M8 8l1.5 14h5L16 8H8z"/><path d="M6.5 8h11"/><path d="M7.5 8C7.5 6 9.5 4.5 12 4.5S16.5 6 16.5 8"/></svg>`;
 
   function updateCartBar(){
     const count = getTotalQty(), subtotal = getSubtotal(), payable = getPayable();
