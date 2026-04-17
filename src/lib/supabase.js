@@ -1,6 +1,11 @@
 // src/lib/supabase.js
 // Kết nối Supabase — dùng chung toàn bộ app
 
+async function hashPassword(pwd) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
 const SUPABASE_URL  = 'https://zicuawpwyhmtqmzawvau.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_rhbewMyE6ws9G3_DSmEbfg_w0omMwFI';
 

@@ -3,9 +3,9 @@
 
 const Auth = (() => {
   const PERMISSIONS = {
-    owner:   ['pos','inventory_view','inventory_edit','revenue','finance','schedule','recipe','menu','payment_settings','user_settings'],
-    manager: ['pos','inventory_view','inventory_edit','revenue','finance','schedule'],
-    staff:   ['pos','inventory_view'],
+    owner:   ['pos','revenue','menu','payment_settings','user_settings'],
+    manager: ['pos','revenue'],
+    staff:   ['pos'],
   };
 
   function getSession() {
@@ -47,17 +47,12 @@ const Auth = (() => {
   }
 
   function getLoginPath() {
-    // Tất cả pages đều ở src/{module}/index.html — auth luôn cách 1 cấp
     return '../auth/login.html';
-  }
-
-  function getHomePath() {
-    return '../home/index.html';
   }
 
   function showIf(permission, element) {
     if (element) element.style.display = can(permission) ? '' : 'none';
   }
 
-  return { getSession, setSession, isLoggedIn, getRole, getName, can, require, logout, getHomePath, showIf };
+  return { getSession, setSession, isLoggedIn, getRole, getName, can, require, logout, showIf };
 })();

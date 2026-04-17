@@ -3,260 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>FNB App</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
-    .header{background:#fff;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #e8e6e0;flex-shrink:0}
-    .greeting{font-size:13px;color:#888}
-    .header-name{font-size:18px;font-weight:700;color:#1a1a18;margin-top:2px}
-    .header-right{display:flex;align-items:center;gap:10px}
-    .net-dot{width:8px;height:8px;border-radius:50%;background:#1D9E75;transition:background .4s}
-    .net-dot.offline{background:#E24B4A}
-    .logout-btn{width:34px;height:34px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888}
-    .logout-btn:active{background:#FCEBEB;color:#A32D2D}
-    .scroll{flex:1;overflow-y:auto;padding:14px 14px 32px;display:flex;flex-direction:column;gap:12px}
-    .today-banner{background:#1D9E75;border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-decoration:none}
-    .today-banner:active{background:#0F6E56}
-    .tb-label{font-size:12px;color:#9FE1CB;font-weight:500}
-    .tb-revenue{font-size:26px;font-weight:700;color:#fff;margin-top:2px}
-    .tb-sub{font-size:12px;color:#9FE1CB;margin-top:3px}
-    .tb-orders{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;color:#fff}
-    .checkin-alert{background:#FAEEDA;border-radius:14px;padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;border:0.5px solid #FAC775}
-    .checkin-alert:active{background:#FAC77540}
-    .alert-icon{width:36px;height:36px;border-radius:10px;background:#EF9F2730;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .alert-title{font-size:13px;font-weight:600;color:#633806}
-    .alert-sub{font-size:12px;color:#BA7517;margin-top:2px}
-    .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-    .stat-chip{background:#fff;border-radius:12px;border:0.5px solid #e8e6e0;padding:10px 12px}
-    .sc-label{font-size:11px;color:#888;margin-bottom:4px}
-    .sc-value{font-size:16px;font-weight:700;color:#1a1a18}
-    .sc-value.green{color:#1D9E75}
-    .sc-value.red{color:#E24B4A}
-    .section-title{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px}
-    .pos-btn{background:#1a1a18;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none}
-    .pos-btn:active{background:#333}
-    .pos-icon{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .pos-title{font-size:16px;font-weight:700;color:#fff}
-    .pos-sub{font-size:12px;color:#888;margin-top:2px}
-    .module-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .module-card{background:#fff;border-radius:16px;border:0.5px solid #e8e6e0;padding:14px;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;gap:10px}
-    .module-card:active{background:#f5f5f0}
-    .mc-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center}
-    .mc-name{font-size:14px;font-weight:600;color:#1a1a18}
-    .mc-stat{font-size:12px;color:#888;margin-top:1px}
-    .mc-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;display:inline-block;margin-top:4px}
-    .badge-green{background:#E1F5EE;color:#085041}
-    .badge-red{background:#FCEBEB;color:#A32D2D}
-    .badge-yellow{background:#FAEEDA;color:#633806}
-    .badge-blue{background:#E6F1FB;color:#0C447C}
-    .badge-gray{background:#f5f5f0;color:#888}
-    .badge-purple{background:#EEEDFE;color:#3C3489}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
-    .overlay.show{display:flex}
-    .sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
-    .sheet-btn{padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
-    .sheet-btn.red{background:#FCEBEB;color:#A32D2D}
-    .sheet-btn.gray{background:#f5f5f0;color:#1a1a18;border:0.5px solid #e8e6e0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100dvh;max-width:480px;margin:0 auto}
+    .header{background:#fff;padding:12px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid #e8e6e0}
+    .header-title{font-size:15px;font-weight:700;color:#1a1a18}
+    .header-right{display:flex;align-items:center;gap:8px}
+    .user-chip{font-size:12px;color:#888;background:#f5f5f0;padding:4px 10px;border-radius:20px}
+    .icon-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid #e8e6e0;background:#f5f5f0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;text-decoration:none}
+    .icon-btn:active{background:#e8e6e0}
+
+    .greet{padding:18px 16px 4px}
+    .greet-name{font-size:20px;font-weight:700}
+    .greet-role{font-size:13px;color:#888;margin-top:3px}
+
+    .stats-card{margin:12px 16px;background:#1D9E75;border-radius:16px;padding:16px 20px;display:flex;gap:0}
+    .stat-item{flex:1;text-align:center}
+    .stat-item+.stat-item{border-left:0.5px solid rgba(255,255,255,.3)}
+    .stat-val{font-size:22px;font-weight:700;color:#fff}
+    .stat-lbl{font-size:11px;color:rgba(255,255,255,.75);margin-top:3px}
+
+    .section-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;padding:16px 16px 8px}
+    .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 24px}
+    .feature-card{background:#fff;border-radius:16px;border:0.5px solid #e8e6e0;padding:18px 16px;cursor:pointer;text-decoration:none;display:flex;flex-direction:column;gap:10px;transition:background .12s}
+    .feature-card:active{background:#f5f5f0}
+    .feature-card.primary{background:#1D9E75;border-color:#1D9E75;grid-column:1/-1}
+    .fc-icon{font-size:28px}
+    .fc-label{font-size:14px;font-weight:600;color:#1a1a18}
+    .fc-sub{font-size:12px;color:#888;margin-top:1px}
+    .feature-card.primary .fc-label,.feature-card.primary .fc-sub{color:#fff}
+    .feature-card.primary .fc-sub{color:rgba(255,255,255,.8)}
+
+    .loading{text-align:center;padding:32px;color:#888;font-size:13px}
+    .toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:500}
   </style>
 </head>
 <body>
+
 <div class="header">
-  <div>
-    <div class="greeting" id="greeting">Chào buổi sáng</div>
-    <div class="header-name" id="headerName">FNB App</div>
-  </div>
+  <div class="header-title">FNB App</div>
   <div class="header-right">
-    <div class="net-dot" id="netDot"></div>
-    <button class="logout-btn" onclick="showLogout()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    <span class="user-chip" id="userChip"></span>
+    <button class="icon-btn" onclick="showLogout()" title="Đăng xuất" style="color:#c0392b">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
   </div>
 </div>
 
-<div class="scroll" id="scroll"><div style="text-align:center;padding:32px;color:#bbb;font-size:13px">Đang tải...</div></div>
+<div class="greet">
+  <div class="greet-name" id="greetName"></div>
+  <div class="greet-role" id="greetRole"></div>
+</div>
 
-<div class="overlay" id="logoutOverlay" onclick="hideLogout()">
-  <div class="sheet" onclick="event.stopPropagation()">
+<div id="statsWrap"></div>
+
+<div class="section-title">Chức năng</div>
+<div class="card-grid" id="cardGrid"><div class="loading">Đang tải...</div></div>
+
+<!-- Đăng xuất -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center" id="logoutOverlay" onclick="hideLogout()">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px" onclick="event.stopPropagation()">
     <div style="font-size:15px;font-weight:600;text-align:center">Đăng xuất?</div>
     <div style="font-size:13px;color:#888;text-align:center" id="logoutSub"></div>
-    <button class="sheet-btn red" onclick="Auth.logout()">Đăng xuất</button>
-    <button class="sheet-btn gray" onclick="hideLogout()">Huỷ</button>
+    <button style="padding:14px;border-radius:12px;border:none;background:#FCEBEB;color:#A32D2D;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit" onclick="Auth.logout()">Đăng xuất</button>
+    <button style="padding:14px;border-radius:12px;border:0.5px solid #e8e6e0;background:#f5f5f0;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit" onclick="hideLogout()">Huỷ</button>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script src="../lib/supabase.js"></script>
+<script src="../lib/utils.js"></script>
 <script src="../auth/auth.js"></script>
-<script>
-  Auth.require('pos');
-  const session=Auth.getSession();
-  const fmt=n=>n.toLocaleString('en-US')+' ₫';
-  const fmtDate=(d,t=false)=>{const dt=d instanceof Date?d:new Date(d);const p=n=>String(n).padStart(2,'0');const s=`${p(dt.getDate())}/${p(dt.getMonth()+1)}/${dt.getFullYear()}`;return t?`${s} ${p(dt.getHours())}:${p(dt.getMinutes())}`:s;};
-  const toKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const today=new Date(),todayKey=toKey(today);
-
-  const hour=today.getHours();
-  document.getElementById('greeting').textContent=hour<12?'Chào buổi sáng':hour<18?'Chào buổi chiều':'Chào buổi tối';
-  document.getElementById('headerName').textContent=session?.name||'FNB App';
-
-  function updateNet(){document.getElementById('netDot').className='net-dot'+(navigator.onLine?'':' offline');}
-  window.addEventListener('online',updateNet);window.addEventListener('offline',updateNet);updateNet();
-
-  async function loadDashboard(){
-    try {
-      const todayStart=new Date(today);todayStart.setHours(0,0,0,0);
-      const todayEnd=new Date(today);todayEnd.setHours(23,59,59,999);
-      const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
-
-      const[todayOrders,monthOrders,rawStock,semiStock,supplies,scheduleToday,activeProducts,activeAssets]=await Promise.all([
-        DB.select('orders',`created_at=gte.${todayStart.toISOString()}&created_at=lte.${todayEnd.toISOString()}&select=total`),
-        DB.select('orders',`created_at=gte.${monthStart.toISOString()}&select=total`),
-        DB.select('raw_stock','select=id,quantity'),
-        DB.select('semi_stock','select=id,quantity'),
-        DB.select('supplies','select=id,quantity,warn_at,category'),
-        DB.select('schedule_logs',`date=eq.${todayKey}&select=*`),
-        DB.select('products','active=eq.true&select=id'),
-        DB.select('assets','active=eq.true&select=id'),
-      ]);
-
-      const todayRev=todayOrders.reduce((s,o)=>s+o.total,0);
-      const monthRev=monthOrders.reduce((s,o)=>s+o.total,0);
-      const todayCount=todayOrders.length;
-
-      // Tồn kho thấp
-      const rawMap={};rawStock.forEach(r=>rawMap[r.id]=parseFloat(r.quantity)||0);
-      const semiMap={};semiStock.forEach(s=>semiMap[s.id]=parseFloat(s.quantity)||0);
-      const RAW_WARN={ca_phe_bot:300,cacao_bot:200,matcha_bot:100,bot_kem_muoi:100,sua_dac:300,sua_tuoi:500,duong:500};
-      const SEMI_WARN={cot_ca_phe:200,cot_cacao:200,cot_matcha:200,kem_muoi:100,nuoc_duong:100};
-      const lowRaw=Object.keys(RAW_WARN).filter(k=>rawMap[k]<=RAW_WARN[k]).length;
-      const lowSemi=Object.keys(SEMI_WARN).filter(k=>semiMap[k]<=SEMI_WARN[k]).length;
-      const lowSupply=supplies.filter(s=>s.category==='consumable'&&(parseFloat(s.quantity)||0)<=(s.warn_at||0)).length;
-      const totalLow=lowRaw+lowSemi+lowSupply;
-
-      const todayLog=scheduleToday&&scheduleToday.length?scheduleToday[0]:null;
-      const checkedIn=!!todayLog?.check_in,checkedOut=!!todayLog?.check_out;
-      const refOpen=new Date(today);refOpen.setHours(6,0,0,0);
-      const shouldCheckin=!checkedIn&&today>=refOpen;
-
-      renderDashboard({todayRev,monthRev,todayCount,totalLow,checkedIn,checkedOut,shouldCheckin,activeProductCount:activeProducts.length,activeAssetCount:activeAssets.length});
-    } catch(e){
-      document.getElementById('scroll').innerHTML=`<div style="text-align:center;padding:32px;color:#E24B4A;font-size:13px">Lỗi: ${e.message}</div>`;
-    }
-  }
-
-  function renderDashboard(d){
-    const canRevenue=Auth.can('revenue');
-    const canFinance=Auth.can('finance');
-    const canInventory=Auth.can('inventory_view');
-    const canEdit=Auth.can('inventory_edit');
-    const isOwner=Auth.getRole()==='owner';
-    let html='';
-
-    // Cảnh báo check-in
-    if(d.shouldCheckin){
-      html+=`<a href="../schedule/index.html" class="checkin-alert">
-        <div class="alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <div><div class="alert-title">${d.checkedIn?'Đang bán hàng':'Chưa check-in hôm nay!'}</div><div class="alert-sub">${d.checkedIn?'Nhấn để xem lịch trình':'Giờ mở bán 06:00 — nhấn để check-in'}</div></div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </a>`;
-    }
-
-    // Banner doanh thu
-    if(canRevenue){
-      html+=`<a href="../revenue/index.html" class="today-banner">
-        <div><div class="tb-label">Doanh thu hôm nay</div><div class="tb-revenue">${fmt(d.todayRev)}</div><div class="tb-sub">${d.todayCount} đơn · ${fmtDate(today)}</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="tb-orders">${d.todayCount} đơn</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9FE1CB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-      </a>`;
-      html+=`<div class="stats-row">
-        <div class="stat-chip"><div class="sc-label">Tháng này</div><div class="sc-value green" style="font-size:14px">${fmt(d.monthRev)}</div></div>
-        <div class="stat-chip"><div class="sc-label">Hôm nay</div><div class="sc-value">${d.todayCount}</div></div>
-        <div class="stat-chip"><div class="sc-label">Tồn kho thấp</div><div class="sc-value${d.totalLow>0?' red':' green'}">${d.totalLow}</div></div>
-      </div>`;
-    }
-
-    // Nút POS
-    html+=`<a href="../pos/index.html" class="pos-btn">
-      <div class="pos-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
-      <div style="flex:1"><div class="pos-title">Bán hàng</div><div class="pos-sub">Mở màn hình POS</div></div>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </a>`;
-
-    // Nút Đơn bán hàng (revenue permission)
-    if(canRevenue) html+=`<a href="../orders/index.html" class="pos-btn" style="background:#fff;border:0.5px solid #e8e6e0">
-      <div class="pos-icon" style="background:#E1F5EE"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
-      <div style="flex:1"><div class="pos-title" style="color:#1a1a18">Đơn bán hàng</div><div class="pos-sub">${d.todayCount} đơn hôm nay</div></div>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </a>`;
-
-    // ── Nhóm Tồn kho ──
-    if(canInventory||canEdit){
-      html+=`<div class="section-title">Tồn kho</div><div class="module-grid">`;
-      if(canInventory) html+=`<a href="../inventory/index.html" class="module-card">
-        <div class="mc-icon" style="background:#FAEEDA"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
-        <div><div class="mc-name">Nguyên liệu</div><div class="mc-stat">Tồn kho & pha chế</div>${d.totalLow>0?`<span class="mc-badge badge-red">${d.totalLow} mục thấp</span>`:'<span class="mc-badge badge-green">Đủ hàng</span>'}</div>
-      </a>`;
-      if(canEdit) html+=`<a href="../supplies/index.html" class="module-card">
-        <div class="mc-icon" style="background:#E6F1FB"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg></div>
-        <div><div class="mc-name">Vật tư</div><div class="mc-stat">Tiêu hao · Dụng cụ · SKU</div>${d.lowSupply>0?`<span class="mc-badge badge-red">${d.lowSupply} mục thấp</span>`:'<span class="mc-badge badge-blue">Quản lý</span>'}</div>
-      </a>`;
-      if(canEdit) html+=`<a href="../assets/index.html" class="module-card">
-        <div class="mc-icon" style="background:#EEEDFE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-        <div><div class="mc-name">Tài sản</div><div class="mc-stat">Dụng cụ · Thiết bị · Xe</div><span class="mc-badge badge-purple">${d.activeAssetCount} tài sản</span></div>
-      </a>`;
-      if(canEdit) html+=`<a href="../purchasing/index.html" class="module-card">
-        <div class="mc-icon" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
-        <div><div class="mc-name">Nhập hàng</div><div class="mc-stat">Phiếu nhập · Giá vốn</div><span class="mc-badge badge-green">Tạo phiếu nhập</span></div>
-      </a>`;
-      html+=`</div>`;
-    }
-
-    // ── Nhóm Báo cáo ──
-    if(canRevenue||canFinance){
-      html+=`<div class="section-title">Báo cáo</div><div class="module-grid">`;
-      if(canRevenue) html+=`<a href="../revenue/index.html" class="module-card">
-        <div class="mc-icon" style="background:#E6F1FB"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C447C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-        <div><div class="mc-name">Doanh thu</div><div class="mc-stat">Báo cáo bán hàng</div><span class="mc-badge badge-blue">${fmt(d.todayRev)} hôm nay</span></div>
-      </a>`;
-      if(canFinance) html+=`<a href="../finance/index.html" class="module-card">
-        <div class="mc-icon" style="background:#EEEDFE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-        <div><div class="mc-name">Tài chính</div><div class="mc-stat">P&L · Chi phí · Giá vốn</div><span class="mc-badge badge-purple">Tháng ${today.getMonth()+1}</span></div>
-      </a>`;
-      html+=`</div>`;
-    }
-
-    // ── Nhóm Quản lý ──
-    html+=`<div class="section-title">Quản lý</div><div class="module-grid">`;
-
-    html+=`<a href="../schedule/index.html" class="module-card">
-      <div class="mc-icon" style="background:#E1F5EE"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-      <div><div class="mc-name">Lịch trình</div><div class="mc-stat">Check-in · Check-out</div>${d.checkedIn&&!d.checkedOut?'<span class="mc-badge badge-green">Đang bán</span>':d.checkedOut?'<span class="mc-badge badge-gray">Xong hôm nay</span>':'<span class="mc-badge badge-yellow">Chưa check-in</span>'}</div>
-    </a>`;
-
-    if(isOwner) html+=`<a href="../menu/index.html" class="module-card">
-      <div class="mc-icon" style="background:#FAEEDA"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>
-      <div><div class="mc-name">Menu</div><div class="mc-stat">Sản phẩm & công thức</div><span class="mc-badge badge-yellow">${d.activeProductCount} sản phẩm</span></div>
-    </a>`;
-
-    if(isOwner) html+=`<a href="../contacts/index.html" class="module-card">
-      <div class="mc-icon" style="background:#FDF3E1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#633806" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div><div class="mc-name">Liên lạc</div><div class="mc-stat">NCC · Khách · Nhượng quyền</div><span class="mc-badge badge-yellow">Quản lý</span></div>
-    </a>`;
-
-    html+=`<a href="../settings/index.html" class="module-card">
-      <div class="mc-icon" style="background:#f5f5f0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
-      <div><div class="mc-name">Cài đặt</div><div class="mc-stat">${isOwner?'Tài khoản · QR · Hệ thống':'Đổi mật khẩu'}</div><span class="mc-badge badge-gray">${Auth.getRole()}</span></div>
-    </a>`;
-
-    html+=`</div>`;
-    document.getElementById('scroll').innerHTML=html;
-  }
-
-  function showLogout(){document.getElementById('logoutSub').textContent=session?`Đang đăng nhập: ${session.name}`:'';document.getElementById('logoutOverlay').classList.add('show');}
-  function hideLogout(){document.getElementById('logoutOverlay').classList.remove('show');}
-
-  loadDashboard();
-</script>
+<script src="./home.js"></script>
 </body>
 </html>
