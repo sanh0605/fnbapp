@@ -141,11 +141,11 @@ Auth.require('pos');
       ? `<span class="mc-original">${fmt(item.price)}</span><span class="mc-price">${fmt(dispPrice)}</span>`
       : `<span class="mc-price">${fmt(item.price)}</span>`;
     const ctrl = out ? '' : qty === 0
-      ? `<button class="mc-add-btn" onclick="add('${item.id}')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><line x1="8" y1="2" x2="8" y2="14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></button>`
+      ? `<button class="mc-add-btn" onclick="add('${item.id}')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#E03C31"/><line x1="12" y1="6" x2="12" y2="18" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><line x1="6" y1="12" x2="18" y2="12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></button>`
       : `<div class="mc-qty">
-           <button class="qb minus" onclick="chg('${item.id}',-1)">−</button>
+           <button class="qb minus" onclick="chg('${item.id}',-1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="7" y1="12" x2="17" y2="12" stroke="#E03C31" stroke-width="2.5" stroke-linecap="round"/></svg></button>
            <span class="qn">${qty}</span>
-           <button class="qb" onclick="chg('${item.id}',1)">+</button>
+           <button class="qb" onclick="chg('${item.id}',1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="12" y1="7" x2="12" y2="17" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/></svg></button>
          </div>`;
     return `<div class="menu-card${out?' out':''}${qty>0?' in-cart':''}">
       <div class="mc-img" style="background:${bg}">${thumb}</div>
@@ -184,20 +184,31 @@ Auth.require('pos');
     discountType=t;
     document.getElementById('dtVnd').classList.toggle('active',t==='vnd');
     document.getElementById('dtPct').classList.toggle('active',t==='pct');
-    document.getElementById('discInput').placeholder = t==='pct'?'0':'0';
-    document.getElementById('discInput').max = t==='pct'?'100':'';
+    document.getElementById('discInput').value = '';
+    discountValue = 0;
     updateDiscount();
   }
+  function parseInputNum(el){
+    return parseInt(el.value.replace(/\./g,'').replace(/[^0-9]/g,''))||0;
+  }
+  function fmtInput(n){ return n > 0 ? n.toLocaleString('vi-VN') : ''; }
+
   function updateDiscount(){
-    discountValue = parseFloat(document.getElementById('discInput').value)||0;
-    actualReceived = null; // reset thực thu khi CK thay đổi
+    const el = document.getElementById('discInput');
+    const raw = parseInputNum(el);
+    discountValue = raw;
+    if(discountType==='vnd') el.value = fmtInput(raw);
+    actualReceived = null;
     document.getElementById('actualInput').value = '';
     renderDiscountUI();
     updateCartBar();
     updatePaymentUI();
   }
   function updateActual(){
-    actualReceived = parseFloat(document.getElementById('actualInput').value)||null;
+    const el = document.getElementById('actualInput');
+    const raw = parseInputNum(el);
+    actualReceived = raw || null;
+    el.value = fmtInput(raw);
     renderDiscountUI();
   }
   function renderDiscountUI(){
@@ -215,15 +226,24 @@ Auth.require('pos');
   }
   function update(){ renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
+  const CUP_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8l1.5 14h5L16 8H8z"/><path d="M6.5 8h11"/><path d="M7.5 6.5C7.5 5 9 4 12 4s4.5 1 4.5 2.5V8h-9V6.5z"/><line x1="14" y1="1" x2="13" y2="8"/></svg>`;
+
   function updateCartBar(){
     const count = getTotalQty(), subtotal = getSubtotal(), payable = getPayable();
     document.getElementById('footerSubtotal').textContent = fmt(subtotal);
-    document.getElementById('cartTotal').textContent = fmt(payable);
-    document.getElementById('cartInfoTop').textContent = count > 0 ? `${count} món` : 'Chưa có món';
     renderDiscountUI();
-    const badge = document.getElementById('cartCount');
-    badge.textContent = count;
-    badge.style.display = count > 0 ? 'flex' : 'none';
+    const iconArea = document.getElementById('cartIconArea');
+    const totalBig = document.getElementById('cartTotalBig');
+    if(count > 0){
+      iconArea.className = 'cart-diamond';
+      iconArea.innerHTML = `<div class="cart-diamond-inner"><span class="cart-diamond-qty">${count}</span>${CUP_SVG}</div>`;
+      totalBig.textContent = fmt(payable);
+      totalBig.style.display = expanded ? 'none' : 'block';
+    } else {
+      iconArea.className = 'cart-icon-circle';
+      iconArea.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`;
+      totalBig.style.display = 'none';
+    }
     document.getElementById('trashBtn').style.visibility = count > 0 ? 'visible' : 'hidden';
     const toggleBtn = document.getElementById('cartToggleBtn');
     toggleBtn.disabled = count === 0;
@@ -255,9 +275,9 @@ Auth.require('pos');
           </div>
           <div class="ci-right">
             <div class="mc-qty">
-              <button class="qb minus" onclick="chg('${id}',-1)">−</button>
+              <button class="qb minus" onclick="chg('${id}',-1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="7" y1="12" x2="17" y2="12" stroke="#E03C31" stroke-width="2.5" stroke-linecap="round"/></svg></button>
               <span class="qn">${cart[id]}</span>
-              <button class="qb" onclick="chg('${id}',1)">+</button>
+              <button class="qb" onclick="chg('${id}',1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="12" y1="7" x2="12" y2="17" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/></svg></button>
             </div>
             <span class="ci-price">${fmt(price*cart[id])}</span>
           </div>
@@ -294,7 +314,8 @@ Auth.require('pos');
     if(Object.keys(cart).length===0 && !expanded) return;
     expanded = !expanded;
     document.getElementById('bottomCart').classList.toggle('expanded', expanded);
-    document.getElementById('cartInfo').style.visibility = expanded ? 'hidden' : 'visible';
+    const tb = document.getElementById('cartTotalBig');
+    if(tb) tb.style.display = expanded ? 'none' : (getTotalQty()>0 ? 'block' : 'none');
     if(!expanded){ payMethod=null; updatePaymentUI(); }
     updateCartBar();
   }
