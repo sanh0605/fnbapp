@@ -1,5 +1,5 @@
 # FNB App — CONTEXT.md
-# Cập nhật lần cuối: 18/04/2026 (redesign POS UI hoàn chỉnh)
+# Cập nhật lần cuối: 18/04/2026 (POS rush-hour UX — 5 fixes)
 
 > **QUY TẮC CHO AI:** Đọc file này trước khi làm bất cứ điều gì. Sau mỗi thay đổi, cập nhật file này và commit ngay.
 
@@ -143,9 +143,13 @@ fnbapp/
 - **Buttons:** touch target 48×48, visual circle 24×24 (SVG embed circle bg)
 - **Confirm button:** loading state (spinner) → success state (xanh ✓ 1s) → reset
 - **Skeleton loading:** 4 card shimmer khi chờ menu load
-- **Chiết khấu:** `actualRow` (Thực thu) chỉ hiện khi có chiết khấu
-- **Performance:** `add()`/`chg()` chỉ update card bị chạm, không re-render toàn menu
+- **Chiết khấu:** collapsed mặc định, tap "Chiết khấu ›" để mở (`#discBlock`). `actualRow` chỉ hiện khi có chiết khấu
+- **Performance:** `add()`/`chg()` chỉ update card bị chạm, không re-render toàn menu. QR chỉ reload khi amount thay đổi (`lastQRAmount` cache)
 - **Haptic:** `navigator.vibrate(20)` khi thêm món
+- **Rush-hour UX (18/04/2026):**
+  - Collapsed bar hiện 2 nút TM / CK khi có món → TM confirm ngay, CK mở cart + QR
+  - Ghi chú ẩn mặc định → hiện khi bấm "+ Ghi chú" (`notesOpen` Set)
+  - Tap số lượng trong cart → inline input chỉnh trực tiếp (`editQty`)
 
 ---
 
@@ -168,7 +172,7 @@ fnbapp/
 |---|---|:---:|
 | Auth | src/auth/ | ✅ |
 | Home | src/home/ | ✅ brand filter + stats + feature cards |
-| POS | src/pos/ | ✅ 1-col menu + bottom-sheet cart + brand/outlet auto-attach + offline IDB |
+| POS | src/pos/ | ✅ 1-col menu + bottom-sheet cart + brand/outlet auto-attach + offline IDB + rush-hour UX |
 | Orders | src/orders/ | ✅ |
 | Revenue | src/revenue/ | ✅ brand filter |
 | Menu | src/menu/ | ✅ |

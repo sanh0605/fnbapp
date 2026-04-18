@@ -1,5 +1,5 @@
 # FNB App — TASK.md
-# Cập nhật lần cuối: 17/04/2026
+# Cập nhật lần cuối: 18/04/2026
 
 Dùng file này để track công việc đang làm trong session hiện tại.
 Xóa task khi hoàn thành, không giữ lại lịch sử.
