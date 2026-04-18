@@ -278,7 +278,7 @@ Auth.require('pos');
   }
   function update(){ renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
-  const CUP_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M8 8l1.5 14h5L16 8H8z"/><path d="M6.5 8h11"/><path d="M7.5 8C7.5 6 9.5 4.5 12 4.5S16.5 6 16.5 8"/></svg>`;
+  const CUP_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M8 8l1.5 14h5L16 8H8z"/><path d="M6.5 8h11"/><path d="M7.5 8C7.5 6 9.5 4.5 12 4.5S16.5 6 16.5 8"/></svg>`;
 
   function updateCartBar(){
     const count = getTotalQty(), subtotal = getSubtotal(), payable = getPayable();
@@ -301,8 +301,8 @@ Auth.require('pos');
     const toggleBtn = document.getElementById('cartToggleBtn');
     toggleBtn.disabled = count === 0;
     toggleBtn.innerHTML = expanded
-      ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 18 6 12"/><polyline points="18 6 12 12 6 6"/></svg>`
-      : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 6 6 12"/><polyline points="18 18 12 12 6 18"/></svg>`;
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 18 6 12"/><polyline points="18 6 12 12 6 6"/></svg>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 6 6 12"/><polyline points="18 18 12 12 6 18"/></svg>`;
   }
 
   function renderCartItems(){
