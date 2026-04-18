@@ -1,5 +1,5 @@
 # FNB App — CONTEXT.md
-# Cập nhật lần cuối: 18/04/2026 (POS rush-hour UX — 5 fixes)
+# Cập nhật lần cuối: 18/04/2026 (audit fixes D2–D7)
 
 > **QUY TẮC CHO AI:** Đọc file này trước khi làm bất cứ điều gì. Sau mỗi thay đổi, cập nhật file này và commit ngay.
 
@@ -150,6 +150,15 @@ fnbapp/
   - Collapsed bar hiện 2 nút TM / CK khi có món → TM confirm ngay, CK mở cart + QR
   - Ghi chú ẩn mặc định → hiện khi bấm "+ Ghi chú" (`notesOpen` Set)
   - Tap số lượng trong cart → inline input chỉnh trực tiếp (`editQty`)
+
+---
+
+## BẢO MẬT & DATA INTEGRITY (18/04/2026)
+
+- **RLS:** `migrations/020_rls_tighten.sql` — orders/users không thể DELETE, orders INSERT yêu cầu `method` hợp lệ và `total >= 0`, orders UPDATE chỉ cho phép void, brands/outlets read-only
+- **Offline sync:** `syncing` flag ngăn race condition khi 2 trigger cùng lúc. Dead-letter (retry ≥ 5) tự xoá sau khi hiện toast cảnh báo
+- **Order number:** format `{outlet_id}-{seq}` (vd: `CF_O1-001`) khi có outlet, `#001` khi không có. Counter filter theo outlet khi init
+- **BACKLOG còn lại:** Auth client-side only — cần migrate sang Supabase Auth để RLS có thể filter theo user
 
 ---
 
