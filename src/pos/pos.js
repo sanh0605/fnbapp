@@ -273,7 +273,7 @@ Auth.require('pos');
       }
       const num = '#' + String(orderN).padStart(3, '0');
       loadDraft(); loadParked();
-      renderCats(); renderMenu(); updateCartBar(); updatePaymentUI();
+      renderCats(); renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
       restoreDraftUI(); updateDraftBadge();
       if(navigator.onLine) syncPendingOrders();
       else updateSyncBadge();
