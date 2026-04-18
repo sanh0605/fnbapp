@@ -82,16 +82,16 @@
     .cart-header-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0 10px;border-bottom:0.5px solid #ebebeb}
     .cart-title{font-size:15px;font-weight:700}
     .clear-btn{font-size:12px;color:#E03C31;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px}
-    .ci{border-bottom:0.5px solid #f0f0ec;padding:10px 0}
-    .ci-top{display:flex;align-items:center;gap:8px}
-    .ci-thumb{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden}
-    .ci-thumb img{width:100%;height:100%;object-fit:cover;border-radius:10px}
-    .ci-info{flex:1;min-width:0}
-    .ci-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .ci-unit{font-size:11px;color:#bbb;margin-top:1px}
-    .ci-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-    .ci-price{font-size:13px;font-weight:600;color:#1a1a18;min-width:60px;text-align:right}
-    .ci-note-val{color:#888;font-style:italic}
+    .ci-group{padding:10px 0;border-bottom:0.5px solid #f0f0ec}
+    .ci-group:last-child{border-bottom:none}
+    .ci-group-name{font-size:14px;font-weight:600;color:#1a1a18;margin-bottom:4px}
+    .ci-line{display:flex;align-items:center;gap:6px;padding:3px 0}
+    .ci-line-opts{flex:1;background:none;border:none;font-size:12px;color:#888;cursor:pointer;font-family:inherit;text-align:left;padding:4px 0;min-height:28px;line-height:1.4}
+    .ci-line-opts:active{opacity:.6}
+    .ci-line-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .ci-line-qty .qb{width:36px;height:36px}
+    .ci-line-qty .qn{font-size:15px;min-width:22px}
+    .ci-price{font-size:13px;font-weight:600;color:#1a1a18;min-width:56px;text-align:right}
 
     .cart-footer{padding:12px 16px 28px;border-top:0.5px solid #ebebeb;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
     .total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:700}
@@ -132,10 +132,16 @@
     .disc-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:2px 0;user-select:none}
     .disc-toggle:active{opacity:.7}
 
-    /* ── NOTE / QTY EDIT ── */
-    .ci-note-btn{background:none;border:none;font-size:12px;color:#bbb;cursor:pointer;font-family:inherit;text-align:left;padding:6px 0;min-height:32px;display:block;width:100%}
-    .ci-note-btn:active{opacity:.6}
+    /* ── QTY EDIT ── */
     .qn-edit{width:40px;border:none;border-bottom:2px solid #E03C31;text-align:center;font-size:18px;font-weight:700;background:transparent;outline:none;font-family:inherit;color:#1a1a18}
+
+    /* ── CUSTOM MODAL ── */
+    .custom-section{margin-bottom:16px}
+    .custom-section-label{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+    .custom-pills{display:flex;flex-wrap:wrap;gap:8px}
+    .custom-pill{height:36px;padding:0 14px;border-radius:18px;border:1.5px solid #e0e0e0;background:#fff;font-size:13px;font-weight:500;color:#555;cursor:pointer;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;transition:all .12s}
+    .custom-pill.active{background:#E03C31;border-color:#E03C31;color:#fff;font-weight:700}
+    .custom-pill:active{opacity:.7}
 
     /* ── SKELETON ── */
     @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
@@ -271,21 +277,44 @@
   </div>
 </div>
 
-<!-- NOTE MODAL -->
-<div class="overlay" id="noteModal" onclick="cancelNoteModal()">
-  <div class="sheet" onclick="event.stopPropagation()" style="gap:12px">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div style="font-size:15px;font-weight:600">Ghi chú</div>
-      <button onclick="cancelNoteModal()" style="width:30px;height:30px;border-radius:50%;border:none;background:#f5f5f0;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0">
+<!-- PRODUCT CUSTOMIZATION MODAL -->
+<div class="overlay" id="customModal" onclick="cancelCustom()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700" id="customItemName"></div>
+      <button onclick="cancelCustom()" style="width:30px;height:30px;border-radius:50%;border:none;background:#f5f5f0;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <input id="noteModalInput" type="text"
-      placeholder="Vd: ít đường, ít đá, thêm trân châu..."
-      style="border:0.5px solid #e8e6e0;border-radius:10px;padding:12px;font-size:14px;font-family:inherit;width:100%;outline:none;-webkit-appearance:none"
-      onfocus="this.style.borderColor='#E03C31'" onblur="this.style.borderColor='#e8e6e0'"
-      onkeydown="if(event.key==='Enter') closeNoteModal()">
-    <button onclick="closeNoteModal()" style="padding:14px;border-radius:12px;border:none;background:#E03C31;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit">Xong</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;margin-bottom:16px;border-bottom:0.5px solid #f0f0ec">
+      <span style="font-size:14px;font-weight:600">Số lượng</span>
+      <div class="mc-qty">
+        <button id="customQtyMinus" class="qb minus" onclick="customQty(-1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="7" y1="12" x2="17" y2="12" stroke="#E03C31" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+        <span id="customQtyVal" class="qn">1</span>
+        <button class="qb" onclick="customQty(1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="12" y1="7" x2="12" y2="17" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+    <div class="custom-section">
+      <div class="custom-section-label">Ngọt</div>
+      <div class="custom-pills" id="sweetPills"></div>
+    </div>
+    <div class="custom-section">
+      <div class="custom-section-label">Đá</div>
+      <div class="custom-pills" id="icePills"></div>
+    </div>
+    <div class="custom-section" id="toppingSection" style="display:none">
+      <div class="custom-section-label">Topping</div>
+      <div class="custom-pills" id="toppingPills"></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="custom-section-label">Ghi chú</div>
+      <input id="customNote" type="text" placeholder="Vd: thêm đường, không kem..."
+        style="width:100%;border:0.5px solid #e8e6e0;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none"
+        onfocus="this.style.borderColor='#E03C31'" onblur="this.style.borderColor='#e8e6e0'"
+        onkeydown="if(event.key==='Enter') this.blur()">
+    </div>
+    <button id="customDelBtn" onclick="deleteCustomLine()" style="display:none;padding:12px;border-radius:12px;border:none;background:#FCEBEB;color:#A32D2D;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;width:100%">Xoá dòng này</button>
+    <button id="customAddBtn" onclick="confirmCustom()" style="padding:15px;border-radius:14px;border:none;background:#E03C31;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;width:100%">Thêm vào giỏ</button>
   </div>
 </div>
 
