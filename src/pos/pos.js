@@ -64,6 +64,51 @@ Auth.require('pos');
   let MENU = [], SETTINGS = {}, activeCat = 'Tất cả';
   let cart = {}, notes = {}, orderN = 1, expanded = false, payMethod = null;
   let discOpen = false, notesOpen = new Set(), lastQRAmount = null;
+
+  // ── DRAFT PERSISTENCE ──
+  const DRAFT_KEY = `fnb_pos_draft_${session?.id || 'anon'}`;
+
+  function saveDraft(){
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        cart, notes, discountType, discountValue, actualReceived, discOpen
+      }));
+    } catch(e){}
+  }
+
+  function loadDraft(){
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if(!raw) return;
+      const d = JSON.parse(raw);
+      if(!d.cart || !Object.keys(d.cart).length) return;
+      cart  = Object.fromEntries(Object.entries(d.cart).filter(([id]) => findItem(id)));
+      if(!Object.keys(cart).length) return;
+      notes          = d.notes          || {};
+      notesOpen      = new Set(Object.keys(notes).filter(id => notes[id]));
+      discountType   = d.discountType   || 'vnd';
+      discountValue  = d.discountValue  || 0;
+      actualReceived = d.actualReceived || null;
+      discOpen       = d.discOpen       || false;
+    } catch(e){}
+  }
+
+  function restoreDraftUI(){
+    if(!Object.keys(cart).length) return;
+    document.getElementById('dtVnd').classList.toggle('active', discountType==='vnd');
+    document.getElementById('dtPct').classList.toggle('active', discountType==='pct');
+    if(discountValue) document.getElementById('discInput').value =
+      discountType==='vnd' ? fmtInput(discountValue) : discountValue;
+    if(actualReceived) document.getElementById('actualInput').value = fmtInput(actualReceived);
+    if(discOpen){
+      document.getElementById('discBlock').style.display = 'flex';
+      document.getElementById('discArrow').style.transform = 'rotate(180deg)';
+    }
+  }
+
+  function clearDraft(){
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+  }
   let discountType = 'vnd', discountValue = 0, actualReceived = null;
   let posOutletId = null, posBrandId = null;
 
@@ -125,7 +170,9 @@ Auth.require('pos');
         toast('📶 Offline — dùng menu đã lưu');
       }
       const num = '#' + String(orderN).padStart(3, '0');
-      renderCats(); renderMenu(); updateCartBar();
+      loadDraft();
+      renderCats(); renderMenu(); updateCartBar(); updatePaymentUI();
+      restoreDraftUI();
       if(navigator.onLine) syncPendingOrders();
       else updateSyncBadge();
     } catch(e){
@@ -213,11 +260,13 @@ Auth.require('pos');
   function add(id){
     cart[id]=(cart[id]||0)+1; if(!notes[id])notes[id]=''; payMethod=null;
     updateMenuCardCtrl(id); renderCartItems(); updateCartBar(); updatePaymentUI();
+    saveDraft();
     navigator.vibrate?.(20);
   }
   function chg(id,d){
     cart[id]=(cart[id]||0)+d; if(cart[id]<=0){delete cart[id];delete notes[id];} payMethod=null;
     updateMenuCardCtrl(id); renderCartItems(); updateCartBar(); updatePaymentUI();
+    saveDraft();
   }
   function clearAll(){
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
@@ -226,6 +275,7 @@ Auth.require('pos');
     document.getElementById('actualInput').value='';
     document.getElementById('discBlock').style.display='none';
     document.getElementById('discArrow').style.transform='';
+    clearDraft();
     renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
     if(expanded) toggleCart();
   }
@@ -254,6 +304,7 @@ Auth.require('pos');
     renderDiscountUI();
     updateCartBar();
     updatePaymentUI();
+    saveDraft();
   }
   function updateActual(){
     const el = document.getElementById('actualInput');
@@ -261,6 +312,7 @@ Auth.require('pos');
     actualReceived = raw || null;
     el.value = fmtInput(raw);
     renderDiscountUI();
+    saveDraft();
   }
   function renderDiscountUI(){
     const subtotal = getSubtotal(), discount = getDiscount(), payable = getPayable();
@@ -347,6 +399,7 @@ Auth.require('pos');
     discOpen = !discOpen;
     document.getElementById('discBlock').style.display = discOpen ? 'flex' : 'none';
     document.getElementById('discArrow').style.transform = discOpen ? 'rotate(180deg)' : '';
+    saveDraft();
   }
 
   function openNote(id){
@@ -369,6 +422,7 @@ Auth.require('pos');
       if(v <= 0){ delete cart[id]; delete notes[id]; notesOpen.delete(id); }
       else { cart[id] = v; }
       renderCartItems(); updateCartBar(); updateMenuCardCtrl(id); updatePaymentUI();
+      saveDraft();
     });
     inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); });
   }
@@ -498,6 +552,7 @@ Auth.require('pos');
     btn.innerHTML = 'Xác nhận thanh toán';
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
     discOpen=false; notesOpen=new Set(); lastQRAmount=null;
+    clearDraft();
     document.getElementById('discInput').value='';
     document.getElementById('actualInput').value='';
     document.getElementById('discBlock').style.display='none';
