@@ -520,6 +520,10 @@ Auth.require('pos');
     renderCartItems();
     saveDraft();
   }
+  function cancelNoteModal(){
+    noteModalId = null;
+    document.getElementById('noteModal').classList.remove('show');
+  }
 
   function editQty(spanEl, id){
     const inp = document.createElement('input');

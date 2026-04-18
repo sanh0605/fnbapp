@@ -272,9 +272,14 @@
 </div>
 
 <!-- NOTE MODAL -->
-<div class="overlay" id="noteModal" onclick="closeNoteModal()">
+<div class="overlay" id="noteModal" onclick="cancelNoteModal()">
   <div class="sheet" onclick="event.stopPropagation()" style="gap:12px">
-    <div style="font-size:15px;font-weight:600">Ghi chú</div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:15px;font-weight:600">Ghi chú</div>
+      <button onclick="cancelNoteModal()" style="width:30px;height:30px;border-radius:50%;border:none;background:#f5f5f0;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
     <input id="noteModalInput" type="text"
       placeholder="Vd: ít đường, ít đá, thêm trân châu..."
       style="border:0.5px solid #e8e6e0;border-radius:10px;padding:12px;font-size:14px;font-family:inherit;width:100%;outline:none;-webkit-appearance:none"
