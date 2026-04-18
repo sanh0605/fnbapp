@@ -16,33 +16,40 @@ Auth.require('pos');
   updateNet();
 
   // ── OFFLINE SYNC ──
+  let syncing = false;
   async function syncPendingOrders(){
-    let queue;
-    try { queue = await IDBService.getPendingOrders(); } catch(e){ return; }
-    if(!queue.length) return;
-    let synced = 0, failed = 0;
-    for(const entry of queue){
-      if(IDBService.isDeadLetter(entry)){
-        toast(`⚠️ Đơn ${entry.payload?.order_num||''} lỗi quá ${IDBService.MAX_RETRIES} lần — báo manager`);
-        continue;
-      }
-      try {
-        await DB.insert('orders', entry.payload, false);
-        await IDBService.removePendingOrder(entry.local_id);
-        synced++;
-      } catch(e){
-        // 409 = đã tồn tại (idempotent) → xoá khỏi queue
-        if(e.message && e.message.includes('409')){
+    if(syncing) return;
+    syncing = true;
+    try {
+      let queue;
+      try { queue = await IDBService.getPendingOrders(); } catch(e){ return; }
+      if(!queue.length) return;
+      let synced = 0;
+      for(const entry of queue){
+        if(IDBService.isDeadLetter(entry)){
+          toast(`⚠️ Đơn ${entry.payload?.order_num||''} lỗi quá ${IDBService.MAX_RETRIES} lần — đã xoá khỏi hàng chờ`);
+          await IDBService.removePendingOrder(entry.local_id);
+          continue;
+        }
+        try {
+          await DB.insert('orders', entry.payload, false);
           await IDBService.removePendingOrder(entry.local_id);
           synced++;
-        } else {
-          await IDBService.incrementRetry(entry.local_id);
-          failed++;
+        } catch(e){
+          // 409 = đã tồn tại (idempotent) → xoá khỏi queue
+          if(e.message && e.message.includes('409')){
+            await IDBService.removePendingOrder(entry.local_id);
+            synced++;
+          } else {
+            await IDBService.incrementRetry(entry.local_id);
+          }
         }
       }
+      updateSyncBadge();
+      if(synced > 0) toast(`✓ Đã đồng bộ ${synced} đơn`);
+    } finally {
+      syncing = false;
     }
-    updateSyncBadge();
-    if(synced > 0) toast(`✓ Đã đồng bộ ${synced} đơn`);
   }
 
   async function updateSyncBadge(){
@@ -79,20 +86,25 @@ Auth.require('pos');
     try {
       if(navigator.onLine){
         // Online: fetch fresh data, cache menu for offline use
-        const [products, settings, latestOrders, userRows] = await Promise.all([
+        const userRows = session?.id
+          ? await DB.select('users', `id=eq.${session.id}&select=outlet_id`)
+          : [];
+        const outletIdForQuery = userRows?.[0]?.outlet_id || null;
+        const [products, settings, latestOrders] = await Promise.all([
           DB.select('products', 'active=eq.true&select=*&order=sort_order.asc'),
           DB.select('settings', 'select=*'),
-          DB.select('orders', 'select=order_num&order=created_at.desc&limit=1'),
-          session?.id ? DB.select('users', `id=eq.${session.id}&select=outlet_id`) : Promise.resolve([]),
+          outletIdForQuery
+            ? DB.select('orders', `select=order_num&outlet_id=eq.${outletIdForQuery}&order=created_at.desc&limit=1`)
+            : DB.select('orders', 'select=order_num&order=created_at.desc&limit=1'),
         ]);
         MENU = products;
         IDBService.cacheMenu(products).catch(()=>{}); // background, non-blocking
         settings.forEach(s => SETTINGS[s.key] = s.value);
         if(latestOrders?.length){
-          const m = (latestOrders[0].order_num||'').match(/\d+/);
-          if(m) orderN = parseInt(m[0], 10) + 1;
+          const m = (latestOrders[0].order_num||'').match(/(\d+)$/);
+          if(m) orderN = parseInt(m[1], 10) + 1;
         }
-        const outletId = userRows?.[0]?.outlet_id || null;
+        const outletId = outletIdForQuery;
         if(outletId){
           posOutletId = outletId;
           try {
@@ -217,7 +229,6 @@ Auth.require('pos');
     renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
     if(expanded) toggleCart();
   }
-  function update(){ renderCartItems(); updateCartBar(); updatePaymentUI(); }
 
   // ── CHIẾT KHẤU / THỰC THU ──
   function setDiscType(t){
@@ -369,7 +380,11 @@ Auth.require('pos');
       confirmPay();
     } else {
       toggleCart();
-      setTimeout(()=>{ selectMethod('transfer'); }, 350);
+      const el = document.getElementById('bottomCart');
+      el.addEventListener('transitionend', function h(){
+        el.removeEventListener('transitionend', h);
+        selectMethod('transfer');
+      });
     }
   }
 
@@ -446,7 +461,9 @@ Auth.require('pos');
     const discount   = getDiscount();
     const payable    = getPayable();
     const methodName = payMethod==='cash' ? 'Tiền mặt' : 'Chuyển khoản';
-    const orderNum   = '#' + String(orderN).padStart(3,'0');
+    const orderNum   = posOutletId
+      ? `${posOutletId}-${String(orderN).padStart(3,'0')}`
+      : '#' + String(orderN).padStart(3,'0');
     const items = Object.keys(cart).map(id => {
       const item = findItem(id);
       return { id, name:item?.name||'', qty:cart[id], price:item?.price||0 };
