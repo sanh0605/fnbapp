@@ -63,15 +63,17 @@ Auth.require('pos');
   // ── STATE ──
   let MENU = [], SETTINGS = {}, activeCat = 'Tất cả';
   let cart = {}, notes = {}, orderN = 1, expanded = false, payMethod = null;
-  let discOpen = false, notesOpen = new Set(), lastQRAmount = null;
+  let discOpen = false, lastQRAmount = null, noteModalId = null;
 
   // ── DRAFT PERSISTENCE ──
-  const DRAFT_KEY = `fnb_pos_draft_${session?.id || 'anon'}`;
+  const DRAFT_KEY  = `fnb_pos_draft_${session?.id || 'anon'}`;
+  const PARKED_KEY = `fnb_pos_parked_${session?.id || 'anon'}`;
+  let parkedOrders = [];
 
   function saveDraft(){
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({
-        cart, notes, discountType, discountValue, actualReceived, discOpen
+        cart, notes, discountType, discountValue, actualReceived, discOpen,
       }));
     } catch(e){}
   }
@@ -85,7 +87,6 @@ Auth.require('pos');
       cart  = Object.fromEntries(Object.entries(d.cart).filter(([id]) => findItem(id)));
       if(!Object.keys(cart).length) return;
       notes          = d.notes          || {};
-      notesOpen      = new Set(Object.keys(notes).filter(id => notes[id]));
       discountType   = d.discountType   || 'vnd';
       discountValue  = d.discountValue  || 0;
       actualReceived = d.actualReceived || null;
@@ -108,6 +109,107 @@ Auth.require('pos');
 
   function clearDraft(){
     try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+  }
+
+  // ── PARKED ORDERS ──
+  function loadParked(){
+    try { parkedOrders = JSON.parse(localStorage.getItem(PARKED_KEY)) || []; } catch(e){ parkedOrders = []; }
+  }
+  function saveParked(){
+    try { localStorage.setItem(PARKED_KEY, JSON.stringify(parkedOrders)); } catch(e){}
+  }
+  function updateDraftBadge(){
+    const btn = document.getElementById('draftListBtn');
+    const badge = document.getElementById('draftBadge');
+    if(!btn) return;
+    btn.style.display = parkedOrders.length > 0 ? 'flex' : 'none';
+    if(badge) badge.textContent = parkedOrders.length;
+  }
+  function buildDraftLabel(){
+    const keys = Object.keys(cart);
+    if(!keys.length) return 'Đơn trống';
+    const first = findItem(keys[0]);
+    const label = `${first?.name || 'Món'} ×${cart[keys[0]]}`;
+    return keys.length > 1 ? `${label} +${keys.length - 1} món` : label;
+  }
+  function timeAgo(iso){
+    const mins = Math.round((Date.now() - new Date(iso)) / 60000);
+    if(mins < 1) return 'vừa xong';
+    if(mins < 60) return `${mins} phút trước`;
+    return `${Math.round(mins / 60)} giờ trước`;
+  }
+  function parkOrder(){
+    if(!Object.keys(cart).length) return;
+    const draft = {
+      id: Date.now().toString(),
+      savedAt: new Date().toISOString(),
+      label: buildDraftLabel(),
+      cart: {...cart}, notes: {...notes},
+      discountType, discountValue, actualReceived, discOpen,
+    };
+    parkedOrders.push(draft);
+    saveParked();
+    updateDraftBadge();
+    cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
+    discOpen=false; lastQRAmount=null;
+    clearDraft();
+    document.getElementById('discInput').value='';
+    document.getElementById('actualInput').value='';
+    document.getElementById('discBlock').style.display='none';
+    document.getElementById('discArrow').style.transform='';
+    if(expanded) toggleCart();
+    renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
+    toast(`Đã lưu nháp: "${draft.label}"`);
+  }
+  function resumeDraft(id){
+    const draft = parkedOrders.find(d => d.id === id);
+    if(!draft) return;
+    if(Object.keys(cart).length) parkOrder();
+    cart           = Object.fromEntries(Object.entries(draft.cart).filter(([k]) => findItem(k)));
+    notes          = draft.notes          || {};
+    discountType   = draft.discountType   || 'vnd';
+    discountValue  = draft.discountValue  || 0;
+    actualReceived = draft.actualReceived || null;
+    discOpen       = draft.discOpen       || false;
+    payMethod      = null; lastQRAmount   = null;
+    parkedOrders   = parkedOrders.filter(d => d.id !== id);
+    saveParked(); saveDraft(); updateDraftBadge(); hideDrafts();
+    renderCats(); renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
+    restoreDraftUI();
+    if(!expanded && Object.keys(cart).length) toggleCart();
+  }
+  function deleteDraft(id){
+    parkedOrders = parkedOrders.filter(d => d.id !== id);
+    saveParked(); updateDraftBadge(); renderDraftList();
+    if(!parkedOrders.length) hideDrafts();
+  }
+  function showDrafts(){ renderDraftList(); document.getElementById('draftsOverlay').classList.add('show'); }
+  function hideDrafts(){ document.getElementById('draftsOverlay').classList.remove('show'); }
+  function renderDraftList(){
+    const el = document.getElementById('draftList');
+    if(!parkedOrders.length){
+      el.innerHTML = '<div style="text-align:center;padding:20px 0;color:#bbb;font-size:13px">Không có đơn nháp nào</div>';
+      return;
+    }
+    el.innerHTML = parkedOrders.map((d, idx) => {
+      const total    = Object.keys(d.cart).reduce((s,id) => s + (findItem(id)?.price||0) * d.cart[id], 0);
+      const qty      = Object.values(d.cart).reduce((s,q) => s + q, 0);
+      const itemsHtml = Object.keys(d.cart).map(id => {
+        const name = findItem(id)?.name || 'Món';
+        return `${name} x${d.cart[id]}`;
+      }).join('<br>');
+      return `<div class="draft-row">
+        <div class="draft-info">
+          <div class="draft-label"><strong>Nháp ${idx + 1}</strong> - ${timeAgo(d.savedAt)}</div>
+          <div class="draft-items">${itemsHtml}</div>
+          <div class="draft-meta">${qty} món - ${fmt(total)}</div>
+        </div>
+        <button class="draft-resume" onclick="resumeDraft('${d.id}')">Tiếp tục</button>
+        <button class="draft-del" onclick="deleteDraft('${d.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    }).join('');
   }
   let discountType = 'vnd', discountValue = 0, actualReceived = null;
   let posOutletId = null, posBrandId = null;
@@ -170,9 +272,9 @@ Auth.require('pos');
         toast('📶 Offline — dùng menu đã lưu');
       }
       const num = '#' + String(orderN).padStart(3, '0');
-      loadDraft();
+      loadDraft(); loadParked();
       renderCats(); renderMenu(); updateCartBar(); updatePaymentUI();
-      restoreDraftUI();
+      restoreDraftUI(); updateDraftBadge();
       if(navigator.onLine) syncPendingOrders();
       else updateSyncBadge();
     } catch(e){
@@ -270,7 +372,7 @@ Auth.require('pos');
   }
   function clearAll(){
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
-    discOpen=false; notesOpen=new Set(); lastQRAmount=null;
+    discOpen=false; lastQRAmount=null;
     document.getElementById('discInput').value='';
     document.getElementById('actualInput').value='';
     document.getElementById('discBlock').style.display='none';
@@ -371,8 +473,8 @@ Auth.require('pos');
         ? `<img src="${item.image_url}" alt="">`
         : (item.icon || '☕');
       const price = (item.discount_price > 0 && item.discount_price < item.price) ? item.discount_price : item.price;
-      const noteHtml = (notesOpen.has(id) || notes[id])
-        ? `<input class="ci-note" placeholder="Ghi chú: ít đường, không đá..." value="${notes[id]||''}" oninput="notes['${id}']=this.value" onclick="event.stopPropagation()">`
+      const noteHtml = notes[id]
+        ? `<button class="ci-note-btn ci-note-val" onclick="event.stopPropagation();openNote('${id}')">${notes[id]}</button>`
         : `<button class="ci-note-btn" onclick="event.stopPropagation();openNote('${id}')">+ Ghi chú</button>`;
       return `<div class="ci" data-id="${id}">
         <div class="ci-top">
@@ -403,10 +505,20 @@ Auth.require('pos');
   }
 
   function openNote(id){
-    notesOpen.add(id);
+    noteModalId = id;
+    const inp = document.getElementById('noteModalInput');
+    inp.value = notes[id] || '';
+    document.getElementById('noteModal').classList.add('show');
+    setTimeout(() => inp.focus(), 100);
+  }
+  function closeNoteModal(){
+    if(noteModalId === null) return;
+    const val = document.getElementById('noteModalInput').value.trim();
+    notes[noteModalId] = val;
+    noteModalId = null;
+    document.getElementById('noteModal').classList.remove('show');
     renderCartItems();
-    const inp = document.querySelector(`.ci[data-id="${id}"] .ci-note`);
-    if(inp) setTimeout(()=>inp.focus(), 30);
+    saveDraft();
   }
 
   function editQty(spanEl, id){
@@ -452,6 +564,8 @@ Auth.require('pos');
     if(payMethod==='transfer' && hasItems){ qr.classList.add('show'); updateQR(payable); }
     else qr.classList.remove('show');
     document.getElementById('confirmBtn').classList.toggle('active', payMethod!==null && hasItems);
+    const parkBtn = document.getElementById('parkBtn');
+    if(parkBtn) parkBtn.style.display = hasItems ? 'block' : 'none';
   }
 
   function updateQR(amount){
@@ -470,6 +584,7 @@ Auth.require('pos');
     if(Object.keys(cart).length===0 && !expanded) return;
     expanded = !expanded;
     document.getElementById('bottomCart').classList.toggle('expanded', expanded);
+    document.getElementById('cartBackdrop').style.display = expanded ? 'block' : 'none';
     const tb = document.getElementById('cartTotalBig');
     if(tb) tb.style.display = expanded ? 'none' : (getTotalQty()>0 ? 'block' : 'none');
     if(!expanded){ payMethod=null; updatePaymentUI(); }
@@ -551,7 +666,7 @@ Auth.require('pos');
     btn.classList.remove('success');
     btn.innerHTML = 'Xác nhận thanh toán';
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
-    discOpen=false; notesOpen=new Set(); lastQRAmount=null;
+    discOpen=false; lastQRAmount=null;
     clearDraft();
     document.getElementById('discInput').value='';
     document.getElementById('actualInput').value='';
@@ -560,6 +675,7 @@ Auth.require('pos');
     orderN++;
     expanded = false;
     document.getElementById('bottomCart').classList.remove('expanded');
+    document.getElementById('cartBackdrop').style.display = 'none';
     renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
   }
 

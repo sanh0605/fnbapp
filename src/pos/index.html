@@ -91,9 +91,7 @@
     .ci-unit{font-size:11px;color:#bbb;margin-top:1px}
     .ci-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
     .ci-price{font-size:13px;font-weight:600;color:#1a1a18;min-width:60px;text-align:right}
-    .ci-note{width:100%;border:0.5px solid #e8e6e0;border-radius:8px;padding:6px 10px;font-size:12px;background:#f5f5f5;font-family:inherit;margin-top:8px}
-    .ci-note:focus{outline:none;border-color:#E03C31}
-    .ci-note::placeholder{color:#bbb}
+    .ci-note-val{color:#888;font-size:12px;font-style:italic;text-align:left;padding:3px 0;margin-top:4px}
 
     .cart-footer{padding:12px 16px 28px;border-top:0.5px solid #ebebeb;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
     .total-row{display:flex;justify-content:space-between;font-size:16px;font-weight:700}
@@ -147,6 +145,21 @@
     .skel-line{height:13px;border-radius:6px;background:linear-gradient(90deg,#efefef 25%,#e0e0e0 50%,#efefef 75%);background-size:200% 100%;animation:shimmer 1.3s infinite}
     .skel-line.short{width:45%}
 
+    /* ── DRAFT ── */
+    .park-btn{padding:13px;border-radius:14px;border:0.5px solid #e8e6e0;background:#f5f5f0;color:#555;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%}
+    .park-btn:active{background:#e8e6e0}
+    .draft-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:0.5px solid #f0f0ec}
+    .draft-row:last-child{border-bottom:none}
+    .draft-info{flex:1;min-width:0}
+    .draft-label{font-size:13px;color:#555;margin-bottom:4px}
+    .draft-label strong{font-weight:700;color:#1a1a18}
+    .draft-items{font-size:13px;color:#1a1a18;line-height:1.5;margin-bottom:3px}
+    .draft-meta{font-size:12px;color:#888}
+    .draft-resume{padding:7px 14px;border-radius:10px;border:none;background:#E03C31;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0}
+    .draft-resume:active{background:#C42B21}
+    .draft-del{width:30px;height:30px;border-radius:50%;border:none;background:#f5f5f0;color:#aaa;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+    .draft-del:active{background:#e8e6e0}
+
     /* ── MISC ── */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-end;justify-content:center}
     .overlay.show{display:flex}
@@ -173,6 +186,10 @@
     <a href="../revenue/index.html" class="icon-btn" id="revenueBtn" style="display:none" title="Báo cáo">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     </a>
+    <button class="icon-btn" id="draftListBtn" style="display:none;position:relative" onclick="showDrafts()" title="Đơn nháp">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span id="draftBadge" style="position:absolute;top:-3px;right:-3px;background:#E03C31;color:#fff;font-size:9px;font-weight:700;border-radius:8px;min-width:14px;height:14px;display:flex;align-items:center;justify-content:center;pointer-events:none"></span>
+    </button>
     <button class="icon-btn" onclick="showLogout()" style="color:#c0392b" title="Đăng xuất">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
@@ -181,6 +198,9 @@
 
 <div class="cat-bar" id="catBar"></div>
 <div class="menu-list" id="menuList"><div class="loading">Đang tải menu...</div></div>
+
+<!-- CART BACKDROP -->
+<div id="cartBackdrop" onclick="toggleCart()" style="display:none;position:fixed;inset:0;z-index:50"></div>
 
 <!-- BOTTOM CART -->
 <div class="bottom-cart" id="bottomCart">
@@ -246,7 +266,34 @@
       <div class="qr-amount" id="qrAmount"></div>
       <div class="qr-hint">Khách quét QR — số tiền tự động điền</div>
     </div>
+    <button class="park-btn" id="parkBtn" style="display:none" onclick="parkOrder()">Lưu nháp &amp; đơn mới</button>
     <button class="confirm-btn" id="confirmBtn" onclick="confirmPay()">Xác nhận thanh toán</button>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="overlay" id="noteModal" onclick="closeNoteModal()">
+  <div class="sheet" onclick="event.stopPropagation()" style="gap:12px">
+    <div style="font-size:15px;font-weight:600">Ghi chú</div>
+    <input id="noteModalInput" type="text"
+      placeholder="Vd: ít đường, ít đá, thêm trân châu..."
+      style="border:0.5px solid #e8e6e0;border-radius:10px;padding:12px;font-size:14px;font-family:inherit;width:100%;outline:none;-webkit-appearance:none"
+      onfocus="this.style.borderColor='#E03C31'" onblur="this.style.borderColor='#e8e6e0'"
+      onkeydown="if(event.key==='Enter') closeNoteModal()">
+    <button onclick="closeNoteModal()" style="padding:14px;border-radius:12px;border:none;background:#E03C31;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit">Xong</button>
+  </div>
+</div>
+
+<!-- DRAFT LIST -->
+<div class="overlay" id="draftsOverlay" onclick="hideDrafts()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:15px;font-weight:600">Đơn nháp</div>
+      <button onclick="hideDrafts()" style="width:30px;height:30px;border-radius:50%;border:none;background:#f5f5f0;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="draftList"></div>
   </div>
 </div>
 
