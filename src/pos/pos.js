@@ -394,6 +394,12 @@ Auth.require('pos');
       customState={lineId:null,productId,qty:1,sweet:'100%',ice:'Bình thường',toppings:new Set(),note:''};
     }
     document.getElementById('customItemName').textContent=item.name;
+    const thumb=document.getElementById('customItemThumb');
+    const bg=item.color||'#f5f5f0';
+    thumb.style.background=bg;
+    thumb.innerHTML=item.image_url
+      ?`<img src="${item.image_url}" alt="" style="width:100%;height:100%;object-fit:cover">`
+      :(item.icon||'☕');
     renderCustomModal();
     document.getElementById('customModal').classList.add('show');
   }
