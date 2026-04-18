@@ -617,13 +617,7 @@ Auth.require('pos');
       iconArea.innerHTML=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`;
       totalBig.style.display='none';
     }
-    document.getElementById('quickPayBtns').style.display=(!expanded&&count>0)?'flex':'none';
     document.getElementById('trashBtn').style.visibility=count>0?'visible':'hidden';
-    const toggleBtn=document.getElementById('cartToggleBtn');
-    toggleBtn.disabled=count===0;
-    toggleBtn.innerHTML=expanded
-      ?`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 18 6 12"/><polyline points="18 6 12 12 6 6"/></svg>`
-      :`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 6 6 12"/><polyline points="18 18 12 12 6 18"/></svg>`;
   }
 
   function toggleDisc(){
@@ -631,18 +625,6 @@ Auth.require('pos');
     document.getElementById('discBlock').style.display=discOpen?'flex':'none';
     document.getElementById('discArrow').style.transform=discOpen?'rotate(180deg)':'';
     saveDraft();
-  }
-
-  function quickPay(method){
-    if(getTotalQty()===0) return;
-    if(method==='cash'){ payMethod='cash'; confirmPay(); }
-    else {
-      toggleCart();
-      const el=document.getElementById('bottomCart');
-      el.addEventListener('transitionend',function h(){
-        el.removeEventListener('transitionend',h); selectMethod('transfer');
-      });
-    }
   }
 
   function selectMethod(m){ payMethod=m; updatePaymentUI(); }

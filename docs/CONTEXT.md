@@ -146,10 +146,10 @@ fnbapp/
 - **Chiết khấu:** collapsed mặc định, tap "Chiết khấu ›" để mở (`#discBlock`). `actualRow` chỉ hiện khi có chiết khấu
 - **Performance:** `add()`/`chg()` chỉ update card bị chạm, không re-render toàn menu. QR chỉ reload khi amount thay đổi (`lastQRAmount` cache)
 - **Haptic:** `navigator.vibrate(20)` khi thêm món
-- **Rush-hour UX (18/04/2026):**
-  - Collapsed bar hiện 2 nút TM / CK khi có món → TM confirm ngay, CK mở cart + QR
-  - Ghi chú ẩn mặc định → hiện khi bấm "+ Ghi chú" (`notesOpen` Set)
-  - Tap số lượng trong cart → inline input chỉnh trực tiếp (`editQty`)
+- **Collapsed bar:** pill badge đỏ (qty + icon ly) + tổng tiền + trash btn — KHÔNG có nút TM/CK hay toggle
+- Tap bất kỳ vào collapsed bar (trừ trash) → mở cart; tap backdrop → đóng cart
+- Ghi chú ẩn mặc định → hiện khi bấm "+ Ghi chú" (`notesOpen` Set)
+- Tap số lượng trong cart → inline input chỉnh trực tiếp (`editQty`)
 
 ---
 

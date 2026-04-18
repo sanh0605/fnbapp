@@ -73,10 +73,6 @@
     #trashBtn{margin-left:auto}
     .cart-action-btn{width:40px;height:40px;border-radius:50%;border:none;background:#E03C31;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;transition:background .15s;box-shadow:0 2px 8px rgba(224,60,49,.35)}
     .cart-action-btn:active{background:#C42B21}
-    .cart-toggle-btn{width:40px;height:40px;border-radius:50%;border:none;background:#E03C31;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .15s;box-shadow:0 2px 8px rgba(224,60,49,.35)}
-    .cart-toggle-btn:active{background:#C42B21}
-    .cart-toggle-btn:disabled{background:#ddd;box-shadow:none;cursor:default}
-
     .cart-detail{flex:1;overflow-y:auto;padding:4px 16px 0;scrollbar-width:none}
     .cart-detail::-webkit-scrollbar{display:none}
     .cart-header-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0 10px;border-bottom:0.5px solid #ebebeb}
@@ -122,11 +118,6 @@
     .confirm-btn.success{background:#1D9E75;cursor:default;pointer-events:none}
     @keyframes spin{to{transform:rotate(360deg)}}
     .btn-spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-
-    /* ── QUICK PAY ── */
-    .quick-pay-wrap{display:flex;gap:6px;align-items:center}
-    .qpay-btn{height:40px;padding:0 14px;border-radius:20px;border:none;background:#E03C31;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;box-shadow:0 2px 8px rgba(224,60,49,.35)}
-    .qpay-btn:active{background:#C42B21}
 
     /* ── DISC TOGGLE ── */
     .disc-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:2px 0;user-select:none}
@@ -216,15 +207,8 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
     </div>
     <div id="cartTotalBig" class="cart-total-big" style="display:none"></div>
-    <div id="quickPayBtns" class="quick-pay-wrap" style="display:none">
-      <button class="qpay-btn" onclick="event.stopPropagation();quickPay('cash')">TM</button>
-      <button class="qpay-btn" onclick="event.stopPropagation();quickPay('transfer')">CK</button>
-    </div>
     <button class="cart-action-btn" id="trashBtn" style="visibility:hidden" onclick="event.stopPropagation();clearAll()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-    </button>
-    <button class="cart-toggle-btn" id="cartToggleBtn" disabled onclick="event.stopPropagation();toggleCart()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 12 12 6 6 12"/><polyline points="18 18 12 12 6 18"/></svg>
     </button>
   </div>
 
