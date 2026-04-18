@@ -50,6 +50,8 @@ Với task nhiều bước, nêu plan ngắn trước khi làm:
 
 ## 6. Confirm Before Code
 
+- **Nếu yêu cầu chưa rõ ràng, PHẢI hỏi lại — không được code cho đến khi có câu trả lời rõ ràng**
 - Với task mơ hồ hoặc có nhiều cách hiểu: nêu cách hiểu, chờ xác nhận trước khi code
 - Với task lớn (>3 file thay đổi): trình bày plan ngắn, chờ anh duyệt
 - Không tự suy diễn ý định — hỏi thẳng nếu không chắc
+- Ví dụ câu hỏi cần hỏi lại: "thêm ảnh vào X" → hỏi X là chỗ nào cụ thể nếu có nhiều chỗ
