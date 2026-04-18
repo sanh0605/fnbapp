@@ -56,6 +56,7 @@ Auth.require('pos');
   // ── STATE ──
   let MENU = [], SETTINGS = {}, activeCat = 'Tất cả';
   let cart = {}, notes = {}, orderN = 1, expanded = false, payMethod = null;
+  let discOpen = false, notesOpen = new Set(), lastQRAmount = null;
   let discountType = 'vnd', discountValue = 0, actualReceived = null;
   let posOutletId = null, posBrandId = null;
 
@@ -208,7 +209,11 @@ Auth.require('pos');
   }
   function clearAll(){
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
-    document.getElementById('discInput').value=''; document.getElementById('actualInput').value='';
+    discOpen=false; notesOpen=new Set(); lastQRAmount=null;
+    document.getElementById('discInput').value='';
+    document.getElementById('actualInput').value='';
+    document.getElementById('discBlock').style.display='none';
+    document.getElementById('discArrow').style.transform='';
     renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
     if(expanded) toggleCart();
   }
@@ -280,6 +285,7 @@ Auth.require('pos');
       iconArea.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`;
       totalBig.style.display = 'none';
     }
+    document.getElementById('quickPayBtns').style.display = (!expanded && count > 0) ? 'flex' : 'none';
     document.getElementById('trashBtn').style.visibility = count > 0 ? 'visible' : 'hidden';
     const toggleBtn = document.getElementById('cartToggleBtn');
     toggleBtn.disabled = count === 0;
@@ -302,7 +308,10 @@ Auth.require('pos');
         ? `<img src="${item.image_url}" alt="">`
         : (item.icon || '☕');
       const price = (item.discount_price > 0 && item.discount_price < item.price) ? item.discount_price : item.price;
-      return `<div class="ci">
+      const noteHtml = (notesOpen.has(id) || notes[id])
+        ? `<input class="ci-note" placeholder="Ghi chú: ít đường, không đá..." value="${notes[id]||''}" oninput="notes['${id}']=this.value" onclick="event.stopPropagation()">`
+        : `<button class="ci-note-btn" onclick="event.stopPropagation();openNote('${id}')">+ Ghi chú</button>`;
+      return `<div class="ci" data-id="${id}">
         <div class="ci-top">
           <div class="ci-thumb" style="background:${bg}">${thumb}</div>
           <div class="ci-info">
@@ -312,16 +321,56 @@ Auth.require('pos');
           <div class="ci-right">
             <div class="mc-qty">
               <button class="qb minus" onclick="chg('${id}',-1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="7" y1="12" x2="17" y2="12" stroke="#E03C31" stroke-width="2.5" stroke-linecap="round"/></svg></button>
-              <span class="qn">${cart[id]}</span>
+              <span class="qn" onclick="event.stopPropagation();editQty(this,'${id}')">${cart[id]}</span>
               <button class="qb" onclick="chg('${id}',1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#f5f5f5"/><line x1="12" y1="7" x2="12" y2="17" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#1a1a18" stroke-width="2.5" stroke-linecap="round"/></svg></button>
             </div>
             <span class="ci-price">${fmt(price*cart[id])}</span>
           </div>
         </div>
-        <input class="ci-note" placeholder="Ghi chú: ít đường, không đá..."
-          value="${notes[id]||''}" oninput="notes['${id}']=this.value" onclick="event.stopPropagation()">
+        ${noteHtml}
       </div>`;
     }).join('');
+  }
+
+  function toggleDisc(){
+    discOpen = !discOpen;
+    document.getElementById('discBlock').style.display = discOpen ? 'flex' : 'none';
+    document.getElementById('discArrow').style.transform = discOpen ? 'rotate(180deg)' : '';
+  }
+
+  function openNote(id){
+    notesOpen.add(id);
+    renderCartItems();
+    const inp = document.querySelector(`.ci[data-id="${id}"] .ci-note`);
+    if(inp) setTimeout(()=>inp.focus(), 30);
+  }
+
+  function editQty(spanEl, id){
+    const inp = document.createElement('input');
+    inp.className = 'qn-edit';
+    inp.value = cart[id] || 0;
+    inp.type = 'text';
+    inp.inputMode = 'numeric';
+    spanEl.replaceWith(inp);
+    inp.select();
+    inp.addEventListener('blur', ()=>{
+      const v = parseInt(inp.value) || 0;
+      if(v <= 0){ delete cart[id]; delete notes[id]; notesOpen.delete(id); }
+      else { cart[id] = v; }
+      renderCartItems(); updateCartBar(); updateMenuCardCtrl(id); updatePaymentUI();
+    });
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); });
+  }
+
+  function quickPay(method){
+    if(getTotalQty() === 0) return;
+    if(method === 'cash'){
+      payMethod = 'cash';
+      confirmPay();
+    } else {
+      toggleCart();
+      setTimeout(()=>{ selectMethod('transfer'); }, 350);
+    }
   }
 
   function selectMethod(m){ payMethod=m; updatePaymentUI(); }
@@ -337,6 +386,8 @@ Auth.require('pos');
   }
 
   function updateQR(amount){
+    if(amount === lastQRAmount) return;
+    lastQRAmount = amount;
     const bankId      = SETTINGS.bank_id      || 'ACB';
     const accountNo   = SETTINGS.account_no   || 'XXXXXXXXXX';
     const accountName = SETTINGS.account_name || '';
@@ -429,8 +480,11 @@ Auth.require('pos');
     btn.classList.remove('success');
     btn.innerHTML = 'Xác nhận thanh toán';
     cart={}; notes={}; payMethod=null; discountValue=0; actualReceived=null;
+    discOpen=false; notesOpen=new Set(); lastQRAmount=null;
     document.getElementById('discInput').value='';
     document.getElementById('actualInput').value='';
+    document.getElementById('discBlock').style.display='none';
+    document.getElementById('discArrow').style.transform='';
     orderN++;
     expanded = false;
     document.getElementById('bottomCart').classList.remove('expanded');

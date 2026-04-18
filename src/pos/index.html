@@ -125,6 +125,20 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .btn-spinner{width:20px;height:20px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 
+    /* ── QUICK PAY ── */
+    .quick-pay-wrap{display:flex;gap:6px;align-items:center}
+    .qpay-btn{height:40px;padding:0 14px;border-radius:20px;border:1.5px solid #E03C31;background:transparent;color:#E03C31;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+    .qpay-btn:active{background:#E03C31;color:#fff}
+
+    /* ── DISC TOGGLE ── */
+    .disc-toggle{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:2px 0;user-select:none}
+    .disc-toggle:active{opacity:.7}
+
+    /* ── NOTE / QTY EDIT ── */
+    .ci-note-btn{background:none;border:none;font-size:12px;color:#bbb;cursor:pointer;font-family:inherit;padding:4px 0;text-align:left}
+    .ci-note-btn:active{color:#888}
+    .qn-edit{width:40px;border:none;border-bottom:2px solid #E03C31;text-align:center;font-size:18px;font-weight:700;background:transparent;outline:none;font-family:inherit;color:#1a1a18}
+
     /* ── SKELETON ── */
     @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
     .skel-card{background:#fff;border-radius:14px;height:88px;display:flex;overflow:hidden;flex-shrink:0}
@@ -177,6 +191,10 @@
     </div>
     <div id="cartTotalBig" class="cart-total-big" style="display:none"></div>
     <div style="flex:1"></div>
+    <div id="quickPayBtns" class="quick-pay-wrap" style="display:none">
+      <button class="qpay-btn" onclick="event.stopPropagation();quickPay('cash')">TM</button>
+      <button class="qpay-btn" onclick="event.stopPropagation();quickPay('transfer')">CK</button>
+    </div>
     <button class="cart-action-btn" id="trashBtn" style="visibility:hidden" onclick="event.stopPropagation();clearAll()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
     </button>
@@ -191,7 +209,11 @@
 
   <div class="cart-footer">
     <div class="total-row"><span>Tổng cộng</span><span id="footerSubtotal">0 ₫</span></div>
-    <div class="disc-block">
+    <div class="disc-toggle" onclick="toggleDisc()">
+      <span style="font-size:13px;color:#888;font-weight:500">Chiết khấu</span>
+      <svg id="discArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="disc-block" id="discBlock" style="display:none">
       <div class="disc-row">
         <span class="disc-lbl">Chiết khấu</span>
         <div class="disc-type-wrap">
