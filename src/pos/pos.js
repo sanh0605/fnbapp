@@ -599,25 +599,13 @@ Auth.require('pos');
     if(document.getElementById('qrSection').classList.contains('show')) updateQR(payable);
   }
 
-  const CUP_SVG=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0"><path d="M8 8l1.5 14h5L16 8H8z"/><path d="M6.5 8h11"/><path d="M7.5 8C7.5 6 9.5 4.5 12 4.5S16.5 6 16.5 8"/></svg>`;
-
   function updateCartBar(){
     const count=getTotalQty(), payable=getPayable();
     document.getElementById('footerSubtotal').textContent=fmt(getSubtotal());
     renderDiscountUI();
-    const iconArea=document.getElementById('cartIconArea');
-    const totalBig=document.getElementById('cartTotalBig');
-    if(count>0){
-      iconArea.className='cart-diamond';
-      iconArea.innerHTML=`<div class="cart-diamond-inner"><span class="cart-diamond-qty">${count}</span>${CUP_SVG}</div>`;
-      totalBig.textContent=fmt(payable);
-      totalBig.style.display=expanded?'none':'block';
-    } else {
-      iconArea.className='cart-icon-circle';
-      iconArea.innerHTML=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`;
-      totalBig.style.display='none';
-    }
-    document.getElementById('trashBtn').style.visibility=count>0?'visible':'hidden';
+    document.getElementById('cartQtyLabel').textContent=count>0?`${count} ly`:'';
+    document.getElementById('cartTotalBig').textContent=count>0?fmt(payable):'';
+    document.getElementById('bottomCart').style.visibility=count>0?'visible':'hidden';
   }
 
   function toggleDisc(){
@@ -655,8 +643,7 @@ Auth.require('pos');
     expanded=!expanded;
     document.getElementById('bottomCart').classList.toggle('expanded',expanded);
     document.getElementById('cartBackdrop').style.display=expanded?'block':'none';
-    const tb=document.getElementById('cartTotalBig');
-    if(tb) tb.style.display=expanded?'none':(getTotalQty()>0?'block':'none');
+    document.getElementById('cartTrashBtn').style.display=expanded?'flex':'none';
     if(!expanded){ payMethod=null; updatePaymentUI(); }
     updateCartBar();
   }
