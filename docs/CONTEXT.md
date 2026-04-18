@@ -189,9 +189,19 @@ fnbapp/
 
 ---
 
+## SCOPE HIỆN TẠI
+
+App chỉ tập trung vào 2 luồng cốt lõi:
+1. **Bán hàng** — POS (offline-first, multi-outlet)
+2. **Báo cáo** — Doanh thu theo ngày/tuần/tháng/năm, lọc theo brand
+
+Các tính năng khác (inventory, purchasing, KDS, loyalty) sẽ được xây dựng lại từ đầu theo kiến trúc mới khi cần.
+
+---
+
 ## BACKLOG
 
-- [ ] RLS thực sự — migrate sang Supabase Auth để dùng `auth.uid()` trong policy
+- [ ] **[P0]** Auth: migrate sang Supabase Auth để RLS filter theo user (`auth.uid()`)
 - [ ] Brand 2 (Trà Tối): dine-in + quản lý bàn
 - [ ] KDS — màn hình bếp/pha chế
 - [ ] Loyalty / tích điểm khách hàng
