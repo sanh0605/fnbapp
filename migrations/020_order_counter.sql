@@ -14,7 +14,7 @@ CREATE POLICY "authenticated can use counter" ON order_counters
 -- Seed từ dữ liệu hiện có
 INSERT INTO order_counters (outlet_id, last_num)
 SELECT
-  outlet_id,
+  outlet_id::uuid,
   MAX(
     CASE
       WHEN order_num ~ '\d+$'
