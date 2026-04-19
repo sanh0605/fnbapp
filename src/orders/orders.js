@@ -8,6 +8,53 @@ Auth.require('revenue');
   let allOrders = [], filteredOrders = [];
   let voidTargetId = null;
 
+  // ── DEAD-LETTER ──
+  const _dlSession = Auth.getSession();
+  const DEAD_KEY = `fnb_pos_deadletter_${_dlSession?.id||'anon'}`;
+
+  function getDeadLetters(){ try{ return JSON.parse(localStorage.getItem(DEAD_KEY)||'[]'); }catch(e){ return []; } }
+  function saveDeadLetters(dl){ try{ localStorage.setItem(DEAD_KEY,JSON.stringify(dl)); }catch(e){} }
+  function removeDeadLetter(idx){
+    const dl=getDeadLetters(); dl.splice(idx,1); saveDeadLetters(dl);
+    renderList();
+  }
+  function clearAllDeadLetters(){ saveDeadLetters([]); renderList(); }
+  function toggleDLBody(){
+    const b=document.getElementById('dlBody');
+    if(b) b.classList.toggle('open');
+  }
+  function renderDeadLetterHTML(dl){
+    if(!dl.length) return '';
+    const rows=dl.map((e,i)=>{
+      const p=e.payload||e;
+      const num=p.order_num||'#?';
+      const total=p.total||0;
+      const t=e.failedAt?new Date(e.failedAt):new Date(e.created_at||0);
+      const timeStr=`${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+      return `<div class="dl-entry">
+        <div class="dl-entry-info">
+          <div class="dl-entry-num">${num}</div>
+          <div class="dl-entry-meta">${timeStr} · ${fmt(total)}</div>
+        </div>
+        <button class="dl-entry-del" onclick="removeDeadLetter(${i})" title="Xoá">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+    return `<div class="dl-section">
+      <div class="dl-header" onclick="toggleDLBody()">
+        <div class="dl-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <span class="dl-title">Đơn cần xử lý</span>
+        <span class="dl-count">${dl.length}</span>
+      </div>
+      <div class="dl-body" id="dlBody">
+        ${rows}
+        <p class="dl-note">⚠️ Chỉ hiện trên thiết bị này</p>
+        <button class="dl-clear-all" onclick="clearAllDeadLetters()">Xoá tất cả</button>
+      </div>
+    </div>`;
+  }
+
   cursor.setHours(0,0,0,0);
 
   // ── PERIOD ──
@@ -110,8 +157,9 @@ Auth.require('revenue');
   // ── RENDER LIST ──
   function renderList(){
     const el=document.getElementById('content');
+    const dlHtml=renderDeadLetterHTML(getDeadLetters());
     if(!filteredOrders.length){
-      el.innerHTML=`<div class="empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Không có đơn hàng</div>`;
+      el.innerHTML=dlHtml+`<div class="empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Không có đơn hàng</div>`;
       return;
     }
     const groups={};
@@ -122,7 +170,7 @@ Auth.require('revenue');
     });
     const today=new Date();today.setHours(0,0,0,0);
     const yesterday=new Date(today);yesterday.setDate(today.getDate()-1);
-    let html='';
+    let html=dlHtml;
     Object.keys(groups).sort().reverse().forEach(key=>{
       const d=new Date(key);
       let dayLabel=d.toDateString()===today.toDateString()?'Hôm nay':d.toDateString()===yesterday.toDateString()?'Hôm qua':`${DOW[d.getDay()]}, ${fmtDate(d)}`;
