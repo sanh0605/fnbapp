@@ -10,11 +10,18 @@ const SUPABASE_URL  = 'https://zicuawpwyhmtqmzawvau.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_rhbewMyE6ws9G3_DSmEbfg_w0omMwFI';
 
 // ── HTTP helpers ──
+function _getToken() {
+  try {
+    const s = JSON.parse(localStorage.getItem('fnb_session') || 'null');
+    return s?.access_token || SUPABASE_ANON;
+  } catch { return SUPABASE_ANON; }
+}
+
 async function sb(path, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
       'apikey':        SUPABASE_ANON,
-      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Authorization': `Bearer ${_getToken()}`,
       'Content-Type':  'application/json',
       'Prefer':        options.prefer || '',
       ...options.headers,
@@ -65,4 +72,35 @@ const DB = {
   // RPC
   rpc: (fn, params = {}) =>
     sb(`rpc/${fn}`, { method: 'POST', body: JSON.stringify(params) }),
+};
+
+// ── Supabase Auth REST helpers ──
+const AuthAPI = {
+  login(email, password) {
+    return fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    }).then(r => r.ok ? r.json() : r.json().then(d => Promise.reject(new Error(d.error_description || d.msg || 'Login failed'))));
+  },
+
+  refresh(refresh_token) {
+    return fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token }),
+    }).then(r => r.ok ? r.json() : Promise.reject(new Error('Refresh failed')));
+  },
+
+  updateOwnPassword(access_token, password) {
+    return fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+    }).then(r => r.ok);
+  },
 };

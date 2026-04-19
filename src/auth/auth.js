@@ -13,14 +13,17 @@ const Auth = (() => {
     catch { return null; }
   }
 
-  function setSession(user) {
+  function setSession(user, tokens = {}) {
     localStorage.setItem('fnb_session', JSON.stringify({
-      id:          user.id,
-      username:    user.username,
-      name:        user.name,
-      role:        user.role,
-      permissions: PERMISSIONS[user.role] || [],
-      loginAt:     new Date().toISOString(),
+      id:            user.id,
+      username:      user.username,
+      name:          user.name,
+      role:          user.role,
+      permissions:   PERMISSIONS[user.role] || [],
+      access_token:  tokens.access_token  || null,
+      refresh_token: tokens.refresh_token || null,
+      expires_at:    tokens.expires_at    || null,
+      loginAt:       new Date().toISOString(),
     }));
   }
 
@@ -34,11 +37,37 @@ const Auth = (() => {
   }
 
   function require(permission) {
-    if (!isLoggedIn() || (permission && !can(permission))) {
+    const s = getSession();
+    if (!s) { window.location.href = getLoginPath(); return false; }
+    // Token hết hạn → logout
+    if (s.expires_at && Date.now() > s.expires_at * 1000) {
+      localStorage.removeItem('fnb_session');
       window.location.href = getLoginPath();
       return false;
     }
+    if (permission && !can(permission)) { window.location.href = getLoginPath(); return false; }
+    // Refresh ngầm nếu còn < 10 phút
+    if (s.refresh_token && s.expires_at && (s.expires_at * 1000 - Date.now()) < 10 * 60 * 1000) {
+      _bgRefresh(s.refresh_token);
+    }
     return true;
+  }
+
+  async function _bgRefresh(refreshToken) {
+    try {
+      const data = await AuthAPI.refresh(refreshToken);
+      if (data?.access_token) {
+        const s = getSession();
+        localStorage.setItem('fnb_session', JSON.stringify({
+          ...s,
+          access_token:  data.access_token,
+          refresh_token: data.refresh_token,
+          expires_at:    data.expires_at,
+        }));
+      }
+    } catch(e) {
+      // Refresh fail → không làm gì, để expire tự nhiên
+    }
   }
 
   function logout() {
@@ -54,5 +83,5 @@ const Auth = (() => {
     if (element) element.style.display = can(permission) ? '' : 'none';
   }
 
-  return { getSession, setSession, isLoggedIn, getRole, getName, can, require, logout, showIf };
+  return { getSession, setSession, isLoggedIn, getRole, getName, can, require, logout, showIf, _bgRefresh };
 })();

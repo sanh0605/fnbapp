@@ -1,15 +1,38 @@
 /**
  * src/lib/settings-service.js
  * Settings module — DB calls only. Zero DOM.
- * Depends on: hashPassword() from supabase.js
+ * Depends on: SUPABASE_URL, SUPABASE_ANON, DB, AuthAPI from supabase.js
  */
 
 const SettingsService = (() => {
 
-  /** Fetch settings map + optionally users list (owner only). */
+  const FUNC_URL = `${SUPABASE_URL}/functions/v1/user-admin`;
+
+  function _token() {
+    try { return JSON.parse(localStorage.getItem('fnb_session') || 'null')?.access_token || ''; }
+    catch { return ''; }
+  }
+
+  function _session() {
+    try { return JSON.parse(localStorage.getItem('fnb_session') || 'null'); }
+    catch { return null; }
+  }
+
+  async function _adminFetch(method, path = '', body = null) {
+    const opts = {
+      method,
+      headers: { 'Authorization': `Bearer ${_token()}`, 'Content-Type': 'application/json' },
+    };
+    if (body !== null) opts.body = JSON.stringify(body);
+    const res = await fetch(`${FUNC_URL}${path}`, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+    return data;
+  }
+
   async function fetchInitData(includeUsers = false) {
     const loads = [DB.select('settings', 'select=*')];
-    if (includeUsers) loads.push(DB.select('users', 'select=*&order=role.asc,name.asc'));
+    if (includeUsers) loads.push(fetchUsers());
     const results = await Promise.all(loads);
     const settings = {};
     results[0].forEach(s => settings[s.key] = s.value);
@@ -17,47 +40,42 @@ const SettingsService = (() => {
     return { settings, users };
   }
 
-  /** Fetch users list (owner only). */
-  async function fetchUsers() {
-    return DB.select('users', 'select=*&order=role.asc,name.asc');
+  function fetchUsers() {
+    return _adminFetch('GET');
   }
 
-  /**
-   * Create or update a user.
-   * @param {string|null} id   null = create
-   * @param {{name, username, password?, role, active}} data
-   */
   async function saveUser(id, data) {
-    const payload = { name: data.name, username: data.username, role: data.role, active: data.active };
-    if (data.password) payload.password_hash = await hashPassword(data.password);
     if (id) {
-      await DB.update('users', `id=eq.${id}`, payload);
+      const payload = { name: data.name, role: data.role, active: data.active };
+      if (data.password) payload.password = data.password;
+      await _adminFetch('PATCH', `/${id}`, payload);
     } else {
-      await DB.insert('users', payload, false);
+      await _adminFetch('POST', '', {
+        name:     data.name,
+        username: data.username,
+        password: data.password,
+        role:     data.role,
+      });
     }
   }
 
-  /** Delete a user by id. */
-  async function deleteUser(id) {
-    await DB.delete('users', `id=eq.${id}`);
+  function deleteUser(id) {
+    return _adminFetch('DELETE', `/${id}`);
   }
 
-  /**
-   * Verify current password then update to new one.
-   * @returns {boolean}  false if current password is wrong
-   */
   async function changePassword(userId, currentPw, newPw) {
-    const hashed = await hashPassword(currentPw);
-    const check = await DB.select('users', `id=eq.${userId}&password_hash=eq.${hashed}&select=id`);
-    if (!check?.length) return false;
-    await DB.update('users', `id=eq.${userId}`, { password_hash: await hashPassword(newPw) });
-    return true;
+    const s = _session();
+    if (!s?.username) return false;
+    // Xác minh password hiện tại bằng cách login lại
+    try {
+      await AuthAPI.login(`${s.username}@fnbapp.internal`, currentPw);
+    } catch {
+      return false;
+    }
+    // Đổi password qua Supabase Auth
+    return AuthAPI.updateOwnPassword(s.access_token, newPw);
   }
 
-  /**
-   * Upsert multiple settings key-value pairs.
-   * @param {Object} fields  { key: value, … }
-   */
   async function saveSettings(fields) {
     for (const [key, value] of Object.entries(fields)) {
       await DB.upsert('settings', { key, value, updated_at: new Date().toISOString() });

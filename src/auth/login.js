@@ -18,29 +18,33 @@ const PERMISSIONS = {
       if(!username||!password){ showError('Vui lòng nhập đầy đủ tài khoản và mật khẩu'); return; }
       showLoading(true); hideError();
       try {
-        const hashed = await hashPassword(password);
-        const users = await DB.select('users',
-          `username=eq.${encodeURIComponent(username)}&password_hash=eq.${hashed}&active=eq.true&select=*`
+        // 1. Xác thực qua Supabase Auth
+        const email = `${username.toLowerCase()}@fnbapp.internal`;
+        const authData = await AuthAPI.login(email, password);
+
+        // 2. Lấy profile từ bảng users (dùng JWT vừa nhận)
+        const profileRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/users?auth_id=eq.${authData.user.id}&select=*`,
+          { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${authData.access_token}` } }
         );
-        if(!users||!users.length){
-          showLoading(false);
-          showError('Tài khoản hoặc mật khẩu không đúng');
-          document.getElementById('password').value='';
-          return;
-        }
-        const user = users[0];
-        localStorage.setItem('fnb_session', JSON.stringify({
-          id:          user.id,
-          username:    user.username,
-          name:        user.name,
-          role:        user.role,
-          permissions: PERMISSIONS[user.role]||[],
-          loginAt:     new Date().toISOString(),
-        }));
+        const profiles = await profileRes.json();
+        if(!profiles?.length){ showLoading(false); showError('Tài khoản chưa được cấu hình'); return; }
+
+        const user = profiles[0];
+        if(!user.active){ showLoading(false); showError('Tài khoản đã bị khoá'); document.getElementById('password').value=''; return; }
+
+        // 3. Lưu session kèm JWT
+        Auth.setSession(user, {
+          access_token:  authData.access_token,
+          refresh_token: authData.refresh_token,
+          expires_at:    authData.expires_at,
+        });
+
         window.location.href = (user.role==='staff') ? '../pos/index.html' : '../home/index.html';
       } catch(e){
         showLoading(false);
-        showError('Lỗi kết nối. Vui lòng thử lại.');
+        showError('Tài khoản hoặc mật khẩu không đúng');
+        document.getElementById('password').value='';
       }
     }
 
