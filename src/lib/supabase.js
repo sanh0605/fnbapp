@@ -21,7 +21,7 @@ async function sb(path, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
       'apikey':        SUPABASE_ANON,
-      'Authorization': `Bearer ${_getToken()}`,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
       'Content-Type':  'application/json',
       'Prefer':        options.prefer || '',
       ...options.headers,
