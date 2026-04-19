@@ -61,4 +61,8 @@ const DB = {
   // DELETE
   delete: (table, match) =>
     sb(`${table}?${match}`, { method: 'DELETE' }),
+
+  // RPC
+  rpc: (fn, params = {}) =>
+    sb(`rpc/${fn}`, { method: 'POST', body: JSON.stringify(params) }),
 };

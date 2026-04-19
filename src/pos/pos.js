@@ -679,7 +679,11 @@ Auth.require('pos');
 
     const subtotal=getSubtotal(), discount=getDiscount(), payable=getPayable();
     const methodName=payMethod==='cash'?'Tiền mặt':'Chuyển khoản';
-    const orderNum=posOutletId?`${posOutletId}-${String(orderN).padStart(3,'0')}`:'#'+String(orderN).padStart(3,'0');
+    let displayN=orderN;
+    if(posOutletId&&navigator.onLine){
+      try{ const n=await DB.rpc('next_order_num',{p_outlet_id:posOutletId}); if(typeof n==='number') displayN=n; }catch(e){}
+    }
+    const orderNum=posOutletId?`${posOutletId}-${String(displayN).padStart(3,'0')}`:'#'+String(orderN).padStart(3,'0');
     const items=cartLines.map(line=>{
       const item=findItem(line.productId);
       return {id:line.productId,name:item?.name||'',qty:line.qty,price:linePriceUnit(line),
