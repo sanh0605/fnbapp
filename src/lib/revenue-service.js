@@ -14,7 +14,7 @@ const RevenueService = (() => {
    */
   async function fetchOrders(from, to, brandFilter = '') {
     return DB.select('orders',
-      `created_at=gte.${from.toISOString()}&created_at=lte.${to.toISOString()}${brandFilter}&select=*&order=created_at.asc`
+      `created_at=gte.${from.toISOString()}&created_at=lte.${to.toISOString()}&voided=not.is.true${brandFilter}&select=*&order=created_at.asc`
     );
   }
 

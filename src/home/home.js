@@ -31,7 +31,7 @@ async function loadStats() {
     const from  = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
     const to    = new Date(today.getFullYear(), today.getMonth(), today.getDate()+1).toISOString();
     const orders = await DB.select('orders',
-      `created_at=gte.${from}&created_at=lt.${to}&voided=eq.false&select=total${brandFilter}`
+      `created_at=gte.${from}&created_at=lt.${to}&voided=not.is.true&select=total${brandFilter}`
     );
     const count   = orders.length;
     const revenue = orders.reduce((s, o) => s + (parseFloat(o.total) || 0), 0);
@@ -57,7 +57,7 @@ function renderCards() {
     { href:'../orders/index.html',  icon:'📋', label:'Đơn hàng',   sub:'Lịch sử & quản lý',   perm:'revenue'  },
     { href:'../revenue/index.html', icon:'📊', label:'Doanh thu',  sub:'Báo cáo & thống kê',   perm:'revenue'  },
     { href:'../menu/index.html',    icon:'🍽️', label:'Menu',       sub:'Quản lý sản phẩm',     perm:'menu'     },
-    { href:'../settings/index.html',icon:'⚙️', label:'Cài đặt',   sub:'Tài khoản & hệ thống', perm:'user_settings' },
+    { href:'../settings/index.html',icon:'⚙️', label:'Cài đặt',   sub:'Tài khoản & hệ thống', perm:'pos' },
   ];
   const cards = all.filter(c => Auth.can(c.perm));
   document.getElementById('cardGrid').innerHTML = cards.map(c => `

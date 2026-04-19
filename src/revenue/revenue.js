@@ -14,14 +14,6 @@ Auth.require('revenue');
     } catch(e){ console.warn('Không lấy được brand filter:', e); }
   }
 
-  const MENU=[
-    {id:1,name:'Cà phê đen',icon:'☕',price:18000},
-    {id:2,name:'Cà phê sữa',icon:'☕',price:20000},
-    {id:3,name:'Cà phê sữa tươi',icon:'☕',price:22000},
-    {id:4,name:'Cà phê kem muối',icon:'☕',price:24000},
-    {id:5,name:'Matcha latte',icon:'🍵',price:23000},
-    {id:6,name:'Cacao latte',icon:'🍫',price:23000},
-  ];
   const DOW=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
   const toISO=d=>d.toISOString();
   let period='day',cursor=new Date(),customFrom=null,customTo=null,chartInstance=null;
