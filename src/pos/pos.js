@@ -16,6 +16,16 @@ Auth.require('pos');
 
   // ── OFFLINE SYNC ──
   let syncing = false;
+  const DEAD_KEY = `fnb_pos_deadletter_${session?.id||'anon'}`;
+
+  function saveDeadLetter(entry){
+    try {
+      const dl = JSON.parse(localStorage.getItem(DEAD_KEY)||'[]');
+      dl.push({...entry, failedAt: new Date().toISOString()});
+      localStorage.setItem(DEAD_KEY, JSON.stringify(dl));
+    } catch(e){}
+  }
+
   async function syncPendingOrders(){
     if(syncing) return;
     syncing = true;
@@ -26,7 +36,8 @@ Auth.require('pos');
       let synced = 0;
       for(const entry of queue){
         if(IDBService.isDeadLetter(entry)){
-          toast(`⚠️ Đơn ${entry.payload?.order_num||''} lỗi quá ${IDBService.MAX_RETRIES} lần — đã xoá khỏi hàng chờ`);
+          saveDeadLetter(entry);
+          toast(`⚠️ Đơn ${entry.payload?.order_num||''} lỗi quá ${IDBService.MAX_RETRIES} lần — đã lưu dead letter`);
           await IDBService.removePendingOrder(entry.local_id);
           continue;
         }
@@ -190,11 +201,7 @@ Auth.require('pos');
     }
     el.innerHTML = parkedOrders.map((d,idx) => {
       const lines = d.cartLines||[];
-      const total = lines.reduce((s,l)=>{
-        const p=findItem(l.productId);
-        const base=(p?.discount_price>0&&p.discount_price<p.price)?p.discount_price:(p?.price||0);
-        return s+(base+(l.toppings||[]).reduce((ts,t)=>ts+(t.price||0),0))*l.qty;
-      },0);
+      const total = lines.reduce((s,l)=>s+linePriceUnit(l)*l.qty, 0);
       const qty = lines.reduce((s,l)=>s+l.qty,0);
       const itemsHtml = lines.map(l=>`${findItem(l.productId)?.name||'Món'} x${l.qty}`).join('<br>');
       return `<div class="draft-row">
@@ -227,7 +234,6 @@ Auth.require('pos');
     return Math.min(discountValue, getSubtotal());
   };
   const getPayable  = () => Math.max(0, getSubtotal()-getDiscount());
-  const getTotal    = getPayable;
   const getTotalQty = () => cartLines.reduce((s,l)=>s+l.qty, 0);
 
   // ── LOAD DATA ──
@@ -269,13 +275,14 @@ Auth.require('pos');
         MENU=cached;
         toast('📶 Offline — dùng menu đã lưu');
       }
-      loadDraft(); loadParked();
-      renderCats(); renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
-      restoreDraftUI(); updateDraftBadge();
       if(navigator.onLine) syncPendingOrders();
       else updateSyncBadge();
     } catch(e){
       document.getElementById('menuList').innerHTML=`<div class="loading">Lỗi tải menu: ${e.message}</div>`;
+    } finally {
+      loadDraft(); loadParked();
+      renderCats(); renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
+      restoreDraftUI(); updateDraftBadge();
     }
   }
 
@@ -579,7 +586,7 @@ Auth.require('pos');
     if(discountType==='vnd') el.value=fmtInput(raw);
     actualReceived=null;
     document.getElementById('actualInput').value='';
-    renderDiscountUI(); updateCartBar(); updatePaymentUI(); saveDraft();
+    updateCartBar(); updatePaymentUI(); saveDraft();
   }
   function updateActual(){
     const el=document.getElementById('actualInput');
@@ -654,6 +661,8 @@ Auth.require('pos');
     const THRESHOLD=40;
     document.addEventListener('touchstart',e=>{startClientY=e.touches[0].clientY;startY=e.touches[0].clientY;startExp=expanded;},{passive:true});
     document.addEventListener('touchend',e=>{
+      const modalOpen=document.querySelector('.overlay.show');
+      if(modalOpen) return;
       const dy=startY-e.changedTouches[0].clientY;
       if(Math.abs(dy)<THRESHOLD) return;
       const startNear=startClientY>window.innerHeight-120;
@@ -685,7 +694,23 @@ Auth.require('pos');
       outlet_id:posOutletId||undefined, brand_id:posBrandId||undefined,
     };
 
-    try { await IDBService.addPendingOrder(orderPayload); } catch(e){ console.warn('IDB error:',e); }
+    let saved = false;
+    try {
+      await IDBService.addPendingOrder(orderPayload);
+      saved = true;
+    } catch(idbErr){
+      if(navigator.onLine){
+        try { await DB.insert('orders', orderPayload, false); saved = true; } catch(e){}
+      }
+    }
+
+    if(!saved){
+      btn.classList.remove('loading'); btn.classList.add('active');
+      btn.innerHTML='Xác nhận thanh toán';
+      toast('Lỗi: không thể lưu đơn — vui lòng thử lại');
+      return;
+    }
+
     if(navigator.onLine) syncPendingOrders();
     else toast('Offline — đơn đã lưu, sẽ sync khi có mạng');
 
@@ -705,6 +730,7 @@ Auth.require('pos');
     orderN++; expanded=false;
     document.getElementById('bottomCart').classList.remove('expanded');
     document.getElementById('cartBackdrop').style.display='none';
+    document.getElementById('cartTrashBtn').style.display='none';
     renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
   }
 
