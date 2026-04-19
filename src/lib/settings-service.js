@@ -21,7 +21,7 @@ const SettingsService = (() => {
   async function _adminFetch(method, path = '', body = null) {
     const opts = {
       method,
-      headers: { 'Authorization': `Bearer ${_token()}`, 'Content-Type': 'application/json' },
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${_token()}`, 'Content-Type': 'application/json' },
     };
     if (body !== null) opts.body = JSON.stringify(body);
     const res = await fetch(`${FUNC_URL}${path}`, opts);
