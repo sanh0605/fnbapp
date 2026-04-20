@@ -1,5 +1,5 @@
 # FNB App — CONTEXT.md
-# Cập nhật lần cuối: 20/04/2026
+# Cập nhật lần cuối: 21/04/2026
 
 > **QUY TẮC CHO AI:** Đọc file này trước khi làm bất cứ điều gì. Sau mỗi thay đổi, cập nhật file này và commit ngay. Sau khi code xong phải tự testing trước khi báo cáo lại.
 
@@ -132,6 +132,18 @@ Supabase đã migrate sang ECC P-256 asymmetric JWT (15/04/2026). PostgREST **ch
 
 ---
 
+## EDGE FUNCTION — `notify-order`
+
+URL: `{SUPABASE_URL}/functions/v1/notify-order`
+
+- Nhận POST với order payload → gửi Telegram message đến owner
+- Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` (set qua Supabase CLI)
+- **Verify JWT: TẮT** (`--no-verify-jwt`) — gọi từ POS với ANON key
+- Vietnamese encoding: toàn bộ non-ASCII được escape thành `\uXXXX` trước khi gửi Telegram (workaround Deno UTF-8 3-byte bug)
+- Fire-and-forget từ `pos.js` sau khi sync đơn lên Supabase thành công
+
+---
+
 ## EDGE FUNCTION — `user-admin`
 
 URL: `{SUPABASE_URL}/functions/v1/user-admin`
@@ -215,7 +227,7 @@ fnbapp/
 
 ---
 
-## TRẠNG THÁI MODULES (20/04/2026)
+## TRẠNG THÁI MODULES (21/04/2026)
 
 | Module | Trạng thái | Ghi chú |
 |---|:---:|---|
