@@ -18,6 +18,14 @@ Auth.require('pos');
   let syncing = false;
   const DEAD_KEY = `fnb_pos_deadletter_${session?.id||'anon'}`;
 
+  function _notifyOrder(payload){
+    return fetch(`${SUPABASE_URL}/functions/v1/notify-order`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(()=>{});
+  }
+
   function saveDeadLetter(entry){
     try {
       const dl = JSON.parse(localStorage.getItem(DEAD_KEY)||'[]');
@@ -44,6 +52,7 @@ Auth.require('pos');
         try {
           await DB.insert('orders', entry.payload, false);
           await IDBService.removePendingOrder(entry.local_id);
+          _notifyOrder(entry.payload);
           synced++;
         } catch(e){
           if(e.message && e.message.includes('409')){
@@ -702,7 +711,7 @@ Auth.require('pos');
       saved = true;
     } catch(idbErr){
       if(navigator.onLine){
-        try { await DB.insert('orders', orderPayload, false); saved = true; } catch(e){}
+        try { await DB.insert('orders', orderPayload, false); _notifyOrder(orderPayload); saved = true; } catch(e){}
       }
     }
 
