@@ -24,6 +24,7 @@ const Auth = (() => {
       refresh_token: tokens.refresh_token || null,
       expires_at:    tokens.expires_at    || null,
       loginAt:       new Date().toISOString(),
+      lastActiveAt:  Math.floor(Date.now() / 1000),
     }));
   }
 
@@ -36,21 +37,57 @@ const Auth = (() => {
     return s?.permissions?.includes(permission) || false;
   }
 
+  const INACTIVE_LIMIT_MS = 48 * 60 * 60 * 1000; // 48 giờ
+
   function require(permission) {
     const s = getSession();
     if (!s) { window.location.href = getLoginPath(); return false; }
-    // Token hết hạn → logout
-    if (s.expires_at && Date.now() > s.expires_at * 1000) {
+
+    const now = Date.now();
+
+    // Kiểm tra 48h không hoạt động
+    const lastActive = s.lastActiveAt
+      ? s.lastActiveAt * 1000
+      : (s.loginAt ? new Date(s.loginAt).getTime() : 0);
+    if (now - lastActive > INACTIVE_LIMIT_MS) {
       localStorage.removeItem('fnb_session');
       window.location.href = getLoginPath();
       return false;
     }
+
+    // Access token hết hạn
+    if (s.expires_at && now > s.expires_at * 1000) {
+      if (s.refresh_token) {
+        // Refresh ngầm, cho phép trang load tiếp (DB dùng ANON key)
+        _bgRefresh(s.refresh_token);
+      } else {
+        localStorage.removeItem('fnb_session');
+        window.location.href = getLoginPath();
+        return false;
+      }
+    }
+
     if (permission && !can(permission)) { window.location.href = getLoginPath(); return false; }
-    // Refresh ngầm nếu còn < 10 phút
-    if (s.refresh_token && s.expires_at && (s.expires_at * 1000 - Date.now()) < 10 * 60 * 1000) {
+
+    // Proactive refresh nếu còn < 10 phút
+    if (s.refresh_token && s.expires_at && (s.expires_at * 1000 - now) < 10 * 60 * 1000) {
       _bgRefresh(s.refresh_token);
     }
+
+    // Cập nhật lastActiveAt
+    _touchSession();
     return true;
+  }
+
+  function _touchSession() {
+    try {
+      const s = getSession();
+      if (!s) return;
+      localStorage.setItem('fnb_session', JSON.stringify({
+        ...s,
+        lastActiveAt: Math.floor(Date.now() / 1000),
+      }));
+    } catch(e) {}
   }
 
   async function _bgRefresh(refreshToken) {
