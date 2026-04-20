@@ -250,9 +250,7 @@ Auth.require('pos');
         const [products, settings, latestOrders] = await Promise.all([
           DB.select('products','active=eq.true&select=*&order=sort_order.asc'),
           DB.select('settings','select=*'),
-          outletIdForQuery
-            ? DB.select('orders',`select=order_num&outlet_id=eq.${outletIdForQuery}&order=created_at.desc&limit=1`)
-            : DB.select('orders','select=order_num&order=created_at.desc&limit=1'),
+          DB.select('orders','select=order_num&order=created_at.desc&limit=1'),
         ]);
         MENU = products;
         IDBService.cacheMenu(products).catch(()=>{});
@@ -683,11 +681,7 @@ Auth.require('pos');
 
     const subtotal=getSubtotal(), discount=getDiscount(), payable=getPayable();
     const methodName=payMethod==='cash'?'Tiền mặt':'Chuyển khoản';
-    let displayN=orderN;
-    if(posOutletId&&navigator.onLine){
-      try{ const n=await DB.rpc('next_order_num',{p_outlet_id:posOutletId}); if(typeof n==='number') displayN=n; }catch(e){}
-    }
-    const orderNum=posOutletId?`${posOutletId}-${String(displayN).padStart(3,'0')}`:'#'+String(orderN).padStart(3,'0');
+    const orderNum='#'+String(orderN).padStart(3,'0');
     const items=cartLines.map(line=>{
       const item=findItem(line.productId);
       return {id:line.productId,name:item?.name||'',qty:line.qty,price:linePriceUnit(line),
