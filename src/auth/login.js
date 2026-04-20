@@ -7,8 +7,10 @@ const PERMISSIONS = {
     // Nếu đã đăng nhập → về home (manager/owner) hoặc POS (staff)
     try {
       const s = JSON.parse(localStorage.getItem('fnb_session')||'null');
-      if(s?.role){
+      if(s?.role && !(s.expires_at && Date.now() > s.expires_at * 1000)){
         window.location.href = (s.role==='staff') ? '../pos/index.html' : '../home/index.html';
+      } else if(s) {
+        localStorage.removeItem('fnb_session');
       }
     } catch(e){ localStorage.removeItem('fnb_session'); }
 
@@ -22,10 +24,10 @@ const PERMISSIONS = {
         const email = `${username.toLowerCase()}@fnbapp.internal`;
         const authData = await AuthAPI.login(email, password);
 
-        // 2. Lấy profile từ bảng users (dùng JWT vừa nhận)
+        // 2. Lấy profile từ bảng users (dùng anon key — PostgREST chưa support ES256)
         const profileRes = await fetch(
           `${SUPABASE_URL}/rest/v1/users?auth_id=eq.${authData.user.id}&select=*`,
-          { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${authData.access_token}` } }
+          { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
         );
         const profiles = await profileRes.json();
         if(!profiles?.length){ showLoading(false); showError('Tài khoản chưa được cấu hình'); return; }

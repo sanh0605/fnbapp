@@ -58,11 +58,13 @@ const Auth = (() => {
       const data = await AuthAPI.refresh(refreshToken);
       if (data?.access_token) {
         const s = getSession();
+        const expiresAt = data.expires_at
+          || (data.expires_in ? Math.floor(Date.now() / 1000) + data.expires_in : s.expires_at);
         localStorage.setItem('fnb_session', JSON.stringify({
           ...s,
           access_token:  data.access_token,
           refresh_token: data.refresh_token,
-          expires_at:    data.expires_at,
+          expires_at:    expiresAt,
         }));
       }
     } catch(e) {

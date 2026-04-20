@@ -66,14 +66,14 @@ const SettingsService = (() => {
   async function changePassword(userId, currentPw, newPw) {
     const s = _session();
     if (!s?.username) return false;
-    // Xác minh password hiện tại bằng cách login lại
+    let freshToken;
     try {
-      await AuthAPI.login(`${s.username}@fnbapp.internal`, currentPw);
+      const authData = await AuthAPI.login(`${s.username}@fnbapp.internal`, currentPw);
+      freshToken = authData.access_token;
     } catch {
       return false;
     }
-    // Đổi password qua Supabase Auth
-    return AuthAPI.updateOwnPassword(s.access_token, newPw);
+    return AuthAPI.updateOwnPassword(freshToken, newPw);
   }
 
   async function saveSettings(fields) {
