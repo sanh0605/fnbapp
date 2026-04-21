@@ -266,6 +266,7 @@ Auth.require('pos');
         MENU = products;
         IDBService.cacheMenu(products).catch(()=>{});
         settings.forEach(s=>SETTINGS[s.key]=s.value);
+        try { localStorage.setItem('fnb_pos_settings', JSON.stringify(SETTINGS)); } catch(e){}
         if(latestOrders?.length){
           const m=(latestOrders[0].order_num||'').match(/(\d+)$/);
           if(m) orderN=parseInt(m[1],10)+1;
@@ -277,6 +278,7 @@ Auth.require('pos');
             posBrandId=outletRows?.[0]?.brand_id||null;
           } catch(e){ console.warn('Không lấy được brand_id:',e); }
         }
+        try { localStorage.setItem('fnb_pos_outlet', JSON.stringify({outlet_id:posOutletId, brand_id:posBrandId})); } catch(e){}
       } else {
         const cached=await IDBService.getMenu();
         if(!cached.length){
@@ -287,6 +289,12 @@ Auth.require('pos');
         }
         MENU=cached;
         toast('📶 Offline — dùng menu đã lưu');
+        // Restore settings + outlet từ cache
+        try { Object.assign(SETTINGS, JSON.parse(localStorage.getItem('fnb_pos_settings')||'{}')); } catch(e){}
+        try {
+          const o=JSON.parse(localStorage.getItem('fnb_pos_outlet')||'{}');
+          posOutletId=o.outlet_id||null; posBrandId=o.brand_id||null;
+        } catch(e){}
         // Khởi tạo orderN từ IDB queue để tránh trùng số với đơn đang chờ sync
         try {
           const pending = await IDBService.getPendingOrders();
