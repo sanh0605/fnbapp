@@ -57,6 +57,7 @@ Auth.require('pos');
         } catch(e){
           if(e.message && e.message.includes('409')){
             await IDBService.removePendingOrder(entry.local_id);
+            _notifyOrder(entry.payload);
             synced++;
           } else {
             await IDBService.incrementRetry(entry.local_id);
@@ -252,6 +253,7 @@ Auth.require('pos');
 
   async function init(){
     document.getElementById('menuList').innerHTML = SKELETON;
+    let menuReady = false;
     try {
       if(navigator.onLine){
         const userRows = session?.id ? await DB.select('users',`id=eq.${session.id}&select=outlet_id`) : [];
@@ -279,18 +281,34 @@ Auth.require('pos');
         const cached=await IDBService.getMenu();
         if(!cached.length){
           document.getElementById('menuList').innerHTML=`<div class="loading">⚠️ Không có mạng và chưa có cache — vui lòng kết nối để tải menu lần đầu</div>`;
-          updateSyncBadge(); return;
+          updateSyncBadge();
+          loadParked(); updateDraftBadge();
+          return;
         }
         MENU=cached;
         toast('📶 Offline — dùng menu đã lưu');
+        // Khởi tạo orderN từ IDB queue để tránh trùng số với đơn đang chờ sync
+        try {
+          const pending = await IDBService.getPendingOrders();
+          if(pending.length){
+            const maxN = Math.max(...pending.map(e=>{
+              const m=(e.payload?.order_num||'').match(/(\d+)$/);
+              return m ? parseInt(m[1],10) : 0;
+            }));
+            if(maxN >= orderN) orderN = maxN + 1;
+          }
+        } catch(e){}
       }
       if(navigator.onLine) syncPendingOrders();
       else updateSyncBadge();
+      menuReady = true;
     } catch(e){
       document.getElementById('menuList').innerHTML=`<div class="loading">Lỗi tải menu: ${e.message}</div>`;
     } finally {
       loadDraft(); loadParked();
-      renderCats(); renderMenu(); renderCartItems(); updateCartBar(); updatePaymentUI();
+      if(menuReady) renderCats();
+      if(menuReady) renderMenu();
+      renderCartItems(); updateCartBar(); updatePaymentUI();
       restoreDraftUI(); updateDraftBadge();
     }
   }
