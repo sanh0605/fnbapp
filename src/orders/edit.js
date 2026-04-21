@@ -127,14 +127,13 @@ Auth.require('revenue');
       calcFinance(); return;
     }
     el.innerHTML = editItems.map((item,idx)=>{
-      const opts = [];
-      if(item.sweet) opts.push(`${item.sweet} ngọt`);
-      if(item.ice)   opts.push(item.ice.toLowerCase());
       const toppings = Array.isArray(item.toppings) ? item.toppings : [];
-      if(toppings.length) opts.push(toppings.join(', '));
-      if(item.note)  opts.push(`<em>${item.note}</em>`);
-      const optsHtml = opts.length
-        ? `<div class="item-opts">${opts.join(' · ')}</div>` : '';
+      const optsHtml = [
+        item.sweet  ? `<div class="item-opt">🍬 ${item.sweet} ngọt</div>` : '',
+        item.ice    ? `<div class="item-opt">🧊 ${item.ice}</div>` : '',
+        toppings.length ? `<div class="item-opt">➕ ${toppings.join(', ')}</div>` : '',
+        item.note   ? `<div class="item-opt item-opt-note">📝 ${item.note}</div>` : '',
+      ].join('');
       return `<div class="item-row">
         <div class="item-info">
           <div class="item-name">${item.name||'?'}</div>
