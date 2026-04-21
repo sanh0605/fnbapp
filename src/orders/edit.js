@@ -126,10 +126,19 @@ Auth.require('revenue');
       el.innerHTML='<div style="padding:14px 16px;font-size:13px;color:#bbb">Chưa có món nào</div>';
       calcFinance(); return;
     }
-    el.innerHTML = editItems.map((item,idx)=>`
-      <div class="item-row">
+    el.innerHTML = editItems.map((item,idx)=>{
+      const opts = [];
+      if(item.sweet) opts.push(`${item.sweet} ngọt`);
+      if(item.ice)   opts.push(item.ice.toLowerCase());
+      const toppings = Array.isArray(item.toppings) ? item.toppings : [];
+      if(toppings.length) opts.push(toppings.join(', '));
+      if(item.note)  opts.push(`<em>${item.note}</em>`);
+      const optsHtml = opts.length
+        ? `<div class="item-opts">${opts.join(' · ')}</div>` : '';
+      return `<div class="item-row">
         <div class="item-info">
           <div class="item-name">${item.name||'?'}</div>
+          ${optsHtml}
           <input class="item-price-input" value="${(item.price||0).toLocaleString('en-US')}"
             onchange="setItemPrice(${idx},this.value)" placeholder="Đơn giá">
         </div>
@@ -139,7 +148,8 @@ Auth.require('revenue');
           <button class="qb" onclick="chgQty(${idx},1)">+</button>
           <button class="qb del" onclick="removeItem(${idx})">✕</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     calcFinance();
   }
 
