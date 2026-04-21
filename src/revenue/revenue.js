@@ -103,10 +103,54 @@ Auth.require('revenue');
           <div class="metric-value" style="font-size:16px">${orderCount>0?fmt(avg):'—'}</div>
         </div>
       </div>
+      <div id="paymentSlot"></div>
       <div id="chartSlot"></div>
       <div id="tableSlot"></div>`;
+    renderPaymentBreakdown(orders,revenue);
     renderChart(orders,from,to);
     renderTable(orders,revenue);
+  }
+
+  function renderPaymentBreakdown(orders, totalRevenue){
+    const slot = document.getElementById('paymentSlot');
+    if(!slot) return;
+    if(!orders.length){ slot.innerHTML=''; return; }
+
+    const methods = ['Tiền mặt','Chuyển khoản'];
+    const stats = methods.map(m => {
+      const filtered = orders.filter(o => o.method === m);
+      return { method: m, count: filtered.length, rev: filtered.reduce((s,o)=>s+o.total,0) };
+    });
+
+    const rows = stats.map(s => {
+      const pct = totalRevenue > 0 ? Math.round(s.rev / totalRevenue * 100) : 0;
+      const barW = totalRevenue > 0 ? Math.round(s.rev / totalRevenue * 100) : 0;
+      const icon = s.method === 'Tiền mặt' ? '💵' : '💳';
+      return `<div class="table-row" style="flex-direction:column;align-items:stretch;gap:4px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="tr-icon">${icon}</span>
+          <div class="tr-info">
+            <div class="tr-name">${s.method}</div>
+            <div class="tr-qty">${s.count} đơn</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:auto">
+            <div class="tr-revenue">${fmt(s.rev)}</div>
+            <div class="tr-pct">${pct}%</div>
+          </div>
+        </div>
+        <div style="height:4px;background:#f0f0ec;border-radius:4px">
+          <div style="height:100%;width:${barW}%;background:#1D9E75;border-radius:4px"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    slot.innerHTML=`<div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Hình thức thanh toán</span>
+        <span style="font-size:12px;color:#888">${orders.length} đơn</span>
+      </div>
+      ${rows}
+    </div>`;
   }
 
   function renderChart(orders,from,to){
@@ -228,6 +272,20 @@ Auth.require('revenue');
     const ws2=XLSX.utils.aoa_to_sheet(prodRows);
     ws2['!cols']=[{wch:10},{wch:22},{wch:16},{wch:16},{wch:14}];
     XLSX.utils.book_append_sheet(wb,ws2,'Sản phẩm');
+
+    // ── Sheet 3: Hình thức thanh toán ──
+    const methods=['Tiền mặt','Chuyển khoản'];
+    const totalRevXLSX=orders.reduce((s,o)=>s+(o.total||0),0);
+    const payRows=[['Hình thức','Số đơn','Doanh thu (đ)','Tỷ trọng (%)']];
+    methods.forEach(m=>{
+      const filtered=orders.filter(o=>o.method===m);
+      const rev=filtered.reduce((s,o)=>s+(o.total||0),0);
+      const pct=totalRevXLSX>0?Math.round(rev/totalRevXLSX*1000)/10:0;
+      payRows.push([m,filtered.length,rev,pct]);
+    });
+    const ws3=XLSX.utils.aoa_to_sheet(payRows);
+    ws3['!cols']=[{wch:16},{wch:10},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb,ws3,'Hình thức TT');
 
     // Xuất file
     const label=period==='day'?toDateInput(from)
