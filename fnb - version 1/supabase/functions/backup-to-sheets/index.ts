@@ -199,6 +199,85 @@ function transformOrdersToSummaryRows(orders: Order[]): (string | number)[][] {
   return rows;
 }
 
+// OrderItemRow matches the Google Sheet column structure
+interface OrderItemRow {
+  orderId: string;
+  orderNum: string;
+  itemId: string;
+  productName: string;
+  category: string;
+  quantity: number;
+  unitPrice: number;
+  itemTotal: number;
+  sweetness: string;
+  iceLevel: string;
+  toppings: string;
+  toppingsPrice: number;
+  note: string;
+  backupAt: string;
+}
+
+// Transform order item to Order Items Detail row
+function transformToOrderItemRow(order: Order, item: OrderItem): OrderItemRow {
+  const toppings = item.toppings || [];
+  const toppingsPrice = toppings.reduce((sum, t) => sum + t.price, 0);
+  const toppingNames = toppings.map(t => t.name).join(', ');
+
+  return {
+    orderId: order.id,
+    orderNum: order.order_num,
+    itemId: item.id,
+    productName: item.name,
+    category: 'N/A', // In production, fetch from products table
+    quantity: item.qty,
+    unitPrice: item.price,
+    itemTotal: item.qty * item.price,
+    sweetness: item.sweet || '100%',
+    iceLevel: item.ice || 'Bình thường',
+    toppings: toppingNames,
+    toppingsPrice,
+    note: item.note || '',
+    backupAt: new Date().toISOString()
+  };
+}
+
+// Transform array of orders to Order Items Detail rows (2D array for Sheets API)
+function transformOrdersToItemRows(orders: Order[]): (string | number)[][] {
+  // Header row
+  const headers = [
+    'Order ID', 'Order #', 'Item ID', 'Product Name', 'Category', 'Quantity',
+    'Unit Price', 'Item Total', 'Sweetness', 'Ice Level', 'Toppings',
+    'Toppings Price', 'Note', 'Backup At'
+  ];
+
+  const rows = [headers];
+
+  // Data rows - one row per item
+  for (const order of orders) {
+    for (const item of order.items) {
+      const itemRow = transformToOrderItemRow(order, item);
+      rows.push([
+        itemRow.orderId,
+        itemRow.orderNum,
+        itemRow.itemId,
+        itemRow.productName,
+        itemRow.category,
+        itemRow.quantity,
+        itemRow.unitPrice,
+        itemRow.itemTotal,
+        itemRow.sweetness,
+        itemRow.iceLevel,
+        itemRow.toppings,
+        itemRow.toppingsPrice,
+        itemRow.note,
+        itemRow.backupAt
+      ]);
+    }
+  }
+
+  return rows;
+}
+
 serve(async (req) => {
   try {
     const env = process.env as unknown as Env;
