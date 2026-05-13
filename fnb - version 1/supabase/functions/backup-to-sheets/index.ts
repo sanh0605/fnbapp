@@ -382,13 +382,53 @@ serve(async (req) => {
 
     const startTime = Date.now();
 
-    // TODO: Implement backup logic in subsequent tasks
+    const supabase = getSupabaseClient();
+    const sheets = await getSheetsClient(env.GOOGLE_SHEETS_CREDENTIALS);
+
+    // Fetch orders
+    const { orders, isFirstRun } = await fetchOrders(supabase);
+
+    if (orders.length === 0) {
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'No new orders to backup'
+      }), { status: 200 });
+    }
+
+    // Transform data
+    const summaryRows = transformOrdersToSummaryRows(orders);
+    const itemRows = transformOrdersToItemRows(orders);
+
+    // Ensure headers exist (for first run)
+    if (isFirstRun) {
+      const summaryHeaders = summaryRows[0] as string[];
+      const itemHeaders = itemRows[0] as string[];
+      await ensureSheetHeaders(sheets, env.SHEET_ID, 'Orders Summary', summaryHeaders);
+      await ensureSheetHeaders(sheets, env.SHEET_ID, 'Order Items Detail', itemHeaders);
+
+      // Remove headers from rows for initial write
+      summaryRows.shift();
+      itemRows.shift();
+    }
+
+    // Write to Sheets (append without headers on subsequent runs)
+    await writeToSheet(sheets, env.SHEET_ID, 'Orders Summary', summaryRows);
+    await writeToSheet(sheets, env.SHEET_ID, 'Order Items Detail', itemRows);
+
+    // Update backup timestamp
+    const now = new Date().toISOString();
+    await supabase
+      .from('settings')
+      .upsert({ key: 'sheets_last_backup', value: now });
 
     const duration = Date.now() - startTime;
+
     return new Response(JSON.stringify({
       success: true,
-      message: 'Backup completed',
-      duration: `${duration}ms`
+      message: `Backed up ${orders.length} orders`,
+      ordersBackedUp: orders.length,
+      duration: `${duration}ms`,
+      backupAt: now
     }), { status: 200 });
 
   } catch (error) {
