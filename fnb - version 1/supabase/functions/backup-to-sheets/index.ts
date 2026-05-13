@@ -23,6 +23,82 @@ async function getSheetsClient(credentialsBase64: string) {
   return google.sheets({ version: 'v4', auth });
 }
 
+function getSupabaseClient(): ReturnType<typeof createClient> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase credentials');
+  }
+
+  return createClient(supabaseUrl, supabaseKey);
+}
+
+interface Order {
+  id: string;
+  order_num: string;
+  created_at: string;
+  total: number;
+  subtotal: number | null;
+  discount_amount: number | null;
+  actual_received: number | null;
+  method: string;
+  items: OrderItem[];
+  staff_name: string | null;
+  outlet_id: string | null;
+  brand_id: string | null;
+  voided: boolean;
+}
+
+interface OrderItem {
+  id: string;
+  name: string;
+  qty: number;
+  price: number;
+  sweet: string | null;
+  ice: string | null;
+  toppings: Topping[] | null;
+  note: string | null;
+}
+
+interface Topping {
+  id: string;
+  name: string;
+  price: number;
+}
+
+// Fetch orders created after the last backup timestamp
+async function fetchOrders(supabase: ReturnType<typeof createClient>) {
+  // Get last backup timestamp from settings
+  const { data: settings } = await supabase
+    .from('settings')
+    .select('value')
+    .eq('key', 'sheets_last_backup')
+    .single();
+
+  const lastBackup = settings?.value;
+  let query = supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(1000);
+
+  // First run: backup last 30 days
+  if (!lastBackup) {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    query = query.gte('created_at', thirtyDaysAgo);
+  } else {
+    // Subsequent runs: backup since last timestamp
+    query = query.gt('created_at', lastBackup);
+  }
+
+  const { data: orders, error } = await query;
+
+  if (error) throw error;
+
+  return { orders: (orders || []) as Order[], isFirstRun: !lastBackup };
+}
+
 // Transform ISO timestamp to date format YYYY-MM-DD
 function formatDate(isoDate: string): string {
   return isoDate.split('T')[0];
