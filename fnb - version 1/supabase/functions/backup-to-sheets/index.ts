@@ -278,6 +278,97 @@ function transformOrdersToItemRows(orders: Order[]): (string | number)[][] {
   return rows;
 }
 
+// Write rows to a specific sheet tab
+async function writeToSheet(
+  sheets: any,
+  sheetId: string,
+  sheetName: string,
+  rows: (string | number)[][]
+): Promise<void> {
+  const spreadsheetId = sheetId;
+
+  // Get sheet info to find the sheet tab ID
+  const { data: spreadsheet } = await sheets.spreadsheets.get({
+    spreadsheetId
+  });
+
+  const sheetTab = spreadsheet?.sheets?.find(
+    (s: any) => s.properties?.title === sheetName
+  );
+
+  if (!sheetTab) {
+    throw new Error(`Sheet tab "${sheetName}" not found`);
+  }
+
+  const sheetIdNum = sheetTab.properties.sheetId;
+
+  // Append rows in batches of 100
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE);
+
+    const request = {
+      spreadsheetId,
+      range: `${sheetName}!A${i + 1}`,
+      valueInputOption: 'USER_ENTERED',
+      resource: {
+        values: batch
+      }
+    };
+
+    // Retry with exponential backoff
+    await withRetry(() =>
+      sheets.spreadsheets.values.update(request)
+    );
+  }
+}
+
+// Retry wrapper with exponential backoff
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3
+): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (attempt === maxRetries) throw error;
+
+      const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+      console.warn(`Retry ${attempt}/${maxRetries} after ${delay}ms:`, error.message);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
+// Initialize sheet with headers if needed
+async function ensureSheetHeaders(
+  sheets: any,
+  sheetId: string,
+  sheetName: string,
+  headers: string[]
+): Promise<void> {
+  const { data: existingData } = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: `${sheetName}!A1:Z1`
+  });
+
+  if (existingData?.values?.length > 0) {
+    return; // Headers already exist
+  }
+
+  // Write headers
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: `${sheetName}!A1`,
+    valueInputOption: 'USER_ENTERED',
+    resource: {
+      values: [headers]
+    }
+  });
+}
+
 serve(async (req) => {
   try {
     const env = process.env as unknown as Env;
