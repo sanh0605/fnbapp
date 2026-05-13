@@ -109,6 +109,96 @@ function formatTime(isoDate: string): string {
   return isoDate.split('T')[1]?.split('.')[0] || '00:00:00';
 }
 
+// OrderSummaryRow matches the Google Sheet column structure
+interface OrderSummaryRow {
+  orderId: string;
+  orderNum: string;
+  date: string;
+  time: string;
+  outlet: string;
+  brand: string;
+  staff: string;
+  totalItems: number;
+  subtotal: number;
+  discountAmount: number;
+  payable: number;
+  actualReceived: number;
+  change: number;
+  paymentMethod: string;
+  voided: string;
+  backupAt: string;
+}
+
+// Transform order to Orders Summary row
+function transformToOrderSummary(order: Order): OrderSummaryRow {
+  const totalItems = order.items.reduce((sum, item) => sum + item.qty, 0);
+  const subtotal = order.subtotal || 0;
+  const discount = order.discount_amount || 0;
+  const actualReceived = order.actual_received || order.total;
+  const payable = order.total;
+  const change = Math.max(0, actualReceived - payable);
+
+  // Format outlet and brand names (simplified - in production you'd fetch from tables)
+  const outletName = order.outlet_id ? `${order.outlet_id}` : 'N/A';
+  const brandName = order.brand_id ? `${order.brand_id}` : 'N/A';
+
+  return {
+    orderId: order.id,
+    orderNum: order.order_num,
+    date: formatDate(order.created_at),
+    time: formatTime(order.created_at),
+    outlet: outletName,
+    brand: brandName,
+    staff: order.staff_name || 'N/A',
+    totalItems,
+    subtotal,
+    discountAmount: discount,
+    payable,
+    actualReceived,
+    change,
+    paymentMethod: order.method || 'N/A',
+    voided: order.voided ? 'TRUE' : 'FALSE',
+    backupAt: new Date().toISOString()
+  };
+}
+
+// Transform array of orders to Orders Summary rows (2D array for Sheets API)
+function transformOrdersToSummaryRows(orders: Order[]): (string | number)[][] {
+  // Header row
+  const headers = [
+    'Order ID', 'Order #', 'Date', 'Time', 'Outlet', 'Brand', 'Staff',
+    'Total Items', 'Subtotal', 'Discount Amount', 'Payable', 'Actual Received',
+    'Change', 'Payment Method', 'Voided', 'Backup At'
+  ];
+
+  const rows = [headers];
+
+  // Data rows
+  for (const order of orders) {
+    const summary = transformToOrderSummary(order);
+    rows.push([
+      summary.orderId,
+      summary.orderNum,
+      summary.date,
+      summary.time,
+      summary.outlet,
+      summary.brand,
+      summary.staff,
+      summary.totalItems,
+      summary.subtotal,
+      summary.discountAmount,
+      summary.payable,
+      summary.actualReceived,
+      summary.change,
+      summary.paymentMethod,
+      summary.voided,
+      summary.backupAt
+    ]);
+  }
+
+  return rows;
+}
+
 serve(async (req) => {
   try {
     const env = process.env as unknown as Env;
