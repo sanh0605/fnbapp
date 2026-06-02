@@ -1,0 +1,222 @@
+import { google } from 'googleapis';
+import { unstable_cache, revalidateTag } from 'next/cache';
+
+const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
+
+// Parse the base64 credentials
+function getAuth() {
+  if (!process.env.GOOGLE_CREDENTIALS_BASE64) {
+    throw new Error('GOOGLE_CREDENTIALS_BASE64 is not set in environment variables');
+  }
+  const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
+  const credentials = JSON.parse(credentialsJson);
+
+  return new google.auth.GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+}
+
+const getSheetsClient = () => {
+  const auth = getAuth();
+  return google.sheets({ version: 'v4', auth });
+};
+
+// Helper: Convert array of arrays to array of objects
+function mapRowsToObjects(rows: string[][]): any[] {
+  if (!rows || rows.length === 0) return [];
+  const headers = rows[0];
+  return rows.slice(1).map((row) => {
+    const obj: any = {};
+    headers.forEach((header, index) => {
+      obj[header] = row[index] || ''; // Handle empty cells
+    });
+    return obj;
+  });
+}
+
+// Helper: Convert object to array based on headers
+function mapObjectToRow(obj: any, headers: string[]): string[] {
+  return headers.map((header) => {
+    const val = obj[header];
+    return val !== undefined && val !== null ? String(val) : '';
+  });
+}
+
+// Get all records from a sheet
+export const findAll = unstable_cache(
+  async (sheetName: string) => {
+    const sheets = getSheetsClient();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${sheetName}!A1:Z`,
+    });
+    return mapRowsToObjects(res.data.values || []);
+  },
+  ['sheets-findall'],
+  { revalidate: 60, tags: ['sheets'] }
+);
+
+// Find one record by ID
+export async function findById(sheetName: string, id: string) {
+  const all = await findAll(sheetName);
+  return all.find((item) => item.id === id) || null;
+}
+
+// Get headers of a sheet
+export const getHeaders = unstable_cache(
+  async (sheetName: string): Promise<string[]> => {
+    const sheets = getSheetsClient();
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${sheetName}!A1:Z1`,
+    });
+    return res.data.values ? res.data.values[0] : [];
+  },
+  ['sheets-headers'],
+  { revalidate: 3600, tags: ['sheets'] } // headers rarely change
+);
+
+// Generate new ID (e.g. BR-001)
+export async function generateNewId(sheetName: string, prefix: string): Promise<string> {
+  const all = await findAll(sheetName);
+  if (all.length === 0) return `${prefix}-001`;
+  
+  // Find max ID
+  let maxNum = 0;
+  for (const item of all) {
+    if (item.id && item.id.startsWith(prefix)) {
+      const numStr = item.id.replace(`${prefix}-`, '');
+      const num = parseInt(numStr, 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    }
+  }
+  const nextNum = maxNum + 1;
+  return `${prefix}-${nextNum.toString().padStart(3, '0')}`;
+}
+
+// Insert a new record
+export async function insert(sheetName: string, data: any) {
+  const sheets = getSheetsClient();
+  const headers = await getHeaders(sheetName);
+  if (!headers || headers.length === 0) throw new Error(`Sheet ${sheetName} has no headers`);
+
+  const newRow = mapObjectToRow(data, headers);
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A:A`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: [newRow],
+    },
+  });
+
+  revalidateTag('sheets'); // Xoá cache ngay lập tức sau khi thêm
+
+  return data;
+}
+
+// Update an existing record
+export async function update(sheetName: string, id: string, data: any) {
+  const sheets = getSheetsClient();
+  
+  // Need to find the exact row number to update
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A1:Z`,
+  });
+  
+  const rows = res.data.values || [];
+  if (rows.length < 2) throw new Error(`Record with id ${id} not found`);
+  
+  const headers = rows[0];
+  const idIndex = headers.indexOf('id');
+  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
+
+  let rowIndex = -1;
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][idIndex] === id) {
+      rowIndex = i;
+      break;
+    }
+  }
+
+  if (rowIndex === -1) throw new Error(`Record with id ${id} not found in ${sheetName}`);
+
+  // Merge existing data with new data
+  const existingObj = {};
+  headers.forEach((h, idx) => { existingObj[h] = rows[rowIndex][idx] || ''; });
+  const updatedObj = { ...existingObj, ...data, id }; // Ensure ID is immutable
+  
+  const updatedRow = mapObjectToRow(updatedObj, headers);
+  const rowNumber = rowIndex + 1; // 1-indexed
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A${rowNumber}:Z${rowNumber}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: [updatedRow],
+    },
+  });
+
+  revalidateTag('sheets'); // Xoá cache sau khi sửa
+
+  return updatedObj;
+}
+
+// Delete a record (Since Google Sheets API deleteRow is complex and requires sheetId, we just clear the row or mark as deleted. Here we'll actually delete the row using batchUpdate)
+export async function remove(sheetName: string, id: string) {
+  const sheets = getSheetsClient();
+  
+  // 1. Get sheetId
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const sheet = meta.data.sheets?.find(s => s.properties?.title?.toLowerCase() === sheetName.toLowerCase());
+  if (!sheet || sheet.properties?.sheetId === undefined) throw new Error(`Sheet ${sheetName} not found`);
+  const sheetId = sheet.properties.sheetId;
+
+  // 2. Find row index
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A1:Z`,
+  });
+  
+  const rows = res.data.values || [];
+  const headers = rows[0] || [];
+  const idIndex = headers.indexOf('id');
+  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
+
+  let rowIndex = -1;
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][idIndex] === id) {
+      rowIndex = i;
+      break;
+    }
+  }
+
+  if (rowIndex === -1) throw new Error(`Record with id ${id} not found in ${sheetName}`);
+
+  // 3. Delete row via batchUpdate
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      requests: [{
+        deleteDimension: {
+          range: {
+            sheetId: sheetId,
+            dimension: 'ROWS',
+            startIndex: rowIndex,
+            endIndex: rowIndex + 1
+          }
+        }
+      }]
+    }
+  });
+
+  revalidateTag('sheets'); // Xoá cache sau khi xoá
+
+  return true;
+}
