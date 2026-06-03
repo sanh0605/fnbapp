@@ -1,10 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 
-export default function SalesFilter({
+export default function SalesFilter(props: {
+  brands: any[];
+  users: any[];
+  categories: any[];
+}) {
+  return (
+    <React.Suspense fallback={<div className="h-20 bg-gray-50 animate-pulse rounded-xl mb-6 border border-gray-100"></div>}>
+      <SalesFilterInner {...props} />
+    </React.Suspense>
+  );
+}
+
+function SalesFilterInner({
   brands,
   users,
   categories
@@ -53,7 +65,7 @@ export default function SalesFilter({
         <label className="block text-xs text-gray-500 mb-1">Từ ngày</label>
         <CustomDatePicker
           selected={startDate}
-          onChange={(date) => setStartDate(date)}
+          onChange={(date: Date | null) => setStartDate(date)}
           className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
@@ -61,7 +73,7 @@ export default function SalesFilter({
         <label className="block text-xs text-gray-500 mb-1">Đến ngày</label>
         <CustomDatePicker
           selected={endDate}
-          onChange={(date) => setEndDate(date)}
+          onChange={(date: Date | null) => setEndDate(date)}
           className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>

@@ -167,6 +167,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           <Link
                             key={child.name}
                             href={child.href}
+                            prefetch={false}
                             onClick={() => setIsSidebarOpen(false)}
                             className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
                               isChildActive
@@ -190,6 +191,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={false}
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-all duration-200 mb-1 ${
                   isActive

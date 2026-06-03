@@ -10,7 +10,7 @@ export async function submitOrder(orderData: any) {
     const session = await getServerSession(authOptions);
     const staff_name = session?.user?.name || "Hệ thống";
     
-    const { brand_id, items, total_amount, payment_method } = orderData; // items = [{ product_id, variant_id, qty, unit_price, modifiers: [{ id, name, price, group_name }] }]
+    const { brand_id, items, total_amount, subtotal_amount, discount_amount, discount_type, payment_method } = orderData; // items = [{ product_id, variant_id, qty, unit_price, modifiers, discount_amount, discount_type }]
     if (!items || items.length === 0) return { error: "Giỏ hàng trống" };
     if (!brand_id) return { error: "Không xác định được thương hiệu. Vui lòng mở máy POS từ đầu." };
 
@@ -20,7 +20,16 @@ export async function submitOrder(orderData: any) {
 
     const allOrders = await findAll("Orders");
     const brandOrders = allOrders.filter((o:any) => o.order_no && o.order_no.startsWith(brandCode));
-    const nextNum = brandOrders.length + 1;
+    
+    let maxNum = 0;
+    for (const o of brandOrders) {
+      const numStr = o.order_no.replace(brandCode, '');
+      const num = parseInt(numStr, 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    }
+    const nextNum = maxNum + 1;
     const order_no = `${brandCode}${nextNum.toString().padStart(6, '0')}`;
 
     const nowIso = new Date().toISOString();
@@ -32,6 +41,9 @@ export async function submitOrder(orderData: any) {
       order_no,
       brand_id,
       total_amount,
+      subtotal_amount: subtotal_amount || total_amount,
+      discount_amount: discount_amount || 0,
+      discount_type: discount_type || "VND",
       status: "COMPLETED",
       method: payment_method || "Tiền mặt",
       staff_name,
@@ -50,6 +62,8 @@ export async function submitOrder(orderData: any) {
         variant_id: item.variant_id,
         qty: item.qty,
         unit_price: item.unit_price,
+        line_discount: item.discount_amount || 0,
+        discount_type: item.discount_type || "VND",
         modifiers_json: JSON.stringify(item.modifiers || []),
         created_at: nowIso
       });

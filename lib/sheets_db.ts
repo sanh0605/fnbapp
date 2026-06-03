@@ -4,7 +4,7 @@ import { unstable_cache, revalidateTag } from 'next/cache';
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
 
 // Parse the base64 credentials
-function getAuth() {
+export function getAuth() {
   if (!process.env.GOOGLE_CREDENTIALS_BASE64) {
     throw new Error('GOOGLE_CREDENTIALS_BASE64 is not set in environment variables');
   }
@@ -17,7 +17,7 @@ function getAuth() {
   });
 }
 
-const getSheetsClient = () => {
+export const getSheetsClient = () => {
   const auth = getAuth();
   return google.sheets({ version: 'v4', auth });
 };

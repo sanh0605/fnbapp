@@ -23,11 +23,18 @@ export default function POSScreen({
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
   
   // Product Selection Modal State
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<any[]>([]);
   const [selectedQty, setSelectedQty] = useState<number>(1);
+  const [itemDiscount, setItemDiscount] = useState<number>(0);
+  const [itemDiscountType, setItemDiscountType] = useState<"VND" | "PERCENT">("VND");
+  
+  // Checkout Modal State
+  const [orderDiscount, setOrderDiscount] = useState<number>(0);
+  const [orderDiscountType, setOrderDiscountType] = useState<"VND" | "PERCENT">("VND");
 
   // Group modifiers by group_name
   const groupedModifiers = useMemo(() => {
@@ -43,14 +50,27 @@ export default function POSScreen({
     ? products 
     : products.filter((p:any) => p.category_id === activeCategory);
 
-  const openProductModal = (product: any) => {
+  const openProductModal = (product: any, editIndex: number | null = null) => {
     const prodVariants = variants.filter((v:any) => v.product_id === product.id);
     if (prodVariants.length === 0) return alert("Món này chưa cấu hình kích cỡ & giá.");
     
     setSelectedProduct(product);
-    setSelectedVariant(prodVariants[0]);
-    setSelectedModifiers([]);
-    setSelectedQty(1);
+    setEditingCartIndex(editIndex);
+
+    if (editIndex !== null) {
+      const item = cart[editIndex];
+      setSelectedVariant(prodVariants.find((v:any) => v.id === item.variant_id) || prodVariants[0]);
+      setSelectedModifiers([...item.modifiers]);
+      setSelectedQty(item.qty);
+      setItemDiscount(item.discount_amount || 0);
+      setItemDiscountType(item.discount_type || "VND");
+    } else {
+      setSelectedVariant(prodVariants[0]);
+      setSelectedModifiers([]);
+      setSelectedQty(1);
+      setItemDiscount(0);
+      setItemDiscountType("VND");
+    }
   };
 
   const addModifier = (mod: any) => {
@@ -70,18 +90,28 @@ export default function POSScreen({
     if (!selectedVariant) return;
     
     const cartItem = {
-      id: Date.now().toString(),
+      id: editingCartIndex !== null ? cart[editingCartIndex].id : Date.now().toString(),
       product_id: selectedProduct.id,
       product_name: selectedProduct.name,
       variant_id: selectedVariant.id,
       size_name: selectedVariant.size_name,
       unit_price: Number(selectedVariant.price),
       modifiers: selectedModifiers,
-      qty: selectedQty
+      qty: selectedQty,
+      discount_amount: itemDiscount,
+      discount_type: itemDiscountType
     };
 
-    setCart([...cart, cartItem]);
+    if (editingCartIndex !== null) {
+      const newCart = [...cart];
+      newCart[editingCartIndex] = cartItem;
+      setCart(newCart);
+    } else {
+      setCart([...cart, cartItem]);
+    }
+    
     setSelectedProduct(null);
+    setEditingCartIndex(null);
   };
 
   const removeFromCart = (index: number) => {
@@ -98,13 +128,55 @@ export default function POSScreen({
     }
   };
 
+  // Tính toán giá tiền trực tiếp cho món đang chọn trong Popup
+  const currentItemBasePrice = selectedVariant ? Number(selectedVariant.price) + selectedModifiers.reduce((sum, m) => sum + Number(m.price), 0) : 0;
+  const currentItemBaseTotal = currentItemBasePrice * selectedQty;
+  let currentItemDiscountAmount = 0;
+  if (itemDiscount > 0) {
+    if (itemDiscountType === "PERCENT") {
+      currentItemDiscountAmount = (currentItemBaseTotal * itemDiscount) / 100;
+    } else {
+      currentItemDiscountAmount = itemDiscount;
+    }
+  }
+  const currentItemFinalTotal = Math.max(0, currentItemBaseTotal - currentItemDiscountAmount);
+
   const calculateItemTotal = (item: any) => {
     const modsPrice = item.modifiers.reduce((sum:number, m:any) => sum + Number(m.price), 0);
-    return (item.unit_price + modsPrice) * item.qty;
+    const baseTotal = (item.unit_price + modsPrice) * item.qty;
+    let discount = 0;
+    if (item.discount_amount > 0) {
+      if (item.discount_type === "PERCENT") {
+        discount = (baseTotal * item.discount_amount) / 100;
+      } else {
+        discount = item.discount_amount;
+      }
+    }
+    return Math.max(0, baseTotal - discount);
   };
 
-  const totalAmount = cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+  const calculateCartBaseTotal = () => cart.reduce((sum, item) => {
+    const modsPrice = item.modifiers.reduce((mSum:number, m:any) => mSum + Number(m.price), 0);
+    return sum + (item.unit_price + modsPrice) * item.qty;
+  }, 0);
+
+  const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+
+  const calculateTotalAmount = () => {
+    const subtotal = calculateSubtotal();
+    let discount = 0;
+    if (orderDiscount > 0) {
+      if (orderDiscountType === "PERCENT") {
+        discount = (subtotal * orderDiscount) / 100;
+      } else {
+        discount = orderDiscount;
+      }
+    }
+    return Math.max(0, subtotal - discount);
+  };
+
+  const totalAmount = calculateTotalAmount();
 
   const handleCheckoutClick = () => {
     if (cart.length === 0) return;
@@ -118,6 +190,9 @@ export default function POSScreen({
       brand_id: brandId,
       items: cart,
       total_amount: totalAmount,
+      subtotal_amount: calculateSubtotal(),
+      discount_amount: orderDiscount,
+      discount_type: orderDiscountType,
       payment_method: method
     };
 
@@ -219,21 +294,44 @@ export default function POSScreen({
             </div>
           ) : (
             <div className="space-y-3">
-              {cart.map((item, idx) => (
-                <div key={item.id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                  <div className="flex justify-between items-start mb-2">
+              {cart.map((item, idx) => {
+                const modsPrice = item.modifiers.reduce((sum:number, m:any) => sum + Number(m.price), 0);
+                const baseTotal = (item.unit_price + modsPrice) * item.qty;
+                const finalTotal = calculateItemTotal(item);
+
+                return (
+                <div key={item.id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-300">
+                  <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => openProductModal(products.find((p:any) => p.id === item.product_id), idx)}>
                     <div>
-                      <h4 className="font-bold text-gray-800 leading-tight">{item.product_name}</h4>
+                      <h4 className="font-bold text-gray-800 leading-tight hover:text-indigo-600 transition-colors">{item.product_name} ✏️</h4>
                       <p className="text-xs font-semibold text-indigo-600 mt-0.5">Size {item.size_name}</p>
                     </div>
-                    <div className="font-bold text-orange-600 text-right">
-                      {calculateItemTotal(item).toLocaleString('vi-VN')}
+                    <div className="text-right">
+                      {item.discount_amount > 0 && (
+                        <div className="text-[11px] text-gray-400 line-through mb-0.5">
+                          {baseTotal.toLocaleString('vi-VN')}
+                        </div>
+                      )}
+                      <div className="font-bold text-orange-600">
+                        {finalTotal.toLocaleString('vi-VN')}
+                      </div>
                     </div>
                   </div>
                   
                   {item.modifiers.length > 0 && (
                     <div className="text-[11px] text-gray-500 bg-gray-50 p-1.5 rounded mb-2 leading-relaxed">
-                      {item.modifiers.map((m:any) => m.name).join(", ")}
+                      {Object.entries(
+                        item.modifiers.reduce((acc: any, m: any) => {
+                          acc[m.name] = (acc[m.name] || 0) + 1;
+                          return acc;
+                        }, {})
+                      ).map(([name, count]: [string, any]) => `${count > 1 ? count + ' x ' : ''}${name}`).join(", ")}
+                    </div>
+                  )}
+
+                  {item.discount_amount > 0 && (
+                    <div className="text-[11px] text-red-500 font-medium mb-2">
+                      Đã chiết khấu: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount).toLocaleString('vi-VN')}đ`}
                     </div>
                   )}
 
@@ -246,7 +344,8 @@ export default function POSScreen({
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -254,7 +353,16 @@ export default function POSScreen({
         <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-center mb-4">
             <span className="text-gray-500 font-medium">Tổng tiền ({totalItems} món)</span>
-            <span className="text-2xl font-black text-orange-600">{totalAmount.toLocaleString('vi-VN')} đ</span>
+            <div className="text-right">
+              {calculateCartBaseTotal() > totalAmount && (
+                <div className="text-sm text-gray-400 line-through mb-0.5 font-medium">
+                  {calculateCartBaseTotal().toLocaleString('vi-VN')} đ
+                </div>
+              )}
+              <div className="text-2xl font-black text-orange-600">
+                {totalAmount.toLocaleString('vi-VN')} đ
+              </div>
+            </div>
           </div>
           <button 
             onClick={handleCheckoutClick}
@@ -354,28 +462,70 @@ export default function POSScreen({
               ))}
             </div>
 
-            <div className="p-4 border-t border-gray-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] flex items-center gap-4">
-              <div className="flex items-center gap-3 bg-gray-100 rounded-xl p-1.5 shrink-0">
+            <div className="p-4 border-t border-gray-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col gap-3">
+              
+              {/* CHIẾT KHẤU MÓN (Dời xuống footer) */}
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-bold text-sm text-gray-800 whitespace-nowrap">Chiết khấu:</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0 h-10">
+                    <button 
+                      onClick={() => setItemDiscountType("VND")}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+                    >
+                      VNĐ
+                    </button>
+                    <button 
+                      onClick={() => setItemDiscountType("PERCENT")}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+                    >
+                      %
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Nhập số..."
+                    value={itemDiscount || ""}
+                    onChange={(e) => setItemDiscount(Number(e.target.value))}
+                    className="flex-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none h-10 text-right"
+                  />
+                </div>
+              </div>
+
+              {/* TỔNG TIỀN & NÚT CẬP NHẬT */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 bg-gray-100 rounded-xl p-1.5 shrink-0 h-14">
+                  <button 
+                    onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))} 
+                    className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
+                  >
+                    -
+                  </button>
+                  <span className="text-lg font-black w-6 text-center text-gray-800">{selectedQty}</span>
+                  <button 
+                    onClick={() => setSelectedQty(selectedQty + 1)} 
+                    className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+
                 <button 
-                  onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))} 
-                  className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
+                  onClick={addToCart}
+                  className="flex-1 bg-orange-600 text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center h-14"
                 >
-                  -
-                </button>
-                <span className="text-lg font-black w-6 text-center text-gray-800">{selectedQty}</span>
-                <button 
-                  onClick={() => setSelectedQty(selectedQty + 1)} 
-                  className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
-                >
-                  +
+                  <div className="font-bold text-sm lg:text-base">
+                    {editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {currentItemFinalTotal.toLocaleString('vi-VN')} đ
+                  </div>
+                  {currentItemDiscountAmount > 0 && (
+                    <div className="text-[10px] lg:text-xs text-orange-200 line-through font-medium">
+                      Gốc: {currentItemBaseTotal.toLocaleString('vi-VN')} đ
+                    </div>
+                  )}
                 </button>
               </div>
-              <button 
-                onClick={addToCart}
-                className="flex-1 bg-orange-600 text-white font-bold text-lg py-3.5 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-all"
-              >
-                THÊM VÀO GIỎ
-              </button>
+
             </div>
           </div>
         </div>
@@ -398,8 +548,37 @@ export default function POSScreen({
             
             <div className="p-6 bg-white space-y-4">
               <div className="text-center mb-6">
-                <p className="text-sm text-gray-500 uppercase font-bold tracking-wider mb-1">Cần Thanh Toán</p>
-                <div className="text-3xl font-black text-orange-600">{totalAmount.toLocaleString('vi-VN')} đ</div>
+                <p className="text-sm text-gray-500 uppercase font-bold tracking-wider mb-1">Tạm Tính</p>
+                <div className="text-xl font-bold text-gray-700 line-through">{calculateSubtotal().toLocaleString('vi-VN')} đ</div>
+                <div className="mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Chiết khấu đơn hàng</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
+                      <button 
+                        onClick={() => setOrderDiscountType("VND")}
+                        className={`px-3 py-2 text-sm font-bold transition-colors ${orderDiscountType === "VND" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
+                      >
+                        VNĐ
+                      </button>
+                      <button 
+                        onClick={() => setOrderDiscountType("PERCENT")}
+                        className={`px-3 py-2 text-sm font-bold transition-colors ${orderDiscountType === "PERCENT" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
+                      >
+                        %
+                      </button>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Nhập giảm giá..."
+                      value={orderDiscount || ""}
+                      onChange={(e) => setOrderDiscount(Number(e.target.value))}
+                      className="flex-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-right font-medium"
+                    />
+                  </div>
+                </div>
+                <p className="text-sm text-indigo-600 uppercase font-black tracking-wider mb-1 mt-6">Khách Phải Trả</p>
+                <div className="text-4xl font-black text-orange-600">{totalAmount.toLocaleString('vi-VN')} đ</div>
               </div>
 
               <button 
