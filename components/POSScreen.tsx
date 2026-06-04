@@ -24,7 +24,8 @@ export default function POSScreen({
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
-  
+  const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
+
   // Product Selection Modal State
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<any[]>([]);
@@ -201,9 +202,11 @@ export default function POSScreen({
     setIsCheckoutModalOpen(false);
 
     if (res.success) {
-      alert(`Thanh toán thành công! Mã Đơn: ${res.order_no}`);
+      setSuccessOrderNo(res.order_no || "");
       setCart([]);
       setIsCartOpen(false);
+      setOrderDiscount(0);
+      setOrderDiscountType("VND");
     } else {
       alert("Lỗi thanh toán: " + res.error);
     }
@@ -604,6 +607,32 @@ export default function POSScreen({
                   Đang ghi nhận đơn hàng...
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {successOrderNo && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-4">
+                &#10003;
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Thanh toan thanh cong!</h3>
+              <p className="text-sm text-gray-500 mb-3">Ma don hang</p>
+              <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-4 mb-4">
+                <span className="text-3xl font-black text-orange-600 tracking-wider">{successOrderNo}</span>
+              </div>
+            </div>
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setSuccessOrderNo(null)}
+                className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all"
+              >
+                Tao don moi
+              </button>
             </div>
           </div>
         </div>
