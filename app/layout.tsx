@@ -5,6 +5,11 @@ import NextAuthSessionProvider from "@/components/SessionProvider";
 export const metadata: Metadata = {
   title: "FNB App v2 - Google Sheets",
   description: "FNB App powered by Next.js and Google Sheets",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "FNB App",
+  },
 };
 
 export const viewport = {
