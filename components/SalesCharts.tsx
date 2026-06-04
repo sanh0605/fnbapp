@@ -6,19 +6,19 @@ export default function SalesCharts({
   salesByDate, 
   salesByDayOfWeek, 
   salesByHour,
-  salesByCategory
+  salesByMonth
 }: { 
   salesByDate: { label: string, amount: number }[];
   salesByDayOfWeek: { label: string, amount: number }[];
   salesByHour: { label: string, amount: number }[];
-  salesByCategory?: { label: string, amount: number }[];
+  salesByMonth: { label: string, amount: number }[];
 }) {
-  const [viewMode, setViewMode] = useState<"DATE" | "DOW" | "HOUR" | "CATEGORY">("DATE");
+  const [viewMode, setViewMode] = useState<"HOUR" | "DOW" | "DATE" | "MONTH">("HOUR");
 
-  let activeData = salesByDate;
+  let activeData = salesByHour;
   if (viewMode === "DOW") activeData = salesByDayOfWeek;
-  if (viewMode === "HOUR") activeData = salesByHour;
-  if (viewMode === "CATEGORY" && salesByCategory) activeData = salesByCategory;
+  if (viewMode === "DATE") activeData = salesByDate;
+  if (viewMode === "MONTH") activeData = salesByMonth;
 
   const maxAmount = Math.max(...activeData.map(d => d.amount), 1);
 
@@ -28,10 +28,10 @@ export default function SalesCharts({
         <h3 className="font-bold text-gray-900">Biểu đồ Doanh Thu</h3>
         <div className="flex bg-gray-100 p-1 rounded-lg">
           <button 
-            onClick={() => setViewMode("DATE")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "DATE" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setViewMode("HOUR")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "HOUR" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
           >
-            Theo Ngày
+            Theo Giờ
           </button>
           <button 
             onClick={() => setViewMode("DOW")}
@@ -40,19 +40,17 @@ export default function SalesCharts({
             Theo Thứ
           </button>
           <button 
-            onClick={() => setViewMode("HOUR")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "HOUR" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={() => setViewMode("DATE")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "DATE" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
           >
-            Theo Giờ
+            Theo Ngày
           </button>
-          {salesByCategory && (
-            <button 
-              onClick={() => setViewMode("CATEGORY")}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "CATEGORY" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
-            >
-              Theo Nhóm Món
-            </button>
-          )}
+          <button 
+            onClick={() => setViewMode("MONTH")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "MONTH" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            Theo Tháng
+          </button>
         </div>
       </div>
       

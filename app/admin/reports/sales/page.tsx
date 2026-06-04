@@ -1,6 +1,7 @@
 import { findAll } from "@/lib/sheets_db";
 import SalesFilter from "@/components/SalesFilter";
 import SalesCharts from "@/components/SalesCharts";
+import CategoryPieChart from "@/components/CategoryPieChart";
 
 export const dynamic = 'force-dynamic';
 
@@ -107,6 +108,7 @@ export default async function SalesReportPage({
   const salesByDate: Record<string, number> = {};
   const salesByDayOfWeek: Record<number, number> = { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 0:0 };
   const salesByHour: Record<number, number> = {};
+  const salesByMonth: Record<string, number> = {};
   for(let i=0; i<24; i++) salesByHour[i] = 0;
   
   let curr = new Date(startDate);
@@ -115,14 +117,23 @@ export default async function SalesReportPage({
     curr.setDate(curr.getDate() + 1);
   }
 
+  let currMonth = new Date(startDate);
+  currMonth.setDate(1);
+  while(currMonth <= endDate) {
+    salesByMonth[`${currMonth.getMonth()+1}/${currMonth.getFullYear()}`] = 0;
+    currMonth.setMonth(currMonth.getMonth() + 1);
+  }
+
   if (categoryId) {
     validLines.forEach((line:any) => {
       if(!line.created_at) return;
       const d = new Date(line.created_at);
       const dateStr = d.toLocaleDateString("en-GB");
+      const monthKey = `${d.getMonth()+1}/${d.getFullYear()}`;
       const amount = Number(line.qty || 0) * Number(line.unit_price || 0);
 
       if(salesByDate[dateStr] !== undefined) salesByDate[dateStr] += amount;
+      if(salesByMonth[monthKey] !== undefined) salesByMonth[monthKey] += amount;
       salesByDayOfWeek[d.getDay()] += amount;
       salesByHour[d.getHours()] += amount;
     });
@@ -131,9 +142,11 @@ export default async function SalesReportPage({
       if(!o.created_at) return;
       const d = new Date(o.created_at);
       const dateStr = d.toLocaleDateString("en-GB");
+      const monthKey = `${d.getMonth()+1}/${d.getFullYear()}`;
       const amount = Number(o.total_amount || 0);
 
       if(salesByDate[dateStr] !== undefined) salesByDate[dateStr] += amount;
+      if(salesByMonth[monthKey] !== undefined) salesByMonth[monthKey] += amount;
       salesByDayOfWeek[d.getDay()] += amount;
       salesByHour[d.getHours()] += amount;
     });
@@ -141,6 +154,11 @@ export default async function SalesReportPage({
 
   const chartDataDate = Object.entries(salesByDate).map(([date, amount]) => ({
     label: date.substring(0, 5),
+    amount
+  }));
+
+  const chartDataMonth = Object.entries(salesByMonth).map(([month, amount]) => ({
+    label: month,
     amount
   }));
 
@@ -193,9 +211,16 @@ export default async function SalesReportPage({
           salesByDate={chartDataDate}
           salesByDayOfWeek={chartDataDOW}
           salesByHour={chartDataHour}
-          salesByCategory={chartDataCategory}
+          salesByMonth={chartDataMonth}
         />
 
+        {/* Category Pie Chart */}
+        <div className="xl:col-span-1">
+          <CategoryPieChart data={chartDataCategory} />
+        </div>
+      </div>
+
+      <div className="mt-8">
         {/* Product Table */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[400px]">
           <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
@@ -204,9 +229,9 @@ export default async function SalesReportPage({
               Tổng: {totalCups} ly
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100">
+              <thead className="bg-white text-gray-400 font-medium border-b border-gray-100">
                 <tr>
                   <th className="px-4 py-3">Món</th>
                   <th className="px-4 py-3 text-right">Số lượng</th>
