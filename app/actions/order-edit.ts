@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllNoCache, insert, update, remove } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, insert, update, remove, insertMany, removeMany } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 
 interface EditLineItem {
@@ -88,10 +88,13 @@ export async function editOrder(
     const allRecipes = await findAll("Recipes");
     const baseIngredients = await findAll("Base_Ingredients");
 
+    const orderLinesToInsert: any[] = [];
+    const stockLedgersToInsert: any[] = [];
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const line_id = `OL-${Date.now()}-${i}-${Math.floor(Math.random() * 1000)}`;
-      await insert("Order_Lines", {
+      orderLinesToInsert.push({
         id: line_id,
         order_id: orderId,
         product_id: item.product_id,
@@ -101,7 +104,7 @@ export async function editOrder(
         line_discount: item.discount_amount || 0,
         discount_type: item.discount_type || "VND",
         modifiers_json: JSON.stringify(item.modifiers || []),
-        created_at: nowIso,
+        created_at: orderCreatedAt,
       });
 
       // Stock deduction - variant recipe (using recipe active at order creation time)
@@ -122,14 +125,14 @@ export async function editOrder(
             const consumeQty = Number(ing.quantity) * Number(item.qty);
             const unitCost = await getIngredientUnitCost(ing.ingredient_id, orderCreatedAt);
             const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-            await insert("Stock_Ledger", {
+            stockLedgersToInsert.push({
               id: ledger_id,
               transaction_type: "SALES_CONSUME",
               reference_id: orderId,
               item_reference: ing.ingredient_id,
               quantity_change: -consumeQty,
               unit_cost: unitCost,
-              created_at: nowIso,
+              created_at: orderCreatedAt,
             });
           }
         }
@@ -155,20 +158,27 @@ export async function editOrder(
                 const consumeQty = Number(ing.quantity) * Number(item.qty);
                 const unitCost = await getIngredientUnitCost(ing.ingredient_id, orderCreatedAt);
                 const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-                await insert("Stock_Ledger", {
+                stockLedgersToInsert.push({
                   id: ledger_id,
                   transaction_type: "SALES_CONSUME",
                   reference_id: orderId,
                   item_reference: ing.ingredient_id,
                   quantity_change: -consumeQty,
                   unit_cost: unitCost,
-                  created_at: nowIso,
+                  created_at: orderCreatedAt,
                 });
               }
             }
           }
         }
       }
+    }
+
+    if (orderLinesToInsert.length > 0) {
+      await insertMany("Order_Lines", orderLinesToInsert);
+    }
+    if (stockLedgersToInsert.length > 0) {
+      await insertMany("Stock_Ledger", stockLedgersToInsert);
     }
 
     // 5. Update the order record
@@ -180,24 +190,24 @@ export async function editOrder(
       method: payment_method,
     });
 
-    // 6. Delete old lines and stock entries — log failures instead of swallowing silently
+    // 6. Delete old lines and stock entries
     const deleteErrors: string[] = [];
 
-    for (const lineId of oldLineIds) {
+    if (oldLineIds.length > 0) {
       try {
-        await remove("Order_Lines", lineId);
+        await removeMany("Order_Lines", oldLineIds);
       } catch (e: any) {
-        const msg = `Failed to delete Order_Line ${lineId}: ${e.message}`;
+        const msg = `Failed to delete old Order_Lines: ${e.message}`;
         console.error("[editOrder]", msg);
         deleteErrors.push(msg);
       }
     }
 
-    for (const stockId of oldStockIds) {
+    if (oldStockIds.length > 0) {
       try {
-        await remove("Stock_Ledger", stockId);
+        await removeMany("Stock_Ledger", oldStockIds);
       } catch (e: any) {
-        const msg = `Failed to delete Stock_Ledger ${stockId}: ${e.message}`;
+        const msg = `Failed to delete old Stock_Ledgers: ${e.message}`;
         console.error("[editOrder]", msg);
         deleteErrors.push(msg);
       }

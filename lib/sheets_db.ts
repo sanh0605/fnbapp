@@ -129,6 +129,30 @@ export async function insert(sheetName: string, data: any) {
   return data;
 }
 
+// Insert multiple records
+export async function insertMany(sheetName: string, dataArray: any[]) {
+  if (!dataArray || dataArray.length === 0) return [];
+  
+  const sheets = getSheetsClient();
+  const headers = await getHeaders(sheetName);
+  if (!headers || headers.length === 0) throw new Error(`Sheet ${sheetName} has no headers`);
+
+  const rows = dataArray.map(data => mapObjectToRow(data, headers));
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A:A`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: rows,
+    },
+  });
+
+  revalidateTag('sheets'); // Xoá cache ngay lập tức sau khi thêm
+
+  return dataArray;
+}
+
 // Update an existing record
 export async function update(sheetName: string, id: string, data: any) {
   const sheets = getSheetsClient();
@@ -157,8 +181,8 @@ export async function update(sheetName: string, id: string, data: any) {
   if (rowIndex === -1) throw new Error(`Record with id ${id} not found in ${sheetName}`);
 
   // Merge existing data with new data
-  const existingObj = {};
-  headers.forEach((h, idx) => { existingObj[h] = rows[rowIndex][idx] || ''; });
+  const existingObj: Record<string, any> = {};
+  headers.forEach((h: string, idx: number) => { existingObj[h] = rows[rowIndex][idx] || ''; });
   const updatedObj = { ...existingObj, ...data, id }; // Ensure ID is immutable
   
   const updatedRow = mapObjectToRow(updatedObj, headers);
@@ -223,6 +247,65 @@ export async function remove(sheetName: string, id: string) {
           }
         }
       }]
+    }
+  });
+
+  revalidateTag('sheets'); // Xoá cache sau khi xoá
+
+  return true;
+}
+
+// Delete multiple records by ID
+export async function removeMany(sheetName: string, ids: string[]) {
+  if (!ids || ids.length === 0) return true;
+
+  const sheets = getSheetsClient();
+  
+  // 1. Get sheetId
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const sheet = meta.data.sheets?.find(s => s.properties?.title?.toLowerCase() === sheetName.toLowerCase());
+  if (!sheet || sheet.properties?.sheetId === undefined) throw new Error(`Sheet ${sheetName} not found`);
+  const sheetId = sheet.properties.sheetId;
+
+  // 2. Find row indices
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A1:Z`,
+  });
+  
+  const rows = res.data.values || [];
+  const headers = rows[0] || [];
+  const idIndex = headers.indexOf('id');
+  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
+
+  const rowIndices: number[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    if (ids.includes(rows[i][idIndex])) {
+      rowIndices.push(i);
+    }
+  }
+
+  if (rowIndices.length === 0) return true;
+
+  // Sort indices descending to avoid shifting issues when deleting
+  rowIndices.sort((a, b) => b - a);
+
+  // 3. Delete rows via batchUpdate
+  const requests = rowIndices.map(rowIndex => ({
+    deleteDimension: {
+      range: {
+        sheetId: sheetId,
+        dimension: 'ROWS',
+        startIndex: rowIndex,
+        endIndex: rowIndex + 1
+      }
+    }
+  }));
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      requests
     }
   });
 

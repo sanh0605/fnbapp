@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllNoCache, insert, generateNewId, remove } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, insert, generateNewId, remove, insertMany, removeMany } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -86,15 +86,15 @@ export async function submitOrder(orderData: any) {
     const baseIngredients = await findAll("Base_Ingredients");
     const existingLedger = await findAllNoCache("Stock_Ledger");
 
-    // Track created line IDs for cleanup on failure
-    const createdLineIds: string[] = [];
-    const createdStockIds: string[] = [];
+    // Track created data
+    const orderLinesToInsert: any[] = [];
+    const stockLedgersToInsert: any[] = [];
 
     try {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const line_id = `OL-${Date.now()}-${i}-${Math.floor(Math.random()*1000)}`;
-        await insert("Order_Lines", {
+        orderLinesToInsert.push({
           id: line_id,
           order_id,
           product_id: item.product_id,
@@ -106,7 +106,6 @@ export async function submitOrder(orderData: any) {
           modifiers_json: JSON.stringify(item.modifiers || []),
           created_at: nowIso
         });
-        createdLineIds.push(line_id);
 
         // -- TRỪ KHO TỰ ĐỘNG --
 
@@ -132,7 +131,7 @@ export async function submitOrder(orderData: any) {
               const consumeQty = Number(ing.quantity) * Number(item.qty);
               const unitCost = await getIngredientUnitCost(ing.ingredient_id, nowIso, existingLedger);
               const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
-              await insert("Stock_Ledger", {
+              stockLedgersToInsert.push({
                 id: ledger_id,
                 transaction_type: "SALES_CONSUME",
                 reference_id: order_id,
@@ -141,7 +140,6 @@ export async function submitOrder(orderData: any) {
                 unit_cost: unitCost,
                 created_at: nowIso
               });
-              createdStockIds.push(ledger_id);
             }
           }
         }
@@ -170,7 +168,7 @@ export async function submitOrder(orderData: any) {
                   const consumeQty = Number(ing.quantity) * Number(item.qty);
                   const unitCost = await getIngredientUnitCost(ing.ingredient_id, nowIso, existingLedger);
                   const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
-                  await insert("Stock_Ledger", {
+                  stockLedgersToInsert.push({
                     id: ledger_id,
                     transaction_type: "SALES_CONSUME",
                     reference_id: order_id,
@@ -179,22 +177,29 @@ export async function submitOrder(orderData: any) {
                     unit_cost: unitCost,
                     created_at: nowIso
                   });
-                  createdStockIds.push(ledger_id);
                 }
               }
             }
           }
         }
       }
+
+      if (orderLinesToInsert.length > 0) {
+        await insertMany("Order_Lines", orderLinesToInsert);
+      }
+      if (stockLedgersToInsert.length > 0) {
+        await insertMany("Stock_Ledger", stockLedgersToInsert);
+      }
+
     } catch (lineError: any) {
       // Cleanup: remove partial lines, stock entries, and the order itself
-      for (const lid of createdLineIds) {
-        try { await remove("Order_Lines", lid); } catch (e) {}
-      }
-      for (const sid of createdStockIds) {
-        try { await remove("Stock_Ledger", sid); } catch (e) {}
-      }
       try { await remove("Orders", order_id); } catch (e) {}
+      if (orderLinesToInsert.length > 0) {
+        try { await removeMany("Order_Lines", orderLinesToInsert.map(l => l.id)); } catch (e) {}
+      }
+      if (stockLedgersToInsert.length > 0) {
+        try { await removeMany("Stock_Ledger", stockLedgersToInsert.map(l => l.id)); } catch (e) {}
+      }
       return { error: `Lỗi tạo order lines: ${lineError.message}. Đã rollback toàn bộ.` };
     }
 
