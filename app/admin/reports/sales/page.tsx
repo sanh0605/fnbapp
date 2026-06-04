@@ -66,7 +66,7 @@ export default async function SalesReportPage({
     if (!productSales[key]) {
       const v = variants.find((x:any) => x.id === line.variant_id);
       const pName = p ? p.name : line.product_id;
-      const vName = v ? v.name : '';
+      const vName = v ? v.size_name : '';
       productSales[key] = {
         name: vName ? `${pName} (${vName})` : pName,
         qty: 0,
