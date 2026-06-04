@@ -14,31 +14,19 @@ export async function submitOrder(orderData: any) {
     if (!items || items.length === 0) return { error: "Giỏ hàng trống" };
     if (!brand_id) return { error: "Không xác định được thương hiệu. Vui lòng mở máy POS từ đầu." };
 
+    // 1. Determine brand code
     const allBrands = await findAll("Brands");
     const brand = allBrands.find((b:any) => b.id === brand_id);
     const brandCode = brand?.code || "ORD";
 
-    const allOrders = await findAll("Orders");
-    const brandOrders = allOrders.filter((o:any) => o.order_no && o.order_no.startsWith(brandCode));
-    
-    let maxNum = 0;
-    for (const o of brandOrders) {
-      const numStr = o.order_no.replace(brandCode, '');
-      const num = parseInt(numStr, 10);
-      if (!isNaN(num) && num > maxNum) {
-        maxNum = num;
-      }
-    }
-    const nextNum = maxNum + 1;
-    const order_no = `${brandCode}${nextNum.toString().padStart(6, '0')}`;
-
+    // 2. Generate unique order_id
     const nowIso = new Date().toISOString();
-    const order_id = await generateNewId("Orders", "ORD");
+    const order_id = `ORD-${Date.now()}-${Math.floor(Math.random()*1000)}`;
 
-    // Lưu Order
+    // 2. Insert as PENDING first to reserve our row atomically
     await insert("Orders", {
       id: order_id,
-      order_no,
+      order_no: "PENDING",
       brand_id,
       total_amount,
       subtotal_amount: subtotal_amount || total_amount,
@@ -50,11 +38,40 @@ export async function submitOrder(orderData: any) {
       created_at: nowIso
     });
 
+    // 3. Fetch all orders again to find our exact row position
+    const { findAllNoCache, update } = require('@/lib/sheets_db');
+    const allOrdersAfter = await findAllNoCache("Orders");
+    const myIndex = allOrdersAfter.findIndex((o:any) => o.id === order_id);
+    
+    let previousCount = 0;
+    if (myIndex !== -1) {
+      // Count how many orders with the same brand exist BEFORE our row
+      for (let i = 0; i < myIndex; i++) {
+        if (allOrdersAfter[i].brand_id === brand_id) {
+          previousCount++;
+        }
+      }
+    } else {
+      // Fallback if not found (shouldn't happen)
+      previousCount = allOrdersAfter.filter((o:any) => o.brand_id === brand_id).length;
+    }
+
+    let final_order_no = `${brandCode}${(previousCount + 1).toString().padStart(6, '0')}`;
+    const existingOrderNos = allOrdersAfter.map((o: any) => o.order_no);
+    while (existingOrderNos.includes(final_order_no)) {
+      previousCount++;
+      final_order_no = `${brandCode}${(previousCount + 1).toString().padStart(6, '0')}`;
+    }
+
+    // 4. Update the order with the true sequential number
+    await update("Orders", order_id, { order_no: final_order_no });
+
     const allRecipes = await findAll("Recipes");
     const baseIngredients = await findAll("Base_Ingredients"); // To check is_non_inventory
 
-    for (const item of items) {
-      const line_id = await generateNewId("Order_Lines", "OL");
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const line_id = `OL-${Date.now()}-${i}-${Math.floor(Math.random()*1000)}`;
       await insert("Order_Lines", {
         id: line_id,
         order_id,
@@ -91,7 +108,7 @@ export async function submitOrder(orderData: any) {
 
           if (!skip && ing.quantity > 0) {
             const consumeQty = Number(ing.quantity) * Number(item.qty);
-            const ledger_id = await generateNewId("Stock_Ledger", "STK");
+                const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
             await insert("Stock_Ledger", {
               id: ledger_id,
               transaction_type: "SALES_CONSUME",
@@ -127,7 +144,7 @@ export async function submitOrder(orderData: any) {
 
               if (!skip && ing.quantity > 0) {
                 const consumeQty = Number(ing.quantity) * Number(item.qty);
-                const ledger_id = await generateNewId("Stock_Ledger", "STK");
+                    const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
                 await insert("Stock_Ledger", {
                   id: ledger_id,
                   transaction_type: "SALES_CONSUME",
@@ -148,7 +165,7 @@ export async function submitOrder(orderData: any) {
     revalidatePath("/admin");
     revalidatePath("/pos");
     
-    return { success: true, order_no };
+    return { success: true, order_no: final_order_no };
   } catch (error: any) {
     return { error: error.message };
   }
