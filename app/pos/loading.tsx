@@ -1,6 +1,6 @@
 export default function POSLoading() {
   return (
-    <div className="flex h-screen bg-gray-100 font-sans overflow-hidden animate-pulse">
+    <div className="fixed inset-0 flex bg-gray-100 font-sans overflow-hidden animate-pulse">
       <div className="flex-1 flex flex-col min-w-0">
         <header className="bg-white h-14 border-b border-gray-200 flex items-center justify-between px-4 shrink-0 shadow-sm">
           <div className="h-6 bg-gray-200 rounded w-32"></div>

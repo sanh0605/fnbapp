@@ -95,7 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="flex h-dvh bg-gray-50 font-sans text-gray-900 overflow-hidden">
+    <div className="fixed inset-0 flex bg-gray-50 font-sans text-gray-900 overflow-hidden">
       
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
@@ -230,7 +230,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-dvh overflow-hidden bg-white/50 relative">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white/50 relative">
         {/* Top Header Mobile */}
         <div className="md:hidden h-auto min-h-[4rem] bg-white border-b border-gray-200 flex items-center px-4 justify-between pt-[env(safe-area-inset-top)]">
           <button 
