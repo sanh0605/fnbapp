@@ -48,7 +48,14 @@ export default async function SalesReportPage({
 
   // Mảng chứa các line hợp lệ
   const validLines: any[] = [];
-  const productSales: Record<string, { qty: number, revenue: number, name: string }> = {};
+  const productSalesMap: Record<string, { 
+    name: string; 
+    totalQty: number; 
+    totalRevenue: number; 
+    sizes: Record<string, number>
+  }> = {};
+  const toppingSalesMap: Record<string, { name: string, qty: number, revenue: number }> = {};
+  const allSizesSet = new Set<string>();
   const categorySalesMap: Record<string, number> = {};
   let totalCups = 0;
   
@@ -62,32 +69,53 @@ export default async function SalesReportPage({
     line.created_at = order.created_at; // Gắn timestamp để vẽ chart
     validLines.push(line);
 
-    const key = `${line.product_id}_${line.variant_id}`;
-    if (!productSales[key]) {
-      const v = variants.find((x:any) => x.id === line.variant_id);
-      const pName = p ? p.name : line.product_id;
-      const vName = v ? v.size_name : '';
-      productSales[key] = {
-        name: vName ? `${pName} (${vName})` : pName,
-        qty: 0,
-        revenue: 0
-      };
-    }
-    
     const qty = Number(line.qty || 0);
     const price = Number(line.unit_price || 0);
     const lineTotal = qty * price;
     
-    productSales[key].qty += qty;
-    productSales[key].revenue += lineTotal;
+    const pName = p ? p.name : line.product_id;
+    const v = variants.find((x:any) => x.id === line.variant_id);
+    const sizeName = v ? (v.size_name || 'Mặc định') : 'Mặc định';
+
+    if (!productSalesMap[line.product_id]) {
+      productSalesMap[line.product_id] = { name: pName, totalQty: 0, totalRevenue: 0, sizes: {} };
+    }
+    
+    productSalesMap[line.product_id].totalQty += qty;
+    productSalesMap[line.product_id].totalRevenue += lineTotal;
+    
+    if (!productSalesMap[line.product_id].sizes[sizeName]) {
+      productSalesMap[line.product_id].sizes[sizeName] = 0;
+    }
+    productSalesMap[line.product_id].sizes[sizeName] += qty;
+    allSizesSet.add(sizeName);
     totalCups += qty;
+
+    if (line.modifiers_json) {
+      try {
+        const modifiers = JSON.parse(line.modifiers_json);
+        if (Array.isArray(modifiers)) {
+          modifiers.forEach((mod: any) => {
+            const modKey = mod.id || mod.name;
+            if (!modKey) return;
+            if (!toppingSalesMap[modKey]) {
+              toppingSalesMap[modKey] = { name: mod.name, qty: 0, revenue: 0 };
+            }
+            toppingSalesMap[modKey].qty += qty;
+            toppingSalesMap[modKey].revenue += Number(mod.price || 0) * qty;
+          });
+        }
+      } catch (e) {}
+    }
 
     const catId = p?.category_id || "unknown";
     if (!categorySalesMap[catId]) categorySalesMap[catId] = 0;
     categorySalesMap[catId] += lineTotal;
   });
 
-  const bestSellers = Object.values(productSales).sort((a, b) => b.qty - a.qty);
+  const uniqueSizes = Array.from(allSizesSet).sort((a,b) => a.localeCompare(b));
+  const bestSellers = Object.values(productSalesMap).sort((a, b) => b.totalQty - a.totalQty);
+  const bestToppings = Object.values(toppingSalesMap).sort((a, b) => b.qty - a.qty);
 
   // Tính KPIs dựa trên validLines (nếu có lọc category) hoặc order (nếu không lọc)
   let totalRevenue = 0;
@@ -220,29 +248,68 @@ export default async function SalesReportPage({
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Product Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[400px]">
+        <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
           <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Chi tiết Sản lượng</h3>
             <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded">
               Tổng: {totalCups} ly
             </span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-white text-gray-400 font-medium border-b border-gray-100">
+          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
                   <th className="px-4 py-3">Món</th>
+                  {uniqueSizes.map(size => (
+                    <th key={size} className="px-4 py-3 text-right">Size {size}</th>
+                  ))}
+                  <th className="px-4 py-3 text-right text-gray-700">Tổng SL</th>
+                  <th className="px-4 py-3 text-right text-gray-700">Tổng Thu</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {bestSellers.length === 0 ? (
+                  <tr><td colSpan={uniqueSizes.length + 3} className="text-center py-8 text-gray-400">Không có giao dịch</td></tr>
+                ) : (
+                  bestSellers.map((item, i) => (
+                    <tr key={i} className="hover:bg-gray-50 transition">
+                      <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
+                      {uniqueSizes.map(size => (
+                        <td key={size} className="px-4 py-3 text-right font-medium text-gray-500">
+                          {item.sizes[size] ? item.sizes[size] : '-'}
+                        </td>
+                      ))}
+                      <td className="px-4 py-3 text-right font-bold text-gray-800">{item.totalQty}</td>
+                      <td className="px-4 py-3 text-right text-green-600 font-medium">{item.totalRevenue.toLocaleString("vi-VN")} đ</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Toppings Table */}
+        <div className="xl:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+            <h3 className="font-bold text-gray-900">Top Topping Bán Chạy</h3>
+          </div>
+          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
+                <tr>
+                  <th className="px-4 py-3">Topping</th>
                   <th className="px-4 py-3 text-right">Số lượng</th>
                   <th className="px-4 py-3 text-right">Doanh thu</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {bestSellers.length === 0 ? (
-                  <tr><td colSpan={3} className="text-center py-8 text-gray-400">Không có giao dịch</td></tr>
+                {bestToppings.length === 0 ? (
+                  <tr><td colSpan={3} className="text-center py-8 text-gray-400">Không có topping nào</td></tr>
                 ) : (
-                  bestSellers.map((item, i) => (
+                  bestToppings.map((item, i) => (
                     <tr key={i} className="hover:bg-gray-50 transition">
                       <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
                       <td className="px-4 py-3 text-right font-bold text-gray-600">{item.qty}</td>
