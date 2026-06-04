@@ -43,7 +43,7 @@ function mapObjectToRow(obj: any, headers: string[]): string[] {
   });
 }
 
-// Get all records from a sheet
+// Get all records from a sheet (cached)
 export const findAll = unstable_cache(
   async (sheetName: string) => {
     const sheets = getSheetsClient();
@@ -56,6 +56,16 @@ export const findAll = unstable_cache(
   ['sheets-findall'],
   { revalidate: 60, tags: ['sheets'] }
 );
+
+// Get all records from a sheet (no cache)
+export const findAllNoCache = async (sheetName: string) => {
+  const sheets = getSheetsClient();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A1:Z`,
+  });
+  return mapRowsToObjects(res.data.values || []);
+};
 
 // Find one record by ID
 export async function findById(sheetName: string, id: string) {
@@ -79,7 +89,7 @@ export const getHeaders = unstable_cache(
 
 // Generate new ID (e.g. BR-001)
 export async function generateNewId(sheetName: string, prefix: string): Promise<string> {
-  const all = await findAll(sheetName);
+  const all = await findAllNoCache(sheetName);
   if (all.length === 0) return `${prefix}-001`;
   
   // Find max ID

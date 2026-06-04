@@ -7,6 +7,14 @@ export const metadata: Metadata = {
   description: "FNB App powered by Next.js and Google Sheets",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

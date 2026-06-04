@@ -1,0 +1,15 @@
+{
+  "items": [
+    {"product_name": "Cacao Oatside", "size_name": "700ml", "qty": 3, "modifiers": ["Kem mứt phô mai", "Kem mứt phô mai", "Kem mứt phô mai"]},
+    {"product_name": "Trà sữa truyền thống", "size_name": "700ml", "qty": 1},
+    {"product_name": "Trà đào dầm", "size_name": "700ml", "qty": 2},
+    {"product_name": "Yogurt xoài", "size_name": "700ml", "qty": 1},
+    {"product_name": "Matcha oatside", "size_name": "700ml", "qty": 1},
+    {"product_name": "Yogurt đào", "size_name": "700ml", "qty": 1},
+    {"product_name": "Matcha oatside", "size_name": "700ml", "qty": 1},
+    {"product_name": "Yogurt việt quất", "size_name": "700ml", "qty": 1},
+    {"product_name": "Yogurt xoài", "size_name": "700ml", "qty": 1},
+    {"product_name": "Cacao Oatside", "size_name": "700ml", "qty": 1},
+    {"product_name": "Yogurt đào", "size_name": "700ml", "qty": 1}
+  ]
+}

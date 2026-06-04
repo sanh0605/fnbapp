@@ -1,9 +1,21 @@
 "use server";
 
-import { findAll, insert, generateNewId } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, insert, generateNewId, remove } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+async function getIngredientUnitCost(ingredientId: string, beforeDate: string, ledgerCache: any[]): Promise<number> {
+  const purchases = ledgerCache.filter((s: any) =>
+    s.item_reference === ingredientId &&
+    s.transaction_type === "PURCHASE" &&
+    s.created_at &&
+    new Date(s.created_at) <= new Date(beforeDate)
+  );
+  if (purchases.length === 0) return 0;
+  purchases.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  return Number(purchases[0].unit_cost) || 0;
+}
 
 export async function submitOrder(orderData: any) {
   try {
@@ -43,122 +55,147 @@ export async function submitOrder(orderData: any) {
     const allOrdersAfter = await findAllNoCache("Orders");
     const myIndex = allOrdersAfter.findIndex((o:any) => o.id === order_id);
     
-    let previousCount = 0;
-    if (myIndex !== -1) {
-      // Count how many orders with the same brand exist BEFORE our row
-      for (let i = 0; i < myIndex; i++) {
-        if (allOrdersAfter[i].brand_id === brand_id) {
-          previousCount++;
+    let maxNum = 0;
+    for (const o of allOrdersAfter) {
+      if (o.id === order_id) continue;
+      
+      if (!o.brand_id || o.brand_id === brand_id || o.brand_id === "") {
+        let num = 0;
+        if (o.order_no && o.order_no.startsWith('#')) {
+          num = parseInt(o.order_no.replace('#', ''), 10);
+        } else if (o.order_no && o.order_no.startsWith(brandCode)) {
+          num = parseInt(o.order_no.replace(brandCode, ''), 10);
+        }
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
         }
       }
-    } else {
-      // Fallback if not found (shouldn't happen)
-      previousCount = allOrdersAfter.filter((o:any) => o.brand_id === brand_id).length;
     }
 
-    let final_order_no = `${brandCode}${(previousCount + 1).toString().padStart(6, '0')}`;
+    let final_order_no = `${brandCode}${(maxNum + 1).toString().padStart(6, '0')}`;
     const existingOrderNos = allOrdersAfter.map((o: any) => o.order_no);
     while (existingOrderNos.includes(final_order_no)) {
-      previousCount++;
-      final_order_no = `${brandCode}${(previousCount + 1).toString().padStart(6, '0')}`;
+      maxNum++;
+      final_order_no = `${brandCode}${(maxNum + 1).toString().padStart(6, '0')}`;
     }
 
     // 4. Update the order with the true sequential number
     await update("Orders", order_id, { order_no: final_order_no });
 
     const allRecipes = await findAll("Recipes");
-    const baseIngredients = await findAll("Base_Ingredients"); // To check is_non_inventory
+    const baseIngredients = await findAll("Base_Ingredients");
+    const existingLedger = await findAllNoCache("Stock_Ledger");
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const line_id = `OL-${Date.now()}-${i}-${Math.floor(Math.random()*1000)}`;
-      await insert("Order_Lines", {
-        id: line_id,
-        order_id,
-        product_id: item.product_id,
-        variant_id: item.variant_id,
-        qty: item.qty,
-        unit_price: item.unit_price,
-        line_discount: item.discount_amount || 0,
-        discount_type: item.discount_type || "VND",
-        modifiers_json: JSON.stringify(item.modifiers || []),
-        created_at: nowIso
-      });
+    // Track created line IDs for cleanup on failure
+    const createdLineIds: string[] = [];
+    const createdStockIds: string[] = [];
 
-      // -- TRỪ KHO TỰ ĐỘNG --
+    try {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const line_id = `OL-${Date.now()}-${i}-${Math.floor(Math.random()*1000)}`;
+        await insert("Order_Lines", {
+          id: line_id,
+          order_id,
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          qty: item.qty,
+          unit_price: item.unit_price,
+          line_discount: item.discount_amount || 0,
+          discount_type: item.discount_type || "VND",
+          modifiers_json: JSON.stringify(item.modifiers || []),
+          created_at: nowIso
+        });
+        createdLineIds.push(line_id);
 
-      // 1. Trừ kho theo công thức của Variant (Thành phẩm)
-      const variantRecipe = allRecipes.find((r:any) => 
-        r.target_type === "PRODUCT_VARIANT" && 
-        r.target_id === item.variant_id && 
-        (!r.end_date || r.end_date === "")
-      );
+        // -- TRỪ KHO TỰ ĐỘNG --
 
-      if (variantRecipe && variantRecipe.ingredients_json) {
-        let ings = [];
-        try { ings = JSON.parse(variantRecipe.ingredients_json); } catch(e){}
-        
-        for (const ing of ings) {
-          // Kiểm tra is_non_inventory nếu là nguyên liệu gốc
-          let skip = false;
-          if (ing.ingredient_type === "BASE_INGREDIENT") {
-            const baseIng = baseIngredients.find((b:any) => b.id === ing.ingredient_id);
-            if (baseIng?.is_non_inventory === "TRUE" || baseIng?.is_non_inventory === true) skip = true;
-          }
+        // 1. Trừ kho theo công thức của Variant (Thành phẩm)
+        const variantRecipe = allRecipes.find((r:any) =>
+          r.target_type === "PRODUCT_VARIANT" &&
+          r.target_id === item.variant_id &&
+          (!r.end_date || r.end_date === "")
+        );
 
-          if (!skip && ing.quantity > 0) {
-            const consumeQty = Number(ing.quantity) * Number(item.qty);
-                const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
-            await insert("Stock_Ledger", {
-              id: ledger_id,
-              transaction_type: "SALES_CONSUME",
-              reference_id: order_id,
-              item_reference: ing.ingredient_id,
-              quantity_change: -consumeQty,
-              unit_cost: 0,
-              created_at: nowIso
-            });
+        if (variantRecipe && variantRecipe.ingredients_json) {
+          let ings = [];
+          try { ings = JSON.parse(variantRecipe.ingredients_json); } catch(e){}
+
+          for (const ing of ings) {
+            let skip = false;
+            if (ing.ingredient_type === "BASE_INGREDIENT") {
+              const baseIng = baseIngredients.find((b:any) => b.id === ing.ingredient_id);
+              if (baseIng?.is_non_inventory === "TRUE" || baseIng?.is_non_inventory === true) skip = true;
+            }
+
+            if (!skip && ing.quantity > 0) {
+              const consumeQty = Number(ing.quantity) * Number(item.qty);
+              const unitCost = await getIngredientUnitCost(ing.ingredient_id, nowIso, existingLedger);
+              const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+              await insert("Stock_Ledger", {
+                id: ledger_id,
+                transaction_type: "SALES_CONSUME",
+                reference_id: order_id,
+                item_reference: ing.ingredient_id,
+                quantity_change: -consumeQty,
+                unit_cost: unitCost,
+                created_at: nowIso
+              });
+              createdStockIds.push(ledger_id);
+            }
           }
         }
-      }
 
-      // 2. Trừ kho theo công thức của các Modifiers (Toppings)
-      if (item.modifiers && item.modifiers.length > 0) {
-        for (const mod of item.modifiers) {
-          const modRecipe = allRecipes.find((r:any) => 
-            r.target_type === "MODIFIER" && 
-            r.target_id === mod.id && 
-            (!r.end_date || r.end_date === "")
-          );
+        // 2. Trừ kho theo công thức của các Modifiers (Toppings)
+        if (item.modifiers && item.modifiers.length > 0) {
+          for (const mod of item.modifiers) {
+            const modRecipe = allRecipes.find((r:any) =>
+              r.target_type === "MODIFIER" &&
+              r.target_id === mod.id &&
+              (!r.end_date || r.end_date === "")
+            );
 
-          if (modRecipe && modRecipe.ingredients_json) {
-            let modIngs = [];
-            try { modIngs = JSON.parse(modRecipe.ingredients_json); } catch(e){}
-            
-            for (const ing of modIngs) {
-              let skip = false;
-              if (ing.ingredient_type === "BASE_INGREDIENT") {
-                const baseIng = baseIngredients.find((b:any) => b.id === ing.ingredient_id);
-                if (baseIng?.is_non_inventory === "TRUE" || baseIng?.is_non_inventory === true) skip = true;
-              }
+            if (modRecipe && modRecipe.ingredients_json) {
+              let modIngs = [];
+              try { modIngs = JSON.parse(modRecipe.ingredients_json); } catch(e){}
 
-              if (!skip && ing.quantity > 0) {
-                const consumeQty = Number(ing.quantity) * Number(item.qty);
-                    const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
-                await insert("Stock_Ledger", {
-                  id: ledger_id,
-                  transaction_type: "SALES_CONSUME",
-                  reference_id: order_id,
-                  item_reference: ing.ingredient_id,
-                  quantity_change: -consumeQty,
-                  unit_cost: 0,
-                  created_at: nowIso
-                });
+              for (const ing of modIngs) {
+                let skip = false;
+                if (ing.ingredient_type === "BASE_INGREDIENT") {
+                  const baseIng = baseIngredients.find((b:any) => b.id === ing.ingredient_id);
+                  if (baseIng?.is_non_inventory === "TRUE" || baseIng?.is_non_inventory === true) skip = true;
+                }
+
+                if (!skip && ing.quantity > 0) {
+                  const consumeQty = Number(ing.quantity) * Number(item.qty);
+                  const unitCost = await getIngredientUnitCost(ing.ingredient_id, nowIso, existingLedger);
+                  const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+                  await insert("Stock_Ledger", {
+                    id: ledger_id,
+                    transaction_type: "SALES_CONSUME",
+                    reference_id: order_id,
+                    item_reference: ing.ingredient_id,
+                    quantity_change: -consumeQty,
+                    unit_cost: unitCost,
+                    created_at: nowIso
+                  });
+                  createdStockIds.push(ledger_id);
+                }
               }
             }
           }
         }
       }
+    } catch (lineError: any) {
+      // Cleanup: remove partial lines, stock entries, and the order itself
+      for (const lid of createdLineIds) {
+        try { await remove("Order_Lines", lid); } catch (e) {}
+      }
+      for (const sid of createdStockIds) {
+        try { await remove("Stock_Ledger", sid); } catch (e) {}
+      }
+      try { await remove("Orders", order_id); } catch (e) {}
+      return { error: `Lỗi tạo order lines: ${lineError.message}. Đã rollback toàn bộ.` };
     }
 
     // Force refresh the inventory overviews if needed

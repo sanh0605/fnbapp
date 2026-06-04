@@ -29,7 +29,9 @@ function SalesFilterInner({
   const searchParams = useSearchParams();
   
   const [startDate, setStartDate] = useState<Date | null>(
-    searchParams.get("start") ? new Date(searchParams.get("start")!) : new Date(new Date().setHours(0,0,0,0))
+    searchParams.get("start") 
+      ? new Date(searchParams.get("start")!) 
+      : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   );
   
   const [endDate, setEndDate] = useState<Date | null>(

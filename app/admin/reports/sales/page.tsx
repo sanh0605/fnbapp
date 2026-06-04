@@ -21,6 +21,7 @@ export default async function SalesReportPage({
 
   // Xác định khoảng thời gian
   let startDate = new Date();
+  startDate.setDate(1); // Mặc định từ đầu tháng
   startDate.setHours(0,0,0,0);
   let endDate = new Date();
   endDate.setHours(23,59,59,999);

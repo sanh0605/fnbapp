@@ -9,8 +9,15 @@ export default async function ReportsPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const startParam = Array.isArray(searchParams?.start) ? searchParams.start[0] : searchParams?.start;
-  const endParam = Array.isArray(searchParams?.end) ? searchParams.end[0] : searchParams?.end;
+  const defaultStartDate = new Date();
+  defaultStartDate.setDate(1);
+  defaultStartDate.setHours(0,0,0,0);
+  
+  const defaultEndDate = new Date();
+  defaultEndDate.setHours(23,59,59,999);
+
+  const startParam = Array.isArray(searchParams?.start) ? searchParams.start[0] : (searchParams?.start || defaultStartDate.toISOString());
+  const endParam = Array.isArray(searchParams?.end) ? searchParams.end[0] : (searchParams?.end || defaultEndDate.toISOString());
   const brandId = Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : searchParams?.brandId;
   const staffName = Array.isArray(searchParams?.staffName) ? searchParams.staffName[0] : searchParams?.staffName;
   const categoryId = Array.isArray(searchParams?.categoryId) ? searchParams.categoryId[0] : searchParams?.categoryId;

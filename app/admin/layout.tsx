@@ -95,7 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans text-gray-900 overflow-hidden">
+    <div className="flex h-dvh bg-gray-50 font-sans text-gray-900 overflow-hidden">
       
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
@@ -111,7 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 pt-[env(safe-area-inset-top)] md:pt-0">
           <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Admin Workspace
           </h1>
@@ -206,7 +206,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
               {session?.user?.name?.charAt(0).toUpperCase() || "A"}
@@ -230,9 +230,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-white/50 relative">
+      <main className="flex-1 flex flex-col h-dvh overflow-hidden bg-white/50 relative">
         {/* Top Header Mobile */}
-        <div className="md:hidden h-16 bg-white border-b border-gray-200 flex items-center px-4 justify-between">
+        <div className="md:hidden h-auto min-h-[4rem] bg-white border-b border-gray-200 flex items-center px-4 justify-between pt-[env(safe-area-inset-top)]">
           <button 
             className="text-gray-500 p-2 hover:bg-gray-100 rounded-lg"
             onClick={() => setIsSidebarOpen(true)}

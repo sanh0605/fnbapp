@@ -13,6 +13,47 @@ interface EditLineItem {
   discount_type: string;
 }
 
+async function getIngredientUnitCost(ingredientId: string, beforeDate: string): Promise<number> {
+  const allLedger = await findAllNoCache("Stock_Ledger");
+  const purchases = allLedger.filter((s: any) =>
+    s.item_reference === ingredientId &&
+    s.transaction_type === "PURCHASE" &&
+    s.created_at &&
+    new Date(s.created_at) <= new Date(beforeDate)
+  );
+
+  if (purchases.length === 0) return 0;
+
+  purchases.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  return Number(purchases[0].unit_cost) || 0;
+}
+
+function findRecipeAtTime(allRecipes: any[], targetType: string, targetId: string, atTime: string): any | null {
+  const targetTime = new Date(atTime).getTime();
+
+  const candidates = allRecipes.filter((r: any) => {
+    if (r.target_type !== targetType || r.target_id !== targetId) return false;
+
+    const effectiveTime = r.created_at ? new Date(r.created_at).getTime() : 0;
+    if (effectiveTime > targetTime) return false;
+
+    if (r.end_date && r.end_date !== "") {
+      return new Date(r.end_date).getTime() > targetTime;
+    }
+    return true;
+  });
+
+  if (candidates.length === 0) return null;
+
+  candidates.sort((a: any, b: any) => {
+    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  return candidates[0];
+}
+
 export async function editOrder(
   orderId: string,
   editData: {
@@ -36,21 +77,14 @@ export async function editOrder(
 
     const nowIso = new Date().toISOString();
 
-    // 2. Delete old Order_Lines
+    // 2. Identify old lines and stock entries for later cleanup
     const allLines = await findAllNoCache("Order_Lines");
-    const oldLines = allLines.filter((l: any) => l.order_id === orderId);
-    for (const line of oldLines) {
-      await remove("Order_Lines", line.id);
-    }
+    const oldLineIds = allLines.filter((l: any) => l.order_id === orderId).map((l: any) => l.id);
 
-    // 3. Delete old Stock_Ledger entries for this order
     const allStockLedger = await findAllNoCache("Stock_Ledger");
-    const oldStockEntries = allStockLedger.filter((s: any) => s.reference_id === orderId);
-    for (const entry of oldStockEntries) {
-      await remove("Stock_Ledger", entry.id);
-    }
+    const oldStockIds = allStockLedger.filter((s: any) => s.reference_id === orderId).map((s: any) => s.id);
 
-    // 4. Create new Order_Lines and Stock_Ledger entries
+    // 3. Create new Order_Lines and Stock_Ledger entries FIRST (before deleting old)
     const allRecipes = await findAll("Recipes");
     const baseIngredients = await findAll("Base_Ingredients");
 
@@ -70,17 +104,8 @@ export async function editOrder(
         created_at: nowIso,
       });
 
-      // Stock deduction - variant recipe
-      // Priority: recipe with end_date > orderCreatedAt
-      // Fallback: recipe with empty end_date
-      const variantRecipe = allRecipes.find((r: any) =>
-        r.target_type === "PRODUCT_VARIANT" &&
-        r.target_id === item.variant_id &&
-        (
-          (r.end_date && r.end_date !== "" && new Date(r.end_date) > new Date(orderCreatedAt)) ||
-          (!r.end_date || r.end_date === "")
-        )
-      );
+      // Stock deduction - variant recipe (using recipe active at order creation time)
+      const variantRecipe = findRecipeAtTime(allRecipes, "PRODUCT_VARIANT", item.variant_id, orderCreatedAt);
 
       if (variantRecipe && variantRecipe.ingredients_json) {
         let ings: any[] = [];
@@ -95,6 +120,7 @@ export async function editOrder(
 
           if (!skip && ing.quantity > 0) {
             const consumeQty = Number(ing.quantity) * Number(item.qty);
+            const unitCost = await getIngredientUnitCost(ing.ingredient_id, orderCreatedAt);
             const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
             await insert("Stock_Ledger", {
               id: ledger_id,
@@ -102,7 +128,7 @@ export async function editOrder(
               reference_id: orderId,
               item_reference: ing.ingredient_id,
               quantity_change: -consumeQty,
-              unit_cost: 0,
+              unit_cost: unitCost,
               created_at: nowIso,
             });
           }
@@ -112,14 +138,7 @@ export async function editOrder(
       // Stock deduction - modifier recipes
       if (item.modifiers && item.modifiers.length > 0) {
         for (const mod of item.modifiers) {
-          const modRecipe = allRecipes.find((r: any) =>
-            r.target_type === "MODIFIER" &&
-            r.target_id === mod.id &&
-            (
-              (r.end_date && r.end_date !== "" && new Date(r.end_date) > new Date(orderCreatedAt)) ||
-              (!r.end_date || r.end_date === "")
-            )
-          );
+          const modRecipe = findRecipeAtTime(allRecipes, "MODIFIER", mod.id, orderCreatedAt);
 
           if (modRecipe && modRecipe.ingredients_json) {
             let modIngs: any[] = [];
@@ -134,6 +153,7 @@ export async function editOrder(
 
               if (!skip && ing.quantity > 0) {
                 const consumeQty = Number(ing.quantity) * Number(item.qty);
+                const unitCost = await getIngredientUnitCost(ing.ingredient_id, orderCreatedAt);
                 const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
                 await insert("Stock_Ledger", {
                   id: ledger_id,
@@ -141,7 +161,7 @@ export async function editOrder(
                   reference_id: orderId,
                   item_reference: ing.ingredient_id,
                   quantity_change: -consumeQty,
-                  unit_cost: 0,
+                  unit_cost: unitCost,
                   created_at: nowIso,
                 });
               }
@@ -160,11 +180,43 @@ export async function editOrder(
       method: payment_method,
     });
 
+    // 6. Delete old lines and stock entries — log failures instead of swallowing silently
+    const deleteErrors: string[] = [];
+
+    for (const lineId of oldLineIds) {
+      try {
+        await remove("Order_Lines", lineId);
+      } catch (e: any) {
+        const msg = `Failed to delete Order_Line ${lineId}: ${e.message}`;
+        console.error("[editOrder]", msg);
+        deleteErrors.push(msg);
+      }
+    }
+
+    for (const stockId of oldStockIds) {
+      try {
+        await remove("Stock_Ledger", stockId);
+      } catch (e: any) {
+        const msg = `Failed to delete Stock_Ledger ${stockId}: ${e.message}`;
+        console.error("[editOrder]", msg);
+        deleteErrors.push(msg);
+      }
+    }
+
     revalidatePath("/admin/orders");
     revalidatePath("/admin/reports");
 
+    if (deleteErrors.length > 0) {
+      return {
+        success: true,
+        warning: `${deleteErrors.length} old record(s) could not be deleted. Check server logs.`,
+        delete_errors: deleteErrors,
+      };
+    }
+
     return { success: true };
   } catch (error: any) {
+    console.error("[editOrder] Fatal error:", error);
     return { error: error.message };
   }
 }

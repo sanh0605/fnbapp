@@ -4,18 +4,18 @@ import { useState, useMemo } from "react";
 import { submitOrder } from "@/app/actions/pos";
 import Link from "next/link";
 
-export default function POSScreen({ 
+export default function POSScreen({
   brandId,
-  categories, 
-  products, 
-  variants, 
-  modifiers 
-}: { 
+  categories,
+  products,
+  variants,
+  modifiers
+}: {
   brandId?: string;
-  categories: any[]; 
-  products: any[]; 
-  variants: any[]; 
-  modifiers: any[] 
+  categories: any[];
+  products: any[];
+  variants: any[];
+  modifiers: any[]
 }) {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [cart, setCart] = useState<any[]>([]);
@@ -32,7 +32,7 @@ export default function POSScreen({
   const [selectedQty, setSelectedQty] = useState<number>(1);
   const [itemDiscount, setItemDiscount] = useState<number>(0);
   const [itemDiscountType, setItemDiscountType] = useState<"VND" | "PERCENT">("VND");
-  
+
   // Checkout Modal State
   const [orderDiscount, setOrderDiscount] = useState<number>(0);
   const [orderDiscountType, setOrderDiscountType] = useState<"VND" | "PERCENT">("VND");
@@ -40,27 +40,27 @@ export default function POSScreen({
   // Group modifiers by group_name
   const groupedModifiers = useMemo(() => {
     const groups: any = {};
-    modifiers.forEach((m:any) => {
+    modifiers.forEach((m: any) => {
       if (!groups[m.group_name]) groups[m.group_name] = [];
       groups[m.group_name].push(m);
     });
     return groups;
   }, [modifiers]);
 
-  const filteredProducts = activeCategory === "ALL" 
-    ? products 
-    : products.filter((p:any) => p.category_id === activeCategory);
+  const filteredProducts = activeCategory === "ALL"
+    ? products
+    : products.filter((p: any) => p.category_id === activeCategory);
 
   const openProductModal = (product: any, editIndex: number | null = null) => {
-    const prodVariants = variants.filter((v:any) => v.product_id === product.id);
+    const prodVariants = variants.filter((v: any) => v.product_id === product.id);
     if (prodVariants.length === 0) return alert("Món này chưa cấu hình kích cỡ & giá.");
-    
+
     setSelectedProduct(product);
     setEditingCartIndex(editIndex);
 
     if (editIndex !== null) {
       const item = cart[editIndex];
-      setSelectedVariant(prodVariants.find((v:any) => v.id === item.variant_id) || prodVariants[0]);
+      setSelectedVariant(prodVariants.find((v: any) => v.id === item.variant_id) || prodVariants[0]);
       setSelectedModifiers([...item.modifiers]);
       setSelectedQty(item.qty);
       setItemDiscount(item.discount_amount || 0);
@@ -89,7 +89,7 @@ export default function POSScreen({
 
   const addToCart = () => {
     if (!selectedVariant) return;
-    
+
     const cartItem = {
       id: editingCartIndex !== null ? cart[editingCartIndex].id : Date.now().toString(),
       product_id: selectedProduct.id,
@@ -110,7 +110,7 @@ export default function POSScreen({
     } else {
       setCart([...cart, cartItem]);
     }
-    
+
     setSelectedProduct(null);
     setEditingCartIndex(null);
   };
@@ -143,7 +143,7 @@ export default function POSScreen({
   const currentItemFinalTotal = Math.max(0, currentItemBaseTotal - currentItemDiscountAmount);
 
   const calculateItemTotal = (item: any) => {
-    const modsPrice = item.modifiers.reduce((sum:number, m:any) => sum + Number(m.price), 0);
+    const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
     const baseTotal = (item.unit_price + modsPrice) * item.qty;
     let discount = 0;
     if (item.discount_amount > 0) {
@@ -157,7 +157,7 @@ export default function POSScreen({
   };
 
   const calculateCartBaseTotal = () => cart.reduce((sum, item) => {
-    const modsPrice = item.modifiers.reduce((mSum:number, m:any) => mSum + Number(m.price), 0);
+    const modsPrice = item.modifiers.reduce((mSum: number, m: any) => mSum + Number(m.price), 0);
     return sum + (item.unit_price + modsPrice) * item.qty;
   }, 0);
 
@@ -186,7 +186,7 @@ export default function POSScreen({
 
   const handleConfirmCheckout = async (method: string) => {
     setIsCheckingOut(true);
-    
+
     const orderData = {
       brand_id: brandId,
       items: cart,
@@ -213,12 +213,12 @@ export default function POSScreen({
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 font-sans overflow-hidden">
-      
+    <div className="flex h-dvh bg-gray-100 font-sans overflow-hidden">
+
       {/* LEFT: Menu Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Header */}
-        <header className="bg-white h-14 border-b border-gray-200 flex items-center justify-between px-4 shrink-0 shadow-sm z-10">
+        <header className="bg-white h-auto min-h-[3.5rem] border-b border-gray-200 flex items-center justify-between px-4 shrink-0 shadow-sm z-10 pt-[env(safe-area-inset-top)]">
           <div className="flex items-center gap-3">
             <Link href="/admin" className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -233,14 +233,14 @@ export default function POSScreen({
         {/* Categories (Horizontal Scroll on Mobile) */}
         <div className="bg-white border-b border-gray-200 p-3 shrink-0">
           <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
-            <button 
+            <button
               onClick={() => setActiveCategory("ALL")}
               className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === "ALL" ? "bg-orange-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
               Tất cả món
             </button>
-            {categories.map((c:any) => (
-              <button 
+            {categories.map((c: any) => (
+              <button
                 key={c.id}
                 onClick={() => setActiveCategory(c.id)}
                 className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === c.id ? "bg-orange-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
@@ -254,9 +254,9 @@ export default function POSScreen({
         {/* Product Grid */}
         <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {filteredProducts.map((p:any) => (
-              <button 
-                key={p.id} 
+            {filteredProducts.map((p: any) => (
+              <button
+                key={p.id}
                 onClick={() => openProductModal(p)}
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition active:scale-95 text-left h-48"
               >
@@ -278,7 +278,7 @@ export default function POSScreen({
 
       {/* RIGHT: Cart Area (Desktop only, hidden on mobile unless toggled) */}
       <div className={`fixed inset-y-0 right-0 w-full md:w-96 bg-white border-l border-gray-200 shadow-2xl flex flex-col z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isCartOpen ? "translate-x-0" : "translate-x-full"}`}>
-        
+
         <div className="h-14 bg-indigo-600 flex items-center justify-between px-4 shrink-0 text-white">
           <h2 className="font-bold text-lg flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -298,62 +298,62 @@ export default function POSScreen({
           ) : (
             <div className="space-y-3">
               {cart.map((item, idx) => {
-                const modsPrice = item.modifiers.reduce((sum:number, m:any) => sum + Number(m.price), 0);
+                const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
                 const baseTotal = (item.unit_price + modsPrice) * item.qty;
                 const finalTotal = calculateItemTotal(item);
 
                 return (
-                <div key={item.id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-300">
-                  <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => openProductModal(products.find((p:any) => p.id === item.product_id), idx)}>
-                    <div>
-                      <h4 className="font-bold text-gray-800 leading-tight hover:text-indigo-600 transition-colors">{item.product_name} ✏️</h4>
-                      <p className="text-xs font-semibold text-indigo-600 mt-0.5">Size {item.size_name}</p>
-                    </div>
-                    <div className="text-right">
-                      {item.discount_amount > 0 && (
-                        <div className="text-[11px] text-gray-400 line-through mb-0.5">
-                          {baseTotal.toLocaleString('vi-VN')}
+                  <div key={item.id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-300">
+                    <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => openProductModal(products.find((p: any) => p.id === item.product_id), idx)}>
+                      <div>
+                        <h4 className="font-bold text-gray-800 leading-tight hover:text-indigo-600 transition-colors">{item.product_name} ✏️</h4>
+                        <p className="text-xs font-semibold text-indigo-600 mt-0.5">Size {item.size_name}</p>
+                      </div>
+                      <div className="text-right">
+                        {item.discount_amount > 0 && (
+                          <div className="text-[11px] text-gray-400 line-through mb-0.5">
+                            {baseTotal.toLocaleString('vi-VN')}
+                          </div>
+                        )}
+                        <div className="font-bold text-orange-600">
+                          {finalTotal.toLocaleString('vi-VN')}
                         </div>
-                      )}
-                      <div className="font-bold text-orange-600">
-                        {finalTotal.toLocaleString('vi-VN')}
+                      </div>
+                    </div>
+
+                    {item.modifiers.length > 0 && (
+                      <div className="text-[11px] text-gray-500 bg-gray-50 p-1.5 rounded mb-2 leading-relaxed">
+                        {Object.entries(
+                          item.modifiers.reduce((acc: any, m: any) => {
+                            acc[m.name] = (acc[m.name] || 0) + 1;
+                            return acc;
+                          }, {})
+                        ).map(([name, count]: [string, any]) => `${count > 1 ? count + ' x ' : ''}${name}`).join(", ")}
+                      </div>
+                    )}
+
+                    {item.discount_amount > 0 && (
+                      <div className="text-[11px] text-red-500 font-medium mb-2">
+                        Đã chiết khấu: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount).toLocaleString('vi-VN')}đ`}
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center mt-2">
+                      <button onClick={() => removeFromCart(idx)} className="text-xs text-red-500 font-medium px-2 py-1 bg-red-50 rounded hover:bg-red-100">Xoá</button>
+                      <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
+                        <button onClick={() => changeQty(idx, -1)} className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold">-</button>
+                        <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
+                        <button onClick={() => changeQty(idx, 1)} className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold">+</button>
                       </div>
                     </div>
                   </div>
-                  
-                  {item.modifiers.length > 0 && (
-                    <div className="text-[11px] text-gray-500 bg-gray-50 p-1.5 rounded mb-2 leading-relaxed">
-                      {Object.entries(
-                        item.modifiers.reduce((acc: any, m: any) => {
-                          acc[m.name] = (acc[m.name] || 0) + 1;
-                          return acc;
-                        }, {})
-                      ).map(([name, count]: [string, any]) => `${count > 1 ? count + ' x ' : ''}${name}`).join(", ")}
-                    </div>
-                  )}
-
-                  {item.discount_amount > 0 && (
-                    <div className="text-[11px] text-red-500 font-medium mb-2">
-                      Đã chiết khấu: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount).toLocaleString('vi-VN')}đ`}
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-center mt-2">
-                    <button onClick={() => removeFromCart(idx)} className="text-xs text-red-500 font-medium px-2 py-1 bg-red-50 rounded hover:bg-red-100">Xoá</button>
-                    <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
-                      <button onClick={() => changeQty(idx, -1)} className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold">-</button>
-                      <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
-                      <button onClick={() => changeQty(idx, 1)} className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold">+</button>
-                    </div>
-                  </div>
-                </div>
                 );
               })}
             </div>
           )}
         </div>
 
-        <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="flex justify-between items-center mb-4">
             <span className="text-gray-500 font-medium">Tổng tiền ({totalItems} món)</span>
             <div className="text-right">
@@ -367,7 +367,7 @@ export default function POSScreen({
               </div>
             </div>
           </div>
-          <button 
+          <button
             onClick={handleCheckoutClick}
             disabled={cart.length === 0 || isCheckingOut}
             className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2"
@@ -382,9 +382,9 @@ export default function POSScreen({
 
       {/* Mobile Floating Cart Button */}
       {!isCartOpen && cart.length > 0 && (
-        <button 
+        <button
           onClick={() => setIsCartOpen(true)}
-          className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 font-bold active:scale-95 transition-transform z-30"
+          className="lg:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 font-bold active:scale-95 transition-transform z-30"
         >
           <div className="relative">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -404,13 +404,13 @@ export default function POSScreen({
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            
+
             <div className="p-5 overflow-y-auto flex-1 space-y-6 bg-white">
               {/* SIZE SELECTION */}
               <div>
                 <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase">Chọn Kích Cỡ</h4>
                 <div className="grid grid-cols-2 gap-3">
-                  {variants.filter((v:any) => v.product_id === selectedProduct.id).map((v:any) => (
+                  {variants.filter((v: any) => v.product_id === selectedProduct.id).map((v: any) => (
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariant(v)}
@@ -428,7 +428,7 @@ export default function POSScreen({
                 <div key={groupName}>
                   <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase">{groupName}</h4>
                   <div className="flex flex-col gap-2">
-                    {groupedModifiers[groupName].map((mod:any) => {
+                    {groupedModifiers[groupName].map((mod: any) => {
                       const count = selectedModifiers.filter(m => m.id === mod.id).length;
                       return (
                         <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all ${count > 0 ? "border-indigo-500 bg-indigo-50 shadow-sm" : "border-gray-200 bg-white hover:bg-gray-50"}`}>
@@ -438,10 +438,10 @@ export default function POSScreen({
                               <span className="text-xs text-gray-500 mt-0.5">+{Number(mod.price).toLocaleString('vi-VN')}đ</span>
                             )}
                           </div>
-                          
+
                           <div className="flex items-center gap-3">
-                            <button 
-                              onClick={() => removeModifier(mod)} 
+                            <button
+                              onClick={() => removeModifier(mod)}
                               disabled={count === 0}
                               className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-100 shadow-sm" : "bg-gray-100 text-gray-300 cursor-not-allowed"}`}
                             >
@@ -450,8 +450,8 @@ export default function POSScreen({
                             <span className={`font-bold w-4 text-center ${count > 0 ? "text-indigo-800" : "text-gray-500"}`}>
                               {count}
                             </span>
-                            <button 
-                              onClick={() => addModifier(mod)} 
+                            <button
+                              onClick={() => addModifier(mod)}
                               className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold text-lg transition-colors shadow-sm"
                             >
                               +
@@ -465,20 +465,20 @@ export default function POSScreen({
               ))}
             </div>
 
-            <div className="p-4 border-t border-gray-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col gap-3">
-              
+            <div className="p-4 border-t border-gray-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
+
               {/* CHIẾT KHẤU MÓN (Dời xuống footer) */}
               <div className="flex items-center justify-between gap-4">
                 <span className="font-bold text-sm text-gray-800 whitespace-nowrap">Chiết khấu:</span>
                 <div className="flex items-center gap-2 flex-1">
                   <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0 h-10">
-                    <button 
+                    <button
                       onClick={() => setItemDiscountType("VND")}
                       className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
                     >
                       VNĐ
                     </button>
-                    <button 
+                    <button
                       onClick={() => setItemDiscountType("PERCENT")}
                       className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
                     >
@@ -499,22 +499,22 @@ export default function POSScreen({
               {/* TỔNG TIỀN & NÚT CẬP NHẬT */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3 bg-gray-100 rounded-xl p-1.5 shrink-0 h-14">
-                  <button 
-                    onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))} 
+                  <button
+                    onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
                     className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
                   >
                     -
                   </button>
                   <span className="text-lg font-black w-6 text-center text-gray-800">{selectedQty}</span>
-                  <button 
-                    onClick={() => setSelectedQty(selectedQty + 1)} 
+                  <button
+                    onClick={() => setSelectedQty(selectedQty + 1)}
                     className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
                   >
                     +
                   </button>
                 </div>
 
-                <button 
+                <button
                   onClick={addToCart}
                   className="flex-1 bg-orange-600 text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center h-14"
                 >
@@ -540,15 +540,15 @@ export default function POSScreen({
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h3 className="text-xl font-bold text-gray-900">Chọn phương thức</h3>
-              <button 
-                onClick={() => !isCheckingOut && setIsCheckoutModalOpen(false)} 
+              <button
+                onClick={() => !isCheckingOut && setIsCheckoutModalOpen(false)}
                 className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300 disabled:opacity-50"
                 disabled={isCheckingOut}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            
+
             <div className="p-6 bg-white space-y-4">
               <div className="text-center mb-6">
                 <p className="text-sm text-gray-500 uppercase font-bold tracking-wider mb-1">Tạm Tính</p>
@@ -557,13 +557,13 @@ export default function POSScreen({
                   <label className="block text-sm font-bold text-gray-700 mb-2">Chiết khấu đơn hàng</label>
                   <div className="flex items-center gap-2">
                     <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
-                      <button 
+                      <button
                         onClick={() => setOrderDiscountType("VND")}
                         className={`px-3 py-2 text-sm font-bold transition-colors ${orderDiscountType === "VND" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
                       >
                         VNĐ
                       </button>
-                      <button 
+                      <button
                         onClick={() => setOrderDiscountType("PERCENT")}
                         className={`px-3 py-2 text-sm font-bold transition-colors ${orderDiscountType === "PERCENT" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
                       >
@@ -584,7 +584,7 @@ export default function POSScreen({
                 <div className="text-4xl font-black text-orange-600">{totalAmount.toLocaleString('vi-VN')} đ</div>
               </div>
 
-              <button 
+              <button
                 onClick={() => handleConfirmCheckout("Tiền mặt")}
                 disabled={isCheckingOut}
                 className="w-full bg-emerald-50 text-emerald-700 border-2 border-emerald-200 font-bold text-lg py-4 rounded-xl hover:bg-emerald-100 hover:border-emerald-300 active:scale-[0.98] transition-all flex justify-center items-center gap-3 disabled:opacity-50"
@@ -593,7 +593,7 @@ export default function POSScreen({
                 <span>Tiền mặt</span>
               </button>
 
-              <button 
+              <button
                 onClick={() => handleConfirmCheckout("Chuyển khoản")}
                 disabled={isCheckingOut}
                 className="w-full bg-blue-50 text-blue-700 border-2 border-blue-200 font-bold text-lg py-4 rounded-xl hover:bg-blue-100 hover:border-blue-300 active:scale-[0.98] transition-all flex justify-center items-center gap-3 disabled:opacity-50"

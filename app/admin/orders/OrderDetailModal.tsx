@@ -60,6 +60,12 @@ export default function OrderDetailModal({
 
   const subtotal = order.lines.reduce((sum: number, l: OrderLine) => sum + calculateLineTotal(l), 0);
 
+  const formatDate = (dateString: string) => {
+    const d = new Date(dateString);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
@@ -68,7 +74,7 @@ export default function OrderDetailModal({
           <div>
             <h3 className="text-xl font-bold text-gray-900">{orderNo}</h3>
             <p className="text-sm text-gray-500 mt-0.5">
-              {new Date(order.created_at).toLocaleString("vi-VN")}
+              {formatDate(order.created_at)}
               {brand && <span className="ml-2 text-blue-600 font-medium">{brand.name}</span>}
             </p>
           </div>
@@ -82,7 +88,7 @@ export default function OrderDetailModal({
           {/* Payment info */}
           <div className="flex gap-3">
             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${order.method === 'Chuyen khoan' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
-              {order.method === "Chuyen khoan" ? "Chuyen khoan" : "Tien mat"}
+              {order.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"}
             </span>
             {order.staff_name && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
@@ -114,16 +120,16 @@ export default function OrderDetailModal({
                       )}
                       {Number(line.line_discount) > 0 && (
                         <div className="text-xs text-red-500 mt-1">
-                          Giam: -{line.discount_type === "PERCENT" ? `${line.line_discount}%` : `${Number(line.line_discount).toLocaleString("vi-VN")}d`}
+                          Giảm: -{line.discount_type === "PERCENT" ? `${line.line_discount}%` : `${Number(line.line_discount).toLocaleString("vi-VN")}đ`}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
                       {Number(line.line_discount) > 0 && (
-                        <div className="text-[11px] text-gray-400 line-through">{baseTotal.toLocaleString("vi-VN")}d</div>
+                        <div className="text-[11px] text-gray-400 line-through">{baseTotal.toLocaleString("vi-VN")}đ</div>
                       )}
-                      <div className="font-bold text-gray-800">{lineTotal.toLocaleString("vi-VN")}d</div>
-                      <div className="text-[11px] text-gray-400">{Number(line.unit_price).toLocaleString("vi-VN")}d / mon</div>
+                      <div className="font-bold text-gray-800">{lineTotal.toLocaleString("vi-VN")}đ</div>
+                      <div className="text-[11px] text-gray-400">{Number(line.unit_price).toLocaleString("vi-VN")}đ / món</div>
                     </div>
                   </div>
                 </div>
@@ -136,18 +142,18 @@ export default function OrderDetailModal({
         <div className="border-t border-gray-100 shrink-0">
           <div className="px-5 py-3 bg-gray-50 space-y-1.5 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Tam tinh</span>
-              <span className="font-medium">{subtotal.toLocaleString("vi-VN")}d</span>
+              <span className="text-gray-500">Tạm tính</span>
+              <span className="font-medium">{subtotal.toLocaleString("vi-VN")}đ</span>
             </div>
             {Number(order.discount_amount) > 0 && (
               <div className="flex justify-between text-red-600">
-                <span>Giam gia ({order.discount_type === "PERCENT" ? `${order.discount_amount}%` : "VND"})</span>
-                <span className="font-medium">-{Number(order.discount_amount).toLocaleString("vi-VN")}d</span>
+                <span>Giảm giá ({order.discount_type === "PERCENT" ? `${order.discount_amount}%` : "VND"})</span>
+                <span className="font-medium">-{Number(order.discount_amount).toLocaleString("vi-VN")}đ</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold pt-1 border-t border-gray-200">
-              <span className="text-gray-900">Tong cong</span>
-              <span className="text-orange-600">{Number(order.total_amount || 0).toLocaleString("vi-VN")}d</span>
+              <span className="text-gray-900">Tổng cộng</span>
+              <span className="text-orange-600">{Number(order.total_amount || 0).toLocaleString("vi-VN")}đ</span>
             </div>
           </div>
           <div className="px-5 py-4 flex gap-3 bg-white">
@@ -155,13 +161,13 @@ export default function OrderDetailModal({
               onClick={onEdit}
               className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
             >
-              Sua don
+              Sửa đơn
             </button>
             <button
               onClick={onDelete}
               className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors"
             >
-              Xoa don
+              Xóa đơn
             </button>
           </div>
         </div>
