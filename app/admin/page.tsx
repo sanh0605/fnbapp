@@ -30,7 +30,7 @@ export default async function AdminDashboard({
     findAll("Product_Categories")
   ]);
 
-  const filterParam = searchParams.filter as string || '30days';
+  const filterParam = searchParams.filter as string || 'this_month';
 
   const now = new Date();
   const currentYear = now.getFullYear();
