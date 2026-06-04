@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { UserForm, DeleteUserButton } from "@/components/UserForm";
+import Link from "next/link";
 
 export default async function UsersPage() {
   const users = await findAll("Users");
@@ -50,7 +51,7 @@ export default async function UsersPage() {
                     {user.created_at ? new Date(user.created_at).toLocaleDateString("vi-VN") : "N/A"}
                   </td>
                   <td className="px-6 py-4 text-sm text-right space-x-4">
-                    <button className="text-blue-600 hover:text-blue-800 font-medium">Sửa</button>
+                    <Link href={`/admin/users/edit/${user.id}`} className="text-blue-600 hover:text-blue-800 font-medium">Sửa</Link>
                     {user.username !== 'admin' && <DeleteUserButton id={user.id} />}
                   </td>
                 </tr>

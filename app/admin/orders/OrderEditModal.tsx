@@ -296,7 +296,7 @@ export default function OrderEditModal({
         {/* Header */}
         <div className="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Sua don hang</h3>
+            <h3 className="text-lg font-bold text-gray-900">Sửa đơn hàng</h3>
             <p className="text-sm text-gray-500">{order.display_order_no || order.order_no}</p>
           </div>
           <button onClick={onClose} disabled={isSaving} className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300 disabled:opacity-50">
@@ -307,7 +307,7 @@ export default function OrderEditModal({
         {/* Items list */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {items.length === 0 && !isAddingProduct && (
-            <div className="text-center text-gray-400 py-8">Khong co mon nao trong don</div>
+            <div className="text-center text-gray-400 py-8">Không có món nào trong đơn</div>
           )}
 
           {items.map((item, idx) => {
@@ -331,11 +331,10 @@ export default function OrderEditModal({
                           <button
                             key={v.id}
                             onClick={() => setEditVariantId(v.id)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                              editVariantId === v.id
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${editVariantId === v.id
                                 ? "border-orange-500 bg-orange-50 text-orange-700"
                                 : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                            }`}
+                              }`}
                           >
                             {v.size_name} - {Number(v.price).toLocaleString("vi-VN")}d
                           </button>
@@ -355,9 +354,8 @@ export default function OrderEditModal({
                             {mods.map((mod: any) => {
                               const count = editModifiers.filter((m: any) => m.id === mod.id).length;
                               return (
-                                <div key={mod.id} className={`flex items-center gap-1 rounded-lg border text-xs ${
-                                  count > 0 ? "border-indigo-400 bg-indigo-50" : "border-gray-200 bg-white"
-                                }`}>
+                                <div key={mod.id} className={`flex items-center gap-1 rounded-lg border text-xs ${count > 0 ? "border-indigo-400 bg-indigo-50" : "border-gray-200 bg-white"
+                                  }`}>
                                   {count > 0 && (
                                     <button onClick={() => removeModifierFromEdit(mod)} className="px-1.5 py-1 text-indigo-400 hover:text-red-500 font-bold">-</button>
                                   )}
@@ -384,7 +382,7 @@ export default function OrderEditModal({
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-sm font-medium text-gray-700">Giam:</span>
+                      <span className="text-sm font-medium text-gray-700">Giảm:</span>
                       <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
                         <button onClick={() => setEditDiscountType("VND")} className={`px-2 py-1 text-xs font-bold ${editDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"}`}>VND</button>
                         <button onClick={() => setEditDiscountType("PERCENT")} className={`px-2 py-1 text-xs font-bold ${editDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"}`}>%</button>
@@ -396,24 +394,24 @@ export default function OrderEditModal({
                   {/* Price totals */}
                   <div className="bg-white rounded-lg p-2.5 border border-indigo-100 space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Gia goc</span>
-                      <span className="text-gray-700 font-medium">{editTotals.base.toLocaleString("vi-VN")}d</span>
+                      <span className="text-gray-500">Giá gốc</span>
+                      <span className="text-gray-700 font-medium">{editTotals.base.toLocaleString("vi-VN")}đ</span>
                     </div>
                     {editDiscount > 0 && (
                       <div className="flex justify-between text-sm text-red-500">
-                        <span>Chiet khau</span>
-                        <span>-{(editTotals.base - editTotals.final).toLocaleString("vi-VN")}d</span>
+                        <span>Chiết khấu</span>
+                        <span>-{(editTotals.base - editTotals.final).toLocaleString("vi-VN")}đ</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold pt-1 border-t border-gray-100">
-                      <span className="text-gray-800">Thanh tien</span>
-                      <span className="text-orange-600">{editTotals.final.toLocaleString("vi-VN")}d</span>
+                      <span className="text-gray-800">Thành tiền</span>
+                      <span className="text-orange-600">{editTotals.final.toLocaleString("vi-VN")}đ</span>
                     </div>
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <button onClick={() => setEditingIndex(null)} className="flex-1 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Huy</button>
-                    <button onClick={saveEditItem} className="flex-1 py-1.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Luu</button>
+                    <button onClick={() => setEditingIndex(null)} className="flex-1 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Hủy</button>
+                    <button onClick={saveEditItem} className="flex-1 py-1.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Lưu</button>
                   </div>
                 </div>
               );
@@ -439,12 +437,12 @@ export default function OrderEditModal({
                 )}
                 {item.discount_amount > 0 && (
                   <div className="text-xs text-red-500 mb-1">
-                    Giam: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount).toLocaleString("vi-VN")}d`}
+                    Giảm: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount).toLocaleString("vi-VN")}đ`}
                   </div>
                 )}
                 <div className="flex gap-2 mt-2">
-                  <button onClick={() => startEditItem(idx)} className="text-xs font-medium text-indigo-600 px-2 py-1 bg-indigo-50 rounded hover:bg-indigo-100">Sua</button>
-                  <button onClick={() => removeItem(idx)} className="text-xs font-medium text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">Xoa</button>
+                  <button onClick={() => startEditItem(idx)} className="text-xs font-medium text-indigo-600 px-2 py-1 bg-indigo-50 rounded hover:bg-indigo-100">Sửa</button>
+                  <button onClick={() => removeItem(idx)} className="text-xs font-medium text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">Xóa</button>
                 </div>
               </div>
             );
@@ -454,7 +452,7 @@ export default function OrderEditModal({
           {isAddingProduct ? (
             <div className="bg-emerald-50 p-3 rounded-xl border-2 border-emerald-200 space-y-3">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-emerald-700">Them san pham</span>
+                <span className="font-bold text-emerald-700">Thêm sản phẩm</span>
                 <button onClick={() => { setIsAddingProduct(false); setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); setNewQty(1); }} className="text-gray-400 hover:text-gray-600">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -463,11 +461,11 @@ export default function OrderEditModal({
               {!selectedNewProduct ? (
                 <>
                   {/* Search */}
-                  <input type="text" placeholder="Tim san pham..." value={addSearch} onChange={(e) => setAddSearch(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-emerald-500" />
+                  <input type="text" placeholder="Tìm sản phẩm..." value={addSearch} onChange={(e) => setAddSearch(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-emerald-500" />
 
                   {/* Category filter */}
                   <div className="flex flex-wrap gap-1.5">
-                    <button onClick={() => setAddCategory("ALL")} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === "ALL" ? "bg-emerald-600 text-white" : "bg-white text-gray-600 border border-gray-200"}`}>Tat ca</button>
+                    <button onClick={() => setAddCategory("ALL")} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === "ALL" ? "bg-emerald-600 text-white" : "bg-white text-gray-600 border border-gray-200"}`}>Tất cả</button>
                     {categories.map((c: any) => (
                       <button key={c.id} onClick={() => setAddCategory(c.id)} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === c.id ? "bg-emerald-600 text-white" : "bg-white text-gray-600 border border-gray-200"}`}>{c.name}</button>
                     ))}
@@ -481,7 +479,7 @@ export default function OrderEditModal({
                       </button>
                     ))}
                     {filteredAddProducts.length === 0 && (
-                      <div className="col-span-3 text-center text-gray-400 text-sm py-4">Khong tim thay san pham</div>
+                      <div className="col-span-3 text-center text-gray-400 text-sm py-4">Không tìm thấy sản phẩm</div>
                     )}
                   </div>
                 </>
@@ -495,9 +493,8 @@ export default function OrderEditModal({
                     <div className="text-xs font-medium text-gray-500 mb-1.5">Size</div>
                     <div className="flex flex-wrap gap-2">
                       {variants.filter((v: any) => v.product_id === selectedNewProduct.id).map((v: any) => (
-                        <button key={v.id} onClick={() => setSelectedNewVariant(v)} className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                          selectedNewVariant?.id === v.id ? "border-orange-500 bg-orange-50 text-orange-700" : "border-gray-200 bg-white text-gray-600"
-                        }`}>
+                        <button key={v.id} onClick={() => setSelectedNewVariant(v)} className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${selectedNewVariant?.id === v.id ? "border-orange-500 bg-orange-50 text-orange-700" : "border-gray-200 bg-white text-gray-600"
+                          }`}>
                           {v.size_name} - {Number(v.price).toLocaleString("vi-VN")}d
                         </button>
                       ))}
@@ -516,9 +513,8 @@ export default function OrderEditModal({
                               {mods.map((mod: any) => {
                                 const count = selectedNewModifiers.filter((m: any) => m.id === mod.id).length;
                                 return (
-                                  <div key={mod.id} className={`flex items-center gap-1 rounded-lg border text-xs ${
-                                    count > 0 ? "border-emerald-400 bg-emerald-50" : "border-gray-200 bg-white"
-                                  }`}>
+                                  <div key={mod.id} className={`flex items-center gap-1 rounded-lg border text-xs ${count > 0 ? "border-emerald-400 bg-emerald-50" : "border-gray-200 bg-white"
+                                    }`}>
                                     {count > 0 && (
                                       <button onClick={() => removeNewModifier(mod)} className="px-1.5 py-1 text-emerald-400 hover:text-red-500 font-bold">-</button>
                                     )}
@@ -553,15 +549,15 @@ export default function OrderEditModal({
                   )}
 
                   <div className="flex gap-2">
-                    <button onClick={() => { setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); }} className="flex-1 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Quay lai</button>
-                    <button onClick={confirmAddProduct} disabled={!selectedNewVariant} className="flex-1 py-1.5 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-40">Them vao don</button>
+                    <button onClick={() => { setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); }} className="flex-1 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Quay lại</button>
+                    <button onClick={confirmAddProduct} disabled={!selectedNewVariant} className="flex-1 py-1.5 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-40">Thêm vào đơn</button>
                   </div>
                 </>
               )}
             </div>
           ) : (
             <button onClick={() => setIsAddingProduct(true)} className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-400 hover:border-indigo-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors">
-              + Them san pham
+              + Thêm sản phẩm
             </button>
           )}
         </div>
@@ -570,7 +566,7 @@ export default function OrderEditModal({
         <div className="border-t border-gray-100 shrink-0">
           <div className="px-4 py-3 bg-gray-50 space-y-3">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 w-28">Giam gia don:</span>
+              <span className="text-sm font-medium text-gray-700 w-28">Giảm giá đơn:</span>
               <div className="flex items-center gap-2 flex-1">
                 <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
                   <button onClick={() => setOrderDiscountType("VND")} className={`px-2 py-1 text-xs font-bold ${orderDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"}`}>VND</button>
@@ -580,23 +576,23 @@ export default function OrderEditModal({
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 w-28">Thanh toan:</span>
+              <span className="text-sm font-medium text-gray-700 w-28">Thanh toán:</span>
               <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white outline-none focus:ring-1 focus:ring-indigo-500">
-                <option value="Tien mat">Tien mat</option>
-                <option value="Chuyen khoan">Chuyen khoan</option>
+                <option value="Tien mat">Tiền mặt</option>
+                <option value="Chuyen khoan">Chuyển khoản</option>
               </select>
             </div>
           </div>
 
           <div className="px-4 py-2 flex justify-between items-center bg-white border-t border-gray-100">
-            <span className="font-bold text-gray-700">Tong cong</span>
-            <span className="text-xl font-black text-orange-600">{totalAmount.toLocaleString("vi-VN")}d</span>
+            <span className="font-bold text-gray-700">Tổng cộng</span>
+            <span className="text-xl font-black text-orange-600">{totalAmount.toLocaleString("vi-VN")}đ</span>
           </div>
 
           <div className="px-4 py-3 flex gap-3 bg-white">
-            <button onClick={onClose} disabled={isSaving} className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors disabled:opacity-50">Huy</button>
+            <button onClick={onClose} disabled={isSaving} className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors disabled:opacity-50">Hủy</button>
             <button onClick={handleSave} disabled={isSaving || items.length === 0} className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50">
-              {isSaving ? "Dang luu..." : "Luu thay doi"}
+              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
             </button>
           </div>
         </div>

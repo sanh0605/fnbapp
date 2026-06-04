@@ -585,7 +585,7 @@ export default function POSScreen({
               </div>
 
               <button
-                onClick={() => handleConfirmCheckout("Tiền mặt")}
+                onClick={() => handleConfirmCheckout("Tien mat")}
                 disabled={isCheckingOut}
                 className="w-full bg-emerald-50 text-emerald-700 border-2 border-emerald-200 font-bold text-lg py-4 rounded-xl hover:bg-emerald-100 hover:border-emerald-300 active:scale-[0.98] transition-all flex justify-center items-center gap-3 disabled:opacity-50"
               >
@@ -594,7 +594,7 @@ export default function POSScreen({
               </button>
 
               <button
-                onClick={() => handleConfirmCheckout("Chuyển khoản")}
+                onClick={() => handleConfirmCheckout("Chuyen khoan")}
                 disabled={isCheckingOut}
                 className="w-full bg-blue-50 text-blue-700 border-2 border-blue-200 font-bold text-lg py-4 rounded-xl hover:bg-blue-100 hover:border-blue-300 active:scale-[0.98] transition-all flex justify-center items-center gap-3 disabled:opacity-50"
               >

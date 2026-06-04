@@ -45,7 +45,7 @@ export async function submitOrder(orderData: any) {
       discount_amount: discount_amount || 0,
       discount_type: discount_type || "VND",
       status: "COMPLETED",
-      method: payment_method || "Tiền mặt",
+      method: payment_method || "Tien mat",
       staff_name,
       created_at: nowIso
     });
