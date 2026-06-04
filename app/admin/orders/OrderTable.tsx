@@ -15,7 +15,7 @@ interface OrderLine {
   unit_price: number;
   line_discount: number;
   discount_type: string;
-  modifiers_json: string;
+  modifiers_json?: string;
   modifiers: any[];
 }
 
