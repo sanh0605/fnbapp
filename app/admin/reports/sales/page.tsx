@@ -139,7 +139,12 @@ export default async function SalesReportPage({
             }
             toppingSalesMap[modKey].qty += qty;
             // Áp dụng tỉ lệ chiết khấu lên topping
-            toppingSalesMap[modKey].revenue += Number(mod.price || 0) * qty * ratio;
+            const modRevenue = Number(mod.price || 0) * qty * ratio;
+            toppingSalesMap[modKey].revenue += modRevenue;
+
+            // Thêm doanh thu topping vào nhóm "topping"
+            if (!categorySalesMap["topping"]) categorySalesMap["topping"] = 0;
+            categorySalesMap["topping"] += modRevenue;
           });
         }
       } catch (e) {}
@@ -266,8 +271,8 @@ export default async function SalesReportPage({
   const chartDataCategory = Object.entries(categorySalesMap).map(([catId, amount]) => {
     const c = categories.find((x:any) => x.id === catId);
     return {
-      label: c ? c.name : "Khác",
-      amount
+      label: c ? c.name : (catId === "topping" ? "Topping" : "Khác"),
+      amount: Math.round(amount)
     };
   });
 
