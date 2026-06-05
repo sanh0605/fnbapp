@@ -21,6 +21,14 @@ export default function SalesCharts({
   if (viewMode === "MONTH") activeData = salesByMonth;
 
   const maxAmount = Math.max(...activeData.map(d => d.amount), 1);
+  const totalItems = activeData.length;
+  // Calculate label interval dynamically to prevent overlapping labels
+  let labelInterval = 1;
+  if (totalItems > 30) {
+    labelInterval = 5;
+  } else if (totalItems > 15) {
+    labelInterval = 2;
+  }
 
   return (
     <div className="xl:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[400px]">
@@ -54,11 +62,17 @@ export default function SalesCharts({
         </div>
       </div>
       
-      <div className="flex-1 flex items-end justify-between gap-2 overflow-x-auto pb-4 mt-auto">
+      <div className="flex-1 flex items-end justify-between gap-1 sm:gap-2 overflow-x-auto pb-4 mt-auto">
         {activeData.map((d, i) => {
           const heightPercent = (d.amount / maxAmount) * 100;
+
+          // Determine if label should be shown
+          const showLabel = i % labelInterval === 0 || i === totalItems - 1;
+          const isTooCloseToLast = (totalItems - 1 - i) < labelInterval && i !== totalItems - 1;
+          const shouldShowLabel = showLabel && !isTooCloseToLast;
+
           return (
-            <div key={i} className="flex flex-col items-center flex-1 group min-w-[30px]">
+            <div key={i} className="flex flex-col items-center flex-1 group min-w-[8px] sm:min-w-[12px]">
               <div className="text-xs text-gray-500 mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 bg-white px-1 rounded shadow-sm">
                 {(d.amount / 1000).toLocaleString()}k
               </div>
@@ -68,7 +82,9 @@ export default function SalesCharts({
                   style={{ height: `${heightPercent}%`, minHeight: d.amount > 0 ? '4px' : '0' }}
                 ></div>
               </div>
-              <div className="text-[10px] sm:text-xs text-gray-400 mt-3 font-medium text-center">{d.label}</div>
+              <div className="text-[10px] sm:text-xs text-gray-400 mt-3 font-medium text-center h-4">
+                {shouldShowLabel ? d.label : ""}
+              </div>
             </div>
           );
         })}
