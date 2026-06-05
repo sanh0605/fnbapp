@@ -71,7 +71,7 @@ export default async function SalesReportPage({
 
     const qty = Number(line.qty || 0);
     const price = Number(line.unit_price || 0);
-    const lineTotal = qty * price;
+    const lineTotal = (qty * price) - Number(line.line_discount || 0);
     
     const pName = p ? p.name : line.product_id;
     const v = variants.find((x:any) => x.id === line.variant_id);
@@ -134,7 +134,7 @@ export default async function SalesReportPage({
   let totalOrders = 0;
   
   if (categoryId) {
-    totalRevenue = validLines.reduce((sum, line) => sum + (Number(line.qty || 0) * Number(line.unit_price || 0)), 0);
+    totalRevenue = validLines.reduce((sum, line) => sum + ((Number(line.qty || 0) * Number(line.unit_price || 0)) - Number(line.line_discount || 0)), 0);
     const uniqueOrderIds = new Set(validLines.map(l => l.order_id));
     totalOrders = uniqueOrderIds.size;
   } else {
@@ -170,7 +170,7 @@ export default async function SalesReportPage({
       const d = new Date(line.created_at);
       const dateStr = d.toLocaleDateString("en-GB");
       const monthKey = `${d.getMonth()+1}/${d.getFullYear()}`;
-      const amount = Number(line.qty || 0) * Number(line.unit_price || 0);
+      const amount = (Number(line.qty || 0) * Number(line.unit_price || 0)) - Number(line.line_discount || 0);
 
       if(salesByDate[dateStr] !== undefined) salesByDate[dateStr] += amount;
       if(salesByMonth[monthKey] !== undefined) salesByMonth[monthKey] += amount;

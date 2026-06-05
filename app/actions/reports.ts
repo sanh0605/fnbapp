@@ -161,7 +161,7 @@ export async function getPnLData(filters: any = {}) {
 
     const qty = Number(line.qty || 0);
     const price = Number(line.unit_price || 0);
-    const lineRevenue = qty * price;
+    const lineRevenue = (qty * price) - Number(line.line_discount || 0);
     
     // Tính Unit COGS của line này bao gồm Variant COGS + Modifiers COGS
     let unitCogs = variantCOGS[line.variant_id] || 0;
