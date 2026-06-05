@@ -1,3 +1,5 @@
+process.env.TZ = 'Asia/Ho_Chi_Minh';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,

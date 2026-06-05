@@ -1,3 +1,7 @@
+if (typeof window === "undefined") {
+  process.env.TZ = "Asia/Ho_Chi_Minh";
+}
+
 import type { Metadata } from "next";
 import "./globals.css";
 import NextAuthSessionProvider from "@/components/SessionProvider";

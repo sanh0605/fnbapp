@@ -1,3 +1,7 @@
+if (typeof window === "undefined") {
+  process.env.TZ = "Asia/Ho_Chi_Minh";
+}
+
 import { google } from 'googleapis';
 import { unstable_cache, revalidateTag } from 'next/cache';
 
