@@ -194,46 +194,48 @@ export async function getPnLData(filters: any = {}) {
     const qty = Number(line.qty || 0);
     const price = Number(line.unit_price || 0);
     
-    // Tính doanh thu gốc của dòng này (đã cộng topping)
-    let rawLineTotal = qty * price;
-    if (line.modifiers_json) {
-      try {
-        const mods = JSON.parse(line.modifiers_json);
-        mods.forEach((m: any) => {
-          rawLineTotal += Number(m.price || 0) * qty;
-        });
-      } catch(e){}
-    }
-
     const order = completedOrders.find((o:any) => o.id === line.order_id);
     const actualTotal = order ? Number(order.total_amount || 0) : 0;
     const ratio = getOrderProratedRatio(line.order_id, actualTotal);
-    const lineRevenue = rawLineTotal * ratio;
+
+    // Tính doanh thu và cogs riêng cho variant chính (không cộng topping)
+    const variantRevenue = qty * price * ratio;
+    const variantCogs = (variantCOGS[line.variant_id] || 0) * qty;
+
+    productProfitMap[key].qty += qty;
+    productProfitMap[key].revenue += variantRevenue;
+    productProfitMap[key].cogs += variantCogs;
+
+    totalCOGS += variantCogs;
     
-    // Tính Unit COGS của line này bao gồm Variant COGS + Modifiers COGS
-    let unitCogs = variantCOGS[line.variant_id] || 0;
-    
+    if (categoryId) {
+      totalRevenue += variantRevenue;
+    }
+
+    // Tính doanh thu và cogs riêng cho từng topping (modifier)
     if (line.modifiers_json) {
       try {
         const mods = JSON.parse(line.modifiers_json);
-        mods.forEach((m:any) => {
-          unitCogs += (modifierCOGS[m.id] || 0);
-        });
-      } catch(e) {}
-    }
+        if (Array.isArray(mods)) {
+          mods.forEach((mod: any) => {
+            const modKey = `modifier_${mod.id || mod.name}`;
+            if (!productProfitMap[modKey]) {
+              productProfitMap[modKey] = { name: mod.name, qty: 0, revenue: 0, cogs: 0 };
+            }
+            const modRevenue = Number(mod.price || 0) * qty * ratio;
+            const modCogs = (modifierCOGS[mod.id] || 0) * qty;
 
-    const lineCogsTotal = qty * unitCogs;
+            productProfitMap[modKey].qty += qty;
+            productProfitMap[modKey].revenue += modRevenue;
+            productProfitMap[modKey].cogs += modCogs;
 
-    productProfitMap[key].qty += qty;
-    productProfitMap[key].revenue += lineRevenue;
-    productProfitMap[key].cogs += lineCogsTotal;
-
-    totalCOGS += lineCogsTotal;
-    
-    // Nếu có lọc theo category, ta tính doanh thu theo từng món (Gross). 
-    // Nếu không, ta sẽ tính tổng doanh thu ở vòng lặp order bên dưới để lấy Net Revenue (đã trừ giảm giá)
-    if (categoryId) {
-      totalRevenue += lineRevenue;
+            totalCOGS += modCogs;
+            if (categoryId) {
+              totalRevenue += modRevenue;
+            }
+          });
+        }
+      } catch (e) {}
     }
   });
 
