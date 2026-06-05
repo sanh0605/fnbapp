@@ -117,6 +117,18 @@ export default async function SalesReportPage({
   const bestSellers = Object.values(productSalesMap).sort((a, b) => b.totalQty - a.totalQty);
   const bestToppings = Object.values(toppingSalesMap).sort((a, b) => b.qty - a.qty);
 
+  // Tính tổng cộng cho từng cột sản lượng
+  const totalQtyBySize = uniqueSizes.reduce((acc, size) => {
+    acc[size] = bestSellers.reduce((sum, item) => sum + (item.sizes[size] || 0), 0);
+    return acc;
+  }, {} as Record<string, number>);
+  const totalQtyAll = bestSellers.reduce((sum, item) => sum + item.totalQty, 0);
+  const totalRevenueAll = bestSellers.reduce((sum, item) => sum + item.totalRevenue, 0);
+
+  // Tính tổng cộng cho topping
+  const totalToppingQty = bestToppings.reduce((sum, item) => sum + item.qty, 0);
+  const totalToppingRevenue = bestToppings.reduce((sum, item) => sum + item.revenue, 0);
+
   // Tính KPIs dựa trên validLines (nếu có lọc category) hoặc order (nếu không lọc)
   let totalRevenue = 0;
   let totalOrders = 0;
@@ -287,6 +299,20 @@ export default async function SalesReportPage({
                   ))
                 )}
               </tbody>
+              {bestSellers.length > 0 && (
+                <tfoot className="bg-gray-50 border-t-2 border-gray-200 sticky bottom-0 z-10 font-bold text-gray-900 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
+                  <tr>
+                    <td className="px-4 py-3">Tổng cộng</td>
+                    {uniqueSizes.map(size => (
+                      <td key={size} className="px-4 py-3 text-right">
+                        {totalQtyBySize[size] > 0 ? totalQtyBySize[size].toLocaleString("vi-VN") : "-"}
+                      </td>
+                    ))}
+                    <td className="px-4 py-3 text-right">{totalQtyAll.toLocaleString("vi-VN")}</td>
+                    <td className="px-4 py-3 text-right text-green-700">{totalRevenueAll.toLocaleString("vi-VN")} đ</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </div>
@@ -318,6 +344,15 @@ export default async function SalesReportPage({
                   ))
                 )}
               </tbody>
+              {bestToppings.length > 0 && (
+                <tfoot className="bg-gray-50 border-t-2 border-gray-200 sticky bottom-0 z-10 font-bold text-gray-900 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
+                  <tr>
+                    <td className="px-4 py-3">Tổng cộng</td>
+                    <td className="px-4 py-3 text-right">{totalToppingQty.toLocaleString("vi-VN")}</td>
+                    <td className="px-4 py-3 text-right text-green-700">{totalToppingRevenue.toLocaleString("vi-VN")} đ</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </div>
