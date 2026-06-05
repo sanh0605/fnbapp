@@ -336,7 +336,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
         <div className="w-full max-w-md mb-6 space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
            <div className="flex justify-between items-center text-sm text-gray-600">
               <span className="font-medium">Tổng tiền hàng:</span>
-              <span className="font-semibold text-gray-900">{subtotalAmount.toLocaleString()} đ</span>
+              <span className="font-semibold text-gray-900">{subtotalAmount.toLocaleString("vi-VN")} đ</span>
            </div>
            
            <div className="space-y-2 pt-2 border-t border-gray-200/60">
@@ -384,7 +384,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
            <div className="flex justify-between items-center pt-4 border-t border-gray-200">
               <span className="text-base font-bold text-gray-800">Cần Thanh Toán:</span>
-              <span className="text-2xl font-bold text-emerald-600">{totalAmount.toLocaleString()} đ</span>
+              <span className="text-2xl font-bold text-emerald-600">{totalAmount.toLocaleString("vi-VN")} đ</span>
            </div>
         </div>
 

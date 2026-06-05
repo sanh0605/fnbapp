@@ -74,7 +74,7 @@ export default function SalesCharts({
           return (
             <div key={i} className="flex flex-col items-center flex-1 group min-w-[8px] sm:min-w-[12px]">
               <div className="text-xs text-gray-500 mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 bg-white px-1 rounded shadow-sm">
-                {(d.amount / 1000).toLocaleString()}k
+                {Math.round(d.amount / 1000).toLocaleString("vi-VN")}k
               </div>
               <div className="w-full max-w-[40px] bg-blue-50 rounded-t-lg relative flex items-end h-[250px]">
                 <div 

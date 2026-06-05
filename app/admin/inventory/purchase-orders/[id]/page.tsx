@@ -82,7 +82,7 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
                       <tr key={idx} className="hover:bg-gray-50/50">
                         <td className="px-4 py-3 font-medium text-gray-900">{item?.name || line.purchased_item_id}</td>
                         <td className="px-4 py-3 text-gray-600">{unitName}</td>
-                        <td className="px-4 py-3 text-right text-gray-900 font-medium">{Number(line.quantity).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right text-gray-900 font-medium">{Number(line.quantity).toLocaleString("vi-VN")}</td>
                         <td className="px-4 py-3 text-right text-gray-500">{Number(line.unit_price).toLocaleString('vi-VN')} đ</td>
                         <td className="px-4 py-3 text-right text-gray-900 font-bold">{Number(line.subtotal).toLocaleString('vi-VN')} đ</td>
                       </tr>

@@ -250,7 +250,7 @@ export default async function AdminDashboard({
               return (
                 <div key={i} className="flex flex-col items-center flex-1 group">
                   <div className="text-xs text-gray-500 mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    {(d.amount / 1000).toLocaleString()}k
+                    {Math.round(d.amount / 1000).toLocaleString("vi-VN")}k
                   </div>
                   <div className="w-full bg-blue-50 rounded-t-lg relative flex items-end h-[200px]">
                     <div 
