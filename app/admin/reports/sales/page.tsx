@@ -324,7 +324,7 @@ export default async function SalesReportPage({
               Tổng: {totalCups} ly
             </span>
           </div>
-          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+          <div className="overflow-x-auto max-h-[528px] overflow-y-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
@@ -377,7 +377,7 @@ export default async function SalesReportPage({
           <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Top Topping Bán Chạy</h3>
           </div>
-          <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+          <div className="overflow-x-auto max-h-[528px] overflow-y-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>

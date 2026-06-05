@@ -108,9 +108,9 @@ export default function StockTable({
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
           <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50/80 text-gray-500 font-medium border-b border-gray-100">
+            <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
               <tr>
                 <th className="px-6 py-4">Mã</th>
                 <th className="px-6 py-4">Tên Sản phẩm / Nguyên liệu</th>

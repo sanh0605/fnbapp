@@ -267,19 +267,29 @@ export async function getPnLData(filters: any = {}) {
     })
     .sort((a, b) => b.cogs - a.cogs); // Sắp xếp giảm dần theo giá vốn tiêu hao
 
-  // 5. Định dạng dữ liệu Product Profit
-  const productProfitAnalysis = Object.values(productProfitMap)
-    .filter(p => p.qty > 0)
-    .map(p => {
-      const gross = p.revenue - p.cogs;
-      const margin = p.revenue > 0 ? (gross / p.revenue) * 100 : 0;
-      return {
-        ...p,
-        grossProfit: gross,
-        margin
-      };
-    })
-    .sort((a, b) => b.grossProfit - a.grossProfit); // Ưu tiên Lợi nhuận gộp cao nhất
+  // 5. Định dạng dữ liệu Product & Topping Profit
+  const productProfitAnalysis: any[] = [];
+  const toppingProfitAnalysis: any[] = [];
+
+  Object.entries(productProfitMap).forEach(([key, p]) => {
+    if (p.qty <= 0) return;
+    const gross = p.revenue - p.cogs;
+    const margin = p.revenue > 0 ? (gross / p.revenue) * 100 : 0;
+    const formattedItem = {
+      ...p,
+      grossProfit: gross,
+      margin
+    };
+
+    if (key.startsWith("modifier_")) {
+      toppingProfitAnalysis.push(formattedItem);
+    } else {
+      productProfitAnalysis.push(formattedItem);
+    }
+  });
+
+  productProfitAnalysis.sort((a, b) => b.grossProfit - a.grossProfit);
+  toppingProfitAnalysis.sort((a, b) => b.grossProfit - a.grossProfit);
 
   const grossProfit = totalRevenue - totalCOGS;
   const margin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
@@ -291,6 +301,7 @@ export async function getPnLData(filters: any = {}) {
     margin,
     cogsDetails,
     productProfitAnalysis,
+    toppingProfitAnalysis,
     orderCount: completedOrders.length
   };
 }

@@ -114,9 +114,9 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu tiêu hao nguyên liệu từ bán hàng.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50/80 text-gray-500 font-medium border-b border-gray-100">
+              <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
                   <th className="px-6 py-4">Tên Nguyên Liệu</th>
                   <th className="px-6 py-4 text-right">Khối Lượng Tiêu Hao</th>
@@ -169,9 +169,9 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu bán hàng.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50/80 text-gray-500 font-medium border-b border-gray-100">
+              <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
                   <th className="px-6 py-4">Tên Món</th>
                   <th className="px-6 py-4 text-center">Số Lượng Bán</th>
@@ -183,6 +183,65 @@ export default async function ReportsPage({
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data.productProfitAnalysis.map((item:any, idx:number) => {
+                  return (
+                    <tr key={idx} className="hover:bg-gray-50/50 transition">
+                      <td className="px-6 py-4 font-bold text-gray-800">{item.name}</td>
+                      <td className="px-6 py-4 text-center text-blue-600 font-medium">
+                        {item.qty.toLocaleString('vi-VN')}
+                      </td>
+                      <td className="px-6 py-4 text-right text-gray-700">
+                        {item.revenue.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                      </td>
+                      <td className="px-6 py-4 text-right text-red-600">
+                        {item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                      </td>
+                      <td className="px-6 py-4 text-right font-bold text-emerald-600">
+                        {item.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className={`inline-flex items-center px-2 py-1 rounded font-bold text-xs ${
+                          item.margin >= 50 ? 'bg-emerald-100 text-emerald-700' :
+                          item.margin >= 30 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {item.margin.toFixed(1)}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* HIỆU QUẢ KINH DOANH TOPPING */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-5 border-b border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900">Phân Tích Hiệu Quả Kinh Doanh Topping</h3>
+          <p className="text-sm text-gray-500">Chi tiết doanh thu, giá vốn và biên lợi nhuận của từng topping bán ra.</p>
+        </div>
+        
+        {!data.toppingProfitAnalysis || data.toppingProfitAnalysis.length === 0 ? (
+          <div className="text-center py-16 px-4">
+            <p className="text-gray-500">Chưa có dữ liệu bán hàng topping.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
+                <tr>
+                  <th className="px-6 py-4">Tên Topping</th>
+                  <th className="px-6 py-4 text-center">Số Lượng Bán</th>
+                  <th className="px-6 py-4 text-right">Doanh Thu</th>
+                  <th className="px-6 py-4 text-right">Tổng Giá Vốn</th>
+                  <th className="px-6 py-4 text-right font-bold text-gray-900">Lợi Nhuận Gộp</th>
+                  <th className="px-6 py-4 text-right">% Margin</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {data.toppingProfitAnalysis.map((item:any, idx:number) => {
                   return (
                     <tr key={idx} className="hover:bg-gray-50/50 transition">
                       <td className="px-6 py-4 font-bold text-gray-800">{item.name}</td>
