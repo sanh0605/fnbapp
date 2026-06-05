@@ -29,7 +29,14 @@ function mapRowsToObjects(rows: string[][]): any[] {
   return rows.slice(1).map((row) => {
     const obj: any = {};
     headers.forEach((header, index) => {
-      obj[header] = row[index] || ''; // Handle empty cells
+      let val = row[index] || '';
+      // Fix timezone for datetime columns that might have lost their UTC 'Z' indicator in Google Sheets
+      if ((header === 'created_at' || header === 'updated_at') && typeof val === 'string' && val.length > 0) {
+        if (!val.endsWith('Z') && !val.includes('+')) {
+          val = val.replace(' ', 'T') + 'Z';
+        }
+      }
+      obj[header] = val; // Handle empty cells
     });
     return obj;
   });
