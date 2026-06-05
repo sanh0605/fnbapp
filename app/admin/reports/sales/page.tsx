@@ -46,6 +46,38 @@ export default async function SalesReportPage({
     return true;
   });
 
+  // Tính tổng doanh thu gốc (gồm món + toppings) cho từng đơn hàng để chia tỉ lệ chiết khấu
+  const orderRawTotals: Record<string, number> = {};
+  completedOrders.forEach((o: any) => {
+    orderRawTotals[o.id] = 0;
+  });
+
+  orderLines.forEach((line: any) => {
+    if (orderRawTotals[line.order_id] !== undefined) {
+      const qty = Number(line.qty || 0);
+      const price = Number(line.unit_price || 0);
+      let lineRaw = qty * price;
+
+      if (line.modifiers_json) {
+        try {
+          const modifiers = JSON.parse(line.modifiers_json);
+          if (Array.isArray(modifiers)) {
+            modifiers.forEach((mod: any) => {
+              lineRaw += Number(mod.price || 0) * qty;
+            });
+          }
+        } catch (e) {}
+      }
+      orderRawTotals[line.order_id] += lineRaw;
+    }
+  });
+
+  const getOrderProratedRatio = (orderId: string, actualTotal: number) => {
+    const rawTotal = orderRawTotals[orderId] || 0;
+    if (rawTotal <= 0) return 0;
+    return actualTotal / rawTotal;
+  };
+
   // Mảng chứa các line hợp lệ
   const validLines: any[] = [];
   const productSalesMap: Record<string, { 
@@ -71,7 +103,11 @@ export default async function SalesReportPage({
 
     const qty = Number(line.qty || 0);
     const price = Number(line.unit_price || 0);
-    const lineTotal = (qty * price) - Number(line.line_discount || 0);
+
+    // Áp dụng tỉ lệ chiết khấu (prorated ratio) của đơn hàng lên sản phẩm
+    const actualTotal = Number(order.total_amount || 0);
+    const ratio = getOrderProratedRatio(line.order_id, actualTotal);
+    const lineTotal = (qty * price) * ratio;
     
     const pName = p ? p.name : line.product_id;
     const v = variants.find((x:any) => x.id === line.variant_id);
@@ -102,7 +138,8 @@ export default async function SalesReportPage({
               toppingSalesMap[modKey] = { name: mod.name, qty: 0, revenue: 0 };
             }
             toppingSalesMap[modKey].qty += qty;
-            toppingSalesMap[modKey].revenue += Number(mod.price || 0) * qty;
+            // Áp dụng tỉ lệ chiết khấu lên topping
+            toppingSalesMap[modKey].revenue += Number(mod.price || 0) * qty * ratio;
           });
         }
       } catch (e) {}
@@ -134,7 +171,14 @@ export default async function SalesReportPage({
   let totalOrders = 0;
   
   if (categoryId) {
-    totalRevenue = validLines.reduce((sum, line) => sum + ((Number(line.qty || 0) * Number(line.unit_price || 0)) - Number(line.line_discount || 0)), 0);
+    totalRevenue = validLines.reduce((sum, line) => {
+      const order = completedOrders.find((o:any) => o.id === line.order_id);
+      const actualTotal = Number(order?.total_amount || 0);
+      const ratio = order ? getOrderProratedRatio(line.order_id, actualTotal) : 0;
+      const qty = Number(line.qty || 0);
+      const price = Number(line.unit_price || 0);
+      return sum + ((qty * price) * ratio);
+    }, 0);
     const uniqueOrderIds = new Set(validLines.map(l => l.order_id));
     totalOrders = uniqueOrderIds.size;
   } else {
@@ -170,7 +214,13 @@ export default async function SalesReportPage({
       const d = new Date(line.created_at);
       const dateStr = d.toLocaleDateString("en-GB");
       const monthKey = `${d.getMonth()+1}/${d.getFullYear()}`;
-      const amount = (Number(line.qty || 0) * Number(line.unit_price || 0)) - Number(line.line_discount || 0);
+      
+      const order = completedOrders.find((o:any) => o.id === line.order_id);
+      const actualTotal = Number(order?.total_amount || 0);
+      const ratio = order ? getOrderProratedRatio(line.order_id, actualTotal) : 0;
+      const qty = Number(line.qty || 0);
+      const price = Number(line.unit_price || 0);
+      const amount = (qty * price) * ratio;
 
       if(salesByDate[dateStr] !== undefined) salesByDate[dateStr] += amount;
       if(salesByMonth[monthKey] !== undefined) salesByMonth[monthKey] += amount;
@@ -294,7 +344,7 @@ export default async function SalesReportPage({
                         </td>
                       ))}
                       <td className="px-4 py-3 text-right font-bold text-gray-800">{item.totalQty}</td>
-                      <td className="px-4 py-3 text-right text-green-600 font-medium">{item.totalRevenue.toLocaleString("vi-VN")} đ</td>
+                      <td className="px-4 py-3 text-right text-green-600 font-medium">{Math.round(item.totalRevenue).toLocaleString("vi-VN")} đ</td>
                     </tr>
                   ))
                 )}
@@ -309,7 +359,7 @@ export default async function SalesReportPage({
                       </td>
                     ))}
                     <td className="px-4 py-3 text-right">{totalQtyAll.toLocaleString("vi-VN")}</td>
-                    <td className="px-4 py-3 text-right text-green-700">{totalRevenueAll.toLocaleString("vi-VN")} đ</td>
+                    <td className="px-4 py-3 text-right text-green-700">{Math.round(totalRevenueAll).toLocaleString("vi-VN")} đ</td>
                   </tr>
                 </tfoot>
               )}
@@ -339,7 +389,7 @@ export default async function SalesReportPage({
                     <tr key={i} className="hover:bg-gray-50 transition">
                       <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
                       <td className="px-4 py-3 text-right font-bold text-gray-600">{item.qty}</td>
-                      <td className="px-4 py-3 text-right text-green-600 font-medium">{item.revenue.toLocaleString("vi-VN")} đ</td>
+                      <td className="px-4 py-3 text-right text-green-600 font-medium">{Math.round(item.revenue).toLocaleString("vi-VN")} đ</td>
                     </tr>
                   ))
                 )}
@@ -349,7 +399,7 @@ export default async function SalesReportPage({
                   <tr>
                     <td className="px-4 py-3">Tổng cộng</td>
                     <td className="px-4 py-3 text-right">{totalToppingQty.toLocaleString("vi-VN")}</td>
-                    <td className="px-4 py-3 text-right text-green-700">{totalToppingRevenue.toLocaleString("vi-VN")} đ</td>
+                    <td className="px-4 py-3 text-right text-green-700">{Math.round(totalToppingRevenue).toLocaleString("vi-VN")} đ</td>
                   </tr>
                 </tfoot>
               )}

@@ -139,6 +139,38 @@ export async function getPnLData(filters: any = {}) {
     qtyByItem[itemId] += qtyConsumed;
   });
 
+  // Tính tổng doanh thu gốc (gồm món + toppings) cho từng đơn hàng để chia tỉ lệ chiết khấu
+  const orderRawTotals: Record<string, number> = {};
+  completedOrders.forEach((o: any) => {
+    orderRawTotals[o.id] = 0;
+  });
+
+  orderLines.forEach((line: any) => {
+    if (orderRawTotals[line.order_id] !== undefined) {
+      const qty = Number(line.qty || 0);
+      const price = Number(line.unit_price || 0);
+      let lineRaw = qty * price;
+
+      if (line.modifiers_json) {
+        try {
+          const modifiers = JSON.parse(line.modifiers_json);
+          if (Array.isArray(modifiers)) {
+            modifiers.forEach((mod: any) => {
+              lineRaw += Number(mod.price || 0) * qty;
+            });
+          }
+        } catch (e) {}
+      }
+      orderRawTotals[line.order_id] += lineRaw;
+    }
+  });
+
+  const getOrderProratedRatio = (orderId: string, actualTotal: number) => {
+    const rawTotal = orderRawTotals[orderId] || 0;
+    if (rawTotal <= 0) return 0;
+    return actualTotal / rawTotal;
+  };
+
   // Tính Product Profit Analysis từ Order_Lines
   const productProfitMap: Record<string, { name: string, qty: number, revenue: number, cogs: number }> = {};
 
@@ -161,7 +193,22 @@ export async function getPnLData(filters: any = {}) {
 
     const qty = Number(line.qty || 0);
     const price = Number(line.unit_price || 0);
-    const lineRevenue = (qty * price) - Number(line.line_discount || 0);
+    
+    // Tính doanh thu gốc của dòng này (đã cộng topping)
+    let rawLineTotal = qty * price;
+    if (line.modifiers_json) {
+      try {
+        const mods = JSON.parse(line.modifiers_json);
+        mods.forEach((m: any) => {
+          rawLineTotal += Number(m.price || 0) * qty;
+        });
+      } catch(e){}
+    }
+
+    const order = completedOrders.find((o:any) => o.id === line.order_id);
+    const actualTotal = order ? Number(order.total_amount || 0) : 0;
+    const ratio = getOrderProratedRatio(line.order_id, actualTotal);
+    const lineRevenue = rawLineTotal * ratio;
     
     // Tính Unit COGS của line này bao gồm Variant COGS + Modifiers COGS
     let unitCogs = variantCOGS[line.variant_id] || 0;
