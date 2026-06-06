@@ -8,7 +8,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 async function getIngredientUnitCost(ingredientId: string, beforeDate: string, ledgerCache: any[]): Promise<number> {
   const purchases = ledgerCache.filter((s: any) =>
     s.item_reference === ingredientId &&
-    s.transaction_type === "PURCHASE" &&
+    s.transaction_type === "PO_RECEIPT" &&
     s.created_at &&
     new Date(s.created_at) <= new Date(beforeDate)
   );

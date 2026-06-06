@@ -17,7 +17,7 @@ async function getIngredientUnitCost(ingredientId: string, beforeDate: string): 
   const allLedger = await findAllNoCache("Stock_Ledger");
   const purchases = allLedger.filter((s: any) =>
     s.item_reference === ingredientId &&
-    s.transaction_type === "PURCHASE" &&
+    s.transaction_type === "PO_RECEIPT" &&
     s.created_at &&
     new Date(s.created_at) <= new Date(beforeDate)
   );

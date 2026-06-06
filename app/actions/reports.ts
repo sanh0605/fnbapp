@@ -82,9 +82,42 @@ export async function getPnLData(filters: any = {}) {
     }
   });
 
-  // Tính Unit COGS cho Product Variants & Modifiers
-  const variantRecipes = recipes.filter((r:any) => r.target_type === "PRODUCT_VARIANT" && (!r.end_date || r.end_date === ""));
-  const modifierRecipes = recipes.filter((r:any) => r.target_type === "MODIFIER" && (!r.end_date || r.end_date === ""));
+  // Tìm công thức hoạt động tại một thời điểm xác định (có fallback về công thức cũ nhất nếu không tìm thấy)
+  const findRecipeAtTime = (allRecipes: any[], targetType: string, targetId: string, atTime: string): any | null => {
+    const targetTime = new Date(atTime).getTime();
+
+    const candidates = allRecipes.filter((r: any) => {
+      if (r.target_type !== targetType || r.target_id !== targetId) return false;
+
+      const effectiveTime = r.created_at ? new Date(r.created_at).getTime() : 0;
+      if (effectiveTime > targetTime) return false;
+
+      if (r.end_date && r.end_date !== "") {
+        return new Date(r.end_date).getTime() > targetTime;
+      }
+      return true;
+    });
+
+    if (candidates.length > 0) {
+      candidates.sort((a: any, b: any) => {
+        const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return bTime - aTime;
+      });
+      return candidates[0];
+    }
+
+    // Fallback: Nếu không tìm thấy công thức nào hiệu lực trước đó, lấy công thức được tạo sớm nhất
+    const allForTarget = allRecipes.filter((r: any) => r.target_type === targetType && r.target_id === targetId);
+    if (allForTarget.length === 0) return null;
+    
+    allForTarget.sort((a: any, b: any) => {
+      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return aTime - bTime;
+    });
+    return allForTarget[0];
+  };
 
   const calculateRecipeCost = (recipe: any) => {
     if (!recipe || !recipe.ingredients_json) return 0;
@@ -92,24 +125,10 @@ export async function getPnLData(filters: any = {}) {
     try { ings = JSON.parse(recipe.ingredients_json); } catch(e){}
     let cost = 0;
     for (const ing of ings) {
-      // Base Ingredient or Semi Product cost is in macMap
       cost += (macMap[ing.ingredient_id] || 0) * Number(ing.quantity || 0);
     }
     return cost;
   };
-
-  const variantCOGS: Record<string, number> = {};
-  variants.forEach((v:any) => {
-    const r = variantRecipes.find((x:any) => x.target_id === v.id);
-    variantCOGS[v.id] = calculateRecipeCost(r);
-  });
-
-  const modifierCOGS: Record<string, number> = {};
-  // if we had a modifiers list, we would iterate it. Since we don't fetch Modifiers directly here, 
-  // we just calculate it when we see it in orderLines, or build a map from modifierRecipes.
-  modifierRecipes.forEach((r:any) => {
-    modifierCOGS[r.target_id] = calculateRecipeCost(r);
-  });
 
   // 3. Tính Giá Vốn Hàng Bán (COGS) & Doanh Thu theo Order_Lines
   const validOrderIds = new Set(completedOrders.map((o:any) => o.id));
@@ -120,24 +139,25 @@ export async function getPnLData(filters: any = {}) {
   const cogsByItem: Record<string, number> = {}; // Raw ingredient consumption
   const qtyByItem: Record<string, number> = {};
 
-  // Tính raw ingredient consumption từ SALES_CONSUME
-  const consumes = stockLedger.filter((s:any) => 
-    s.transaction_type === "SALES_CONSUME" && validOrderIds.has(s.reference_id)
-  );
-
-  consumes.forEach((c:any) => {
-    const itemId = c.item_reference;
-    const qtyConsumed = Math.abs(Number(c.quantity_change || 0));
-    const costPerUnit = macMap[itemId] || 0;
-    const lineCOGS = qtyConsumed * costPerUnit;
-
-    if (!cogsByItem[itemId]) {
-      cogsByItem[itemId] = 0;
-      qtyByItem[itemId] = 0;
+  // Hàm cộng dồn lượng nguyên vật liệu tiêu thụ từ công thức
+  const addRecipeIngredientsToConsumption = (recipe: any, lineQty: number) => {
+    if (!recipe || !recipe.ingredients_json) return;
+    let ings = [];
+    try { ings = JSON.parse(recipe.ingredients_json); } catch(e){}
+    for (const ing of ings) {
+      const itemId = ing.ingredient_id;
+      const qtyConsumed = Number(ing.quantity || 0) * lineQty;
+      const costPerUnit = macMap[itemId] || 0;
+      const lineIngredientCOGS = qtyConsumed * costPerUnit;
+      
+      if (!cogsByItem[itemId]) {
+        cogsByItem[itemId] = 0;
+        qtyByItem[itemId] = 0;
+      }
+      cogsByItem[itemId] += lineIngredientCOGS;
+      qtyByItem[itemId] += qtyConsumed;
     }
-    cogsByItem[itemId] += lineCOGS;
-    qtyByItem[itemId] += qtyConsumed;
-  });
+  };
 
   // Tính tổng doanh thu gốc (gồm món + toppings) cho từng đơn hàng để chia tỉ lệ chiết khấu
   const orderRawTotals: Record<string, number> = {};
@@ -195,12 +215,19 @@ export async function getPnLData(filters: any = {}) {
     const price = Number(line.unit_price || 0);
     
     const order = completedOrders.find((o:any) => o.id === line.order_id);
+    const orderTime = order ? order.created_at : new Date().toISOString();
     const actualTotal = order ? Number(order.total_amount || 0) : 0;
     const ratio = getOrderProratedRatio(line.order_id, actualTotal);
 
+    // Tìm công thức lịch sử của variant tại thời điểm tạo đơn hàng
+    const histRecipe = findRecipeAtTime(recipes, "PRODUCT_VARIANT", line.variant_id, orderTime);
+    const variantCogs = calculateRecipeCost(histRecipe) * qty;
+
+    // Cộng dồn nguyên liệu tiêu thụ cho variant
+    addRecipeIngredientsToConsumption(histRecipe, qty);
+
     // Tính doanh thu và cogs riêng cho variant chính (không cộng topping)
     const variantRevenue = qty * price * ratio;
-    const variantCogs = (variantCOGS[line.variant_id] || 0) * qty;
 
     productProfitMap[key].qty += qty;
     productProfitMap[key].revenue += variantRevenue;
@@ -222,8 +249,15 @@ export async function getPnLData(filters: any = {}) {
             if (!productProfitMap[modKey]) {
               productProfitMap[modKey] = { name: mod.name, qty: 0, revenue: 0, cogs: 0 };
             }
+
+            // Tìm công thức lịch sử của modifier tại thời điểm tạo đơn hàng
+            const histModRecipe = findRecipeAtTime(recipes, "MODIFIER", mod.id, orderTime);
+            const modCogs = calculateRecipeCost(histModRecipe) * qty;
+
+            // Cộng dồn nguyên liệu tiêu thụ cho modifier
+            addRecipeIngredientsToConsumption(histModRecipe, qty);
+
             const modRevenue = Number(mod.price || 0) * qty * ratio;
-            const modCogs = (modifierCOGS[mod.id] || 0) * qty;
 
             productProfitMap[modKey].qty += qty;
             productProfitMap[modKey].revenue += modRevenue;
