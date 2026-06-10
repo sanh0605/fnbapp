@@ -12,6 +12,10 @@ Date: 2026-06-10
 
 **Fix:** Compute MAC per day within P&L date range. For each day, sum all PO_RECEIPT entries from the beginning of time up to that day.
 
+Both PO_RECEIPT and sales orders use their actual transaction dates for comparison:
+- PO_RECEIPT: `Stock_Ledger.created_at` = `transaction_date` (ngay nhap hang thuc te, set by user on PO form)
+- Sales order: `Orders.created_at` (ngay tao don thuc te)
+
 ```
 For each date D in P&L range:
   receipts = PO_RECEIPT.where(ingredient_id = X, created_at <= endOfDay(D))
