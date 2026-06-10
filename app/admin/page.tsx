@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import Link from "next/link";
+import { computeLineRevenue } from "@/lib/report-utils";
 
 const TrendBadge = ({ value }: { value: number | null }) => {
   if (value === null) return null;
@@ -168,9 +169,14 @@ export default async function AdminDashboard({
     }
     
     const qty = Number(line.qty || 0);
-    const price = Number(line.unit_price || 0);
+    const lineRevenue = computeLineRevenue({
+      qty,
+      unit_price: Number(line.unit_price || 0),
+      line_discount: Number(line.line_discount || 0),
+      modifiers_json: line.modifiers_json || "",
+    });
     productSales[key].qty += qty;
-    productSales[key].revenue += qty * price;
+    productSales[key].revenue += lineRevenue.lineTotal;
   });
 
   const bestSellers = Object.values(productSales)

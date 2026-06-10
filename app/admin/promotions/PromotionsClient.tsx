@@ -10,6 +10,7 @@ interface PromotionsClientProps {
   brands: any[];
   products: any[];
   variants: any[];
+  categories: any[];
 }
 
 export default function PromotionsClient({
@@ -17,6 +18,7 @@ export default function PromotionsClient({
   brands,
   products,
   variants,
+  categories,
 }: PromotionsClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
@@ -48,6 +50,18 @@ export default function PromotionsClient({
   const isExpired = (endDate: string) => {
     if (!endDate) return false;
     return new Date(endDate).getTime() < new Date().getTime();
+  };
+
+  const formatDateTime = (dateStr: string) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const HH = String(d.getHours()).padStart(2, '0');
+    const MIN = String(d.getMinutes()).padStart(2, '0');
+    const SS = String(d.getSeconds()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${HH}:${MIN}:${SS}`;
   };
 
   // Filter promotions
@@ -231,26 +245,14 @@ export default function PromotionsClient({
                     <div className="flex justify-between">
                       <span>Bắt đầu:</span>
                       <span className="font-bold text-gray-600">
-                        {new Date(promo.start_date).toLocaleString("vi-VN", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })}
+                        {formatDateTime(promo.start_date)}
                       </span>
                     </div>
                     {promo.end_date && (
                       <div className="flex justify-between">
                         <span>Kết thúc:</span>
                         <span className="font-bold text-gray-600">
-                          {new Date(promo.end_date).toLocaleString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })}
+                          {formatDateTime(promo.end_date)}
                         </span>
                       </div>
                     )}
@@ -299,6 +301,7 @@ export default function PromotionsClient({
         <PromotionForm
           initialData={editingPromo}
           brands={brands}
+          categories={categories}
           products={products}
           variants={variants}
           onClose={() => {

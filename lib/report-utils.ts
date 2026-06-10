@@ -17,6 +17,7 @@ export function computeLineRevenue(line: {
   const variantRaw = qty * price;
   let remainingDiscount = lineDiscount;
 
+  // PRIORITY 1: Apply discount to the base variant first
   let variantRevenue: number;
   if (remainingDiscount >= variantRaw) {
     variantRevenue = 0;
@@ -26,23 +27,26 @@ export function computeLineRevenue(line: {
     remainingDiscount = 0;
   }
 
+  // PRIORITY 2: Apply remaining discount to modifiers
   let mods: { id: string; name: string; price: number }[] = [];
-  let modsRaw = 0;
+  let modsRawTotal = 0;
   if (line.modifiers_json) {
     try {
       const parsed = JSON.parse(line.modifiers_json);
       if (Array.isArray(parsed)) {
         mods = parsed;
-        mods.forEach((m: any) => { modsRaw += Number(m.price || 0) * qty; });
+        mods.forEach((m: any) => { modsRawTotal += Number(m.price || 0) * qty; });
       }
     } catch {}
   }
 
   const modRevenues = mods.map((mod: any) => {
     const modRaw = Number(mod.price || 0) * qty;
-    const modRatio = modsRaw > 0 ? modRaw / modsRaw : 0;
+    // Distribute remaining discount proportionally among modifiers
+    const modRatio = modsRawTotal > 0 ? modRaw / modsRawTotal : 0;
     const modDiscount = remainingDiscount * modRatio;
     const modRevenue = Math.max(0, modRaw - modDiscount);
+    
     return {
       id: mod.id || mod.name || "",
       name: mod.name || "",

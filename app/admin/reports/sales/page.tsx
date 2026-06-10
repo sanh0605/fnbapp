@@ -1,4 +1,5 @@
 import { findAll } from "@/lib/sheets_db";
+import { computeLineRevenue } from "@/lib/report-utils";
 import SalesFilter from "@/components/SalesFilter";
 import SalesCharts from "@/components/SalesCharts";
 import CategoryPieChart from "@/components/CategoryPieChart";
@@ -46,38 +47,7 @@ export default async function SalesReportPage({
     return true;
   });
 
-  // Tính tổng doanh thu gốc (gồm món + toppings) cho từng đơn hàng để chia tỉ lệ chiết khấu
-  const orderRawTotals: Record<string, number> = {};
-  completedOrders.forEach((o: any) => {
-    orderRawTotals[o.id] = 0;
-  });
-
-  orderLines.forEach((line: any) => {
-    if (orderRawTotals[line.order_id] !== undefined) {
-      const qty = Number(line.qty || 0);
-      const price = Number(line.unit_price || 0);
-      let lineRaw = qty * price;
-
-      if (line.modifiers_json) {
-        try {
-          const modifiers = JSON.parse(line.modifiers_json);
-          if (Array.isArray(modifiers)) {
-            modifiers.forEach((mod: any) => {
-              lineRaw += Number(mod.price || 0) * qty;
-            });
-          }
-        } catch (e) {}
-      }
-      orderRawTotals[line.order_id] += lineRaw;
-    }
-  });
-
-  const getOrderProratedRatio = (orderId: string, actualTotal: number) => {
-    const rawTotal = orderRawTotals[orderId] || 0;
-    if (rawTotal <= 0) return 0;
-    return actualTotal / rawTotal;
-  };
-
+  // Bỏ logic prorated ratio, sử dụng trực tiếp line_discount từ database
   // Mảng chứa các line hợp lệ
   const validLines: any[] = [];
   const productSalesMap: Record<string, { 
@@ -102,12 +72,16 @@ export default async function SalesReportPage({
     validLines.push(line);
 
     const qty = Number(line.qty || 0);
-    const price = Number(line.unit_price || 0);
 
-    // Áp dụng tỉ lệ chiết khấu (prorated ratio) của đơn hàng lên sản phẩm
-    const actualTotal = Number(order.total_amount || 0);
-    const ratio = getOrderProratedRatio(line.order_id, actualTotal);
-    const lineTotal = (qty * price) * ratio;
+    const lineRevenue = computeLineRevenue({
+      qty,
+      unit_price: Number(line.unit_price || 0),
+      line_discount: Number(line.line_discount || 0),
+      modifiers_json: line.modifiers_json || "",
+    });
+
+    const variantRevenue = lineRevenue.variantRevenue;
+    let lineTotal = lineRevenue.lineTotal;
     
     const pName = p ? p.name : line.product_id;
     const v = variants.find((x:any) => x.id === line.variant_id);
@@ -118,7 +92,7 @@ export default async function SalesReportPage({
     }
     
     productSalesMap[line.product_id].totalQty += qty;
-    productSalesMap[line.product_id].totalRevenue += lineTotal;
+    productSalesMap[line.product_id].totalRevenue += variantRevenue;
     
     if (!productSalesMap[line.product_id].sizes[sizeName]) {
       productSalesMap[line.product_id].sizes[sizeName] = 0;
@@ -131,21 +105,20 @@ export default async function SalesReportPage({
       try {
         const modifiers = JSON.parse(line.modifiers_json);
         if (Array.isArray(modifiers)) {
-          modifiers.forEach((mod: any) => {
-            const modKey = mod.id || mod.name;
-            if (!modKey) return;
-            if (!toppingSalesMap[modKey]) {
-              toppingSalesMap[modKey] = { name: mod.name, qty: 0, revenue: 0 };
-            }
-            toppingSalesMap[modKey].qty += qty;
-            // Áp dụng tỉ lệ chiết khấu lên topping
-            const modRevenue = Number(mod.price || 0) * qty * ratio;
-            toppingSalesMap[modKey].revenue += modRevenue;
+          let modsRaw = 0;
+          modifiers.forEach((m: any) => modsRaw += (Number(m.price || 0) * qty));
 
-            // Thêm doanh thu topping vào nhóm "topping"
-            if (!categorySalesMap["topping"]) categorySalesMap["topping"] = 0;
-            categorySalesMap["topping"] += modRevenue;
-          });
+            lineRevenue.modRevenues.forEach((modResult) => {
+              if (!toppingSalesMap[modResult.id]) {
+                toppingSalesMap[modResult.id] = { name: modResult.name, qty: 0, revenue: 0 };
+              }
+              toppingSalesMap[modResult.id].qty += qty;
+              toppingSalesMap[modResult.id].revenue += modResult.revenue;
+              // lineTotal is already computed by computeLineRevenue
+
+              if (!categorySalesMap["topping"]) categorySalesMap["topping"] = 0;
+              categorySalesMap["topping"] += modResult.revenue;
+            });
         }
       } catch (e) {}
     }
@@ -174,22 +147,18 @@ export default async function SalesReportPage({
   // Tính KPIs dựa trên validLines (nếu có lọc category) hoặc order (nếu không lọc)
   let totalRevenue = 0;
   let totalOrders = 0;
-  
-  if (categoryId) {
-    totalRevenue = validLines.reduce((sum, line) => {
-      const order = completedOrders.find((o:any) => o.id === line.order_id);
-      const actualTotal = Number(order?.total_amount || 0);
-      const ratio = order ? getOrderProratedRatio(line.order_id, actualTotal) : 0;
-      const qty = Number(line.qty || 0);
-      const price = Number(line.unit_price || 0);
-      return sum + ((qty * price) * ratio);
-    }, 0);
-    const uniqueOrderIds = new Set(validLines.map(l => l.order_id));
-    totalOrders = uniqueOrderIds.size;
-  } else {
-    totalRevenue = completedOrders.reduce((sum:number, order:any) => sum + (parseFloat(order.total_amount) || 0), 0);
-    totalOrders = completedOrders.length;
-  }
+
+  validLines.forEach((line: any) => {
+    const lineRevenue = computeLineRevenue({
+      qty: Number(line.qty || 0),
+      unit_price: Number(line.unit_price || 0),
+      line_discount: Number(line.line_discount || 0),
+      modifiers_json: line.modifiers_json || "",
+    });
+    totalRevenue += lineRevenue.lineTotal;
+  });
+  const uniqueOrderIds = new Set(validLines.map((l: any) => l.order_id));
+  totalOrders = uniqueOrderIds.size;
   
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
@@ -213,39 +182,25 @@ export default async function SalesReportPage({
     currMonth.setMonth(currMonth.getMonth() + 1);
   }
 
-  if (categoryId) {
-    validLines.forEach((line:any) => {
-      if(!line.created_at) return;
-      const d = new Date(line.created_at);
-      const dateStr = d.toLocaleDateString("en-GB");
-      const monthKey = `${d.getMonth()+1}/${d.getFullYear()}`;
-      
-      const order = completedOrders.find((o:any) => o.id === line.order_id);
-      const actualTotal = Number(order?.total_amount || 0);
-      const ratio = order ? getOrderProratedRatio(line.order_id, actualTotal) : 0;
-      const qty = Number(line.qty || 0);
-      const price = Number(line.unit_price || 0);
-      const amount = (qty * price) * ratio;
+  validLines.forEach((line: any) => {
+    if (!line.created_at) return;
+    const d = new Date(line.created_at);
+    const dateStr = d.toLocaleDateString("en-GB");
+    const monthKey = `${d.getMonth() + 1}/${d.getFullYear()}`;
 
-      if(salesByDate[dateStr] !== undefined) salesByDate[dateStr] += amount;
-      if(salesByMonth[monthKey] !== undefined) salesByMonth[monthKey] += amount;
-      salesByDayOfWeek[d.getDay()] += amount;
-      salesByHour[d.getHours()] += amount;
+    const lineRevenue = computeLineRevenue({
+      qty: Number(line.qty || 0),
+      unit_price: Number(line.unit_price || 0),
+      line_discount: Number(line.line_discount || 0),
+      modifiers_json: line.modifiers_json || "",
     });
-  } else {
-    completedOrders.forEach((o:any) => {
-      if(!o.created_at) return;
-      const d = new Date(o.created_at);
-      const dateStr = d.toLocaleDateString("en-GB");
-      const monthKey = `${d.getMonth()+1}/${d.getFullYear()}`;
-      const amount = Number(o.total_amount || 0);
+    const amount = lineRevenue.lineTotal;
 
-      if(salesByDate[dateStr] !== undefined) salesByDate[dateStr] += amount;
-      if(salesByMonth[monthKey] !== undefined) salesByMonth[monthKey] += amount;
-      salesByDayOfWeek[d.getDay()] += amount;
-      salesByHour[d.getHours()] += amount;
-    });
-  }
+    if (salesByDate[dateStr] !== undefined) salesByDate[dateStr] += amount;
+    if (salesByMonth[monthKey] !== undefined) salesByMonth[monthKey] += amount;
+    salesByDayOfWeek[d.getDay()] += amount;
+    salesByHour[d.getHours()] += amount;
+  });
 
   const chartDataDate = Object.entries(salesByDate).map(([date, amount]) => ({
     label: date.substring(0, 5),

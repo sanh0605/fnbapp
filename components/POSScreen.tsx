@@ -210,27 +210,39 @@ export default function POSScreen({
         if (subtotal < Number(p.min_order_value || 0)) return 0;
 
         let totalProdDiscount = 0;
-        let applicableVariants: string[] = [];
+        let applicableVariantsMap: Record<string, number> = {};
+        let applicableVariantsList: string[] = [];
+        let isMap = false;
+
         try {
           if (p.applicable_products_json) {
-            applicableVariants = JSON.parse(p.applicable_products_json);
+            const parsed = JSON.parse(p.applicable_products_json);
+            if (Array.isArray(parsed)) {
+              applicableVariantsList = parsed;
+            } else if (parsed && typeof parsed === "object") {
+              applicableVariantsMap = parsed;
+              applicableVariantsList = Object.keys(parsed);
+              isMap = true;
+            }
           }
         } catch (e) {}
 
-        if (applicableVariants.length === 0) return 0;
+        if (applicableVariantsList.length === 0) return 0;
 
         cart.forEach((item) => {
-          if (applicableVariants.includes(item.variant_id)) {
+          if (applicableVariantsList.includes(item.variant_id)) {
+            const val = isMap ? Number(applicableVariantsMap[item.variant_id]) : Number(p.discount_value);
+
             const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
             const itemBaseTotal = (item.unit_price + modsPrice) * item.qty;
             let itemDiscount = 0;
             if (p.discount_type === "PERCENT") {
-              itemDiscount = itemBaseTotal * (Number(p.discount_value) / 100);
+              itemDiscount = itemBaseTotal * (val / 100);
             } else if (p.discount_type === "FLAT_PRICE") {
-              const unitDiscount = Math.max(0, item.unit_price - Number(p.discount_value));
+              const unitDiscount = Math.max(0, item.unit_price - val);
               itemDiscount = unitDiscount * item.qty;
             } else {
-              itemDiscount = Number(p.discount_value) * item.qty;
+              itemDiscount = val * item.qty;
             }
             totalProdDiscount += Math.min(itemBaseTotal, itemDiscount);
           }
@@ -395,26 +407,93 @@ export default function POSScreen({
   const handleConfirmCheckout = async (method: string) => {
     setIsCheckingOut(true);
 
-    const finalDiscount = userCustomDiscount !== null
-      ? userCustomDiscount
-      : (appliedPromo
-        ? (appliedPromo.type === "ORDER_DISCOUNT" ? Number(appliedPromo.discount_value) : promoDiscountAmount)
-        : 0);
+    const subtotal = calculateSubtotal();
 
-    const finalDiscountType = userCustomDiscount !== null
-      ? userCustomDiscountType
-      : (appliedPromo ? (appliedPromo.type === "ORDER_DISCOUNT" ? appliedPromo.discount_type : "VND") : "VND");
+    let finalDiscountAmountInVND = 0;
+    if (userCustomDiscount !== null) {
+      if (userCustomDiscountType === "PERCENT") {
+        finalDiscountAmountInVND = subtotal * (userCustomDiscount / 100);
+      } else {
+        finalDiscountAmountInVND = userCustomDiscount;
+      }
+    } else if (appliedPromo) {
+      if (appliedPromo.type === "ORDER_DISCOUNT") {
+        if (appliedPromo.discount_type === "PERCENT") {
+          finalDiscountAmountInVND = subtotal * (Number(appliedPromo.discount_value) / 100);
+        } else {
+          finalDiscountAmountInVND = Number(appliedPromo.discount_value);
+        }
+      } else {
+        finalDiscountAmountInVND = promoDiscountAmount;
+      }
+    }
 
     const finalAppliedPromoId = userCustomDiscount !== null ? "" : (appliedPromo ? appliedPromo.id : "");
+    const finalAppliedPromoSnapshot = userCustomDiscount !== null ? "" : (appliedPromo ? JSON.stringify(appliedPromo) : "");
+    const finalDiscountReason = userCustomDiscount !== null ? "MANUAL_DISCOUNT" : "";
+
+    // 1. Phân bổ chiết khấu (Line Discount) cho từng món trong giỏ hàng
+    const finalCart = cart.map(item => {
+      let lineDiscount = 0;
+      const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
+      const itemBaseTotal = (item.unit_price + modsPrice) * item.qty;
+
+      if (userCustomDiscount !== null || (appliedPromo && appliedPromo.type === "ORDER_DISCOUNT")) {
+        // Tình huống 1: Khuyến mãi toàn đơn (ORDER_DISCOUNT)
+        if (subtotal > 0) {
+          lineDiscount = finalDiscountAmountInVND * (itemBaseTotal / subtotal);
+        }
+      } else if (appliedPromo && appliedPromo.type === "PRODUCT_DISCOUNT") {
+        // Tình huống 2: Khuyến mãi từng món (PRODUCT_DISCOUNT)
+        let applicableVariantsMap: Record<string, number> = {};
+        let applicableVariantsList: string[] = [];
+        let isMap = false;
+
+        try {
+          if (appliedPromo.applicable_products_json) {
+            const parsed = JSON.parse(appliedPromo.applicable_products_json);
+            if (Array.isArray(parsed)) {
+              applicableVariantsList = parsed;
+            } else if (parsed && typeof parsed === "object") {
+              applicableVariantsMap = parsed;
+              applicableVariantsList = Object.keys(parsed);
+              isMap = true;
+            }
+          }
+        } catch (e) {}
+
+        if (applicableVariantsList.includes(item.variant_id)) {
+          const val = isMap ? Number(applicableVariantsMap[item.variant_id]) : Number(appliedPromo.discount_value);
+          let itemSpecificDiscount = 0;
+          if (appliedPromo.discount_type === "PERCENT") {
+            itemSpecificDiscount = itemBaseTotal * (val / 100);
+          } else if (appliedPromo.discount_type === "FLAT_PRICE") {
+            const unitDiscount = Math.max(0, item.unit_price - val);
+            itemSpecificDiscount = unitDiscount * item.qty;
+          } else {
+            itemSpecificDiscount = val * item.qty;
+          }
+          lineDiscount = Math.min(itemBaseTotal, itemSpecificDiscount);
+        }
+      }
+
+      return {
+        ...item,
+        discount_amount: lineDiscount,
+        discount_type: "VND"
+      };
+    });
 
     const orderData = {
       brand_id: brandId,
-      items: cart,
+      items: finalCart,
       total_amount: totalAmount,
-      subtotal_amount: calculateSubtotal(),
-      discount_amount: finalDiscount,
-      discount_type: finalDiscountType,
+      subtotal_amount: subtotal,
+      discount_amount: finalDiscountAmountInVND,
+      discount_type: "VND",
       applied_promotion_id: finalAppliedPromoId,
+      applied_promotion_snapshot_json: finalAppliedPromoSnapshot,
+      discount_reason: finalDiscountReason,
       payment_method: method
     };
 

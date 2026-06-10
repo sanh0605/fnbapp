@@ -186,8 +186,10 @@ export async function editOrder(
       total_amount,
       subtotal_amount,
       discount_amount,
-      discount_type,
+      discount_type: "VND", // Force VND since we calculate it on the frontend
       method: payment_method,
+      applied_promotion_id: "", // Xóa khuyến mãi nếu có chỉnh sửa sau thanh toán
+      discount_reason: "Chỉnh sửa sau khi thanh toán",
     });
 
     // 6. Delete old lines and stock entries

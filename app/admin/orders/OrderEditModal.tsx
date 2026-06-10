@@ -218,20 +218,34 @@ export default function OrderEditModal({
     if (items.length === 0) return;
     setIsSaving(true);
 
+    const subtotal = calculateSubtotal();
+    let finalOrderDiscountVND = orderDiscount;
+    if (orderDiscountType === "PERCENT") {
+      finalOrderDiscountVND = subtotal * (orderDiscount / 100);
+    }
+
     const editData = {
-      items: items.map(item => ({
-        product_id: item.product_id,
-        variant_id: item.variant_id,
-        qty: item.qty,
-        unit_price: item.unit_price,
-        modifiers: item.modifiers,
-        discount_amount: item.discount_amount,
-        discount_type: item.discount_type,
-      })),
+      items: items.map(item => {
+        let itemDiscountVND = item.discount_amount;
+        if (item.discount_type === "PERCENT") {
+          const modsPrice = item.modifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
+          const base = (item.unit_price + modsPrice) * item.qty;
+          itemDiscountVND = base * (item.discount_amount / 100);
+        }
+        return {
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          qty: item.qty,
+          unit_price: item.unit_price,
+          modifiers: item.modifiers,
+          discount_amount: itemDiscountVND,
+          discount_type: "VND",
+        };
+      }),
       total_amount: calculateTotal(),
-      subtotal_amount: calculateSubtotal(),
-      discount_amount: orderDiscount,
-      discount_type: orderDiscountType,
+      subtotal_amount: subtotal,
+      discount_amount: finalOrderDiscountVND,
+      discount_type: "VND",
       payment_method: paymentMethod,
     };
 
@@ -242,23 +256,31 @@ export default function OrderEditModal({
       const updatedOrder: Order = {
         ...order,
         total_amount: calculateTotal(),
-        subtotal_amount: calculateSubtotal(),
-        discount_amount: orderDiscount,
-        discount_type: orderDiscountType,
+        subtotal_amount: subtotal,
+        discount_amount: finalOrderDiscountVND,
+        discount_type: "VND",
         method: paymentMethod,
-        lines: items.map((item, idx) => ({
-          id: `OL-EDIT-${idx}`,
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          product_name: item.product_name,
-          size_name: item.size_name,
-          qty: item.qty,
-          unit_price: item.unit_price,
-          line_discount: item.discount_amount,
-          discount_type: item.discount_type,
-          modifiers_json: JSON.stringify(item.modifiers),
-          modifiers: item.modifiers,
-        })),
+        lines: items.map((item, idx) => {
+          let itemDiscountVND = item.discount_amount;
+          if (item.discount_type === "PERCENT") {
+            const modsPrice = item.modifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
+            const base = (item.unit_price + modsPrice) * item.qty;
+            itemDiscountVND = base * (item.discount_amount / 100);
+          }
+          return {
+            id: `OL-EDIT-${idx}`,
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            product_name: item.product_name,
+            size_name: item.size_name,
+            qty: item.qty,
+            unit_price: item.unit_price,
+            line_discount: itemDiscountVND,
+            discount_type: "VND",
+            modifiers_json: JSON.stringify(item.modifiers),
+            modifiers: item.modifiers,
+          };
+        }),
       };
       onSave(updatedOrder);
     } else {

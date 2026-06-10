@@ -22,7 +22,7 @@ export async function submitOrder(orderData: any) {
     const session = await getServerSession(authOptions);
     const staff_name = session?.user?.name || "Hệ thống";
     
-    const { brand_id, items, total_amount, subtotal_amount, discount_amount, discount_type, payment_method, applied_promotion_id } = orderData; // items = [{ product_id, variant_id, qty, unit_price, modifiers, discount_amount, discount_type }]
+    const { brand_id, items, total_amount, subtotal_amount, discount_amount, discount_type, payment_method, applied_promotion_id, applied_promotion_snapshot_json, discount_reason } = orderData; // items = [{ product_id, variant_id, qty, unit_price, modifiers, discount_amount, discount_type }]
     if (!items || items.length === 0) return { error: "Giỏ hàng trống" };
     if (!brand_id) return { error: "Không xác định được thương hiệu. Vui lòng mở máy POS từ đầu." };
 
@@ -48,7 +48,9 @@ export async function submitOrder(orderData: any) {
       method: payment_method || "Tien mat",
       staff_name,
       created_at: nowIso,
-      applied_promotion_id: applied_promotion_id || ""
+      applied_promotion_id: applied_promotion_id || "",
+      applied_promotion_snapshot_json: applied_promotion_snapshot_json || "",
+      discount_reason: discount_reason === "MANUAL_DISCOUNT" ? `Chiết khấu thủ công bởi ${staff_name}` : (discount_reason || "")
     });
 
     // 3. Fetch all orders again to find our exact row position

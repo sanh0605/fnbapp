@@ -2,16 +2,18 @@ import { findAll } from "@/lib/sheets_db";
 import PromotionsClient from "./PromotionsClient";
 
 export default async function PromotionsPage() {
-  const [promotions, brands, products, variants] = await Promise.all([
+  const [promotions, brands, products, variants, categories] = await Promise.all([
     findAll("Promotions"),
     findAll("Brands"),
     findAll("Products"),
     findAll("Product_Variants"),
+    findAll("Product_Categories"),
   ]);
 
   const activeBrands = brands.filter((b: any) => b.status !== "DELETED");
   const activeProducts = products.filter((p: any) => p.status !== "DELETED");
   const activeVariants = variants.filter((v: any) => v.status !== "DELETED");
+  const activeCategories = categories.filter((c: any) => c.status !== "DELETED");
 
   // Sort promotions by created_at descending (newest first)
   const sortedPromotions = [...promotions].sort((a: any, b: any) => {
@@ -24,6 +26,7 @@ export default async function PromotionsPage() {
       brands={activeBrands}
       products={activeProducts}
       variants={activeVariants}
+      categories={activeCategories}
     />
   );
 }

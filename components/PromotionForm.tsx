@@ -6,6 +6,7 @@ import { savePromotion } from "@/app/actions/promotions";
 interface PromotionFormProps {
   initialData?: any;
   brands: any[];
+  categories: any[];
   products: any[];
   variants: any[];
   onClose: () => void;
@@ -15,6 +16,7 @@ interface PromotionFormProps {
 export default function PromotionForm({
   initialData,
   brands,
+  categories,
   products,
   variants,
   onClose,
@@ -30,6 +32,7 @@ export default function PromotionForm({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedVariants, setSelectedVariants] = useState<string[]>([]);
+  const [variantValues, setVariantValues] = useState<Record<string, string>>({});
   const [status, setStatus] = useState("ACTIVE");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,14 +47,21 @@ export default function PromotionForm({
       setDiscountValue(String(initialData.discount_value || ""));
       setMinOrderValue(String(initialData.min_order_value || ""));
       
+      const getLocalISOTime = (dateString: string) => {
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return "";
+        const tzOffset = d.getTimezoneOffset() * 60000;
+        return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+      };
+
       // Format dates for datetime-local input (YYYY-MM-DDTHH:MM)
       if (initialData.start_date) {
-        setStartDate(new Date(initialData.start_date).toISOString().slice(0, 16));
+        setStartDate(getLocalISOTime(initialData.start_date));
       } else {
         setStartDate("");
       }
       if (initialData.end_date) {
-        setEndDate(new Date(initialData.end_date).toISOString().slice(0, 16));
+        setEndDate(getLocalISOTime(initialData.end_date));
       } else {
         setEndDate("");
       }
@@ -60,12 +70,25 @@ export default function PromotionForm({
       
       try {
         if (initialData.applicable_products_json) {
-          setSelectedVariants(JSON.parse(initialData.applicable_products_json));
+          const parsed = JSON.parse(initialData.applicable_products_json);
+          if (Array.isArray(parsed)) {
+            setSelectedVariants(parsed);
+            setVariantValues({});
+          } else {
+            setSelectedVariants(Object.keys(parsed));
+            const stringifiedVals: Record<string, string> = {};
+            Object.keys(parsed).forEach(k => {
+              stringifiedVals[k] = String(parsed[k]);
+            });
+            setVariantValues(stringifiedVals);
+          }
         } else {
           setSelectedVariants([]);
+          setVariantValues({});
         }
       } catch (e) {
         setSelectedVariants([]);
+        setVariantValues({});
       }
     } else {
       // Set defaults for new promo
@@ -88,6 +111,7 @@ export default function PromotionForm({
       setEndDate(localEndISOTime);
       
       setSelectedVariants([]);
+      setVariantValues({});
       setStatus("ACTIVE");
     }
   }, [initialData]);
@@ -110,6 +134,18 @@ export default function PromotionForm({
     setLoading(true);
     setError("");
 
+    let applicableProductsJson = "";
+    if (type === "PRODUCT_DISCOUNT") {
+      const obj: Record<string, number> = {};
+      selectedVariants.forEach((vId) => {
+        const customVal = variantValues[vId];
+        obj[vId] = customVal !== undefined && customVal !== "" 
+          ? Number(customVal) 
+          : Number(discountValue);
+      });
+      applicableProductsJson = JSON.stringify(obj);
+    }
+
     const promoPayload = {
       id: initialData?.id,
       name: name.trim(),
@@ -121,7 +157,7 @@ export default function PromotionForm({
       min_order_value: Number(minOrderValue || 0),
       start_date: new Date(startDate).toISOString(),
       end_date: endDate ? new Date(endDate).toISOString() : "",
-      applicable_products_json: type === "PRODUCT_DISCOUNT" ? JSON.stringify(selectedVariants) : "",
+      applicable_products_json: applicableProductsJson,
       status,
     };
 
@@ -136,21 +172,45 @@ export default function PromotionForm({
   };
 
   const toggleVariantSelection = (variantId: string) => {
-    setSelectedVariants((prev) =>
-      prev.includes(variantId)
-        ? prev.filter((id) => id !== variantId)
-        : [...prev, variantId]
-    );
+    setSelectedVariants((prev) => {
+      const isSelected = prev.includes(variantId);
+      if (isSelected) {
+        const newVals = { ...variantValues };
+        delete newVals[variantId];
+        setVariantValues(newVals);
+        return prev.filter((id) => id !== variantId);
+      } else {
+        return [...prev, variantId];
+      }
+    });
   };
 
-  // Group variants by product for easier selection
-  const groupedVariants = products.map((prod) => {
-    const pVars = variants.filter((v) => v.product_id === prod.id);
+  const handleSelectGroup = (variantIds: string[], isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedVariants(prev => Array.from(new Set([...prev, ...variantIds])));
+    } else {
+      setSelectedVariants(prev => prev.filter(id => !variantIds.includes(id)));
+    }
+  };
+
+  // Group variants by category, then by product
+  const groupedByCategory = categories.map((cat) => {
+    const catProducts = products.filter((p) => p.category_id === cat.id);
+    
+    const catGroupedProducts = catProducts.map((prod) => {
+      const pVars = variants.filter((v) => v.product_id === prod.id);
+      return {
+        product: prod,
+        variants: pVars,
+      };
+    }).filter(group => group.variants.length > 0);
+
     return {
-      product: prod,
-      variants: pVars,
+      category: cat,
+      products: catGroupedProducts,
+      allVariantIds: catGroupedProducts.flatMap(p => p.variants.map((v: any) => v.id as string))
     };
-  }).filter(group => group.variants.length > 0);
+  }).filter(group => group.products.length > 0);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
@@ -325,31 +385,84 @@ export default function PromotionForm({
                   </button>
                 </div>
               </div>
-              <div className="max-h-52 overflow-y-auto space-y-4 pr-2 divide-y divide-gray-100">
-                {groupedVariants.map(({ product, variants: prodVariants }) => (
-                  <div key={product.id} className="pt-3 first:pt-0">
-                    <p className="text-sm font-bold text-gray-700 mb-1.5">{product.name}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {prodVariants.map((v: any) => {
-                        const isSelected = selectedVariants.includes(v.id);
-                        return (
-                          <button
-                            key={v.id}
-                            type="button"
-                            onClick={() => toggleVariantSelection(v.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
-                              isSelected
-                                ? "bg-blue-50 border-blue-500 text-blue-700 shadow-sm"
-                                : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
-                            }`}
-                          >
-                            Size {v.size_name || "Mặc định"} ({Number(v.price).toLocaleString()}đ)
-                          </button>
-                        );
-                      })}
+              <div className="max-h-[400px] overflow-y-auto space-y-6 pr-2 divide-y divide-gray-100">
+                {groupedByCategory.map(({ category, products: catProducts, allVariantIds }) => {
+                  const isCatSelected = allVariantIds.every((id: string) => selectedVariants.includes(id)) && allVariantIds.length > 0;
+                  
+                  return (
+                    <div key={category.id} className="pt-4 first:pt-0">
+                      <div className="flex items-center justify-between mb-3 bg-gray-100/50 p-2 rounded-lg">
+                        <h4 className="font-bold text-gray-800 uppercase tracking-wide text-[13px]">{category.name}</h4>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectGroup(allVariantIds, !isCatSelected)}
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-md transition ${isCatSelected ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                        >
+                          {isCatSelected ? "Bỏ chọn nhóm" : "Chọn nhóm này"}
+                        </button>
+                      </div>
+
+                      <div className="space-y-4 pl-2 border-l-2 border-gray-100 ml-1">
+                        {catProducts.map(({ product, variants: prodVariants }) => {
+                          const prodVariantIds = prodVariants.map((v: any) => v.id as string);
+                          const isProdSelected = prodVariantIds.every((id: string) => selectedVariants.includes(id)) && prodVariantIds.length > 0;
+
+                          return (
+                            <div key={product.id} className="relative">
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <p className="text-sm font-bold text-gray-700">{product.name}</p>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectGroup(prodVariantIds, !isProdSelected)}
+                                  className={`text-[10px] px-1.5 py-0.5 rounded transition ${isProdSelected ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                                >
+                                  {isProdSelected ? "Bỏ chọn" : "Chọn tất cả size"}
+                                </button>
+                              </div>
+                              <div className="flex flex-wrap gap-2.5">
+                                {prodVariants.map((v: any) => {
+                                  const isSelected = selectedVariants.includes(v.id);
+                                  return (
+                                    <div key={v.id} className={`flex items-center gap-1.5 p-1 border rounded-xl transition ${
+                                      isSelected ? "bg-blue-50/50 border-blue-400" : "bg-white border-gray-200"
+                                    }`}>
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleVariantSelection(v.id)}
+                                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                                          isSelected
+                                            ? "text-blue-700"
+                                            : "text-gray-600 hover:bg-gray-50"
+                                        }`}
+                                      >
+                                        Size {v.size_name || "Mặc định"} ({Number(v.price).toLocaleString()}đ)
+                                      </button>
+                                      {isSelected && (
+                                        <input
+                                          type="number"
+                                          placeholder={discountValue || (discountType === "PERCENT" ? "%" : "đ")}
+                                          value={variantValues[v.id] ?? ""}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            setVariantValues(prev => ({
+                                              ...prev,
+                                              [v.id]: val
+                                            }));
+                                          }}
+                                          className="w-16 px-2 py-0.5 border border-gray-200 rounded-lg text-[11px] focus:outline-none focus:border-blue-500 text-right font-bold text-blue-700 bg-white"
+                                        />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
