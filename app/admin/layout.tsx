@@ -45,6 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     { name: "Nhân sự & Phân quyền", href: "/admin/users", icon: "👥" },
     { name: "Quản lý Đơn hàng", href: "/admin/orders", icon: "🧾" },
+    { name: "Khuyến mãi", href: "/admin/promotions", icon: "🏷️" },
     { 
       name: "Báo cáo & Phân tích", 
       icon: "📈",

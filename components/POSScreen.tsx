@@ -9,13 +9,15 @@ export default function POSScreen({
   categories,
   products,
   variants,
-  modifiers
+  modifiers,
+  promotions = []
 }: {
   brandId?: string;
   categories: any[];
   products: any[];
   variants: any[];
-  modifiers: any[]
+  modifiers: any[];
+  promotions?: any[];
 }) {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [cart, setCart] = useState<any[]>([]);
@@ -33,9 +35,18 @@ export default function POSScreen({
   const [itemDiscount, setItemDiscount] = useState<number>(0);
   const [itemDiscountType, setItemDiscountType] = useState<"VND" | "PERCENT">("VND");
 
+  // Promotions State
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null);
+  const [manualPromoError, setManualPromoError] = useState<string | null>(null);
+
+  // Cashier Custom Override State
+  const [userCustomDiscount, setUserCustomDiscount] = useState<number | null>(null);
+  const [userCustomDiscountType, setUserCustomDiscountType] = useState<"VND" | "PERCENT">("VND");
+
   // Checkout Modal State
-  const [orderDiscount, setOrderDiscount] = useState<number>(0);
-  const [orderDiscountType, setOrderDiscountType] = useState<"VND" | "PERCENT">("VND");
+  const [modalDiscountInput, setModalDiscountInput] = useState<number | null>(null);
+  const [modalDiscountType, setModalDiscountType] = useState<"VND" | "PERCENT">("VND");
 
   // Group modifiers by group_name
   const groupedModifiers = useMemo(() => {
@@ -164,15 +175,194 @@ export default function POSScreen({
   const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
 
+  // Promotions Memo
+  const { appliedPromo, promoDiscountAmount } = useMemo(() => {
+    const now = new Date();
+    const subtotal = calculateSubtotal();
+    
+    if (cart.length === 0) {
+      return { appliedPromo: null, promoDiscountAmount: 0 };
+    }
+
+    // Filter active promotions for this brand and current date
+    const eligiblePromos = (promotions || []).filter((p: any) => {
+      if (p.status !== "ACTIVE") return false;
+      const isDateValid = new Date(p.start_date) <= now && (!p.end_date || new Date(p.end_date) >= now);
+      if (!isDateValid) return false;
+
+      const isBrandValid = !p.brand_id || p.brand_id === brandId;
+      if (!isBrandValid) return false;
+
+      return true;
+    });
+
+    // Helper to calculate discount amount for a promotion
+    const calcPromoDiscount = (p: any) => {
+      if (p.type === "ORDER_DISCOUNT") {
+        if (subtotal < Number(p.min_order_value || 0)) return 0;
+
+        if (p.discount_type === "PERCENT") {
+          return (subtotal * Number(p.discount_value)) / 100;
+        } else {
+          return Number(p.discount_value);
+        }
+      } else if (p.type === "PRODUCT_DISCOUNT") {
+        if (subtotal < Number(p.min_order_value || 0)) return 0;
+
+        let totalProdDiscount = 0;
+        let applicableVariants: string[] = [];
+        try {
+          if (p.applicable_products_json) {
+            applicableVariants = JSON.parse(p.applicable_products_json);
+          }
+        } catch (e) {}
+
+        if (applicableVariants.length === 0) return 0;
+
+        cart.forEach((item) => {
+          if (applicableVariants.includes(item.variant_id)) {
+            const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
+            const itemBaseTotal = (item.unit_price + modsPrice) * item.qty;
+            let itemDiscount = 0;
+            if (p.discount_type === "PERCENT") {
+              itemDiscount = itemBaseTotal * (Number(p.discount_value) / 100);
+            } else if (p.discount_type === "FLAT_PRICE") {
+              const unitDiscount = Math.max(0, item.unit_price - Number(p.discount_value));
+              itemDiscount = unitDiscount * item.qty;
+            } else {
+              itemDiscount = Number(p.discount_value) * item.qty;
+            }
+            totalProdDiscount += Math.min(itemBaseTotal, itemDiscount);
+          }
+        });
+
+        return totalProdDiscount;
+      }
+      return 0;
+    };
+
+    // Case 1: Cashier has entered a Promo Code
+    if (appliedPromoCode) {
+      const matchedPromo = eligiblePromos.find(
+        (p: any) => p.code && p.code.toUpperCase() === appliedPromoCode.toUpperCase()
+      );
+      if (matchedPromo) {
+        const amt = calcPromoDiscount(matchedPromo);
+        return {
+          appliedPromo: matchedPromo,
+          promoDiscountAmount: amt,
+        };
+      }
+    }
+
+    // Case 2: Best automatic promotion (code is empty)
+    const autoPromos = eligiblePromos.filter((p: any) => !p.code);
+    let bestPromo: any = null;
+    let maxDiscount = 0;
+
+    autoPromos.forEach((p: any) => {
+      const amt = calcPromoDiscount(p);
+      if (amt > maxDiscount) {
+        maxDiscount = amt;
+        bestPromo = p;
+      }
+    });
+
+    if (bestPromo && maxDiscount > 0) {
+      return {
+        appliedPromo: bestPromo,
+        promoDiscountAmount: maxDiscount,
+      };
+    }
+
+    return { appliedPromo: null, promoDiscountAmount: 0 };
+  }, [cart, promotions, brandId, appliedPromoCode]);
+
+  const handleApplyPromoCode = () => {
+    const code = promoCodeInput.trim().toUpperCase();
+    if (!code) return;
+
+    const matchedPromo = (promotions || []).find(
+      (p: any) => p.code && p.code.toUpperCase() === code
+    );
+
+    if (!matchedPromo) {
+      setManualPromoError("Mã giảm giá không tồn tại hoặc đã bị tắt.");
+      return;
+    }
+
+    if (matchedPromo.status !== "ACTIVE") {
+      setManualPromoError("Chương trình khuyến mãi này không còn hoạt động.");
+      return;
+    }
+
+    const now = new Date();
+    const isStarted = new Date(matchedPromo.start_date) <= now;
+    const isExpired = matchedPromo.end_date && new Date(matchedPromo.end_date) < now;
+
+    if (!isStarted) {
+      setManualPromoError("Chương trình khuyến mãi chưa bắt đầu.");
+      return;
+    }
+    if (isExpired) {
+      setManualPromoError("Mã giảm giá này đã hết hạn.");
+      return;
+    }
+
+    if (matchedPromo.brand_id && matchedPromo.brand_id !== brandId) {
+      setManualPromoError("Mã giảm giá này không áp dụng cho thương hiệu này.");
+      return;
+    }
+
+    const subtotal = calculateSubtotal();
+    if (subtotal < Number(matchedPromo.min_order_value || 0)) {
+      setManualPromoError(
+        `Đơn hàng chưa đạt giá trị tối thiểu ${Number(matchedPromo.min_order_value).toLocaleString()}đ để áp dụng.`
+      );
+      return;
+    }
+
+    if (matchedPromo.type === "PRODUCT_DISCOUNT") {
+      let applicableVariants: string[] = [];
+      try {
+        if (matchedPromo.applicable_products_json) {
+          applicableVariants = JSON.parse(matchedPromo.applicable_products_json);
+        }
+      } catch (e) {}
+
+      const hasMatchingProduct = cart.some((item) =>
+        applicableVariants.includes(item.variant_id)
+      );
+
+      if (!hasMatchingProduct) {
+        setManualPromoError("Đơn hàng không chứa sản phẩm được áp dụng mã giảm giá này.");
+        return;
+      }
+    }
+
+    setAppliedPromoCode(code);
+    setManualPromoError(null);
+    setUserCustomDiscount(null);
+  };
+
+  const handleRemovePromoCode = () => {
+    setAppliedPromoCode(null);
+    setPromoCodeInput("");
+    setManualPromoError(null);
+    setUserCustomDiscount(null);
+  };
+
   const calculateTotalAmount = () => {
     const subtotal = calculateSubtotal();
     let discount = 0;
-    if (orderDiscount > 0) {
-      if (orderDiscountType === "PERCENT") {
-        discount = (subtotal * orderDiscount) / 100;
+    if (userCustomDiscount !== null) {
+      if (userCustomDiscountType === "PERCENT") {
+        discount = (subtotal * userCustomDiscount) / 100;
       } else {
-        discount = orderDiscount;
+        discount = userCustomDiscount;
       }
+    } else {
+      discount = promoDiscountAmount;
     }
     return Math.max(0, subtotal - discount);
   };
@@ -181,19 +371,50 @@ export default function POSScreen({
 
   const handleCheckoutClick = () => {
     if (cart.length === 0) return;
+    
+    // Initialize modal input values based on custom override or promo
+    if (userCustomDiscount !== null) {
+      setModalDiscountInput(userCustomDiscount);
+      setModalDiscountType(userCustomDiscountType);
+    } else if (appliedPromo) {
+      if (appliedPromo.type === "ORDER_DISCOUNT") {
+        setModalDiscountInput(Number(appliedPromo.discount_value));
+        setModalDiscountType(appliedPromo.discount_type);
+      } else {
+        setModalDiscountInput(promoDiscountAmount);
+        setModalDiscountType("VND");
+      }
+    } else {
+      setModalDiscountInput(0);
+      setModalDiscountType("VND");
+    }
+
     setIsCheckoutModalOpen(true);
   };
 
   const handleConfirmCheckout = async (method: string) => {
     setIsCheckingOut(true);
 
+    const finalDiscount = userCustomDiscount !== null
+      ? userCustomDiscount
+      : (appliedPromo
+        ? (appliedPromo.type === "ORDER_DISCOUNT" ? Number(appliedPromo.discount_value) : promoDiscountAmount)
+        : 0);
+
+    const finalDiscountType = userCustomDiscount !== null
+      ? userCustomDiscountType
+      : (appliedPromo ? (appliedPromo.type === "ORDER_DISCOUNT" ? appliedPromo.discount_type : "VND") : "VND");
+
+    const finalAppliedPromoId = userCustomDiscount !== null ? "" : (appliedPromo ? appliedPromo.id : "");
+
     const orderData = {
       brand_id: brandId,
       items: cart,
       total_amount: totalAmount,
       subtotal_amount: calculateSubtotal(),
-      discount_amount: orderDiscount,
-      discount_type: orderDiscountType,
+      discount_amount: finalDiscount,
+      discount_type: finalDiscountType,
+      applied_promotion_id: finalAppliedPromoId,
       payment_method: method
     };
 
@@ -205,8 +426,11 @@ export default function POSScreen({
       setSuccessOrderNo(res.order_no || "");
       setCart([]);
       setIsCartOpen(false);
-      setOrderDiscount(0);
-      setOrderDiscountType("VND");
+      setUserCustomDiscount(null);
+      setUserCustomDiscountType("VND");
+      setAppliedPromoCode(null);
+      setPromoCodeInput("");
+      setManualPromoError(null);
     } else {
       alert("Lỗi thanh toán: " + res.error);
     }
@@ -354,6 +578,66 @@ export default function POSScreen({
         </div>
 
         <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          {/* Promotions Input and Display */}
+          {cart.length > 0 && (
+            <div className="mb-4 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Khuyến Mãi</span>
+                {appliedPromo && (
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                    Đã áp dụng
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Nhập mã giảm giá..."
+                  value={promoCodeInput}
+                  onChange={(e) => {
+                    setPromoCodeInput(e.target.value);
+                    setManualPromoError(null);
+                  }}
+                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 uppercase font-medium"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyPromoCode}
+                  className="px-4 py-1.5 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-lg hover:bg-indigo-100 transition active:scale-95 shrink-0"
+                >
+                  Áp dụng
+                </button>
+              </div>
+
+              {manualPromoError && (
+                <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {manualPromoError}</p>
+              )}
+
+              {appliedPromo && (
+                <div className="mt-3 flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl p-2.5">
+                  <div className="flex items-start gap-2 min-w-0">
+                    <span className="text-lg shrink-0 mt-0.5">{appliedPromo.code ? "🎟️" : "⚡"}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-gray-800 truncate">{appliedPromo.name}</p>
+                      <p className="text-[10px] font-medium text-gray-400">
+                        Giảm -{promoDiscountAmount.toLocaleString("vi-VN")}đ
+                      </p>
+                    </div>
+                  </div>
+                  {appliedPromo.code && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePromoCode}
+                      className="text-gray-400 hover:text-red-500 text-sm font-bold px-1.5 py-0.5 hover:bg-red-50 rounded animate-fade-in"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-4">
             <span className="text-gray-500 font-medium">Tổng tiền ({totalItems} món)</span>
             <div className="text-right">
@@ -558,14 +842,22 @@ export default function POSScreen({
                   <div className="flex items-center gap-2">
                     <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
                       <button
-                        onClick={() => setOrderDiscountType("VND")}
-                        className={`px-3 py-2 text-sm font-bold transition-colors ${orderDiscountType === "VND" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
+                        onClick={() => {
+                          setModalDiscountType("VND");
+                          setUserCustomDiscount(modalDiscountInput);
+                          setUserCustomDiscountType("VND");
+                        }}
+                        className={`px-3 py-2 text-sm font-bold transition-colors ${modalDiscountType === "VND" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
                       >
                         VNĐ
                       </button>
                       <button
-                        onClick={() => setOrderDiscountType("PERCENT")}
-                        className={`px-3 py-2 text-sm font-bold transition-colors ${orderDiscountType === "PERCENT" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
+                        onClick={() => {
+                          setModalDiscountType("PERCENT");
+                          setUserCustomDiscount(modalDiscountInput);
+                          setUserCustomDiscountType("PERCENT");
+                        }}
+                        className={`px-3 py-2 text-sm font-bold transition-colors ${modalDiscountType === "PERCENT" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
                       >
                         %
                       </button>
@@ -574,11 +866,39 @@ export default function POSScreen({
                       type="number"
                       min="0"
                       placeholder="Nhập giảm giá..."
-                      value={orderDiscount || ""}
-                      onChange={(e) => setOrderDiscount(Number(e.target.value))}
+                      value={modalDiscountInput === 0 ? "" : modalDiscountInput || ""}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setModalDiscountInput(val);
+                        setUserCustomDiscount(val);
+                        setUserCustomDiscountType(modalDiscountType);
+                      }}
                       className="flex-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-right font-medium"
                     />
                   </div>
+                  {userCustomDiscount !== null && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserCustomDiscount(null);
+                        if (appliedPromo) {
+                          if (appliedPromo.type === "ORDER_DISCOUNT") {
+                            setModalDiscountInput(Number(appliedPromo.discount_value));
+                            setModalDiscountType(appliedPromo.discount_type);
+                          } else {
+                            setModalDiscountInput(promoDiscountAmount);
+                            setModalDiscountType("VND");
+                          }
+                        } else {
+                          setModalDiscountInput(0);
+                          setModalDiscountType("VND");
+                        }
+                      }}
+                      className="mt-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-center gap-1 w-full text-center"
+                    >
+                      🔄 Khôi phục khuyến mãi hệ thống
+                    </button>
+                  )}
                 </div>
                 <p className="text-sm text-indigo-600 uppercase font-black tracking-wider mb-1 mt-6">Khách Phải Trả</p>
                 <div className="text-4xl font-black text-orange-600">{totalAmount.toLocaleString('vi-VN')} đ</div>

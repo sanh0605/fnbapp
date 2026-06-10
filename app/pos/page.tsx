@@ -18,17 +18,19 @@ export default async function POSPage({
     redirect("/login");
   }
 
-  const [categories, products, variants, modifiers] = await Promise.all([
+  const [categories, products, variants, modifiers, promotions] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
-    findAll("Modifiers")
+    findAll("Modifiers"),
+    findAll("Promotions")
   ]);
 
   const activeCategories = categories.filter(c => c.status !== "DELETED");
   const activeProducts = products.filter(p => p.status !== "DELETED");
   const activeVariants = variants.filter(v => v.status !== "DELETED");
   const activeModifiers = modifiers.filter(m => m.status !== "DELETED");
+  const activePromotions = promotions.filter(p => p.status === "ACTIVE");
   
   const brandId = Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : searchParams?.brandId;
 
@@ -39,6 +41,7 @@ export default async function POSPage({
       products={activeProducts}
       variants={activeVariants}
       modifiers={activeModifiers}
+      promotions={activePromotions}
     />
   );
 }
