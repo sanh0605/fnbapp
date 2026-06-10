@@ -92,7 +92,7 @@ Result: 5 API calls instead of 27.
 
 ### 4a. Remove unused `@supabase/supabase-js` dependency
 
-The app migrated from Supabase to Google Sheets. `@supabase/supabase-js` is in `package.json` but unused in the main application code (only in `scripts/sync-supabase-sales.js` which is a one-time migration script). Remove it to reduce cold start time.
+The app migrated from Supabase to Google Sheets. `@supabase/supabase-js` is in `package.json` but unused in the main application code. It is only referenced by `scripts/sync-supabase-sales.js` (one-time migration script, already completed) and `supabase/functions/` (legacy edge functions). Safe to remove - the migration is done and Supabase project is paused.
 
 ### 4b. Fix sequential fetch in Product Categories page
 
