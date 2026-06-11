@@ -13,8 +13,7 @@ interface EditLineItem {
   discount_type: string;
 }
 
-async function getIngredientUnitCost(ingredientId: string, beforeDate: string): Promise<number> {
-  const allLedger = await findAllNoCache("Stock_Ledger");
+async function getIngredientUnitCost(allLedger: any[], ingredientId: string, beforeDate: string): Promise<number> {
   const purchases = allLedger.filter((s: any) =>
     s.item_reference === ingredientId &&
     s.transaction_type === "PO_RECEIPT" &&
@@ -123,7 +122,7 @@ export async function editOrder(
 
           if (!skip && ing.quantity > 0) {
             const consumeQty = Number(ing.quantity) * Number(item.qty);
-            const unitCost = await getIngredientUnitCost(ing.ingredient_id, orderCreatedAt);
+            const unitCost = await getIngredientUnitCost(allStockLedger, ing.ingredient_id, orderCreatedAt);
             const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
             stockLedgersToInsert.push({
               id: ledger_id,
@@ -156,7 +155,7 @@ export async function editOrder(
 
               if (!skip && ing.quantity > 0) {
                 const consumeQty = Number(ing.quantity) * Number(item.qty);
-                const unitCost = await getIngredientUnitCost(ing.ingredient_id, orderCreatedAt);
+                const unitCost = await getIngredientUnitCost(allStockLedger, ing.ingredient_id, orderCreatedAt);
                 const ledger_id = `STK-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
                 stockLedgersToInsert.push({
                   id: ledger_id,

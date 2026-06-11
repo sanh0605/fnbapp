@@ -1,24 +1,10 @@
 import { getOrders } from "@/app/actions/orders";
-import { findAll } from "@/lib/sheets_db";
 import OrderTable from "./OrderTable";
 
 export const dynamic = "force-dynamic";
 
 export default async function OrdersPage() {
-  const [orders, brands, products, variants, modifiers, categories] = await Promise.all([
-    getOrders(),
-    findAll("Brands"),
-    findAll("Products"),
-    findAll("Product_Variants"),
-    findAll("Modifiers"),
-    findAll("Product_Categories"),
-  ]);
-
-  const activeBrands = brands.filter((b: any) => b.status !== "DELETED");
-  const activeProducts = products.filter((p: any) => p.status !== "DELETED");
-  const activeVariants = variants.filter((v: any) => v.status !== "DELETED");
-  const activeModifiers = modifiers.filter((m: any) => m.status !== "DELETED");
-  const activeCategories = categories.filter((c: any) => c.status !== "DELETED");
+  const { orders, brands, products, variants, modifiers, categories } = await getOrders();
 
   return (
     <div className="space-y-6">
@@ -34,11 +20,11 @@ export default async function OrdersPage() {
 
       <OrderTable
         initialOrders={orders}
-        brands={activeBrands}
-        products={activeProducts}
-        variants={activeVariants}
-        modifiers={activeModifiers}
-        categories={activeCategories}
+        brands={brands}
+        products={products}
+        variants={variants}
+        modifiers={modifiers}
+        categories={categories}
       />
     </div>
   );

@@ -5,6 +5,17 @@ if (typeof window === "undefined") {
 import { google } from 'googleapis';
 import { unstable_cache, revalidateTag } from 'next/cache';
 
+// Per-sheet cache tag: each sheet gets its own tag so writing to Orders
+// does not invalidate the cache for Products, Units, etc.
+const getCacheTag = (sheetName: string) => `sheets-${sheetName}`;
+
+// Static sheets rarely change (5 min), dynamic sheets change often (60s)
+const STATIC_SHEETS = new Set([
+  'Units', 'Item_Categories', 'Product_Categories', 'Brands',
+  'Suppliers', 'Users',
+]);
+const getRevalidation = (sheetName: string) => STATIC_SHEETS.has(sheetName) ? 300 : 60;
+
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
 
 // Parse the base64 credentials
@@ -55,18 +66,22 @@ function mapObjectToRow(obj: any, headers: string[]): string[] {
 }
 
 // Get all records from a sheet (cached)
-export const findAll = unstable_cache(
-  async (sheetName: string) => {
-    const sheets = getSheetsClient();
-    const res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${sheetName}!A1:Z`,
-    });
-    return mapRowsToObjects(res.data.values || []);
-  },
-  ['sheets-findall'],
-  { revalidate: 60, tags: ['sheets'] }
-);
+export const findAll = (sheetName: string) => {
+  const tag = getCacheTag(sheetName);
+  const reval = getRevalidation(sheetName);
+  return unstable_cache(
+    async (name: string) => {
+      const sheets = getSheetsClient();
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${name}!A1:Z`,
+      });
+      return mapRowsToObjects(res.data.values || []);
+    },
+    ['sheets-findall', sheetName],
+    { revalidate: reval, tags: [tag] }
+  )(sheetName);
+};
 
 // Get all records from a sheet (no cache)
 export const findAllNoCache = async (sheetName: string) => {
@@ -84,19 +99,22 @@ export async function findById(sheetName: string, id: string) {
   return all.find((item) => item.id === id) || null;
 }
 
-// Get headers of a sheet
-export const getHeaders = unstable_cache(
-  async (sheetName: string): Promise<string[]> => {
-    const sheets = getSheetsClient();
-    const res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${sheetName}!A1:Z1`,
-    });
-    return res.data.values ? res.data.values[0] : [];
-  },
-  ['sheets-headers'],
-  { revalidate: 3600, tags: ['sheets'] } // headers rarely change
-);
+// Get headers of a sheet (cached)
+export const getHeaders = (sheetName: string) => {
+  const tag = getCacheTag(sheetName);
+  return unstable_cache(
+    async (name: string): Promise<string[]> => {
+      const sheets = getSheetsClient();
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${name}!A1:Z1`,
+      });
+      return res.data.values ? res.data.values[0] : [];
+    },
+    ['sheets-headers', sheetName],
+    { revalidate: 3600, tags: [tag] }
+  )(sheetName);
+};
 
 // Generate new ID (e.g. BR-001)
 export async function generateNewId(sheetName: string, prefix: string): Promise<string> {
@@ -135,7 +153,7 @@ export async function insert(sheetName: string, data: any) {
     },
   });
 
-  revalidateTag('sheets'); // Xoá cache ngay lập tức sau khi thêm
+  revalidateTag(getCacheTag(sheetName));
 
   return data;
 }
@@ -159,7 +177,7 @@ export async function insertMany(sheetName: string, dataArray: any[]) {
     },
   });
 
-  revalidateTag('sheets'); // Xoá cache ngay lập tức sau khi thêm
+  revalidateTag(getCacheTag(sheetName));
 
   return dataArray;
 }
@@ -208,7 +226,7 @@ export async function update(sheetName: string, id: string, data: any) {
     },
   });
 
-  revalidateTag('sheets'); // Xoá cache sau khi sửa
+  revalidateTag(getCacheTag(sheetName));
 
   return updatedObj;
 }
@@ -261,7 +279,7 @@ export async function remove(sheetName: string, id: string) {
     }
   });
 
-  revalidateTag('sheets'); // Xoá cache sau khi xoá
+  revalidateTag(getCacheTag(sheetName));
 
   return true;
 }
@@ -320,7 +338,7 @@ export async function removeMany(sheetName: string, ids: string[]) {
     }
   });
 
-  revalidateTag('sheets'); // Xoá cache sau khi xoá
+  revalidateTag(getCacheTag(sheetName));
 
   return true;
 }

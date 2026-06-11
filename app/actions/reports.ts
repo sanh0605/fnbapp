@@ -182,30 +182,6 @@ export async function getPnLData(filters: any = {}) {
     }
   };
 
-  // Tính Product Profit Analysis từ Order_Lines
-  // Pre-calculate order subtotals (sum of lineNet) to allocate order-level discounts
-  const orderSubtotals: Record<string, number> = {};
-  orderLines.forEach((line: any) => {
-    if (!validOrderIds.has(line.order_id)) return;
-    const qty = Number(line.qty || 0);
-    const price = Number(line.unit_price || 0);
-    let modsRaw = 0;
-    if (line.modifiers_json) {
-      try {
-        const parsedMods = JSON.parse(line.modifiers_json);
-        if (Array.isArray(parsedMods)) {
-          parsedMods.forEach((mod: any) => {
-            modsRaw += Number(mod.price || 0) * qty;
-          });
-        }
-      } catch (e) {}
-    }
-    const lineRaw = (price * qty) + modsRaw;
-    const lineDiscount = Number(line.line_discount || 0);
-    const lineNet = Math.max(0, lineRaw - lineDiscount);
-    orderSubtotals[line.order_id] = (orderSubtotals[line.order_id] || 0) + lineNet;
-  });
-
   const productProfitMap: Record<string, { name: string, qty: number, revenue: number, cogs: number }> = {};
 
   orderLines.forEach((line:any) => {

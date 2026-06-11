@@ -1,27 +1,28 @@
 "use server";
 
-import { findAll, remove } from "@/lib/sheets_db";
+import { findAll, remove, removeMany } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 
 export async function getOrders() {
   try {
-    const [orders, orderLines, products, variants, brands] = await Promise.all([
+    const [orders, orderLines, products, variants, brands, modifiers, categories] = await Promise.all([
       findAll("Orders"),
       findAll("Order_Lines"),
       findAll("Products"),
       findAll("Product_Variants"),
-      findAll("Brands")
+      findAll("Brands"),
+      findAll("Modifiers"),
+      findAll("Product_Categories"),
     ]);
 
-    // Map lines to orders
     const mappedOrders = orders.map(order => {
       const lines = orderLines.filter(l => l.order_id === order.id).map(line => {
         const product = products.find(p => p.id === line.product_id);
         const variant = variants.find(v => v.id === line.variant_id);
-        let modifiers = [];
+        let mods = [];
         try {
           if (line.modifiers_json) {
-            modifiers = JSON.parse(line.modifiers_json);
+            mods = JSON.parse(line.modifiers_json);
           }
         } catch(e){}
 
@@ -29,7 +30,7 @@ export async function getOrders() {
           ...line,
           product_name: product?.name || "Unknown",
           size_name: variant?.size_name || "Unknown",
-          modifiers
+          modifiers: mods
         };
       });
 
@@ -40,7 +41,6 @@ export async function getOrders() {
         const bCode = brand?.code || "ORD";
         display_order_no = `${bCode}${numStr}`;
       } else if (!display_order_no) {
-         // Fallback if no order_no
          display_order_no = order.id;
       }
 
@@ -51,35 +51,34 @@ export async function getOrders() {
       };
     });
 
-    // Sort by created_at descending
     mappedOrders.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
-    return mappedOrders;
+    return {
+      orders: mappedOrders,
+      brands: brands.filter((b: any) => b.status !== "DELETED"),
+      products: products.filter((p: any) => p.status !== "DELETED"),
+      variants: variants.filter((v: any) => v.status !== "DELETED"),
+      modifiers: modifiers.filter((m: any) => m.status !== "DELETED"),
+      categories: categories.filter((c: any) => c.status !== "DELETED"),
+    };
   } catch (error: any) {
     console.error("Lỗi getOrders:", error);
-    return [];
+    return { orders: [], brands: [], products: [], variants: [], modifiers: [], categories: [] };
   }
 }
 
 export async function deleteOrder(orderId: string) {
   try {
-    // 1. Lấy thông tin order lines để xoá liên kết
-    const orderLines = await findAll("Order_Lines");
-    const linesToDelete = orderLines.filter((l: any) => l.order_id === orderId);
+    const [orderLines, stockLedger] = await Promise.all([
+      findAll("Order_Lines"),
+      findAll("Stock_Ledger"),
+    ]);
 
-    // 2. Lấy thông tin stock ledger để xoá liên kết (hoàn kho)
-    const stockLedger = await findAll("Stock_Ledger");
-    const stockToDelete = stockLedger.filter((s: any) => s.reference_id === orderId);
+    const lineIds = orderLines.filter((l: any) => l.order_id === orderId).map((l: any) => l.id);
+    const stockIds = stockLedger.filter((s: any) => s.reference_id === orderId).map((s: any) => s.id);
 
-    // 3. Thực hiện xoá lần lượt
-    for (const s of stockToDelete) {
-      await remove("Stock_Ledger", s.id);
-    }
-
-    for (const l of linesToDelete) {
-      await remove("Order_Lines", l.id);
-    }
-
+    if (stockIds.length > 0) await removeMany("Stock_Ledger", stockIds);
+    if (lineIds.length > 0) await removeMany("Order_Lines", lineIds);
     await remove("Orders", orderId);
 
     revalidatePath("/admin/orders");

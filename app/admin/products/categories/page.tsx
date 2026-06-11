@@ -2,9 +2,11 @@ import { findAll } from "@/lib/sheets_db";
 import ProductCategoryForm from "@/components/ProductCategoryForm";
 
 export default async function ProductCategoriesPage() {
-  const categories = await findAll("Product_Categories");
+  const [categories, products] = await Promise.all([
+    findAll("Product_Categories"),
+    findAll("Products"),
+  ]);
   const activeCategories = categories.filter(c => c.status !== "DELETED");
-  const products = await findAll("Products");
 
   return (
     <div className="space-y-6">

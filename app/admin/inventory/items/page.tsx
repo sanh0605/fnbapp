@@ -1,6 +1,7 @@
 import { findAll } from "@/lib/sheets_db";
 import { PurchasedItemForm, DeleteBtn } from "@/components/InventoryForms";
 import { deletePurchasedItem } from "@/app/actions/inventory";
+import Link from "next/link";
 
 export default async function ItemsPage() {
   const [categories, baseIngredients, items, conversions, allUnits] = await Promise.all([
@@ -20,7 +21,12 @@ export default async function ItemsPage() {
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Hàng Cụ Thể Mua Vào</h1>
           <p className="text-gray-500 mt-1">Quản lý các mặt hàng thực tế nhập từ nhà cung cấp.</p>
         </div>
-        <PurchasedItemForm itemCategories={categories} baseIngredients={baseIngredients} units={units} />
+        <div className="flex gap-3">
+          <Link href="/admin/inventory/sync" className="px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-sm font-bold hover:bg-amber-100 transition flex items-center gap-2">
+            <span>🔄</span> Đồng bộ tồn kho cũ
+          </Link>
+          <PurchasedItemForm itemCategories={categories} baseIngredients={baseIngredients} units={units} />
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
