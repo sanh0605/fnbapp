@@ -4,20 +4,31 @@ export interface LineRevenueResult {
   lineTotal: number;
 }
 
-export function computeLineRevenue(line: {
+export interface ComputeLineRevenueInput {
   qty: number;
   unit_price: number;
   line_discount: number;
   modifiers_json: string;
-}): LineRevenueResult {
+  /**
+   * Order-level discount ratio in [0, 1].
+   * Computed by the caller as order.discount_amount / order.subtotal_amount.
+   * Applied multiplicatively on top of the per-line revenue so an order-wide
+   * discount reduces every line proportionally without corrupting line_discount.
+   * Defaults to 0 when the caller does not supply it (e.g. legacy callers).
+   */
+  order_discount_ratio?: number;
+}
+
+export function computeLineRevenue(line: ComputeLineRevenueInput): LineRevenueResult {
   const qty = Number(line.qty || 0);
   const price = Number(line.unit_price || 0);
   const lineDiscount = Number(line.line_discount || 0);
+  const orderDiscountRatio = Math.min(1, Math.max(0, Number(line.order_discount_ratio || 0)));
 
   const variantRaw = qty * price;
   let remainingDiscount = lineDiscount;
 
-  // PRIORITY 1: Apply discount to the base variant first
+  // PRIORITY 1: Apply item-level discount to the base variant first
   let variantRevenue: number;
   if (remainingDiscount >= variantRaw) {
     variantRevenue = 0;
@@ -27,7 +38,7 @@ export function computeLineRevenue(line: {
     remainingDiscount = 0;
   }
 
-  // PRIORITY 2: Apply remaining discount to modifiers
+  // PRIORITY 2: Apply remaining item-level discount to modifiers
   let mods: { id: string; name: string; price: number }[] = [];
   let modsRawTotal = 0;
   if (line.modifiers_json) {
@@ -42,11 +53,12 @@ export function computeLineRevenue(line: {
 
   const modRevenues = mods.map((mod: any) => {
     const modRaw = Number(mod.price || 0) * qty;
-    // Distribute remaining discount proportionally among modifiers
     const modRatio = modsRawTotal > 0 ? modRaw / modsRawTotal : 0;
-    const modDiscount = remainingDiscount * modRatio;
-    const modRevenue = Math.max(0, modRaw - modDiscount);
-    
+    const itemLevelModDiscount = remainingDiscount * modRatio;
+    const modRevenueAfterLineDiscount = Math.max(0, modRaw - itemLevelModDiscount);
+    // Apply order-level discount multiplicatively on top of the line-level result
+    const modRevenue = modRevenueAfterLineDiscount * (1 - orderDiscountRatio);
+
     return {
       id: mod.id || mod.name || "",
       name: mod.name || "",
@@ -54,6 +66,9 @@ export function computeLineRevenue(line: {
       raw: modRaw,
     };
   });
+
+  // Apply order-level discount multiplicatively on top of variant revenue
+  variantRevenue = variantRevenue * (1 - orderDiscountRatio);
 
   const lineTotal = variantRevenue + modRevenues.reduce((s, m) => s + m.revenue, 0);
   return { variantRevenue, modRevenues, lineTotal };
