@@ -47,6 +47,15 @@ export default async function SalesReportPage({
     return true;
   });
 
+  // Pre-compute order-level discount ratio for each completed order.
+  // Orders with no subtotal get ratio 0 (defensive - new orders always have subtotal).
+  const orderDiscountRatioById: Record<string, number> = {};
+  completedOrders.forEach((o: any) => {
+    const subtotal = Number(o.subtotal_amount || 0);
+    const orderDiscount = Number(o.discount_amount || 0);
+    orderDiscountRatioById[o.id] = subtotal > 0 ? Math.min(1, orderDiscount / subtotal) : 0;
+  });
+
   // Bỏ logic prorated ratio, sử dụng trực tiếp line_discount từ database
   // Mảng chứa các line hợp lệ
   const validLines: any[] = [];
@@ -78,6 +87,7 @@ export default async function SalesReportPage({
       unit_price: Number(line.unit_price || 0),
       line_discount: Number(line.line_discount || 0),
       modifiers_json: line.modifiers_json || "",
+      order_discount_ratio: orderDiscountRatioById[order.id] || 0,
     });
 
     const variantRevenue = lineRevenue.variantRevenue;
@@ -154,6 +164,7 @@ export default async function SalesReportPage({
       unit_price: Number(line.unit_price || 0),
       line_discount: Number(line.line_discount || 0),
       modifiers_json: line.modifiers_json || "",
+      order_discount_ratio: orderDiscountRatioById[line.order_id] || 0,
     });
     totalRevenue += lineRevenue.lineTotal;
   });
@@ -193,6 +204,7 @@ export default async function SalesReportPage({
       unit_price: Number(line.unit_price || 0),
       line_discount: Number(line.line_discount || 0),
       modifiers_json: line.modifiers_json || "",
+      order_discount_ratio: orderDiscountRatioById[line.order_id] || 0,
     });
     const amount = lineRevenue.lineTotal;
 
@@ -233,12 +245,13 @@ export default async function SalesReportPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Báo cáo Bán hàng</h1>
-        <p className="text-gray-500 mt-1">Phân tích hiệu quả kinh doanh theo thời gian.</p>
-      </div>
-
-      <SalesFilter brands={brands} users={users} categories={categories} />
+      <SalesFilter 
+        brands={brands} 
+        users={users} 
+        categories={categories} 
+        title="Báo cáo Bán hàng"
+        subtitle="Phân tích hiệu quả kinh doanh theo thời gian."
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
