@@ -155,6 +155,14 @@ export async function getPnLData(filters: any = {}) {
   // 3. Tính Giá Vốn Hàng Bán (COGS) & Doanh Thu theo Order_Lines
   const validOrderIds = new Set(completedOrders.map((o:any) => o.id));
   
+  // Pre-compute order-level discount ratio for each completed order.
+  const orderDiscountRatioById: Record<string, number> = {};
+  completedOrders.forEach((o: any) => {
+    const subtotal = Number(o.subtotal_amount || 0);
+    const orderDiscount = Number(o.discount_amount || 0);
+    orderDiscountRatioById[o.id] = subtotal > 0 ? Math.min(1, orderDiscount / subtotal) : 0;
+  });
+  
   let totalRevenue = 0;
   let totalCOGS = 0;
   
@@ -215,6 +223,7 @@ export async function getPnLData(filters: any = {}) {
       unit_price: Number(line.unit_price || 0),
       line_discount: Number(line.line_discount || 0),
       modifiers_json: line.modifiers_json || "",
+      order_discount_ratio: orderDiscountRatioById[line.order_id] || 0,
     });
 
     const variantRevenue = lineRevenue.variantRevenue;
