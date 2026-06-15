@@ -51,7 +51,7 @@ export default async function SalesReportPage({
   // Orders with no subtotal get ratio 0 (defensive - new orders always have subtotal).
   const orderDiscountRatioById: Record<string, number> = {};
   completedOrders.forEach((o: any) => {
-    const subtotal = Number(o.subtotal_amount || 0);
+    const subtotal = Number(o.subtotal || o.subtotal_amount || 0);
     const orderDiscount = Number(o.discount_amount || 0);
     orderDiscountRatioById[o.id] = subtotal > 0 ? Math.min(1, orderDiscount / subtotal) : 0;
   });

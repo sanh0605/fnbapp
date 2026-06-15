@@ -183,7 +183,7 @@ export async function editOrder(
     // 5. Update the order record
     await update("Orders", orderId, {
       total_amount,
-      subtotal_amount,
+      subtotal: subtotal_amount,
       discount_amount,
       discount_type: "VND", // Force VND since we calculate it on the frontend
       method: payment_method,

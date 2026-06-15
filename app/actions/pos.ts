@@ -41,7 +41,7 @@ export async function submitOrder(orderData: any) {
       order_no: "PENDING",
       brand_id,
       total_amount,
-      subtotal_amount: subtotal_amount || total_amount,
+      subtotal: subtotal_amount || total_amount,
       discount_amount: discount_amount || 0,
       discount_type: discount_type || "VND",
       status: "COMPLETED",
