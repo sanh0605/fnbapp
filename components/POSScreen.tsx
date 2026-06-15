@@ -411,44 +411,49 @@ export default function POSScreen({
 
     let finalDiscountAmountInVND = 0;
     if (userCustomDiscount !== null) {
+      // Manual Order Discount from the checkout modal - Order-Level only
       if (userCustomDiscountType === "PERCENT") {
         finalDiscountAmountInVND = subtotal * (userCustomDiscount / 100);
       } else {
         finalDiscountAmountInVND = userCustomDiscount;
       }
-    } else if (appliedPromo) {
-      if (appliedPromo.type === "ORDER_DISCOUNT") {
-        if (appliedPromo.discount_type === "PERCENT") {
-          finalDiscountAmountInVND = subtotal * (Number(appliedPromo.discount_value) / 100);
-        } else {
-          finalDiscountAmountInVND = Number(appliedPromo.discount_value);
-        }
+    } else if (appliedPromo?.type === "ORDER_DISCOUNT") {
+      // ORDER_DISCOUNT promo - Order-Level only
+      if (appliedPromo.discount_type === "PERCENT") {
+        finalDiscountAmountInVND = subtotal * (Number(appliedPromo.discount_value) / 100);
       } else {
-        finalDiscountAmountInVND = promoDiscountAmount;
+        finalDiscountAmountInVND = Number(appliedPromo.discount_value);
       }
     }
+    // PRODUCT_DISCOUNT promo case: finalDiscountAmountInVND stays 0.
+    // The promo saving is captured in Order_Lines.line_discount via finalCart above;
+    // writing it again to order.discount_amount would cause Reports to double-apply
+    // (once via line.line_discount, once via order_discount_ratio).
 
     const finalAppliedPromoId = userCustomDiscount !== null ? "" : (appliedPromo ? appliedPromo.id : "");
     const finalAppliedPromoSnapshot = userCustomDiscount !== null ? "" : (appliedPromo ? JSON.stringify(appliedPromo) : "");
     const finalDiscountReason = userCustomDiscount !== null ? "MANUAL_DISCOUNT" : "";
 
-    // 1. Phân bổ chiết khấu (Line Discount) cho từng món trong giỏ hàng
+    // Item-Level discounts only:
+    //   - Cashier-entered per-item discount from the product popup (preserved verbatim)
+    //   - PRODUCT_DISCOUNT promo (added on top, capped at itemBaseTotal)
+    // Order-Level discounts (manual modal entry or ORDER_DISCOUNT promo) live ONLY in
+    // orderData.discount_amount and must NOT be prorated into line_discount.
+    const isOrderLevelDiscountActive =
+      userCustomDiscount !== null || (appliedPromo?.type === "ORDER_DISCOUNT");
+
     const finalCart = cart.map(item => {
-      let lineDiscount = 0;
       const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
       const itemBaseTotal = (item.unit_price + modsPrice) * item.qty;
 
-      if (userCustomDiscount !== null || (appliedPromo && appliedPromo.type === "ORDER_DISCOUNT")) {
-        // Tình huống 1: Khuyến mãi toàn đơn (ORDER_DISCOUNT)
-        if (subtotal > 0) {
-          lineDiscount = finalDiscountAmountInVND * (itemBaseTotal / subtotal);
-        }
-      } else if (appliedPromo && appliedPromo.type === "PRODUCT_DISCOUNT") {
-        // Tình huống 2: Khuyến mãi từng món (PRODUCT_DISCOUNT)
+      // Start from the cashier-entered item discount (already in VND in cart state)
+      let lineDiscount = Number(item.discount_amount || 0);
+
+      if (!isOrderLevelDiscountActive && appliedPromo?.type === "PRODUCT_DISCOUNT") {
+        // Accumulate the promo discount on top of the cashier discount
         let applicableVariantsMap: Record<string, number> = {};
         let applicableVariantsList: string[] = [];
         let isMap = false;
-
         try {
           if (appliedPromo.applicable_products_json) {
             const parsed = JSON.parse(appliedPromo.applicable_products_json);
@@ -463,24 +468,27 @@ export default function POSScreen({
         } catch (e) {}
 
         if (applicableVariantsList.includes(item.variant_id)) {
-          const val = isMap ? Number(applicableVariantsMap[item.variant_id]) : Number(appliedPromo.discount_value);
-          let itemSpecificDiscount = 0;
+          const val = isMap
+            ? Number(applicableVariantsMap[item.variant_id])
+            : Number(appliedPromo.discount_value);
+          let promoItemDiscount = 0;
           if (appliedPromo.discount_type === "PERCENT") {
-            itemSpecificDiscount = itemBaseTotal * (val / 100);
+            promoItemDiscount = itemBaseTotal * (val / 100);
           } else if (appliedPromo.discount_type === "FLAT_PRICE") {
             const unitDiscount = Math.max(0, item.unit_price - val);
-            itemSpecificDiscount = unitDiscount * item.qty;
+            promoItemDiscount = unitDiscount * item.qty;
           } else {
-            itemSpecificDiscount = val * item.qty;
+            promoItemDiscount = val * item.qty;
           }
-          lineDiscount = Math.min(itemBaseTotal, itemSpecificDiscount);
+          // Cap the combined discount at the item's base total so revenue never goes negative
+          lineDiscount = Math.min(itemBaseTotal, lineDiscount + promoItemDiscount);
         }
       }
 
       return {
         ...item,
         discount_amount: lineDiscount,
-        discount_type: "VND"
+        discount_type: "VND",
       };
     });
 
