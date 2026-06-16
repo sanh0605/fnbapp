@@ -430,8 +430,8 @@ export default function POSScreen({
     // writing it again to order.discount_amount would cause Reports to double-apply
     // (once via line.line_discount, once via order_discount_ratio).
 
-    const finalAppliedPromoId = userCustomDiscount !== null ? "" : (appliedPromo ? appliedPromo.id : "");
-    const finalAppliedPromoSnapshot = userCustomDiscount !== null ? "" : (appliedPromo ? JSON.stringify(appliedPromo) : "");
+    const finalAppliedPromoId = appliedPromo?.id || "";
+    const finalAppliedPromoSnapshot = appliedPromo ? JSON.stringify(appliedPromo) : "";
     const finalDiscountReason = userCustomDiscount !== null ? "MANUAL_DISCOUNT" : "";
 
     // Item-Level discounts only:
@@ -449,7 +449,7 @@ export default function POSScreen({
       // Start from the cashier-entered item discount (already in VND in cart state)
       let lineDiscount = Number(item.discount_amount || 0);
 
-      if (!isOrderLevelDiscountActive && appliedPromo?.type === "PRODUCT_DISCOUNT") {
+      if (appliedPromo?.type === "PRODUCT_DISCOUNT") {
         // Accumulate the promo discount on top of the cashier discount
         let applicableVariantsMap: Record<string, number> = {};
         let applicableVariantsList: string[] = [];
