@@ -366,17 +366,26 @@ export default function POSScreen({
 
   const calculateTotalAmount = () => {
     const subtotal = calculateSubtotal();
-    let discount = 0;
+
+    // Order-level discount: manual input OR ORDER_DISCOUNT promo (via modal pre-fill)
+    let orderLevelDiscount = 0;
     if (userCustomDiscount !== null) {
       if (userCustomDiscountType === "PERCENT") {
-        discount = (subtotal * userCustomDiscount) / 100;
+        orderLevelDiscount = (subtotal * userCustomDiscount) / 100;
       } else {
-        discount = userCustomDiscount;
+        orderLevelDiscount = userCustomDiscount;
       }
-    } else {
-      discount = promoDiscountAmount;
+    } else if (appliedPromo?.type === "ORDER_DISCOUNT") {
+      // ORDER_DISCOUNT promo active, no manual entry yet
+      orderLevelDiscount = promoDiscountAmount;
     }
-    return Math.max(0, subtotal - discount);
+
+    // Product-level promo (PRM-003 etc): STACKS on top of order-level
+    const productLevelDiscount = appliedPromo?.type === "PRODUCT_DISCOUNT"
+      ? promoDiscountAmount
+      : 0;
+
+    return Math.max(0, subtotal - orderLevelDiscount - productLevelDiscount);
   };
 
   const totalAmount = calculateTotalAmount();
