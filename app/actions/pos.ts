@@ -104,7 +104,8 @@ export async function submitOrder(orderData: any) {
           variant_id: item.variant_id,
           qty: item.qty,
           unit_price: item.unit_price,
-          line_discount: item.discount_amount || 0,
+          line_discount: item.promo_discount || 0,
+          line_manual_discount: item.discount_amount || 0,
           discount_type: item.discount_type || "VND",
           modifiers_json: JSON.stringify(item.modifiers || []),
           created_at: nowIso

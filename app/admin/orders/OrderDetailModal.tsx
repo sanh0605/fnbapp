@@ -44,18 +44,19 @@ export default function OrderDetailModal({
   const brand = brands.find((b: any) => b.id === order.brand_id);
   const orderNo = order.display_order_no || order.order_no;
 
-  const calculateLineTotal = (line: OrderLine) => {
+  const calculateLineTotal = (line: OrderLine & { line_manual_discount?: number }) => {
     const modsPrice = (line.modifiers || []).reduce((sum: number, m: any) => sum + Number(m.price || 0), 0);
     const baseTotal = (Number(line.unit_price) + modsPrice) * Number(line.qty);
-    let discount = 0;
-    if (Number(line.line_discount) > 0) {
+    const totalLineDiscount = Number(line.line_discount || 0) + Number(line.line_manual_discount || 0);
+    let discountValue = 0;
+    if (totalLineDiscount > 0) {
       if (line.discount_type === "PERCENT") {
-        discount = (baseTotal * Number(line.line_discount)) / 100;
+        discountValue = (baseTotal * totalLineDiscount) / 100;
       } else {
-        discount = Number(line.line_discount);
+        discountValue = totalLineDiscount;
       }
     }
-    return Math.max(0, baseTotal - discount);
+    return Math.max(0, baseTotal - discountValue);
   };
 
   const subtotal = order.lines.reduce((sum: number, l: OrderLine) => sum + calculateLineTotal(l), 0);
@@ -118,14 +119,14 @@ export default function OrderDetailModal({
                           + {line.modifiers.map((m: any) => m.name).join(", ")}
                         </div>
                       )}
-                      {Number(line.line_discount) > 0 && (
+                      {(Number(line.line_discount) + Number((line as any).line_manual_discount || 0)) > 0 && (
                         <div className="text-xs text-red-500 mt-1">
-                          Giảm: -{line.discount_type === "PERCENT" ? `${line.line_discount}%` : `${Number(line.line_discount).toLocaleString("vi-VN")}đ`}
+                          Giảm: -{line.discount_type === "PERCENT" ? `${Number(line.line_discount) + Number((line as any).line_manual_discount || 0)}%` : `${(Number(line.line_discount) + Number((line as any).line_manual_discount || 0)).toLocaleString("vi-VN")}đ`}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
-                      {Number(line.line_discount) > 0 && (
+                      {(Number(line.line_discount) + Number((line as any).line_manual_discount || 0)) > 0 && (
                         <div className="text-[11px] text-gray-400 line-through">{baseTotal.toLocaleString("vi-VN")}đ</div>
                       )}
                       <div className="font-bold text-gray-800">{lineTotal.toLocaleString("vi-VN")}đ</div>

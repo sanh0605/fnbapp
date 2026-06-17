@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-06-16T08:26:56.404Z",
+  "totalOrdersProcessed": 651,
+  "countsByTier": {
+    "CONFIRMED": 283,
+    "INFERRED_HIGH": 12,
+    "INFERRED_MEDIUM": 0,
+    "INFERRED_LOW": 0,
+    "AMBIGUOUS": 1,
+    "NO_PROMO": 355
+  },
+  "samplesByTier": {
+    "CONFIRMED": [
+      "PHD000356",
+      "PHD000357",
+      "PHD000362"
+    ],
+    "INFERRED_HIGH": [
+      "PHD000467",
+      "PHD000468",
+      "PHD000476"
+    ],
+    "INFERRED_MEDIUM": [],
+    "INFERRED_LOW": [],
+    "AMBIGUOUS": [
+      "PHD000503"
+    ],
+    "NO_PROMO": [
+      "PHD000002",
+      "PHD000003",
+      "PHD000004"
+    ]
+  },
+  "sanityChecks": {
+    "appliedPromotionIdSetButTierNotConfirmed": 5,
+    "confirmedButLineDiscountMismatch": 0,
+    "ambiguousWithMultipleActivePromos": 0,
+    "inferredLowCount": 0
+  }
+}

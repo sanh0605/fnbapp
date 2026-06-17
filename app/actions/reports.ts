@@ -221,7 +221,7 @@ export async function getPnLData(filters: any = {}) {
     const lineRevenue = computeLineRevenue({
       qty,
       unit_price: Number(line.unit_price || 0),
-      line_discount: Number(line.line_discount || 0),
+      line_discount: Number(line.line_discount || 0) + Number(line.line_manual_discount || 0),
       modifiers_json: line.modifiers_json || "",
       order_discount_ratio: orderDiscountRatioById[line.order_id] || 0,
     });

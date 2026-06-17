@@ -393,7 +393,7 @@ export default function POSScreen({
         setModalDiscountInput(Number(appliedPromo.discount_value));
         setModalDiscountType(appliedPromo.discount_type);
       } else {
-        setModalDiscountInput(promoDiscountAmount);
+        setModalDiscountInput(0);
         setModalDiscountType("VND");
       }
     } else {
@@ -434,23 +434,16 @@ export default function POSScreen({
     const finalAppliedPromoSnapshot = appliedPromo ? JSON.stringify(appliedPromo) : "";
     const finalDiscountReason = userCustomDiscount !== null ? "MANUAL_DISCOUNT" : "";
 
-    // Item-Level discounts only:
-    //   - Cashier-entered per-item discount from the product popup (preserved verbatim)
-    //   - PRODUCT_DISCOUNT promo (added on top, capped at itemBaseTotal)
-    // Order-Level discounts (manual modal entry or ORDER_DISCOUNT promo) live ONLY in
-    // orderData.discount_amount and must NOT be prorated into line_discount.
-    const isOrderLevelDiscountActive =
-      userCustomDiscount !== null || (appliedPromo?.type === "ORDER_DISCOUNT");
-
     const finalCart = cart.map(item => {
       const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
       const itemBaseTotal = (item.unit_price + modsPrice) * item.qty;
 
-      // Start from the cashier-entered item discount (already in VND in cart state)
-      let lineDiscount = Number(item.discount_amount || 0);
+      // Manual portion: cashier-entered item discount (already in VND)
+      const manualLineDiscount = Number(item.discount_amount || 0);
 
+      // Promo portion: computed from PRM-003 formula if applicable
+      let promoPortion = 0;
       if (appliedPromo?.type === "PRODUCT_DISCOUNT") {
-        // Accumulate the promo discount on top of the cashier discount
         let applicableVariantsMap: Record<string, number> = {};
         let applicableVariantsList: string[] = [];
         let isMap = false;
@@ -471,23 +464,26 @@ export default function POSScreen({
           const val = isMap
             ? Number(applicableVariantsMap[item.variant_id])
             : Number(appliedPromo.discount_value);
-          let promoItemDiscount = 0;
           if (appliedPromo.discount_type === "PERCENT") {
-            promoItemDiscount = itemBaseTotal * (val / 100);
+            promoPortion = itemBaseTotal * (val / 100);
           } else if (appliedPromo.discount_type === "FLAT_PRICE") {
             const unitDiscount = Math.max(0, item.unit_price - val);
-            promoItemDiscount = unitDiscount * item.qty;
+            promoPortion = unitDiscount * item.qty;
           } else {
-            promoItemDiscount = val * item.qty;
+            promoPortion = val * item.qty;
           }
-          // Cap the combined discount at the item's base total so revenue never goes negative
-          lineDiscount = Math.min(itemBaseTotal, lineDiscount + promoItemDiscount);
         }
       }
 
+      // Cap combined at baseTotal
+      const combined = Math.min(itemBaseTotal, promoPortion + manualLineDiscount);
+      // If cap kicks in, reduce manual first (preserve full promo)
+      const cappedManual = Math.max(0, combined - promoPortion);
+
       return {
         ...item,
-        discount_amount: lineDiscount,
+        discount_amount: cappedManual,        // manual portion only
+        promo_discount: promoPortion,         // NEW field
         discount_type: "VND",
       };
     });
@@ -963,6 +959,11 @@ export default function POSScreen({
                       className="flex-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-right font-medium"
                     />
                   </div>
+                  {appliedPromo && appliedPromo.type === "PRODUCT_DISCOUNT" && (
+                    <p className="mt-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                      ⚡ {appliedPromo.name} đang áp dụng: giảm {promoDiscountAmount.toLocaleString('vi-VN')}đ (đã gồm trong giá món)
+                    </p>
+                  )}
                   {userCustomDiscount !== null && (
                     <button
                       type="button"
