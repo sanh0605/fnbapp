@@ -35,7 +35,7 @@ async function main() {
     try {
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: `${sheetName}!A1:Z1`,
+        range: `${sheetName}!1:1`,
       });
       const actualHeaders = res.data.values ? res.data.values[0] : [];
 
