@@ -99,6 +99,62 @@ export function allocateLineRevenue(line: LineForAllocation): AllocatedRevenue {
   return { variantRevenue, modifierRevenue, lineRevenue };
 }
 
-export function assertOrderInvariants(_order: OrderV2, _lines: OrderLineV2[]): void {
-  throw new Error("Not implemented");
+/**
+ * Asserts all financial invariants for an order + its lines.
+ *
+ * Invariants (see spec section 6.2):
+ *   I1. gross_total = sum(line.gross_line_total)
+ *   I2. promo_discount_total = sum(line.promo_discount)
+ *   I3. manual_item_discount_total = sum(line.manual_item_discount)
+ *   I4. sum(line.order_discount_allocation) = manual_order_discount (±1đ)
+ *   I5. net_total = gross - promo - manual_item - manual_order (±1đ)
+ *   I6. per-line: net_line_total = gross - promo - manual_item - order_alloc (±1đ)
+ *   I7. net_total = sum(line.net_line_total) (±1đ)
+ *
+ * Throws InvariantError on the first violation.
+ */
+export function assertOrderInvariants(order: OrderV2, lines: OrderLineV2[]): void {
+  if (lines.length === 0) {
+    throw new InvariantError("order has no lines");
+  }
+
+  for (const l of lines) {
+    const expectedLineNet =
+      l.gross_line_total - l.promo_discount - l.manual_item_discount - l.order_discount_allocation;
+    if (Math.abs(expectedLineNet - l.net_line_total) > 1) {
+      throw new InvariantError(`line ${l.id} net mismatch: expected ${expectedLineNet}, got ${l.net_line_total}`);
+    }
+  }
+
+  const sumGross = lines.reduce((s, l) => s + l.gross_line_total, 0);
+  const sumPromo = lines.reduce((s, l) => s + l.promo_discount, 0);
+  const sumManualItem = lines.reduce((s, l) => s + l.manual_item_discount, 0);
+  const sumOrderAlloc = lines.reduce((s, l) => s + l.order_discount_allocation, 0);
+  const sumNet = lines.reduce((s, l) => s + l.net_line_total, 0);
+
+  if (sumGross !== order.gross_total) {
+    throw new InvariantError(`gross mismatch: lines sum to ${sumGross}, order.gross_total=${order.gross_total}`);
+  }
+  if (sumPromo !== order.promo_discount_total) {
+    throw new InvariantError(`promo mismatch: lines sum to ${sumPromo}, order.promo_discount_total=${order.promo_discount_total}`);
+  }
+  if (sumManualItem !== order.manual_item_discount_total) {
+    throw new InvariantError(`manual_item mismatch: lines sum to ${sumManualItem}, order.manual_item_discount_total=${order.manual_item_discount_total}`);
+  }
+  if (Math.abs(sumOrderAlloc - order.manual_order_discount) > 1) {
+    throw new InvariantError(`order_discount_allocation mismatch: lines sum to ${sumOrderAlloc}, order.manual_order_discount=${order.manual_order_discount}`);
+  }
+
+  const expectedNet =
+    order.gross_total -
+    order.promo_discount_total -
+    order.manual_item_discount_total -
+    order.manual_order_discount;
+  if (Math.abs(expectedNet - order.net_total) > 1) {
+    throw new InvariantError(`net_total formula mismatch: expected ${expectedNet}, got ${order.net_total}`);
+  }
+
+  if (Math.abs(sumNet - order.net_total) > 1) {
+    throw new InvariantError(`net_total mismatch: lines sum to ${sumNet}, order.net_total=${order.net_total}`);
+  }
 }
