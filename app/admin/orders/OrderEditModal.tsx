@@ -39,7 +39,9 @@ interface EditItem {
   unit_price: number;
   qty: number;
   modifiers: any[];
-  discount_amount: number;
+  discount_amount: number; // Editable manual portion
+  line_discount: number; // Preserved promo portion
+  line_manual_discount: number; // Preserved manual portion
   discount_type: string;
 }
 
@@ -79,7 +81,9 @@ export default function OrderEditModal({
       unit_price: Number(l.unit_price),
       qty: Number(l.qty),
       modifiers: (l.modifiers || []).map((m: any) => ({ id: m.id, name: m.name, price: Number(m.price || 0) })),
-      discount_amount: Number(l.line_discount || 0),
+      discount_amount: Number((l as any).line_manual_discount || 0),
+      line_discount: Number(l.line_discount || 0),
+      line_manual_discount: Number((l as any).line_manual_discount || 0),
       discount_type: l.discount_type || "VND",
     }))
   );
@@ -203,6 +207,8 @@ export default function OrderEditModal({
       qty: newQty,
       modifiers: [...selectedNewModifiers],
       discount_amount: 0,
+      line_discount: 0,
+      line_manual_discount: 0,
       discount_type: "VND",
     }]);
     setIsAddingProduct(false);
@@ -238,7 +244,9 @@ export default function OrderEditModal({
           qty: item.qty,
           unit_price: item.unit_price,
           modifiers: item.modifiers,
-          discount_amount: itemDiscountVND,
+          discount_amount: itemDiscountVND,         // backward compat
+          line_discount: item.line_discount || 0,   // NEW: preserve promo portion
+          line_manual_discount: itemDiscountVND,    // NEW: manual portion in correct field
           discount_type: "VND",
         };
       }),
@@ -448,7 +456,7 @@ export default function OrderEditModal({
                     <span className="text-gray-400 text-xs ml-1">({item.size_name})</span>
                   </div>
                   <div className="text-right">
-                    {item.discount_amount > 0 && (
+                    {(item.discount_amount > 0 || item.line_discount > 0 || item.line_manual_discount > 0) && (
                       <div className="text-[11px] text-gray-400 line-through">{baseTotal.toLocaleString("vi-VN")}d</div>
                     )}
                     <div className="font-bold text-gray-800">{lineTotal.toLocaleString("vi-VN")}d</div>
@@ -457,9 +465,14 @@ export default function OrderEditModal({
                 {item.modifiers.length > 0 && (
                   <div className="text-xs text-indigo-600 mb-1">+ {item.modifiers.map((m: any) => m.name).join(", ")}</div>
                 )}
-                {item.discount_amount > 0 && (
-                  <div className="text-xs text-red-500 mb-1">
-                    Giảm: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount).toLocaleString("vi-VN")}đ`}
+                {item.line_discount > 0 && (
+                  <div className="text-xs text-emerald-600 font-medium mb-0.5">
+                    KM: -{item.line_discount.toLocaleString("vi-VN")}đ
+                  </div>
+                )}
+                {(item.discount_amount > 0 || item.line_manual_discount > 0) && (
+                  <div className="text-xs text-red-500 font-medium mb-1">
+                    Giảm: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount || item.line_manual_discount).toLocaleString("vi-VN")}đ`}
                   </div>
                 )}
                 <div className="flex gap-2 mt-2">
@@ -621,4 +634,4 @@ export default function OrderEditModal({
       </div>
     </div>
   );
-}
+}

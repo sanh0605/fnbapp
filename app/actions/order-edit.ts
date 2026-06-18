@@ -10,6 +10,8 @@ interface EditLineItem {
   unit_price: number;
   modifiers: any[];
   discount_amount: number;
+  line_discount?: number;          // NEW: promo portion (preserved)
+  line_manual_discount?: number;   // NEW: manual portion
   discount_type: string;
 }
 
@@ -100,7 +102,8 @@ export async function editOrder(
         variant_id: item.variant_id,
         qty: item.qty,
         unit_price: item.unit_price,
-        line_discount: item.discount_amount || 0,
+        line_discount: Number(item.line_discount || 0),                                  // FIX: preserve promo portion
+        line_manual_discount: Number(item.line_manual_discount ?? item.discount_amount ?? 0),  // NEW: write manual to correct column
         discount_type: item.discount_type || "VND",
         modifiers_json: JSON.stringify(item.modifiers || []),
         created_at: orderCreatedAt,
@@ -187,8 +190,6 @@ export async function editOrder(
       discount_amount,
       discount_type: "VND", // Force VND since we calculate it on the frontend
       method: payment_method,
-      applied_promotion_id: "", // Xóa khuyến mãi nếu có chỉnh sửa sau thanh toán
-      discount_reason: "Chỉnh sửa sau khi thanh toán",
     });
 
     // 6. Delete old lines and stock entries
