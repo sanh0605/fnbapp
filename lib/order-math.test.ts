@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { allocateOrderDiscount } from "@/lib/order-math";
+import { allocateOrderDiscount, allocateLineRevenue } from "@/lib/order-math";
 import type { AllocatableLine } from "@/lib/order-types";
 import { makeUCK000094Order } from "@/lib/__tests__/fixtures";
 
@@ -99,5 +99,111 @@ describe("allocateOrderDiscount", () => {
     // Verify sum equals order discount
     const sum = (result.get("ol-uck000094-1") || 0) + (result.get("ol-uck000094-2") || 0);
     expect(sum).toBe(5000);
+  });
+});
+
+describe("allocateLineRevenue", () => {
+  it("returns gross when no discounts applied", () => {
+    const line: LineForAllocation = {
+      unit_price: 30000,
+      qty: 2,
+      modifiers: [],
+      gross_line_total: 60000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+    };
+    const result = allocateLineRevenue(line);
+    expect(result.variantRevenue).toBe(60000);
+    expect(result.modifierRevenue).toEqual({});
+    expect(result.lineRevenue).toBe(60000);
+  });
+
+  it("applies a single ratio across variant and modifiers", () => {
+    // gross = 80000 (variant 60k + modifiers 20k), discount 20000 → ratio 0.75
+    const line: LineForAllocation = {
+      unit_price: 30000,
+      qty: 2,
+      modifiers: [
+        { id: "MOD-ICE", name: "Đá", price: 0, qty: 1 },
+        { id: "MOD-SUGAR", name: "Đường", price: 2000, qty: 1 },
+        { id: "MOD-CHEESE", name: "Phô mai", price: 8000, qty: 1 },
+      ],
+      gross_line_total: 80000,
+      promo_discount: 20000,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+    };
+    const result = allocateLineRevenue(line);
+    expect(result.variantRevenue).toBe(45000); // 60000 * 0.75
+    expect(result.modifierRevenue["MOD-ICE"]).toBe(0); // 0 * 0.75
+    expect(result.modifierRevenue["MOD-SUGAR"]).toBe(3000); // 4000 * 0.75
+    expect(result.modifierRevenue["MOD-CHEESE"]).toBe(12000); // 16000 * 0.75
+    expect(result.lineRevenue).toBe(60000); // 80000 - 20000
+  });
+
+  it("lineRevenue equals stored net (gross - all discounts)", () => {
+    const line: LineForAllocation = {
+      unit_price: 35000,
+      qty: 1,
+      modifiers: [],
+      gross_line_total: 35000,
+      promo_discount: 10000,
+      manual_item_discount: 5000,
+      order_discount_allocation: 0,
+    };
+    const result = allocateLineRevenue(line);
+    expect(result.lineRevenue).toBe(20000); // 35000 - 10000 - 5000
+    expect(result.variantRevenue).toBe(20000); // ratio = 20000/35000 ≈ 0.571; 35000 * ratio rounded
+  });
+
+  it("floors revenue at 0 when discounts exceed gross", () => {
+    // Defensive: shouldn't happen post-invariants, but allocator must not return negative
+    const line: LineForAllocation = {
+      unit_price: 10000,
+      qty: 1,
+      modifiers: [],
+      gross_line_total: 10000,
+      promo_discount: 15000, // exceeds gross
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+    };
+    const result = allocateLineRevenue(line);
+    expect(result.variantRevenue).toBe(0);
+    expect(result.lineRevenue).toBe(0); // floor
+  });
+
+  it("UCK000094 Sữa Dâu line: variantRevenue = 25000 (promo price)", () => {
+    const { lines } = makeUCK000094Order();
+    const fixtureLine = lines[0]; // Sữa Dâu
+    const line: LineForAllocation = {
+      unit_price: fixtureLine.unit_price,
+      qty: fixtureLine.qty,
+      modifiers: [],
+      gross_line_total: fixtureLine.gross_line_total,
+      promo_discount: fixtureLine.promo_discount,
+      manual_item_discount: fixtureLine.manual_item_discount,
+      order_discount_allocation: fixtureLine.order_discount_allocation,
+    };
+    const result = allocateLineRevenue(line);
+    expect(result.variantRevenue).toBe(25000); // headline number from audit
+    expect(result.lineRevenue).toBe(25000);
+  });
+
+  it("UCK000094 Hồng Trà line: variantRevenue = 25000 (after 5k order discount)", () => {
+    const { lines } = makeUCK000094Order();
+    const fixtureLine = lines[1]; // Hồng Trà
+    const line: LineForAllocation = {
+      unit_price: fixtureLine.unit_price,
+      qty: fixtureLine.qty,
+      modifiers: [],
+      gross_line_total: fixtureLine.gross_line_total,
+      promo_discount: fixtureLine.promo_discount,
+      manual_item_discount: fixtureLine.manual_item_discount,
+      order_discount_allocation: fixtureLine.order_discount_allocation,
+    };
+    const result = allocateLineRevenue(line);
+    expect(result.variantRevenue).toBe(25000); // 30000 - 5000
+    expect(result.lineRevenue).toBe(25000);
   });
 });

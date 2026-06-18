@@ -64,8 +64,39 @@ export function allocateOrderDiscount(
 // Functions below are stubs — implemented in Tasks 5 and 6.
 // ============================================================================
 
-export function allocateLineRevenue(_line: LineForAllocation): AllocatedRevenue {
-  throw new Error("Not implemented");
+/**
+ * Allocates a line's net revenue back to its variant and modifiers
+ * for per-product reporting.
+ *
+ * Strategy: apply a single ratio across all components of the line.
+ *   ratio = (gross - totalDiscount) / gross   (floored at 0)
+ *
+ * The `lineRevenue` returned equals the stored net (gross - all discounts).
+ * `variantRevenue + sum(modifierRevenue)` may differ by ±1đ due to
+ * rounding per component; consumers that need the exact line total must
+ * use `lineRevenue`, not sum the components.
+ */
+export function allocateLineRevenue(line: LineForAllocation): AllocatedRevenue {
+  const grossVariant = line.unit_price * line.qty;
+  const grossModifiers = line.modifiers.reduce(
+    (sum, m) => sum + m.price * m.qty * line.qty,
+    0,
+  );
+  const grossLine = grossVariant + grossModifiers;
+
+  const totalDiscount =
+    line.promo_discount + line.manual_item_discount + line.order_discount_allocation;
+
+  const lineRevenue = Math.max(0, grossLine - totalDiscount);
+  const ratio = grossLine > 0 ? lineRevenue / grossLine : 0;
+
+  const variantRevenue = Math.round(grossVariant * ratio);
+  const modifierRevenue: Record<string, number> = {};
+  for (const m of line.modifiers) {
+    modifierRevenue[m.id] = Math.round(m.price * m.qty * line.qty * ratio);
+  }
+
+  return { variantRevenue, modifierRevenue, lineRevenue };
 }
 
 export function assertOrderInvariants(_order: OrderV2, _lines: OrderLineV2[]): void {
