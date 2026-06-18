@@ -132,11 +132,13 @@ export default function OrderEditModal({
   const calculateSubtotal = () => items.reduce((sum, item) => sum + calcItemTotal(item), 0);
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
-    let disc = 0;
+    let orderLevelDisc = 0;
     if (orderDiscount > 0) {
-      disc = orderDiscountType === "PERCENT" ? (subtotal * orderDiscount) / 100 : orderDiscount;
+      orderLevelDisc = orderDiscountType === "PERCENT" ? (subtotal * orderDiscount) / 100 : orderDiscount;
     }
-    return Math.max(0, subtotal - disc);
+    // Subtract promo portion (preserved per-line, NOT order-level)
+    const productLevelDisc = items.reduce((sum, item) => sum + Number(item.line_discount || 0), 0);
+    return Math.max(0, subtotal - orderLevelDisc - productLevelDisc);
   };
 
   const removeItem = (index: number) => {
@@ -158,6 +160,14 @@ export default function OrderEditModal({
     if (editingIndex === null) return;
     const item = items[editingIndex];
     const newVariant = variants.find((v: any) => v.id === editVariantId);
+
+    // Auto-scale preserved promo portion when qty changes
+    let scaledLineDiscount = Number(item.line_discount || 0);
+    if (item.qty > 0 && editQty !== item.qty) {
+      const scale = editQty / item.qty;
+      scaledLineDiscount = Math.round(scaledLineDiscount * scale);
+    }
+
     setItems(items.map((it, i) => {
       if (i !== editingIndex) return it;
       return {
@@ -169,6 +179,7 @@ export default function OrderEditModal({
         size_name: newVariant?.size_name || it.size_name,
         unit_price: Number(newVariant?.price || it.unit_price),
         modifiers: [...editModifiers],
+        line_discount: scaledLineDiscount,
       };
     }));
     setEditingIndex(null);
@@ -311,11 +322,17 @@ export default function OrderEditModal({
     const unitPrice = Number(variant?.price || item.unit_price);
     const modsPrice = editModifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
     const base = (unitPrice + modsPrice) * editQty;
-    let disc = 0;
+
+    let manualDisc = 0;
     if (editDiscount > 0) {
-      disc = editDiscountType === "PERCENT" ? (base * editDiscount) / 100 : editDiscount;
+      manualDisc = editDiscountType === "PERCENT" ? (base * editDiscount) / 100 : editDiscount;
     }
-    return { base, final: Math.max(0, base - disc) };
+    // Scaled promo portion (matches saveEditItem logic)
+    const promoDisc = item.qty > 0 && editQty !== item.qty
+      ? Math.round(Number(item.line_discount || 0) * (editQty / item.qty))
+      : Number(item.line_discount || 0);
+
+    return { base, final: Math.max(0, base - manualDisc - promoDisc) };
   };
 
   const totalAmount = calculateTotal();
@@ -427,10 +444,27 @@ export default function OrderEditModal({
                       <span className="text-gray-500">Giá gốc</span>
                       <span className="text-gray-700 font-medium">{editTotals.base.toLocaleString("vi-VN")}đ</span>
                     </div>
+                    {(() => {
+                      const item = items[editingIndex];
+                      if (!item || Number(item.line_discount || 0) === 0) return null;
+                      const scaledPromo = item.qty > 0 && editQty !== item.qty
+                        ? Math.round(Number(item.line_discount || 0) * (editQty / item.qty))
+                        : Number(item.line_discount || 0);
+                      return (
+                        <div className="flex justify-between text-sm text-emerald-600">
+                          <span>⚡ KM (tự scale theo SL)</span>
+                          <span>-{scaledPromo.toLocaleString("vi-VN")}đ</span>
+                        </div>
+                      );
+                    })()}
                     {editDiscount > 0 && (
                       <div className="flex justify-between text-sm text-red-500">
                         <span>Chiết khấu</span>
-                        <span>-{(editTotals.base - editTotals.final).toLocaleString("vi-VN")}đ</span>
+                        <span>-{(editTotals.base - editTotals.final - (Number(items[editingIndex]?.line_discount || 0) > 0
+                          ? (items[editingIndex].qty > 0 && editQty !== items[editingIndex].qty
+                            ? Math.round(Number(items[editingIndex].line_discount || 0) * (editQty / items[editingIndex].qty))
+                            : Number(items[editingIndex].line_discount || 0))
+                          : 0)).toLocaleString("vi-VN")}đ</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold pt-1 border-t border-gray-100">

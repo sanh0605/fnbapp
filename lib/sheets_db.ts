@@ -153,7 +153,11 @@ export async function insert(sheetName: string, data: any) {
     },
   });
 
-  revalidateTag(getCacheTag(sheetName));
+  try {
+    revalidateTag(getCacheTag(sheetName));
+  } catch (e) {
+    // Ignore error if not in Next.js context
+  }
 
   return data;
 }
@@ -177,7 +181,11 @@ export async function insertMany(sheetName: string, dataArray: any[]) {
     },
   });
 
-  revalidateTag(getCacheTag(sheetName));
+  try {
+    revalidateTag(getCacheTag(sheetName));
+  } catch (e) {
+    // Ignore error if not in Next.js context
+  }
 
   return dataArray;
 }
@@ -226,7 +234,11 @@ export async function update(sheetName: string, id: string, data: any) {
     },
   });
 
-  revalidateTag(getCacheTag(sheetName));
+  try {
+    revalidateTag(getCacheTag(sheetName));
+  } catch (e) {
+    // Ignore error if not in Next.js context
+  }
 
   return updatedObj;
 }
@@ -279,7 +291,11 @@ export async function remove(sheetName: string, id: string) {
     }
   });
 
-  revalidateTag(getCacheTag(sheetName));
+  try {
+    revalidateTag(getCacheTag(sheetName));
+  } catch (e) {
+    // Ignore error if not in Next.js context
+  }
 
   return true;
 }
@@ -338,7 +354,11 @@ export async function removeMany(sheetName: string, ids: string[]) {
     }
   });
 
-  revalidateTag(getCacheTag(sheetName));
+  try {
+    revalidateTag(getCacheTag(sheetName));
+  } catch (e) {
+    // Ignore error if not in Next.js context
+  }
 
   return true;
 }
