@@ -85,6 +85,7 @@ describe("Property tests", () => {
             pos_snapshot_json: "{}",
             payment_method: "CASH",
             payment_ref: "",
+            migration_notes: "",
           };
 
           expect(() => assertOrderInvariants(order, lines)).not.toThrow();
