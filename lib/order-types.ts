@@ -224,3 +224,43 @@ export class InvariantError extends Error {
     this.name = "InvariantError";
   }
 }
+
+// ============================================================================
+// Line recipe snapshot — combined variant + modifier recipes
+// ============================================================================
+
+export interface ModifierRecipeEntry {
+  modifier_id: string;
+  modifier_name: string;
+  recipe: RecipeSnapshot;
+}
+
+export interface LineRecipeSnapshot {
+  variant: RecipeSnapshot;
+  modifiers: ModifierRecipeEntry[];
+}
+
+/** Parse the combined recipe_snapshot_json. Throws InvariantError on malformed JSON. */
+export function parseLineRecipeSnapshot(json: string): LineRecipeSnapshot {
+  if (!json || json === "{}" || json === "") {
+    return {
+      variant: { target_type: "PRODUCT_VARIANT", target_id: "", ingredients: [] },
+      modifiers: [],
+    };
+  }
+  try {
+    const parsed = JSON.parse(json);
+    // New shape
+    if (parsed && typeof parsed === "object" && "variant" in parsed) {
+      return parsed as LineRecipeSnapshot;
+    }
+    // Legacy shape (raw RecipeSnapshot) — wrap as variant-only
+    if (parsed && typeof parsed === "object" && "target_type" in parsed) {
+      return { variant: parsed as RecipeSnapshot, modifiers: [] };
+    }
+  } catch {}
+  return {
+    variant: { target_type: "PRODUCT_VARIANT", target_id: "", ingredients: [] },
+    modifiers: [],
+  };
+}

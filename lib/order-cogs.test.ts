@@ -84,4 +84,49 @@ describe("computeLineCostAtSale", () => {
     // Sale at 2026-06-05: only first PO counts → 20k/L
     expect(computeLineCostAtSale(single, ledger, 1, "2026-06-05T00:00:00Z")).toBe(20000);
   });
+
+  it("computes MAC across variant + modifier ingredients", () => {
+    const lineRecipe = {
+      variant: {
+        target_type: "PRODUCT_VARIANT",
+        target_id: "V1",
+        ingredients: [
+          { ingredient_id: "BI-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 0.05, unit_id: "L" },
+        ],
+      },
+      modifiers: [{
+        modifier_id: "MOD-PEARL",
+        modifier_name: "Trân châu",
+        recipe: {
+          target_type: "MODIFIER",
+          target_id: "MOD-PEARL",
+          ingredients: [
+            { ingredient_id: "BI-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 0.03, unit_id: "KG" },
+          ],
+        },
+      }],
+    };
+    const ledger = [
+      { item_reference: "BI-MILK", transaction_type: "PO_RECEIPT", unit_cost: "20000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "BI-PEARL", transaction_type: "PO_RECEIPT", unit_cost: "50000", quantity_change: "5", created_at: "2026-06-01T00:00:00Z" },
+    ];
+    // 0.05L milk × 20k/L = 1000
+    // 0.03kg pearl × 50k/kg = 1500
+    // Total = 2500
+    expect(computeLineCostAtSale(lineRecipe as any, ledger, 1)).toBe(2500);
+  });
+
+  it("backward compat: accepts raw RecipeSnapshot (old shape)", () => {
+    const oldShape: RecipeSnapshot = {
+      target_type: "PRODUCT_VARIANT",
+      target_id: "V1",
+      ingredients: [
+        { ingredient_id: "BI-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "L" },
+      ],
+    };
+    const ledger = [
+      { item_reference: "BI-MILK", transaction_type: "PO_RECEIPT", unit_cost: "20000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+    ];
+    expect(computeLineCostAtSale(oldShape, ledger, 1)).toBe(20000);
+  });
 });

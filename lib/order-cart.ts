@@ -27,6 +27,7 @@ import type {
   ProductSnapshot,
   VariantSnapshot,
   ModifierSnapshot,
+  ModifierRecipeEntry,
 } from "@/lib/order-types";
 
 export interface CartItemInput {
@@ -260,12 +261,30 @@ function buildLine(
   const variantSnap = buildVariantSnapshot(variant);
   const modifierSnap = buildModifierSnapshotsFromCart(item.modifiers, ref.modifiers);
 
-  // Recipe at sale time (most recent non-expired)
-  const recipe = pickRecipe(ref.recipes, "PRODUCT_VARIANT", item.variant_id);
-  const recipeSnap = recipe ? buildRecipeSnapshot(recipe) : {
+  // Pick variant recipe (most recent non-expired)
+  const variantRecipe = pickRecipe(ref.recipes, "PRODUCT_VARIANT", item.variant_id);
+  const variantRecipeSnap = variantRecipe ? buildRecipeSnapshot(variantRecipe) : {
     target_type: "PRODUCT_VARIANT" as const,
     target_id: item.variant_id,
     ingredients: [],
+  };
+
+  // Pick each modifier's recipe (most recent non-expired)
+  const modifierRecipeEntries: ModifierRecipeEntry[] = [];
+  for (const mod of modifierSnap) {
+    const modRecipe = pickRecipe(ref.recipes, "MODIFIER", mod.id);
+    if (modRecipe) {
+      modifierRecipeEntries.push({
+        modifier_id: mod.id,
+        modifier_name: mod.name,
+        recipe: buildRecipeSnapshot(modRecipe),
+      });
+    }
+  }
+
+  const lineRecipeSnap = {
+    variant: variantRecipeSnap,
+    modifiers: modifierRecipeEntries,
   };
 
   // Gross
@@ -298,7 +317,7 @@ function buildLine(
     order_discount_allocation: 0, // filled in by caller
     net_line_total: 0, // filled in by caller
     cost_at_sale: 0, // filled in by server action (Task 5)
-    recipe_snapshot_json: JSON.stringify(recipeSnap),
+    recipe_snapshot_json: JSON.stringify(lineRecipeSnap),
     promo_discount_reason: promoDiscount > 0 && resolvedPromo ? resolvedPromo.id : "",
     manual_discount_reason: manualItem > 0 ? "MANUAL_CASHIER" : "",
   };

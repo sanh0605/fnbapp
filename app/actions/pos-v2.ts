@@ -10,6 +10,7 @@ import { buildOrderFromCart } from "@/lib/order-cart";
 import { computeLineCostAtSale } from "@/lib/order-cogs";
 import { insertOrderV2Records } from "@/lib/sheets-db-v2";
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
+import { parseLineRecipeSnapshot } from "@/lib/order-types";
 import type { CartInput } from "@/lib/order-cart";
 
 export type SubmitOrderV2Result = {
@@ -59,8 +60,8 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
     // 5. Compute COGS per line, mutate lines in place
     const saleTime = built.order.created_at;
     for (const line of built.lines) {
-      const recipeSnap = JSON.parse(line.recipe_snapshot_json);
-      line.cost_at_sale = computeLineCostAtSale(recipeSnap, ledger, line.qty, saleTime);
+      const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+      line.cost_at_sale = computeLineCostAtSale(lineRecipe, ledger, line.qty, saleTime);
     }
 
     // 6. Assign order_no (brand-prefixed sequential, race-tolerant)
@@ -136,27 +137,13 @@ function buildStockLedgerEntries(
   built: ReturnType<typeof buildOrderFromCart>,
   eventId: string,
   saleTime: string,
-): Array<{
-  id: string;
-  transaction_type: string;
-  reference_id: string;
-  item_reference: string;
-  quantity_change: number;
-  unit_cost: number;
-  created_at: string;
-  order_event_id: string;
-  cost_at_sale: number;
-}> {
+) {
   const entries: any[] = [];
   for (const line of built.lines) {
-    const recipe = JSON.parse(line.recipe_snapshot_json);
-    if (!recipe.ingredients) continue;
+    const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
 
-    // Per-ingredient cost = MAC × quantity; cost_at_sale on ledger row
-    // is the per-ingredient cost (the line-level cost_at_sale is the sum).
-    const lineCostPerQty = line.cost_at_sale / line.qty;
-
-    for (const ing of recipe.ingredients) {
+    // Variant ingredients
+    for (const ing of lineRecipe.variant.ingredients) {
       if (ing.quantity <= 0) continue;
       entries.push({
         id: `stk-${crypto.randomUUID()}`,
@@ -164,20 +151,31 @@ function buildStockLedgerEntries(
         reference_id: built.order.id,
         item_reference: ing.ingredient_id,
         quantity_change: -(ing.quantity * line.qty),
-        unit_cost: 0, // legacy field, kept for backward compat; cost is in cost_at_sale
+        unit_cost: 0,
         created_at: saleTime,
         order_event_id: eventId,
-        cost_at_sale: Math.round(lineCostPerQty * (ing.quantity / recipe.ingredients.reduce((s: number, i: any) => s + i.quantity, 0))),
+        cost_at_sale: 0, // simplified: per-ingredient MAC refinement deferred
+        source: "VARIANT_RECIPE",
       });
     }
 
-    // Modifier recipes
-    const modifiers = JSON.parse(line.modifiers_snapshot_json);
-    for (const mod of modifiers) {
-      // Modifier recipes are looked up at sale time but we don't have them here
-      // (buildOrderFromCart didn't capture modifier recipes separately).
-      // For WS-2 simplicity: skip modifier ingredient consumption; will be added in WS-3.
-      // Note: this is a known gap, documented in migration_notes if it matters.
+    // Modifier ingredients
+    for (const modEntry of lineRecipe.modifiers) {
+      for (const ing of modEntry.recipe.ingredients) {
+        if (ing.quantity <= 0) continue;
+        entries.push({
+          id: `stk-${crypto.randomUUID()}`,
+          transaction_type: "SALES_CONSUME",
+          reference_id: built.order.id,
+          item_reference: ing.ingredient_id,
+          quantity_change: -(ing.quantity * line.qty),
+          unit_cost: 0,
+          created_at: saleTime,
+          order_event_id: eventId,
+          cost_at_sale: 0,
+          source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
+        });
+      }
     }
   }
   return entries;
