@@ -99,17 +99,25 @@ export async function findById(sheetName: string, id: string) {
   return all.find((item) => item.id === id) || null;
 }
 
+export const getHeadersNoCache = async (sheetName: string): Promise<string[]> => {
+  const sheets = getSheetsClient();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A1:Z1`,
+  });
+  return res.data.values ? res.data.values[0] : [];
+};
+
 // Get headers of a sheet (cached)
 export const getHeaders = (sheetName: string) => {
+  if (process.env.CLI_MODE === "true") {
+    return getHeadersNoCache(sheetName);
+  }
+
   const tag = getCacheTag(sheetName);
   return unstable_cache(
     async (name: string): Promise<string[]> => {
-      const sheets = getSheetsClient();
-      const res = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${name}!A1:Z1`,
-      });
-      return res.data.values ? res.data.values[0] : [];
+      return getHeadersNoCache(name);
     },
     ['sheets-headers', sheetName],
     { revalidate: 3600, tags: [tag] }
