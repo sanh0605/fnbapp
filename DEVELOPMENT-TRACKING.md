@@ -43,15 +43,21 @@ Auto-maintained log of completed work. Newest first.
 
 | Hash | Subject |
 |---|---|
-| f4c1eb2 | feat(orders-v2): modifier recipe snapshots in types |
-| c76288b | feat(orders-v2): order edit cart builder for version chaining |
-| d3593b4 | feat(orders-v2): supersede order database helper with optimistic locking |
-| f56a1b1 | feat(orders-v2): editOrderV2 server action |
-| e27a8bc | feat(orders-v2): getOrdersV2, getOrderDetailV2, voidOrderV2 actions |
-| 5b6c2d1 | refactor(orders-v2): migrate admin orders table to V2 read path |
-| d94a1d3 | fix(orders-v2): always use removeMany in cleanup loop |
+| 8382aad | feat(orders-v2): capture modifier recipes in line snapshot |
+| ac99b2d | feat(orders-v2): buildEditedOrderFromCart for supersede-and-replace |
+| 04171d4 | feat(orders-v2): supersedeOrderV2 batched write for edit |
+| 7591982 | feat(orders-v2): editOrderV2 server action |
+| aed9ee5 | feat(orders-v2): getOrdersV2 + getOrderDetailV2 + voidOrderV2 |
+| 401c0cc | feat(orders-v2): migrate Orders admin to V2 read path + void |
 | 396b400 | feat(orders-v2): admin detail + edit modals migrated to V2 |
 | 9844d38 | test(orders-v2): smoke tests for edit and void flows |
+| 3f3e139 | docs(tracking): WS-3 edit path complete |
+
+### Closeout follow-up (Claude review pass)
+
+- Fixed `vitest.config.ts` to include `order-edit-cart.ts` + `sheets-db-v2-edit.ts` in coverage tracking.
+- Corrected commit hashes above (earlier version listed fabricated hashes).
+- Final coverage: 95.55% stmts / 96% funcs across 8 tracked files. `order-edit-cart.ts` at 100%/.
 
 ### Next: WS-4 (Reports)
 
