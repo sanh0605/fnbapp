@@ -4,6 +4,91 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-19 — WS-5 LIVE MIGRATION EXECUTED
+
+**Operator:** Claude (User-authorized 2026-06-19)
+**Runbook:** `docs/runbooks/orders-v2-cutover.md`
+
+### Pre-migration steps completed
+
+1. **V1 sheets backed up** via `scripts/backup-v1-sheets.ts`:
+   - `Orders_BACKUP_PRE_WS5_2026-06-19`
+   - `Order_Lines_BACKUP_PRE_WS5_2026-06-19`
+   - `Stock_Ledger_BACKUP_PRE_WS5_2026-06-19`
+2. **V2 smoke test data cleared** via `scripts/reset-v2-sheets.ts --live` (7 orders + 7 lines + 9 events + 50 ledger rows removed; safety check confirmed no real migrated data)
+3. **Bug fix applied mid-cutover**: `migrate-orders-to-v2.ts` was missing `process.env.CLI_MODE = "true"` → first live attempt failed at insertMany step with "incrementalCache missing in unstable_cache" error. Fixed and re-ran successfully.
+
+### Migration results
+
+- **751 V1 orders migrated** to V2 (0 invariant failures, 0 errors)
+- **751 Order_Events MIGRATED records** written
+- **2810 Stock_Ledger SALES_CONSUME entries** re-created (linked to new V2 order_ids + event_ids)
+- **Reconciliation: DRIFT 0Đ** for date range 2026-05-31 → 2026-06-19 (396 orders in range, 12.179M VND matches exactly)
+- **Heuristic adjustments**: 25 orders (3.3%) had notes — mostly minor residual absorption as manual_order_discount. All passed invariants.
+
+### Post-migration state
+
+- V1 sheets still in place at original names (`orders`, `Order_Lines`, `Stock_Ledger`) for rollback safety. Rename to `_LEGACY` deferred to WS-6.
+- V2 sheets fully populated with all historical data.
+- Reports PnL/Sales/Stock now read V2 with real data — no more empty banners.
+- Admin Orders list shows all migrated orders.
+- POS continues to write V2 (no change).
+- PnL smoke test with real data: 22 orders today, 388k revenue, 73.53% margin.
+
+### Next: WS-6 (Polish + Decommission)
+
+Safe to proceed. V2 has full historical data, V1 has backups.
+
+---
+
+## 2026-06-19 — WS-5 Migration + Cutover Complete
+
+**Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
+**Plan:** `docs/superpowers/plans/2026-06-19-orders-reports-rebuild-ws5-migration-cutover.md`
+
+### What landed
+
+- **Migration helpers:** `lib/migrate-v1-to-v2.ts` — `reconstructOrderV2`, `classifyV1Discounts`, `computeLineCostFromLedger`. Spec §7.2 heuristics applied: net_total authoritative from V1, gross recomputed, promo from line.line_discount, manual_item from max of legacy fields, manual_order solved as residual.
+- **Migration script:** `scripts/migrate-orders-to-v2.ts` — dry-run default, --live to write. Idempotent (checks `pos_snapshot_json.v1_id`). Batched writes (50/200/50/200 for orders/lines/events/ledger). Outputs `migration-report.json` with per-order details.
+- **Cutover runbook:** `docs/runbooks/orders-v2-cutover.md` — operator-facing steps for pre-cutover, cutover, rollback, post-monitoring.
+- **Cleanup script extended:** `scripts/cleanup-test-orders-v2.ts` catches more smoke patterns.
+- **Legacy code archived:** 5 V1 action files moved to `_legacy/app-actions/`:
+  - `pos.ts`, `order-edit.ts`, `orders.ts`, `reports.ts`, `index.ts`
+
+### Verification gates (all passed)
+
+- `rtk npm test` — 107/107 tests pass
+- `rtk tsc --noEmit` — 0 errors in WS-5 files
+- `rtk npm run test:coverage` — 95.44% stmts / 100% funcs across 10 files; `migrate-v1-to-v2.ts` at 92.6%
+- Dry-run migration: 751 V1 orders processed, 0 invariant failures
+
+### Commits (in order)
+
+| Hash | Subject |
+|---|---|
+| 42ad153 | feat(orders-v2): V1 to V2 migration helpers |
+| ba72679 | test(orders-v2): migration helper golden cases |
+| 9792435 | feat(orders-v2): V1 to V2 migration script with dry-run |
+| ae0cffb | chore(orders-v2): extend cleanup script for WS-3/WS-4 smoke artifacts |
+| 4cec662 | docs(orders-v2): WS-5 cutover runbook |
+| ff5b886 | chore(orders-v2): archive legacy V1 action files |
+| e3d0b49 | chore(orders-v2): add migrate-v1-to-v2 to coverage |
+
+### Closeout follow-up (Claude review pass + live cutover)
+
+- Added missing WS-5 section to DEVELOPMENT-TRACKING.md (Antigravity missed Task 7 Step 5)
+- Bug-fixed `migrate-orders-to-v2.ts` to set `CLI_MODE=true` (required for CLI execution)
+- Added safety scripts: `backup-v1-sheets.ts`, `reset-v2-sheets.ts`, `list-sheets.ts`
+- Executed live migration: 751 orders, 0đ drift, see "WS-5 LIVE MIGRATION EXECUTED" section above
+
+### Known gaps deferred to WS-6
+
+- V1 sheets still named `Orders`, `Order_Lines`, `Stock_Ledger` (rename to `_LEGACY` in WS-6)
+- `lib/report-utils.ts` + `app/admin/page.tsx` still on V1 (dashboard migration)
+- `_legacy/` folder cleanup after final verification
+
+---
+
 ## 2026-06-19 — WS-4 Reports V2 Complete
 
 **Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
