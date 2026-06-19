@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { submitOrder } from "@/app/actions/pos";
+import { submitOrderV2 } from "@/app/actions/pos-v2";
+import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
 
 export default function POSScreen({
@@ -416,101 +417,43 @@ export default function POSScreen({
   const handleConfirmCheckout = async (method: string) => {
     setIsCheckingOut(true);
 
-    const subtotal = calculateSubtotal();
-
-    let finalDiscountAmountInVND = 0;
-    if (userCustomDiscount !== null) {
-      // Manual Order Discount from the checkout modal - Order-Level only
-      if (userCustomDiscountType === "PERCENT") {
-        finalDiscountAmountInVND = subtotal * (userCustomDiscount / 100);
-      } else {
-        finalDiscountAmountInVND = userCustomDiscount;
-      }
-    } else if (appliedPromo?.type === "ORDER_DISCOUNT") {
-      // ORDER_DISCOUNT promo - Order-Level only
-      if (appliedPromo.discount_type === "PERCENT") {
-        finalDiscountAmountInVND = subtotal * (Number(appliedPromo.discount_value) / 100);
-      } else {
-        finalDiscountAmountInVND = Number(appliedPromo.discount_value);
-      }
-    }
-    // PRODUCT_DISCOUNT promo case: finalDiscountAmountInVND stays 0.
-    // The promo saving is captured in Order_Lines.line_discount via finalCart above;
-    // writing it again to order.discount_amount would cause Reports to double-apply
-    // (once via line.line_discount, once via order_discount_ratio).
-
-    const finalAppliedPromoId = appliedPromo?.id || "";
-    const finalAppliedPromoSnapshot = appliedPromo ? JSON.stringify(appliedPromo) : "";
-    const finalDiscountReason = userCustomDiscount !== null ? "MANUAL_DISCOUNT" : "";
-
-    const finalCart = cart.map(item => {
-      const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
-      const itemBaseTotal = (item.unit_price + modsPrice) * item.qty;
-
-      // Manual portion: cashier-entered item discount (already in VND)
-      const manualLineDiscount = Number(item.discount_amount || 0);
-
-      // Promo portion: computed from PRM-003 formula if applicable
-      let promoPortion = 0;
-      if (appliedPromo?.type === "PRODUCT_DISCOUNT") {
-        let applicableVariantsMap: Record<string, number> = {};
-        let applicableVariantsList: string[] = [];
-        let isMap = false;
-        try {
-          if (appliedPromo.applicable_products_json) {
-            const parsed = JSON.parse(appliedPromo.applicable_products_json);
-            if (Array.isArray(parsed)) {
-              applicableVariantsList = parsed;
-            } else if (parsed && typeof parsed === "object") {
-              applicableVariantsMap = parsed;
-              applicableVariantsList = Object.keys(parsed);
-              isMap = true;
-            }
-          }
-        } catch (e) {}
-
-        if (applicableVariantsList.includes(item.variant_id)) {
-          const val = isMap
-            ? Number(applicableVariantsMap[item.variant_id])
-            : Number(appliedPromo.discount_value);
-          if (appliedPromo.discount_type === "PERCENT") {
-            promoPortion = itemBaseTotal * (val / 100);
-          } else if (appliedPromo.discount_type === "FLAT_PRICE") {
-            const unitDiscount = Math.max(0, item.unit_price - val);
-            promoPortion = unitDiscount * item.qty;
-          } else {
-            promoPortion = val * item.qty;
-          }
+    // Build V2 cart input from existing cart state
+    const cartInput: CartInput = {
+      brand_id: brandId || "",
+      items: cart.map(item => {
+        // Manual per-item discount (cashier-entered in product modal)
+        let manualItemValue = Number(item.discount_amount || 0);
+        let manualItemType: "VND" | "PERCENT" = item.discount_type === "PERCENT" ? "PERCENT" : "VND";
+        if (manualItemType === "PERCENT") {
+          // Convert to VND here; V2 cart takes VND or PERCENT — keep original input shape
         }
-      }
 
-      // Cap combined at baseTotal
-      const combined = Math.min(itemBaseTotal, promoPortion + manualLineDiscount);
-      // If cap kicks in, reduce manual first (preserve full promo)
-      const cappedManual = Math.max(0, combined - promoPortion);
-
-      return {
-        ...item,
-        discount_amount: cappedManual,        // manual portion only
-        promo_discount: promoPortion,         // NEW field
-        discount_type: "VND",
-      };
-    });
-
-    const orderData = {
-      brand_id: brandId,
-      items: finalCart,
-      total_amount: totalAmount,
-      subtotal_amount: subtotal,
-      discount_amount: finalDiscountAmountInVND,
-      discount_type: "VND",
-      applied_promotion_id: finalAppliedPromoId,
-      applied_promotion_snapshot_json: finalAppliedPromoSnapshot,
-      discount_reason: finalDiscountReason,
-      payment_method: method
+        return {
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          qty: item.qty,
+          modifiers: item.modifiers.map((m: any) => ({
+            modifier_id: m.id,
+            modifier_qty: 1, // each cart entry represents qty 1 of the modifier
+          })),
+          manual_item_discount: {
+            value: manualItemValue,
+            type: manualItemType,
+          },
+        };
+      }),
+      payment_method: method === "Chuyen khoan" ? "BANK_TRANSFER" : "CASH",
+      manual_order_discount: userCustomDiscount !== null
+        ? {
+            value: userCustomDiscount,
+            type: userCustomDiscountType,
+          }
+        : null,
+      applied_promotion_id: appliedPromo?.id || null,
+      actor: { id: "", name: "" }, // server action overrides from session
     };
 
-    const res = await submitOrder(orderData);
+    const res = await submitOrderV2(cartInput);
     setIsCheckingOut(false);
     setIsCheckoutModalOpen(false);
 
