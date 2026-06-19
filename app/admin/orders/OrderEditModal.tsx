@@ -1,35 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { editOrder } from "@/app/actions/order-edit";
+import { editOrderV2 } from "@/app/actions/order-edit-v2";
+import type { CartInput } from "@/lib/order-cart";
 
-interface OrderLine {
-  id: string;
-  product_id: string;
-  variant_id: string;
-  product_name: string;
-  size_name: string;
-  qty: number;
-  unit_price: number;
-  line_discount: number;
-  discount_type: string;
-  modifiers: any[];
-}
+import type { OrderListItem } from "@/app/actions/orders-v2";
 
-interface Order {
-  id: string;
-  order_no: string;
-  display_order_no: string;
-  brand_id: string;
-  total_amount: number;
-  subtotal_amount: number;
-  discount_amount: number;
-  discount_type: string;
-  method: string;
-  staff_name: string;
-  created_at: string;
-  lines: OrderLine[];
-}
+type OrderLine = OrderListItem["lines"][0];
+type Order = OrderListItem;
 
 interface EditItem {
   product_id: string;
@@ -70,7 +48,7 @@ export default function OrderEditModal({
   modifiers: any[];
   categories: any[];
   onClose: () => void;
-  onSave: (updatedOrder: Order) => void;
+  onSave: (updatedOrder?: Order) => void;
 }) {
   const [items, setItems] = useState<EditItem[]>(() =>
     order.lines.map((l: OrderLine) => ({
@@ -81,17 +59,18 @@ export default function OrderEditModal({
       unit_price: Number(l.unit_price),
       qty: Number(l.qty),
       modifiers: (l.modifiers || []).map((m: any) => ({ id: m.id, name: m.name, price: Number(m.price || 0) })),
-      discount_amount: Number((l as any).line_manual_discount || 0),
-      line_discount: Number(l.line_discount || 0),
-      line_manual_discount: Number((l as any).line_manual_discount || 0),
-      discount_type: l.discount_type || "VND",
+      discount_amount: Number(l.manual_item_discount || 0),
+      line_discount: Number(l.promo_discount || 0) + Number(l.order_discount_allocation || 0),
+      line_manual_discount: Number(l.manual_item_discount || 0),
+      discount_type: "VND",
     }))
   );
 
-  const [orderDiscount, setOrderDiscount] = useState(Number(order.discount_amount || 0));
-  const [orderDiscountType, setOrderDiscountType] = useState(order.discount_type || "VND");
+  const [orderDiscount, setOrderDiscount] = useState(Number(order.manual_order_discount || 0));
+  const [orderDiscountType, setOrderDiscountType] = useState("VND");
   const [paymentMethod, setPaymentMethod] = useState(order.method || "Tien mat");
   const [isSaving, setIsSaving] = useState(false);
+  const [editReason, setEditReason] = useState("");
 
   // Item editing state
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -233,77 +212,45 @@ export default function OrderEditModal({
 
   const handleSave = async () => {
     if (items.length === 0) return;
+    if (!editReason.trim()) {
+      alert("Lý do chỉnh sửa là bắt buộc");
+      return;
+    }
     setIsSaving(true);
 
-    const subtotal = calculateSubtotal();
-    let finalOrderDiscountVND = orderDiscount;
-    if (orderDiscountType === "PERCENT") {
-      finalOrderDiscountVND = subtotal * (orderDiscount / 100);
-    }
-
-    const editData = {
+    const cartInput: CartInput = {
+      brand_id: order.brand_id,
       items: items.map(item => {
-        let itemDiscountVND = item.discount_amount;
-        if (item.discount_type === "PERCENT") {
-          const modsPrice = item.modifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
-          const base = (item.unit_price + modsPrice) * item.qty;
-          itemDiscountVND = base * (item.discount_amount / 100);
-        }
+        let manualItemValue = item.discount_amount;
+        let manualItemType: "VND" | "PERCENT" = item.discount_type === "PERCENT" ? "PERCENT" : "VND";
         return {
           product_id: item.product_id,
           variant_id: item.variant_id,
           qty: item.qty,
-          unit_price: item.unit_price,
-          modifiers: item.modifiers,
-          discount_amount: itemDiscountVND,         // backward compat
-          line_discount: item.line_discount || 0,   // NEW: preserve promo portion
-          line_manual_discount: itemDiscountVND,    // NEW: manual portion in correct field
-          discount_type: "VND",
+          modifiers: item.modifiers.map(m => ({ modifier_id: m.id, modifier_qty: 1 })),
+          manual_item_discount: { value: manualItemValue, type: manualItemType },
         };
       }),
-      total_amount: calculateTotal(),
-      subtotal_amount: subtotal,
-      discount_amount: finalOrderDiscountVND,
-      discount_type: "VND",
-      payment_method: paymentMethod,
+      payment_method: paymentMethod === "Chuyen khoan" ? "BANK_TRANSFER" : "CASH",
+      manual_order_discount: orderDiscount > 0
+        ? { value: orderDiscount, type: orderDiscountType === "PERCENT" ? "PERCENT" : "VND" }
+        : null,
+      actor: { id: "", name: "" }, // server resolves from session
     };
 
-    const res = await editOrder(order.id, editData);
+    const res = await editOrderV2({
+      orderId: order.id,
+      expectedVersion: order.version,
+      cart: cartInput,
+      reason: editReason,
+    });
+
     setIsSaving(false);
 
     if (res.success) {
-      const updatedOrder: Order = {
-        ...order,
-        total_amount: calculateTotal(),
-        subtotal_amount: subtotal,
-        discount_amount: finalOrderDiscountVND,
-        discount_type: "VND",
-        method: paymentMethod,
-        lines: items.map((item, idx) => {
-          let itemDiscountVND = item.discount_amount;
-          if (item.discount_type === "PERCENT") {
-            const modsPrice = item.modifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
-            const base = (item.unit_price + modsPrice) * item.qty;
-            itemDiscountVND = base * (item.discount_amount / 100);
-          }
-          return {
-            id: `OL-EDIT-${idx}`,
-            product_id: item.product_id,
-            variant_id: item.variant_id,
-            product_name: item.product_name,
-            size_name: item.size_name,
-            qty: item.qty,
-            unit_price: item.unit_price,
-            line_discount: itemDiscountVND,
-            discount_type: "VND",
-            modifiers_json: JSON.stringify(item.modifiers),
-            modifiers: item.modifiers,
-          };
-        }),
-      };
-      onSave(updatedOrder);
+      onSave(order);  // parent will reload
     } else {
-      alert("Loi cap nhat don: " + res.error);
+      alert("Lỗi cập nhật đơn: " + res.error);
     }
   };
 
@@ -658,9 +605,20 @@ export default function OrderEditModal({
             <span className="text-xl font-black text-orange-600">{totalAmount.toLocaleString("vi-VN")}đ</span>
           </div>
 
+          <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">Lý do chỉnh sửa (bắt buộc)</label>
+            <textarea
+              placeholder="VD: Khách đổi từ 1 ly thành 2 ly"
+              value={editReason}
+              onChange={(e) => setEditReason(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
           <div className="px-4 py-3 flex gap-3 bg-white">
             <button onClick={onClose} disabled={isSaving} className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors disabled:opacity-50">Hủy</button>
-            <button onClick={handleSave} disabled={isSaving || items.length === 0} className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50">
+            <button onClick={handleSave} disabled={isSaving || items.length === 0 || !editReason.trim()} className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50">
               {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
             </button>
           </div>

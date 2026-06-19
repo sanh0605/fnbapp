@@ -1,110 +1,84 @@
 "use client";
 
-interface OrderLine {
-  id: string;
-  product_id: string;
-  variant_id: string;
-  product_name: string;
-  size_name: string;
-  qty: number;
-  unit_price: number;
-  line_discount: number;
-  discount_type: string;
-  modifiers: any[];
-}
+import { useState, useEffect } from "react";
+import { getOrderDetailV2, type OrderListItem } from "@/app/actions/orders-v2";
 
-interface Order {
-  id: string;
-  order_no: string;
-  display_order_no: string;
-  brand_id: string;
-  total_amount: number;
-  subtotal_amount: number;
-  discount_amount: number;
-  discount_type: string;
-  method: string;
-  staff_name: string;
-  created_at: string;
-  lines: OrderLine[];
-}
-
-export default function OrderDetailModal({
-  order,
-  brands,
-  onClose,
-  onEdit,
-  onDelete,
-}: {
-  order: Order;
+interface Props {
+  order: OrderListItem;
   brands: any[];
   onClose: () => void;
   onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const brand = brands.find((b: any) => b.id === order.brand_id);
+  onVoid: () => void;
+}
+
+export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoid }: Props) {
+  const [detail, setDetail] = useState<Awaited<ReturnType<typeof getOrderDetailV2>>>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getOrderDetailV2(order.id).then(d => {
+      setDetail(d);
+      setLoading(false);
+    });
+  }, [order.id]);
+
+  const brand = brands.find(b => b.id === order.brand_id);
   const orderNo = order.display_order_no || order.order_no;
 
-  const calculateLineTotal = (line: OrderLine & { line_manual_discount?: number }) => {
-    const modsPrice = (line.modifiers || []).reduce((sum: number, m: any) => sum + Number(m.price || 0), 0);
-    const baseTotal = (Number(line.unit_price) + modsPrice) * Number(line.qty);
-    const totalLineDiscount = Number(line.line_discount || 0) + Number(line.line_manual_discount || 0);
-    let discountValue = 0;
-    if (totalLineDiscount > 0) {
-      if (line.discount_type === "PERCENT") {
-        discountValue = (baseTotal * totalLineDiscount) / 100;
-      } else {
-        discountValue = totalLineDiscount;
-      }
-    }
-    return Math.max(0, baseTotal - discountValue);
+  const formatDate = (s: string) => {
+    const d = new Date(s);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  const subtotal = order.lines.reduce((sum: number, l: OrderLine) => sum + calculateLineTotal(l), 0);
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+        <div className="bg-white p-6 rounded-xl">Đang tải...</div>
+      </div>
+    );
+  }
 
-  const formatDate = (dateString: string) => {
-    const d = new Date(dateString);
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  };
+  const currentOrder = detail?.order || order;
+  const timeline = detail?.timeline || [];
+  const events = detail?.events || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
-        {/* Header */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         <div className="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">{orderNo}</h3>
+            <h3 className="text-xl font-bold text-gray-900">
+              {orderNo}
+              {currentOrder.version > 1 && (
+                <span className="ml-2 text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                  v{currentOrder.version}
+                </span>
+              )}
+            </h3>
             <p className="text-sm text-gray-500 mt-0.5">
-              {formatDate(order.created_at)}
+              {formatDate(currentOrder.created_at)}
               {brand && <span className="ml-2 text-blue-600 font-medium">{brand.name}</span>}
             </p>
           </div>
-          <button onClick={onClose} className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
+          <button onClick={onClose} className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300">✕</button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {/* Payment info */}
           <div className="flex gap-3">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${order.method === 'Chuyen khoan' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
-              {order.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"}
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${currentOrder.method === "Chuyen khoan" ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"}`}>
+              {currentOrder.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"}
             </span>
-            {order.staff_name && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
-                {order.staff_name}
-              </span>
-            )}
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
+              {currentOrder.created_by_name}
+            </span>
           </div>
 
           {/* Line items */}
           <div className="space-y-3">
-            {order.lines.map((line: OrderLine, idx: number) => {
-              const modsPrice = (line.modifiers || []).reduce((sum: number, m: any) => sum + Number(m.price || 0), 0);
-              const baseTotal = (Number(line.unit_price) + modsPrice) * Number(line.qty);
-              const lineTotal = calculateLineTotal(line);
-
+            {currentOrder.lines.map((line: any, idx: number) => {
+              const gross = line.gross_line_total;
+              const net = line.net_line_total;
               return (
                 <div key={idx} className="bg-gray-50 rounded-xl p-3">
                   <div className="flex justify-between items-start">
@@ -114,61 +88,118 @@ export default function OrderDetailModal({
                         {line.product_name}
                       </div>
                       <div className="text-xs text-gray-500 mt-0.5">Size {line.size_name}</div>
-                      {(line.modifiers || []).length > 0 && (
+                      {line.modifiers?.length > 0 && (
                         <div className="text-xs text-indigo-600 mt-1">
                           + {line.modifiers.map((m: any) => m.name).join(", ")}
                         </div>
                       )}
-                      {(Number(line.line_discount) + Number((line as any).line_manual_discount || 0)) > 0 && (
+                      {(line.promo_discount + line.manual_item_discount + line.order_discount_allocation) > 0 && (
                         <div className="text-xs text-red-500 mt-1">
-                          Giảm: -{line.discount_type === "PERCENT" ? `${Number(line.line_discount) + Number((line as any).line_manual_discount || 0)}%` : `${(Number(line.line_discount) + Number((line as any).line_manual_discount || 0)).toLocaleString("vi-VN")}đ`}
+                          Giảm: -{(line.promo_discount + line.manual_item_discount + line.order_discount_allocation).toLocaleString("vi-VN")}đ
                         </div>
                       )}
                     </div>
                     <div className="text-right">
-                      {(Number(line.line_discount) + Number((line as any).line_manual_discount || 0)) > 0 && (
-                        <div className="text-[11px] text-gray-400 line-through">{baseTotal.toLocaleString("vi-VN")}đ</div>
+                      {gross > net && (
+                        <div className="text-[11px] text-gray-400 line-through">{gross.toLocaleString("vi-VN")}đ</div>
                       )}
-                      <div className="font-bold text-gray-800">{lineTotal.toLocaleString("vi-VN")}đ</div>
-                      <div className="text-[11px] text-gray-400">{Number(line.unit_price).toLocaleString("vi-VN")}đ / món</div>
+                      <div className="font-bold text-gray-800">{net.toLocaleString("vi-VN")}đ</div>
                     </div>
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
 
-        {/* Footer - Totals and Actions */}
-        <div className="border-t border-gray-100 shrink-0">
-          <div className="px-5 py-3 bg-gray-50 space-y-1.5 text-sm">
+          {/* Money breakdown */}
+          <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1">
             <div className="flex justify-between">
-              <span className="text-gray-500">Tạm tính</span>
-              <span className="font-medium">{subtotal.toLocaleString("vi-VN")}đ</span>
+              <span className="text-gray-500">Tổng gốc</span>
+              <span>{currentOrder.gross_total.toLocaleString("vi-VN")}đ</span>
             </div>
-            {Number(order.discount_amount) > 0 && (
-              <div className="flex justify-between text-red-600">
-                <span>Giảm giá ({order.discount_type === "PERCENT" ? `${order.discount_amount}%` : "VND"})</span>
-                <span className="font-medium">-{Number(order.discount_amount).toLocaleString("vi-VN")}đ</span>
+            {currentOrder.promo_discount_total > 0 && (
+              <div className="flex justify-between text-emerald-600">
+                <span>Khuyến mãi hệ thống</span>
+                <span>-{currentOrder.promo_discount_total.toLocaleString("vi-VN")}đ</span>
+              </div>
+            )}
+            {currentOrder.manual_item_discount_total > 0 && (
+              <div className="flex justify-between text-red-500">
+                <span>Giảm thủ công từng món</span>
+                <span>-{currentOrder.manual_item_discount_total.toLocaleString("vi-VN")}đ</span>
+              </div>
+            )}
+            {currentOrder.manual_order_discount > 0 && (
+              <div className="flex justify-between text-red-500">
+                <span>Giảm cả đơn</span>
+                <span>-{currentOrder.manual_order_discount.toLocaleString("vi-VN")}đ</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold pt-1 border-t border-gray-200">
-              <span className="text-gray-900">Tổng cộng</span>
-              <span className="text-orange-600">{Number(order.total_amount || 0).toLocaleString("vi-VN")}đ</span>
+              <span className="text-gray-900">Khách trả</span>
+              <span className="text-orange-600">{currentOrder.net_total.toLocaleString("vi-VN")}đ</span>
             </div>
           </div>
+
+          {/* Timeline */}
+          {timeline.length > 1 && (
+            <div>
+              <h4 className="text-sm font-bold text-gray-700 mb-2">Lịch sử phiên bản ({timeline.length})</h4>
+              <div className="space-y-1.5">
+                {timeline.map(v => (
+                  <div key={v.id} className={`text-xs px-3 py-2 rounded-lg flex justify-between items-center ${
+                    v.id === currentOrder.id ? "bg-indigo-50 border border-indigo-200" : "bg-gray-50"
+                  }`}>
+                    <div>
+                      <span className="font-bold text-gray-700">v{v.version}</span>
+                      <span className="ml-2 text-gray-600">{v.created_by_name}</span>
+                      {v.status === "SUPERSEDED" && <span className="ml-2 text-gray-400">(đã thay thế)</span>}
+                      {v.status === "VOIDED" && <span className="ml-2 text-red-500">(đã hủy)</span>}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-gray-500">{formatDate(v.created_at)}</div>
+                      <div className="text-gray-400">{v.net_total.toLocaleString("vi-VN")}đ</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Events */}
+          {events.length > 0 && (
+            <div>
+              <h4 className="text-sm font-bold text-gray-700 mb-2">Sự kiện ({events.length})</h4>
+              <div className="space-y-1.5">
+                {events.map(e => (
+                  <div key={e.id} className="text-xs px-3 py-2 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between">
+                      <span className="font-bold text-gray-700">{e.event_type}</span>
+                      <span className="text-gray-500">{formatDate(e.event_at)}</span>
+                    </div>
+                    <div className="text-gray-600 mt-0.5">{e.actor_name}: {e.reason}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-gray-100 shrink-0">
           <div className="px-5 py-4 flex gap-3 bg-white">
             <button
               onClick={onEdit}
-              className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+              disabled={currentOrder.status !== "COMPLETED"}
+              className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >
               Sửa đơn
             </button>
             <button
-              onClick={onDelete}
-              className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors"
+              onClick={onVoid}
+              disabled={currentOrder.status !== "COMPLETED"}
+              className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors disabled:opacity-50"
             >
-              Xóa đơn
+              Hủy đơn
             </button>
           </div>
         </div>

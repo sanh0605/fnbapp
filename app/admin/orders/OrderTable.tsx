@@ -7,40 +7,10 @@ import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
 import StickyFilterBar from "@/components/StickyFilterBar";
 
-interface OrderLine {
-  id: string;
-  product_id: string;
-  variant_id: string;
-  product_name: string;
-  size_name: string;
-  qty: number;
-  unit_price: number;
-  gross_line_total: number;
-  promo_discount: number;
-  manual_item_discount: number;
-  order_discount_allocation: number;
-  net_line_total: number;
-  modifiers: any[];
-}
+import type { OrderListItem } from "@/app/actions/orders-v2";
 
-interface Order {
-  id: string;
-  order_no: string;
-  display_order_no: string;
-  brand_id: string;
-  status: string;
-  version: number;
-  parent_order_id: string;
-  gross_total: number;
-  promo_discount_total: number;
-  manual_item_discount_total: number;
-  manual_order_discount: number;
-  net_total: number;
-  method: string;
-  created_by_name: string;
-  created_at: string;
-  lines: OrderLine[];
-}
+type OrderLine = OrderListItem["lines"][0];
+type Order = OrderListItem;
 
 interface Brand {
   id: string;
@@ -391,7 +361,7 @@ export default function OrderTable({
           brands={brands}
           onClose={() => setSelectedOrder(null)}
           onEdit={() => setEditingOrder(selectedOrder)}
-          onDelete={() => { setOrderToVoid(selectedOrder); setSelectedOrder(null); }}
+          onVoid={() => { setOrderToVoid(selectedOrder); setSelectedOrder(null); }}
         />
       )}
 
