@@ -145,7 +145,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
           marginPct,
         };
       })
-      .sort((a, b) => b.grossProfit - a.grossProfit);
+      .sort((a, b) => b.qty - a.qty || b.grossProfit - a.grossProfit);
 
     // Add topping rows (modifiers as pseudo-products)
     // WS-10 fix: compute topping COGS from modifier-source MAC (resolves SEMI_PRODUCTs)

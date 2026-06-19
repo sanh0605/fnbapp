@@ -130,6 +130,7 @@ export default async function ReportsPage({
                 <tr>
                   <th className="px-6 py-4">Tên Nguyên Liệu</th>
                   <th className="px-6 py-4 text-right">Khối Lượng Tiêu Hao</th>
+                  <th className="px-6 py-4 text-right">Giá Nhập Bình Quân (MAC)</th>
                   <th className="px-6 py-4 text-right font-bold text-gray-900">Tổng Giá Vốn</th>
                   <th className="px-6 py-4 text-right">% Tỷ Trọng</th>
                 </tr>
@@ -137,11 +138,15 @@ export default async function ReportsPage({
               <tbody className="divide-y divide-gray-100">
                 {data.cogsDetails.map((item, idx) => {
                   const percentage = data.totalCOGS > 0 ? (item.cogs / data.totalCOGS) * 100 : 0;
+                  const mac = item.qty > 0 ? item.cogs / item.qty : 0;
                   return (
                     <tr key={idx} className="hover:bg-gray-50/50 transition">
                       <td className="px-6 py-4 font-bold text-gray-800">{item.name}</td>
                       <td className="px-6 py-4 text-right text-orange-600 font-medium">
                         {item.qty.toLocaleString('vi-VN')} {item.unitName}
+                      </td>
+                      <td className="px-6 py-4 text-right text-gray-700">
+                        {mac.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ / {item.unitName}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-red-600">
                         {item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
