@@ -10,7 +10,7 @@ import { getPnLDataV2 } from "./reports-v2";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 describe("getPnLDataV2", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("returns empty result when no orders match filters", async () => {
     (findAllNoCache as any).mockResolvedValue([]);

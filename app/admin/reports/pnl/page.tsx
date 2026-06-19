@@ -1,4 +1,4 @@
-import { getPnLData } from "@/app/actions/reports";
+import { getPnLDataV2 } from "@/app/actions/reports-v2";
 import { findAll } from "@/lib/sheets_db";
 import SalesFilter from "@/components/SalesFilter";
 
@@ -31,20 +31,30 @@ export default async function ReportsPage({
   };
 
   const [data, brands, users, categories] = await Promise.all([
-    getPnLData(filters),
+    getPnLDataV2(filters),
     findAll("Brands"),
     findAll("Users"),
     findAll("Product_Categories")
   ]);
 
+  const productProfitAnalysis = data.productProfitAnalysis.filter(p => !p.product_id.startsWith("MOD:"));
+  const toppingProfitAnalysis = data.productProfitAnalysis.filter(p => p.product_id.startsWith("MOD:"));
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Báo cáo Lãi Lỗ (P&L)</h1>
-        <p className="text-gray-500 mt-1">Tổng hợp Doanh thu và Giá vốn nguyên vật liệu (COGS) dựa trên phương pháp Bình quân gia quyền (MAC).</p>
-      </div>
+      <SalesFilter 
+        brands={brands} 
+        users={users} 
+        categories={categories} 
+        title="Báo cáo Lãi Lỗ (P&L)"
+        subtitle="Tổng hợp Doanh thu và Giá vốn nguyên vật liệu (COGS) dựa trên dữ liệu V2."
+      />
 
-      <SalesFilter brands={brands} users={users} categories={categories} />
+      {data.v2OrderCount === 0 && (
+        <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl border border-yellow-200">
+          <strong>Lưu ý:</strong> Không có đơn hàng V2 nào trong khoảng thời gian này. Báo cáo lãi lỗ đã được chuyển sang dữ liệu V2 (từ 19/06/2026). Dữ liệu V1 cũ không còn hiển thị ở đây.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* DOANH THU */}
@@ -120,7 +130,6 @@ export default async function ReportsPage({
                 <tr>
                   <th className="px-6 py-4">Tên Nguyên Liệu</th>
                   <th className="px-6 py-4 text-right">Khối Lượng Tiêu Hao</th>
-                  <th className="px-6 py-4 text-right">Giá Nhập Bình Quân (MAC)</th>
                   <th className="px-6 py-4 text-right font-bold text-gray-900">Tổng Giá Vốn</th>
                   <th className="px-6 py-4 text-right">% Tỷ Trọng</th>
                 </tr>
@@ -133,9 +142,6 @@ export default async function ReportsPage({
                       <td className="px-6 py-4 font-bold text-gray-800">{item.name}</td>
                       <td className="px-6 py-4 text-right text-orange-600 font-medium">
                         {item.qty.toLocaleString('vi-VN')} {item.unitName}
-                      </td>
-                      <td className="px-6 py-4 text-right text-gray-500">
-                        {item.mac.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ / {item.unitName}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-red-600">
                         {item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
@@ -164,7 +170,7 @@ export default async function ReportsPage({
           <p className="text-sm text-gray-500">Chi tiết doanh thu, giá vốn và biên lợi nhuận của từng món bán ra.</p>
         </div>
         
-        {!data.productProfitAnalysis || data.productProfitAnalysis.length === 0 ? (
+        {productProfitAnalysis.length === 0 ? (
           <div className="text-center py-16 px-4">
             <p className="text-gray-500">Chưa có dữ liệu bán hàng.</p>
           </div>
@@ -182,10 +188,10 @@ export default async function ReportsPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {data.productProfitAnalysis.map((item:any, idx:number) => {
+                {productProfitAnalysis.map((item:any, idx:number) => {
                   return (
                     <tr key={idx} className="hover:bg-gray-50/50 transition">
-                      <td className="px-6 py-4 font-bold text-gray-800">{item.name}</td>
+                      <td className="px-6 py-4 font-bold text-gray-800">{item.product_name}</td>
                       <td className="px-6 py-4 text-center text-blue-600 font-medium">
                         {item.qty.toLocaleString('vi-VN')}
                       </td>
@@ -200,11 +206,11 @@ export default async function ReportsPage({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className={`inline-flex items-center px-2 py-1 rounded font-bold text-xs ${
-                          item.margin >= 50 ? 'bg-emerald-100 text-emerald-700' :
-                          item.margin >= 30 ? 'bg-yellow-100 text-yellow-700' :
+                          item.marginPct >= 50 ? 'bg-emerald-100 text-emerald-700' :
+                          item.marginPct >= 30 ? 'bg-yellow-100 text-yellow-700' :
                           'bg-red-100 text-red-700'
                         }`}>
-                          {item.margin.toFixed(1)}%
+                          {item.marginPct.toFixed(1)}%
                         </span>
                       </td>
                     </tr>
@@ -223,7 +229,7 @@ export default async function ReportsPage({
           <p className="text-sm text-gray-500">Chi tiết doanh thu, giá vốn và biên lợi nhuận của từng topping bán ra.</p>
         </div>
         
-        {!data.toppingProfitAnalysis || data.toppingProfitAnalysis.length === 0 ? (
+        {toppingProfitAnalysis.length === 0 ? (
           <div className="text-center py-16 px-4">
             <p className="text-gray-500">Chưa có dữ liệu bán hàng topping.</p>
           </div>
@@ -241,10 +247,10 @@ export default async function ReportsPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {data.toppingProfitAnalysis.map((item:any, idx:number) => {
+                {toppingProfitAnalysis.map((item:any, idx:number) => {
                   return (
                     <tr key={idx} className="hover:bg-gray-50/50 transition">
-                      <td className="px-6 py-4 font-bold text-gray-800">{item.name}</td>
+                      <td className="px-6 py-4 font-bold text-gray-800">{item.product_name}</td>
                       <td className="px-6 py-4 text-center text-blue-600 font-medium">
                         {item.qty.toLocaleString('vi-VN')}
                       </td>
@@ -259,11 +265,11 @@ export default async function ReportsPage({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className={`inline-flex items-center px-2 py-1 rounded font-bold text-xs ${
-                          item.margin >= 50 ? 'bg-emerald-100 text-emerald-700' :
-                          item.margin >= 30 ? 'bg-yellow-100 text-yellow-700' :
+                          item.marginPct >= 50 ? 'bg-emerald-100 text-emerald-700' :
+                          item.marginPct >= 30 ? 'bg-yellow-100 text-yellow-700' :
                           'bg-red-100 text-red-700'
                         }`}>
-                          {item.margin.toFixed(1)}%
+                          {item.marginPct.toFixed(1)}%
                         </span>
                       </td>
                     </tr>
