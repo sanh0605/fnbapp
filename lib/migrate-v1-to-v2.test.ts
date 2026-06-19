@@ -73,14 +73,15 @@ describe("classifyV1Discounts", () => {
 });
 
 describe("reconstructOrderV2", () => {
-  it("UCK000094 pattern: 5k discrepancy absorbed as manual_order_discount", () => {
-    // Reconstructed V1 order matching real UCK000094 pattern
+  it("UCK000094 pattern: V1 total_amount bug ignored, computed net used instead", () => {
     const v1: V1Order = {
       id: "ORD-uck", order_no: "UCK000094", brand_id: "BR-002", status: "COMPLETED",
       total_amount: "156000", // LEGACY BUG: should be 161000
-      discount_amount: "0", discount_type: "VND",
+      subtotal: "266000",     // V1 subtotal is correct
+      discount_amount: "0",   // No order-level discount
+      discount_type: "VND",
       applied_promotion_id: "PRM-003",
-      applied_promotion_snapshot_json: "", // wiped (E.1 pattern)
+      applied_promotion_snapshot_json: "",
       method: "Chuyen khoan", staff_name: "tuyen2612", created_at: "2026-06-12T12:21:26Z",
     };
     const lines: V1Line[] = [{
@@ -91,17 +92,40 @@ describe("reconstructOrderV2", () => {
     }];
     const result = reconstructOrderV2(v1, lines, [], REF);
 
+    // WS-7 fix: use V1 intended math, NOT stored total_amount
     expect(result.order.gross_total).toBe(35000);
     expect(result.order.promo_discount_total).toBe(10000);
     expect(result.order.manual_item_discount_total).toBe(0);
-    // net_total = V1 total_amount (authoritative)
-    expect(result.order.net_total).toBe(156000);
-    // manual_order_discount = gross - promo - manual_item - net = 35 - 10 - 0 - 156 = -131
-    // → clamped to 0 (overpaid case)
-    expect(result.order.manual_order_discount).toBe(0);
-    expect(result.classification.residual).toBe(-131000); // 35-10-0-0-156 in thousands
+    expect(result.order.manual_order_discount).toBe(0); // V1 discount_amount = 0
+    expect(result.order.net_total).toBe(25000); // computed: 35-10-0-0 = 25k
+    // Note: NOT 156000 (V1 buggy value) or 161000 (user's earlier "correct" guess for full order)
+    expect(result.classification.residual).toBe(-131000); // stored - computed
     expect(result.classification.heuristic_notes.length).toBeGreaterThan(0);
-    expect(result.classification.heuristic_notes[0]).toMatch(/overpaid/i);
+    expect(result.invariantPassed).toBe(true);
+  });
+
+  it("manual_order_discount from V1 discount_amount (not solved residual)", () => {
+    // Order: gross 100k, V1 says order discount 20k → manual_order = 20k
+    const v1: V1Order = {
+      id: "ORD-disc", order_no: "DISC001", brand_id: "BR-002", status: "COMPLETED",
+      total_amount: "80000", // gross 100 - discount 20 = 80 (V1 total correct here)
+      subtotal: "100000",
+      discount_amount: "20000",
+      discount_type: "VND",
+      applied_promotion_id: "", applied_promotion_snapshot_json: "",
+      method: "Tien mat", staff_name: "Test", created_at: "2026-06-12T00:00:00Z",
+    };
+    const lines: V1Line[] = [{
+      id: "OL-disc", order_id: "ORD-disc",
+      product_id: "PROD-024", variant_id: "VAR-031",
+      qty: "2", unit_price: "35000", line_discount: "30000", // 70k gross, 30k line discount
+      discount_type: "VND", modifiers_json: "[]", created_at: "2026-06-12T00:00:00Z",
+    }];
+    // gross = 70k, line_discount = 30k, manual_order = 20k
+    // net = 70 - 30 - 0 - 20 = 20k
+    const result = reconstructOrderV2(v1, lines, [], REF);
+    expect(result.order.manual_order_discount).toBe(20000);
+    expect(result.order.net_total).toBe(20000);
   });
 
   it("clean Sữa Dâu order: invariants pass", () => {

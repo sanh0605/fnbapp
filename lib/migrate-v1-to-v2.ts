@@ -124,27 +124,33 @@ export function reconstructOrderV2(
     v2Lines.push(v2Line);
   }
 
-  // ----- Compute gross + promo + manual_item totals -----
+  // ----- Compute totals from V1 intended math -----
+  // CRITICAL FIX (WS-7): do NOT trust V1 total_amount — it had bugs.
+  // Use intended math: subtotal - sum(discounts).
+
   const grossTotal = v2Lines.reduce((s, l) => s + l.gross_line_total, 0);
   const promoTotal = v2Lines.reduce((s, l) => s + l.promo_discount, 0);
   const manualItemTotal = v2Lines.reduce((s, l) => s + l.manual_item_discount, 0);
 
-  // ----- Determine net_total (authoritative from V1) -----
-  const netTotal = Number(v1Order.total_amount || 0);
+  // manual_order_discount comes from V1 discount_amount directly
+  // (NOT solved as residual — residual approach created phantom discounts
+  // when V1 total_amount had bugs).
+  const manualOrderDiscount = Math.max(0, Math.round(Number(v1Order.discount_amount || 0)));
 
-  // ----- Solve for manual_order_discount -----
-  // residual_before = gross - promo - manual_item - net
-  // If positive: that's the manual_order_discount
-  // If near-zero: no order-level discount existed
-  // If negative: customer overpaid (data corruption) — set manual_order_discount = 0, document
-  const residualBefore = grossTotal - promoTotal - manualItemTotal - netTotal;
-  let manualOrderDiscount = Math.max(0, residualBefore);
-  if (residualBefore < -1) {
-    heuristicNotes.push(`Customer appears to have overpaid by ${Math.abs(residualBefore)}đ (gross - all < net_total). Set manual_order_discount=0, accepted net_total as truth.`);
-    manualOrderDiscount = 0;
-  } else if (residualBefore > 0) {
-    heuristicNotes.push(`Residual of ${residualBefore}đ not accounted for by line-level data; absorbing as manual_order_discount.`);
+  // Computed net — this is the mathematically correct value
+  const computedNetTotal = grossTotal - promoTotal - manualItemTotal - manualOrderDiscount;
+
+  // Sanity check: compare to V1 stored total_amount
+  const v1StoredTotal = Number(v1Order.total_amount || 0);
+  const storedVsComputed = computedNetTotal - v1StoredTotal;
+  if (Math.abs(storedVsComputed) > 1) {
+    heuristicNotes.push(
+      `V1 stored total_amount (${v1StoredTotal}) differs from computed (${computedNetTotal}) by ${storedVsComputed}đ. ` +
+      `Using computed value (V1 total_amount had known bugs in some orders).`
+    );
   }
+
+  const netTotal = computedNetTotal;
 
   // ----- Allocate manual_order_discount across lines -----
   if (manualOrderDiscount > 0) {
@@ -227,7 +233,7 @@ export function reconstructOrderV2(
       promo_total: promoTotal,
       manual_item_total: manualItemTotal,
       manual_order_discount: manualOrderDiscount,
-      residual_before: residualBefore,
+      residual: storedVsComputed,
     }),
     reason: `WS-5 migration from V1 order ${v1Order.id}`,
   };
@@ -253,7 +259,7 @@ export function reconstructOrderV2(
       manual_item_discount_total: manualItemTotal,
       manual_order_discount: manualOrderDiscount,
       net_total: netTotal,
-      residual: grossTotal - promoTotal - manualItemTotal - manualOrderDiscount - netTotal,
+      residual: storedVsComputed, // now means "stored - computed" drift, NOT solved residual
       heuristic_notes: heuristicNotes,
     },
     invariantPassed,
