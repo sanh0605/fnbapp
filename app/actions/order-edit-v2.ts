@@ -42,7 +42,10 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     const oldLinesV2 = oldLines.map(normalizeLineV2);
 
     // 2. Resolve actor
-    const session = await getServerSession(authOptions);
+    let session = null;
+    if (process.env.CLI_MODE !== "true") {
+      session = await getServerSession(authOptions);
+    }
     const actor = {
       id: (session?.user as any)?.id || "system",
       name: session?.user?.name || "Hệ thống",
@@ -128,8 +131,10 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       return { success: false, error: result.error };
     }
 
-    revalidatePath("/admin/orders");
-    revalidatePath("/admin");
+    if (process.env.CLI_MODE !== "true") {
+      revalidatePath("/admin/orders");
+      revalidatePath("/admin");
+    }
 
     return {
       success: true,

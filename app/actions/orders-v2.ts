@@ -265,7 +265,10 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       return { success: false, error: `Order status is ${order.status}, must be COMPLETED to void` };
     }
 
-    const session = await getServerSession(authOptions);
+    let session = null;
+    if (process.env.CLI_MODE !== "true") {
+      session = await getServerSession(authOptions);
+    }
     const actor = {
       id: (session?.user as any)?.id || "system",
       name: session?.user?.name || "Hệ thống",
@@ -321,7 +324,9 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       await insertMany("Stock_Ledger", reversalEntries);
     }
 
-    revalidatePath("/admin/orders");
+    if (process.env.CLI_MODE !== "true") {
+      revalidatePath("/admin/orders");
+    }
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err?.message || String(err) };

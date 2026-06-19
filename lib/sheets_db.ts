@@ -67,6 +67,10 @@ function mapObjectToRow(obj: any, headers: string[]): string[] {
 
 // Get all records from a sheet (cached)
 export const findAll = (sheetName: string) => {
+  if (process.env.CLI_MODE === "true") {
+    return findAllNoCache(sheetName);
+  }
+
   const tag = getCacheTag(sheetName);
   const reval = getRevalidation(sheetName);
   return unstable_cache(

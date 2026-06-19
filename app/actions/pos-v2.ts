@@ -33,7 +33,10 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
     }
 
     // 2. Resolve actor
-    const session = await getServerSession(authOptions);
+    let session = null;
+    if (process.env.CLI_MODE !== "true") {
+      session = await getServerSession(authOptions);
+    }
     const actor = {
       id: (session?.user as any)?.id || "system",
       name: session?.user?.name || "Hệ thống",
@@ -105,8 +108,10 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
     }
 
     // 10. Refresh caches
-    revalidatePath("/admin");
-    revalidatePath("/pos");
+    if (process.env.CLI_MODE !== "true") {
+      revalidatePath("/admin");
+      revalidatePath("/pos");
+    }
 
     return { success: true, order_id: finalOrder.id, order_no: orderNo };
   } catch (err: any) {
