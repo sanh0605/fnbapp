@@ -1,6 +1,7 @@
-import { findAll } from "@/lib/sheets_db";
+import { findAll, findAllNoCache } from "@/lib/sheets_db";
 import Link from "next/link";
-import { computeLineRevenue } from "@/lib/report-utils";
+import { ORDER_STATUS } from "@/lib/order-types";
+import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
 
 const TrendBadge = ({ value }: { value: number | null }) => {
   if (value === null) return null;
@@ -20,16 +21,55 @@ export default async function AdminDashboard({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const [brands, users, suppliers, orders, orderLines, products, variants, categories] = await Promise.all([
+  const [brands, users, suppliers, v2Orders, v2Lines, products, variants, categories] = await Promise.all([
     findAll("Brands"),
     findAll("Users"),
     findAll("Suppliers"),
-    findAll("Orders"),
-    findAll("Order_Lines"),
+    findAllNoCache("Orders_V2"),
+    findAllNoCache("Order_Lines_V2"),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Product_Categories")
   ]);
+
+  // Coerce raw V2 row strings to typed shape with numeric fields
+  function normalizeV2Order(row: any) {
+    return {
+      ...row,
+      id: row.id,
+      status: row.status,
+      version: Number(row.version) || 1,
+      created_at: row.created_at,
+      staff_name: row.created_by_name || "",
+      brand_id: row.brand_id,
+      // For backward-compat with downstream dashboard logic
+      total_amount: Number(row.net_total) || 0,
+      net_total: Number(row.net_total) || 0,
+      gross_total: Number(row.gross_total) || 0,
+    };
+  }
+
+  const v2OrderIds = new Set(v2Orders.map((o: any) => o.id));
+  const v2LinesForOrders = (v2Lines as any[])
+    .filter((l: any) => v2OrderIds.has(l.order_id))
+    .map((l: any) => ({
+      ...l,
+      qty: Number(l.qty) || 0,
+      unit_price: Number(l.unit_price) || 0,
+      gross_line_total: Number(l.gross_line_total) || 0,
+      promo_discount: Number(l.promo_discount) || 0,
+      manual_item_discount: Number(l.manual_item_discount) || 0,
+      order_discount_allocation: Number(l.order_discount_allocation) || 0,
+      net_line_total: Number(l.net_line_total) || 0,
+    }));
+
+  const validOrders = (v2Orders as any[])
+    .filter((o: any) =>
+      o.status === ORDER_STATUS.COMPLETED &&
+      !(o.superseded_by && o.superseded_by !== "") &&
+      o.created_at,
+    )
+    .map(normalizeV2Order);
 
   const filterParam = searchParams.filter as string || 'this_month';
 
@@ -94,7 +134,6 @@ export default async function AdminDashboard({
       break;
   }
   
-  const validOrders = orders.filter((o:any) => o.status === "COMPLETED" && o.created_at);
   const currOrders = validOrders.filter((o:any) => isCurrent(new Date(o.created_at)));
   const prevOrders = validOrders.filter((o:any) => isPrev(new Date(o.created_at)));
 
@@ -111,7 +150,7 @@ export default async function AdminDashboard({
   const toppingCats = categories.filter((c:any) => c.name?.toLowerCase().includes('topping')).map((c:any) => c.id);
   const getCups = (ords:any[]) => {
     const ids = ords.map(o => o.id);
-    const lines = orderLines.filter((l:any) => ids.includes(l.order_id));
+    const lines = v2LinesForOrders.filter((l:any) => ids.includes(l.order_id));
     return lines.reduce((sum:number, line:any) => {
       const p = products.find((p:any) => p.id === line.product_id);
       if (p && toppingCats.includes(p.category_id)) return sum;
@@ -149,39 +188,18 @@ export default async function AdminDashboard({
     { title: "Nhà cung cấp", value: activeSuppliers.toString(), icon: "🏢", color: "bg-purple-100 text-purple-700", trend: undefined },
   ];
 
-  const productSales: Record<string, { qty: number, revenue: number, name: string }> = {};
-  
-  orderLines.forEach((line:any) => {
-    const order = currOrders.find((o:any) => o.id === line.order_id);
-    if (!order) return;
-
-    const key = `${line.product_id}_${line.variant_id}`;
-    if (!productSales[key]) {
-      const p = products.find((x:any) => x.id === line.product_id);
-      const v = variants.find((x:any) => x.id === line.variant_id);
-      const pName = p ? p.name : line.product_id;
-      const vName = v ? v.name : '';
-      productSales[key] = {
-        name: vName ? `${pName} (${vName})` : pName,
-        qty: 0,
-        revenue: 0
-      };
-    }
-    
-    const qty = Number(line.qty || 0);
-    const lineRevenue = computeLineRevenue({
-      qty,
-      unit_price: Number(line.unit_price || 0),
-      line_discount: Number(line.line_discount || 0) + Number(line.line_manual_discount || 0),
-      modifiers_json: line.modifiers_json || "",
-    });
-    productSales[key].qty += qty;
-    productSales[key].revenue += lineRevenue.lineTotal;
-  });
-
-  const bestSellers = Object.values(productSales)
+  const currOrderIds = new Set(currOrders.map((o: any) => o.id));
+  const currLines = v2LinesForOrders.filter((l: any) => currOrderIds.has(l.order_id));
+  const currProducts = breakdownRevenueByProduct(currOrders, currLines);
+  const bestSellers = currProducts
+    .filter(p => !p.product_id.startsWith("MOD:"))
     .sort((a, b) => b.qty - a.qty)
-    .slice(0, 5);
+    .slice(0, 5)
+    .map(p => ({
+      name: p.product_name,
+      qty: p.qty,
+      revenue: p.revenue
+    }));
 
   const salesByDate: Record<string, number> = {};
   for(let i=6; i>=0; i--) {
@@ -190,7 +208,7 @@ export default async function AdminDashboard({
     salesByDate[d.toLocaleDateString("en-GB")] = 0;
   }
 
-  const allCompletedOrders = orders.filter((o:any) => o.status === "COMPLETED");
+  const allCompletedOrders = validOrders;
   allCompletedOrders.forEach((o:any) => {
     if(!o.created_at) return;
     const dateStr = new Date(o.created_at).toLocaleDateString("en-GB");
