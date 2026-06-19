@@ -14,3 +14,8 @@ Files were moved here in WS-5 after V2 equivalents were verified:
 These can be safely deleted after WS-6 verification if no rollback needed.
 
 Reference: `docs/superpowers/plans/2026-06-19-orders-reports-rebuild-ws5-migration-cutover.md`
+
+## lib/report-utils.ts (added WS-6)
+
+The legacy `computeLineRevenue` function. Used by pre-WS-6 admin dashboard.
+Replaced by `lib/report-v2-allocators.ts` (breakdownRevenueByProduct, breakdownCOGSByIngredient).

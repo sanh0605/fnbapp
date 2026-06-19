@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { findAllNoCache, getSheetsClient } from "../lib/sheets_db";
-import { computeLineRevenue } from "../lib/report-utils";
+const { computeLineRevenue } = require("../_legacy/lib/report-utils");
 
 const COMMIT_122a633 = "2026-06-16T04:30:57.000Z"; // 2026-06-16 11:30:57 +0700
 const COMMIT_7bac2d1 = "2026-06-15T08:30:08.000Z"; // 2026-06-15 15:30:08 +0700
