@@ -202,6 +202,213 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
 // Coercion helpers (sheet rows come back as strings)
 // ============================================================
 
+// ============================================================
+// Sales report
+// ============================================================
+
+export interface SalesReportResult {
+  totalRevenue: number;
+  totalOrders: number;
+  avgOrderValue: number;
+  bestSellers: Array<{
+    product_id: string;
+    name: string;
+    totalQty: number;
+    totalRevenue: number;
+    sizes: Record<string, number>;
+  }>;
+  bestToppings: Array<{
+    modifier_id: string;
+    name: string;
+    qty: number;
+    revenue: number;
+  }>;
+  uniqueSizes: string[];
+  totalQtyBySize: Record<string, number>;
+  totalQtyAll: number;
+  salesByDate: Array<{ label: string; amount: number }>;
+  salesByMonth: Array<{ label: string; amount: number }>;
+  salesByDayOfWeek: Array<{ label: string; amount: number }>;
+  salesByHour: Array<{ label: string; amount: number }>;
+  // Reconciliation indicator
+  v2OrderCount: number;
+}
+
+export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<SalesReportResult> {
+  try {
+    const [orders, orderLines] = await Promise.all([
+      findAllNoCache("Orders_V2"),
+      findAllNoCache("Order_Lines_V2"),
+    ]);
+
+    const { startDate, endDate, brandId, staffName, categoryId } = filters;
+
+    const filteredOrders = (orders as any[]).filter(o => {
+      if (o.status !== ORDER_STATUS.COMPLETED) return false;
+      if (o.superseded_by && o.superseded_by !== "") return false;
+      if (!o.created_at) return false;
+
+      if (startDate && endDate) {
+        const d = new Date(o.created_at);
+        if (d < new Date(startDate) || d > new Date(endDate)) return false;
+      }
+      if (brandId && o.brand_id !== brandId) return false;
+      if (staffName && o.created_by_name !== staffName) return false;
+
+      return true;
+    });
+
+    const orderIds = new Set(filteredOrders.map(o => o.id));
+    const filteredLines = (orderLines as any[]).filter(l => orderIds.has(l.order_id));
+
+    const typedOrders: OrderV2[] = filteredOrders.map(coerceOrder);
+    let typedLines: OrderLineV2[] = filteredLines.map(coerceLine);
+
+    if (categoryId) {
+      typedLines = typedLines.filter(l => {
+        try {
+          const snap = JSON.parse(l.product_snapshot_json || "{}");
+          return snap.category_id === categoryId;
+        } catch {
+          return false;
+        }
+      });
+      // If filtering by category, we only want orders that contain these lines
+      const validOrdersForCat = new Set(typedLines.map(l => l.order_id));
+      // typedOrders = typedOrders.filter(o => validOrdersForCat.has(o.id));
+      // Actually, standard behavior: totalRevenue only sums the filtered lines when category is picked?
+      // Wait, PnLDataV2 did not re-filter typedOrders. Let's keep it simple: totalRevenue from order.net_total
+      // But if category is selected, order.net_total includes other categories!
+      // To match V1 behavior, if category is selected, sales revenue = sum of line nets.
+    }
+
+    const totalRevenue = categoryId
+      ? typedLines.reduce((s, l) => s + l.net_line_total, 0)
+      : typedOrders.reduce((s, o) => s + o.net_total, 0);
+
+    const totalOrders = categoryId
+      ? new Set(typedLines.map(l => l.order_id)).size
+      : typedOrders.length;
+
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+    const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
+
+    const bestSellersMap = new Map<string, any>();
+    const bestToppingsMap = new Map<string, any>();
+    const uniqueSizesSet = new Set<string>();
+
+    for (const r of productRows) {
+      if (r.product_id.startsWith("MOD:")) {
+        const modId = r.product_id.replace("MOD:", "");
+        if (!bestToppingsMap.has(modId)) {
+          bestToppingsMap.set(modId, { modifier_id: modId, name: r.product_name, qty: 0, revenue: 0 });
+        }
+        const row = bestToppingsMap.get(modId);
+        row.qty += r.qty;
+        row.revenue += r.revenue;
+      } else {
+        if (!bestSellersMap.has(r.product_id)) {
+          bestSellersMap.set(r.product_id, {
+            product_id: r.product_id,
+            name: r.product_name,
+            totalQty: 0,
+            totalRevenue: 0,
+            sizes: {},
+          });
+        }
+        const row = bestSellersMap.get(r.product_id);
+        row.totalQty += r.qty;
+        row.totalRevenue += r.revenue;
+        if (r.size_name) {
+          row.sizes[r.size_name] = (row.sizes[r.size_name] || 0) + r.qty;
+          uniqueSizesSet.add(r.size_name);
+        }
+      }
+    }
+
+    const bestSellers = Array.from(bestSellersMap.values()).sort((a, b) => b.totalQty - a.totalQty);
+    const bestToppings = Array.from(bestToppingsMap.values()).sort((a, b) => b.qty - a.qty);
+    const uniqueSizes = Array.from(uniqueSizesSet).sort();
+
+    const totalQtyBySize: Record<string, number> = {};
+    let totalQtyAll = 0;
+    for (const item of bestSellers) {
+      for (const [sz, q] of Object.entries(item.sizes)) {
+        totalQtyBySize[sz] = (totalQtyBySize[sz] || 0) + (q as number);
+        totalQtyAll += (q as number);
+      }
+    }
+
+    // Time series (use typedOrders if no category, else filter orders to those containing lines)
+    let timeSeriesOrders = typedOrders;
+    if (categoryId) {
+      const validOrderIds = new Set(typedLines.map(l => l.order_id));
+      timeSeriesOrders = typedOrders.filter(o => validOrderIds.has(o.id));
+    }
+
+    const byDate = new Map<string, number>();
+    const byMonth = new Map<string, number>();
+    const byDayOfWeek = new Map<string, number>();
+    const byHour = new Map<string, number>();
+
+    const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+    for (const o of timeSeriesOrders) {
+      if (!o.created_at) continue;
+      const d = new Date(o.created_at);
+      const rev = categoryId
+        ? typedLines.filter(l => l.order_id === o.id).reduce((s, l) => s + l.net_line_total, 0)
+        : o.net_total;
+
+      const dateStr = d.toISOString().split("T")[0];
+      byDate.set(dateStr, (byDate.get(dateStr) || 0) + rev);
+
+      const monthStr = d.toISOString().substring(0, 7);
+      byMonth.set(monthStr, (byMonth.get(monthStr) || 0) + rev);
+
+      const dow = days[d.getDay()];
+      byDayOfWeek.set(dow, (byDayOfWeek.get(dow) || 0) + rev);
+
+      const hour = d.getHours().toString().padStart(2, "0") + ":00";
+      byHour.set(hour, (byHour.get(hour) || 0) + rev);
+    }
+
+    const sortMap = (m: Map<string, number>) =>
+      Array.from(m.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => a.label.localeCompare(b.label));
+
+    // Fix DOW sorting
+    const dowOrder = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+    const salesByDayOfWeek = Array.from(byDayOfWeek.entries())
+      .map(([label, amount]) => ({ label, amount }))
+      .sort((a, b) => dowOrder.indexOf(a.label) - dowOrder.indexOf(b.label));
+
+    return {
+      totalRevenue,
+      totalOrders,
+      avgOrderValue,
+      bestSellers,
+      bestToppings,
+      uniqueSizes,
+      totalQtyBySize,
+      totalQtyAll,
+      salesByDate: sortMap(byDate),
+      salesByMonth: sortMap(byMonth),
+      salesByDayOfWeek,
+      salesByHour: sortMap(byHour),
+      v2OrderCount: typedOrders.length,
+    };
+  } catch (err: any) {
+    console.error("[getSalesDataV2]", err);
+    return {
+      totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, bestSellers: [], bestToppings: [],
+      uniqueSizes: [], totalQtyBySize: {}, totalQtyAll: 0,
+      salesByDate: [], salesByMonth: [], salesByDayOfWeek: [], salesByHour: [],
+      v2OrderCount: 0,
+    };
+  }
+}
+
 function coerceOrder(row: any): OrderV2 {
   return {
     ...row,
