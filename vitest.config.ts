@@ -24,6 +24,7 @@ export default defineConfig({
         "lib/sheets-db-v2.ts",
         "lib/sheets-db-v2-edit.ts",
         "lib/report-v2-allocators.ts",
+        "lib/migrate-v1-to-v2.ts",
       ],
     },
   },
