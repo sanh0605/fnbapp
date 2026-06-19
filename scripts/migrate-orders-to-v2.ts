@@ -23,6 +23,8 @@ dotenv.config({ path: ".env.local" });
 const { findAllNoCache, insert, insertMany } = require("../lib/sheets_db");
 const { reconstructOrderV2 } = require("../lib/migrate-v1-to-v2");
 const { InvariantError } = require("../lib/order-types");
+const { computeLineCostAtSale } = require("../lib/order-cogs");
+const { parseLineRecipeSnapshot } = require("../lib/order-types");
 
 interface MigrationReport {
   generatedAt: string;
@@ -119,18 +121,18 @@ async function main() {
     try {
       const result = reconstructOrderV2(v1Order, orderV1Lines, v1Ledger, ref);
 
-      // Compute per-line cost_at_sale (distribute order ledger cost by line gross proportion)
+      // WS-7 fix: recompute cost_at_sale via MAC from PO_RECEIPT history.
+      // V1 Stock_Ledger had unit_cost = 0 for many entries (data quality issue),
+      // so we cannot trust V1's stored unit_cost. Instead, recompute MAC for each
+      // line using its recipe snapshot and historical PO_RECEIPT entries.
+      for (const line of result.lines) {
+        const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+        line.cost_at_sale = computeLineCostAtSale(lineRecipe, v1Ledger, Number(line.qty), v1Order.created_at);
+      }
+
       const orderLedger = v1Ledger.filter((l: any) =>
         l.reference_id === v1Order.id && l.transaction_type === "SALES_CONSUME",
       );
-      const orderLedgerCost = orderLedger.reduce((s: number, e: any) =>
-        s + (Number(e.unit_cost) || 0) * Math.abs(Number(e.quantity_change) || 0), 0);
-      const totalGross = result.lines.reduce((s: number, l: any) => s + l.gross_line_total, 0);
-      for (const line of result.lines) {
-        line.cost_at_sale = totalGross > 0
-          ? Math.round(orderLedgerCost * (line.gross_line_total / totalGross))
-          : 0;
-      }
 
       // Build V2 ledger entries (re-create from V1 ledger, link to new order + event)
       for (const oldEntry of orderLedger) {
