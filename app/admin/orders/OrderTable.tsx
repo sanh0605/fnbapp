@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { deleteOrder } from "@/app/actions/orders";
+import { CustomDatePicker } from "@/components/CustomDatePicker";
+import { voidOrderV2 } from "@/app/actions/orders-v2";
 import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
+import StickyFilterBar from "@/components/StickyFilterBar";
 
 interface OrderLine {
   id: string;
@@ -15,9 +15,11 @@ interface OrderLine {
   size_name: string;
   qty: number;
   unit_price: number;
-  line_discount: number;
-  discount_type: string;
-  modifiers_json?: string;
+  gross_line_total: number;
+  promo_discount: number;
+  manual_item_discount: number;
+  order_discount_allocation: number;
+  net_line_total: number;
   modifiers: any[];
 }
 
@@ -26,29 +28,58 @@ interface Order {
   order_no: string;
   display_order_no: string;
   brand_id: string;
-  total_amount: number;
-  subtotal_amount: number;
-  discount_amount: number;
-  discount_type: string;
+  status: string;
+  version: number;
+  parent_order_id: string;
+  gross_total: number;
+  promo_discount_total: number;
+  manual_item_discount_total: number;
+  manual_order_discount: number;
+  net_total: number;
   method: string;
-  staff_name: string;
+  created_by_name: string;
   created_at: string;
   lines: OrderLine[];
+}
+
+interface Brand {
+  id: string;
+  name: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+}
+
+interface Variant {
+  id: string;
+  size_name: string;
+}
+
+interface Modifier {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 export default function OrderTable({
   initialOrders, brands, products, variants, modifiers, categories
 }: {
   initialOrders: Order[];
-  brands: any[];
-  products: any[];
-  variants: any[];
-  modifiers: any[];
-  categories: any[];
+  brands: Brand[];
+  products: Product[];
+  variants: Variant[];
+  modifiers: Modifier[];
+  categories: Category[];
 }) {
   const [orders, setOrders] = useState(initialOrders);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [orderToVoid, setOrderToVoid] = useState<Order | null>(null);
+  const [voidReason, setVoidReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -88,25 +119,30 @@ export default function OrderTable({
   }, [orders, searchQuery, startDate, endDate, paymentFilter, brandFilter]);
 
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const currentOrders = filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const currentOrders = useMemo(() => 
+    filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
+    [filteredOrders, currentPage]
+  );
 
-  const confirmDelete = async () => {
-    if (!orderToDelete) return;
-    const orderId = orderToDelete.id;
-    const prevOrders = [...orders];
-    setOrders(orders.filter(o => o.id !== orderId));
-    setOrderToDelete(null);
-    const res = await deleteOrder(orderId);
+  const confirmVoid = async () => {
+    if (!orderToVoid || !voidReason.trim()) return;
+    const orderId = orderToVoid.id;
+    setOrderToVoid(null);
+    const res = await voidOrderV2(orderId, voidReason);
+    setVoidReason("");
     if (!res.success) {
-      setOrders(prevOrders);
-      alert("Lỗi xóa đơn: " + res.error);
+      alert("Lỗi hủy đơn: " + res.error);
+      return;
     }
+    // Reload to reflect changes
+    window.location.reload();
   };
 
-  const handleEditSave = (updatedOrder: Order) => {
-    setOrders(orders.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+  const handleEditSave = () => {
     setEditingOrder(null);
     setSelectedOrder(null);
+    // Reload since V2 edit creates a new row
+    window.location.reload();
   };
 
   const clearFilters = () => {
@@ -126,77 +162,80 @@ export default function OrderTable({
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   };
 
+  const rightContent = (
+    <>
+      {hasActiveFilters && (
+        <button
+          onClick={clearFilters}
+          className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition whitespace-nowrap"
+        >
+          Xóa bộ lọc
+        </button>
+      )}
+      <div className="text-xs font-bold text-gray-500 whitespace-nowrap px-3 py-1.5 bg-gray-100 rounded-lg">
+        {filteredOrders.length} / {orders.length}
+      </div>
+    </>
+  );
+
   return (
     <div className="space-y-4">
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-end gap-3">
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">Tìm mã đơn</label>
+      <StickyFilterBar 
+        rightContent={rightContent}
+        title="Quản lý Đơn hàng"
+        subtitle="Quản lý và xem lại tất cả các đơn hàng đã được tạo."
+      >
+        <div className="shrink-0">
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm mã đơn</label>
           <input
             type="text"
             placeholder="VD: PHD000001"
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            className="w-44 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">Từ ngày</label>
-          <DatePicker
+        <div className="shrink-0">
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Từ ngày</label>
+          <CustomDatePicker
             selected={startDate}
             onChange={(date: Date | null) => { setStartDate(date); setCurrentPage(1); }}
-            dateFormat="dd/MM/yyyy"
-            placeholderText="dd/mm/yyyy"
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            isClearable
+            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">Đến ngày</label>
-          <DatePicker
+        <div className="shrink-0">
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đến ngày</label>
+          <CustomDatePicker
             selected={endDate}
             onChange={(date: Date | null) => { setEndDate(date); setCurrentPage(1); }}
-            dateFormat="dd/MM/yyyy"
-            placeholderText="dd/mm/yyyy"
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            isClearable
+            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">PT thanh toán</label>
+        <div className="shrink-0">
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">PT thanh toán</label>
           <select
             value={paymentFilter}
             onChange={(e) => { setPaymentFilter(e.target.value); setCurrentPage(1); }}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả</option>
             <option value="Tien mat">Tiền mặt</option>
             <option value="Chuyen khoan">Chuyển khoản</option>
           </select>
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">Thương hiệu</label>
+        <div className="shrink-0">
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Thương hiệu</label>
           <select
             value={brandFilter}
             onChange={(e) => { setBrandFilter(e.target.value); setCurrentPage(1); }}
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả</option>
             {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition"
-          >
-            Xóa bộ lọc
-          </button>
-        )}
-        <div className="ml-auto text-sm text-gray-500">
-          {filteredOrders.length} / {orders.length} đơn hàng
-        </div>
-      </div>
+      </StickyFilterBar>
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -223,11 +262,16 @@ export default function OrderTable({
                 currentOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className={`hover:bg-gray-50 transition-colors cursor-pointer ${deletingId === order.id ? "opacity-50" : ""}`}
+                    className={`hover:bg-gray-50 transition-colors cursor-pointer`}
                     onClick={() => setSelectedOrder(order)}
                   >
                     <td className="px-6 py-4 font-bold text-gray-900">
                       {order.display_order_no || order.order_no}
+                      {order.parent_order_id && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800">
+                          v{order.version}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {formatDate(order.created_at)}
@@ -247,7 +291,7 @@ export default function OrderTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-orange-600">
-                      {Number(order.total_amount || 0).toLocaleString("vi-VN")} đ
+                      {Number(order.net_total || 0).toLocaleString("vi-VN")} đ
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${order.method === 'Chuyen khoan' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
@@ -256,11 +300,11 @@ export default function OrderTable({
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
-                        onClick={(e) => { e.stopPropagation(); setOrderToDelete(order); }}
-                        disabled={deletingId === order.id}
-                        className="text-red-500 hover:text-red-700 font-medium px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
+                        disabled={order.status !== "COMPLETED"}
+                        className="text-red-500 hover:text-red-700 font-medium px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
                       >
-                        {deletingId === order.id ? "Đang xóa..." : "Xóa đơn"}
+                        Hủy đơn
                       </button>
                     </td>
                   </tr>
@@ -298,34 +342,42 @@ export default function OrderTable({
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {orderToDelete && (
+      {/* Void Confirmation Modal */}
+      {orderToVoid && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl flex flex-col overflow-hidden">
             <div className="p-5 border-b border-gray-100 bg-red-50 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl shrink-0">
-                !
-              </div>
+              <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl shrink-0">!</div>
               <div>
-                <h3 className="font-bold text-red-800">Xác nhận xóa đơn</h3>
-                <p className="text-sm text-red-600 font-medium">{orderToDelete.display_order_no || orderToDelete.order_no}</p>
+                <h3 className="font-bold text-red-800">Hủy đơn hàng</h3>
+                <p className="text-sm text-red-600 font-medium">{orderToVoid.display_order_no}</p>
               </div>
             </div>
-            <div className="p-5 text-gray-600 text-sm leading-relaxed">
-              Có chắc chắn muốn xóa đơn hàng này không? Xóa sẽ hoàn trả toàn bộ nguyên vật liệu của đơn này vào kho. Thao tác này không thể hoàn tác.
+            <div className="p-5 space-y-3">
+              <p className="text-gray-600 text-sm">
+                Đơn sẽ chuyển sang trạng thái VOIDED. Nguyên liệu sẽ được hoàn trả vào kho. Lịch sử đơn được giữ nguyên.
+              </p>
+              <textarea
+                placeholder="Lý do hủy đơn (bắt buộc)"
+                value={voidReason}
+                onChange={(e) => setVoidReason(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500"
+              />
             </div>
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-3">
               <button
-                onClick={() => setOrderToDelete(null)}
-                className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                onClick={() => { setOrderToVoid(null); setVoidReason(""); }}
+                className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50"
               >
                 Hủy bỏ
               </button>
               <button
-                onClick={confirmDelete}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-sm shadow-red-200 transition-colors"
+                onClick={confirmVoid}
+                disabled={!voidReason.trim()}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 disabled:opacity-50"
               >
-                Đồng ý xóa
+                Đồng ý hủy
               </button>
             </div>
           </div>
@@ -339,7 +391,7 @@ export default function OrderTable({
           brands={brands}
           onClose={() => setSelectedOrder(null)}
           onEdit={() => setEditingOrder(selectedOrder)}
-          onDelete={() => { setOrderToDelete(selectedOrder); setSelectedOrder(null); }}
+          onDelete={() => { setOrderToVoid(selectedOrder); setSelectedOrder(null); }}
         />
       )}
 
