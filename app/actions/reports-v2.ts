@@ -50,13 +50,23 @@ export interface PnLReportResult {
 
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   try {
-    const [orders, orderLines, baseIngredients, semiProducts, units] = await Promise.all([
+    const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes] = await Promise.all([
       findAllNoCache("Orders_V2"),
       findAllNoCache("Order_Lines_V2"),
       findAll("Base_Ingredients"),
       findAll("Semi_Products"),
       findAll("Units"),
+      findAllNoCache("Stock_Ledger"),
+      findAll("Recipes"),
     ]);
+
+    // Build SemiProductContext for SP-aware COGS computation (WS-10)
+    const spRecipes = (recipes as any[]).filter(r => r.target_type === "SEMI_PRODUCT");
+    const spYields = new Map<string, number>();
+    for (const sp of semiProducts as any[]) {
+      spYields.set(sp.id, Number(sp.batch_yield) || 1);
+    }
+    const spContext = { recipes: spRecipes, yields: spYields };
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
 
@@ -138,8 +148,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       .sort((a, b) => b.grossProfit - a.grossProfit);
 
     // Add topping rows (modifiers as pseudo-products)
-    // WS-7 fix: compute topping COGS from modifier-source ingredients
-    const cogsBySource = breakdownCOGSBySource(typedLines);
+    // WS-10 fix: compute topping COGS from modifier-source MAC (resolves SEMI_PRODUCTs)
+    const cogsBySource = breakdownCOGSBySource(typedLines, typedOrders, ledger as any[], spContext);
     const toppingCogsById = new Map(
       cogsBySource.modifierRows.map(r => [r.modifier_id, r.cogs]),
     );

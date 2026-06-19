@@ -146,10 +146,10 @@ describe("breakdownCOGSBySource", () => {
     expect(result.modifierRows).toEqual([]);
   });
 
-  it("attributes cost to variant only when no modifier recipe", () => {
+  it("attributes cost to variant only when no modifier recipe (WS-10 MAC-based)", () => {
     const lines = [{
       ...makeSuaDauStandaloneOrder().lines[0],
-      cost_at_sale: 12000,
+      qty: 1,
       recipe_snapshot_json: JSON.stringify({
         variant: {
           target_type: "PRODUCT_VARIANT", target_id: "VAR-031",
@@ -158,17 +158,24 @@ describe("breakdownCOGSBySource", () => {
         modifiers: [],
       }),
     }] as any;
-    const result = breakdownCOGSBySource(lines);
+    const ledger = [
+      { item_reference: "BI-MILK", transaction_type: "PO_RECEIPT", unit_cost: "240000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+    ];
+    const result = breakdownCOGSBySource(lines, [], ledger);
     expect(result.variantRows.length).toBe(1);
     expect(result.variantRows[0].ingredient_id).toBe("BI-MILK");
-    expect(result.variantRows[0].cogs).toBe(12000);
+    expect(result.variantRows[0].cogs).toBe(12000); // 0.05L × 240k/L
     expect(result.modifierRows).toEqual([]);
   });
 
-  it("splits cost between variant and modifier when both have ingredients", () => {
+  it("WS-10 fix: computes per-source MAC from ledger (not proportional split)", () => {
+    // Setup: line with variant (BI-MILK 0.05L) + modifier (BI-PEARL 0.03kg)
+    // Ledger: BI-MILK @ 200k/L, BI-PEARL @ 50k/kg
+    // Expected: variant MAC = 0.05L × 200k/L = 10000
+    //           modifier MAC = 0.03kg × 50k/kg = 1500
     const lines = [{
       ...makeSuaDauStandaloneOrder().lines[0],
-      cost_at_sale: 10000,
+      qty: 1,
       modifiers_snapshot_json: JSON.stringify([{ id: "MOD-PEARL", name: "Trân châu", price: 5000, qty: 1 }]),
       recipe_snapshot_json: JSON.stringify({
         variant: {
@@ -184,14 +191,68 @@ describe("breakdownCOGSBySource", () => {
         }],
       }),
     }] as any;
-    const result = breakdownCOGSBySource(lines);
-    // variant: 0.05L, modifier: 0.03kg → 50/50 split (by quantity)
-    // cost_at_sale 10k split: variant 5k, modifier 5k
+
+    const ledger = [
+      { item_reference: "BI-MILK", transaction_type: "PO_RECEIPT", unit_cost: "200000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "BI-PEARL", transaction_type: "PO_RECEIPT", unit_cost: "50000", quantity_change: "5", created_at: "2026-06-01T00:00:00Z" },
+    ];
+
+    const result = breakdownCOGSBySource(lines, [], ledger);
+
     const totalVariant = result.variantRows.reduce((s, r) => s + r.cogs, 0);
     const totalModifier = result.modifierRows.reduce((s, r) => s + r.cogs, 0);
-    expect(totalVariant + totalModifier).toBe(10000);
-    expect(result.modifierRows.length).toBe(1);
+    expect(totalVariant).toBe(10000); // 0.05L × 200k/L
+    expect(totalModifier).toBe(1500); // 0.03kg × 50k/kg
     expect(result.modifierRows[0].modifier_id).toBe("MOD-PEARL");
-    expect(result.modifierRows[0].cogs).toBeGreaterThan(0);
+  });
+
+  it("WS-10 fix: resolves SEMI_PRODUCT ingredients via spContext", () => {
+    // Setup: modifier uses SEMI_PRODUCT BTP-001 (Cốt cà phê)
+    // BTP-001 recipe: NNL-002 (200), NNL-003 (650) per batch_yield 500
+    // Line uses 20 BTP-001 (per MOD-001 recipe)
+    // Per unit of BTP-001: NNL-002 = 200/500 = 0.4, NNL-003 = 650/500 = 1.3
+    // Total NNL-002 used = 0.4 × 20 = 8
+    // Total NNL-003 used = 1.3 × 20 = 26
+    // MAC NNL-002: 100k/u → 8 × 100k = 800k?? That seems wrong. Let me check.
+    // Actually MAC is per unit. If NNL-002 unit_cost is 100/u, MAC = 100. 8 × 100 = 800.
+    // If NNL-003 unit_cost is 50/u, MAC = 50. 26 × 50 = 1300.
+    // Total modifier cost = 800 + 1300 = 2100
+    const lines = [{
+      ...makeSuaDauStandaloneOrder().lines[0],
+      qty: 1,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-001", name: "20ml cốt cà phê", price: 3000, qty: 1 }]),
+      recipe_snapshot_json: JSON.stringify({
+        variant: { target_type: "PRODUCT_VARIANT", target_id: "", ingredients: [] },
+        modifiers: [{
+          modifier_id: "MOD-001", modifier_name: "20ml cốt cà phê",
+          recipe: {
+            target_type: "MODIFIER", target_id: "MOD-001",
+            ingredients: [{ ingredient_id: "BTP-001", ingredient_type: "SEMI_PRODUCT", quantity: 20, unit_id: "ml" }],
+          },
+        }],
+      }),
+    }] as any;
+
+    const ledger = [
+      { item_reference: "NNL-002", transaction_type: "PO_RECEIPT", unit_cost: "100", quantity_change: "1000", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "NNL-003", transaction_type: "PO_RECEIPT", unit_cost: "50", quantity_change: "1000", created_at: "2026-06-01T00:00:00Z" },
+    ];
+
+    const spContext = {
+      recipes: [
+        { target_id: "BTP-001", ingredients_json: JSON.stringify([
+          { ingredient_id: "NNL-002", ingredient_type: "BASE_INGREDIENT", quantity: 200 },
+          { ingredient_id: "NNL-003", ingredient_type: "BASE_INGREDIENT", quantity: 650 },
+        ]) },
+      ],
+      yields: new Map([["BTP-001", 500]]),
+    };
+
+    const result = breakdownCOGSBySource(lines, [], ledger, spContext);
+    const totalModifier = result.modifierRows.reduce((s, r) => s + r.cogs, 0);
+    // NNL-002: 200/500 × 20 × 100 = 800
+    // NNL-003: 650/500 × 20 × 50 = 1300
+    // Total = 2100
+    expect(totalModifier).toBe(2100);
   });
 });

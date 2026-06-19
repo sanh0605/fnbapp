@@ -11,6 +11,7 @@
 import { allocateLineRevenue } from "@/lib/order-math";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
 import type { OrderV2, OrderLineV2, LineForAllocation } from "@/lib/order-types";
+import { computeLineCostAtSale } from "@/lib/order-cogs";
 
 export interface ProductRevenueRow {
   product_id: string;
@@ -148,55 +149,73 @@ export interface ModifierCOGSRow {
  * Break down COGS by source: variant recipe ingredients vs modifier recipe ingredients.
  * Used by PnL report to attribute COGS to toppings (modifiers), not just drinks (variants).
  *
- * Sum of all `cogs` across both arrays = sum of line.cost_at_sale.
+ * WS-10 fix: replaced proportional-qty split (which under-attributed expensive toppings
+ * like 20ml cốt cà phê) with accurate MAC per source. Resolves SEMI_PRODUCT ingredients
+ * via spContext.
+ *
+ * @param lines - V2 order lines
+ * @param orders - V2 orders (for sale time lookup)
+ * @param ledger - Stock_Ledger for MAC computation
+ * @param spContext - Semi-product recipes + yields (for SP resolution)
  */
 export function breakdownCOGSBySource(
   lines: OrderLineV2[],
+  orders: any[] = [],
+  ledger: any[] = [],
+  spContext?: any,
 ): { variantRows: IngredientCOGSRow[]; modifierRows: ModifierCOGSRow[] } {
   const variantMap = new Map<string, { cogs: number; qty: number }>();
   const modifierMap = new Map<string, { cogs: number; qty: number; name: string }>();
 
+  // Build order lookup for sale time
+  const orderById = new Map<string, any>();
+  for (const o of orders) orderById.set(o.id, o);
+
+  // Load computeLineCostAtSale lazily (avoid circular import issues)
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+
   for (const line of lines) {
-    if (line.cost_at_sale <= 0) continue;
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+    const order = orderById.get(line.order_id);
+    const saleTime = order?.created_at || new Date().toISOString();
+    const qty = line.qty;
 
-    // Compute total ingredient qty for this line (variant + modifiers)
-    const variantQty = lineRecipe.variant.ingredients.reduce((s, i) => s + i.quantity * line.qty, 0);
-    const modifierQty = lineRecipe.modifiers.reduce((s, m) =>
-      s + m.recipe.ingredients.reduce((ms, i) => ms + i.quantity * line.qty, 0), 0);
-    const totalQty = variantQty + modifierQty;
-    if (totalQty <= 0) continue;
+    // Compute variant-only MAC for this line
+    const variantRecipeOnly = { variant: lineRecipe.variant, modifiers: [] };
+    const variantMAC = computeLineCostAtSale(variantRecipeOnly, ledger, qty, saleTime, spContext);
 
-    // Allocate line.cost_at_sale proportionally
-    const variantShare = variantQty / totalQty;
-    const modifierShare = modifierQty / totalQty;
-    const variantCogs = Math.round(line.cost_at_sale * variantShare);
-    const modifierCogs = Math.round(line.cost_at_sale * modifierShare);
-
-    // Variant ingredient-level breakdown (for ingredient PnL section)
-    for (const ing of lineRecipe.variant.ingredients) {
-      const ingQty = ing.quantity * line.qty;
-      const ingShare = variantQty > 0 ? ingQty / variantQty : 0;
-      if (!variantMap.has(ing.ingredient_id)) {
-        variantMap.set(ing.ingredient_id, { cogs: 0, qty: 0 });
+    if (variantMAC > 0) {
+      // Distribute variant MAC across ingredients proportionally by their contribution
+      // (This is approximate at ingredient level, accurate at variant-source level)
+      const totalIngQty = lineRecipe.variant.ingredients.reduce((s, i) => s + i.quantity * qty, 0);
+      for (const ing of lineRecipe.variant.ingredients) {
+        const ingQty = ing.quantity * qty;
+        const share = totalIngQty > 0 ? ingQty / totalIngQty : 0;
+        if (!variantMap.has(ing.ingredient_id)) {
+          variantMap.set(ing.ingredient_id, { cogs: 0, qty: 0 });
+        }
+        const row = variantMap.get(ing.ingredient_id)!;
+        row.cogs += Math.round(variantMAC * share);
+        row.qty += ingQty;
       }
-      const row = variantMap.get(ing.ingredient_id)!;
-      row.cogs += Math.round(variantCogs * ingShare);
-      row.qty += ingQty;
     }
 
-    // Modifier-level breakdown (for topping PnL section)
+    // Compute modifier-only MAC for each modifier
     for (const modEntry of lineRecipe.modifiers) {
+      const modOnlyRecipe = {
+        variant: { target_type: "PRODUCT_VARIANT" as const, target_id: "", ingredients: [] as any[] },
+        modifiers: [modEntry],
+      };
+      const modMAC = computeLineCostAtSale(modOnlyRecipe, ledger, qty, saleTime, spContext);
+
       if (!modifierMap.has(modEntry.modifier_id)) {
         modifierMap.set(modEntry.modifier_id, {
           cogs: 0, qty: 0, name: modEntry.modifier_name,
         });
       }
       const modRow = modifierMap.get(modEntry.modifier_id)!;
-      const modIngQty = modEntry.recipe.ingredients.reduce((s, i) => s + i.quantity * line.qty, 0);
-      const modShare = modifierQty > 0 ? modIngQty / modifierQty : 0;
-      modRow.cogs += Math.round(modifierCogs * modShare);
-      modRow.qty += line.qty * Number(
+      modRow.cogs += modMAC;
+      modRow.qty += qty * Number(
         JSON.parse(line.modifiers_snapshot_json || "[]").find((m: any) => m.id === modEntry.modifier_id)?.qty || 1
       );
     }
