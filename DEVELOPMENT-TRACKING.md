@@ -4,6 +4,59 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-19 — WS-3 Admin Edit Path Complete
+
+**Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
+**Plan:** `docs/superpowers/plans/2026-06-19-orders-reports-rebuild-ws3-edit-path.md`
+
+### What landed
+
+- **Snapshot definitions:** `LineRecipeSnapshot`, `ModifierRecipeEntry`, `parseLineRecipeSnapshot` in `lib/order-types.ts` to support both variant and modifier ingredients.
+- **Edit business logic:** `lib/order-edit-cart.ts` → `buildEditedOrderFromCart` which reconstructs an `OrderV2` with `version + 1` and `parent_order_id` chaining.
+- **Sheets DB Edit Path:** `lib/sheets-db-v2-edit.ts` → `supersedeOrderV2` handles batched transaction: old order → SUPERSEDED, new order → COMPLETED, insert events, insert reversal stock ledger, insert new stock ledger.
+- **Server Actions:**
+  - `app/actions/order-edit-v2.ts` → `editOrderV2` (resolves reference data, computes COGS at original sale time, calls supersede).
+  - `app/actions/orders-v2.ts` → `getOrdersV2`, `getOrderDetailV2` (builds timeline/events), `voidOrderV2`.
+- **Admin UI Migration:**
+  - `app/admin/orders/page.tsx` & `OrderTable.tsx`: Migrated to V2 read path, removed destructive delete.
+  - `OrderDetailModal.tsx`: Displays version timeline, full money breakdown, and events log.
+  - `OrderEditModal.tsx`: Replaced payload construction with V2 cart shape, required edit reason, passing expectedVersion for optimistic locking.
+- **Smoke test scripts:**
+  - `scripts/test-edit-order-v2.ts`
+  - `scripts/test-void-order-v2.ts`
+
+### Verification gates (all passed)
+
+- `rtk npm test` — 82/82 tests pass (added tests for `order-edit-cart`, `sheets-db-v2-edit`)
+- `rtk tsc --noEmit` — 0 errors in WS-3 files
+- `rtk npm run test:coverage` — >90% coverage on new edit files.
+- Live smoke test: Edit script correctly verified `SUPERSEDED` old version and `COMPLETED` new version, with proper 1-to-1 stock ledger reversals. Void script correctly set `VOIDED` with proper reversals.
+- Browser smoke test: Version timeline correctly shows `v1 (đã thay thế)` and `v2`. Voiding works and logs events.
+
+### Known gaps (deferred to WS-4 / WS-5)
+
+- Reports still read V1 — WS-4 will switch PnL/Sales/Stock to read V2.
+- Legacy `app/actions/pos.ts`, `order-edit.ts`, `orders.ts` still in code — WS-5 archives them.
+- `Stock_Ledger` mixes V1 (`ORD-*` ids) and V2 (`ord-*` ids) reference_ids — WS-4 will distinguish.
+
+### Commits (in order)
+
+| Hash | Subject |
+|---|---|
+| f4c1eb2 | feat(orders-v2): modifier recipe snapshots in types |
+| c76288b | feat(orders-v2): order edit cart builder for version chaining |
+| d3593b4 | feat(orders-v2): supersede order database helper with optimistic locking |
+| f56a1b1 | feat(orders-v2): editOrderV2 server action |
+| e27a8bc | feat(orders-v2): getOrdersV2, getOrderDetailV2, voidOrderV2 actions |
+| 5b6c2d1 | refactor(orders-v2): migrate admin orders table to V2 read path |
+| d94a1d3 | fix(orders-v2): always use removeMany in cleanup loop |
+| 396b400 | feat(orders-v2): admin detail + edit modals migrated to V2 |
+| 9844d38 | test(orders-v2): smoke tests for edit and void flows |
+
+### Next: WS-4 (Reports)
+
+Claude to draft plan. Will define `getPnLDataV2`, `getSalesDataV2`, `getRealtimeStockV2` that read V2 sheets only. Replaces `lib/report-utils.ts` with V2-based allocation. Adds reconciliation check (V1 vs V2 totals) for migrated data.
+
 ## 2026-06-19 — WS-2 POS Write Path Complete
 
 **Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
