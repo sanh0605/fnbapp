@@ -80,13 +80,23 @@ export function allocateOrderDiscount(
  * Allocates a line's net revenue back to its variant and modifiers
  * for per-product reporting.
  *
- * Strategy: apply a single ratio across all components of the line.
- *   ratio = (gross - totalDiscount) / gross   (floored at 0)
+ * Strategy (WS-8 fix): 2-stage allocation.
+ *
+ * Stage 1: Variant absorbs promo + manual_item discounts first.
+ *   - Promos (PRODUCT_DISCOUNT) target the variant specifically.
+ *   - Manual item discounts are typically cashier reductions on the main item.
+ *   - variantNet = max(0, grossVariant - promo - manual_item)
+ *
+ * Stage 2: Order_discount_allocation distributed proportionally across
+ * (variantNet + modifiers). This is the only discount that conceptually
+ * applies to the whole line.
+ *   - ratio = max(0, 1 - order_alloc / (variantNet + grossModifiers))
+ *   - variantRevenue = round(variantNet * ratio)
+ *   - modifierRevenue[id] = round(grossMod * ratio)
  *
  * The `lineRevenue` returned equals the stored net (gross - all discounts).
- * `variantRevenue + sum(modifierRevenue)` may differ by ±1đ due to
- * rounding per component; consumers that need the exact line total must
- * use `lineRevenue`, not sum the components.
+ *
+ * Spec: docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md (section 6.1)
  */
 export function allocateLineRevenue(line: LineForAllocation): AllocatedRevenue {
   const grossVariant = line.unit_price * line.qty;
@@ -96,17 +106,22 @@ export function allocateLineRevenue(line: LineForAllocation): AllocatedRevenue {
   );
   const grossLine = grossVariant + grossModifiers;
 
-  const totalDiscount =
-    line.promo_discount + line.manual_item_discount + line.order_discount_allocation;
+  // Stage 1: variant absorbs promo + manual_item first (capped at 0)
+  const variantNet = Math.max(0, grossVariant - line.promo_discount - line.manual_item_discount);
 
-  const lineRevenue = Math.max(0, grossLine - totalDiscount);
-  const ratio = grossLine > 0 ? lineRevenue / grossLine : 0;
+  // Stage 2: order_discount_allocation proportional across remaining
+  const totalAvailable = variantNet + grossModifiers;
+  const orderAllocEffective = Math.min(line.order_discount_allocation, totalAvailable);
+  const ratio = totalAvailable > 0 ? Math.max(0, 1 - orderAllocEffective / totalAvailable) : 0;
 
-  const variantRevenue = Math.round(grossVariant * ratio);
+  const variantRevenue = Math.round(variantNet * ratio);
   const modifierRevenue: Record<string, number> = {};
   for (const m of line.modifiers) {
     modifierRevenue[m.id] = Math.round(m.price * m.qty * line.qty * ratio);
   }
+
+  // lineRevenue = stored net (gross - all discounts). Independent of allocation.
+  const lineRevenue = Math.max(0, grossLine - line.promo_discount - line.manual_item_discount - line.order_discount_allocation);
 
   return { variantRevenue, modifierRevenue, lineRevenue };
 }

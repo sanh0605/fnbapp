@@ -165,8 +165,12 @@ describe("allocateLineRevenue", () => {
     expect(result.lineRevenue).toBe(60000);
   });
 
-  it("applies a single ratio across variant and modifiers", () => {
-    // gross = 80000 (variant 60k + modifiers 20k), discount 20000 → ratio 0.75
+  it("promo attributes to variant first; modifiers stay full price (WS-8 fix)", () => {
+    // gross_line = 80000 (variant 60k + modifiers 20k), promo 20000 on variant only
+    // WS-8 fix: promo + manual_item go to VARIANT first, then order_alloc proportional.
+    //
+    // Old (WS-1, buggy): single ratio 0.75 applied to everything → variant 45k, topping 15k total
+    // New (WS-8, correct): variantNet = 60k - 20k = 40k, modifiers full 20k, ratio 1.0
     const line: LineForAllocation = {
       unit_price: 30000,
       qty: 2,
@@ -181,11 +185,30 @@ describe("allocateLineRevenue", () => {
       order_discount_allocation: 0,
     };
     const result = allocateLineRevenue(line);
-    expect(result.variantRevenue).toBe(45000); // 60000 * 0.75
-    expect(result.modifierRevenue["MOD-ICE"]).toBe(0); // 0 * 0.75
-    expect(result.modifierRevenue["MOD-SUGAR"]).toBe(3000); // 4000 * 0.75
-    expect(result.modifierRevenue["MOD-CHEESE"]).toBe(12000); // 16000 * 0.75
-    expect(result.lineRevenue).toBe(60000); // 80000 - 20000
+    expect(result.variantRevenue).toBe(40000); // 60k variant - 20k promo = 40k (full)
+    expect(result.modifierRevenue["MOD-ICE"]).toBe(0);
+    expect(result.modifierRevenue["MOD-SUGAR"]).toBe(4000); // 2000 × 2 × 1.0 = 4000 (full)
+    expect(result.modifierRevenue["MOD-CHEESE"]).toBe(16000); // 8000 × 2 × 1.0 = 16000 (full)
+    expect(result.lineRevenue).toBe(60000); // 80000 - 20000 (gross - all discounts)
+  });
+
+  it("order_discount_allocation distributes proportionally across variant + modifiers (WS-8)", () => {
+    // Variant 25k (after promo), topping 5k → total 30k. Order_alloc 3k.
+    // ratio = 1 - 3/30 = 0.9 → variant 22.5k, topping 4.5k
+    const line: LineForAllocation = {
+      unit_price: 35000,
+      qty: 1,
+      modifiers: [{ id: "MOD-X", name: "X", price: 5000, qty: 1 }],
+      gross_line_total: 40000,
+      promo_discount: 10000,
+      manual_item_discount: 0,
+      order_discount_allocation: 3000,
+    };
+    const result = allocateLineRevenue(line);
+    // variantNet = 35k - 10k = 25k; totalAvailable = 30k; ratio = 0.9
+    expect(result.variantRevenue).toBe(22500); // 25k × 0.9 = 22500
+    expect(result.modifierRevenue["MOD-X"]).toBe(4500); // 5k × 0.9 = 4500
+    expect(result.lineRevenue).toBe(27000); // 40k - 10k - 3k
   });
 
   it("lineRevenue equals stored net (gross - all discounts)", () => {
