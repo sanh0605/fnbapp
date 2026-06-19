@@ -4,7 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
-## 2026-06-19 — WS-5 LIVE MIGRATION EXECUTED
+## 2026-06-19 — WS-6 Polish + Decommission Complete
+
+### What landed
+- Dashboard migrated to V2 (app/admin/page.tsx): reads Orders_V2, uses breakdownRevenueByProduct, drops computeLineRevenue
+- lib/report-utils.ts archived to _legacy/lib/
+- scripts/rename-v1-sheets-to-legacy.ts: idempotent V1 sheet rename
+
+### Verification gates (all passed)
+- rtk npm test: 107/107 tests pass
+- rtk tsc --noEmit: 0 errors (admin/page.tsx + report-utils.ts pre-existing errors resolved)
+- Browser smoke test: all 8 paths load correctly
+- Reconciliation: V1→V2 drift 25.000đ (acceptable, 1 extra V2 order from testing)
+
+### Final state
+- V2 system fully operational
+- V1 sheets rename script ready for live
+- _legacy/ folder contains 5 action files + report-utils.ts (kept for reference, can be deleted by User after 30 days stable)
+
+### Project Status: V2 REBUILD COMPLETE
+
+---
 
 **Operator:** Claude (User-authorized 2026-06-19)
 **Runbook:** `docs/runbooks/orders-v2-cutover.md`
