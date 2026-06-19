@@ -78,7 +78,9 @@ describe("insertOrderV2Records", () => {
     const result = await insertOrderV2Records({ order, lines, event, ledgerEntries: [] });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/lines failed/);
+    if (!result.success) {
+      expect(result.error).toMatch(/lines failed/);
+    }
     expect(removeMany).toHaveBeenCalledWith("Orders_V2", [order.id]); // cleanup
   });
 

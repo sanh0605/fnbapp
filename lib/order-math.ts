@@ -42,18 +42,30 @@ export function allocateOrderDiscount(
   const totalCapacity = eligible.reduce((s, l) => s + l.capacity, 0);
   const target = Math.min(orderDiscount, totalCapacity);
 
-  let allocated = 0;
-  for (let i = 0; i < eligible.length; i++) {
-    const l = eligible[i];
-    if (i === eligible.length - 1) {
-      // Last line absorbs rounding residual.
-      const residual = target - allocated;
-      result.set(l.line_id, Math.min(residual, l.capacity));
-    } else {
-      const proportional = Math.round((target * l.capacity) / totalCapacity);
-      const capped = Math.min(proportional, l.capacity);
-      result.set(l.line_id, capped);
-      allocated += capped;
+  let remainingTarget = target;
+  let remainingCapacity = totalCapacity;
+
+  for (const l of eligible) {
+    if (remainingCapacity <= 0) break;
+    let alloc = Math.round((remainingTarget * l.capacity) / remainingCapacity);
+    alloc = Math.min(alloc, l.capacity);
+    result.set(l.line_id, alloc);
+    remainingTarget -= alloc;
+    remainingCapacity -= l.capacity;
+  }
+
+  // If there's still target left (due to rounding down and capping),
+  // distribute it to any line that still has capacity.
+  if (remainingTarget > 0) {
+    for (const l of eligible) {
+      if (remainingTarget <= 0) break;
+      const current = result.get(l.line_id)!;
+      if (current < l.capacity) {
+        const space = l.capacity - current;
+        const add = Math.min(space, remainingTarget);
+        result.set(l.line_id, current + add);
+        remainingTarget -= add;
+      }
     }
   }
 
