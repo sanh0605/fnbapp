@@ -4,6 +4,82 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-19 — WS-4 Reports V2 Complete
+
+**Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
+**Plan:** `docs/superpowers/plans/2026-06-19-orders-reports-rebuild-ws4-reports.md`
+
+### What landed
+
+- **Pure report allocators:** `lib/report-v2-allocators.ts`
+  - `breakdownRevenueByProduct(orders, lines)` — wraps WS-1 `allocateLineRevenue`; sum of all `revenue` fields equals sum of order `net_total`
+  - `breakdownCOGSByIngredient(lines)` — wraps WS-3 `parseLineRecipeSnapshot`; sum of all `cogs` fields equals sum of line `cost_at_sale`
+- **Server actions:** `app/actions/reports-v2.ts`
+  - `getPnLDataV2(filters)` — reads V2 (latest COMPLETED versions only), sums stored `net_total` + `cost_at_sale`. Per-product breakdown via Task 1 allocator.
+  - `getSalesDataV2(filters)` — time series (date/DOW/hour/month), best sellers by product+size, best toppings, category pie.
+- **UI migration:**
+  - `app/admin/reports/pnl/page.tsx` — calls `getPnLDataV2`, amber banner when 0 orders in range
+  - `app/admin/reports/sales/page.tsx` — calls `getSalesDataV2`, amber banner when 0 orders in range
+  - `app/admin/reports/stock/page.tsx` — UNCHANGED (self-balancing ledger already handles V2 EDIT_REVERSAL)
+- **Scripts:**
+  - `scripts/reconcile-v1-v2.ts` — compares V1 vs V2 totals; flags drift > 1đ/order
+  - `scripts/test-pnl-v2.ts` — smoke test: create order via V2 → verify PnL shows it
+
+### Pre-migration state (verified by reconciliation script)
+
+- V1 has 396 orders, ~12.18M VND total revenue (legacy data)
+- V2 has 4 orders (smoke test artifacts), 125k VND
+- Reports PnL/Sales will show empty for any historical date range until WS-5 migrates V1 → V2
+- Stock report unaffected — `getRealtimeStock` self-balances ledger entries
+
+### Verification gates (all passed)
+
+- `rtk npm test` — **100/100 pass** (10 test files; WS-4 adds 10 unit tests for allocators + 8 for reports-v2 action)
+- `rtk tsc --noEmit` — 0 errors in WS-4 files
+- `rtk npm run test:coverage` — 96.34% stmts / 100% funcs across 9 tracked files:
+  - `report-v2-allocators.ts`: 97.1% (new)
+  - `order-edit-cart.ts`: 100%
+  - `order-cart.ts`: 96.27%
+  - `sheets-db-v2.ts`: 97.53%
+  - `sheets-db-v2-edit.ts`: 96.55%
+  - `order-types.ts`: 95.11%
+  - `order-cogs.ts`: 100%
+  - `order-math.ts`: 92.44% (defensive 2-pass code)
+  - `order-snapshot.ts`: 99.18%
+- Reconciliation script runs cleanly, correctly flags drift > 1đ tolerance
+- PnL smoke test PASSED: order created via V2 → PnL shows it with correct revenue 25k and margin 50.32%
+
+### Known gaps deferred to WS-5
+
+- V1 → V2 migration script not yet written — reports show empty for historical ranges
+- Legacy `app/actions/pos.ts`, `order-edit.ts`, `orders.ts`, `reports.ts` + `lib/report-utils.ts` still in code — archived in WS-5
+- V2 sheets contain smoke test orders (TEST*, PHD*, UCK*) — should be cleaned up before WS-5 cutover via `scripts/cleanup-test-orders-v2.ts`
+- Reconciliation script depends on V1 still existing; after WS-5 archives V1, script won't have V1 side
+
+### Commits (in order)
+
+| Hash | Subject |
+|---|---|
+| 42541ad | feat(orders-v2): report allocators using stored V2 values |
+| 5425abe | feat(orders-v2): getPnLDataV2 reads V2 with stored values |
+| 18092a2 | feat(orders-v2): migrate Sales report UI to getSalesDataV2 |
+| 7e40932 | feat(orders-v2): migrate PnL report UI to getPnLDataV2 |
+| debaf41 | feat(orders-v2): V1 vs V2 reconciliation script |
+| 6513d73 | test(orders-v2): PnL V2 smoke test script |
+| 6b91242 | chore(orders-v2): add report allocators to coverage |
+
+### Closeout follow-up (Claude review pass)
+
+- Updated DEVELOPMENT-TRACKING.md with WS-4 section (Antigravity missed Task 7 Step 7)
+- Verified reconciliation script correctly shows pre-migration drift (396 V1 vs 4 V2 orders)
+- Verified PnL smoke test passes end-to-end
+
+### Next: WS-5 (Migration + Cutover)
+
+Claude to draft. Will define V1 → V2 migration script following spec §7.2 reconstruction rules, dry-run mode, cutover runbook, and legacy code archival.
+
+---
+
 ## 2026-06-19 — WS-3 Admin Edit Path Complete
 
 **Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
