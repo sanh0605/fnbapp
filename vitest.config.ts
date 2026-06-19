@@ -23,6 +23,7 @@ export default defineConfig({
         "lib/order-edit-cart.ts",
         "lib/sheets-db-v2.ts",
         "lib/sheets-db-v2-edit.ts",
+        "lib/report-v2-allocators.ts",
       ],
     },
   },
