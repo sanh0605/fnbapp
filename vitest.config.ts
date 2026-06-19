@@ -14,7 +14,14 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["lib/order-math.ts", "lib/order-types.ts"],
+      include: [
+        "lib/order-math.ts",
+        "lib/order-types.ts",
+        "lib/order-snapshot.ts",
+        "lib/order-cogs.ts",
+        "lib/order-cart.ts",
+        "lib/sheets-db-v2.ts",
+      ],
     },
   },
 });

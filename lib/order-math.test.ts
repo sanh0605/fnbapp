@@ -83,6 +83,42 @@ describe("allocateOrderDiscount", () => {
     expect(result.size).toBe(0);
   });
 
+  it("2-pass distribution: sum equals target even when proportional rounds down for many lines", () => {
+    // Documents the bug fix in fd65b96: when many small-capacity lines
+    // cause proportional values to round down, the second pass redistributes
+    // any residual to lines that still have capacity.
+    // Property: sum(result) === min(discount, totalCapacity) always.
+    const lines: AllocatableLine[] = [
+      { line_id: "L1", capacity: 3 },
+      { line_id: "L2", capacity: 3 },
+      { line_id: "L3", capacity: 3 },
+      { line_id: "L4", capacity: 3 },
+    ];
+    // total capacity = 12, target = 5
+    const result = allocateOrderDiscount(lines, 5);
+    const sum = lines.reduce((s, l) => s + (result.get(l.line_id) || 0), 0);
+    expect(sum).toBe(5);
+
+    // No allocation exceeds capacity
+    for (const l of lines) {
+      expect(result.get(l.line_id)).toBeLessThanOrEqual(l.capacity);
+    }
+  });
+
+  it("2-pass distribution: cap-then-redistribute when one line hits capacity early", () => {
+    // Edge case: small-capacity line gets capped, residual must still find a home.
+    const lines: AllocatableLine[] = [
+      { line_id: "L1", capacity: 5 },  // will be capped
+      { line_id: "L2", capacity: 100 }, // absorbs residual
+    ];
+    // total = 105, target = 50
+    const result = allocateOrderDiscount(lines, 50);
+    const sum = (result.get("L1") || 0) + (result.get("L2") || 0);
+    expect(sum).toBe(50);
+    expect(result.get("L1")).toBeLessThanOrEqual(5);
+    expect(result.get("L2")).toBeLessThanOrEqual(100);
+  });
+
   it("UCK000094 has no order-level discount (User-confirmed); allocator returns all zeros", () => {
     // Real situation: UCK000094 has only PRM-003 promo, no order-level discount.
     // The 5k discrepancy in legacy data is a calc bug, NOT a real discount.

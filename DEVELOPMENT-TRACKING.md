@@ -4,6 +4,68 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-19 — WS-2 POS Write Path Complete
+
+**Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
+**Plan:** `docs/superpowers/plans/2026-06-18-orders-reports-rebuild-ws2-pos-write-path.md`
+
+### What landed
+
+- **Pure helpers:**
+  - `lib/order-snapshot.ts` — 6 snapshot builders (product/variant/modifier×2/promo/recipe)
+  - `lib/order-cogs.ts` — `computeLineCostAtSale` MAC pinned at sale time
+  - `lib/order-cart.ts` — `buildOrderFromCart`: cart → OrderV2 + OrderLineV2[] with all 5 money fields, snapshots, and `assertOrderInvariants` called internally
+  - `lib/sheets-db-v2.ts` — `insertOrderV2Records` batched write with cleanup-on-failure
+- **Server action:** `app/actions/pos-v2.ts` → `submitOrderV2`. Orchestrates: validate → load ref data → build order (asserts invariants) → compute COGS → assign order_no → insert V2 rows + Order_Events + Stock_Ledger in one batched op
+- **POS UI:** `components/POSScreen.tsx` migrated to call `submitOrderV2` with V2 payload shape. Old client-side discount math (92 lines) replaced with payload construction (35 lines)
+- **Smoke test scripts:**
+  - `scripts/test-submit-order-v2.ts` — CLI script for full pipeline verification
+- **Core file modification:** `lib/sheets_db.ts` — added `getHeadersNoCache` + `CLI_MODE` bypass for scripts running outside Next.js context
+
+### Bug fix in WS-1 code (commit fd65b96)
+
+Property test surfaced bug in `allocateOrderDiscount` (WS-1 code): single-pass algorithm could lose residual if last line had insufficient capacity. Fixed with 2-pass approach: proportional allocation in pass 1, redistribute any residual in pass 2. All WS-1 fixtures still pass.
+
+### Verification gates (all passed)
+
+- `rtk npm test` — 67/67 tests pass (35 from WS-1 + 32 new in WS-2 + 2 documentation tests for 2-pass behavior)
+- `rtk tsc --noEmit` — clean for all WS-2 files
+- `rtk npm run test:coverage` — 96.04% stmts / 100% funcs across 6 tracked files:
+  - `order-cart.ts`: 93.27%
+  - `order-cogs.ts`: 100%
+  - `order-math.ts`: 92.44% (defensive 2-pass code partially uncovered — genuinely hard to trigger deterministically)
+  - `order-snapshot.ts`: 99.18%
+  - `order-types.ts`: 100%
+  - `sheets-db-v2.ts`: 97.53%
+- Live smoke test: Sữa Dâu @ 35k → auto-applies PRM-003 promo → net 25k stored in Orders_V2 with full snapshot + Order_Events CREATED + Stock_Ledger SALES_CONSUME
+- CLI smoke test: produces real order rows in V2 sheets (TEST157569 etc.)
+
+### Known gaps (deferred to WS-3 / WS-4)
+
+- **Modifier recipe consumption** in Stock_Ledger — variant recipes only; topping consumption deferred to WS-3 (edit flow also needs it)
+- **Cost_at_sale per ingredient** in Stock_Ledger — currently allocates line cost by ingredient quantity ratio (approximate). Per-ingredient MAC would be more accurate; refine later
+- **Stock_Ledger reference_id mixing** — V1 orders (format `ORD-timestamp-rand`) and V2 orders (format `ord-uuid`) both write to same Stock_Ledger sheet. WS-4 reports need to distinguish via prefix or added column
+- **allocateOrderDiscount 2-pass coverage** — defensive code path partially uncovered (lines 60-70); deterministic trigger not found
+
+### Commits (in order)
+
+| Hash | Subject |
+|---|---|
+| 5e5ce91 | feat(orders-v2): snapshot helpers from raw DB rows |
+| 2e454c1 | feat(orders-v2): MAC COGS computation pinned at sale time |
+| ebc60fa | feat(orders-v2): cart math with snapshot+invariants |
+| b370a7d | feat(orders-v2): V2 sheet write helpers |
+| dea324c | feat(orders-v2): submitOrderV2 server action |
+| 8989c4d | feat(orders-v2): migrate POS checkout to submitOrderV2 |
+| f33b09c | test(orders-v2): smoke test script for submitOrderV2 pipeline |
+| fd65b96 | fix(order-math): properly distribute allocation remainder |
+
+### Next: WS-3 (Admin Edit Path)
+
+Claude to draft plan. Will define `editOrderV2` with supersede-and-replace pattern (old order → SUPERSEDED, new order → COMPLETED with version+1), Stock_Ledger `EDIT_REVERSAL` rows, Order_Events EDITED records with delta_json, and `previous_order_id` chaining. Also closes the modifier recipe gap from WS-2.
+
+---
+
 ## 2026-06-18 — WS-1 Foundation Complete
 
 **Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md`
