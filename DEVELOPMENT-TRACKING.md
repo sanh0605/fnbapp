@@ -4,6 +4,45 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-19 — WS-8 allocateLineRevenue 2-stage Fix
+
+**Trigger:** User flagged drink revenue not ending in 5k/0k after WS-7 (e.g., Sữa Dâu 25047đ/cup instead of 25000đ).
+
+**Root cause:** WS-1 `allocateLineRevenue` applied a single ratio across variant + modifiers. But PRM-003 PRODUCT_DISCOUNT only targets the variant — toppings should stay at full price. Single-ratio approach over-attributed discount to modifiers and under-attributed to variant.
+
+### Fix
+
+Rewrote `allocateLineRevenue` in `lib/order-math.ts` with 2-stage allocation:
+
+- **Stage 1:** Variant absorbs promo + manual_item first
+  - `variantNet = max(0, grossVariant - promo - manual_item)`
+- **Stage 2:** Order_discount_allocation distributed proportionally across `(variantNet + modifiers)`
+  - `ratio = max(0, 1 - order_alloc / (variantNet + grossMods))`
+  - `variantRevenue = round(variantNet * ratio)`
+  - `modifierRevenue[id] = round(grossMod * ratio)`
+
+### Verification
+
+- 112/112 tests pass (updated 1 WS-1 test that codified old behavior; added 1 new test for 2-stage logic)
+- Drink revenue per cup (real V2 data):
+  - Sữa Dâu: 25.000đ/cup exactly (was 25.047đ) ✓
+  - 6 other drinks: 15.000đ/cup exactly (were 15.0xxđ) ✓
+  - Cà phê sữa đá: 15.053đ (53đ variance from order_alloc — expected)
+  - Cà phê đá: 13.043đ (mix of 15k promo VAR-010 + 18k regular VAR-001 — expected)
+  - Trà sữa truyền thống: 14.900đ (100đ below 15k from order_alloc — expected)
+- Sữa Dâu anomalies: **0** (was 3 orders with over-attribution)
+- Topping COGS attribution unchanged (still works correctly)
+
+### Commit
+
+| Hash | Subject |
+|---|---|
+| (this commit) | fix(orders-v2): 2-stage allocateLineRevenue (WS-8) |
+
+### Project Status: V2 REBUILD COMPLETE + ALL ACCURACY FIXES APPLIED
+
+---
+
 ## 2026-06-19 — WS-7 Report Accuracy Fix Complete
 
 **Spec:** `docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md` (§7.2 amended)
