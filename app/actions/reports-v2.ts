@@ -6,6 +6,7 @@ import type { OrderV2, OrderLineV2 } from "@/lib/order-types";
 import {
   breakdownRevenueByProduct,
   breakdownCOGSByIngredient,
+  breakdownCOGSBySource,
   type ProductRevenueRow,
   type IngredientCOGSRow,
 } from "@/lib/report-v2-allocators";
@@ -137,19 +138,31 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       .sort((a, b) => b.grossProfit - a.grossProfit);
 
     // Add topping rows (modifiers as pseudo-products)
+    // WS-7 fix: compute topping COGS from modifier-source ingredients
+    const cogsBySource = breakdownCOGSBySource(typedLines);
+    const toppingCogsById = new Map(
+      cogsBySource.modifierRows.map(r => [r.modifier_id, r.cogs]),
+    );
+
     const toppingRows = productRows
       .filter(r => r.product_id.startsWith("MOD:"))
-      .map(r => ({
-        product_id: r.product_id,
-        product_name: r.product_name,
-        variant_id: "",
-        size_name: "",
-        qty: r.qty,
-        revenue: r.revenue,
-        cogs: 0, // modifier COGS not separately tracked at line level
-        grossProfit: r.revenue,
-        marginPct: 100,
-      }));
+      .map(r => {
+        const modifierId = r.product_id.replace("MOD:", "");
+        const cogs = toppingCogsById.get(modifierId) || 0;
+        const grossProfit = r.revenue - cogs;
+        const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
+        return {
+          product_id: r.product_id,
+          product_name: r.product_name,
+          variant_id: "",
+          size_name: "",
+          qty: r.qty,
+          revenue: r.revenue,
+          cogs,
+          grossProfit,
+          marginPct,
+        };
+      });
 
     // 7. COGS details with names + units
     const cogsDetails = ingredientRows

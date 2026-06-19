@@ -136,3 +136,78 @@ export function breakdownCOGSByIngredient(lines: OrderLineV2[]): IngredientCOGSR
 
   return Array.from(map.values());
 }
+
+export interface ModifierCOGSRow {
+  modifier_id: string;
+  modifier_name: string;
+  cogs: number;
+  qty_consumed: number;
+}
+
+/**
+ * Break down COGS by source: variant recipe ingredients vs modifier recipe ingredients.
+ * Used by PnL report to attribute COGS to toppings (modifiers), not just drinks (variants).
+ *
+ * Sum of all `cogs` across both arrays = sum of line.cost_at_sale.
+ */
+export function breakdownCOGSBySource(
+  lines: OrderLineV2[],
+): { variantRows: IngredientCOGSRow[]; modifierRows: ModifierCOGSRow[] } {
+  const variantMap = new Map<string, { cogs: number; qty: number }>();
+  const modifierMap = new Map<string, { cogs: number; qty: number; name: string }>();
+
+  for (const line of lines) {
+    if (line.cost_at_sale <= 0) continue;
+    const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+
+    // Compute total ingredient qty for this line (variant + modifiers)
+    const variantQty = lineRecipe.variant.ingredients.reduce((s, i) => s + i.quantity * line.qty, 0);
+    const modifierQty = lineRecipe.modifiers.reduce((s, m) =>
+      s + m.recipe.ingredients.reduce((ms, i) => ms + i.quantity * line.qty, 0), 0);
+    const totalQty = variantQty + modifierQty;
+    if (totalQty <= 0) continue;
+
+    // Allocate line.cost_at_sale proportionally
+    const variantShare = variantQty / totalQty;
+    const modifierShare = modifierQty / totalQty;
+    const variantCogs = Math.round(line.cost_at_sale * variantShare);
+    const modifierCogs = Math.round(line.cost_at_sale * modifierShare);
+
+    // Variant ingredient-level breakdown (for ingredient PnL section)
+    for (const ing of lineRecipe.variant.ingredients) {
+      const ingQty = ing.quantity * line.qty;
+      const ingShare = variantQty > 0 ? ingQty / variantQty : 0;
+      if (!variantMap.has(ing.ingredient_id)) {
+        variantMap.set(ing.ingredient_id, { cogs: 0, qty: 0 });
+      }
+      const row = variantMap.get(ing.ingredient_id)!;
+      row.cogs += Math.round(variantCogs * ingShare);
+      row.qty += ingQty;
+    }
+
+    // Modifier-level breakdown (for topping PnL section)
+    for (const modEntry of lineRecipe.modifiers) {
+      if (!modifierMap.has(modEntry.modifier_id)) {
+        modifierMap.set(modEntry.modifier_id, {
+          cogs: 0, qty: 0, name: modEntry.modifier_name,
+        });
+      }
+      const modRow = modifierMap.get(modEntry.modifier_id)!;
+      const modIngQty = modEntry.recipe.ingredients.reduce((s, i) => s + i.quantity * line.qty, 0);
+      const modShare = modifierQty > 0 ? modIngQty / modifierQty : 0;
+      modRow.cogs += Math.round(modifierCogs * modShare);
+      modRow.qty += line.qty * Number(
+        JSON.parse(line.modifiers_snapshot_json || "[]").find((m: any) => m.id === modEntry.modifier_id)?.qty || 1
+      );
+    }
+  }
+
+  return {
+    variantRows: Array.from(variantMap.entries()).map(([id, v]) => ({
+      ingredient_id: id, cogs: v.cogs, qty_consumed: v.qty,
+    })),
+    modifierRows: Array.from(modifierMap.entries()).map(([id, m]) => ({
+      modifier_id: id, modifier_name: m.name, cogs: m.cogs, qty_consumed: m.qty,
+    })),
+  };
+}

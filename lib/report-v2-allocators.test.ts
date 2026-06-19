@@ -136,3 +136,62 @@ describe("breakdownCOGSByIngredient", () => {
     expect(totalCogs).toBe(12000); // matches line cost_at_sale
   });
 });
+
+import { breakdownCOGSBySource } from "@/lib/report-v2-allocators";
+
+describe("breakdownCOGSBySource", () => {
+  it("returns empty for empty input", () => {
+    const result = breakdownCOGSBySource([]);
+    expect(result.variantRows).toEqual([]);
+    expect(result.modifierRows).toEqual([]);
+  });
+
+  it("attributes cost to variant only when no modifier recipe", () => {
+    const lines = [{
+      ...makeSuaDauStandaloneOrder().lines[0],
+      cost_at_sale: 12000,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT", target_id: "VAR-031",
+          ingredients: [{ ingredient_id: "BI-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 0.05, unit_id: "L" }],
+        },
+        modifiers: [],
+      }),
+    }] as any;
+    const result = breakdownCOGSBySource(lines);
+    expect(result.variantRows.length).toBe(1);
+    expect(result.variantRows[0].ingredient_id).toBe("BI-MILK");
+    expect(result.variantRows[0].cogs).toBe(12000);
+    expect(result.modifierRows).toEqual([]);
+  });
+
+  it("splits cost between variant and modifier when both have ingredients", () => {
+    const lines = [{
+      ...makeSuaDauStandaloneOrder().lines[0],
+      cost_at_sale: 10000,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-PEARL", name: "Trân châu", price: 5000, qty: 1 }]),
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT", target_id: "VAR-031",
+          ingredients: [{ ingredient_id: "BI-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 0.05, unit_id: "L" }],
+        },
+        modifiers: [{
+          modifier_id: "MOD-PEARL", modifier_name: "Trân châu",
+          recipe: {
+            target_type: "MODIFIER", target_id: "MOD-PEARL",
+            ingredients: [{ ingredient_id: "BI-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 0.03, unit_id: "KG" }],
+          },
+        }],
+      }),
+    }] as any;
+    const result = breakdownCOGSBySource(lines);
+    // variant: 0.05L, modifier: 0.03kg → 50/50 split (by quantity)
+    // cost_at_sale 10k split: variant 5k, modifier 5k
+    const totalVariant = result.variantRows.reduce((s, r) => s + r.cogs, 0);
+    const totalModifier = result.modifierRows.reduce((s, r) => s + r.cogs, 0);
+    expect(totalVariant + totalModifier).toBe(10000);
+    expect(result.modifierRows.length).toBe(1);
+    expect(result.modifierRows[0].modifier_id).toBe("MOD-PEARL");
+    expect(result.modifierRows[0].cogs).toBeGreaterThan(0);
+  });
+});
