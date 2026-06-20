@@ -117,20 +117,22 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // 5. Per-ingredient COGS breakdown
     const ingredientRows = breakdownCOGSByIngredient(typedLines, typedOrders, ledger as any[], spContext);
 
-    // 6. Build product profit analysis (join product revenue with product COGS)
-    // Note: COGS is per-ingredient, not per-product. For per-product COGS we'd need
-    // to attribute ingredients back to products. Use line-level cost_at_sale aggregated
-    // by product_id as approximation.
-    const cogsByProductId = new Map<string, number>();
+    // 6. Build product profit analysis (join per-variant revenue with per-variant COGS)
+    // CRITICAL: aggregate COGS by product_id + variant_id (same key as breakdownRevenueByProduct).
+    // Aggregating by product_id only caused each variant row to display the FULL product COGS,
+    // double-counting for multi-variant products (e.g., Matcha latte 500ml + 700ml).
+    const cogsByVariantKey = new Map<string, number>();
     for (const line of typedLines) {
-      const prev = cogsByProductId.get(line.product_id) || 0;
-      cogsByProductId.set(line.product_id, prev + line.cost_at_sale);
+      const key = `${line.product_id}__${line.variant_id}`;
+      const prev = cogsByVariantKey.get(key) || 0;
+      cogsByVariantKey.set(key, prev + line.cost_at_sale);
     }
 
     const productProfitAnalysis = productRows
       .filter(r => !r.product_id.startsWith("MOD:"))
       .map(r => {
-        const cogs = cogsByProductId.get(r.product_id) || 0;
+        const key = `${r.product_id}__${r.variant_id}`;
+        const cogs = cogsByVariantKey.get(key) || 0;
         const grossProfit = r.revenue - cogs;
         const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
         return {

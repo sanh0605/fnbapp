@@ -124,4 +124,100 @@ describe("getPnLDataV2", () => {
     const result = await getPnLDataV2({});
     expect(result.totalRevenue).toBe(161000);
   });
+
+  it("BUG-FIX: per-variant COGS attribution (no double-counting across variants)", async () => {
+    // Same product PROD-MULTI has 2 variants (VAR-A 500ml, VAR-B 700ml).
+    // Each line has its own cost_at_sale.
+    // Expected: productProfitAnalysis has 2 rows, each with its OWN cogs (not summed).
+    const orderId = "ord-multi-variant";
+    const baseTs = "2026-06-15T10:00:00.000Z";
+    const order = {
+      id: orderId,
+      order_no: "MULTI-001",
+      brand_id: "BR-002",
+      status: "COMPLETED",
+      version: 1,
+      parent_order_id: "",
+      superseded_by: "",
+      created_at: baseTs,
+      created_by_id: "U",
+      created_by_name: "Test",
+      completed_at: baseTs,
+      voided_at: "",
+      voided_by_id: "",
+      void_reason: "",
+      currency: "VND",
+      gross_total: 30000,
+      promo_discount_total: 0,
+      manual_item_discount_total: 0,
+      manual_order_discount: 0,
+      net_total: 30000,
+      applied_promotion_id: "",
+      applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}",
+      payment_method: "CASH",
+      payment_ref: "",
+      migration_notes: "",
+    };
+
+    const lineA = {
+      id: "ol-a",
+      order_id: orderId,
+      line_no: 1,
+      product_id: "PROD-MULTI",
+      product_snapshot_json: JSON.stringify({ id: "PROD-MULTI", name: "Multi Variant Drink", category_id: "CAT-X", category_name: "X" }),
+      variant_id: "VAR-A",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-A", size_name: "500ml", price: 15000 }),
+      qty: 1,
+      unit_price: 15000,
+      modifiers_snapshot_json: "[]",
+      gross_line_total: 15000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 15000,
+      cost_at_sale: 5000, // VAR-A cost
+      recipe_snapshot_json: "{}",
+      promo_discount_reason: "",
+      manual_discount_reason: "",
+    };
+    const lineB = {
+      ...lineA,
+      id: "ol-b",
+      line_no: 2,
+      variant_id: "VAR-B",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-B", size_name: "700ml", price: 15000 }),
+      gross_line_total: 15000,
+      net_line_total: 15000,
+      cost_at_sale: 7000, // VAR-B cost (different from VAR-A)
+    };
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [lineA, lineB];
+      return [];
+    });
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({});
+
+    // Should have 2 rows (one per variant)
+    const multiRows = result.productProfitAnalysis.filter(p => p.product_id === "PROD-MULTI");
+    expect(multiRows.length).toBe(2);
+
+    const rowA = multiRows.find(r => r.variant_id === "VAR-A");
+    const rowB = multiRows.find(r => r.variant_id === "VAR-B");
+
+    // CRITICAL: each row should have its OWN cost_at_sale, not the product total
+    expect(rowA?.cogs).toBe(5000);
+    expect(rowB?.cogs).toBe(7000);
+
+    // Total COGS in report should equal sum of variant COGS, NOT 2x product sum
+    const totalMultiCogs = multiRows.reduce((s, r) => s + r.cogs, 0);
+    expect(totalMultiCogs).toBe(12000); // 5k + 7k, NOT 24k (which would be 2x bug)
+
+    // Margins should be sane (not negative losses)
+    expect(rowA?.marginPct).toBeCloseTo(66.67, 1); // (15k-5k)/15k
+    expect(rowB?.marginPct).toBeCloseTo(53.33, 1); // (15k-7k)/15k
+  });
 });
