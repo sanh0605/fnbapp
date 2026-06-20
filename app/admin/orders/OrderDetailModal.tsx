@@ -7,7 +7,7 @@ interface Props {
   order: OrderListItem;
   brands: any[];
   onClose: () => void;
-  onEdit: () => void;
+  onEdit: (freshOrder: any) => void;
   onVoid: () => void;
 }
 
@@ -188,7 +188,7 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
         <div className="border-t border-gray-100 shrink-0">
           <div className="px-5 py-4 flex gap-3 bg-white">
             <button
-              onClick={onEdit}
+              onClick={() => onEdit(detail?.order || order)}
               disabled={currentOrder.status !== "COMPLETED"}
               className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >

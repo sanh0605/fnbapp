@@ -360,7 +360,7 @@ export default function OrderTable({
           order={selectedOrder}
           brands={brands}
           onClose={() => setSelectedOrder(null)}
-          onEdit={() => setEditingOrder(selectedOrder)}
+          onEdit={(freshOrder) => setEditingOrder(freshOrder)}
           onVoid={() => { setOrderToVoid(selectedOrder); setSelectedOrder(null); }}
         />
       )}
