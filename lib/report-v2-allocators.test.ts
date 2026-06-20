@@ -84,12 +84,11 @@ describe("breakdownCOGSByIngredient", () => {
     expect(result.length).toBe(0);
   });
 
-  it("UCK000094: ingredients from both variant + modifier recipes aggregated when cost > 0", () => {
+  it("UCK000094: ingredients aggregated via FIFO when ledger has data", () => {
     const { lines } = makeUCK000094MigratedOrder();
-    // Force cost_at_sale to be > 0 and provide a mock recipe_snapshot_json so ingredients are extracted
     const testLines = lines.map(l => ({
       ...l,
-      cost_at_sale: 1000,
+      qty: 1,
       recipe_snapshot_json: JSON.stringify({
         variant: {
           target_type: "PRODUCT_VARIANT",
@@ -101,7 +100,10 @@ describe("breakdownCOGSByIngredient", () => {
         modifiers: [],
       }),
     }));
-    const result = breakdownCOGSByIngredient(testLines);
+    const ledger = [
+      { item_reference: "BI-MOCK-1", transaction_type: "PO_RECEIPT", unit_cost: "100000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+    ];
+    const result = breakdownCOGSByIngredient(testLines, [], ledger);
 
     const totalCogs = result.reduce((s, r) => s + r.cogs, 0);
     expect(totalCogs).toBeGreaterThan(0);
@@ -110,12 +112,15 @@ describe("breakdownCOGSByIngredient", () => {
     expect(ingredientIds.length).toBeGreaterThan(0);
   });
 
-  it("lines with cost_at_sale > 0 distribute cost across their ingredients", () => {
+  it("WS-11 fix: per-ingredient FIFO consumption (not proportional split)", () => {
+    // Setup: line with 2 ingredients (different units)
+    // BI-MILK qty 0.05L (MAC 200k/L → 10k)
+    // BI-STRAWBERRY qty 0.03kg (MAC 50k/kg → 1.5k)
+    // Total expected = 11500
     const { lines } = makeSuaDauStandaloneOrder();
-    // Manually set cost_at_sale for test
     const testLines: OrderLineV2[] = lines.map(l => ({
       ...l,
-      cost_at_sale: 12000,
+      qty: 1,
       recipe_snapshot_json: JSON.stringify({
         variant: {
           target_type: "PRODUCT_VARIANT",
@@ -129,11 +134,19 @@ describe("breakdownCOGSByIngredient", () => {
       }),
     }));
 
-    const result = breakdownCOGSByIngredient(testLines);
-    expect(result.length).toBe(2); // BI-MILK + BI-STRAWBERRY
+    const ledger = [
+      { item_reference: "BI-MILK", transaction_type: "PO_RECEIPT", unit_cost: "200000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "BI-STRAWBERRY", transaction_type: "PO_RECEIPT", unit_cost: "50000", quantity_change: "5", created_at: "2026-06-01T00:00:00Z" },
+    ];
 
-    const totalCogs = result.reduce((s, r) => s + r.cogs, 0);
-    expect(totalCogs).toBe(12000); // matches line cost_at_sale
+    const result = breakdownCOGSByIngredient(testLines, [], ledger);
+    expect(result.length).toBe(2);
+
+    const milkRow = result.find(r => r.ingredient_id === "BI-MILK");
+    const strawRow = result.find(r => r.ingredient_id === "BI-STRAWBERRY");
+    expect(milkRow?.cogs).toBe(10000); // 0.05L × 200k/L
+    expect(milkRow?.qty_consumed).toBeCloseTo(0.05);
+    expect(strawRow?.cogs).toBe(1500); // 0.03kg × 50k/kg
   });
 });
 

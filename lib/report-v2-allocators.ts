@@ -98,40 +98,105 @@ export function breakdownRevenueByProduct(
 }
 
 /**
- * Break down COGS across raw ingredients (Base_Ingredients + Semi_Products).
- * Uses line.cost_at_sale (pinned at sale time) and splits proportionally
- * by ingredient quantity within the line's recipe snapshot.
+ * Break down COGS across raw ingredients (Base_Ingredients only — SEMI_PRODUCTs resolved).
  *
- * Total of all `cogs` fields equals sum of line.cost_at_sale values.
+ * WS-11 fix: replaced proportional-qty split (mixed units like ml + miếng
+ * gave garbage results — e.g., đào miếng showed 37đ/piece). Now consumes
+ * each ingredient from FIFO tracker directly. Each ingredient's COGS =
+ * its own FIFO consumption, NOT a share of line total.
+ *
+ * @param lines - V2 order lines
+ * @param orders - V2 orders (for chronological sort)
+ * @param ledger - Stock_Ledger for FIFO batches
+ * @param spContext - SEMI_PRODUCT recipes + yields (for resolving SP to base ingredients)
  */
-export function breakdownCOGSByIngredient(lines: OrderLineV2[]): IngredientCOGSRow[] {
+export function breakdownCOGSByIngredient(
+  lines: OrderLineV2[],
+  orders: any[] = [],
+  ledger: any[] = [],
+  spContext?: any,
+): IngredientCOGSRow[] {
   const map = new Map<string, IngredientCOGSRow>();
 
-  for (const line of lines) {
-    if (line.cost_at_sale <= 0) continue;
-    const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+  // Build order lookup for chronological sort
+  const orderById = new Map<string, any>();
+  for (const o of orders) orderById.set(o.id, o);
 
-    // Collect all ingredients for this line with their quantities
-    const allIngredients: Array<{ id: string; qty: number }> = [];
+  // WS-11: FIFO tracker shared across lines (must process chronologically)
+  const tracker = new FIFOTracker();
+  tracker.init(ledger);
+
+  // Sort lines by order.created_at for FIFO correctness
+  const sortedLines = [...lines].sort((a, b) => {
+    const oa = orderById.get(a.order_id);
+    const ob = orderById.get(b.order_id);
+    const ta = oa?.created_at ? new Date(oa.created_at).getTime() : 0;
+    const tb = ob?.created_at ? new Date(ob.created_at).getTime() : 0;
+    return ta - tb;
+  });
+
+  for (const line of sortedLines) {
+    const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+    const lineQty = line.qty;
+
+    // Collect all BASE ingredients needed (resolve SEMI_PRODUCTs)
+    const baseIngredients: Array<{ id: string; qty: number }> = [];
+
+    // Variant recipe
     for (const ing of lineRecipe.variant.ingredients) {
-      allIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * line.qty });
-    }
-    for (const modEntry of lineRecipe.modifiers) {
-      for (const ing of modEntry.recipe.ingredients) {
-        allIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * line.qty });
+      if (ing.quantity <= 0) continue;
+      if (ing.ingredient_type === "SEMI_PRODUCT" && spContext) {
+        const spRecipe = spContext.recipes.find((r: any) => r.target_id === ing.ingredient_id);
+        if (!spRecipe || !spRecipe.ingredients_json) continue;
+        try {
+          const spIngs = JSON.parse(spRecipe.ingredients_json);
+          const yieldQty = spContext.yields.get(ing.ingredient_id) || 1;
+          if (yieldQty <= 0) continue;
+          for (const spIng of spIngs) {
+            baseIngredients.push({
+              id: spIng.ingredient_id,
+              qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty,
+            });
+          }
+        } catch {}
+      } else if (ing.ingredient_type === "BASE_INGREDIENT") {
+        baseIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * lineQty });
       }
     }
 
-    const totalQty = allIngredients.reduce((s, i) => s + i.qty, 0);
-    if (totalQty <= 0) continue;
+    // Modifier recipes (same resolution)
+    for (const modEntry of lineRecipe.modifiers) {
+      for (const ing of modEntry.recipe.ingredients) {
+        if (ing.quantity <= 0) continue;
+        if (ing.ingredient_type === "SEMI_PRODUCT" && spContext) {
+          const spRecipe = spContext.recipes.find((r: any) => r.target_id === ing.ingredient_id);
+          if (!spRecipe || !spRecipe.ingredients_json) continue;
+          try {
+            const spIngs = JSON.parse(spRecipe.ingredients_json);
+            const yieldQty = spContext.yields.get(ing.ingredient_id) || 1;
+            if (yieldQty <= 0) continue;
+            for (const spIng of spIngs) {
+              baseIngredients.push({
+                id: spIng.ingredient_id,
+                qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty,
+              });
+            }
+          } catch {}
+        } else if (ing.ingredient_type === "BASE_INGREDIENT") {
+          baseIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * lineQty });
+        }
+      }
+    }
 
-    for (const ing of allIngredients) {
+    // Consume each base ingredient from FIFO tracker, attribute cost directly
+    for (const ing of baseIngredients) {
+      if (ing.qty <= 0) continue;
+      const cost = tracker.consume(ing.id, ing.qty);
       if (!map.has(ing.id)) {
         map.set(ing.id, { ingredient_id: ing.id, cogs: 0, qty_consumed: 0 });
       }
       const row = map.get(ing.id)!;
-      const share = ing.qty / totalQty;
-      row.cogs += Math.round(line.cost_at_sale * share);
+      row.cogs += cost;
       row.qty_consumed += ing.qty;
     }
   }

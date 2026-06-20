@@ -115,7 +115,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
 
     // 5. Per-ingredient COGS breakdown
-    const ingredientRows = breakdownCOGSByIngredient(typedLines);
+    const ingredientRows = breakdownCOGSByIngredient(typedLines, typedOrders, ledger as any[], spContext);
 
     // 6. Build product profit analysis (join product revenue with product COGS)
     // Note: COGS is per-ingredient, not per-product. For per-product COGS we'd need
