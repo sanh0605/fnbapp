@@ -11,7 +11,8 @@
 import { allocateLineRevenue } from "@/lib/order-math";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
 import type { OrderV2, OrderLineV2, LineForAllocation } from "@/lib/order-types";
-import { computeLineCostAtSale } from "@/lib/order-cogs";
+import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
+import { FIFOTracker } from "@/lib/fifo-tracker";
 
 export interface ProductRevenueRow {
   product_id: string;
@@ -171,22 +172,29 @@ export function breakdownCOGSBySource(
   const orderById = new Map<string, any>();
   for (const o of orders) orderById.set(o.id, o);
 
-  // Load computeLineCostAtSale lazily (avoid circular import issues)
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // WS-11: build FIFO tracker + sort lines by order.created_at so batches consumed chronologically
+  const tracker = new FIFOTracker();
+  tracker.init(ledger);
 
-  for (const line of lines) {
+  // Sort lines by their order's created_at ascending for FIFO correctness
+  const sortedLines = [...lines].sort((a, b) => {
+    const oa = orderById.get(a.order_id);
+    const ob = orderById.get(b.order_id);
+    const ta = oa?.created_at ? new Date(oa.created_at).getTime() : 0;
+    const tb = ob?.created_at ? new Date(ob.created_at).getTime() : 0;
+    return ta - tb;
+  });
+
+  for (const line of sortedLines) {
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-    const order = orderById.get(line.order_id);
-    const saleTime = order?.created_at || new Date().toISOString();
     const qty = line.qty;
 
-    // Compute variant-only MAC for this line
+    // Compute variant-only FIFO for this line
     const variantRecipeOnly = { variant: lineRecipe.variant, modifiers: [] };
-    const variantMAC = computeLineCostAtSale(variantRecipeOnly, ledger, qty, saleTime, spContext);
+    const variantCost = computeLineCostFIFO(variantRecipeOnly, tracker, qty, spContext);
 
-    if (variantMAC > 0) {
-      // Distribute variant MAC across ingredients proportionally by their contribution
-      // (This is approximate at ingredient level, accurate at variant-source level)
+    if (variantCost > 0) {
+      // Distribute variant cost across ingredients proportionally by their contribution
       const totalIngQty = lineRecipe.variant.ingredients.reduce((s, i) => s + i.quantity * qty, 0);
       for (const ing of lineRecipe.variant.ingredients) {
         const ingQty = ing.quantity * qty;
@@ -195,18 +203,18 @@ export function breakdownCOGSBySource(
           variantMap.set(ing.ingredient_id, { cogs: 0, qty: 0 });
         }
         const row = variantMap.get(ing.ingredient_id)!;
-        row.cogs += Math.round(variantMAC * share);
+        row.cogs += Math.round(variantCost * share);
         row.qty += ingQty;
       }
     }
 
-    // Compute modifier-only MAC for each modifier
+    // Compute modifier-only FIFO for each modifier
     for (const modEntry of lineRecipe.modifiers) {
       const modOnlyRecipe = {
         variant: { target_type: "PRODUCT_VARIANT" as const, target_id: "", ingredients: [] as any[] },
         modifiers: [modEntry],
       };
-      const modMAC = computeLineCostAtSale(modOnlyRecipe, ledger, qty, saleTime, spContext);
+      const modCost = computeLineCostFIFO(modOnlyRecipe, tracker, qty, spContext);
 
       if (!modifierMap.has(modEntry.modifier_id)) {
         modifierMap.set(modEntry.modifier_id, {
@@ -214,7 +222,7 @@ export function breakdownCOGSBySource(
         });
       }
       const modRow = modifierMap.get(modEntry.modifier_id)!;
-      modRow.cogs += modMAC;
+      modRow.cogs += modCost;
       modRow.qty += qty * Number(
         JSON.parse(line.modifiers_snapshot_json || "[]").find((m: any) => m.id === modEntry.modifier_id)?.qty || 1
       );

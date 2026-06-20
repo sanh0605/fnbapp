@@ -19,11 +19,11 @@
 
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
+process.env.CLI_MODE = "true"; // bypass unstable_cache for CLI execution
 
 const { findAllNoCache, insert, insertMany } = require("../lib/sheets_db");
 const { reconstructOrderV2 } = require("../lib/migrate-v1-to-v2");
 const { InvariantError } = require("../lib/order-types");
-const { computeLineCostAtSale } = require("../lib/order-cogs");
 const { parseLineRecipeSnapshot } = require("../lib/order-types");
 
 interface MigrationReport {
@@ -100,6 +100,11 @@ async function main() {
     toMigrate = toMigrate.filter((o: any) => o.id === singleOrderId);
   }
 
+  // WS-11 FIFO: sort orders by created_at ascending so batches are consumed chronologically
+  toMigrate.sort((a: any, b: any) =>
+    new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
+  );
+
   console.log(`  To migrate: ${toMigrate.length}\n`);
 
   // 3. Process each order
@@ -107,6 +112,20 @@ async function main() {
   const ordersToInsert: any[] = [];
   const linesToInsert: any[] = [];
   const eventsToInsert: any[] = [];
+
+  // WS-11: Build FIFO tracker + SP context for accurate cost computation
+  const { FIFOTracker } = require("../lib/fifo-tracker");
+  const { computeLineCostFIFO } = require("../lib/order-cogs-fifo");
+  const spRecipes = (recipes as any[]).filter((r: any) => r.target_type === "SEMI_PRODUCT");
+  const spYields = new Map<string, number>();
+  const semiProductsList = await findAllNoCache("Semi_Products");
+  for (const sp of semiProductsList as any[]) {
+    spYields.set(sp.id, Number(sp.batch_yield) || 1);
+  }
+  const spContext = { recipes: spRecipes, yields: spYields };
+  const fifoTracker = new FIFOTracker();
+  fifoTracker.init(v1Ledger);
+  console.log(`  FIFO tracker initialized: ${fifoTracker.size()} batches`);
   const ledgerToInsert: any[] = [];
 
   for (const v1Order of toMigrate) {
@@ -127,7 +146,7 @@ async function main() {
       // line using its recipe snapshot and historical PO_RECEIPT entries.
       for (const line of result.lines) {
         const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-        line.cost_at_sale = computeLineCostAtSale(lineRecipe, v1Ledger, Number(line.qty), v1Order.created_at);
+        line.cost_at_sale = computeLineCostFIFO(lineRecipe, fifoTracker, Number(line.qty), spContext);
       }
 
       const orderLedger = v1Ledger.filter((l: any) =>
