@@ -3,6 +3,8 @@ import EditUserForm from "@/components/EditUserForm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditUserPage({ params }: { params: { id: string } }) {
   const users = await findAll("Users");
   const user = users.find((u: any) => u.id === params.id);

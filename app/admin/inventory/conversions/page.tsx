@@ -2,6 +2,8 @@ import { findAll } from "@/lib/sheets_db";
 import { ConversionForm, DeleteBtn } from "@/components/InventoryForms";
 import { deleteConversion } from "@/app/actions/inventory";
 
+export const dynamic = "force-dynamic";
+
 export default async function ConversionsPage() {
   const [baseIngredients, items, conversions, allUnits] = await Promise.all([
     findAll("Base_Ingredients"),

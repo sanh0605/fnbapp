@@ -2,6 +2,8 @@ import { findAll } from "@/lib/sheets_db";
 import PurchaseOrderForm from "@/components/PurchaseOrderForm";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewPurchaseOrderPage() {
   const [suppliers, items, conversions, baseIngredients, allUnits, sources] = await Promise.all([
     findAll("Suppliers"),

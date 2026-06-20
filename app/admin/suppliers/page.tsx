@@ -1,6 +1,8 @@
 import { findAll } from "@/lib/sheets_db";
 import { SupplierForm, DeleteSupplierButton } from "@/components/SupplierForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function SuppliersPage() {
   const suppliers = await findAll("Suppliers");
 

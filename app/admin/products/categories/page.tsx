@@ -1,6 +1,8 @@
 import { findAll } from "@/lib/sheets_db";
 import ProductCategoryForm from "@/components/ProductCategoryForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProductCategoriesPage() {
   const [categories, products] = await Promise.all([
     findAll("Product_Categories"),

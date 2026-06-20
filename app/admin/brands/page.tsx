@@ -1,6 +1,8 @@
 import { findAll } from "@/lib/sheets_db";
 import { BrandForm, DeleteBrandButton, EditBrandButton } from "@/components/BrandForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function BrandsPage() {
   const allBrands = await findAll("Brands");
   const brands = allBrands.filter((b:any) => b.status !== "DELETED");

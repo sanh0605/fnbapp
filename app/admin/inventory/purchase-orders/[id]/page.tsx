@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PurchaseOrderForm from "@/components/PurchaseOrderForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function PurchaseOrderDetail({ params }: { params: { id: string } }) {
   const [po, lines, allItems, allBaseIngredients, allUnits, allSuppliers, allConversions, allSources] = await Promise.all([
     findById("Purchase_Orders", params.id),

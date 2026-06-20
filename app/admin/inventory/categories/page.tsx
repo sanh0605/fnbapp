@@ -2,6 +2,8 @@ import { findAll } from "@/lib/sheets_db";
 import { ItemCategoryForm, DeleteBtn } from "@/components/InventoryForms";
 import { deleteItemCategory } from "@/app/actions/inventory";
 
+export const dynamic = "force-dynamic";
+
 export default async function CategoriesPage() {
   const categories = await findAll("Item_Categories");
 

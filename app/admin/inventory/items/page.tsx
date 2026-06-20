@@ -3,6 +3,8 @@ import { PurchasedItemForm, DeleteBtn } from "@/components/InventoryForms";
 import { deletePurchasedItem } from "@/app/actions/inventory";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function ItemsPage() {
   const [categories, baseIngredients, items, conversions, allUnits] = await Promise.all([
     findAll("Item_Categories"),

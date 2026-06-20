@@ -2,6 +2,8 @@ import { findAll } from "@/lib/sheets_db";
 import ProductForm from "@/components/ProductForm";
 import HistoryModal from "@/components/HistoryModal";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProductsPage() {
   const [categories, products, variants, recipes, baseIngredients, semiProducts, allUnits, allPriceHistory] = await Promise.all([
     findAll("Product_Categories"),

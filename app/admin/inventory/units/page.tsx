@@ -1,6 +1,8 @@
 import { findAll } from "@/lib/sheets_db";
 import { UnitForm, DeleteBtn } from "./UnitForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function UnitsPage() {
   const allUnits = await findAll("Units");
   

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/order-types";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
 
+export const dynamic = "force-dynamic";
+
 const TrendBadge = ({ value }: { value: number | null }) => {
   if (value === null) return null;
   const isUp = value > 0;

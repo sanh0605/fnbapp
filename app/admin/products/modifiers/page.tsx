@@ -4,6 +4,8 @@ import { deleteModifier } from "@/app/actions/modifiers";
 import { DeleteBtn } from "@/components/InventoryForms";
 import HistoryModal from "@/components/HistoryModal";
 
+export const dynamic = "force-dynamic";
+
 export default async function ModifiersPage() {
   const [modifiers, recipes, baseIngredients, semiProducts, allUnits] = await Promise.all([
     findAll("Modifiers"),
