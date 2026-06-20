@@ -70,7 +70,7 @@ const consumeEntries = [{
 }];
 
 describe("supersedeOrderV2", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("marks old order as SUPERSEDED with superseded_by pointing to new", async () => {
     (update as any).mockResolvedValue({});
@@ -105,7 +105,9 @@ describe("supersedeOrderV2", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/version/i);
+    if (!result.success) {
+      expect(result.error).toMatch(/version/i);
+    }
   });
 
   it("rejects if old order is not COMPLETED", async () => {
@@ -117,7 +119,9 @@ describe("supersedeOrderV2", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/status/i);
+    if (!result.success) {
+      expect(result.error).toMatch(/status/i);
+    }
   });
 
   it("inserts new order, lines, event, reversal + consume ledger in sequence", async () => {
@@ -152,6 +156,8 @@ describe("supersedeOrderV2", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/Order_Lines_V2/);
+    if (!result.success) {
+      expect(result.error).toMatch(/Order_Lines_V2/);
+    }
   });
 });

@@ -184,7 +184,7 @@ export function SupplierModal({
     if (res.error) {
       setError(res.error);
     } else {
-      if (onSuccess) onSuccess(res.id);
+      if (onSuccess && res.id) onSuccess(res.id);
       onClose();
     }
   }

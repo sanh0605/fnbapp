@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { submitStockAdjustment, approveStockAdjustment } from "@/app/actions/stock";
+import StickyFilterBar from "@/components/StickyFilterBar";
 
 export default function StockTable({ 
   stockItems, 
@@ -93,18 +94,21 @@ export default function StockTable({
       )}
 
       {/* Control Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+      <StickyFilterBar
+        title="Quản lý & Cân bằng Tồn kho"
+        subtitle="Kiểm kê số lượng thực tế và điều chỉnh nếu có sai lệch."
+      >
         <div className="relative w-full sm:w-96">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔍</span>
           <input 
             type="text" 
             placeholder="Tìm nguyên liệu, bán thành phẩm..." 
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </div>
+      </StickyFilterBar>
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

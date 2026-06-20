@@ -1,28 +1,25 @@
-import { findAll } from "@/lib/sheets_db";
-import PromotionsClient from "./PromotionsClient";
+import { getPromotionsData } from "./actions";
+import PromotionsClient from "./components/PromotionsClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function PromotionsPage() {
-  const [promotions, brands, products, variants, categories] = await Promise.all([
-    findAll("Promotions"),
-    findAll("Brands"),
-    findAll("Products"),
-    findAll("Product_Variants"),
-    findAll("Product_Categories"),
-  ]);
+  const { promotions, brands, products, variants, categories } = await getPromotionsData();
 
-  const activeBrands = brands.filter((b: any) => b.status !== "DELETED");
-  const activeProducts = products.filter((p: any) => p.status !== "DELETED");
-  const activeVariants = variants.filter((v: any) => v.status !== "DELETED");
-  const activeCategories = categories.filter((c: any) => c.status !== "DELETED");
+  // Filter out DELETED entities (preserving current behavior)
+  const activeBrands = brands.filter(b => b.status !== "DELETED");
+  const activeProducts = products.filter(p => p.status !== "DELETED");
+  const activeVariants = variants.filter(v => v.status !== "DELETED");
+  const activeCategories = categories.filter(c => c.status !== "DELETED");
 
-  // Sort promotions by created_at descending (newest first)
-  const sortedPromotions = [...promotions].sort((a: any, b: any) => {
-    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-  });
+  // Sort promotions by created_at descending
+  const sorted = [...promotions].sort((a, b) =>
+    (b.created_at || "").localeCompare(a.created_at || "")
+  ).reverse(); // Reverse because localeCompare(a, b) sorts ascending by default if b.created_at is first
 
   return (
     <PromotionsClient
-      initialPromotions={sortedPromotions}
+      promotions={sorted}
       brands={activeBrands}
       products={activeProducts}
       variants={activeVariants}

@@ -15,9 +15,10 @@ interface SearchableSelectProps {
   name?: string;
   required?: boolean;
   onCreateNew?: (searchTerm: string) => void | Promise<void>;
+  className?: string;
 }
 
-export function SearchableSelect({ options, value, onChange, placeholder = "-- Chọn --", name, required, onCreateNew }: SearchableSelectProps) {
+export function SearchableSelect({ options, value, onChange, placeholder = "-- Chọn --", name, required, onCreateNew, className }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -45,7 +46,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
       <input type="hidden" name={name} value={value} required={required} />
       
       <div
-        className="w-full border border-blue-200 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
+        className={`w-full border border-blue-200 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center ${className || ''}`}
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen) setSearchTerm(""); // Reset search when opening

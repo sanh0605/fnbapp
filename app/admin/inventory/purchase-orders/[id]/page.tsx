@@ -1,7 +1,7 @@
 import { findById, findAll } from "@/lib/sheets_db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import PurchaseOrderForm from "@/components/PurchaseOrderForm";
+import PurchaseOrderForm from "../components/PurchaseOrderForm";
 
 export const dynamic = "force-dynamic";
 

@@ -1,0 +1,305 @@
+"use client";
+
+import { useState } from "react";
+import { saveSemiProduct } from "../actions";
+import { FormModal } from "@/components/ui/FormModal";
+import { LoadingButton } from "@/components/ui/LoadingButton";
+import { SearchableSelect } from "@/components/SearchableSelect";
+import { CustomDatePicker } from "@/components/CustomDatePicker";
+import type { DBSemiProduct, DBRecipe, DBBaseIngredient, DBUnit } from "@/types/db";
+
+interface SemiProductFormProps {
+  units: DBUnit[];
+  baseIngredients: DBBaseIngredient[];
+  semiProducts: DBSemiProduct[];
+  initialData?: DBSemiProduct;
+  initialRecipe?: DBRecipe;
+}
+
+export function SemiProductForm({ units, baseIngredients, semiProducts, initialData, initialRecipe }: SemiProductFormProps) {
+  const isEdit = !!initialData;
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [name, setName] = useState(initialData?.name || "");
+  const [baseUnit, setBaseUnit] = useState(initialData?.base_unit || "");
+  const [batchYield, setBatchYield] = useState(initialData?.batch_yield || "");
+  const [status, setStatus] = useState(initialData?.status || "ACTIVE");
+  const [effectiveDate, setEffectiveDate] = useState<Date | null>(null);
+  
+  const initialIngredients = initialRecipe?.ingredients_json 
+    ? JSON.parse(initialRecipe.ingredients_json) 
+    : [];
+    
+  const [ingredients, setIngredients] = useState<any[]>(initialIngredients);
+
+  const unitOptions = units.map(u => ({ id: u.id, label: u.name }));
+  
+  // Prevent self-reference in ingredients
+  const availableSemiProducts = semiProducts.filter(s => s.id !== initialData?.id);
+
+  function addIngredient() {
+    setIngredients([...ingredients, { ingredient_type: "BASE_INGREDIENT", ingredient_id: "", quantity: "0" }]);
+  }
+
+  function updateIngredient(idx: number, fields: any) {
+    const newIngs = [...ingredients];
+    newIngs[idx] = { ...newIngs[idx], ...fields };
+    setIngredients(newIngs);
+  }
+
+  function removeIngredient(idx: number) {
+    setIngredients(ingredients.filter((_, i) => i !== idx));
+  }
+
+  function getIngredientBaseUnit(type: string, id: string) {
+    if (!id) return "";
+    let sourceUnitId = "";
+    if (type === "BASE_INGREDIENT") {
+      sourceUnitId = baseIngredients.find(b => b.id === id)?.base_unit || "";
+    } else {
+      sourceUnitId = semiProducts.find(s => s.id === id)?.base_unit || "";
+    }
+    return units.find(u => u.id === sourceUnitId)?.name || "";
+  }
+
+  async function handleSubmit(formData: FormData) {
+    setLoading(true);
+    setError(null);
+
+    if (!name || !baseUnit || !batchYield) {
+      setError("Vui lòng nhập đầy đủ thông tin tên, đơn vị, và mẻ chuẩn");
+      setLoading(false);
+      return;
+    }
+
+    const validIngredients = ingredients.filter(ing => ing.ingredient_id && Number(ing.quantity) > 0);
+    if (validIngredients.length === 0) {
+      setError("Phải có ít nhất 1 thành phần nguyên liệu");
+      setLoading(false);
+      return;
+    }
+
+    formData.append("is_edit", String(isEdit));
+    if (isEdit) formData.append("id", initialData!.id);
+    formData.append("name", name);
+    formData.append("base_unit", baseUnit);
+    formData.append("batch_yield", batchYield);
+    formData.append("status", status);
+    formData.append("ingredients_json", JSON.stringify(validIngredients));
+    if (effectiveDate) {
+      formData.append("effective_date", effectiveDate.toISOString());
+    }
+
+    const res = await saveSemiProduct(formData);
+    setLoading(false);
+    
+    if (res.error) {
+      setError(res.error);
+    } else {
+      setIsOpen(false);
+      if (!isEdit) {
+        setName("");
+        setBaseUnit("");
+        setBatchYield("");
+        setIngredients([]);
+        setEffectiveDate(null);
+      }
+    }
+  }
+
+  return (
+    <>
+      {isEdit ? (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-4"
+        >
+          Sửa
+        </button>
+      ) : (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+        >
+          + Thêm Bán Thành Phẩm
+        </button>
+      )}
+
+      <FormModal
+        isOpen={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+          setError(null);
+        }}
+        title={isEdit ? "Sửa Bán Thành Phẩm" : "Thêm Bán Thành Phẩm"}
+        maxWidth="max-w-3xl"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+            >
+              Hủy
+            </button>
+            <LoadingButton
+              type="submit"
+              form="semi-product-form"
+              loading={loading}
+              loadingText="Đang lưu..."
+            >
+              {isEdit ? "Cập nhật" : "Lưu Bán Thành Phẩm"}
+            </LoadingButton>
+          </>
+        }
+      >
+        <form id="semi-product-form" action={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tên Bán Thành Phẩm</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                placeholder="VD: Trà đen ủ, Trân châu nấu..."
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị quản lý (cơ bản)</label>
+              <SearchableSelect
+                options={unitOptions}
+                value={baseUnit}
+                onChange={setBaseUnit}
+                placeholder="VD: ml, g..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quy mô mẻ chuẩn (Batch Yield)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  step="any"
+                  value={batchYield}
+                  onChange={(e) => setBatchYield(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  placeholder="VD: 5000"
+                />
+                <span className="text-gray-500 font-medium text-sm w-12">
+                  {units.find(u => u.id === baseUnit)?.name || "---"}
+                </span>
+              </div>
+            </div>
+
+            {isEdit && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white"
+                  >
+                    <option value="ACTIVE">Đang sử dụng</option>
+                    <option value="INACTIVE">Ngừng sử dụng</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ngày áp dụng công thức (Nếu đổi)</label>
+                  <CustomDatePicker
+                    selected={effectiveDate}
+                    onChange={setEffectiveDate}
+                    placeholderText="Mặc định: Ngay lúc này"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 text-gray-900"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1">Để trống hệ thống sẽ ghi nhận thay đổi từ lúc bấm lưu.</p>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h4 className="text-base font-bold text-gray-900">Công thức (Recipe) cho mẻ chuẩn</h4>
+                <p className="text-xs text-gray-500">Định lượng để tạo ra {batchYield || "0"} {units.find(u => u.id === baseUnit)?.name || "đơn vị"}</p>
+              </div>
+              <button
+                type="button"
+                onClick={addIngredient}
+                className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
+              >
+                + Thêm thành phần
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {ingredients.map((ing, idx) => (
+                <div key={idx} className="flex gap-2 items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <select
+                    value={ing.ingredient_type}
+                    onChange={(e) => updateIngredient(idx, { ingredient_type: e.target.value, ingredient_id: "" })}
+                    className="w-40 border border-gray-300 rounded-lg px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white"
+                  >
+                    <option value="BASE_INGREDIENT">Nguyên liệu thô</option>
+                    <option value="SEMI_PRODUCT">Bán thành phẩm</option>
+                  </select>
+
+                  <div className="flex-1">
+                    <select
+                      value={ing.ingredient_id}
+                      onChange={(e) => updateIngredient(idx, { ingredient_id: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white"
+                    >
+                      <option value="">-- Chọn --</option>
+                      {ing.ingredient_type === "BASE_INGREDIENT" 
+                        ? baseIngredients.map(bi => <option key={bi.id} value={bi.id}>{bi.name}</option>)
+                        : availableSemiProducts.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)
+                      }
+                    </select>
+                  </div>
+
+                  <div className="w-32 relative">
+                    <input
+                      type="number"
+                      step="any"
+                      value={ing.quantity}
+                      onChange={(e) => updateIngredient(idx, { quantity: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:border-blue-500 font-mono text-right"
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">
+                      {getIngredientBaseUnit(ing.ingredient_type, ing.ingredient_id)}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => removeIngredient(idx)}
+                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {ingredients.length === 0 && (
+                <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                  Chưa có thành phần nguyên liệu. Nhấn "+ Thêm thành phần"
+                </div>
+              )}
+            </div>
+          </div>
+        </form>
+      </FormModal>
+    </>
+  );
+}

@@ -1,11 +1,12 @@
 import { findAll } from "@/lib/sheets_db";
-import { BrandForm, DeleteBrandButton, EditBrandButton } from "@/components/BrandForm";
+import { BrandForm, DeleteBrandButton } from "./components/BrandForm";
+import type { DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function BrandsPage() {
   const allBrands = await findAll("Brands");
-  const brands = allBrands.filter((b:any) => b.status !== "DELETED");
+  const brands = allBrands.filter((b: DBBrand) => b.status !== "DELETED");
 
   return (
     <div className="space-y-6">
@@ -31,12 +32,12 @@ export default async function BrandsPage() {
           <tbody className="divide-y divide-gray-100">
             {brands.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                   Chưa có dữ liệu thương hiệu.
                 </td>
               </tr>
             ) : (
-              brands.map((brand: any) => (
+              brands.map((brand: DBBrand) => (
                 <tr key={brand.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{brand.id}</td>
                   <td className="px-6 py-4 text-sm text-gray-800 font-semibold">{brand.name}</td>
@@ -45,7 +46,7 @@ export default async function BrandsPage() {
                     {brand.start_date ? new Date(brand.start_date).toLocaleDateString('en-GB') : "N/A"}
                   </td>
                   <td className="px-6 py-4 text-sm text-right">
-                    <EditBrandButton brand={brand} />
+                    <BrandForm initialData={brand} />
                     <DeleteBrandButton id={brand.id} />
                   </td>
                 </tr>

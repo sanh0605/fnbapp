@@ -1,29 +1,28 @@
-import { findAll } from "@/lib/sheets_db";
-import EditUserForm from "@/components/EditUserForm";
+import { getUserById } from "../../actions";
+import EditUserForm from "../../components/EditUserForm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditUserPage({ params }: { params: { id: string } }) {
-  const users = await findAll("Users");
-  const user = users.find((u: any) => u.id === params.id);
+  const user = await getUserById(params.id);
 
   if (!user) {
     notFound();
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <Link href="/admin/users" className="hover:text-blue-600">Nhân sự</Link>
+        <span>/</span>
+        <span className="text-gray-900 font-medium">Chỉnh sửa</span>
+      </div>
+
       <div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <Link href="/admin/users" className="hover:text-blue-600 transition-colors">Quản lý Nhân sự</Link>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">Sửa nhân sự</span>
-        </div>
-        
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Sửa Thông Tin Nhân Sự</h1>
-        <p className="text-gray-500 mt-1">Cập nhật mật khẩu hoặc phân quyền cho tài khoản {user.username}.</p>
+        <h1 className="text-2xl font-bold text-gray-900">Chỉnh sửa nhân sự: {user.username}</h1>
+        <p className="text-sm text-gray-500 mt-1">Cập nhật quyền hạn hoặc thay đổi mật khẩu cho tài khoản này.</p>
       </div>
 
       <EditUserForm user={user} />

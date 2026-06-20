@@ -1,5 +1,5 @@
 import { findAll } from "@/lib/sheets_db";
-import PurchaseOrderForm from "@/components/PurchaseOrderForm";
+import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";

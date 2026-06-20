@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getBrands } from "@/app/actions/brands";
+import { getBrands } from "@/app/admin/brands/actions";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
