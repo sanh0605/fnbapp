@@ -23,8 +23,9 @@ export default function POSScreen({
   variants: any[];
   modifiers: any[];
   promotions?: any[];
+  bestSellers?: string[];
 }) {
-  const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [activeCategory, setActiveCategory] = useState<string>("BEST_SELLERS");
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -65,16 +66,49 @@ export default function POSScreen({
   }, [modifiers]);
 
   const filteredProducts = useMemo(() => {
-    let result = activeCategory === "ALL"
-      ? products
-      : products.filter((p: any) => p.category_id === activeCategory);
+    let result = products;
+    if (activeCategory === "BEST_SELLERS") {
+      result = products.filter((p: any) => (bestSellers || []).includes(p.id));
+      result.sort((a: any, b: any) => (bestSellers || []).indexOf(a.id) - (bestSellers || []).indexOf(b.id));
+    } else if (activeCategory !== "ALL") {
+      result = products.filter((p: any) => p.category_id === activeCategory);
+    }
     
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((p: any) => p.name.toLowerCase().includes(q));
     }
     return result;
-  }, [products, activeCategory, searchQuery]);
+  }, [products, activeCategory, searchQuery, bestSellers]);
+
+  const promoProductIds = useMemo(() => {
+    const ids = new Set<string>();
+    const now = new Date();
+    (promotions || []).forEach((p: any) => {
+      if (p.status !== "ACTIVE" || p.type !== "PRODUCT_DISCOUNT") return;
+      const isDateValid = new Date(p.start_date) <= now && (!p.end_date || new Date(p.end_date) >= now);
+      if (!isDateValid) return;
+      if (p.brand_id && p.brand_id !== brandId) return;
+
+      let applicableVariantsList: string[] = [];
+      try {
+        if (p.applicable_products_json) {
+          const parsed = JSON.parse(p.applicable_products_json);
+          if (Array.isArray(parsed)) {
+            applicableVariantsList = parsed;
+          } else if (parsed && typeof parsed === "object") {
+            applicableVariantsList = Object.keys(parsed);
+          }
+        }
+      } catch (e) {}
+      
+      applicableVariantsList.forEach(vId => {
+        const variant = variants.find((v: any) => v.id === vId);
+        if (variant) ids.add(variant.product_id);
+      });
+    });
+    return ids;
+  }, [promotions, variants, brandId]);
 
   const openProductModal = (product: any, editIndex: number | null = null) => {
     const prodVariants = variants.filter((v: any) => v.product_id === product.id);
@@ -583,6 +617,12 @@ export default function POSScreen({
         <div className="bg-white border-b border-gray-200 p-3 shrink-0">
           <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
             <button
+              onClick={() => setActiveCategory("BEST_SELLERS")}
+              className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === "BEST_SELLERS" ? "bg-orange-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            >
+              🔥 Bán chạy
+            </button>
+            <button
               onClick={() => setActiveCategory("ALL")}
               className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === "ALL" ? "bg-orange-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
             >
@@ -613,7 +653,12 @@ export default function POSScreen({
                   onClick={() => openProductModal(p)}
                   className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition active:scale-95 text-left h-48"
                 >
-                  <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 w-full shrink-0">
+                  <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 w-full shrink-0 relative">
+                    {promoProductIds.has(p.id) && (
+                      <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10 shadow-sm shadow-red-500/50">
+                        🔥 PROMO
+                      </div>
+                    )}
                     {p.image_url ? (
                       <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
                     ) : (
