@@ -187,7 +187,7 @@ export function SupplierModal({
     if (res.error) {
       setError(res.error);
     } else {
-      if (onSuccess && res.data?.id) onSuccess(res.data.id);
+      if (onSuccess && typeof res.id === "string") onSuccess(res.id);
       onClose();
     }
   }
