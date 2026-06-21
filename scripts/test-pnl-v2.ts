@@ -14,7 +14,7 @@ dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
 const { findAll } = require("../lib/sheets_db");
-const { submitOrderV2 } = require("../app/actions/pos");
+const { submitOrderV2 } = require("../app/pos/actions");
 const { getPnLDataV2 } = require("../app/actions/reports");
 
 async function main() {

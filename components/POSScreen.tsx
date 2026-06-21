@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { submitOrderV2 } from "@/app/actions/pos";
+import { submitOrderV2 } from "@/app/pos/actions";
 import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
 import { categoryIcon } from "@/lib/pos-category-icons";

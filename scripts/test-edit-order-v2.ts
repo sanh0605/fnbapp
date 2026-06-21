@@ -11,7 +11,7 @@ dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
 const { findAllNoCache } = require("../lib/sheets_db");
-const { submitOrderV2 } = require("../app/actions/pos");
+const { submitOrderV2 } = require("../app/pos/actions");
 const { editOrderV2 } = require("../app/actions/order-edit");
 
 async function main() {
