@@ -5,6 +5,9 @@ import { submitOrderV2 } from "@/app/actions/pos";
 import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
 import { categoryIcon } from "@/lib/pos-category-icons";
+import { DiscountBadge, DISCOUNT_KIND } from "@/components/pos/DiscountBadge";
+import { useEffect, useRef } from "react";
+import { categoryIcon } from "@/lib/pos-category-icons";
 
 export default function POSScreen({
   brandId,
@@ -301,6 +304,46 @@ export default function POSScreen({
     return { appliedPromo: null, promoDiscountAmount: 0 };
   }, [cart, promotions, brandId, appliedPromoCode]);
 
+  const itemPromoDiscounts = useMemo(() => {
+    const discounts: number[] = new Array(cart.length).fill(0);
+    if (appliedPromo?.type === "PRODUCT_DISCOUNT") {
+      let isMap = false;
+      let applicableVariantsMap: Record<string, number> = {};
+      let applicableVariantsList: string[] = [];
+      try {
+        if (appliedPromo.applicable_products_json) {
+          const parsed = JSON.parse(appliedPromo.applicable_products_json);
+          if (Array.isArray(parsed)) {
+            applicableVariantsList = parsed;
+          } else if (parsed && typeof parsed === "object") {
+            applicableVariantsMap = parsed;
+            applicableVariantsList = Object.keys(parsed);
+            isMap = true;
+          }
+        }
+      } catch(e) {}
+
+      cart.forEach((item, idx) => {
+        if (applicableVariantsList.includes(item.variant_id)) {
+          const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
+          const baseTotal = (item.unit_price + modsPrice) * item.qty;
+          const val = isMap ? Number(applicableVariantsMap[item.variant_id]) : Number(appliedPromo.discount_value);
+          let itemDiscount = 0;
+          if (appliedPromo.discount_type === "PERCENT") {
+            itemDiscount = baseTotal * (val / 100);
+          } else if (appliedPromo.discount_type === "FLAT_PRICE") {
+            const unitDiscount = Math.max(0, item.unit_price - val);
+            itemDiscount = unitDiscount * item.qty;
+          } else {
+            itemDiscount = val * item.qty;
+          }
+          discounts[idx] = Math.min(baseTotal, itemDiscount);
+        }
+      });
+    }
+    return discounts;
+  }, [cart, appliedPromo]);
+
   const handleApplyPromoCode = () => {
     const code = promoCodeInput.trim().toUpperCase();
     if (!code) return;
@@ -481,6 +524,32 @@ export default function POSScreen({
     }
   };
 
+  const handleConfirmCheckoutRef = useRef(handleConfirmCheckout);
+  useEffect(() => {
+    handleConfirmCheckoutRef.current = handleConfirmCheckout;
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      if (e.key === "+") {
+        e.preventDefault();
+        setIsCartOpen(true);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setIsCheckoutModalOpen(false);
+        setSelectedProduct(null);
+        setIsCartOpen(false);
+      } else if (e.key === "Enter" && isCheckoutModalOpen && !isCheckingOut) {
+        e.preventDefault();
+        handleConfirmCheckoutRef.current("Tien mat");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCheckoutModalOpen, isCheckingOut]);
+
   return (
     <div className="fixed inset-0 flex bg-gray-100 font-sans overflow-hidden">
 
@@ -572,9 +641,21 @@ export default function POSScreen({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             Hoá Đơn
           </h2>
-          <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-1 bg-white/20 rounded hover:bg-white/30">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {cart.length > 0 && (
+              <button 
+                onClick={() => {
+                  if (confirm("Xoá hết món trong giỏ hàng?")) setCart([]);
+                }} 
+                className="text-xs font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
+              >
+                Xoá hết
+              </button>
+            )}
+            <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-1 bg-white/20 rounded hover:bg-white/30">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto bg-gray-50 p-3">
@@ -589,6 +670,8 @@ export default function POSScreen({
                 const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
                 const baseTotal = (item.unit_price + modsPrice) * item.qty;
                 const finalTotal = calculateItemTotal(item);
+                const itemPromoDiscount = itemPromoDiscounts[idx];
+                const manualItemDiscount = baseTotal - finalTotal;
 
                 return (
                   <div key={item.id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-300">
@@ -598,7 +681,7 @@ export default function POSScreen({
                         <p className="text-xs font-semibold text-indigo-600 mt-0.5">Size {item.size_name}</p>
                       </div>
                       <div className="text-right">
-                        {item.discount_amount > 0 && (
+                        {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
                           <div className="text-[11px] text-gray-400 line-through mb-0.5">
                             {baseTotal.toLocaleString('vi-VN')}
                           </div>
@@ -620,11 +703,15 @@ export default function POSScreen({
                       </div>
                     )}
 
-                    {item.discount_amount > 0 && (
-                      <div className="text-[11px] text-red-500 font-medium mb-2">
-                        Đã chiết khấu: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount).toLocaleString('vi-VN')}đ`}
-                      </div>
-                    )}
+                    {/* PHÂN TÁCH GIẢM GIÁ TỪNG MÓN */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {itemPromoDiscount > 0 && (
+                        <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={itemPromoDiscount} />
+                      )}
+                      {manualItemDiscount > 0 && (
+                        <DiscountBadge kind={DISCOUNT_KIND.MANUAL_ITEM} label="Thu ngân" amount={manualItemDiscount} />
+                      )}
+                    </div>
 
                     <div className="flex justify-between items-center mt-2">
                       <button onClick={() => removeFromCart(idx)} className="text-xs text-red-500 font-medium px-2 py-1 bg-red-50 rounded hover:bg-red-100">Xoá</button>
@@ -701,6 +788,18 @@ export default function POSScreen({
               )}
             </div>
           )}
+
+          {userCustomDiscount !== null ? (
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-gray-500 text-sm">Giảm giá Hoá đơn</span>
+              <DiscountBadge kind={DISCOUNT_KIND.ORDER} label="Thu ngân" amount={calculateSubtotal() - totalAmount} />
+            </div>
+          ) : appliedPromo?.type === "ORDER_DISCOUNT" ? (
+             <div className="flex justify-between items-center mb-3">
+              <span className="text-gray-500 text-sm">Khuyến mãi Hoá đơn</span>
+              <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={promoDiscountAmount} />
+            </div>
+          ) : null}
 
           <div className="flex justify-between items-center mb-4">
             <span className="text-gray-500 font-medium">Tổng tiền ({totalItems} món)</span>
