@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateUser } from "@/app/actions/users";
+import { updateUser } from "@/app/admin/users/actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 

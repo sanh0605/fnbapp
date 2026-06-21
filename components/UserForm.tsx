@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addUser, deleteUser } from "@/app/actions/users";
+import { addUser, deleteUserAction as deleteUser } from "@/app/admin/users/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export function UserForm() {
