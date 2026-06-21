@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { saveSemiProduct } from "@/app/actions/recipes";
+import { saveSemiProduct } from "@/app/admin/semi-products/actions";
 import { SearchableSelect } from "./SearchableSelect";
 import { CustomDatePicker } from "./CustomDatePicker";
 import { ModalPortal } from "@/components/ui/ModalPortal";
