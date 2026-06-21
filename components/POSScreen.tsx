@@ -31,10 +31,9 @@ export default function POSScreen({
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
   const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
@@ -125,10 +124,6 @@ export default function POSScreen({
   // Cashier Custom Override State
   const [userCustomDiscount, setUserCustomDiscount] = useState<number | null>(null);
   const [userCustomDiscountType, setUserCustomDiscountType] = useState<"VND" | "PERCENT">("VND");
-
-  // Checkout Modal State
-  const [modalDiscountInput, setModalDiscountInput] = useState<number | null>(null);
-  const [modalDiscountType, setModalDiscountType] = useState<"VND" | "PERCENT">("VND");
 
   // Group modifiers by group_name
   const groupedModifiers = useMemo(() => {
@@ -588,30 +583,10 @@ export default function POSScreen({
 
   const totalAmount = calculateTotalAmount();
 
-  const handleCheckoutClick = () => {
-    if (cart.length === 0) return;
-    
-    if (userCustomDiscount !== null) {
-      setModalDiscountInput(userCustomDiscount);
-      setModalDiscountType(userCustomDiscountType);
-    } else if (appliedPromo) {
-      if (appliedPromo.type === "ORDER_DISCOUNT") {
-        setModalDiscountInput(Number(appliedPromo.discount_value));
-        setModalDiscountType(appliedPromo.discount_type);
-      } else {
-        setModalDiscountInput(0);
-        setModalDiscountType("VND");
-      }
-    } else {
-      setModalDiscountInput(0);
-      setModalDiscountType("VND");
-    }
 
-    setIsCheckoutModalOpen(true);
-  };
 
   const handleConfirmCheckout = async (method: string) => {
-    setIsCheckingOut(true);
+    setIsCheckingOut(method);
 
     const cartInput: CartInput = {
       brand_id: brandId || "",
@@ -645,8 +620,7 @@ export default function POSScreen({
     };
 
     const res = await submitOrderV2(cartInput);
-    setIsCheckingOut(false);
-    setIsCheckoutModalOpen(false);
+    setIsCheckingOut(null);
 
     if (res.success) {
       setSuccessOrderNo(res.order_no || "");
@@ -693,18 +667,19 @@ export default function POSScreen({
         setIsCartOpen(true);
       } else if (e.key === "Escape") {
         e.preventDefault();
-        setIsCheckoutModalOpen(false);
         setIsDraftModalOpen(false);
         setSelectedProduct(null);
         setIsCartOpen(false);
-      } else if (e.key === "Enter" && isCheckoutModalOpen && !isCheckingOut) {
+      } else if (e.key === "Enter" && !isCheckingOut && cart.length > 0) {
         e.preventDefault();
-        handleConfirmCheckoutRef.current("Tien mat");
+        if (confirm("Xác nhận thanh toán TIỀN MẶT cho đơn hàng?")) {
+          handleConfirmCheckoutRef.current("Tien mat");
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isCheckoutModalOpen, isCheckingOut]);
+  }, [isCheckingOut, cart.length]);
 
   return (
     <div className="fixed inset-0 flex bg-gray-100 font-sans overflow-hidden">
@@ -984,20 +959,91 @@ export default function POSScreen({
                   )}
                 </div>
               )}
+
+              {/* Chiết khấu đơn hàng */}
+              <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Chiết khấu đơn hàng</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0 h-9 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserCustomDiscountType("VND");
+                      }}
+                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${userCustomDiscountType === "VND" ? "bg-indigo-500 text-white" : "bg-white text-gray-500 hover:bg-gray-100"}`}
+                    >
+                      VNĐ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserCustomDiscountType("PERCENT");
+                      }}
+                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${userCustomDiscountType === "PERCENT" ? "bg-indigo-500 text-white" : "bg-white text-gray-500 hover:bg-gray-100"}`}
+                    >
+                      %
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Nhập giảm giá..."
+                    value={userCustomDiscount === 0 || userCustomDiscount === null ? "" : userCustomDiscount}
+                    onChange={(e) => {
+                      const val = e.target.value === "" ? null : Number(e.target.value);
+                      setUserCustomDiscount(val);
+                    }}
+                    className="flex-1 w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-right font-medium text-sm h-9"
+                  />
+                  {userCustomDiscount !== null && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserCustomDiscount(null);
+                      }}
+                      className="text-gray-400 hover:text-red-500 text-sm font-bold px-2 py-1.5 hover:bg-red-50 rounded"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
-          {userCustomDiscount !== null ? (
+          {userCustomDiscount !== null && (
             <div className="flex justify-between items-center mb-3">
               <span className="text-gray-500 text-sm">Giảm giá Hoá đơn</span>
-              <DiscountBadge kind={DISCOUNT_KIND.ORDER} label="Thu ngân" amount={calculateSubtotal() - totalAmount} />
+              <DiscountBadge
+                kind={DISCOUNT_KIND.ORDER}
+                label="Thu ngân"
+                amount={
+                  userCustomDiscountType === "PERCENT"
+                    ? (calculateSubtotal() * userCustomDiscount) / 100
+                    : userCustomDiscount
+                }
+              />
             </div>
-          ) : appliedPromo?.type === "ORDER_DISCOUNT" ? (
-             <div className="flex justify-between items-center mb-3">
-              <span className="text-gray-500 text-sm">Khuyến mãi Hoá đơn</span>
-              <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={promoDiscountAmount} />
-            </div>
-          ) : null}
+          )}
+
+          {appliedPromo && (
+            (() => {
+              const amount = userCustomDiscount !== null && appliedPromo.type === "ORDER_DISCOUNT" ? 0 : promoDiscountAmount;
+              if (amount <= 0) return null;
+              return (
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-gray-500 text-sm">Khuyến mãi hệ thống</span>
+                  <DiscountBadge
+                    kind={DISCOUNT_KIND.PROMO}
+                    label="Hệ thống"
+                    amount={amount}
+                  />
+                </div>
+              );
+            })()
+          )}
 
           <div className="flex justify-between items-center mb-4">
             <span className="text-gray-500 font-medium">Tổng tiền ({totalItems} món)</span>
@@ -1012,16 +1058,48 @@ export default function POSScreen({
               </div>
             </div>
           </div>
-          <button
-            onClick={handleCheckoutClick}
-            disabled={cart.length === 0 || isCheckingOut}
-            className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2"
-          >
-            <>
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-              THANH TOÁN
-            </>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleConfirmCheckout("Tien mat")}
+              disabled={cart.length === 0 || !!isCheckingOut}
+              className="flex-1 bg-emerald-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2"
+            >
+              {isCheckingOut === "Tien mat" ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>ĐANG XỬ LÝ...</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-lg">💵</span>
+                  <span>TIỀN MẶT</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => handleConfirmCheckout("Chuyen khoan")}
+              disabled={cart.length === 0 || !!isCheckingOut}
+              className="flex-1 bg-blue-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2"
+            >
+              {isCheckingOut === "Chuyen khoan" ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>ĐANG XỬ LÝ...</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-lg">💳</span>
+                  <span>CHUYỂN KHOẢN</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1191,124 +1269,7 @@ export default function POSScreen({
         </div>
       )}
 
-      {/* Checkout Modal */}
-      {isCheckoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-xl font-bold text-gray-900">Chọn phương thức</h3>
-              <button
-                onClick={() => !isCheckingOut && setIsCheckoutModalOpen(false)}
-                className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300 disabled:opacity-50"
-                disabled={isCheckingOut}
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
 
-            <div className="p-6 bg-white space-y-4">
-              <div className="text-center mb-6">
-                <p className="text-sm text-gray-500 uppercase font-bold tracking-wider mb-1">Tạm Tính</p>
-                <div className="text-xl font-bold text-gray-700 line-through">{calculateSubtotal().toLocaleString('vi-VN')} đ</div>
-                <div className="mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Chiết khấu đơn hàng</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
-                      <button
-                        onClick={() => {
-                          setModalDiscountType("VND");
-                          setUserCustomDiscount(modalDiscountInput);
-                          setUserCustomDiscountType("VND");
-                        }}
-                        className={`px-3 py-2 text-sm font-bold transition-colors ${modalDiscountType === "VND" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
-                      >
-                        VNĐ
-                      </button>
-                      <button
-                        onClick={() => {
-                          setModalDiscountType("PERCENT");
-                          setUserCustomDiscount(modalDiscountInput);
-                          setUserCustomDiscountType("PERCENT");
-                        }}
-                        className={`px-3 py-2 text-sm font-bold transition-colors ${modalDiscountType === "PERCENT" ? "bg-indigo-100 text-indigo-700" : "bg-white text-gray-500 hover:bg-gray-100"}`}
-                      >
-                        %
-                      </button>
-                    </div>
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder="Nhập giảm giá..."
-                      value={modalDiscountInput === 0 ? "" : modalDiscountInput || ""}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        setModalDiscountInput(val);
-                        setUserCustomDiscount(val);
-                        setUserCustomDiscountType(modalDiscountType);
-                      }}
-                      className="flex-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-right font-medium"
-                    />
-                  </div>
-                  {appliedPromo && appliedPromo.type === "PRODUCT_DISCOUNT" && (
-                    <p className="mt-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                      ⚡ {appliedPromo.name} đang áp dụng: giảm {promoDiscountAmount.toLocaleString('vi-VN')}đ (đã gồm trong giá món)
-                    </p>
-                  )}
-                  {userCustomDiscount !== null && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserCustomDiscount(null);
-                        if (appliedPromo) {
-                          if (appliedPromo.type === "ORDER_DISCOUNT") {
-                            setModalDiscountInput(Number(appliedPromo.discount_value));
-                            setModalDiscountType(appliedPromo.discount_type);
-                          } else {
-                            setModalDiscountInput(promoDiscountAmount);
-                            setModalDiscountType("VND");
-                          }
-                        } else {
-                          setModalDiscountInput(0);
-                          setModalDiscountType("VND");
-                        }
-                      }}
-                      className="mt-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-center gap-1 w-full text-center"
-                    >
-                      🔄 Khôi phục khuyến mãi hệ thống
-                    </button>
-                  )}
-                </div>
-                <p className="text-sm text-indigo-600 uppercase font-black tracking-wider mb-1 mt-6">Khách Phải Trả</p>
-                <div className="text-4xl font-black text-orange-600">{totalAmount.toLocaleString('vi-VN')} đ</div>
-              </div>
-
-              <button
-                onClick={() => handleConfirmCheckout("Tien mat")}
-                disabled={isCheckingOut}
-                className="w-full bg-emerald-50 text-emerald-700 border-2 border-emerald-200 font-bold text-lg py-4 rounded-xl hover:bg-emerald-100 hover:border-emerald-300 active:scale-[0.98] transition-all flex justify-center items-center gap-3 disabled:opacity-50"
-              >
-                <span className="text-2xl">💵</span>
-                <span>Tiền mặt</span>
-              </button>
-
-              <button
-                onClick={() => handleConfirmCheckout("Chuyen khoan")}
-                disabled={isCheckingOut}
-                className="w-full bg-blue-50 text-blue-700 border-2 border-blue-200 font-bold text-lg py-4 rounded-xl hover:bg-blue-100 hover:border-blue-300 active:scale-[0.98] transition-all flex justify-center items-center gap-3 disabled:opacity-50"
-              >
-                <span className="text-2xl">💳</span>
-                <span>Chuyển khoản (QR)</span>
-              </button>
-
-              {isCheckingOut && (
-                <div className="text-center text-sm font-medium text-indigo-600 pt-2 animate-pulse">
-                  Đang ghi nhận đơn hàng...
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Success Modal */}
       {successOrderNo && (
