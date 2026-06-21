@@ -85,11 +85,15 @@ export default async function POSPage({
     variantAvailableMap.set(v.id, isAvailable);
   });
 
+  // Temporarily disable out-of-stock feature as requested by owner (returns empty array)
+  const outOfStockProductIds: string[] = [];
+  /*
   const outOfStockProductIds = activeProducts.filter((p: any) => {
     const pVariants = activeVariants.filter((v: any) => v.product_id === p.id);
     if (pVariants.length === 0) return false; // if no variants, assume it's available or not trackable
     return pVariants.every((v: any) => variantAvailableMap.get(v.id) === false);
   }).map((p: any) => p.id);
+  */
 
   return (
     <POSScreen 
