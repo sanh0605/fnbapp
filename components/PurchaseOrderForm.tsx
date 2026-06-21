@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { savePurchaseOrder, addPurchaseSource } from "@/app/actions/purchase-orders";
+import { savePurchaseOrder, addPurchaseSource } from "@/app/admin/inventory/purchase-orders/actions";
 import { useRouter } from "next/navigation";
 import { SearchableSelect } from "./SearchableSelect";
 import { SupplierModal } from "./SupplierForm";
