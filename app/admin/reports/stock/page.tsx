@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
-import { getRealtimeStock } from "@/app/actions/stock";
+import { getRealtimeStock } from "@/app/admin/inventory/actions";
 import { findAll } from "@/lib/sheets_db";
 import StockTable from "@/components/StockTable";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { submitStockAdjustment, approveStockAdjustment } from "@/app/actions/stock";
+import { submitStockAdjustment, approveStockAdjustment } from "@/app/admin/inventory/actions";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 

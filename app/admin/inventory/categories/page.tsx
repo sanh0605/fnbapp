@@ -1,6 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { ItemCategoryForm, DeleteBtn } from "@/components/InventoryForms";
-import { deleteItemCategory } from "@/app/actions/inventory";
+import { deleteItemCategory } from "@/app/admin/inventory/actions";
 
 export const dynamic = "force-dynamic";
 

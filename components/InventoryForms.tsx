@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addItemCategory, updateItemCategory, addBaseIngredient, updateBaseIngredient, addPurchasedItem, updatePurchasedItem, addConversion, updateConversion } from "@/app/actions/inventory";
+import { addItemCategory, updateItemCategory, addBaseIngredient, updateBaseIngredient, addPurchasedItem, updatePurchasedItem, addConversion, updateConversion } from "@/app/admin/inventory/actions";
 import { SearchableSelect } from "./SearchableSelect";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 

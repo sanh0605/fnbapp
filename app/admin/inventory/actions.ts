@@ -1,26 +1,27 @@
 "use server";
 
 import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
+import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
-export async function addItemCategory(formData: FormData) {
+export async function addItemCategory(formData: FormData): Promise<ActionResponse> {
   const name = formData.get("name") as string;
   const system_type = formData.get("system_type") as string;
 
-  if (!name || !system_type) return { error: "Vui lòng nhập đầy đủ thông tin" };
+  if (!name || !system_type) return fail("Vui lòng nhập đầy đủ thông tin");
 
   try {
     const id = await generateNewId("Item_Categories", "NHH");
     await insert("Item_Categories", { id, name, system_type });
     revalidatePath("/admin/inventory/categories");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function updateItemCategory(formData: FormData) {
+export async function updateItemCategory(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const system_type = formData.get("system_type") as string;
@@ -28,25 +29,25 @@ export async function updateItemCategory(formData: FormData) {
   try {
     await update("Item_Categories", id, { name, system_type });
     revalidatePath("/admin/inventory/categories");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function deleteItemCategory(formData: FormData) {
+export async function deleteItemCategory(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   try {
     await remove("Item_Categories", id);
     revalidatePath("/admin/inventory/categories");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
 // --- BASE INGREDIENTS (Nhóm Nguyên Liệu) ---
-export async function addBaseIngredient(formData: FormData) {
+export async function addBaseIngredient(formData: FormData): Promise<ActionResponse> {
   const itemsJson = formData.get("items_json") as string;
   
   if (itemsJson) {
@@ -63,9 +64,9 @@ export async function addBaseIngredient(formData: FormData) {
         });
       }
       revalidatePath("/admin/inventory/base-ingredients");
-      return { success: true };
+      return ok();
     } catch (error: any) {
-      return { error: error.message };
+      return fail(error.message);
     }
   }
 
@@ -73,19 +74,19 @@ export async function addBaseIngredient(formData: FormData) {
   const name = formData.get("name") as string;
   const base_unit = formData.get("base_unit") as string;
 
-  if (!name || !base_unit) return { error: "Vui lòng nhập đầy đủ thông tin" };
+  if (!name || !base_unit) return fail("Vui lòng nhập đầy đủ thông tin");
 
   try {
     const id = await generateNewId("Base_Ingredients", "NNL");
     await insert("Base_Ingredients", { id, name, base_unit });
     revalidatePath("/admin/inventory/base-ingredients");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function updateBaseIngredient(formData: FormData) {
+export async function updateBaseIngredient(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const base_unit = formData.get("base_unit") as string;
@@ -98,32 +99,32 @@ export async function updateBaseIngredient(formData: FormData) {
       is_non_inventory: is_non_inventory ? "TRUE" : "FALSE"
     });
     revalidatePath("/admin/inventory/base-ingredients");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function deleteBaseIngredient(formData: FormData) {
+export async function deleteBaseIngredient(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   try {
     await remove("Base_Ingredients", id);
     revalidatePath("/admin/inventory/base-ingredients");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
 // --- PURCHASED ITEMS (Hàng Hoá Mua Vào) ---
-export async function addPurchasedItem(formData: FormData) {
+export async function addPurchasedItem(formData: FormData): Promise<ActionResponse> {
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
   const base_ingredient_id = formData.get("base_ingredient_id") as string;
   const unitsJson = formData.get("units_json") as string;
   const base_unit = formData.get("base_unit") as string;
 
-  if (!name || !item_category_id) return { error: "Vui lòng nhập Tên và chọn Phân loại" };
+  if (!name || !item_category_id) return fail("Vui lòng nhập Tên và chọn Phân loại");
 
   try {
     const id = await generateNewId("Purchased_Items", "SPM");
@@ -153,13 +154,13 @@ export async function addPurchasedItem(formData: FormData) {
 
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function updatePurchasedItem(formData: FormData) {
+export async function updatePurchasedItem(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
@@ -192,8 +193,6 @@ export async function updatePurchasedItem(formData: FormData) {
               const poLines = await findAll("Purchase_Order_Lines");
               const linesToUpdate = poLines.filter((p: any) => p.purchased_item_id === id && p.unit === oldConv.purchased_unit);
               for (const line of linesToUpdate) {
-                 await update("Purchase_Order_Lines", line.id, { unit: u.name }); // Use partial update or full, sheet_db.ts `update` function uses Object.assign internally over existing row if needed, but since we overwrite it, it's better to pass just { unit: u.name }, Wait, `update` expects the full object.
-                 // let's pass the full object with modification
                  await update("Purchase_Order_Lines", line.id, { ...line, unit: u.name });
               }
             }
@@ -230,32 +229,32 @@ export async function updatePurchasedItem(formData: FormData) {
 
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function deletePurchasedItem(formData: FormData) {
+export async function deletePurchasedItem(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   try {
     await remove("Purchased_Items", id);
     revalidatePath("/admin/inventory/items");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
 // --- UOM CONVERSIONS (Bảng Quy Đổi) ---
-export async function addConversion(formData: FormData) {
+export async function addConversion(formData: FormData): Promise<ActionResponse> {
   const purchased_item_id = formData.get("purchased_item_id") as string;
   const purchased_unit = formData.get("purchased_unit") as string;
   const conversion_rate = formData.get("conversion_rate") as string;
   const base_unit = formData.get("base_unit") as string;
 
   if (!purchased_item_id || !purchased_unit || !conversion_rate || !base_unit) 
-    return { error: "Thiếu thông tin quy đổi" };
+    return fail("Thiếu thông tin quy đổi");
 
   try {
     const id = await generateNewId("UOM_Conversions", "QD");
@@ -267,13 +266,13 @@ export async function addConversion(formData: FormData) {
       conversion_rate 
     });
     revalidatePath("/admin/inventory/conversions");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function updateConversion(formData: FormData) {
+export async function updateConversion(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   const purchased_item_id = formData.get("purchased_item_id") as string;
   const purchased_unit = formData.get("purchased_unit") as string;
@@ -301,30 +300,29 @@ export async function updateConversion(formData: FormData) {
       conversion_rate 
     });
     revalidatePath("/admin/inventory/conversions");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-export async function deleteConversion(formData: FormData) {
+export async function deleteConversion(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   try {
     await remove("UOM_Conversions", id);
     revalidatePath("/admin/inventory/conversions");
-    return { success: true };
+    return ok();
   } catch (error: any) {
-    return { error: error.message };
+    return fail(error.message);
   }
 }
 
-
 // --- UNITS (Đơn vị) ---
-export async function addUnit(formData: FormData) {
+export async function addUnit(formData: FormData): Promise<ActionResponse> {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   
-  if (!name) return { error: "Vui lòng nhập tên đơn vị" };
+  if (!name) return fail("Vui lòng nhập tên đơn vị");
   try {
     const id = await generateNewId("Units", "U");
     await insert("Units", {
@@ -334,29 +332,151 @@ export async function addUnit(formData: FormData) {
       created_at: new Date().toISOString()
     });
     revalidatePath("/admin/inventory/units");
-    return { success: true };
-  } catch (error: any) { return { error: error.message }; }
+    return ok();
+  } catch (error: any) {
+    return fail(error.message);
+  }
 }
 
-export async function updateUnit(formData: FormData) {
+export async function updateUnit(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   
-  if (!id || !name) return { error: "Thiếu thông tin" };
+  if (!id || !name) return fail("Thiếu thông tin");
   try {
     await update("Units", id, { name, description });
     revalidatePath("/admin/inventory/units");
-    return { success: true };
-  } catch (error: any) { return { error: error.message }; }
+    return ok();
+  } catch (error: any) {
+    return fail(error.message);
+  }
 }
 
-export async function deleteUnit(formData: FormData) {
+export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   try {
-    const { remove } = await import("@/lib/sheets_db");
     await remove("Units", id);
     revalidatePath("/admin/inventory/units");
-    return { success: true };
-  } catch (error: any) { return { error: error.message }; }
+    return ok();
+  } catch (error: any) {
+    return fail(error.message);
+  }
+}
+
+// --- STOCK (Tồn kho) ---
+export const getRealtimeStock = unstable_cache(
+  async () => {
+    const [stockLedger, baseIngredients, semiProducts, units] = await Promise.all([
+      findAll("Stock_Ledger"),
+      findAll("Base_Ingredients"),
+      findAll("Semi_Products"),
+      findAll("Units")
+    ]);
+
+    const stockMap: Record<string, number> = {};
+
+    stockLedger.forEach((entry: any) => {
+      const itemId = entry.item_reference;
+      const qty = Number(entry.quantity_change || 0);
+      if (!stockMap[itemId]) {
+        stockMap[itemId] = 0;
+      }
+      stockMap[itemId] += qty;
+    });
+
+    const allItems = [
+      ...baseIngredients.map((b: any) => ({ ...b, item_type: "BASE_INGREDIENT" })),
+      ...semiProducts.map((s: any) => ({ ...s, item_type: "SEMI_PRODUCT" }))
+    ];
+
+    return allItems.map(item => {
+      const unitName = units.find((u:any) => u.id === item.base_unit)?.name || item.base_unit;
+      return {
+        id: item.id,
+        name: item.name,
+        item_type: item.item_type,
+        current_stock: stockMap[item.id] || 0,
+        unitName
+      };
+    });
+  },
+  ["realtime-stock-all"],
+  { revalidate: 60, tags: ["sheets-Stock_Ledger", "sheets-Base_Ingredients", "sheets-Semi_Products", "sheets-Units"] }
+);
+
+export async function submitStockAdjustment(data: any, role: string, username: string): Promise<ActionResponse> {
+  try {
+    const nowIso = new Date().toISOString();
+    const id = await generateNewId("Stock_Adjustments", "SADJ");
+    
+    // If admin submits, it's auto-approved
+    const isApproved = role === "ADMIN";
+    
+    await insert("Stock_Adjustments", {
+      id,
+      item_reference: data.item_id,
+      theoretical_qty: data.theoretical_qty,
+      actual_qty: data.actual_qty,
+      difference: data.difference,
+      reason: data.reason || "",
+      status: isApproved ? "APPROVED" : "PENDING",
+      created_by: username,
+      created_at: nowIso,
+      approved_by: isApproved ? username : "",
+      approved_at: isApproved ? nowIso : ""
+    });
+
+    if (isApproved) {
+      // Create ledger entry immediately
+      const ledger_id = await generateNewId("Stock_Ledger", "STK");
+      await insert("Stock_Ledger", {
+        id: ledger_id,
+        transaction_type: "STOCK_ADJUST",
+        reference_id: id,
+        item_reference: data.item_id,
+        quantity_change: data.difference,
+        unit_cost: 0,
+        created_at: nowIso
+      });
+    }
+
+    revalidatePath("/admin/inventory/stock");
+    return ok();
+  } catch (error: any) {
+    return fail(error.message);
+  }
+}
+
+export async function approveStockAdjustment(adjustmentId: string, adminUsername: string): Promise<ActionResponse> {
+  try {
+    const adjustments = await findAll("Stock_Adjustments");
+    const adj = adjustments.find((a:any) => a.id === adjustmentId);
+    if (!adj) return fail("Không tìm thấy phiếu điều chỉnh");
+    if (adj.status === "APPROVED") return fail("Phiếu đã được duyệt");
+
+    const nowIso = new Date().toISOString();
+    
+    await update("Stock_Adjustments", adjustmentId, {
+      status: "APPROVED",
+      approved_by: adminUsername,
+      approved_at: nowIso
+    });
+
+    const ledger_id = await generateNewId("Stock_Ledger", "STK");
+    await insert("Stock_Ledger", {
+      id: ledger_id,
+      transaction_type: "STOCK_ADJUST",
+      reference_id: adjustmentId,
+      item_reference: adj.item_reference,
+      quantity_change: adj.difference,
+      unit_cost: 0,
+      created_at: nowIso
+    });
+
+    revalidatePath("/admin/inventory/stock");
+    return ok();
+  } catch (error: any) {
+    return fail(error.message);
+  }
 }

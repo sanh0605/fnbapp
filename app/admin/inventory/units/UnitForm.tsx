@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addUnit, updateUnit, deleteUnit } from "@/app/actions/inventory";
+import { addUnit, updateUnit, deleteUnit } from "@/app/admin/inventory/actions";
 
 export function UnitForm({ initialData }: { initialData?: any }) {
   const [isOpen, setIsOpen] = useState(false);
