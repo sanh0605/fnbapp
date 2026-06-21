@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { saveProductionOrder } from "@/app/actions/production";
+import { saveProductionOrder } from "@/app/admin/production/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function ProductionForm({ semiProducts, recipes, baseIngredients, units }: any) {
