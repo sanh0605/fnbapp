@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { saveProductCategory, updateProductCategory, deleteProductCategory } from "@/app/actions/products";
+import { saveCategory as saveProductCategory, updateCategory as updateProductCategory, deleteCategory as deleteProductCategory } from "@/app/admin/products/categories/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function ProductCategoryForm({ initialData }: any) {

@@ -1,55 +1,16 @@
 "use server";
 
-import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
+import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
+import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 
-// --- PRODUCT CATEGORIES ---
-export async function saveProductCategory(formData: FormData) {
-  const name = formData.get("name") as string;
-  if (!name) return { error: "Vui lòng nhập tên danh mục" };
+const PRODUCT_SHEET = "Products";
+const VARIANT_SHEET = "Product_Variants";
+const PRICE_HISTORY_SHEET = "Product_Price_History";
+const RECIPE_SHEET = "Recipes";
+const PATH = "/admin/products";
 
-  try {
-    const id = await generateNewId("Product_Categories", "CAT");
-    await insert("Product_Categories", {
-      id,
-      name,
-      status: "ACTIVE",
-      created_at: new Date().toISOString()
-    });
-    revalidatePath("/admin/products/categories");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
-  }
-}
-
-export async function updateProductCategory(formData: FormData) {
-  const id = formData.get("id") as string;
-  const name = formData.get("name") as string;
-  if (!id || !name) return { error: "Dữ liệu không hợp lệ" };
-
-  try {
-    await update("Product_Categories", id, { name });
-    revalidatePath("/admin/products/categories");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
-  }
-}
-
-export async function deleteProductCategory(formData: FormData) {
-  const id = formData.get("id") as string;
-  try {
-    await update("Product_Categories", id, { status: "DELETED" });
-    revalidatePath("/admin/products/categories");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
-  }
-}
-
-// --- PRODUCTS & VARIANTS & RECIPES (The Product Builder) ---
-export async function saveProduct(formData: FormData) {
+export async function saveProduct(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   const category_id = formData.get("category_id") as string;
   const name = formData.get("name") as string;
@@ -57,17 +18,17 @@ export async function saveProduct(formData: FormData) {
   const variantsJson = formData.get("variants_json") as string;
   const effectiveDateStr = formData.get("effective_date") as string;
   
-  if (!name || !category_id || !variantsJson) return { error: "Thiếu thông tin bắt buộc" };
+  if (!name || !category_id || !variantsJson) return fail("Thiếu thông tin bắt buộc");
 
   try {
     const isEdit = !!id;
-    const productId = isEdit ? id : await generateNewId("Products", "PROD");
+    const productId = isEdit ? id : await generateNewId(PRODUCT_SHEET, "PROD");
 
     // 1. Lưu/Cập nhật Món chính
     if (isEdit) {
-      await update("Products", productId, { category_id, name, image_url: imageUrl });
+      await update(PRODUCT_SHEET, productId, { category_id, name, image_url: imageUrl });
     } else {
-      await insert("Products", {
+      await insert(PRODUCT_SHEET, {
         id: productId,
         category_id,
         name,
@@ -79,9 +40,9 @@ export async function saveProduct(formData: FormData) {
 
     // 2. Xử lý Variants & Recipes
     const variants = JSON.parse(variantsJson);
-    const existingVariants = isEdit ? (await findAll("Product_Variants")).filter((v:any) => v.product_id === productId && v.status !== "DELETED") : [];
-    const allRecipes = await findAll("Recipes");
-    const allPriceHistory = await findAll("Product_Price_History");
+    const existingVariants = isEdit ? (await findAll(VARIANT_SHEET)).filter((v:any) => v.product_id === productId && v.status !== "DELETED") : [];
+    const allRecipes = await findAll(RECIPE_SHEET);
+    const allPriceHistory = await findAll(PRICE_HISTORY_SHEET);
     
     const keepVariantIds: string[] = [];
     
@@ -104,14 +65,14 @@ export async function saveProduct(formData: FormData) {
           oldPrice = Number(v.price); // Ghi nhận giá mới
         }
 
-        await update("Product_Variants", variantId, {
+        await update(VARIANT_SHEET, variantId, {
           size_name: v.size_name,
           price: v.price
         });
         keepVariantIds.push(variantId);
       } else {
-        variantId = await generateNewId("Product_Variants", "VAR");
-        await insert("Product_Variants", {
+        variantId = await generateNewId(VARIANT_SHEET, "VAR");
+        await insert(VARIANT_SHEET, {
           id: variantId,
           product_id: productId,
           size_name: v.size_name,
@@ -132,14 +93,14 @@ export async function saveProduct(formData: FormData) {
         
         if (activePriceHistory) {
           // Đóng history cũ
-          await update("Product_Price_History", activePriceHistory.id, {
+          await update(PRICE_HISTORY_SHEET, activePriceHistory.id, {
             end_date: nowIso
           });
         }
         
         // Tạo history mới
-        const phId = await generateNewId("Product_Price_History", "PPH");
-        await insert("Product_Price_History", {
+        const phId = await generateNewId(PRICE_HISTORY_SHEET, "PPH");
+        await insert(PRICE_HISTORY_SHEET, {
           id: phId,
           variant_id: variantId,
           price: v.price,
@@ -160,13 +121,13 @@ export async function saveProduct(formData: FormData) {
       if (activeRecipe) {
         if (activeRecipe.ingredients_json !== ingredientsJsonString) {
           // Đóng công thức cũ
-          await update("Recipes", activeRecipe.id, {
+          await update(RECIPE_SHEET, activeRecipe.id, {
             end_date: nowIso
           });
           
           // Tạo công thức mới
-          const recipeId = await generateNewId("Recipes", "REC");
-          await insert("Recipes", {
+          const recipeId = await generateNewId(RECIPE_SHEET, "REC");
+          await insert(RECIPE_SHEET, {
             id: recipeId,
             target_type: "PRODUCT_VARIANT",
             target_id: variantId,
@@ -177,8 +138,8 @@ export async function saveProduct(formData: FormData) {
         }
       } else {
         // Tạo công thức lần đầu
-        const recipeId = await generateNewId("Recipes", "REC");
-        await insert("Recipes", {
+        const recipeId = await generateNewId(RECIPE_SHEET, "REC");
+        await insert(RECIPE_SHEET, {
           id: recipeId,
           target_type: "PRODUCT_VARIANT",
           target_id: variantId,
@@ -193,34 +154,37 @@ export async function saveProduct(formData: FormData) {
     if (isEdit) {
       for (const ev of existingVariants) {
         if (!keepVariantIds.includes(ev.id)) {
-          await update("Product_Variants", ev.id, { status: "DELETED" });
+          await update(VARIANT_SHEET, ev.id, { status: "DELETED" });
         }
       }
     }
 
-    revalidatePath("/admin/products");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return fail(message);
   }
 }
 
-export async function deleteProduct(formData: FormData) {
+export async function deleteProduct(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
+  if (!id) return fail("ID không hợp lệ");
   try {
-    await update("Products", id, { status: "DELETED" });
+    await update(PRODUCT_SHEET, id, { status: "DELETED" });
     
     // Cập nhật các variants thành DELETED luôn
-    const variants = await findAll("Product_Variants");
+    const variants = await findAll(VARIANT_SHEET);
     for (const v of variants) {
       if (v.product_id === id) {
-        await update("Product_Variants", v.id, { status: "DELETED" });
+        await update(VARIANT_SHEET, v.id, { status: "DELETED" });
       }
     }
     
-    revalidatePath("/admin/products");
-    return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return fail(message);
   }
 }
