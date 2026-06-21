@@ -18,13 +18,17 @@ export async function getSuppliers(): Promise<DBSupplier[]> {
 }
 
 export async function addSupplier(formData: FormData): Promise<ActionResponse> {
+  const id = formData.get("id") as string;
+  if (id) {
+    return editSupplier(formData);
+  }
   const name = formData.get("name") as string;
   const phone = (formData.get("phone") as string) || "";
   const tax_id = (formData.get("tax_id") as string) || "";
   const address = (formData.get("address") as string) || "";
   const links = (formData.get("links") as string) || "";
 
-  if (!name) return fail("Ten nha cung cap khong duoc de trong");
+  if (!name) return fail("Tên nhà cung cấp không được để trống");
 
   try {
     const suppliers = await findAll(SHEET);

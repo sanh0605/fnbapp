@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addSupplier, deleteSupplier } from "@/app/actions/suppliers";
+import { addSupplier, deleteSupplierAction as deleteSupplier } from "@/app/admin/suppliers/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export function SupplierForm({ initialData }: { initialData?: any }) {
@@ -187,7 +187,7 @@ export function SupplierModal({
     if (res.error) {
       setError(res.error);
     } else {
-      if (onSuccess && res.id) onSuccess(res.id);
+      if (onSuccess && res.data?.id) onSuccess(res.data.id);
       onClose();
     }
   }
