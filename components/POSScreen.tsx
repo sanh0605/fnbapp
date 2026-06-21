@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { submitOrderV2 } from "@/app/actions/pos-v2";
+import { submitOrderV2 } from "@/app/actions/pos";
 import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
+import { categoryIcon } from "@/lib/pos-category-icons";
 
 export default function POSScreen({
   brandId,
@@ -21,6 +22,7 @@ export default function POSScreen({
   promotions?: any[];
 }) {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -59,9 +61,17 @@ export default function POSScreen({
     return groups;
   }, [modifiers]);
 
-  const filteredProducts = activeCategory === "ALL"
-    ? products
-    : products.filter((p: any) => p.category_id === activeCategory);
+  const filteredProducts = useMemo(() => {
+    let result = activeCategory === "ALL"
+      ? products
+      : products.filter((p: any) => p.category_id === activeCategory);
+    
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((p: any) => p.name.toLowerCase().includes(q));
+    }
+    return result;
+  }, [products, activeCategory, searchQuery]);
 
   const openProductModal = (product: any, editIndex: number | null = null) => {
     const prodVariants = variants.filter((v: any) => v.product_id === product.id);
@@ -489,6 +499,17 @@ export default function POSScreen({
           </div>
         </header>
 
+        {/* Search Bar */}
+        <div className="bg-white px-4 py-3 shrink-0 border-b border-gray-100">
+          <input 
+            type="text"
+            placeholder="Tìm kiếm món (vd: đào, cà phê)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-gray-100 border-none rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 outline-none placeholder-gray-400"
+          />
+        </div>
+
         {/* Categories (Horizontal Scroll on Mobile) */}
         <div className="bg-white border-b border-gray-200 p-3 shrink-0">
           <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
@@ -513,24 +534,32 @@ export default function POSScreen({
         {/* Product Grid */}
         <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {filteredProducts.map((p: any) => (
-              <button
-                key={p.id}
-                onClick={() => openProductModal(p)}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition active:scale-95 text-left h-48"
-              >
-                <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 w-full shrink-0">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-3xl">🥤</div>
-                  )}
-                </div>
-                <div className="p-3 flex-1 flex flex-col justify-between">
-                  <h3 className="font-bold text-gray-800 text-sm leading-tight line-clamp-2">{p.name}</h3>
-                </div>
-              </button>
-            ))}
+            {filteredProducts.map((p: any) => {
+              const cat = categories.find(c => c.id === p.category_id);
+              const prodVariants = variants.filter((v: any) => v.product_id === p.id);
+              const basePrice = prodVariants.length > 0 ? Number(prodVariants[0].price) : 0;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => openProductModal(p)}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition active:scale-95 text-left h-48"
+                >
+                  <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 w-full shrink-0">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-4xl">{categoryIcon(cat?.name)}</div>
+                    )}
+                  </div>
+                  <div className="p-3 flex-1 flex flex-col justify-between">
+                    <h3 className="font-bold text-gray-800 text-sm leading-tight line-clamp-2">{p.name}</h3>
+                    <div className="text-orange-600 font-bold text-sm mt-1">
+                      {basePrice.toLocaleString('vi-VN')} đ
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
