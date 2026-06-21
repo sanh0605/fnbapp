@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { submitOrderV2 } from "@/app/actions/pos";
 import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
 import { categoryIcon } from "@/lib/pos-category-icons";
 import { DiscountBadge, DISCOUNT_KIND } from "@/components/pos/DiscountBadge";
-import { useEffect, useRef } from "react";
-import { categoryIcon } from "@/lib/pos-category-icons";
 
 export default function POSScreen({
   brandId,
@@ -15,7 +13,9 @@ export default function POSScreen({
   products,
   variants,
   modifiers,
-  promotions = []
+  promotions = [],
+  bestSellers = [],
+  outOfStockProductIds = []
 }: {
   brandId?: string;
   categories: any[];
@@ -24,6 +24,7 @@ export default function POSScreen({
   modifiers: any[];
   promotions?: any[];
   bestSellers?: string[];
+  outOfStockProductIds?: string[];
 }) {
   const [activeCategory, setActiveCategory] = useState<string>("BEST_SELLERS");
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,9 +32,64 @@ export default function POSScreen({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [drafts, setDrafts] = useState<any[]>([]);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
   const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
+
+  // Load and cleanup drafts on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("pos_drafts");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const now = new Date().getTime();
+        const validDrafts = parsed.filter((d: any) => now - d.timestamp < 24 * 60 * 60 * 1000);
+        setDrafts(validDrafts);
+        if (validDrafts.length !== parsed.length) {
+          localStorage.setItem("pos_drafts", JSON.stringify(validDrafts));
+        }
+      }
+    } catch(e) {}
+  }, []);
+
+  const saveDraft = (cartToSave: any[], clearCartAfter: boolean = false) => {
+    if (cartToSave.length === 0) return;
+    const newDraft = {
+      id: "DRAFT_" + Date.now(),
+      timestamp: Date.now(),
+      cart: [...cartToSave]
+    };
+    const newDrafts = [newDraft, ...drafts];
+    setDrafts(newDrafts);
+    localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
+    if (clearCartAfter) setCart([]);
+  };
+
+  const loadDraft = (draftId: string) => {
+    const draft = drafts.find(d => d.id === draftId);
+    if (!draft) return;
+    
+    if (cart.length > 0) {
+      if (confirm("Bạn đang có món trong giỏ. Lưu giỏ hiện tại thành nháp mới trước khi mở nháp này?")) {
+        saveDraft(cart, false);
+      }
+    }
+    
+    setCart(draft.cart);
+    setIsDraftModalOpen(false);
+    
+    const newDrafts = drafts.filter(d => d.id !== draftId);
+    setDrafts(newDrafts);
+    localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
+  };
+
+  const deleteDraft = (draftId: string) => {
+    const newDrafts = drafts.filter(d => d.id !== draftId);
+    setDrafts(newDrafts);
+    localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
+  };
 
   // Product Selection Modal State
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
@@ -81,8 +137,11 @@ export default function POSScreen({
     return result;
   }, [products, activeCategory, searchQuery, bestSellers]);
 
-  const promoProductIds = useMemo(() => {
-    const ids = new Set<string>();
+  const { promoProductsMap, promoVariantsMap, promoDetailsMap } = useMemo(() => {
+    const prodMap = new Map<string, number>();
+    const varMap = new Map<string, number>();
+    const detailsMap = new Map<string, any>(); // store promo details for accurate % calc with modifiers
+    
     const now = new Date();
     (promotions || []).forEach((p: any) => {
       if (p.status !== "ACTIVE" || p.type !== "PRODUCT_DISCOUNT") return;
@@ -91,23 +150,49 @@ export default function POSScreen({
       if (p.brand_id && p.brand_id !== brandId) return;
 
       let applicableVariantsList: string[] = [];
+      let applicableVariantsMap: Record<string, number> = {};
+      let isMap = false;
       try {
         if (p.applicable_products_json) {
           const parsed = JSON.parse(p.applicable_products_json);
           if (Array.isArray(parsed)) {
             applicableVariantsList = parsed;
           } else if (parsed && typeof parsed === "object") {
+            applicableVariantsMap = parsed;
             applicableVariantsList = Object.keys(parsed);
+            isMap = true;
           }
         }
       } catch (e) {}
       
       applicableVariantsList.forEach(vId => {
         const variant = variants.find((v: any) => v.id === vId);
-        if (variant) ids.add(variant.product_id);
+        if (variant) {
+          const basePrice = Number(variant.price);
+          const val = isMap ? Number(applicableVariantsMap[vId]) : Number(p.discount_value);
+          let newPrice = basePrice;
+          
+          if (p.discount_type === "PERCENT") {
+            newPrice = basePrice * (1 - val / 100);
+          } else if (p.discount_type === "FLAT_PRICE") {
+            newPrice = val;
+          } else {
+            newPrice = Math.max(0, basePrice - val);
+          }
+          
+          
+          // Store the minimum new price for the product if multiple promos or variants apply
+          if (!prodMap.has(variant.product_id) || newPrice < prodMap.get(variant.product_id)!) {
+             prodMap.set(variant.product_id, newPrice);
+          }
+          if (!varMap.has(vId) || newPrice < varMap.get(vId)!) {
+             varMap.set(vId, newPrice);
+             detailsMap.set(vId, { type: p.discount_type, val });
+          }
+        }
       });
     });
-    return ids;
+    return { promoProductsMap: prodMap, promoVariantsMap: varMap, promoDetailsMap: detailsMap };
   }, [promotions, variants, brandId]);
 
   const openProductModal = (product: any, editIndex: number | null = null) => {
@@ -188,18 +273,32 @@ export default function POSScreen({
     }
   };
 
-  // Tính toán giá tiền trực tiếp cho món đang chọn trong Popup
   const currentItemBasePrice = selectedVariant ? Number(selectedVariant.price) + selectedModifiers.reduce((sum, m) => sum + Number(m.price), 0) : 0;
   const currentItemBaseTotal = currentItemBasePrice * selectedQty;
-  let currentItemDiscountAmount = 0;
+  let currentItemManualDiscountAmount = 0;
   if (itemDiscount > 0) {
     if (itemDiscountType === "PERCENT") {
-      currentItemDiscountAmount = (currentItemBaseTotal * itemDiscount) / 100;
+      currentItemManualDiscountAmount = (currentItemBaseTotal * itemDiscount) / 100;
     } else {
-      currentItemDiscountAmount = itemDiscount;
+      currentItemManualDiscountAmount = itemDiscount;
     }
   }
-  const currentItemFinalTotal = Math.max(0, currentItemBaseTotal - currentItemDiscountAmount);
+
+  // Calculate promo discount for the current selection in modal
+  let currentItemPromoDiscountAmount = 0;
+  if (selectedVariant && promoDetailsMap.has(selectedVariant.id)) {
+    const promo = promoDetailsMap.get(selectedVariant.id);
+    if (promo.type === "PERCENT") {
+      currentItemPromoDiscountAmount = currentItemBaseTotal * (promo.val / 100);
+    } else if (promo.type === "FLAT_PRICE") {
+      const unitDiscount = Math.max(0, Number(selectedVariant.price) - promo.val);
+      currentItemPromoDiscountAmount = unitDiscount * selectedQty;
+    } else {
+      currentItemPromoDiscountAmount = promo.val * selectedQty;
+    }
+  }
+
+  const currentItemFinalTotal = Math.max(0, currentItemBaseTotal - currentItemManualDiscountAmount - currentItemPromoDiscountAmount);
 
   const calculateItemTotal = (item: any) => {
     const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
@@ -223,7 +322,6 @@ export default function POSScreen({
   const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
 
-  // Promotions Memo
   const { appliedPromo, promoDiscountAmount } = useMemo(() => {
     const now = new Date();
     const subtotal = calculateSubtotal();
@@ -232,7 +330,6 @@ export default function POSScreen({
       return { appliedPromo: null, promoDiscountAmount: 0 };
     }
 
-    // Filter active promotions for this brand and current date
     const eligiblePromos = (promotions || []).filter((p: any) => {
       if (p.status !== "ACTIVE") return false;
       const isDateValid = new Date(p.start_date) <= now && (!p.end_date || new Date(p.end_date) >= now);
@@ -244,7 +341,6 @@ export default function POSScreen({
       return true;
     });
 
-    // Helper to calculate discount amount for a promotion
     const calcPromoDiscount = (p: any) => {
       if (p.type === "ORDER_DISCOUNT") {
         if (subtotal < Number(p.min_order_value || 0)) return 0;
@@ -301,7 +397,6 @@ export default function POSScreen({
       return 0;
     };
 
-    // Case 1: Cashier has entered a Promo Code
     if (appliedPromoCode) {
       const matchedPromo = eligiblePromos.find(
         (p: any) => p.code && p.code.toUpperCase() === appliedPromoCode.toUpperCase()
@@ -315,7 +410,6 @@ export default function POSScreen({
       }
     }
 
-    // Case 2: Best automatic promotion (code is empty)
     const autoPromos = eligiblePromos.filter((p: any) => !p.code);
     let bestPromo: any = null;
     let maxDiscount = 0;
@@ -455,7 +549,6 @@ export default function POSScreen({
   const calculateTotalAmount = () => {
     const subtotal = calculateSubtotal();
 
-    // Order-level discount: manual input OR ORDER_DISCOUNT promo (via modal pre-fill)
     let orderLevelDiscount = 0;
     if (userCustomDiscount !== null) {
       if (userCustomDiscountType === "PERCENT") {
@@ -464,11 +557,9 @@ export default function POSScreen({
         orderLevelDiscount = userCustomDiscount;
       }
     } else if (appliedPromo?.type === "ORDER_DISCOUNT") {
-      // ORDER_DISCOUNT promo active, no manual entry yet
       orderLevelDiscount = promoDiscountAmount;
     }
 
-    // Product-level promo (PRM-003 etc): STACKS on top of order-level
     const productLevelDiscount = appliedPromo?.type === "PRODUCT_DISCOUNT"
       ? promoDiscountAmount
       : 0;
@@ -481,7 +572,6 @@ export default function POSScreen({
   const handleCheckoutClick = () => {
     if (cart.length === 0) return;
     
-    // Initialize modal input values based on custom override or promo
     if (userCustomDiscount !== null) {
       setModalDiscountInput(userCustomDiscount);
       setModalDiscountType(userCustomDiscountType);
@@ -504,16 +594,11 @@ export default function POSScreen({
   const handleConfirmCheckout = async (method: string) => {
     setIsCheckingOut(true);
 
-    // Build V2 cart input from existing cart state
     const cartInput: CartInput = {
       brand_id: brandId || "",
       items: cart.map(item => {
-        // Manual per-item discount (cashier-entered in product modal)
         let manualItemValue = Number(item.discount_amount || 0);
         let manualItemType: "VND" | "PERCENT" = item.discount_type === "PERCENT" ? "PERCENT" : "VND";
-        if (manualItemType === "PERCENT") {
-          // Convert to VND here; V2 cart takes VND or PERCENT — keep original input shape
-        }
 
         return {
           product_id: item.product_id,
@@ -521,7 +606,7 @@ export default function POSScreen({
           qty: item.qty,
           modifiers: item.modifiers.map((m: any) => ({
             modifier_id: m.id,
-            modifier_qty: 1, // each cart entry represents qty 1 of the modifier
+            modifier_qty: 1,
           })),
           manual_item_discount: {
             value: manualItemValue,
@@ -537,7 +622,7 @@ export default function POSScreen({
           }
         : null,
       applied_promotion_id: appliedPromo?.id || null,
-      actor: { id: "", name: "" }, // server action overrides from session
+      actor: { id: "", name: "" },
     };
 
     const res = await submitOrderV2(cartInput);
@@ -573,6 +658,7 @@ export default function POSScreen({
       } else if (e.key === "Escape") {
         e.preventDefault();
         setIsCheckoutModalOpen(false);
+        setIsDraftModalOpen(false);
         setSelectedProduct(null);
         setIsCartOpen(false);
       } else if (e.key === "Enter" && isCheckoutModalOpen && !isCheckingOut) {
@@ -587,22 +673,29 @@ export default function POSScreen({
   return (
     <div className="fixed inset-0 flex bg-gray-100 font-sans overflow-hidden">
 
-      {/* LEFT: Menu Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {/* Header */}
-        <header className="bg-white h-auto min-h-[3.5rem] border-b border-gray-200 flex items-center justify-between px-4 shrink-0 shadow-sm z-10 pt-[env(safe-area-inset-top)]">
-          <div className="flex items-center gap-3">
-            <Link href="/admin" className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-gray-400 hover:text-indigo-600 transition-colors">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </Link>
-            <h1 className="font-bold text-lg text-gray-800">POS Thu Ngân</h1>
+            <h1 className="font-extrabold text-xl text-gray-900 tracking-tight flex items-center gap-2">
+              <span className="text-indigo-600">POS</span> Đơn Mới
+            </h1>
           </div>
-          <div className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-            {new Date().toLocaleDateString("vi-VN")}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsDraftModalOpen(true)}
+              className="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition flex items-center gap-1.5"
+            >
+              📝 Nháp <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
+            </button>
+            <div className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+              {new Date().toLocaleDateString("vi-VN")}
+            </div>
           </div>
         </header>
 
-        {/* Search Bar */}
         <div className="bg-white px-4 py-3 shrink-0 border-b border-gray-100">
           <input 
             type="text"
@@ -613,7 +706,6 @@ export default function POSScreen({
           />
         </div>
 
-        {/* Categories (Horizontal Scroll on Mobile) */}
         <div className="bg-white border-b border-gray-200 p-3 shrink-0">
           <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
             <button
@@ -640,21 +732,29 @@ export default function POSScreen({
           </div>
         </div>
 
-        {/* Product Grid */}
         <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredProducts.map((p: any) => {
               const cat = categories.find(c => c.id === p.category_id);
               const prodVariants = variants.filter((v: any) => v.product_id === p.id);
               const basePrice = prodVariants.length > 0 ? Number(prodVariants[0].price) : 0;
+              const isOOS = (outOfStockProductIds || []).includes(p.id);
+              const promoPrice = promoProductsMap.get(p.id);
+
               return (
                 <button
                   key={p.id}
-                  onClick={() => openProductModal(p)}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition active:scale-95 text-left h-48"
+                  onClick={() => !isOOS && openProductModal(p)}
+                  disabled={isOOS}
+                  className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition text-left h-48 relative ${isOOS ? "opacity-50 grayscale cursor-not-allowed" : "hover:shadow-md active:scale-95"}`}
                 >
+                  {isOOS && (
+                    <div className="absolute inset-0 bg-white/40 z-20 flex flex-col items-center justify-center">
+                      <span className="bg-red-600 text-white font-bold px-3 py-1 rounded-full shadow border-2 border-white transform -rotate-12">HẾT HÀNG</span>
+                    </div>
+                  )}
                   <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 w-full shrink-0 relative">
-                    {promoProductIds.has(p.id) && (
+                    {promoPrice !== undefined && (
                       <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10 shadow-sm shadow-red-500/50">
                         🔥 PROMO
                       </div>
@@ -667,8 +767,17 @@ export default function POSScreen({
                   </div>
                   <div className="p-3 flex-1 flex flex-col justify-between">
                     <h3 className="font-bold text-gray-800 text-sm leading-tight line-clamp-2">{p.name}</h3>
-                    <div className="text-orange-600 font-bold text-sm mt-1">
-                      {basePrice.toLocaleString('vi-VN')} đ
+                    <div className="mt-1">
+                      {promoPrice !== undefined ? (
+                        <div className="flex flex-col">
+                          <span className="text-[11px] text-gray-400 line-through leading-none">{basePrice.toLocaleString('vi-VN')} đ</span>
+                          <span className="text-orange-600 font-bold text-sm leading-tight">{promoPrice.toLocaleString('vi-VN')} đ</span>
+                        </div>
+                      ) : (
+                        <div className="text-orange-600 font-bold text-sm leading-tight">
+                          {basePrice.toLocaleString('vi-VN')} đ
+                        </div>
+                      )}
                     </div>
                   </div>
                 </button>
@@ -678,7 +787,6 @@ export default function POSScreen({
         </div>
       </div>
 
-      {/* RIGHT: Cart Area (Desktop only, hidden on mobile unless toggled) */}
       <div className={`fixed inset-y-0 right-0 w-full md:w-96 bg-white border-l border-gray-200 shadow-2xl flex flex-col z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isCartOpen ? "translate-x-0" : "translate-x-full"}`}>
 
         <div className="h-14 bg-indigo-600 flex items-center justify-between px-4 shrink-0 text-white">
@@ -688,14 +796,22 @@ export default function POSScreen({
           </h2>
           <div className="flex items-center gap-2">
             {cart.length > 0 && (
-              <button 
-                onClick={() => {
-                  if (confirm("Xoá hết món trong giỏ hàng?")) setCart([]);
-                }} 
-                className="text-xs font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
-              >
-                Xoá hết
-              </button>
+              <>
+                <button 
+                  onClick={() => saveDraft(cart, true)} 
+                  className="text-xs font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
+                >
+                  Lưu Nháp
+                </button>
+                <button 
+                  onClick={() => {
+                    if (confirm("Xoá hết món trong giỏ hàng?")) setCart([]);
+                  }} 
+                  className="text-xs font-bold bg-red-500/20 text-red-100 hover:bg-red-500/40 px-2 py-1 rounded transition-colors"
+                >
+                  Xoá hết
+                </button>
+              </>
             )}
             <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-1 bg-white/20 rounded hover:bg-white/30">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -748,7 +864,6 @@ export default function POSScreen({
                       </div>
                     )}
 
-                    {/* PHÂN TÁCH GIẢM GIÁ TỪNG MÓN */}
                     <div className="mt-2 flex flex-wrap gap-2">
                       {itemPromoDiscount > 0 && (
                         <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={itemPromoDiscount} />
@@ -774,7 +889,6 @@ export default function POSScreen({
         </div>
 
         <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          {/* Promotions Input and Display */}
           {cart.length > 0 && (
             <div className="mb-4 pb-4 border-b border-gray-100">
               <div className="flex items-center justify-between mb-2">
@@ -902,16 +1016,28 @@ export default function POSScreen({
               <div>
                 <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase">Chọn Kích Cỡ</h4>
                 <div className="grid grid-cols-2 gap-3">
-                  {variants.filter((v: any) => v.product_id === selectedProduct.id).map((v: any) => (
-                    <button
-                      key={v.id}
-                      onClick={() => setSelectedVariant(v)}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${selectedVariant?.id === v.id ? "border-orange-500 bg-orange-50" : "border-gray-100 bg-white hover:border-orange-200"}`}
-                    >
-                      <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-orange-700" : "text-gray-700"}`}>{v.size_name}</span>
-                      <span className="text-sm font-black text-gray-900">{Number(v.price).toLocaleString('vi-VN')}đ</span>
-                    </button>
-                  ))}
+                  {variants.filter((v: any) => v.product_id === selectedProduct.id).map((v: any) => {
+                    const hasPromo = promoVariantsMap.has(v.id);
+                    const promoPrice = promoVariantsMap.get(v.id);
+                    
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => setSelectedVariant(v)}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${selectedVariant?.id === v.id ? "border-orange-500 bg-orange-50" : "border-gray-100 bg-white hover:border-orange-200"}`}
+                      >
+                        <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-orange-700" : "text-gray-700"}`}>{v.size_name}</span>
+                        {hasPromo ? (
+                          <div className="flex flex-col items-center">
+                            <span className="text-xs text-gray-400 line-through">{Number(v.price).toLocaleString('vi-VN')}đ</span>
+                            <span className="text-sm font-black text-orange-600">{promoPrice!.toLocaleString('vi-VN')}đ</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm font-black text-gray-900">{Number(v.price).toLocaleString('vi-VN')}đ</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1010,11 +1136,11 @@ export default function POSScreen({
                   onClick={addToCart}
                   className="flex-1 bg-orange-600 text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center h-14"
                 >
-                  <div className="font-bold text-sm lg:text-base">
-                    {editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {currentItemFinalTotal.toLocaleString('vi-VN')} đ
+                  <div className="font-bold text-sm lg:text-base flex flex-col items-center">
+                    <span>{editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {currentItemFinalTotal.toLocaleString('vi-VN')} đ</span>
                   </div>
-                  {currentItemDiscountAmount > 0 && (
-                    <div className="text-[10px] lg:text-xs text-orange-200 line-through font-medium">
+                  {(currentItemManualDiscountAmount > 0 || currentItemPromoDiscountAmount > 0) && (
+                    <div className="text-[10px] lg:text-xs text-orange-200 line-through font-medium mt-0.5">
                       Gốc: {currentItemBaseTotal.toLocaleString('vi-VN')} đ
                     </div>
                   )}
