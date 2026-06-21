@@ -57,16 +57,25 @@ export default function POSScreen({
 
   const saveDraft = (cartToSave: any[], clearCartAfter: boolean = false) => {
     if (cartToSave.length === 0) return;
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const HH = String(now.getHours()).padStart(2, '0');
+    const MM = String(now.getMinutes()).padStart(2, '0');
+    const firstItemName = cartToSave[0]?.product_name || "Trống";
+    const draftName = `${dd}/${mm} ${HH}:${MM} - ${firstItemName}`;
+
     const newDraft = {
       id: "DRAFT_" + Date.now(),
       timestamp: Date.now(),
+      name: draftName,
       cart: [...cartToSave]
     };
     let newDrafts = drafts;
     if (activeDraftId) {
       newDrafts = newDrafts.filter(d => d.id !== activeDraftId);
     }
-    newDrafts = [newDraft, ...newDrafts];
+    newDrafts = [newDraft, ...newDrafts].slice(0, 10);
     setDrafts(newDrafts);
     localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
     if (clearCartAfter) {
@@ -1322,6 +1331,76 @@ export default function POSScreen({
               >
                 Tao don moi
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Draft Modal */}
+      {isDraftModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-xl font-bold text-gray-900">Danh sách đơn nháp</h3>
+              <button
+                onClick={() => setIsDraftModalOpen(false)}
+                className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 bg-white space-y-4 max-h-[60vh] overflow-y-auto">
+              {drafts.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 font-medium">
+                  Chưa có đơn nháp nào.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {drafts.map((d: any) => {
+                    const totalAmt = d.cart.reduce((sum: number, item: any) => {
+                      const modsPrice = item.modifiers.reduce((s: number, m: any) => s + Number(m.price), 0);
+                      const baseTotal = (item.unit_price + modsPrice) * item.qty;
+                      let discount = 0;
+                      if (item.discount_amount > 0) {
+                        if (item.discount_type === "PERCENT") {
+                          discount = (baseTotal * item.discount_amount) / 100;
+                        } else {
+                          discount = item.discount_amount;
+                        }
+                      }
+                      return sum + Math.max(0, baseTotal - discount);
+                    }, 0);
+
+                    const totalItems = d.cart.reduce((sum: number, item: any) => sum + item.qty, 0);
+
+                    return (
+                      <div key={d.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-sm text-gray-800 truncate">{d.name || "Đơn nháp"}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {totalItems} món • {totalAmt.toLocaleString("vi-VN")} đ
+                          </p>
+                        </div>
+                        <div className="flex gap-2 shrink-0 ml-4">
+                          <button
+                            onClick={() => loadDraft(d.id)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
+                          >
+                            Nạp
+                          </button>
+                          <button
+                            onClick={() => deleteDraft(d.id)}
+                            className="bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
