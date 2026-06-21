@@ -10,8 +10,8 @@ dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
 const { findAllNoCache } = require("../lib/sheets_db");
-const { submitOrderV2 } = require("../app/actions/pos-v2");
-const { voidOrderV2 } = require("../app/actions/orders-v2");
+const { submitOrderV2 } = require("../app/actions/pos");
+const { voidOrderV2 } = require("../app/actions/orders");
 
 async function main() {
   const products = await findAllNoCache("Products");

@@ -2,12 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
-import { voidOrderV2 } from "@/app/actions/orders-v2";
+import { voidOrderV2 } from "@/app/actions/orders";
 import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
 import StickyFilterBar from "@/components/StickyFilterBar";
 
-import type { OrderListItem } from "@/app/actions/orders-v2";
+import type { OrderListItem } from "@/app/actions/orders";
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;

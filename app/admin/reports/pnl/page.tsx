@@ -1,4 +1,4 @@
-import { getPnLDataV2 } from "@/app/actions/reports-v2";
+import { getPnLDataV2 } from "@/app/actions/reports";
 import { findAll } from "@/lib/sheets_db";
 import SalesFilter from "@/components/SalesFilter";
 

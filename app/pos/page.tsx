@@ -52,16 +52,35 @@ export default async function POSPage({
   const stockMap = new Map<string, number>();
   realtimeStock.forEach((s: any) => stockMap.set(s.id, s.current_stock));
 
+  const pickVariantRecipe = (vId: string) => {
+    const now = new Date();
+    const candidates = (recipes as any[]).filter(r =>
+      r.target_type === "PRODUCT_VARIANT" &&
+      r.target_id === vId &&
+      (!r.end_date || r.end_date === "" || new Date(r.end_date) >= now)
+    );
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    return candidates[0];
+  };
+
   const variantAvailableMap = new Map<string, boolean>();
   activeVariants.forEach((v: any) => {
-    const variantRecipes = (recipes as any[]).filter(r => r.target_id === v.id && r.target_type === "VARIANT");
+    const recipe = pickVariantRecipe(v.id);
     let isAvailable = true;
-    for (const r of variantRecipes) {
-      const currentStock = stockMap.get(r.ingredient_id) || 0;
-      if (currentStock < Number(r.qty)) {
-        isAvailable = false;
-        break;
-      }
+    if (recipe && recipe.ingredients_json) {
+      try {
+        const ingredients = JSON.parse(recipe.ingredients_json);
+        if (Array.isArray(ingredients)) {
+          for (const ing of ingredients) {
+            const currentStock = stockMap.get(ing.ingredient_id) || 0;
+            if (currentStock < Number(ing.quantity)) {
+              isAvailable = false;
+              break;
+            }
+          }
+        }
+      } catch (e) {}
     }
     variantAvailableMap.set(v.id, isAvailable);
   });

@@ -6,7 +6,7 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 
 import { findAllNoCache, findAll } from "@/lib/sheets_db";
-import { getPnLDataV2 } from "./reports-v2";
+import { getPnLDataV2 } from "./reports";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 describe("getPnLDataV2", () => {

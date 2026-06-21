@@ -37,6 +37,7 @@ export default function POSScreen({
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
   const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
 
   // Load and cleanup drafts on mount
   useEffect(() => {
@@ -61,10 +62,19 @@ export default function POSScreen({
       timestamp: Date.now(),
       cart: [...cartToSave]
     };
-    const newDrafts = [newDraft, ...drafts];
+    let newDrafts = drafts;
+    if (activeDraftId) {
+      newDrafts = newDrafts.filter(d => d.id !== activeDraftId);
+    }
+    newDrafts = [newDraft, ...newDrafts];
     setDrafts(newDrafts);
     localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
-    if (clearCartAfter) setCart([]);
+    if (clearCartAfter) {
+      setCart([]);
+      setActiveDraftId(null);
+    } else {
+      setActiveDraftId(newDraft.id);
+    }
   };
 
   const loadDraft = (draftId: string) => {
@@ -78,17 +88,17 @@ export default function POSScreen({
     }
     
     setCart(draft.cart);
+    setActiveDraftId(draftId);
     setIsDraftModalOpen(false);
-    
-    const newDrafts = drafts.filter(d => d.id !== draftId);
-    setDrafts(newDrafts);
-    localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
   };
 
   const deleteDraft = (draftId: string) => {
     const newDrafts = drafts.filter(d => d.id !== draftId);
     setDrafts(newDrafts);
     localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
+    if (activeDraftId === draftId) {
+      setActiveDraftId(null);
+    }
   };
 
   // Product Selection Modal State
@@ -638,6 +648,13 @@ export default function POSScreen({
       setAppliedPromoCode(null);
       setPromoCodeInput("");
       setManualPromoError(null);
+      
+      if (activeDraftId) {
+        const newDrafts = drafts.filter(d => d.id !== activeDraftId);
+        setDrafts(newDrafts);
+        localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
+        setActiveDraftId(null);
+      }
     } else {
       alert("Lỗi thanh toán: " + res.error);
     }
@@ -650,7 +667,17 @@ export default function POSScreen({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const activeEl = document.activeElement;
+      if (
+        e.target instanceof HTMLInputElement || 
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable ||
+        activeEl?.tagName === "INPUT" ||
+        activeEl?.tagName === "TEXTAREA" ||
+        activeEl?.hasAttribute("contenteditable")
+      ) {
+        return;
+      }
       
       if (e.key === "+") {
         e.preventDefault();
@@ -805,7 +832,10 @@ export default function POSScreen({
                 </button>
                 <button 
                   onClick={() => {
-                    if (confirm("Xoá hết món trong giỏ hàng?")) setCart([]);
+                    if (confirm("Xoá hết món trong giỏ hàng?")) {
+                      setCart([]);
+                      setActiveDraftId(null);
+                    }
                   }} 
                   className="text-xs font-bold bg-red-500/20 text-red-100 hover:bg-red-500/40 px-2 py-1 rounded transition-colors"
                 >

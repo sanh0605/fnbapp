@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getOrderDetailV2, type OrderListItem } from "@/app/actions/orders-v2";
+import { getOrderDetailV2, type OrderListItem } from "@/app/actions/orders";
 
 interface Props {
   order: OrderListItem;

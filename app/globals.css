@@ -31,3 +31,35 @@ html, body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* ============================================================
+   WS-5 Responsive: opt-in mobile helpers
+   Apply via class names — do NOT globally override table/form/button
+   ============================================================ */
+
+/* Opt-in: wrap a table parent to make it horizontally scrollable on mobile
+   Usage: <div className="table-mobile-scroll"><table>...</table></div> */
+.table-mobile-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Opt-in: modal goes full-screen on mobile
+   Usage: <div className="modal-responsive ..."> */
+@media (max-width: 639px) {
+  .modal-responsive {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 100vh !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+/* Prevent iOS Safari input zoom-on-focus */
+@media (max-width: 639px) {
+  input, select, textarea {
+    font-size: 16px;
+  }
+}

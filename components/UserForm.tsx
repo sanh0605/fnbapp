@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addUser, deleteUser } from "@/app/actions/users";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export function UserForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +32,7 @@ export function UserForm() {
       </button>
 
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
             <h2 className="text-xl font-bold mb-4">Thêm Nhân Sự Mới</h2>
@@ -89,6 +91,7 @@ export function UserForm() {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

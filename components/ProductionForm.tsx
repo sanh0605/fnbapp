@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { saveProductionOrder } from "@/app/actions/production";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function ProductionForm({ semiProducts, recipes, baseIngredients, units }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -114,6 +115,7 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
       </button>
 
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -226,6 +228,7 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

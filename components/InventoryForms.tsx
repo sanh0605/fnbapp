@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { addItemCategory, updateItemCategory, addBaseIngredient, updateBaseIngredient, addPurchasedItem, updatePurchasedItem, addConversion, updateConversion } from "@/app/actions/inventory";
 import { SearchableSelect } from "./SearchableSelect";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 // --- ITEM CATEGORY FORM (Nhóm Hàng Hoá) ---
 export function ItemCategoryForm({ initialData }: { initialData?: any }) {
@@ -33,6 +34,7 @@ export function ItemCategoryForm({ initialData }: { initialData?: any }) {
       )}
       
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
             <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Phân Loại" : "Tạo Phân Loại Hàng Hoá"}</h2>
@@ -56,6 +58,7 @@ export function ItemCategoryForm({ initialData }: { initialData?: any }) {
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );
@@ -136,6 +139,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
       )}
       
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
           <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-xl">
             <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Nguyên Liệu" : "Thêm Nguyên Liệu Gốc"}</h2>
@@ -183,6 +187,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );
@@ -292,6 +297,7 @@ export function PurchasedItemForm({
       )}
       
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
           <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Hàng Mua Vào" : "Thêm Hàng Mua Vào"}</h2>
@@ -383,6 +389,7 @@ export function PurchasedItemForm({
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );
@@ -439,6 +446,7 @@ export function ConversionForm({ items, baseIngredients, initialData, units = []
       )}
       
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
             <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Quy Đổi" : "Tạo Quy Đổi Đơn Vị"}</h2>
@@ -508,6 +516,7 @@ export function ConversionForm({ items, baseIngredients, initialData, units = []
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );
@@ -560,6 +569,7 @@ export function ActionGroup({
       </div>
 
       {isDeleteOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
             <div className="p-5 border-b border-gray-100 flex items-center gap-3 bg-red-50/50">
@@ -593,6 +603,7 @@ export function ActionGroup({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

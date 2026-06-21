@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { saveModifier, deleteModifier } from "@/app/actions/modifiers";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function ModifierForm({ baseIngredients, semiProducts, units, initialData, initialRecipe }: any) {
   const isEdit = !!initialData;
@@ -83,6 +84,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
       )}
 
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -177,6 +179,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { submitStockAdjustment, approveStockAdjustment } from "@/app/actions/stock";
 import StickyFilterBar from "@/components/StickyFilterBar";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function StockTable({ 
   stockItems, 
@@ -157,6 +158,7 @@ export default function StockTable({
 
       {/* Adjust Modal */}
       {isAdjusting && (
+        <ModalPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl flex flex-col overflow-hidden">
             <div className="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -234,6 +236,7 @@ export default function StockTable({
             </form>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

@@ -282,4 +282,44 @@ describe("buildOrderFromCart", () => {
     expect(recipeSnap.modifiers[0].modifier_id).toBe("MOD-004");
     expect(recipeSnap.modifiers[0].recipe.ingredients[0].ingredient_id).toBe("BI-PEARL");
   });
+
+  it("3-discount coexistence: manual item, system promo, and custom order discount all active", () => {
+    // Sữa Dâu (VAR-031): base 35k.
+    // has system promo PRM-003: flat variant price 25k (discount 10k)
+    // manual_item_discount: 5000 VND
+    // manual_order_discount: 3000 VND
+    const result = buildOrderFromCart({
+      brand_id: "BR-002",
+      items: [
+        {
+          product_id: "PROD-024",
+          variant_id: "VAR-031",
+          qty: 1,
+          modifiers: [],
+          manual_item_discount: { value: 5000, type: "VND" },
+        },
+      ],
+      payment_method: "CASH",
+      manual_order_discount: { value: 3000, type: "VND" },
+      actor: { id: "U1", name: "Test" },
+    }, REF);
+
+    // Gross: 35k
+    // Promo: 10k
+    // Manual item: 5k
+    // Capacity for order-level: 35k - 10k - 5k = 20k
+    // Order discount: 3k
+    // Net: 20k - 3k = 17k
+    expect(result.order.gross_total).toBe(35000);
+    expect(result.order.promo_discount_total).toBe(10000);
+    expect(result.order.manual_item_discount_total).toBe(5000);
+    expect(result.order.manual_order_discount).toBe(3000);
+    expect(result.order.net_total).toBe(17000);
+
+    expect(result.lines[0].gross_line_total).toBe(35000);
+    expect(result.lines[0].promo_discount).toBe(10000);
+    expect(result.lines[0].manual_item_discount).toBe(5000);
+    expect(result.lines[0].order_discount_allocation).toBe(3000);
+    expect(result.lines[0].net_line_total).toBe(17000);
+  });
 });

@@ -1,43 +1,47 @@
 "use server";
 
 import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 
-export async function getRealtimeStock() {
-  const [stockLedger, baseIngredients, semiProducts, units] = await Promise.all([
-    findAll("Stock_Ledger"),
-    findAll("Base_Ingredients"),
-    findAll("Semi_Products"),
-    findAll("Units")
-  ]);
+export const getRealtimeStock = unstable_cache(
+  async () => {
+    const [stockLedger, baseIngredients, semiProducts, units] = await Promise.all([
+      findAll("Stock_Ledger"),
+      findAll("Base_Ingredients"),
+      findAll("Semi_Products"),
+      findAll("Units")
+    ]);
 
-  const stockMap: Record<string, number> = {};
+    const stockMap: Record<string, number> = {};
 
-  stockLedger.forEach((entry: any) => {
-    const itemId = entry.item_reference;
-    const qty = Number(entry.quantity_change || 0);
-    if (!stockMap[itemId]) {
-      stockMap[itemId] = 0;
-    }
-    stockMap[itemId] += qty;
-  });
+    stockLedger.forEach((entry: any) => {
+      const itemId = entry.item_reference;
+      const qty = Number(entry.quantity_change || 0);
+      if (!stockMap[itemId]) {
+        stockMap[itemId] = 0;
+      }
+      stockMap[itemId] += qty;
+    });
 
-  const allItems = [
-    ...baseIngredients.map((b: any) => ({ ...b, item_type: "BASE_INGREDIENT" })),
-    ...semiProducts.map((s: any) => ({ ...s, item_type: "SEMI_PRODUCT" }))
-  ];
+    const allItems = [
+      ...baseIngredients.map((b: any) => ({ ...b, item_type: "BASE_INGREDIENT" })),
+      ...semiProducts.map((s: any) => ({ ...s, item_type: "SEMI_PRODUCT" }))
+    ];
 
-  return allItems.map(item => {
-    const unitName = units.find((u:any) => u.id === item.base_unit)?.name || item.base_unit;
-    return {
-      id: item.id,
-      name: item.name,
-      item_type: item.item_type,
-      current_stock: stockMap[item.id] || 0,
-      unitName
-    };
-  });
-}
+    return allItems.map(item => {
+      const unitName = units.find((u:any) => u.id === item.base_unit)?.name || item.base_unit;
+      return {
+        id: item.id,
+        name: item.name,
+        item_type: item.item_type,
+        current_stock: stockMap[item.id] || 0,
+        unitName
+      };
+    });
+  },
+  ["realtime-stock-all"],
+  { revalidate: 60, tags: ["sheets-Stock_Ledger", "sheets-Base_Ingredients", "sheets-Semi_Products", "sheets-Units"] }
+);
 
 export async function submitStockAdjustment(data: any, role: string, username: string) {
   try {

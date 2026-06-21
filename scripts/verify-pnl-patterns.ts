@@ -16,7 +16,7 @@ dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
 const { findAllNoCache } = require("../lib/sheets_db");
-const { getPnLDataV2 } = require("../app/actions/reports-v2");
+const { getPnLDataV2 } = require("../app/actions/reports");
 
 async function main() {
   console.log("\n=== WS-7 PnL Pattern Verification ===\n");

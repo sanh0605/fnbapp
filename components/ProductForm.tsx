@@ -4,6 +4,7 @@ import { useState } from "react";
 import { saveProduct, deleteProduct } from "@/app/actions/products";
 import { SearchableSelect } from "./SearchableSelect";
 import { CustomDatePicker } from "./CustomDatePicker";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function ProductForm({ categories, baseIngredients, semiProducts, units, initialData }: any) {
   const isEdit = !!initialData;
@@ -110,6 +111,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
       )}
 
       {isOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -268,9 +270,11 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {isDeleteOpen && (
+        <ModalPortal>
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
             <div className="p-5 border-b border-gray-100 flex items-center gap-3 bg-red-50/50">
@@ -304,6 +308,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );
