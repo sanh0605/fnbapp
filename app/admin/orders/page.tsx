@@ -1,4 +1,4 @@
-import { getOrdersV2 } from "@/app/actions/orders";
+import { getOrdersV2 } from "./actions";
 import OrderTable from "./OrderTable";
 
 export const dynamic = "force-dynamic";

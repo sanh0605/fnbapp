@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { editOrderV2 } from "@/app/actions/order-edit";
+import { editOrderV2 } from "./actions";
 import type { CartInput } from "@/lib/order-cart";
 
-import type { OrderListItem } from "@/app/actions/orders";
+import type { OrderListItem } from "./actions";
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
