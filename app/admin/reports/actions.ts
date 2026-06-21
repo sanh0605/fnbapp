@@ -224,10 +224,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
 }
 
 // ============================================================
-// Coercion helpers (sheet rows come back as strings)
-// ============================================================
-
-// ============================================================
 // Sales report
 // ============================================================
 
@@ -300,11 +296,6 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       });
       // If filtering by category, we only want orders that contain these lines
       const validOrdersForCat = new Set(typedLines.map(l => l.order_id));
-      // typedOrders = typedOrders.filter(o => validOrdersForCat.has(o.id));
-      // Actually, standard behavior: totalRevenue only sums the filtered lines when category is picked?
-      // Wait, PnLDataV2 did not re-filter typedOrders. Let's keep it simple: totalRevenue from order.net_total
-      // But if category is selected, order.net_total includes other categories!
-      // To match V1 behavior, if category is selected, sales revenue = sum of line nets.
     }
 
     const totalRevenue = categoryId

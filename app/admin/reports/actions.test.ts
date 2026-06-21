@@ -6,7 +6,7 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 
 import { findAllNoCache, findAll } from "@/lib/sheets_db";
-import { getPnLDataV2 } from "./reports";
+import { getPnLDataV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 describe("getPnLDataV2", () => {
@@ -126,9 +126,6 @@ describe("getPnLDataV2", () => {
   });
 
   it("BUG-FIX: per-variant COGS attribution (no double-counting across variants)", async () => {
-    // Same product PROD-MULTI has 2 variants (VAR-A 500ml, VAR-B 700ml).
-    // Each line has its own cost_at_sale.
-    // Expected: productProfitAnalysis has 2 rows, each with its OWN cogs (not summed).
     const orderId = "ord-multi-variant";
     const baseTs = "2026-06-15T10:00:00.000Z";
     const order = {
@@ -176,7 +173,7 @@ describe("getPnLDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 15000,
-      cost_at_sale: 5000, // VAR-A cost
+      cost_at_sale: 5000,
       recipe_snapshot_json: "{}",
       promo_discount_reason: "",
       manual_discount_reason: "",
@@ -189,7 +186,7 @@ describe("getPnLDataV2", () => {
       variant_snapshot_json: JSON.stringify({ id: "VAR-B", size_name: "700ml", price: 15000 }),
       gross_line_total: 15000,
       net_line_total: 15000,
-      cost_at_sale: 7000, // VAR-B cost (different from VAR-A)
+      cost_at_sale: 7000,
     };
 
     (findAllNoCache as any).mockImplementation((sheet: string) => {
@@ -201,23 +198,19 @@ describe("getPnLDataV2", () => {
 
     const result = await getPnLDataV2({});
 
-    // Should have 2 rows (one per variant)
     const multiRows = result.productProfitAnalysis.filter(p => p.product_id === "PROD-MULTI");
     expect(multiRows.length).toBe(2);
 
     const rowA = multiRows.find(r => r.variant_id === "VAR-A");
     const rowB = multiRows.find(r => r.variant_id === "VAR-B");
 
-    // CRITICAL: each row should have its OWN cost_at_sale, not the product total
     expect(rowA?.cogs).toBe(5000);
     expect(rowB?.cogs).toBe(7000);
 
-    // Total COGS in report should equal sum of variant COGS, NOT 2x product sum
     const totalMultiCogs = multiRows.reduce((s, r) => s + r.cogs, 0);
-    expect(totalMultiCogs).toBe(12000); // 5k + 7k, NOT 24k (which would be 2x bug)
+    expect(totalMultiCogs).toBe(12000);
 
-    // Margins should be sane (not negative losses)
-    expect(rowA?.marginPct).toBeCloseTo(66.67, 1); // (15k-5k)/15k
-    expect(rowB?.marginPct).toBeCloseTo(53.33, 1); // (15k-7k)/15k
+    expect(rowA?.marginPct).toBeCloseTo(66.67, 1);
+    expect(rowB?.marginPct).toBeCloseTo(53.33, 1);
   });
 });

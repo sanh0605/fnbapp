@@ -1,5 +1,5 @@
 import { findAll } from "@/lib/sheets_db";
-import { getSalesDataV2 } from "@/app/actions/reports";
+import { getSalesDataV2 } from "../actions";
 import SalesFilter from "@/components/SalesFilter";
 import SalesCharts from "@/components/SalesCharts";
 import CategoryPieChart from "@/components/CategoryPieChart";
