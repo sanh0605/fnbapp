@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { saveModifier, deleteModifier } from "@/app/actions/modifiers";
+import { saveModifierAction as saveModifier, deleteModifierAction as deleteModifier } from "@/app/admin/products/modifiers/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function ModifierForm({ baseIngredients, semiProducts, units, initialData, initialRecipe }: any) {
