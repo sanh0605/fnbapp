@@ -887,7 +887,7 @@ export default function POSScreen({
                           </div>
                         )}
                         <div className="font-bold text-orange-600">
-                          {finalTotal.toLocaleString('vi-VN')}
+                          {Math.max(0, finalTotal - itemPromoDiscount).toLocaleString('vi-VN')}
                         </div>
                       </div>
                     </div>
