@@ -101,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-[49] md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
