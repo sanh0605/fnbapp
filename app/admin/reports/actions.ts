@@ -451,3 +451,136 @@ function coerceLine(row: any): OrderLineV2 {
     cost_at_sale: Number(row.cost_at_sale) || 0,
   } as OrderLineV2;
 }
+
+export interface HeatmapCell {
+  dayOfWeek: string;
+  hour: number;
+  revenue: number;
+  orderCount: number;
+}
+
+export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promise<HeatmapCell[]> {
+  try {
+    const orders = await findAllNoCache("Orders_V2");
+    const { startDate, endDate, brandId } = filters;
+
+    const filteredOrders = (orders as any[]).filter(o => {
+      if (o.status !== ORDER_STATUS.COMPLETED) return false;
+      if (o.superseded_by && o.superseded_by !== "") return false;
+      if (!o.created_at) return false;
+
+      if (startDate && endDate) {
+        const d = new Date(o.created_at);
+        if (d < new Date(startDate) || d > new Date(endDate)) return false;
+      }
+      if (brandId && o.brand_id !== brandId) return false;
+
+      return true;
+    });
+
+    const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+    const cellsMap = new Map<string, HeatmapCell>();
+    
+    for (const day of days) {
+      for (let hour = 0; hour < 24; hour++) {
+        const key = `${day}_${hour}`;
+        cellsMap.set(key, { dayOfWeek: day, hour, revenue: 0, orderCount: 0 });
+      }
+    }
+
+    for (const o of filteredOrders) {
+      const d = new Date(o.created_at);
+      const day = days[d.getDay()];
+      const hour = d.getHours();
+      const key = `${day}_${hour}`;
+      
+      const cell = cellsMap.get(key);
+      if (cell) {
+        cell.revenue += Number(o.net_total) || 0;
+        cell.orderCount += 1;
+      }
+    }
+
+    return Array.from(cellsMap.values());
+  } catch (err: any) {
+    console.error("[getHourlyHeatmapV2]", err);
+    return [];
+  }
+}
+
+export interface PromotionPerformanceRow {
+  promotion_id: string;
+  name: string;
+  code: string;
+  type: string;
+  appliedCount: number;
+  totalDiscount: number;
+  totalRevenue: number;
+}
+
+export async function getPromotionPerformanceV2(filters: PnLReportFilters = {}): Promise<PromotionPerformanceRow[]> {
+  try {
+    const [orders, promotions] = await Promise.all([
+      findAllNoCache("Orders_V2"),
+      findAll("Promotions"),
+    ]);
+
+    const { startDate, endDate, brandId } = filters;
+
+    const filteredOrders = (orders as any[]).filter(o => {
+      if (o.status !== ORDER_STATUS.COMPLETED) return false;
+      if (o.superseded_by && o.superseded_by !== "") return false;
+      if (!o.created_at) return false;
+
+      if (startDate && endDate) {
+        const d = new Date(o.created_at);
+        if (d < new Date(startDate) || d > new Date(endDate)) return false;
+      }
+      if (brandId && o.brand_id !== brandId) return false;
+
+      return true;
+    });
+
+    const perfMap = new Map<string, PromotionPerformanceRow>();
+    
+    for (const p of promotions as any[]) {
+      perfMap.set(p.id, {
+        promotion_id: p.id,
+        name: p.name || "(Không tên)",
+        code: p.code || "(Tự động)",
+        type: p.type || "PRODUCT_DISCOUNT",
+        appliedCount: 0,
+        totalDiscount: 0,
+        totalRevenue: 0,
+      });
+    }
+
+    for (const o of filteredOrders) {
+      if (!o.applied_promotion_id) continue;
+      const promoId = o.applied_promotion_id;
+      
+      let row = perfMap.get(promoId);
+      if (!row) {
+        row = {
+          promotion_id: promoId,
+          name: `Khuyến mãi #${promoId}`,
+          code: "",
+          type: "",
+          appliedCount: 0,
+          totalDiscount: 0,
+          totalRevenue: 0,
+        };
+        perfMap.set(promoId, row);
+      }
+      
+      row.appliedCount += 1;
+      row.totalDiscount += Number(o.promo_discount_total) || 0;
+      row.totalRevenue += Number(o.net_total) || 0;
+    }
+
+    return Array.from(perfMap.values()).filter(r => r.appliedCount > 0);
+  } catch (err: any) {
+    console.error("[getPromotionPerformanceV2]", err);
+    return [];
+  }
+}

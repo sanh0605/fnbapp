@@ -23,8 +23,8 @@ export function ProductCard({
     <button
       onClick={() => !isOOS && onClick()}
       disabled={isOOS}
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition text-left h-48 relative ${
-        isOOS ? "opacity-50 grayscale cursor-not-allowed" : "hover:shadow-md active:scale-95"
+      className={`bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col transition text-left h-48 relative ${
+        isOOS ? "opacity-50 grayscale cursor-not-allowed" : "hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] active:scale-95"
       }`}
     >
       {isOOS && (

@@ -1,4 +1,4 @@
-import { getPnLDataV2 } from "../actions";
+import { getPnLDataV2, getPromotionPerformanceV2 } from "../actions";
 import { findAll } from "@/lib/sheets_db";
 import SalesFilter from "@/components/SalesFilter";
 
@@ -30,8 +30,9 @@ export default async function ReportsPage({
     categoryId
   };
 
-  const [data, brands, users, categories] = await Promise.all([
+  const [data, promoPerf, brands, users, categories] = await Promise.all([
     getPnLDataV2(filters),
+    getPromotionPerformanceV2(filters),
     findAll("Brands"),
     findAll("Users"),
     findAll("Product_Categories")
@@ -282,6 +283,92 @@ export default async function ReportsPage({
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+      </div>
+
+      {/* HIỆU QUẢ CHƯƠNG TRÌNH KHUYẾN MÃI */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Hiệu Quả Chương Trình Khuyến Mãi</h3>
+            <p className="text-sm text-gray-500">Thống kê số lần dùng, tổng chiết khấu đã chi và doanh thu thực tế mang về.</p>
+          </div>
+        </div>
+
+        {promoPerf.length === 0 ? (
+          <div className="text-center py-12 px-4 text-gray-400">
+            Không có chương trình khuyến mãi nào được áp dụng trong khoảng thời gian này.
+          </div>
+        ) : (
+          <div className="p-6 space-y-8">
+            {/* Visual Bar Chart Comparison */}
+            <div className="space-y-4">
+              <h4 className="font-bold text-sm text-gray-700 uppercase tracking-wider">So sánh doanh số do Khuyến mãi mang lại</h4>
+              <div className="space-y-3">
+                {promoPerf.map((p, idx) => {
+                  const maxRevenue = Math.max(...promoPerf.map(x => x.totalRevenue), 1);
+                  const widthPct = (p.totalRevenue / maxRevenue) * 100;
+                  return (
+                    <div key={p.promotion_id} className="space-y-1">
+                      <div className="flex justify-between text-xs font-semibold text-gray-700">
+                        <span>{p.name} {p.code ? `(${p.code})` : ""}</span>
+                        <span>{p.totalRevenue.toLocaleString("vi-VN")} đ</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-3.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500" 
+                            style={{ width: `${widthPct}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-[11px] font-bold text-gray-500 w-16 text-right shrink-0">
+                          {p.appliedCount} lượt
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Table Details */}
+            <div className="overflow-x-auto border border-gray-100 rounded-xl">
+              <table className="w-full text-left text-sm text-gray-600 whitespace-nowrap">
+                <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
+                  <tr>
+                    <th className="px-6 py-4">Tên Chương Trình</th>
+                    <th className="px-6 py-4">Mã</th>
+                    <th className="px-6 py-4">Loại</th>
+                    <th className="px-6 py-4 text-center">Số Lượt Áp Dụng</th>
+                    <th className="px-6 py-4 text-right">Tổng Tiền Chiết Khấu</th>
+                    <th className="px-6 py-4 text-right font-bold text-gray-900">Doanh Thu Mang Về</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {promoPerf.map((p, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50/50 transition">
+                      <td className="px-6 py-4 font-bold text-gray-800">{p.name}</td>
+                      <td className="px-6 py-4">
+                        <span className="font-mono bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs">
+                          {p.code || "TỰ ĐỘNG"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-gray-500 capitalize">
+                        {p.type?.toLowerCase().replace("_", " ") || "Chiết khấu"}
+                      </td>
+                      <td className="px-6 py-4 text-center font-bold text-indigo-600">{p.appliedCount}</td>
+                      <td className="px-6 py-4 text-right text-red-600 font-medium">
+                        {p.totalDiscount.toLocaleString("vi-VN")} đ
+                      </td>
+                      <td className="px-6 py-4 text-right font-bold text-emerald-600">
+                        {p.totalRevenue.toLocaleString("vi-VN")} đ
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { submitOrderV2 } from "@/app/pos/actions";
+import { submitOrderV2, getPOSDrafts, savePOSDraft, deletePOSDraft } from "@/app/pos/actions";
 import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
 import { ProductGrid } from "@/components/pos/ProductGrid";
@@ -38,21 +38,27 @@ export default function POSScreen({
   const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
 
-  // Load and cleanup drafts on mount
-  useEffect(() => {
+  const refreshDrafts = async () => {
+    if (!brandId) return;
     try {
-      const saved = localStorage.getItem("pos_drafts");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const now = new Date().getTime();
-        const validDrafts = parsed.filter((d: any) => now - d.timestamp < 24 * 60 * 60 * 1000);
-        setDrafts(validDrafts);
-        if (validDrafts.length !== parsed.length) {
-          localStorage.setItem("pos_drafts", JSON.stringify(validDrafts));
-        }
-      }
-    } catch(e) {}
-  }, []);
+      const data = await getPOSDrafts(brandId);
+      const parsed = data.map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        timestamp: new Date(d.timestamp || d.created_at).getTime(),
+        cart: JSON.parse(d.cart_json),
+        created_by_name: d.created_by_name,
+      }));
+      setDrafts(parsed);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Load drafts on mount
+  useEffect(() => {
+    refreshDrafts();
+  }, [brandId]);
 
   const saveDraft = (cartToSave: any[], clearCartAfter: boolean = false) => {
     if (cartToSave.length === 0) return;
@@ -64,25 +70,24 @@ export default function POSScreen({
     const firstItemName = cartToSave[0]?.product_name || "Trống";
     const draftName = `${dd}/${mm} ${HH}:${MM} - ${firstItemName}`;
 
-    const newDraft = {
-      id: "DRAFT_" + Date.now(),
-      timestamp: Date.now(),
+    savePOSDraft({
+      id: activeDraftId || undefined,
       name: draftName,
-      cart: [...cartToSave]
-    };
-    let newDrafts = drafts;
-    if (activeDraftId) {
-      newDrafts = newDrafts.filter(d => d.id !== activeDraftId);
-    }
-    newDrafts = [newDraft, ...newDrafts].slice(0, 10);
-    setDrafts(newDrafts);
-    localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
-    if (clearCartAfter) {
-      setCart([]);
-      setActiveDraftId(null);
-    } else {
-      setActiveDraftId(newDraft.id);
-    }
+      cart_json: JSON.stringify(cartToSave),
+      brand_id: brandId || "",
+    }).then(res => {
+      if (res.success && res.draft) {
+        refreshDrafts();
+        if (clearCartAfter) {
+          setCart([]);
+          setActiveDraftId(null);
+        } else {
+          setActiveDraftId(res.draft.id);
+        }
+      } else {
+        alert("Lỗi lưu đơn nháp: " + (res as any).error);
+      }
+    });
   };
 
   const loadDraft = (draftId: string) => {
@@ -101,12 +106,16 @@ export default function POSScreen({
   };
 
   const deleteDraft = (draftId: string) => {
-    const newDrafts = drafts.filter(d => d.id !== draftId);
-    setDrafts(newDrafts);
-    localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
-    if (activeDraftId === draftId) {
-      setActiveDraftId(null);
-    }
+    deletePOSDraft(draftId).then(res => {
+      if (res.success) {
+        refreshDrafts();
+        if (activeDraftId === draftId) {
+          setActiveDraftId(null);
+        }
+      } else {
+        alert("Lỗi xóa đơn nháp: " + res.error);
+      }
+    });
   };
 
   // Product Selection Modal State
@@ -633,9 +642,11 @@ export default function POSScreen({
       setManualPromoError(null);
       
       if (activeDraftId) {
-        const newDrafts = drafts.filter(d => d.id !== activeDraftId);
-        setDrafts(newDrafts);
-        localStorage.setItem("pos_drafts", JSON.stringify(newDrafts));
+        deletePOSDraft(activeDraftId).then(res => {
+          if (res.success) {
+            refreshDrafts();
+          }
+        });
         setActiveDraftId(null);
       }
     } else {
@@ -682,10 +693,10 @@ export default function POSScreen({
   }, [isCheckingOut, cart.length]);
 
   return (
-    <div className="fixed inset-0 flex bg-gray-100 font-sans overflow-hidden">
+    <div className="fixed inset-0 flex bg-zinc-50 text-zinc-900 font-sans overflow-hidden">
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
+        <header className="h-14 bg-white/80 border-b border-gray-200/50 backdrop-blur-md flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
           <div className="flex items-center gap-4">
             <Link href="/admin" className="text-gray-400 hover:text-indigo-600 transition-colors">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -696,7 +707,10 @@ export default function POSScreen({
           </div>
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => setIsDraftModalOpen(true)}
+              onClick={() => {
+                refreshDrafts();
+                setIsDraftModalOpen(true);
+              }}
               className="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition flex items-center gap-1.5"
             >
               📝 Nháp <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
@@ -766,9 +780,9 @@ export default function POSScreen({
 
       {/* Product Selection Modal (Popup Chọn Món) */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white w-full sm:w-[500px] max-h-[90vh] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-fade-in">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur-2xl border border-gray-200/40 w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-fade-in">
+            <div className="p-4 border-b border-gray-100/50 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-xl font-bold text-gray-900">{selectedProduct.name}</h3>
               <button onClick={() => setSelectedProduct(null)} className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -847,7 +861,7 @@ export default function POSScreen({
               ))}
             </div>
 
-            <div className="p-4 border-t border-gray-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] flex flex-col gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
+            <div className="p-4 border-t border-gray-100/50 bg-white/95 backdrop-blur-md shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] flex flex-col gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
 
               {/* CHIẾT KHẤU MÓN (Dời xuống footer) */}
               <div className="flex items-center justify-between gap-4">
@@ -920,8 +934,8 @@ export default function POSScreen({
 
       {/* Success Modal */}
       {successOrderNo && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-2xl border border-gray-200/40 w-full max-w-sm rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
             <div className="p-8 text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-4">
                 &#10003;
@@ -946,9 +960,9 @@ export default function POSScreen({
 
       {/* Draft Modal */}
       {isDraftModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-2xl border border-gray-200/40 w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            <div className="p-5 border-b border-gray-100/50 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-xl font-bold text-gray-900">Danh sách đơn nháp</h3>
               <button
                 onClick={() => setIsDraftModalOpen(false)}

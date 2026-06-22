@@ -108,7 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside 
-        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 w-64 bg-white/95 border-r border-gray-200/80 backdrop-blur-md flex flex-col shadow-sm z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -144,8 +144,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div key={item.name} className="space-y-1 mb-1">
                   <button
                     onClick={() => toggleGroup(item.name)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isGroupActive ? "text-blue-700 bg-blue-50/50" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isGroupActive ? "text-blue-700 bg-blue-50/50 font-semibold" : "text-gray-600 hover:bg-blue-50/40 hover:text-blue-700"
                     }`}
                   >
                     <div className="flex items-center">
@@ -170,10 +170,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href={child.href}
                             prefetch={false}
                             onClick={() => setIsSidebarOpen(false)}
-                            className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
+                            className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                               isChildActive
-                                ? "bg-blue-50 text-blue-700 font-bold"
-                                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
+                                : "text-gray-500 hover:bg-blue-50/40 hover:text-blue-700 font-medium"
                             }`}
                           >
                             {child.name}
@@ -197,7 +197,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-all duration-200 mb-1 ${
                   isActive
                     ? "bg-blue-50 text-blue-700 shadow-sm font-semibold"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                    : "text-gray-600 hover:bg-blue-50/40 hover:text-blue-700 font-medium"
                 }`}
               >
                 <span className="mr-3 text-lg">{item.icon}</span>

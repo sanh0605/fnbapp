@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllNoCache } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, insert, update, remove } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -185,3 +185,72 @@ function buildStockLedgerEntries(
   }
   return entries;
 }
+
+export async function getPOSDrafts(brandId: string) {
+  try {
+    const allDrafts = await findAllNoCache("POS_Drafts");
+    return allDrafts.filter((d: any) => d.brand_id === brandId);
+  } catch (err: any) {
+    console.error("Error getting POS drafts:", err);
+    return [];
+  }
+}
+
+export async function savePOSDraft(draft: {
+  id?: string;
+  name: string;
+  cart_json: string;
+  brand_id: string;
+}) {
+  try {
+    let session = null;
+    if (process.env.CLI_MODE !== "true") {
+      session = await getServerSession(authOptions);
+    }
+    const actor = {
+      id: (session?.user as any)?.id || "system",
+      name: session?.user?.name || "Hệ thống",
+    };
+
+    const now = new Date().toISOString();
+    
+    if (draft.id) {
+      const allDrafts = await findAllNoCache("POS_Drafts");
+      const existing = allDrafts.find((d: any) => d.id === draft.id);
+      if (existing) {
+        const updated = await update("POS_Drafts", draft.id, {
+          name: draft.name,
+          cart_json: draft.cart_json,
+          timestamp: now,
+        });
+        return { success: true as const, draft: updated };
+      }
+    }
+
+    const newId = draft.id || `drf-${crypto.randomUUID()}`;
+    const newDraft = {
+      id: newId,
+      timestamp: now,
+      name: draft.name,
+      cart_json: draft.cart_json,
+      brand_id: draft.brand_id,
+      created_by_id: actor.id,
+      created_by_name: actor.name,
+      created_at: now,
+    };
+    await insert("POS_Drafts", newDraft);
+    return { success: true as const, draft: newDraft };
+  } catch (err: any) {
+    return { success: false as const, error: err?.message || String(err) };
+  }
+}
+
+export async function deletePOSDraft(draftId: string) {
+  try {
+    await remove("POS_Drafts", draftId);
+    return { success: true as const };
+  } catch (err: any) {
+    return { success: false as const, error: err?.message || String(err) };
+  }
+}
+

@@ -1,5 +1,5 @@
 import { findAll } from "@/lib/sheets_db";
-import { getSalesDataV2 } from "../actions";
+import { getSalesDataV2, getHourlyHeatmapV2 } from "../actions";
 import SalesFilter from "@/components/SalesFilter";
 import SalesCharts from "@/components/SalesCharts";
 import CategoryPieChart from "@/components/CategoryPieChart";
@@ -50,7 +50,10 @@ export default async function SalesReportPage({
     filters.endDate = d2.toISOString();
   }
 
-  const data = await getSalesDataV2(filters);
+  const [data, heatmapData] = await Promise.all([
+    getSalesDataV2(filters),
+    getHourlyHeatmapV2(filters)
+  ]);
 
   // Re-build category chart data
   // getSalesDataV2 doesn't return category sales directly because it's tricky with product IDs.
@@ -124,6 +127,83 @@ export default async function SalesReportPage({
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="text-sm font-medium text-gray-500 mb-1">Doanh Thu Trung Bình / Đơn</div>
           <div className="text-3xl font-bold text-gray-900">{Math.round(avgOrderValue).toLocaleString("vi-VN")} đ</div>
+        </div>
+      </div>
+
+      {/* Hourly Heatmap Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="mb-4">
+          <h3 className="font-bold text-gray-900 text-lg">Ma trận Doanh thu theo Giờ (Heatmap)</h3>
+          <p className="text-sm text-gray-500">Phân bổ doanh thu theo giờ trong ngày và thứ trong tuần.</p>
+        </div>
+        
+        <div className="overflow-x-auto table-mobile-scroll pb-2">
+          <div className="min-w-[800px] space-y-1">
+            {/* Header: Hours */}
+            <div className="flex items-center">
+              <div className="w-16 shrink-0 text-xs text-gray-400 font-bold text-center">Thứ</div>
+              <div className="flex-1 gap-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
+                {Array.from({ length: 24 }, (_, i) => i).map(h => (
+                  <div key={h} className="text-center text-[10px] text-gray-400 font-medium">
+                    {h}h
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Rows: DOW */}
+            {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map(day => {
+              const maxRevenue = Math.max(...heatmapData.map(c => c.revenue), 1);
+              return (
+                <div key={day} className="flex items-center h-10">
+                  <div className="w-16 shrink-0 text-sm font-semibold text-gray-700">
+                    {day === "CN" ? "Chủ Nhật" : `Thứ ${day.replace("T", "")}`}
+                  </div>
+                  <div className="flex-1 gap-1 h-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
+                    {Array.from({ length: 24 }, (_, i) => i).map(hour => {
+                      const cell = heatmapData.find(c => c.dayOfWeek === day && c.hour === hour) || { revenue: 0, orderCount: 0 };
+                      const opacity = maxRevenue > 0 ? (cell.revenue / maxRevenue) : 0;
+                      const scaledOpacity = opacity > 0 ? 0.08 + opacity * 0.87 : 0.03;
+                      
+                      return (
+                        <div
+                          key={hour}
+                          title={`${day}, ${hour}h: ${cell.revenue.toLocaleString("vi-VN")} đ (${cell.orderCount} đơn)`}
+                          className="rounded-md border border-gray-100/50 flex flex-col items-center justify-center transition-all hover:scale-105 hover:shadow-sm cursor-pointer"
+                          style={{
+                            backgroundColor: cell.revenue > 0 ? `rgba(79, 70, 229, ${scaledOpacity})` : '#f9fafb',
+                            color: scaledOpacity > 0.5 ? '#ffffff' : '#1e1b4b',
+                          }}
+                        >
+                          {cell.revenue > 0 && (
+                            <span className="text-[8px] font-black leading-none truncate max-w-full px-0.5">
+                              {cell.revenue >= 1000000 
+                                ? `${(cell.revenue / 1000000).toFixed(1)}M` 
+                                : cell.revenue >= 1000 
+                                  ? `${Math.round(cell.revenue / 1000)}k` 
+                                  : cell.revenue}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Legend */}
+        <div className="mt-4 flex items-center justify-end gap-3 text-xs text-gray-500">
+          <span>Doanh thu thấp</span>
+          <div className="flex gap-1 h-4">
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(79, 70, 229, 0.05)' }}></div>
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(79, 70, 229, 0.25)' }}></div>
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(79, 70, 229, 0.55)' }}></div>
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(79, 70, 229, 0.9)' }}></div>
+          </div>
+          <span>Doanh thu cao</span>
         </div>
       </div>
 

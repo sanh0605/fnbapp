@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { ProductCard } from "./ProductCard";
 
 interface ProductGridProps {
@@ -27,6 +28,40 @@ export function ProductGrid({
   promoProductsMap,
   onProductClick,
 }: ProductGridProps) {
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const diffX = e.changedTouches[0].clientX - touchStartX.current;
+    const diffY = e.changedTouches[0].clientY - touchStartY.current;
+
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+      const tabList = ["BEST_SELLERS", "ALL", ...categories.map((c) => c.id)];
+      const currentIndex = tabList.indexOf(activeCategory);
+      if (currentIndex !== -1) {
+        if (diffX < 0) {
+          const nextIndex = Math.min(tabList.length - 1, currentIndex + 1);
+          if (nextIndex !== currentIndex) {
+            setActiveCategory(tabList[nextIndex]);
+          }
+        } else {
+          const prevIndex = Math.max(0, currentIndex - 1);
+          if (prevIndex !== currentIndex) {
+            setActiveCategory(tabList[prevIndex]);
+          }
+        }
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
   return (
     <>
       <div className="bg-white px-4 py-3 shrink-0 border-b border-gray-100">
@@ -77,7 +112,7 @@ export function ProductGrid({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {filteredProducts.map((p: any) => {
             const cat = categories.find((c) => c.id === p.category_id);
