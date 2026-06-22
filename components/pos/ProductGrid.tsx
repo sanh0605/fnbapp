@@ -1,0 +1,105 @@
+"use client";
+
+import { ProductCard } from "./ProductCard";
+
+interface ProductGridProps {
+  categories: any[];
+  activeCategory: string;
+  setActiveCategory: (cat: string) => void;
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+  filteredProducts: any[];
+  variants: any[];
+  outOfStockProductIds: string[];
+  promoProductsMap: Map<string, number>;
+  onProductClick: (product: any) => void;
+}
+
+export function ProductGrid({
+  categories,
+  activeCategory,
+  setActiveCategory,
+  searchQuery,
+  setSearchQuery,
+  filteredProducts,
+  variants,
+  outOfStockProductIds,
+  promoProductsMap,
+  onProductClick,
+}: ProductGridProps) {
+  return (
+    <>
+      <div className="bg-white px-4 py-3 shrink-0 border-b border-gray-100">
+        <input
+          type="text"
+          placeholder="Tìm kiếm món (vd: đào, cà phê)..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-gray-100 border-none rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 outline-none placeholder-gray-400"
+        />
+      </div>
+
+      <div className="bg-white border-b border-gray-200 p-3 shrink-0">
+        <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
+          <button
+            onClick={() => setActiveCategory("BEST_SELLERS")}
+            className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
+              activeCategory === "BEST_SELLERS"
+                ? "bg-orange-600 text-white shadow-md"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            🔥 Bán chạy
+          </button>
+          <button
+            onClick={() => setActiveCategory("ALL")}
+            className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
+              activeCategory === "ALL"
+                ? "bg-orange-600 text-white shadow-md"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Tất cả món
+          </button>
+          {categories.map((c: any) => (
+            <button
+              key={c.id}
+              onClick={() => setActiveCategory(c.id)}
+              className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
+                activeCategory === c.id
+                  ? "bg-orange-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {filteredProducts.map((p: any) => {
+            const cat = categories.find((c) => c.id === p.category_id);
+            const prodVariants = variants.filter((v: any) => v.product_id === p.id);
+            const basePrice = prodVariants.length > 0 ? Number(prodVariants[0].price) : 0;
+            const isOOS = (outOfStockProductIds || []).includes(p.id);
+            const promoPrice = promoProductsMap.get(p.id);
+
+            return (
+              <ProductCard
+                key={p.id}
+                product={p}
+                category={cat}
+                basePrice={basePrice}
+                isOOS={isOOS}
+                promoPrice={promoPrice}
+                onClick={() => onProductClick(p)}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}

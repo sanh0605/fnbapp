@@ -4,8 +4,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { submitOrderV2 } from "@/app/pos/actions";
 import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
-import { categoryIcon } from "@/lib/pos-category-icons";
-import { DiscountBadge, DISCOUNT_KIND } from "@/components/pos/DiscountBadge";
+import { ProductGrid } from "@/components/pos/ProductGrid";
+import { CartPanel } from "@/components/pos/CartPanel";
 
 export default function POSScreen({
   brandId,
@@ -707,401 +707,48 @@ export default function POSScreen({
           </div>
         </header>
 
-        <div className="bg-white px-4 py-3 shrink-0 border-b border-gray-100">
-          <input 
-            type="text"
-            placeholder="Tìm kiếm món (vd: đào, cà phê)..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-gray-100 border-none rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 outline-none placeholder-gray-400"
-          />
-        </div>
-
-        <div className="bg-white border-b border-gray-200 p-3 shrink-0">
-          <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
-            <button
-              onClick={() => setActiveCategory("BEST_SELLERS")}
-              className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === "BEST_SELLERS" ? "bg-orange-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-            >
-              🔥 Bán chạy
-            </button>
-            <button
-              onClick={() => setActiveCategory("ALL")}
-              className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === "ALL" ? "bg-orange-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-            >
-              Tất cả món
-            </button>
-            {categories.map((c: any) => (
-              <button
-                key={c.id}
-                onClick={() => setActiveCategory(c.id)}
-                className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === c.id ? "bg-orange-600 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {filteredProducts.map((p: any) => {
-              const cat = categories.find(c => c.id === p.category_id);
-              const prodVariants = variants.filter((v: any) => v.product_id === p.id);
-              const basePrice = prodVariants.length > 0 ? Number(prodVariants[0].price) : 0;
-              const isOOS = (outOfStockProductIds || []).includes(p.id);
-              const promoPrice = promoProductsMap.get(p.id);
-
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => !isOOS && openProductModal(p)}
-                  disabled={isOOS}
-                  className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition text-left h-48 relative ${isOOS ? "opacity-50 grayscale cursor-not-allowed" : "hover:shadow-md active:scale-95"}`}
-                >
-                  {isOOS && (
-                    <div className="absolute inset-0 bg-white/40 z-20 flex flex-col items-center justify-center">
-                      <span className="bg-red-600 text-white font-bold px-3 py-1 rounded-full shadow border-2 border-white transform -rotate-12">HẾT HÀNG</span>
-                    </div>
-                  )}
-                  <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 w-full shrink-0 relative">
-                    {promoPrice !== undefined && (
-                      <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10 shadow-sm shadow-red-500/50">
-                        🔥 PROMO
-                      </div>
-                    )}
-                    {p.image_url ? (
-                      <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="text-4xl">{categoryIcon(cat?.name)}</div>
-                    )}
-                  </div>
-                  <div className="p-3 flex-1 flex flex-col justify-between">
-                    <h3 className="font-bold text-gray-800 text-sm leading-tight line-clamp-2">{p.name}</h3>
-                    <div className="mt-1">
-                      {promoPrice !== undefined ? (
-                        <div className="flex flex-col">
-                          <span className="text-[11px] text-gray-400 line-through leading-none">{basePrice.toLocaleString('vi-VN')} đ</span>
-                          <span className="text-orange-600 font-bold text-sm leading-tight">{promoPrice.toLocaleString('vi-VN')} đ</span>
-                        </div>
-                      ) : (
-                        <div className="text-orange-600 font-bold text-sm leading-tight">
-                          {basePrice.toLocaleString('vi-VN')} đ
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <ProductGrid
+          categories={categories}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filteredProducts={filteredProducts}
+          variants={variants}
+          outOfStockProductIds={outOfStockProductIds}
+          promoProductsMap={promoProductsMap}
+          onProductClick={(p) => openProductModal(p)}
+        />
       </div>
 
-      <div className={`fixed inset-y-0 right-0 w-full md:w-96 bg-white border-l border-gray-200 shadow-2xl flex flex-col z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isCartOpen ? "translate-x-0" : "translate-x-full"}`}>
-
-        <div className="h-14 bg-indigo-600 flex items-center justify-between px-4 shrink-0 text-white">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            Hoá Đơn
-          </h2>
-          <div className="flex items-center gap-2">
-            {cart.length > 0 && (
-              <>
-                <button 
-                  onClick={() => saveDraft(cart, true)} 
-                  className="text-xs font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
-                >
-                  Lưu Nháp
-                </button>
-                <button 
-                  onClick={() => {
-                    if (confirm("Xoá hết món trong giỏ hàng?")) {
-                      setCart([]);
-                      setActiveDraftId(null);
-                    }
-                  }} 
-                  className="text-xs font-bold bg-red-500/20 text-red-100 hover:bg-red-500/40 px-2 py-1 rounded transition-colors"
-                >
-                  Xoá hết
-                </button>
-              </>
-            )}
-            <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-1 bg-white/20 rounded hover:bg-white/30">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-3">
-          {cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
-              <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-              <p>Chưa có món nào</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {cart.map((item, idx) => {
-                const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
-                const baseTotal = (item.unit_price + modsPrice) * item.qty;
-                const finalTotal = calculateItemTotal(item);
-                const itemPromoDiscount = itemPromoDiscounts[idx];
-                const manualItemDiscount = baseTotal - finalTotal;
-
-                return (
-                  <div key={item.id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-300">
-                    <div className="flex justify-between items-start mb-2 cursor-pointer" onClick={() => openProductModal(products.find((p: any) => p.id === item.product_id), idx)}>
-                      <div>
-                        <h4 className="font-bold text-gray-800 leading-tight hover:text-indigo-600 transition-colors">{item.product_name} ✏️</h4>
-                        <p className="text-xs font-semibold text-indigo-600 mt-0.5">Size {item.size_name}</p>
-                      </div>
-                      <div className="text-right">
-                        {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
-                          <div className="text-[11px] text-gray-400 line-through mb-0.5">
-                            {baseTotal.toLocaleString('vi-VN')}
-                          </div>
-                        )}
-                        <div className="font-bold text-orange-600">
-                          {Math.max(0, finalTotal - itemPromoDiscount).toLocaleString('vi-VN')}
-                        </div>
-                      </div>
-                    </div>
-
-                    {item.modifiers.length > 0 && (
-                      <div className="text-[11px] text-gray-500 bg-gray-50 p-1.5 rounded mb-2 leading-relaxed">
-                        {Object.entries(
-                          item.modifiers.reduce((acc: any, m: any) => {
-                            acc[m.name] = (acc[m.name] || 0) + 1;
-                            return acc;
-                          }, {})
-                        ).map(([name, count]: [string, any]) => `${count > 1 ? count + ' x ' : ''}${name}`).join(", ")}
-                      </div>
-                    )}
-
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {itemPromoDiscount > 0 && (
-                        <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={itemPromoDiscount} />
-                      )}
-                      {manualItemDiscount > 0 && (
-                        <DiscountBadge kind={DISCOUNT_KIND.MANUAL_ITEM} label="Thu ngân" amount={manualItemDiscount} />
-                      )}
-                    </div>
-
-                    <div className="flex justify-between items-center mt-2">
-                      <button onClick={() => removeFromCart(idx)} className="text-xs text-red-500 font-medium px-2 py-1 bg-red-50 rounded hover:bg-red-100">Xoá</button>
-                      <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
-                        <button onClick={() => changeQty(idx, -1)} className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold">-</button>
-                        <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
-                        <button onClick={() => changeQty(idx, 1)} className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold">+</button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          {cart.length > 0 && (
-            <div className="mb-4 pb-4 border-b border-gray-100">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Khuyến Mãi</span>
-                {appliedPromo && (
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    Đã áp dụng
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Nhập mã giảm giá..."
-                  value={promoCodeInput}
-                  onChange={(e) => {
-                    setPromoCodeInput(e.target.value);
-                    setManualPromoError(null);
-                  }}
-                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 uppercase font-medium"
-                />
-                <button
-                  type="button"
-                  onClick={handleApplyPromoCode}
-                  className="px-4 py-1.5 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-lg hover:bg-indigo-100 transition active:scale-95 shrink-0"
-                >
-                  Áp dụng
-                </button>
-              </div>
-
-              {manualPromoError && (
-                <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {manualPromoError}</p>
-              )}
-
-              {appliedPromo && (
-                <div className="mt-3 flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl p-2.5">
-                  <div className="flex items-start gap-2 min-w-0">
-                    <span className="text-lg shrink-0 mt-0.5">{appliedPromo.code ? "🎟️" : "⚡"}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-gray-800 truncate">{appliedPromo.name}</p>
-                      <p className="text-[10px] font-medium text-gray-400">
-                        Giảm -{promoDiscountAmount.toLocaleString("vi-VN")}đ
-                      </p>
-                    </div>
-                  </div>
-                  {appliedPromo.code && (
-                    <button
-                      type="button"
-                      onClick={handleRemovePromoCode}
-                      className="text-gray-400 hover:text-red-500 text-sm font-bold px-1.5 py-0.5 hover:bg-red-50 rounded animate-fade-in"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Chiết khấu đơn hàng */}
-              <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Chiết khấu đơn hàng</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0 h-9 bg-white">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserCustomDiscountType("VND");
-                      }}
-                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${userCustomDiscountType === "VND" ? "bg-indigo-500 text-white" : "bg-white text-gray-500 hover:bg-gray-100"}`}
-                    >
-                      VNĐ
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserCustomDiscountType("PERCENT");
-                      }}
-                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${userCustomDiscountType === "PERCENT" ? "bg-indigo-500 text-white" : "bg-white text-gray-500 hover:bg-gray-100"}`}
-                    >
-                      %
-                    </button>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="Nhập giảm giá..."
-                    value={userCustomDiscount === 0 || userCustomDiscount === null ? "" : userCustomDiscount}
-                    onChange={(e) => {
-                      const val = e.target.value === "" ? null : Number(e.target.value);
-                      setUserCustomDiscount(val);
-                    }}
-                    className="flex-1 w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-right font-medium text-sm h-9"
-                  />
-                  {userCustomDiscount !== null && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserCustomDiscount(null);
-                      }}
-                      className="text-gray-400 hover:text-red-500 text-sm font-bold px-2 py-1.5 hover:bg-red-50 rounded"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {userCustomDiscount !== null && (
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-gray-500 text-sm">Giảm giá Hoá đơn</span>
-              <DiscountBadge
-                kind={DISCOUNT_KIND.ORDER}
-                label="Thu ngân"
-                amount={
-                  userCustomDiscountType === "PERCENT"
-                    ? (calculateSubtotal() * userCustomDiscount) / 100
-                    : userCustomDiscount
-                }
-              />
-            </div>
-          )}
-
-          {appliedPromo && (
-            (() => {
-              const amount = userCustomDiscount !== null && appliedPromo.type === "ORDER_DISCOUNT" ? 0 : promoDiscountAmount;
-              if (amount <= 0) return null;
-              return (
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-gray-500 text-sm">Khuyến mãi hệ thống</span>
-                  <DiscountBadge
-                    kind={DISCOUNT_KIND.PROMO}
-                    label="Hệ thống"
-                    amount={amount}
-                  />
-                </div>
-              );
-            })()
-          )}
-
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-gray-500 font-medium">Tổng tiền ({totalItems} món)</span>
-            <div className="text-right">
-              {calculateCartBaseTotal() > totalAmount && (
-                <div className="text-sm text-gray-400 line-through mb-0.5 font-medium">
-                  {calculateCartBaseTotal().toLocaleString('vi-VN')} đ
-                </div>
-              )}
-              <div className="text-2xl font-black text-orange-600">
-                {totalAmount.toLocaleString('vi-VN')} đ
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleConfirmCheckout("Tien mat")}
-              disabled={cart.length === 0 || !!isCheckingOut}
-              className="flex-1 bg-emerald-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2"
-            >
-              {isCheckingOut === "Tien mat" ? (
-                <>
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>ĐANG XỬ LÝ...</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-lg">💵</span>
-                  <span>TIỀN MẶT</span>
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => handleConfirmCheckout("Chuyen khoan")}
-              disabled={cart.length === 0 || !!isCheckingOut}
-              className="flex-1 bg-blue-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2"
-            >
-              {isCheckingOut === "Chuyen khoan" ? (
-                <>
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>ĐANG XỬ LÝ...</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-lg">💳</span>
-                  <span>CHUYỂN KHOẢN</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
+      <CartPanel
+        cart={cart}
+        products={products}
+        isCartOpen={isCartOpen}
+        setIsCartOpen={setIsCartOpen}
+        saveDraft={saveDraft}
+        drafts={drafts}
+        setCart={setCart}
+        setActiveDraftId={setActiveDraftId}
+        activeDraftId={activeDraftId}
+        openProductModal={openProductModal}
+        removeFromCart={removeFromCart}
+        changeQty={changeQty}
+        promoCodeInput={promoCodeInput}
+        setPromoCodeInput={setPromoCodeInput}
+        handleApplyPromoCode={handleApplyPromoCode}
+        handleRemovePromoCode={handleRemovePromoCode}
+        appliedPromo={appliedPromo}
+        promoDiscountAmount={promoDiscountAmount}
+        manualPromoError={manualPromoError}
+        userCustomDiscountType={userCustomDiscountType}
+        setUserCustomDiscountType={setUserCustomDiscountType}
+        userCustomDiscount={userCustomDiscount}
+        setUserCustomDiscount={setUserCustomDiscount}
+        handleConfirmCheckout={handleConfirmCheckout}
+        isCheckingOut={isCheckingOut}
+        itemPromoDiscounts={itemPromoDiscounts}
+      />
 
       {/* Mobile Floating Cart Button */}
       {!isCartOpen && cart.length > 0 && (
