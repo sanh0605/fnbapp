@@ -111,8 +111,8 @@ export default function StockTable({
         </div>
       </StickyFilterBar>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Desktop Table - hidden on mobile */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hidden md:block">
         <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
@@ -154,6 +154,40 @@ export default function StockTable({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Card List - shown on mobile */}
+      <div className="space-y-3 md:hidden">
+        {filteredItems.map((item) => (
+          <div key={item.id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <h4 className="font-bold text-gray-900 text-sm">{item.name}</h4>
+                <span className="text-[10px] font-mono text-gray-400 block mt-0.5">ID: {item.id}</span>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium mt-1.5 ${
+                  item.item_type === "SEMI_PRODUCT" ? "bg-purple-50 text-purple-700" : "bg-blue-50 text-blue-700"
+                }`}>
+                  {item.item_type === "SEMI_PRODUCT" ? "Bán thành phẩm" : "Nguyên liệu"}
+                </span>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Hệ thống</p>
+                <div className={`text-base font-extrabold mt-0.5 ${item.current_stock < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  {item.current_stock.toLocaleString("vi-VN")} {item.unitName}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-gray-50">
+              <button 
+                onClick={() => setIsAdjusting(item)}
+                className="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Cân bằng
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Adjust Modal */}

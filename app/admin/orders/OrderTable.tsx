@@ -207,8 +207,8 @@ export default function OrderTable({
         </div>
       </StickyFilterBar>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Desktop Table - hidden on mobile, shown on desktop */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 font-medium">
@@ -283,34 +283,99 @@ export default function OrderTable({
             </tbody>
           </table>
         </div>
+      </div>
 
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Hiển thị <span className="font-bold text-gray-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-bold text-gray-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)}</span> trong tổng số <span className="font-bold text-gray-900">{filteredOrders.length}</span> đơn hàng
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              >
-                Trước
-              </button>
-              <div className="flex items-center px-2 font-medium text-gray-700">
-                Trang {currentPage} / {totalPages}
-              </div>
-              <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              >
-                Sau
-              </button>
-            </div>
+      {/* Mobile Card List - shown on mobile, hidden on desktop */}
+      <div className="space-y-3 md:hidden">
+        {currentOrders.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">
+            Không tìm thấy đơn hàng nào
           </div>
+        ) : (
+          currentOrders.map((order) => (
+            <div
+              key={order.id}
+              className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-3 active:bg-gray-50 transition-colors cursor-pointer"
+              onClick={() => setSelectedOrder(order)}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="font-bold text-gray-900 text-sm">
+                    {order.display_order_no || order.order_no}
+                  </span>
+                  {order.parent_order_id && (
+                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-purple-100 text-purple-800">
+                      v{order.version}
+                    </span>
+                  )}
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    {formatDate(order.created_at)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-orange-600 text-sm">
+                    {Number(order.net_total || 0).toLocaleString("vi-VN")} đ
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${order.method === 'Chuyen khoan' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    {order.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-2 space-y-1">
+                {order.lines && order.lines.map((line: OrderLine, idx: number) => (
+                  <div key={idx} className="text-xs text-gray-600">
+                    <span className="font-bold text-gray-800">{line.qty}x</span> {line.product_name} <span className="text-gray-400">({line.size_name})</span>
+                    {line.modifiers && line.modifiers.length > 0 && (
+                      <div className="text-[10px] text-gray-500 ml-4 mt-0.5">
+                        + {line.modifiers.map((m: any) => m.name).join(", ")}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-2 border-t border-gray-50">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
+                  disabled={order.status !== "COMPLETED"}
+                  className="text-xs text-red-600 bg-red-50 hover:bg-red-100 font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Hủy đơn
+                </button>
+              </div>
+            </div>
+          ))
         )}
       </div>
+
+      {/* Pagination Wrapper */}
+      {totalPages > 1 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
+          <div className="text-sm text-gray-500 text-center sm:text-left">
+            Hiển thị <span className="font-bold text-gray-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-bold text-gray-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)}</span> trong tổng số <span className="font-bold text-gray-900">{filteredOrders.length}</span> đơn hàng
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm"
+            >
+              Trước
+            </button>
+            <div className="flex items-center px-2 font-medium text-gray-700 text-sm">
+              Trang {currentPage} / {totalPages}
+            </div>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm"
+            >
+              Sau
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Void Confirmation Modal */}
       {orderToVoid && (
