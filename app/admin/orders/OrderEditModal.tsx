@@ -3,25 +3,15 @@
 import { useState, useMemo } from "react";
 import { editOrderV2 } from "./actions";
 import type { CartInput } from "@/lib/order-cart";
-
 import type { OrderListItem } from "./actions";
+import { LineItemEditor } from "./components/LineItemEditor";
+import { DiscountEditor } from "./components/DiscountEditor";
+import type { EditItem } from "./components/LineItemEditor";
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
 
-interface EditItem {
-  product_id: string;
-  product_name: string;
-  variant_id: string;
-  size_name: string;
-  unit_price: number;
-  qty: number;
-  modifiers: any[];
-  discount_amount: number; // Editable manual portion
-  line_discount: number; // Preserved promo portion
-  line_manual_discount: number; // Preserved manual portion
-  discount_type: string;
-}
+
 
 function calcItemTotal(item: EditItem) {
   const modsPrice = item.modifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
@@ -74,11 +64,6 @@ export default function OrderEditModal({
 
   // Item editing state
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editQty, setEditQty] = useState(1);
-  const [editDiscount, setEditDiscount] = useState(0);
-  const [editDiscountType, setEditDiscountType] = useState<"VND" | "PERCENT">("VND");
-  const [editVariantId, setEditVariantId] = useState<string>("");
-  const [editModifiers, setEditModifiers] = useState<any[]>([]);
 
   // Add product state
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -125,55 +110,7 @@ export default function OrderEditModal({
     if (editingIndex === index) setEditingIndex(null);
   };
 
-  const startEditItem = (index: number) => {
-    const item = items[index];
-    setEditingIndex(index);
-    setEditQty(item.qty);
-    setEditDiscount(item.discount_amount);
-    setEditDiscountType(item.discount_type as "VND" | "PERCENT");
-    setEditVariantId(item.variant_id);
-    setEditModifiers([...item.modifiers]);
-  };
 
-  const saveEditItem = () => {
-    if (editingIndex === null) return;
-    const item = items[editingIndex];
-    const newVariant = variants.find((v: any) => v.id === editVariantId);
-
-    // Auto-scale preserved promo portion when qty changes
-    let scaledLineDiscount = Number(item.line_discount || 0);
-    if (item.qty > 0 && editQty !== item.qty) {
-      const scale = editQty / item.qty;
-      scaledLineDiscount = Math.round(scaledLineDiscount * scale);
-    }
-
-    setItems(items.map((it, i) => {
-      if (i !== editingIndex) return it;
-      return {
-        ...it,
-        qty: editQty,
-        discount_amount: editDiscount,
-        discount_type: editDiscountType,
-        variant_id: editVariantId,
-        size_name: newVariant?.size_name || it.size_name,
-        unit_price: Number(newVariant?.price || it.unit_price),
-        modifiers: [...editModifiers],
-        line_discount: scaledLineDiscount,
-      };
-    }));
-    setEditingIndex(null);
-  };
-
-  const addModifierToEdit = (mod: any) => {
-    setEditModifiers([...editModifiers, { id: mod.id, name: mod.name, price: Number(mod.price || 0) }]);
-  };
-
-  const removeModifierFromEdit = (mod: any) => {
-    const idx = editModifiers.findIndex((m: any) => m.id === mod.id);
-    if (idx !== -1) {
-      setEditModifiers(editModifiers.filter((_, i: number) => i !== idx));
-    }
-  };
 
   const addNewModifier = (mod: any) => {
     setSelectedNewModifiers([...selectedNewModifiers, { id: mod.id, name: mod.name, price: Number(mod.price || 0) }]);
@@ -254,33 +191,7 @@ export default function OrderEditModal({
     }
   };
 
-  // Get available variants for an item being edited
-  const getEditVariants = () => {
-    if (editingIndex === null) return [];
-    const item = items[editingIndex];
-    return variants.filter((v: any) => v.product_id === item.product_id);
-  };
 
-  // Build the edit-mode item preview with price totals
-  const getEditItemTotals = () => {
-    if (editingIndex === null) return { base: 0, final: 0 };
-    const item = items[editingIndex];
-    const variant = variants.find((v: any) => v.id === editVariantId);
-    const unitPrice = Number(variant?.price || item.unit_price);
-    const modsPrice = editModifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
-    const base = (unitPrice + modsPrice) * editQty;
-
-    let manualDisc = 0;
-    if (editDiscount > 0) {
-      manualDisc = editDiscountType === "PERCENT" ? (base * editDiscount) / 100 : editDiscount;
-    }
-    // Scaled promo portion (matches saveEditItem logic)
-    const promoDisc = item.qty > 0 && editQty !== item.qty
-      ? Math.round(Number(item.line_discount || 0) * (editQty / item.qty))
-      : Number(item.line_discount || 0);
-
-    return { base, final: Math.max(0, base - manualDisc - promoDisc) };
-  };
 
   const totalAmount = calculateTotal();
 
@@ -304,165 +215,29 @@ export default function OrderEditModal({
             <div className="text-center text-gray-400 py-8">Không có món nào trong đơn</div>
           )}
 
-          {items.map((item, idx) => {
-            const lineTotal = calcItemTotal(item);
-            const baseTotal = calcItemBaseTotal(item);
-
-            if (editingIndex === idx) {
-              const editVariants = getEditVariants();
-              const editTotals = getEditItemTotals();
-
-              return (
-                <div key={idx} className="bg-indigo-50 p-3 rounded-xl border-2 border-indigo-200 space-y-3">
-                  <div className="font-bold text-gray-800">{item.product_name}</div>
-
-                  {/* Size selection */}
-                  {editVariants.length > 1 && (
-                    <div>
-                      <div className="text-xs font-medium text-gray-500 mb-1.5">Size</div>
-                      <div className="flex flex-wrap gap-2">
-                        {editVariants.map((v: any) => (
-                          <button
-                            key={v.id}
-                            onClick={() => setEditVariantId(v.id)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${editVariantId === v.id
-                                ? "border-orange-500 bg-orange-50 text-orange-700"
-                                : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                              }`}
-                          >
-                            {v.size_name} - {Number(v.price).toLocaleString("vi-VN")}d
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Topping editing */}
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 mb-1.5">Topping</div>
-                    <div className="space-y-2">
-                      {Object.entries(groupedModifiers).map(([groupName, mods]) => (
-                        <div key={groupName}>
-                          <div className="text-[11px] text-gray-400 mb-1">{groupName}</div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {mods.map((mod: any) => {
-                              const count = editModifiers.filter((m: any) => m.id === mod.id).length;
-                              return (
-                                <div key={mod.id} className={`flex items-center gap-1 rounded-lg border text-xs ${count > 0 ? "border-indigo-400 bg-indigo-50" : "border-gray-200 bg-white"
-                                  }`}>
-                                  {count > 0 && (
-                                    <button onClick={() => removeModifierFromEdit(mod)} className="px-1.5 py-1 text-indigo-400 hover:text-red-500 font-bold">-</button>
-                                  )}
-                                  <span className="px-1 py-1">{mod.name} <span className="text-gray-400">+{Number(mod.price).toLocaleString("vi-VN")}d</span></span>
-                                  {count > 0 && <span className="px-1 py-1 font-bold text-indigo-600">{count}x</span>}
-                                  <button onClick={() => addModifierToEdit(mod)} className="px-1.5 py-1 text-gray-400 hover:text-indigo-600 font-bold">+</button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Qty & Discount */}
-                  <div className="flex gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-700">SL:</span>
-                      <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-gray-200">
-                        <button onClick={() => setEditQty(Math.max(1, editQty - 1))} className="w-7 h-7 flex items-center justify-center bg-white rounded border text-gray-600 font-bold">-</button>
-                        <span className="font-bold w-6 text-center">{editQty}</span>
-                        <button onClick={() => setEditQty(editQty + 1)} className="w-7 h-7 flex items-center justify-center bg-white rounded border text-gray-600 font-bold">+</button>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-1">
-                      <span className="text-sm font-medium text-gray-700">Giảm:</span>
-                      <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
-                        <button onClick={() => setEditDiscountType("VND")} className={`px-2 py-1 text-xs font-bold ${editDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"}`}>VND</button>
-                        <button onClick={() => setEditDiscountType("PERCENT")} className={`px-2 py-1 text-xs font-bold ${editDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"}`}>%</button>
-                      </div>
-                      <input type="number" min="0" value={editDiscount || ""} onChange={(e) => setEditDiscount(Number(e.target.value))} className="flex-1 px-2 py-1 border border-gray-200 rounded-lg text-sm text-right outline-none focus:ring-1 focus:ring-indigo-500" />
-                    </div>
-                  </div>
-
-                  {/* Price totals */}
-                  <div className="bg-white rounded-lg p-2.5 border border-indigo-100 space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Giá gốc</span>
-                      <span className="text-gray-700 font-medium">{editTotals.base.toLocaleString("vi-VN")}đ</span>
-                    </div>
-                    {(() => {
-                      const item = items[editingIndex];
-                      if (!item || Number(item.line_discount || 0) === 0) return null;
-                      const scaledPromo = item.qty > 0 && editQty !== item.qty
-                        ? Math.round(Number(item.line_discount || 0) * (editQty / item.qty))
-                        : Number(item.line_discount || 0);
-                      return (
-                        <div className="flex justify-between text-sm text-emerald-600">
-                          <span>⚡ KM (tự scale theo SL)</span>
-                          <span>-{scaledPromo.toLocaleString("vi-VN")}đ</span>
-                        </div>
-                      );
-                    })()}
-                    {editDiscount > 0 && (
-                      <div className="flex justify-between text-sm text-red-500">
-                        <span>Chiết khấu</span>
-                        <span>-{(editTotals.base - editTotals.final - (Number(items[editingIndex]?.line_discount || 0) > 0
-                          ? (items[editingIndex].qty > 0 && editQty !== items[editingIndex].qty
-                            ? Math.round(Number(items[editingIndex].line_discount || 0) * (editQty / items[editingIndex].qty))
-                            : Number(items[editingIndex].line_discount || 0))
-                          : 0)).toLocaleString("vi-VN")}đ</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold pt-1 border-t border-gray-100">
-                      <span className="text-gray-800">Thành tiền</span>
-                      <span className="text-orange-600">{editTotals.final.toLocaleString("vi-VN")}đ</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-1">
-                    <button onClick={() => setEditingIndex(null)} className="flex-1 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Hủy</button>
-                    <button onClick={saveEditItem} className="flex-1 py-1.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Lưu</button>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <div key={idx} className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <div className="flex justify-between items-start mb-1">
-                  <div className="flex-1">
-                    <span className="font-bold text-orange-600 mr-1">{item.qty}x</span>
-                    <span className="font-bold text-gray-800">{item.product_name}</span>
-                    <span className="text-gray-400 text-xs ml-1">({item.size_name})</span>
-                  </div>
-                  <div className="text-right">
-                    {(item.discount_amount > 0 || item.line_discount > 0 || item.line_manual_discount > 0) && (
-                      <div className="text-[11px] text-gray-400 line-through">{baseTotal.toLocaleString("vi-VN")}d</div>
-                    )}
-                    <div className="font-bold text-gray-800">{lineTotal.toLocaleString("vi-VN")}d</div>
-                  </div>
-                </div>
-                {item.modifiers.length > 0 && (
-                  <div className="text-xs text-indigo-600 mb-1">+ {item.modifiers.map((m: any) => m.name).join(", ")}</div>
-                )}
-                {item.line_discount > 0 && (
-                  <div className="text-xs text-emerald-600 font-medium mb-0.5">
-                    KM: -{item.line_discount.toLocaleString("vi-VN")}đ
-                  </div>
-                )}
-                {(item.discount_amount > 0 || item.line_manual_discount > 0) && (
-                  <div className="text-xs text-red-500 font-medium mb-1">
-                    Giảm: -{item.discount_type === "PERCENT" ? `${item.discount_amount}%` : `${Number(item.discount_amount || item.line_manual_discount).toLocaleString("vi-VN")}đ`}
-                  </div>
-                )}
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => startEditItem(idx)} className="text-xs font-medium text-indigo-600 px-2 py-1 bg-indigo-50 rounded hover:bg-indigo-100">Sửa</button>
-                  <button onClick={() => removeItem(idx)} className="text-xs font-medium text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100">Xóa</button>
-                </div>
-              </div>
-            );
-          })}
+          {items.map((item, idx) => (
+            <LineItemEditor
+              key={idx}
+              item={item}
+              idx={idx}
+              isEditing={editingIndex === idx}
+              variants={variants}
+              groupedModifiers={groupedModifiers}
+              onStartEdit={(i) => setEditingIndex(i)}
+              onCancelEdit={() => setEditingIndex(null)}
+              onSaveEdit={(i, updatedFields) => {
+                setItems(items.map((it, idxIt) => {
+                  if (idxIt !== i) return it;
+                  return { ...it, ...updatedFields } as EditItem;
+                }));
+                setEditingIndex(null);
+              }}
+              onRemove={(i) => {
+                setItems(items.filter((_, idxIt) => idxIt !== i));
+                if (editingIndex === i) setEditingIndex(null);
+              }}
+            />
+          ))}
 
           {/* Add Product Section */}
           {isAddingProduct ? (
@@ -581,16 +356,12 @@ export default function OrderEditModal({
         {/* Footer */}
         <div className="border-t border-gray-100 shrink-0">
           <div className="px-4 py-3 bg-gray-50 space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 w-28">Giảm giá đơn:</span>
-              <div className="flex items-center gap-2 flex-1">
-                <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
-                  <button onClick={() => setOrderDiscountType("VND")} className={`px-2 py-1 text-xs font-bold ${orderDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"}`}>VND</button>
-                  <button onClick={() => setOrderDiscountType("PERCENT")} className={`px-2 py-1 text-xs font-bold ${orderDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"}`}>%</button>
-                </div>
-                <input type="number" min="0" value={orderDiscount || ""} onChange={(e) => setOrderDiscount(Number(e.target.value))} className="flex-1 px-2 py-1 border border-gray-200 rounded-lg text-sm text-right outline-none focus:ring-1 focus:ring-indigo-500" />
-              </div>
-            </div>
+            <DiscountEditor
+              orderDiscount={orderDiscount}
+              orderDiscountType={orderDiscountType}
+              setOrderDiscount={setOrderDiscount}
+              setOrderDiscountType={setOrderDiscountType}
+            />
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-700 w-28">Thanh toán:</span>
               <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white outline-none focus:ring-1 focus:ring-indigo-500">
