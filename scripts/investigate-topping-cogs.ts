@@ -102,8 +102,12 @@ async function main() {
       };
       const cost = computeLineCostAtSale(modOnlyRecipe, ledger, Number(l.qty), saleTime);
       const id = modEntry.modifier_id;
-      if (!cogsByMod.has(id)) cogsByMod.set(id, { name: modEntry.modifier_name, cogs: 0 });
-      cogsByMod.get(id).cogs += cost;
+      let info = cogsByMod.get(id);
+      if (!info) {
+        info = { name: modEntry.modifier_name, cogs: 0 };
+        cogsByMod.set(id, info);
+      }
+      info.cogs += cost;
     }
   }
   for (const [id, info] of cogsByMod) {

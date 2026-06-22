@@ -32,7 +32,7 @@ async function main() {
 
   // Check 1: drink revenue per cup should end in 5k or 0k (15k/18k/25k prices)
   console.log("--- Drink revenue per-cup check ---");
-  const drinkRows = pnl.productProfitAnalysis.filter(p => !p.product_id.startsWith("MOD:"));
+  const drinkRows = pnl.productProfitAnalysis.filter((p: any) => !p.product_id.startsWith("MOD:"));
   for (const row of drinkRows.slice(0, 10)) {
     if (row.qty === 0) continue;
     const perCup = row.revenue / row.qty;
@@ -45,7 +45,7 @@ async function main() {
 
   // Check 2: Topping COGS > 0
   console.log("\n--- Topping COGS check ---");
-  const toppingRows = pnl.productProfitAnalysis.filter(p => p.product_id.startsWith("MOD:"));
+  const toppingRows = pnl.productProfitAnalysis.filter((p: any) => p.product_id.startsWith("MOD:"));
   for (const row of toppingRows) {
     const hasCogs = row.cogs > 0;
     const status = hasCogs ? "✓" : "✗";

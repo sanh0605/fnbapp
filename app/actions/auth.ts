@@ -3,7 +3,7 @@
 import { getSheetData, sheets, SPREADSHEET_ID } from "@/lib/sheets";
 import { hashPasswordSHA256 } from "@/lib/crypto";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function changePasswordAction(oldPassword: string, newPassword: string) {
   try {

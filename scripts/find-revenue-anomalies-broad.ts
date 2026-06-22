@@ -68,7 +68,7 @@ async function main() {
 
     // Check each line for anomaly
     const anomalies: any[] = [];
-    const expectedCounts = new Map<number, number>(); // per_cup → count
+    const expectedCounts = new Map<number | undefined, number>(); // per_cup → count
     let totalQty = 0;
     let totalRevenue = 0;
 
@@ -127,8 +127,12 @@ async function main() {
     const byVariant = new Map<string, any[]>();
     for (const a of anomalies) {
       const key = `${a.variant_id}|diff=${a.diff}`;
-      if (!byVariant.has(key)) byVariant.set(key, []);
-      byVariant.get(key).push(a);
+      let group = byVariant.get(key);
+      if (!group) {
+        group = [];
+        byVariant.set(key, group);
+      }
+      group.push(a);
     }
     console.log(`\nAnomaly groups:`);
     for (const [key, items] of byVariant) {

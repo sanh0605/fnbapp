@@ -71,8 +71,12 @@ async function main() {
   // Group by variant
   const byVariant = new Map<string, any[]>();
   for (const l of caPheLines) {
-    if (!byVariant.has(l.variant_id)) byVariant.set(l.variant_id, []);
-    byVariant.get(l.variant_id).push(l);
+    let group = byVariant.get(l.variant_id);
+    if (!group) {
+      group = [];
+      byVariant.set(l.variant_id, group);
+    }
+    group.push(l);
   }
 
   console.log("\nBreakdown by variant:");
