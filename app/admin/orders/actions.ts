@@ -520,6 +520,7 @@ function buildStockLedgerEntries(
       });
     }
     for (const modEntry of lineRecipe.modifiers) {
+      const modifierQty = Number(modEntry.modifier_qty || 1);
       for (const ing of modEntry.recipe.ingredients) {
         if (ing.quantity <= 0) continue;
         entries.push({
@@ -527,7 +528,7 @@ function buildStockLedgerEntries(
           transaction_type: "SALES_CONSUME",
           reference_id: built.order.id,
           item_reference: ing.ingredient_id,
-          quantity_change: -(ing.quantity * line.qty),
+          quantity_change: -(ing.quantity * line.qty * modifierQty),
           unit_cost: 0,
           created_at: saleTime,
           order_event_id: eventId,

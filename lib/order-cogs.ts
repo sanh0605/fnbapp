@@ -101,7 +101,8 @@ export function computeLineCostAtSale(
   const snap = lineRecipe as LineRecipeSnapshot;
   let total = costForRecipe(snap.variant, ledger, lineQty, saleMs, spContext);
   for (const modEntry of snap.modifiers) {
-    total += costForRecipe(modEntry.recipe, ledger, lineQty, saleMs, spContext);
+    const modifierQty = Number(modEntry.modifier_qty || 1);
+    total += costForRecipe(modEntry.recipe, ledger, lineQty * modifierQty, saleMs, spContext);
   }
   return Math.round(total);
 }

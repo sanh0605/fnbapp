@@ -29,6 +29,16 @@ export interface IngredientCOGSRow {
   qty_consumed: number;
 }
 
+function modifierQtyByIdFromLine(line: OrderLineV2): Map<string, number> {
+  try {
+    const modifiers = JSON.parse(line.modifiers_snapshot_json || "[]");
+    if (!Array.isArray(modifiers)) return new Map();
+    return new Map(modifiers.map((mod: any) => [String(mod.id || ""), Number(mod.qty || 1)]));
+  } catch {
+    return new Map();
+  }
+}
+
 /**
  * Break down revenue across products (and modifiers as pseudo-products).
  * Total of all `revenue` fields equals sum of order.net_total values.
@@ -138,6 +148,7 @@ export function breakdownCOGSByIngredient(
   for (const line of sortedLines) {
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const lineQty = line.qty;
+    const modifierQtyById = modifierQtyByIdFromLine(line);
 
     // Collect all BASE ingredients needed (resolve SEMI_PRODUCTs)
     const baseIngredients: Array<{ id: string; qty: number }> = [];
@@ -166,6 +177,7 @@ export function breakdownCOGSByIngredient(
 
     // Modifier recipes (same resolution)
     for (const modEntry of lineRecipe.modifiers) {
+      const modifierQty = Number(modEntry.modifier_qty || modifierQtyById.get(modEntry.modifier_id) || 1);
       for (const ing of modEntry.recipe.ingredients) {
         if (ing.quantity <= 0) continue;
         if (ing.ingredient_type === "SEMI_PRODUCT" && spContext) {
@@ -178,12 +190,12 @@ export function breakdownCOGSByIngredient(
             for (const spIng of spIngs) {
               baseIngredients.push({
                 id: spIng.ingredient_id,
-                qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty,
+                qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty * modifierQty,
               });
             }
           } catch {}
         } else if (ing.ingredient_type === "BASE_INGREDIENT") {
-          baseIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * lineQty });
+          baseIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * lineQty * modifierQty });
         }
       }
     }
@@ -253,6 +265,7 @@ export function breakdownCOGSBySource(
   for (const line of sortedLines) {
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const qty = line.qty;
+    const modifierQtyById = modifierQtyByIdFromLine(line);
 
     // Compute variant-only FIFO for this line
     const variantRecipeOnly = { variant: lineRecipe.variant, modifiers: [] };
@@ -275,9 +288,10 @@ export function breakdownCOGSBySource(
 
     // Compute modifier-only FIFO for each modifier
     for (const modEntry of lineRecipe.modifiers) {
+      const modifierQty = Number(modEntry.modifier_qty || modifierQtyById.get(modEntry.modifier_id) || 1);
       const modOnlyRecipe = {
         variant: { target_type: "PRODUCT_VARIANT" as const, target_id: "", ingredients: [] as any[] },
-        modifiers: [modEntry],
+        modifiers: [{ ...modEntry, modifier_qty: modifierQty }],
       };
       const modCost = computeLineCostFIFO(modOnlyRecipe, tracker, qty, spContext);
 
@@ -288,9 +302,7 @@ export function breakdownCOGSBySource(
       }
       const modRow = modifierMap.get(modEntry.modifier_id)!;
       modRow.cogs += modCost;
-      modRow.qty += qty * Number(
-        JSON.parse(line.modifiers_snapshot_json || "[]").find((m: any) => m.id === modEntry.modifier_id)?.qty || 1
-      );
+      modRow.qty += qty * modifierQty;
     }
   }
 

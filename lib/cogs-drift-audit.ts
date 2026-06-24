@@ -19,6 +19,7 @@ type RawLine = {
   qty?: string | number;
   cost_at_sale?: string | number;
   recipe_snapshot_json?: string;
+  modifiers_snapshot_json?: string;
 };
 
 type RawRecipe = {
@@ -132,6 +133,12 @@ export function auditCogsDrift(input: {
 
     try {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");
+      const modifierQtyById = modifierQtyByIdFromLine(line);
+      for (const modEntry of lineRecipe.modifiers) {
+        if (!modEntry.modifier_qty) {
+          modEntry.modifier_qty = modifierQtyById.get(modEntry.modifier_id) || 1;
+        }
+      }
       expectedCost = computeLineCostFIFO(lineRecipe, fifoTracker, qty, spContext);
     } catch (error: any) {
       warnings.push({
@@ -187,6 +194,16 @@ export function auditCogsDrift(input: {
     lineMismatches,
     warnings,
   };
+}
+
+function modifierQtyByIdFromLine(line: RawLine): Map<string, number> {
+  try {
+    const modifiers = JSON.parse(line.modifiers_snapshot_json || "[]");
+    if (!Array.isArray(modifiers)) return new Map();
+    return new Map(modifiers.map((mod: any) => [String(mod.id || ""), Number(mod.qty || 1)]));
+  } catch {
+    return new Map();
+  }
 }
 
 function buildSemiProductContext(recipes: RawRecipe[], semiProducts: RawSemiProduct[]): SemiProductContext {

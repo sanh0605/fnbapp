@@ -60,7 +60,8 @@ export function computeLineCostFIFO(
   const snap = lineRecipe as LineRecipeSnapshot;
   let total = costForRecipeFIFO(snap.variant, tracker, lineQty, spContext);
   for (const modEntry of snap.modifiers) {
-    total += costForRecipeFIFO(modEntry.recipe, tracker, lineQty, spContext);
+    const modifierQty = Number(modEntry.modifier_qty || 1);
+    total += costForRecipeFIFO(modEntry.recipe, tracker, lineQty * modifierQty, spContext);
   }
   return Math.round(total);
 }

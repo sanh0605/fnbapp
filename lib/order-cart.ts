@@ -277,6 +277,7 @@ function buildLine(
       modifierRecipeEntries.push({
         modifier_id: mod.id,
         modifier_name: mod.name,
+        modifier_qty: mod.qty,
         recipe: buildRecipeSnapshot(modRecipe),
       });
     }

@@ -7,7 +7,8 @@ import { authOptions } from "@/lib/auth";
 import crypto from "node:crypto";
 
 import { buildOrderFromCart } from "@/lib/order-cart";
-import { computeLineCostAtSale } from "@/lib/order-cogs";
+import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
+import { FIFOTracker } from "@/lib/fifo-tracker";
 import { insertOrderV2Records } from "@/lib/sheets-db-v2";
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
@@ -43,7 +44,7 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
     };
 
     // 3. Load reference data (cached where possible)
-    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients] = await Promise.all([
+    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients, semiProducts] = await Promise.all([
       findAll("Brands"),
       findAll("Products"),
       findAll("Product_Variants"),
@@ -52,8 +53,16 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
       findAll("Promotions"),
       findAll("Recipes"),
       findAll("Base_Ingredients"),
+      findAll("Semi_Products"),
     ]);
     const ledger = await findAllNoCache("Stock_Ledger");
+
+    const spRecipes = (recipes as any[]).filter(r => r.target_type === "SEMI_PRODUCT");
+    const spYields = new Map<string, number>();
+    for (const sp of semiProducts as any[]) {
+      spYields.set(sp.id, Number(sp.batch_yield) || 1);
+    }
+    const spContext = { recipes: spRecipes, yields: spYields };
 
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
     const built = buildOrderFromCart({ ...input, actor }, {
@@ -62,9 +71,14 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
 
     // 5. Compute COGS per line, mutate lines in place
     const saleTime = built.order.created_at;
+    const fifoTracker = new FIFOTracker();
+    const saleMs = new Date(saleTime).getTime();
+    const pastLedger = (ledger as any[]).filter(e => new Date(e.created_at || 0).getTime() <= saleMs);
+    fifoTracker.init(pastLedger);
+
     for (const line of built.lines) {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-      line.cost_at_sale = computeLineCostAtSale(lineRecipe, ledger, line.qty, saleTime);
+      line.cost_at_sale = computeLineCostFIFO(lineRecipe, fifoTracker, line.qty, spContext);
     }
 
     // 6. Assign order_no (brand-prefixed sequential, race-tolerant)
@@ -166,6 +180,7 @@ function buildStockLedgerEntries(
 
     // Modifier ingredients
     for (const modEntry of lineRecipe.modifiers) {
+      const modifierQty = Number(modEntry.modifier_qty || 1);
       for (const ing of modEntry.recipe.ingredients) {
         if (ing.quantity <= 0) continue;
         entries.push({
@@ -173,7 +188,7 @@ function buildStockLedgerEntries(
           transaction_type: "SALES_CONSUME",
           reference_id: built.order.id,
           item_reference: ing.ingredient_id,
-          quantity_change: -(ing.quantity * line.qty),
+          quantity_change: -(ing.quantity * line.qty * modifierQty),
           unit_cost: 0,
           created_at: saleTime,
           order_event_id: eventId,
@@ -253,4 +268,3 @@ export async function deletePOSDraft(draftId: string) {
     return { success: false as const, error: err?.message || String(err) };
   }
 }
-

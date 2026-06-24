@@ -232,6 +232,7 @@ export class InvariantError extends Error {
 export interface ModifierRecipeEntry {
   modifier_id: string;
   modifier_name: string;
+  modifier_qty?: number;
   recipe: RecipeSnapshot;
 }
 
