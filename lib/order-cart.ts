@@ -35,6 +35,7 @@ export interface CartItemInput {
   variant_id: string;
   qty: number;
   unit_price_snapshot?: number;
+  promo_discount_snapshot?: number;
   modifiers: Array<{
     modifier_id: string;
     modifier_qty: number;
@@ -50,6 +51,7 @@ export interface CartInput {
   payment_method: "CASH" | "BANK_TRANSFER";
   manual_order_discount?: { value: number; type: "VND" | "PERCENT" } | null;
   applied_promotion_id?: string | null; // explicit override; else auto-resolve
+  suppress_auto_promotion?: boolean;
   actor: { id: string; name: string };
 }
 
@@ -169,6 +171,8 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
 // ============================================================
 
 function resolvePromotion(input: CartInput, ref: ReferenceData): any | null {
+  if (input.suppress_auto_promotion) return null;
+
   const now = new Date();
   const eligible = ref.promotions.filter(p => {
     if (p.status !== "ACTIVE") return false;
@@ -306,7 +310,9 @@ function buildLine(
   const gross = (variantSnap.price + modifierSnap.reduce((s, m) => s + m.price * m.qty, 0)) * item.qty;
 
   // Promo
-  const promoDiscount = computePromoForLine(resolvedPromo, item, variantSnap, modifierSnap, gross);
+  const promoDiscount = Number.isFinite(Number(item.promo_discount_snapshot))
+    ? Math.min(gross, Math.max(0, Math.round(Number(item.promo_discount_snapshot))))
+    : computePromoForLine(resolvedPromo, item, variantSnap, modifierSnap, gross);
 
   // Manual item (cap at gross - promo)
   const manualItemRaw = item.manual_item_discount.type === "PERCENT"
@@ -333,7 +339,7 @@ function buildLine(
     net_line_total: 0, // filled in by caller
     cost_at_sale: 0, // filled in by server action (Task 5)
     recipe_snapshot_json: JSON.stringify(lineRecipeSnap),
-    promo_discount_reason: promoDiscount > 0 && resolvedPromo ? resolvedPromo.id : "",
+    promo_discount_reason: promoDiscount > 0 ? (resolvedPromo?.id || "SNAPSHOT") : "",
     manual_discount_reason: manualItem > 0 ? "MANUAL_CASHIER" : "",
   };
 

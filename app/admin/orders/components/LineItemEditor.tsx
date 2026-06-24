@@ -12,6 +12,8 @@ export interface EditItem {
   modifiers: any[];
   discount_amount: number;
   line_discount: number;
+  line_promo_discount: number;
+  line_order_discount_allocation: number;
   line_manual_discount: number;
   discount_type: string;
 }
@@ -123,6 +125,14 @@ export function LineItemEditor({
       unit_price: Number(newVariant?.price || item.unit_price),
       modifiers: [...editModifiers],
       line_discount: scaledLineDiscount,
+      line_promo_discount:
+        item.qty > 0 && editQty !== item.qty
+          ? Math.round(Number(item.line_promo_discount || 0) * (editQty / item.qty))
+          : Number(item.line_promo_discount || 0),
+      line_order_discount_allocation:
+        item.qty > 0 && editQty !== item.qty
+          ? Math.round(Number(item.line_order_discount_allocation || 0) * (editQty / item.qty))
+          : Number(item.line_order_discount_allocation || 0),
     });
   };
 

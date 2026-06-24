@@ -59,7 +59,9 @@ export default function OrderEditModal({
       qty: Number(l.qty),
       modifiers: expandModifierSnapshots(l.modifiers || []),
       discount_amount: Number(l.manual_item_discount || 0),
-      line_discount: Number(l.promo_discount || 0) + Number(l.order_discount_allocation || 0),
+      line_discount: Number(l.promo_discount || 0),
+      line_promo_discount: Number(l.promo_discount || 0),
+      line_order_discount_allocation: Number(l.order_discount_allocation || 0),
       line_manual_discount: Number(l.manual_item_discount || 0),
       discount_type: "VND",
     }))
@@ -144,6 +146,8 @@ export default function OrderEditModal({
       modifiers: [...selectedNewModifiers],
       discount_amount: 0,
       line_discount: 0,
+      line_promo_discount: 0,
+      line_order_discount_allocation: 0,
       line_manual_discount: 0,
       discount_type: "VND",
     }]);
@@ -173,6 +177,7 @@ export default function OrderEditModal({
           product_id: item.product_id,
           variant_id: item.variant_id,
           unit_price_snapshot: item.unit_price,
+          promo_discount_snapshot: item.line_promo_discount,
           qty: item.qty,
           modifiers: item.modifiers.map(m => ({
             modifier_id: m.id,

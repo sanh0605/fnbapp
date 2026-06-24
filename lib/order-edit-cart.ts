@@ -30,7 +30,7 @@ export function buildEditedOrderFromCart(
   original: OriginalOrder,
 ): BuildOrderResult {
   // Delegate core math to buildOrderFromCart, then patch identity fields.
-  const built = buildOrderFromCart(input, ref);
+  const built = buildOrderFromCart({ ...input, suppress_auto_promotion: true }, ref);
 
   // Find root: if original has no parent, original IS the root.
   const rootId = original.order.parent_order_id || original.order.id;

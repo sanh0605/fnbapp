@@ -102,7 +102,14 @@ describe("buildEditedOrderFromCart", () => {
 
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
-      items: [{ product_id: "PROD-024", variant_id: "VAR-031", qty: 2, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
+      items: [{
+        product_id: "PROD-024",
+        variant_id: "VAR-031",
+        qty: 2,
+        promo_discount_snapshot: 20000,
+        modifiers: [],
+        manual_item_discount: { value: 0, type: "VND" },
+      }],
       payment_method: "CASH",
       actor: { id: "U2", name: "Editor" },
     }, REF, original);
@@ -174,5 +181,37 @@ describe("buildEditedOrderFromCart", () => {
       qty: 2,
     });
     expect(result.lines[0].gross_line_total).toBe(28000);
+  });
+
+  it("preserves submitted promo discount snapshot when current promotion changed", () => {
+    const original = makeSuaDauStandaloneOrder();
+    const refWithChangedPromotion: ReferenceData = {
+      ...REF,
+      promotions: [{
+        ...REF.promotions[0],
+        discount_value: "99999",
+        applicable_products_json: JSON.stringify({ "VAR-031": 1000 }),
+      }],
+    };
+
+    const result = buildEditedOrderFromCart({
+      brand_id: "BR-002",
+      items: [{
+        product_id: "PROD-024",
+        variant_id: "VAR-031",
+        unit_price_snapshot: 35000,
+        promo_discount_snapshot: 10000,
+        qty: 1,
+        modifiers: [],
+        manual_item_discount: { value: 0, type: "VND" },
+      }],
+      payment_method: "CASH",
+      actor: { id: "U2", name: "Editor" },
+    }, refWithChangedPromotion, original);
+
+    expect(result.lines[0].promo_discount).toBe(10000);
+    expect(result.lines[0].net_line_total).toBe(25000);
+    expect(result.order.promo_discount_total).toBe(10000);
+    expect(result.order.net_total).toBe(25000);
   });
 });
