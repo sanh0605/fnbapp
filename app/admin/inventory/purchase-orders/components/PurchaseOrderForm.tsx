@@ -36,17 +36,42 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
   const [notes, setNotes] = useState(po.notes || "");
   
   // Format initial lines to match form state structure
-  const formattedInitialLines = initialLines.map((line: any) => ({
-    purchased_item_id: line.purchased_item_id || "",
-    unit: line.unit || "",
-    quantity: line.quantity || 1,
-    subtotal: line.subtotal || 0,
-    is_new_unit: false,
-    conversion_rate: line.conversion_rate || "",
-    base_unit: line.base_unit || "",
-    base_ingredient_id: line.base_ingredient_id || "",
-    conversion_id: line.conversion_id || ""
-  }));
+  const formattedInitialLines = initialLines.map((line: any) => {
+    // Bước 1: Tìm conversion record
+    // Ưu tiên dùng conversion_id đã lưu trong DB (sau khi fix actions.ts)
+    // Fallback: tìm theo purchased_item_id + purchased_unit (với dữ liệu cũ chưa có conversion_id)
+    let matchedConv = conversions.find((c: any) => c.id === line.conversion_id);
+    if (!matchedConv && line.purchased_item_id && line.unit) {
+      matchedConv = conversions.find(
+        (c: any) =>
+          c.purchased_item_id === line.purchased_item_id &&
+          String(c.purchased_unit).trim() === String(line.unit).trim()
+      );
+    }
+
+    // Bước 2: Restore base_ingredient_id và base_unit từ Purchased_Items
+    const selectedItem = items.find((i: any) => i.id === line.purchased_item_id);
+    const base_ingredient_id = selectedItem?.base_ingredient_id || "";
+    const baseIng = base_ingredient_id
+      ? baseIngredients.find((b: any) => b.id === base_ingredient_id)
+      : null;
+    const base_unit = baseIng?.base_unit || "";
+
+    return {
+      purchased_item_id: line.purchased_item_id || "",
+      unit: line.unit || "",
+      quantity: line.quantity || 1,
+      subtotal: line.subtotal || 0,
+      is_new_unit: false,
+      // Restore từ conversion record
+      conversion_id: matchedConv?.id || "",
+      conversion_rate: matchedConv?.conversion_rate || "",
+      // Restore từ item lookup
+      base_ingredient_id,
+      base_unit,
+    };
+  });
+
 
   const [lines, setLines] = useState<any[]>(formattedInitialLines.length > 0 ? formattedInitialLines : []);
   
@@ -408,14 +433,14 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             onClick={() => handleSubmit("DRAFT")}
             variant="secondary"
           >
-            Lưu Nháp (Draft)
+            {isEdit ? "Lưu Nháp" : "Lưu Nháp (Draft)"}
           </LoadingButton>
           <LoadingButton
             loading={loading}
             onClick={() => handleSubmit("COMPLETED")}
             variant="primary"
           >
-            Tạo
+            {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
           </LoadingButton>
         </div>
       </div>

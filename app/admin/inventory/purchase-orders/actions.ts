@@ -4,6 +4,7 @@ import { findAll, insert, update, generateNewId, remove } from "@/lib/sheets_db"
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource } from "@/types/db";
+import { buildPurchaseReceipt } from "@/lib/purchase-ledger-rebuild";
 
 const PATH = "/admin/inventory/purchase-orders";
 
@@ -49,7 +50,10 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
   try {
     const lines = JSON.parse(linesJson);
     const total_amount = subtotal_amount + shipping_fee + tax_amount - voucher_amount - discount_amount;
-    const total_extra_costs = shipping_fee + tax_amount - voucher_amount - discount_amount;
+    const [purchasedItems, conversions] = await Promise.all([
+      findAll("Purchased_Items"),
+      findAll("UOM_Conversions"),
+    ]);
 
     // First pass: UOM_Conversions logic was removed because conversions are now pre-defined in Purchased_Item
 
@@ -71,11 +75,21 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         supplier_invoice_code,
       });
 
-      // Xoá các dòng cũ
+      // Xoá các dòng PO Lines cũ
       const existingLines = await findAll("Purchase_Order_Lines");
       const oldLines = existingLines.filter((l:any) => l.po_id === po_id);
       for (const oldLine of oldLines) {
         await remove("Purchase_Order_Lines", oldLine.id);
+      }
+
+      // [P0 FIX] Xoá các bản ghi Stock_Ledger cũ liên quan đến PO này
+      // để tránh tồn kho bị cộng trùng khi sửa lại đơn đã COMPLETED
+      const existingLedger = await findAll("Stock_Ledger");
+      const oldLedgerEntries = existingLedger.filter(
+        (e: any) => e.reference_id === po_id && e.transaction_type === "PO_RECEIPT"
+      );
+      for (const entry of oldLedgerEntries) {
+        await remove("Stock_Ledger", entry.id);
       }
     } else {
       po_id = await generateNewId("Purchase_Orders", "PO");
@@ -113,47 +127,44 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         unit: line.unit,
         quantity: line.quantity,
         unit_price: unit_price,
-        subtotal: line_subtotal
+        subtotal: line_subtotal,
+        conversion_id: line.conversion_id || ""
       });
 
       if (status === "COMPLETED") {
         const ledger_id = await generateNewId("Stock_Ledger", "STK");
-        
-        let quantity_change = Number(line.quantity);
-        let item_reference = line.purchased_item_id;
-
-        // If it's a RAW item
-        if (line.base_ingredient_id) {
-           item_reference = line.base_ingredient_id;
-           let convRate = line.conversion_rate;
-           if (convRate) {
-              quantity_change = quantity_change * Number(convRate);
-           }
+        const item = (purchasedItems as any[]).find((p: any) => p.id === line.purchased_item_id);
+        if (!item) {
+          throw new Error(`Không tìm thấy hàng mua vào ${line.purchased_item_id}`);
         }
-
-        // Landed cost allocation
-        let allocated_extra = 0;
-        if (subtotal_amount > 0) {
-           const line_proportion = line_subtotal / subtotal_amount;
-           allocated_extra = total_extra_costs * line_proportion;
-        }
-        
-        const landed_cost_total = line_subtotal + allocated_extra;
-        const unit_cost = quantity_change > 0 ? landed_cost_total / quantity_change : 0;
+        const receipt = buildPurchaseReceipt({
+          po: {
+            id: po_id,
+            subtotal_amount,
+            shipping_fee,
+            tax_amount,
+            voucher_amount,
+            discount_amount,
+          },
+          line,
+          item,
+          conversions: conversions as any[],
+        });
 
         await insert("Stock_Ledger", {
            id: ledger_id,
            transaction_type: "PO_RECEIPT",
            reference_id: po_id,
-           item_reference,
-           quantity_change,
-           unit_cost,
+           item_reference: receipt.item_reference,
+           quantity_change: receipt.quantity_change,
+           unit_cost: receipt.unit_cost,
            created_at: effectiveDate
         });
       }
     }
 
     revalidatePath("/admin/inventory/purchase-orders");
+    revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
     return ok({ po_id });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";

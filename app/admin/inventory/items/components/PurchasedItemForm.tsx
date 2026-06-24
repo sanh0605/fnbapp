@@ -35,7 +35,13 @@ export function PurchasedItemForm({
 
   const [unitsState, setUnitsState] = useState<Array<{ id?: string; name: string; conversion_rate: string }>>(
     initialConversions && initialConversions.length > 0
-      ? initialConversions.map(c => ({ id: c.id, name: c.purchased_unit || "", conversion_rate: c.conversion_rate || "" }))
+      ? initialConversions.map(c => {
+          const pUnit = c.purchased_unit || "";
+          // purchased_unit được lưu trong DB là unit ID (VD: "U001")
+          // nhưng SearchableSelect dùng unit name làm value → cần convert
+          const unitName = units.find(u => u.id === pUnit)?.name || pUnit;
+          return { id: c.id, name: unitName, conversion_rate: c.conversion_rate || "" };
+        })
       : [{ name: "", conversion_rate: "" }]
   );
 
