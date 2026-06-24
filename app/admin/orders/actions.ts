@@ -9,7 +9,8 @@ import crypto from "node:crypto";
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
 import type { OrderV2, OrderLineV2, OrderEvent } from "@/lib/order-types";
 import { buildEditedOrderFromCart } from "@/lib/order-edit-cart";
-import { computeLineCostAtSale } from "@/lib/order-cogs";
+import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
+import { FIFOTracker } from "@/lib/fifo-tracker";
 import { supersedeOrderV2 } from "@/lib/sheets-db-v2-edit";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
 import type { CartInput } from "@/lib/order-cart";
@@ -386,10 +387,10 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     };
 
     // 3. Load reference data
-    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients] = await Promise.all([
+    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients, semiProducts] = await Promise.all([
       findAll("Brands"), findAll("Products"), findAll("Product_Variants"),
       findAll("Product_Categories"), findAll("Modifiers"), findAll("Promotions"),
-      findAll("Recipes"), findAll("Base_Ingredients"),
+      findAll("Recipes"), findAll("Base_Ingredients"), findAll("Semi_Products"),
     ]);
     const ledger = await findAllNoCache("Stock_Ledger");
 
@@ -400,11 +401,22 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       { order: oldOrderV2, lines: oldLinesV2 },
     );
 
-    // 5. Compute COGS at ORIGINAL sale time (not edit time)
+    // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same FIFO path as POS.
     const originalSaleTime = oldOrderV2.created_at;
+    const spRecipes = (recipes as any[]).filter(r => r.target_type === "SEMI_PRODUCT");
+    const spYields = new Map<string, number>();
+    for (const sp of semiProducts as any[]) {
+      spYields.set(sp.id, Number(sp.batch_yield) || 1);
+    }
+    const spContext = { recipes: spRecipes, yields: spYields };
+    const saleMs = new Date(originalSaleTime).getTime();
+    const pastLedger = (ledger as any[]).filter(e => new Date(e.created_at || 0).getTime() <= saleMs);
+    const fifoTracker = new FIFOTracker();
+    fifoTracker.init(pastLedger);
+
     for (const line of built.lines) {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-      line.cost_at_sale = computeLineCostAtSale(lineRecipe, ledger, line.qty, originalSaleTime);
+      line.cost_at_sale = computeLineCostFIFO(lineRecipe, fifoTracker, line.qty, spContext);
     }
 
     // 6. Build EDITED event
