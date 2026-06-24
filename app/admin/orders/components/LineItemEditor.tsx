@@ -16,6 +16,19 @@ export interface EditItem {
   discount_type: string;
 }
 
+function summarizeModifiers(modifiers: any[]): string {
+  const grouped = new Map<string, { name: string; count: number }>();
+  for (const modifier of modifiers) {
+    const key = String(modifier.id || modifier.name || "");
+    const current = grouped.get(key) || { name: modifier.name || key, count: 0 };
+    current.count += 1;
+    grouped.set(key, current);
+  }
+  return Array.from(grouped.values())
+    .map(modifier => `${modifier.count > 1 ? `${modifier.count}x ` : ""}${modifier.name}`)
+    .join(", ");
+}
+
 interface LineItemEditorProps {
   item: EditItem;
   idx: number;
@@ -327,7 +340,7 @@ export function LineItemEditor({
         </div>
       </div>
       {item.modifiers.length > 0 && (
-        <div className="text-xs text-indigo-600 mb-1">+ {item.modifiers.map((m: any) => m.name).join(", ")}</div>
+        <div className="text-xs text-indigo-600 mb-1">+ {summarizeModifiers(item.modifiers)}</div>
       )}
       {item.line_discount > 0 && (
         <div className="text-xs text-emerald-600 font-medium mb-0.5">

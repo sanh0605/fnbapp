@@ -90,7 +90,7 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
                       <div className="text-xs text-gray-500 mt-0.5">Size {line.size_name}</div>
                       {line.modifiers?.length > 0 && (
                         <div className="text-xs text-indigo-600 mt-1">
-                          + {line.modifiers.map((m: any) => m.name).join(", ")}
+                          + {line.modifiers.map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`).join(", ")}
                         </div>
                       )}
                       {(line.promo_discount + line.manual_item_discount + line.order_discount_allocation) > 0 && (

@@ -61,6 +61,21 @@ describe("buildModifierSnapshots", () => {
     const snaps = buildModifierSnapshotsFromCart(cart, modifierRows);
     expect(snaps[0].qty).toBe(3);
   });
+
+  it("uses modifier snapshot price from edit cart when provided", () => {
+    const cart = [
+      {
+        modifier_id: "MOD-X",
+        modifier_qty: 2,
+        modifier_name_snapshot: "Old topping",
+        modifier_price_snapshot: 3000,
+      },
+    ];
+    const modifierRows = [{ id: "MOD-X", name: "New topping", price: "10000" }];
+    const snaps = buildModifierSnapshotsFromCart(cart, modifierRows);
+
+    expect(snaps[0]).toEqual({ id: "MOD-X", name: "Old topping", price: 3000, qty: 2 });
+  });
 });
 
 describe("buildPromotionSnapshot", () => {

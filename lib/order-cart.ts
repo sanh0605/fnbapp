@@ -34,7 +34,13 @@ export interface CartItemInput {
   product_id: string;
   variant_id: string;
   qty: number;
-  modifiers: Array<{ modifier_id: string; modifier_qty: number }>;
+  unit_price_snapshot?: number;
+  modifiers: Array<{
+    modifier_id: string;
+    modifier_qty: number;
+    modifier_name_snapshot?: string;
+    modifier_price_snapshot?: number;
+  }>;
   manual_item_discount: { value: number; type: "VND" | "PERCENT" };
 }
 
@@ -232,11 +238,16 @@ function parseApplicable(json: string | undefined): Map<string, number> {
   return result;
 }
 
-function sumModifierPrices(mods: Array<{ modifier_id: string; modifier_qty: number }>, ref: ReferenceData): number {
+function sumModifierPrices(mods: CartItemInput["modifiers"], ref: ReferenceData): number {
   let sum = 0;
   for (const m of mods) {
     const row = ref.modifiers.find((r: any) => r.id === m.modifier_id);
-    if (row) sum += Number(row.price) * Number(m.modifier_qty || 1);
+    const price = Number.isFinite(Number(m.modifier_price_snapshot))
+      ? Number(m.modifier_price_snapshot)
+      : Number(row?.price || 0);
+    if (row || Number.isFinite(Number(m.modifier_price_snapshot))) {
+      sum += price * Number(m.modifier_qty || 1);
+    }
   }
   return sum;
 }
@@ -258,7 +269,10 @@ function buildLine(
   const category = ref.categories.find(c => c.id === product.category_id) || null;
 
   const productSnap = buildProductSnapshot(product, category);
-  const variantSnap = buildVariantSnapshot(variant);
+  const variantSnap = buildVariantSnapshot({
+    ...variant,
+    price: Number.isFinite(Number(item.unit_price_snapshot)) ? item.unit_price_snapshot : variant.price,
+  });
   const modifierSnap = buildModifierSnapshotsFromCart(item.modifiers, ref.modifiers);
 
   // Pick variant recipe (most recent non-expired)

@@ -11,7 +11,16 @@ import type { EditItem } from "./components/LineItemEditor";
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
 
-
+function expandModifierSnapshots(modifiers: any[]): any[] {
+  return modifiers.flatMap((modifier: any) => {
+    const qty = Math.max(1, Number(modifier.qty || 1));
+    return Array.from({ length: qty }, () => ({
+      id: modifier.id,
+      name: modifier.name,
+      price: Number(modifier.price || 0),
+    }));
+  });
+}
 
 function calcItemTotal(item: EditItem) {
   const modsPrice = item.modifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0);
@@ -48,7 +57,7 @@ export default function OrderEditModal({
       size_name: l.size_name,
       unit_price: Number(l.unit_price),
       qty: Number(l.qty),
-      modifiers: (l.modifiers || []).map((m: any) => ({ id: m.id, name: m.name, price: Number(m.price || 0) })),
+      modifiers: expandModifierSnapshots(l.modifiers || []),
       discount_amount: Number(l.manual_item_discount || 0),
       line_discount: Number(l.promo_discount || 0) + Number(l.order_discount_allocation || 0),
       line_manual_discount: Number(l.manual_item_discount || 0),
@@ -163,8 +172,14 @@ export default function OrderEditModal({
         return {
           product_id: item.product_id,
           variant_id: item.variant_id,
+          unit_price_snapshot: item.unit_price,
           qty: item.qty,
-          modifiers: item.modifiers.map(m => ({ modifier_id: m.id, modifier_qty: 1 })),
+          modifiers: item.modifiers.map(m => ({
+            modifier_id: m.id,
+            modifier_qty: 1,
+            modifier_name_snapshot: m.name,
+            modifier_price_snapshot: Number(m.price || 0),
+          })),
           manual_item_discount: { value: manualItemValue, type: manualItemType },
         };
       }),
@@ -397,4 +412,4 @@ export default function OrderEditModal({
       </div>
     </div>
   );
-}
+}

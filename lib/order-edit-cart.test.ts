@@ -128,4 +128,51 @@ describe("buildEditedOrderFromCart", () => {
     expect(result.order.id).not.toBe(original.order.id);
     expect(result.order.status).toBe("COMPLETED");
   });
+
+  it("preserves submitted price snapshots when current menu prices changed", () => {
+    const original = makeSuaDauStandaloneOrder();
+    const refWithChangedPrices: ReferenceData = {
+      ...REF,
+      variants: [{ id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "99000" }],
+      modifiers: [{ id: "MOD-001", name: "20ml cot ca phe new", price: "10000" }],
+      recipes: [{
+        id: "RCP-MOD-001",
+        target_type: "MODIFIER",
+        target_id: "MOD-001",
+        ingredients_json: "[]",
+        end_date: "",
+        created_at: "2026-06-01T00:00:00Z",
+      }],
+    };
+
+    const result = buildEditedOrderFromCart({
+      brand_id: "BR-002",
+      items: [{
+        product_id: "PROD-024",
+        variant_id: "VAR-031",
+        unit_price_snapshot: 22000,
+        qty: 1,
+        modifiers: [{
+          modifier_id: "MOD-001",
+          modifier_qty: 2,
+          modifier_name_snapshot: "20ml cot ca phe",
+          modifier_price_snapshot: 3000,
+        }],
+        manual_item_discount: { value: 0, type: "VND" },
+      }],
+      payment_method: "CASH",
+      actor: { id: "U2", name: "Editor" },
+    }, refWithChangedPrices, original);
+
+    const modifierSnapshot = JSON.parse(result.lines[0].modifiers_snapshot_json);
+
+    expect(result.lines[0].unit_price).toBe(22000);
+    expect(modifierSnapshot[0]).toMatchObject({
+      id: "MOD-001",
+      name: "20ml cot ca phe",
+      price: 3000,
+      qty: 2,
+    });
+    expect(result.lines[0].gross_line_total).toBe(28000);
+  });
 });
