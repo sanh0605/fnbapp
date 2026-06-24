@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import { saveModifierAction } from "../actions";
+import { SearchableSelect } from "@/components/SearchableSelect";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import type { DBModifier, DBRecipe, DBBaseIngredient, DBSemiProduct, DBUnit } from "@/types/db";
+import {
+  normalizeModifierIngredients,
+  normalizeQuantityInput,
+  parseModifierIngredients,
+  validateModifierIngredients,
+} from "@/lib/modifier-recipe";
 
 interface ModifierFormProps {
   baseIngredients: DBBaseIngredient[];
@@ -22,12 +29,12 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
   const [name, setName] = useState(initialData?.name || "");
   const [groupName, setGroupName] = useState(initialData?.group_name || "Thêm Topping");
   const [price, setPrice] = useState(initialData?.price || "0");
-  
-  const initialIngredients = initialData?.activeRecipe?.ingredients_json 
-    ? JSON.parse(initialData.activeRecipe.ingredients_json) 
-    : [];
-    
-  const [ingredients, setIngredients] = useState<any[]>(initialIngredients);
+  const [ingredients, setIngredients] = useState<any[]>(
+    parseModifierIngredients(initialData?.activeRecipe?.ingredients_json),
+  );
+
+  const baseIngredientOptions = baseIngredients.map((bi) => ({ id: bi.id, label: bi.name }));
+  const semiProductOptions = semiProducts.map((sp) => ({ id: sp.id, label: sp.name }));
 
   function addIngredient() {
     setIngredients([...ingredients, { ingredient_type: "BASE_INGREDIENT", ingredient_id: "", quantity: "0" }]);
@@ -53,12 +60,20 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
       return;
     }
 
+    const cleanedIngredients = ingredients.filter((ing) => ing.ingredient_id);
+    const validation = validateModifierIngredients(cleanedIngredients);
+    if (!validation.ok) {
+      setError(validation.error);
+      setLoading(false);
+      return;
+    }
+
     formData.append("is_edit", String(isEdit));
     if (isEdit) formData.append("id", initialData!.id);
     formData.append("name", name);
     formData.append("group_name", groupName);
     formData.append("price", price);
-    formData.append("ingredients_json", JSON.stringify(ingredients.filter(ing => ing.ingredient_id)));
+    formData.append("ingredients_json", JSON.stringify(normalizeModifierIngredients(cleanedIngredients)));
 
     const res = await saveModifierAction(formData);
     setLoading(false);
@@ -99,7 +114,7 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
           setError(null);
         }}
         title={isEdit ? "Sửa Tùy Chọn" : "Thêm Tùy Chọn Mới"}
-        maxWidth="max-w-2xl"
+        maxWidth="max-w-3xl"
         footer={
           <>
             <button
@@ -127,7 +142,7 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nhóm Tùy Chọn</label>
               <select
@@ -178,44 +193,47 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
 
             <div className="space-y-2">
               {ingredients.map((ing: any, idx: number) => (
-                <div key={idx} className="flex gap-2 items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
+                <div
+                  key={idx}
+                  className="grid grid-cols-1 sm:grid-cols-[128px_minmax(0,1fr)_96px_32px] gap-2 items-start bg-gray-50 p-2.5 rounded-lg border border-gray-100"
+                >
                   <select
                     value={ing.ingredient_type}
                     onChange={(e) => updateIngredient(idx, { ingredient_type: e.target.value, ingredient_id: "" })}
-                    className="w-32 border border-gray-300 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-blue-500 bg-white"
+                    className="w-full h-9 border border-gray-300 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-blue-500 bg-white"
                   >
                     <option value="BASE_INGREDIENT">Nguyên liệu</option>
                     <option value="SEMI_PRODUCT">Bán thành phẩm</option>
                   </select>
 
-                  <select
-                    value={ing.ingredient_id}
-                    required
-                    onChange={(e) => updateIngredient(idx, { ingredient_id: e.target.value })}
-                    className="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-blue-500 bg-white"
-                  >
-                    <option value="">Chọn...</option>
-                    {ing.ingredient_type === "BASE_INGREDIENT" 
-                      ? baseIngredients.map(bi => <option key={bi.id} value={bi.id}>{bi.name}</option>)
-                      : semiProducts.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)
-                    }
-                  </select>
+                  <div className="min-w-0">
+                    <SearchableSelect
+                      options={ing.ingredient_type === "BASE_INGREDIENT" ? baseIngredientOptions : semiProductOptions}
+                      value={ing.ingredient_id}
+                      onChange={(value) => updateIngredient(idx, { ingredient_id: value })}
+                      placeholder="Chọn nguyên liệu..."
+                      className="h-9 py-1.5 text-xs border-gray-300"
+                    />
+                  </div>
 
-                  <div className="w-20 relative">
+                  <div className="relative">
                     <input
                       type="number"
                       step="any"
                       required
                       value={ing.quantity}
-                      onChange={(e) => updateIngredient(idx, { quantity: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg pl-2 pr-6 py-1.5 text-xs outline-none focus:border-blue-500"
+                      onFocus={() => {
+                        if (String(ing.quantity) === "0") updateIngredient(idx, { quantity: "" });
+                      }}
+                      onChange={(e) => updateIngredient(idx, { quantity: normalizeQuantityInput(e.target.value) })}
+                      className="w-full h-9 border border-gray-300 rounded-lg pl-2 pr-7 py-1.5 text-xs outline-none focus:border-blue-500 text-right"
                     />
-                    <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-medium">
+                    <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-medium pointer-events-none">
                       {(() => {
-                        const source = ing.ingredient_type === "BASE_INGREDIENT" 
-                          ? baseIngredients.find(bi => bi.id === ing.ingredient_id)
-                          : semiProducts.find(sp => sp.id === ing.ingredient_id);
-                        return units.find(u => u.id === source?.base_unit)?.name || "";
+                        const source = ing.ingredient_type === "BASE_INGREDIENT"
+                          ? baseIngredients.find((bi) => bi.id === ing.ingredient_id)
+                          : semiProducts.find((sp) => sp.id === ing.ingredient_id);
+                        return units.find((u) => u.id === source?.base_unit)?.name || "";
                       })()}
                     </span>
                   </div>
@@ -223,9 +241,9 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
                   <button
                     type="button"
                     onClick={() => removeIngredient(idx)}
-                    className="p-1.5 text-gray-400 hover:text-red-500"
+                    className="h-9 w-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50"
                   >
-                    ✕
+                    ×
                   </button>
                 </div>
               ))}

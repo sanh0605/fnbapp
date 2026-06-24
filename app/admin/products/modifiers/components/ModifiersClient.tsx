@@ -1,15 +1,22 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import HistoryModal from "@/components/HistoryModal";
 import { deleteModifierAction } from "../actions";
 import { ModifierForm } from "./ModifierForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import type { DBModifier, DBRecipe, DBBaseIngredient, DBSemiProduct, DBUnit } from "@/types/db";
+import { parseModifierIngredients } from "@/lib/modifier-recipe";
 
 interface ModifiersClientProps {
-  modifiers: Array<DBModifier & { activeRecipe?: DBRecipe; recipeHistory: Array<any> }>;
+  modifiers: Array<DBModifier & {
+    activeRecipe?: DBRecipe;
+    recipeHistory: Array<any>;
+    hasMultipleActiveRecipes?: boolean;
+    activeRecipeCount?: number;
+  }>;
   baseIngredients: DBBaseIngredient[];
   semiProducts: DBSemiProduct[];
   units: DBUnit[];
@@ -17,13 +24,27 @@ interface ModifiersClientProps {
 
 export default function ModifiersClient({ modifiers, baseIngredients, semiProducts, units }: ModifiersClientProps) {
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   const filteredModifiers = useMemo(() => {
-    return modifiers.filter((m) =>
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.group_name.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [modifiers, search]);
+    const normalizedSearch = search.trim().toLowerCase();
+    if (!normalizedSearch) return modifiers;
+    return modifiers.filter((m) => {
+      const ingredientNames = parseModifierIngredients(m.activeRecipe?.ingredients_json)
+        .map((ing) => {
+          const source = ing.ingredient_type === "BASE_INGREDIENT"
+            ? baseIngredients.find(bi => bi.id === ing.ingredient_id)
+            : semiProducts.find(sp => sp.id === ing.ingredient_id);
+          return source?.name || ing.ingredient_id || "";
+        })
+        .join(" ");
+      return (
+        m.name.toLowerCase().includes(normalizedSearch) ||
+        m.group_name.toLowerCase().includes(normalizedSearch) ||
+        ingredientNames.toLowerCase().includes(normalizedSearch)
+      );
+    });
+  }, [baseIngredients, modifiers, search, semiProducts]);
 
   const rightContent = (
     <ModifierForm 
@@ -87,8 +108,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                       <div className="flex flex-wrap gap-1 max-w-md">
                         {m.activeRecipe ? (
                           (() => {
-                            let ings: any[] = [];
-                            try { ings = JSON.parse(m.activeRecipe.ingredients_json || "[]"); } catch {}
+                            const ings = parseModifierIngredients(m.activeRecipe.ingredients_json);
                             if (ings.length === 0) return <span className="text-gray-400 italic text-[11px]">Chưa có định mức</span>;
                             
                             return ings.map((ing, idx) => {
@@ -106,6 +126,11 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                         ) : (
                           <span className="text-gray-400 italic text-[11px]">Chưa có định mức</span>
                         )}
+                        {m.hasMultipleActiveRecipes && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 border border-amber-100">
+                            {m.activeRecipeCount} active recipes
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -122,7 +147,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                           semiProducts={semiProducts} 
                           units={units} 
                         />
-                        <DeleteModifierButton id={m.id} name={m.name} />
+                        <DeleteModifierButton id={m.id} name={m.name} onDeleted={() => router.refresh()} />
                       </div>
                     </td>
                   </tr>
@@ -136,7 +161,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
   );
 }
 
-function DeleteModifierButton({ id, name }: { id: string; name: string }) {
+function DeleteModifierButton({ id, name, onDeleted }: { id: string; name: string; onDeleted: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -146,6 +171,7 @@ function DeleteModifierButton({ id, name }: { id: string; name: string }) {
     fd.append("id", id);
     await deleteModifierAction(fd);
     setLoading(false);
+    onDeleted();
   }
 
   return (

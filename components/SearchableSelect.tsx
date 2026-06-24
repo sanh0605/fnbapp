@@ -41,25 +41,25 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
   );
 
   return (
-    <div className="relative" ref={wrapperRef}>
+    <div className="relative min-w-0" ref={wrapperRef}>
       {/* Hidden input to support native form submission and 'required' attribute */}
       <input type="hidden" name={name} value={value} required={required} />
       
       <div
-        className={`w-full border border-blue-200 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center ${className || ''}`}
+        className={`w-full min-w-0 border border-blue-200 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center gap-2 ${className || ''}`}
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen) setSearchTerm(""); // Reset search when opening
         }}
       >
-        <span className={selectedOption ? "text-gray-900" : "text-gray-500"}>
+        <span className={`${selectedOption ? "text-gray-900" : "text-gray-500"} min-w-0 truncate`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+        <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
+        <div className="absolute z-[80] w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-72 overflow-hidden flex flex-col">
           <div className="p-2 border-b border-gray-100">
             <input
               type="text"
@@ -96,7 +96,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
                 {filteredOptions.map((opt) => (
                   <li
                     key={opt.id}
-                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 ${opt.id === value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 truncate ${opt.id === value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
                     onClick={() => {
                       onChange(opt.id);
                       setIsOpen(false);

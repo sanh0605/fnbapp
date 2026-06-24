@@ -4,6 +4,12 @@ import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBModifier, DBRecipe, DBBaseIngredient, DBSemiProduct, DBUnit } from "@/types/db";
+import {
+  findActiveRecipeIntegrity,
+  normalizeModifierIngredients,
+  parseModifierIngredients,
+  validateModifierIngredients,
+} from "@/lib/modifier-recipe";
 
 const MODIFIER_SHEET = "Modifiers";
 const RECIPE_SHEET = "Recipes";
@@ -34,13 +40,11 @@ export async function getModifiersData(): Promise<{
         r => r.target_type === "MODIFIER" && r.target_id === m.id
       );
 
-      const activeRecipe = modifierRecipes.find(
-        r => !r.end_date || r.end_date === ""
-      ) || undefined;
+      const recipeIntegrity = findActiveRecipeIntegrity(modifierRecipes);
+      const activeRecipe = recipeIntegrity.activeRecipe;
 
       const recipeHistory = modifierRecipes.map(r => {
-        let ings: any[] = [];
-        try { ings = JSON.parse(r.ingredients_json || "[]"); } catch {}
+        const ings = parseModifierIngredients(r.ingredients_json);
         return {
           ...r,
           ingredients: ings.map((ing: any) => {
@@ -59,7 +63,13 @@ export async function getModifiersData(): Promise<{
         (b.created_at || "").localeCompare(a.created_at || "")
       );
 
-      return { ...m, activeRecipe, recipeHistory };
+      return {
+        ...m,
+        activeRecipe,
+        recipeHistory,
+        activeRecipeCount: recipeIntegrity.activeRecipeCount,
+        hasMultipleActiveRecipes: recipeIntegrity.hasMultipleActiveRecipes,
+      };
     });
 
     return { modifiers: enriched, baseIngredients: activeBI, semiProducts: activeSP, units };
@@ -78,6 +88,10 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
   const ingredientsJson = formData.get("ingredients_json") as string;
 
   if (!name || !group_name) return fail("Vui lòng nhập đầy đủ thông tin");
+  const ingredients = parseModifierIngredients(ingredientsJson);
+  const validation = validateModifierIngredients(ingredients);
+  if (!validation.ok) return fail(validation.error);
+  const normalizedIngredientsJson = JSON.stringify(normalizeModifierIngredients(ingredients));
 
   try {
     let finalId = modifier_id;
@@ -107,7 +121,7 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
     );
 
     if (existingActive) {
-      if (existingActive.ingredients_json !== ingredientsJson) {
+      if (existingActive.ingredients_json !== normalizedIngredientsJson) {
         // Close old recipe
         await update(RECIPE_SHEET, existingActive.id, { end_date: nowIso });
         // Create new version
@@ -116,7 +130,7 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
           id: recipeId,
           target_type: "MODIFIER",
           target_id: finalId,
-          ingredients_json: ingredientsJson,
+          ingredients_json: normalizedIngredientsJson,
           status: "ACTIVE",
           start_date: nowIso,
           end_date: "",
@@ -131,7 +145,7 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
         id: recipeId,
         target_type: "MODIFIER",
         target_id: finalId,
-        ingredients_json: ingredientsJson,
+        ingredients_json: normalizedIngredientsJson,
         status: "ACTIVE",
         start_date: nowIso,
         end_date: "",
