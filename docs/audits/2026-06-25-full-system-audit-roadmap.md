@@ -381,15 +381,15 @@ Task 2.4 - Audit rebuild/reprocess:
 - [x] Reprocess ưu tiên `conversion_id`.
 - [x] Nếu thiếu `conversion_id` nhưng chỉ có 1 conversion hợp lệ thì có thể backfill.
 - [x] Nếu nhiều conversion hợp lệ thì report ambiguous, không tự chọn.
-- [ ] Dry-run mặc định.
-- [ ] Apply cần flag rõ.
+- [x] Dry-run mặc định.
+- [x] Apply cần flag rõ.
 
 Task 2.5 - Test:
 
 - [x] Unit test conversion resolution.
-- [ ] Unit test purchase ledger rebuild.
-- [ ] Data audit tất cả completed PO.
-- [ ] Regression test Dâu sấy.
+- [x] Unit test purchase ledger rebuild.
+- [x] Data audit tất cả completed PO.
+- [x] Regression test Dâu sấy.
 
 Task 2.6 - Verify:
 
