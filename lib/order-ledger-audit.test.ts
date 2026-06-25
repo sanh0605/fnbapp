@@ -76,4 +76,67 @@ describe("auditOrderLedger", () => {
     expect(report.orphanLedgerRows).toHaveLength(1);
     expect(report.orphanLedgerRows[0]).toMatchObject({ reference_id: "ord-missing" });
   });
+
+  it("expects semi-product ledger to split available stock and recipe shortfall", () => {
+    const report = auditOrderLedger({
+      orders: [{ id: "ord-1", order_no: "O1", status: "COMPLETED", superseded_by: "", created_at: "2026-06-02T00:00:00Z" }],
+      lines: [{
+        id: "line-1",
+        order_id: "ord-1",
+        qty: 1,
+        recipe_snapshot_json: JSON.stringify({
+          variant: {
+            target_type: "PRODUCT_VARIANT",
+            target_id: "VAR-1",
+            ingredients: [{ ingredient_id: "BTP-COFFEE", ingredient_type: "SEMI_PRODUCT", quantity: 20 }],
+          },
+          modifiers: [],
+        }),
+      }],
+      ledger: [
+        { reference_id: "ADJ-1", transaction_type: "STOCK_ADJUST", item_reference: "BTP-COFFEE", quantity_change: 10, created_at: "2026-06-01T00:00:00Z" },
+        { reference_id: "ord-1", transaction_type: "SALES_CONSUME", item_reference: "BTP-COFFEE", quantity_change: -10 },
+        { reference_id: "ord-1", transaction_type: "SALES_CONSUME", item_reference: "ING-BEAN", quantity_change: -10 },
+      ],
+      recipes: [{
+        target_id: "BTP-COFFEE",
+        target_type: "SEMI_PRODUCT",
+        ingredients_json: JSON.stringify([{ ingredient_id: "ING-BEAN", ingredient_type: "BASE_INGREDIENT", quantity: 100 }]),
+      }],
+      semiProducts: [{ id: "BTP-COFFEE", batch_yield: 100 }],
+    });
+
+    expect(report.mismatches).toEqual([]);
+  });
+
+  it("keeps pre-cutover historical semi-product ledger on the direct-consumption contract", () => {
+    const report = auditOrderLedger({
+      orders: [{ id: "ord-1", order_no: "O1", status: "COMPLETED", superseded_by: "", created_at: "2026-06-24T08:00:00Z" }],
+      lines: [{
+        id: "line-1",
+        order_id: "ord-1",
+        qty: 1,
+        recipe_snapshot_json: JSON.stringify({
+          variant: {
+            target_type: "PRODUCT_VARIANT",
+            target_id: "VAR-1",
+            ingredients: [{ ingredient_id: "BTP-COFFEE", ingredient_type: "SEMI_PRODUCT", quantity: 20 }],
+          },
+          modifiers: [],
+        }),
+      }],
+      ledger: [
+        { reference_id: "ord-1", transaction_type: "SALES_CONSUME", item_reference: "BTP-COFFEE", quantity_change: -20 },
+      ],
+      recipes: [{
+        target_id: "BTP-COFFEE",
+        target_type: "SEMI_PRODUCT",
+        ingredients_json: JSON.stringify([{ ingredient_id: "ING-BEAN", ingredient_type: "BASE_INGREDIENT", quantity: 100 }]),
+      }],
+      semiProducts: [{ id: "BTP-COFFEE", batch_yield: 100 }],
+      shortfallCutoverAt: "2026-06-25T07:31:08.402Z",
+    });
+
+    expect(report.mismatches).toEqual([]);
+  });
 });

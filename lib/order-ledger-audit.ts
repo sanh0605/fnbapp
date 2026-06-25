@@ -1,10 +1,16 @@
 import { parseLineRecipeSnapshot } from "./order-types";
+import {
+  allocateRecipeConsumption,
+  buildInventoryBalances,
+  buildSemiProductRecipeMaps,
+} from "./inventory-consumption";
 
 type RawOrder = {
   id: string;
   order_no?: string;
   status?: string;
   superseded_by?: string;
+  created_at?: string;
 };
 
 type RawLine = {
@@ -21,6 +27,18 @@ type RawLedger = {
   transaction_type?: string;
   item_reference?: string;
   quantity_change?: string | number;
+  created_at?: string;
+};
+
+type RawRecipe = {
+  target_id?: string;
+  target_type?: string;
+  ingredients_json?: string;
+};
+
+type RawSemiProduct = {
+  id?: string;
+  batch_yield?: string | number;
 };
 
 export type OrderLedgerMismatch = {
@@ -45,6 +63,9 @@ export function auditOrderLedger(input: {
   orders: RawOrder[];
   lines: RawLine[];
   ledger: RawLedger[];
+  recipes?: RawRecipe[];
+  semiProducts?: RawSemiProduct[];
+  shortfallCutoverAt?: string;
   tolerance?: number;
 }): OrderLedgerAuditReport {
   const tolerance = input.tolerance ?? 0.000001;
@@ -70,9 +91,25 @@ export function auditOrderLedger(input: {
     ledgerByOrder.set(row.reference_id, rows);
   }
 
+  const consumptionMaps = input.recipes && input.semiProducts
+    ? buildSemiProductRecipeMaps(input.recipes, input.semiProducts)
+    : null;
+  const shortfallCutoverMs = input.shortfallCutoverAt
+    ? new Date(input.shortfallCutoverAt).getTime()
+    : Number.NEGATIVE_INFINITY;
+  const sortedOrders = [...input.orders].sort((a, b) =>
+    new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
+  );
+
   const mismatches: OrderLedgerMismatch[] = [];
-  for (const order of input.orders) {
-    const expected = expectedNetByItem(order, linesByOrder.get(order.id) || []);
+  for (const order of sortedOrders) {
+    const expected = expectedNetByItem(
+      order,
+      linesByOrder.get(order.id) || [],
+      input.ledger,
+      consumptionMaps,
+      shortfallCutoverMs,
+    );
     const actual = actualNetByItem(ledgerByOrder.get(order.id) || []);
     const keys = new Set([...expected.keys(), ...actual.keys()]);
 
@@ -104,7 +141,13 @@ export function auditOrderLedger(input: {
   };
 }
 
-function expectedNetByItem(order: RawOrder, lines: RawLine[]): Map<string, number> {
+function expectedNetByItem(
+  order: RawOrder,
+  lines: RawLine[],
+  ledger: RawLedger[],
+  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps> | null,
+  shortfallCutoverMs: number,
+): Map<string, number> {
   if (order.status === "SUPERSEDED" || order.status === "VOIDED") {
     return new Map();
   }
@@ -113,6 +156,49 @@ function expectedNetByItem(order: RawOrder, lines: RawLine[]): Map<string, numbe
   }
 
   const map = new Map<string, number>();
+  const orderTime = new Date(order.created_at || 0).getTime();
+  const shouldUseShortfallAllocator = consumptionMaps && orderTime >= shortfallCutoverMs;
+  if (shouldUseShortfallAllocator) {
+    const pastLedger = ledger.filter(row => {
+      const rowTime = new Date(row.created_at || 0).getTime();
+      if (Number.isFinite(orderTime) && rowTime > orderTime) return false;
+      return row.reference_id !== order.id;
+    });
+    const balances = buildInventoryBalances(pastLedger as any[], order.created_at);
+
+    for (const line of lines) {
+      const lineQty = Number(line.qty || 0);
+      const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");
+      const modifierQtyById = modifierQtyByIdFromLine(line);
+
+      for (const ingredient of recipe.variant.ingredients) {
+        for (const row of allocateRecipeConsumption({
+          ingredients: [ingredient],
+          multiplier: lineQty,
+          balances,
+          ...consumptionMaps,
+          source: "VARIANT_RECIPE",
+        })) {
+          add(map, row.item_reference, -row.quantity);
+        }
+      }
+
+      for (const modifier of recipe.modifiers) {
+        const modifierQty = Number(modifier.modifier_qty || modifierQtyById.get(modifier.modifier_id) || 1);
+        for (const row of allocateRecipeConsumption({
+          ingredients: modifier.recipe.ingredients,
+          multiplier: lineQty * modifierQty,
+          balances,
+          ...consumptionMaps,
+          source: `MODIFIER_RECIPE:${modifier.modifier_id}`,
+        })) {
+          add(map, row.item_reference, -row.quantity);
+        }
+      }
+    }
+    return map;
+  }
+
   for (const line of lines) {
     const lineQty = Number(line.qty || 0);
     const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");

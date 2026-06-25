@@ -184,7 +184,7 @@ export function auditMacCogsDrift(input: {
         delta,
         classification,
         has_btp_shortfall: consumptionRows.some(row => row.source.includes("BTP_SHORTFALL")),
-        has_semi_product_direct: consumptionRows.some(row => row.item_reference.startsWith("BTP-")),
+        has_semi_product_direct: consumptionRows.some(row => String(row.item_reference || "").startsWith("BTP-")),
       });
     }
   }
@@ -233,7 +233,7 @@ function buildLineConsumptionRows(
 
 function classifyMismatch(line: RawLine, rows: ConsumptionRow[]): MacCogsDriftClassification {
   if (rows.some(row => row.source.includes("BTP_SHORTFALL"))) return "BTP_SHORTFALL";
-  if (rows.some(row => row.item_reference.startsWith("BTP-"))) return "SEMI_PRODUCT_DIRECT";
+  if (rows.some(row => String(row.item_reference || "").startsWith("BTP-"))) return "SEMI_PRODUCT_DIRECT";
   if (line.id.startsWith("ol-migrated")) return "MIGRATED_LINE";
   return "MAC_REPRICE";
 }

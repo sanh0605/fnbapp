@@ -18,7 +18,10 @@ describe("modifier recipe helpers", () => {
     ]);
 
     expect(result.ok).toBe(false);
-    expect(result.error).toContain("lớn hơn 0");
+    // Claude code — R5: narrow via type guard so TS knows result is the error branch.
+    if (!result.ok) {
+      expect(result.error).toContain("lớn hơn 0");
+    }
   });
 
   it("normalizes numeric quantity strings before saving", () => {

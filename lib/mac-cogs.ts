@@ -2,6 +2,8 @@ import type { ConsumptionRow } from "@/lib/inventory-consumption";
 import type { RecipeIngredientSnapshot } from "@/lib/order-types";
 
 export type MacLedgerEntry = {
+  id?: string;
+  reference_id?: string;
   item_reference?: string;
   transaction_type?: string;
   quantity_change?: string | number;
