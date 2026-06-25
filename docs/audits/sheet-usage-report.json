@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-25T07:28:11.089Z",
+  "generated_at": "2026-06-25T07:36:24.877Z",
   "sheet_count": 64,
   "reference_count": 711,
   "report": [
@@ -60,6 +60,12 @@
         },
         {
           "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
           "filePath": "scripts\\audit-negative-stock-periods.ts",
           "line": 18,
           "kind": "helper"
@@ -90,32 +96,8 @@
         },
         {
           "sheetName": "Base_Ingredients",
-          "filePath": "scripts\\audit-water-sugar-transition.ts",
-          "line": 18,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
           "filePath": "app\\pos\\actions.ts",
           "line": 60,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 398,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 54,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
-          "line": 28,
           "kind": "helper"
         },
         {
@@ -126,20 +108,32 @@
         },
         {
           "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
           "filePath": "app\\admin\\semi-products\\actions.ts",
           "line": 21,
           "kind": "helper"
         },
         {
           "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
-          "line": 19,
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
           "kind": "helper"
         },
         {
           "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 24,
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 28,
           "kind": "helper"
         },
         {
@@ -192,14 +186,20 @@
         },
         {
           "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
-          "line": 13,
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 21,
           "kind": "helper"
         },
         {
           "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\inventory\\items\\actions.ts",
-          "line": 21,
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 13,
           "kind": "helper"
         },
         {
@@ -255,6 +255,18 @@
         },
         {
           "sheetName": "Brands",
+          "filePath": "app\\api\\migrate-orders\\route.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\brands\\page.tsx",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
           "filePath": "app\\admin\\page.tsx",
           "line": 27,
           "kind": "helper"
@@ -285,26 +297,14 @@
         },
         {
           "sheetName": "Brands",
-          "filePath": "app\\api\\migrate-orders\\route.ts",
-          "line": 8,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Brands",
-          "filePath": "app\\admin\\reports\\sales\\page.tsx",
-          "line": 15,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Brands",
           "filePath": "app\\admin\\reports\\pnl\\page.tsx",
           "line": 36,
           "kind": "helper"
         },
         {
           "sheetName": "Brands",
-          "filePath": "app\\admin\\brands\\page.tsx",
-          "line": 8,
+          "filePath": "app\\admin\\reports\\sales\\page.tsx",
+          "line": 15,
           "kind": "helper"
         }
       ]
@@ -316,12 +316,6 @@
       "status": "KEEP",
       "reason": "Referenced by code with exact sheet name.",
       "references": [
-        {
-          "sheetName": "Item_Categories",
-          "filePath": "app\\admin\\inventory\\categories\\page.tsx",
-          "line": 8,
-          "kind": "helper"
-        },
         {
           "sheetName": "Item_Categories",
           "filePath": "app\\admin\\inventory\\actions.ts",
@@ -350,6 +344,12 @@
           "sheetName": "Item_Categories",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
           "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Item_Categories",
+          "filePath": "app\\admin\\inventory\\categories\\page.tsx",
+          "line": 8,
           "kind": "helper"
         }
       ]
@@ -393,6 +393,12 @@
         },
         {
           "sheetName": "Modifiers",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 66,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 102,
           "kind": "helper"
@@ -401,12 +407,6 @@
           "sheetName": "Modifiers",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 397,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Modifiers",
-          "filePath": "app\\api\\diagnose-order\\route.ts",
-          "line": 66,
           "kind": "helper"
         }
       ]
@@ -717,42 +717,6 @@
         },
         {
           "sheetName": "Order_Lines",
-          "filePath": "scripts\\add-line-manual-discount-column.ts",
-          "line": 29,
-          "kind": "range"
-        },
-        {
-          "sheetName": "Order_Lines",
-          "filePath": "scripts\\add-line-manual-discount-column.ts",
-          "line": 43,
-          "kind": "range"
-        },
-        {
-          "sheetName": "Order_Lines",
-          "filePath": "scripts\\audit-specific-order.ts",
-          "line": 37,
-          "kind": "range"
-        },
-        {
-          "sheetName": "Order_Lines",
-          "filePath": "scripts\\audit-revenue-anomalies.ts",
-          "line": 129,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines",
-          "filePath": "scripts\\backfill-orders-subtotal.ts",
-          "line": 13,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines",
-          "filePath": "scripts\\backfill-e1-edit-bug.ts",
-          "line": 27,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines",
           "filePath": "scripts\\batch-sheets-utils.ts",
           "line": 21,
           "kind": "range"
@@ -779,6 +743,42 @@
           "sheetName": "Order_Lines",
           "filePath": "scripts\\batch-migrate.ts",
           "line": 56,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\backfill-orders-subtotal.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\backfill-e1-edit-bug.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\audit-specific-order.ts",
+          "line": 37,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\audit-revenue-anomalies.ts",
+          "line": 129,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\add-line-manual-discount-column.ts",
+          "line": 29,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\add-line-manual-discount-column.ts",
+          "line": 43,
           "kind": "range"
         },
         {
@@ -1044,6 +1044,24 @@
         },
         {
           "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\audit-order-modifier-qty.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\audit-order-ledger.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\audit-order-discounts.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
           "filePath": "scripts\\audit-cogs-drift.ts",
           "line": 25,
           "kind": "helper"
@@ -1086,24 +1104,6 @@
         },
         {
           "sheetName": "Order_Lines_V2",
-          "filePath": "scripts\\audit-order-modifier-qty.ts",
-          "line": 27,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "scripts\\audit-order-ledger.ts",
-          "line": 16,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "scripts\\audit-order-discounts.ts",
-          "line": 17,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
           "filePath": "lib\\sheet-usage-audit.test.ts",
           "line": 10,
           "kind": "range"
@@ -1118,30 +1118,6 @@
           "sheetName": "Order_Lines_V2",
           "filePath": "lib\\sheets-db-v2-edit.ts",
           "line": 78,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "app\\admin\\page.tsx",
-          "line": 31,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 98,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 188,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 375,
           "kind": "helper"
         },
         {
@@ -1166,6 +1142,30 @@
           "sheetName": "Order_Lines_V2",
           "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
           "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 98,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 188,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 375,
           "kind": "helper"
         },
         {
@@ -1503,26 +1503,20 @@
         },
         {
           "sheetName": "Orders",
-          "filePath": "scripts\\add-snapshot-column.ts",
-          "line": 29,
+          "filePath": "scripts\\batch-sheets-orders.ts",
+          "line": 17,
           "kind": "range"
         },
         {
           "sheetName": "Orders",
-          "filePath": "scripts\\add-snapshot-column.ts",
-          "line": 43,
+          "filePath": "scripts\\batch-sheets-orders.ts",
+          "line": 47,
           "kind": "range"
         },
         {
           "sheetName": "Orders",
-          "filePath": "scripts\\audit-specific-order.ts",
-          "line": 16,
-          "kind": "range"
-        },
-        {
-          "sheetName": "Orders",
-          "filePath": "scripts\\audit-revenue-anomalies.ts",
-          "line": 128,
+          "filePath": "scripts\\batch-migrate.ts",
+          "line": 8,
           "kind": "helper"
         },
         {
@@ -1551,20 +1545,26 @@
         },
         {
           "sheetName": "Orders",
-          "filePath": "scripts\\batch-migrate.ts",
-          "line": 8,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders",
-          "filePath": "scripts\\batch-sheets-orders.ts",
-          "line": 17,
+          "filePath": "scripts\\audit-specific-order.ts",
+          "line": 16,
           "kind": "range"
         },
         {
           "sheetName": "Orders",
-          "filePath": "scripts\\batch-sheets-orders.ts",
-          "line": 47,
+          "filePath": "scripts\\audit-revenue-anomalies.ts",
+          "line": 128,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\add-snapshot-column.ts",
+          "line": 29,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\add-snapshot-column.ts",
+          "line": 43,
           "kind": "range"
         },
         {
@@ -1848,6 +1848,24 @@
         },
         {
           "sheetName": "Orders_V2",
+          "filePath": "scripts\\audit-order-modifier-qty.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\audit-order-ledger.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\audit-order-discounts.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
           "filePath": "scripts\\audit-cogs-drift.ts",
           "line": 24,
           "kind": "helper"
@@ -1868,24 +1886,6 @@
           "sheetName": "Orders_V2",
           "filePath": "scripts\\apply-cogs-recalc.ts",
           "line": 14,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "scripts\\audit-order-modifier-qty.ts",
-          "line": 26,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "scripts\\audit-order-ledger.ts",
-          "line": 15,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "scripts\\audit-order-discounts.ts",
-          "line": 16,
           "kind": "helper"
         },
         {
@@ -1926,6 +1926,18 @@
         },
         {
           "sheetName": "Orders_V2",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
           "filePath": "app\\admin\\page.tsx",
           "line": 30,
           "kind": "helper"
@@ -1958,18 +1970,6 @@
           "sheetName": "Orders_V2",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 374,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "app\\api\\recalculate-cogs\\route.ts",
-          "line": 22,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
-          "line": 8,
           "kind": "helper"
         },
         {
@@ -2094,6 +2094,12 @@
         },
         {
           "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 103,
           "kind": "helper"
@@ -2112,20 +2118,14 @@
         },
         {
           "sheetName": "Product_Categories",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 50,
+          "filePath": "app\\admin\\reports\\pnl\\page.tsx",
+          "line": 38,
           "kind": "helper"
         },
         {
           "sheetName": "Product_Categories",
           "filePath": "app\\admin\\reports\\sales\\page.tsx",
           "line": 17,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Product_Categories",
-          "filePath": "app\\admin\\reports\\pnl\\page.tsx",
-          "line": 38,
           "kind": "helper"
         }
       ]
@@ -2250,8 +2250,20 @@
         },
         {
           "sheetName": "Product_Variants",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 65,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
           "filePath": "app\\admin\\page.tsx",
           "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 52,
           "kind": "helper"
         },
         {
@@ -2276,18 +2288,6 @@
           "sheetName": "Product_Variants",
           "filePath": "app\\admin\\promotions\\actions.ts",
           "line": 23,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Product_Variants",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 52,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Product_Variants",
-          "filePath": "app\\api\\diagnose-order\\route.ts",
-          "line": 65,
           "kind": "helper"
         }
       ]
@@ -2451,8 +2451,20 @@
         },
         {
           "sheetName": "Products",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 64,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
           "filePath": "app\\admin\\page.tsx",
           "line": 32,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 51,
           "kind": "helper"
         },
         {
@@ -2481,20 +2493,8 @@
         },
         {
           "sheetName": "Products",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 51,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Products",
           "filePath": "app\\admin\\products\\categories\\actions.ts",
           "line": 18,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Products",
-          "filePath": "app\\api\\diagnose-order\\route.ts",
-          "line": 64,
           "kind": "helper"
         },
         {
@@ -2667,6 +2667,18 @@
         },
         {
           "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
           "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
           "line": 28,
           "kind": "helper"
@@ -2691,30 +2703,6 @@
         },
         {
           "sheetName": "Purchase_Order_Lines",
-          "filePath": "scripts\\audit-purchase-ledger.ts",
-          "line": 31,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "scripts\\audit-water-sugar-transition.ts",
-          "line": 21,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
-          "line": 79,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
-          "line": 82,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
           "filePath": "app\\admin\\inventory\\actions.ts",
           "line": 193,
           "kind": "helper"
@@ -2735,6 +2723,36 @@
           "sheetName": "Purchase_Order_Lines",
           "filePath": "app\\admin\\inventory\\actions.ts",
           "line": 291,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 108,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 111,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 112,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 79,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 82,
           "kind": "helper"
         },
         {
@@ -2765,24 +2783,6 @@
           "sheetName": "Purchase_Order_Lines",
           "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
           "line": 11,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\items\\actions.ts",
-          "line": 108,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\items\\actions.ts",
-          "line": 111,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\items\\actions.ts",
-          "line": 112,
           "kind": "helper"
         }
       ]
@@ -2826,6 +2826,12 @@
         },
         {
           "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
           "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
           "line": 27,
           "kind": "helper"
@@ -2841,12 +2847,6 @@
           "filePath": "scripts\\add-transaction-date.ts",
           "line": 30,
           "kind": "range"
-        },
-        {
-          "sheetName": "Purchase_Orders",
-          "filePath": "scripts\\audit-purchase-ledger.ts",
-          "line": 30,
-          "kind": "helper"
         },
         {
           "sheetName": "Purchase_Orders",
@@ -2928,8 +2928,8 @@
         },
         {
           "sheetName": "Purchased_Items",
-          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
-          "line": 29,
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 22,
           "kind": "helper"
         },
         {
@@ -2940,14 +2940,8 @@
         },
         {
           "sheetName": "Purchased_Items",
-          "filePath": "scripts\\audit-water-sugar-transition.ts",
-          "line": 22,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchased_Items",
-          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
-          "line": 20,
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 29,
           "kind": "helper"
         },
         {
@@ -2976,18 +2970,6 @@
         },
         {
           "sheetName": "Purchased_Items",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 54,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchased_Items",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
-          "line": 12,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchased_Items",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
           "line": 44,
           "kind": "helper"
@@ -3002,6 +2984,24 @@
           "sheetName": "Purchased_Items",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
           "line": 88,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 12,
           "kind": "helper"
         },
         {
@@ -3111,20 +3111,20 @@
         },
         {
           "sheetName": "Recipes",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 398,
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 23,
           "kind": "helper"
         },
         {
           "sheetName": "Recipes",
           "filePath": "app\\admin\\products\\page.tsx",
           "line": 53,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Recipes",
-          "filePath": "app\\api\\recalculate-cogs\\route.ts",
-          "line": 24,
           "kind": "helper"
         },
         {
@@ -3165,8 +3165,8 @@
         },
         {
           "sheetName": "Recipes",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 23,
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
           "kind": "helper"
         },
         {
@@ -3216,6 +3216,18 @@
         },
         {
           "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
           "filePath": "scripts\\audit-negative-stock-periods.ts",
           "line": 19,
           "kind": "helper"
@@ -3252,32 +3264,8 @@
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "scripts\\audit-production-stock.ts",
-          "line": 17,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Semi_Products",
-          "filePath": "scripts\\audit-water-sugar-transition.ts",
-          "line": 19,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Semi_Products",
           "filePath": "app\\pos\\actions.ts",
           "line": 61,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 398,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 55,
           "kind": "helper"
         },
         {
@@ -3288,14 +3276,26 @@
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
-          "line": 29,
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 12,
           "kind": "helper"
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
-          "line": 12,
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 47,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 55,
           "kind": "helper"
         },
         {
@@ -3324,14 +3324,14 @@
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 22,
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
           "kind": "helper"
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 47,
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 29,
           "kind": "helper"
         },
         {
@@ -3389,7 +3389,7 @@
     },
     {
       "title": "Stock_Ledger",
-      "rowCount": 4011,
+      "rowCount": 4019,
       "columnCount": 26,
       "status": "KEEP",
       "reason": "Referenced by code with exact sheet name.",
@@ -3594,6 +3594,30 @@
         },
         {
           "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-order-ledger.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
           "filePath": "scripts\\audit-negative-stock-periods.ts",
           "line": 17,
           "kind": "helper"
@@ -3678,30 +3702,6 @@
         },
         {
           "sheetName": "Stock_Ledger",
-          "filePath": "scripts\\audit-purchase-ledger.ts",
-          "line": 34,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "scripts\\audit-production-stock.ts",
-          "line": 14,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "scripts\\audit-order-ledger.ts",
-          "line": 17,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "scripts\\audit-water-sugar-transition.ts",
-          "line": 20,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
           "filePath": "lib\\sheet-usage-audit.test.ts",
           "line": 8,
           "kind": "helper"
@@ -3722,24 +3722,6 @@
           "sheetName": "Stock_Ledger",
           "filePath": "app\\pos\\actions.ts",
           "line": 63,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 319,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 350,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 400,
           "kind": "helper"
         },
         {
@@ -3776,6 +3758,24 @@
           "sheetName": "Stock_Ledger",
           "filePath": "app\\admin\\production\\actions.ts",
           "line": 98,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 319,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 350,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 400,
           "kind": "helper"
         },
         {
@@ -3960,6 +3960,12 @@
         },
         {
           "sheetName": "Units",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
           "filePath": "scripts\\audit-negative-stock-periods.ts",
           "line": 20,
           "kind": "helper"
@@ -4002,8 +4008,8 @@
         },
         {
           "sheetName": "Units",
-          "filePath": "scripts\\audit-production-stock.ts",
-          "line": 18,
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 25,
           "kind": "helper"
         },
         {
@@ -4014,32 +4020,14 @@
         },
         {
           "sheetName": "Units",
-          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
-          "line": 30,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
           "filePath": "app\\admin\\semi-products\\actions.ts",
           "line": 22,
           "kind": "helper"
         },
         {
           "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\units\\page.tsx",
-          "line": 7,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
-          "line": 22,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 25,
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 30,
           "kind": "helper"
         },
         {
@@ -4050,8 +4038,8 @@
         },
         {
           "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\base-ingredients\\actions.ts",
-          "line": 18,
+          "filePath": "app\\admin\\inventory\\units\\page.tsx",
+          "line": 7,
           "kind": "helper"
         },
         {
@@ -4086,14 +4074,26 @@
         },
         {
           "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
-          "line": 14,
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 24,
           "kind": "helper"
         },
         {
           "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\items\\actions.ts",
-          "line": 24,
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\base-ingredients\\actions.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 14,
           "kind": "helper"
         },
         {
@@ -4131,14 +4131,14 @@
         },
         {
           "sheetName": "UOM_Conversions",
-          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
-          "line": 30,
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 33,
           "kind": "helper"
         },
         {
           "sheetName": "UOM_Conversions",
-          "filePath": "scripts\\audit-purchase-ledger.ts",
-          "line": 33,
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 30,
           "kind": "helper"
         },
         {
@@ -4215,18 +4215,6 @@
         },
         {
           "sheetName": "UOM_Conversions",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 55,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "UOM_Conversions",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
-          "line": 16,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "UOM_Conversions",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
           "line": 23,
           "kind": "helper"
@@ -4275,6 +4263,18 @@
         },
         {
           "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
           "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
           "line": 11,
           "kind": "helper"
@@ -4319,62 +4319,6 @@
       "references": []
     },
     {
-      "title": "Finished_Product_Prices",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Finished_Product_Recipes",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Finished_Products",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Inventory_Batches",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Inventory_Transactions",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "order_counters",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "outlets",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
       "title": "P&L",
       "rowCount": 1002,
       "columnCount": 44,
@@ -4383,113 +4327,9 @@
       "references": []
     },
     {
-      "title": "Permissions",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "PO_Items",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "POS_Order_Items",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "POS_Orders",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Product_Brands",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "product_recipes",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
       "title": "QUY TRÌNH TRIỂN KHAI",
       "rowCount": 1022,
       "columnCount": 25,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "raw_materials",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "semi_product_recipes",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "settings",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Spoilage_Items",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Spoilage_Orders",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Stocktake_Records",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "supplies",
-      "rowCount": 1000,
-      "columnCount": 26,
       "status": "REVIEW",
       "reason": "No direct code reference found; inspect manually before archive/delete.",
       "references": []
@@ -4519,11 +4359,51 @@
       "references": []
     },
     {
-      "title": "User_Brands",
+      "title": "ZZ_ARCHIVE_Finished_Product_Prices",
       "rowCount": 1000,
       "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Finished_Product_Recipes",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Finished_Products",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Inventory_Batches",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Inventory_Transactions",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_order_counters",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
       "references": []
     },
     {
@@ -4575,8 +4455,128 @@
       "references": []
     },
     {
+      "title": "ZZ_ARCHIVE_outlets",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Permissions",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_PO_Items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_POS_Order_Items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_POS_Orders",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Product_Brands",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_product_recipes",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_raw_materials",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_semi_product_recipes",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_settings",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Spoilage_Items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Spoilage_Orders",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
       "title": "ZZ_ARCHIVE_Stock_Ledger_BACKUP_PRE_WS5_2026-06-19",
       "rowCount": 2925,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_Stocktake_Records",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_supplies",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "ZZ_ARCHIVE_User_Brands",
+      "rowCount": 1000,
       "columnCount": 26,
       "status": "ARCHIVE_CANDIDATE",
       "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",

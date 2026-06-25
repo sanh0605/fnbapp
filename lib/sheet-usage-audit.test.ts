@@ -48,4 +48,15 @@ describe("sheet usage audit", () => {
 
     expect(report.find(row => row.title === "Orders_BACKUP_PRE_WS5_2026-06-19")?.status).toBe("ARCHIVE_CANDIDATE");
   });
+
+  it("marks ZZ_ARCHIVE prefixed sheets as archive candidates", () => {
+    const report = classifySheets({
+      sheets: [
+        { title: "ZZ_ARCHIVE_POS_Orders", rowCount: 10, columnCount: 5 },
+      ],
+      references: [],
+    });
+
+    expect(report[0].status).toBe("ARCHIVE_CANDIDATE");
+  });
 });

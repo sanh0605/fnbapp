@@ -140,7 +140,8 @@ function preferredTitle(titles: string[]): string {
 }
 
 function looksLikeBackupOrLegacy(title: string): boolean {
-  return /\b(backup|archive|legacy|pre[_-]?ws|phase|copy)\b/i.test(title) ||
+  return /^zz_archive_/i.test(title) ||
+    /(backup|archive|legacy|pre[_-]?ws|phase|copy)/i.test(title) ||
     /(^|[_-])backup([_-]|$)/i.test(title);
 }
 
