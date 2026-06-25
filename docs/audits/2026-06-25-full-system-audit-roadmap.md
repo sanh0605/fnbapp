@@ -13,6 +13,10 @@ Mode: local commits only, no push
 3. Code có module rõ ràng, test được, giảm script một lần và giảm logic trùng.
 4. UI mobile-first đủ tốt cho vận hành thật: POS, đơn hàng, nhập hàng, tồn kho, báo cáo.
 
+Từ điển chuẩn dùng chung:
+
+- `docs/domain-dictionary.md`
+
 Nguyên tắc thực thi:
 
 - Mỗi phase/task phải có audit trước và verify sau.
@@ -20,6 +24,7 @@ Nguyên tắc thực thi:
 - Không push nếu chưa được yêu cầu.
 - Không xoá dữ liệu vận hành nếu chưa có audit và lý do rõ ràng.
 - Dữ liệu lịch sử phải được bảo toàn bằng snapshot hoặc ledger, không lấy giá/công thức hiện tại để ghi đè lịch sử nếu nghiệp vụ cần giá trị tại thời điểm tạo đơn.
+- Tên tính năng, trạng thái, ledger, snapshot, discount và UI label phải đối chiếu với `docs/domain-dictionary.md`.
 
 ## 2. Baseline hiện tại
 
@@ -311,6 +316,33 @@ Khuyến nghị:
 - Thêm smoke E2E tối thiểu cho các workflow không thể bắt bằng unit test.
 
 ## 5. Kế hoạch tiếp theo
+
+### Phase 0 - Domain Dictionary & System Vocabulary
+
+Trạng thái: done
+
+Mục tiêu:
+
+- Có một bộ từ điển nghiệp vụ dùng chung cho code, sheet, audit script, báo cáo và UI.
+- Tránh một khái niệm bị gọi nhiều tên khác nhau như `Topping`, `Modifier`, `Tùy chọn`.
+- Tránh các audit script tính khác định nghĩa với app.
+
+Task 0.1 - Tạo từ điển chuẩn:
+
+- [x] Tạo `docs/domain-dictionary.md`.
+- [x] Chuẩn hoá core entities: order, order line, product, variant, modifier, promotion.
+- [x] Chuẩn hoá inventory entities: base ingredient, semi-product, purchased item, PO, conversion.
+- [x] Chuẩn hoá trạng thái: `DRAFT`, `COMPLETED`, `SUPERSEDED`, `VOIDED`, `ACTIVE`, `INACTIVE`, `DELETED`.
+- [x] Chuẩn hoá ledger contract: `PO_RECEIPT`, `SALES_CONSUME`, `EDIT_REVERSAL`, `PRODUCTION_CONSUME`, `PRODUCTION_YIELD`, `STOCK_ADJUST`.
+- [x] Chuẩn hoá snapshot policy và purchase conversion policy.
+- [x] Ghi rõ open decisions còn cần xử lý ở các phase sau.
+
+Task 0.2 - Áp dụng từ điển vào các phase sau:
+
+- [ ] Khi sửa UI label, dùng preferred Vietnamese labels trong dictionary.
+- [ ] Khi sửa code/module, dùng code terms trong dictionary.
+- [ ] Khi sửa audit scripts, đảm bảo định nghĩa mismatch/drift/current stock thống nhất.
+- [ ] Khi phát hiện thuật ngữ mới, cập nhật dictionary cùng commit.
 
 ### Phase 1 - Chuẩn hoá tài liệu và checklist audit
 
@@ -715,14 +747,15 @@ Task 8.4 - Verify:
 
 Thứ tự em đề xuất:
 
-1. Commit roadmap này.
-2. Phase 2 - Audit Nhập hàng end-to-end.
-3. Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn.
-4. Phase 4 - Audit tồn kho và sản xuất.
-5. Phase 5 - Audit báo cáo.
-6. Phase 6 - Dọn scripts/kiến trúc.
-7. Phase 7 - Mobile-first UI/UX.
-8. Phase 8 - Offline/sync.
+1. Phase 0 - Domain Dictionary & System Vocabulary.
+2. Commit roadmap này.
+3. Phase 2 - Audit Nhập hàng end-to-end.
+4. Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn.
+5. Phase 4 - Audit tồn kho và sản xuất.
+6. Phase 5 - Audit báo cáo.
+7. Phase 6 - Dọn scripts/kiến trúc.
+8. Phase 7 - Mobile-first UI/UX.
+9. Phase 8 - Offline/sync.
 
 Lý do:
 
