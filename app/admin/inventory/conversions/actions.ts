@@ -71,12 +71,26 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
   }
 
   try {
-    // Preserve update_history logic exactly
+    const [allConvs, poLines] = await Promise.all([
+      findAll(SHEET),
+      findAll("Purchase_Order_Lines"),
+    ]);
+    const oldConv = allConvs.find((c: DBUOMConversion) => c.id === id);
+    const isReferenced = poLines.some((line: any) => line.conversion_id === id);
+    const coreFieldsChanged = oldConv && (
+      oldConv.purchased_item_id !== purchased_item_id ||
+      oldConv.purchased_unit !== purchased_unit ||
+      String(oldConv.conversion_rate) !== String(conversion_rate) ||
+      oldConv.base_unit !== base_unit
+    );
+
+    if (isReferenced && coreFieldsChanged) {
+      return fail("Quy đổi này đã được dùng trong phiếu nhập lịch sử. Hãy tạo quy đổi mới thay vì sửa trực tiếp.");
+    }
+
+    // Preserve update_history logic for unused conversions only.
     if (update_history) {
-      const allConvs = await findAll(SHEET);
-      const oldConv = allConvs.find((c: DBUOMConversion) => c.id === id);
       if (oldConv && oldConv.purchased_unit !== purchased_unit) {
-        const poLines = await findAll("Purchase_Order_Lines");
         for (const line of poLines) {
           if (line.purchased_item_id === purchased_item_id && line.unit === oldConv.purchased_unit) {
             await update("Purchase_Order_Lines", line.id, { ...line, unit: purchased_unit });
@@ -99,7 +113,13 @@ export async function deleteConversionAction(formData: FormData): Promise<Action
   if (!id) return fail("ID không hợp lệ");
 
   try {
-    await remove(SHEET, id);
+    const poLines = await findAll("Purchase_Order_Lines");
+    const isReferenced = poLines.some((line: any) => line.conversion_id === id);
+    if (isReferenced) {
+      await update(SHEET, id, { status: "INACTIVE" });
+    } else {
+      await remove(SHEET, id);
+    }
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

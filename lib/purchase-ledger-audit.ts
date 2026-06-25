@@ -202,7 +202,10 @@ function resolveConversion(
   const conversionId = String(line.conversion_id || "").trim();
   if (conversionId) {
     const conversion = conversionMap.get(conversionId);
-    return conversion ? { kind: "resolved", conversion } : { kind: "missing" };
+    if (!conversion) return { kind: "missing" };
+    return conversion.purchased_item_id === getPurchasedItemId(line)
+      ? { kind: "resolved", conversion }
+      : { kind: "missing" };
   }
 
   const purchasedItemId = getPurchasedItemId(line);

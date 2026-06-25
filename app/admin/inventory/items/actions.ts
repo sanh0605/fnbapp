@@ -95,21 +95,36 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       const newUnits = JSON.parse(unitsJson);
       
       const allConversions = await findAll("UOM_Conversions");
+      const poLines = await findAll("Purchase_Order_Lines");
       const existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);
+      const referencedConversionIds = new Set(
+        poLines
+          .filter((line: any) => line.conversion_id)
+          .map((line: any) => line.conversion_id)
+      );
       
       const newUnitIds: string[] = [];
       for (const u of newUnits) {
         if (!u.name || !u.conversion_rate) continue;
         
         if (u.id) {
+          const oldConv = existingConversions.find((c: any) => c.id === u.id);
+          const isReferenced = referencedConversionIds.has(u.id);
+          const coreFieldsChanged = oldConv && (
+            oldConv.purchased_unit !== u.name ||
+            String(oldConv.conversion_rate) !== String(u.conversion_rate) ||
+            oldConv.base_unit !== base_unit
+          );
+
+          if (isReferenced && coreFieldsChanged) {
+            return fail("Một quy đổi đã được dùng trong phiếu nhập lịch sử. Hãy tạo quy đổi mới thay vì sửa trực tiếp.");
+          }
+
           if (update_history) {
-            const oldConv = existingConversions.find((c: any) => c.id === u.id);
             if (oldConv && oldConv.purchased_unit !== u.name) {
-              const poLines = await findAll("Purchase_Order_Lines");
               const linesToUpdate = poLines.filter((p: any) => p.purchased_item_id === id && p.unit === oldConv.purchased_unit);
               for (const line of linesToUpdate) {
                  await update("Purchase_Order_Lines", line.id, { ...line, unit: u.name });
-                 await update("Purchase_Order_Lines", line.id, { ...line, unit: u.name }); // exact double update preservation
               }
             }
           }
@@ -138,7 +153,11 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       // Xoá những record đã bị xoá khỏi UI
       for (const ex of existingConversions) {
         if (!newUnitIds.includes(ex.id)) {
-          await remove("UOM_Conversions", ex.id);
+          if (referencedConversionIds.has(ex.id)) {
+            await update("UOM_Conversions", ex.id, { status: "INACTIVE" });
+          } else {
+            await remove("UOM_Conversions", ex.id);
+          }
         }
       }
     }

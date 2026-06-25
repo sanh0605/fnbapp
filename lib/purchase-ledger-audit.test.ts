@@ -65,6 +65,31 @@ describe("auditPurchaseLedger", () => {
       }),
     ]);
   });
+
+  it("does not resolve a conversion_id that belongs to another purchased item", () => {
+    const report = auditPurchaseLedger({
+      purchaseOrders: [completedPo("PO-001")],
+      purchaseOrderLines: [poLine({ id: "POL-1", po_id: "PO-001", conversion_id: "QD-OTHER" })],
+      purchasedItems: [rawItem()],
+      conversions: [
+        conversion({
+          id: "QD-OTHER",
+          purchased_item_id: "SPM-OTHER",
+          conversion_rate: "500",
+        }),
+      ],
+      stockLedger: [],
+    });
+
+    expect(report.missingConversions).toEqual([
+      expect.objectContaining({
+        line_id: "POL-1",
+        po_id: "PO-001",
+        purchased_item_id: "SPM-001",
+      }),
+    ]);
+    expect(report.ledgerMismatches).toHaveLength(0);
+  });
 });
 
 function completedPo(id: string) {

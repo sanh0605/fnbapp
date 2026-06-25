@@ -76,6 +76,11 @@ export function resolveConversion(
     if (!conversion) {
       throw new Error(`Conversion ${conversionId} not found for line ${line.id || ""}`);
     }
+    if (conversion.purchased_item_id !== purchasedItemId) {
+      throw new Error(
+        `Conversion ${conversionId} does not belong to purchased item ${purchasedItemId} for line ${line.id || ""}`,
+      );
+    }
     return conversion;
   }
 

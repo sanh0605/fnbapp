@@ -342,6 +342,8 @@ Task 1.3 - Sau commit, chọn phase triển khai tiếp:
 
 ### Phase 2 - Audit Nhập hàng end-to-end
 
+Trạng thái: in progress
+
 Mục tiêu:
 
 - Đảm bảo mọi PO mới và PO lịch sử tạo stock ledger đúng.
@@ -350,21 +352,21 @@ Mục tiêu:
 
 Task 2.1 - Đọc và vẽ luồng nhập hàng:
 
-- [ ] `app/admin/inventory/purchase-orders/actions.ts`
-- [ ] `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx`
-- [ ] `app/admin/inventory/purchase-orders/[id]/page.tsx`
-- [ ] `app/admin/inventory/items/actions.ts`
-- [ ] `app/admin/inventory/conversions/actions.ts`
-- [ ] `scripts/reprocess-all-po-ledger.ts`
-- [ ] `lib/purchase-ledger-audit.ts`
-- [ ] `lib/purchase-ledger-rebuild.ts`
+- [x] `app/admin/inventory/purchase-orders/actions.ts`
+- [x] `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx`
+- [x] `app/admin/inventory/purchase-orders/[id]/page.tsx`
+- [x] `app/admin/inventory/items/actions.ts`
+- [x] `app/admin/inventory/conversions/actions.ts`
+- [x] `scripts/reprocess-all-po-ledger.ts`
+- [x] `lib/purchase-ledger-audit.ts`
+- [x] `lib/purchase-ledger-rebuild.ts`
 
 Task 2.2 - Audit form submit:
 
-- [ ] Khi chọn purchased item, list conversion hiển thị đúng theo item.
-- [ ] Khi chọn unit/conversion, form lưu `conversion_id`.
-- [ ] `conversion_rate` không bị stale khi đổi unit/item.
-- [ ] Không cho lưu nếu conversion bị thiếu hoặc mơ hồ.
+- [x] Khi chọn purchased item, list conversion hiển thị đúng theo item.
+- [x] Khi chọn unit/conversion, form lưu `conversion_id`.
+- [x] `conversion_rate` không bị stale khi đổi unit/item.
+- [x] Không cho lưu nếu conversion bị thiếu hoặc mơ hồ.
 - [ ] Error message tiếng Việt rõ ràng.
 
 Task 2.3 - Audit save PO:
@@ -376,24 +378,34 @@ Task 2.3 - Audit save PO:
 
 Task 2.4 - Audit rebuild/reprocess:
 
-- [ ] Reprocess ưu tiên `conversion_id`.
-- [ ] Nếu thiếu `conversion_id` nhưng chỉ có 1 conversion hợp lệ thì có thể backfill.
-- [ ] Nếu nhiều conversion hợp lệ thì report ambiguous, không tự chọn.
+- [x] Reprocess ưu tiên `conversion_id`.
+- [x] Nếu thiếu `conversion_id` nhưng chỉ có 1 conversion hợp lệ thì có thể backfill.
+- [x] Nếu nhiều conversion hợp lệ thì report ambiguous, không tự chọn.
 - [ ] Dry-run mặc định.
 - [ ] Apply cần flag rõ.
 
 Task 2.5 - Test:
 
-- [ ] Unit test conversion resolution.
+- [x] Unit test conversion resolution.
 - [ ] Unit test purchase ledger rebuild.
 - [ ] Data audit tất cả completed PO.
 - [ ] Regression test Dâu sấy.
 
 Task 2.6 - Verify:
 
-- [ ] `scripts/audit-purchase-ledger.ts` mismatch `0`.
-- [ ] Test suite pass.
+- [x] `scripts/audit-purchase-ledger.ts` mismatch `0`.
+- [x] Test suite pass.
 - [ ] Tạo thử PO mới trên dev server và kiểm tra ledger.
+
+Task 2.7 - Guard đã triển khai trong phase này:
+
+- [x] Khi đổi purchased item trên PO form, reset `unit`, `conversion_id`, `conversion_rate`.
+- [x] Khi mở PO cũ thiếu `conversion_id`, chỉ tự restore conversion nếu có đúng một candidate.
+- [x] Ẩn conversion `INACTIVE` khỏi dropdown nhập hàng mới.
+- [x] `buildPurchaseReceipt` chặn `conversion_id` không thuộc purchased item của line.
+- [x] Purchase ledger audit không resolve conversion nếu conversion thuộc item khác.
+- [x] Không cho sửa core fields của conversion đã được PO line lịch sử tham chiếu.
+- [x] Xoá conversion đã dùng trong lịch sử sẽ chuyển `status = INACTIVE` thay vì xoá record.
 
 ### Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn
 

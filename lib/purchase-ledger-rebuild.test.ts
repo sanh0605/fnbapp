@@ -34,6 +34,23 @@ describe("buildPurchaseReceipt", () => {
       }),
     ).toThrow(/Ambiguous conversion/);
   });
+
+  it("rejects a conversion_id from another purchased item", () => {
+    expect(() =>
+      buildPurchaseReceipt({
+        po: po(),
+        line: line({ conversion_id: "QD-OTHER" }),
+        item: item(),
+        conversions: [
+          conversion({
+            id: "QD-OTHER",
+            purchased_item_id: "SPM-OTHER",
+            conversion_rate: "500",
+          }),
+        ],
+      }),
+    ).toThrow(/does not belong to purchased item/);
+  });
 });
 
 function po() {

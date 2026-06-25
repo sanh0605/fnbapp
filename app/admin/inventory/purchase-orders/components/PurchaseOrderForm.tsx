@@ -40,13 +40,16 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
     // Bước 1: Tìm conversion record
     // Ưu tiên dùng conversion_id đã lưu trong DB (sau khi fix actions.ts)
     // Fallback: tìm theo purchased_item_id + purchased_unit (với dữ liệu cũ chưa có conversion_id)
-    let matchedConv = conversions.find((c: any) => c.id === line.conversion_id);
+    let matchedConv = conversions.find(
+      (c: any) => c.id === line.conversion_id && c.purchased_item_id === line.purchased_item_id
+    );
     if (!matchedConv && line.purchased_item_id && line.unit) {
-      matchedConv = conversions.find(
+      const fallbackCandidates = conversions.filter(
         (c: any) =>
           c.purchased_item_id === line.purchased_item_id &&
           String(c.purchased_unit).trim() === String(line.unit).trim()
       );
+      matchedConv = fallbackCandidates.length === 1 ? fallbackCandidates[0] : undefined;
     }
 
     // Bước 2: Restore base_ingredient_id và base_unit từ Purchased_Items
@@ -118,6 +121,8 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
       // Reset unit selection
       newLines[index].unit = "";
       newLines[index].is_new_unit = false;
+      newLines[index].conversion_id = "";
+      newLines[index].conversion_rate = "";
     }
 
     if (field === "conversion_id") {
@@ -279,7 +284,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
         ) : (
           <div className="space-y-4">
             {lines.map((line, index) => {
-              const availableUnits = conversions.filter((c: any) => c.purchased_item_id === line.purchased_item_id);
+              const availableUnits = conversions.filter(
+                (c: any) => c.purchased_item_id === line.purchased_item_id && c.status !== "INACTIVE"
+              );
               const unitPrice = Number(line.quantity) > 0 ? Number(line.subtotal) / Number(line.quantity) : 0;
 
               return (
