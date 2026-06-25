@@ -3,6 +3,8 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
+const BTP_SHORTFALL_CUTOVER_AT = "2026-06-25T07:31:08.402Z";
+
 function fmt(value: number): string {
   return Number(value.toFixed(6)).toString();
 }
@@ -11,16 +13,21 @@ async function main() {
   const { auditOrderLedger } = await import("../lib/order-ledger-audit");
   const { findAllNoCache } = await import("../lib/sheets_db");
 
-  const [orders, lines, ledger] = await Promise.all([
+  const [orders, lines, ledger, recipes, semiProducts] = await Promise.all([
     findAllNoCache("Orders_V2"),
     findAllNoCache("Order_Lines_V2"),
     findAllNoCache("Stock_Ledger"),
+    findAllNoCache("Recipes"),
+    findAllNoCache("Semi_Products"),
   ]);
 
   const report = auditOrderLedger({
     orders: orders as any[],
     lines: lines as any[],
     ledger: ledger as any[],
+    recipes: recipes as any[],
+    semiProducts: semiProducts as any[],
+    shortfallCutoverAt: BTP_SHORTFALL_CUTOVER_AT,
   });
 
   console.log("=== ORDER LEDGER AUDIT (READ ONLY) ===");
