@@ -4,6 +4,199 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-26 (Claude, phiên 3) — Spec resolution + Codex handoff
+
+**Trigger:** Anh yêu cầu em xem MAC COGS spec, liệt kê việc cần làm, tránh hiểu lầm giữa AI CLIs. P&L breakdown refactor deferred cho Codex.
+
+### Done by Claude
+
+| Item | File | Change |
+|---|---|---|
+| Spec Q1 | `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md` | Answer Open Question 1: rewrite toàn bộ historical (đã apply 1267 lines). |
+| Spec Q2 | Same | Answer Q2: KHÔNG populate `Stock_Ledger.unit_cost` MAC cho SALES_CONSUME. MAC stored duy nhất ở `Order_Lines_V2.cost_at_sale`. |
+| Spec Q3 | Same | Answer Q3: SP MAC LAZY tại sale time (compute từ recipe ingredients). |
+| Spec "Outstanding" | Same | Document P&L breakdown FIFO issue + 4 tasks cho Codex. |
+| UI wording | `app/admin/reports/pnl/page.tsx` | Add note COGS = MAC, breakdown FIFO informational, link spec. |
+| UI wording | `app/admin/reports/sales/page.tsx` | Comment marker. |
+| Roadmap | `docs/audits/2026-06-25-full-system-audit-roadmap.md` | Phase 5A status → done. Check off 2 verify items. Add 2 deferred items cho Codex. |
+| Handoff | `docs/audits/codex-handoff-2026-06-25.md` | Add "Direction change log" entry với P0 P&L breakdown issue rõ ràng + 4 tasks Codex + authority to edit. |
+
+### Verification
+
+- TypeScript: **0 errors**
+- Tests: **187/187 pass**
+- MAC drift: **0 mismatch** (Codex migration stable)
+- Current stock: **0 negative**
+
+### Codex authority (rõ ràng)
+
+- **Codex có quyền** chỉnh sửa các file Claude đã sửa nếu cần (auth guard, UI notes, spec).
+- Spec "Outstanding" section liệt kê 4 tasks cho Codex với full context.
+- Handoff "Direction change log" thông báo P&L breakdown FIFO là issue tồn tại, không phải Claude quên.
+
+### Files modified by Claude (phiên 3)
+
+- `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`
+- `docs/audits/codex-handoff-2026-06-25.md`
+- `docs/audits/2026-06-25-full-system-audit-roadmap.md`
+- `app/admin/reports/pnl/page.tsx`
+- `app/admin/reports/sales/page.tsx`
+
+### Codex review notes (thêm)
+
+19. Spec Q2/Q3 reflect code HIỆN TẠI — không phải Claude decide, chỉ document. Nếu Codex muốn change behavior, update spec + tracking.
+20. UI note "breakdown FIFO informational" ở PnL — nếu Codex refactor breakdown sang MAC, update note tương ứng.
+21. Phase 5A verify có 2 items `[ ]` defer cho Codex (P&L breakdown MAC + audit consistency script).
+
+---
+
+## 2026-06-26 (Claude, phiên 2) — P0/P1 fixes + agent file integration
+
+**Trigger:** Anh yêu cầu (1) đảm bảo Codex/Antigravity cũng đọc các file chia sẻ, (2) em tự làm việc ưu tiên.
+
+### Done by Claude
+
+| Item | File | Change |
+|---|---|---|
+| Infrastructure | `CLAUDE.md` | Add section 0 "Collaboration files (READ FIRST)" reference `docs/COLLABORATION.md` + tracking + handoff. |
+| Infrastructure | `AGENTS.md` (new) | Cho Codex CLI + Antigravity — reference COLLABORATION.md + CLAUDE.md rules. |
+| **CODE-22** P0 | `lib/auth.ts` | Add `requireAdmin`/`resolveActor`/`AuthActor`/`AuthResult` types. CLI_MODE bypass cho scripts. |
+| **CODE-22** P0 | `app/admin/orders/actions.ts` | Apply `requireAdmin` cho `voidOrderV2`, `editOrderV2`. Remove inline session logic. |
+| **CODE-22** P0 | `app/admin/inventory/purchase-orders/actions.ts` | Apply `requireAdmin` cho `savePurchaseOrder`. Override `created_by` bằng `auth.actor.name`. |
+| **CODE-22** P0 | `app/admin/inventory/actions.ts` | Refactor `submitStockAdjustment` (bỏ trust client `role` param) + `approveStockAdjustment` dùng server-side auth. |
+| **R13** | `scripts/audit-cogs-drift.ts` | Add 3-line warning đầu output: "FIFO informational only sau MAC migration". |
+| **UI-9** | `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx` | `transactionDate.toISOString()` → `toSaigonIsoString(transactionDate)` từ `lib/datetime.ts`. |
+| **UI-20** | Same file | Remove hardcoded `formData.append("created_by", "ADMIN")` (server override bằng auth.actor). |
+| **UI-3** | `components/SalesFilter.tsx` | Push URL `YYYY-MM-DD` (friendly) + `parseDateParam` backward compat với ISO legacy. |
+
+### Security impact
+
+- **Before**: 5 server actions (`voidOrderV2`, `editOrderV2`, `savePurchaseOrder`, `submitStockAdjustment`, `approveStockAdjustment`) không require admin session. Client có thể giả `role=ADMIN` để auto-approve adjustment.
+- **After**: Tất cả 5 require server-side admin session. CLI_MODE bypass cho scripts (system actor). Client-supplied `role`/`username` ignored.
+
+### Verification
+
+- TypeScript: **0 errors**
+- Test suite: **187/187 pass**
+- TS check confirm không break test exist.
+
+### Codex review notes (thêm)
+
+16. `lib/auth.ts` `resolveActor` dùng dynamic import `getServerSession` — verify Next.js build không có issue với lazy import trong server action.
+17. `submitStockAdjustment` signature giữ `(data, _clientRole?, _clientUsername?)` cho backward compat. Caller UI cần update để không pass role từ client (hoặc pass undefined).
+18. `savePurchaseOrder` override `created_by` từ auth — verify UI không còn rely trên giá trị client-provided.
+
+### Files modified
+
+- `CLAUDE.md`, `AGENTS.md` (new)
+- `lib/auth.ts`, `lib/datetime.ts` (existing)
+- `app/admin/orders/actions.ts`
+- `app/admin/inventory/actions.ts`
+- `app/admin/inventory/purchase-orders/actions.ts`
+- `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx`
+- `components/SalesFilter.tsx`
+- `scripts/audit-cogs-drift.ts`
+- `docs/audits/codex-handoff-2026-06-25.md` (status updates)
+
+---
+
+## 2026-06-26 (Claude) — Collaboration infrastructure + handoff refresh
+
+**Trigger:** Anh yêu cầu đảm bảo Claude và Codex có file doc dùng chung để giao tiếp rõ ràng.
+
+### Done by Claude
+
+| File | Change |
+|---|---|
+| `docs/COLLABORATION.md` (new) | **Single source of truth** cho communication protocol: file map, status markers, commit conventions, verify commands, direction snapshot, quick links. |
+| `docs/audits/codex-handoff-2026-06-25.md` | Update với direction change log (MAC impact), mark R5/R9/R10 done, add R11-R13 (issues mới từ MAC verify), re-prioritize P0-P3 theo post-MAC, add "Next 3 phiên đề xuất" section, link tới COLLABORATION.md. |
+
+### Files dùng chung (snapshot)
+
+| File | Role |
+|---|---|
+| `docs/COLLABORATION.md` | Protocol — đọc đầu mỗi phiên |
+| `DEVELOPMENT-TRACKING.md` | Chronicle log (this file) |
+| `docs/audits/codex-handoff-2026-06-25.md` | Active task tracking với status |
+| `docs/audits/2026-06-25-full-system-audit-roadmap.md` | Strategic roadmap |
+| `docs/audits/script-cleanup-plan.md` | Script inventory |
+| `docs/domain-dictionary.md` | Terminology |
+
+### Codex review notes (thêm)
+
+14. `docs/COLLABORATION.md` mới — verify protocol match với cách Codex làm việc. Nếu cần thêm section, update file đó.
+15. Handoff "Next 3 phiên đề xuất" section — confirm kế hoạch hoặc đề xuất khác.
+
+---
+
+## 2026-06-26 (Claude) — Verify MAC migration + fix Codex issues
+
+**Trigger:** Anh asked to verify Codex MAC COGS migration after direction change FIFO → MAC.
+
+### Verification result: PASS
+
+- Test suite: **187/187** pass (was 175, Codex added 12 tests for MAC engine + BTP shortfall).
+- MAC drift audit: **0 mismatched lines, 0 delta** (stored 13.804.046đ = expected).
+- Current stock: **0 negative, 0 unknown**.
+- Order ledger: **0 mismatch, 0 orphan**.
+- TypeScript: **0 errors** (was 2 — 1 Codex-introduced + 1 pre-existing).
+
+### Issues found in Codex code — FIXED
+
+| Issue | File:line | Fix |
+|---|---|---|
+| **CODEX-1** TS error — `MacLedgerEntry` thiếu `reference_id` nhưng `mac-cogs-audit.ts:138` dùng `row.reference_id`. Type không match runtime → filter không work đúng nếu data thiếu. | `lib/mac-cogs.ts:4-10` | Thêm `id?: string; reference_id?: string` vào type. |
+| **CODEX-2** Runtime crash risk — `row.item_reference.startsWith("BTP-")` mà `item_reference?: string` (có thể undefined). | `lib/mac-cogs-audit.ts:187, 236` | Wrap `String(row.item_reference \|\| "").startsWith(...)`. |
+| **R5** Pre-existing TS error — discriminated union narrowing trong `modifier-recipe.test.ts:21`. | `lib/modifier-recipe.test.ts` | Narrow qua `if (!result.ok)` trước khi truy `.error`. |
+
+### Issues found — DEFERRED (note cho Codex)
+
+| Issue | File:line | Lý do defer |
+|---|---|---|
+| **CODEX-3** `buildLineConsumptionRows` + `modifierQtyByIdFromLine` trùng 4 chỗ (`btp-shortfall-reprocess.ts`, `cogs-drift-audit.ts`, `mac-cogs-audit.ts`, `report-v2-allocators.ts`) — vẫn là CODE-18 trong handoff. | multiple | Refactor lớn, cần kế hoạch. |
+| **CODEX-4** Perf O(n²) trong `btp-shortfall-reprocess.ts:126` — `workingLedger.filter()` mỗi order re-scan full ledger + growing workingLedger. | `lib/btp-shortfall-reprocess.ts` | Migration script 1-lần, performance acceptable cho data current. |
+| **CODEX-5** Idempotency check dựa vào string prefix `"BTP-SHORTFALL-REPROCESS-"` và `"stk-btp-reprocess-"` — fragile nếu convention đổi. | `lib/btp-shortfall-reprocess.ts:94-97` | Đã có test guard; chấp nhận được cho 1-shot migration. |
+| **FIFO drift audit không còn = 0** — drift audit `audit-cogs-drift.ts` report nhiều mismatch (FIFO recompute ≠ stored MAC). Đây là **expected behavior** sau MAC migration, không phải bug. FIFO giờ chỉ là informational audit. | `scripts/audit-cogs-drift.ts` | Cần note rõ trong audit output để user không tưởng có bug. |
+
+### Files modified by Claude (phiên này)
+
+- `lib/mac-cogs.ts` — added `id`, `reference_id` to `MacLedgerEntry`.
+- `lib/mac-cogs-audit.ts` — null-safe `item_reference.startsWith` (2 chỗ).
+- `lib/modifier-recipe.test.ts` — R5 fix.
+
+### Codex review notes
+
+11. Verify `MacLedgerEntry.reference_id` không phải optional ở runtime — `Stock_Ledger` rows luôn có field này. Optional trong type chỉ để accept wider input.
+12. `btp-shortfall-reprocess.ts` perf — nếu migration chạy lại với data lớn hơn, cân nhắc sort ledger 1 lần + dùng cursor thay filter mỗi order.
+13. FIFO drift audit output nên thêm warning "FIFO is informational only, MAC is primary contract" để user không báo false-positive.
+
+---
+
+## 2026-06-26 (Codex) — Reprocess BTP shortfall ledger after stock reset
+
+**Trigger:** User approved fixing the remaining 5 negative semi-product balances after the MAC COGS migration.
+
+### Root cause
+
+- The negative balances came from orders created after the 2026-06-25 stock reset while the live write path still wrote direct BTP `SALES_CONSUME` rows.
+- The current code already supports BTP shortfall allocation, but those 15 post-cutover orders needed ledger reprocessing.
+
+### Done
+
+- Added `lib/btp-shortfall-reprocess.ts` planner and tests.
+- Added `scripts/reprocess-btp-shortfall-ledger.ts` dry-run/apply script.
+- Added `scripts/audit-negative-btp-orders.ts` read-only investigation script.
+- Updated `auditOrderLedger` to use direct BTP contract before the 2026-06-25 cutover and BTP shortfall allocation after the cutover.
+- Applied post-cutover reprocess: inserted `272` correction rows into `Stock_Ledger`.
+
+### Verification
+
+- `scripts/audit-current-stock.ts`: negative stock `0`, unknown item refs `0`.
+- `scripts/audit-order-ledger.ts`: mismatches `0`, orphan ledger rows `0`.
+- `scripts/audit-mac-cogs-drift.ts`: mismatched lines `0`, delta `0`.
+
+---
+
 ## 2026-06-26 (Codex) — Apply historical MAC COGS migration
 
 **Trigger:** User approved continuing from the MAC write-path phase into historical `cost_at_sale` migration.

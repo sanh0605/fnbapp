@@ -638,7 +638,7 @@ Task 5.6 - Fix/guard đã triển khai trong phase này:
 
 ### Phase 5A - Chuyển chuẩn giá vốn từ FIFO sang MAC
 
-Trạng thái: partial implementation
+Trạng thái: done (P&L breakdown refactor deferred to Codex — see "Outstanding" trong spec)
 
 Mục tiêu:
 
@@ -691,8 +691,10 @@ Task 5A.6 - Verify:
 - [x] Unit test BTP recipe fallback khi direct BTP MAC chưa có.
 - [x] Unit test BTP partial shortfall ở allocation layer và MAC cost layer.
 - [x] MAC COGS drift clean sau migration: `0` mismatched lines, delta `0`.
-- [ ] Current stock audit clean riêng về số lượng.
-- [ ] P&L không còn COGS 0 do thiếu FIFO batch.
+- [x] Current stock audit clean riêng về số lượng (Claude verify 2026-06-26: 0 negative, 0 unknown).
+- [x] P&L không còn COGS 0 do thiếu FIFO batch (Claude verify: drift = 0 cho total COGS).
+- [ ] **P&L breakdown theo ingredient/source dùng MAC thay vì FIFO recompute** — deferred to Codex (see spec "Outstanding" section).
+- [ ] Audit `scripts/audit-pnl-mac-consistency.ts` verify P&L total = sum cost_at_sale — deferred to Codex.
 
 Codex implementation note:
 

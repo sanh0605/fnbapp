@@ -1,32 +1,73 @@
 # Codex Handoff — 2026-06-25
 
+> **READ FIRST**: `docs/COLLABORATION.md` — communication protocol + file map.
+
 Yêu cầu gốc: review code changes của Claude (Phần A) + fix system-wide audit findings (Phần B).
 
-Trạng thái từng item sẽ được update tại chỗ bằng marker:
-- `[ ]` pending — Codex làm
-- `[x]` done — Claude làm xong, Codex verify
-- `[~]` partial — Claude làm một phần, Codex complete
-- `[!]` skip — có lý do, đọc note
+Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `docs/COLLABORATION.md` section 2):
+- `[ ]` pending
+- `[x]` done
+- `[~]` partial
+- `[!]` skip — có lý do
+- `[-]` obsolete — direction change
+
+---
+
+## Direction change log
+
+### 2026-06-26 — MAC COGS primary direction
+
+- User approved switching primary COGS valuation FIFO → MAC.
+- Inventory quantity control remains ledger-based via `Stock_Ledger.quantity_change`.
+- FIFO demoted to audit/debug only.
+- Design note: `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`.
+- Migration applied: 1267 historical lines MAC-recalc'd, 272 BTP shortfall correction rows added. All audits clean.
+
+### 2026-06-26 (Claude) — Open Questions resolved + P&L breakdown flag
+
+Spec đã update với 3 Open Questions answered (Q1 rewrite, Q2 không populate SALES_CONSUME.unit_cost, Q3 lazy SP MAC).
+
+**P0 issue còn tồn tại — DEFERRED TO CODEX**:
+
+**P&L breakdown recompute FIFO thay vì dùng stored MAC** (spec violation).
+
+- `app/admin/reports/actions.ts:449-501` `splitLineCogsBySaleSource` — recompute FIFO để split variant vs modifier.
+- `lib/report-v2-allocators.ts` `breakdownCOGSByIngredient` — recompute FIFO để breakdown theo ingredient.
+- Tổng COGS = MAC stored (đúng), nhưng breakdown có thể lệch.
+
+**Why Codex**:
+- Codex viết MAC engine + write paths.
+- Có thể có lý do giữ FIFO breakdown (audit?) — confirm trước.
+- Refactor cần design decision: proportionally split stored MAC theo recipe quantity, hoặc MAC recompute via consumption rows (không FIFO).
+
+**Tasks cho Codex**:
+1. Confirm có lý do giữ FIFO breakdown không, hay là bug cần fix.
+2. Nếu fix: refactor `splitLineCogsBySaleSource` + `breakdownCOGSByIngredient` dùng stored MAC hoặc MAC recompute.
+3. Viết audit `scripts/audit-pnl-mac-consistency.ts` verify P&L total = sum cost_at_sale.
+4. Update R1 status trong handoff: nếu breakdown refactor, `filterLedgerForFifoInit` có thể không còn cần ở allocators (chỉ giữ cho audit scripts).
+
+**Spec compliance** (Codex has authority to edit if needed):
+- Spec section "Outstanding (P0 — deferred to Codex)" có full context.
+- Claude đã add UI note MAC tại `app/admin/reports/pnl/page.tsx` (giải thích breakdown FIFO informational).
+- Claude giữ nguyên WS-12 fix (filterLedgerForFifoInit) để FIFO allocators chạy đúng khi còn tồn tại.
+
+**Impact trên handoff items**:
+- R1 (filterLedgerForFifoInit): vẫn valid NGAY BÂY GIỜ — FIFO allocators vẫn dùng cho breakdown. **Sẽ obsolete nếu Codex refactor breakdown sang MAC**.
+- R6 (audit scripts): vẫn valid.
+- Bug Đào miếng fix: vẫn valid (modifier COGS = 0 do filter thiếu).
+- CODE-5 (parseSpIngredients): đã done bởi Claude.
 
 ---
 
 ## Phần A — Review code changes của Claude (phiên 2026-06-25)
 
-### Codex architecture update — MAC COGS direction
-
-- User approved switching the primary COGS valuation direction from FIFO to MAC/weighted average cost.
-- Inventory quantity control remains ledger-based through `Stock_Ledger.quantity_change`.
-- FIFO should be treated as optional audit/debug only, not the primary P&L contract.
-- Design note: `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`.
-- Roadmap phase added: Phase 5A — Chuyển chuẩn giá vốn từ FIFO sang MAC.
-- Implementation is still pending; do not continue assuming `audit-cogs-drift.ts` FIFO recompute is the long-term source of truth.
-
 ### File cần đọc
 
 **Overview docs (3 file):**
-1. `DEVELOPMENT-TRACKING.md` — 2 entries đầu sau header
-2. `docs/audits/2026-06-25-full-system-audit-roadmap.md` — Phase 2/3/4/5/6.1 đã check off
-3. `docs/audits/script-cleanup-plan.md` — Phase 6.1 output
+1. `docs/COLLABORATION.md` — communication protocol (READ FIRST)
+2. `DEVELOPMENT-TRACKING.md` — 4+ entries mới nhất (2 Claude + 4 Codex MAC migration)
+3. `docs/audits/2026-06-25-full-system-audit-roadmap.md` — Phase 0-5, 5A, 6.1 done
+4. `docs/audits/script-cleanup-plan.md` — Phase 6.1 output
 
 **Code modified (7 file):**
 - `lib/report-v2-allocators.ts` — export `filterLedgerForFifoInit`, apply 2 chỗ
@@ -55,14 +96,22 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker:
 
 ### 8 Review points (Claude đã note trong `DEVELOPMENT-TRACKING.md`)
 
-- [ ] **R1** `filterLedgerForFifoInit` — có cần loại thêm `STOCK_ADJUST`/`EDIT_CONSUME`? So sánh `lib/cogs-drift-audit.ts:136-143`.
+- [ ] **R1** `filterLedgerForFifoInit` — có cần loại thêm `STOCK_ADJUST`/`EDIT_CONSUME`? So sánh `lib/cogs-drift-audit.ts:136-143`. *(Vẫn valid dù MAC primary — FIFO vẫn dùng cho breakdown UI)*
 - [ ] **R2** `toSaigonUtcRange` — behavior với ISO input không timezone suffix.
 - [ ] **R3** `getRealtimeStock` cache staleness 60s cho `is_non_inventory` toggle.
 - [ ] **R4** `sales/page.tsx:37-51` redundant date conversion — có nên đơn giản hoá?
-- [ ] **R5** Pre-existing TS error `lib/modifier-recipe.test.ts:21`.
+- [x] **R5** Pre-existing TS error `lib/modifier-recipe.test.ts:21`. **Done by Claude (phiên 2026-06-26)** — narrow qua `if (!result.ok)` trước khi access `.error`.
 - [ ] **R6** 7 audit scripts mới — review naming, output, read-only contract.
 - [ ] **R7** `submitStockAdjustment` reason validation — UI form phải pass reason.
 - [ ] **R8** Vietnamese error messages render đúng qua UI toast.
+
+### Additional issues found in Codex MAC code (2026-06-26 Claude verify)
+
+- [x] **R9** TS error `MacLedgerEntry` thiếu `reference_id` ở `lib/mac-cogs.ts:4-10` dù `lib/mac-cogs-audit.ts:138` dùng. **Done by Claude** — thêm `id?: string; reference_id?: string` vào type.
+- [x] **R10** Runtime crash risk `lib/mac-cogs-audit.ts:187,236` — `row.item_reference.startsWith` mà `item_reference?: string`. **Done by Claude** — wrap `String(row.item_reference || "")`.
+- [ ] **R11** `btp-shortfall-reprocess.ts:126` perf O(n²) — `workingLedger.filter()` mỗi order re-scan + growing workingLedger. *(Defer — 1-shot migration, performance acceptable)*
+- [ ] **R12** `buildLineConsumptionRows` + `modifierQtyByIdFromLine` trùng 4 chỗ: `btp-shortfall-reprocess.ts`, `cogs-drift-audit.ts`, `mac-cogs-audit.ts`, `report-v2-allocators.ts`. (= CODE-18, càng rõ sau MAC migration)
+- [x] **R13** FIFO drift audit `scripts/audit-cogs-drift.ts` giờ report nhiều mismatch (FIFO ≠ MAC). **Done by Claude (phiên 2026-06-26)** — added 3-line warning đầu output giải thích FIFO informational only, point tới MAC audit.
 
 ### Verify commands
 
@@ -92,7 +141,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 #### Date/Time display
 - [x] **UI-1** HIGH Tạo `lib/datetime.ts` helper `formatDateTime(iso, opts?)` dùng `Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })`. Thay 2 helper trùng `OrderTable.tsx:134` + `OrderDetailModal.tsx:28`. **Done by Claude** — `lib/datetime.ts` + 9 tests, apply ở `OrderTable.tsx`, `OrderDetailModal.tsx`, `StockTable.tsx`.
 - [x] **UI-2** HIGH `StockTable.tsx:80` và các trang `.toLocaleString("vi-VN")` thiếu `timeZone` option. **Done by Claude** — dùng `formatDateTime` helper mới.
-- [ ] **UI-3** HIGH `SalesFilter.tsx:84` push URL `.toISOString()` raw → không friendly. Đổi sang `YYYY-MM-DD`. *(Defer — cần backward-compat với URL cũ)*
+- [x] **UI-3** HIGH `SalesFilter.tsx:84` push URL `.toISOString()` raw → không friendly. **Done by Claude (phiên 2026-06-26)** — `toDateOnlyForUrl` YYYY-MM-DD + `parseDateParam` backward compat với ISO legacy. Server `toSaigonUtcRange` handle date-only.
 
 #### Sizing & touch target
 - [x] **UI-4** HIGH Touch target < 44px: `OrderDetailModal.tsx:64` close button, `SalesFilter.tsx:111-113` preset buttons. **Done by Claude** — tăng `min-h-[36px]` + `aria-label="Đóng"`. Codex verify `OrderTable.tsx:280` "Hủy đơn" button.
@@ -102,7 +151,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 #### Layout & consistency
 - [x] **UI-7** HIGH `ModifiersClient.tsx:131` text English `"active recipes"`. **Done by Claude** — `"phiên bản hoạt động"`.
 - [ ] **UI-8** MED `PurchaseOrderForm.tsx:213` placeholder. *(Defer — cần đọc CustomDatePicker)*
-- [ ] **UI-9** HIGH `PurchaseOrderForm.tsx:165` gửi `transaction_date.toISOString()`. *(Defer — cần đọc CustomDatePicker + server parse)*
+- [x] **UI-9** HIGH `PurchaseOrderForm.tsx:165` gửi `transaction_date.toISOString()`. **Done by Claude (phiên 2026-06-26)** — đổi sang `toSaigonIsoString(transactionDate)` từ `lib/datetime.ts`. Server parse đúng ngày Saigon bất kể deploy TZ.
 - [x] **UI-10** MED Format tiền `XXđ` → `XX đ`. **Done by Claude** — sweep trong `OrderDetailModal.tsx` (6 chỗ).
 - [x] **UI-11** MED `OrderTable.tsx:137` show giây. **Done by Claude** — dùng `formatDateTime(dateString)` mặc định không giây.
 - [ ] **UI-12** MED Heatmap mobile. *(Defer — cần design)*
@@ -115,7 +164,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 #### Low severity
 - [x] **UI-18** LOW `OrderTable.tsx:359` className conflict. **Done by Claude** — removed `bg-white` duplicate.
 - [x] **UI-19** LOW backdrop opacity khác nhau. **Done by Claude** — unified `bg-black/50 backdrop-blur-sm` ở OrderDetailModal.
-- [ ] **UI-20** LOW `created_by` hardcoded. *(Defer — cần session integration)*
+- [x] **UI-20** LOW `created_by` hardcoded. **Done by Claude (phiên 2026-06-26)** — server override bằng `auth.actor.name` (CODE-22), client append removed khỏi PurchaseOrderForm.
 - [x] **UI-21** LOW PnL emoji icons. **Done by Claude** — `aria-hidden="true"` 3 chỗ.
 
 ### B.2 — Code Architecture
@@ -132,7 +181,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 - [ ] **CODE-7** LOW `app/admin/orders/actions.ts:117-121` silent catch. Log warning nếu non-empty.
 
 #### Data Integrity
-- [ ] **CODE-8** CRITICAL `app/admin/orders/actions.ts:337-351` `voidOrderV2` 3 writes không transaction. Fail bước 3 → order VOIDED nhưng không reversal.
+- [x] **CODE-8** CRITICAL `app/admin/orders/actions.ts:337-351` `voidOrderV2` 3 writes không transaction. **Done by Claude (phiên 2026-06-26)** — reorder fail-safe (reversal+event first, order update last) + idempotency guard reject double-VOIDED. Bonus CODE-2: replace `require()` runtime bằng static `insertMany` import.
 - [ ] **CODE-9** CRITICAL `app/admin/inventory/purchase-orders/actions.ts:81-93` update PO loop remove; fail giữa → mất dữ liệu.
 - [ ] **CODE-10** HIGH `app/admin/orders/actions.ts:472` `editOrderV2` race condition.
 - [ ] **CODE-11** HIGH `app/pos/actions.ts:138-155` `assignOrderNo` race → trùng order_no.
@@ -152,37 +201,66 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 - [ ] **CODE-21** MED SEMI_PRODUCT resolution trùng. Helper `resolveSemiProduct`.
 
 #### Security
-- [ ] **CODE-22** CRITICAL Không server action nào check `session.user.role === "ADMIN"` cho `voidOrderV2`, `editOrderV2`, `savePurchaseOrder`, `approveStockAdjustment`. Guard `requireAdmin(session)`.
+- [x] **CODE-22** CRITICAL Không server action nào check `session.user.role === "ADMIN"`. **Done by Claude (phiên 2026-06-26)** — `requireAdmin`/`resolveActor` ở `lib/auth.ts`. Apply: `voidOrderV2`, `editOrderV2`, `savePurchaseOrder`, `approveStockAdjustment`, `submitStockAdjustment` (refactor: bỏ trust client `role` param, dùng server-side).
 - [ ] **CODE-23** LOW `lib/sheets_db.ts:132-149` `generateNewId` predictable. OK cho ledger.
 - [ ] **CODE-24** MED `lib/sheets_db.ts:69-87` sheet name dynamic. Whitelist `ALLOWED_SHEETS`.
 
 ---
 
-## Priority
+## Priority (updated 2026-06-26 sau MAC migration)
 
-| Priority | Items |
-|---|---|
-| **P0 — Critical** | CODE-22 (auth), CODE-8 (void txn), CODE-9 (PO txn), CODE-11 (order_no race) |
-| **P1 — High** | UI-1/2/3 (datetime), UI-4/5 (sizing), UI-7 (English), UI-9 (PO date), UI-10 (tiền), CODE-5 (silent SP), CODE-13/14/15 (perf), CODE-18 (dedup) |
-| **P2 — Medium** | UI-6/8/11-17 (cosmetic), CODE-1/10/12/16/17/19-21 |
-| **P3 — Low / defer** | UI-18-21, CODE-2/3/4/7/23/24, Phase 6.3-6.5/7/8 |
+**Done items removed from priority** (Claude phiên 2026-06-25 + 2026-06-26):
+- UI-1/2/4/5/6/7/10/11/16/18/19/21 — done
+- CODE-5, R5, R9, R10 — done
+
+| Priority | Items | Ghi chú |
+|---|---|---|
+| **P0 — Critical (security/data)** | CODE-22 (auth guard), CODE-8 (void txn), CODE-9 (PO txn), CODE-11 (order_no race) | Rủi ro mất dữ liệu / bảo mật. Codex ưu tiên. |
+| **P1 — High (sau MAC migration)** | R11 (BTP perf), R12 (dedup 4 chỗ tăng sau MAC), R13 (FIFO drift warning), CODE-13/14/15 (perf N+1), UI-3 (URL date), UI-9 (PO date ISO) | Tăng ưu tiên vì MAC migration thêm code mới. |
+| **P2 — Medium (cosmetic + refactor)** | UI-8/12/13/14/15/17/20, CODE-1/10/12/16/17/19-21/24, R1/2/3/4/6/7/8 | UI + cleanup. |
+| **P3 — Low / defer (large or low-impact)** | CODE-2/3/4/7/23, Phase 6.3-6.5/7/8 | Large refactor hoặc cần design. |
+
+---
+
+## Next 3 phiên đề xuất
+
+### Codex phiên tiếp theo
+
+1. **Verify** Claude fixes (R9, R10, R5) — chạy `tsc --noEmit` clean.
+2. **P0**: CODE-22 auth guard (lớn nhất, rủi ro cao nhất).
+3. **P1**: R12 dedup `buildLineConsumptionRows` (4 chỗ giờ là 5 sau MAC).
+4. **P1**: R13 add warning trong FIFO drift audit output.
+
+### Claude phiên tiếp theo (nếu anh cần)
+
+1. **P1**: UI-9 (PO transaction_date UTC → Saigon) — em đã tạo `toSaigonIsoString` helper sẵn trong `lib/datetime.ts`.
+2. **P1**: UI-3 (SalesFilter URL date) — dùng `formatDate(iso)` từ helper.
+3. **P2**: UI-8/14/15 (PO form polish).
+
+### Sau khi cả 2 xong P0-P1
+
+1. Phase 6.2 (script deletion — review từng script).
+2. Phase 7 (mobile UI audit — cần dev server).
+3. Phase 8 (offline/sync — cần design approval).
 
 ---
 
 ## Output mong đợi từ Codex
 
-1. **Phần A**: Confirm/reject R1-R8. Flag thêm edge cases.
+1. **Phần A**: Confirm/reject R1-R13. Flag thêm edge cases.
 2. **Phần B**: Làm item `[ ]` còn lại theo priority. Mỗi fix commit riêng với `Codex:` prefix.
 3. Update file này: chuyển `[ ]` → `[x]` khi xong, note commit sha.
-4. Update `DEVELOPMENT-TRACKING.md` entry mới.
-5. Không push.
+4. Update `DEVELOPMENT-TRACKING.md` entry mới (newest first).
+5. **Không push** unless explicitly asked.
+6. Cuối phiên: đọc `docs/COLLABORATION.md` section 4 "Quy trình làm việc mỗi phiên".
 
-## Quy tắc (CLAUDE.md)
+## Quy tắc (CLAUDE.md + COLLABORATION.md)
 
 - Code/comments: English only
 - User-facing strings: tiếng Việt
-- CamelCase, no emojis
+- CamelCase, no emojis mới (cũ OK với `aria-hidden`)
 - Surgical changes, simplicity first
-- Transactions cho critical flows
+- Transactions cho critical flows (P0)
 - Lodash khi có thể
 - Tuân thủ `docs/domain-dictionary.md`
+- **Communication**: tuân thủ `docs/COLLABORATION.md`

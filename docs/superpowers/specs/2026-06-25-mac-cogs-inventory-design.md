@@ -118,8 +118,73 @@ Required gates after implementation:
 - P&L total COGS equals sum of active `Order_Lines_V2.cost_at_sale`.
 - Current stock audit remains independent from costing method.
 
-## Open Questions
+## Open Questions — RESOLVED 2026-06-26
 
-- Should historical orders be rewritten to MAC, or should MAC apply only from the cutover date?
-- Should `Stock_Ledger.unit_cost` on `SALES_CONSUME` be populated with MAC for easier audit, or should only order lines store COGS?
-- Should semi-products have explicit production MAC based on recipe ingredients at production time, or derive MAC lazily from consumed recipe ingredients at sale time?
+Decisions reflected in code (Codex implementation pass + Claude verification):
+
+### Q1: Historical orders rewrite vs cutover date?
+
+**Decision**: REWRITE toàn bộ historical active order lines.
+
+**Rationale**: Đảm bảo P&L report nhất quán — không có "khoảng conversion" mà ở đó COGS chuyển nghĩa. Historical `cost_at_sale` được MAC-recalc cho 1267 lines (classification: BTP_SHORTFALL 1116, MIGRATED_LINE 109, MAC_REPRICE 42). Post-apply MAC drift audit: 0 mismatch, 0 delta.
+
+### Q2: `Stock_Ledger.unit_cost` on `SALES_CONSUME` — populate MAC?
+
+**Decision**: KHÔNG populate MAC vào `Stock_Ledger.unit_cost` của `SALES_CONSUME` rows.
+
+**Rationale**:
+- Ledger là **quantity** source of truth, không phải cost.
+- `app/pos/actions.ts:174` hardcode `unit_cost: 0` cho SALES_CONSUME entries.
+- MAC stored duy nhất tại `Order_Lines_V2.cost_at_sale` để tránh dual-source-of-truth.
+- Audit MAC drift (`scripts/audit-mac-cogs-drift.ts`) recompute từ PO_RECEIPT history, không cần SALES_CONSUME.unit_cost.
+
+**Trade-off**: Nếu sau cần per-ledger-row cost tracing (ví dụ debug 1 order), phải join với `Order_Lines_V2`. Acceptable vì drift audit đã exist.
+
+### Q3: Semi-product MAC explicit at production hay lazy at sale?
+
+**Decision**: LAZY — compute SP MAC tại sale/consume time từ recipe ingredients.
+
+**Rationale**:
+- `lib/mac-cogs.ts:71-99` `getMacOrRecipeFallback` + `computeSemiProductUnitCost` resolve recursively khi direct MAC missing (BTP-* items không có PO_RECEIPT).
+- Production yield entries chỉ track **quantity** (`PRODUCTION_YIELD` tăng stock SP).
+- Avoids duplicate MAC tracking (SP MAC vs ingredient MAC) — single source of truth tại ingredient level.
+
+**Trade-off**: SP MAC không "pinned" lúc production, nên nếu ingredient MAC thay đổi giữa production và sale, COGS reflect MAC tại sale time. Acceptable cho F&B (production-to-sale thường <1 ngày).
+
+---
+
+## Outstanding (P0 — deferred to Codex)
+
+### P&L breakdown recompute FIFO thay vì dùng stored MAC
+
+Spec line 55: **"P&L reads stored `cost_at_sale`; it does not recompute FIFO for normal reports."**
+
+**Code hiện tại không conform**:
+- ✅ `totalCOGS = sum(line.cost_at_sale)` — đúng MAC.
+- ❌ `splitLineCogsBySaleSource` (`app/admin/reports/actions.ts:449-501`) — recompute FIFO để split variant vs modifier.
+- ❌ `breakdownCOGSByIngredient` (`lib/report-v2-allocators.ts`) — recompute FIFO để breakdown theo ingredient.
+
+**Impact**:
+- Tổng COGS trong P&L = MAC stored (đúng).
+- Breakdown COGS theo món/topping/ingredient = FIFO recompute (sai theo spec, có thể lệch so với MAC stored).
+
+**Why deferred to Codex**:
+- Codex viết MAC engine + write paths, có context đầy đủ.
+- Refactor cần design: split stored MAC proportionally theo recipe quantity, hoặc dùng consumption rows với MAC recompute (không phải FIFO).
+- Có thể có lý do Codex giữ FIFO breakdown (audit purpose?) — cần confirm.
+
+**Codex task**:
+1. Confirm có lý do giữ FIFO breakdown không, hay là bug cần fix.
+2. Nếu fix: refactor `splitLineCogsBySaleSource` và `breakdownCOGSByIngredient` để dùng stored MAC hoặc MAC recompute (không FIFO).
+3. Viết audit `scripts/audit-pnl-mac-consistency.ts` verify P&L total = sum cost_at_sale.
+4. Update handoff R1 status: nếu breakdown refactor, `filterLedgerForFifoInit` có thể không còn cần ở allocators.
+
+**Claude đã làm để support**:
+- WS-12 fix (filter ledger FIFO allocators) — vẫn cần nếu giữ FIFO breakdown.
+- CODE-5 (parseSpIngredients throw) — vẫn valid.
+
+## Open Questions (original — kept for audit trail)
+
+- ~~Should historical orders be rewritten to MAC, or should MAC apply only from the cutover date?~~ → Q1 above.
+- ~~Should `Stock_Ledger.unit_cost` on `SALES_CONSUME` be populated with MAC for easier audit, or should only order lines store COGS?~~ → Q2 above.
+- ~~Should semi-products have explicit production MAC based on recipe ingredients at production time, or derive MAC lazily from consumed recipe ingredients at sale time?~~ → Q3 above.

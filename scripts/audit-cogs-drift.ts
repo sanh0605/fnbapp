@@ -37,6 +37,9 @@ async function main() {
   });
 
   console.log("\n=== COGS DRIFT AUDIT (READ ONLY) ===");
+  console.log("NOTE: FIFO là informational audit only sau MAC migration (Phase 5A).");
+  console.log("      MAC là primary COGS contract — chạy scripts/audit-mac-cogs-drift.ts để verify primary.");
+  console.log("      Mismatches FIFO bên dưới KHÔNG phải bug nếu MAC drift = 0.\n");
   console.log(`Eligible orders:       ${report.eligibleOrderCount}`);
   console.log(`Eligible lines:        ${report.eligibleLineCount}`);
   console.log(`Mismatched orders:     ${report.mismatchedOrderCount}`);

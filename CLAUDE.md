@@ -1,5 +1,17 @@
 # CLAUDE.md — FNB App
 
+## 0. Collaboration files (READ FIRST)
+
+Multi-agent repo (Claude Code + Codex). Trước mỗi phiên, đọc theo thứ tự:
+
+1. `docs/COLLABORATION.md` — protocol, file map, status markers, commit conventions
+2. `DEVELOPMENT-TRACKING.md` — 3 entries mới nhất (chronicle log)
+3. `docs/audits/codex-handoff-2026-06-25.md` — active task tracking với status
+4. `docs/audits/2026-06-25-full-system-audit-roadmap.md` — phase status
+5. `docs/domain-dictionary.md` — terminology (chỉ khi cần)
+
+Mọi thay đổi cuối phiên: append entry vào `DEVELOPMENT-TRACKING.md`, update status markers trong handoff, không push.
+
 ## 1. Think Before Coding
 
 - Nêu rõ assumptions trước khi code — nếu không chắc, hỏi thay vì đoán
