@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath, unstable_cache } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 
@@ -368,7 +368,7 @@ export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
 export const getRealtimeStock = unstable_cache(
   async () => {
     const [stockLedger, baseIngredients, semiProducts, units] = await Promise.all([
-      findAll("Stock_Ledger"),
+      findAllNoCache("Stock_Ledger"),
       findAll("Base_Ingredients"),
       findAll("Semi_Products"),
       findAll("Units")
