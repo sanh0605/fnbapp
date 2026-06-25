@@ -464,7 +464,7 @@ Task 3.6 - Verify:
 
 - [x] `scripts/audit-order-ledger.ts` mismatch `0`.
 - [x] `scripts/audit-cogs-drift.ts` mismatch `0`.
-- [x] `scripts/audit-order-discounts.ts` chạy được; ghi nhận 5 migrated orders có manual order discount lớn cần phân loại nghiệp vụ.
+- [x] `scripts/audit-order-discounts.ts` chạy được; 5 migrated orders có manual order discount lớn đã được user xác nhận là đơn cà phê đá cho nhân viên uống miễn phí, dữ liệu hợp lệ.
 - [x] `scripts/audit-order-modifier-qty.ts` mismatch `0`.
 - [x] `scripts/verify-v2-invariants.ts` pass `885`, fail `0`.
 - [x] Tests pass.
@@ -474,8 +474,11 @@ Task 3.7 - Guard/tooling đã triển khai trong phase này:
 - [x] Sửa `scripts/audit-order-discounts.ts` sang dynamic import để chạy được bằng `vite-node`.
 - [x] Sửa `scripts/verify-v2-invariants.ts` sang dynamic import.
 - [x] Chuyển import nội bộ trong `lib/order-math.ts` sang relative để script audit không lỗi alias.
+- [x] Thêm `scripts/audit-free-discount-orders.ts` để audit chi tiết các đơn miễn phí cho nhân viên.
 
 ### Phase 4 - Audit tồn kho và sản xuất
+
+Trạng thái: in progress
 
 Mục tiêu:
 
@@ -491,11 +494,11 @@ Task 4.1 - Audit stock ledger schema:
 
 Task 4.2 - Audit production:
 
-- [ ] `app/admin/production/actions.ts`
+- [x] `app/admin/production/actions.ts`
 - [ ] Sản xuất bán thành phẩm trừ nguyên liệu gốc đúng.
 - [ ] Sản xuất cộng bán thành phẩm đúng yield.
 - [ ] Không cho sản xuất nếu thiếu nguyên liệu hoặc có policy rõ.
-- [ ] Audit production stock mismatch.
+- [x] Audit production stock mismatch.
 
 Task 4.3 - Audit stock adjustments:
 
@@ -506,16 +509,23 @@ Task 4.3 - Audit stock adjustments:
 Task 4.4 - Audit negative periods:
 
 - [ ] Không chỉ audit current stock.
-- [ ] Tìm khoảng thời gian âm theo từng item.
-- [ ] Phân loại âm do thiếu PO, do double deduct, do recipe sai, do non-inventory.
+- [x] Tìm khoảng thời gian âm theo từng item.
+- [x] Phân loại âm do non-inventory: audit bỏ qua `is_non_inventory=TRUE` để không báo Trái tắc như tồn âm cần xử lý.
+- [ ] Phân loại âm do thiếu PO, do double deduct, do recipe sai.
 - [ ] Ưu tiên các item ảnh hưởng COGS.
 
 Task 4.5 - Verify:
 
-- [ ] Current stock negative `0`.
-- [ ] Negative period report có phân loại.
-- [ ] Production audit clean hoặc có danh sách fix rõ.
-- [ ] Tests pass.
+- [x] Current stock negative `0`.
+- [x] Negative period report bỏ qua non-inventory và chỉ còn các giai đoạn âm lịch sử đã đóng.
+- [x] Production audit clean: yield mismatches `0`, negative semi-products `0`.
+- [x] Tests pass.
+
+Task 4.6 - Guard/tooling đã triển khai trong phase này:
+
+- [x] `scripts/audit-negative-stock-periods.ts` lọc non-inventory giống `scripts/audit-current-stock.ts`.
+- [x] `scripts/audit-production-stock.ts` tính `STOCK_ADJUST`.
+- [x] `scripts/audit-production-stock.ts` tính `EDIT_REVERSAL` để net consumption khớp ledger thật sau sửa/huỷ đơn.
 
 ### Phase 5 - Audit báo cáo doanh thu, COGS, P&L
 

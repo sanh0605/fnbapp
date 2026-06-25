@@ -11,6 +11,10 @@ function fmtDate(value: string): string {
   return new Date(value).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 }
 
+function isNonInventory(item?: any): boolean {
+  return item?.is_non_inventory === true || item?.is_non_inventory === "TRUE";
+}
+
 async function main() {
   const { findAllNoCache } = await import("../lib/sheets_db");
   const [ledger, baseIngredients, semiProducts, units] = await Promise.all([
@@ -38,6 +42,7 @@ async function main() {
   for (const [itemId, rows] of [...rowsByItem.entries()].sort()) {
     const item = itemById.get(itemId);
     if (!item) continue;
+    if (isNonInventory(item)) continue;
     rows.sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
 
     let balance = 0;

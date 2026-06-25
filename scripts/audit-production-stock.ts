@@ -24,6 +24,7 @@ async function main() {
   const yieldedByItem = new Map<string, number>();
   const soldByItem = new Map<string, number>();
   const productionConsumeByItem = new Map<string, number>();
+  const adjustmentByItem = new Map<string, number>();
 
   for (const item of productionItems as any[]) {
     const spId = item.semi_product_id || "";
@@ -35,10 +36,12 @@ async function main() {
     const qty = Number(row.quantity_change || 0);
     if (row.transaction_type === "PRODUCTION_YIELD") {
       yieldedByItem.set(itemId, (yieldedByItem.get(itemId) || 0) + qty);
-    } else if (row.transaction_type === "SALES_CONSUME") {
+    } else if (row.transaction_type === "SALES_CONSUME" || row.transaction_type === "EDIT_REVERSAL") {
       soldByItem.set(itemId, (soldByItem.get(itemId) || 0) + qty);
     } else if (row.transaction_type === "PRODUCTION_CONSUME") {
       productionConsumeByItem.set(itemId, (productionConsumeByItem.get(itemId) || 0) + qty);
+    } else if (row.transaction_type === "STOCK_ADJUST") {
+      adjustmentByItem.set(itemId, (adjustmentByItem.get(itemId) || 0) + qty);
     }
   }
 
@@ -52,7 +55,12 @@ async function main() {
       ledgerYieldQty: yieldedByItem.get(id) || 0,
       salesConsumeQty: soldByItem.get(id) || 0,
       productionConsumeQty: productionConsumeByItem.get(id) || 0,
-      balance: (yieldedByItem.get(id) || 0) + (soldByItem.get(id) || 0) + (productionConsumeByItem.get(id) || 0),
+      adjustmentQty: adjustmentByItem.get(id) || 0,
+      balance:
+        (yieldedByItem.get(id) || 0) +
+        (soldByItem.get(id) || 0) +
+        (productionConsumeByItem.get(id) || 0) +
+        (adjustmentByItem.get(id) || 0),
     };
   }).sort((a, b) => a.balance - b.balance);
 
@@ -83,6 +91,7 @@ async function main() {
         `yield=${fmt(row.ledgerYieldQty)}`,
         `sales=${fmt(row.salesConsumeQty)}`,
         `prod_consume=${fmt(row.productionConsumeQty)}`,
+        `adjust=${fmt(row.adjustmentQty)}`,
       ].join(" | "));
     }
   }
