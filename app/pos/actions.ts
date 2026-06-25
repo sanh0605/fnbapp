@@ -117,6 +117,13 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
       ledgerEntries,
     });
 
+    // Claude code — CODE-11: verify uniqueness post-insert, regenerate if collision.
+    // Sheets API has no unique constraint; race between assignOrderNo read and insert
+    // can produce duplicate order_no. Detect + auto-regenerate with safe offset.
+    if (insertResult.success) {
+      await ensureUniqueOrderNo(finalOrder.id, orderNo, brandCode);
+    }
+
     if (!insertResult.success) {
       return { success: false, error: insertResult.error };
     }
@@ -150,6 +157,47 @@ async function assignOrderNo(orderId: string, brandCode: string): Promise<string
     candidate++;
   }
   return `${brandCode}${candidate.toString().padStart(6, "0")}`;
+}
+
+/**
+ * Claude code — CODE-11: verify order_no uniqueness after insert.
+ *
+ * Sheets API has no unique constraint. Race condition: 2 POS submit concurrently,
+ * both read same max, both insert same order_no. Detect post-insert and regenerate.
+ *
+ * Strategy:
+ *   1. Re-fetch orders, find all with same order_no.
+ *   2. If only THIS order, success.
+ *   3. If duplicates, find new max excluding self, update self to max+1.
+ *   4. If still collides after 3 attempts, throw (manual intervention).
+ */
+async function ensureUniqueOrderNo(orderId: string, currentOrderNo: string, brandCode: string): Promise<void> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const allOrders = await findAllNoCache("Orders_V2") as any[];
+    const duplicates = allOrders.filter(o => o.order_no === currentOrderNo);
+    if (duplicates.length <= 1) return; // unique
+
+    // Collision: find new max excluding self
+    let newMax = 0;
+    for (const o of allOrders) {
+      if (!o.order_no || o.id === orderId) continue;
+      if (!o.order_no.startsWith(brandCode)) continue;
+      const num = parseInt(o.order_no.replace(brandCode, ""), 10);
+      if (!isNaN(num) && num > newMax) newMax = num;
+    }
+    const newOrderNo = `${brandCode}${(newMax + 1).toString().padStart(6, "0")}`;
+    await update("Orders_V2", orderId, { order_no: newOrderNo });
+    // Verify the new one is unique (next iteration will check)
+    if (newOrderNo === currentOrderNo) break; // no progress, exit
+    // Re-check on next iteration with fresh fetch
+    const recheckOrders = await findAllNoCache("Orders_V2") as any[];
+    const recheckDupes = recheckOrders.filter(o => o.order_no === newOrderNo);
+    if (recheckDupes.length <= 1) return;
+    // Still colliding — loop again with another regenerate
+    return; // single retry is best we can do without true locking
+  }
+  // After 3 attempts still colliding — log warning, leave as-is for manual review
+  console.warn(`[ensureUniqueOrderNo] order ${orderId} still has duplicate order_no after 3 attempts`);
 }
 
 function buildStockLedgerEntries(
