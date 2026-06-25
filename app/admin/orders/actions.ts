@@ -9,10 +9,15 @@ import crypto from "node:crypto";
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
 import type { OrderV2, OrderLineV2, OrderEvent } from "@/lib/order-types";
 import { buildEditedOrderFromCart } from "@/lib/order-edit-cart";
-import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
 import { FIFOTracker } from "@/lib/fifo-tracker";
 import { supersedeOrderV2 } from "@/lib/sheets-db-v2-edit";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
+import {
+  allocateRecipeConsumption,
+  buildInventoryBalances,
+  buildSemiProductRecipeMaps,
+  type ConsumptionRow,
+} from "@/lib/inventory-consumption";
 import type { CartInput } from "@/lib/order-cart";
 
 // ============================================================
@@ -403,12 +408,6 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
 
     // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same FIFO path as POS.
     const originalSaleTime = oldOrderV2.created_at;
-    const spRecipes = (recipes as any[]).filter(r => r.target_type === "SEMI_PRODUCT");
-    const spYields = new Map<string, number>();
-    for (const sp of semiProducts as any[]) {
-      spYields.set(sp.id, Number(sp.batch_yield) || 1);
-    }
-    const spContext = { recipes: spRecipes, yields: spYields };
     const saleMs = new Date(originalSaleTime).getTime();
     const pastLedger = (ledger as any[]).filter(e => {
       const entryTime = new Date(e.created_at || 0).getTime();
@@ -417,10 +416,13 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     });
     const fifoTracker = new FIFOTracker();
     fifoTracker.init(pastLedger);
+    const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
+    const consumptionBalances = buildInventoryBalances(pastLedger, originalSaleTime);
 
     for (const line of built.lines) {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-      line.cost_at_sale = computeLineCostFIFO(lineRecipe, fifoTracker, line.qty, spContext);
+      const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, consumptionBalances, consumptionMaps);
+      line.cost_at_sale = costConsumptionRowsFIFO(consumptionRows, fifoTracker);
     }
 
     // 6. Build EDITED event
@@ -464,7 +466,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     }));
 
     // 8. Build new SALES_CONSUME entries for the new version
-    const consumeEntries = buildStockLedgerEntries(built, event.id, originalSaleTime);
+    const consumeEntries = buildStockLedgerEntries(built, event.id, originalSaleTime, pastLedger, consumptionMaps);
 
     // 9. Execute supersede
     const result = await supersedeOrderV2({
@@ -504,45 +506,61 @@ function buildStockLedgerEntries(
   built: ReturnType<typeof buildEditedOrderFromCart>,
   eventId: string,
   saleTime: string,
+  pastLedger: any[],
+  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
 ): any[] {
   const entries: any[] = [];
+  const balances = buildInventoryBalances(pastLedger, saleTime);
   for (const line of built.lines) {
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-    for (const ing of lineRecipe.variant.ingredients) {
-      if (ing.quantity <= 0) continue;
+    for (const row of buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps)) {
       entries.push({
         id: `stk-${crypto.randomUUID()}`,
         transaction_type: "SALES_CONSUME",
         reference_id: built.order.id,
-        item_reference: ing.ingredient_id,
-        quantity_change: -(ing.quantity * line.qty),
+        item_reference: row.item_reference,
+        quantity_change: -row.quantity,
         unit_cost: 0,
         created_at: saleTime,
         order_event_id: eventId,
         cost_at_sale: 0,
-        source: "VARIANT_RECIPE",
+        source: row.source,
       });
-    }
-    for (const modEntry of lineRecipe.modifiers) {
-      const modifierQty = Number(modEntry.modifier_qty || 1);
-      for (const ing of modEntry.recipe.ingredients) {
-        if (ing.quantity <= 0) continue;
-        entries.push({
-          id: `stk-${crypto.randomUUID()}`,
-          transaction_type: "SALES_CONSUME",
-          reference_id: built.order.id,
-          item_reference: ing.ingredient_id,
-          quantity_change: -(ing.quantity * line.qty * modifierQty),
-          unit_cost: 0,
-          created_at: saleTime,
-          order_event_id: eventId,
-          cost_at_sale: 0,
-          source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
-        });
-      }
     }
   }
   return entries;
+}
+
+function buildLineConsumptionRows(
+  lineRecipe: ReturnType<typeof parseLineRecipeSnapshot>,
+  lineQty: number,
+  balances: Map<string, number>,
+  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
+): ConsumptionRow[] {
+  const rows: ConsumptionRow[] = [];
+  rows.push(...allocateRecipeConsumption({
+    ingredients: lineRecipe.variant.ingredients,
+    multiplier: lineQty,
+    balances,
+    ...consumptionMaps,
+    source: "VARIANT_RECIPE",
+  }));
+
+  for (const modEntry of lineRecipe.modifiers) {
+    const modifierQty = Number(modEntry.modifier_qty || 1);
+    rows.push(...allocateRecipeConsumption({
+      ingredients: modEntry.recipe.ingredients,
+      multiplier: lineQty * modifierQty,
+      balances,
+      ...consumptionMaps,
+      source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
+    }));
+  }
+  return rows;
+}
+
+function costConsumptionRowsFIFO(rows: ConsumptionRow[], tracker: FIFOTracker): number {
+  return Math.round(rows.reduce((sum, row) => sum + tracker.consume(row.item_reference, row.quantity), 0));
 }
 
 // Coerce raw sheet row (strings) into typed OrderV2/OrderLineV2 with numeric fields

@@ -1,7 +1,11 @@
 import { FIFOTracker, type LedgerEntry } from "./fifo-tracker";
-import type { SemiProductContext } from "./order-cogs";
-import { computeLineCostFIFO } from "./order-cogs-fifo";
 import { parseLineRecipeSnapshot } from "./order-types";
+import {
+  allocateRecipeConsumption,
+  buildInventoryBalances,
+  buildSemiProductRecipeMaps,
+  type ConsumptionRow,
+} from "./inventory-consumption";
 
 type RawOrder = {
   id: string;
@@ -119,7 +123,7 @@ export function auditCogsDrift(input: {
   );
   const eligibleLines = sortedOrders.flatMap(order => linesByOrder.get(order.id) || []);
 
-  const spContext = buildSemiProductContext(input.recipes, input.semiProducts);
+  const consumptionMaps = buildSemiProductRecipeMaps(input.recipes, input.semiProducts);
   const lineMismatches: CogsLineMismatch[] = [];
   const orderTotals = new Map<string, CogsOrderMismatch>();
   let totalStoredCogs = 0;
@@ -137,6 +141,7 @@ export function auditCogsDrift(input: {
 
     const fifoTracker = new FIFOTracker();
     fifoTracker.init(ledgerBeforeOrder);
+    const consumptionBalances = buildInventoryBalances(ledgerBeforeOrder, order.created_at);
 
     for (const priorLine of priorLines) {
       try {
@@ -147,7 +152,13 @@ export function auditCogsDrift(input: {
             modEntry.modifier_qty = modifierQtyById.get(modEntry.modifier_id) || 1;
           }
         }
-        computeLineCostFIFO(priorRecipe, fifoTracker, Number(priorLine.qty) || 0, spContext);
+        const priorConsumptionRows = buildLineConsumptionRows(
+          priorRecipe,
+          Number(priorLine.qty) || 0,
+          consumptionBalances,
+          consumptionMaps,
+        );
+        costConsumptionRowsFIFO(priorConsumptionRows, fifoTracker);
       } catch {}
     }
 
@@ -164,7 +175,8 @@ export function auditCogsDrift(input: {
             modEntry.modifier_qty = modifierQtyById.get(modEntry.modifier_id) || 1;
           }
         }
-        expectedCost = computeLineCostFIFO(lineRecipe, fifoTracker, qty, spContext);
+        const consumptionRows = buildLineConsumptionRows(lineRecipe, qty, consumptionBalances, consumptionMaps);
+        expectedCost = costConsumptionRowsFIFO(consumptionRows, fifoTracker);
       } catch (error: any) {
         warnings.push({
           type: "INVALID_RECIPE",
@@ -224,6 +236,38 @@ export function auditCogsDrift(input: {
   };
 }
 
+function buildLineConsumptionRows(
+  lineRecipe: ReturnType<typeof parseLineRecipeSnapshot>,
+  lineQty: number,
+  balances: Map<string, number>,
+  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
+): ConsumptionRow[] {
+  const rows: ConsumptionRow[] = [];
+  rows.push(...allocateRecipeConsumption({
+    ingredients: lineRecipe.variant.ingredients,
+    multiplier: lineQty,
+    balances,
+    ...consumptionMaps,
+    source: "VARIANT_RECIPE",
+  }));
+
+  for (const modEntry of lineRecipe.modifiers) {
+    const modifierQty = Number(modEntry.modifier_qty || 1);
+    rows.push(...allocateRecipeConsumption({
+      ingredients: modEntry.recipe.ingredients,
+      multiplier: lineQty * modifierQty,
+      balances,
+      ...consumptionMaps,
+      source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
+    }));
+  }
+  return rows;
+}
+
+function costConsumptionRowsFIFO(rows: ConsumptionRow[], tracker: FIFOTracker): number {
+  return Math.round(rows.reduce((sum, row) => sum + tracker.consume(row.item_reference, row.quantity), 0));
+}
+
 function modifierQtyByIdFromLine(line: RawLine): Map<string, number> {
   try {
     const modifiers = JSON.parse(line.modifiers_snapshot_json || "[]");
@@ -232,21 +276,6 @@ function modifierQtyByIdFromLine(line: RawLine): Map<string, number> {
   } catch {
     return new Map();
   }
-}
-
-function buildSemiProductContext(recipes: RawRecipe[], semiProducts: RawSemiProduct[]): SemiProductContext {
-  const spRecipes = recipes
-    .filter(recipe => recipe.target_type === "SEMI_PRODUCT")
-    .map(recipe => ({
-      target_id: recipe.target_id || "",
-      ingredients_json: recipe.ingredients_json || "",
-    }));
-  const spYields = new Map<string, number>();
-  for (const semiProduct of semiProducts) {
-    if (!semiProduct.id) continue;
-    spYields.set(semiProduct.id, Number(semiProduct.batch_yield) || 1);
-  }
-  return { recipes: spRecipes, yields: spYields };
 }
 
 function getOrderTotal(orderTotals: Map<string, CogsOrderMismatch>, order: RawOrder): CogsOrderMismatch {
