@@ -94,86 +94,114 @@ export function auditCogsDrift(input: {
   const orderMap = new Map(eligibleOrders.map(order => [order.id, order]));
   const warnings: CogsAuditWarning[] = [];
 
-  const eligibleLines = input.lines
-    .filter(line => {
-      if (orderMap.has(line.order_id)) return true;
-      const hasAnyOrder = input.orders.some(order => order.id === line.order_id);
-      if (!hasAnyOrder) {
-        warnings.push({
-          type: "MISSING_ORDER",
-          line_id: line.id,
-          order_id: line.order_id,
-          message: `Line ${line.id} references missing order ${line.order_id}`,
-        });
-      }
-      return false;
-    })
-    .sort((a, b) => {
-      const orderA = orderMap.get(a.order_id);
-      const orderB = orderMap.get(b.order_id);
-      return new Date(orderA?.created_at || 0).getTime() - new Date(orderB?.created_at || 0).getTime();
-    });
+  const linesByOrder = new Map<string, RawLine[]>();
+  for (const line of input.lines) {
+    if (orderMap.has(line.order_id)) {
+      const rows = linesByOrder.get(line.order_id) || [];
+      rows.push(line);
+      linesByOrder.set(line.order_id, rows);
+      continue;
+    }
 
-  const fifoTracker = new FIFOTracker();
-  fifoTracker.init(input.ledger);
+    const hasAnyOrder = input.orders.some(order => order.id === line.order_id);
+    if (!hasAnyOrder) {
+      warnings.push({
+        type: "MISSING_ORDER",
+        line_id: line.id,
+        order_id: line.order_id,
+        message: `Line ${line.id} references missing order ${line.order_id}`,
+      });
+    }
+  }
+
+  const sortedOrders = [...eligibleOrders].sort((a, b) =>
+    new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
+  );
+  const eligibleLines = sortedOrders.flatMap(order => linesByOrder.get(order.id) || []);
 
   const spContext = buildSemiProductContext(input.recipes, input.semiProducts);
   const lineMismatches: CogsLineMismatch[] = [];
   const orderTotals = new Map<string, CogsOrderMismatch>();
   let totalStoredCogs = 0;
   let totalExpectedCogs = 0;
+  const priorLines: RawLine[] = [];
 
-  for (const line of eligibleLines) {
-    const order = orderMap.get(line.order_id);
-    if (!order) continue;
+  for (const order of sortedOrders) {
+    const orderLines = linesByOrder.get(order.id) || [];
+    const orderTime = new Date(order.created_at || 0).getTime();
+    const ledgerBeforeOrder = input.ledger.filter(entry => {
+      const entryTime = new Date(entry.created_at || 0).getTime();
+      if (entryTime > orderTime) return false;
+      return entry.transaction_type !== "SALES_CONSUME" && entry.transaction_type !== "EDIT_REVERSAL";
+    });
 
-    const qty = Number(line.qty) || 0;
-    const storedCost = Number(line.cost_at_sale) || 0;
-    let expectedCost = 0;
+    const fifoTracker = new FIFOTracker();
+    fifoTracker.init(ledgerBeforeOrder);
 
-    try {
-      const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");
-      const modifierQtyById = modifierQtyByIdFromLine(line);
-      for (const modEntry of lineRecipe.modifiers) {
-        if (!modEntry.modifier_qty) {
-          modEntry.modifier_qty = modifierQtyById.get(modEntry.modifier_id) || 1;
+    for (const priorLine of priorLines) {
+      try {
+        const priorRecipe = parseLineRecipeSnapshot(priorLine.recipe_snapshot_json || "{}");
+        const modifierQtyById = modifierQtyByIdFromLine(priorLine);
+        for (const modEntry of priorRecipe.modifiers) {
+          if (!modEntry.modifier_qty) {
+            modEntry.modifier_qty = modifierQtyById.get(modEntry.modifier_id) || 1;
+          }
         }
+        computeLineCostFIFO(priorRecipe, fifoTracker, Number(priorLine.qty) || 0, spContext);
+      } catch {}
+    }
+
+    for (const line of orderLines) {
+      const qty = Number(line.qty) || 0;
+      const storedCost = Number(line.cost_at_sale) || 0;
+      let expectedCost = 0;
+
+      try {
+        const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");
+        const modifierQtyById = modifierQtyByIdFromLine(line);
+        for (const modEntry of lineRecipe.modifiers) {
+          if (!modEntry.modifier_qty) {
+            modEntry.modifier_qty = modifierQtyById.get(modEntry.modifier_id) || 1;
+          }
+        }
+        expectedCost = computeLineCostFIFO(lineRecipe, fifoTracker, qty, spContext);
+      } catch (error: any) {
+        warnings.push({
+          type: "INVALID_RECIPE",
+          line_id: line.id,
+          order_id: line.order_id,
+          message: error?.message || `Line ${line.id} has invalid recipe snapshot`,
+        });
       }
-      expectedCost = computeLineCostFIFO(lineRecipe, fifoTracker, qty, spContext);
-    } catch (error: any) {
-      warnings.push({
-        type: "INVALID_RECIPE",
-        line_id: line.id,
-        order_id: line.order_id,
-        message: error?.message || `Line ${line.id} has invalid recipe snapshot`,
-      });
+
+      totalStoredCogs += storedCost;
+      totalExpectedCogs += expectedCost;
+
+      const orderTotal = getOrderTotal(orderTotals, order);
+      orderTotal.line_count += 1;
+      orderTotal.stored_cogs += storedCost;
+      orderTotal.expected_cogs += expectedCost;
+      orderTotal.delta = orderTotal.expected_cogs - orderTotal.stored_cogs;
+
+      const delta = expectedCost - storedCost;
+      if (Math.abs(delta) > mismatchThreshold) {
+        orderTotal.mismatched_line_count += 1;
+        lineMismatches.push({
+          line_id: line.id,
+          order_id: line.order_id,
+          order_no: order.order_no || "",
+          created_at: order.created_at || "",
+          product_id: line.product_id || "",
+          variant_id: line.variant_id || "",
+          qty,
+          stored_cost: storedCost,
+          expected_cost: expectedCost,
+          delta,
+        });
+      }
     }
 
-    totalStoredCogs += storedCost;
-    totalExpectedCogs += expectedCost;
-
-    const orderTotal = getOrderTotal(orderTotals, order);
-    orderTotal.line_count += 1;
-    orderTotal.stored_cogs += storedCost;
-    orderTotal.expected_cogs += expectedCost;
-    orderTotal.delta = orderTotal.expected_cogs - orderTotal.stored_cogs;
-
-    const delta = expectedCost - storedCost;
-    if (Math.abs(delta) > mismatchThreshold) {
-      orderTotal.mismatched_line_count += 1;
-      lineMismatches.push({
-        line_id: line.id,
-        order_id: line.order_id,
-        order_no: order.order_no || "",
-        created_at: order.created_at || "",
-        product_id: line.product_id || "",
-        variant_id: line.variant_id || "",
-        qty,
-        stored_cost: storedCost,
-        expected_cost: expectedCost,
-        delta,
-      });
-    }
+    priorLines.push(...orderLines);
   }
 
   const orderMismatches = [...orderTotals.values()]

@@ -410,7 +410,11 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     }
     const spContext = { recipes: spRecipes, yields: spYields };
     const saleMs = new Date(originalSaleTime).getTime();
-    const pastLedger = (ledger as any[]).filter(e => new Date(e.created_at || 0).getTime() <= saleMs);
+    const pastLedger = (ledger as any[]).filter(e => {
+      const entryTime = new Date(e.created_at || 0).getTime();
+      if (entryTime > saleMs) return false;
+      return e.reference_id !== oldOrderV2.id;
+    });
     const fifoTracker = new FIFOTracker();
     fifoTracker.init(pastLedger);
 

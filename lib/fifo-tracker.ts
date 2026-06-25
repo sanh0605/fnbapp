@@ -27,26 +27,41 @@ export class FIFOTracker {
   private batchesByIngredient = new Map<string, Batch[]>();
   private initialized = false;
 
-  /** Initialize from PO_RECEIPT entries. Batches sorted oldest-first per ingredient. */
+  /** Initialize from inventory events in chronological order. */
   init(ledger: LedgerEntry[]): void {
     this.batchesByIngredient.clear();
-    const receipts = ledger
-      .filter(e => e.transaction_type === "PO_RECEIPT")
+    this.initialized = true;
+
+    const events = ledger
+      .filter(e => (
+        e.transaction_type === "PO_RECEIPT" ||
+        e.transaction_type === "SALES_CONSUME" ||
+        e.transaction_type === "PRODUCTION_CONSUME"
+      ))
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-    for (const r of receipts) {
-      const ingId = r.item_reference;
-      if (!this.batchesByIngredient.has(ingId)) {
-        this.batchesByIngredient.set(ingId, []);
+    for (const event of events) {
+      if (event.transaction_type === "PO_RECEIPT") {
+        this.addBatch(event);
+        continue;
       }
-      this.batchesByIngredient.get(ingId)!.push({
-        id: r.id,
-        remaining: Number(r.quantity_change) || 0,
-        unit_cost: Number(r.unit_cost) || 0,
-        received_at: r.created_at,
-      });
+
+      const qty = Math.abs(Number(event.quantity_change) || 0);
+      if (qty > 0) this.consume(event.item_reference, qty);
     }
-    this.initialized = true;
+  }
+
+  private addBatch(entry: LedgerEntry): void {
+    const ingId = entry.item_reference;
+    if (!this.batchesByIngredient.has(ingId)) {
+      this.batchesByIngredient.set(ingId, []);
+    }
+    this.batchesByIngredient.get(ingId)!.push({
+      id: entry.id,
+      remaining: Number(entry.quantity_change) || 0,
+      unit_cost: Number(entry.unit_cost) || 0,
+      received_at: entry.created_at,
+    });
   }
 
   /**
