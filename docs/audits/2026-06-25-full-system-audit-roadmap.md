@@ -1,0 +1,721 @@
+# Full System Audit And Optimization Roadmap
+
+Date: 2026-06-25
+Repo: `fnbapp`
+Mode: local commits only, no push
+
+## 1. Mục tiêu
+
+Đây là tài liệu điều phối cho giai đoạn tối ưu lại toàn bộ hệ thống. Mục tiêu không chỉ là sửa từng bug rời rạc, mà là đưa hệ thống về trạng thái có thể tin được ở 4 lớp:
+
+1. Dữ liệu Google Sheet sạch, không còn sheet dư làm nhiễu audit.
+2. Luồng nghiệp vụ bán hàng, sửa đơn, nhập hàng, tồn kho, giá vốn chạy nhất quán.
+3. Code có module rõ ràng, test được, giảm script một lần và giảm logic trùng.
+4. UI mobile-first đủ tốt cho vận hành thật: POS, đơn hàng, nhập hàng, tồn kho, báo cáo.
+
+Nguyên tắc thực thi:
+
+- Mỗi phase/task phải có audit trước và verify sau.
+- Mỗi nhóm thay đổi có commit riêng.
+- Không push nếu chưa được yêu cầu.
+- Không xoá dữ liệu vận hành nếu chưa có audit và lý do rõ ràng.
+- Dữ liệu lịch sử phải được bảo toàn bằng snapshot hoặc ledger, không lấy giá/công thức hiện tại để ghi đè lịch sử nếu nghiệp vụ cần giá trị tại thời điểm tạo đơn.
+
+## 2. Baseline hiện tại
+
+Kết quả mới nhất sau phase cleanup:
+
+- Google Sheet usage audit: `KEEP 29`, `REVIEW 0`, `ARCHIVE_CANDIDATE 28`.
+- Review sheet content audit: `0` sheet còn cần review.
+- Order ledger audit: `0` mismatch, `0` orphan ledger row.
+- Purchase ledger audit: `0` ledger mismatch, `0` ambiguous conversion row, `0` missing conversion row.
+- Current stock audit: `0` tracked item âm, `0` unknown item ref.
+- COGS drift audit: `0` mismatched orders, `0` mismatched lines, delta `0đ`.
+- Test suite: `155/155` tests pass.
+
+Lệnh verify baseline:
+
+```powershell
+node_modules\.bin\vite-node.cmd scripts\audit-sheet-usage.ts
+node_modules\.bin\vite-node.cmd scripts\audit-review-sheet-content.ts
+node_modules\.bin\vite-node.cmd scripts\audit-order-ledger.ts
+node_modules\.bin\vite-node.cmd scripts\audit-purchase-ledger.ts
+node_modules\.bin\vite-node.cmd scripts\audit-current-stock.ts
+node_modules\.bin\vite-node.cmd scripts\audit-cogs-drift.ts
+npx.cmd vitest run
+```
+
+## 3. Những việc đã hoàn thành
+
+### Phase A - Sửa lỗi snapshot/giá khi sửa đơn
+
+Trạng thái: done
+
+Commit liên quan:
+
+- `b50c38a fix: preserve promotion snapshots on order edit`
+- `35653a3 fix: audit and clean order inventory ledger`
+- `a1b673f fix: compute cogs with fifo timeline`
+
+Task A1 - Kiểm tra đơn bị nghi bug khi sửa đơn:
+
+- Audit đơn `PHD000605`.
+- Kiểm tra hiển thị chi tiết đơn và modal sửa đơn.
+- Xác định câu hỏi nghiệp vụ: sửa đơn sau khi giá modifier thay đổi có dùng snapshot cũ hay giá mới.
+- Kết luận thiết kế: đơn lịch sử cần giữ snapshot tại thời điểm tạo đơn; sửa đơn không được tự lấy giá modifier hiện tại làm sai lịch sử nếu line cũ không đổi.
+
+Task A2 - Sửa đường tính COGS:
+
+- Đồng bộ COGS theo FIFO thay vì trộn MAC/FIFO.
+- Bổ sung audit COGS drift để so sánh stored `cost_at_sale` với FIFO kỳ vọng.
+- Sửa FIFO timeline để tính theo thứ tự thời gian ledger.
+
+Task A3 - Verify:
+
+- COGS drift về `0`.
+- Order ledger mismatch về `0`.
+- Test suite pass.
+
+### Phase B - Sửa logic trừ tồn bán thành phẩm
+
+Trạng thái: done
+
+Commit liên quan:
+
+- `e0e9e97 fix: split semi-product stock consumption`
+- `71b1263 chore: add negative stock investigation scripts`
+- `3c6cb03 chore: add stock balance audits`
+
+Task B1 - Audit tồn âm:
+
+- Xác định 9 item âm ban đầu chủ yếu là bán thành phẩm.
+- Kiểm tra khả năng bị trừ tồn 2 lần: vừa trừ bán thành phẩm, vừa bung công thức trừ nguyên liệu.
+- Kết luận nghiệp vụ: nếu bán thành phẩm thiếu tồn thì chỉ bung công thức cho phần thiếu, không trừ nguyên liệu cho toàn bộ lượng đã có sẵn.
+
+Task B2 - Sửa consumption module:
+
+- Tạo module `lib/inventory-consumption.ts`.
+- Logic mới:
+  - Nếu bán thành phẩm còn đủ tồn: trừ bán thành phẩm.
+  - Nếu còn một phần: trừ phần còn trong bán thành phẩm, bung công thức cho phần thiếu.
+  - Nếu bằng 0: bung công thức sang nguyên liệu gốc.
+- Áp dụng cho POS order creation và admin order edit.
+
+Task B3 - Xử lý nước đường:
+
+- Xác nhận từ user: từ đơn hàng ngày 2026-05-13 trở đi, nước đường dùng nguyên liệu gốc `Nước đường Glofood`.
+- Xác định purchased item `SPM-027`.
+- Thêm audit `scripts/audit-water-sugar-transition.ts`.
+
+Task B4 - Xử lý tồn âm hiện tại:
+
+- Chạy adjustment cho các item âm được xác định.
+- Kết quả current stock về `0` item âm.
+
+Task B5 - Verify:
+
+- `scripts/audit-current-stock.ts`: negative stock `0`.
+- `scripts/audit-cogs-drift.ts`: mismatch `0`.
+- Tests pass.
+
+### Phase C - Sửa nhập hàng và giá vốn Dâu sấy thành bài toán tổng quát
+
+Trạng thái: done
+
+Task C1 - Audit lỗi Dâu sấy:
+
+- Base ingredient: `ING-028`.
+- Purchased item: `SPM-033`.
+- PO liên quan: `PO-020`, `PO-023`, `PO-033`, `PO-034`.
+- Nguyên nhân: nhiều `UOM_Conversions` cùng purchased unit `U-008`, lịch sử thiếu `conversion_id`, script fallback chọn nhầm conversion.
+
+Task C2 - Mở rộng từ Dâu sấy sang toàn bộ PO:
+
+- Không chỉ sửa một item.
+- Audit tất cả completed PO lines.
+- Backfill `conversion_id` khi an toàn.
+- Không tự chọn conversion nếu có nhiều conversion mơ hồ.
+
+Task C3 - Sửa dữ liệu và script:
+
+- Sửa stock ledger cho các dòng sai.
+- Gắn/refill conversion cho PO lines lịch sử khi xác định được.
+- Sửa đường rebuild/audit purchase ledger để ưu tiên `conversion_id`.
+- Nếu thiếu `conversion_id` và không xác định duy nhất, báo lỗi audit thay vì chọn dòng đầu tiên.
+
+Task C4 - Verify:
+
+- Purchase ledger mismatch `0`.
+- Ambiguous conversion rows `0`.
+- Dâu sấy đúng:
+  - `PO-020`: qty `100`, unit cost `570`.
+  - `PO-023`: qty `1000`, unit cost `411.6`.
+  - `PO-033`: qty `1000`, unit cost `545.28`.
+  - `PO-034`: qty `1000`, unit cost `445.5`.
+
+### Phase D - Tối ưu trang Modifiers
+
+Trạng thái: done
+
+Task D1 - Audit UI:
+
+- Trang `/admin/products/modifiers`.
+- Lỗi input số lượng giữ `0`, nhập `10` thành `010`.
+- Select nguyên liệu quá dài, khó tìm.
+- Modal trên màn rộng còn bị trải ngang/chưa tối ưu thao tác.
+
+Task D2 - Sửa input số:
+
+- Khi focus/nhập số khác 0 thì số `0` mặc định biến mất hoặc bị thay thế.
+- Lưu định mức không còn hiển thị `010g`.
+
+Task D3 - Sửa lựa chọn nguyên liệu:
+
+- Đổi select sản phẩm chi tiết sang live search.
+- Tối ưu hiển thị dòng recipe trong modal.
+
+Task D4 - Verify:
+
+- Thêm/sửa modifier với Dâu sấy `10g`.
+- UI hiển thị `Dâu sấy: 10g`, không còn `010g`.
+- Modal usable hơn trên desktop.
+
+### Phase E - Làm sạch Google Sheet
+
+Trạng thái: done
+
+Commit liên quan:
+
+- `5d334a1 chore: add google sheets cleanup audit`
+- `dcaadca chore: archive unused backup sheets`
+- `42df0ef chore: archive empty review sheets`
+- `f5efb61 chore: delete remaining review sheets`
+
+Task E1 - Tạo audit sheet usage:
+
+- Thêm `lib/sheet-usage-audit.ts`.
+- Thêm `scripts/audit-sheet-usage.ts`.
+- Thêm report:
+  - `docs/audits/sheet-cleanup-plan.md`
+  - `docs/audits/sheet-usage-report.json`
+
+Subtask E1.1 - Phân loại sheet:
+
+- `KEEP`: sheet có code reference hoặc đang được Google Sheets range phục vụ.
+- `REVIEW`: không có code reference nhưng có khả năng chứa dữ liệu nghiệp vụ.
+- `ARCHIVE_CANDIDATE`: backup/legacy/copy sheet không có code reference.
+
+Subtask E1.2 - Bài học quan trọng:
+
+- Một số sheet vận hành đang có tên lowercase như `orders`, `products`, `purchased_items`, `semi_products`, `brands`.
+- Code có thể đọc bằng tên PascalCase nhưng Google Sheets vẫn phục vụ tab lowercase.
+- Không được xoá/rename nhóm này nếu chưa đổi toàn bộ code và verify.
+
+Task E2 - Archive sheet dư:
+
+- Archive/hide backup và empty/header-only sheets bằng prefix `ZZ_ARCHIVE_`.
+- Khôi phục ngay các lowercase operational sheets đã bị archive nhầm.
+
+Task E3 - Audit nội dung review sheet:
+
+- Thêm `lib/sheet-content-audit.ts`.
+- Thêm `scripts/audit-review-sheet-content.ts`.
+- Thêm report:
+  - `docs/audits/review-sheet-content-report.md`
+  - `docs/audits/review-sheet-content-report.json`
+
+Task E4 - Xoá 7 review sheet sau khi user duyệt:
+
+- `QUY TRÌNH TRIỂN KHAI`
+- `TONG`
+- `Thansg 3`
+- `P&L`
+- `CHUẨN BỊ TRƯỚC BÁN`
+- `CCDC`
+- `Trang tính2`
+
+Task E5 - Verify:
+
+- Sheet usage audit: `REVIEW 0`.
+- Review content audit: `0`.
+- Nghiệp vụ không lỗi:
+  - Order ledger mismatch `0`.
+  - Purchase ledger mismatch `0`.
+  - Current stock âm `0`.
+  - COGS drift `0`.
+  - Tests `155/155` pass.
+
+## 4. Rủi ro còn lại
+
+### R1 - `ZZ_ARCHIVE_*` vẫn còn trong Google Sheet
+
+Mức độ: thấp, nhưng gây nhiễu nếu nhìn bằng mắt.
+
+Hiện trạng:
+
+- 28 sheet đã archive/hide.
+- Không còn `REVIEW`.
+
+Khuyến nghị:
+
+- Chưa xoá ngay nhóm `ZZ_ARCHIVE_*`.
+- Giữ làm rollback cho tới khi hoàn tất audit full hệ thống.
+- Sau khi tất cả phase nghiệp vụ pass, tạo phase xoá archive vĩnh viễn nếu user muốn sheet gọn tuyệt đối.
+
+### R2 - Script một lần còn nhiều
+
+Mức độ: trung bình.
+
+Hiện trạng:
+
+- `scripts/` còn nhiều script audit/fix lịch sử.
+- Một số script vẫn có giá trị làm runbook.
+- Một số script có thể xoá sau khi thay bằng audit chính thức.
+
+Khuyến nghị:
+
+- Không xoá hàng loạt ngay.
+- Phân nhóm script thành:
+  - `KEEP_RUNBOOK`
+  - `KEEP_AUDIT`
+  - `DELETE_ONE_OFF`
+  - `ARCHIVE_AFTER_RELEASE`
+
+### R3 - Admin UI chưa mobile-first toàn diện
+
+Mức độ: trung bình/cao cho vận hành thực tế.
+
+Hiện trạng:
+
+- POS và Orders là luồng quan trọng nhất.
+- Modifiers đã được tối ưu một phần.
+- Nhiều trang admin vẫn thiên về desktop/table.
+
+Khuyến nghị:
+
+- Phase UI phải đi sau khi nghiệp vụ/ledger ổn.
+- Ưu tiên màn nhân viên dùng thường xuyên trước.
+
+### R4 - Thiếu test E2E cho workflow thật
+
+Mức độ: trung bình.
+
+Hiện trạng:
+
+- Unit tests tốt hơn trước.
+- Audit scripts bao phủ dữ liệu thật.
+- Chưa có Playwright workflow cho POS, sửa đơn, nhập hàng.
+
+Khuyến nghị:
+
+- Thêm smoke E2E tối thiểu cho các workflow không thể bắt bằng unit test.
+
+## 5. Kế hoạch tiếp theo
+
+### Phase 1 - Chuẩn hoá tài liệu và checklist audit
+
+Trạng thái: in progress
+
+Mục tiêu:
+
+- Tạo một nguồn sự thật duy nhất cho toàn bộ giai đoạn tối ưu.
+- Mỗi phase sau đều cập nhật lại file này hoặc tạo report con có link.
+
+Task 1.1 - Viết roadmap tổng hệ thống:
+
+- [x] Ghi baseline hiện tại.
+- [x] Ghi các phase đã hoàn thành.
+- [x] Ghi rủi ro còn lại.
+- [x] Ghi backlog phase/task/subtask.
+
+Task 1.2 - Commit roadmap:
+
+- [ ] Stage file roadmap.
+- [ ] Commit riêng.
+- [ ] Không push.
+
+Task 1.3 - Sau commit, chọn phase triển khai tiếp:
+
+- [ ] Ưu tiên Phase 2 nếu muốn chắc nghiệp vụ trước.
+- [ ] Ưu tiên Phase 6 nếu muốn dọn code/script trước.
+- [ ] Ưu tiên Phase 7 nếu muốn tối ưu UX ngay.
+
+### Phase 2 - Audit Nhập hàng end-to-end
+
+Mục tiêu:
+
+- Đảm bảo mọi PO mới và PO lịch sử tạo stock ledger đúng.
+- Không còn lỗi conversion mơ hồ.
+- Đảm bảo UI gửi `conversion_id` và `conversion_rate` đúng.
+
+Task 2.1 - Đọc và vẽ luồng nhập hàng:
+
+- [ ] `app/admin/inventory/purchase-orders/actions.ts`
+- [ ] `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx`
+- [ ] `app/admin/inventory/purchase-orders/[id]/page.tsx`
+- [ ] `app/admin/inventory/items/actions.ts`
+- [ ] `app/admin/inventory/conversions/actions.ts`
+- [ ] `scripts/reprocess-all-po-ledger.ts`
+- [ ] `lib/purchase-ledger-audit.ts`
+- [ ] `lib/purchase-ledger-rebuild.ts`
+
+Task 2.2 - Audit form submit:
+
+- [ ] Khi chọn purchased item, list conversion hiển thị đúng theo item.
+- [ ] Khi chọn unit/conversion, form lưu `conversion_id`.
+- [ ] `conversion_rate` không bị stale khi đổi unit/item.
+- [ ] Không cho lưu nếu conversion bị thiếu hoặc mơ hồ.
+- [ ] Error message tiếng Việt rõ ràng.
+
+Task 2.3 - Audit save PO:
+
+- [ ] PO draft không ghi stock ledger.
+- [ ] PO completed ghi stock ledger đúng một lần.
+- [ ] Update PO completed không tạo double ledger.
+- [ ] Huỷ/xoá PO nếu có workflow thì ledger đảo đúng hoặc bị chặn rõ.
+
+Task 2.4 - Audit rebuild/reprocess:
+
+- [ ] Reprocess ưu tiên `conversion_id`.
+- [ ] Nếu thiếu `conversion_id` nhưng chỉ có 1 conversion hợp lệ thì có thể backfill.
+- [ ] Nếu nhiều conversion hợp lệ thì report ambiguous, không tự chọn.
+- [ ] Dry-run mặc định.
+- [ ] Apply cần flag rõ.
+
+Task 2.5 - Test:
+
+- [ ] Unit test conversion resolution.
+- [ ] Unit test purchase ledger rebuild.
+- [ ] Data audit tất cả completed PO.
+- [ ] Regression test Dâu sấy.
+
+Task 2.6 - Verify:
+
+- [ ] `scripts/audit-purchase-ledger.ts` mismatch `0`.
+- [ ] Test suite pass.
+- [ ] Tạo thử PO mới trên dev server và kiểm tra ledger.
+
+### Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn
+
+Mục tiêu:
+
+- Đảm bảo order lifecycle không làm lệch revenue, promotion, inventory, COGS.
+- Đảm bảo sửa đơn cũ dùng snapshot đúng.
+
+Task 3.1 - Audit POS create order:
+
+- [ ] `app/pos/actions.ts`
+- [ ] Product price snapshot.
+- [ ] Variant snapshot.
+- [ ] Modifier snapshot.
+- [ ] Recipe snapshot.
+- [ ] Promotion snapshot.
+- [ ] Inventory ledger rows.
+- [ ] COGS FIFO.
+
+Task 3.2 - Audit admin edit order:
+
+- [ ] `app/admin/orders/actions.ts`
+- [ ] Khi line cũ không đổi: giữ snapshot lịch sử.
+- [ ] Khi thêm line mới: dùng giá/công thức hiện tại.
+- [ ] Khi đổi quantity: dùng snapshot line đó, không lấy lại giá/công thức hiện tại nếu không cần.
+- [ ] Khi đổi modifier: snapshot mới chỉ áp dụng modifier được đổi/thêm.
+- [ ] Inventory ledger net correction đúng.
+- [ ] COGS FIFO sau edit không drift.
+
+Task 3.3 - Audit cancel/void:
+
+- [ ] Huỷ đơn trả tồn đúng.
+- [ ] Không double-return stock.
+- [ ] Revenue report loại đơn huỷ.
+- [ ] COGS report loại đơn huỷ.
+- [ ] Event log đủ để truy vết.
+
+Task 3.4 - Audit discounts:
+
+- [ ] System promotion.
+- [ ] Manual item discount.
+- [ ] Manual order discount allocation.
+- [ ] Edit order không mất promotion snapshot.
+- [ ] Tổng tiền detail modal khớp table/report.
+
+Task 3.5 - Test:
+
+- [ ] Unit test order snapshot preservation.
+- [ ] Unit test edit cart math.
+- [ ] Unit test order ledger net correction.
+- [ ] E2E smoke: POS create -> admin detail -> edit -> audit.
+
+Task 3.6 - Verify:
+
+- [ ] `scripts/audit-order-ledger.ts` mismatch `0`.
+- [ ] `scripts/audit-cogs-drift.ts` mismatch `0`.
+- [ ] `scripts/audit-order-discounts.ts` clean.
+- [ ] Tests pass.
+
+### Phase 4 - Audit tồn kho và sản xuất
+
+Mục tiêu:
+
+- Tồn kho phản ánh đúng nguồn nhập hàng, bán hàng, sản xuất, điều chỉnh.
+- Bán thành phẩm không bị trừ hai lần.
+
+Task 4.1 - Audit stock ledger schema:
+
+- [ ] Source type chuẩn: purchase, sale, edit correction, production, adjustment.
+- [ ] Quantity sign chuẩn.
+- [ ] `unit_cost` có ý nghĩa rõ theo từng source.
+- [ ] `reference_id` đủ để truy ngược.
+
+Task 4.2 - Audit production:
+
+- [ ] `app/admin/production/actions.ts`
+- [ ] Sản xuất bán thành phẩm trừ nguyên liệu gốc đúng.
+- [ ] Sản xuất cộng bán thành phẩm đúng yield.
+- [ ] Không cho sản xuất nếu thiếu nguyên liệu hoặc có policy rõ.
+- [ ] Audit production stock mismatch.
+
+Task 4.3 - Audit stock adjustments:
+
+- [ ] Tách adjustment thật với fix lịch sử.
+- [ ] Lý do điều chỉnh bắt buộc.
+- [ ] Report adjustment theo ngày/item.
+
+Task 4.4 - Audit negative periods:
+
+- [ ] Không chỉ audit current stock.
+- [ ] Tìm khoảng thời gian âm theo từng item.
+- [ ] Phân loại âm do thiếu PO, do double deduct, do recipe sai, do non-inventory.
+- [ ] Ưu tiên các item ảnh hưởng COGS.
+
+Task 4.5 - Verify:
+
+- [ ] Current stock negative `0`.
+- [ ] Negative period report có phân loại.
+- [ ] Production audit clean hoặc có danh sách fix rõ.
+- [ ] Tests pass.
+
+### Phase 5 - Audit báo cáo doanh thu, COGS, P&L
+
+Mục tiêu:
+
+- Báo cáo khớp ledger và order lines.
+- Không còn chênh giữa modal đơn, table đơn, báo cáo doanh thu và P&L.
+
+Task 5.1 - Audit report data source:
+
+- [ ] `app/admin/reports/actions.ts`
+- [ ] `lib/report-v2-allocators.ts`
+- [ ] Orders source.
+- [ ] Order lines source.
+- [ ] COGS source.
+- [ ] Discount allocation source.
+
+Task 5.2 - Audit sales report:
+
+- [ ] Gross revenue.
+- [ ] Net revenue.
+- [ ] System promotion.
+- [ ] Manual discounts.
+- [ ] Payment methods.
+- [ ] Brand/outlet filters.
+
+Task 5.3 - Audit P&L:
+
+- [ ] Revenue khớp sales report.
+- [ ] COGS khớp FIFO stored line cost.
+- [ ] Gross profit đúng.
+- [ ] Date range inclusive/exclusive rõ.
+- [ ] Timezone Asia/Saigon rõ.
+
+Task 5.4 - Audit stock report:
+
+- [ ] Current stock khớp ledger aggregation.
+- [ ] Unit hiển thị đúng.
+- [ ] Non-inventory item không làm nhiễu.
+
+Task 5.5 - Verify:
+
+- [ ] `scripts/audit-revenue-anomalies.ts`.
+- [ ] `scripts/audit-cogs-drift.ts`.
+- [ ] Manual compare vài ngày doanh thu lớn.
+- [ ] Tests pass.
+
+### Phase 6 - Dọn scripts và kiến trúc module
+
+Mục tiêu:
+
+- Giảm nhiễu trong repo.
+- Giữ lại các script có giá trị audit/runbook.
+- Gom logic nghiệp vụ vào module sâu hơn, ít pass-through hơn.
+
+Task 6.1 - Inventory scripts audit:
+
+- [ ] Liệt kê toàn bộ `scripts/*.ts`, `scripts/*.js`, output/log liên quan.
+- [ ] Phân loại từng script:
+  - `KEEP_RUNBOOK`
+  - `KEEP_AUDIT`
+  - `KEEP_MIGRATION_HISTORY`
+  - `DELETE_ONE_OFF`
+  - `ARCHIVE_DOC_ONLY`
+- [ ] Tạo report `docs/audits/script-cleanup-plan.md`.
+
+Task 6.2 - Delete one-off scripts:
+
+- [ ] Chỉ xoá script đã có replacement hoặc không còn dữ liệu sử dụng.
+- [ ] Không xoá script có thể cần rollback hoặc audit dữ liệu lịch sử.
+- [ ] Commit riêng.
+
+Task 6.3 - Deepen modules:
+
+- [ ] Order lifecycle module: create/edit/void consistency.
+- [ ] Inventory consumption module: stock deduction policy.
+- [ ] Purchase ledger module: conversion resolution and ledger generation.
+- [ ] Reporting module: shared allocation rules.
+- [ ] Sheet adapter module: lower-case/PascalCase alias risk.
+
+Task 6.4 - Test surface:
+
+- [ ] Tests gọi module interface, không phụ thuộc chi tiết implementation.
+- [ ] Giảm test chỉ mock từng helper nhỏ nếu không bắt được workflow thật.
+
+Task 6.5 - Verify:
+
+- [ ] Tests pass.
+- [ ] Audit scripts pass.
+- [ ] Git diff không xoá nhầm runbook.
+
+### Phase 7 - Mobile-first UI/UX audit
+
+Mục tiêu:
+
+- Màn hình chính dùng tốt trên mobile trước, desktop sau.
+- Tránh card lồng card, text overflow, modal bị kẹt, bảng quá rộng.
+
+Task 7.1 - Priority pages:
+
+- [ ] POS.
+- [ ] Admin Orders.
+- [ ] Order detail modal.
+- [ ] Order edit modal.
+- [ ] Purchase Orders.
+- [ ] Inventory stock.
+- [ ] Products.
+- [ ] Modifiers.
+- [ ] Reports.
+
+Task 7.2 - Layout rules:
+
+- [ ] Mobile first: 360px minimum.
+- [ ] Table desktop, card/list mobile.
+- [ ] Modal full-screen mobile, centered desktop.
+- [ ] Touch target tối thiểu 44px.
+- [ ] Không text overlap.
+- [ ] Không horizontal scroll ngoài khu vực có chủ đích.
+
+Task 7.3 - POS:
+
+- [ ] Product grid dễ bấm.
+- [ ] Cart drawer mobile.
+- [ ] Discount badges dễ phân biệt.
+- [ ] Offline/slow network state rõ.
+- [ ] Checkout không bị double submit.
+
+Task 7.4 - Orders:
+
+- [ ] Filter bar responsive.
+- [ ] Table/card list rõ trạng thái đơn.
+- [ ] Detail modal đọc nhanh tổng tiền, giảm giá, payment, event.
+- [ ] Edit modal rõ line cũ/mới, lý do sửa bắt buộc.
+
+Task 7.5 - Purchase Orders:
+
+- [ ] Form nhập hàng mobile usable.
+- [ ] Conversion/unit selection chống nhầm.
+- [ ] Completed PO có cảnh báo ledger.
+- [ ] Search supplier/item tốt.
+
+Task 7.6 - Verify:
+
+- [ ] Dev server smoke desktop.
+- [ ] Dev server smoke mobile 360/375px.
+- [ ] Screenshot check các màn chính.
+- [ ] Tests pass.
+
+### Phase 8 - Offline/sync audit
+
+Mục tiêu:
+
+- Đảm bảo bán hàng không mất đơn khi mạng yếu/mất mạng.
+- Sync không tạo duplicate order hoặc duplicate stock ledger.
+
+Task 8.1 - Audit current offline capability:
+
+- [ ] POS local state.
+- [ ] Draft/order queue nếu có.
+- [ ] API retry behavior.
+- [ ] Idempotency key/order number generation.
+- [ ] Sync scan/execute route.
+
+Task 8.2 - Failure modes:
+
+- [ ] Submit order thành công nhưng UI không nhận response.
+- [ ] User bấm lại checkout.
+- [ ] Network timeout giữa ghi order và ghi ledger.
+- [ ] Sync lại sau khi app reload.
+- [ ] Google Sheets rate limit.
+
+Task 8.3 - Durable design:
+
+- [ ] Idempotent order creation.
+- [ ] Local pending queue.
+- [ ] Sync status rõ: pending, synced, failed, duplicate-safe.
+- [ ] Ledger write atomicity strategy hoặc reconciliation audit.
+
+Task 8.4 - Verify:
+
+- [ ] Manual offline test.
+- [ ] Duplicate submit test.
+- [ ] Audit order ledger sau sync.
+- [ ] Audit revenue sau sync.
+
+## 6. Thứ tự khuyến nghị
+
+Thứ tự em đề xuất:
+
+1. Commit roadmap này.
+2. Phase 2 - Audit Nhập hàng end-to-end.
+3. Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn.
+4. Phase 4 - Audit tồn kho và sản xuất.
+5. Phase 5 - Audit báo cáo.
+6. Phase 6 - Dọn scripts/kiến trúc.
+7. Phase 7 - Mobile-first UI/UX.
+8. Phase 8 - Offline/sync.
+
+Lý do:
+
+- Nhập hàng và bán hàng là nguồn dữ liệu gốc.
+- Tồn kho và COGS phụ thuộc ledger từ nhập/bán.
+- Báo cáo phụ thuộc order/ledger/COGS.
+- UI nên tối ưu sau khi nghiệp vụ ổn để không phải sửa lại nhiều.
+- Offline/sync là phase có rủi ro cao, cần baseline audit trước.
+
+## 7. Definition of Done toàn dự án tối ưu
+
+Một phase chỉ được coi là done khi:
+
+- Có file/code/report thể hiện thay đổi.
+- Có audit trước/sau nếu đụng dữ liệu.
+- Có test hoặc lệnh verify phù hợp.
+- Có commit riêng.
+- Không còn working tree bẩn ngoài phần user đang làm.
+- Có ghi chú rủi ro còn lại nếu chưa xử lý triệt để.
+
+Toàn bộ đợt tối ưu coi là done khi:
+
+- Google Sheet không còn sheet review.
+- Ledger nhập hàng, ledger đơn hàng, tồn kho, COGS đều audit sạch.
+- Các workflow chính có test hoặc smoke checklist.
+- Scripts một lần đã được phân loại/dọn.
+- UI chính chạy tốt trên mobile 360px+.
+- Dev server chạy được và user kiểm tra được.
