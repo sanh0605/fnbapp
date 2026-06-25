@@ -3,6 +3,7 @@
 import { findAll, findAllNoCache, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath, unstable_cache } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { resolveActor, requireAdmin } from "@/lib/auth";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
 export async function addItemCategory(formData: FormData): Promise<ActionResponse> {
@@ -408,12 +409,19 @@ export const getRealtimeStock = unstable_cache(
   { revalidate: 60, tags: ["sheets-Stock_Ledger", "sheets-Base_Ingredients", "sheets-Semi_Products", "sheets-Units"] }
 );
 
-export async function submitStockAdjustment(data: any, role: string, username: string): Promise<ActionResponse> {
+export async function submitStockAdjustment(data: any, _clientRole?: string, _clientUsername?: string): Promise<ActionResponse> {
   try {
     // Claude code — Phase 4.3: adjustment reason required for audit traceability.
     if (!data?.reason || String(data.reason).trim().length === 0) {
       return fail("Lý do điều chỉnh là bắt buộc");
     }
+    // Claude code — CODE-22: ignore client-supplied role, use server-side auth.
+    // Client params kept in signature for backward compat but no longer trusted.
+    const auth = await resolveActor();
+    if (!auth.ok) return fail(auth.error);
+    const role = auth.actor.role;
+    const username = auth.actor.name;
+
     const nowIso = new Date().toISOString();
     const id = await generateNewId("Stock_Adjustments", "SADJ");
     
@@ -455,8 +463,13 @@ export async function submitStockAdjustment(data: any, role: string, username: s
   }
 }
 
-export async function approveStockAdjustment(adjustmentId: string, adminUsername: string): Promise<ActionResponse> {
+export async function approveStockAdjustment(adjustmentId: string, _clientAdminUsername?: string): Promise<ActionResponse> {
   try {
+    // Claude code — CODE-22: require ADMIN server-side; ignore client username.
+    const auth = await requireAdmin();
+    if (!auth.ok) return fail(auth.error);
+    const adminUsername = auth.actor.name;
+
     const adjustments = await findAll("Stock_Adjustments");
     const adj = adjustments.find((a:any) => a.id === adjustmentId);
     if (!adj) return fail("Không tìm thấy phiếu điều chỉnh");

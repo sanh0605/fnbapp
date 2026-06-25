@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource } from "@/types/db";
 import { buildPurchaseReceipt } from "@/lib/purchase-ledger-rebuild";
+import { requireAdmin } from "@/lib/auth";
 
 const PATH = "/admin/inventory/purchase-orders";
 
@@ -25,6 +26,10 @@ export async function getPurchaseOrdersData(): Promise<{
 }
 
 export async function savePurchaseOrder(formData: FormData): Promise<ActionResponse> {
+  // Claude code — CODE-22: require ADMIN before PO write.
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const supplier_id = formData.get("supplier_id") as string;
   const transaction_date = formData.get("transaction_date") as string;
   const status = formData.get("status") as string; // DRAFT or COMPLETED
@@ -32,8 +37,9 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
   const source_id = formData.get("source_id") as string;
   const supplier_invoice_code = formData.get("supplier_invoice_code") as string;
   const linesJson = formData.get("lines_json") as string;
-  const created_by = formData.get("created_by") as string; 
-  const id = formData.get("id") as string; 
+  // Override client-supplied created_by with authenticated actor (Claude code — UI-20 + CODE-22).
+  const created_by = auth.actor.name;
+  const id = formData.get("id") as string;
   
   const subtotal_amount = Number(formData.get("subtotal_amount") || 0);
   const shipping_fee = Number(formData.get("shipping_fee") || 0);

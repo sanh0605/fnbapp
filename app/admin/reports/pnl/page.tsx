@@ -43,13 +43,18 @@ export default async function ReportsPage({
 
   return (
     <div className="space-y-6">
-      <SalesFilter 
-        brands={brands} 
-        users={users} 
-        categories={categories} 
+      <SalesFilter
+        brands={brands}
+        users={users}
+        categories={categories}
         title="Báo cáo Lãi Lỗ (P&L)"
-        subtitle="Tổng hợp Doanh thu và Giá vốn nguyên vật liệu (COGS) dựa trên dữ liệu V2."
+        subtitle="Tổng hợp Doanh thu và Giá vốn (COGS, chuẩn MAC — weighted average cost) dựa trên dữ liệu V2."
       />
+
+      {/* Claude code — spec compliance: note MAC clarification */}
+      <div className="bg-blue-50 text-blue-800 p-3 rounded-xl border border-blue-100 text-xs">
+        <strong>Lưu ý COGS:</strong> Giá vốn dùng chuẩn MAC (Moving Average Cost) được lưu tại thời điểm tạo/sửa đơn. Chi tiết theo nguyên liệu chỉ mang tính tham khảo (FIFO informational). Xem <code>docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md</code>.
+      </div>
 
       {data.v2OrderCount === 0 && (
         <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl border border-yellow-200">

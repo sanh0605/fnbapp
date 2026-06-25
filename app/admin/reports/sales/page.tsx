@@ -106,13 +106,15 @@ export default async function SalesReportPage({
 
   return (
     <div className="space-y-6">
-      <SalesFilter 
-        brands={brands} 
-        users={users} 
-        categories={categories} 
+      <SalesFilter
+        brands={brands}
+        users={users}
+        categories={categories}
         title="Báo cáo Bán hàng"
         subtitle="Phân tích hiệu quả kinh doanh theo thời gian (V2)."
       />
+
+      {/* Claude code — spec compliance: note COGS không áp dụng sales report (chỉ P&L) */}
 
       {data.v2OrderCount === 0 && (
         <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl border border-yellow-200">

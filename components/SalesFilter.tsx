@@ -5,6 +5,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import StickyFilterBar from "@/components/StickyFilterBar";
 
+// Claude code — UI-3: encode URL date as YYYY-MM-DD (friendly + shareable).
+// Backward compat: accept both ISO datetime and date-only when reading.
+function toDateOnlyForUrl(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function parseDateParam(value: string): Date {
+  // ISO datetime (legacy) → use as-is.
+  if (value.includes("T")) return new Date(value);
+  // Date only YYYY-MM-DD → treat as local midnight (browser TZ = Saigon for vn users).
+  return new Date(`${value}T00:00:00`);
+}
+
 interface Brand {
   id: string;
   name: string;
@@ -55,13 +71,13 @@ function SalesFilterInner({
   const searchParams = useSearchParams();
   
   const [startDate, setStartDate] = useState<Date | null>(
-    searchParams.get("start") 
-      ? new Date(searchParams.get("start")!) 
+    searchParams.get("start")
+      ? parseDateParam(searchParams.get("start")!)
       : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   );
-  
+
   const [endDate, setEndDate] = useState<Date | null>(
-    searchParams.get("end") ? new Date(searchParams.get("end")!) : new Date(new Date().setHours(23,59,59,999))
+    searchParams.get("end") ? parseDateParam(searchParams.get("end")!) : new Date(new Date().setHours(23,59,59,999))
   );
 
   const [brandId, setBrandId] = useState(searchParams.get("brandId") || "");
@@ -81,8 +97,9 @@ function SalesFilterInner({
     if (startDate && endDate) {
       const timeoutId = setTimeout(() => {
         const params = new URLSearchParams();
-        params.set("start", startDate.toISOString());
-        params.set("end", endDate.toISOString());
+        // Claude code — UI-3: YYYY-MM-DD friendly URL; server toSaigonUtcRange handles date-only.
+        params.set("start", toDateOnlyForUrl(startDate));
+        params.set("end", toDateOnlyForUrl(endDate));
         if (brandId) params.set("brandId", brandId);
         if (staffName) params.set("staffName", staffName);
         if (categoryId) params.set("categoryId", categoryId);

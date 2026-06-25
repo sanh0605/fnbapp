@@ -7,6 +7,7 @@ import { SearchableSelect } from "@/components/SearchableSelect";
 import { SupplierModal } from "@/components/SupplierForm";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
+import { toSaigonIsoString } from "@/lib/datetime";
 import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBBaseIngredient, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
 
 interface PurchaseOrderFormProps {
@@ -162,7 +163,8 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
     const formData = new FormData();
     if (isEdit) formData.append("id", po.id!);
     formData.append("supplier_id", supplierId);
-    if (transactionDate) formData.append("transaction_date", transactionDate.toISOString());
+    // Claude code — UI-9: send Saigon-local ISO so server interprets date correctly regardless of deploy TZ.
+    if (transactionDate) formData.append("transaction_date", toSaigonIsoString(transactionDate));
     formData.append("notes", notes);
     formData.append("source_id", sourceId);
     formData.append("supplier_invoice_code", supplierInvoiceCode);
@@ -173,9 +175,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
     formData.append("tax_amount", taxAmount.toString());
     formData.append("voucher_amount", voucherAmount.toString());
     formData.append("discount_amount", discountAmount.toString());
-    
-    // Hardcode user for now or get from context, assume action handles if missing
-    formData.append("created_by", "ADMIN");
+    // Claude code — UI-20: removed hardcoded `created_by=ADMIN`; server uses authenticated actor (see CODE-22).
 
     const res = await savePurchaseOrder(formData);
     setLoading(false);

@@ -1,9 +1,8 @@
 "use server";
 
-import { findAll, findAllNoCache, insert, update } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, insert, insertMany, update } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import crypto from "node:crypto";
 
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
@@ -284,6 +283,11 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       return { success: false, error: "Lý do hủy đơn là bắt buộc" };
     }
 
+    // Claude code — CODE-22: require ADMIN before any state mutation.
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const actor = { id: auth.actor.id, name: auth.actor.name };
+
     const allOrders = await findAllNoCache("Orders_V2");
     const order = (allOrders as any[]).find(o => o.id === orderId);
     if (!order) return { success: false, error: `Order ${orderId} not found` };
@@ -291,14 +295,15 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       return { success: false, error: `Order status is ${order.status}, must be COMPLETED to void` };
     }
 
-    let session = null;
-    if (process.env.CLI_MODE !== "true") {
-      session = await getServerSession(authOptions);
+    // Claude code — CODE-8: idempotency guard. Reject if VOIDED event already exists.
+    // Protects against double-click retries creating duplicate reversal entries.
+    const existingEvents = await findAllNoCache("Order_Events");
+    const alreadyVoided = (existingEvents as any[]).some(
+      e => e.order_id === orderId && e.event_type === EVENT_TYPE.VOIDED,
+    );
+    if (alreadyVoided) {
+      return { success: false, error: `Order ${orderId} đã có event VOIDED, không hủy lại được` };
     }
-    const actor = {
-      id: (session?.user as any)?.id || "system",
-      name: session?.user?.name || "Hệ thống",
-    };
 
     const eventTime = new Date().toISOString();
     const event = {
@@ -333,22 +338,22 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       source: l.source || "VARIANT_RECIPE",
     }));
 
-    // 1. Mark order VOIDED
+    // Claude code — CODE-8: reorder for fail-safe.
+    // 1. Insert reversal entries first (uses insertMany — atomic batch).
+    // 2. Insert event second (audit trail of intent).
+    // 3. Update order LAST (final state transition).
+    // If step 3 fails: order remains COMPLETED, user can retry safely (idempotency guard rejects duplicates).
+    // Old order (update first) left order VOIDED with no reversal on partial failure — broken stock.
+    if (reversalEntries.length > 0) {
+      await insertMany("Stock_Ledger", reversalEntries);
+    }
+    await insert("Order_Events", event);
     await update("Orders_V2", orderId, {
       status: ORDER_STATUS.VOIDED,
       voided_at: eventTime,
       voided_by_id: actor.id,
       void_reason: reason,
     });
-
-    // 2. Insert event
-    await insert("Order_Events", event);
-
-    // 3. Insert reversal entries
-    if (reversalEntries.length > 0) {
-      const { insertMany } = require("@/lib/sheets_db");
-      await insertMany("Stock_Ledger", reversalEntries);
-    }
 
     if (process.env.CLI_MODE !== "true") {
       revalidatePath("/admin/orders");
@@ -381,15 +386,10 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     const oldOrderV2 = normalizeOrderV2(oldOrder);
     const oldLinesV2 = oldLines.map(normalizeLineV2);
 
-    // 2. Resolve actor
-    let session = null;
-    if (process.env.CLI_MODE !== "true") {
-      session = await getServerSession(authOptions);
-    }
-    const actor = {
-      id: (session?.user as any)?.id || "system",
-      name: session?.user?.name || "Hệ thống",
-    };
+    // 2. Resolve actor (Claude code — CODE-22: require ADMIN)
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const actor = { id: auth.actor.id, name: auth.actor.name };
 
     // 3. Load reference data
     const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients, semiProducts] = await Promise.all([
