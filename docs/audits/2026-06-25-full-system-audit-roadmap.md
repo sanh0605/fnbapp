@@ -409,6 +409,8 @@ Task 2.7 - Guard đã triển khai trong phase này:
 
 ### Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn
 
+Trạng thái: in progress
+
 Mục tiêu:
 
 - Đảm bảo order lifecycle không làm lệch revenue, promotion, inventory, COGS.
@@ -416,24 +418,24 @@ Mục tiêu:
 
 Task 3.1 - Audit POS create order:
 
-- [ ] `app/pos/actions.ts`
-- [ ] Product price snapshot.
-- [ ] Variant snapshot.
-- [ ] Modifier snapshot.
-- [ ] Recipe snapshot.
-- [ ] Promotion snapshot.
-- [ ] Inventory ledger rows.
-- [ ] COGS FIFO.
+- [x] `app/pos/actions.ts`
+- [x] Product price snapshot.
+- [x] Variant snapshot.
+- [x] Modifier snapshot.
+- [x] Recipe snapshot.
+- [x] Promotion snapshot.
+- [x] Inventory ledger rows.
+- [x] COGS FIFO.
 
 Task 3.2 - Audit admin edit order:
 
-- [ ] `app/admin/orders/actions.ts`
-- [ ] Khi line cũ không đổi: giữ snapshot lịch sử.
-- [ ] Khi thêm line mới: dùng giá/công thức hiện tại.
-- [ ] Khi đổi quantity: dùng snapshot line đó, không lấy lại giá/công thức hiện tại nếu không cần.
-- [ ] Khi đổi modifier: snapshot mới chỉ áp dụng modifier được đổi/thêm.
-- [ ] Inventory ledger net correction đúng.
-- [ ] COGS FIFO sau edit không drift.
+- [x] `app/admin/orders/actions.ts`
+- [x] Khi line cũ không đổi: giữ snapshot lịch sử.
+- [x] Khi thêm line mới: dùng giá/công thức hiện tại.
+- [x] Khi đổi quantity: dùng snapshot line đó, không lấy lại giá/công thức hiện tại nếu không cần.
+- [x] Khi đổi modifier: snapshot mới chỉ áp dụng modifier được đổi/thêm.
+- [x] Inventory ledger net correction đúng.
+- [x] COGS FIFO sau edit không drift.
 
 Task 3.3 - Audit cancel/void:
 
@@ -445,10 +447,10 @@ Task 3.3 - Audit cancel/void:
 
 Task 3.4 - Audit discounts:
 
-- [ ] System promotion.
-- [ ] Manual item discount.
-- [ ] Manual order discount allocation.
-- [ ] Edit order không mất promotion snapshot.
+- [x] System promotion.
+- [x] Manual item discount.
+- [x] Manual order discount allocation.
+- [x] Edit order không mất promotion snapshot.
 - [ ] Tổng tiền detail modal khớp table/report.
 
 Task 3.5 - Test:
@@ -460,10 +462,18 @@ Task 3.5 - Test:
 
 Task 3.6 - Verify:
 
-- [ ] `scripts/audit-order-ledger.ts` mismatch `0`.
-- [ ] `scripts/audit-cogs-drift.ts` mismatch `0`.
-- [ ] `scripts/audit-order-discounts.ts` clean.
-- [ ] Tests pass.
+- [x] `scripts/audit-order-ledger.ts` mismatch `0`.
+- [x] `scripts/audit-cogs-drift.ts` mismatch `0`.
+- [x] `scripts/audit-order-discounts.ts` chạy được; ghi nhận 5 migrated orders có manual order discount lớn cần phân loại nghiệp vụ.
+- [x] `scripts/audit-order-modifier-qty.ts` mismatch `0`.
+- [x] `scripts/verify-v2-invariants.ts` pass `885`, fail `0`.
+- [x] Tests pass.
+
+Task 3.7 - Guard/tooling đã triển khai trong phase này:
+
+- [x] Sửa `scripts/audit-order-discounts.ts` sang dynamic import để chạy được bằng `vite-node`.
+- [x] Sửa `scripts/verify-v2-invariants.ts` sang dynamic import.
+- [x] Chuyển import nội bộ trong `lib/order-math.ts` sang relative để script audit không lỗi alias.
 
 ### Phase 4 - Audit tồn kho và sản xuất
 

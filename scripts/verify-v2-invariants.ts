@@ -2,10 +2,9 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
-const { findAllNoCache } = require("../lib/sheets_db");
-const { assertOrderInvariants } = require("../lib/order-math");
-
 (async () => {
+  const { findAllNoCache } = await import("../lib/sheets_db");
+  const { assertOrderInvariants } = await import("../lib/order-math");
   const orders = await findAllNoCache("Orders_V2");
   const lines = await findAllNoCache("Order_Lines_V2");
   const completed = orders.filter((o: any) => o.status === "COMPLETED" && !o.superseded_by);

@@ -9,9 +9,8 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
-const { findAllNoCache } = require("../lib/sheets_db");
-
 async function main() {
+  const { findAllNoCache } = await import("../lib/sheets_db");
   const [v2Orders, v2Lines] = await Promise.all([
     findAllNoCache("Orders_V2"),
     findAllNoCache("Order_Lines_V2"),

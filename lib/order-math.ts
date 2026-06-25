@@ -12,8 +12,8 @@ import type {
   LineForAllocation,
   OrderV2,
   OrderLineV2,
-} from "@/lib/order-types";
-import { InvariantError } from "@/lib/order-types";
+} from "./order-types";
+import { InvariantError } from "./order-types";
 
 /**
  * Distributes `orderDiscount` across lines proportional to their capacity.
