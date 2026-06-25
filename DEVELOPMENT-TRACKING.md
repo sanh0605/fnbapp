@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-25 (Codex) — Phase 5A MAC COGS write path
+
+**Trigger:** User approved changing primary COGS from FIFO to MAC/weighted average cost while keeping inventory quantity control based on `Stock_Ledger.quantity_change`.
+
+### Done
+
+- Added shared MAC engine in `lib/mac-cogs.ts`.
+- Switched POS order creation to store `Order_Lines_V2.cost_at_sale` from MAC.
+- Switched admin order edit to recompute edited line `cost_at_sale` from MAC at sale/edit context.
+- Kept stock quantity ledger behavior unchanged; FIFO is not used for reorder/stock quantity control.
+- Added read-only historical dry-run script `scripts/audit-mac-cogs-drift.ts`.
+- Added guard tests for MAC engine, POS write path, and admin edit write path.
+
+### Verification
+
+- `npx.cmd vitest run app\pos\actions.test.ts app\admin\orders\actions.test.ts lib\mac-cogs.test.ts`: `6/6` pass.
+- `scripts/audit-mac-cogs-drift.ts` is expected to show historical drift until a reviewed migration rewrites old `cost_at_sale` values to the new MAC contract.
+
+### Remaining
+
+- Review/classify historical MAC drift output before writing data.
+- Add idempotent apply script for historical `Order_Lines_V2.cost_at_sale` only after review.
+- Add a write-path integration test for BTP partial shortfall.
+
+---
+
 ## 2026-06-25 (Codex) — MAC COGS architecture decision
 
 **Trigger:** User asked whether the system should switch COGS from FIFO to weighted average cost while still keeping inventory quantity control strong enough for stock and reorder planning.

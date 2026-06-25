@@ -2,7 +2,7 @@
 
 Date: 2026-06-25
 Repo: `fnbapp`
-Status: approved direction, implementation pending
+Status: approved direction, phase 5A implementation partial
 
 ## Decision
 
@@ -81,6 +81,18 @@ Implementation should include a dry-run first:
 5. Update affected historical `Order_Lines_V2.cost_at_sale` if the new MAC contract is accepted for historical reports.
 
 The apply script must be idempotent and should write an audit report before changing data.
+
+## Implementation Notes
+
+Implemented in the first Phase 5A code pass:
+
+- Shared MAC engine: `lib/mac-cogs.ts`.
+- POS write path: `app/pos/actions.ts` stores `cost_at_sale` from MAC.
+- Admin order edit write path: `app/admin/orders/actions.ts` stores edited line `cost_at_sale` from MAC.
+- Read-only drift audit: `scripts/audit-mac-cogs-drift.ts`.
+- Guard tests: `lib/mac-cogs.test.ts`, `app/pos/actions.test.ts`, `app/admin/orders/actions.test.ts`.
+
+Historical active order lines still need a reviewed migration policy before rewriting stored `cost_at_sale`.
 
 ## Code Changes Needed
 

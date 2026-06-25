@@ -638,7 +638,7 @@ Task 5.6 - Fix/guard đã triển khai trong phase này:
 
 ### Phase 5A - Chuyển chuẩn giá vốn từ FIFO sang MAC
 
-Trạng thái: planned
+Trạng thái: partial implementation
 
 Mục tiêu:
 
@@ -659,39 +659,47 @@ Task 5A.1 - Chuẩn hoá quyết định:
 
 Task 5A.2 - Thiết kế MAC engine:
 
-- [ ] Tạo module MAC shared, dự kiến `lib/mac-cogs.ts`.
-- [ ] Tính MAC từ `PO_RECEIPT` và `STOCK_ADJUST` có giá vốn hợp lệ.
-- [ ] Khi stock bằng 0 hoặc âm, dùng latest known MAC thay vì trả COGS 0.
-- [ ] Hỗ trợ bán thành phẩm: direct BTP dùng MAC của BTP; phần shortfall bung xuống nguyên liệu gốc dùng MAC từng nguyên liệu.
+- [x] Tạo module MAC shared: `lib/mac-cogs.ts`.
+- [x] Tính MAC từ `PO_RECEIPT`, `STOCK_ADJUST`, `PRODUCTION_YIELD` có giá vốn hợp lệ.
+- [x] Khi stock bằng 0 hoặc âm, dùng latest known MAC thay vì trả COGS 0.
+- [x] Hỗ trợ bán thành phẩm: direct BTP dùng MAC của BTP; nếu direct BTP chưa có MAC hợp lệ thì fallback theo recipe/yield để tránh COGS 0.
 
 Task 5A.3 - Chuyển write path:
 
-- [ ] `app/pos/actions.ts` tính `cost_at_sale` bằng MAC thay vì FIFO.
-- [ ] `app/admin/orders/actions.ts` tính `cost_at_sale` bằng MAC khi sửa đơn.
-- [ ] Giữ nguyên `Stock_Ledger.quantity_change` cho tồn kho; không phụ thuộc FIFO để dự báo nhập hàng.
+- [x] `app/pos/actions.ts` tính `cost_at_sale` bằng MAC thay vì FIFO.
+- [x] `app/admin/orders/actions.ts` tính `cost_at_sale` bằng MAC khi sửa đơn.
+- [x] Giữ nguyên `Stock_Ledger.quantity_change` cho tồn kho; không phụ thuộc FIFO để dự báo nhập hàng.
 
 Task 5A.4 - Chuyển audit:
 
-- [ ] Thêm `scripts/audit-mac-cogs-drift.ts` hoặc chuyển `scripts/audit-cogs-drift.ts` sang MAC.
-- [ ] Giữ FIFO audit như script phụ nếu còn cần điều tra.
-- [ ] P&L verify: total COGS = sum active `Order_Lines_V2.cost_at_sale`.
-- [ ] Stock verify: current stock audit không phát sinh dependency vào FIFO.
+- [x] Thêm `scripts/audit-mac-cogs-drift.ts` dạng read-only dry-run.
+- [x] Giữ FIFO audit như script phụ nếu còn cần điều tra.
+- [x] P&L verify hiện vẫn đọc stored `Order_Lines_V2.cost_at_sale`; MAC write path ghim giá vốn tại sale/edit time.
+- [x] Stock verify không phát sinh dependency vào FIFO; quantity vẫn đi theo ledger.
 
 Task 5A.5 - Dữ liệu lịch sử:
 
-- [ ] Dry-run recompute MAC cho toàn bộ active order lines.
+- [x] Dry-run recompute MAC cho toàn bộ active order lines bằng `scripts/audit-mac-cogs-drift.ts`.
 - [ ] Phân loại chênh lệch: do FIFO/MAC khác nhau, do BTP shortfall, do order header mồ côi, do ledger thiếu.
 - [ ] Chỉ apply update `Order_Lines_V2.cost_at_sale` sau khi output dry-run được review.
 - [ ] Script apply phải idempotent và có report trước/sau.
 
 Task 5A.6 - Verify:
 
-- [ ] Unit test MAC nhiều PO receipt khác giá.
-- [ ] Unit test zero/negative stock fallback latest MAC.
-- [ ] Unit test BTP partial shortfall.
+- [x] Unit test MAC nhiều PO receipt khác giá.
+- [x] Unit test zero/negative stock fallback latest MAC.
+- [x] Unit test BTP recipe fallback khi direct BTP MAC chưa có.
+- [x] Unit test BTP partial shortfall ở allocation layer và MAC cost layer.
 - [ ] MAC COGS drift clean hoặc được review/chấp nhận theo cutover policy.
 - [ ] Current stock audit clean riêng về số lượng.
 - [ ] P&L không còn COGS 0 do thiếu FIFO batch.
+
+Codex implementation note:
+
+- `lib/mac-cogs.ts` is now the shared MAC engine.
+- `app/pos/actions.ts` and `app/admin/orders/actions.ts` now use `computeMacCostForConsumptionRows` for `cost_at_sale`.
+- `app/pos/actions.test.ts`, `app/admin/orders/actions.test.ts`, and `lib/mac-cogs.test.ts` guard the new contract.
+- `scripts/audit-mac-cogs-drift.ts` reports historical stored COGS drift against the new MAC contract. This is expected before the historical migration apply step and must be reviewed before any data write.
 
 ### Phase 6 - Dọn scripts và kiến trúc module
 

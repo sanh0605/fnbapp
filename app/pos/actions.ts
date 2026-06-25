@@ -7,10 +7,10 @@ import { authOptions } from "@/lib/auth";
 import crypto from "node:crypto";
 
 import { buildOrderFromCart } from "@/lib/order-cart";
-import { FIFOTracker } from "@/lib/fifo-tracker";
 import { insertOrderV2Records } from "@/lib/sheets-db-v2";
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
+import { computeMacCostForConsumptionRows } from "@/lib/mac-cogs";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
@@ -71,16 +71,14 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
 
     // 5. Compute COGS per line, mutate lines in place
     const saleTime = built.order.created_at;
-    const fifoTracker = new FIFOTracker();
     const saleMs = new Date(saleTime).getTime();
     const pastLedger = (ledger as any[]).filter(e => new Date(e.created_at || 0).getTime() <= saleMs);
-    fifoTracker.init(pastLedger);
 
     const consumptionBalances = buildInventoryBalances(pastLedger, saleTime);
     for (const line of built.lines) {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
       const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, consumptionBalances, consumptionMaps);
-      line.cost_at_sale = costConsumptionRowsFIFO(consumptionRows, fifoTracker);
+      line.cost_at_sale = computeMacCostForConsumptionRows(consumptionRows, pastLedger, saleTime, consumptionMaps);
     }
 
     // 6. Assign order_no (brand-prefixed sequential, race-tolerant)
@@ -210,10 +208,6 @@ function buildLineConsumptionRows(
     }));
   }
   return rows;
-}
-
-function costConsumptionRowsFIFO(rows: ConsumptionRow[], tracker: FIFOTracker): number {
-  return Math.round(rows.reduce((sum, row) => sum + tracker.consume(row.item_reference, row.quantity), 0));
 }
 
 export async function getPOSDrafts(brandId: string) {

@@ -9,9 +9,9 @@ import crypto from "node:crypto";
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
 import type { OrderV2, OrderLineV2, OrderEvent } from "@/lib/order-types";
 import { buildEditedOrderFromCart } from "@/lib/order-edit-cart";
-import { FIFOTracker } from "@/lib/fifo-tracker";
 import { supersedeOrderV2 } from "@/lib/sheets-db-v2-edit";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
+import { computeMacCostForConsumptionRows } from "@/lib/mac-cogs";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
@@ -406,7 +406,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       { order: oldOrderV2, lines: oldLinesV2 },
     );
 
-    // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same FIFO path as POS.
+    // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same MAC path as POS.
     const originalSaleTime = oldOrderV2.created_at;
     const saleMs = new Date(originalSaleTime).getTime();
     const pastLedger = (ledger as any[]).filter(e => {
@@ -414,15 +414,13 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       if (entryTime > saleMs) return false;
       return e.reference_id !== oldOrderV2.id;
     });
-    const fifoTracker = new FIFOTracker();
-    fifoTracker.init(pastLedger);
     const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
     const consumptionBalances = buildInventoryBalances(pastLedger, originalSaleTime);
 
     for (const line of built.lines) {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
       const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, consumptionBalances, consumptionMaps);
-      line.cost_at_sale = costConsumptionRowsFIFO(consumptionRows, fifoTracker);
+      line.cost_at_sale = computeMacCostForConsumptionRows(consumptionRows, pastLedger, originalSaleTime, consumptionMaps);
     }
 
     // 6. Build EDITED event
@@ -557,10 +555,6 @@ function buildLineConsumptionRows(
     }));
   }
   return rows;
-}
-
-function costConsumptionRowsFIFO(rows: ConsumptionRow[], tracker: FIFOTracker): number {
-  return Math.round(rows.reduce((sum, row) => sum + tracker.consume(row.item_reference, row.quantity), 0));
 }
 
 // Coerce raw sheet row (strings) into typed OrderV2/OrderLineV2 with numeric fields
