@@ -4,6 +4,33 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-26 (Codex) — Apply historical MAC COGS migration
+
+**Trigger:** User approved continuing from the MAC write-path phase into historical `cost_at_sale` migration.
+
+### Done
+
+- Added reusable MAC drift audit helper in `lib/mac-cogs-audit.ts`.
+- Refactored `scripts/audit-mac-cogs-drift.ts` to use the shared helper.
+- Added `scripts/apply-mac-cogs-recalc.ts` with dry-run by default and `--apply` for idempotent batch update.
+- Applied MAC COGS migration to historical active order lines.
+
+### Migration result
+
+- Before apply: `1267` mismatched `Order_Lines_V2` lines.
+- Classification: `BTP_SHORTFALL` 1116, `MIGRATED_LINE` 109, `MAC_REPRICE` 42.
+- Updated: `1267` `Order_Lines_V2.cost_at_sale` cells.
+- After apply: `0` mismatched lines.
+- Stored COGS after apply: `13.804.046 VND`.
+- Expected MAC COGS after apply: `13.804.046 VND`.
+- Delta after apply: `0`.
+
+### Verification
+
+- `node_modules\.bin\vite-node.cmd scripts\audit-mac-cogs-drift.ts`: mismatch `0`, delta `0`.
+
+---
+
 ## 2026-06-25 (Codex) — Phase 5A MAC COGS write path
 
 **Trigger:** User approved changing primary COGS from FIFO to MAC/weighted average cost while keeping inventory quantity control based on `Stock_Ledger.quantity_change`.

@@ -2,7 +2,7 @@
 
 Date: 2026-06-25
 Repo: `fnbapp`
-Status: approved direction, phase 5A implementation partial
+Status: implemented for write path and historical active order lines
 
 ## Decision
 
@@ -92,7 +92,10 @@ Implemented in the first Phase 5A code pass:
 - Read-only drift audit: `scripts/audit-mac-cogs-drift.ts`.
 - Guard tests: `lib/mac-cogs.test.ts`, `app/pos/actions.test.ts`, `app/admin/orders/actions.test.ts`.
 
-Historical active order lines still need a reviewed migration policy before rewriting stored `cost_at_sale`.
+Historical active order lines were migrated on 2026-06-26:
+
+- Updated `1267` `Order_Lines_V2.cost_at_sale` cells.
+- Post-apply MAC drift audit: mismatch `0`, delta `0`.
 
 ## Code Changes Needed
 

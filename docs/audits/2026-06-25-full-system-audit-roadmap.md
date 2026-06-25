@@ -680,9 +680,9 @@ Task 5A.4 - Chuyển audit:
 Task 5A.5 - Dữ liệu lịch sử:
 
 - [x] Dry-run recompute MAC cho toàn bộ active order lines bằng `scripts/audit-mac-cogs-drift.ts`.
-- [ ] Phân loại chênh lệch: do FIFO/MAC khác nhau, do BTP shortfall, do order header mồ côi, do ledger thiếu.
-- [ ] Chỉ apply update `Order_Lines_V2.cost_at_sale` sau khi output dry-run được review.
-- [ ] Script apply phải idempotent và có report trước/sau.
+- [x] Phân loại chênh lệch: `BTP_SHORTFALL` 1116 dòng, `MIGRATED_LINE` 109 dòng, `MAC_REPRICE` 42 dòng.
+- [x] Apply update `Order_Lines_V2.cost_at_sale` sau dry-run bằng `scripts/apply-mac-cogs-recalc.ts --apply`.
+- [x] Script apply idempotent: sau apply, `scripts/audit-mac-cogs-drift.ts` báo mismatch `0`, delta `0`.
 
 Task 5A.6 - Verify:
 
@@ -690,7 +690,7 @@ Task 5A.6 - Verify:
 - [x] Unit test zero/negative stock fallback latest MAC.
 - [x] Unit test BTP recipe fallback khi direct BTP MAC chưa có.
 - [x] Unit test BTP partial shortfall ở allocation layer và MAC cost layer.
-- [ ] MAC COGS drift clean hoặc được review/chấp nhận theo cutover policy.
+- [x] MAC COGS drift clean sau migration: `0` mismatched lines, delta `0`.
 - [ ] Current stock audit clean riêng về số lượng.
 - [ ] P&L không còn COGS 0 do thiếu FIFO batch.
 
@@ -700,6 +700,7 @@ Codex implementation note:
 - `app/pos/actions.ts` and `app/admin/orders/actions.ts` now use `computeMacCostForConsumptionRows` for `cost_at_sale`.
 - `app/pos/actions.test.ts`, `app/admin/orders/actions.test.ts`, and `lib/mac-cogs.test.ts` guard the new contract.
 - `scripts/audit-mac-cogs-drift.ts` reports historical stored COGS drift against the new MAC contract. This is expected before the historical migration apply step and must be reviewed before any data write.
+- 2026-06-26: applied MAC historical migration for 1267 `Order_Lines_V2.cost_at_sale` cells. Post-apply audit: stored COGS `13.804.046 VND`, expected MAC COGS `13.804.046 VND`, delta `0`, mismatch `0`.
 
 ### Phase 6 - Dọn scripts và kiến trúc module
 
