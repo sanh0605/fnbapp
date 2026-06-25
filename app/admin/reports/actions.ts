@@ -1,12 +1,13 @@
 "use server";
 
 import { findAll, findAllNoCache } from "@/lib/sheets_db";
-import { ORDER_STATUS } from "@/lib/order-types";
-import type { OrderV2, OrderLineV2 } from "@/lib/order-types";
+import { ORDER_STATUS, parseLineRecipeSnapshot } from "@/lib/order-types";
+import type { LineRecipeSnapshot, OrderV2, OrderLineV2 } from "@/lib/order-types";
+import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
+import { FIFOTracker } from "@/lib/fifo-tracker";
 import {
   breakdownRevenueByProduct,
   breakdownCOGSByIngredient,
-  breakdownCOGSBySource,
   type ProductRevenueRow,
   type IngredientCOGSRow,
 } from "@/lib/report-v2-allocators";
@@ -117,22 +118,15 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // 5. Per-ingredient COGS breakdown
     const ingredientRows = breakdownCOGSByIngredient(typedLines, typedOrders, ledger as any[], spContext);
 
-    // 6. Build product profit analysis (join per-variant revenue with per-variant COGS)
-    // CRITICAL: aggregate COGS by product_id + variant_id (same key as breakdownRevenueByProduct).
-    // Aggregating by product_id only caused each variant row to display the FULL product COGS,
-    // double-counting for multi-variant products (e.g., Matcha latte 500ml + 700ml).
-    const cogsByVariantKey = new Map<string, number>();
-    for (const line of typedLines) {
-      const key = `${line.product_id}__${line.variant_id}`;
-      const prev = cogsByVariantKey.get(key) || 0;
-      cogsByVariantKey.set(key, prev + line.cost_at_sale);
-    }
+    // 6. Build product profit analysis.
+    // COGS is split by source so product rows do not also carry topping COGS.
+    const cogsBySourceKey = splitLineCogsBySaleSource(typedLines, typedOrders, ledger as any[], spContext);
 
     const productProfitAnalysis = productRows
       .filter(r => !r.product_id.startsWith("MOD:"))
       .map(r => {
         const key = `${r.product_id}__${r.variant_id}`;
-        const cogs = cogsByVariantKey.get(key) || 0;
+        const cogs = cogsBySourceKey.variantCogs.get(key) || 0;
         const grossProfit = r.revenue - cogs;
         const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
         return {
@@ -150,17 +144,11 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       .sort((a, b) => b.qty - a.qty || b.grossProfit - a.grossProfit);
 
     // Add topping rows (modifiers as pseudo-products)
-    // WS-10 fix: compute topping COGS from modifier-source MAC (resolves SEMI_PRODUCTs)
-    const cogsBySource = breakdownCOGSBySource(typedLines, typedOrders, ledger as any[], spContext);
-    const toppingCogsById = new Map(
-      cogsBySource.modifierRows.map(r => [r.modifier_id, r.cogs]),
-    );
-
     const toppingRows = productRows
       .filter(r => r.product_id.startsWith("MOD:"))
       .map(r => {
         const modifierId = r.product_id.replace("MOD:", "");
-        const cogs = toppingCogsById.get(modifierId) || 0;
+        const cogs = cogsBySourceKey.modifierCogs.get(modifierId) || 0;
         const grossProfit = r.revenue - cogs;
         const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
         return {
@@ -450,6 +438,88 @@ function coerceLine(row: any): OrderLineV2 {
     net_line_total: Number(row.net_line_total) || 0,
     cost_at_sale: Number(row.cost_at_sale) || 0,
   } as OrderLineV2;
+}
+
+function splitLineCogsBySaleSource(
+  lines: OrderLineV2[],
+  orders: OrderV2[],
+  ledger: any[],
+  spContext?: any,
+): { variantCogs: Map<string, number>; modifierCogs: Map<string, number> } {
+  const variantCogs = new Map<string, number>();
+  const modifierCogs = new Map<string, number>();
+  const orderById = new Map(orders.map(order => [order.id, order]));
+  const tracker = new FIFOTracker();
+  tracker.init(ledger);
+
+  const sortedLines = [...lines].sort((a, b) => {
+    const aTime = orderById.get(a.order_id)?.created_at || "";
+    const bTime = orderById.get(b.order_id)?.created_at || "";
+    return new Date(aTime || 0).getTime() - new Date(bTime || 0).getTime();
+  });
+
+  for (const line of sortedLines) {
+    const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+    const variantKey = `${line.product_id}__${line.variant_id}`;
+    const allocations = computeSourceCogsForLine(recipe, tracker, line.qty, spContext);
+    const rawTotal = allocations.variant + allocations.modifiers.reduce((sum, modifier) => sum + modifier.cogs, 0);
+
+    if (rawTotal <= 0) {
+      addMoney(variantCogs, variantKey, line.cost_at_sale);
+      continue;
+    }
+
+    const targetTotal = line.cost_at_sale || rawTotal;
+    const scale = targetTotal / rawTotal;
+    let allocatedTotal = 0;
+
+    const scaledVariant = Math.round(allocations.variant * scale);
+    allocatedTotal += scaledVariant;
+    addMoney(variantCogs, variantKey, scaledVariant);
+
+    allocations.modifiers.forEach((modifier, index) => {
+      const isLast = index === allocations.modifiers.length - 1;
+      const scaled = isLast
+        ? targetTotal - allocatedTotal
+        : Math.round(modifier.cogs * scale);
+      allocatedTotal += scaled;
+      addMoney(modifierCogs, modifier.modifierId, scaled);
+    });
+
+    if (allocations.modifiers.length === 0 && allocatedTotal !== targetTotal) {
+      addMoney(variantCogs, variantKey, targetTotal - allocatedTotal);
+    }
+  }
+
+  return { variantCogs, modifierCogs };
+}
+
+function computeSourceCogsForLine(
+  recipe: LineRecipeSnapshot,
+  tracker: FIFOTracker,
+  lineQty: number,
+  spContext?: any,
+): { variant: number; modifiers: Array<{ modifierId: string; cogs: number }> } {
+  const variantOnly = { variant: recipe.variant, modifiers: [] };
+  const variant = computeLineCostFIFO(variantOnly, tracker, lineQty, spContext);
+
+  const modifiers = recipe.modifiers.map(modifier => {
+    const modifierOnly = {
+      variant: { target_type: "PRODUCT_VARIANT" as const, target_id: "", ingredients: [] as any[] },
+      modifiers: [modifier],
+    };
+    return {
+      modifierId: modifier.modifier_id,
+      cogs: computeLineCostFIFO(modifierOnly, tracker, lineQty, spContext),
+    };
+  });
+
+  return { variant, modifiers };
+}
+
+function addMoney(map: Map<string, number>, key: string, value: number): void {
+  if (!key || !Number.isFinite(value) || value === 0) return;
+  map.set(key, (map.get(key) || 0) + value);
 }
 
 export interface HeatmapCell {

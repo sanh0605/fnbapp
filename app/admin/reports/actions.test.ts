@@ -213,4 +213,94 @@ describe("getPnLDataV2", () => {
     expect(rowA?.marginPct).toBeCloseTo(66.67, 1);
     expect(rowB?.marginPct).toBeCloseTo(53.33, 1);
   });
+
+  it("splits COGS between product and topping rows without double-counting", async () => {
+    const orderId = "ord-with-topping";
+    const createdAt = "2026-06-15T10:00:00.000Z";
+    const order = {
+      id: orderId,
+      order_no: "TOP-001",
+      brand_id: "BR-002",
+      status: "COMPLETED",
+      version: 1,
+      parent_order_id: "",
+      superseded_by: "",
+      created_at: createdAt,
+      created_by_id: "U",
+      created_by_name: "Test",
+      completed_at: createdAt,
+      voided_at: "",
+      voided_by_id: "",
+      void_reason: "",
+      currency: "VND",
+      gross_total: 25000,
+      promo_discount_total: 0,
+      manual_item_discount_total: 0,
+      manual_order_discount: 0,
+      net_total: 25000,
+      applied_promotion_id: "",
+      applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}",
+      payment_method: "CASH",
+      payment_ref: "",
+      migration_notes: "",
+    };
+    const line = {
+      id: "ol-top",
+      order_id: orderId,
+      line_no: 1,
+      product_id: "PROD-COFFEE",
+      product_snapshot_json: JSON.stringify({ id: "PROD-COFFEE", name: "Coffee", category_id: "CAT-X", category_name: "X" }),
+      variant_id: "VAR-COFFEE",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-COFFEE", size_name: "500ml", price: 20000 }),
+      qty: 1,
+      unit_price: 20000,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-PEARL", name: "Pearl", price: 5000, qty: 1 }]),
+      gross_line_total: 25000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 25000,
+      cost_at_sale: 5000,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-COFFEE",
+          ingredients: [{ ingredient_id: "ING-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 100 }],
+        },
+        modifiers: [{
+          modifier_id: "MOD-PEARL",
+          modifier_name: "Pearl",
+          recipe: {
+            target_type: "MODIFIER",
+            target_id: "MOD-PEARL",
+            ingredients: [{ ingredient_id: "ING-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 20 }],
+          },
+        }],
+      }),
+      promo_discount_reason: "",
+      manual_discount_reason: "",
+    };
+    const ledger = [
+      { id: "po-milk", transaction_type: "PO_RECEIPT", item_reference: "ING-MILK", quantity_change: 1000, unit_cost: 30, created_at: "2026-06-01T00:00:00.000Z" },
+      { id: "po-pearl", transaction_type: "PO_RECEIPT", item_reference: "ING-PEARL", quantity_change: 1000, unit_cost: 100, created_at: "2026-06-01T00:00:00.000Z" },
+    ];
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [line];
+      if (sheet === "Stock_Ledger") return ledger;
+      return [];
+    });
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({});
+    const productRow = result.productProfitAnalysis.find(p => p.product_id === "PROD-COFFEE");
+    const toppingRow = result.productProfitAnalysis.find(p => p.product_id === "MOD:MOD-PEARL");
+
+    expect(result.totalCOGS).toBe(5000);
+    expect(productRow?.cogs).toBe(3000);
+    expect(toppingRow?.cogs).toBe(2000);
+    expect(result.productProfitAnalysis.reduce((sum, row) => sum + row.cogs, 0)).toBe(5000);
+  });
 });
