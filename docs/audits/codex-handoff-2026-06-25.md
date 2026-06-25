@@ -182,7 +182,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 
 #### Data Integrity
 - [x] **CODE-8** CRITICAL `app/admin/orders/actions.ts:337-351` `voidOrderV2` 3 writes không transaction. **Done by Claude (phiên 2026-06-26)** — reorder fail-safe (reversal+event first, order update last) + idempotency guard reject double-VOIDED. Bonus CODE-2: replace `require()` runtime bằng static `insertMany` import.
-- [ ] **CODE-9** CRITICAL `app/admin/inventory/purchase-orders/actions.ts:81-93` update PO loop remove; fail giữa → mất dữ liệu.
+- [x] **CODE-9** CRITICAL `app/admin/inventory/purchase-orders/actions.ts:81-93` update PO loop remove; fail giữa → mất dữ liệu. **Done by Claude (phiên 2026-06-26)** — replace loop remove với `removeMany` batch (atomic), accumulate line/ledger rows + `insertMany` batch. Giảm fail-between window đáng kể.
 - [ ] **CODE-10** HIGH `app/admin/orders/actions.ts:472` `editOrderV2` race condition.
 - [x] **CODE-11** HIGH `app/pos/actions.ts:138-155` `assignOrderNo` race → trùng order_no. **Done by Claude (phiên 2026-06-26)** — thêm `ensureUniqueOrderNo` post-insert verify + auto-regenerate khi collision.
 - [ ] **CODE-12** MED `findAll` (cache 5min) cho reference data trong write-path.

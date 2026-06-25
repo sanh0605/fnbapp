@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, insert, update, generateNewId, remove } from "@/lib/sheets_db";
+import { findAll, insert, insertMany, update, generateNewId, remove, removeMany } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource } from "@/types/db";
@@ -81,21 +81,22 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         supplier_invoice_code,
       });
 
-      // Xoá các dòng PO Lines cũ
+      // Claude code — CODE-9: batch remove để tránh fail-between mất dữ liệu.
+      // Trước đây loop remove từng row; nếu fail giữa chừng → trạng thái nửa xóa.
       const existingLines = await findAll("Purchase_Order_Lines");
-      const oldLines = existingLines.filter((l:any) => l.po_id === po_id);
-      for (const oldLine of oldLines) {
-        await remove("Purchase_Order_Lines", oldLine.id);
+      const oldLineIds = existingLines.filter((l:any) => l.po_id === po_id).map((l:any) => l.id);
+      if (oldLineIds.length > 0) {
+        await removeMany("Purchase_Order_Lines", oldLineIds);
       }
 
       // [P0 FIX] Xoá các bản ghi Stock_Ledger cũ liên quan đến PO này
       // để tránh tồn kho bị cộng trùng khi sửa lại đơn đã COMPLETED
       const existingLedger = await findAll("Stock_Ledger");
-      const oldLedgerEntries = existingLedger.filter(
-        (e: any) => e.reference_id === po_id && e.transaction_type === "PO_RECEIPT"
-      );
-      for (const entry of oldLedgerEntries) {
-        await remove("Stock_Ledger", entry.id);
+      const oldLedgerIds = existingLedger
+        .filter((e: any) => e.reference_id === po_id && e.transaction_type === "PO_RECEIPT")
+        .map((e: any) => e.id);
+      if (oldLedgerIds.length > 0) {
+        await removeMany("Stock_Ledger", oldLedgerIds);
       }
     } else {
       po_id = await generateNewId("Purchase_Orders", "PO");
@@ -118,15 +119,17 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       });
     }
 
-    // 2. Create PO Lines & Stock Ledger
+    // 2. Create PO Lines & Stock Ledger — Claude code — CODE-9/CODE-15: accumulate + batch insert.
+    const lineRows: any[] = [];
+    const ledgerRows: any[] = [];
     for (const line of lines) {
       const line_id = await generateNewId("Purchase_Order_Lines", "POL");
       const line_subtotal = Number(line.subtotal);
-      
+
       // Calculate unit price backwards
       const unit_price = Number(line.quantity) > 0 ? line_subtotal / Number(line.quantity) : 0;
-      
-      await insert("Purchase_Order_Lines", {
+
+      lineRows.push({
         id: line_id,
         po_id,
         purchased_item_id: line.purchased_item_id,
@@ -134,7 +137,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         quantity: line.quantity,
         unit_price: unit_price,
         subtotal: line_subtotal,
-        conversion_id: line.conversion_id || ""
+        conversion_id: line.conversion_id || "",
       });
 
       if (status === "COMPLETED") {
@@ -157,17 +160,20 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
           conversions: conversions as any[],
         });
 
-        await insert("Stock_Ledger", {
-           id: ledger_id,
-           transaction_type: "PO_RECEIPT",
-           reference_id: po_id,
-           item_reference: receipt.item_reference,
-           quantity_change: receipt.quantity_change,
-           unit_cost: receipt.unit_cost,
-           created_at: effectiveDate
+        ledgerRows.push({
+          id: ledger_id,
+          transaction_type: "PO_RECEIPT",
+          reference_id: po_id,
+          item_reference: receipt.item_reference,
+          quantity_change: receipt.quantity_change,
+          unit_cost: receipt.unit_cost,
+          created_at: effectiveDate,
         });
       }
     }
+
+    if (lineRows.length > 0) await insertMany("Purchase_Order_Lines", lineRows);
+    if (ledgerRows.length > 0) await insertMany("Stock_Ledger", ledgerRows);
 
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
