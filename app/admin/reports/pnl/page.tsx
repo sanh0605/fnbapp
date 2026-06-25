@@ -65,7 +65,7 @@ export default async function ReportsPage({
               <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng Doanh Thu</p>
               <h3 className="text-3xl font-black text-gray-900">{data.totalRevenue.toLocaleString('vi-VN')} đ</h3>
             </div>
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl">
+            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl" aria-hidden="true">
               💰
             </div>
           </div>
@@ -81,7 +81,7 @@ export default async function ReportsPage({
               <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Giá Vốn (COGS)</p>
               <h3 className="text-3xl font-black text-red-600">{data.totalCOGS.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</h3>
             </div>
-            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center text-xl">
+            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center text-xl" aria-hidden="true">
               📉
             </div>
           </div>
@@ -97,7 +97,7 @@ export default async function ReportsPage({
               <p className="text-sm font-bold text-emerald-100 uppercase tracking-wider mb-1">Lợi Nhuận Gộp</p>
               <h3 className="text-3xl font-black">{data.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</h3>
             </div>
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl" aria-hidden="true">
               📈
             </div>
           </div>
@@ -125,7 +125,7 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu tiêu hao nguyên liệu từ bán hàng.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
+          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
@@ -181,7 +181,7 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu bán hàng.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
+          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
@@ -240,7 +240,7 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu bán hàng topping.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
+          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>

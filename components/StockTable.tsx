@@ -4,6 +4,7 @@ import { useState } from "react";
 import { submitStockAdjustment, approveStockAdjustment } from "@/app/admin/inventory/actions";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { formatDateTime } from "@/lib/datetime";
 
 export default function StockTable({ 
   stockItems, 
@@ -77,7 +78,7 @@ export default function StockTable({
                     <div className="text-sm text-gray-500">
                       Thực tế: <span className="font-bold text-gray-900">{adj.actual_qty}</span> (Lệch: {adj.difference > 0 ? '+' : ''}{adj.difference}) - Lý do: {adj.reason}
                     </div>
-                    <div className="text-xs text-gray-400 mt-1">Báo cáo bởi: {adj.created_by} lúc {new Date(adj.created_at).toLocaleString("vi-VN")}</div>
+                    <div className="text-xs text-gray-400 mt-1">Báo cáo bởi: {adj.created_by} lúc {formatDateTime(adj.created_at, { withSeconds: true })}</div>
                   </div>
                   <div className="flex gap-2">
                     <button 
@@ -100,7 +101,7 @@ export default function StockTable({
         subtitle="Kiểm kê số lượng thực tế và điều chỉnh nếu có sai lệch."
       >
         <div className="relative w-full sm:w-96">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔍</span>
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400" aria-hidden="true">🔍</span>
           <input 
             type="text" 
             placeholder="Tìm nguyên liệu, bán thành phẩm..." 
@@ -113,7 +114,7 @@ export default function StockTable({
 
       {/* Desktop Table - hidden on mobile */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hidden md:block">
-        <div className="overflow-x-auto max-h-[484px] overflow-y-auto">
+        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
               <tr>

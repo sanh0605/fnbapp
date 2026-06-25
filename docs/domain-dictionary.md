@@ -101,7 +101,7 @@ Rules:
 - Editing an old order must not silently pull current product price, modifier price, promotion, or recipe for unchanged historical lines.
 - New lines added during edit may use current reference data.
 - Changed modifiers should create a new snapshot for that changed selection.
-- COGS uses FIFO at the original sale time for edited historical orders.
+- COGS uses the stored historical cost on existing lines. After the 2026-06-25 MAC decision, new and edited lines should use MAC at the relevant sale time unless a future lot-level FIFO design is approved.
 
 ## Purchase Conversion Policy
 
@@ -121,14 +121,15 @@ Rules:
 | Concept | Vietnamese UI label | Code term | Meaning |
 | --- | --- | --- | --- |
 | COGS | Giá vốn | `cost_at_sale` | Cost of goods sold stored per order line. |
-| FIFO | Nhập trước xuất trước | `FIFOTracker` | Costing method that consumes oldest inventory batches first. |
-| MAC | Bình quân | MAC/average cost | Legacy calculation path. Should not be used for current order COGS. |
-| COGS drift | Lệch giá vốn | `cogs drift` | Stored `cost_at_sale` differs from recomputed FIFO expectation. |
+| MAC | Bình quân gia quyền | MAC/weighted average cost | Preferred COGS valuation method for P&L after the 2026-06-25 architecture decision. |
+| FIFO | Nhập trước xuất trước | `FIFOTracker` | Optional audit/debug costing method. Not the primary P&L contract unless a future lot-level design is approved. |
+| COGS drift | Lệch giá vốn | `cogs drift` | Stored `cost_at_sale` differs from the accepted COGS valuation contract. |
 
 Rules:
 
-- POS create and admin edit must use the same FIFO logic.
+- POS create and admin edit must use the same MAC logic.
 - Reports should read stored line COGS unless explicitly auditing/recalculating.
+- FIFO audits are secondary checks only; quantity stock control does not depend on FIFO.
 - COGS audit is read-only unless an apply script is explicitly run.
 
 ## Reporting Terms

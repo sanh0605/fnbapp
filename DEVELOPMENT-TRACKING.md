@@ -4,6 +4,214 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-25 (Codex) — MAC COGS architecture decision
+
+**Trigger:** User asked whether the system should switch COGS from FIFO to weighted average cost while still keeping inventory quantity control strong enough for stock and reorder planning.
+
+### Decision
+
+- Inventory control remains quantity-ledger based: `Stock_Ledger.quantity_change` is still the source of truth for current stock and reorder forecasting.
+- P&L COGS direction changes to MAC/weighted average cost, pinned into `Order_Lines_V2.cost_at_sale` at sale/edit time.
+- FIFO is demoted to optional audit/debug only. It is no longer the desired primary report contract unless a future lot-level/expiry design is approved.
+
+### Files updated
+
+| File | Change |
+|---|---|
+| `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md` | New design note for separating quantity inventory from COGS valuation. |
+| `docs/domain-dictionary.md` | Updated COGS terms: MAC is preferred, FIFO is secondary audit/debug. |
+| `docs/audits/2026-06-25-full-system-audit-roadmap.md` | Added Phase 5A for MAC COGS migration and reordered recommended phases. |
+
+### Implementation status
+
+Planned only. Code conversion is intentionally not done in this doc commit. Next implementation phase should build MAC engine, switch POS/admin edit COGS, add MAC drift audit, then dry-run historical recompute before applying data changes.
+
+---
+
+## 2026-06-25 (latest) — System-wide audit fixes (Claude code)
+
+**Trigger:** User requested system-wide audit + fix khuyết điểm (UI alignment, sizing, date/time display, code smells). Claude làm P1/P2 items dễ, defer P0 + các item cần design decision cho Codex.
+
+### Done by Claude (13 items)
+
+| Item | File | Change |
+|---|---|---|
+| UI-1 | `lib/datetime.ts` (new) + `lib/datetime.test.ts` (new) | Helper `formatDateTime/formatDate/formatTime/toSaigonIsoString` dùng `Intl.DateTimeFormat` với `timeZone: "Asia/Ho_Chi_Minh"`. 9 unit tests pass. |
+| UI-1 | `app/admin/orders/OrderTable.tsx` | Replace local `formatDate` với shared helper. |
+| UI-1 | `app/admin/orders/OrderDetailModal.tsx` | Replace local `formatDate` với shared helper. |
+| UI-2 | `components/StockTable.tsx` | Replace `toLocaleString("vi-VN")` với `formatDateTime`. |
+| UI-4 | `OrderDetailModal.tsx:62` + `SalesFilter.tsx:111-113` | Touch target tăng `min-h-[36px]`, thêm `aria-label="Đóng"`. |
+| UI-5 | `app/admin/reports/sales/page.tsx:256` | Heatmap cell `text-[8px]` → `text-[10px]`. |
+| UI-6 | `pnl/page.tsx` (3 chỗ) + `StockTable.tsx` | `max-h-[484px]` → `max-h-[60vh]`. |
+| UI-7 | `ModifiersClient.tsx:131` | `"active recipes"` → `"phiên bản hoạt động"`. |
+| UI-10 | `OrderDetailModal.tsx` (6 chỗ) | `XXđ` → `XX đ` (consistent with PnL). |
+| UI-11 | `OrderTable.tsx` | Bỏ giây trong cell table (modal vẫn giữ HH:MM). |
+| UI-16 | `StockTable.tsx:103` | `aria-hidden="true"` cho icon `🔍`. |
+| UI-18 | `OrderTable.tsx:359` | Remove className conflict `bg-white bg-gray-50`. |
+| UI-19 | `OrderDetailModal.tsx` (2 chỗ) | Backdrop unified `bg-black/50 backdrop-blur-sm`. |
+| UI-21 | `pnl/page.tsx` (3 chỗ) | `aria-hidden="true"` cho emoji icons. |
+| CODE-5 | `lib/report-v2-allocators.ts` | Added `parseSpIngredients` helper throws on malformed JSON; replaced 2 silent `try/catch {}` blocks in `breakdownCOGSByIngredient`. |
+
+### Deferred to Codex
+
+Xem `docs/audits/codex-handoff-2026-06-25.md` cho full list với status `[ ]`. Tóm tắt:
+
+- **P0 (critical)**: CODE-22 (auth guard), CODE-8/9 (transactions), CODE-11 (order_no race)
+- **P1 cần design**: UI-3 (SalesFilter URL backward-compat), UI-8/9 (CustomDatePicker rewrite), UI-12/13 (mobile fallback), CODE-1/18-21 (large refactor)
+- **P2 minor**: UI-14/15/17/20 (PO form, items UI)
+
+### Verification
+
+- Test suite: **175/175 pass** (was 166, +9 datetime tests)
+- COGS drift audit: **0 mismatch**
+- TS check: clean cho files Claude động
+
+### Codex review notes (thêm)
+
+9. `lib/datetime.ts` mới — verify timezone behavior với runtime khác nhau (Node.js production). Test với `process.env.TZ` khác.
+10. `parseSpIngredients` throw — `breakdownCOGSByIngredient` giờ có thể throw nếu SP có `ingredients_json` hỏng. Caller `getPnLDataV2` đã có try/catch outer (line 205) nên an toàn, nhưng nên verify fallback trả empty data istead of crash.
+
+---
+
+## 2026-06-25 — Phase 2/3/4/5/6 Audits + Dao Mieng COGS Bug Fix (Claude code)
+
+**Trigger:** User reported "Đào miếng" topping showing COGS = 0 in P&L report. Codex ran out of tokens mid-investigation. User asked Claude to continue bug fix + all remaining roadmap items.
+
+### Bug investigation (Dao Mieng COGS = 0)
+
+Codex's previous audit reported "no bug" because `audit-cogs-drift.ts` passed. But that audit measures total line COGS (stored vs FIFO recompute), not the **breakdown by source** (variant vs modifier). The two measurements differ.
+
+Root cause via diagnostic (`scripts/diagnose-dao-mieng-full-flow.ts` — temporary, removed after fix):
+
+- `splitLineCogsBySaleSource` (P&L topping rows) passed **full ledger** to `FIFOTracker.init()`.
+- `FIFOTracker.init()` (`lib/fifo-tracker.ts:38-51`) consumes `SALES_CONSUME` during initialization.
+- After init, batches are in "current stock" state (all historical sales already deducted).
+- When allocator loops through 530+ lines, ING-017 is depleted by the time it reaches UCK000245 → modifier COGS = 0.
+- Same bug in `breakdownCOGSByIngredient` and `breakdownCOGSBySource` (`lib/report-v2-allocators.ts`).
+- `auditCogsDrift` (`lib/cogs-drift-audit.ts:136-143`) was correct because it filters `SALES_CONSUME` + `EDIT_REVERSAL` before init.
+
+Diagnostic confirmed:
+- Buggy (full ledger): ING-017 at UCK000245 = 0 → modifier COGS = 0
+- Fixed (filtered ledger): ING-017 at UCK000245 = 22 → modifier COGS = 4000
+
+### Fixes applied
+
+| File | Change |
+|---|---|
+| `lib/report-v2-allocators.ts` | Exported `filterLedgerForFifoInit` helper. Applied to `breakdownCOGSByIngredient` (line 136) and `breakdownCOGSBySource` (line 253). |
+| `app/admin/reports/actions.ts` | Applied `filterLedgerForFifoInit` in `splitLineCogsBySaleSource` (line 458). |
+| `lib/report-v2-allocators.test.ts` | Added 2 regression tests ("WS-12 fix" + "bug manifests when SALES_CONSUME exhausts PO_RECEIPT"). |
+
+### Phase 5.3 — Date range + Asia/Saigon timezone
+
+| File | Change |
+|---|---|
+| `lib/report-time.ts` (new) | `toSaigonUtcRange(startDate, endDate)` helper: interprets date-only inputs as start/end of day in Asia/Saigon (UTC+7). Full ISO inputs pass through unchanged. |
+| `lib/report-time.test.ts` (new) | 6 unit tests covering date-only, ISO, mixed, month boundary. |
+| `app/admin/reports/actions.ts` | Applied `toSaigonUtcRange` in `getPnLDataV2`, `getSalesDataV2`, `getHourlyHeatmapV2`, `getPromotionPerformanceV2`. Eliminates the previous inconsistent handling between P&L page (no conversion) and sales page (local-time conversion). |
+
+### Phase 5.2 — Sales report gross/discount/payment breakdown
+
+| File | Change |
+|---|---|
+| `app/admin/reports/actions.ts` | Extended `SalesReportResult` with `grossRevenue`, `systemPromotionDiscount`, `manualItemDiscount`, `manualOrderDiscount`, `totalDiscount`, `paymentBreakdown`. Computed in `getSalesDataV2` from `gross_total`, `promo_discount_total`, `manual_item_discount_total`, `manual_order_discount`, `payment_method`. |
+| `app/admin/reports/sales/page.tsx` | Added 2 new cards: "Chi tiết Giảm giá" (discount breakdown) and "Doanh thu theo PT Thanh toán" (payment methods). Updated existing stat cards to show summary in subtitles. |
+
+### Phase 5.4 — Stock report
+
+| File | Change |
+|---|---|
+| `app/admin/inventory/actions.ts` | `getRealtimeStock` now filters `is_non_inventory === "TRUE"` from base ingredients before listing — matches `audit-current-stock.ts` behavior. Prevents items like "Trái tắc" from cluttering the stock UI. |
+
+### Verification
+
+- Full test suite: **166/166 passing** (was 155 at baseline; +6 timezone + 2 dao mieng regression tests added; +3 from prior unrelated commits).
+- COGS drift audit: **0 mismatched lines**, delta **0đ** (unchanged — fix only affects breakdown, not totals).
+- TypeScript: clean for all touched files. Pre-existing TS error in `lib/modifier-recipe.test.ts:21` (discriminated union narrowing) — not introduced by this work, mentioned to user.
+
+### Codex review notes
+
+Items Codex should review:
+
+1. **`filterLedgerForFifoInit` pattern** in `lib/report-v2-allocators.ts` and `app/admin/reports/actions.ts` — should match `auditCogsDrift` semantics. Are there other ledger entry types (e.g., `STOCK_ADJUST`, `EDIT_CONSUME`) that should also be excluded?
+2. **`toSaigonUtcRange` behavior** when input has time component but no timezone suffix (e.g., `"2026-06-25T08:00:00"`) — currently passed through to `new Date()` which interprets as UTC for date-only or local for date+time. Confirm desired behavior.
+3. **`getRealtimeStock` cache staleness** — function still uses `findAll` (cached 60s) for Base_Ingredients/Semi_Products/Units, but `findAllNoCache` for Stock_Ledger. If user marks item as non-inventory, UI may show stale data for up to 60s. Acceptable?
+4. **Sales page date conversion** (`app/admin/reports/sales/page.tsx:37-51`) — still converts `startParam` to ISO via `new Date()` + `toISOString()`. With new server-side helper, this conversion is redundant for date-only inputs but still works correctly for ISO. Could simplify by passing `startParam` directly.
+5. **Pre-existing TS error** in `lib/modifier-recipe.test.ts:21` — fix when convenient.
+
+### Out of scope (left for future)
+
+- Phase 3 Task 3.3 — cancel/void order audit (return stock, revenue/COGS exclusion).
+- Phase 4 Task 4.3 — stock adjustments audit (reasons, reports).
+- Phase 6, 7, 8 — script cleanup, mobile-first UI, offline/sync.
+
+---
+
+## 2026-06-25 (later) — Phase 2/3/4/6 audits + scripts (Claude code)
+
+**Trigger:** User asked to complete all remaining roadmap tasks after Phase 5 + bug fix.
+
+### Phase 2 — Purchase orders
+
+- **Task 2.2**: Translated 4 error messages in `lib/purchase-ledger-rebuild.ts` from English to Vietnamese (`Không tìm thấy quy đổi`, `không thuộc mặt hàng`, `Quy đổi mơ hồ`, `Thiếu quy đổi`). Updated `lib/purchase-ledger-rebuild.test.ts` to match.
+- **Task 2.3**: Wrote `scripts/audit-po-save-ledger.ts`. Verified 36 completed POs: 0 missing ledger, 0 mismatch.
+
+### Phase 3 — Orders / lifecycle
+
+- **Task 3.3**: Wrote `scripts/audit-void-orders.ts`. Verified 5 VOIDED + 4 SUPERSEDED orders: all have proper EDIT_REVERSAL entries matching SALES_CONSUME qty, no double-reversal, all events have non-empty reasons. Code in `app/admin/orders/actions.ts:voidOrderV2` was already correct.
+- **Task 3.4**: Wrote `scripts/audit-order-total-consistency.ts`. Verified 886 COMPLETED orders: `sum(gross_line_total) = gross_total`, `sum(promo_discount) = promo_discount_total`, etc. 0 mismatch → modal/table/report all use same source data.
+- **Task 3.5**: Confirmed existing coverage — `lib/order-edit-cart.test.ts` (9 tests, snapshot preservation + cart math), `lib/order-ledger-audit.test.ts` (4 tests, ledger net correction). E2E smoke deferred (needs Playwright).
+
+### Phase 4 — Inventory / production
+
+- **Task 4.1**: Wrote `scripts/audit-stock-ledger-schema.ts`. Verified 4050 ledger rows: 0 invalid types, 0 sign violations, 0 missing references.
+- **Task 4.2**: Confirmed `app/admin/production/actions.ts` writes `PRODUCTION_CONSUME` (negative) + `PRODUCTION_YIELD` (positive) correctly. `scripts/audit-production-stock.ts` shows 0 mismatches. Policy: always allow + record (no insufficient-stock check).
+- **Task 4.3**: Fixed `submitStockAdjustment` in `app/admin/inventory/actions.ts` to require non-empty `reason`. Wrote `scripts/audit-stock-adjustments.ts`.
+- **Task 4.4**: Wrote `scripts/audit-negative-periods-classification.ts`. All 9 negative periods classified as `MIGRATION_GAP_NO_YIELD` (SP consumed before migration backfilled production history). All affect COGS. All resolved (end_balance = 0).
+
+### Phase 6.1 — Script cleanup plan
+
+- Wrote `scripts/generate-script-cleanup-plan.ts` (self-categorizing).
+- Generated `docs/audits/script-cleanup-plan.md` covering 135 scripts:
+  - KEEP_AUDIT: 26
+  - KEEP_RUNBOOK: 19
+  - KEEP_MIGRATION_HISTORY: 14
+  - ARCHIVE_DOC_ONLY: 25
+  - DELETE_ONE_OFF: 51
+- Phase 6.2 (actual deletion) **deferred** — heuristic categorization may misclassify; deletion is destructive; needs user review per script.
+
+### Verification
+
+- Full test suite: **166/166 passing**.
+- COGS drift audit: 0 mismatched lines, delta 0đ.
+- Current stock audit: 0 negative.
+- All new audit scripts run clean on existing data.
+
+### Deferred (needs different approach)
+
+- **Phase 5.5** manual compare with UI: needs dev server.
+- **Phase 6.2** script deletion: needs user review per script.
+- **Phase 6.3-6.5** module deepening: significant refactor, needs alignment.
+- **Phase 7** mobile UI audit: needs dev server + browser testing at 360/375px.
+- **Phase 8** offline/sync: major architectural change, needs design approval before implementation.
+- **Task 2.6** PO creation on dev server: needs UI manual test.
+- **Task 3.5 E2E smoke**: needs Playwright.
+
+### Codex review notes (additional)
+
+6. New audit scripts (7 total) — review naming, output format, contract:
+   - `audit-void-orders.ts`
+   - `audit-order-total-consistency.ts`
+   - `audit-stock-ledger-schema.ts`
+   - `audit-stock-adjustments.ts`
+   - `audit-po-save-ledger.ts`
+   - `audit-negative-periods-classification.ts`
+   - `generate-script-cleanup-plan.ts`
+7. `submitStockAdjustment` reason validation — backwards-incompatible change. Existing callers (UI form) must pass non-empty reason or will get failure. Confirm UI form already sends reason.
+8. Vietnamese error messages in `purchase-ledger-rebuild.ts` — confirm downstream display (UI toast) renders Vietnamese correctly.
+
+---
+
 ## 2026-06-19 — WS-9 PHD000522 Promo Under-count Fix (1 order)
 
 **Trigger:** User asked to identify specific orders causing 3 drinks to deviate from 15k/25k pattern in PnL report.

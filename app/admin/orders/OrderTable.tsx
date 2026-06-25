@@ -7,6 +7,7 @@ import { voidOrderV2 } from "./actions";
 import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
 import StickyFilterBar from "@/components/StickyFilterBar";
+import { formatDateTime } from "@/lib/datetime";
 
 import type { OrderListItem } from "./actions";
 
@@ -131,11 +132,8 @@ export default function OrderTable({
 
   const hasActiveFilters = searchQuery || startDate || endDate || paymentFilter || brandFilter;
 
-  const formatDate = (dateString: string) => {
-    const d = new Date(dateString);
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  };
+  // Claude code — UI-1/UI-11: use shared datetime helper, drop seconds in table cell.
+  const formatDate = (dateString: string) => formatDateTime(dateString);
 
   const rightContent = (
     <>
@@ -356,7 +354,7 @@ export default function OrderTable({
 
       {/* Pagination Wrapper */}
       {totalPages > 1 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
+        <div className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-sm text-gray-500 text-center sm:text-left">
             Hiển thị <span className="font-bold text-gray-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-bold text-gray-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)}</span> trong tổng số <span className="font-bold text-gray-900">{filteredOrders.length}</span> đơn hàng
           </div>

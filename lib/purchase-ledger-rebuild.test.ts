@@ -32,7 +32,7 @@ describe("buildPurchaseReceipt", () => {
           conversion({ id: "QD-1000", conversion_rate: "1000" }),
         ],
       }),
-    ).toThrow(/Ambiguous conversion/);
+    ).toThrow(/Quy đổi mơ hồ/);
   });
 
   it("rejects a conversion_id from another purchased item", () => {
@@ -49,7 +49,7 @@ describe("buildPurchaseReceipt", () => {
           }),
         ],
       }),
-    ).toThrow(/does not belong to purchased item/);
+    ).toThrow(/không thuộc mặt hàng/);
   });
 });
 

@@ -29,6 +29,24 @@ export interface IngredientCOGSRow {
   qty_consumed: number;
 }
 
+/**
+ * Filter ledger entries before passing to FIFOTracker.init().
+ *
+ * Why: FIFOTracker.init() consumes SALES_CONSUME / PRODUCTION_CONSUME during
+ * initialization. If allocator functions pass full ledger, batches are
+ * depleted before per-line consumption — causing late-processed lines to
+ * see zero stock and report COGS = 0 for their modifiers.
+ * Mirrors auditCogsDrift pattern in lib/cogs-drift-audit.ts.
+ *
+ * Claude code — fix for "Đào miếng" topping showing 0 COGS in P&L.
+ */
+export function filterLedgerForFifoInit(ledger: any[]): any[] {
+  return ledger.filter(e =>
+    e.transaction_type !== "SALES_CONSUME" &&
+    e.transaction_type !== "EDIT_REVERSAL",
+  );
+}
+
 function modifierQtyByIdFromLine(line: OrderLineV2): Map<string, number> {
   try {
     const modifiers = JSON.parse(line.modifiers_snapshot_json || "[]");
@@ -37,6 +55,25 @@ function modifierQtyByIdFromLine(line: OrderLineV2): Map<string, number> {
   } catch {
     return new Map();
   }
+}
+
+/**
+ * Parse SEMI_PRODUCT ingredients JSON. Throws on malformed JSON so callers
+ * surface the error instead of silently producing COGS = 0.
+ *
+ * Claude code — CODE-5 fix.
+ */
+function parseSpIngredients(ingredientsJson: string, spId: string): any[] {
+  let parsed: any;
+  try {
+    parsed = JSON.parse(ingredientsJson);
+  } catch (err) {
+    throw new Error(`SEMI_PRODUCT ${spId} has malformed ingredients_json: ${(err as Error).message}`);
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error(`SEMI_PRODUCT ${spId} ingredients_json is not an array`);
+  }
+  return parsed;
 }
 
 /**
@@ -134,7 +171,7 @@ export function breakdownCOGSByIngredient(
 
   // WS-11: FIFO tracker shared across lines (must process chronologically)
   const tracker = new FIFOTracker();
-  tracker.init(ledger);
+  tracker.init(filterLedgerForFifoInit(ledger));
 
   // Sort lines by order.created_at for FIFO correctness
   const sortedLines = [...lines].sort((a, b) => {
@@ -158,18 +195,19 @@ export function breakdownCOGSByIngredient(
       if (ing.quantity <= 0) continue;
       if (ing.ingredient_type === "SEMI_PRODUCT" && spContext) {
         const spRecipe = spContext.recipes.find((r: any) => r.target_id === ing.ingredient_id);
-        if (!spRecipe || !spRecipe.ingredients_json) continue;
-        try {
-          const spIngs = JSON.parse(spRecipe.ingredients_json);
-          const yieldQty = spContext.yields.get(ing.ingredient_id) || 1;
-          if (yieldQty <= 0) continue;
-          for (const spIng of spIngs) {
-            baseIngredients.push({
-              id: spIng.ingredient_id,
-              qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty,
-            });
-          }
-        } catch {}
+        if (!spRecipe || !spRecipe.ingredients_json) {
+          // Claude code — CODE-5: surface missing SP recipe instead of silent skip.
+          throw new Error(`SEMI_PRODUCT ${ing.ingredient_id} has no recipe in spContext (variant)`);
+        }
+        const spIngs = parseSpIngredients(spRecipe.ingredients_json, ing.ingredient_id);
+        const yieldQty = spContext.yields.get(ing.ingredient_id) || 1;
+        if (yieldQty <= 0) continue;
+        for (const spIng of spIngs) {
+          baseIngredients.push({
+            id: spIng.ingredient_id,
+            qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty,
+          });
+        }
       } else if (ing.ingredient_type === "BASE_INGREDIENT") {
         baseIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * lineQty });
       }
@@ -182,18 +220,18 @@ export function breakdownCOGSByIngredient(
         if (ing.quantity <= 0) continue;
         if (ing.ingredient_type === "SEMI_PRODUCT" && spContext) {
           const spRecipe = spContext.recipes.find((r: any) => r.target_id === ing.ingredient_id);
-          if (!spRecipe || !spRecipe.ingredients_json) continue;
-          try {
-            const spIngs = JSON.parse(spRecipe.ingredients_json);
-            const yieldQty = spContext.yields.get(ing.ingredient_id) || 1;
-            if (yieldQty <= 0) continue;
-            for (const spIng of spIngs) {
-              baseIngredients.push({
-                id: spIng.ingredient_id,
-                qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty * modifierQty,
-              });
-            }
-          } catch {}
+          if (!spRecipe || !spRecipe.ingredients_json) {
+            throw new Error(`SEMI_PRODUCT ${ing.ingredient_id} has no recipe in spContext (modifier ${modEntry.modifier_id})`);
+          }
+          const spIngs = parseSpIngredients(spRecipe.ingredients_json, ing.ingredient_id);
+          const yieldQty = spContext.yields.get(ing.ingredient_id) || 1;
+          if (yieldQty <= 0) continue;
+          for (const spIng of spIngs) {
+            baseIngredients.push({
+              id: spIng.ingredient_id,
+              qty: (Number(spIng.quantity || 0) / yieldQty) * ing.quantity * lineQty * modifierQty,
+            });
+          }
         } else if (ing.ingredient_type === "BASE_INGREDIENT") {
           baseIngredients.push({ id: ing.ingredient_id, qty: ing.quantity * lineQty * modifierQty });
         }
@@ -251,7 +289,7 @@ export function breakdownCOGSBySource(
 
   // WS-11: build FIFO tracker + sort lines by order.created_at so batches consumed chronologically
   const tracker = new FIFOTracker();
-  tracker.init(ledger);
+  tracker.init(filterLedgerForFifoInit(ledger));
 
   // Sort lines by their order's created_at ascending for FIFO correctness
   const sortedLines = [...lines].sort((a, b) => {

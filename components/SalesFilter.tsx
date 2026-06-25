@@ -108,9 +108,9 @@ function SalesFilterInner({
 
   const rightContent = (
     <div className="flex gap-2">
-      <button onClick={() => setPreset(0)} className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Hôm nay</button>
-      <button onClick={() => setPreset(7)} className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">7 ngày</button>
-      <button onClick={() => setPreset(30)} className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">30 ngày</button>
+      <button onClick={() => setPreset(0)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[36px]">Hôm nay</button>
+      <button onClick={() => setPreset(7)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[36px]">7 ngày</button>
+      <button onClick={() => setPreset(30)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[36px]">30 ngày</button>
     </div>
   );
 

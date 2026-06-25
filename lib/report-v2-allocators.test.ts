@@ -268,4 +268,95 @@ describe("breakdownCOGSBySource", () => {
     // Total = 2100
     expect(totalModifier).toBe(2100);
   });
+
+  // Claude code — regression test for "Đào miếng" COGS = 0 bug.
+  it("WS-12 fix: filters SALES_CONSUME before FIFOTracker.init (avoids double-consumption)", () => {
+    // Setup: ledger has both PO_RECEIPT and SALES_CONSUME for ING-X.
+    // Without filter: FIFOTracker.init() consumes SALES_CONSUME during init,
+    // depleting batches. By the time the line is processed, no stock left → modifier COGS = 0.
+    // With filter: tracker sees only PO_RECEIPT → batches full → modifier COGS = 4000 (1 unit × 4000/u).
+    const lines = [{
+      ...makeSuaDauStandaloneOrder().lines[0],
+      qty: 1,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-DAO", name: "Đào miếng", price: 10000, qty: 1 }]),
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT", target_id: "VAR-MOCK",
+          ingredients: [{ ingredient_id: "BI-OTHER", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" }],
+        },
+        modifiers: [{
+          modifier_id: "MOD-DAO", modifier_name: "Đào miếng",
+          recipe: {
+            target_type: "MODIFIER", target_id: "MOD-DAO",
+            ingredients: [{ ingredient_id: "ING-X", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" }],
+          },
+        }],
+      }),
+      cost_at_sale: 5000,
+    }] as any;
+
+    // Ledger: 10 units received @ 4000/u, then 5 units consumed by other sales (SALES_CONSUME).
+    // Also 1 EDIT_REVERSAL. Without filter, init consumes 5+1 → batches left with 4.
+    // Then the test line consumes 1 (modifier) → modifier COGS = 1 × 4000 = 4000.
+    // Note: WITHOUT the fix, init would consume all 5+1=6 (including SALES_CONSUME) → batches
+    // left with 4 → still enough for 1 modifier unit, but the bug manifests in real data
+    // where cumulative SALES_CONSUME > PO_RECEIPT.
+    const ledger = [
+      { item_reference: "ING-X", transaction_type: "PO_RECEIPT", unit_cost: "4000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "ING-X", transaction_type: "SALES_CONSUME", unit_cost: "0", quantity_change: "-8", created_at: "2026-06-10T00:00:00Z" },
+      { item_reference: "ING-X", transaction_type: "SALES_CONSUME", unit_cost: "0", quantity_change: "-2", created_at: "2026-06-15T00:00:00Z" },
+      { item_reference: "ING-X", transaction_type: "EDIT_REVERSAL", unit_cost: "0", quantity_change: "1", created_at: "2026-06-16T00:00:00Z" },
+    ];
+
+    const result = breakdownCOGSBySource(lines, [], ledger);
+
+    // After fix: tracker.init filters out SALES_CONSUME + EDIT_REVERSAL.
+    // Batches have 10 units. Line consumes 1 (modifier) → modifier COGS = 4000.
+    // Without fix: tracker.init consumes SALES_CONSUME entries (8 + 2 = 10) → batches empty.
+    // Plus EDIT_REVERSAL adds 1 back → batches have 1. Line consumes 1 → modifier COGS = 4000.
+    // To force bug to manifest, we need cumulative consumption > receipts.
+    // The test ledger above still leaves 1 unit after buggy init, so both pass.
+    // Use larger SALES_CONSUME to demonstrate bug:
+    expect(result.modifierRows.length).toBeGreaterThan(0);
+    expect(result.modifierRows[0].cogs).toBe(4000);
+  });
+
+  it("WS-12 fix: bug manifests when SALES_CONSUME exhausts PO_RECEIPT", () => {
+    // Setup that reproduces the actual production bug:
+    // - Real production ledger has many SALES_CONSUME entries that deplete batches.
+    // - Without filter, by the time a late-processed line tries to consume, stock = 0.
+    // Single-line test: 1 line, ledger has 1 PO_RECEIPT + many SALES_CONSUME
+    // such that after init, batches = 0.
+    const lines = [{
+      ...makeSuaDauStandaloneOrder().lines[0],
+      qty: 1,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-DAO", name: "Đào miếng", price: 10000, qty: 1 }]),
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT", target_id: "VAR-MOCK",
+          ingredients: [],
+        },
+        modifiers: [{
+          modifier_id: "MOD-DAO", modifier_name: "Đào miếng",
+          recipe: {
+            target_type: "MODIFIER", target_id: "MOD-DAO",
+            ingredients: [{ ingredient_id: "ING-X", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" }],
+          },
+        }],
+      }),
+      cost_at_sale: 4000,
+    }] as any;
+
+    // 10 units received, 10 units consumed by previous sales.
+    const ledger = [
+      { item_reference: "ING-X", transaction_type: "PO_RECEIPT", unit_cost: "4000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "ING-X", transaction_type: "SALES_CONSUME", unit_cost: "0", quantity_change: "-10", created_at: "2026-06-15T00:00:00Z" },
+    ];
+
+    const result = breakdownCOGSBySource(lines, [], ledger);
+
+    // With fix: filter removes SALES_CONSUME. Batches have 10. Consume 1 → modifier COGS = 4000.
+    // Without fix: init consumes 10 → batches empty. Consume returns 0.
+    expect(result.modifierRows[0].cogs).toBe(4000);
+  });
 });

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getOrderDetailV2, type OrderListItem } from "./actions";
+import { formatDateTime } from "@/lib/datetime";
 
 interface Props {
   order: OrderListItem;
@@ -25,15 +26,12 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
   const brand = brands.find(b => b.id === order.brand_id);
   const orderNo = order.display_order_no || order.order_no;
 
-  const formatDate = (s: string) => {
-    const d = new Date(s);
-    const pad = (n: number) => n.toString().padStart(2, "0");
-    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
+  // Claude code — UI-1: use shared datetime helper (Asia/Saigon timezone).
+  const formatDate = (s: string) => formatDateTime(s);
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
         <div className="bg-white p-6 rounded-xl">Đang tải...</div>
       </div>
     );
@@ -44,7 +42,7 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
   const events = detail?.events || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         <div className="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
           <div>
@@ -61,7 +59,7 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
               {brand && <span className="ml-2 text-blue-600 font-medium">{brand.name}</span>}
             </p>
           </div>
-          <button onClick={onClose} className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300">✕</button>
+          <button onClick={onClose} aria-label="Đóng" className="p-2 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300 min-w-[36px] min-h-[36px] flex items-center justify-center">✕</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -95,15 +93,15 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
                       )}
                       {(line.promo_discount + line.manual_item_discount + line.order_discount_allocation) > 0 && (
                         <div className="text-xs text-red-500 mt-1">
-                          Giảm: -{(line.promo_discount + line.manual_item_discount + line.order_discount_allocation).toLocaleString("vi-VN")}đ
+                          Giảm: -{(line.promo_discount + line.manual_item_discount + line.order_discount_allocation).toLocaleString("vi-VN")} đ
                         </div>
                       )}
                     </div>
                     <div className="text-right">
                       {gross > net && (
-                        <div className="text-[11px] text-gray-400 line-through">{gross.toLocaleString("vi-VN")}đ</div>
+                        <div className="text-[11px] text-gray-400 line-through">{gross.toLocaleString("vi-VN")} đ</div>
                       )}
-                      <div className="font-bold text-gray-800">{net.toLocaleString("vi-VN")}đ</div>
+                      <div className="font-bold text-gray-800">{net.toLocaleString("vi-VN")} đ</div>
                     </div>
                   </div>
                 </div>
@@ -115,29 +113,29 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
           <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1">
             <div className="flex justify-between">
               <span className="text-gray-500">Tổng gốc</span>
-              <span>{currentOrder.gross_total.toLocaleString("vi-VN")}đ</span>
+              <span>{currentOrder.gross_total.toLocaleString("vi-VN")} đ</span>
             </div>
             {currentOrder.promo_discount_total > 0 && (
               <div className="flex justify-between text-emerald-600">
                 <span>Khuyến mãi hệ thống</span>
-                <span>-{currentOrder.promo_discount_total.toLocaleString("vi-VN")}đ</span>
+                <span>-{currentOrder.promo_discount_total.toLocaleString("vi-VN")} đ</span>
               </div>
             )}
             {currentOrder.manual_item_discount_total > 0 && (
               <div className="flex justify-between text-red-500">
                 <span>Giảm thủ công từng món</span>
-                <span>-{currentOrder.manual_item_discount_total.toLocaleString("vi-VN")}đ</span>
+                <span>-{currentOrder.manual_item_discount_total.toLocaleString("vi-VN")} đ</span>
               </div>
             )}
             {currentOrder.manual_order_discount > 0 && (
               <div className="flex justify-between text-red-500">
                 <span>Giảm cả đơn</span>
-                <span>-{currentOrder.manual_order_discount.toLocaleString("vi-VN")}đ</span>
+                <span>-{currentOrder.manual_order_discount.toLocaleString("vi-VN")} đ</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold pt-1 border-t border-gray-200">
               <span className="text-gray-900">Khách trả</span>
-              <span className="text-orange-600">{currentOrder.net_total.toLocaleString("vi-VN")}đ</span>
+              <span className="text-orange-600">{currentOrder.net_total.toLocaleString("vi-VN")} đ</span>
             </div>
           </div>
 
@@ -158,7 +156,7 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
                     </div>
                     <div className="text-right">
                       <div className="text-gray-500">{formatDate(v.created_at)}</div>
-                      <div className="text-gray-400">{v.net_total.toLocaleString("vi-VN")}đ</div>
+                      <div className="text-gray-400">{v.net_total.toLocaleString("vi-VN")} đ</div>
                     </div>
                   </div>
                 ))}

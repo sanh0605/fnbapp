@@ -386,7 +386,10 @@ export const getRealtimeStock = unstable_cache(
     });
 
     const allItems = [
-      ...baseIngredients.map((b: any) => ({ ...b, item_type: "BASE_INGREDIENT" })),
+      // Claude code — Phase 5.4: filter non-inventory items to keep stock UI focused.
+      ...baseIngredients
+        .filter((b: any) => b.is_non_inventory !== true && b.is_non_inventory !== "TRUE")
+        .map((b: any) => ({ ...b, item_type: "BASE_INGREDIENT" })),
       ...semiProducts.map((s: any) => ({ ...s, item_type: "SEMI_PRODUCT" }))
     ];
 
@@ -407,6 +410,10 @@ export const getRealtimeStock = unstable_cache(
 
 export async function submitStockAdjustment(data: any, role: string, username: string): Promise<ActionResponse> {
   try {
+    // Claude code — Phase 4.3: adjustment reason required for audit traceability.
+    if (!data?.reason || String(data.reason).trim().length === 0) {
+      return fail("Lý do điều chỉnh là bắt buộc");
+    }
     const nowIso = new Date().toISOString();
     const id = await generateNewId("Stock_Adjustments", "SADJ");
     

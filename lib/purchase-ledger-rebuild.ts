@@ -74,11 +74,12 @@ export function resolveConversion(
   if (conversionId) {
     const conversion = conversions.find(candidate => candidate.id === conversionId);
     if (!conversion) {
-      throw new Error(`Conversion ${conversionId} not found for line ${line.id || ""}`);
+      // Claude code — Phase 2.2: user-facing errors in tiếng Việt.
+      throw new Error(`Không tìm thấy quy đổi ${conversionId} cho dòng ${line.id || ""}`);
     }
     if (conversion.purchased_item_id !== purchasedItemId) {
       throw new Error(
-        `Conversion ${conversionId} does not belong to purchased item ${purchasedItemId} for line ${line.id || ""}`,
+        `Quy đổi ${conversionId} không thuộc mặt hàng ${purchasedItemId} ở dòng ${line.id || ""}`,
       );
     }
     return conversion;
@@ -93,10 +94,10 @@ export function resolveConversion(
   if (candidates.length === 1) return candidates[0];
   if (candidates.length > 1) {
     throw new Error(
-      `Ambiguous conversion for line ${line.id || ""}: ${candidates.map(candidate => candidate.id).join(",")}`,
+      `Quy đổi mơ hồ cho dòng ${line.id || ""}: ${candidates.map(candidate => candidate.id).join(",")}`,
     );
   }
-  throw new Error(`Missing conversion for line ${line.id || ""}`);
+  throw new Error(`Thiếu quy đổi cho dòng ${line.id || ""}`);
 }
 
 function calculateLineLandedCost(po: PurchaseOrderInput, line: PurchaseOrderLineInput): number {

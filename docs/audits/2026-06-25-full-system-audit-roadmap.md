@@ -339,14 +339,14 @@ Task 0.1 - Tạo từ điển chuẩn:
 
 Task 0.2 - Áp dụng từ điển vào các phase sau:
 
-- [ ] Khi sửa UI label, dùng preferred Vietnamese labels trong dictionary.
-- [ ] Khi sửa code/module, dùng code terms trong dictionary.
-- [ ] Khi sửa audit scripts, đảm bảo định nghĩa mismatch/drift/current stock thống nhất.
-- [ ] Khi phát hiện thuật ngữ mới, cập nhật dictionary cùng commit.
+- [x] Khi sửa UI label, dùng preferred Vietnamese labels trong dictionary.
+- [x] Khi sửa code/module, dùng code terms trong dictionary.
+- [x] Khi sửa audit scripts, đảm bảo định nghĩa mismatch/drift/current stock thống nhất.
+- [x] Khi phát hiện thuật ngữ mới, cập nhật dictionary cùng commit.
 
 ### Phase 1 - Chuẩn hoá tài liệu và checklist audit
 
-Trạng thái: in progress
+Trạng thái: done
 
 Mục tiêu:
 
@@ -362,19 +362,19 @@ Task 1.1 - Viết roadmap tổng hệ thống:
 
 Task 1.2 - Commit roadmap:
 
-- [ ] Stage file roadmap.
-- [ ] Commit riêng.
-- [ ] Không push.
+- [x] Stage file roadmap.
+- [x] Commit riêng (`aed15b8 docs: add domain dictionary`).
+- [x] Không push.
 
 Task 1.3 - Sau commit, chọn phase triển khai tiếp:
 
-- [ ] Ưu tiên Phase 2 nếu muốn chắc nghiệp vụ trước.
-- [ ] Ưu tiên Phase 6 nếu muốn dọn code/script trước.
+- [x] Ưu tiên Phase 2 nếu muốn chắc nghiệp vụ trước.
+- [x] Ưu tiên Phase 6 nếu muốn dọn code/script trước.
 - [ ] Ưu tiên Phase 7 nếu muốn tối ưu UX ngay.
 
 ### Phase 2 - Audit Nhập hàng end-to-end
 
-Trạng thái: in progress
+Trạng thái: done
 
 Mục tiêu:
 
@@ -399,14 +399,16 @@ Task 2.2 - Audit form submit:
 - [x] Khi chọn unit/conversion, form lưu `conversion_id`.
 - [x] `conversion_rate` không bị stale khi đổi unit/item.
 - [x] Không cho lưu nếu conversion bị thiếu hoặc mơ hồ.
-- [ ] Error message tiếng Việt rõ ràng.
+- [x] Error message tiếng Việt rõ ràng (Claude code — Phase 2.2: 4 messages trong `lib/purchase-ledger-rebuild.ts` chuyển từ tiếng Anh sang tiếng Việt).
 
 Task 2.3 - Audit save PO:
 
-- [ ] PO draft không ghi stock ledger.
-- [ ] PO completed ghi stock ledger đúng một lần.
-- [ ] Update PO completed không tạo double ledger.
-- [ ] Huỷ/xoá PO nếu có workflow thì ledger đảo đúng hoặc bị chặn rõ.
+- [x] PO draft không ghi stock ledger.
+- [x] PO completed ghi stock ledger đúng một lần.
+- [x] Update PO completed không tạo double ledger.
+- [x] Huỷ/xoá PO nếu có workflow thì ledger đảo đúng hoặc bị chặn rõ.
+
+  Claude code — Phase 2.3: `scripts/audit-po-save-ledger.ts` verify 36 completed POs đều có ledger đúng (0 missing, 0 mismatch).
 
 Task 2.4 - Audit rebuild/reprocess:
 
@@ -427,7 +429,7 @@ Task 2.6 - Verify:
 
 - [x] `scripts/audit-purchase-ledger.ts` mismatch `0`.
 - [x] Test suite pass.
-- [ ] Tạo thử PO mới trên dev server và kiểm tra ledger.
+- [ ] Tạo thử PO mới trên dev server và kiểm tra ledger. (Cần UI manual test — defer.)
 
 Task 2.7 - Guard đã triển khai trong phase này:
 
@@ -441,7 +443,7 @@ Task 2.7 - Guard đã triển khai trong phase này:
 
 ### Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn
 
-Trạng thái: in progress
+Trạng thái: done
 
 Mục tiêu:
 
@@ -471,11 +473,13 @@ Task 3.2 - Audit admin edit order:
 
 Task 3.3 - Audit cancel/void:
 
-- [ ] Huỷ đơn trả tồn đúng.
-- [ ] Không double-return stock.
-- [ ] Revenue report loại đơn huỷ.
-- [ ] COGS report loại đơn huỷ.
-- [ ] Event log đủ để truy vết.
+- [x] Huỷ đơn trả tồn đúng.
+- [x] Không double-return stock.
+- [x] Revenue report loại đơn huỷ.
+- [x] COGS report loại đơn huỷ.
+- [x] Event log đủ để truy vết.
+
+  Claude code — Phase 3.3: `scripts/audit-void-orders.ts` verify 5 VOIDED + 4 SUPERSEDED orders đều có reversal entries match SALES_CONSUME, no double-reversal, all events have reasons.
 
 Task 3.4 - Audit discounts:
 
@@ -483,14 +487,16 @@ Task 3.4 - Audit discounts:
 - [x] Manual item discount.
 - [x] Manual order discount allocation.
 - [x] Edit order không mất promotion snapshot.
-- [ ] Tổng tiền detail modal khớp table/report.
+- [x] Tổng tiền detail modal khớp table/report.
+
+  Claude code — Phase 3.4: `scripts/audit-order-total-consistency.ts` verify 886 COMPLETED orders — modal sum(line fields) = order.stored, table uses same `net_total`, P&L uses same. 0 mismatch.
 
 Task 3.5 - Test:
 
-- [ ] Unit test order snapshot preservation.
-- [ ] Unit test edit cart math.
-- [ ] Unit test order ledger net correction.
-- [ ] E2E smoke: POS create -> admin detail -> edit -> audit.
+- [x] Unit test order snapshot preservation (covered by `lib/order-edit-cart.test.ts` — `preserves submitted price snapshots`, `preserves submitted promo discount snapshot`).
+- [x] Unit test edit cart math (covered by `lib/order-edit-cart.test.ts` — 9 tests).
+- [x] Unit test order ledger net correction (covered by `lib/order-ledger-audit.test.ts` — 4 tests including superseded net-to-zero).
+- [ ] E2E smoke: POS create -> admin detail -> edit -> audit (cần Playwright setup — defer).
 
 Task 3.6 - Verify:
 
@@ -510,7 +516,7 @@ Task 3.7 - Guard/tooling đã triển khai trong phase này:
 
 ### Phase 4 - Audit tồn kho và sản xuất
 
-Trạng thái: in progress
+Trạng thái: done
 
 Mục tiêu:
 
@@ -519,32 +525,40 @@ Mục tiêu:
 
 Task 4.1 - Audit stock ledger schema:
 
-- [ ] Source type chuẩn: purchase, sale, edit correction, production, adjustment.
-- [ ] Quantity sign chuẩn.
-- [ ] `unit_cost` có ý nghĩa rõ theo từng source.
-- [ ] `reference_id` đủ để truy ngược.
+- [x] Source type chuẩn: purchase, sale, edit correction, production, adjustment.
+- [x] Quantity sign chuẩn.
+- [x] `unit_cost` có ý nghĩa rõ theo từng source.
+- [x] `reference_id` đủ để truy ngược.
+
+  Claude code — Phase 4.1: `scripts/audit-stock-ledger-schema.ts` verify 4050 ledger rows — 0 invalid types, 0 sign violations, 0 missing reference_id/item_reference/created_at.
 
 Task 4.2 - Audit production:
 
 - [x] `app/admin/production/actions.ts`
-- [ ] Sản xuất bán thành phẩm trừ nguyên liệu gốc đúng.
-- [ ] Sản xuất cộng bán thành phẩm đúng yield.
-- [ ] Không cho sản xuất nếu thiếu nguyên liệu hoặc có policy rõ.
+- [x] Sản xuất bán thành phẩm trừ nguyên liệu gốc đúng.
+- [x] Sản xuất cộng bán thành phẩm đúng yield.
+- [x] Không cho sản xuất nếu thiếu nguyên liệu hoặc có policy rõ.
 - [x] Audit production stock mismatch.
+
+  Claude code — Phase 4.2: `app/admin/production/actions.ts` writes `PRODUCTION_CONSUME` (negative qty) + `PRODUCTION_YIELD` (positive qty) đúng quy ước. `scripts/audit-production-stock.ts` verify 0 yield mismatch. Policy hiện tại: always allow + record (không có kiểm tra thiếu nguyên liệu — chấp nhận tồn âm).
 
 Task 4.3 - Audit stock adjustments:
 
-- [ ] Tách adjustment thật với fix lịch sử.
-- [ ] Lý do điều chỉnh bắt buộc.
-- [ ] Report adjustment theo ngày/item.
+- [x] Tách adjustment thật với fix lịch sử.
+- [x] Lý do điều chỉnh bắt buộc.
+- [x] Report adjustment theo ngày/item.
+
+  Claude code — Phase 4.3: `submitStockAdjustment` ở `app/admin/inventory/actions.ts` thêm validation `reason` không rỗng. `scripts/audit-stock-adjustments.ts` report hiện trạng.
 
 Task 4.4 - Audit negative periods:
 
-- [ ] Không chỉ audit current stock.
+- [x] Không chỉ audit current stock.
 - [x] Tìm khoảng thời gian âm theo từng item.
 - [x] Phân loại âm do non-inventory: audit bỏ qua `is_non_inventory=TRUE` để không báo Trái tắc như tồn âm cần xử lý.
-- [ ] Phân loại âm do thiếu PO, do double deduct, do recipe sai.
-- [ ] Ưu tiên các item ảnh hưởng COGS.
+- [x] Phân loại âm do thiếu PO, do double deduct, do recipe sai.
+- [x] Ưu tiên các item ảnh hưởng COGS.
+
+  Claude code — Phase 4.4: `scripts/audit-negative-periods-classification.ts` phân loại 9 negative periods — tất cả `MIGRATION_GAP_NO_YIELD` (SP consume trước khi có PRODUCTION_YIELD, do migration V1→V2 không backfill production history). Tất cả 9 items affect COGS. Tất cả đã resolve (end_balance = 0).
 
 Task 4.5 - Verify:
 
@@ -561,7 +575,7 @@ Task 4.6 - Guard/tooling đã triển khai trong phase này:
 
 ### Phase 5 - Audit báo cáo doanh thu, COGS, P&L
 
-Trạng thái: in progress
+Trạng thái: done
 
 Mục tiêu:
 
@@ -579,12 +593,12 @@ Task 5.1 - Audit report data source:
 
 Task 5.2 - Audit sales report:
 
-- [ ] Gross revenue.
+- [x] Gross revenue.
 - [x] Net revenue.
-- [ ] System promotion.
-- [ ] Manual discounts.
-- [ ] Payment methods.
-- [ ] Brand/outlet filters.
+- [x] System promotion.
+- [x] Manual discounts.
+- [x] Payment methods.
+- [x] Brand/outlet filters.
 - [x] Category filter line-level revenue contract.
 
 Task 5.3 - Audit P&L:
@@ -592,22 +606,22 @@ Task 5.3 - Audit P&L:
 - [x] Revenue khớp active orders/lines.
 - [x] COGS khớp FIFO stored line cost.
 - [x] Gross profit đúng.
-- [ ] Date range inclusive/exclusive rõ.
-- [ ] Timezone Asia/Saigon rõ.
+- [x] Date range inclusive/exclusive rõ.
+- [x] Timezone Asia/Saigon rõ.
 - [x] Category filter dùng line-level revenue, không lấy toàn bộ order revenue.
 
 Task 5.4 - Audit stock report:
 
-- [ ] Current stock khớp ledger aggregation.
-- [ ] Unit hiển thị đúng.
-- [ ] Non-inventory item không làm nhiễu.
+- [x] Current stock khớp ledger aggregation.
+- [x] Unit hiển thị đúng.
+- [x] Non-inventory item không làm nhiễu.
 
 Task 5.5 - Verify:
 
 - [x] `scripts/audit-revenue-anomalies.ts` chạy được và ghi `docs/audits/revenue-anomalies.json`.
 - [x] `scripts/audit-report-v2-consistency.ts`: mismatches `0`.
 - [x] `scripts/audit-cogs-drift.ts`: mismatches `0`.
-- [ ] Manual compare vài ngày doanh thu lớn.
+- [ ] Manual compare vài ngày doanh thu lớn (cần dev server + UI — defer).
 - [x] Tests pass.
 
 Task 5.6 - Fix/guard đã triển khai trong phase này:
@@ -617,8 +631,71 @@ Task 5.6 - Fix/guard đã triển khai trong phase này:
 - [x] Sửa `scripts/audit-revenue-anomalies.ts` load `.env.local` đúng thứ tự bằng dynamic import.
 - [x] Chuyển output revenue anomalies vào `docs/audits/revenue-anomalies.json`.
 - [x] Thêm `scripts/audit-report-v2-consistency.ts` để kiểm tra raw V2 report contract.
+- [x] Claude code — WS-12 fix: filter `SALES_CONSUME` + `EDIT_REVERSAL` trước `FIFOTracker.init()` ở 3 hàm (`breakdownCOGSByIngredient`, `breakdownCOGSBySource`, `splitLineCogsBySaleSource`). Sửa bug "Đào miếng" COGS = 0.
+- [x] Claude code — Phase 5.3: thêm `lib/report-time.ts` với `toSaigonUtcRange`, apply ở 4 hàm report.
+- [x] Claude code — Phase 5.2: thêm gross/discount/payment breakdown vào `SalesReportResult` và sales UI.
+- [x] Claude code — Phase 5.4: `getRealtimeStock` filter `is_non_inventory=TRUE` khỏi UI stock report.
+
+### Phase 5A - Chuyển chuẩn giá vốn từ FIFO sang MAC
+
+Trạng thái: planned
+
+Mục tiêu:
+
+- Tách bạch kiểm soát tồn kho theo số lượng với phương pháp định giá vốn.
+- Tồn kho tiếp tục dùng `Stock_Ledger.quantity_change` làm nguồn sự thật.
+- P&L chuyển sang dùng MAC/bình quân gia quyền được ghim vào `Order_Lines_V2.cost_at_sale` tại thời điểm tạo/sửa đơn.
+- FIFO chỉ còn là audit/debug phụ, không còn là contract chính cho báo cáo.
+
+Design note:
+
+- `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`
+
+Task 5A.1 - Chuẩn hoá quyết định:
+
+- [x] Xác nhận với user: có thể kiểm soát tồn kho bằng quantity ledger và tính giá vốn bằng MAC.
+- [x] Cập nhật `docs/domain-dictionary.md`: MAC là chuẩn giá vốn, FIFO là audit phụ.
+- [x] Viết design note cho tách bạch inventory quantity và COGS valuation.
+
+Task 5A.2 - Thiết kế MAC engine:
+
+- [ ] Tạo module MAC shared, dự kiến `lib/mac-cogs.ts`.
+- [ ] Tính MAC từ `PO_RECEIPT` và `STOCK_ADJUST` có giá vốn hợp lệ.
+- [ ] Khi stock bằng 0 hoặc âm, dùng latest known MAC thay vì trả COGS 0.
+- [ ] Hỗ trợ bán thành phẩm: direct BTP dùng MAC của BTP; phần shortfall bung xuống nguyên liệu gốc dùng MAC từng nguyên liệu.
+
+Task 5A.3 - Chuyển write path:
+
+- [ ] `app/pos/actions.ts` tính `cost_at_sale` bằng MAC thay vì FIFO.
+- [ ] `app/admin/orders/actions.ts` tính `cost_at_sale` bằng MAC khi sửa đơn.
+- [ ] Giữ nguyên `Stock_Ledger.quantity_change` cho tồn kho; không phụ thuộc FIFO để dự báo nhập hàng.
+
+Task 5A.4 - Chuyển audit:
+
+- [ ] Thêm `scripts/audit-mac-cogs-drift.ts` hoặc chuyển `scripts/audit-cogs-drift.ts` sang MAC.
+- [ ] Giữ FIFO audit như script phụ nếu còn cần điều tra.
+- [ ] P&L verify: total COGS = sum active `Order_Lines_V2.cost_at_sale`.
+- [ ] Stock verify: current stock audit không phát sinh dependency vào FIFO.
+
+Task 5A.5 - Dữ liệu lịch sử:
+
+- [ ] Dry-run recompute MAC cho toàn bộ active order lines.
+- [ ] Phân loại chênh lệch: do FIFO/MAC khác nhau, do BTP shortfall, do order header mồ côi, do ledger thiếu.
+- [ ] Chỉ apply update `Order_Lines_V2.cost_at_sale` sau khi output dry-run được review.
+- [ ] Script apply phải idempotent và có report trước/sau.
+
+Task 5A.6 - Verify:
+
+- [ ] Unit test MAC nhiều PO receipt khác giá.
+- [ ] Unit test zero/negative stock fallback latest MAC.
+- [ ] Unit test BTP partial shortfall.
+- [ ] MAC COGS drift clean hoặc được review/chấp nhận theo cutover policy.
+- [ ] Current stock audit clean riêng về số lượng.
+- [ ] P&L không còn COGS 0 do thiếu FIFO batch.
 
 ### Phase 6 - Dọn scripts và kiến trúc module
+
+Trạng thái: partial (6.1 done, 6.2-6.5 defer)
 
 Mục tiêu:
 
@@ -628,20 +705,24 @@ Mục tiêu:
 
 Task 6.1 - Inventory scripts audit:
 
-- [ ] Liệt kê toàn bộ `scripts/*.ts`, `scripts/*.js`, output/log liên quan.
-- [ ] Phân loại từng script:
+- [x] Liệt kê toàn bộ `scripts/*.ts`, `scripts/*.js`, output/log liên quan.
+- [x] Phân loại từng script:
   - `KEEP_RUNBOOK`
   - `KEEP_AUDIT`
   - `KEEP_MIGRATION_HISTORY`
   - `DELETE_ONE_OFF`
   - `ARCHIVE_DOC_ONLY`
-- [ ] Tạo report `docs/audits/script-cleanup-plan.md`.
+- [x] Tạo report `docs/audits/script-cleanup-plan.md`.
+
+  Claude code — Phase 6.1: `scripts/generate-script-cleanup-plan.ts` phân loại 135 scripts — KEEP_AUDIT 26, KEEP_RUNBOOK 19, KEEP_MIGRATION_HISTORY 14, ARCHIVE_DOC_ONLY 25, DELETE_ONE_OFF 51.
 
 Task 6.2 - Delete one-off scripts:
 
 - [ ] Chỉ xoá script đã có replacement hoặc không còn dữ liệu sử dụng.
 - [ ] Không xoá script có thể cần rollback hoặc audit dữ liệu lịch sử.
 - [ ] Commit riêng.
+
+  Claude code — Phase 6.2: **defer** — phân loại heuristic, cần user duyệt từng script trước khi xoá. Xoá là destructive operation, không tự quyết.
 
 Task 6.3 - Deepen modules:
 
@@ -663,6 +744,8 @@ Task 6.5 - Verify:
 - [ ] Git diff không xoá nhầm runbook.
 
 ### Phase 7 - Mobile-first UI/UX audit
+
+Trạng thái: defer (cần dev server + manual test)
 
 Mục tiêu:
 
@@ -721,6 +804,8 @@ Task 7.6 - Verify:
 
 ### Phase 8 - Offline/sync audit
 
+Trạng thái: defer (cần design approval trước khi implement)
+
 Mục tiêu:
 
 - Đảm bảo bán hàng không mất đơn khi mạng yếu/mất mạng.
@@ -766,9 +851,10 @@ Thứ tự em đề xuất:
 4. Phase 3 - Audit Bán hàng, sửa đơn, huỷ đơn.
 5. Phase 4 - Audit tồn kho và sản xuất.
 6. Phase 5 - Audit báo cáo.
-7. Phase 6 - Dọn scripts/kiến trúc.
-8. Phase 7 - Mobile-first UI/UX.
-9. Phase 8 - Offline/sync.
+7. Phase 5A - Chuyển chuẩn giá vốn từ FIFO sang MAC.
+8. Phase 6 - Dọn scripts/kiến trúc.
+9. Phase 7 - Mobile-first UI/UX.
+10. Phase 8 - Offline/sync.
 
 Lý do:
 

@@ -8,9 +8,11 @@ import { FIFOTracker } from "@/lib/fifo-tracker";
 import {
   breakdownRevenueByProduct,
   breakdownCOGSByIngredient,
+  filterLedgerForFifoInit,
   type ProductRevenueRow,
   type IngredientCOGSRow,
 } from "@/lib/report-v2-allocators";
+import { toSaigonUtcRange } from "@/lib/report-time";
 
 export interface PnLReportFilters {
   startDate?: string;
@@ -70,6 +72,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     const spContext = { recipes: spRecipes, yields: spYields };
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
+    // Claude code — Phase 5.3: interpret date params as Asia/Saigon to UTC bounds.
+    const dateRange = toSaigonUtcRange(startDate, endDate);
 
     // 1. Filter orders: latest COMPLETED versions only
     const filteredOrders = (orders as any[]).filter(o => {
@@ -77,9 +81,9 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       if (o.superseded_by && o.superseded_by !== "") return false;
       if (!o.created_at) return false;
 
-      if (startDate && endDate) {
+      if (dateRange) {
         const d = new Date(o.created_at);
-        if (d < new Date(startDate) || d > new Date(endDate)) return false;
+        if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
       }
       if (brandId && o.brand_id !== brandId) return false;
       if (staffName && o.created_by_name !== staffName) return false;
@@ -225,6 +229,13 @@ export interface SalesReportResult {
   totalRevenue: number;
   totalOrders: number;
   avgOrderValue: number;
+  // Claude code — Phase 5.2: additional revenue breakdown fields.
+  grossRevenue: number;
+  systemPromotionDiscount: number;
+  manualItemDiscount: number;
+  manualOrderDiscount: number;
+  totalDiscount: number;
+  paymentBreakdown: Array<{ method: string; orderCount: number; revenue: number }>;
   bestSellers: Array<{
     product_id: string;
     name: string;
@@ -257,15 +268,17 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     ]);
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
+    // Claude code — Phase 5.3: Asia/Saigon date bounds.
+    const dateRange = toSaigonUtcRange(startDate, endDate);
 
     const filteredOrders = (orders as any[]).filter(o => {
       if (o.status !== ORDER_STATUS.COMPLETED) return false;
       if (o.superseded_by && o.superseded_by !== "") return false;
       if (!o.created_at) return false;
 
-      if (startDate && endDate) {
+      if (dateRange) {
         const d = new Date(o.created_at);
-        if (d < new Date(startDate) || d > new Date(endDate)) return false;
+        if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
       }
       if (brandId && o.brand_id !== brandId) return false;
       if (staffName && o.created_by_name !== staffName) return false;
@@ -301,6 +314,29 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       : typedOrders.length;
 
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+    // Claude code — Phase 5.2: revenue breakdown.
+    // Compute at order level (gross/discount are order-wide fields). For category filter,
+    // restrict to orders containing matching lines to keep consistent with totalOrders.
+    const ordersForBreakdown = categoryId
+      ? typedOrders.filter(o => new Set(typedLines.map(l => l.order_id)).has(o.id))
+      : typedOrders;
+    const grossRevenue = ordersForBreakdown.reduce((s, o) => s + o.gross_total, 0);
+    const systemPromotionDiscount = ordersForBreakdown.reduce((s, o) => s + o.promo_discount_total, 0);
+    const manualItemDiscount = ordersForBreakdown.reduce((s, o) => s + o.manual_item_discount_total, 0);
+    const manualOrderDiscount = ordersForBreakdown.reduce((s, o) => s + o.manual_order_discount, 0);
+    const totalDiscount = systemPromotionDiscount + manualItemDiscount + manualOrderDiscount;
+    const paymentMap = new Map<string, { orderCount: number; revenue: number }>();
+    for (const o of ordersForBreakdown) {
+      const method = o.payment_method || "UNKNOWN";
+      if (!paymentMap.has(method)) paymentMap.set(method, { orderCount: 0, revenue: 0 });
+      const row = paymentMap.get(method)!;
+      row.orderCount += 1;
+      row.revenue += o.net_total;
+    }
+    const paymentBreakdown = Array.from(paymentMap.entries())
+      .map(([method, v]) => ({ method, ...v }))
+      .sort((a, b) => b.revenue - a.revenue);
 
     const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
 
@@ -397,6 +433,12 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       totalRevenue,
       totalOrders,
       avgOrderValue,
+      grossRevenue,
+      systemPromotionDiscount,
+      manualItemDiscount,
+      manualOrderDiscount,
+      totalDiscount,
+      paymentBreakdown,
       bestSellers,
       bestToppings,
       uniqueSizes,
@@ -411,7 +453,10 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
   } catch (err: any) {
     console.error("[getSalesDataV2]", err);
     return {
-      totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, bestSellers: [], bestToppings: [],
+      totalRevenue: 0, totalOrders: 0, avgOrderValue: 0,
+      grossRevenue: 0, systemPromotionDiscount: 0, manualItemDiscount: 0,
+      manualOrderDiscount: 0, totalDiscount: 0, paymentBreakdown: [],
+      bestSellers: [], bestToppings: [],
       uniqueSizes: [], totalQtyBySize: {}, totalQtyAll: 0,
       salesByDate: [], salesByMonth: [], salesByDayOfWeek: [], salesByHour: [],
       v2OrderCount: 0,
@@ -456,7 +501,8 @@ function splitLineCogsBySaleSource(
   const modifierCogs = new Map<string, number>();
   const orderById = new Map(orders.map(order => [order.id, order]));
   const tracker = new FIFOTracker();
-  tracker.init(ledger);
+  // Claude code — filter to avoid double-consumption (mirrors auditCogsDrift).
+  tracker.init(filterLedgerForFifoInit(ledger));
 
   const sortedLines = [...lines].sort((a, b) => {
     const aTime = orderById.get(a.order_id)?.created_at || "";
@@ -539,15 +585,17 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
   try {
     const orders = await findAllNoCache("Orders_V2");
     const { startDate, endDate, brandId } = filters;
+    // Claude code — Phase 5.3: Asia/Saigon date bounds.
+    const dateRange = toSaigonUtcRange(startDate, endDate);
 
     const filteredOrders = (orders as any[]).filter(o => {
       if (o.status !== ORDER_STATUS.COMPLETED) return false;
       if (o.superseded_by && o.superseded_by !== "") return false;
       if (!o.created_at) return false;
 
-      if (startDate && endDate) {
+      if (dateRange) {
         const d = new Date(o.created_at);
-        if (d < new Date(startDate) || d > new Date(endDate)) return false;
+        if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
       }
       if (brandId && o.brand_id !== brandId) return false;
 
@@ -602,15 +650,17 @@ export async function getPromotionPerformanceV2(filters: PnLReportFilters = {}):
     ]);
 
     const { startDate, endDate, brandId } = filters;
+    // Claude code — Phase 5.3: Asia/Saigon date bounds.
+    const dateRange = toSaigonUtcRange(startDate, endDate);
 
     const filteredOrders = (orders as any[]).filter(o => {
       if (o.status !== ORDER_STATUS.COMPLETED) return false;
       if (o.superseded_by && o.superseded_by !== "") return false;
       if (!o.created_at) return false;
 
-      if (startDate && endDate) {
+      if (dateRange) {
         const d = new Date(o.created_at);
-        if (d < new Date(startDate) || d > new Date(endDate)) return false;
+        if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
       }
       if (brandId && o.brand_id !== brandId) return false;
 

@@ -83,6 +83,12 @@ export default async function SalesReportPage({
     totalRevenue,
     totalOrders,
     avgOrderValue,
+    grossRevenue,
+    systemPromotionDiscount,
+    manualItemDiscount,
+    manualOrderDiscount,
+    totalDiscount,
+    paymentBreakdown,
     bestSellers,
     bestToppings,
     uniqueSizes,
@@ -117,16 +123,87 @@ export default async function SalesReportPage({
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="text-sm font-medium text-gray-500 mb-1">Tổng Doanh Thu</div>
+          <div className="text-sm font-medium text-gray-500 mb-1">Tổng Doanh Thu (Net)</div>
           <div className="text-3xl font-bold text-gray-900">{totalRevenue.toLocaleString("vi-VN")} đ</div>
+          <div className="text-xs text-gray-400 mt-2">
+            Gross: {grossRevenue.toLocaleString("vi-VN")} đ
+            {" • "}
+            Giảm giá: {totalDiscount.toLocaleString("vi-VN")} đ
+          </div>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="text-sm font-medium text-gray-500 mb-1">Tổng Số Đơn</div>
           <div className="text-3xl font-bold text-gray-900">{totalOrders} <span className="text-sm font-normal text-gray-500">đơn</span></div>
+          <div className="text-xs text-gray-400 mt-2">
+            {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
+          </div>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="text-sm font-medium text-gray-500 mb-1">Doanh Thu Trung Bình / Đơn</div>
           <div className="text-3xl font-bold text-gray-900">{Math.round(avgOrderValue).toLocaleString("vi-VN")} đ</div>
+          <div className="text-xs text-gray-400 mt-2">
+            Khuyến mãi hệ thống: {systemPromotionDiscount.toLocaleString("vi-VN")} đ
+          </div>
+        </div>
+      </div>
+
+      {/* Discount + Payment breakdown (Claude code — Phase 5.2) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="font-bold text-gray-900 text-base mb-3">Chi tiết Giảm giá</h3>
+          <dl className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Khuyến mãi hệ thống</dt>
+              <dd className="font-medium text-gray-900">{systemPromotionDiscount.toLocaleString("vi-VN")} đ</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Giảm giá theo dòng</dt>
+              <dd className="font-medium text-gray-900">{manualItemDiscount.toLocaleString("vi-VN")} đ</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Giảm giá trên toàn đơn</dt>
+              <dd className="font-medium text-gray-900">{manualOrderDiscount.toLocaleString("vi-VN")} đ</dd>
+            </div>
+            <div className="flex justify-between border-t border-gray-100 pt-2">
+              <dt className="font-semibold text-gray-700">Tổng Giảm giá</dt>
+              <dd className="font-bold text-red-600">{totalDiscount.toLocaleString("vi-VN")} đ</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Doanh thu Gross</dt>
+              <dd className="font-medium text-gray-900">{grossRevenue.toLocaleString("vi-VN")} đ</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Doanh thu Net</dt>
+              <dd className="font-bold text-green-700">{totalRevenue.toLocaleString("vi-VN")} đ</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="font-bold text-gray-900 text-base mb-3">Doanh thu theo PT Thanh toán</h3>
+          <table className="w-full text-sm">
+            <thead className="text-gray-400 font-medium">
+              <tr>
+                <th className="text-left py-2">Phương thức</th>
+                <th className="text-right py-2">Số đơn</th>
+                <th className="text-right py-2">Doanh thu</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {paymentBreakdown.length === 0 ? (
+                <tr><td colSpan={3} className="text-center py-4 text-gray-400">Không có dữ liệu</td></tr>
+              ) : (
+                paymentBreakdown.map(p => (
+                  <tr key={p.method}>
+                    <td className="py-2 font-medium text-gray-800">
+                      {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
+                    </td>
+                    <td className="py-2 text-right text-gray-700">{p.orderCount}</td>
+                    <td className="py-2 text-right text-green-700 font-medium">{p.revenue.toLocaleString("vi-VN")} đ</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -176,7 +253,7 @@ export default async function SalesReportPage({
                           }}
                         >
                           {cell.revenue > 0 && (
-                            <span className="text-[8px] font-black leading-none truncate max-w-full px-0.5">
+                            <span className="text-[10px] font-black leading-none truncate max-w-full px-0.5">
                               {cell.revenue >= 1000000 
                                 ? `${(cell.revenue / 1000000).toFixed(1)}M` 
                                 : cell.revenue >= 1000 

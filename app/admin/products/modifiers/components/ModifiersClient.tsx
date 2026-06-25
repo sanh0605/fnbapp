@@ -128,7 +128,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                         )}
                         {m.hasMultipleActiveRecipes && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 border border-amber-100">
-                            {m.activeRecipeCount} active recipes
+                            {m.activeRecipeCount} phiên bản hoạt động
                           </span>
                         )}
                       </div>
