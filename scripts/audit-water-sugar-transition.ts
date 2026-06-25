@@ -22,7 +22,14 @@ async function main() {
     findAllNoCache("Purchased_Items"),
   ]);
 
-  const matchesName = (row: any) => norm(row.name).includes("nuoc duong") || norm(row.name).includes("glofood");
+  const matchesName = (row: any) =>
+    row.id === "SPM-027" ||
+    row.id === "ING-022" ||
+    row.base_ingredient === "ING-022" ||
+    row.base_ingredient_id === "ING-022" ||
+    row.raw_material_id === "ING-022" ||
+    norm(row.name).includes("nuoc duong") ||
+    norm(row.name).includes("glofood");
   const matchesSugarName = (row: any) => norm(row.name).includes("duong") || norm(row.name).includes("glofood");
   const baseMatches = (baseIngredients as any[]).filter(matchesName);
   const semiMatches = (semiProducts as any[]).filter((row: any) => matchesName(row) || row.id === "BTP-004");
@@ -44,7 +51,8 @@ async function main() {
   const candidateIds = new Set<string>([
     "BTP-004",
     ...baseMatches.map((row: any) => row.id),
-    ...purchasedMatches.map((row: any) => row.base_ingredient_id).filter(Boolean),
+    ...purchasedMatches.map((row: any) => row.base_ingredient_id || row.base_ingredient || row.raw_material_id).filter(Boolean),
+    "ING-022",
   ]);
 
   console.log("\n=== LEDGER FROM 2026-05-13 FOR CANDIDATES ===");
