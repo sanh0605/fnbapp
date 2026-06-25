@@ -1,0 +1,4652 @@
+{
+  "generated_at": "2026-06-25T03:50:37.940Z",
+  "sheet_count": 64,
+  "reference_count": 723,
+  "report": [
+    {
+      "title": "Base_Ingredients",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\audit-negative-stock-periods.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\audit-modifier-recipes.ts",
+          "line": 42,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\audit-current-stock.ts",
+          "line": 32,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\apply-negative-stock-adjustments.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\add-non-inventory-column.ts",
+          "line": 27,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\check-current-stock.ts",
+          "line": 6,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\calculate-yogurt-cogs.ts",
+          "line": 10,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 35,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\migrate-units-to-ids.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\migrate-units-to-ids.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 76,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 86,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\investigate-negative-stock.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "scripts\\investigate-dao-mieng.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 60,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 58,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 59,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 80,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 81,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 96,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 111,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 372,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 57,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 11,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
+          "line": 12,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Item_Categories",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Item_Categories",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Item_Categories",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Item_Categories",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Item_Categories",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 41,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Item_Categories",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Item_Categories",
+          "filePath": "app\\admin\\inventory\\categories\\page.tsx",
+          "line": 8,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Modifiers",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Modifiers",
+          "filePath": "scripts\\audit-modifier-recipes.ts",
+          "line": 40,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 32,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 79,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 57,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
+          "filePath": "app\\pos\\page.tsx",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 66,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 102,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Modifiers",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 397,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Order_Events",
+      "rowCount": 896,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 101,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\test-void-order-v2.ts",
+          "line": 43,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\test-edit-order-v2.ts",
+          "line": 77,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 69,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 67,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 239,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 83,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 39,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 239,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 345,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Order_Lines",
+      "rowCount": 1156,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\add-line-manual-discount-column.ts",
+          "line": 29,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\add-line-manual-discount-column.ts",
+          "line": 43,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\audit-specific-order.ts",
+          "line": 37,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\audit-revenue-anomalies.ts",
+          "line": 129,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\backfill-orders-subtotal.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\backfill-e1-edit-bug.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\batch-sheets-utils.ts",
+          "line": 21,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\batch-sheets-utils.ts",
+          "line": 53,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\batch-migrate.ts",
+          "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\batch-migrate.ts",
+          "line": 28,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\batch-migrate.ts",
+          "line": 56,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\clear-combo-order-discount.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\classify-promo-context.ts",
+          "line": 84,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\find-promo-plus-order-discount.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-historical-discounts.ts",
+          "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-historical-discounts.ts",
+          "line": 25,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-historical-discounts.ts",
+          "line": 89,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\zero-out-prorated-line-discounts.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\zero-out-prorated-line-discounts.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\verify-latest-test-order.ts",
+          "line": 45,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\verify-june-revenue.ts",
+          "line": 5,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\verify-e1-fix.ts",
+          "line": 28,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\verify-e1-fix.ts",
+          "line": 81,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\remigrate-per-audit.ts",
+          "line": 81,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\remigrate-per-audit.ts",
+          "line": 112,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\recover-product-discount.ts",
+          "line": 31,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\recover-product-discount.ts",
+          "line": 83,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\reconcile-v1-v2.ts",
+          "line": 40,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\reaudit-orders-promo-window.ts",
+          "line": 41,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 73,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\migrate-line-discount-split.ts",
+          "line": 48,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 36,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 201,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\investigate-revenue-mismatch.ts",
+          "line": 5,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\inspect-uck000161.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\inspect-uck000094.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\inspect-phd000522.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\inspect-lines.ts",
+          "line": 4,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 36,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 99,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 181,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 208,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-product-discount-overrides.ts",
+          "line": 116,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "scripts\\fix-product-discount-overrides.ts",
+          "line": 283,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\run-migration\\route.ts",
+          "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\run-migration\\route.ts",
+          "line": 27,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\run-migration\\route.ts",
+          "line": 52,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 37,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 131,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\migrate-discount\\route.ts",
+          "line": 41,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines",
+          "filePath": "app\\api\\migrate-discount\\route.ts",
+          "line": 58,
+          "kind": "range"
+        }
+      ]
+    },
+    {
+      "title": "Order_Lines_V2",
+      "rowCount": 1253,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\audit-cogs-drift.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\apply-order-modifier-qty-cleanup.ts",
+          "line": 48,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\apply-order-modifier-qty-cleanup.ts",
+          "line": 111,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\apply-order-ledger-net-corrections.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\apply-cogs-recalc.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\apply-cogs-recalc.ts",
+          "line": 54,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\apply-cogs-recalc.ts",
+          "line": 73,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\audit-order-modifier-qty.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\audit-order-ledger.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\audit-order-discounts.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\classify-order-ledger-audit.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\check-total-cogs.ts",
+          "line": 6,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\check-semi-product-usage.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\check-mod-recipes.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 105,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\cleanup-migrated-v1-orphan-ledger.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\cleanup-duplicated-migrated-order-ledger.ts",
+          "line": 48,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\classify-orphan-order-ledger.ts",
+          "line": 12,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\find-promo-undercount-bugs.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\fix-phd000522-promo.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\fix-phd000522-promo.ts",
+          "line": 140,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\find-revenue-anomalies-broad.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\verify-v2-invariants.ts",
+          "line": 10,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\test-edit-order-v2.ts",
+          "line": 76,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 73,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 71,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\reconcile-v1-v2.ts",
+          "line": 42,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 231,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 78,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 10,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\investigate-topping-cogs.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\investigate-revenue-anomaly.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\investigate-pnl-bugs.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\investigate-negative-stock.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\investigate-caphe-da.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\investigate-caphe-da-detail.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\inspect-uck000161.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\inspect-phd000522.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\inspect-order-v2.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 157,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 202,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\fix-phd522-and-uck161.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\fix-phd522-and-uck161.ts",
+          "line": 112,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "scripts\\fix-phd522-and-uck161.ts",
+          "line": 135,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 98,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 188,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 375,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 58,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 92,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 56,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 250,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 9,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Orders_V2",
+      "rowCount": 892,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\audit-cogs-drift.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\apply-order-modifier-qty-cleanup.ts",
+          "line": 47,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\apply-order-ledger-net-corrections.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\apply-cogs-recalc.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\audit-order-modifier-qty.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\audit-order-ledger.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\audit-order-discounts.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\classify-order-ledger-audit.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\check-total-cogs.ts",
+          "line": 5,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 109,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\cleanup-migrated-v1-orphan-ledger.ts",
+          "line": 12,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\cleanup-duplicated-migrated-order-ledger.ts",
+          "line": 47,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\classify-orphan-order-ledger.ts",
+          "line": 11,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\find-promo-undercount-bugs.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-phd000522-promo.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-phd000522-promo.ts",
+          "line": 132,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\find-revenue-anomalies-broad.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\verify-v2-invariants.ts",
+          "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\verify-pnl-patterns.ts",
+          "line": 58,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\test-void-order-v2.ts",
+          "line": 42,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\test-edit-order-v2.ts",
+          "line": 75,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 77,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 74,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\reconcile-v1-v2.ts",
+          "line": 41,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 75,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 223,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 45,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 66,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 73,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\list-all-v2-orders.ts",
+          "line": 10,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\investigate-topping-cogs.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\investigate-revenue-anomaly.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\investigate-pnl-bugs.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\investigate-negative-stock.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\investigate-caphe-da.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\investigate-caphe-da-detail.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\inspect-uck000161.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\inspect-phd000522.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\inspect-order-v2.ts",
+          "line": 12,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 38,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 156,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 185,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-phd522-and-uck161.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-phd522-and-uck161.ts",
+          "line": 110,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "scripts\\fix-phd522-and-uck161.ts",
+          "line": 134,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 139,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 97,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 187,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 287,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 337,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 374,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 249,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 534,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 594,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 8,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "POS_Drafts",
+      "rowCount": 999,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "POS_Drafts",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 221,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "POS_Drafts",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 248,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "POS_Drafts",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 251,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "POS_Drafts",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 271,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "POS_Drafts",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 280,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Product_Categories",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 78,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 46,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 51,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 56,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\pos\\page.tsx",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 103,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 397,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\promotions\\actions.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\reports\\sales\\page.tsx",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\reports\\pnl\\page.tsx",
+          "line": 38,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Product_Price_History",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Product_Price_History",
+          "filePath": "scripts\\init-history-tables.ts",
+          "line": 57,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Product_Price_History",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 57,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Product_Variants",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\audit-revenue-anomalies.ts",
+          "line": 130,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\calculate-yogurt-cogs.ts",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\find-promo-undercount-bugs.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\find-revenue-anomalies-broad.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\test-void-order-v2.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\test-pnl-v2.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\test-edit-order-v2.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 77,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\investigate-pnl-bugs.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\investigate-caphe-da.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\investigate-caphe-da-detail.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\inspect-uck000094.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "scripts\\generate-phase3-briefing.ts",
+          "line": 10,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\pos\\page.tsx",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 65,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 100,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 190,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 396,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\promotions\\actions.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 52,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Production_Items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Production_Items",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Production_Items",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Production_Items",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 69,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Production_Items",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 70,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Production_Orders",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Production_Orders",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Production_Orders",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Production_Orders",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 59,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Production_Orders",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 62,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Promotions",
+      "rowCount": 997,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\audit-revenue-anomalies.ts",
+          "line": 132,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\classify-promo-context.ts",
+          "line": 85,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\find-promo-undercount-bugs.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\find-promo-plus-order-discount.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\find-revenue-anomalies-broad.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\remigrate-per-audit.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\reaudit-orders-promo-window.ts",
+          "line": 42,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 80,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\migrate-line-discount-split.ts",
+          "line": 49,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 12,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\investigate-pnl-bugs.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\inspect-uck000094.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\init-promotions-table.js",
+          "line": 52,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\generate-phase3-briefing.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 94,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "scripts\\fix-product-discount-overrides.ts",
+          "line": 98,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 58,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "app\\pos\\page.tsx",
+          "line": 32,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 397,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Promotions",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 595,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Purchase_Order_Lines",
+      "rowCount": 973,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 99,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 109,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 121,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\reprocess-all-po-ledger.ts",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\migrate-units-to-ids.ts",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "scripts\\migrate-units-to-ids.ts",
+          "line": 56,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 193,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 196,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 288,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 291,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 108,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 111,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 112,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 79,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 82,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 117,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 123,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 79,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 82,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 11,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Purchase_Orders",
+      "rowCount": 999,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\add-transaction-date.ts",
+          "line": 23,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\add-transaction-date.ts",
+          "line": 30,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\delete-po001.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\update-po-headers.js",
+          "line": 27,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\reprocess-all-po-ledger.ts",
+          "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 9,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 117,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 122,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 63,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 95,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 96,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Purchase_Sources",
+      "rowCount": 1000,
+      "columnCount": 10,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Purchase_Sources",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 178,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Sources",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 179,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Sources",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Sources",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
+          "line": 14,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Recipes",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\audit-modifier-recipes.ts",
+          "line": 41,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\audit-cogs-drift.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\apply-modifier-recipe-normalization.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\apply-modifier-recipe-normalization.ts",
+          "line": 44,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\apply-cogs-recalc.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\check-semi-product-usage.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\check-mod-recipes.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\calculate-yogurt-cogs.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\update-btp-dates.ts",
+          "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\update-btp-dates.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 81,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\investigate-dao-mieng.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "scripts\\init-history-tables.ts",
+          "line": 28,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 59,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\pos\\page.tsx",
+          "line": 39,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 53,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 90,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 107,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 112,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 113,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 124,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 125,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Recipes",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 61,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Stock_Adjustments",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Stock_Adjustments",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 411,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Adjustments",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 416,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Adjustments",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 453,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Adjustments",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 460,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Adjustments",
+          "filePath": "app\\admin\\reports\\stock\\page.tsx",
+          "line": 22,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Stock_Ledger",
+      "rowCount": 3996,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-negative-stock-periods.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-current-stock.ts",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-cogs-drift.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 128,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 146,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 150,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-order-modifier-qty-cleanup.ts",
+          "line": 49,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-order-modifier-qty-cleanup.ts",
+          "line": 103,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-order-ledger-net-corrections.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-order-ledger-net-corrections.ts",
+          "line": 79,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-negative-stock-adjustments.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-negative-stock-adjustments.ts",
+          "line": 88,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\apply-cogs-recalc.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-order-ledger.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\classify-order-ledger-audit.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\check-current-stock.ts",
+          "line": 5,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\calculate-yogurt-cogs.ts",
+          "line": 11,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 31,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\cleanup-test-orders-v2.ts",
+          "line": 97,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\cleanup-migrated-v1-orphan-ledger.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\cleanup-migrated-v1-orphan-ledger.ts",
+          "line": 58,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\cleanup-duplicated-migrated-order-ledger.ts",
+          "line": 49,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\cleanup-duplicated-migrated-order-ledger.ts",
+          "line": 159,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\classify-orphan-order-ledger.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\delete-po001.ts",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\delete-po001.ts",
+          "line": 51,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\test-void-order-v2.ts",
+          "line": 44,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 37,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\test-edit-order-v2.ts",
+          "line": 78,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\reset-v2-sheets.ts",
+          "line": 65,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\reset-migrated-v2-orders.ts",
+          "line": 63,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\reprocess-all-po-ledger.ts",
+          "line": 37,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\reprocess-all-po-ledger.ts",
+          "line": 123,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\reprocess-all-po-ledger.ts",
+          "line": 126,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 74,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 247,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 60,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 89,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 140,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 143,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\investigate-topping-cogs.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\investigate-negative-stock.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\investigate-dao-mieng.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\inspect-order-v2.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 37,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 40,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 118,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 129,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 138,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 63,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 319,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 350,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 400,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 371,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 432,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 433,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 466,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 467,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 83,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 84,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 97,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 98,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 60,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 10,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 87,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 92,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 135,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 154,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Suppliers",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Suppliers",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 109,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Suppliers",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 112,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Suppliers",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 113,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Suppliers",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Suppliers",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Suppliers",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Suppliers",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
+          "line": 9,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Units",
+      "rowCount": 999,
+      "columnCount": 10,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\audit-negative-stock-periods.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\audit-current-stock.ts",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\apply-negative-stock-adjustments.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\add-unit-actions.js",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\add-unit-actions.js",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\add-unit-actions.js",
+          "line": 42,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\add-unit-actions.js",
+          "line": 51,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\migrate-units-to-ids.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 34,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 42,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 81,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\migrate-data.ts",
+          "line": 82,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\investigate-dao-mieng.ts",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\init-units-table.js",
+          "line": 44,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "scripts\\init-units-table.js",
+          "line": 55,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 56,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 327,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 328,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 348,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 359,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 374,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 59,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\units\\page.tsx",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\base-ingredients\\actions.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
+          "line": 13,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "UOM_Conversions",
+      "rowCount": 997,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 30,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "scripts\\reprocess-all-po-ledger.ts",
+          "line": 36,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "scripts\\migrate-units-to-ids.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "scripts\\migrate-units-to-ids.ts",
+          "line": 45,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 143,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 144,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 182,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 201,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 210,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 211,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 225,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 260,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 261,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 285,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 296,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 312,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 57,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 58,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 97,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 117,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 126,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 127,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 141,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
+          "line": 11,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "users",
+      "rowCount": 998,
+      "columnCount": 26,
+      "status": "KEEP",
+      "reason": "Referenced by code with exact sheet name.",
+      "references": [
+        {
+          "sheetName": "users",
+          "filePath": "app\\actions\\auth.ts",
+          "line": 20,
+          "kind": "range"
+        },
+        {
+          "sheetName": "users",
+          "filePath": "app\\actions\\auth.ts",
+          "line": 57,
+          "kind": "range"
+        }
+      ]
+    },
+    {
+      "title": "CCDC",
+      "rowCount": 1000,
+      "columnCount": 28,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "CHUẨN BỊ TRƯỚC BÁN",
+      "rowCount": 1001,
+      "columnCount": 27,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Finished_Product_Prices",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Finished_Product_Recipes",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Finished_Products",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Inventory_Batches",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Inventory_Transactions",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "order_counters",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "outlets",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "P&L",
+      "rowCount": 1002,
+      "columnCount": 44,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Permissions",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "PO_Items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "POS_Order_Items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "POS_Orders",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Product_Brands",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "product_recipes",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "QUY TRÌNH TRIỂN KHAI",
+      "rowCount": 1022,
+      "columnCount": 25,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "raw_materials",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "semi_product_recipes",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "settings",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Spoilage_Items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Spoilage_Orders",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Stocktake_Records",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "supplies",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Thansg 3",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "TONG",
+      "rowCount": 1001,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "Trang tính2",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "User_Brands",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "REVIEW",
+      "reason": "No direct code reference found; inspect manually before archive/delete.",
+      "references": []
+    },
+    {
+      "title": "brands",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Only case/style variant is referenced by code; likely duplicate legacy tab.",
+      "references": [
+        {
+          "sheetName": "Brands",
+          "filePath": "scripts\\test-void-order-v2.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "scripts\\test-pnl-v2.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "scripts\\test-edit-order-v2.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "scripts\\migrate.js",
+          "line": 40,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 53,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 27,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 101,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 191,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 396,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\promotions\\actions.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\brands\\page.tsx",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\reports\\sales\\page.tsx",
+          "line": 15,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\reports\\pnl\\page.tsx",
+          "line": 36,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\api\\migrate-orders\\route.ts",
+          "line": 8,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Order_Lines_BACKUP_PRE_WS5_2026-06-19",
+      "rowCount": 1156,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "Order_Lines-Backup-2026-06-17",
+      "rowCount": 1162,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "Order_Lines-Backup-PhaseE",
+      "rowCount": 1160,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "orders",
+      "rowCount": 1349,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Only case/style variant is referenced by code; likely duplicate legacy tab.",
+      "references": [
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\add-snapshot-column.ts",
+          "line": 29,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\add-snapshot-column.ts",
+          "line": 43,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\audit-specific-order.ts",
+          "line": 16,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\audit-revenue-anomalies.ts",
+          "line": 128,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\backfill-orders-subtotal.ts",
+          "line": 12,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\backfill-inferred-high-promo-id.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\backfill-e1-edit-bug.ts",
+          "line": 26,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\backfill-e1-edit-bug.ts",
+          "line": 80,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\batch-sheets-orders.ts",
+          "line": 17,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\batch-sheets-orders.ts",
+          "line": 47,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\batch-migrate.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\compare-order-dates.js",
+          "line": 117,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\compare-order-dates.js",
+          "line": 174,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\clear-combo-order-discount.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\classify-promo-context.ts",
+          "line": 83,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\classify-orphan-order-ledger.ts",
+          "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\find-promo-plus-order-discount.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\diff-promo-id-loss.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-historical-discounts.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-historical-discounts.ts",
+          "line": 38,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-historical-discounts.ts",
+          "line": 99,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\zero-out-prorated-line-discounts.ts",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\verify-orders-schema.ts",
+          "line": 13,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\verify-orders-schema.ts",
+          "line": 26,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\verify-latest-test-order.ts",
+          "line": 16,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\verify-june-revenue.ts",
+          "line": 4,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\verify-e1-fix.ts",
+          "line": 46,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\revert-e1-backfill-overreach.ts",
+          "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\revert-e1-backfill-overreach.ts",
+          "line": 45,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\remigrate-per-audit.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\recover-product-discount.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\recover-product-discount.ts",
+          "line": 106,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\recover-product-discount.ts",
+          "line": 117,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\reconcile-v1-v2.ts",
+          "line": 39,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\reconcile-migrated-dates.js",
+          "line": 29,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\reconcile-migrated-dates.js",
+          "line": 77,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\reaudit-orders-promo-window.ts",
+          "line": 40,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate.js",
+          "line": 28,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate.js",
+          "line": 73,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 72,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate-line-discount-split.ts",
+          "line": 47,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 25,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 185,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 189,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\migrate-historical-promotions.ts",
+          "line": 193,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\investigate-revenue-mismatch.ts",
+          "line": 4,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\inspect.ts",
+          "line": 4,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\inspect-uck000161.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\inspect-uck000094.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\inspect-phd000522.ts",
+          "line": 13,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\init-promotions-table.js",
+          "line": 64,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\init-promotions-table.js",
+          "line": 74,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\generate-phase3-briefing.ts",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\generate-phase3-briefing.ts",
+          "line": 15,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-ws7-migration-issues.ts",
+          "line": 35,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 93,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 205,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 217,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-subtotal-and-line-discounts.ts",
+          "line": 262,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-product-discount-overrides.ts",
+          "line": 97,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-product-discount-overrides.ts",
+          "line": 130,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "scripts\\fix-product-discount-overrides.ts",
+          "line": 272,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\run-migration\\route.ts",
+          "line": 8,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 63,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\migrate-discount\\route.ts",
+          "line": 13,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\migrate-discount\\route.ts",
+          "line": 30,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\migrate-orders\\route.ts",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\migrate-orders\\route.ts",
+          "line": 32,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\migrate-orders\\route.ts",
+          "line": 41,
+          "kind": "range"
+        }
+      ]
+    },
+    {
+      "title": "Orders_BACKUP_PRE_WS5_2026-06-19",
+      "rowCount": 1349,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "Orders-Backup-2026-06-17",
+      "rowCount": 1351,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "Orders-Backup-PhaseE",
+      "rowCount": 1349,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    },
+    {
+      "title": "products",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Only case/style variant is referenced by code; likely duplicate legacy tab.",
+      "references": [
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\audit-revenue-anomalies.ts",
+          "line": 131,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\check-total-cogs.ts",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\calculate-yogurt-cogs.ts",
+          "line": 6,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\find-revenue-anomalies-broad.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\test-void-order-v2.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\test-submit-order-v2.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\test-pnl-v2.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\test-edit-order-v2.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 76,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\investigate-pnl-bugs.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\investigate-caphe-da.ts",
+          "line": 16,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\investigate-caphe-da-detail.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\inspect-uck000094.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "scripts\\generate-phase3-briefing.ts",
+          "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\pos\\page.tsx",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\page.tsx",
+          "line": 32,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\api\\diagnose-order\\route.ts",
+          "line": 64,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 99,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 189,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 396,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\promotions\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 51,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\products\\categories\\actions.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\reports\\sales\\page.tsx",
+          "line": 63,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "purchased_items",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Only case/style variant is referenced by code; likely duplicate legacy tab.",
+      "references": [
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "scripts\\apply-purchase-ledger-cleanup.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "scripts\\audit-purchase-ledger.ts",
+          "line": 32,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "scripts\\reprocess-all-po-ledger.ts",
+          "line": 35,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 130,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 131,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 173,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 241,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 44,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 45,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 88,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 20,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
+          "line": 12,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
+          "line": 10,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "semi_products",
+      "rowCount": 1000,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Only case/style variant is referenced by code; likely duplicate legacy tab.",
+      "references": [
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-negative-stock-periods.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-modifier-recipes.ts",
+          "line": 43,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-current-stock.ts",
+          "line": 33,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-cogs-drift.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\apply-negative-stock-adjustments.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\apply-cogs-recalc.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-production-stock.ts",
+          "line": 17,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\audit-water-sugar-transition.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\check-sp-yields.ts",
+          "line": 7,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\check-semi-product-usage.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\calculate-yogurt-cogs.ts",
+          "line": 9,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\migrate-orders-to-v2.ts",
+          "line": 121,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\investigate-negative-stock.ts",
+          "line": 19,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "scripts\\investigate-dao-mieng.ts",
+          "line": 18,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\pos\\actions.ts",
+          "line": 61,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\api\\recalculate-cogs\\route.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 373,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 47,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 71,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 78,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 79,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 146,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 58,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 12,
+          "kind": "helper"
+        }
+      ]
+    },
+    {
+      "title": "Stock_Ledger_BACKUP_PRE_WS5_2026-06-19",
+      "rowCount": 2925,
+      "columnCount": 26,
+      "status": "ARCHIVE_CANDIDATE",
+      "reason": "Name looks like backup/legacy/copy sheet and no direct code reference was found.",
+      "references": []
+    }
+  ]
+}
