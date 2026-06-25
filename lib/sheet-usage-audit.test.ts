@@ -18,7 +18,7 @@ describe("sheet usage audit", () => {
     ]);
   });
 
-  it("keeps referenced sheets and marks lowercase duplicates as archive candidates", () => {
+  it("keeps referenced sheets including case/style variants", () => {
     const report = classifySheets({
       sheets: [
         { title: "Purchased_Items", rowCount: 10, columnCount: 5 },
@@ -31,7 +31,7 @@ describe("sheet usage audit", () => {
     });
 
     expect(report.find(row => row.title === "Purchased_Items")?.status).toBe("KEEP");
-    expect(report.find(row => row.title === "purchased_items")?.status).toBe("ARCHIVE_CANDIDATE");
+    expect(report.find(row => row.title === "purchased_items")?.status).toBe("KEEP");
     expect(report.find(row => row.title === "Scratch")?.status).toBe("REVIEW");
   });
 

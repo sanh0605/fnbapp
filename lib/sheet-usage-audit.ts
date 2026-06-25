@@ -61,8 +61,8 @@ export function classifySheets(input: {
     if (refs.length > 0) {
       return {
         ...sheet,
-        status: "ARCHIVE_CANDIDATE" as const,
-        reason: "Only case/style variant is referenced by code; likely duplicate legacy tab.",
+        status: "KEEP" as const,
+        reason: "Referenced by code through a case/style variant; Google Sheets ranges are serving this tab.",
         references: refs,
       };
     }
