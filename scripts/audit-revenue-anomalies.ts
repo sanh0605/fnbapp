@@ -33,9 +33,12 @@
  * Usage: npx tsx scripts/audit-revenue-anomalies.ts
  */
 
-import { findAllNoCache } from "../lib/sheets_db";
+import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
+
+dotenv.config({ path: ".env.local" });
+process.env.CLI_MODE = "true";
 
 // ===== Types =====
 
@@ -122,6 +125,7 @@ function computeExpectedLineDiscount(
 // ===== Main =====
 
 async function main() {
+  const { findAllNoCache } = await import("../lib/sheets_db");
   console.log("[audit-revenue-anomalies] Fetching Orders, Order_Lines, Product_Variants, Products, Promotions ...");
 
   const [orders, orderLines, variants, products, promotions] = await Promise.all([
@@ -327,7 +331,7 @@ async function main() {
   }
 
   // ===== Output =====
-  const outputPath = path.resolve(process.cwd(), "audit-anomalies.json");
+  const outputPath = path.resolve(process.cwd(), "docs", "audits", "revenue-anomalies.json");
   fs.writeFileSync(
     outputPath,
     JSON.stringify({ generatedAt: new Date().toISOString(), anomalies }, null, 2)

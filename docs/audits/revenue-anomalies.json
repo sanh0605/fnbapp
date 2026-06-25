@@ -1,0 +1,985 @@
+{
+  "generatedAt": "2026-06-25T08:09:21.795Z",
+  "anomalies": [
+    {
+      "orderId": "ORD-1780484963732",
+      "orderNo": "UCK000005",
+      "createdAt": "2026-06-03T11:11:18.259Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780484963733",
+      "orderNo": "UCK000006",
+      "createdAt": "2026-06-03T11:15:55.586Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780484963745",
+      "orderNo": "UCK000008",
+      "createdAt": "2026-06-03T12:15:45.754Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780484963770",
+      "orderNo": "UCK000017",
+      "createdAt": "2026-06-04T11:24:32.310Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780484963771",
+      "orderNo": "UCK000018",
+      "createdAt": "2026-06-04T11:28:39.544Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 3,
+        "expectedLineDiscount": 60000,
+        "actualLineDiscount": 30000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780484963772",
+      "orderNo": "UCK000019",
+      "createdAt": "2026-06-04T11:36:26.240Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780484963773",
+      "orderNo": "UCK000020",
+      "createdAt": "2026-06-04T11:37:51.638Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780580888415-68",
+      "orderNo": "UCK000023",
+      "createdAt": "2026-06-04T13:48:08.415Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780639764316-321",
+      "orderNo": "UCK000027",
+      "createdAt": "2026-06-05T06:09:24.316Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780639764316-321",
+      "orderNo": "UCK000027",
+      "createdAt": "2026-06-05T06:09:24.316Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780665214952-208",
+      "orderNo": "UCK000034",
+      "createdAt": "2026-06-05T13:13:34.952Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780667040894-765",
+      "orderNo": "UCK000039",
+      "createdAt": "2026-06-05T13:44:00.894Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780668834420-975",
+      "orderNo": "UCK000042",
+      "createdAt": "2026-06-05T14:13:54.420Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780669765949-194",
+      "orderNo": "UCK000043",
+      "createdAt": "2026-06-05T14:29:25.949Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780716807750-888",
+      "orderNo": "UCK000045",
+      "createdAt": "2026-06-06T03:33:27.750Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780747938271-599",
+      "orderNo": "UCK000048",
+      "createdAt": "2026-06-06T12:12:18.271Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 4,
+        "expectedLineDiscount": 80000,
+        "actualLineDiscount": 40000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780754062537-847",
+      "orderNo": "UCK000053",
+      "createdAt": "2026-06-06T13:54:22.537Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780823241937-361",
+      "orderNo": "UCK000055",
+      "createdAt": "2026-06-07T09:07:21.937Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 3,
+        "expectedLineDiscount": 60000,
+        "actualLineDiscount": 30000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780899514290-807",
+      "orderNo": "UCK000061",
+      "createdAt": "2026-06-08T06:18:34.290Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 3,
+        "expectedLineDiscount": 60000,
+        "actualLineDiscount": 30000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1780992687091-176",
+      "orderNo": "UCK000062",
+      "createdAt": "2026-06-09T08:11:27.091Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781008485154-44",
+      "orderNo": "UCK000063",
+      "createdAt": "2026-06-09T12:34:45.154Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781011969178-303",
+      "orderNo": "UCK000070",
+      "createdAt": "2026-06-09T13:32:49.178Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781013017841-579",
+      "orderNo": "UCK000074",
+      "createdAt": "2026-06-09T13:50:17.841Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 3,
+        "expectedLineDiscount": 60000,
+        "actualLineDiscount": 30000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781102811813-84",
+      "orderNo": "UCK000078",
+      "createdAt": "2026-06-10T14:46:51.813Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781182768723-606",
+      "orderNo": "UCK000086",
+      "createdAt": "2026-06-11T12:59:28.723Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781190881291-555",
+      "orderNo": "UCK000088",
+      "createdAt": "2026-06-11T15:14:41.291Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781221902941-406",
+      "orderNo": "UCK000089",
+      "createdAt": "2026-06-11T23:51:42.941Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781266435647-567",
+      "orderNo": "UCK000091",
+      "createdAt": "2026-06-12T12:13:55.647Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 4,
+        "expectedLineDiscount": 80000,
+        "actualLineDiscount": 40000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781266886776-149",
+      "orderNo": "UCK000094",
+      "createdAt": "2026-06-12T12:21:26.776Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781266981389-148",
+      "orderNo": "UCK000095",
+      "createdAt": "2026-06-12T12:23:01.389Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781350956175-135",
+      "orderNo": "UCK000105",
+      "createdAt": "2026-06-13T11:42:36.175Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781351033197-56",
+      "orderNo": "UCK000110",
+      "createdAt": "2026-06-13T11:43:53.197Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781358657312-319",
+      "orderNo": "UCK000115",
+      "createdAt": "2026-06-13T13:50:57.312Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781360492914-19",
+      "orderNo": "UCK000116",
+      "createdAt": "2026-06-13T14:21:32.914Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781362881745-288",
+      "orderNo": "UCK000118",
+      "createdAt": "2026-06-13T15:01:21.745Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 5,
+        "expectedLineDiscount": 100000,
+        "actualLineDiscount": 50000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781362881745-288",
+      "orderNo": "UCK000118",
+      "createdAt": "2026-06-13T15:01:21.745Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781368547739-490",
+      "orderNo": "UCK000119",
+      "createdAt": "2026-06-13T16:35:47.739Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781441948850-96",
+      "orderNo": "UCK000125",
+      "createdAt": "2026-06-14T12:59:08.850Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781441982962-445",
+      "orderNo": "UCK000127",
+      "createdAt": "2026-06-14T12:59:42.962Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 2,
+        "expectedLineDiscount": 40000,
+        "actualLineDiscount": 20000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781442149856-813",
+      "orderNo": "UCK000128",
+      "createdAt": "2026-06-14T13:02:29.856Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781444591942-911",
+      "orderNo": "UCK000131",
+      "createdAt": "2026-06-14T13:43:11.942Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781445172341-582",
+      "orderNo": "UCK000132",
+      "createdAt": "2026-06-14T13:52:52.341Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781496334053-792",
+      "orderNo": "UCK000137",
+      "createdAt": "2026-06-15T04:05:34.053Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 1,
+        "expectedLineDiscount": 20000,
+        "actualLineDiscount": 10000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781532660814-356",
+      "orderNo": "UCK000144",
+      "createdAt": "2026-06-15T14:11:00.814Z",
+      "type": "POTENTIAL_PROMO_NOT_APPLIED",
+      "description": "Món \"Sữa dâu sấy giòn (700ml)\" nằm trong cửa sổ CTKM KHAI TRƯƠNG ĐỒNG GIÁ đang hoạt động, nhưng đơn không có promo snapshot và line_discount không khớp kỳ vọng.",
+      "details": {
+        "variantId": "VAR-031",
+        "activePromoId": "PRM-003",
+        "activePromoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "unitPrice": 35000,
+        "qty": 3,
+        "expectedLineDiscount": 60000,
+        "actualLineDiscount": 30000,
+        "orderDiscountAmount": 0
+      }
+    },
+    {
+      "orderId": "ORD-1781610285784-830",
+      "orderNo": "UCK000150",
+      "createdAt": "2026-06-16T11:44:45.784Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 10000, kỳ vọng theo công thức CTKM = 20000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 1,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 10000,
+        "expectedLineDiscount": 20000,
+        "diff": -10000
+      }
+    },
+    {
+      "orderId": "ORD-1781617851088-376",
+      "orderNo": "UCK000155",
+      "createdAt": "2026-06-16T13:50:51.088Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 40000, kỳ vọng theo công thức CTKM = 80000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 4,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 40000,
+        "expectedLineDiscount": 80000,
+        "diff": -40000
+      }
+    },
+    {
+      "orderId": "ORD-1781617851088-376",
+      "orderNo": "UCK000155",
+      "createdAt": "2026-06-16T13:50:51.088Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 10000, kỳ vọng theo công thức CTKM = 20000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 1,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 10000,
+        "expectedLineDiscount": 20000,
+        "diff": -10000
+      }
+    },
+    {
+      "orderId": "ORD-1781618461194-298",
+      "orderNo": "UCK000161",
+      "createdAt": "2026-06-16T14:01:01.194Z",
+      "type": "PRODUCT_DISCOUNT_WITH_MANUAL_ORDER_DISCOUNT",
+      "description": "Đơn có CTKM PRODUCT_DISCOUNT (KHAI TRƯƠNG ĐỒNG GIÁ) nhưng discount_amount = 12000. Trong logic POS hiện tại, cashier nhập chiết khấu thủ công trên modal checkout sẽ ghi đè hoàn toàn lên CTKM PRODUCT_DISCOUNT, làm mất doanh thu chuẩn của món được khuyến mãi.",
+      "details": {
+        "promoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "orderDiscountAmount": 12000,
+        "lineCount": 3
+      }
+    },
+    {
+      "orderId": "ORD-1781659083295-182",
+      "orderNo": "PHD000522",
+      "createdAt": "2026-06-17T01:18:03.295Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Cà phê sữa đá (500ml)\": line_discount thực tế = 5000, kỳ vọng theo công thức CTKM = 10000.",
+      "details": {
+        "variantId": "VAR-002",
+        "variantLabel": "Cà phê sữa đá (500ml)",
+        "unitPrice": 20000,
+        "qty": 2,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 5000,
+        "expectedLineDiscount": 10000,
+        "diff": -5000
+      }
+    },
+    {
+      "orderId": "ORD-1781693557801-320",
+      "orderNo": "UCK000166",
+      "createdAt": "2026-06-17T10:52:37.801Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 10000, kỳ vọng theo công thức CTKM = 20000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 1,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 10000,
+        "expectedLineDiscount": 20000,
+        "diff": -10000
+      }
+    },
+    {
+      "orderId": "ORD-1781706662528-459",
+      "orderNo": "UCK000175",
+      "createdAt": "2026-06-17T14:31:02.528Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 10000, kỳ vọng theo công thức CTKM = 20000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 1,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 10000,
+        "expectedLineDiscount": 20000,
+        "diff": -10000
+      }
+    },
+    {
+      "orderId": "ORD-1781711624425-236",
+      "orderNo": "UCK000176",
+      "createdAt": "2026-06-17T15:53:44.425Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 20000, kỳ vọng theo công thức CTKM = 40000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 2,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 20000,
+        "expectedLineDiscount": 40000,
+        "diff": -20000
+      }
+    },
+    {
+      "orderId": "ORD-1781743016326-678",
+      "orderNo": "PHD000540",
+      "createdAt": "2026-06-18T00:36:56.326Z",
+      "type": "PRODUCT_DISCOUNT_WITH_MANUAL_ORDER_DISCOUNT",
+      "description": "Đơn có CTKM PRODUCT_DISCOUNT (KHAI TRƯƠNG ĐỒNG GIÁ) nhưng discount_amount = 21000. Trong logic POS hiện tại, cashier nhập chiết khấu thủ công trên modal checkout sẽ ghi đè hoàn toàn lên CTKM PRODUCT_DISCOUNT, làm mất doanh thu chuẩn của món được khuyến mãi.",
+      "details": {
+        "promoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "orderDiscountAmount": 21000,
+        "lineCount": 1
+      }
+    },
+    {
+      "orderId": "ORD-1781746509195-202",
+      "orderNo": "PHD000548",
+      "createdAt": "2026-06-18T01:35:09.195Z",
+      "type": "PRODUCT_DISCOUNT_WITH_MANUAL_ORDER_DISCOUNT",
+      "description": "Đơn có CTKM PRODUCT_DISCOUNT (KHAI TRƯƠNG ĐỒNG GIÁ) nhưng discount_amount = 18000. Trong logic POS hiện tại, cashier nhập chiết khấu thủ công trên modal checkout sẽ ghi đè hoàn toàn lên CTKM PRODUCT_DISCOUNT, làm mất doanh thu chuẩn của món được khuyến mãi.",
+      "details": {
+        "promoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "orderDiscountAmount": 18000,
+        "lineCount": 1
+      }
+    },
+    {
+      "orderId": "ORD-1781764813842-457",
+      "orderNo": "UCK000177",
+      "createdAt": "2026-06-18T06:40:13.842Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 10000, kỳ vọng theo công thức CTKM = 20000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 1,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 10000,
+        "expectedLineDiscount": 20000,
+        "diff": -10000
+      }
+    },
+    {
+      "orderId": "ORD-1781780713663-318",
+      "orderNo": "UCK000179",
+      "createdAt": "2026-06-18T11:05:13.663Z",
+      "type": "APPLICABLE_VARIANT_LINE_DISCOUNT_MISMATCH",
+      "description": "Món được CTKM \"Sữa dâu sấy giòn (700ml)\": line_discount thực tế = 10000, kỳ vọng theo công thức CTKM = 20000.",
+      "details": {
+        "variantId": "VAR-031",
+        "variantLabel": "Sữa dâu sấy giòn (700ml)",
+        "unitPrice": 35000,
+        "qty": 1,
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "actualLineDiscount": 10000,
+        "expectedLineDiscount": 20000,
+        "diff": -10000
+      }
+    },
+    {
+      "orderId": "ORD-1781829630422-48",
+      "orderNo": "PHD000561",
+      "createdAt": "2026-06-19T00:40:30.422Z",
+      "type": "PRODUCT_DISCOUNT_WITH_MANUAL_ORDER_DISCOUNT",
+      "description": "Đơn có CTKM PRODUCT_DISCOUNT (KHAI TRƯƠNG ĐỒNG GIÁ) nhưng discount_amount = 21000. Trong logic POS hiện tại, cashier nhập chiết khấu thủ công trên modal checkout sẽ ghi đè hoàn toàn lên CTKM PRODUCT_DISCOUNT, làm mất doanh thu chuẩn của món được khuyến mãi.",
+      "details": {
+        "promoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "orderDiscountAmount": 21000,
+        "lineCount": 1
+      }
+    },
+    {
+      "orderId": "ORD-1781829640865-559",
+      "orderNo": "PHD000562",
+      "createdAt": "2026-06-19T00:40:40.865Z",
+      "type": "PRODUCT_DISCOUNT_WITH_MANUAL_ORDER_DISCOUNT",
+      "description": "Đơn có CTKM PRODUCT_DISCOUNT (KHAI TRƯƠNG ĐỒNG GIÁ) nhưng discount_amount = 18000. Trong logic POS hiện tại, cashier nhập chiết khấu thủ công trên modal checkout sẽ ghi đè hoàn toàn lên CTKM PRODUCT_DISCOUNT, làm mất doanh thu chuẩn của món được khuyến mãi.",
+      "details": {
+        "promoName": "KHAI TRƯƠNG ĐỒNG GIÁ",
+        "discountType": "FLAT_PRICE",
+        "discountValue": "15000",
+        "orderDiscountAmount": 18000,
+        "lineCount": 1
+      }
+    }
+  ]
+}

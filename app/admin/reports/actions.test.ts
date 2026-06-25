@@ -80,8 +80,91 @@ describe("getPnLDataV2", () => {
     (findAll as any).mockResolvedValue([]);
 
     const result = await getPnLDataV2({ categoryId: "CAT-NONEXISTENT" });
-    expect(result.orderCount).toBe(1); // order still counted
+    expect(result.orderCount).toBe(0);
+    expect(result.totalRevenue).toBe(0);
+    expect(result.totalCOGS).toBe(0);
     expect(result.productProfitAnalysis.length).toBe(0); // but no products match
+  });
+
+  it("with categoryId, totals include only matching category lines", async () => {
+    const orderId = "ord-category-mixed";
+    const createdAt = "2026-06-15T10:00:00.000Z";
+    const order = {
+      id: orderId,
+      order_no: "CAT-001",
+      brand_id: "BR-002",
+      status: "COMPLETED",
+      version: 1,
+      parent_order_id: "",
+      superseded_by: "",
+      created_at: createdAt,
+      created_by_id: "U",
+      created_by_name: "Test",
+      completed_at: createdAt,
+      voided_at: "",
+      voided_by_id: "",
+      void_reason: "",
+      currency: "VND",
+      gross_total: 50000,
+      promo_discount_total: 0,
+      manual_item_discount_total: 0,
+      manual_order_discount: 0,
+      net_total: 50000,
+      applied_promotion_id: "",
+      applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}",
+      payment_method: "CASH",
+      payment_ref: "",
+      migration_notes: "",
+    };
+    const drinkLine = {
+      id: "ol-drink",
+      order_id: orderId,
+      line_no: 1,
+      product_id: "PROD-DRINK",
+      product_snapshot_json: JSON.stringify({ id: "PROD-DRINK", name: "Drink", category_id: "CAT-DRINK", category_name: "Drink" }),
+      variant_id: "VAR-DRINK",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-DRINK", size_name: "500ml", price: 30000 }),
+      qty: 1,
+      unit_price: 30000,
+      modifiers_snapshot_json: "[]",
+      gross_line_total: 30000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 30000,
+      cost_at_sale: 12000,
+      recipe_snapshot_json: "{}",
+      promo_discount_reason: "",
+      manual_discount_reason: "",
+    };
+    const foodLine = {
+      ...drinkLine,
+      id: "ol-food",
+      line_no: 2,
+      product_id: "PROD-FOOD",
+      product_snapshot_json: JSON.stringify({ id: "PROD-FOOD", name: "Food", category_id: "CAT-FOOD", category_name: "Food" }),
+      variant_id: "VAR-FOOD",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-FOOD", size_name: "Default", price: 20000 }),
+      gross_line_total: 20000,
+      net_line_total: 20000,
+      cost_at_sale: 7000,
+    };
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [drinkLine, foodLine];
+      return [];
+    });
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({ categoryId: "CAT-DRINK" });
+
+    expect(result.orderCount).toBe(1);
+    expect(result.totalRevenue).toBe(30000);
+    expect(result.totalCOGS).toBe(12000);
+    expect(result.grossProfit).toBe(18000);
+    expect(result.productProfitAnalysis.map(row => row.product_id)).toEqual(["PROD-DRINK"]);
   });
 
   it("excludes SUPERSEDED orders", async () => {

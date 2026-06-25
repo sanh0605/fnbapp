@@ -561,6 +561,8 @@ Task 4.6 - Guard/tooling đã triển khai trong phase này:
 
 ### Phase 5 - Audit báo cáo doanh thu, COGS, P&L
 
+Trạng thái: in progress
+
 Mục tiêu:
 
 - Báo cáo khớp ledger và order lines.
@@ -568,29 +570,31 @@ Mục tiêu:
 
 Task 5.1 - Audit report data source:
 
-- [ ] `app/admin/reports/actions.ts`
-- [ ] `lib/report-v2-allocators.ts`
-- [ ] Orders source.
-- [ ] Order lines source.
-- [ ] COGS source.
-- [ ] Discount allocation source.
+- [x] `app/admin/reports/actions.ts`
+- [x] `lib/report-v2-allocators.ts`
+- [x] Orders source.
+- [x] Order lines source.
+- [x] COGS source.
+- [x] Discount allocation source.
 
 Task 5.2 - Audit sales report:
 
 - [ ] Gross revenue.
-- [ ] Net revenue.
+- [x] Net revenue.
 - [ ] System promotion.
 - [ ] Manual discounts.
 - [ ] Payment methods.
 - [ ] Brand/outlet filters.
+- [x] Category filter line-level revenue contract.
 
 Task 5.3 - Audit P&L:
 
-- [ ] Revenue khớp sales report.
-- [ ] COGS khớp FIFO stored line cost.
-- [ ] Gross profit đúng.
+- [x] Revenue khớp active orders/lines.
+- [x] COGS khớp FIFO stored line cost.
+- [x] Gross profit đúng.
 - [ ] Date range inclusive/exclusive rõ.
 - [ ] Timezone Asia/Saigon rõ.
+- [x] Category filter dùng line-level revenue, không lấy toàn bộ order revenue.
 
 Task 5.4 - Audit stock report:
 
@@ -600,10 +604,19 @@ Task 5.4 - Audit stock report:
 
 Task 5.5 - Verify:
 
-- [ ] `scripts/audit-revenue-anomalies.ts`.
-- [ ] `scripts/audit-cogs-drift.ts`.
+- [x] `scripts/audit-revenue-anomalies.ts` chạy được và ghi `docs/audits/revenue-anomalies.json`.
+- [x] `scripts/audit-report-v2-consistency.ts`: mismatches `0`.
+- [x] `scripts/audit-cogs-drift.ts`: mismatches `0`.
 - [ ] Manual compare vài ngày doanh thu lớn.
-- [ ] Tests pass.
+- [x] Tests pass.
+
+Task 5.6 - Fix/guard đã triển khai trong phase này:
+
+- [x] Sửa P&L category filter: `totalRevenue` và `orderCount` dùng line-level category scope.
+- [x] Thêm regression test cho mixed-category order.
+- [x] Sửa `scripts/audit-revenue-anomalies.ts` load `.env.local` đúng thứ tự bằng dynamic import.
+- [x] Chuyển output revenue anomalies vào `docs/audits/revenue-anomalies.json`.
+- [x] Thêm `scripts/audit-report-v2-consistency.ts` để kiểm tra raw V2 report contract.
 
 ### Phase 6 - Dọn scripts và kiến trúc module
 

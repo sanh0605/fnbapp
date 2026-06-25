@@ -106,8 +106,14 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       });
     }
 
-    // 2. Total revenue = sum of order.net_total
-    const totalRevenue = typedOrders.reduce((s, o) => s + o.net_total, 0);
+    const reportOrderCount = categoryId
+      ? new Set(typedLines.map(line => line.order_id)).size
+      : typedOrders.length;
+
+    // 2. Total revenue. With category filter, only revenue from matching lines belongs in the report.
+    const totalRevenue = categoryId
+      ? typedLines.reduce((s, line) => s + line.net_line_total, 0)
+      : typedOrders.reduce((s, o) => s + o.net_total, 0);
 
     // 3. Total COGS = sum of line.cost_at_sale
     const totalCOGS = typedLines.reduce((s, l) => s + l.cost_at_sale, 0);
@@ -191,7 +197,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       totalCOGS,
       grossProfit,
       margin,
-      orderCount: typedOrders.length,
+      orderCount: reportOrderCount,
       productProfitAnalysis: [...productProfitAnalysis, ...toppingRows],
       cogsDetails,
       v2OrderCount: typedOrders.length,
