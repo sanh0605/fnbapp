@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-25T07:36:24.877Z",
-  "sheet_count": 64,
+  "generated_at": "2026-06-25T07:39:57.918Z",
+  "sheet_count": 57,
   "reference_count": 711,
   "report": [
     {
@@ -102,44 +102,8 @@
         },
         {
           "sheetName": "Base_Ingredients",
-          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
-          "line": 11,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 24,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 54,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\semi-products\\actions.ts",
-          "line": 21,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 398,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
-          "line": 28,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Base_Ingredients",
-          "filePath": "app\\admin\\reports\\actions.ts",
-          "line": 57,
           "kind": "helper"
         },
         {
@@ -186,7 +150,19 @@
         },
         {
           "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 21,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
           "line": 21,
           "kind": "helper"
         },
@@ -198,14 +174,38 @@
         },
         {
           "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 57,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
           "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
           "line": 13,
           "kind": "helper"
         },
         {
           "sheetName": "Base_Ingredients",
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 28,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
           "filePath": "app\\admin\\inventory\\purchase-orders\\new\\page.tsx",
           "line": 12,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Base_Ingredients",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 11,
           "kind": "helper"
         }
       ]
@@ -261,12 +261,6 @@
         },
         {
           "sheetName": "Brands",
-          "filePath": "app\\admin\\brands\\page.tsx",
-          "line": 8,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Brands",
           "filePath": "app\\admin\\page.tsx",
           "line": 27,
           "kind": "helper"
@@ -287,6 +281,12 @@
           "sheetName": "Brands",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 396,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Brands",
+          "filePath": "app\\admin\\brands\\page.tsx",
+          "line": 8,
           "kind": "helper"
         },
         {
@@ -342,14 +342,14 @@
         },
         {
           "sheetName": "Item_Categories",
-          "filePath": "app\\admin\\inventory\\items\\actions.ts",
-          "line": 20,
+          "filePath": "app\\admin\\inventory\\categories\\page.tsx",
+          "line": 8,
           "kind": "helper"
         },
         {
           "sheetName": "Item_Categories",
-          "filePath": "app\\admin\\inventory\\categories\\page.tsx",
-          "line": 8,
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 20,
           "kind": "helper"
         }
       ]
@@ -420,6 +420,18 @@
       "references": [
         {
           "sheetName": "Order_Events",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 83,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Events",
           "filePath": "scripts\\test-void-order-v2.ts",
           "line": 43,
           "kind": "helper"
@@ -476,18 +488,6 @@
           "sheetName": "Order_Events",
           "filePath": "scripts\\cleanup-test-orders-v2.ts",
           "line": 101,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Events",
-          "filePath": "lib\\sheets-db-v2.ts",
-          "line": 55,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Events",
-          "filePath": "lib\\sheets-db-v2-edit.ts",
-          "line": 83,
           "kind": "helper"
         },
         {
@@ -840,6 +840,24 @@
       "references": [
         {
           "sheetName": "Order_Lines_V2",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 78,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 10,
+          "kind": "range"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
           "filePath": "scripts\\verify-v2-invariants.ts",
           "line": 10,
           "kind": "helper"
@@ -1104,24 +1122,6 @@
         },
         {
           "sheetName": "Order_Lines_V2",
-          "filePath": "lib\\sheet-usage-audit.test.ts",
-          "line": 10,
-          "kind": "range"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "lib\\sheets-db-v2.ts",
-          "line": 50,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "lib\\sheets-db-v2-edit.ts",
-          "line": 78,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
           "filePath": "app\\api\\recalculate-cogs\\route.ts",
           "line": 23,
           "kind": "helper"
@@ -1137,12 +1137,6 @@
           "filePath": "app\\api\\recalculate-cogs\\route.ts",
           "line": 92,
           "kind": "range"
-        },
-        {
-          "sheetName": "Order_Lines_V2",
-          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
-          "line": 9,
-          "kind": "helper"
         },
         {
           "sheetName": "Order_Lines_V2",
@@ -1178,6 +1172,12 @@
           "sheetName": "Order_Lines_V2",
           "filePath": "app\\admin\\reports\\actions.ts",
           "line": 250,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Order_Lines_V2",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 9,
           "kind": "helper"
         }
       ]
@@ -1569,12 +1569,6 @@
         },
         {
           "sheetName": "Orders",
-          "filePath": "app\\api\\run-migration\\route.ts",
-          "line": 8,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders",
           "filePath": "app\\api\\migrate-orders\\route.ts",
           "line": 7,
           "kind": "helper"
@@ -1590,6 +1584,12 @@
           "filePath": "app\\api\\migrate-orders\\route.ts",
           "line": 41,
           "kind": "range"
+        },
+        {
+          "sheetName": "Orders",
+          "filePath": "app\\api\\run-migration\\route.ts",
+          "line": 8,
+          "kind": "helper"
         },
         {
           "sheetName": "Orders",
@@ -1624,6 +1624,36 @@
       "status": "KEEP",
       "reason": "Referenced by code with exact sheet name.",
       "references": [
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 45,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 50,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 66,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 73,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 7,
+          "kind": "helper"
+        },
         {
           "sheetName": "Orders_V2",
           "filePath": "scripts\\verify-v2-invariants.ts",
@@ -1890,36 +1920,6 @@
         },
         {
           "sheetName": "Orders_V2",
-          "filePath": "lib\\sheet-usage-audit.test.ts",
-          "line": 7,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "lib\\sheets-db-v2.ts",
-          "line": 45,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "lib\\sheets-db-v2-edit.ts",
-          "line": 50,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "lib\\sheets-db-v2-edit.ts",
-          "line": 66,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "lib\\sheets-db-v2-edit.ts",
-          "line": 73,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
           "filePath": "app\\pos\\actions.ts",
           "line": 139,
           "kind": "helper"
@@ -1928,12 +1928,6 @@
           "sheetName": "Orders_V2",
           "filePath": "app\\api\\recalculate-cogs\\route.ts",
           "line": 22,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Orders_V2",
-          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
-          "line": 8,
           "kind": "helper"
         },
         {
@@ -1994,6 +1988,12 @@
           "sheetName": "Orders_V2",
           "filePath": "app\\admin\\reports\\actions.ts",
           "line": 594,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Orders_V2",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 8,
           "kind": "helper"
         }
       ]
@@ -2094,12 +2094,6 @@
         },
         {
           "sheetName": "Product_Categories",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 50,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Product_Categories",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 103,
           "kind": "helper"
@@ -2114,6 +2108,12 @@
           "sheetName": "Product_Categories",
           "filePath": "app\\admin\\promotions\\actions.ts",
           "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Categories",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 50,
           "kind": "helper"
         },
         {
@@ -2262,12 +2262,6 @@
         },
         {
           "sheetName": "Product_Variants",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 52,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Product_Variants",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 100,
           "kind": "helper"
@@ -2288,6 +2282,12 @@
           "sheetName": "Product_Variants",
           "filePath": "app\\admin\\promotions\\actions.ts",
           "line": 23,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Product_Variants",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 52,
           "kind": "helper"
         }
       ]
@@ -2463,12 +2463,6 @@
         },
         {
           "sheetName": "Products",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 51,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Products",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 99,
           "kind": "helper"
@@ -2489,6 +2483,12 @@
           "sheetName": "Products",
           "filePath": "app\\admin\\promotions\\actions.ts",
           "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Products",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 51,
           "kind": "helper"
         },
         {
@@ -2727,6 +2727,30 @@
         },
         {
           "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 79,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 82,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 117,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 123,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchase_Order_Lines",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
           "line": 108,
           "kind": "helper"
@@ -2757,30 +2781,6 @@
         },
         {
           "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 79,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 82,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 117,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 123,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchase_Order_Lines",
           "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
           "line": 11,
           "kind": "helper"
@@ -2794,6 +2794,12 @@
       "status": "KEEP",
       "reason": "Referenced by code with exact sheet name.",
       "references": [
+        {
+          "sheetName": "Purchase_Orders",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 9,
+          "kind": "range"
+        },
         {
           "sheetName": "Purchase_Orders",
           "filePath": "scripts\\update-po-headers.js",
@@ -2846,12 +2852,6 @@
           "sheetName": "Purchase_Orders",
           "filePath": "scripts\\add-transaction-date.ts",
           "line": 30,
-          "kind": "range"
-        },
-        {
-          "sheetName": "Purchase_Orders",
-          "filePath": "lib\\sheet-usage-audit.test.ts",
-          "line": 9,
           "kind": "range"
         },
         {
@@ -2970,6 +2970,12 @@
         },
         {
           "sheetName": "Purchased_Items",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 54,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Purchased_Items",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
           "line": 44,
           "kind": "helper"
@@ -2990,12 +2996,6 @@
           "sheetName": "Purchased_Items",
           "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
           "line": 20,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Purchased_Items",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 54,
           "kind": "helper"
         },
         {
@@ -3117,14 +3117,14 @@
         },
         {
           "sheetName": "Recipes",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 23,
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
           "kind": "helper"
         },
         {
           "sheetName": "Recipes",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 53,
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 23,
           "kind": "helper"
         },
         {
@@ -3165,8 +3165,8 @@
         },
         {
           "sheetName": "Recipes",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 398,
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 53,
           "kind": "helper"
         },
         {
@@ -3276,8 +3276,14 @@
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
-          "line": 12,
+          "filePath": "app\\admin\\orders\\actions.ts",
+          "line": 398,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\admin\\inventory\\actions.ts",
+          "line": 373,
           "kind": "helper"
         },
         {
@@ -3290,12 +3296,6 @@
           "sheetName": "Semi_Products",
           "filePath": "app\\admin\\production\\actions.ts",
           "line": 47,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 55,
           "kind": "helper"
         },
         {
@@ -3324,14 +3324,8 @@
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\orders\\actions.ts",
-          "line": 398,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
-          "line": 29,
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 55,
           "kind": "helper"
         },
         {
@@ -3342,8 +3336,14 @@
         },
         {
           "sheetName": "Semi_Products",
-          "filePath": "app\\admin\\inventory\\actions.ts",
-          "line": 373,
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 29,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Semi_Products",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 12,
           "kind": "helper"
         }
       ]
@@ -3355,12 +3355,6 @@
       "status": "KEEP",
       "reason": "Referenced by code with exact sheet name.",
       "references": [
-        {
-          "sheetName": "Stock_Adjustments",
-          "filePath": "app\\admin\\reports\\stock\\page.tsx",
-          "line": 22,
-          "kind": "helper"
-        },
         {
           "sheetName": "Stock_Adjustments",
           "filePath": "app\\admin\\inventory\\actions.ts",
@@ -3384,6 +3378,12 @@
           "filePath": "app\\admin\\inventory\\actions.ts",
           "line": 460,
           "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Adjustments",
+          "filePath": "app\\admin\\reports\\stock\\page.tsx",
+          "line": 22,
+          "kind": "helper"
         }
       ]
     },
@@ -3394,6 +3394,24 @@
       "status": "KEEP",
       "reason": "Referenced by code with exact sheet name.",
       "references": [
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "lib\\sheets-db-v2.ts",
+          "line": 60,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "lib\\sheets-db-v2-edit.ts",
+          "line": 89,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "lib\\sheet-usage-audit.test.ts",
+          "line": 8,
+          "kind": "helper"
+        },
         {
           "sheetName": "Stock_Ledger",
           "filePath": "scripts\\test-void-order-v2.ts",
@@ -3702,24 +3720,6 @@
         },
         {
           "sheetName": "Stock_Ledger",
-          "filePath": "lib\\sheet-usage-audit.test.ts",
-          "line": 8,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "lib\\sheets-db-v2.ts",
-          "line": 60,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "lib\\sheets-db-v2-edit.ts",
-          "line": 89,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
           "filePath": "app\\pos\\actions.ts",
           "line": 63,
           "kind": "helper"
@@ -3728,36 +3728,6 @@
           "sheetName": "Stock_Ledger",
           "filePath": "app\\api\\recalculate-cogs\\route.ts",
           "line": 26,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
-          "line": 10,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 83,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 84,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 97,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 98,
           "kind": "helper"
         },
         {
@@ -3776,12 +3746,6 @@
           "sheetName": "Stock_Ledger",
           "filePath": "app\\admin\\orders\\actions.ts",
           "line": 400,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Stock_Ledger",
-          "filePath": "app\\admin\\reports\\actions.ts",
-          "line": 60,
           "kind": "helper"
         },
         {
@@ -3816,6 +3780,30 @@
         },
         {
           "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 83,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 84,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 97,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 98,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
           "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
           "line": 87,
           "kind": "helper"
@@ -3836,6 +3824,18 @@
           "sheetName": "Stock_Ledger",
           "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
           "line": 154,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 60,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Stock_Ledger",
+          "filePath": "app\\api\\inventory\\sync\\scan\\route.ts",
+          "line": 10,
           "kind": "helper"
         }
       ]
@@ -4008,42 +4008,6 @@
         },
         {
           "sheetName": "Units",
-          "filePath": "app\\admin\\production\\actions.ts",
-          "line": 25,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\products\\page.tsx",
-          "line": 56,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\semi-products\\actions.ts",
-          "line": 22,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
-          "line": 30,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\reports\\actions.ts",
-          "line": 59,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\units\\page.tsx",
-          "line": 7,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
           "filePath": "app\\admin\\inventory\\actions.ts",
           "line": 327,
           "kind": "helper"
@@ -4074,14 +4038,8 @@
         },
         {
           "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\items\\actions.ts",
-          "line": 24,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "Units",
-          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
-          "line": 22,
+          "filePath": "app\\admin\\inventory\\units\\page.tsx",
+          "line": 7,
           "kind": "helper"
         },
         {
@@ -4092,8 +4050,50 @@
         },
         {
           "sheetName": "Units",
+          "filePath": "app\\admin\\production\\actions.ts",
+          "line": 25,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\items\\actions.ts",
+          "line": 24,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\semi-products\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\inventory\\conversions\\actions.ts",
+          "line": 22,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\products\\page.tsx",
+          "line": 56,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\reports\\actions.ts",
+          "line": 59,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
           "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
           "line": 14,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "Units",
+          "filePath": "app\\admin\\products\\modifiers\\actions.ts",
+          "line": 30,
           "kind": "helper"
         },
         {
@@ -4215,6 +4215,12 @@
         },
         {
           "sheetName": "UOM_Conversions",
+          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
+          "line": 55,
+          "kind": "helper"
+        },
+        {
+          "sheetName": "UOM_Conversions",
           "filePath": "app\\admin\\inventory\\items\\actions.ts",
           "line": 23,
           "kind": "helper"
@@ -4263,12 +4269,6 @@
         },
         {
           "sheetName": "UOM_Conversions",
-          "filePath": "app\\admin\\inventory\\purchase-orders\\actions.ts",
-          "line": 55,
-          "kind": "helper"
-        },
-        {
-          "sheetName": "UOM_Conversions",
           "filePath": "app\\admin\\inventory\\purchase-orders\\[id]\\page.tsx",
           "line": 16,
           "kind": "helper"
@@ -4301,62 +4301,6 @@
           "kind": "range"
         }
       ]
-    },
-    {
-      "title": "CCDC",
-      "rowCount": 1000,
-      "columnCount": 28,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "CHUẨN BỊ TRƯỚC BÁN",
-      "rowCount": 1001,
-      "columnCount": 27,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "P&L",
-      "rowCount": 1002,
-      "columnCount": 44,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "QUY TRÌNH TRIỂN KHAI",
-      "rowCount": 1022,
-      "columnCount": 25,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Thansg 3",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "TONG",
-      "rowCount": 1001,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
-    },
-    {
-      "title": "Trang tính2",
-      "rowCount": 1000,
-      "columnCount": 26,
-      "status": "REVIEW",
-      "reason": "No direct code reference found; inspect manually before archive/delete.",
-      "references": []
     },
     {
       "title": "ZZ_ARCHIVE_Finished_Product_Prices",
