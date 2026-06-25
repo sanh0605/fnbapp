@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { voidOrderV2 } from "./actions";
 import OrderDetailModal from "./OrderDetailModal";
@@ -48,6 +49,7 @@ export default function OrderTable({
   categories: Category[];
 }) {
   const [orders, setOrders] = useState(initialOrders);
+  const router = useRouter();
   const [orderToVoid, setOrderToVoid] = useState<Order | null>(null);
   const [voidReason, setVoidReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,7 +91,7 @@ export default function OrderTable({
   }, [orders, searchQuery, startDate, endDate, paymentFilter, brandFilter]);
 
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const currentOrders = useMemo(() => 
+  const currentOrders = useMemo(() =>
     filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
     [filteredOrders, currentPage]
   );
@@ -97,22 +99,25 @@ export default function OrderTable({
   const confirmVoid = async () => {
     if (!orderToVoid || !voidReason.trim()) return;
     const orderId = orderToVoid.id;
+    const reasonToSend = voidReason;
     setOrderToVoid(null);
-    const res = await voidOrderV2(orderId, voidReason);
     setVoidReason("");
+    const res = await voidOrderV2(orderId, reasonToSend);
     if (!res.success) {
       alert("Lỗi hủy đơn: " + res.error);
       return;
     }
-    // Reload to reflect changes
-    window.location.reload();
+    // Update local state immediately; no page reload needed.
+    setOrders(prev =>
+      prev.map(o => o.id === orderId ? { ...o, status: "VOIDED" } : o)
+    );
   };
 
   const handleEditSave = () => {
     setEditingOrder(null);
     setSelectedOrder(null);
-    // Reload since V2 edit creates a new row
-    window.location.reload();
+    // Soft refresh to get updated data from server (edit creates a new row)
+    router.refresh();
   };
 
   const clearFilters = () => {
@@ -151,7 +156,7 @@ export default function OrderTable({
   return (
     <div className="space-y-4">
       {/* Filter Bar */}
-      <StickyFilterBar 
+      <StickyFilterBar
         rightContent={rightContent}
         title="Quản lý Đơn hàng"
         subtitle="Quản lý và xem lại tất cả các đơn hàng đã được tạo."
