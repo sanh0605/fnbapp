@@ -170,8 +170,8 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 ### B.2 — Code Architecture
 
 #### Type Safety
-- [ ] **CODE-1** HIGH `app/admin/orders/actions.ts:111-162, 208-228` `any[]` + `Number(x) || 0` lặp. Tạo `coerceOrder`/`coerceLine` shared ở `lib/order-types.ts`.
-- [ ] **CODE-2** MED `app/admin/orders/actions.ts:349` `require()` runtime. Đổi import tĩnh.
+- [x] **CODE-1** HIGH `app/admin/orders/actions.ts:111-162, 208-228` `any[]` + `Number(x) || 0` lặp. **Done by Claude (phiên 2026-06-26)** — extracted `coerceOrderV2`/`coerceLineV2` to `lib/order-types.ts`. Áp dụng ở `app/admin/reports/actions.ts` (2 chỗ).
+- [x] **CODE-2** MED `app/admin/orders/actions.ts:349` `require()` runtime. **Done by Claude (phiên 2026-06-26)** — đổi sang static `insertMany` import (cùng commit CODE-8).
 - [ ] **CODE-3** MED `lib/report-v2-allocators.ts:43-48, 145, 262` `any[]`. Typed `LedgerEntry[]` + `SemiProductContext`.
 - [ ] **CODE-4** LOW `app/admin/inventory/actions.ts:411` `submitStockAdjustment(data: any)`. Typed input.
 
@@ -196,7 +196,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 
 #### Code Duplication
 - [x] **CODE-18** HIGH `buildLineConsumptionRows` + `costConsumptionRowsFIFO` trùng 3 chỗ (`pos/actions`, `admin/orders/actions`, `cogs-drift-audit`). **Done by Claude (phiên 2026-06-26)** — extracted to `lib/inventory-consumption.ts`.
-- [ ] **CODE-19** MED `coerceOrder`/`coerceLine` trùng. Export từ `lib/order-types.ts`.
+- [x] **CODE-19** MED `coerceOrder`/`coerceLine` trùng. **Done by Claude (phiên 2026-06-26)** — same as CODE-1.
 - [ ] **CODE-20** MED Block filter "COMPLETED + superseded_by empty" lặp 4 lần. Helper `filterEligibleOrders`.
 - [ ] **CODE-21** MED SEMI_PRODUCT resolution trùng. Helper `resolveSemiProduct`.
 

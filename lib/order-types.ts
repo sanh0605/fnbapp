@@ -265,3 +265,35 @@ export function parseLineRecipeSnapshot(json: string): LineRecipeSnapshot {
     modifiers: [],
   };
 }
+
+// ============================================================================
+// Coercion helpers — convert raw sheet rows (strings) into typed V2 with numeric fields.
+// Claude code — CODE-1/19: shared, used by reports + admin/orders + pos/actions.
+// ============================================================================
+
+export function coerceOrderV2(row: any): OrderV2 {
+  return {
+    ...row,
+    version: Number(row.version) || 1,
+    gross_total: Number(row.gross_total) || 0,
+    promo_discount_total: Number(row.promo_discount_total) || 0,
+    manual_item_discount_total: Number(row.manual_item_discount_total) || 0,
+    manual_order_discount: Number(row.manual_order_discount) || 0,
+    net_total: Number(row.net_total) || 0,
+  } as OrderV2;
+}
+
+export function coerceLineV2(row: any): OrderLineV2 {
+  return {
+    ...row,
+    line_no: Number(row.line_no) || 0,
+    qty: Number(row.qty) || 0,
+    unit_price: Number(row.unit_price) || 0,
+    gross_line_total: Number(row.gross_line_total) || 0,
+    promo_discount: Number(row.promo_discount) || 0,
+    manual_item_discount: Number(row.manual_item_discount) || 0,
+    order_discount_allocation: Number(row.order_discount_allocation) || 0,
+    net_line_total: Number(row.net_line_total) || 0,
+    cost_at_sale: Number(row.cost_at_sale) || 0,
+  } as OrderLineV2;
+}

@@ -1,7 +1,7 @@
 "use server";
 
 import { findAll, findAllNoCache } from "@/lib/sheets_db";
-import { ORDER_STATUS, parseLineRecipeSnapshot } from "@/lib/order-types";
+import { ORDER_STATUS, parseLineRecipeSnapshot, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
 import type { LineRecipeSnapshot, OrderV2, OrderLineV2 } from "@/lib/order-types";
 import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
 import { FIFOTracker } from "@/lib/fifo-tracker";
@@ -95,8 +95,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     const filteredLines = (orderLines as any[]).filter(l => orderIds.has(l.order_id));
 
     // Coerce types
-    const typedOrders: OrderV2[] = filteredOrders.map(coerceOrder);
-    let typedLines: OrderLineV2[] = filteredLines.map(coerceLine);
+    const typedOrders: OrderV2[] = filteredOrders.map(coerceOrderV2);
+    let typedLines: OrderLineV2[] = filteredLines.map(coerceLineV2);
 
     // Apply category filter on lines if present
     if (categoryId) {
@@ -289,8 +289,8 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     const orderIds = new Set(filteredOrders.map(o => o.id));
     const filteredLines = (orderLines as any[]).filter(l => orderIds.has(l.order_id));
 
-    const typedOrders: OrderV2[] = filteredOrders.map(coerceOrder);
-    let typedLines: OrderLineV2[] = filteredLines.map(coerceLine);
+    const typedOrders: OrderV2[] = filteredOrders.map(coerceOrderV2);
+    let typedLines: OrderLineV2[] = filteredLines.map(coerceLineV2);
 
     if (categoryId) {
       typedLines = typedLines.filter(l => {
@@ -462,33 +462,6 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       v2OrderCount: 0,
     };
   }
-}
-
-function coerceOrder(row: any): OrderV2 {
-  return {
-    ...row,
-    version: Number(row.version) || 1,
-    gross_total: Number(row.gross_total) || 0,
-    promo_discount_total: Number(row.promo_discount_total) || 0,
-    manual_item_discount_total: Number(row.manual_item_discount_total) || 0,
-    manual_order_discount: Number(row.manual_order_discount) || 0,
-    net_total: Number(row.net_total) || 0,
-  } as OrderV2;
-}
-
-function coerceLine(row: any): OrderLineV2 {
-  return {
-    ...row,
-    line_no: Number(row.line_no) || 0,
-    qty: Number(row.qty) || 0,
-    unit_price: Number(row.unit_price) || 0,
-    gross_line_total: Number(row.gross_line_total) || 0,
-    promo_discount: Number(row.promo_discount) || 0,
-    manual_item_discount: Number(row.manual_item_discount) || 0,
-    order_discount_allocation: Number(row.order_discount_allocation) || 0,
-    net_line_total: Number(row.net_line_total) || 0,
-    cost_at_sale: Number(row.cost_at_sale) || 0,
-  } as OrderLineV2;
 }
 
 function splitLineCogsBySaleSource(
