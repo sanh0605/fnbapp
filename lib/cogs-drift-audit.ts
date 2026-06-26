@@ -3,6 +3,7 @@ import { parseLineRecipeSnapshot } from "./order-types";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
+  buildLineConsumptionRows,
   buildSemiProductRecipeMaps,
   type ConsumptionRow,
 } from "./inventory-consumption";
@@ -234,34 +235,6 @@ export function auditCogsDrift(input: {
     lineMismatches,
     warnings,
   };
-}
-
-function buildLineConsumptionRows(
-  lineRecipe: ReturnType<typeof parseLineRecipeSnapshot>,
-  lineQty: number,
-  balances: Map<string, number>,
-  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
-): ConsumptionRow[] {
-  const rows: ConsumptionRow[] = [];
-  rows.push(...allocateRecipeConsumption({
-    ingredients: lineRecipe.variant.ingredients,
-    multiplier: lineQty,
-    balances,
-    ...consumptionMaps,
-    source: "VARIANT_RECIPE",
-  }));
-
-  for (const modEntry of lineRecipe.modifiers) {
-    const modifierQty = Number(modEntry.modifier_qty || 1);
-    rows.push(...allocateRecipeConsumption({
-      ingredients: modEntry.recipe.ingredients,
-      multiplier: lineQty * modifierQty,
-      balances,
-      ...consumptionMaps,
-      source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
-    }));
-  }
-  return rows;
 }
 
 function costConsumptionRowsFIFO(rows: ConsumptionRow[], tracker: FIFOTracker): number {

@@ -3,6 +3,7 @@ import { parseLineRecipeSnapshot } from "./order-types";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
+  buildLineConsumptionRows,
   buildSemiProductRecipeMaps,
   type ConsumptionRow,
 } from "./inventory-consumption";
@@ -202,33 +203,6 @@ export function auditMacCogsDrift(input: {
     classificationCounts,
     warnings,
   };
-}
-
-function buildLineConsumptionRows(
-  lineRecipe: ReturnType<typeof parseLineRecipeSnapshot>,
-  lineQty: number,
-  balances: Map<string, number>,
-  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
-): ConsumptionRow[] {
-  const rows: ConsumptionRow[] = [];
-  rows.push(...allocateRecipeConsumption({
-    ingredients: lineRecipe.variant.ingredients,
-    multiplier: lineQty,
-    balances,
-    ...consumptionMaps,
-    source: "VARIANT_RECIPE",
-  }));
-
-  for (const modifier of lineRecipe.modifiers) {
-    rows.push(...allocateRecipeConsumption({
-      ingredients: modifier.recipe.ingredients,
-      multiplier: lineQty * Number(modifier.modifier_qty || 1),
-      balances,
-      ...consumptionMaps,
-      source: `MODIFIER_RECIPE:${modifier.modifier_id}`,
-    }));
-  }
-  return rows;
 }
 
 function classifyMismatch(line: RawLine, rows: ConsumptionRow[]): MacCogsDriftClassification {

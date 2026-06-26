@@ -1,4 +1,4 @@
-import type { RecipeIngredientSnapshot } from "@/lib/order-types";
+import type { RecipeIngredientSnapshot, LineRecipeSnapshot } from "@/lib/order-types";
 
 export type ConsumptionRow = {
   item_reference: string;
@@ -14,6 +14,46 @@ export type ConsumptionAllocationInput = {
   semiProductYields: Map<string, number>;
   source?: string;
 };
+
+export type SemiProductConsumptionMaps = {
+  semiProductRecipes: Map<string, RecipeIngredientSnapshot[]>;
+  semiProductYields: Map<string, number>;
+};
+
+/**
+ * Build consumption rows from a parsed line recipe (variant + modifiers).
+ * Shared by cogs-drift-audit, mac-cogs-audit, btp-shortfall-reprocess,
+ * POS write path, admin edit write path.
+ *
+ * Claude code — R12/CODE-18: extract duplicated logic (was 4 copies).
+ */
+export function buildLineConsumptionRows(
+  lineRecipe: LineRecipeSnapshot,
+  lineQty: number,
+  balances: Map<string, number>,
+  consumptionMaps: SemiProductConsumptionMaps,
+): ConsumptionRow[] {
+  const rows: ConsumptionRow[] = [];
+  rows.push(...allocateRecipeConsumption({
+    ingredients: lineRecipe.variant.ingredients,
+    multiplier: lineQty,
+    balances,
+    ...consumptionMaps,
+    source: "VARIANT_RECIPE",
+  }));
+
+  for (const modEntry of lineRecipe.modifiers) {
+    const modifierQty = Number(modEntry.modifier_qty || 1);
+    rows.push(...allocateRecipeConsumption({
+      ingredients: modEntry.recipe.ingredients,
+      multiplier: lineQty * modifierQty,
+      balances,
+      ...consumptionMaps,
+      source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
+    }));
+  }
+  return rows;
+}
 
 export function allocateRecipeConsumption(input: ConsumptionAllocationInput): ConsumptionRow[] {
   const rows: ConsumptionRow[] = [];

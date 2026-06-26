@@ -14,6 +14,7 @@ import { computeMacCostForConsumptionRows } from "@/lib/mac-cogs";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
+  buildLineConsumptionRows,
   buildSemiProductRecipeMaps,
   type ConsumptionRow,
 } from "@/lib/inventory-consumption";
@@ -230,33 +231,7 @@ function buildStockLedgerEntries(
   return entries;
 }
 
-function buildLineConsumptionRows(
-  lineRecipe: ReturnType<typeof parseLineRecipeSnapshot>,
-  lineQty: number,
-  balances: Map<string, number>,
-  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
-): ConsumptionRow[] {
-  const rows: ConsumptionRow[] = [];
-  rows.push(...allocateRecipeConsumption({
-    ingredients: lineRecipe.variant.ingredients,
-    multiplier: lineQty,
-    balances,
-    ...consumptionMaps,
-    source: "VARIANT_RECIPE",
-  }));
-
-  for (const modEntry of lineRecipe.modifiers) {
-    const modifierQty = Number(modEntry.modifier_qty || 1);
-    rows.push(...allocateRecipeConsumption({
-      ingredients: modEntry.recipe.ingredients,
-      multiplier: lineQty * modifierQty,
-      balances,
-      ...consumptionMaps,
-      source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
-    }));
-  }
-  return rows;
-}
+// Claude code — R12: buildLineConsumptionRows extracted to lib/inventory-consumption.ts (shared).
 
 export async function getPOSDrafts(brandId: string) {
   try {

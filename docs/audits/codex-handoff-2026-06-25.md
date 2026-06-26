@@ -110,7 +110,7 @@ Spec đã update với 3 Open Questions answered (Q1 rewrite, Q2 không populate
 - [x] **R9** TS error `MacLedgerEntry` thiếu `reference_id` ở `lib/mac-cogs.ts:4-10` dù `lib/mac-cogs-audit.ts:138` dùng. **Done by Claude** — thêm `id?: string; reference_id?: string` vào type.
 - [x] **R10** Runtime crash risk `lib/mac-cogs-audit.ts:187,236` — `row.item_reference.startsWith` mà `item_reference?: string`. **Done by Claude** — wrap `String(row.item_reference || "")`.
 - [ ] **R11** `btp-shortfall-reprocess.ts:126` perf O(n²) — `workingLedger.filter()` mỗi order re-scan + growing workingLedger. *(Defer — 1-shot migration, performance acceptable)*
-- [ ] **R12** `buildLineConsumptionRows` + `modifierQtyByIdFromLine` trùng 4 chỗ: `btp-shortfall-reprocess.ts`, `cogs-drift-audit.ts`, `mac-cogs-audit.ts`, `report-v2-allocators.ts`. (= CODE-18, càng rõ sau MAC migration)
+- [x] **R12** `buildLineConsumptionRows` + `modifierQtyByIdFromLine` trùng 4 chỗ. **Done by Claude (phiên 2026-06-26)** — extract `buildLineConsumptionRows` to `lib/inventory-consumption.ts`, replace 4 implementations.
 - [x] **R13** FIFO drift audit `scripts/audit-cogs-drift.ts` giờ report nhiều mismatch (FIFO ≠ MAC). **Done by Claude (phiên 2026-06-26)** — added 3-line warning đầu output giải thích FIFO informational only, point tới MAC audit.
 
 ### Verify commands
@@ -195,7 +195,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 - [ ] **CODE-17** MED `lib/cogs-drift-audit.ts:146-163` re-consume prior lines O(n²).
 
 #### Code Duplication
-- [ ] **CODE-18** HIGH `buildLineConsumptionRows` + `costConsumptionRowsFIFO` trùng 3 chỗ (`pos/actions`, `admin/orders/actions`, `cogs-drift-audit`). Đưa vào `lib/inventory-consumption.ts`.
+- [x] **CODE-18** HIGH `buildLineConsumptionRows` + `costConsumptionRowsFIFO` trùng 3 chỗ (`pos/actions`, `admin/orders/actions`, `cogs-drift-audit`). **Done by Claude (phiên 2026-06-26)** — extracted to `lib/inventory-consumption.ts`.
 - [ ] **CODE-19** MED `coerceOrder`/`coerceLine` trùng. Export từ `lib/order-types.ts`.
 - [ ] **CODE-20** MED Block filter "COMPLETED + superseded_by empty" lặp 4 lần. Helper `filterEligibleOrders`.
 - [ ] **CODE-21** MED SEMI_PRODUCT resolution trùng. Helper `resolveSemiProduct`.
