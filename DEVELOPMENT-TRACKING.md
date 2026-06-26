@@ -4,6 +4,48 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-26 (Claude, Coordinator) — Review Codex commits + Phase 9 proposal
+
+**Trigger:** Anh yeu cau Coordinator review 2 commit cua Codex (df0bd3f coordination rewrite + 58b4ace CODE-14 batch update), verify audit report, de xuat phase tiep theo.
+
+### Reviewed
+
+| Item | Commit | Verdict | Notes |
+|---|---|---|---|
+| Coordination protocol rewrite | df0bd3f | APPROVED | File map, status markers `[~C]/[~X]/[~A]`, risk-boundary ownership, 7 rules, merge gate, session checklist. Antigravity tasks need explicit assignment. |
+| CODE-14 updateMany + batch update | 58b4ace | APPROVED + 1 follow-up | Single batchUpdate call, fail-safe on missing id. Tests only cover happy path; Codex follow-up: edge cases (id-not-found throw, empty array, revalidateTag CLI skip). |
+| mac-cogs-recalc-report.json | 58b4ace | KEEP | Audit trail evidence for MAC migration. Regenerate via `apply-mac-cogs-recalc.ts --apply`. Add "as of" timestamp note in handoff. |
+
+### Verification
+
+- `npx vitest run`: **192/192 pass**
+- `vite-node scripts/audit-mac-cogs-drift.ts`: **0 mismatch, 0 delta**
+- `vite-node scripts/audit-current-stock.ts`: **6 negative items** (5 BTP shortfall + ING-015 Siro đào -10ml)
+- TS `tsc --noEmit`: blocked by TS6053 missing route/page files (pre-existing, not introduced by Codex).
+
+### Coordinator follow-up tasks
+
+- [ ] Track handoff status marker updates for CODE-14 (Codex marked done in handoff; tracking already appended).
+- [ ] Monitor status marker conflicts (Claude as coordinator + contributor).
+- [ ] Codex follow-up: extend `lib/sheets_db.test.ts` with edge cases for `updateMany`.
+- [ ] Phase 9 planning: negative stock resolution for 6 items.
+
+### Next phase proposal (aligns with Codex recommendation)
+
+**Phase 9 — Negative stock resolution** (Codex own, engine/data work):
+
+- Audit 6 items: classify root cause per item.
+  - 5 BTP items: SALES_CONSUME exceeds STOCK_ADJUST + EDIT_REVERSAL → likely missing PRODUCTION_YIELD.
+  - ING-015 Siro đào: -10ml, PO_RECEIPT nearly covers → adjustment or PO_RECEIPT backfill.
+- Per-item fix plan with dry-run + count + `--apply`.
+- Verify `audit-current-stock.ts` returns 0 negative.
+
+**Phase 6.2 (script deletion)** — defer until Phase 9 done. Audit scripts for negative-stock classification may still be needed.
+
+**Antigravity tasks** — UI polish (UI-8/12/13/14/15/17) can run in parallel since they do not touch engine/data.
+
+---
+
 ## 2026-06-26 (Codex) — Coordination rewrite + CODE-14 batch update
 
 **Trigger:** Anh yeu cau rewrite coordination files cho workflow Claude/Codex/Antigravity, de xuat folder cleanup, sau do pick mot task engine ton dong va lam tiep.
