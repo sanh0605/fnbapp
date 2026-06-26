@@ -39,10 +39,14 @@ export default async function POSPage({
     findAll("Recipes")
   ]);
 
-  const activeCategories = categories.filter(c => c.status !== "DELETED");
-  const activeProducts = products.filter(p => p.status !== "DELETED");
-  const activeVariants = variants.filter(v => v.status !== "DELETED");
-  const activeModifiers = modifiers.filter(m => m.status !== "DELETED");
+  // Per docs/domain-dictionary.md: ACTIVE = available for new transactions,
+  // INACTIVE = hidden from new transactions, DELETED = soft-deleted.
+  // POS must show ACTIVE only so the admin toggle (Product.status ACTIVE/INACTIVE)
+  // actually hides toppings from the catalog.
+  const activeCategories = categories.filter(c => c.status === "ACTIVE");
+  const activeProducts = products.filter(p => p.status === "ACTIVE");
+  const activeVariants = variants.filter(v => v.status === "ACTIVE");
+  const activeModifiers = modifiers.filter(m => m.status === "ACTIVE");
   const activePromotions = promotions.filter(p => p.status === "ACTIVE");
   
   const brandId = Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : searchParams?.brandId;

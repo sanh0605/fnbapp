@@ -13,17 +13,42 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 
 ---
 
+## Pending hand-off tasks (by owner)
+
+Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong từng direction log entry bên dưới.
+
+### Antigravity (UI)
+
+| Marker | Task | File | Spec |
+|---|---|---|---|
+| `[~A]` | Admin toggle page (server component) | `app/admin/products/toppings/page.tsx` (new) | `docs/superpowers/specs/2026-06-27-topping-standalone-design.md` §Admin UI |
+| `[~A]` | Admin toggle component (client) | `components/ToppingsManager.tsx` (new) | same spec |
+| `[~A]` | Toggle server action | `app/admin/products/toppings/actions.ts` (new) | same spec §Server action |
+| `[ ]` | (Codex review required after Antigravity PR) | — | per COLLABORATION.md rule C |
+
+### Codex (engine / data review)
+
+| Marker | Task | Notes |
+|---|---|---|
+| `[ ]` | Post-hoc review: `scripts/import-june-2026-sales.ts` (applied 2026-06-27) | Order creation + MAC COGS + ledger writes; user verbally approved without Codex review. |
+| `[ ]` | Post-hoc review: `scripts/setup-topping-standalone.ts` (applied 2026-06-27) | Catalog mutation (CAT-007 + 7 products/variants/recipes). |
+| `[ ]` | Review: POS filter fix `app/pos/page.tsx:42-45` (applied 2026-06-27 by Claude) | `status !== "DELETED"` → `status === "ACTIVE"`. Data flow impact. |
+| `[ ]` | Review: toggle server action after Antigravity ships it | Mutates Products sheet. |
+
+---
+
 ## Direction change log
 
 ### 2026-06-27 (Claude) — Topping standalone sales setup (data done, UI pending)
 
 - New: standalone topping sales. Spec `docs/superpowers/specs/2026-06-27-topping-standalone-design.md`.
 - Data layer APPLIED: CAT-007 "Topping" + 7 Products (PROD-029..035) + 7 Variants (VAR-038..044) + 7 Recipes (REC-071..077). Re-run `scripts/setup-topping-standalone.ts` (dry-run by default) is idempotent.
-- **Antigravity tasks (pending)**:
-  - `[ ]` POS filter fix `app/pos/page.tsx` lines 42-45: `status !== "DELETED"` → `status === "ACTIVE"` (correctness fix per domain-dictionary; required for toggle to work).
-  - `[ ]` Admin toggle page `app/admin/products/toppings/page.tsx` + `components/ToppingsManager.tsx`.
-  - `[ ]` Server action `app/admin/products/toppings/actions.ts` — `toggleToppingStandalone(productId, enabled)`.
-- **Codex review (pending)**: data setup script (post-hoc, already applied), POS filter change (data flow impact), toggle action (mutates Products sheet).
+- POS filter fix `[x]` DONE by Claude 2026-06-27: `app/pos/page.tsx:42-45` changed `status !== "DELETED"` → `status === "ACTIVE"` for categories/products/variants/modifiers. Aligns POS with `docs/domain-dictionary.md` INACTIVE contract.
+- **Antigravity tasks (pending)** — see "Pending hand-off tasks" table above:
+  - `[~A]` Admin toggle page `app/admin/products/toppings/page.tsx`.
+  - `[~A]` Admin toggle component `components/ToppingsManager.tsx`.
+  - `[~A]` Toggle server action `app/admin/products/toppings/actions.ts`.
+- **Codex review (pending)** — see "Pending hand-off tasks" table above.
 - See `DEVELOPMENT-TRACKING.md` 2026-06-27 topping entry for full context.
 
 ### 2026-06-27 (Claude) — June 2026 sales backfill import (Phin Đi)

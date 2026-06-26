@@ -23,12 +23,12 @@ Auto-maintained log of completed work. Newest first.
 
 ### Hand-off to Antigravity (pending — UI work)
 
-| Item | File | Change |
-|---|---|---|
-| POS filter fix | `app/pos/page.tsx` lines 42-45 | Change `status !== "DELETED"` → `status === "ACTIVE"` for `activeCategories`, `activeProducts`, `activeVariants`, `activeModifiers`. Per `docs/domain-dictionary.md` INACTIVE = "Hidden from new transactions" — current filter violates contract. Required for admin toggle to actually hide toppings from POS. |
-| Admin toggle page | `app/admin/products/toppings/page.tsx` (new) | Server component. Loads Products where `category_id === "CAT-007"`. Renders `<ToppingsManager>`. |
-| Admin toggle component | `components/ToppingsManager.tsx` (new) | Client component. Table: Modifier \| Standalone Product \| ON/OFF switch. Calls `toggleToppingStandalone` action. |
-| Toggle server action | `app/admin/products/toppings/actions.ts` (new) | `toggleToppingStandalone(productId, enabled)`: validates `category_id === "CAT-007"`, `update("Products", productId, { status: enabled ? "ACTIVE" : "INACTIVE" })`, `revalidatePath("/pos")`, `revalidatePath("/admin/products/toppings")`. |
+| Item | File | Change | Status |
+|---|---|---|---|
+| POS filter fix | `app/pos/page.tsx` lines 42-45 | Change `status !== "DELETED"` → `status === "ACTIVE"` for `activeCategories`, `activeProducts`, `activeVariants`, `activeModifiers`. Per `docs/domain-dictionary.md` INACTIVE = "Hidden from new transactions" — current filter violates contract. Required for admin toggle to actually hide toppings from POS. | **DONE by Claude 2026-06-27** |
+| Admin toggle page | `app/admin/products/toppings/page.tsx` (new) | Server component. Loads Products where `category_id === "CAT-007"`. Renders `<ToppingsManager>`. | Pending |
+| Admin toggle component | `components/ToppingsManager.tsx` (new) | Client component. Table: Modifier \| Standalone Product \| ON/OFF switch. Calls `toggleToppingStandalone` action. | Pending |
+| Toggle server action | `app/admin/products/toppings/actions.ts` (new) | `toggleToppingStandalone(productId, enabled)`: validates `category_id === "CAT-007"`, `update("Products", productId, { status: enabled ? "ACTIVE" : "INACTIVE" })`, `revalidatePath("/pos")`, `revalidatePath("/admin/products/toppings")`. | Pending |
 
 ### Hand-off to Codex (pending — review)
 
