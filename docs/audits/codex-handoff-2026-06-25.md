@@ -15,6 +15,17 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 
 ## Direction change log
 
+### 2026-06-27 (Claude) — Topping standalone sales setup (data done, UI pending)
+
+- New: standalone topping sales. Spec `docs/superpowers/specs/2026-06-27-topping-standalone-design.md`.
+- Data layer APPLIED: CAT-007 "Topping" + 7 Products (PROD-029..035) + 7 Variants (VAR-038..044) + 7 Recipes (REC-071..077). Re-run `scripts/setup-topping-standalone.ts` (dry-run by default) is idempotent.
+- **Antigravity tasks (pending)**:
+  - `[ ]` POS filter fix `app/pos/page.tsx` lines 42-45: `status !== "DELETED"` → `status === "ACTIVE"` (correctness fix per domain-dictionary; required for toggle to work).
+  - `[ ]` Admin toggle page `app/admin/products/toppings/page.tsx` + `components/ToppingsManager.tsx`.
+  - `[ ]` Server action `app/admin/products/toppings/actions.ts` — `toggleToppingStandalone(productId, enabled)`.
+- **Codex review (pending)**: data setup script (post-hoc, already applied), POS filter change (data flow impact), toggle action (mutates Products sheet).
+- See `DEVELOPMENT-TRACKING.md` 2026-06-27 topping entry for full context.
+
 ### 2026-06-27 (Claude) — June 2026 sales backfill import (Phin Đi)
 
 - User-provided spreadsheet backfilled: 110 line items → 77 orders, Phin Đi brand, June 1-26.

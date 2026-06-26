@@ -4,6 +4,51 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude) — Topping standalone sales setup (data layer)
+
+**Trigger:** User wants to sell toppings independently (no drink required). Spec: `docs/superpowers/specs/2026-06-27-topping-standalone-design.md` (commit `5654581`).
+
+### Done (this session)
+
+| Item | Files | Description |
+|---|---|---|
+| Data setup script | `scripts/setup-topping-standalone.ts` | Dry-run default + `--apply`. For each of 7 active topping Modifiers (MOD-001..006, MOD-008), creates Product + Variant + Recipe in new CAT-007 "Topping" category. Recipe cloned from modifier recipe. In-memory ID allocator (PROD-/VAR-/REC- prefixes) for sequential allocation within one run. Idempotency via name+category check (re-runnable). |
+| Diagnostic | `scripts/inspect-toppings.ts` | Read-only check for Modifiers / Recipes / Products state. Used during brainstorm. |
+| Apply result | Google Sheets | 1 category (CAT-007) + 7 Products (PROD-029..035) + 7 Variants (VAR-038..044) + 7 Recipes (REC-071..077). All ACTIVE. All `brand_id=""` (shared across PHD + UCK per user decision). |
+
+### Verification
+
+- Re-run `vite-node scripts/setup-topping-standalone.ts` (dry-run): **7/7 already set up**, 0 to create, 0 errors — idempotency confirmed.
+- Toppings visible in catalog: `findAll("Products")` returns 35 rows (28 prior + 7 new), all in CAT-007.
+
+### Hand-off to Antigravity (pending — UI work)
+
+| Item | File | Change |
+|---|---|---|
+| POS filter fix | `app/pos/page.tsx` lines 42-45 | Change `status !== "DELETED"` → `status === "ACTIVE"` for `activeCategories`, `activeProducts`, `activeVariants`, `activeModifiers`. Per `docs/domain-dictionary.md` INACTIVE = "Hidden from new transactions" — current filter violates contract. Required for admin toggle to actually hide toppings from POS. |
+| Admin toggle page | `app/admin/products/toppings/page.tsx` (new) | Server component. Loads Products where `category_id === "CAT-007"`. Renders `<ToppingsManager>`. |
+| Admin toggle component | `components/ToppingsManager.tsx` (new) | Client component. Table: Modifier \| Standalone Product \| ON/OFF switch. Calls `toggleToppingStandalone` action. |
+| Toggle server action | `app/admin/products/toppings/actions.ts` (new) | `toggleToppingStandalone(productId, enabled)`: validates `category_id === "CAT-007"`, `update("Products", productId, { status: enabled ? "ACTIVE" : "INACTIVE" })`, `revalidatePath("/pos")`, `revalidatePath("/admin/products/toppings")`. |
+
+### Hand-off to Codex (pending — review)
+
+Per `docs/COLLABORATION.md` rule C, the items above are engine/data writes and require Codex review before merge:
+- `scripts/setup-topping-standalone.ts` — already applied (post-hoc review requested).
+- POS filter change — data flow impact, Codex review.
+- Toggle server action — mutates Products sheet, Codex review.
+
+### Known limitations (deferred)
+
+- **Recipe drift**: editing a Modifier recipe does NOT auto-update the standalone Variant recipe. Manual sync via re-running setup or editing Recipes sheet.
+- **Price drift**: same — Modifier price changes do not propagate to Variant price.
+- **`brand_id` blank on topping products**: same pattern as existing PROD-027/028 (per yesterday's import). Reports-by-brand may classify toppings as "unbranded". Out of scope.
+
+### Commits
+
+- (pending) `Claude feat: topping standalone sales data setup`
+
+---
+
 ## 2026-06-27 (Claude) — June 2026 sales backfill import (Phin Đi)
 
 **Trigger:** User provided 110-row spreadsheet of historical Phin Đi (PHD) sales for 2026-06-01..2026-06-26 and asked Claude to backfill them into the system with dry-run + approval flow.
