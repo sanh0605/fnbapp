@@ -56,7 +56,7 @@ export interface PnLReportResult {
 
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   try {
-    const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes] = await Promise.all([
+    const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers] = await Promise.all([
       findAllNoCache("Orders_V2"),
       findAllNoCache("Order_Lines_V2"),
       findAll("Base_Ingredients"),
@@ -64,6 +64,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       findAll("Units"),
       findAllNoCache("Stock_Ledger"),
       findAll("Recipes"),
+      findAll("Modifiers"),
     ]);
 
     // Build SemiProductContext for SP-aware COGS computation (WS-10)
@@ -134,6 +135,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // 6. Build product profit analysis.
     // COGS is split by source so product rows do not also carry topping COGS.
     const cogsBySourceKey = splitLineCogsBySaleSource(typedLines, typedOrders, ledger as any[], spContext);
+    const canonicalModifiers = buildCanonicalModifierLookup(modifiers as any[]);
+    const canonicalModifierCogs = canonicalizeModifierCogs(cogsBySourceKey.modifierCogs, canonicalModifiers);
 
     const productProfitAnalysis = productRows
       .filter(r => !r.product_id.startsWith("MOD:"))
@@ -157,25 +160,24 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       .sort((a, b) => b.qty - a.qty || b.grossProfit - a.grossProfit);
 
     // Add topping rows (modifiers as pseudo-products)
-    const toppingRows = productRows
-      .filter(r => r.product_id.startsWith("MOD:"))
-      .map(r => {
-        const modifierId = r.product_id.replace("MOD:", "");
-        const cogs = cogsBySourceKey.modifierCogs.get(modifierId) || 0;
-        const grossProfit = r.revenue - cogs;
-        const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
-        return {
-          product_id: r.product_id,
-          product_name: r.product_name,
-          variant_id: "",
-          size_name: "",
-          qty: r.qty,
-          revenue: r.revenue,
-          cogs,
-          grossProfit,
-          marginPct,
-        };
-      });
+    const toppingRevenueRows = mergeModifierRevenueRows(productRows, canonicalModifiers);
+    const toppingRows = toppingRevenueRows.map(r => {
+      const modifierId = r.product_id.replace("MOD:", "");
+      const cogs = canonicalModifierCogs.get(modifierId) || 0;
+      const grossProfit = r.revenue - cogs;
+      const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
+      return {
+        product_id: r.product_id,
+        product_name: r.product_name,
+        variant_id: "",
+        size_name: "",
+        qty: r.qty,
+        revenue: r.revenue,
+        cogs,
+        grossProfit,
+        marginPct,
+      };
+    });
 
     // 7. COGS details with names + units
     const cogsDetails = ingredientRows
@@ -593,6 +595,48 @@ function computeRawMacWeight(
 function addMoney(map: Map<string, number>, key: string, value: number): void {
   if (!key || !Number.isFinite(value) || value === 0) return;
   map.set(key, (map.get(key) || 0) + value);
+}
+
+function mergeModifierRevenueRows(
+  productRows: ProductRevenueRow[],
+  canonicalModifiers: ReturnType<typeof buildCanonicalModifierLookup>,
+): ProductRevenueRow[] {
+  const map = new Map<string, ProductRevenueRow>();
+
+  for (const row of productRows.filter(r => r.product_id.startsWith("MOD:"))) {
+    const modifierId = row.product_id.replace("MOD:", "");
+    const canonical = canonicalModifiers.byId.get(modifierId)
+      || canonicalModifiers.byName.get(normalizeModifierName(row.product_name))
+      || { id: modifierId, name: row.product_name };
+    const key = `MOD:${canonical.id}`;
+    const current = map.get(key);
+    if (current) {
+      current.qty += row.qty;
+      current.revenue += row.revenue;
+    } else {
+      map.set(key, {
+        ...row,
+        product_id: key,
+        product_name: canonical.name,
+        variant_id: "",
+        size_name: "",
+      });
+    }
+  }
+
+  return Array.from(map.values());
+}
+
+function canonicalizeModifierCogs(
+  modifierCogs: Map<string, number>,
+  canonicalModifiers: ReturnType<typeof buildCanonicalModifierLookup>,
+): Map<string, number> {
+  const result = new Map<string, number>();
+  for (const [modifierId, cogs] of modifierCogs.entries()) {
+    const canonical = canonicalModifiers.byId.get(modifierId) || { id: modifierId, name: modifierId };
+    addMoney(result, canonical.id, cogs);
+  }
+  return result;
 }
 
 function toConsumptionMaps(spContext?: any): SemiProductConsumptionMaps {
