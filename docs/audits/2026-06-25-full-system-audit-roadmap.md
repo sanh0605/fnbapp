@@ -567,6 +567,8 @@ Task 4.5 - Verify:
 - [x] Production audit clean: yield mismatches `0`, negative semi-products `0`.
 - [x] Tests pass.
 
+  Codex update 2026-06-26: reprocessed post-cutover orders after the stock reset so BTP shortfall is represented in ledger by reversing old direct BTP consumption and inserting split BTP/base-ingredient consumption. Applied two idempotent batches: 15 orders / 272 rows, then 24 new live orders / 166 rows. Verification: `scripts/audit-current-stock.ts` negative stock `0`; `scripts/audit-order-ledger.ts` mismatch `0`, orphan `0`; `scripts/audit-mac-cogs-drift.ts` mismatch `0`; `scripts/reprocess-btp-shortfall-ledger.ts` dry-run rows `0`.
+
 Task 4.6 - Guard/tooling đã triển khai trong phase này:
 
 - [x] `scripts/audit-negative-stock-periods.ts` lọc non-inventory giống `scripts/audit-current-stock.ts`.

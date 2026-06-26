@@ -248,13 +248,16 @@ a72b2ac Claude chore: stage Codex audit-order-ledger.ts changes          [Codex 
 - Added `scripts/reprocess-btp-shortfall-ledger.ts` dry-run/apply script.
 - Added `scripts/audit-negative-btp-orders.ts` read-only investigation script.
 - Updated `auditOrderLedger` to use direct BTP contract before the 2026-06-25 cutover and BTP shortfall allocation after the cutover.
-- Applied post-cutover reprocess: inserted `272` correction rows into `Stock_Ledger`.
+- Applied post-cutover reprocess in two idempotent batches:
+  - First batch: 15 orders, inserted `272` correction rows.
+  - Second batch after new live orders arrived: 24 orders, inserted `166` correction rows and recalculated 24 `Order_Lines_V2.cost_at_sale` cells.
 
 ### Verification
 
 - `scripts/audit-current-stock.ts`: negative stock `0`, unknown item refs `0`.
 - `scripts/audit-order-ledger.ts`: mismatches `0`, orphan ledger rows `0`.
 - `scripts/audit-mac-cogs-drift.ts`: mismatched lines `0`, delta `0`.
+- `scripts/reprocess-btp-shortfall-ledger.ts`: dry-run rows to insert `0`.
 
 ---
 
