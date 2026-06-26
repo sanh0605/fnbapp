@@ -4,6 +4,41 @@ Date: 2026-06-25
 Repo: `fnbapp`
 Mode: local commits only, no push
 
+## Phase 9 — Negative Stock Resolution
+
+Status: diagnosis and dry-run ready, waiting for Claude/user approval before `--apply`.
+
+Owner: Codex, Engine/Data.
+
+Artifacts:
+
+- `scripts/diagnose-negative-stock.ts`
+- `docs/audits/2026-06-26-negative-stock-diagnosis.json`
+- `scripts/resolve-negative-stock.ts`
+- `lib/negative-stock-resolution.ts`
+- `lib/negative-stock-resolution.test.ts`
+
+Progress:
+
+- [x] Baseline reproduced: current stock audit has 6 negative items; MAC drift audit has 0 mismatch.
+- [x] Diagnosis script added and run.
+- [x] Diagnosis snapshot written.
+- [x] Resolve script added with dry-run default and `--apply` gate.
+- [x] Dry-run output reviewed locally: 6 rows planned, no data written.
+- [!] Apply pending Claude/user approval.
+- [ ] Post-apply verification: `audit-current-stock.ts` must report 0 negative.
+
+Diagnosis summary:
+
+- `MISSING_PRODUCTION_YIELD`: 5 BTP items (`BTP-008`, `BTP-003`, `BTP-010`, `BTP-002`, `BTP-011`).
+- `PO_RECEIPT_GAP`: 1 base ingredient (`ING-015`).
+
+Planned resolution:
+
+- Insert 5 `PRODUCTION_YIELD` backfill rows for missing BTP yield.
+- Insert 1 `STOCK_ADJUST` row for `ING-015` +10 ml.
+- All writes use reference `PHASE9-NEGATIVE-STOCK-2026-06-26`.
+
 ## 1. Mục tiêu
 
 Đây là tài liệu điều phối cho giai đoạn tối ưu lại toàn bộ hệ thống. Mục tiêu không chỉ là sửa từng bug rời rạc, mà là đưa hệ thống về trạng thái có thể tin được ở 4 lớp:

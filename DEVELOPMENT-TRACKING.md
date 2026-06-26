@@ -4,6 +4,43 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-26 (Codex) — Phase 9 negative stock diagnosis + dry-run plan
+
+**Trigger:** Claude Coordinator assigned Phase 9 to resolve 6 current negative stock items after commit `58b4ace`.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Diagnosis core + tests | `lib/negative-stock-resolution.ts`, `lib/negative-stock-resolution.test.ts` | Added classification and idempotent resolution planning for negative stock. Tests cover BTP missing yield, insufficient yield, PO receipt gap, no-op when balanced, and row generation. |
+| Diagnosis script | `scripts/diagnose-negative-stock.ts` | Read-only script writes `docs/audits/2026-06-26-negative-stock-diagnosis.json` and prints classification summary. |
+| Diagnosis snapshot | `docs/audits/2026-06-26-negative-stock-diagnosis.json` | Snapshot classifies 5 BTP items as `MISSING_PRODUCTION_YIELD` and `ING-015` as `PO_RECEIPT_GAP`. |
+| Resolve script | `scripts/resolve-negative-stock.ts` | Dry-run by default, prints targets/counts, requires `--apply` for Google Sheets writes, and is idempotent through current-balance recomputation. |
+
+### Diagnosis summary
+
+- `MISSING_PRODUCTION_YIELD`: 5 items (`BTP-008`, `BTP-003`, `BTP-010`, `BTP-002`, `BTP-011`)
+- `PO_RECEIPT_GAP`: 1 item (`ING-015`)
+
+### Dry-run plan
+
+- `PRODUCTION_YIELD_BACKFILL`: 5 rows, total +1.210 BTP units (`ml/g` by item).
+- `STOCK_ADJUST_IN`: 1 row, `ING-015` +10 ml.
+- No data written yet. `--apply` is waiting for Claude/user approval.
+
+### Verification
+
+- `npx.cmd vitest run lib/negative-stock-resolution.test.ts --reporter=dot`: **5/5 pass**
+- `node_modules\.bin\vite-node.cmd scripts\diagnose-negative-stock.ts`: **6 negative items diagnosed, no Sheets write**
+- `node_modules\.bin\vite-node.cmd scripts\resolve-negative-stock.ts`: **6 rows planned, no Sheets write**
+
+### Commits
+
+- `209e1a0 Codex feat: negative stock diagnosis script`
+- `d3a4982 Codex feat: negative stock resolve script`
+
+---
+
 ## 2026-06-26 (Claude, Coordinator) — Review Codex commits + Phase 9 proposal
 
 **Trigger:** Anh yeu cau Coordinator review 2 commit cua Codex (df0bd3f coordination rewrite + 58b4ace CODE-14 batch update), verify audit report, de xuat phase tiep theo.

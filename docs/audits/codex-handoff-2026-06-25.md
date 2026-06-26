@@ -15,6 +15,19 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 
 ## Direction change log
 
+### 2026-06-26 (Codex) — Phase 9 negative stock diagnosis
+
+- Phase 9 diagnosis and dry-run resolve plan are ready for Claude/user review.
+- Diagnosis script: `scripts/diagnose-negative-stock.ts`.
+- Diagnosis output: `docs/audits/2026-06-26-negative-stock-diagnosis.json`.
+- Resolve script: `scripts/resolve-negative-stock.ts`.
+- Dry-run result: 6 rows planned, no data written.
+- Classification counts: `MISSING_PRODUCTION_YIELD=5`, `PO_RECEIPT_GAP=1`.
+- Proposed writes after approval:
+  - `PRODUCTION_YIELD` backfill rows for `BTP-008`, `BTP-003`, `BTP-010`, `BTP-002`, `BTP-011`.
+  - `STOCK_ADJUST` row for `ING-015` +10 ml.
+- Status: waiting for Claude/user approval before running `node_modules\.bin\vite-node.cmd scripts\resolve-negative-stock.ts --apply`.
+
 ### 2026-06-26 — MAC COGS primary direction
 
 - User approved switching primary COGS valuation FIFO → MAC.
