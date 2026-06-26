@@ -4,6 +4,67 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-26 (Claude, phiên 4) — P0 + P1 + P2 priority fixes
+
+**Trigger:** Anh yêu cầu em làm theo thứ tự ưu tiên giảm dần, commit từng task/phase, không push.
+
+### Done by Claude (8 commits, b137b30 ← 4fb5037)
+
+| Item | Severity | Commit | Description |
+|---|---|---|---|
+| **CODE-22** | P0 Critical | 0ec4eb2 | `requireAdmin`/`resolveActor` helper. Apply 5 server actions: voidOrderV2, editOrderV2, savePurchaseOrder, submitStockAdjustment, approveStockAdjustment. Stop trusting client role param. |
+| **CODE-8** | P0 Critical | 0ec4eb2 | voidOrderV2 reorder fail-safe: reversal+event first, order update last + idempotency guard. Old order left VOIDED-without-reversal on partial failure. |
+| **CODE-11** | P0 High | 35daadd | `ensureUniqueOrderNo` post-insert verify + auto-regenerate. Sheets no unique constraint → detect+retry best-effort. |
+| **CODE-9 + CODE-15** | P0 Critical | 54e2466 | PO update `removeMany` batch (was loop remove). PO create/update `insertMany` batch (was loop insert, N+1). |
+| **R12 / CODE-18** | P1 High | 1cae265 | Extract `buildLineConsumptionRows` to `lib/inventory-consumption.ts`. Replace 4 implementations (pos, admin/orders, cogs-drift-audit, mac-cogs-audit). -63 lines. |
+| **CODE-13** | P1 High | 42224b7 | `getOrdersV2`/`getOrderDetailV2` `.find()` O(n) per line → `productById`/`variantById` Map O(1). |
+| **CODE-1 / CODE-19** | P2 Medium | bf7d7ad | Extract `coerceOrderV2`/`coerceLineV2` to `lib/order-types.ts`. Apply at `reports/actions.ts` (2 places). |
+| **CODE-2** | P2 Medium | 0ec4eb2 | `require()` runtime → static `insertMany` import (bonus from CODE-8). |
+| **CODE-16** | P2 Medium | b137b30 | `getSalesDataV2` tạo Set mỗi iteration → build 1 lần trước filter. |
+
+### Deferred with lý do (trong handoff)
+
+| Item | Lý do |
+|---|---|
+| **CODE-14** | Sheets adapter chưa có `updateMany`. Cần thêm API vào `lib/sheets_db.ts` trước. |
+| **CODE-17** | `cogs-drift-audit.ts` re-consume prior lines O(n²). Cần re-architecture FIFO tracker usage. |
+| **CODE-20** | `filterEligibleOrders` shared — 4 chỗ có filter hơi khác nhau (category level). Refactor risky. |
+| **CODE-21** | `resolveSemiProduct` shared — đã handle bởi `lib/inventory-consumption.ts` allocateRecipeConsumption internally. |
+| **CODE-24** | Whitelist ALLOWED_SHEETS — risky, cần enum đầy đủ + tests. |
+| **P&L breakdown MAC refactor** | Codex authority — spec "Outstanding" section có 4 tasks rõ ràng. |
+| **UI-12/13** | Mobile card fallback — large UI work. |
+| **UI-17** | Item ID display — UX decision, cần anh confirm. |
+
+### Verification (cuối phiên)
+
+- TypeScript: **0 errors**
+- Test suite: **187/187 pass**
+- MAC drift audit: **0 mismatch, 0 delta**
+- Current stock: **0 negative**
+- Order ledger: **0 mismatch**
+- FIFO drift: works (informational, sẽ có mismatch vì MAC primary — expected)
+
+### Commit strategy (8 commits, không push)
+
+```
+b137b30 Claude perf: build Set once outside filter in sales report        [CODE-16]
+bf7d7ad Claude refactor: extract coerceOrderV2/coerceLineV2              [CODE-1/19]
+42224b7 Claude perf: O(n) product/variant lookup → O(1) Map lookup       [CODE-13]
+1cae265 Claude refactor: extract buildLineConsumptionRows                [R12/CODE-18]
+54e2466 Claude fix: PO update transaction safety + batch insert          [CODE-9/15]
+35daadd Claude fix: order_no race condition detection                    [CODE-11]
+a72b2ac Claude chore: stage Codex audit-order-ledger.ts changes          [Codex work]
+0ec4eb2 Claude fix: P0 security + transaction safety + UI/UX cleanup     [CODE-22/8/2 + UI]
+```
+
+### Codex review notes (thêm)
+
+22. Mọi P0 đã done — verify auth guard works trong UI flow thật (login STAFF cố voidOrderV2 phải fail).
+23. CODE-14 defer — nếu Codex thêm `updateMany` API, Claude có thể apply batch update ở items actions.
+24. P&L breakdown MAC refactor (spec Outstanding) — vẫn là task của Codex.
+
+---
+
 ## 2026-06-26 (Claude, phiên 3) — Spec resolution + Codex handoff
 
 **Trigger:** Anh yêu cầu em xem MAC COGS spec, liệt kê việc cần làm, tránh hiểu lầm giữa AI CLIs. P&L breakdown refactor deferred cho Codex.
