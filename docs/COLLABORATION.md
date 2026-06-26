@@ -1,157 +1,162 @@
-# Collaboration Protocol — Claude × Codex
+# Collaboration Protocol
 
-File này là **single source of truth** cho cách 2 agent (Claude Code + Codex) giao tiếp trong repo `fnbapp`. Cả 2 phải đọc file này đầu mỗi phiên.
+This file is the single source of truth for coordinated work in repo `fnbapp`.
+All agents read it at the start of every session.
 
-Cập nhật mỗi khi có thay đổi về quy tắc hoặc cấu trúc file.
+Agents:
 
----
+- Claude Code / GLM 5.1: coordination, specs, review, surgical fixes, tracking.
+- Codex / GPT 5.5: engine, data correctness, migrations, audits, multi-file refactors.
+- Antigravity / Gemini 3.1 stable: UI/frontend, responsive layouts, forms, visual QA.
 
-## 1. File dùng chung
+Do not treat ownership as identity-based permission. Ownership follows risk boundary.
 
-| File | Role | Khi nào update |
-|---|---|---|
-| `docs/COLLABORATION.md` | **THIS FILE** — protocol, quy tắc, file map | Khi đổi convention/structure |
-| `DEVELOPMENT-TRACKING.md` | **Chronicle log** — mọi thay đổi (newest first) | Cuối mỗi phiên làm việc |
-| `docs/audits/codex-handoff-2026-06-25.md` | **Active task tracking** — items với status `[ ]`/`[x]`/`[~]`/`[!]` | Khi item đổi trạng thái |
-| `docs/audits/2026-06-25-full-system-audit-roadmap.md` | **Strategic roadmap** — phase/task long-term | Khi phase đổi status (in progress → done) |
-| `docs/audits/script-cleanup-plan.md` | **Script inventory** — 135 scripts categorized | Khi script add/remove/change category |
-| `docs/domain-dictionary.md` | **Terminology** — code/sheet/UI terms | Khi thêm/chưa term mới |
+## A. File Map
 
----
+Read before each session:
 
-## 2. Status markers (cho task lists)
+- `CLAUDE.md` section 0: Claude-specific project instructions.
+- `AGENTS.md`: Codex and Antigravity project instructions.
+- `docs/COLLABORATION.md`: this protocol.
+- `DEVELOPMENT-TRACKING.md`: 3 newest entries.
+- `docs/audits/codex-handoff-2026-06-25.md`: active task status.
+- `docs/audits/2026-06-25-full-system-audit-roadmap.md`: phase status.
+- `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`: MAC/COGS spec.
+- `docs/domain-dictionary.md`: terminology when changing labels, sheets, reports, or domain code.
 
-```
-[ ]   pending — chưa làm
-[x]   done — đã làm xong + verify
-[~]   partial — làm 1 phần, ai đó complete
-[!]   skip — có lý do, đọc note ngay sau item
-[-]   obsolete — không còn apply (direction change, etc.)
-```
+## B. Status Markers
 
-**Quy tắc**:
-- Khi đánh dấu `[x]`: phải có note `**Done by Claude/Codex** — <tóm tắt>` ngay sau item
-- Khi `[!]` hoặc `[-]`: phải có note lý do
-- Không xoá item — giữ để audit trail
+- `[ ]` pending.
+- `[~C]` in progress by Claude.
+- `[~X]` in progress by Codex.
+- `[~A]` in progress by Antigravity.
+- `[x]` done and verified.
+- `[!]` blocked or needs review.
+- `[-]` deferred or wontfix.
 
----
+Rules:
 
-## 3. Commit message conventions
+- Do not delete task items. Preserve audit trail.
+- `[x]` needs a short note with who completed it and verification.
+- `[!]` and `[-]` need a reason.
+- Only one agent should own an in-progress task marker at a time.
 
-| Prefix | Ý nghĩa | Ai |
-|---|---|---|
-| `Claude:` | Claude Code làm | Claude |
-| `Codex:` | Codex làm | Codex |
-| `fix:` | Bug fix | Cả 2 |
-| `feat:` | Feature mới | Cả 2 |
-| `chore:` | Refactor, cleanup, scripts | Cả 2 |
-| `docs:` | Documentation | Cả 2 |
+## C. Risk-Boundary Ownership
 
-Format đầy đủ: `<prefix> <scope>: <description>` (ví dụ `Claude fix: mac ledger type safe`)
+### Engine Files
 
-Body commit có section `Co-Authored-By:` nếu合作. Không push unless explicitly asked.
+Codex owns these. If another agent touches them, Codex review is required.
 
----
+- `lib/mac-cogs.ts`
+- `lib/fifo-tracker.ts`
+- `lib/inventory-consumption.ts`
+- `lib/report-v2-allocators.ts`
+- `lib/cogs-drift-audit.ts`
+- `lib/mac-cogs-audit.ts`
+- `lib/purchase-ledger-rebuild.ts`
+- `scripts/*cogs*`
+- `scripts/*ledger*`
+- `scripts/audit-pnl-mac-consistency.ts`
+- `app/admin/orders/actions.ts` transaction/order-mutation paths only.
+- `app/pos/actions.ts` transaction paths only.
 
-## 4. Quy trình làm việc mỗi phiên
+### UI Files
 
-### Bắt đầu phiên
+Antigravity owns these. Claude review is required before commit when the change is user-facing.
 
-1. Đọc `docs/COLLABORATION.md` (file này).
-2. Đọc `DEVELOPMENT-TRACKING.md` 3 entries mới nhất.
-3. Đọc `docs/audits/codex-handoff-2026-06-25.md` (active task tracking).
-4. Check `docs/audits/2026-06-25-full-system-audit-roadmap.md` phase hiện tại.
+- `app/**/page.tsx`
+- `app/**/components/*.tsx`
+- `components/*`
+- Form UX, responsive behavior, modal layout, visual QA.
 
-### Trong phiên
+If UI changes server actions or data flow, Codex review is also required.
 
-- Mỗi thay đổi code: thêm entry vào `DEVELOPMENT-TRACKING.md` cuối phiên (không phải mỗi commit).
-- Mỗi item task tracking: update status marker + note ngay sau item.
-- Phát hiện issue mới: thêm item vào handoff section tương ứng + note `Discovered by Claude/Codex`.
+### Spec And Protocol Files
 
-### Cuối phiên
+Claude owns these. Codex review is required for engine/data claims.
 
-1. Update `DEVELOPMENT-TRACKING.md` với entry mới (newest first).
-2. Update `docs/audits/codex-handoff-2026-06-25.md` status markers.
-3. Chạy verify commands (xem section 5).
-4. Nếu có commit, note commit sha trong tracking entry.
+- `docs/COLLABORATION.md`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `docs/superpowers/specs/*`
+- `DEVELOPMENT-TRACKING.md` is append-only unless cleanup is explicitly requested.
 
----
+## D. Seven Coordination Rules
 
-## 5. Verify commands (chạy trước khi kết thúc phiên)
+1. No silent data writes.
+   - Any script that writes Google Sheets must support dry-run by default.
+   - It must print exact counts and targets.
+   - `--apply` is required for writes. No `--apply` means read-only.
 
-```bash
-rtk node_modules/.bin/vitest run                                       # Test suite
-rtk node_modules/.bin/vite-node.cmd scripts/audit-mac-cogs-drift.ts    # MAC primary
-rtk node_modules/.bin/vite-node.cmd scripts/audit-cogs-drift.ts        # FIFO informational only
-rtk node_modules/.bin/vite-node.cmd scripts/audit-current-stock.ts     # Stock ledger
-rtk node_modules/.bin/vite-node.cmd scripts/audit-order-ledger.ts      # Order ledger
-rtk node_modules/.bin/vite-node.cmd scripts/audit-purchase-ledger.ts   # PO ledger
-rtk node_modules/.bin/tsc --noEmit                                     # TypeScript
-```
+2. Commit per phase.
+   - One commit equals one outcome plus verification.
+   - Do not mix UI, engine, and data migration in the same commit.
 
-Baseline hiện tại:
-- Tests: **187/187 pass**
-- MAC drift: **0 mismatch**
-- Current stock: **0 negative**
-- Order ledger: **0 mismatch**
-- PO ledger: **0 mismatch**
-- TypeScript: **0 errors**
+3. Cross-boundary review is required.
+   - UI changing server action or data flow: Codex review.
+   - Engine changing visible report UI: Antigravity or Claude review.
+   - Spec/protocol change: Claude approval first, including Codex proposals.
 
----
+4. Handoff freshness.
+   - Start each session with `git status`, `git log -5`, latest tracking, and handoff.
+   - Do not rely on stale prompt summaries when the repo has moved.
 
-## 6. Quy tắc giao tiếp
+5. No edits in unknown dirty files.
+   - If worktree is dirty, inspect diff before editing the same file.
+   - Assume dirty changes belong to another agent or the user.
 
-### Khi phát hiện issue của agent kia
+6. Audit scripts are first-class deliverables.
+   - Each engine/data fix should include or update a read-only audit script that verifies the invariant.
+   - Unit tests are not enough for Google Sheets data correctness.
 
-1. **Không tự fix ngay** nếu:
-   - Issue nằm ngoài scope task hiện tại
-   - Fix có thể break logic đang chạy
-2. **Add note** vào `DEVELOPMENT-TRACKING.md` entry mới với format:
-   ```
-   ### Issues found in <agent> code — <status>
-   | Issue | File:line | Fix/Defer |
-   ```
-3. **Mark `Codex review notes` numbered** ở cuối entry để agent kia dễ respond.
+7. Model downgrade gate.
+   - Mini/Flash models are allowed for rename, pattern-based tests, docs/tracking, mechanical cleanup, and small UI that does not touch actions.
+   - Mini/Flash models are not allowed for migration `--apply`, COGS/FIFO/MAC, auth/transactions, Sheets batch update, or historical reprocessing.
 
-### Khi agent kia feedback
+## E. Merge Gate
 
-1. Đọc `DEVELOPMENT-TRACKING.md` entries mới nhất từ agent kia.
-2. Respond bằng entry mới với header `## <Date> (<agent>) — Response to <other agent>'s notes`.
-3. Quote specific note number + trả lời.
+Before ending a work phase, regardless of agent:
 
-### Khi direction change (lớn)
+- Tests pass: current baseline is 191+ tests.
+- TypeScript: 0 errors.
+- MAC drift audit: 0 mismatch.
+- COGS drift audit: 0 mismatch or explicitly documented as informational.
+- P&L MAC consistency audit: 0 delta when report/COGS changed.
+- Current stock/order ledger/purchase ledger audits clean when related areas changed.
+- Commit prefix:
+  - `Claude <type>:`
+  - `Codex <type>:`
+  - `Antigravity <type>:`
+- Do not push unless the user explicitly asks.
 
-1. Agent propose direction change → add entry `## <Date> (<agent>) — <change> decision` vào tracking.
-2. Update `docs/audits/codex-handoff-2026-06-25.md` với section "Direction change log" đầu file.
-3. Re-evaluate items trong handoff — mark `[-] obsolete` cho items không còn apply + note lý do.
+## F. Session Start Checklist
 
----
+1. Read `CLAUDE.md` section 0 or `AGENTS.md`, depending on agent.
+2. Read `DEVELOPMENT-TRACKING.md` 3 newest entries.
+3. Read `docs/audits/codex-handoff-2026-06-25.md`.
+4. Run `git status` and `git log -5`.
+5. Pick a `[ ]` task and mark it in-progress with `[~C]`, `[~X]`, or `[~A]`.
+6. Do the work.
+7. Verify.
+8. Commit.
+9. Update tracking and handoff from `[~*]` to `[x]`, `[!]`, or `[-]`.
 
-## 7. Current direction (snapshot 2026-06-26)
+## Current Direction
 
-- **COGS valuation**: MAC (weighted average) — `lib/mac-cogs.ts`, pin vào `Order_Lines_V2.cost_at_sale` lúc sale/edit
-- **Inventory quantity**: ledger-based — `Stock_Ledger.quantity_change` vẫn là source of truth
-- **FIFO**: audit/debug only — `lib/cogs-drift-audit.ts` giờ informational, không phải primary contract
-- **Phase status**:
-  - Phase 0-5: done
-  - Phase 5A (MAC migration): done
-  - Phase 6.1 (script cleanup plan): done
-  - Phase 6.2-6.5: defer
-  - Phase 7 (mobile UI): defer
-  - Phase 8 (offline/sync): defer
+- COGS valuation: MAC, pinned into `Order_Lines_V2.cost_at_sale`.
+- Inventory quantity: `Stock_Ledger.quantity_change`.
+- FIFO: audit/debug only, not the primary P&L contract.
+- P&L MAC breakdown refactor: implemented by Codex in commits `a63f0b1` and `4bf795c`.
+- P&L consistency audit: `scripts/audit-pnl-mac-consistency.ts`.
 
----
+## Quick Links
 
-## 8. Quick links
+- Active handoff: `docs/audits/codex-handoff-2026-06-25.md`
+- Roadmap: `docs/audits/2026-06-25-full-system-audit-roadmap.md`
+- Script cleanup plan: `docs/audits/script-cleanup-plan.md`
+- Domain dictionary: `docs/domain-dictionary.md`
+- Tracking: `DEVELOPMENT-TRACKING.md`
 
-- [Active handoff](audits/codex-handoff-2026-06-25.md) — task list với status
-- [Strategic roadmap](audits/2026-06-25-full-system-audit-roadmap.md) — phases
-- [Script cleanup plan](audits/script-cleanup-plan.md) — 135 scripts categorized
-- [Domain dictionary](domain-dictionary.md) — terminology
-- [Development tracking](../DEVELOPMENT-TRACKING.md) — chronicle log
+## Change Log
 
----
-
-## 9. Change log cho file này
-
-- **2026-06-26 (Claude)**: Tạo file. Định nghĩa protocol sau khi phát hiện handoff 2026-06-25 không reflect MAC direction change. Cần single source of truth.
+- 2026-06-26 Codex: rewrote protocol for 3-agent coordination and risk-boundary ownership.
