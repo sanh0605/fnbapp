@@ -6,6 +6,14 @@ import CategoryPieChart from "@/components/CategoryPieChart";
 
 export const dynamic = 'force-dynamic';
 
+// Format Date as YYYY-MM-DD using local date parts (matches SalesFilter semantics).
+function toDateOnlyForUrl(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default async function SalesReportPage({
   searchParams,
 }: {
@@ -25,29 +33,23 @@ export default async function SalesReportPage({
 
   // Build filters for V2
   const filters: any = {};
-  if (startParam) filters.startDate = startParam;
-  if (endParam) filters.endDate = endParam;
   if (brandId) filters.brandId = brandId;
   if (staffName) filters.staffName = staffName;
   if (categoryId) filters.categoryId = categoryId;
 
-  // Fallback default date range (start of month to now) for getSalesDataV2
-  // We can just rely on the startParam/endParam passed by the filter component.
-  // Actually, SalesFilter sets start/end in URL. If not present, we can pass them here.
-  if (!startParam || !endParam) {
+  // Claude code — fix 2026-06-26: pass date-only strings through to
+  // toSaigonUtcRange. Previously pre-converted via new Date("YYYY-MM-DD")
+  // which JS interprets as UTC midnight, causing Sales report to miss the
+  // first 7 hours of the Saigon day (00:00-06:59). P&L page already does
+  // this correctly by passing date-only directly.
+  if (startParam && endParam) {
+    filters.startDate = startParam;
+    filters.endDate = endParam;
+  } else {
     const today = new Date();
     const d1 = new Date(today.getFullYear(), today.getMonth(), 1);
-    const d2 = new Date();
-    d2.setHours(23, 59, 59, 999);
-    filters.startDate = d1.toISOString();
-    filters.endDate = d2.toISOString();
-  } else {
-    // If param is provided, it's already YYYY-MM-DD
-    const d1 = new Date(startParam);
-    const d2 = new Date(endParam);
-    d2.setHours(23, 59, 59, 999);
-    filters.startDate = d1.toISOString();
-    filters.endDate = d2.toISOString();
+    filters.startDate = toDateOnlyForUrl(d1);
+    filters.endDate = toDateOnlyForUrl(today);
   }
 
   const [data, heatmapData] = await Promise.all([
