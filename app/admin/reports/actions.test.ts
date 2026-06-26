@@ -6,7 +6,7 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 
 import { findAllNoCache, findAll } from "@/lib/sheets_db";
-import { getPnLDataV2 } from "./actions";
+import { getPnLDataV2, getSalesDataV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 describe("getPnLDataV2", () => {
@@ -385,5 +385,186 @@ describe("getPnLDataV2", () => {
     expect(productRow?.cogs).toBe(3000);
     expect(toppingRow?.cogs).toBe(2000);
     expect(result.productProfitAnalysis.reduce((sum, row) => sum + row.cogs, 0)).toBe(5000);
+  });
+
+  it("splits product and topping COGS by MAC weights instead of FIFO order", async () => {
+    const orderId = "ord-mac-split";
+    const createdAt = "2026-06-15T10:00:00.000Z";
+    const order = {
+      id: orderId,
+      order_no: "MAC-001",
+      brand_id: "BR-002",
+      status: "COMPLETED",
+      version: 1,
+      parent_order_id: "",
+      superseded_by: "",
+      created_at: createdAt,
+      created_by_id: "U",
+      created_by_name: "Test",
+      completed_at: createdAt,
+      voided_at: "",
+      voided_by_id: "",
+      void_reason: "",
+      currency: "VND",
+      gross_total: 25000,
+      promo_discount_total: 0,
+      manual_item_discount_total: 0,
+      manual_order_discount: 0,
+      net_total: 25000,
+      applied_promotion_id: "",
+      applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}",
+      payment_method: "CASH",
+      payment_ref: "",
+      migration_notes: "",
+    };
+    const line = {
+      id: "ol-mac-split",
+      order_id: orderId,
+      line_no: 1,
+      product_id: "PROD-COFFEE",
+      product_snapshot_json: JSON.stringify({ id: "PROD-COFFEE", name: "Coffee", category_id: "CAT-X", category_name: "X" }),
+      variant_id: "VAR-COFFEE",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-COFFEE", size_name: "500ml", price: 20000 }),
+      qty: 1,
+      unit_price: 20000,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-PEARL", name: "Pearl", price: 5000, qty: 1 }]),
+      gross_line_total: 25000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 25000,
+      cost_at_sale: 130,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-COFFEE",
+          ingredients: [{ ingredient_id: "ING-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 1 }],
+        },
+        modifiers: [{
+          modifier_id: "MOD-PEARL",
+          modifier_name: "Pearl",
+          recipe: {
+            target_type: "MODIFIER",
+            target_id: "MOD-PEARL",
+            ingredients: [{ ingredient_id: "ING-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 1 }],
+          },
+        }],
+      }),
+      promo_discount_reason: "",
+      manual_discount_reason: "",
+    };
+    const ledger = [
+      { id: "po-milk-1", transaction_type: "PO_RECEIPT", item_reference: "ING-MILK", quantity_change: 1, unit_cost: 10, created_at: "2026-06-01T00:00:00.000Z" },
+      { id: "po-milk-2", transaction_type: "PO_RECEIPT", item_reference: "ING-MILK", quantity_change: 1, unit_cost: 50, created_at: "2026-06-02T00:00:00.000Z" },
+      { id: "po-pearl", transaction_type: "PO_RECEIPT", item_reference: "ING-PEARL", quantity_change: 10, unit_cost: 100, created_at: "2026-06-01T00:00:00.000Z" },
+    ];
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [line];
+      if (sheet === "Stock_Ledger") return ledger;
+      return [];
+    });
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({});
+    const productRow = result.productProfitAnalysis.find(p => p.product_id === "PROD-COFFEE");
+    const toppingRow = result.productProfitAnalysis.find(p => p.product_id === "MOD:MOD-PEARL");
+
+    expect(result.totalCOGS).toBe(130);
+    expect(productRow?.cogs).toBe(30);
+    expect(toppingRow?.cogs).toBe(100);
+    expect(result.productProfitAnalysis.reduce((sum, row) => sum + row.cogs, 0)).toBe(130);
+  });
+});
+
+describe("getSalesDataV2", () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it("merges historical duplicate toppings into the latest active modifier id", async () => {
+    const createdAt = "2026-06-15T10:00:00.000Z";
+    const order = {
+      id: "ord-strawberry-topping",
+      order_no: "TOP-DAU-001",
+      brand_id: "BR-002",
+      status: "COMPLETED",
+      version: 1,
+      parent_order_id: "",
+      superseded_by: "",
+      created_at: createdAt,
+      created_by_id: "U",
+      created_by_name: "Test",
+      completed_at: createdAt,
+      voided_at: "",
+      voided_by_id: "",
+      void_reason: "",
+      currency: "VND",
+      gross_total: 20000,
+      promo_discount_total: 0,
+      manual_item_discount_total: 0,
+      manual_order_discount: 0,
+      net_total: 20000,
+      applied_promotion_id: "",
+      applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}",
+      payment_method: "CASH",
+      payment_ref: "",
+      migration_notes: "",
+    };
+    const baseLine = {
+      order_id: order.id,
+      product_id: "PROD-COFFEE",
+      product_snapshot_json: JSON.stringify({ id: "PROD-COFFEE", name: "Coffee", category_id: "CAT-X", category_name: "X" }),
+      variant_id: "VAR-COFFEE",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-COFFEE", size_name: "500ml", price: 0 }),
+      qty: 1,
+      unit_price: 0,
+      gross_line_total: 10000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 10000,
+      cost_at_sale: 0,
+      recipe_snapshot_json: "{}",
+      promo_discount_reason: "",
+      manual_discount_reason: "",
+    };
+    const oldLine = {
+      ...baseLine,
+      id: "ol-old-dau",
+      line_no: 1,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-OLD-DAU", name: "Dâu sấy", price: 10000, qty: 1 }]),
+    };
+    const newLine = {
+      ...baseLine,
+      id: "ol-new-dau",
+      line_no: 2,
+      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-NEW-DAU", name: "Dâu sấy", price: 10000, qty: 1 }]),
+    };
+    const modifiers = [
+      { id: "MOD-OLD-DAU", name: "Dâu sấy", status: "DELETED", created_at: "2026-06-01T00:00:00.000Z" },
+      { id: "MOD-NEW-DAU", name: "Dâu sấy", status: "ACTIVE", created_at: "2026-06-20T00:00:00.000Z" },
+    ];
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [oldLine, newLine];
+      return [];
+    });
+    (findAll as any).mockImplementation((sheet: string) => {
+      if (sheet === "Modifiers") return modifiers;
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+    const dauSayRows = result.bestToppings.filter(row => row.name === "Dâu sấy");
+
+    expect(dauSayRows).toHaveLength(1);
+    expect(dauSayRows[0]).toMatchObject({
+      modifier_id: "MOD-NEW-DAU",
+      qty: 2,
+      revenue: 20000,
+    });
   });
 });

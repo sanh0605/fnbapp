@@ -13,6 +13,12 @@ import { parseLineRecipeSnapshot } from "@/lib/order-types";
 import type { OrderV2, OrderLineV2, LineForAllocation } from "@/lib/order-types";
 import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
 import { FIFOTracker } from "@/lib/fifo-tracker";
+import {
+  buildInventoryBalances,
+  buildLineConsumptionRows,
+  type SemiProductConsumptionMaps,
+} from "@/lib/inventory-consumption";
+import { getMacUnitCostWithRecipeFallback, type MacLedgerEntry } from "@/lib/mac-cogs";
 
 export interface ProductRevenueRow {
   product_id: string;
@@ -144,6 +150,113 @@ export function breakdownRevenueByProduct(
   return Array.from(map.values()).filter(r => r.qty > 0 || r.revenue > 0);
 }
 
+export function breakdownCOGSByIngredient(
+  lines: OrderLineV2[],
+  orders: any[] = [],
+  ledger: any[] = [],
+  spContext?: any,
+): IngredientCOGSRow[] {
+  const map = new Map<string, IngredientCOGSRow>();
+  const orderById = new Map<string, any>();
+  for (const order of orders) orderById.set(order.id, order);
+
+  const consumptionMaps = toConsumptionMaps(spContext);
+  const macContext = toMacSemiProductContext(spContext);
+  const sortedLines = [...lines].sort((a, b) => {
+    const aTime = orderById.get(a.order_id)?.created_at || "";
+    const bTime = orderById.get(b.order_id)?.created_at || "";
+    return new Date(aTime || 0).getTime() - new Date(bTime || 0).getTime();
+  });
+
+  for (const line of sortedLines) {
+    if (line.cost_at_sale <= 0) continue;
+
+    const saleTime = orderById.get(line.order_id)?.created_at || "";
+    const saleMs = new Date(saleTime || 0).getTime();
+    const ledgerBeforeSale = Number.isFinite(saleMs)
+      ? (ledger as MacLedgerEntry[]).filter(row => new Date(row.created_at || 0).getTime() < saleMs)
+      : (ledger as MacLedgerEntry[]);
+    const balances = buildInventoryBalances(ledgerBeforeSale, saleTime);
+    const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
+    const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps);
+    const weightedRows = consumptionRows
+      .filter(row => row.quantity > 0)
+      .map(row => ({
+        ...row,
+        rawCost: row.quantity * getMacUnitCostWithRecipeFallback(
+          row.item_reference,
+          ledger as MacLedgerEntry[],
+          saleTime,
+          macContext,
+        ),
+      }));
+    const rawTotal = weightedRows.reduce((sum, row) => sum + row.rawCost, 0);
+
+    if (rawTotal <= 0) {
+      addIngredientCogs(map, "UNALLOCATED", 0, line.cost_at_sale);
+      continue;
+    }
+
+    let allocatedTotal = 0;
+    weightedRows.forEach((row, index) => {
+      const isLast = index === weightedRows.length - 1;
+      const cogs = isLast
+        ? line.cost_at_sale - allocatedTotal
+        : Math.round((row.rawCost / rawTotal) * line.cost_at_sale);
+      allocatedTotal += cogs;
+      addIngredientCogs(map, row.item_reference, row.quantity, cogs);
+    });
+  }
+
+  return Array.from(map.values());
+}
+
+function addIngredientCogs(
+  map: Map<string, IngredientCOGSRow>,
+  ingredientId: string,
+  qty: number,
+  cogs: number,
+): void {
+  if (!ingredientId || cogs === 0) return;
+  if (!map.has(ingredientId)) {
+    map.set(ingredientId, { ingredient_id: ingredientId, cogs: 0, qty_consumed: 0 });
+  }
+  const row = map.get(ingredientId)!;
+  row.cogs += cogs;
+  row.qty_consumed += qty;
+}
+
+function toConsumptionMaps(spContext?: any): SemiProductConsumptionMaps {
+  const semiProductRecipes = new Map();
+  const semiProductYields = new Map();
+
+  if (spContext?.semiProductRecipes instanceof Map) {
+    for (const [id, recipe] of spContext.semiProductRecipes.entries()) semiProductRecipes.set(id, recipe);
+  }
+  if (spContext?.semiProductYields instanceof Map) {
+    for (const [id, yieldQty] of spContext.semiProductYields.entries()) semiProductYields.set(id, yieldQty);
+  }
+  if (Array.isArray(spContext?.recipes)) {
+    for (const recipe of spContext.recipes) {
+      if (!recipe.target_id || !recipe.ingredients_json) continue;
+      semiProductRecipes.set(recipe.target_id, parseSpIngredients(recipe.ingredients_json, recipe.target_id));
+    }
+  }
+  if (spContext?.yields instanceof Map) {
+    for (const [id, yieldQty] of spContext.yields.entries()) semiProductYields.set(id, yieldQty);
+  }
+
+  return { semiProductRecipes, semiProductYields };
+}
+
+function toMacSemiProductContext(spContext?: any) {
+  const maps = toConsumptionMaps(spContext);
+  return {
+    semiProductRecipes: maps.semiProductRecipes,
+    semiProductYields: maps.semiProductYields,
+  };
+}
+
 /**
  * Break down COGS across raw ingredients (Base_Ingredients only — SEMI_PRODUCTs resolved).
  *
@@ -157,7 +270,7 @@ export function breakdownRevenueByProduct(
  * @param ledger - Stock_Ledger for FIFO batches
  * @param spContext - SEMI_PRODUCT recipes + yields (for resolving SP to base ingredients)
  */
-export function breakdownCOGSByIngredient(
+function breakdownCOGSByIngredientFifoLegacy(
   lines: OrderLineV2[],
   orders: any[] = [],
   ledger: any[] = [],

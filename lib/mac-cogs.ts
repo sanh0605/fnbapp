@@ -64,13 +64,13 @@ export function computeMacCostForConsumptionRows(
   semiProductContext?: MacSemiProductContext,
 ): number {
   const total = rows.reduce((sum, row) => {
-    const unitCost = getMacOrRecipeFallback(row.item_reference, ledger, saleTime, semiProductContext);
+    const unitCost = getMacUnitCostWithRecipeFallback(row.item_reference, ledger, saleTime, semiProductContext);
     return sum + unitCost * row.quantity;
   }, 0);
   return Math.round(total);
 }
 
-function getMacOrRecipeFallback(
+export function getMacUnitCostWithRecipeFallback(
   itemReference: string,
   ledger: MacLedgerEntry[],
   saleTime: string,
@@ -95,7 +95,7 @@ function computeSemiProductUnitCost(
   return recipe.reduce((sum, ingredient) => {
     const quantity = Number(ingredient.quantity || 0);
     if (!ingredient.ingredient_id || quantity <= 0) return sum;
-    const unitCost = getMacOrRecipeFallback(ingredient.ingredient_id, ledger, saleTime, semiProductContext);
+    const unitCost = getMacUnitCostWithRecipeFallback(ingredient.ingredient_id, ledger, saleTime, semiProductContext);
     return sum + (quantity / yieldQty) * unitCost;
   }, 0);
 }

@@ -89,6 +89,7 @@ describe("breakdownCOGSByIngredient", () => {
     const testLines = lines.map(l => ({
       ...l,
       qty: 1,
+      cost_at_sale: 5000,
       recipe_snapshot_json: JSON.stringify({
         variant: {
           target_type: "PRODUCT_VARIANT",
@@ -121,6 +122,7 @@ describe("breakdownCOGSByIngredient", () => {
     const testLines: OrderLineV2[] = lines.map(l => ({
       ...l,
       qty: 1,
+      cost_at_sale: 11500,
       recipe_snapshot_json: JSON.stringify({
         variant: {
           target_type: "PRODUCT_VARIANT",
@@ -147,6 +149,36 @@ describe("breakdownCOGSByIngredient", () => {
     expect(milkRow?.cogs).toBe(10000); // 0.05L × 200k/L
     expect(milkRow?.qty_consumed).toBeCloseTo(0.05);
     expect(strawRow?.cogs).toBe(1500); // 0.03kg × 50k/kg
+  });
+  it("allocates ingredient COGS from stored MAC cost_at_sale total", () => {
+    const { lines } = makeSuaDauStandaloneOrder();
+    const testLines: OrderLineV2[] = lines.map(l => ({
+      ...l,
+      qty: 1,
+      cost_at_sale: 5000,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-031",
+          ingredients: [
+            { ingredient_id: "BI-LOW", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+            { ingredient_id: "BI-HIGH", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+          ],
+        },
+        modifiers: [],
+      }),
+    }));
+
+    const ledger = [
+      { item_reference: "BI-LOW", transaction_type: "PO_RECEIPT", unit_cost: "100", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "BI-HIGH", transaction_type: "PO_RECEIPT", unit_cost: "900", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+    ];
+
+    const result = breakdownCOGSByIngredient(testLines, [], ledger);
+
+    expect(result.reduce((s, r) => s + r.cogs, 0)).toBe(5000);
+    expect(result.find(r => r.ingredient_id === "BI-LOW")?.cogs).toBe(500);
+    expect(result.find(r => r.ingredient_id === "BI-HIGH")?.cogs).toBe(4500);
   });
 });
 

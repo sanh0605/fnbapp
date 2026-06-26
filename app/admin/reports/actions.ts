@@ -3,16 +3,19 @@
 import { findAll, findAllNoCache } from "@/lib/sheets_db";
 import { ORDER_STATUS, parseLineRecipeSnapshot, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
 import type { LineRecipeSnapshot, OrderV2, OrderLineV2 } from "@/lib/order-types";
-import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
-import { FIFOTracker } from "@/lib/fifo-tracker";
 import {
   breakdownRevenueByProduct,
   breakdownCOGSByIngredient,
-  filterLedgerForFifoInit,
   type ProductRevenueRow,
   type IngredientCOGSRow,
 } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/report-time";
+import {
+  buildInventoryBalances,
+  buildLineConsumptionRows,
+  type SemiProductConsumptionMaps,
+} from "@/lib/inventory-consumption";
+import { getMacUnitCostWithRecipeFallback, type MacLedgerEntry } from "@/lib/mac-cogs";
 
 export interface PnLReportFilters {
   startDate?: string;
@@ -192,6 +195,13 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
         };
       })
       .sort((a, b) => b.cogs - a.cogs);
+    const cogsDetailDelta = totalCOGS - cogsDetails.reduce((sum, row) => sum + row.cogs, 0);
+    if (cogsDetails.length > 0 && Math.abs(cogsDetailDelta) > 0.000001) {
+      cogsDetails[0] = {
+        ...cogsDetails[0],
+        cogs: cogsDetails[0].cogs + cogsDetailDelta,
+      };
+    }
 
     const grossProfit = totalRevenue - totalCOGS;
     const margin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
@@ -262,9 +272,10 @@ export interface SalesReportResult {
 
 export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<SalesReportResult> {
   try {
-    const [orders, orderLines] = await Promise.all([
+    const [orders, orderLines, modifiers] = await Promise.all([
       findAllNoCache("Orders_V2"),
       findAllNoCache("Order_Lines_V2"),
+      findAll("Modifiers"),
     ]);
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
@@ -342,6 +353,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       .sort((a, b) => b.revenue - a.revenue);
 
     const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
+    const canonicalModifiers = buildCanonicalModifierLookup(modifiers as any[]);
 
     const bestSellersMap = new Map<string, any>();
     const bestToppingsMap = new Map<string, any>();
@@ -350,10 +362,13 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     for (const r of productRows) {
       if (r.product_id.startsWith("MOD:")) {
         const modId = r.product_id.replace("MOD:", "");
-        if (!bestToppingsMap.has(modId)) {
-          bestToppingsMap.set(modId, { modifier_id: modId, name: r.product_name, qty: 0, revenue: 0 });
+        const canonical = canonicalModifiers.byId.get(modId)
+          || canonicalModifiers.byName.get(normalizeModifierName(r.product_name))
+          || { id: modId, name: r.product_name };
+        if (!bestToppingsMap.has(canonical.id)) {
+          bestToppingsMap.set(canonical.id, { modifier_id: canonical.id, name: canonical.name, qty: 0, revenue: 0 });
         }
-        const row = bestToppingsMap.get(modId);
+        const row = bestToppingsMap.get(canonical.id);
         row.qty += r.qty;
         row.revenue += r.revenue;
       } else {
@@ -476,9 +491,6 @@ function splitLineCogsBySaleSource(
   const variantCogs = new Map<string, number>();
   const modifierCogs = new Map<string, number>();
   const orderById = new Map(orders.map(order => [order.id, order]));
-  const tracker = new FIFOTracker();
-  // Claude code — filter to avoid double-consumption (mirrors auditCogsDrift).
-  tracker.init(filterLedgerForFifoInit(ledger));
 
   const sortedLines = [...lines].sort((a, b) => {
     const aTime = orderById.get(a.order_id)?.created_at || "";
@@ -489,7 +501,20 @@ function splitLineCogsBySaleSource(
   for (const line of sortedLines) {
     const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const variantKey = `${line.product_id}__${line.variant_id}`;
-    const allocations = computeSourceCogsForLine(recipe, tracker, line.qty, spContext);
+    const saleTime = orderById.get(line.order_id)?.created_at || "";
+    const saleMs = new Date(saleTime || 0).getTime();
+    const ledgerBeforeSale = Number.isFinite(saleMs)
+      ? (ledger as MacLedgerEntry[]).filter(row => new Date(row.created_at || 0).getTime() < saleMs)
+      : (ledger as MacLedgerEntry[]);
+    const allocations = computeSourceCogsForLine(
+      recipe,
+      ledger as MacLedgerEntry[],
+      ledgerBeforeSale,
+      saleTime,
+      line.qty,
+      toConsumptionMaps(spContext),
+      toMacSemiProductContext(spContext),
+    );
     const rawTotal = allocations.variant + allocations.modifiers.reduce((sum, modifier) => sum + modifier.cogs, 0);
 
     if (rawTotal <= 0) {
@@ -524,12 +549,15 @@ function splitLineCogsBySaleSource(
 
 function computeSourceCogsForLine(
   recipe: LineRecipeSnapshot,
-  tracker: FIFOTracker,
+  ledger: MacLedgerEntry[],
+  ledgerBeforeSale: MacLedgerEntry[],
+  saleTime: string,
   lineQty: number,
-  spContext?: any,
+  consumptionMaps: SemiProductConsumptionMaps,
+  macContext: ReturnType<typeof toMacSemiProductContext>,
 ): { variant: number; modifiers: Array<{ modifierId: string; cogs: number }> } {
   const variantOnly = { variant: recipe.variant, modifiers: [] };
-  const variant = computeLineCostFIFO(variantOnly, tracker, lineQty, spContext);
+  const variant = computeRawMacWeight(variantOnly, ledger, ledgerBeforeSale, saleTime, lineQty, consumptionMaps, macContext);
 
   const modifiers = recipe.modifiers.map(modifier => {
     const modifierOnly = {
@@ -538,16 +566,136 @@ function computeSourceCogsForLine(
     };
     return {
       modifierId: modifier.modifier_id,
-      cogs: computeLineCostFIFO(modifierOnly, tracker, lineQty, spContext),
+      cogs: computeRawMacWeight(modifierOnly, ledger, ledgerBeforeSale, saleTime, lineQty, consumptionMaps, macContext),
     };
   });
 
   return { variant, modifiers };
 }
 
+function computeRawMacWeight(
+  recipe: LineRecipeSnapshot,
+  ledger: MacLedgerEntry[],
+  ledgerBeforeSale: MacLedgerEntry[],
+  saleTime: string,
+  lineQty: number,
+  consumptionMaps: SemiProductConsumptionMaps,
+  macContext: ReturnType<typeof toMacSemiProductContext>,
+): number {
+  const balances = buildInventoryBalances(ledgerBeforeSale, saleTime);
+  const rows = buildLineConsumptionRows(recipe, lineQty, balances, consumptionMaps);
+  return rows.reduce((sum, row) => {
+    const unitCost = getMacUnitCostWithRecipeFallback(row.item_reference, ledger, saleTime, macContext);
+    return sum + row.quantity * unitCost;
+  }, 0);
+}
+
 function addMoney(map: Map<string, number>, key: string, value: number): void {
   if (!key || !Number.isFinite(value) || value === 0) return;
   map.set(key, (map.get(key) || 0) + value);
+}
+
+function toConsumptionMaps(spContext?: any): SemiProductConsumptionMaps {
+  const semiProductRecipes = new Map();
+  const semiProductYields = new Map();
+
+  if (spContext?.semiProductRecipes instanceof Map) {
+    for (const [id, recipe] of spContext.semiProductRecipes.entries()) semiProductRecipes.set(id, recipe);
+  }
+  if (spContext?.semiProductYields instanceof Map) {
+    for (const [id, yieldQty] of spContext.semiProductYields.entries()) semiProductYields.set(id, yieldQty);
+  }
+  if (Array.isArray(spContext?.recipes)) {
+    for (const recipe of spContext.recipes) {
+      if (!recipe.target_id || !recipe.ingredients_json) continue;
+      semiProductRecipes.set(recipe.target_id, parseSemiProductIngredients(recipe.ingredients_json, recipe.target_id));
+    }
+  }
+  if (spContext?.yields instanceof Map) {
+    for (const [id, yieldQty] of spContext.yields.entries()) semiProductYields.set(id, yieldQty);
+  }
+
+  return { semiProductRecipes, semiProductYields };
+}
+
+function toMacSemiProductContext(spContext?: any) {
+  const maps = toConsumptionMaps(spContext);
+  return {
+    semiProductRecipes: maps.semiProductRecipes,
+    semiProductYields: maps.semiProductYields,
+  };
+}
+
+function parseSemiProductIngredients(ingredientsJson: string, semiProductId: string): any[] {
+  try {
+    const parsed = JSON.parse(ingredientsJson || "[]");
+    if (Array.isArray(parsed)) return parsed;
+  } catch (err) {
+    throw new Error(`SEMI_PRODUCT ${semiProductId} has malformed ingredients_json: ${(err as Error).message}`);
+  }
+  throw new Error(`SEMI_PRODUCT ${semiProductId} ingredients_json is not an array`);
+}
+
+type CanonicalModifier = { id: string; name: string };
+
+function buildCanonicalModifierLookup(modifiers: any[]): {
+  byId: Map<string, CanonicalModifier>;
+  byName: Map<string, CanonicalModifier>;
+} {
+  const byNameGroup = new Map<string, any[]>();
+  for (const modifier of modifiers) {
+    const id = String(modifier.id || "");
+    const name = String(modifier.name || "").trim();
+    if (!id || !name) continue;
+    const key = normalizeModifierName(name);
+    if (!key) continue;
+    const group = byNameGroup.get(key) || [];
+    group.push(modifier);
+    byNameGroup.set(key, group);
+  }
+
+  const byId = new Map<string, CanonicalModifier>();
+  const byName = new Map<string, CanonicalModifier>();
+
+  for (const [nameKey, group] of byNameGroup.entries()) {
+    const canonicalRow = [...group].sort(compareModifierCanonicalPriority)[0];
+    const canonical = {
+      id: String(canonicalRow.id),
+      name: String(canonicalRow.name || canonicalRow.id),
+    };
+    byName.set(nameKey, canonical);
+    for (const row of group) {
+      byId.set(String(row.id), canonical);
+    }
+  }
+
+  return { byId, byName };
+}
+
+function compareModifierCanonicalPriority(a: any, b: any): number {
+  const aActive = a.status === "DELETED" ? 0 : 1;
+  const bActive = b.status === "DELETED" ? 0 : 1;
+  if (aActive !== bActive) return bActive - aActive;
+
+  const aTime = new Date(a.created_at || 0).getTime();
+  const bTime = new Date(b.created_at || 0).getTime();
+  if (aTime !== bTime) return bTime - aTime;
+
+  return modifierIdNumber(b.id) - modifierIdNumber(a.id);
+}
+
+function modifierIdNumber(id: string): number {
+  const match = String(id || "").match(/(\d+)$/);
+  return match ? Number(match[1]) : 0;
+}
+
+function normalizeModifierName(name: string): string {
+  return String(name || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 }
 
 export interface HeatmapCell {

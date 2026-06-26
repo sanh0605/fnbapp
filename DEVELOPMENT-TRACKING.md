@@ -4,6 +4,36 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-26 (Codex) — P&L MAC consistency + sales topping canonicalization
+
+**Trigger:** Anh báo dev server chỉ điều hướng trong nhóm Báo cáo, bảng Top Topping tách `Dâu sấy` thành 2 dòng, và P&L COGS cần theo MAC thay vì FIFO breakdown.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Dev server recovery | runtime only | Killed stale node process on port 3002 and restarted `npm run dev -- -p 3002`. Verified `/admin/inventory/items`, `/admin/orders`, `/admin/reports/sales` return 200. |
+| Sales topping canonicalization | `app/admin/reports/actions.ts` | `getSalesDataV2` now loads `Modifiers` and maps historical duplicate modifier ids by normalized name to the latest active modifier. Historical `Dâu sấy` rows roll up into the current active `Dâu sấy` id. |
+| P&L source COGS MAC split | `app/admin/reports/actions.ts`, `lib/mac-cogs.ts` | Product/topping COGS breakdown now uses stored `line.cost_at_sale` as the canonical total and splits by MAC recipe weights, not FIFO consumption order. |
+| P&L ingredient COGS MAC split | `lib/report-v2-allocators.ts` | Ingredient detail now allocates stored MAC COGS by MAC-weighted consumption rows. The old FIFO implementation is retained as internal legacy code only. |
+| P&L consistency audit | `scripts/audit-pnl-mac-consistency.ts` | Added read-only audit: verifies total COGS, product/topping COGS, and ingredient COGS reconcile to zero delta. |
+| Regression tests | `app/admin/reports/actions.test.ts`, `lib/report-v2-allocators.test.ts` | Added tests for duplicate `Dâu sấy` topping merge, MAC source split vs FIFO order, and ingredient breakdown reconciling to stored `cost_at_sale`. |
+
+### Verification
+
+- `npx.cmd vitest run`: **190/190 pass**
+- `node_modules\.bin\vite-node.cmd --config vitest.config.ts scripts/audit-pnl-mac-consistency.ts`: **0 delta**
+- `node_modules\.bin\vite-node.cmd scripts/audit-mac-cogs-drift.ts`: **0 mismatch, 0 delta**
+- `node_modules\.bin\vite-node.cmd scripts/audit-current-stock.ts`: **0 negative, 0 unknown refs**
+- `node_modules\.bin\vite-node.cmd scripts/audit-order-ledger.ts`: **0 mismatch, 0 orphan rows**
+
+### Notes
+
+- `node_modules\.bin\vite-node.cmd scripts/audit-pnl-mac-consistency.ts` without `--config vitest.config.ts` cannot resolve `@/` aliases. Use the config flag for this script.
+- Full `tsc --noEmit` is still blocked in this environment by access-denied/not-found route files (`app/admin/page.tsx`, `app/pos/page.tsx`, auth route, migrate-discount route).
+
+---
+
 ## 2026-06-26 (Claude, phiên 4) — P0 + P1 + P2 priority fixes
 
 **Trigger:** Anh yêu cầu em làm theo thứ tự ưu tiên giảm dần, commit từng task/phase, không push.
