@@ -255,6 +255,66 @@ export async function update(sheetName: string, id: string, data: any) {
   return updatedObj;
 }
 
+// Update multiple existing records by id using one Sheets batch request.
+export async function updateMany(sheetName: string, dataArray: any[]) {
+  if (!dataArray || dataArray.length === 0) return [];
+
+  const sheets = getSheetsClient();
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A1:Z`,
+  });
+
+  const rows = res.data.values || [];
+  if (rows.length < 2) throw new Error(`No records found in ${sheetName}`);
+
+  const headers = rows[0];
+  const idIndex = headers.indexOf('id');
+  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
+
+  const rowIndexById = new Map<string, number>();
+  for (let i = 1; i < rows.length; i++) {
+    const rowId = rows[i][idIndex];
+    if (rowId) rowIndexById.set(rowId, i);
+  }
+
+  const updatedObjects = dataArray.map((data) => {
+    const id = data?.id;
+    const rowIndex = rowIndexById.get(id);
+    if (rowIndex === undefined) {
+      throw new Error(`Record with id ${id} not found in ${sheetName}`);
+    }
+
+    const existingObj: Record<string, any> = {};
+    headers.forEach((h: string, idx: number) => { existingObj[h] = rows[rowIndex][idx] || ''; });
+    return { ...existingObj, ...data, id };
+  });
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      valueInputOption: 'USER_ENTERED',
+      data: updatedObjects.map((updatedObj) => {
+        const rowIndex = rowIndexById.get(updatedObj.id);
+        const rowNumber = (rowIndex ?? 0) + 1;
+        return {
+          range: `${sheetName}!A${rowNumber}:Z${rowNumber}`,
+          values: [mapObjectToRow(updatedObj, headers)],
+        };
+      }),
+    },
+  });
+
+  try {
+    revalidateTag(getCacheTag(sheetName));
+  } catch (e) {
+    // Ignore error if not in Next.js context
+  }
+
+  return updatedObjects;
+}
+
 // Delete a record (Since Google Sheets API deleteRow is complex and requires sheetId, we just clear the row or mark as deleted. Here we'll actually delete the row using batchUpdate)
 export async function remove(sheetName: string, id: string) {
   const sheets = getSheetsClient();

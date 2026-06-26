@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
+import { findAll, insert, update, updateMany, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
@@ -122,9 +122,11 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
 
           if (update_history) {
             if (oldConv && oldConv.purchased_unit !== u.name) {
-              const linesToUpdate = poLines.filter((p: any) => p.purchased_item_id === id && p.unit === oldConv.purchased_unit);
-              for (const line of linesToUpdate) {
-                 await update("Purchase_Order_Lines", line.id, { ...line, unit: u.name });
+              const linesToUpdate = poLines
+                .filter((p: any) => p.purchased_item_id === id && p.unit === oldConv.purchased_unit)
+                .map((line: any) => ({ id: line.id, unit: u.name }));
+              if (linesToUpdate.length > 0) {
+                await updateMany("Purchase_Order_Lines", linesToUpdate);
               }
             }
           }

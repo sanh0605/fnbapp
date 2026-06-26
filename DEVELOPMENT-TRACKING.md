@@ -4,6 +4,38 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-26 (Codex) — Coordination rewrite + CODE-14 batch update
+
+**Trigger:** Anh yeu cau rewrite coordination files cho workflow Claude/Codex/Antigravity, de xuat folder cleanup, sau do pick mot task engine ton dong va lam tiep.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Coordination protocol | `docs/COLLABORATION.md`, `AGENTS.md` | Rewrote the shared 3-agent protocol with file map, status markers, risk-boundary ownership, seven coordination rules, merge gate, and session checklist. |
+| MAC COGS spec cleanup | `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md` | Removed stale P&L outstanding section and recorded implemented/audited status for commits `a63f0b1` and `4bf795c`. |
+| Folder cleanup proposal | `docs/audits/2026-06-26-folder-cleanup-proposal.md` | Proposed archive/delete candidates only. No scripts or docs were deleted in this phase. |
+| CODE-14 batch update | `lib/sheets_db.ts`, `app/admin/inventory/items/actions.ts`, `lib/sheets_db.test.ts` | Added `updateMany` for one Sheets `values.batchUpdate` request and replaced the purchased-item history PO-line update loop with batch update. |
+| Handoff update | `docs/audits/codex-handoff-2026-06-25.md` | Marked CODE-14 done by Codex. |
+
+### Verification
+
+- `npx.cmd vitest run lib/sheets_db.test.ts --reporter=dot`: **1/1 pass**
+- `npx.cmd vitest run --reporter=dot`: **192/192 pass**
+- `node_modules\.bin\vite-node.cmd scripts\apply-mac-cogs-recalc.ts`: **dry-run found 9 mismatched lines, no data written**
+- `node_modules\.bin\vite-node.cmd scripts\apply-mac-cogs-recalc.ts --apply`: **updated 9 `Order_Lines_V2.cost_at_sale` cells; post-apply 0 mismatch, 0 delta**
+- `node_modules\.bin\vite-node.cmd scripts\audit-mac-cogs-drift.ts`: **0 mismatch, 0 delta**
+- `node_modules\.bin\vite-node.cmd --config vitest.config.ts scripts\audit-pnl-mac-consistency.ts`: **0 delta**
+- `node_modules\.bin\vite-node.cmd scripts\audit-cogs-drift.ts`: FIFO informational audit still reports FIFO-vs-MAC mismatches as expected after MAC migration.
+- `node_modules\.bin\tsc.cmd --noEmit`: **blocked in this environment** by TS6053 missing route/page files (`app/admin/page.tsx`, `app/pos/page.tsx`, auth route, migrate-discount route).
+
+### Commits
+
+- `df0bd3f Codex docs: refresh agent coordination protocol`
+- CODE-14 commit pending in current session.
+
+---
+
 ## 2026-06-26 (Codex) — P&L MAC consistency + sales topping canonicalization
 
 **Trigger:** Anh báo dev server chỉ điều hướng trong nhóm Báo cáo, bảng Top Topping tách `Dâu sấy` thành 2 dòng, và P&L COGS cần theo MAC thay vì FIFO breakdown.
