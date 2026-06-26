@@ -56,7 +56,7 @@ export interface PnLReportResult {
 
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   try {
-    const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers] = await Promise.all([
+    const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers, products] = await Promise.all([
       findAllNoCache("Orders_V2"),
       findAllNoCache("Order_Lines_V2"),
       findAll("Base_Ingredients"),
@@ -65,7 +65,12 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       findAllNoCache("Stock_Ledger"),
       findAll("Recipes"),
       findAll("Modifiers"),
+      findAll("Products"),
     ]);
+
+    // Standalone topping → linked modifier map (CAT-007 products with migration_notes link).
+    // See spec 2026-06-27-standalone-topping-report-classification-design.md.
+    const standaloneToppingToModId = buildStandaloneToppingMap(products as any[]);
 
     // Build SemiProductContext for SP-aware COGS computation (WS-10)
     const spRecipes = (recipes as any[]).filter(r => r.target_type === "SEMI_PRODUCT");
@@ -139,7 +144,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     const canonicalModifierCogs = canonicalizeModifierCogs(cogsBySourceKey.modifierCogs, canonicalModifiers);
 
     const productProfitAnalysis = productRows
-      .filter(r => !r.product_id.startsWith("MOD:"))
+      .filter(r => !r.product_id.startsWith("MOD:") && !standaloneToppingToModId.has(r.product_id))
       .map(r => {
         const key = `${r.product_id}__${r.variant_id}`;
         const cogs = cogsBySourceKey.variantCogs.get(key) || 0;
@@ -159,12 +164,63 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       })
       .sort((a, b) => b.qty - a.qty || b.grossProfit - a.grossProfit);
 
-    // Add topping rows (modifiers as pseudo-products)
+    // Add topping rows (modifiers as pseudo-products + standalone toppings merged via modId)
     const toppingRevenueRows = mergeModifierRevenueRows(productRows, canonicalModifiers);
-    const toppingRows = toppingRevenueRows.map(r => {
-      const modifierId = r.product_id.replace("MOD:", "");
-      const cogs = canonicalModifierCogs.get(modifierId) || 0;
-      const grossProfit = r.revenue - cogs;
+
+    // Aggregate standalone topping revenue + COGS by linked modifier ID
+    const standaloneByModId = new Map<string, { qty: number; revenue: number; cogs: number; name: string }>();
+    for (const r of productRows) {
+      const modId = standaloneToppingToModId.get(r.product_id);
+      if (!modId) continue;
+      const key = `${r.product_id}__${r.variant_id}`;
+      const cogs = cogsBySourceKey.variantCogs.get(key) || 0;
+      const existing = standaloneByModId.get(modId);
+      if (existing) {
+        existing.qty += r.qty;
+        existing.revenue += r.revenue;
+        existing.cogs += cogs;
+      } else {
+        standaloneByModId.set(modId, { qty: r.qty, revenue: r.revenue, cogs, name: r.product_name });
+      }
+    }
+
+    // Build a combined toppingRows map keyed by `MOD:<id>` so standalone merges with add-on
+    const toppingRowMap = new Map<string, {
+      product_id: string;
+      product_name: string;
+      qty: number;
+      revenue: number;
+      cogs: number;
+    }>();
+    for (const r of toppingRevenueRows) {
+      toppingRowMap.set(r.product_id, {
+        product_id: r.product_id,
+        product_name: r.product_name,
+        qty: r.qty,
+        revenue: r.revenue,
+        cogs: canonicalModifierCogs.get(r.product_id.replace("MOD:", "")) || 0,
+      });
+    }
+    for (const [modId, agg] of standaloneByModId) {
+      const key = `MOD:${modId}`;
+      const existing = toppingRowMap.get(key);
+      if (existing) {
+        existing.qty += agg.qty;
+        existing.revenue += agg.revenue;
+        existing.cogs += agg.cogs;
+      } else {
+        toppingRowMap.set(key, {
+          product_id: key,
+          product_name: agg.name,
+          qty: agg.qty,
+          revenue: agg.revenue,
+          cogs: agg.cogs,
+        });
+      }
+    }
+
+    const toppingRows = Array.from(toppingRowMap.values()).map(r => {
+      const grossProfit = r.revenue - r.cogs;
       const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
       return {
         product_id: r.product_id,
@@ -173,7 +229,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
         size_name: "",
         qty: r.qty,
         revenue: r.revenue,
-        cogs,
+        cogs: r.cogs,
         grossProfit,
         marginPct,
       };
@@ -274,11 +330,17 @@ export interface SalesReportResult {
 
 export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<SalesReportResult> {
   try {
-    const [orders, orderLines, modifiers] = await Promise.all([
+    const [orders, orderLines, modifiers, products] = await Promise.all([
       findAllNoCache("Orders_V2"),
       findAllNoCache("Order_Lines_V2"),
       findAll("Modifiers"),
+      findAll("Products"),
     ]);
+
+    // Standalone topping products (category_id=CAT-007) mapped to their linked
+    // modifier ID via migration_notes. Used to route standalone topping sales
+    // into bestToppings instead of bestSellers. See spec 2026-06-27.
+    const standaloneToppingToModId = buildStandaloneToppingMap(products as any[]);
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
     // Claude code — Phase 5.3: Asia/Saigon date bounds.
@@ -362,11 +424,18 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     const uniqueSizesSet = new Set<string>();
 
     for (const r of productRows) {
+      // Determine topping key: MOD-prefix (add-on) or standalone topping mapped via CAT-007 link
+      let toppingModId: string | null = null;
       if (r.product_id.startsWith("MOD:")) {
-        const modId = r.product_id.replace("MOD:", "");
-        const canonical = canonicalModifiers.byId.get(modId)
+        toppingModId = r.product_id.replace("MOD:", "");
+      } else if (standaloneToppingToModId.has(r.product_id)) {
+        toppingModId = standaloneToppingToModId.get(r.product_id) || null;
+      }
+
+      if (toppingModId) {
+        const canonical = canonicalModifiers.byId.get(toppingModId)
           || canonicalModifiers.byName.get(normalizeModifierName(r.product_name))
-          || { id: modId, name: r.product_name };
+          || { id: toppingModId, name: r.product_name };
         if (!bestToppingsMap.has(canonical.id)) {
           bestToppingsMap.set(canonical.id, { modifier_id: canonical.id, name: canonical.name, qty: 0, revenue: 0 });
         }
@@ -681,6 +750,26 @@ function parseSemiProductIngredients(ingredientsJson: string, semiProductId: str
 }
 
 type CanonicalModifier = { id: string; name: string };
+
+/**
+ * Build map: standalone topping product_id -> linked modifier_id.
+ *
+ * Standalone toppings are Products in category CAT-007 created by
+ * scripts/setup-topping-standalone.ts. Each carries migration_notes
+ * `topping-standalone::mod_id=MOD-XXX` linking back to its modifier.
+ * Used to route standalone topping sales into topping sections of reports.
+ *
+ * Spec: docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md
+ */
+function buildStandaloneToppingMap(products: any[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const p of products) {
+    if (String(p.category_id) !== "CAT-007") continue;
+    const match = String(p.migration_notes || "").match(/topping-standalone::mod_id=(MOD-\d+)/);
+    if (match) map.set(String(p.id), match[1]);
+  }
+  return map;
+}
 
 function buildCanonicalModifierLookup(modifiers: any[]): {
   byId: Map<string, CanonicalModifier>;

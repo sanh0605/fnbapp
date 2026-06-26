@@ -4,6 +4,46 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude) — Standalone topping report classification
+
+**Trigger:** User wants standalone topping sales (CAT-007 products) classified into topping reports, not drink reports. Spec: `docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md`.
+
+### Done (this session)
+
+| Item | File | Description |
+|---|---|---|
+| Sales report classification | `app/admin/reports/actions.ts` `getSalesDataV2` | Load Products, build `standaloneToppingToModId` map (CAT-007 → linked MOD-XXX via `migration_notes`). Classification loop routes standalone toppings into `bestToppings` (merged with add-on modifier sales) instead of `bestSellers`. |
+| P&L report classification | `app/admin/reports/actions.ts` `getPnLDataV2` | Same `standaloneToppingToModId` map. `productProfitAnalysis` excludes standalone. `toppingRows` merges standalone revenue + COGS with modifier add-on rows keyed by `MOD:<id>`. Existing page filter `startsWith("MOD:")` still works. |
+| Helper | `app/admin/reports/actions.ts` `buildStandaloneToppingMap` | Extracts CAT-007 products with `topping-standalone::mod_id=MOD-XXX` link from `migration_notes`. |
+
+### No UI changes needed
+
+- Sales category chart: `bestSellers` no longer contains standalone toppings → first loop only buckets drinks. `bestToppings` loop aggregates all toppings into "topping" key. Single "Topping" slice in chart. ✓
+- P&L `toppingProfitAnalysis` page filter (`startsWith("MOD:")`) still picks up the merged topping rows because actions preserve `MOD:` prefix in `product_id`. ✓
+
+### Verification
+
+- `rtk tsc --noEmit`: **0 errors**.
+- `rtk vitest run --reporter=dot`: **197/197 pass** (no regression).
+- Cannot verify with live data yet — no orders placed against standalone topping variants. Logic verified by reading + type check.
+
+### Risk boundary
+
+- `app/admin/reports/actions.ts` is data-flow territory → **Codex review required** per COLLABORATION.md rule C.
+- No `lib/*` changes.
+- No UI changes (Antigravity territory untouched).
+
+### Known limitations
+
+- Standalone topping products without `migration_notes` link fall through to `bestSellers` (treated as drink). Setup script tags all 7 current toppings correctly.
+- Historical reclassification: only applies going forward. Past orders (none yet for CAT-007) classified at order time via snapshot.
+
+### Commits
+
+- (pending) `Claude feat: standalone topping report classification`
+
+---
+
 ## 2026-06-27 (Claude) — Topping standalone sales setup (data layer)
 
 **Trigger:** User wants to sell toppings independently (no drink required). Spec: `docs/superpowers/specs/2026-06-27-topping-standalone-design.md` (commit `5654581`).

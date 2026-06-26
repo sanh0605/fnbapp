@@ -39,6 +39,14 @@ Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong 
 
 ## Direction change log
 
+### 2026-06-27 (Claude) — Standalone topping report classification (actions done)
+
+- New: standalone topping sales (CAT-007 products) routed into topping sections of Sales + P&L reports. Spec `docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md`.
+- Implementation: `app/admin/reports/actions.ts` — both `getSalesDataV2` and `getPnLDataV2` build `standaloneToppingToModId` map and merge standalone with add-on via `MOD:<id>` key.
+- No UI changes (page filters still work with `MOD:` prefix preserved).
+- **Codex review (pending)**: data-flow change in `app/admin/reports/actions.ts`.
+- Verification: `rtk tsc` 0 errors, `rtk vitest` 197/197 pass.
+
 ### 2026-06-27 (Claude) — Topping standalone sales setup (data done, UI pending)
 
 - New: standalone topping sales. Spec `docs/superpowers/specs/2026-06-27-topping-standalone-design.md`.
