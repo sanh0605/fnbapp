@@ -188,8 +188,8 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 - [ ] **CODE-12** MED `findAll` (cache 5min) cho reference data trong write-path.
 
 #### Performance
-- [ ] **CODE-13** HIGH `app/admin/orders/actions.ts:113-115, 209-210` `.find()` O(n) per line → O(n²). Dùng Lodash `keyBy`.
-- [ ] **CODE-14** HIGH `app/admin/inventory/actions.ts:182-227` `updatePurchasedItem` N+1 queries.
+- [x] **CODE-13** HIGH `app/admin/orders/actions.ts:113-115, 209-210` `.find()` O(n) per line → O(n²). **Done by Claude (phiên 2026-06-26)** — build `productById`/`variantById` Maps 1 lần trước map.
+- [!] **CODE-14** HIGH `app/admin/inventory/items/actions.ts:182-227` `updatePurchasedItem` N+1. **Defer** — Sheets adapter chưa có `updateMany`. Cần thêm API vào `lib/sheets_db.ts` trước.
 - [ ] **CODE-15** HIGH `app/admin/inventory/purchase-orders/actions.ts:116-164` loop insert. Accumulate + `insertMany`.
 - [ ] **CODE-16** MED `app/admin/reports/actions.ts:321-322` tạo Set mỗi iteration.
 - [ ] **CODE-17** MED `lib/cogs-drift-audit.ts:146-163` re-consume prior lines O(n²).

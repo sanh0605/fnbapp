@@ -108,11 +108,15 @@ export async function getOrdersV2(): Promise<GetOrdersV2Result> {
       o.status === ORDER_STATUS.COMPLETED && !o.superseded_by,
     );
 
+    // Claude code — CODE-13: build Maps once for O(1) lookup instead of O(n) find per line.
+    const productById = new Map((products as any[]).map(p => [p.id, p]));
+    const variantById = new Map((variants as any[]).map(v => [v.id, v]));
+
     const mappedOrders: OrderListItem[] = latestOrders.map(order => {
       const orderLinesV2 = (orderLines as any[]).filter(l => l.order_id === order.id);
       const mappedLines = orderLinesV2.map(line => {
-        const product = (products as any[]).find(p => p.id === line.product_id);
-        const variant = (variants as any[]).find(v => v.id === line.variant_id);
+        const product = productById.get(line.product_id);
+        const variant = variantById.get(line.variant_id);
         let mods: any[] = [];
         try {
           if (line.modifiers_snapshot_json) {
@@ -205,9 +209,12 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
 
   // Build current order detail (reuse logic from getOrdersV2)
   const orderLinesV2 = (orderLines as any[]).filter(l => l.order_id === orderId);
+  // Claude code — CODE-13: O(1) lookup Maps.
+  const productById = new Map((products as any[]).map(p => [p.id, p]));
+  const variantById = new Map((variants as any[]).map(v => [v.id, v]));
   const mappedLines = orderLinesV2.map(line => {
-    const product = (products as any[]).find(p => p.id === line.product_id);
-    const variant = (variants as any[]).find(v => v.id === line.variant_id);
+    const product = productById.get(line.product_id);
+    const variant = variantById.get(line.variant_id);
     let mods: any[] = [];
     try {
       if (line.modifiers_snapshot_json) mods = JSON.parse(line.modifiers_snapshot_json);
