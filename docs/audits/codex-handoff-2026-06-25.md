@@ -15,6 +15,16 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 
 ## Direction change log
 
+### 2026-06-27 (Claude) — June 2026 sales backfill import (Phin Đi)
+
+- User-provided spreadsheet backfilled: 110 line items → 77 orders, Phin Đi brand, June 1-26.
+- Order_no range PHD000661 → PHD000747. Gross 1.045.000 VND, COGS 268.876 VND, GP 776.124 VND.
+- See `DEVELOPMENT-TRACKING.md` 2026-06-27 entry for full summary.
+- **Codex post-hoc review requested**: `scripts/import-june-2026-sales.ts` chạm `buildOrderFromCart` + `insertOrderV2Records` + MAC COGS + ledger. User approved `--apply` without Codex review (verbal). Suggest Codex spot-check script logic + audit results before depending on this data in COGS/FIFO/P&L work.
+- **Follow-up for user (non-blocking)**:
+  - `Products.brand_id` missing for PROD-027 (Khoai lang) and PROD-028 (Trứng luộc) — recommend set `BR-001`.
+  - VAR-036 has no recipe → COGS = 0. Recommend configure recipe + `apply-cogs-recalc.ts` for June range.
+
 ### 2026-06-26 (Codex) — Phase 9 negative stock diagnosis
 
 - Phase 9 diagnosis and dry-run resolve plan are ready for Claude/user review.

@@ -4,6 +4,58 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude) — June 2026 sales backfill import (Phin Đi)
+
+**Trigger:** User provided 110-row spreadsheet of historical Phin Đi (PHD) sales for 2026-06-01..2026-06-26 and asked Claude to backfill them into the system with dry-run + approval flow.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Import script | `scripts/import-june-2026-sales.ts` | Backfill 110 line items into 77 orders via `buildOrderFromCart` + `insertOrderV2Records`. Override `created_at` to historical date with random 07:00-08:30 +07:00 time per user. MAC COGS at sale time. Dry-run default, `--apply` for writes. Idempotency via `migration_notes` tag. |
+| Verify script | `scripts/verify-june-2026-import.ts` | Read-only integrity check: every tagged order has complete lines + CREATED event + SALES_CONSUME ledger rows. |
+| Orphan cleanup | `scripts/cleanup-june-2026-orphans.ts` | One-off: deletes 2 orders whose Orders_V2 row inserted but lines/events failed under Sheets API quota. Cleanup-on-fail in `insertOrderV2Records` also failed under quota, leaving orphans. |
+| Variant diagnostic | `scripts/inspect-phin-di-variants.ts` | Read-only check for VAR-036/037 product/brand wiring. |
+| Vite config | `vite.config.ts` | Minimal alias config (`@/` → project root) so vite-node resolves Next.js-style imports transitively used by `lib/order-cart`. Does not affect Next.js build. |
+| Dry-run preview | `docs/audits/2026-06-26-june-2026-sales-import-preview.json` | Audit-trail snapshot of the planned 77 orders with lines/COGS/ledger breakdown. |
+
+### Import summary
+
+- **110 input rows → 77 orders** (1 split: don 62 had VAR-036 Chuyển khoản + VAR-037 Tiền mặt → 2 separate orders since `Orders_V2.payment_method` is order-level).
+- **Order_no range**: PHD000661 → PHD000747.
+- **Gross/net revenue**: 1.045.000 VND (no discounts; `suppress_auto_promotion: true`).
+- **COGS (MAC at sale time)**: 268.876 VND. VAR-036 (Khoai lang) COGS = 0 (no recipe configured); VAR-037 (Trứng luộc) carries full COGS.
+- **Stock_Ledger SALES_CONSUME entries**: 61 (only VAR-037 lines consume ingredient).
+- **Payment split**: CASH 810.000 VND / BANK_TRANSFER 235.000 VND.
+- **Sale time per order**: random within 07:00:00–08:30:00 Asia/Ho_Chi_Minh on the order's date.
+
+### Apply process
+
+3 apply runs needed due to Google Sheets API rate limit (300 read + 300 write per minute per user):
+1. **Run 1**: 65/77 OK, 12 hit quota. 2 of the 12 became orphan headers (Orders_V2 inserted, lines/events/ledger failed, cleanup-on-fail in `insertOrderV2Records` also failed under quota).
+2. **Cleanup**: deleted 2 orphan headers (PHD000704, PHD000724) via dedicated script.
+3. **Run 2** (after 65s quota cooldown): 10/12 remaining OK.
+4. **Run 3** (after cleanup): 2/2 final orders OK.
+
+### Verification
+
+- `vite-node scripts/verify-june-2026-import.ts`: **77/77 orders complete** (lines + CREATED event + ledger all present). Totals match (gross 1.045.000 VND, lines 110, events 77, ledger 61).
+- `vite-node scripts/audit-current-stock.ts`: **5 negative items** — all pre-existing (BTP-008/003/002/010/011). No new negative introduced by this import.
+- `vite-node scripts/audit-mac-cogs-drift.ts`: No drift on new orders (PHD000661-747). Pre-existing drifts on UCK/older PHD orders unchanged.
+
+### Known issues / follow-up (NOT blocking)
+
+- **`Products.brand_id` missing for PROD-027 and PROD-028** (Khoai lang, Trứng luộc — created 2026-06-26). Import works because `CartInput.brand_id` is passed explicitly, but POS UI and reports-by-brand may misclassify these products. Recommend user update Products sheet to set `brand_id = BR-001` for both rows.
+- **VAR-036 (Khoai lang) has no recipe** → COGS = 0 for 78 units. Recommend setting up recipe in `Recipes` sheet then running `scripts/apply-cogs-recalc.ts --start=2026-06-01 --end=2026-06-26` to backfill `cost_at_sale`.
+- **Codex review post-hoc**: per `docs/COLLABORATION.md` rule C, order-creation + COGS + ledger writes normally require Codex review before `--apply`. User approved apply without Codex review (verbal approval). Suggest Codex spot-check `scripts/import-june-2026-sales.ts` and confirm audit results before depending on this data downstream.
+- **Idempotency**: re-running `--apply` is safe — script detects existing orders via `migration_notes` prefix and skips them.
+
+### Commits
+
+- (pending) `Claude feat: June 2026 sales backfill import`
+
+---
+
 ## 2026-06-26 (Codex) — Phase 9 negative stock diagnosis + dry-run plan
 
 **Trigger:** Claude Coordinator assigned Phase 9 to resolve 6 current negative stock items after commit `58b4ace`.

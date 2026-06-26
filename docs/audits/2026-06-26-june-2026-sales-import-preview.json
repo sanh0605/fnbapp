@@ -1,0 +1,629 @@
+{
+  "generated_at": "2026-06-26T17:34:38.406Z",
+  "mode": "apply",
+  "brand": {
+    "id": "BR-001",
+    "code": "PHD",
+    "name": "Phin Đi"
+  },
+  "variants": {
+    "VAR-036": {
+      "product_id": "PROD-027",
+      "product_name": "Khoai lang",
+      "size_name": "1 trái",
+      "system_price": 5000,
+      "override_price": 5000
+    },
+    "VAR-037": {
+      "product_id": "PROD-028",
+      "product_name": "Trứng luộc",
+      "size_name": "1 trái",
+      "system_price": 5000,
+      "override_price": 5000
+    }
+  },
+  "totals": {
+    "input_rows": 110,
+    "planned_orders": 77,
+    "already_imported": 75,
+    "built_ok": 2,
+    "build_failed": 0,
+    "inserted_ok": 2,
+    "insert_failed": 0,
+    "lines": 2,
+    "ledger_entries": 1,
+    "gross_total_vnd": 20000,
+    "net_total_vnd": 20000,
+    "cogs_total_vnd": 4278,
+    "gross_profit_vnd": 15722,
+    "qty_by_variant": {
+      "VAR-036": 2,
+      "VAR-037": 2
+    },
+    "cogs_by_variant": {
+      "VAR-036": 0,
+      "VAR-037": 4278
+    },
+    "revenue_by_payment": {
+      "BANK_TRANSFER": 10000,
+      "CASH": 10000
+    },
+    "revenue_by_day": {
+      "2026-06-18": 10000,
+      "2026-06-24": 10000
+    }
+  },
+  "orders": [
+    {
+      "external_don": 2,
+      "date": "2026-06-01",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-01::don=2::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 1,
+      "date": "2026-06-01",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-01::don=1::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 6,
+      "date": "2026-06-03",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-03::don=6::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 4,
+      "date": "2026-06-03",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-03::don=4::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 3,
+      "date": "2026-06-03",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-03::don=3::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 5,
+      "date": "2026-06-03",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-03::don=5::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 7,
+      "date": "2026-06-04",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-04::don=7::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 8,
+      "date": "2026-06-04",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-04::don=8::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 9,
+      "date": "2026-06-05",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-05::don=9::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 10,
+      "date": "2026-06-05",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-05::don=10::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 11,
+      "date": "2026-06-05",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-05::don=11::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 12,
+      "date": "2026-06-06",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-06::don=12::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 15,
+      "date": "2026-06-06",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-06::don=15::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 13,
+      "date": "2026-06-06",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-06::don=13::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 14,
+      "date": "2026-06-06",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-06::don=14::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 17,
+      "date": "2026-06-09",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-09::don=17::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 16,
+      "date": "2026-06-09",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-09::don=16::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 18,
+      "date": "2026-06-09",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-09::don=18::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 19,
+      "date": "2026-06-11",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-11::don=19::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 20,
+      "date": "2026-06-11",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-11::don=20::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 22,
+      "date": "2026-06-11",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-11::don=22::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 21,
+      "date": "2026-06-11",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-11::don=21::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 26,
+      "date": "2026-06-12",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-12::don=26::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 24,
+      "date": "2026-06-12",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-12::don=24::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 25,
+      "date": "2026-06-12",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-12::don=25::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 23,
+      "date": "2026-06-12",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-12::don=23::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 30,
+      "date": "2026-06-16",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-16::don=30::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 29,
+      "date": "2026-06-16",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-16::don=29::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 27,
+      "date": "2026-06-16",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-16::don=27::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 28,
+      "date": "2026-06-16",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-16::don=28::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 31,
+      "date": "2026-06-16",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-16::don=31::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 37,
+      "date": "2026-06-17",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-17::don=37::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 35,
+      "date": "2026-06-17",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-17::don=35::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 33,
+      "date": "2026-06-17",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-17::don=33::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 38,
+      "date": "2026-06-17",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-17::don=38::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 36,
+      "date": "2026-06-17",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-17::don=36::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 32,
+      "date": "2026-06-17",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-17::don=32::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 34,
+      "date": "2026-06-17",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-17::don=34::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 39,
+      "date": "2026-06-18",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-18::don=39::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 47,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-18::don=47::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 41,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-18::don=41::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 40,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-18::don=40::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 43,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-18::don=43::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 44,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-18::don=44::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 45,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "order_no_preview": "PHD000748",
+      "order_id": "ord-26bbe7fe-8394-4315-9c37-6d021c07b4bf",
+      "tag": "june-2026-import::date=2026-06-18::don=45::pay=CASH",
+      "status": "built",
+      "line_count": 1,
+      "ledger_count": 1,
+      "gross_vnd": 10000,
+      "net_vnd": 10000,
+      "cogs_vnd": 4278,
+      "lines": [
+        {
+          "variant_id": "VAR-037",
+          "qty": 2,
+          "unit_price": 5000,
+          "gross_line_total": 10000,
+          "cost_at_sale": 4278
+        }
+      ]
+    },
+    {
+      "external_don": 42,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-18::don=42::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 46,
+      "date": "2026-06-18",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-18::don=46::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 51,
+      "date": "2026-06-19",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-19::don=51::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 49,
+      "date": "2026-06-19",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-19::don=49::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 48,
+      "date": "2026-06-19",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-19::don=48::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 50,
+      "date": "2026-06-19",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-19::don=50::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 53,
+      "date": "2026-06-19",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-19::don=53::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 52,
+      "date": "2026-06-19",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-19::don=52::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 58,
+      "date": "2026-06-22",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-22::don=58::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 54,
+      "date": "2026-06-22",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-22::don=54::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 57,
+      "date": "2026-06-22",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-22::don=57::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 56,
+      "date": "2026-06-22",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-22::don=56::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 55,
+      "date": "2026-06-22",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-22::don=55::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 59,
+      "date": "2026-06-23",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-23::don=59::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 60,
+      "date": "2026-06-23",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-23::don=60::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 64,
+      "date": "2026-06-24",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-24::don=64::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 63,
+      "date": "2026-06-24",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-24::don=63::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 61,
+      "date": "2026-06-24",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-24::don=61::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 62,
+      "date": "2026-06-24",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-24::don=62::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 62,
+      "date": "2026-06-24",
+      "payment_method": "BANK_TRANSFER",
+      "order_no_preview": "PHD000749",
+      "order_id": "ord-701949c4-79cb-4883-a600-43956c8e9f19",
+      "tag": "june-2026-import::date=2026-06-24::don=62::pay=BANK_TRANSFER",
+      "status": "built",
+      "line_count": 1,
+      "ledger_count": 0,
+      "gross_vnd": 10000,
+      "net_vnd": 10000,
+      "cogs_vnd": 0,
+      "lines": [
+        {
+          "variant_id": "VAR-036",
+          "qty": 2,
+          "unit_price": 5000,
+          "gross_line_total": 10000,
+          "cost_at_sale": 0
+        }
+      ]
+    },
+    {
+      "external_don": 66,
+      "date": "2026-06-24",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-24::don=66::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 65,
+      "date": "2026-06-24",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-24::don=65::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 67,
+      "date": "2026-06-24",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-24::don=67::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 68,
+      "date": "2026-06-25",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-25::don=68::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 69,
+      "date": "2026-06-25",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-25::don=69::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 72,
+      "date": "2026-06-25",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-25::don=72::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 70,
+      "date": "2026-06-25",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-25::don=70::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 71,
+      "date": "2026-06-25",
+      "payment_method": "BANK_TRANSFER",
+      "tag": "june-2026-import::date=2026-06-25::don=71::pay=BANK_TRANSFER",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 74,
+      "date": "2026-06-26",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-26::don=74::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 75,
+      "date": "2026-06-26",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-26::don=75::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 73,
+      "date": "2026-06-26",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-26::don=73::pay=CASH",
+      "status": "already_imported"
+    },
+    {
+      "external_don": 76,
+      "date": "2026-06-26",
+      "payment_method": "CASH",
+      "tag": "june-2026-import::date=2026-06-26::don=76::pay=CASH",
+      "status": "already_imported"
+    }
+  ]
+}
