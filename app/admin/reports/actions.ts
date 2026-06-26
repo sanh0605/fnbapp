@@ -315,11 +315,14 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
 
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-    // Claude code — Phase 5.2: revenue breakdown.
+    // Claude code — Phase 5.2: revenue breakdown + CODE-16: build Set once outside filter.
     // Compute at order level (gross/discount are order-wide fields). For category filter,
     // restrict to orders containing matching lines to keep consistent with totalOrders.
-    const ordersForBreakdown = categoryId
-      ? typedOrders.filter(o => new Set(typedLines.map(l => l.order_id)).has(o.id))
+    const lineOrderIds = categoryId
+      ? new Set(typedLines.map(l => l.order_id))
+      : null;
+    const ordersForBreakdown = lineOrderIds
+      ? typedOrders.filter(o => lineOrderIds.has(o.id))
       : typedOrders;
     const grossRevenue = ordersForBreakdown.reduce((s, o) => s + o.gross_total, 0);
     const systemPromotionDiscount = ordersForBreakdown.reduce((s, o) => s + o.promo_discount_total, 0);
