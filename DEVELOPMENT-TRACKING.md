@@ -4,6 +4,42 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude Coordinator) — Review Antigravity UI-17 revision + UI-18 inventory cards
+
+**Trigger:** Antigravity complete UI-17 revision (remove copy + truncation per user feedback) + UI-18 new task (inventory items mobile card layout). Claude review.
+
+### Reviewed
+
+| Item | Commit | Verdict | Notes |
+|---|---|---|---|
+| UI-17 revision (remove copy + truncation) | 59fa72b | APPROVED | 1 insertion / 16 deletions. Show full `{item.id}` directly. Reality: ID là short codes (SPM-001), không phải UUID, truncation không cần. |
+| UI-18 inventory items mobile card layout | a6475a6 | APPROVED | Mobile (< 768px) cards với name/ID/category badge/conversions flex-wrap/base ingredient/actions. `min-h-[44px]` touch target cho actions. DeleteItemButton class updated cho mobile touch target. No new abstractions (reuse PurchasedItemForm + DeleteItemButton). |
+
+### Verification
+
+- `vitest run`: 197/197 pass.
+- Diff scope: chỉ `app/admin/inventory/items/components/ItemsClient.tsx`. No action/lib touch.
+- Mobile + desktop pattern consistent với UI-13 (commit 6f0a3c3).
+
+### Minor notes (non-blocking)
+
+- Empty state text mobile ("Không tìm thấy hàng hóa nào phù hợp.") khác desktop nhẹ. Sync sau nếu user request.
+
+### Phase 7 (mobile UI) status
+
+Done items:
+- [x] UI-12 mobile heatmap accordion (commit 09713a3)
+- [x] UI-13 report tables mobile cards (commit 6f0a3c3)
+- [x] UI-17 item ID full display (commit 59fa72b revision)
+- [x] UI-18 inventory items mobile cards (commit a6475a6)
+
+Defer items:
+- [ ] UI-8 PO form placeholder
+- [ ] UI-14 PO form grid fallback
+- [ ] UI-15 PO inputs w-32 overflow
+
+---
+
 ## 2026-06-27 (Claude Coordinator) — Review Antigravity UI-12 accordion + UI-13
 
 **Trigger:** Antigravity complete UI-12 mobile heatmap refactor (day-grouped accordion) + UI-13 mobile table card fallback. User reported heatmap too long with previous flat list. Claude review.
