@@ -80,7 +80,7 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
       </StickyFilterBar>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
@@ -147,6 +147,66 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
             </tbody>
           </table>
         </div>
+        {/* Mobile Card Layout (< 768px) */}
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+          {filteredItems.length === 0 ? (
+            <div className="text-center text-gray-500 italic py-8">
+              Không tìm thấy hàng hóa nào phù hợp.
+            </div>
+          ) : (
+            filteredItems.map(item => {
+              const itemConversions = conversions.filter(c => c.purchased_item_id === item.id);
+              return (
+                <div key={item.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+                  <div>
+                    <div className="font-bold text-gray-900">{item.name}</div>
+                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">
+                      {item.id} • <span className="font-medium text-purple-700 bg-purple-50 px-1 py-0.5 rounded">{categoryMap[item.item_category_id] || "---"}</span>
+                    </div>
+                  </div>
+                  
+                  {itemConversions.length > 0 && (
+                    <div className="flex flex-col gap-1">
+                      <div className="text-[10px] uppercase font-bold text-gray-400">Quy đổi</div>
+                      <div className="flex flex-wrap gap-1">
+                        {itemConversions.map((conv, idx) => {
+                          const baseUnitName = units.find(u => u.id === conv.base_unit)?.name || "";
+                          const purchasedUnitName = units.find(u => u.id === conv.purchased_unit)?.name || conv.purchased_unit;
+                          return (
+                            <span key={idx} className="inline-flex items-center px-2 py-1 rounded text-[11px] bg-gray-100 text-gray-600 border border-gray-200">
+                              1 {purchasedUnitName} = {conv.conversion_rate} {baseUnitName}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {item.base_ingredient_id && (
+                    <div className="text-sm text-gray-600">
+                      <span className="text-gray-400">Nguyên liệu gốc:</span> <span className="font-medium">{baseIngredientMap[item.base_ingredient_id] || "---"}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-gray-100/50">
+                    <div className="flex items-center min-h-[44px]">
+                      <PurchasedItemForm 
+                        initialData={item}
+                        initialConversions={itemConversions}
+                        itemCategories={categories}
+                        baseIngredients={baseIngredients}
+                        units={units}
+                      />
+                    </div>
+                    <div className="flex items-center min-h-[44px]">
+                      <DeleteItemButton id={item.id} name={item.name} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );
@@ -169,7 +229,7 @@ function DeleteItemButton({ id, name }: { id: string; name: string }) {
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
+        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50 p-2 -m-2 md:p-0 md:m-0 min-h-[44px] md:min-h-0 flex items-center justify-center"
       >
         {loading ? "..." : "Xóa"}
       </button>
