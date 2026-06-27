@@ -4,6 +4,56 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude, Coordinator) — Apply Phase 9 negative stock resolution
+
+**Trigger:** Codex het token sau khi viet resolve script (dry-run only). Anh duyệt Claude apply vì Codex reset token den 1 Jul 15:44.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Pre-apply snapshot | `docs/audits/2026-06-27-phase9-pre-apply-snapshot.txt` | Captured `audit-current-stock.ts` output before apply (5 negative BTP items). |
+| Phase 9 apply | Google Sheets `Stock_Ledger` (5 rows) | Inserted 5 PRODUCTION_YIELD rows via `scripts/resolve-negative-stock.ts --apply`. Reference ID `PHASE9-NEGATIVE-STOCK-2026-06-26`. unit_cost=0 (BTP co no prior yield history). |
+| Tracking + handoff update | `DEVELOPMENT-TRACKING.md`, `docs/audits/codex-handoff-2026-06-25.md` | Phase 9 marked done by Claude (apply step). Codex retroactive review flagged. |
+
+### Rows applied
+
+| Item | qty | unit_cost | old_balance (live) | post-apply balance |
+|---|---|---|---|---|
+| BTP-008 Hong tra | +1.410 ml | 0 | -1.410 | 0 |
+| BTP-003 Cot matcha | +440 ml | 0 | -440 | 0 |
+| BTP-002 Cot cacao | +400 ml | 0 | -400 | 0 |
+| BTP-010 Tra sua hong tra | +300 ml | 0 | -300 | 0 |
+| BTP-011 Kem muoi pho mai | +240 g | 0 | -240 | 0 |
+
+ING-015 Siro dao tu can bang truoc apply (do June 2026 sales backfill commits) -> skip.
+
+### Verification
+
+- `audit-current-stock.ts`: **0 negative** (down from 5). 9 zero stock, 34 positive, 43 tracked items.
+- `vitest run`: **197/197 pass**.
+- Idempotency: re-run `resolve-negative-stock.ts` (no --apply) shows all 6 items "already balanced", 0 rows to insert.
+- `audit-mac-cogs-drift.ts`: **101 mismatch, +25.576 VND** — PRE-EXISTING, not caused by Phase 9 apply.
+
+### MAC drift analysis
+
+101 mismatches appeared vs Codex's baseline (0 mismatch, 2026-06-26 15:37). Logic verification:
+- `lib/mac-cogs.ts:43`: COST_INPUT_TYPES requires `unitCost > 0` -> yield unit_cost=0 is filtered out of MAC calc.
+- `lib/mac-cogs.ts:37`: `createdAt > asOfMs continue` -> yields with timestamp NOW excluded from historical MAC.
+- Therefore Phase 9 apply cannot affect any historical MAC calc.
+
+Root cause of 101 mismatches: 5 Claude commits about June 2026 sales backfill + topping standalone (5654581, c561a7e, 4eefd8a, 6a04c21, 81f9f3d, 079e661) added new orders with BTP_SHORTFALL scenarios. Classification breakdown: `{BTP_SHORTFALL:89, MAC_REPRICE:12}` — consistent with new sales, not with yield insertion.
+
+**Flagged for Codex retroactive review** (when token refreshes 1 Jul 15:44):
+- Verify Phase 9 apply correctness (5 PRODUCTION_YIELD rows).
+- Investigate 101 MAC drift mismatches pre-existing from June 2026 sales backfill.
+
+### Antigravity output (parallel)
+
+- `204d2a4 Antigravity feat: UI-12 heatmap mobile responsive` — APPROVED by Claude review. Mobile list view (< 768px) + desktop grid (min-w-[1120px], h-11). Touch target 44px. No cross-boundary. Vietnamese labels per domain dictionary.
+
+---
+
 ## 2026-06-27 (Claude) — Standalone topping report classification
 
 **Trigger:** User wants standalone topping sales (CAT-007 products) classified into topping reports, not drink reports. Spec: `docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md`.

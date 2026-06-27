@@ -17,6 +17,8 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 
 Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong từng direction log entry bên dưới.
 
+> **Roadmap đầy đủ**: `docs/audits/system-optimization-roadmap.md` — tổng hợp toàn bộ optimization tasks (P0-P3), để long-term planning.
+
 ### Antigravity (UI)
 
 | Marker | Task | File | Spec |
@@ -81,6 +83,18 @@ Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong 
   - `PRODUCTION_YIELD` backfill rows for `BTP-008`, `BTP-003`, `BTP-010`, `BTP-002`, `BTP-011`.
   - `STOCK_ADJUST` row for `ING-015` +10 ml.
 - Status: waiting for Claude/user approval before running `node_modules\.bin\vite-node.cmd scripts\resolve-negative-stock.ts --apply`.
+
+### 2026-06-27 (Claude Coordinator) — Phase 9 applied
+
+- Apply executed by Claude after Codex ran out of token (reset 1 Jul 15:44).
+- 5 PRODUCTION_YIELD rows inserted (ING-015 self-balanced before apply due to June 2026 sales backfill commits).
+- Reference ID: `PHASE9-NEGATIVE-STOCK-2026-06-26`. unit_cost=0 for all 5 (no prior yield history).
+- Post-apply verification: `audit-current-stock.ts` 0 negative, 197/197 tests pass, idempotent re-run = 0 rows.
+- **MAC drift 101 mismatches pre-existing** (not caused by apply) — root cause: 5 Claude commits about June 2026 sales backfill + topping standalone added new BTP_SHORTFALL orders. Logic verified: `lib/mac-cogs.ts:37,43` filter yield unit_cost=0 out of MAC calc.
+- **Codex retroactive review needed** when token refreshes:
+  1. Verify Phase 9 apply correctness (5 PRODUCTION_YIELD rows in Stock_Ledger with reference `PHASE9-NEGATIVE-STOCK-2026-06-26`).
+  2. Investigate 101 MAC drift mismatches from June 2026 sales backfill (separate issue, not Phase 9).
+- Pre-apply snapshot: `docs/audits/2026-06-27-phase9-pre-apply-snapshot.txt`.
 
 ### 2026-06-26 — MAC COGS primary direction
 
@@ -221,7 +235,7 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 - [x] **UI-9** HIGH `PurchaseOrderForm.tsx:165` gửi `transaction_date.toISOString()`. **Done by Claude (phiên 2026-06-26)** — đổi sang `toSaigonIsoString(transactionDate)` từ `lib/datetime.ts`. Server parse đúng ngày Saigon bất kể deploy TZ.
 - [x] **UI-10** MED Format tiền `XXđ` → `XX đ`. **Done by Claude** — sweep trong `OrderDetailModal.tsx` (6 chỗ).
 - [x] **UI-11** MED `OrderTable.tsx:137` show giây. **Done by Claude** — dùng `formatDateTime(dateString)` mặc định không giây.
-- [ ] **UI-12** MED Heatmap mobile. *(Defer — cần design)*
+- [x] **UI-12** MED Heatmap mobile. **Done by Antigravity** — added list view for mobile and min-width 1120px for desktop touch targets (commit 204d2a4).
 - [ ] **UI-13** MED Mobile table card fallback. *(Defer — large)*
 - [ ] **UI-14** MED PO form grid fallback. *(Defer — cần đọc PO form)*
 - [ ] **UI-15** MED PO inputs `w-32` overflow. *(Defer — cần đọc PO form)*

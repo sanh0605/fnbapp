@@ -1,0 +1,18 @@
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+◇ injected env (4) from .env.local // tip: ⌘ suppress logs { quiet: true }
+=== CURRENT STOCK AUDIT (READ ONLY) ===
+Ledger rows:       4906
+Tracked items:     43
+Positive stock:    34
+Zero stock:        4
+Negative stock:    5
+Unknown item refs: 0
+
+Top negative balances:
+BTP-008 | Hồng trà | SEMI_PRODUCT | stock=-1.410 ml | SALES_CONSUME:-41.540 | STOCK_ADJUST:37.370 | EDIT_REVERSAL:2.760
+BTP-003 | Cốt matcha | SEMI_PRODUCT | stock=-440 ml | SALES_CONSUME:-9.840 | STOCK_ADJUST:9.120 | EDIT_REVERSAL:280
+BTP-002 | Cốt cacao | SEMI_PRODUCT | stock=-400 ml | SALES_CONSUME:-6.960 | STOCK_ADJUST:6.320 | EDIT_REVERSAL:240
+BTP-010 | Trà sữa hồng trà | SEMI_PRODUCT | stock=-300 ml | SALES_CONSUME:-13.020 | STOCK_ADJUST:11.350 | EDIT_REVERSAL:1.370
+BTP-011 | Kem muối phô mai | SEMI_PRODUCT | stock=-240 g | SALES_CONSUME:-4.610 | STOCK_ADJUST:3.910 | EDIT_REVERSAL:460
+
+No data was written.
