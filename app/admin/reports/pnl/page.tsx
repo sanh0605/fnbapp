@@ -186,7 +186,7 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu bán hàng.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
+          <div className="hidden md:block overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
@@ -230,6 +230,44 @@ export default async function ReportsPage({
               </tbody>
             </table>
           </div>
+          {/* Mobile Card Layout (< 768px) */}
+          <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[60vh] bg-gray-50/30">
+            {productProfitAnalysis.map((item:any, idx:number) => (
+              <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="font-bold text-gray-900">{item.product_name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded font-bold text-xs ${
+                      item.marginPct >= 50 ? 'bg-emerald-100 text-emerald-700' :
+                      item.marginPct >= 30 ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {item.marginPct.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-y-2 text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-400">Số Lượng</span>
+                    <span className="font-semibold text-blue-600">{item.qty.toLocaleString('vi-VN')}</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs text-gray-400">Doanh Thu</span>
+                    <span className="font-semibold text-gray-800">{item.revenue.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-400">Giá Vốn</span>
+                    <span className="font-semibold text-red-600">{item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs text-gray-400">LN Gộp</span>
+                    <span className="font-bold text-emerald-600">{item.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
@@ -245,7 +283,7 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu bán hàng topping.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
+          <div className="hidden md:block overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
@@ -288,6 +326,44 @@ export default async function ReportsPage({
                 })}
               </tbody>
             </table>
+          </div>
+          {/* Mobile Card Layout (< 768px) */}
+          <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[60vh] bg-gray-50/30">
+            {toppingProfitAnalysis.map((item:any, idx:number) => (
+              <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="font-bold text-gray-900">{item.product_name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded font-bold text-xs ${
+                      item.marginPct >= 50 ? 'bg-emerald-100 text-emerald-700' :
+                      item.marginPct >= 30 ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {item.marginPct.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-y-2 text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-400">Số Lượng</span>
+                    <span className="font-semibold text-blue-600">{item.qty.toLocaleString('vi-VN')}</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs text-gray-400">Doanh Thu</span>
+                    <span className="font-semibold text-gray-800">{item.revenue.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-400">Giá Vốn</span>
+                    <span className="font-semibold text-red-600">{item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs text-gray-400">LN Gộp</span>
+                    <span className="font-bold text-emerald-600">{item.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

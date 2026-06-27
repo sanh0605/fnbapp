@@ -345,7 +345,7 @@ export default async function SalesReportPage({
               Tổng: {totalQtyAll} ly
             </span>
           </div>
-          <div className="overflow-x-auto max-h-[528px] overflow-y-auto">
+          <div className="hidden md:block overflow-x-auto max-h-[528px] overflow-y-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
@@ -391,6 +391,53 @@ export default async function SalesReportPage({
               )}
             </table>
           </div>
+          {/* Mobile Card Layout (< 768px) */}
+          <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[528px] bg-gray-50/30">
+            {bestSellers.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">Không có giao dịch</div>
+            ) : (
+              bestSellers.map((item, i) => (
+                <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="font-bold text-gray-900">{item.name}</div>
+                    <div className="font-bold text-green-600 shrink-0">{Math.round(item.totalRevenue).toLocaleString("vi-VN")} đ</div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-400">Tổng SL:</span>
+                      <span className="font-semibold text-gray-800">{item.totalQty}</span>
+                    </div>
+                    {uniqueSizes.filter(size => item.sizes[size]).map(size => (
+                      <div key={size} className="flex items-center gap-1 text-xs">
+                        <span className="text-gray-400">Size {size}:</span>
+                        <span className="font-medium text-gray-700">{item.sizes[size]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+            {bestSellers.length > 0 && (
+              <div className="mt-2 pt-3 border-t border-gray-200 flex flex-col gap-2">
+                <div className="flex justify-between items-center font-bold text-gray-900">
+                  <span>Tổng cộng</span>
+                  <span className="text-green-700">{Math.round(totalRevenueAll).toLocaleString("vi-VN")} đ</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                     <span className="text-gray-500">Tổng SL:</span>
+                     <span className="font-bold text-gray-800">{totalQtyAll.toLocaleString("vi-VN")}</span>
+                  </div>
+                  {uniqueSizes.filter(size => totalQtyBySize[size] > 0).map(size => (
+                    <div key={size} className="flex items-center gap-1 text-xs">
+                      <span className="text-gray-400">Size {size}:</span>
+                      <span className="font-medium text-gray-700">{totalQtyBySize[size].toLocaleString("vi-VN")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Toppings Table */}
@@ -398,7 +445,7 @@ export default async function SalesReportPage({
           <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Top Topping Bán Chạy</h3>
           </div>
-          <div className="overflow-x-auto max-h-[528px] overflow-y-auto">
+          <div className="hidden md:block overflow-x-auto max-h-[528px] overflow-y-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
                 <tr>
@@ -430,6 +477,34 @@ export default async function SalesReportPage({
                 </tfoot>
               )}
             </table>
+          </div>
+          {/* Mobile Card Layout (< 768px) */}
+          <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[528px] bg-gray-50/30">
+            {bestToppings.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">Không có topping nào</div>
+            ) : (
+              bestToppings.map((item, i) => (
+                <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-2">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="font-bold text-gray-900">{item.name}</div>
+                    <div className="font-bold text-green-600 shrink-0">{Math.round(item.revenue).toLocaleString("vi-VN")} đ</div>
+                  </div>
+                  <div className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="text-gray-400">Số lượng:</span>
+                    <span className="font-semibold text-gray-800">{item.qty}</span>
+                  </div>
+                </div>
+              ))
+            )}
+            {bestToppings.length > 0 && (
+              <div className="mt-2 pt-3 border-t border-gray-200 flex justify-between items-center font-bold text-gray-900">
+                <div className="flex items-center gap-2">
+                  <span>Tổng:</span>
+                  <span>{totalToppingQty.toLocaleString("vi-VN")}</span>
+                </div>
+                <div className="text-green-700">{Math.round(totalToppingRevenue).toLocaleString("vi-VN")} đ</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
