@@ -103,22 +103,7 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                   const itemConversions = conversions.filter(c => c.purchased_item_id === item.id);
                   return (
                     <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 font-mono text-[11px] text-gray-400">
-                        <div className="flex items-center gap-1 group">
-                          <span title={item.id} className="cursor-help border-b border-dashed border-gray-300">
-                            <span className="md:hidden">{item.id.slice(0, 4)}...</span>
-                            <span className="hidden md:inline">{item.id.slice(0, 8)}...</span>
-                          </span>
-                          <button
-                            onClick={() => navigator.clipboard.writeText(item.id)}
-                            aria-label="Copy ID"
-                            title="Copy ID"
-                            className="w-11 h-11 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 -my-2 -mr-4"
-                          >
-                            <span aria-hidden="true">📋</span>
-                          </button>
-                        </div>
-                      </td>
+                      <td className="px-6 py-4 font-mono text-[11px] text-gray-400">{item.id}</td>
                       <td className="px-6 py-4">
                         <div className="font-bold text-gray-900">{item.name}</div>
                         {itemConversions.length > 0 && (

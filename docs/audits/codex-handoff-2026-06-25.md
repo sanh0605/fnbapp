@@ -41,6 +41,13 @@ Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong 
 
 ## Direction change log
 
+### 2026-06-27 (Antigravity) — UI-12 mobile heatmap accordion fix
+
+- Refactor mobile heatmap từ flat list (~200-300 cards) → day-grouped accordion (7 sections max, default collapsed).
+- Native `<details>`+`<summary>` cho accessibility, zero JS.
+- Commit: `09713a30e34f4be2ecc706aa4cfaa4dbaf5b8191`.
+- Claude review pending.
+
 ### 2026-06-27 (Claude) — Standalone topping report classification (actions done)
 
 - New: standalone topping sales (CAT-007 products) routed into topping sections of Sales + P&L reports. Spec `docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md`.
@@ -236,11 +243,11 @@ rtk node_modules/.bin/tsc --noEmit                                     # 1 pre-e
 - [x] **UI-10** MED Format tiền `XXđ` → `XX đ`. **Done by Claude** — sweep trong `OrderDetailModal.tsx` (6 chỗ).
 - [x] **UI-11** MED `OrderTable.tsx:137` show giây. **Done by Claude** — dùng `formatDateTime(dateString)` mặc định không giây.
 - [x] **UI-12** MED Heatmap mobile. **Done by Antigravity** — added list view for mobile and min-width 1120px for desktop touch targets (commit 204d2a4).
-- [ ] **UI-13** MED Mobile table card fallback. *(Defer — large)*
+- [x] **UI-13** MED Mobile table card fallback. **Done by Antigravity** — added card layout for mobile (<768px) in sales and PnL tables (commit 6f0a3c3).
 - [ ] **UI-14** MED PO form grid fallback. *(Defer — cần đọc PO form)*
 - [ ] **UI-15** MED PO inputs `w-32` overflow. *(Defer — cần đọc PO form)*
 - [x] **UI-16** MED `StockTable.tsx:103` icon `🔍`. **Done by Claude** — `aria-hidden="true"`.
-- [ ] **UI-17** MED `ItemsClient.tsx:106` item.id raw UUID. *(Defer — UX decision)*
+- [x] **UI-17** MED `ItemsClient.tsx:106` item.id raw UUID. **Done by Antigravity** — added short ID display and hover copy button (commit f8e14e5).
 
 #### Low severity
 - [x] **UI-18** LOW `OrderTable.tsx:359` className conflict. **Done by Claude** — removed `bg-white` duplicate.
