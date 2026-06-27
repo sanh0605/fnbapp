@@ -41,6 +41,16 @@ Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong 
 
 ## Direction change log
 
+### 2026-06-27 (Antigravity) — UI-17 revision
+- Remove copy button + truncation per user feedback.
+- Show full ID (reality: short codes like SPM-001, not UUIDs).
+- Commit: 59fa72bdde954b01bdb26f5b0b915b0df97d10e6.
+
+### 2026-06-27 (Antigravity) — UI-18 inventory mobile cards
+- Mobile (< 768px) card layout for inventory items table.
+- Same pattern as UI-13 (commit 6f0a3c3).
+- Commit: a6475a6783c369b38fd56c781cee6788f9d6cc2b.
+
 ### 2026-06-27 (Antigravity) — UI-12 mobile heatmap accordion fix
 
 - Refactor mobile heatmap từ flat list (~200-300 cards) → day-grouped accordion (7 sections max, default collapsed).
