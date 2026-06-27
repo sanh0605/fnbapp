@@ -4,6 +4,29 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude Coordinator) — Review Antigravity UI-12 accordion + UI-13
+
+**Trigger:** Antigravity complete UI-12 mobile heatmap refactor (day-grouped accordion) + UI-13 mobile table card fallback. User reported heatmap too long with previous flat list. Claude review.
+
+### Reviewed
+
+| Item | Commit | Verdict | Notes |
+|---|---|---|---|
+| UI-13 mobile table card fallback | 6f0a3c3 | APPROVED | 4 tables (sales bestSellers/bestToppings + pnl productProfitAnalysis/toppingProfitAnalysis). `hidden md:block` desktop + `md:hidden flex flex-col` mobile. Touch target ≥ 44px, no truncate. No cross-boundary. |
+| UI-12 mobile heatmap accordion refactor | 09713a3 | APPROVED | Refactor from flat list (~200-300 cards for 1-month range) to day-grouped accordion (max 7 sections, default collapsed). Native `<details>`+`<summary>` for zero-JS accessibility. Skip empty days via `filter(Boolean)`. Day totals inline. Icon `group-open:rotate-180` for state. Touch target ≥ 44px summary, ≥ 36px row body. Server component kept. |
+
+### Verification
+
+- `vitest run`: 197/197 pass.
+- Diff scope: only `app/admin/reports/sales/page.tsx` + `app/admin/reports/pnl/page.tsx`. No action/lib touch.
+- Tailwind `group-open` variant — Tailwind 3.4+ feature; if codebase older, icon stays static (graceful degrade, still functional).
+
+### Antigravity next
+
+UI-17 (item ID display short form + copy button) approved to start.
+
+---
+
 ## 2026-06-27 (Claude, Coordinator) — Apply Phase 9 negative stock resolution
 
 **Trigger:** Codex het token sau khi viet resolve script (dry-run only). Anh duyệt Claude apply vì Codex reset token den 1 Jul 15:44.
