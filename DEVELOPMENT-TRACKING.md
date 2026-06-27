@@ -4,6 +4,31 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude) — PO form polish UI-8 + UI-15
+
+**Trigger:** User chọn option B (Claude tự làm UI-8/14/15 PO form polish).
+
+### Done
+
+| Item | File | Description |
+|---|---|---|
+| UI-8 placeholder text | `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx:213` | Đổi `"dd/mm/yyyy hh:mm:ss"` → `"Chọn ngày nhập hàng (dd/mm/yyyy)"`. Vietnamese user-friendly. |
+| UI-15 input width responsive | Same file, 4 occurrences (phí vận chuyển, thuế, voucher, chiết khấu) | `w-32` → `w-28 md:w-32`. Mobile hẹp hơn 1 cell (112px vs 128px) để tránh overflow khi label dài. Desktop giữ nguyên 128px. |
+| UI-14 grid fallback | (no change) | Verified: `grid-cols-1 md:grid-cols-2` (header) + `grid-cols-1 md:grid-cols-12` (lines) đã có mobile fallback. Skip. |
+
+### Verification
+
+- `vitest run`: 197/197 pass.
+- Diff scope: 5 insertions / 5 deletions. 1 file only.
+- No cross-boundary (data flow unchanged, chỉ visual).
+
+### Notes
+
+- Per protocol ownership, UI files Antigravity own. User approved Claude doing it directly (option B). Mark UI-8/15 as `[x] Claude` trong handoff.
+- Antigravity retroactive review welcome nếu cần.
+
+---
+
 ## 2026-06-27 (Claude Coordinator) — Review Antigravity UI-17 revision + UI-18 inventory cards
 
 **Trigger:** Antigravity complete UI-17 revision (remove copy + truncation per user feedback) + UI-18 new task (inventory items mobile card layout). Claude review.

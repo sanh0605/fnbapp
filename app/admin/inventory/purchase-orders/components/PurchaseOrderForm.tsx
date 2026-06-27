@@ -210,7 +210,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             name="transaction_date"
             selected={transactionDate}
             onChange={(date) => setTransactionDate(date)}
-            placeholderText="dd/mm/yyyy hh:mm:ss"
+            placeholderText="Chọn ngày nhập hàng (dd/mm/yyyy)"
           />
           <p className="text-xs text-gray-500 mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
         </div>
@@ -392,7 +392,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={shippingFee || ''}
                    onChange={(e) => setShippingFee(Number(e.target.value))}
-                   className="w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-28 md:w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
                    placeholder="0"
                  />
              </div>
@@ -402,7 +402,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={taxAmount || ''}
                    onChange={(e) => setTaxAmount(Number(e.target.value))}
-                   className="w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-28 md:w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
                    placeholder="0"
                  />
              </div>
@@ -412,7 +412,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={voucherAmount || ''}
                    onChange={(e) => setVoucherAmount(Number(e.target.value))}
-                   className="w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
+                   className="w-28 md:w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
                    placeholder="0"
                  />
              </div>
@@ -422,7 +422,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={discountAmount || ''}
                    onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                   className="w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
+                   className="w-28 md:w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
                    placeholder="0"
                  />
              </div>
