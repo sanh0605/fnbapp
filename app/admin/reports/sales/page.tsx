@@ -219,35 +219,59 @@ export default async function SalesReportPage({
         </div>
         
         {/* Mobile List View (< 768px) */}
-        <div className="md:hidden space-y-3 pb-2">
+        <div className="md:hidden space-y-2 pb-2">
           {heatmapData.filter(c => c.revenue > 0).length === 0 ? (
             <div className="text-center py-8 text-gray-400 text-sm">Không có dữ liệu doanh thu</div>
           ) : (
-            heatmapData
-              .filter(c => c.revenue > 0)
-              .sort((a, b) => {
-                const days = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-                if (a.dayOfWeek !== b.dayOfWeek) {
-                  return days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek);
-                }
-                return a.hour - b.hour;
-              })
-              .map((cell, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 shrink-0 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shadow-sm">
-                      {cell.hour}h
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900">{cell.dayOfWeek === "CN" ? "Chủ Nhật" : `Thứ ${cell.dayOfWeek.replace("T", "")}`}</div>
-                      <div className="text-xs text-gray-500">{cell.orderCount} đơn</div>
-                    </div>
-                  </div>
-                  <div className="font-bold text-green-600 text-right">
-                    {cell.revenue.toLocaleString("vi-VN")} đ
-                  </div>
-                </div>
-              ))
+            (() => {
+              const dayOrder = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+              return dayOrder
+                .map(day => {
+                  const dayCells = heatmapData
+                    .filter(c => c.dayOfWeek === day && c.revenue > 0)
+                    .sort((a, b) => a.hour - b.hour);
+                  if (dayCells.length === 0) return null;
+                  const dayLabel = day === "CN" ? "Chủ Nhật" : `Thứ ${day.replace("T", "")}`;
+                  const dayTotalRevenue = dayCells.reduce((s, c) => s + c.revenue, 0);
+                  const dayTotalOrders = dayCells.reduce((s, c) => s + c.orderCount, 0);
+                  return (
+                    <details key={day} className="rounded-xl border border-gray-100 bg-gray-50/50 overflow-hidden group">
+                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[44px] [&::-webkit-details-marker]:hidden">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 shrink-0 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                            {day === "CN" ? "CN" : day}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900">{dayLabel}</div>
+                            <div className="text-xs text-gray-500">{dayTotalOrders} đơn</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-green-600">{dayTotalRevenue.toLocaleString("vi-VN")} đ</div>
+                          <div className="text-[10px] text-gray-400 flex items-center justify-end gap-1">
+                            tap để mở/đóng
+                            <svg className="w-3 h-3 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </summary>
+                      <div className="px-3 pb-3 pt-1 space-y-1 border-t border-gray-100/50 bg-white">
+                        {dayCells.map(c => (
+                          <div key={`${day}-${c.hour}`} className="flex items-center justify-between py-2 min-h-[36px]">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 text-sm font-bold text-gray-700 text-center">{c.hour}h</div>
+                              <div className="text-xs text-gray-500">{c.orderCount} đơn</div>
+                            </div>
+                            <div className="text-sm font-medium text-gray-900">{c.revenue.toLocaleString("vi-VN")} đ</div>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  );
+                })
+                .filter(Boolean);
+            })()
           )}
         </div>
 
