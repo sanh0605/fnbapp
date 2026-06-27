@@ -4,6 +4,47 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-27 (Claude) — Phase 6.2 script deletion (49 one-off scripts)
+
+**Trigger:** User chọn option B (Tier 1 + Tier 2) sau khi em audit 51 DELETE_ONE_OFF scripts.
+
+### Done
+
+Deleted 49 one-off scripts từ `scripts/` directory:
+
+**Tier 1 — no references (35 scripts):**
+- 8 `investigate-*` (caphe-da, dao-mieng, negative-stock, pnl-bugs, revenue-anomaly/mismatch, topping-cogs)
+- 4 `inspect-*` (uck000094, uck000161, phd000522, order-v2)
+- 5 `verify-*` (e1-fix, june-revenue, latest-test-order, orders-schema, v2-invariants)
+- 3 `fix-*` (phd000522-promo, phd522+uck161, ws7-migration-issues)
+- 3 `classify-*` (order-ledger, orphan-ledger, promo-context)
+- 3 `find-*` (promo-plus, promo-undercount, revenue-anomalies-broad)
+- 9 single (add-non-inventory-column, archive-review-sheet-candidates, archive-sheet-candidates, batch-sheets-orders, compare-order-dates, diff-promo-id-loss, generate-phase3-briefing, read-user-sheet, seed-admin)
+
+**Tier 2 — historical doc references only (14 scripts):**
+- cleanup-test-orders-v2, fix-historical-discounts, fix-product-discount-overrides, fix-subtotal-and-line-discounts, generate-knowledge-graph, inspect-lines, inspect, list-all-v2-orders, recover-product-discount, sync-supabase-sales, test-edit-order-v2, test-pnl-v2, test-submit-order-v2, test-void-order-v2
+
+References chỉ trong `docs/superpowers/plans/*` + `docs/runbooks/*` (2026-06-15 → 2026-06-19, historical). No runtime dependency.
+
+### Skipped (2 scripts)
+
+- `verify-pnl-patterns.ts` — imported by `scripts/re-migrate-v1-to-v2.ts` (KEEP_MIGRATION_HISTORY)
+- `verify-v2-schema.ts` — imported by `scripts/create-v2-sheets.ts` (KEEP_RUNBOOK)
+
+### Verification
+
+- `vitest run`: **197/197 pass**.
+- Scripts count: 156 → **107** (giảm 31%).
+- Audit trail: `docs/audits/2026-06-27-script-deletion-verification.md` giữ reference record.
+- `docs/audits/script-cleanup-plan.md` (Phase 6.1) giữ original categorization để đối chiếu.
+
+### Notes
+
+- Per protocol rule 1 (No silent data writes): file deletion không phải data write, nhưng vẫn destructive. User approved từng nhóm trước khi xóa.
+- Historical docs trong `docs/superpowers/plans/*` vẫn giữ text references — không sửa docs (per rule 3 surgical changes). Text references trong historical plans không affect runtime.
+
+---
+
 ## 2026-06-27 (Claude) — PO form polish UI-8 + UI-15
 
 **Trigger:** User chọn option B (Claude tự làm UI-8/14/15 PO form polish).
