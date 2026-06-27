@@ -218,8 +218,42 @@ export default async function SalesReportPage({
           <p className="text-sm text-gray-500">Phân bổ doanh thu theo giờ trong ngày và thứ trong tuần.</p>
         </div>
         
-        <div className="overflow-x-auto table-mobile-scroll pb-2">
-          <div className="min-w-[800px] space-y-1">
+        {/* Mobile List View (< 768px) */}
+        <div className="md:hidden space-y-3 pb-2">
+          {heatmapData.filter(c => c.revenue > 0).length === 0 ? (
+            <div className="text-center py-8 text-gray-400 text-sm">Không có dữ liệu doanh thu</div>
+          ) : (
+            heatmapData
+              .filter(c => c.revenue > 0)
+              .sort((a, b) => {
+                const days = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+                if (a.dayOfWeek !== b.dayOfWeek) {
+                  return days.indexOf(a.dayOfWeek) - days.indexOf(b.dayOfWeek);
+                }
+                return a.hour - b.hour;
+              })
+              .map((cell, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 shrink-0 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shadow-sm">
+                      {cell.hour}h
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">{cell.dayOfWeek === "CN" ? "Chủ Nhật" : `Thứ ${cell.dayOfWeek.replace("T", "")}`}</div>
+                      <div className="text-xs text-gray-500">{cell.orderCount} đơn</div>
+                    </div>
+                  </div>
+                  <div className="font-bold text-green-600 text-right">
+                    {cell.revenue.toLocaleString("vi-VN")} đ
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+
+        {/* Desktop Grid View (>= 768px) */}
+        <div className="hidden md:block overflow-x-auto table-mobile-scroll pb-2">
+          <div className="min-w-[1120px] space-y-1">
             {/* Header: Hours */}
             <div className="flex items-center">
               <div className="w-16 shrink-0 text-xs text-gray-400 font-bold text-center">Thứ</div>
@@ -236,7 +270,7 @@ export default async function SalesReportPage({
             {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map(day => {
               const maxRevenue = Math.max(...heatmapData.map(c => c.revenue), 1);
               return (
-                <div key={day} className="flex items-center h-10">
+                <div key={day} className="flex items-center h-11">
                   <div className="w-16 shrink-0 text-sm font-semibold text-gray-700">
                     {day === "CN" ? "Chủ Nhật" : `Thứ ${day.replace("T", "")}`}
                   </div>
@@ -276,7 +310,7 @@ export default async function SalesReportPage({
         </div>
         
         {/* Legend */}
-        <div className="mt-4 flex items-center justify-end gap-3 text-xs text-gray-500">
+        <div className="mt-4 flex items-center justify-end gap-3 text-xs text-gray-500 hidden md:flex">
           <span>Doanh thu thấp</span>
           <div className="flex gap-1 h-4">
             <div className="w-6 rounded" style={{ backgroundColor: 'rgba(79, 70, 229, 0.05)' }}></div>
