@@ -4,6 +4,37 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-28 (Claude) — Supabase migration Phase A (foundation)
+
+**Trigger:** User quyết định đổi primary DB Google Sheets → Supabase, sync 1 chiều Supabase → Sheets daily. Plan approved `C:\Users\Admin\.claude\plans\unified-sprouting-reef.md`.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Supabase JS dep | `package.json` | `@supabase/supabase-js@^2.108.2`. |
+| Supabase client | `lib/supabase.ts` | Server-only client, service role key, bypasses RLS. Cached singleton. Env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`). |
+| Schema SQL | `supabase/migrations/0001_init_schema.sql` | 27 tables: 6 reference + 10 catalog + 10 transactions + 1 auth. Money BIGINT, IDs TEXT, snapshots JSONB, CHECK constraints cho enums, composite unique `(brand_id, order_no)` trên Orders_V2, 14 indexes cho hot paths, RLS enabled (default deny), updated_at triggers. |
+| Schema applied | remote Supabase `zicuawpwyhmtqmzawvau` | `supabase db push` successful. Ping test confirms 27 tables visible via PostgREST. |
+
+### Verification
+
+- `npx supabase db push --dry-run`: shows 1 migration ready.
+- `npx supabase db push`: applied successfully.
+- `scripts/supabase-ping.ts`: 27 tables visible via PostgREST root.
+- `vitest run`: 197/197 pass (no test changes needed).
+- Pre-commit hook: PASS (tsc clean for new files).
+
+### Next phases
+
+- **Phase B**: Compatibility shim `lib/sheets_db.ts` (Supabase impl, same exports). Engine area — Codex retroactive review required.
+- **Phase C**: Per-sheet data migration (reference → catalog → transactions → hot tables).
+- **Phase D**: Auth swap (`lib/auth.ts` reads users from Supabase).
+- **Phase E**: Fix + extend `supabase/functions/backup-to-sheets/index.ts` for daily sync.
+- **Phase F**: Cleanup `getSheetsClient()` bypass in scripts + API routes (defer).
+
+---
+
 ## 2026-06-28 (Claude) — Husky pre-commit hook for TS enforcement
 
 **Trigger:** User chọn option B sau khi em phát hiện JSX syntax errors trong Antigravity commit `6f0a3c3` (UI-13) mà tests không catch vì SWC permissive.
