@@ -138,13 +138,25 @@ export const findAllNoCache = async (sheetName: string) => {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*');
-  if (error) {
-    throw new Error(`findAll(${sheetName}): ${error.message}`);
+  // Claude code — Supabase migration Phase B fix: PostgREST default limit
+  // is 1000 rows. Paginate to fetch full dataset.
+  const PAGE_SIZE = 1000;
+  const all: any[] = [];
+  let page = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (error) {
+      throw new Error(`findAll(${sheetName}): ${error.message}`);
+    }
+    if (!data || data.length === 0) break;
+    for (const row of data) all.push(serializeRow(row, jsonCols));
+    if (data.length < PAGE_SIZE) break;
+    page += 1;
   }
-  return (data || []).map((row: any) => serializeRow(row, jsonCols));
+  return all;
 };
 
 export async function findById(sheetName: string, id: string) {

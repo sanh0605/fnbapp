@@ -4,6 +4,43 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-28 (Claude) — Shim pagination fix (reports thiếu data)
+
+**Trigger:** Anh báo reports hiển thị thiếu dữ liệu sau Supabase migration.
+
+### Root cause
+
+Phase B shim `lib/sheets_db.ts:findAllNoCache` không paginate. PostgREST default limit = 1000 rows. Với 1071 orders → **71 orders bị missing trong reports** (7% data loss trong hiển thị).
+
+Tương tự Order_Lines_V2 (1521 rows → 521 missing), Order_Events (1075 → 75 missing), Stock_Ledger (5216 → 4216 missing). P&L/Sales reports đọc qua shim nên bị thiếu phần lớn data lịch sử.
+
+Không phải lỗi xóa đơn — em không xóa đơn nào. Toàn bộ data vẫn ở Supabase, chỉ shim không trả về đủ.
+
+### Fix
+
+| Item | Files | Description |
+|---|---|---|
+| Shim pagination | `lib/sheets_db.ts:findAllNoCache` | Loop với `.range(page*1000, (page+1)*1000-1)` cho đến khi trả < PAGE_SIZE. Tự động paginate mọi table. |
+| Verify script | `scripts/verify-shim-pagination.ts` | Sanity check: findAllNoCache cho 4 hot tables trả đủ count khớp parity migration. |
+
+### Verification
+
+- `verify-shim-pagination.ts`: **4/4 PASS**. Orders_V2 1071, Order_Lines_V2 1521, Order_Events 1075, Stock_Ledger 5216 — tất cả match.
+- Thời gian load: ~450ms mỗi table (acceptable, không chậm hơn Sheets).
+- `vitest run`: **199/199 pass**.
+- `tsc --noEmit`: **0 errors**.
+- Pre-commit hook: PASS.
+
+### Impact
+
+Reports (Sales, P&L) giờ hiển thị đầy đủ data. Không cần restart dev server — Next.js cache sẽ revalidate theo tag (60s cho dynamic sheets).
+
+### Lesson learned
+
+Phase B shim chính xác về semantics nhưng thiếu test edge case "table > 1000 rows". Phase C verify script *có* pagination (em đã fix verify script), nhưng bản thân shim không có. Pre-commit hook không catch được vì shim compile OK. Cần integration test cho shim đọc table lớn.
+
+---
+
 ## 2026-06-28 (Claude) — Supabase migration Phase F (cleanup + deployment)
 
 **Trigger:** User approved Phase F + deployment tasks. Done after Phase E.
