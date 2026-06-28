@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:28:08.746Z",
+  "mode": "APPLY",
+  "sheet_name": "Purchase_Orders",
+  "table_name": "purchase_orders",
+  "source_count": 45,
+  "target_existing_count": 0,
+  "missing_count": 45,
+  "skipped_no_id_count": 0,
+  "inserted_count": 45,
+  "sample_missing_ids": [
+    "PO-001",
+    "PO-002",
+    "PO-003",
+    "PO-004",
+    "PO-005",
+    "PO-006",
+    "PO-007",
+    "PO-008",
+    "PO-009",
+    "PO-010"
+  ]
+}

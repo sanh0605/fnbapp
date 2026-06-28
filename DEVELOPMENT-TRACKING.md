@@ -4,6 +4,57 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-28 (Claude) — Supabase migration Phase C (data migration)
+
+**Trigger:** Plan approved. Phase A+B done. Phase C = migrate all sheet data to Supabase, gradual per-sheet.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Sheets source adapter | `lib/sheets-source.ts` | Direct googleapis read-only access for migration scripts. Bypasses shim with proper auth + datetime Z-fix. |
+| Migration script | `scripts/migrate-sheet-to-supabase.ts` | Per-sheet migration: dry-run + `--apply`. Features: column rename map (`po_id` → `purchase_order_id`), JSON/boolean/money transform, target column allowlist filter (drops unknown Sheets columns), FK pre-validation (skip orphans), pagination (default 1000 row limit handled), chunked inserts (500 rows/batch), upsert with `ignoreDuplicates` for partial-run recovery. |
+| Parity verification | `scripts/verify-sheet-supabase-parity.ts` | Compare source vs target counts + ID sets. Pagination-aware. |
+| Schema fix | `supabase/migrations/0002_relax_orders_unique.sql` | Drop composite unique `(brand_id, order_no)` from 0001 (blocks superseded orders with same order_no). Replace with partial unique only for COMPLETED + not superseded. |
+| Data migrated | 27 tables | All Sheets data migrated. 25/27 PARITY. |
+
+### Migration results
+
+| Status | Count | Notes |
+|---|---|---|
+| PARITY | 25 | All reference + catalog + most transactions match source/target |
+| MISSING_IN_TARGET | 2 | Order_Lines_V2 (5 orphans), Order_Events (1 orphan) — pre-existing data integrity issue in source Sheets |
+
+The 6 orphan rows reference order IDs `ord-eb0aeea2...` and `ord-528a2c85...` that don't exist in source `Orders_V2` either. Already documented in MAC drift audit warnings. Correctly skipped (would violate FK).
+
+### Schema decisions
+
+- Money columns stored as `bigint` in source → round decimals before insert.
+- JSON snapshot columns stored as text in Sheets → parse to object for jsonb.
+- Boolean columns stored as `"TRUE"/"FALSE"` → real boolean.
+- Empty `created_at`/`updated_at` → fill with now() (Postgres DEFAULT not applied via PostgREST).
+- Source uses different column names (`po_id`, `outlet_id`) → rename to schema names.
+- Unknown Sheets columns dropped via allowlist filter (description, parent_id, raw_material_id, etc.).
+- 6 orphan rows skipped (FK to non-existent orders).
+
+### Verification
+
+- `vitest run`: **199/199 pass**.
+- `tsc --noEmit`: **0 errors**.
+- Pre-commit hook: PASS.
+
+### Audit trail
+
+- 27 `docs/audits/2026-06-28-supabase-migration-<table>.json` files generated per migration run.
+- `scripts/verify-sheet-supabase-parity.ts --all` confirms parity.
+
+### Next
+
+- **Phase D**: Auth swap (`lib/auth.ts` reads users from Supabase).
+- **Phase E**: Fix + extend `supabase/functions/backup-to-sheets/index.ts` for daily sync.
+
+---
+
 ## 2026-06-28 (Claude) — Supabase migration Phase B (compatibility shim)
 
 **Trigger:** Plan approved. Phase A done (schema applied). Phase B = swap `lib/sheets_db.ts` impl từ Google Sheets → Supabase, giữ same exports/signatures để callers không cần đổi.

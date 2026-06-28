@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:26:58.480Z",
+  "mode": "APPLY",
+  "sheet_name": "Base_Ingredients",
+  "table_name": "base_ingredients",
+  "source_count": 41,
+  "target_existing_count": 0,
+  "missing_count": 41,
+  "skipped_no_id_count": 0,
+  "inserted_count": 41,
+  "sample_missing_ids": [
+    "NNL-001",
+    "NNL-002",
+    "NNL-003",
+    "ING-001",
+    "ING-002",
+    "ING-003",
+    "ING-004",
+    "ING-005",
+    "ING-006",
+    "ING-007"
+  ]
+}

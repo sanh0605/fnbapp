@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:25:22.076Z",
+  "mode": "APPLY",
+  "sheet_name": "Products",
+  "table_name": "products",
+  "source_count": 35,
+  "target_existing_count": 0,
+  "missing_count": 35,
+  "skipped_no_id_count": 0,
+  "inserted_count": 35,
+  "sample_missing_ids": [
+    "PROD-001",
+    "PROD-002",
+    "PROD-003",
+    "PROD-004",
+    "PROD-005",
+    "PROD-006",
+    "PROD-007",
+    "PROD-008",
+    "PROD-009",
+    "PROD-010"
+  ]
+}

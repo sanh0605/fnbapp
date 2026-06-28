@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-06-28T16:18:28.461Z",
+  "mode": "APPLY",
+  "sheet_name": "Item_Categories",
+  "table_name": "item_categories",
+  "source_count": 3,
+  "target_existing_count": 0,
+  "missing_count": 3,
+  "skipped_no_id_count": 0,
+  "inserted_count": 3,
+  "sample_missing_ids": [
+    "NHH-001",
+    "NHH-002",
+    "NHH-003"
+  ]
+}

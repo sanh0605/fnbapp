@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:27:48.891Z",
+  "mode": "APPLY",
+  "sheet_name": "Product_Price_History",
+  "table_name": "product_price_history",
+  "source_count": 37,
+  "target_existing_count": 0,
+  "missing_count": 37,
+  "skipped_no_id_count": 0,
+  "inserted_count": 37,
+  "sample_missing_ids": [
+    "PPH-001",
+    "PPH-002",
+    "PPH-003",
+    "PPH-004",
+    "PPH-005",
+    "PPH-006",
+    "PPH-007",
+    "PPH-008",
+    "PPH-009",
+    "PPH-010"
+  ]
+}

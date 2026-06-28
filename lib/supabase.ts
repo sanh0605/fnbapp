@@ -17,12 +17,14 @@ let cachedClient: SupabaseClient | null = null;
 
 function getSupabaseConfig(): { url: string; key: string } {
   const url = process.env.SUPABASE_URL;
+  // Prefer new-format sb_secret_... key; fall back to legacy service_role JWT.
+  // Supabase disabled legacy JWTs in some projects; new format is recommended.
   const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SECRET_KEY;
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
     throw new Error(
-      "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment.",
+      "Missing SUPABASE_URL or SUPABASE_SECRET_KEY in environment.",
     );
   }
   return { url, key };

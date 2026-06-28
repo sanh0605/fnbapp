@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:23:29.064Z",
+  "mode": "APPLY",
+  "sheet_name": "Units",
+  "table_name": "units",
+  "source_count": 27,
+  "target_existing_count": 0,
+  "missing_count": 27,
+  "skipped_no_id_count": 0,
+  "inserted_count": 27,
+  "sample_missing_ids": [
+    "U-002",
+    "U-003",
+    "U-004",
+    "U-005",
+    "U-006",
+    "U-007",
+    "U-008",
+    "UNT-001",
+    "UNT-002",
+    "UNT-003"
+  ]
+}

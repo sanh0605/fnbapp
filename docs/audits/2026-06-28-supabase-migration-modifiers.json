@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-06-28T16:25:28.703Z",
+  "mode": "APPLY",
+  "sheet_name": "Modifiers",
+  "table_name": "modifiers",
+  "source_count": 8,
+  "target_existing_count": 0,
+  "missing_count": 8,
+  "skipped_no_id_count": 0,
+  "inserted_count": 8,
+  "sample_missing_ids": [
+    "MOD-001",
+    "MOD-002",
+    "MOD-003",
+    "MOD-004",
+    "MOD-005",
+    "MOD-006",
+    "MOD-007",
+    "MOD-008"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:27:01.849Z",
+  "mode": "APPLY",
+  "sheet_name": "Purchased_Items",
+  "table_name": "purchased_items",
+  "source_count": 45,
+  "target_existing_count": 0,
+  "missing_count": 45,
+  "skipped_no_id_count": 0,
+  "inserted_count": 45,
+  "sample_missing_ids": [
+    "SPM-001",
+    "SPM-002",
+    "SPM-003",
+    "SPM-004",
+    "SPM-005",
+    "SPM-006",
+    "SPM-007",
+    "SPM-008",
+    "SPM-009",
+    "SPM-010"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-06-28T16:34:47.521Z",
+  "mode": "APPLY",
+  "sheet_name": "Stock_Ledger",
+  "table_name": "stock_ledger",
+  "source_count": 5221,
+  "target_existing_count": 5216,
+  "missing_count": 0,
+  "skipped_no_id_count": 0,
+  "inserted_count": 0,
+  "sample_missing_ids": []
+}

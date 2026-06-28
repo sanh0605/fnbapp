@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:27:05.051Z",
+  "mode": "APPLY",
+  "sheet_name": "UOM_Conversions",
+  "table_name": "uom_conversions",
+  "source_count": 49,
+  "target_existing_count": 0,
+  "missing_count": 49,
+  "skipped_no_id_count": 0,
+  "inserted_count": 49,
+  "sample_missing_ids": [
+    "QD-001",
+    "QD-003",
+    "QD-005",
+    "QD-006",
+    "QD-007",
+    "QD-009",
+    "QD-010",
+    "QD-011",
+    "QD-012",
+    "QD-013"
+  ]
+}

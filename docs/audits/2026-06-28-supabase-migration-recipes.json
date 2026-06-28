@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:25:31.852Z",
+  "mode": "APPLY",
+  "sheet_name": "Recipes",
+  "table_name": "recipes",
+  "source_count": 106,
+  "target_existing_count": 0,
+  "missing_count": 106,
+  "skipped_no_id_count": 0,
+  "inserted_count": 106,
+  "sample_missing_ids": [
+    "RC-001",
+    "RC-002",
+    "RC-003",
+    "RC-004",
+    "RC-005",
+    "RC-006",
+    "RC-007",
+    "RC-008",
+    "RC-009",
+    "RC-010"
+  ]
+}

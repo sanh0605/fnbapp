@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-06-28T16:25:35.148Z",
+  "mode": "APPLY",
+  "sheet_name": "Promotions",
+  "table_name": "promotions",
+  "source_count": 1,
+  "target_existing_count": 0,
+  "missing_count": 1,
+  "skipped_no_id_count": 0,
+  "inserted_count": 1,
+  "sample_missing_ids": [
+    "PRM-003"
+  ]
+}

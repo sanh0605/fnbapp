@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-06-28T16:18:38.516Z",
+  "mode": "APPLY",
+  "sheet_name": "Purchase_Sources",
+  "table_name": "purchase_sources",
+  "source_count": 3,
+  "target_existing_count": 0,
+  "missing_count": 3,
+  "skipped_no_id_count": 0,
+  "inserted_count": 3,
+  "sample_missing_ids": [
+    "SRC-001",
+    "SRC-002",
+    "SRC-003"
+  ]
+}

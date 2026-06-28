@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:25:41.653Z",
+  "mode": "APPLY",
+  "sheet_name": "Semi_Products",
+  "table_name": "semi_products",
+  "source_count": 13,
+  "target_existing_count": 0,
+  "missing_count": 13,
+  "skipped_no_id_count": 0,
+  "inserted_count": 13,
+  "sample_missing_ids": [
+    "BTP-001",
+    "BTP-002",
+    "BTP-003",
+    "BTP-004",
+    "BTP-005",
+    "BTP-006",
+    "BTP-007",
+    "BTP-008",
+    "BTP-009",
+    "BTP-010"
+  ]
+}

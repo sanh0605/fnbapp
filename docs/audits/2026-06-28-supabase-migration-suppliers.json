@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:23:32.432Z",
+  "mode": "APPLY",
+  "sheet_name": "Suppliers",
+  "table_name": "suppliers",
+  "source_count": 32,
+  "target_existing_count": 0,
+  "missing_count": 32,
+  "skipped_no_id_count": 0,
+  "inserted_count": 32,
+  "sample_missing_ids": [
+    "SUP-001",
+    "NCC-001",
+    "NCC-002",
+    "NCC-003",
+    "NCC-004",
+    "NCC-005",
+    "NCC-006",
+    "NCC-007",
+    "NCC-008",
+    "NCC-009"
+  ]
+}

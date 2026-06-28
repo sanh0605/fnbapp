@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-06-28T16:18:02.714Z",
+  "mode": "APPLY",
+  "sheet_name": "Brands",
+  "table_name": "brands",
+  "source_count": 2,
+  "target_existing_count": 2,
+  "missing_count": 0,
+  "skipped_no_id_count": 0,
+  "inserted_count": 0,
+  "sample_missing_ids": []
+}

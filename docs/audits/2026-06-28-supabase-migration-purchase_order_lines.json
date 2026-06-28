@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-06-28T16:30:28.846Z",
+  "mode": "APPLY",
+  "sheet_name": "Purchase_Order_Lines",
+  "table_name": "purchase_order_lines",
+  "source_count": 103,
+  "target_existing_count": 0,
+  "missing_count": 103,
+  "skipped_no_id_count": 0,
+  "inserted_count": 103,
+  "sample_missing_ids": [
+    "POL-001",
+    "POL-002",
+    "POL-003",
+    "POL-004",
+    "POL-005",
+    "POL-006",
+    "POL-007",
+    "POL-008",
+    "POL-009",
+    "POL-010"
+  ]
+}

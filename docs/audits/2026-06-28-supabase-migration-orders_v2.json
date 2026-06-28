@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-06-28T16:34:43.743Z",
+  "mode": "APPLY",
+  "sheet_name": "Orders_V2",
+  "table_name": "orders_v2",
+  "source_count": 1071,
+  "target_existing_count": 1071,
+  "missing_count": 0,
+  "skipped_no_id_count": 0,
+  "inserted_count": 0,
+  "sample_missing_ids": []
+}

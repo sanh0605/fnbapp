@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-06-28T16:23:35.648Z",
+  "mode": "APPLY",
+  "sheet_name": "Users",
+  "table_name": "users",
+  "source_count": 2,
+  "target_existing_count": 0,
+  "missing_count": 2,
+  "skipped_no_id_count": 0,
+  "inserted_count": 2,
+  "sample_missing_ids": [
+    "USR-001",
+    "USR-002"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-06-28T16:38:33.329Z",
+  "mode": "APPLY",
+  "sheet_name": "Order_Lines_V2",
+  "table_name": "order_lines_v2",
+  "source_count": 1526,
+  "target_existing_count": 1000,
+  "missing_count": 521,
+  "skipped_no_id_count": 0,
+  "skipped_orphan_fk_count": 5,
+  "inserted_count": 521,
+  "sample_missing_ids": [
+    "ol-migrated-96e33446-feb0-4d83-be01-869db71d9f3e",
+    "ol-migrated-1634dd7e-c763-47e8-b6b2-4716adde2ede",
+    "ol-migrated-50bf1b4a-e03f-4b70-9982-b0885888dccd",
+    "ol-migrated-96c62736-746e-4b87-af0a-b2e08d086d88",
+    "ol-migrated-87b0aec8-8633-46b8-b021-8bfb381dc1e8",
+    "ol-migrated-92e665bb-143b-48e8-8b3f-ada236599cf6",
+    "ol-migrated-152b0a8f-c8c3-4f5d-b216-8f13cce9a5d2",
+    "ol-migrated-d59a228e-3788-4f7c-a7d0-32362d532036",
+    "ol-migrated-17453c33-7114-45eb-a9a4-dcef1657618d",
+    "ol-migrated-a4e7ebb5-8728-4b89-a17b-5cfe4219cd4f"
+  ]
+}
