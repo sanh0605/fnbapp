@@ -23,10 +23,10 @@ Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong 
 
 | Marker | Task | File | Spec |
 |---|---|---|---|
-| `[~A]` | Admin toggle page (server component) | `app/admin/products/toppings/page.tsx` (new) | `docs/superpowers/specs/2026-06-27-topping-standalone-design.md` §Admin UI |
-| `[~A]` | Admin toggle component (client) | `components/ToppingsManager.tsx` (new) | same spec |
-| `[~A]` | Toggle server action | `app/admin/products/toppings/actions.ts` (new) | same spec §Server action |
-| `[ ]` | (Codex review required after Antigravity PR) | — | per COLLABORATION.md rule C |
+| `[x]` | Admin toggle page (server component) | `app/admin/products/toppings/page.tsx` (new) | `docs/superpowers/specs/2026-06-27-topping-standalone-design.md` §Admin UI |
+| `[x]` | Admin toggle component (client) | `components/ToppingsManager.tsx` (new) | same spec |
+| `[x]` | Toggle server action | `app/admin/products/toppings/actions.ts` (new) | same spec §Server action |
+| `[!]` | (Codex review required after Antigravity PR) | — | per COLLABORATION.md rule C |
 
 ### Codex (engine / data review)
 
@@ -35,7 +35,7 @@ Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong 
 | `[ ]` | Post-hoc review: `scripts/import-june-2026-sales.ts` (applied 2026-06-27) | Order creation + MAC COGS + ledger writes; user verbally approved without Codex review. |
 | `[ ]` | Post-hoc review: `scripts/setup-topping-standalone.ts` (applied 2026-06-27) | Catalog mutation (CAT-007 + 7 products/variants/recipes). |
 | `[ ]` | Review: POS filter fix `app/pos/page.tsx:42-45` (applied 2026-06-27 by Claude) | `status !== "DELETED"` → `status === "ACTIVE"`. Data flow impact. |
-| `[ ]` | Review: toggle server action after Antigravity ships it | Mutates Products sheet. |
+| `[!]` | Review: toggle server action after Antigravity ships it | Mutates Products sheet. |
 
 ---
 
