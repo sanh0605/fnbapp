@@ -4,6 +4,44 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-28 (Claude) — Supabase migration Phase D (auth swap)
+
+**Trigger:** Plan approved. Phase A+B+C done. Phase D = swap NextAuth user lookup from Sheets to Supabase.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| User lookup swap | `lib/auth.ts` | Replace `findAll("Users")` with Supabase `.from('users').select(...).eq('username', ...).maybeSingle()`. Targets single user via SQL query (no more full-table scan + in-memory find). |
+| Plaintext password fallback removed | `lib/auth.ts` | Security hardening: `bcrypt.compare` only, no `password === password_hash` fallback. Pre-existing fallback was for quick test, no longer needed. |
+| Status check | `lib/auth.ts` | Reject login if user `status !== 'ACTIVE'` (matches domain-dictionary lifecycle). |
+| CLI_MODE bypass unchanged | `lib/auth.ts:resolveActor` | Scripts still bypass via `CLI_MODE=true`. No session lookup in CLI context. |
+| Session/JWT/callbacks unchanged | `lib/auth.ts` | Token shape `{id, name, role}` preserved. `resolveActor`/`requireAdmin` consumers unaffected. |
+
+### Verification
+
+- `vitest run`: **199/199 pass**.
+- `tsc --noEmit`: **0 errors**.
+- Pre-commit hook: PASS.
+
+### Manual test pending (anh)
+
+Login flow needs manual smoke test on dev server:
+1. Login as ADMIN — verify session.
+2. Login as STAFF (nếu có) — verify role propagation.
+3. Verify protected server actions still require ADMIN.
+4. Verify CLI_MODE scripts still work (no auth check).
+
+### Security note
+
+`password_hash` column in Supabase `users` table stores bcrypt hash. Plaintext fallback removed. Any user with plaintext `password_hash` (pre-existing) will be unable to login until password is reset to bcrypt hash.
+
+### Next
+
+- **Phase E**: Fix + extend `supabase/functions/backup-to-sheets/index.ts` for daily sync.
+
+---
+
 ## 2026-06-28 (Claude) — Supabase migration Phase C (data migration)
 
 **Trigger:** Plan approved. Phase A+B done. Phase C = migrate all sheet data to Supabase, gradual per-sheet.

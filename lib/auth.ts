@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { findAll } from "@/lib/sheets_db";
 import bcrypt from "bcryptjs";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export type AuthActor = {
   id: string;
@@ -23,7 +23,6 @@ export async function resolveActor(): Promise<AuthResult> {
   if (process.env.CLI_MODE === "true") {
     return { ok: true, actor: { id: "system", name: "Hệ thống", role: "SYSTEM" } };
   }
-  // Lazy import to avoid pulling next-auth into CLI scripts.
   const { getServerSession } = await import("next-auth/next");
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -45,7 +44,6 @@ export async function resolveActor(): Promise<AuthResult> {
 
 /**
  * Require ADMIN role. Returns actor on success or error message on failure.
- * Server actions should call this at the top and short-circuit on `ok: false`.
  *
  * Claude code — CODE-22.
  */
@@ -72,27 +70,38 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Fetch all users from Google Sheets
-          const users = await findAll("Users");
-          const user = users.find((u) => u.username === credentials.username);
+          // Claude code — Supabase migration Phase D: lookup user from Supabase.
+          const supabase = getSupabaseClient();
+          const { data: user, error } = await supabase
+            .from("users")
+            .select("id, username, password_hash, name, role, status")
+            .eq("username", credentials.username)
+            .maybeSingle();
 
+          if (error) {
+            console.error("Auth Supabase error:", error.message);
+            return null;
+          }
           if (!user) {
-            console.log("User not found");
+            console.log("User not found:", credentials.username);
+            return null;
+          }
+          if (user.status !== "ACTIVE") {
+            console.log("User inactive:", credentials.username);
             return null;
           }
 
-          // In case the password isn't hashed yet in the Sheet (for quick test), we do a fallback comparison
+          // bcrypt-only. Removed plaintext fallback (security hardening).
           const isMatch = await bcrypt.compare(credentials.password, user.password_hash);
-          
-          if (isMatch || credentials.password === user.password_hash) {
-            return {
-              id: user.id,
-              name: user.username,
-              role: user.role
-            };
+          if (!isMatch) {
+            return null;
           }
 
-          return null;
+          return {
+            id: user.id,
+            name: user.username,
+            role: user.role,
+          };
         } catch (error) {
           console.error("Auth Error:", error);
           return null;
