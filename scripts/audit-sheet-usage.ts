@@ -19,11 +19,11 @@ async function main() {
     fields: "sheets(properties(title,gridProperties(rowCount,columnCount)))",
   });
 
-  const sheets = (meta.data.sheets || []).map(sheet => ({
+  const sheets = (meta.data.sheets || []).map((sheet: any) => ({
     title: sheet.properties?.title || "",
     rowCount: sheet.properties?.gridProperties?.rowCount || 0,
     columnCount: sheet.properties?.gridProperties?.columnCount || 0,
-  })).filter(sheet => sheet.title);
+  })).filter((sheet: any) => sheet.title);
 
   const files = listSourceFiles();
   const references = files.flatMap(file => {

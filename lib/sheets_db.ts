@@ -1,12 +1,36 @@
-if (typeof window === "undefined") {
-  process.env.TZ = "Asia/Ho_Chi_Minh";
+/**
+ * Database adapter — Supabase implementation.
+ *
+ * Claude code — Supabase migration Phase B.
+ *
+ * Replaces Google Sheets implementation. Same exports/signatures as before
+ * so callers (server actions, scripts, lib) don't need changes.
+ *
+ * Sheet name resolution: code uses PascalCase (e.g. "Orders_V2") but
+ * Postgres stores as lowercase. We lowercase before querying.
+ *
+ * Cache layer: unstable_cache with tag `sheets-<SheetName>` preserved
+ * so existing revalidateTag calls in app/api/revalidate/route.ts work
+ * unchanged.
+ *
+ * CLI_MODE: scripts bypass cache (same as Sheets impl).
+ */
+
+import { unstable_cache, revalidateTag } from 'next/cache';
+import { getSupabaseClient } from './supabase';
+
+// ============================================================================
+// Sheet name normalization (PascalCase → lowercase table name)
+// ============================================================================
+
+function normalizeTableName(sheetName: string): string {
+  return sheetName.toLowerCase();
 }
 
-import { google } from 'googleapis';
-import { unstable_cache, revalidateTag } from 'next/cache';
+// ============================================================================
+// Cache helpers (preserved from Sheets impl)
+// ============================================================================
 
-// Per-sheet cache tag: each sheet gets its own tag so writing to Orders
-// does not invalidate the cache for Products, Units, etc.
 const getCacheTag = (sheetName: string) => `sheets-${sheetName}`;
 
 // Static sheets rarely change (5 min), dynamic sheets change often (60s)
@@ -16,58 +40,86 @@ const STATIC_SHEETS = new Set([
 ]);
 const getRevalidation = (sheetName: string) => STATIC_SHEETS.has(sheetName) ? 300 : 60;
 
-const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
+// ============================================================================
+// Deprecated Google Sheets exports (kept for back-compat with scripts that
+// bypass the abstraction). Will be removed in Phase F.
+// ============================================================================
 
-// Parse the base64 credentials
-export function getAuth() {
-  if (!process.env.GOOGLE_CREDENTIALS_BASE64) {
-    throw new Error('GOOGLE_CREDENTIALS_BASE64 is not set in environment variables');
-  }
-  const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
-  const credentials = JSON.parse(credentialsJson);
-
-  return new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
+/**
+ * @deprecated Supabase migration Phase B. Use getSupabaseClient() from
+ * lib/supabase.ts instead. This throws at runtime; returns `any` so legacy
+ * bypass callers compile (Phase F cleanup will rewrite them).
+ */
+export function getAuth(): any {
+  throw new Error(
+    'getAuth() is deprecated after Supabase migration. Update caller to use lib/supabase.ts.'
+  );
 }
 
-export const getSheetsClient = () => {
-  const auth = getAuth();
-  return google.sheets({ version: 'v4', auth });
+/**
+ * @deprecated Supabase migration Phase B. Use getSupabaseClient() instead.
+ * Throws at runtime; returns `any` for legacy bypass compile compat.
+ */
+export const getSheetsClient = (): any => {
+  throw new Error(
+    'getSheetsClient() is deprecated after Supabase migration. Update caller to use lib/supabase.ts.'
+  );
 };
 
-// Helper: Convert array of arrays to array of objects
-function mapRowsToObjects(rows: string[][]): any[] {
-  if (!rows || rows.length === 0) return [];
-  const headers = rows[0];
-  return rows.slice(1).map((row) => {
-    const obj: any = {};
-    headers.forEach((header, index) => {
-      let val = row[index] || '';
-      // Fix timezone for datetime columns that might have lost their UTC 'Z' indicator in Google Sheets
-      if ((header === 'created_at' || header === 'updated_at') && typeof val === 'string' && val.length > 0) {
-        if (!val.endsWith('Z') && !val.includes('+')) {
-          val = val.replace(' ', 'T') + 'Z';
-        }
-      }
-      obj[header] = val; // Handle empty cells
-    });
-    return obj;
-  });
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/**
+ * Serialize row values to match legacy Sheets-impl behavior:
+ * - Dates stored as ISO strings (Supabase returns Date objects for timestamptz).
+ * - Booleans as-is (Sheets stored as string "TRUE"/"FALSE", now real boolean).
+ * - Numbers as-is.
+ * - JSON columns: Sheets stored as JSON string, Supabase as jsonb object. Convert to string for back-compat with JSON.parse callers.
+ */
+function serializeRow(row: any, jsonColumns: Set<string>): any {
+  if (!row) return row;
+  const out: any = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (value instanceof Date) {
+      out[key] = value.toISOString();
+    } else if (jsonColumns.has(key) && value !== null && typeof value === 'object') {
+      out[key] = JSON.stringify(value);
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
 }
 
-// Helper: Convert object to array based on headers
-function mapObjectToRow(obj: any, headers: string[]): string[] {
-  return headers.map((header) => {
-    const val = obj[header];
-    return val !== undefined && val !== null ? String(val) : '';
-  });
+// Known JSON columns stored as jsonb in Postgres. Callers expect string for JSON.parse.
+const JSON_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
+  orders_v2: new Set([
+    'applied_promotion_snapshot_json',
+    'pos_snapshot_json',
+  ]),
+  order_lines_v2: new Set([
+    'product_snapshot_json',
+    'variant_snapshot_json',
+    'modifiers_snapshot_json',
+    'recipe_snapshot_json',
+  ]),
+  order_events: new Set(['delta_json']),
+  recipes: new Set(['ingredients_json']),
+  promotions: new Set(['applicable_products_json']),
+  pos_drafts: new Set(['cart_json']),
+};
+
+function getJsonColumns(tableName: string): Set<string> {
+  return JSON_COLUMNS_BY_TABLE[tableName] || new Set();
 }
 
-// Get all records from a sheet (cached)
+// ============================================================================
+// Read APIs
+// ============================================================================
+
 export const findAll = (sheetName: string) => {
-  if (process.env.CLI_MODE === "true") {
+  if (process.env.CLI_MODE === 'true') {
     return findAllNoCache(sheetName);
   }
 
@@ -75,46 +127,59 @@ export const findAll = (sheetName: string) => {
   const reval = getRevalidation(sheetName);
   return unstable_cache(
     async (name: string) => {
-      const sheets = getSheetsClient();
-      const res = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${name}!A1:Z`,
-      });
-      return mapRowsToObjects(res.data.values || []);
+      return findAllNoCache(name);
     },
     ['sheets-findall', sheetName],
     { revalidate: reval, tags: [tag] }
   )(sheetName);
 };
 
-// Get all records from a sheet (no cache)
 export const findAllNoCache = async (sheetName: string) => {
-  const sheets = getSheetsClient();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A1:Z`,
-  });
-  return mapRowsToObjects(res.data.values || []);
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const jsonCols = getJsonColumns(tableName);
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*');
+  if (error) {
+    throw new Error(`findAll(${sheetName}): ${error.message}`);
+  }
+  return (data || []).map((row: any) => serializeRow(row, jsonCols));
 };
 
-// Find one record by ID
 export async function findById(sheetName: string, id: string) {
-  const all = await findAll(sheetName);
-  return all.find((item) => item.id === id) || null;
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const jsonCols = getJsonColumns(tableName);
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) {
+    throw new Error(`findById(${sheetName}, ${id}): ${error.message}`);
+  }
+  return data ? serializeRow(data, jsonCols) : null;
 }
 
 export const getHeadersNoCache = async (sheetName: string): Promise<string[]> => {
-  const sheets = getSheetsClient();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A1:Z1`,
-  });
-  return res.data.values ? res.data.values[0] : [];
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  // Use PostgREST OpenAPI to get columns. Cheaper than full row select.
+  // Fallback: SELECT * LIMIT 0 to get column names.
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*')
+    .limit(1);
+  if (error) {
+    throw new Error(`getHeaders(${sheetName}): ${error.message}`);
+  }
+  if (!data || data.length === 0) return [];
+  return Object.keys(data[0]);
 };
 
-// Get headers of a sheet (cached)
 export const getHeaders = (sheetName: string) => {
-  if (process.env.CLI_MODE === "true") {
+  if (process.env.CLI_MODE === 'true') {
     return getHeadersNoCache(sheetName);
   }
 
@@ -128,15 +193,19 @@ export const getHeaders = (sheetName: string) => {
   )(sheetName);
 };
 
-// Generate new ID (e.g. BR-001)
+// ============================================================================
+// ID generation
+// ============================================================================
+
 export async function generateNewId(sheetName: string, prefix: string): Promise<string> {
+  // V2 sheets use crypto.randomUUID() (no prefix). Legacy uses PREFIX-###.
+  // For legacy, find max existing numeric suffix.
   const all = await findAllNoCache(sheetName);
   if (all.length === 0) return `${prefix}-001`;
-  
-  // Find max ID
+
   let maxNum = 0;
   for (const item of all) {
-    if (item.id && item.id.startsWith(prefix)) {
+    if (item.id && typeof item.id === 'string' && item.id.startsWith(prefix)) {
       const numStr = item.id.replace(`${prefix}-`, '');
       const num = parseInt(numStr, 10);
       if (!isNaN(num) && num > maxNum) {
@@ -148,289 +217,155 @@ export async function generateNewId(sheetName: string, prefix: string): Promise<
   return `${prefix}-${nextNum.toString().padStart(3, '0')}`;
 }
 
-// Insert a new record
-export async function insert(sheetName: string, data: any) {
-  const sheets = getSheetsClient();
-  const headers = await getHeaders(sheetName);
-  if (!headers || headers.length === 0) throw new Error(`Sheet ${sheetName} has no headers`);
+// ============================================================================
+// Write APIs
+// ============================================================================
 
-  const newRow = mapObjectToRow(data, headers);
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A:A`,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: {
-      values: [newRow],
-    },
-  });
-
-  try {
-    revalidateTag(getCacheTag(sheetName));
-  } catch (e) {
-    // Ignore error if not in Next.js context
-  }
-
-  return data;
-}
-
-// Insert multiple records
-export async function insertMany(sheetName: string, dataArray: any[]) {
-  if (!dataArray || dataArray.length === 0) return [];
-  
-  const sheets = getSheetsClient();
-  const headers = await getHeaders(sheetName);
-  if (!headers || headers.length === 0) throw new Error(`Sheet ${sheetName} has no headers`);
-
-  const rows = dataArray.map(data => mapObjectToRow(data, headers));
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A:A`,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: {
-      values: rows,
-    },
-  });
-
-  try {
-    revalidateTag(getCacheTag(sheetName));
-  } catch (e) {
-    // Ignore error if not in Next.js context
-  }
-
-  return dataArray;
-}
-
-// Update an existing record
-export async function update(sheetName: string, id: string, data: any) {
-  const sheets = getSheetsClient();
-  
-  // Need to find the exact row number to update
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A1:Z`,
-  });
-  
-  const rows = res.data.values || [];
-  if (rows.length < 2) throw new Error(`Record with id ${id} not found`);
-  
-  const headers = rows[0];
-  const idIndex = headers.indexOf('id');
-  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
-
-  let rowIndex = -1;
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][idIndex] === id) {
-      rowIndex = i;
-      break;
+/**
+ * Convert data object for Supabase insert/update.
+ * - String JSON values → parse to object (Postgres jsonb).
+ * - Empty string → null (Postgres NOT NULL friendly).
+ */
+function deserializeRow(data: any, jsonColumns: Set<string>): any {
+  const out: any = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (jsonColumns.has(key) && typeof value === 'string' && value.length > 0) {
+      try {
+        out[key] = JSON.parse(value);
+      } catch {
+        out[key] = value;
+      }
+    } else if (value === '') {
+      // Empty string becomes null for optional fields.
+      // Note: caller must ensure required fields are not empty.
+      out[key] = null;
+    } else {
+      out[key] = value;
     }
   }
-
-  if (rowIndex === -1) throw new Error(`Record with id ${id} not found in ${sheetName}`);
-
-  // Merge existing data with new data
-  const existingObj: Record<string, any> = {};
-  headers.forEach((h: string, idx: number) => { existingObj[h] = rows[rowIndex][idx] || ''; });
-  const updatedObj = { ...existingObj, ...data, id }; // Ensure ID is immutable
-  
-  const updatedRow = mapObjectToRow(updatedObj, headers);
-  const rowNumber = rowIndex + 1; // 1-indexed
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A${rowNumber}:Z${rowNumber}`,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: {
-      values: [updatedRow],
-    },
-  });
-
-  try {
-    revalidateTag(getCacheTag(sheetName));
-  } catch (e) {
-    // Ignore error if not in Next.js context
-  }
-
-  return updatedObj;
+  return out;
 }
 
-// Update multiple existing records by id using one Sheets batch request.
+function touchRevalidate(sheetName: string) {
+  try {
+    revalidateTag(getCacheTag(sheetName));
+  } catch {
+    // Ignore if not in Next.js context (scripts).
+  }
+}
+
+export async function insert(sheetName: string, data: any) {
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const jsonCols = getJsonColumns(tableName);
+  const payload = deserializeRow(data, jsonCols);
+
+  const { data: inserted, error } = await supabase
+    .from(tableName)
+    .insert(payload)
+    .select()
+    .single();
+  if (error) {
+    throw new Error(`insert(${sheetName}): ${error.message}`);
+  }
+  touchRevalidate(sheetName);
+  return serializeRow(inserted, jsonCols);
+}
+
+export async function insertMany(sheetName: string, dataArray: any[]) {
+  if (!dataArray || dataArray.length === 0) return [];
+
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const jsonCols = getJsonColumns(tableName);
+  const payload = dataArray.map(d => deserializeRow(d, jsonCols));
+
+  const { data: inserted, error } = await supabase
+    .from(tableName)
+    .insert(payload)
+    .select();
+  if (error) {
+    throw new Error(`insertMany(${sheetName}): ${error.message}`);
+  }
+  touchRevalidate(sheetName);
+  return (inserted || []).map((row: any) => serializeRow(row, jsonCols));
+}
+
+export async function update(sheetName: string, id: string, data: any) {
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const jsonCols = getJsonColumns(tableName);
+  const payload = deserializeRow(data, jsonCols);
+
+  const { data: updated, error } = await supabase
+    .from(tableName)
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) {
+    throw new Error(`update(${sheetName}, ${id}): ${error.message}`);
+  }
+  touchRevalidate(sheetName);
+  return serializeRow(updated, jsonCols);
+}
+
 export async function updateMany(sheetName: string, dataArray: any[]) {
   if (!dataArray || dataArray.length === 0) return [];
 
-  const sheets = getSheetsClient();
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const jsonCols = getJsonColumns(tableName);
 
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A1:Z`,
-  });
-
-  const rows = res.data.values || [];
-  if (rows.length < 2) throw new Error(`No records found in ${sheetName}`);
-
-  const headers = rows[0];
-  const idIndex = headers.indexOf('id');
-  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
-
-  const rowIndexById = new Map<string, number>();
-  for (let i = 1; i < rows.length; i++) {
-    const rowId = rows[i][idIndex];
-    if (rowId) rowIndexById.set(rowId, i);
-  }
-
-  const updatedObjects = dataArray.map((data) => {
-    const id = data?.id;
-    const rowIndex = rowIndexById.get(id);
-    if (rowIndex === undefined) {
-      throw new Error(`Record with id ${id} not found in ${sheetName}`);
-    }
-
-    const existingObj: Record<string, any> = {};
-    headers.forEach((h: string, idx: number) => { existingObj[h] = rows[rowIndex][idx] || ''; });
-    return { ...existingObj, ...data, id };
-  });
-
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId: SPREADSHEET_ID,
-    requestBody: {
-      valueInputOption: 'USER_ENTERED',
-      data: updatedObjects.map((updatedObj) => {
-        const rowIndex = rowIndexById.get(updatedObj.id);
-        const rowNumber = (rowIndex ?? 0) + 1;
-        return {
-          range: `${sheetName}!A${rowNumber}:Z${rowNumber}`,
-          values: [mapObjectToRow(updatedObj, headers)],
-        };
-      }),
-    },
-  });
-
-  try {
-    revalidateTag(getCacheTag(sheetName));
-  } catch (e) {
-    // Ignore error if not in Next.js context
-  }
-
-  return updatedObjects;
+  // Postgres update by primary key in parallel. Callers guarantee unique IDs.
+  // Supabase JS doesn't have native batch update; use Promise.all.
+  const results = await Promise.all(
+    dataArray.map(async (data) => {
+      const id = data?.id;
+      if (!id) throw new Error(`updateMany(${sheetName}): missing id in ${JSON.stringify(data)}`);
+      const payload = deserializeRow(data, jsonCols);
+      const { data: updated, error } = await supabase
+        .from(tableName)
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) {
+        throw new Error(`updateMany(${sheetName}, ${id}): ${error.message}`);
+      }
+      return serializeRow(updated, jsonCols);
+    })
+  );
+  touchRevalidate(sheetName);
+  return results;
 }
 
-// Delete a record (Since Google Sheets API deleteRow is complex and requires sheetId, we just clear the row or mark as deleted. Here we'll actually delete the row using batchUpdate)
 export async function remove(sheetName: string, id: string) {
-  const sheets = getSheetsClient();
-  
-  // 1. Get sheetId
-  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
-  const sheet = meta.data.sheets?.find(s => s.properties?.title?.toLowerCase() === sheetName.toLowerCase());
-  if (!sheet || sheet.properties?.sheetId === undefined) throw new Error(`Sheet ${sheetName} not found`);
-  const sheetId = sheet.properties.sheetId;
-
-  // 2. Find row index
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A1:Z`,
-  });
-  
-  const rows = res.data.values || [];
-  const headers = rows[0] || [];
-  const idIndex = headers.indexOf('id');
-  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
-
-  let rowIndex = -1;
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][idIndex] === id) {
-      rowIndex = i;
-      break;
-    }
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const { error } = await supabase
+    .from(tableName)
+    .delete()
+    .eq('id', id);
+  if (error) {
+    throw new Error(`remove(${sheetName}, ${id}): ${error.message}`);
   }
-
-  if (rowIndex === -1) throw new Error(`Record with id ${id} not found in ${sheetName}`);
-
-  // 3. Delete row via batchUpdate
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: SPREADSHEET_ID,
-    requestBody: {
-      requests: [{
-        deleteDimension: {
-          range: {
-            sheetId: sheetId,
-            dimension: 'ROWS',
-            startIndex: rowIndex,
-            endIndex: rowIndex + 1
-          }
-        }
-      }]
-    }
-  });
-
-  try {
-    revalidateTag(getCacheTag(sheetName));
-  } catch (e) {
-    // Ignore error if not in Next.js context
-  }
-
+  touchRevalidate(sheetName);
   return true;
 }
 
-// Delete multiple records by ID
 export async function removeMany(sheetName: string, ids: string[]) {
   if (!ids || ids.length === 0) return true;
 
-  const sheets = getSheetsClient();
-  
-  // 1. Get sheetId
-  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
-  const sheet = meta.data.sheets?.find(s => s.properties?.title?.toLowerCase() === sheetName.toLowerCase());
-  if (!sheet || sheet.properties?.sheetId === undefined) throw new Error(`Sheet ${sheetName} not found`);
-  const sheetId = sheet.properties.sheetId;
-
-  // 2. Find row indices
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A1:Z`,
-  });
-  
-  const rows = res.data.values || [];
-  const headers = rows[0] || [];
-  const idIndex = headers.indexOf('id');
-  if (idIndex === -1) throw new Error(`Sheet ${sheetName} has no 'id' column`);
-
-  const rowIndices: number[] = [];
-  for (let i = 1; i < rows.length; i++) {
-    if (ids.includes(rows[i][idIndex])) {
-      rowIndices.push(i);
-    }
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const { error } = await supabase
+    .from(tableName)
+    .delete()
+    .in('id', ids);
+  if (error) {
+    throw new Error(`removeMany(${sheetName}, ${ids.length} ids): ${error.message}`);
   }
-
-  if (rowIndices.length === 0) return true;
-
-  // Sort indices descending to avoid shifting issues when deleting
-  rowIndices.sort((a, b) => b - a);
-
-  // 3. Delete rows via batchUpdate
-  const requests = rowIndices.map(rowIndex => ({
-    deleteDimension: {
-      range: {
-        sheetId: sheetId,
-        dimension: 'ROWS',
-        startIndex: rowIndex,
-        endIndex: rowIndex + 1
-      }
-    }
-  }));
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: SPREADSHEET_ID,
-    requestBody: {
-      requests
-    }
-  });
-
-  try {
-    revalidateTag(getCacheTag(sheetName));
-  } catch (e) {
-    // Ignore error if not in Next.js context
-  }
-
+  touchRevalidate(sheetName);
   return true;
 }

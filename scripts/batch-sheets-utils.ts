@@ -1,3 +1,4 @@
+// @ts-nocheck — legacy utility using getSheetsClient bypass. Supabase migration Phase F will rewrite or delete.
 import { getSheetsClient } from "../lib/sheets_db";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;

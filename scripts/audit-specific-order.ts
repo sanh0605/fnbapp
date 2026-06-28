@@ -19,7 +19,7 @@ async function main() {
   const headersO = rowsO[0] as string[];
   const dataRowsO = rowsO.slice(1);
 
-  const orderRow = dataRowsO.find(r => r[headersO.indexOf("order_no")] === TARGET_ORDER_NO);
+  const orderRow = dataRowsO.find((r: any[]) => r[headersO.indexOf("order_no")] === TARGET_ORDER_NO);
   if (!orderRow) {
     console.log(`Order ${TARGET_ORDER_NO} not found`);
     return;
@@ -39,7 +39,7 @@ async function main() {
   const rowsL = resL.data.values || [];
   const headersL = rowsL[0] as string[];
   const orderId = order.id;
-  const matchingLines = rowsL.slice(1).filter(r => r[headersL.indexOf("order_id")] === orderId);
+  const matchingLines = rowsL.slice(1).filter((r: any[]) => r[headersL.indexOf("order_id")] === orderId);
 
   console.log("");
   console.log(`=== ORDER_LINES (${matchingLines.length}) ===`);

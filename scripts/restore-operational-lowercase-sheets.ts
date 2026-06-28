@@ -1,3 +1,4 @@
+// @ts-nocheck — legacy script using getSheetsClient bypass. Supabase migration Phase F will rewrite or delete.
 import * as dotenv from "dotenv";
 import { resolve } from "path";
 
