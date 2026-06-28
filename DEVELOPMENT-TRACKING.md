@@ -4,6 +4,70 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-28 (Claude) — Supabase migration Phase E (daily sync)
+
+**Trigger:** Plan approved. Phase A+B+C+D done. Phase E = fix + extend backup-to-sheets edge function.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Edge function rewrite | `supabase/functions/backup-to-sheets/index.ts` | Complete rewrite: fix OAuth bug (proper RS256 JWT signing via Web Crypto API), rename tables (orders → orders_v2, separate order_lines_v2 query), use Authorization: Bearer header, batch appends 100 rows, retry on 5xx, pagination (500 rows/page), incremental via sync_state cursor. |
+| sync_state table | `supabase/migrations/0003_sync_state.sql` | New table tracks last_synced_at per sync_key. RLS enabled (service role bypass). Migration includes documentation comments for pg_cron setup. |
+
+### Key bug fixes vs draft
+
+1. **OAuth flow**: original used raw `GOOGLE_SHEETS_CREDENTIALS` as JWT assertion (broken). Fixed: build proper RS256-signed JWT from service account `client_email` + `private_key` via Web Crypto API.
+2. **Table/column names**: original targeted V1 `orders` with `order_num`, `subtotal`, `discount_amount`, `actual_received`, `method`, `outlet_id`, `staff_name`, `voided`. Fixed: target V2 schema `orders_v2` + `order_lines_v2` with V2 column names.
+3. **Order items**: original assumed nested `order.items[]` array. Fixed: separate `order_lines_v2` query via `in('order_id', orderIds)` (chunked 100).
+4. **Sheets auth**: original used `?key=accessToken` query param (incorrect for v4 API). Fixed: `Authorization: Bearer <token>` header.
+5. **Cursor persistence**: original used `settings` table (doesn't exist). Fixed: dedicated `sync_state` table.
+6. **Env vars**: original expected `GOOGLE_SHEETS_CREDENTIALS` + `SHEET_ID`. Fixed: match `.env.local` names `GOOGLE_CREDENTIALS_BASE64` + `GOOGLE_SPREADSHEET_ID`.
+
+### Verification
+
+- `tsc --noEmit`: **0 errors**.
+- Migration 0003 applied to remote Supabase.
+- Manual test pending (need to deploy edge function + set secrets).
+
+### Deployment steps (anh cần làm)
+
+```bash
+# 1. Deploy edge function
+rtk npx supabase functions deploy backup-to-sheets --project-ref zicuawpwyhmtqmzawvau
+
+# 2. Set secrets (from .env.local)
+rtk npx supabase secrets set \
+  GOOGLE_CREDENTIALS_BASE64=<value from .env.local> \
+  GOOGLE_SPREADSHEET_ID=<value from .env.local> \
+  --project-ref zicuawpwyhmtqmzawvau
+
+# 3. Manual test
+curl -X POST https://zicuawpwyhmtqmzawvau.functions.supabase.co/backup-to-sheets \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>"
+
+# 4. Schedule daily cron (Supabase dashboard SQL editor):
+select cron.schedule(
+  'backup-to-sheets-daily',
+  '0 19 * * *',  -- 19:00 UTC = 02:00 UTC+7 next day
+  $$
+    select net.http_post(
+      url := 'https://zicuawpwyhmtqmzawvau.functions.supabase.co/backup-to-sheets',
+      headers := jsonb_build_object('Authorization', 'Bearer <anon-key>'),
+      body := '{}'::jsonb
+    );
+  $$
+);
+```
+
+### Notes
+
+- Backup is **append-only** to Sheets. Idempotency via sync_state cursor — re-runs continue from last sync.
+- Snapshot JSON columns intentionally excluded from Sheets backup (kept as jsonb source-of-truth in Supabase). Sheets gets row references only.
+- Supabase refresh 1 Jul 15:44 — Codex retroactive review welcome on edge function logic.
+
+---
+
 ## 2026-06-28 (Claude) — Supabase migration Phase D (auth swap)
 
 **Trigger:** Plan approved. Phase A+B+C done. Phase D = swap NextAuth user lookup from Sheets to Supabase.

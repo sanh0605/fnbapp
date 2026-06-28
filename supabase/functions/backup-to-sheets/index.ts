@@ -1,435 +1,383 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.5.0';
+// Claude code — Supabase migration Phase E.
+//
+// Daily sync Supabase → Google Sheets (one-way backup).
+//
+// Reads orders_v2 + order_lines_v2 from Supabase (incremental via
+// sync_state cursor), appends to Google Sheets tabs `Orders_V2` and
+// `Order_Lines_V2` for human review/backup.
+//
+// Env vars (set via `supabase secrets set`):
+//   - GOOGLE_CREDENTIALS_BASE64: base64 service account JSON.
+//   - GOOGLE_SPREADSHEET_ID: target spreadsheet id.
+//   - SUPABASE_URL: project URL.
+//   - SUPABASE_SERVICE_ROLE_KEY: service role key.
+//
+// Trigger: Supabase scheduled function (cron daily, e.g., 02:00 UTC+7).
+// Configure in Supabase dashboard → Database → Cron (pg_cron extension).
 
-interface Env {
-  GOOGLE_SHEETS_CREDENTIALS: string;
-  SHEET_ID: string;
-  SUPABASE_URL: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
+import { createClient } from 'npm:@supabase/supabase-js@2.45.0';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface ServiceAccountCredentials {
+  client_email: string;
+  private_key: string;
+  private_key_id?: string;
 }
 
-// Google Sheets API URLs
-const SHEETS_BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
+interface OrderV2 {
+  id: string;
+  order_no: string;
+  brand_id: string;
+  status: string;
+  version: number;
+  created_at: string;
+  created_by_name: string | null;
+  completed_at: string | null;
+  voided_at: string | null;
+  void_reason: string | null;
+  currency: string;
+  gross_total: number;
+  promo_discount_total: number;
+  manual_item_discount_total: number;
+  manual_order_discount: number;
+  net_total: number;
+  applied_promotion_id: string | null;
+  payment_method: string | null;
+  payment_ref: string | null;
+  migration_notes: string | null;
+}
 
-// Get OAuth2 access token from service account credentials
-async function getAccessToken(credentialsBase64: string): Promise<string> {
-  const credentialsJson = JSON.parse(
-    atob(credentialsBase64)
+interface OrderLineV2 {
+  id: string;
+  order_id: string;
+  line_no: number;
+  product_id: string;
+  variant_id: string;
+  qty: number;
+  unit_price: number;
+  gross_line_total: number;
+  promo_discount: number;
+  manual_item_discount: number;
+  order_discount_allocation: number;
+  net_line_total: number;
+  cost_at_sale: number;
+  created_at: string;
+}
+
+// ============================================================================
+// OAuth2 — service account JWT flow
+// ============================================================================
+
+const SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
+const TOKEN_URL = 'https://oauth2.googleapis.com/token';
+
+function base64UrlEncode(input: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < input.length; i++) {
+    binary += String.fromCharCode(input[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function pemToDer(pem: string): Uint8Array {
+  // Strip PEM headers and parse base64 body.
+  const pemContents = pem
+    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+    .replace(/-----END PRIVATE KEY-----/, '')
+    .replace(/\s+/g, '');
+  const binary = atob(pemContents);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+async function importPrivateKey(pem: string): Promise<CryptoKey> {
+  const derBytes = pemToDer(pem);
+  return await crypto.subtle.importKey(
+    'pkcs8',
+    derBytes,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+}
+
+async function signJwt(payload: object, credentials: ServiceAccountCredentials): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: 'RS256', typ: 'JWT', kid: credentials.private_key_id };
+  const claim = {
+    iss: credentials.client_email,
+    scope: SCOPE,
+    aud: TOKEN_URL,
+    iat: now,
+    exp: now + 3600,
+    ...payload,
+  };
+
+  const enc = new TextEncoder();
+  const headerB64 = base64UrlEncode(enc.encode(JSON.stringify(header)));
+  const claimB64 = base64UrlEncode(enc.encode(JSON.stringify(claim)));
+  const signingInput = `${headerB64}.${claimB64}`;
+
+  const key = await importPrivateKey(credentials.private_key);
+  const signature = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',
+    key,
+    enc.encode(signingInput),
   );
 
-  // Use service account credentials directly for OAuth
-  const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+  return `${signingInput}.${base64UrlEncode(new Uint8Array(signature))}`;
+}
+
+async function getAccessToken(credentialsBase64: string): Promise<string> {
+  const credentialsJson = atob(credentialsBase64);
+  const credentials = JSON.parse(credentialsJson) as ServiceAccountCredentials;
+
+  const jwt = await signJwt({}, credentials);
+
+  const response = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: Deno.env.get('GOOGLE_SHEETS_CREDENTIALS')
-    })
+      assertion: jwt,
+    }),
   });
 
-  if (!tokenResponse.ok) {
-    const errorText = await tokenResponse.text();
-    throw new Error(`Failed to get access token: ${errorText}`);
-  }
-
-  const tokenData = await tokenResponse.json();
-  return tokenData.access_token;
-}
-
-function getSupabaseClient(): ReturnType<typeof createClient> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase credentials');
-  }
-
-  return createClient(supabaseUrl, supabaseKey);
-}
-
-interface Order {
-  id: string;
-  order_num: string;
-  created_at: string;
-  total: number;
-  subtotal: number | null;
-  discount_amount: number | null;
-  actual_received: number | null;
-  method: string;
-  items: OrderItem[];
-  staff_name: string | null;
-  outlet_id: string | null;
-  brand_id: string | null;
-  voided: boolean;
-}
-
-interface OrderItem {
-  id: string;
-  name: string;
-  qty: number;
-  price: number;
-  sweet: string | null;
-  ice: string | null;
-  toppings: Topping[] | null;
-  note: string | null;
-}
-
-interface Topping {
-  id: string;
-  name: string;
-  price: number;
-}
-
-// Fetch orders created after the last backup timestamp
-async function fetchOrders(supabase: ReturnType<typeof createClient>) {
-  const { data: settings } = await supabase
-    .from('settings')
-    .select('value')
-    .eq('key', 'sheets_last_backup')
-    .single();
-
-  const lastBackup = settings?.value;
-  let query = supabase
-    .from('orders')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1000);
-
-  if (!lastBackup) {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    query = query.gte('created_at', thirtyDaysAgo);
-  } else {
-    query = query.gt('created_at', lastBackup);
-  }
-
-  const { data: orders, error } = await query;
-
-  if (error) throw error;
-
-  return { orders: (orders || []) as Order[], isFirstRun: !lastBackup };
-}
-
-// Transform ISO timestamp to date format YYYY-MM-DD
-function formatDate(isoDate: string): string {
-  return isoDate.split('T')[0];
-}
-
-// Transform ISO timestamp to time format HH:MM:SS
-function formatTime(isoDate: string): string {
-  return isoDate.split('T')[1]?.split('.')[0] || '00:00:00';
-}
-
-// OrderSummaryRow matches the Google Sheet column structure
-interface OrderSummaryRow {
-  orderId: string;
-  orderNum: string;
-  date: string;
-  time: string;
-  outlet: string;
-  brand: string;
-  staff: string;
-  totalItems: number;
-  subtotal: number;
-  discountAmount: number;
-  payable: number;
-  actualReceived: number;
-  change: number;
-  paymentMethod: string;
-  voided: string;
-  backupAt: string;
-}
-
-// Transform order to Orders Summary row
-function transformToOrderSummary(order: Order): OrderSummaryRow {
-  const totalItems = order.items.reduce((sum, item) => sum + item.qty, 0);
-  const subtotal = order.subtotal || 0;
-  const discount = order.discount_amount || 0;
-  const actualReceived = order.actual_received || order.total;
-  const payable = order.total;
-  const change = Math.max(0, actualReceived - payable);
-
-  const outletName = order.outlet_id ? `${order.outlet_id}` : 'N/A';
-  const brandName = order.brand_id ? `${order.brand_id}` : 'N/A';
-
-  return {
-    orderId: order.id,
-    orderNum: order.order_num,
-    date: formatDate(order.created_at),
-    time: formatTime(order.created_at),
-    outlet: outletName,
-    brand: brandName,
-    staff: order.staff_name || 'N/A',
-    totalItems,
-    subtotal,
-    discountAmount: discount,
-    payable,
-    actualReceived,
-    change,
-    paymentMethod: order.method || 'N/A',
-    voided: order.voided ? 'TRUE' : 'FALSE',
-    backupAt: new Date().toISOString()
-  };
-}
-
-// Transform array of orders to Orders Summary rows (2D array for Sheets API)
-function transformOrdersToSummaryRows(orders: Order[]): (string | number)[][] {
-  const headers = [
-    'Order ID', 'Order #', 'Date', 'Time', 'Outlet', 'Brand', 'Staff',
-    'Total Items', 'Subtotal', 'Discount Amount', 'Payable', 'Actual Received',
-    'Change', 'Payment Method', 'Voided', 'Backup At'
-  ];
-
-  const rows = [headers];
-
-  for (const order of orders) {
-    const summary = transformToOrderSummary(order);
-    rows.push([
-      summary.orderId,
-      summary.orderNum,
-      summary.date,
-      summary.time,
-      summary.outlet,
-      summary.brand,
-      summary.staff,
-      summary.totalItems,
-      summary.subtotal,
-      summary.discountAmount,
-      summary.payable,
-      summary.actualReceived,
-      summary.change,
-      summary.paymentMethod,
-      summary.voided,
-      summary.backupAt
-    ]);
-  }
-
-  return rows;
-}
-
-// OrderItemRow matches the Google Sheet column structure
-interface OrderItemRow {
-  orderId: string;
-  orderNum: string;
-  itemId: string;
-  productName: string;
-  category: string;
-  quantity: number;
-  unitPrice: number;
-  itemTotal: number;
-  sweetness: string;
-  iceLevel: string;
-  toppings: string;
-  toppingsPrice: number;
-  note: string;
-  backupAt: string;
-}
-
-// Transform order item to Order Items Detail row
-function transformToOrderItemRow(order: Order, item: OrderItem): OrderItemRow {
-  const toppings = item.toppings || [];
-  const toppingsPrice = toppings.reduce((sum, t) => sum + t.price, 0);
-  const toppingNames = toppings.map(t => t.name).join(', ');
-
-  return {
-    orderId: order.id,
-    orderNum: order.order_num,
-    itemId: item.id,
-    productName: item.name,
-    category: 'N/A',
-    quantity: item.qty,
-    unitPrice: item.price,
-    itemTotal: item.qty * item.price,
-    sweetness: item.sweet || '100%',
-    iceLevel: item.ice || 'Bình thường',
-    toppings: toppingNames,
-    toppingsPrice,
-    note: item.note || '',
-    backupAt: new Date().toISOString()
-  };
-}
-
-// Transform array of orders to Order Items Detail rows (2D array for Sheets API)
-function transformOrdersToItemRows(orders: Order[]): (string | number)[][] {
-  const headers = [
-    'Order ID', 'Order #', 'Item ID', 'Product Name', 'Category', 'Quantity',
-    'Unit Price', 'Item Total', 'Sweetness', 'Ice Level', 'Toppings',
-    'Toppings Price', 'Note', 'Backup At'
-  ];
-
-  const rows = [headers];
-
-  for (const order of orders) {
-    for (const item of order.items) {
-      const itemRow = transformToOrderItemRow(order, item);
-      rows.push([
-        itemRow.orderId,
-        itemRow.orderNum,
-        itemRow.itemId,
-        itemRow.productName,
-        itemRow.category,
-        itemRow.quantity,
-        itemRow.unitPrice,
-        itemRow.itemTotal,
-        itemRow.sweetness,
-        itemRow.iceLevel,
-        itemRow.toppings,
-        itemRow.toppingsPrice,
-        itemRow.note,
-        itemRow.backupAt
-      ]);
-    }
-  }
-
-  return rows;
-}
-
-// Write rows to a specific sheet tab
-async function writeToSheet(
-  accessToken: string,
-  sheetId: string,
-  sheetName: string,
-  rows: (string | number)[][]
-): Promise<void> {
-  const spreadsheetId = sheetId;
-
-  const response = await fetch(`${SHEETS_BASE_URL}/${spreadsheetId}?key=${accessToken}`);
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to get sheet: ${errorText}`);
-  }
-  const spreadsheet = await response.json();
-
-  const sheetTab = spreadsheet?.sheets?.find(
-    (s: any) => s.properties?.title === sheetName
-  );
-
-  if (!sheetTab) {
-    throw new Error(`Sheet tab "${sheetName}" not found`);
+    const text = await response.text();
+    throw new Error(`OAuth failed: ${response.status} ${text}`);
   }
 
-  const sheetIdNum = sheetTab.properties.sheetId;
-
-  const BATCH_SIZE = 100;
-  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-    const batch = rows.slice(i, i + BATCH_SIZE);
-
-    await withRetry(async () => {
-      const appendResponse = await fetch(`${SHEETS_BASE_URL}/${spreadsheetId}/values/${encodeURIComponent(`${sheetName}!A${i + 1}`)}:append?valueInputOption=USER_ENTERED&key=${accessToken}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: batch })
-      });
-
-      if (!appendResponse.ok) {
-        const errorText = await appendResponse.text();
-        throw new Error(`Failed to append rows: ${errorText}`);
-      }
-    });
-  }
-}
-
-// Retry wrapper with exponential backoff
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries = 3
-): Promise<T> {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error: any) {
-      if (attempt === maxRetries) throw error;
-
-      const delay = Math.pow(2, attempt) * 1000;
-      console.warn(`Retry ${attempt}/${maxRetries} after ${delay}ms:`, error.message);
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-  throw new Error('Max retries exceeded');
-}
-
-// Initialize sheet with headers if needed
-async function ensureSheetHeaders(
-  accessToken: string,
-  sheetId: string,
-  sheetName: string,
-  headers: string[]
-): Promise<void> {
-  const response = await fetch(`${SHEETS_BASE_URL}/${sheetId}/values/${encodeURIComponent(`${sheetName}!A1:Z1`)}?key=${accessToken}`);
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to check sheet headers: ${errorText}`);
-  }
   const data = await response.json();
-
-  if (data?.values?.length > 0) {
-    return;
-  }
-
-  await fetch(`${SHEETS_BASE_URL}/${sheetId}/values/${encodeURIComponent(`${sheetName}!A1`)}?valueInputOption=USER_ENTERED&key=${accessToken}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values: [headers] })
-  });
+  return data.access_token as string;
 }
 
-Deno.serve(async (req) => {
-  try {
-    const credentialsBase64 = Deno.env.get('GOOGLE_SHEETS_CREDENTIALS');
-    const sheetId = Deno.env.get('SHEET_ID');
+// ============================================================================
+// Sheets API helpers
+// ============================================================================
 
-    if (!credentialsBase64 || !sheetId) {
-      return new Response(JSON.stringify({ error: 'Missing credentials' }), { status: 500 });
+const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
+
+function sheetsHeaders(accessToken: string): Record<string, string> {
+  return {
+    'Authorization': `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+async function appendRows(
+  accessToken: string,
+  spreadsheetId: string,
+  sheetTab: string,
+  rows: (string | number | null)[][],
+): Promise<void> {
+  if (rows.length === 0) return;
+
+  const BATCH = 100;
+  for (let i = 0; i < rows.length; i += BATCH) {
+    const batch = rows.slice(i, i + BATCH);
+    const url = `${SHEETS_API}/${spreadsheetId}/values/${encodeURIComponent(`${sheetTab}!A:A`)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+
+    let attempt = 0;
+    while (attempt < 3) {
+      attempt += 1;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: sheetsHeaders(accessToken),
+        body: JSON.stringify({ values: batch }),
+      });
+      if (res.ok) break;
+      if (res.status >= 500 && attempt < 3) {
+        await new Promise((r) => setTimeout(r, 2 ** attempt * 1000));
+        continue;
+      }
+      const text = await res.text();
+      throw new Error(`Sheets append failed (${res.status}): ${text}`);
     }
+  }
+}
 
-    const startTime = Date.now();
+// ============================================================================
+// Supabase queries
+// ============================================================================
+
+function getSupabaseClient() {
+  const url = Deno.env.get('SUPABASE_URL');
+  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  return createClient(url, key);
+}
+
+async function getLastSync(supabase: ReturnType<typeof createClient>, key: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('sync_state')
+    .select('last_synced_at')
+    .eq('sync_key', key)
+    .maybeSingle();
+  if (error) {
+    console.warn(`sync_state read failed (will use default): ${error.message}`);
+    return null;
+  }
+  return data?.last_synced_at || null;
+}
+
+async function setLastSync(supabase: ReturnType<typeof createClient>, key: string, iso: string): Promise<void> {
+  const { error } = await supabase
+    .from('sync_state')
+    .upsert({ sync_key: key, last_synced_at: iso }, { onConflict: 'sync_key' });
+  if (error) console.warn(`sync_state write failed: ${error.message}`);
+}
+
+async function fetchOrdersSince(supabase: ReturnType<typeof createClient>, since: string | null): Promise<OrderV2[]> {
+  // First-run default: 7 days back.
+  const cutoff = since || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const all: OrderV2[] = [];
+  let page = 0;
+  const PAGE = 500;
+  while (true) {
+    const { data, error } = await supabase
+      .from('orders_v2')
+      .select('*')
+      .gt('created_at', cutoff)
+      .order('created_at', { ascending: true })
+      .range(page * PAGE, (page + 1) * PAGE - 1);
+    if (error) throw new Error(`orders_v2 query: ${error.message}`);
+    if (!data || data.length === 0) break;
+    all.push(...(data as OrderV2[]));
+    if (data.length < PAGE) break;
+    page += 1;
+  }
+  return all;
+}
+
+async function fetchLinesForOrders(supabase: ReturnType<typeof createClient>, orderIds: string[]): Promise<OrderLineV2[]> {
+  if (orderIds.length === 0) return [];
+  const all: OrderLineV2[] = [];
+  // Chunk to avoid PostgREST URL length limits.
+  const CHUNK = 100;
+  for (let i = 0; i < orderIds.length; i += CHUNK) {
+    const chunk = orderIds.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from('order_lines_v2')
+      .select('*')
+      .in('order_id', chunk);
+    if (error) throw new Error(`order_lines_v2 query: ${error.message}`);
+    if (data) all.push(...(data as OrderLineV2[]));
+  }
+  return all;
+}
+
+// ============================================================================
+// Transform to Sheets row format
+// ============================================================================
+
+const ORDERS_COLUMNS = [
+  'id', 'order_no', 'brand_id', 'status', 'version', 'created_at',
+  'created_by_name', 'completed_at', 'voided_at', 'void_reason', 'currency',
+  'gross_total', 'promo_discount_total', 'manual_item_discount_total',
+  'manual_order_discount', 'net_total', 'applied_promotion_id',
+  'payment_method', 'payment_ref', 'migration_notes',
+];
+
+const LINES_COLUMNS = [
+  'id', 'order_id', 'line_no', 'product_id', 'variant_id', 'qty',
+  'unit_price', 'gross_line_total', 'promo_discount',
+  'manual_item_discount', 'order_discount_allocation', 'net_line_total',
+  'cost_at_sale', 'created_at',
+];
+
+function orderToRow(o: OrderV2): (string | number | null)[] {
+  return [
+    o.id, o.order_no, o.brand_id, o.status, o.version, o.created_at,
+    o.created_by_name, o.completed_at, o.voided_at, o.void_reason, o.currency,
+    o.gross_total, o.promo_discount_total, o.manual_item_discount_total,
+    o.manual_order_discount, o.net_total, o.applied_promotion_id || '',
+    o.payment_method || '', o.payment_ref || '', o.migration_notes || '',
+  ];
+}
+
+function lineToRow(l: OrderLineV2): (string | number | null)[] {
+  // Note: snapshot JSON columns (product_snapshot_json, etc.) intentionally
+  // excluded — Sheets backup keeps row references only, not full snapshots
+  // (they remain in Supabase as jsonb source-of-truth).
+  return [
+    l.id, l.order_id, l.line_no, l.product_id, l.variant_id, l.qty,
+    l.unit_price, l.gross_line_total, l.promo_discount,
+    l.manual_item_discount, l.order_discount_allocation, l.net_line_total,
+    l.cost_at_sale, l.created_at,
+  ];
+}
+
+// ============================================================================
+// Main handler
+// ============================================================================
+
+Deno.serve(async (_req) => {
+  const startedAt = new Date().toISOString();
+  console.log(`[backup-to-sheets] start at ${startedAt}`);
+
+  try {
+    const credentialsB64 = Deno.env.get('GOOGLE_CREDENTIALS_BASE64');
+    const spreadsheetId = Deno.env.get('GOOGLE_SPREADSHEET_ID');
+    if (!credentialsB64 || !spreadsheetId) {
+      return new Response(JSON.stringify({ error: 'Missing Google env vars' }), { status: 500 });
+    }
 
     const supabase = getSupabaseClient();
-    const accessToken = await getAccessToken(credentialsBase64);
+    const accessToken = await getAccessToken(credentialsB64);
 
-    const { orders, isFirstRun } = await fetchOrders(supabase);
+    const ordersSince = await getLastSync(supabase, 'orders_v2');
+    console.log(`[backup-to-sheets] syncing orders since: ${ordersSince || '(7d default)'}`);
+
+    const orders = await fetchOrdersSince(supabase, ordersSince);
+    console.log(`[backup-to-sheets] fetched ${orders.length} orders`);
 
     if (orders.length === 0) {
+      await setLastSync(supabase, 'orders_v2', startedAt);
       return new Response(JSON.stringify({
         success: true,
-        message: 'No new orders to backup'
+        message: 'No new orders',
+        backupAt: startedAt,
       }), { status: 200 });
     }
 
-    const summaryRows = transformOrdersToSummaryRows(orders);
-    const itemRows = transformOrdersToItemRows(orders);
+    const orderIds = orders.map((o) => o.id);
+    const lines = await fetchLinesForOrders(supabase, orderIds);
+    console.log(`[backup-to-sheets] fetched ${lines.length} lines`);
 
-    if (isFirstRun) {
-      const summaryHeaders = summaryRows[0] as string[];
-      const itemHeaders = itemRows[0] as string[];
-      await ensureSheetHeaders(accessToken, sheetId, 'Orders Summary', summaryHeaders);
-      await ensureSheetHeaders(accessToken, sheetId, 'Order Items Detail', itemHeaders);
+    const orderRows = orders.map(orderToRow);
+    const lineRows = lines.map(lineToRow);
 
-      summaryRows.shift();
-      itemRows.shift();
+    // Insert header on first run only — detect by sync_state null.
+    if (!ordersSince) {
+      console.log('[backup-to-sheets] first run — inserting headers');
+      await appendRows(accessToken, spreadsheetId, 'Orders_V2', [ORDERS_COLUMNS]);
+      await appendRows(accessToken, spreadsheetId, 'Order_Lines_V2', [LINES_COLUMNS]);
     }
 
-    await writeToSheet(accessToken, sheetId, 'Orders Summary', summaryRows);
-    await writeToSheet(accessToken, sheetId, 'Order Items Detail', itemRows);
+    await appendRows(accessToken, spreadsheetId, 'Orders_V2', orderRows);
+    await appendRows(accessToken, spreadsheetId, 'Order_Lines_V2', lineRows);
 
-    const now = new Date().toISOString();
-    await supabase
-      .from('settings')
-      .upsert({ key: 'sheets_last_backup', value: now });
-
-    const duration = Date.now() - startTime;
+    await setLastSync(supabase, 'orders_v2', startedAt);
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Backed up ${orders.length} orders`,
+      message: `Backed up ${orders.length} orders + ${lines.length} lines`,
       ordersBackedUp: orders.length,
-      duration: `${duration}ms`,
-      backupAt: now
+      linesBackedUp: lines.length,
+      backupAt: startedAt,
+      durationMs: Date.now() - new Date(startedAt).getTime(),
     }), { status: 200 });
-
-  } catch (error) {
-    console.error('Backup error:', error);
+  } catch (err) {
+    console.error('[backup-to-sheets] failed:', err);
     return new Response(JSON.stringify({
       error: 'Backup failed',
-      message: error instanceof Error ? error.message : String(error)
+      message: err instanceof Error ? err.message : String(err),
+      backupAt: startedAt,
     }), { status: 500 });
   }
 });
