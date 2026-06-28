@@ -4,6 +4,37 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-28 (Claude) — Husky pre-commit hook for TS enforcement
+
+**Trigger:** User chọn option B sau khi em phát hiện JSX syntax errors trong Antigravity commit `6f0a3c3` (UI-13) mà tests không catch vì SWC permissive.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Husky installed | `package.json` (+`prepare` script, dev dep `husky`) | Auto-installs hooks on `npm install` via `prepare` script. Cross-platform support. |
+| Pre-commit hook | `.husky/pre-commit` | Runs `npx tsc --noEmit`. Blocks commit on TS error. Catches JSX syntax issues that Next.js SWC compiles but strict tsc rejects. |
+| Protocol update | `docs/COLLABORATION.md` section E | Document hook + escape hatch (`--no-verify` for WIP, do not make habit). |
+
+### Why tsc-only (not tests)
+
+- Tests already enforced by manual `vitest` runs before commit (per existing protocol).
+- Pre-commit tests (~3s) + tsc (~5s) = ~8s overhead per commit hurts velocity.
+- tsc catches the specific class of bug missed (type/syntax errors that SWC tolerates).
+- Tests can be added to pre-push hook later if needed.
+
+### Verification
+
+- `sh .husky/pre-commit`: PASS (tsc clean).
+- Hook fires automatically on `git commit`.
+- Escape hatch: `git commit --no-verify` for WIP (documented in COLLABORATION.md, do not abuse).
+
+### Lesson learned
+
+Antigravity UI-13 commit `6f0a3c3` introduced JSX syntax errors (multiple sibling elements in ternary false branch without `<>...</>` fragment). Tests passed because Next.js SWC is more permissive than strict tsc. Without pre-commit enforcement, errors propagated to working tree. Codex/Claude/Antigravity all missed in review. Now automated.
+
+---
+
 ## 2026-06-27 (Claude) — Phase 6.2 script deletion (49 one-off scripts)
 
 **Trigger:** User chọn option B (Tier 1 + Tier 2) sau khi em audit 51 DELETE_ONE_OFF scripts.

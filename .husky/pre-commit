@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+# Pre-commit gate per docs/COLLABORATION.md section E (Merge Gate).
+# Claude code — enforce TS check that Next.js SWC may mask.
+
+echo "[pre-commit] Running tsc --noEmit..."
+npx tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo "[pre-commit] FAIL: TypeScript errors. Fix before commit."
+  echo "[pre-commit] Tip: nếu bị block bởi TS6053 missing files, verify file path tồn tại."
+  exit 1
+fi
+
+echo "[pre-commit] PASS: tsc clean."

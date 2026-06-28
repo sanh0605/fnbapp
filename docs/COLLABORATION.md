@@ -118,7 +118,7 @@ Claude owns these. Codex review is required for engine/data claims.
 Before ending a work phase, regardless of agent:
 
 - Tests pass: current baseline is 191+ tests.
-- TypeScript: 0 errors.
+- TypeScript: 0 errors. **Enforced automatically by Husky pre-commit hook** (`.husky/pre-commit` runs `tsc --noEmit`). Next.js SWC may compile code that strict tsc rejects, so the hook catches issues that `npm test` alone would miss.
 - MAC drift audit: 0 mismatch.
 - COGS drift audit: 0 mismatch or explicitly documented as informational.
 - P&L MAC consistency audit: 0 delta when report/COGS changed.
@@ -128,6 +128,8 @@ Before ending a work phase, regardless of agent:
   - `Codex <type>:`
   - `Antigravity <type>:`
 - Do not push unless the user explicitly asks.
+
+If the pre-commit hook blocks a commit that the agent believes should be allowed (e.g., WIP, intentional broken state for hand-off), use `git commit --no-verify` and note in the commit message. Do not make `--no-verify` a habit.
 
 ## F. Session Start Checklist
 
