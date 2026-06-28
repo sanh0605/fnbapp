@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { DBPurchaseOrder, DBSupplier } from "@/types/db";
 
 interface PurchaseOrdersClientProps {
@@ -15,8 +14,6 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [supplierFilter, setSupplierFilter] = useState("ALL");
-  const [recalculating, setRecalculating] = useState(false);
-  const router = useRouter();
 
   const supplierMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -27,65 +24,26 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
   const filteredOrders = useMemo(() => {
     return orders.filter(po => {
       const sName = supplierMap[po.supplier_id] || "";
-      const matchSearch = po.id.toLowerCase().includes(search.toLowerCase()) || 
+      const matchSearch = po.id.toLowerCase().includes(search.toLowerCase()) ||
                           sName.toLowerCase().includes(search.toLowerCase());
       const matchStatus = statusFilter === "ALL" || po.status === statusFilter;
       const matchSupplier = supplierFilter === "ALL" || po.supplier_id === supplierFilter;
-      
+
       return matchSearch && matchStatus && matchSupplier;
     });
   }, [orders, search, statusFilter, supplierFilter, supplierMap]);
 
   // Sort descending by creation date
-  const sortedOrders = [...filteredOrders].sort((a, b) => 
+  const sortedOrders = [...filteredOrders].sort((a, b) =>
     new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
   );
 
-  const handleRecalculate = async () => {
-    if (recalculating) return;
-    if (!window.confirm("Bạn có chắc chắn muốn tính toán lại giá vốn cho toàn bộ đơn hàng trong lịch sử? Việc này sẽ mất vài giây.")) return;
-    
-    setRecalculating(true);
-    try {
-      const res = await fetch("/api/recalculate-cogs", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        alert(`Thành công! Đã tính toán lại giá vốn và cập nhật ${data.updatedCount} dòng đơn hàng.`);
-        router.refresh();
-      } else {
-        alert(`Lỗi: ${data.error || "Không thể tính lại giá vốn"}`);
-      }
-    } catch (err: any) {
-      alert(`Lỗi kết nối: ${err?.message || err}`);
-    } finally {
-      setRecalculating(false);
-    }
-  };
+  // Claude code — Supabase migration Phase F: removed "Tính lại giá vốn"
+  // button + handler. Endpoint /api/recalculate-cogs was a legacy FIFO-era
+  // helper, obsolete after MAC migration (Phase 5A).
 
   const rightContent = (
     <div className="flex gap-3">
-      <button
-        onClick={handleRecalculate}
-        disabled={recalculating}
-        className={`px-4 py-2 rounded-lg font-medium border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition whitespace-nowrap shadow-sm flex items-center gap-2 ${recalculating ? 'opacity-60 cursor-not-allowed' : ''}`}
-      >
-        {recalculating ? (
-          <>
-            <svg className="animate-spin h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            Đang tính toán lại...
-          </>
-        ) : (
-          <>
-            <svg className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3 3L22 4" />
-            </svg>
-            Tính lại giá vốn
-          </>
-        )}
-      </button>
       <Link
         href="/admin/inventory/purchase-orders/new"
         className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition whitespace-nowrap shadow-sm"

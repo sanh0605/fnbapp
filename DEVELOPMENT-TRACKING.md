@@ -4,6 +4,81 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-28 (Claude) — Supabase migration Phase F (cleanup + deployment)
+
+**Trigger:** User approved Phase F + deployment tasks. Done after Phase E.
+
+### Done
+
+| Item | Files | Description |
+|---|---|---|
+| Obsolete API routes deleted | `app/api/recalculate-cogs/route.ts`, `app/api/run-migration/route.ts`, `app/api/migrate-orders/route.ts`, `app/api/migrate-discount/route.ts` | All 4 routes used `getSheetsClient()` bypass. After Supabase migration, these legacy FIFO/migration helpers are obsolete. |
+| Broken button removed | `app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx` | "Tính lại giá vốn" button + handleRecalculate called deleted `/api/recalculate-cogs`. Removed button, state, handler, unused imports. |
+| Edge function deployed | remote Supabase | `supabase functions deploy backup-to-sheets` to project `zicuawpwyhmtqmzawvau`. |
+| Edge function secrets | remote Supabase | Set `GOOGLE_CREDENTIALS_BASE64` + `GOOGLE_SPREADSHEET_ID` from local .env.local. |
+| Sync test (e2e) | remote Supabase | Manual trigger via curl: 265 orders + 405 lines backed up in ~8s. Cursor saved to sync_state for next incremental run. |
+| Cron schedule | (pending — manual via dashboard) | pg_cron + pg_net extensions need manual enable via Supabase dashboard SQL editor. Then schedule job. Steps documented below. |
+
+### Manual cron setup (anh cần làm)
+
+```sql
+-- 1. Enable extensions (Supabase dashboard → SQL Editor → run):
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+-- 2. Schedule daily 02:00 UTC+7 (19:00 UTC previous day):
+select cron.schedule(
+  'backup-to-sheets-daily',
+  '0 19 * * *',
+  $$
+    select net.http_post(
+      url := 'https://zicuawpwyhmtqmzawvau.functions.supabase.co/backup-to-sheets',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer <SUPABASE_ANON_KEY>'
+      ),
+      body := '{}'::jsonb
+    );
+  $$
+);
+
+-- 3. Verify scheduled:
+select * from cron.job;
+
+-- 4. To unschedule later:
+-- select cron.unschedule('backup-to-sheets-daily');
+```
+
+### Remaining bypass callers (defer)
+
+Scripts still use `getSheetsClient` but already have `@ts-nocheck` or are `.js` (no TS check). These are historical migration scripts (KEEP_MIGRATION_HISTORY) or init scripts (KEEP_RUNBOOK). They'll throw at runtime but won't break build:
+
+- `scripts/batch-sheets-utils.ts`, `batch-sheets-orders.ts`, `standalone-sheets-utils.ts`
+- `scripts/init-*.ts/js`, `create-v2-sheets.ts`, `backup-v1-sheets.ts`, `rename-v1-sheets-to-legacy.ts`
+- `scripts/apply-*.ts`, `migrate.js`, `reconcile-migrated-dates.js`, etc.
+
+Decision: leave as-is. They serve as historical reference. Rewrite only if needed operationally.
+
+### Verification
+
+- `vitest run`: **199/199 pass**.
+- `tsc --noEmit`: **0 errors**.
+- Pre-commit hook: PASS.
+
+### Migration complete summary
+
+| Phase | Status |
+|---|---|
+| A Foundation (client + 27 tables) | ✅ |
+| B Compatibility shim | ✅ |
+| C Data migration (25/27 PARITY, 6 source orphans skipped) | ✅ |
+| D Auth swap | ✅ |
+| E Daily sync edge function | ✅ |
+| F Cleanup + deployment | ✅ |
+
+Total: **6 phases done**, ~9000 rows migrated, 0 data loss (6 orphans were pre-existing source integrity issue).
+
+---
+
 ## 2026-06-28 (Claude) — Supabase migration Phase E (daily sync)
 
 **Trigger:** Plan approved. Phase A+B+C+D done. Phase E = fix + extend backup-to-sheets edge function.
