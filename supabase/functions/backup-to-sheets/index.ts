@@ -276,39 +276,60 @@ async function fetchLinesForOrders(supabase: ReturnType<typeof createClient>, or
 // ============================================================================
 
 const ORDERS_COLUMNS = [
-  'id', 'order_no', 'brand_id', 'status', 'version', 'created_at',
-  'created_by_name', 'completed_at', 'voided_at', 'void_reason', 'currency',
+  'id', 'order_no', 'brand_id', 'status', 'version', 'parent_order_id',
+  'superseded_by', 'created_at', 'created_by_id', 'created_by_name',
+  'completed_at', 'voided_at', 'voided_by_id', 'void_reason', 'currency',
   'gross_total', 'promo_discount_total', 'manual_item_discount_total',
   'manual_order_discount', 'net_total', 'applied_promotion_id',
-  'payment_method', 'payment_ref', 'migration_notes',
+  'applied_promotion_snapshot_json', 'pos_snapshot_json', 'payment_method',
+  'payment_ref', 'migration_notes',
 ];
 
 const LINES_COLUMNS = [
-  'id', 'order_id', 'line_no', 'product_id', 'variant_id', 'qty',
-  'unit_price', 'gross_line_total', 'promo_discount',
+  'id', 'order_id', 'line_no', 'product_id', 'product_snapshot_json',
+  'variant_id', 'variant_snapshot_json', 'qty', 'unit_price',
+  'modifiers_snapshot_json', 'gross_line_total', 'promo_discount',
   'manual_item_discount', 'order_discount_allocation', 'net_line_total',
-  'cost_at_sale', 'created_at',
+  'cost_at_sale', 'recipe_snapshot_json', 'promo_discount_reason',
+  'manual_discount_reason', 'created_at',
 ];
 
-function orderToRow(o: OrderV2): (string | number | null)[] {
+function orderToRow(o: any): (string | number | null)[] {
+  // Claude code — Phase E fix: full V2 schema with all columns including
+  // snapshot JSON + voided_by_id. Previous version omitted these, causing
+  // column shift when appended to original sheet.
   return [
-    o.id, o.order_no, o.brand_id, o.status, o.version, o.created_at,
-    o.created_by_name, o.completed_at, o.voided_at, o.void_reason, o.currency,
-    o.gross_total, o.promo_discount_total, o.manual_item_discount_total,
-    o.manual_order_discount, o.net_total, o.applied_promotion_id || '',
-    o.payment_method || '', o.payment_ref || '', o.migration_notes || '',
+    o.id, o.order_no, o.brand_id, o.status, o.version,
+    o.parent_order_id || '', o.superseded_by || '',
+    o.created_at, o.created_by_id || '', o.created_by_name || '',
+    o.completed_at || '', o.voided_at || '',
+    o.voided_by_id || '', o.void_reason || '',
+    o.currency || 'VND',
+    o.gross_total ?? 0, o.promo_discount_total ?? 0,
+    o.manual_item_discount_total ?? 0, o.manual_order_discount ?? 0,
+    o.net_total ?? 0,
+    o.applied_promotion_id || '',
+    JSON.stringify(o.applied_promotion_snapshot_json ?? {}),
+    JSON.stringify(o.pos_snapshot_json ?? {}),
+    o.payment_method || '', o.payment_ref || '',
+    o.migration_notes || '',
   ];
 }
 
-function lineToRow(l: OrderLineV2): (string | number | null)[] {
-  // Note: snapshot JSON columns (product_snapshot_json, etc.) intentionally
-  // excluded — Sheets backup keeps row references only, not full snapshots
-  // (they remain in Supabase as jsonb source-of-truth).
+function lineToRow(l: any): (string | number | null)[] {
   return [
-    l.id, l.order_id, l.line_no, l.product_id, l.variant_id, l.qty,
-    l.unit_price, l.gross_line_total, l.promo_discount,
-    l.manual_item_discount, l.order_discount_allocation, l.net_line_total,
-    l.cost_at_sale, l.created_at,
+    l.id, l.order_id, l.line_no, l.product_id,
+    JSON.stringify(l.product_snapshot_json ?? {}),
+    l.variant_id,
+    JSON.stringify(l.variant_snapshot_json ?? {}),
+    l.qty, l.unit_price,
+    JSON.stringify(l.modifiers_snapshot_json ?? []),
+    l.gross_line_total ?? 0, l.promo_discount ?? 0,
+    l.manual_item_discount ?? 0, l.order_discount_allocation ?? 0,
+    l.net_line_total ?? 0, l.cost_at_sale ?? 0,
+    JSON.stringify(l.recipe_snapshot_json ?? {}),
+    l.promo_discount_reason || '', l.manual_discount_reason || '',
+    l.created_at,
   ];
 }
 
@@ -352,12 +373,9 @@ Deno.serve(async (_req) => {
     const orderRows = orders.map(orderToRow);
     const lineRows = lines.map(lineToRow);
 
-    // Insert header on first run only — detect by sync_state null.
-    if (!ordersSince) {
-      console.log('[backup-to-sheets] first run — inserting headers');
-      await appendRows(accessToken, spreadsheetId, 'Orders_V2', [ORDERS_COLUMNS]);
-      await appendRows(accessToken, spreadsheetId, 'Order_Lines_V2', [LINES_COLUMNS]);
-    }
+    // Claude code — Phase E fix: do NOT insert headers. Original sheet
+    // already has headers from migration source. Re-inserting causes
+    // duplicate header rows + column shift.
 
     await appendRows(accessToken, spreadsheetId, 'Orders_V2', orderRows);
     await appendRows(accessToken, spreadsheetId, 'Order_Lines_V2', lineRows);
