@@ -186,6 +186,7 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu bán hàng.</p>
           </div>
         ) : (
+          <>
           <div className="hidden md:block overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
@@ -268,6 +269,7 @@ export default async function ReportsPage({
               </div>
             ))}
           </div>
+          </>
         )}
       </div>
 
@@ -283,6 +285,7 @@ export default async function ReportsPage({
             <p className="text-gray-500">Chưa có dữ liệu bán hàng topping.</p>
           </div>
         ) : (
+          <>
           <div className="hidden md:block overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
@@ -365,6 +368,7 @@ export default async function ReportsPage({
               </div>
             ))}
           </div>
+          </>
         )}
       </div>
 

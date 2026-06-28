@@ -9,10 +9,8 @@ process.env.CLI_MODE = "true";
 async function main() {
   const { findAllNoCache } = await import("../lib/sheets_db");
   const { parseLineRecipeSnapshot } = await import("../lib/order-types");
-  const { buildLineConsumptionRows } = await import("../lib/inventory-consumption");
-  const { buildSemiProductRecipeMaps } = await import("../lib/mac-cogs-audit");
+  const { buildLineConsumptionRows, buildSemiProductRecipeMaps, buildInventoryBalances } = await import("../lib/inventory-consumption");
   const { computeMacCostForConsumptionRows } = await import("../lib/mac-cogs");
-  const { buildInventoryBalances } = await import("../lib/inventory-consumption");
 
   const [orders, lines, ledger, recipes, semiProducts] = await Promise.all([
     findAllNoCache("Orders_V2"),
