@@ -33,12 +33,12 @@ export default function StickyFilterBar({
           </div>
         )}
 
-        {/* Main Filter Row (Horizontally scrollable on mobile) */}
-        <div className="flex items-center gap-3 overflow-x-auto hide-scrollbar pb-1">
+        {/* Main Filter Row (Responsive grid layout) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:items-end gap-3 pb-1">
           {children}
           
           {rightContent && (
-            <div className={`flex items-center gap-2 shrink-0 ${title ? '' : 'md:hidden'}`}>
+            <div className={`col-span-2 sm:col-span-3 flex items-center gap-2 mt-2 md:mt-0 ${title ? '' : 'md:hidden'}`}>
               {rightContent}
             </div>
           )}

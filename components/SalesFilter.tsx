@@ -137,50 +137,50 @@ function SalesFilterInner({
       title={title}
       subtitle={subtitle}
     >
-      <div className="shrink-0">
+      <div className="w-full md:w-auto">
         <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Từ ngày</label>
         <CustomDatePicker
           selected={startDate}
           onChange={(date: Date | null) => setStartDate(date)}
-          className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         />
       </div>
-      <div className="shrink-0">
+      <div className="w-full md:w-auto">
         <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đến ngày</label>
         <CustomDatePicker
           selected={endDate}
           onChange={(date: Date | null) => setEndDate(date)}
-          className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         />
       </div>
-      <div className="shrink-0">
+      <div className="w-full md:w-auto">
         <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Thương hiệu</label>
         <select 
           value={brandId} 
           onChange={(e) => setBrandId(e.target.value)}
-          className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
       </div>
-      <div className="shrink-0">
+      <div className="w-full md:w-auto">
         <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nhân viên</label>
         <select 
           value={staffName} 
           onChange={(e) => setStaffName(e.target.value)}
-          className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
         </select>
       </div>
-      <div className="shrink-0">
+      <div className="w-full md:w-auto">
         <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nhóm SP</label>
         <select 
           value={categoryId} 
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
