@@ -4,6 +4,81 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-06-29 (Claude Coordinator) — Session wrap: Supabase migration complete
+
+**Trigger:** End of Claude session. Final state summary cho Codex review queue.
+
+### Session summary (2026-06-27 → 2026-06-29)
+
+Major work completed (~35 commits, no push per user rule):
+
+| Phase | Description | Status |
+|---|---|---|
+| Phase 9 apply | 5 BTP PRODUCTION_YIELD rows inserted | ✅ |
+| MAC drift diagnostic | 2 root cause scripts (Codex refresh will investigate) | ✅ |
+| UI-12 mobile heatmap | Refactor flat list → day-grouped accordion | ✅ |
+| UI-13 mobile tables | Card fallback cho 4 report tables | ✅ |
+| UI-17 item ID | Show full ID, remove copy button | ✅ |
+| UI-18 inventory cards | Mobile card layout cho inventory items | ✅ |
+| UI-8/15 PO form polish | Placeholder + responsive inputs | ✅ |
+| Phase 6.2 script cleanup | 49 one-off scripts deleted (156 → 107) | ✅ |
+| Husky pre-commit hook | Enforce `tsc --noEmit` (caught JSX syntax bug) | ✅ |
+| TS errors fix | JSX fragment wrap + batch-sheets-orders restore | ✅ |
+| **Supabase migration Phase A-F** | Full migration + cleanup + deploy | ✅ |
+| Shim pagination fix | findAll/findAllNoCache paginate (>1000 rows) | ✅ |
+| Edge function fix | Column align + no duplicate header | ✅ |
+| Sheet cleanup | Truncate polluted rows + re-backup clean | ✅ |
+
+### Final state
+
+- Tests: **199/199 pass**.
+- TS: **0 errors**.
+- Pre-commit hook: active.
+- Working tree: clean.
+- Branch: `main`, 29 commits ahead of `origin/main`, **NOT pushed** (per user rule).
+- Supabase: 27 tables + 3 migrations + sync_state, 25/27 PARITY.
+- Edge function `backup-to-sheets`: deployed + tested (1071 orders + 1521 lines in 16s).
+- Sheet Orders_V2 + Order_Lines_V2: clean (0 pollution, 0 duplicates).
+- Auth: swapped to Supabase users table.
+- Husky pre-commit: enforces tsc on every commit.
+
+### Codex review queue (refresh 1 Jul 15:44)
+
+Priority order:
+
+1. **MAC drift root cause** — 101 mismatches pre-existing (BTP_SHORTFALL 89, MAC_REPRICE 12). Diagnostic scripts: `scripts/diagnose-mac-drift-root-cause.ts`, `scripts/inspect-mac-drift-line.ts`. Hypotheses flagged in earlier tracking entry.
+2. **Supabase migration full review** — Phase A-F retroactive. Files: `lib/supabase.ts`, `lib/sheets_db.ts` (shim), `lib/sheets-source.ts` (read-only source), `supabase/migrations/0001_init_schema.sql` + `0002_relax_orders_unique.sql` + `0003_sync_state.sql`, `supabase/functions/backup-to-sheets/index.ts`, `lib/auth.ts`, `scripts/migrate-sheet-to-supabase.ts` + verify scripts. Check: schema correctness, FK constraints, RLS policies (currently default deny + service role bypass), shim edge cases, edge function logic.
+3. **Phase 9 retroactive review** — 5 PRODUCTION_YIELD rows in Stock_Ledger with reference `PHASE9-NEGATIVE-STOCK-2026-06-26`. Pre-apply snapshot: `docs/audits/2026-06-27-phase9-pre-apply-snapshot.txt`.
+4. **`updateMany` edge case tests** — Codex follow-up from commit `58b4ace`. Current tests only cover happy path.
+5. **June 2026 sales backfill post-hoc review** — Commit `5654581`. Verbal approval without Codex review.
+6. **Topping standalone post-hoc review** — Commits `c561a7e`, `4eefd8a`, `6a04c21`, `81f9f3d`, `079e661`, Antigravity commit `ca1cc60`. CAT-007 catalog mutation + reports data flow.
+
+### Handoff freshness checklist (Codex session start)
+
+```
+1. rtk git status              # clean
+2. rtk git log -10             # recent commits
+3. rtk git log origin/main..HEAD  # 29 commits ahead, not pushed
+4. Read DEVELOPMENT-TRACKING.md (this file, 3 newest)
+5. Read docs/audits/codex-handoff-2026-06-25.md
+6. Run verify gates:
+   - rtk node_modules/.bin/vitest.cmd run --reporter=dot     # 199/199
+   - rtk node_modules/.bin/tsc.cmd --noEmit                  # 0 errors
+   - rtk node_modules/.bin/vite-node.cmd scripts/audit-current-stock.ts  # 0 negative
+   - rtk node_modules/.bin/vite-node.cmd scripts/audit-mac-cogs-drift.ts # 101 pre-existing
+7. Pick task từ priority list above
+```
+
+### Notes cho Codex
+
+- Mọi thay đổi Claude mark `// Claude code — <phase>` ở code/commit message.
+- Husky pre-commit hook sẽ run `tsc --noEmit` trên mỗi commit. Nếu block do TS error, fix hoặc `--no-verify` (WIP only).
+- Sheet backup đã clean. Edge function đã fix + redeploy. Cron schedule pending (manual setup via Supabase dashboard).
+- 6 orphan rows (5 Order_Lines + 1 Order_Event) correctly skipped during migration — pre-existing data integrity issue in source Sheets (orders `ord-eb0aeea2...`, `ord-528a2c85...` không tồn tại).
+- Antigravity đã hoàn tất UI polish phase (UI-12/13/17/18). Pending: topping standalone UI cho POS toggle (3 files: actions.ts, ToppingsManager.tsx, page.tsx). Spec trong `docs/superpowers/specs/2026-06-27-topping-standalone-design.md`.
+
+---
+
 ## 2026-06-28 (Claude) — Shim pagination fix (reports thiếu data)
 
 **Trigger:** Anh báo reports hiển thị thiếu dữ liệu sau Supabase migration.
