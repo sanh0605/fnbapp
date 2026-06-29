@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-06-29T02:36:08.317Z",
+  "mode": "APPLY",
+  "sheet_name": "Orders_V2",
+  "table_name": "orders_v2",
+  "source_count": 1098,
+  "target_existing_count": 1071,
+  "missing_count": 27,
+  "skipped_no_id_count": 0,
+  "skipped_orphan_fk_count": 0,
+  "inserted_count": 27,
+  "sample_missing_ids": [
+    "ord-24766bea-81cf-4541-b67d-268735f0aa51",
+    "ord-33eb93bf-6445-4aa0-b37b-16ab050cf94d",
+    "ord-16dc8d66-fd5c-4add-a0a2-2a2ad8870c83",
+    "ord-8f595a1a-fb81-4c42-b5d3-3ac591923fc7",
+    "ord-61267137-001a-43a5-98b7-b2c28a80d18f",
+    "ord-2c04844d-5faf-4dd4-bdc3-ec1fc2d02a40",
+    "ord-10a27fa8-d45b-4be0-afc0-217ba4e2c10c",
+    "ord-f4059b97-b46f-4aa7-90fa-70d4d2029020",
+    "ord-f0eee8f3-41ab-4fee-b9a7-9caffa23d68c",
+    "ord-4d5e1057-33b4-4848-8968-51be025dc076"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-06-29T02:36:16.676Z",
+  "mode": "APPLY",
+  "sheet_name": "Order_Events",
+  "table_name": "order_events",
+  "source_count": 1104,
+  "target_existing_count": 1075,
+  "missing_count": 28,
+  "skipped_no_id_count": 0,
+  "skipped_orphan_fk_count": 1,
+  "inserted_count": 28,
+  "sample_missing_ids": [
+    "evt-823b81b9-cad4-4bcc-a415-8d90d03c804a",
+    "evt-9a3b5a15-869b-43cc-a14d-d431b126f8e3",
+    "evt-8827c7b8-c4c5-40da-b30a-a6d9c7363fcf",
+    "evt-c4eb316a-f78a-45d6-b696-0bab11250759",
+    "evt-98cc3dfe-e2e8-4641-8687-6c95fd0b6696",
+    "evt-bfbb40e6-d8bf-41f3-802e-20afebfcd89a",
+    "evt-8778d586-d3e9-4896-8355-7cd601d52401",
+    "evt-aa226483-a81c-4a02-8b87-0fbfeba841a9",
+    "evt-482c1e60-74d8-4900-96da-fcff103478e0",
+    "evt-8910b545-4e8b-4763-8626-3d77ae58fcf2"
+  ]
+}

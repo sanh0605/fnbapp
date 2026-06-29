@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-06-29T02:36:20.721Z",
+  "mode": "APPLY",
+  "sheet_name": "Stock_Ledger",
+  "table_name": "stock_ledger",
+  "source_count": 5307,
+  "target_existing_count": 5216,
+  "missing_count": 86,
+  "skipped_no_id_count": 0,
+  "skipped_orphan_fk_count": 0,
+  "inserted_count": 86,
+  "sample_missing_ids": [
+    "stk-a376ffeb-bc21-47aa-bd3b-6a026558d434",
+    "stk-31f10e1a-b00f-49d9-a316-9dfca007e21a",
+    "stk-dd1e222c-edbd-4ecb-9888-3322c0ab4e88",
+    "stk-fae52543-5cf3-47ce-bd1a-9aac058ac82c",
+    "stk-cbd1b00a-33eb-4bf7-89c6-61de313ab94d",
+    "stk-1a464925-e5fe-4b5b-b625-466050fd08bc",
+    "stk-1774b2d5-5b40-4e9f-8a61-dcdfec85b7e6",
+    "stk-ad60a358-39e2-43cf-b72b-381fcf7de76a",
+    "stk-ac00655b-f522-47f6-94ff-e8cf9e557c87",
+    "stk-e03dc332-7149-4c97-ac9b-0d933cb63184"
+  ]
+}
