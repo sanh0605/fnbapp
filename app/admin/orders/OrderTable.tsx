@@ -159,50 +159,50 @@ export default function OrderTable({
         title="Quản lý Đơn hàng"
         subtitle="Quản lý và xem lại tất cả các đơn hàng đã được tạo."
       >
-        <div className="shrink-0">
+        <div className="w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm mã đơn</label>
           <input
             type="text"
             placeholder="VD: PHD000001"
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Từ ngày</label>
           <CustomDatePicker
             selected={startDate}
             onChange={(date: Date | null) => { setStartDate(date); setCurrentPage(1); }}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đến ngày</label>
           <CustomDatePicker
             selected={endDate}
             onChange={(date: Date | null) => { setEndDate(date); setCurrentPage(1); }}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">PT thanh toán</label>
           <select
             value={paymentFilter}
             onChange={(e) => { setPaymentFilter(e.target.value); setCurrentPage(1); }}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả</option>
             <option value="Tien mat">Tiền mặt</option>
             <option value="Chuyen khoan">Chuyển khoản</option>
           </select>
         </div>
-        <div className="shrink-0">
+        <div className="w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Thương hiệu</label>
           <select
             value={brandFilter}
             onChange={(e) => { setBrandFilter(e.target.value); setCurrentPage(1); }}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả</option>
             {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}

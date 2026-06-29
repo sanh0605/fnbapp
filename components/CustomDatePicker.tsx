@@ -49,7 +49,9 @@ export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
         wrapperClassName="w-full"
         isClearable
         readOnly={isMobile}
+        withPortal={isMobile}
         {...props}
+        {...({ inputMode: "none" } as any)}
       />
     );
   }
