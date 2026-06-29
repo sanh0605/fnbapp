@@ -6,17 +6,29 @@ interface ProductTableProps {
   uniqueSizes: string[];
 }
 
-export default function ProductTable({ title, items, uniqueSizes }: ProductTableProps) {
+export default function ProductTable({ title, items, uniqueSizes: _propUniqueSizes }: ProductTableProps) {
   const totalQtyAll = items.reduce((s, i) => s + i.totalQty, 0);
   const totalRevenueAll = items.reduce((s, i) => s + i.totalRevenue, 0);
   
+  // 1. Find all distinct sizes present in these specific items
+  const sizeSet = new Set<string>();
+  items.forEach(item => {
+    Object.keys(item.sizes || {}).forEach(size => sizeSet.add(size));
+  });
+  
+  let tableUniqueSizes = Array.from(sizeSet).sort();
+  // 2. If there is only 1 size (or none), do not separate quantity by size
+  if (tableUniqueSizes.length <= 1) {
+    tableUniqueSizes = [];
+  }
+
   const totalQtyBySize: Record<string, number> = {};
-  for (const size of uniqueSizes) {
+  for (const size of tableUniqueSizes) {
     totalQtyBySize[size] = 0;
   }
   
   for (const item of items) {
-    for (const size of uniqueSizes) {
+    for (const size of tableUniqueSizes) {
       if (item.sizes[size]) {
         totalQtyBySize[size] += item.sizes[size];
       }
@@ -36,7 +48,7 @@ export default function ProductTable({ title, items, uniqueSizes }: ProductTable
           <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
             <tr>
               <th className="px-4 py-3">Món</th>
-              {uniqueSizes.map(size => (
+              {tableUniqueSizes.map(size => (
                 <th key={size} className="px-4 py-3 text-right">Size {size}</th>
               ))}
               <th className="px-4 py-3 text-right text-gray-700">Tổng SL</th>
@@ -45,12 +57,12 @@ export default function ProductTable({ title, items, uniqueSizes }: ProductTable
           </thead>
           <tbody className="divide-y divide-gray-50">
             {items.length === 0 ? (
-              <tr><td colSpan={uniqueSizes.length + 3} className="text-center py-8 text-gray-400">Không có giao dịch</td></tr>
+              <tr><td colSpan={tableUniqueSizes.length + 3} className="text-center py-8 text-gray-400">Không có giao dịch</td></tr>
             ) : (
               items.map((item, i) => (
                 <tr key={i} className="hover:bg-gray-50 transition">
                   <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
-                  {uniqueSizes.map(size => (
+                  {tableUniqueSizes.map(size => (
                     <td key={size} className="px-4 py-3 text-right font-medium text-gray-500">
                       {item.sizes[size] ? item.sizes[size] : '-'}
                     </td>
@@ -65,7 +77,7 @@ export default function ProductTable({ title, items, uniqueSizes }: ProductTable
             <tfoot className="bg-gray-50 border-t-2 border-gray-200 sticky bottom-0 z-10 font-bold text-gray-900 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
               <tr>
                 <td className="px-4 py-3">Tổng cộng</td>
-                {uniqueSizes.map(size => (
+                {tableUniqueSizes.map(size => (
                   <td key={size} className="px-4 py-3 text-right">
                     {totalQtyBySize[size] > 0 ? totalQtyBySize[size].toLocaleString("vi-VN") : "-"}
                   </td>
@@ -93,7 +105,7 @@ export default function ProductTable({ title, items, uniqueSizes }: ProductTable
                   <span className="text-gray-400">Tổng SL:</span>
                   <span className="font-semibold text-gray-800">{item.totalQty}</span>
                 </div>
-                {uniqueSizes.filter(size => item.sizes[size]).map(size => (
+                {tableUniqueSizes.filter(size => item.sizes[size]).map(size => (
                   <div key={size} className="flex items-center gap-1 text-xs">
                     <span className="text-gray-400">Size {size}:</span>
                     <span className="font-medium text-gray-700">{item.sizes[size]}</span>
@@ -114,7 +126,7 @@ export default function ProductTable({ title, items, uniqueSizes }: ProductTable
                  <span className="text-gray-500">Tổng SL:</span>
                  <span className="font-bold text-gray-800">{totalQtyAll.toLocaleString("vi-VN")}</span>
               </div>
-              {uniqueSizes.filter(size => totalQtyBySize[size] > 0).map(size => (
+              {tableUniqueSizes.filter(size => totalQtyBySize[size] > 0).map(size => (
                 <div key={size} className="flex items-center gap-1 text-xs">
                   <span className="text-gray-400">Size {size}:</span>
                   <span className="font-medium text-gray-700">{totalQtyBySize[size].toLocaleString("vi-VN")}</span>
