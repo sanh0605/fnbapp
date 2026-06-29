@@ -95,8 +95,19 @@ function serializeRow(row: any, jsonColumns: Set<string>): any {
   for (const [key, value] of Object.entries(row)) {
     if (value instanceof Date) {
       out[key] = value.toISOString();
-    } else if (jsonColumns.has(key) && value !== null && typeof value === 'object') {
-      out[key] = JSON.stringify(value);
+    } else if (jsonColumns.has(key)) {
+      if (value === null) {
+        out[key] = "";
+      } else if (typeof value === 'object') {
+        const str = JSON.stringify(value);
+        if (str === "{}" || str === "[]") {
+          out[key] = "";
+        } else {
+          out[key] = str;
+        }
+      } else {
+        out[key] = value;
+      }
     } else {
       out[key] = value;
     }
@@ -261,8 +272,11 @@ function deserializeRow(data: any, jsonColumns: Set<string>): any {
       }
     } else if (value === '') {
       // Empty string becomes null for optional fields.
-      // Note: caller must ensure required fields are not empty.
-      out[key] = null;
+      if (jsonColumns.has(key)) {
+        out[key] = {}; // Satisfy Postgres jsonb NOT NULL constraint
+      } else {
+        out[key] = null;
+      }
     } else {
       out[key] = value;
     }
