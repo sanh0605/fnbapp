@@ -563,23 +563,36 @@ function splitLineCogsBySaleSource(
   const modifierCogs = new Map<string, number>();
   const orderById = new Map(orders.map(order => [order.id, order]));
 
+  // Claude code — perf Tier 3: pre-sort ledger by created_at once.
+  // Then for each line (also sorted by sale_time), use sliding window
+  // to find ledger slice. O(n+m) instead of O(n*m).
+  const ledgerSorted = [...(ledger as MacLedgerEntry[])].sort(
+    (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
+  );
+  const ledgerTimes = ledgerSorted.map(row => new Date(row.created_at || 0).getTime());
+
   const sortedLines = [...lines].sort((a, b) => {
     const aTime = orderById.get(a.order_id)?.created_at || "";
     const bTime = orderById.get(b.order_id)?.created_at || "";
     return new Date(aTime || 0).getTime() - new Date(bTime || 0).getTime();
   });
 
+  let ledgerCursor = 0;
   for (const line of sortedLines) {
     const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const variantKey = `${line.product_id}__${line.variant_id}`;
     const saleTime = orderById.get(line.order_id)?.created_at || "";
     const saleMs = new Date(saleTime || 0).getTime();
-    const ledgerBeforeSale = Number.isFinite(saleMs)
-      ? (ledger as MacLedgerEntry[]).filter(row => new Date(row.created_at || 0).getTime() < saleMs)
-      : (ledger as MacLedgerEntry[]);
+
+    // Sliding window: advance cursor while ledger time < saleMs.
+    while (ledgerCursor < ledgerTimes.length && ledgerTimes[ledgerCursor] < saleMs) {
+      ledgerCursor += 1;
+    }
+    const ledgerBeforeSale = ledgerSorted.slice(0, ledgerCursor);
+
     const allocations = computeSourceCogsForLine(
       recipe,
-      ledger as MacLedgerEntry[],
+      ledgerSorted,
       ledgerBeforeSale,
       saleTime,
       line.qty,

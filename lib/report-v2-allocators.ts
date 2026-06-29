@@ -162,20 +162,33 @@ export function breakdownCOGSByIngredient(
 
   const consumptionMaps = toConsumptionMaps(spContext);
   const macContext = toMacSemiProductContext(spContext);
+
+  // Claude code — perf Tier 3: pre-sort ledger by created_at once.
+  // Sliding window for ledger slice per line: O(n+m) instead of O(n*m).
+  const ledgerSorted = [...(ledger as MacLedgerEntry[])].sort(
+    (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
+  );
+  const ledgerTimes = ledgerSorted.map(row => new Date(row.created_at || 0).getTime());
+
   const sortedLines = [...lines].sort((a, b) => {
     const aTime = orderById.get(a.order_id)?.created_at || "";
     const bTime = orderById.get(b.order_id)?.created_at || "";
     return new Date(aTime || 0).getTime() - new Date(bTime || 0).getTime();
   });
 
+  let ledgerCursor = 0;
   for (const line of sortedLines) {
     if (line.cost_at_sale <= 0) continue;
 
     const saleTime = orderById.get(line.order_id)?.created_at || "";
     const saleMs = new Date(saleTime || 0).getTime();
-    const ledgerBeforeSale = Number.isFinite(saleMs)
-      ? (ledger as MacLedgerEntry[]).filter(row => new Date(row.created_at || 0).getTime() < saleMs)
-      : (ledger as MacLedgerEntry[]);
+
+    // Sliding window: advance cursor while ledger time < saleMs.
+    while (ledgerCursor < ledgerTimes.length && ledgerTimes[ledgerCursor] < saleMs) {
+      ledgerCursor += 1;
+    }
+    const ledgerBeforeSale = ledgerSorted.slice(0, ledgerCursor);
+
     const balances = buildInventoryBalances(ledgerBeforeSale, saleTime);
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps);
@@ -185,7 +198,7 @@ export function breakdownCOGSByIngredient(
         ...row,
         rawCost: row.quantity * getMacUnitCostWithRecipeFallback(
           row.item_reference,
-          ledger as MacLedgerEntry[],
+          ledgerSorted,
           saleTime,
           macContext,
         ),

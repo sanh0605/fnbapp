@@ -33,12 +33,24 @@ function normalizeTableName(sheetName: string): string {
 
 const getCacheTag = (sheetName: string) => `sheets-${sheetName}`;
 
-// Static sheets rarely change (5 min), dynamic sheets change often (60s)
+// Claude code — Supabase migration perf: cache TTL bumped.
+// Postgres data changes less often than Sheets did. Writes call
+// revalidateTag to invalidate on mutation, so longer TTL is safe.
+// Static (reference) tables: 30 min. Catalog: 10 min. Transactions: 2 min.
 const STATIC_SHEETS = new Set([
   'Units', 'Item_Categories', 'Product_Categories', 'Brands',
   'Suppliers', 'Users',
 ]);
-const getRevalidation = (sheetName: string) => STATIC_SHEETS.has(sheetName) ? 300 : 60;
+const CATALOG_SHEETS = new Set([
+  'Products', 'Product_Variants', 'Modifiers', 'Recipes', 'Promotions',
+  'Base_Ingredients', 'Semi_Products', 'Purchased_Items', 'UOM_Conversions',
+  'Product_Price_History',
+]);
+const getRevalidation = (sheetName: string) => {
+  if (STATIC_SHEETS.has(sheetName)) return 1800;  // 30 min
+  if (CATALOG_SHEETS.has(sheetName)) return 600;  // 10 min
+  return 120;  // 2 min for transactions (Orders, Lines, Events, Ledger, etc.)
+};
 
 // ============================================================================
 // Deprecated Google Sheets exports (kept for back-compat with scripts that
