@@ -20,19 +20,6 @@ interface CustomDatePickerProps {
 
 export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
   ({ name, selected, onChange, placeholderText, className, ...props }, ref) => {
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-      const checkMobile = () => {
-        setIsMobile(
-          window.matchMedia("(max-width: 768px)").matches ||
-          ("ontouchstart" in window) ||
-          (navigator.maxTouchPoints > 0)
-        );
-      };
-      checkMobile();
-    }, []);
-
     return (
       <DatePicker
         name={name}
@@ -48,8 +35,6 @@ export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
         className={className || "w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"}
         wrapperClassName="w-full"
         isClearable
-        readOnly={isMobile}
-        withPortal={isMobile}
         {...props}
         {...({ inputMode: "none" } as any)}
       />
