@@ -133,7 +133,7 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
           ingredients_json: normalizedIngredientsJson,
           status: "ACTIVE",
           start_date: nowIso,
-          end_date: "",
+          end_date: null,
           created_at: nowIso,
         });
       }
@@ -148,7 +148,7 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
         ingredients_json: normalizedIngredientsJson,
         status: "ACTIVE",
         start_date: nowIso,
-        end_date: "",
+        end_date: null,
         created_at: nowIso,
       });
     }

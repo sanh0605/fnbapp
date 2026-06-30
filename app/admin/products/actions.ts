@@ -86,26 +86,22 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
 
       // -- XỬ LÝ LỊCH SỬ GIÁ BÁN --
       if (priceChanged) {
-        // Tìm history đang active của variant này
-        const activePriceHistory = allPriceHistory.find((h:any) => 
-          h.variant_id === variantId && (!h.end_date || h.end_date === "")
-        );
-        
-        if (activePriceHistory) {
-          // Đóng history cũ
-          await update(PRICE_HISTORY_SHEET, activePriceHistory.id, {
-            end_date: nowIso
-          });
-        }
-        
-        // Tạo history mới
         const phId = await generateNewId(PRICE_HISTORY_SHEET, "PPH");
+        
+        // Lấy giá cũ nếu có (bản ghi gần nhất)
+        const sortedHistory = allPriceHistory
+          .filter((h: any) => h.variant_id === variantId)
+          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        
+        const oldPrice = sortedHistory.length > 0 ? sortedHistory[0].new_price : null;
+
         await insert(PRICE_HISTORY_SHEET, {
           id: phId,
           variant_id: variantId,
-          price: v.price,
-          created_at: nowIso,
-          end_date: ""
+          old_price: oldPrice,
+          new_price: v.price,
+          effective_at: nowIso,
+          created_at: nowIso
         });
       }
 
@@ -133,7 +129,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
             target_id: variantId,
             ingredients_json: ingredientsJsonString,
             created_at: nowIso,
-            end_date: ""
+            end_date: null
           });
         }
       } else {
@@ -145,7 +141,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
           target_id: variantId,
           ingredients_json: ingredientsJsonString,
           created_at: nowIso,
-          end_date: ""
+          end_date: null
         });
       }
     }
