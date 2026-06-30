@@ -181,9 +181,15 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
           <div className="text-gray-600">
             Tổng cộng: <span className="font-bold text-gray-900">{items.length}</span> thành phần
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-lg font-medium text-gray-600">Tổng Giá Vốn:</span>
-            <span className="text-3xl font-black text-orange-600">{Math.round(totalCost).toLocaleString()}đ</span>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-4">
+              <span className="text-lg font-medium text-gray-600">Tổng Giá Vốn:</span>
+              <span className="text-3xl font-black text-orange-600">{Math.round(totalCost).toLocaleString()}đ</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-gray-500">Giá bán dự kiến (COGS 40%):</span>
+              <span className="text-xl font-bold text-indigo-600">{Math.round(totalCost / 0.4).toLocaleString()}đ</span>
+            </div>
           </div>
         </div>
       </div>
