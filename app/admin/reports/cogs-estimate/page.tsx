@@ -23,7 +23,7 @@ export default async function CogsEstimatePage() {
     const r = recipes.find((x: any) => x.target_type === "SEMI_PRODUCT" && x.target_id === s.id);
     if (r && r.ingredients_json) {
       try { semiProductRecipes.set(s.id, JSON.parse(r.ingredients_json)); } catch (e) {}
-      semiProductYields.set(s.id, r.yield_quantity ? Number(r.yield_quantity) : 1);
+      semiProductYields.set(s.id, s.batch_yield ? Number(s.batch_yield) : 1);
     }
   }
   const semiContext: MacSemiProductContext = { semiProductRecipes, semiProductYields };
