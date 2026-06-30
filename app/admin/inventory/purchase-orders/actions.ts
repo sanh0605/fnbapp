@@ -84,7 +84,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       // Claude code — CODE-9: batch remove để tránh fail-between mất dữ liệu.
       // Trước đây loop remove từng row; nếu fail giữa chừng → trạng thái nửa xóa.
       const existingLines = await findAll("Purchase_Order_Lines");
-      const oldLineIds = existingLines.filter((l:any) => l.po_id === po_id).map((l:any) => l.id);
+      const oldLineIds = existingLines.filter((l:any) => (l.po_id === po_id || l.purchase_order_id === po_id)).map((l:any) => l.id);
       if (oldLineIds.length > 0) {
         await removeMany("Purchase_Order_Lines", oldLineIds);
       }
@@ -132,7 +132,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
 
       lineRows.push({
         id: line_id,
-        po_id,
+        purchase_order_id: po_id,
         purchased_item_id: line.purchased_item_id,
         unit: line.unit,
         quantity: line.quantity,

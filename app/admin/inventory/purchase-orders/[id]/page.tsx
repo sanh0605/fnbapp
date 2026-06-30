@@ -21,7 +21,7 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
     notFound();
   }
 
-  const poLines = lines.filter((l: any) => l.po_id === params.id);
+  const poLines = lines.filter((l: any) => (l.po_id === params.id || l.purchase_order_id === params.id));
   const isDraft = po.status === "DRAFT";
 
   return (
