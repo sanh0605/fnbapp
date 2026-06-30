@@ -133,8 +133,8 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       currentLineNum++;
       const line_subtotal = Number(line.subtotal);
 
-      // Calculate unit price backwards
-      const unit_price = Number(line.quantity) > 0 ? line_subtotal / Number(line.quantity) : 0;
+      // Calculate unit price backwards and round to avoid float in bigint column
+      const unit_price = Number(line.quantity) > 0 ? Math.round(line_subtotal / Number(line.quantity)) : 0;
 
       lineRows.push({
         id: line_id,
@@ -143,7 +143,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         unit: line.unit,
         quantity: line.quantity,
         unit_price: unit_price,
-        subtotal: line_subtotal,
+        subtotal: Math.round(line_subtotal),
         conversion_id: line.conversion_id || "",
       });
 
@@ -174,7 +174,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
           reference_id: po_id,
           item_reference: receipt.item_reference,
           quantity_change: receipt.quantity_change,
-          unit_cost: receipt.unit_cost,
+          unit_cost: Math.round(receipt.unit_cost),
           created_at: effectiveDate,
         });
       }
