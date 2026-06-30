@@ -436,7 +436,8 @@ export async function submitStockAdjustment(data: any, _clientRole?: string, _cl
       difference: data.difference,
       reason: data.reason || "",
       status: isApproved ? "APPROVED" : "PENDING",
-      created_by: username,
+      created_by_name: username,
+      created_by_id: auth.actor.id,
       created_at: nowIso,
       approved_by: isApproved ? username : "",
       approved_at: isApproved ? nowIso : ""

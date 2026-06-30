@@ -78,7 +78,7 @@ export default function StockTable({
                     <div className="text-sm text-gray-500">
                       Thực tế: <span className="font-bold text-gray-900">{adj.actual_qty}</span> (Lệch: {adj.difference > 0 ? '+' : ''}{adj.difference}) - Lý do: {adj.reason}
                     </div>
-                    <div className="text-xs text-gray-400 mt-1">Báo cáo bởi: {adj.created_by} lúc {formatDateTime(adj.created_at, { withSeconds: true })}</div>
+                    <div className="text-xs text-gray-400 mt-1">Báo cáo bởi: {adj.created_by_name} lúc {formatDateTime(adj.created_at, { withSeconds: true })}</div>
                   </div>
                   <div className="flex gap-2">
                     <button 
