@@ -123,8 +123,14 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     // 2. Create PO Lines & Stock Ledger — Claude code — CODE-9/CODE-15: accumulate + batch insert.
     const lineRows: any[] = [];
     const ledgerRows: any[] = [];
+    const baseLineIdStr = await generateNewId("Purchase_Order_Lines", "POL");
+    let currentLineNum = parseInt(baseLineIdStr.replace("POL-", ""), 10);
+    const baseLedgerIdStr = await generateNewId("Stock_Ledger", "STK");
+    let currentLedgerNum = parseInt(baseLedgerIdStr.replace("STK-", ""), 10);
+
     for (const line of lines) {
-      const line_id = await generateNewId("Purchase_Order_Lines", "POL");
+      const line_id = `POL-${currentLineNum.toString().padStart(3, '0')}`;
+      currentLineNum++;
       const line_subtotal = Number(line.subtotal);
 
       // Calculate unit price backwards
@@ -142,7 +148,8 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       });
 
       if (status === "COMPLETED") {
-        const ledger_id = await generateNewId("Stock_Ledger", "STK");
+        const ledger_id = `STK-${currentLedgerNum.toString().padStart(3, '0')}`;
+        currentLedgerNum++;
         const item = (purchasedItems as any[]).find((p: any) => p.id === line.purchased_item_id);
         if (!item) {
           throw new Error(`Không tìm thấy hàng mua vào ${line.purchased_item_id}`);
