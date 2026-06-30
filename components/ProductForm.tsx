@@ -94,6 +94,21 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
     setVariants(newVars);
   };
 
+  const calculateVariantCost = (variant: any) => {
+    let cost = 0;
+    for (const ing of variant.ingredients) {
+      if (!ing.ingredient_id) continue;
+      let mac = 0;
+      if (ing.ingredient_type === "BASE_INGREDIENT") {
+        mac = baseIngredients.find((b: any) => b.id === ing.ingredient_id)?.current_mac || 0;
+      } else {
+        mac = semiProducts.find((s: any) => s.id === ing.ingredient_id)?.current_mac || 0;
+      }
+      cost += mac * (ing.quantity || 0);
+    }
+    return cost;
+  };
+
   return (
     <>
       {!isEdit ? (
@@ -184,6 +199,12 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                           <div className="flex-1">
                             <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Giá bán (VNĐ)</label>
                             <input type="number" required min="0" value={variant.price} onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-bold text-indigo-700 focus:ring-orange-500" />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Giá vốn dự kiến (VNĐ)</label>
+                            <div className="w-full border border-transparent px-3 py-2 text-sm font-bold text-gray-500 bg-white rounded-md shadow-sm">
+                              {Math.round(calculateVariantCost(variant)).toLocaleString()}đ
+                            </div>
                           </div>
                           {variants.length > 1 && (
                             <button type="button" onClick={() => removeVariant(vIdx)} className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-md text-sm font-medium">Xoá Size</button>

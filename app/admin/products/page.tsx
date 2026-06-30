@@ -1,4 +1,5 @@
 import { findAll } from "@/lib/sheets_db";
+import { getMacUnitCostWithRecipeFallback, MacSemiProductContext } from "@/lib/mac-cogs";
 import ProductForm from "@/components/ProductForm";
 import ProductsClient from "./ProductsClient";
 import HistoryModal from "@/components/HistoryModal";
@@ -46,7 +47,7 @@ interface Unit {
 }
 
 export default async function ProductsPage() {
-  const [categories, products, variants, recipes, baseIngredients, semiProducts, allUnits, allPriceHistory]: [any[], any[], any[], Recipe[], BaseIngredient[], SemiProduct[], Unit[], PriceHistory[]] = await Promise.all([
+  const [categories, products, variants, recipes, baseIngredients, semiProducts, allUnits, allPriceHistory, ledger]: [any[], any[], any[], Recipe[], BaseIngredient[], SemiProduct[], Unit[], PriceHistory[], any[]] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
@@ -54,16 +55,38 @@ export default async function ProductsPage() {
     findAll("Base_Ingredients"),
     findAll("Semi_Products"),
     findAll("Units"),
-    findAll("Product_Price_History")
+    findAll("Product_Price_History"),
+    findAll("Stock_Ledger")
   ]);
 
   const activeCategories = categories.filter(c => c.status !== "DELETED");
   const activeProducts = products.filter(p => p.status !== "DELETED");
   const activeVariants = variants.filter(v => v.status !== "DELETED");
   
-  const activeBaseIngredients = baseIngredients.filter(b => b.status !== "DELETED");
-  const activeSemiProducts = semiProducts.filter(s => s.status !== "DELETED");
+  const activeBaseIngredientsRaw = baseIngredients.filter(b => b.status !== "DELETED");
+  const activeSemiProductsRaw = semiProducts.filter(s => s.status !== "DELETED");
   const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
+
+  const semiProductRecipes = new Map();
+  const semiProductYields = new Map();
+  for (const s of activeSemiProductsRaw) {
+    const r = recipes.find(x => x.target_type === "SEMI_PRODUCT" && x.target_id === s.id);
+    if (r && r.ingredients_json) {
+      try { semiProductRecipes.set(s.id, JSON.parse(r.ingredients_json)); } catch (e) {}
+      semiProductYields.set(s.id, r.yield_quantity ? Number(r.yield_quantity) : 1);
+    }
+  }
+  const semiContext: MacSemiProductContext = { semiProductRecipes, semiProductYields };
+  
+  const now = new Date().toISOString();
+  const activeBaseIngredients = activeBaseIngredientsRaw.map(b => ({
+    ...b,
+    current_mac: getMacUnitCostWithRecipeFallback(b.id, ledger, now, semiContext)
+  }));
+  const activeSemiProducts = activeSemiProductsRaw.map(s => ({
+    ...s,
+    current_mac: getMacUnitCostWithRecipeFallback(s.id, ledger, now, semiContext)
+  }));
 
   // Build the rich data for the form
   const enhancedProducts = activeProducts.map(p => {
