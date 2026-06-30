@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Báo cáo Bán hàng", href: "/admin/reports/sales" },
         { name: "Báo cáo Lãi lỗ", href: "/admin/reports/pnl" },
         { name: "Báo cáo Tồn kho", href: "/admin/reports/stock" },
-        { name: "Dự kiến Giá vốn (COGS)", href: "/admin/reports/cogs-estimate" },
+        { name: "Công cụ Dự toán COGS", href: "/admin/reports/cogs-estimate" },
       ]
     },
   ];
