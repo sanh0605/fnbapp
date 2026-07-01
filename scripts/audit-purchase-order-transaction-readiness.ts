@@ -61,10 +61,16 @@ async function probeRemote(): Promise<void> {
   }
 }
 
-if (process.argv.includes("--remote")) {
-  await probeRemote();
-} else {
-  console.log("Remote status: SKIPPED (pass --remote for a non-writing guard probe)");
+async function main(): Promise<void> {
+  if (process.argv.includes("--remote")) {
+    await probeRemote();
+  } else {
+    console.log("Remote status: SKIPPED (pass --remote for a non-writing guard probe)");
+  }
+  console.log("No data was written.");
 }
 
-console.log("No data was written.");
+main().catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});

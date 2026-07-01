@@ -81,6 +81,7 @@ vite.config.ts.timestamp-*
 # WS-1 cleanup: scratch files, generated output, test caches
 scratch/
 scripts/output/
+recovery-snapshots/
 .playwright-mcp/
 *.migration-report.json
 *.audit-report.json
