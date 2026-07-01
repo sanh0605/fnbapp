@@ -22,13 +22,13 @@ declare
   v_line_count integer;
   v_ledger_count integer;
 begin
-  if jsonb_typeof(p_order) <> 'object' then
+  if p_order is null or jsonb_typeof(p_order) <> 'object' then
     raise exception 'p_order must be a JSON object';
   end if;
-  if jsonb_typeof(p_lines) <> 'array' then
+  if p_lines is null or jsonb_typeof(p_lines) <> 'array' then
     raise exception 'p_lines must be a JSON array';
   end if;
-  if jsonb_typeof(p_ledger) <> 'array' then
+  if p_ledger is null or jsonb_typeof(p_ledger) <> 'array' then
     raise exception 'p_ledger must be a JSON array';
   end if;
 

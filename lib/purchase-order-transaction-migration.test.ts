@@ -16,6 +16,24 @@ describe("atomic purchase order migration", () => {
     expect(migration).toContain("from public.purchase_orders");
   });
 
+  it("rejects null payloads before ID allocation or writes", () => {
+    const validationPosition = migration.indexOf(
+      "if p_order is null or jsonb_typeof(p_order) <> 'object'",
+    );
+    const allocationPosition = migration.indexOf(
+      "pg_advisory_xact_lock",
+    );
+
+    expect(validationPosition).toBeGreaterThan(-1);
+    expect(validationPosition).toBeLessThan(allocationPosition);
+    expect(migration).toContain(
+      "if p_lines is null or jsonb_typeof(p_lines) <> 'array'",
+    );
+    expect(migration).toContain(
+      "if p_ledger is null or jsonb_typeof(p_ledger) <> 'array'",
+    );
+  });
+
   it("replaces the order, lines, and receipt ledger inside one function", () => {
     expect(migration).toContain(
       "create or replace function public.save_purchase_order_atomic",
