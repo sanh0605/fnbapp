@@ -4,6 +4,7 @@ import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db"
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBBaseIngredient, DBUnit } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Base_Ingredients";
 const PATH = "/admin/inventory/base-ingredients";
@@ -26,6 +27,9 @@ export async function getBaseIngredientsData(): Promise<{
 }
 
 export async function addBaseIngredient(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   try {
     const itemsJson = formData.get("items_json") as string;
 
@@ -75,6 +79,9 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
 }
 
 export async function updateBaseIngredient(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const base_unit = formData.get("base_unit") as string;
@@ -94,6 +101,9 @@ export async function updateBaseIngredient(formData: FormData): Promise<ActionRe
 }
 
 export async function deleteBaseIngredientAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
 

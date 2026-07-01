@@ -4,6 +4,7 @@ import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, softDeleteEntity, type ActionResponse } from "@/lib/shared-actions";
 import type { DBProductCategory, DBProduct } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Product_Categories";
 const PATH = "/admin/products/categories";
@@ -32,6 +33,9 @@ export async function getCategoriesWithCounts(): Promise<{
 }
 
 export async function saveCategory(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const name = formData.get("name") as string;
   if (!name) return fail("Vui lòng nhập tên danh mục");
 
@@ -48,6 +52,9 @@ export async function saveCategory(formData: FormData): Promise<ActionResponse> 
 }
 
 export async function updateCategory(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   if (!id || !name) return fail("Dữ liệu không hợp lệ");
@@ -63,6 +70,9 @@ export async function updateCategory(formData: FormData): Promise<ActionResponse
 }
 
 export async function deleteCategory(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
   return softDeleteEntity(SHEET, id, PATH);

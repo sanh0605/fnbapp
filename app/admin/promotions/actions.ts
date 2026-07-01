@@ -4,6 +4,7 @@ import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db"
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Promotions";
 const PATH = "/admin/promotions";
@@ -36,6 +37,9 @@ export async function getPromotionsData(): Promise<{
 // upsert logic (id present = update, absent = create with prefix "PRM"),
 // revalidation of both /admin/promotions and /pos
 export async function savePromotion(promoData: Record<string, any>): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   try {
     const data = {
       ...promoData,
@@ -70,6 +74,9 @@ export async function savePromotion(promoData: Record<string, any>): Promise<Act
 // --- COPY deletePromotion EXACTLY ---
 // PRESERVE: hard delete (remove), revalidation of both paths
 export async function deletePromotionAction(promoId: string): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   try {
     await remove(SHEET, promoId);
     revalidatePath(PATH);

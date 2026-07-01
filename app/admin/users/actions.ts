@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBUser } from "@/types/db";
 import bcrypt from "bcryptjs";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Users";
 const PATH = "/admin/users";
@@ -30,6 +31,9 @@ export async function getUserById(id: string): Promise<DBUser | null> {
 
 // PRESERVE: duplicate username check, bcrypt.hash(password, 10), ID prefix "USR"
 export async function addUser(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const username = formData.get("username") as string;
   const role = formData.get("role") as string;
   const password = formData.get("password") as string;
@@ -57,6 +61,9 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
 
 // PRESERVE: hard delete, no admin protection check (matches current behavior)
 export async function deleteUserAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
 
@@ -72,6 +79,9 @@ export async function deleteUserAction(formData: FormData): Promise<ActionRespon
 
 // PRESERVE: conditional password update (only if non-blank), bcrypt hash
 export async function updateUser(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const role = formData.get("role") as string;
   const password = formData.get("password") as string;

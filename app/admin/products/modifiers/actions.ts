@@ -10,6 +10,7 @@ import {
   parseModifierIngredients,
   validateModifierIngredients,
 } from "@/lib/modifier-recipe";
+import { requireAdmin } from "@/lib/auth";
 
 const MODIFIER_SHEET = "Modifiers";
 const RECIPE_SHEET = "Recipes";
@@ -80,6 +81,9 @@ export async function getModifiersData(): Promise<{
 }
 
 export async function saveModifierAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const isEdit = formData.get("is_edit") === "true";
   const modifier_id = formData.get("id") as string;
   const name = formData.get("name") as string;
@@ -162,6 +166,9 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
 }
 
 export async function deleteModifierAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
 

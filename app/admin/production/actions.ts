@@ -4,6 +4,7 @@ import { findAll, insert, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBProductionOrder, DBProductionItem, DBSemiProduct, DBRecipe, DBBaseIngredient, DBUnit, DBStockLedger } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const PATH = "/admin/production";
 
@@ -34,6 +35,9 @@ export async function getProductionData(): Promise<{
 }
 
 export async function saveProductionOrder(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const semi_product_id = formData.get("semi_product_id") as string;
   const target_yield = Number(formData.get("target_yield") || 0);
   const consumedIngredientsJson = formData.get("consumed_ingredients") as string;

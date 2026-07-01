@@ -193,6 +193,9 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
 }
 
 export async function addPurchaseSource(name: string): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   if (!name) return fail("Vui lòng nhập tên nguồn");
   try {
     const id = await generateNewId("Purchase_Sources", "SRC");

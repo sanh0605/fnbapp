@@ -4,6 +4,7 @@ import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db"
 import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/shared-actions";
 import type { DBSupplier } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Suppliers";
 const PATH = "/admin/suppliers";
@@ -22,6 +23,9 @@ export async function addSupplier(formData: FormData): Promise<ActionResponse> {
   if (id) {
     return editSupplier(formData);
   }
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const name = formData.get("name") as string;
   const phone = (formData.get("phone") as string) || "";
   const tax_id = (formData.get("tax_id") as string) || "";
@@ -49,6 +53,9 @@ export async function addSupplier(formData: FormData): Promise<ActionResponse> {
 }
 
 export async function editSupplier(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const phone = (formData.get("phone") as string) || "";
@@ -75,6 +82,9 @@ export async function editSupplier(formData: FormData): Promise<ActionResponse> 
 }
 
 export async function deleteSupplierAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   if (!id) return fail("ID khong hop le");
   return deleteEntity(SHEET, id, PATH);

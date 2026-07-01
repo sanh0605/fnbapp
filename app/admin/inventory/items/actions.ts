@@ -4,6 +4,7 @@ import { findAll, insert, update, updateMany, remove, generateNewId } from "@/li
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Purchased_Items";
 const PATH = "/admin/inventory/items";
@@ -32,6 +33,9 @@ export async function getItemsData(): Promise<{
 }
 
 export async function addPurchasedItem(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
   const base_ingredient_id = formData.get("base_ingredient_id") as string;
@@ -76,6 +80,9 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
 }
 
 export async function updatePurchasedItem(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
@@ -174,6 +181,9 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
 }
 
 export async function deletePurchasedItemAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   try {
     await remove(SHEET, id);

@@ -3,6 +3,7 @@
 import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { requireAdmin } from "@/lib/auth";
 
 const PRODUCT_SHEET = "Products";
 const VARIANT_SHEET = "Product_Variants";
@@ -11,6 +12,9 @@ const RECIPE_SHEET = "Recipes";
 const PATH = "/admin/products";
 
 export async function saveProduct(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const category_id = formData.get("category_id") as string;
   const name = formData.get("name") as string;
@@ -164,6 +168,9 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
 }
 
 export async function deleteProduct(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
   try {

@@ -4,6 +4,7 @@ import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBSemiProduct, DBRecipe, DBBaseIngredient, DBUnit } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const SP_SHEET = "Semi_Products";
 const RECIPE_SHEET = "Recipes";
@@ -52,6 +53,9 @@ export async function getSemiProductsData(): Promise<{
 }
 
 export async function saveSemiProduct(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const isEdit = formData.get("is_edit") === "true";
   const name = formData.get("name") as string;
   const base_unit = formData.get("base_unit") as string;
@@ -141,6 +145,9 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
 }
 
 export async function deleteSemiProductAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   try {
     await update("Semi_Products", id, { status: "DELETED" });

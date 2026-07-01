@@ -2,6 +2,7 @@
 
 import { findAll } from "@/lib/sheets_db";
 import { createEntity, updateEntity, deleteEntity, type ActionResponse } from "@/lib/shared-actions";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Brands";
 const PATH = "/admin/brands";
@@ -16,6 +17,9 @@ export async function getBrands() {
 }
 
 export async function addBrand(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return { error: auth.error };
+
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
   const start_date = formData.get("start_date") as string;
@@ -26,6 +30,9 @@ export async function addBrand(formData: FormData): Promise<ActionResponse> {
 }
 
 export async function editBrand(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return { error: auth.error };
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const code = formData.get("code") as string;
@@ -37,6 +44,9 @@ export async function editBrand(formData: FormData): Promise<ActionResponse> {
 }
 
 export async function deleteBrand(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return { error: auth.error };
+
   const id = formData.get("id") as string;
   if (!id) return { error: "ID khong hop le" };
 

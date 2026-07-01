@@ -7,6 +7,9 @@ import { resolveActor, requireAdmin } from "@/lib/auth";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
 export async function addItemCategory(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const name = formData.get("name") as string;
   const system_type = formData.get("system_type") as string;
 
@@ -23,6 +26,9 @@ export async function addItemCategory(formData: FormData): Promise<ActionRespons
 }
 
 export async function updateItemCategory(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const system_type = formData.get("system_type") as string;
@@ -37,6 +43,9 @@ export async function updateItemCategory(formData: FormData): Promise<ActionResp
 }
 
 export async function deleteItemCategory(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   try {
     await remove("Item_Categories", id);
@@ -49,6 +58,9 @@ export async function deleteItemCategory(formData: FormData): Promise<ActionResp
 
 // --- BASE INGREDIENTS (Nhóm Nguyên Liệu) ---
 export async function addBaseIngredient(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const itemsJson = formData.get("items_json") as string;
   
   if (itemsJson) {
@@ -88,6 +100,9 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
 }
 
 export async function updateBaseIngredient(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const base_unit = formData.get("base_unit") as string;
@@ -107,6 +122,9 @@ export async function updateBaseIngredient(formData: FormData): Promise<ActionRe
 }
 
 export async function deleteBaseIngredient(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   try {
     await remove("Base_Ingredients", id);
@@ -119,6 +137,9 @@ export async function deleteBaseIngredient(formData: FormData): Promise<ActionRe
 
 // --- PURCHASED ITEMS (Hàng Hoá Mua Vào) ---
 export async function addPurchasedItem(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
   const base_ingredient_id = formData.get("base_ingredient_id") as string;
@@ -162,6 +183,9 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
 }
 
 export async function updatePurchasedItem(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
@@ -237,6 +261,9 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
 }
 
 export async function deletePurchasedItem(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   try {
     await remove("Purchased_Items", id);
@@ -249,6 +276,9 @@ export async function deletePurchasedItem(formData: FormData): Promise<ActionRes
 
 // --- UOM CONVERSIONS (Bảng Quy Đổi) ---
 export async function addConversion(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const purchased_item_id = formData.get("purchased_item_id") as string;
   const purchased_unit = formData.get("purchased_unit") as string;
   const conversion_rate = formData.get("conversion_rate") as string;
@@ -274,6 +304,9 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
 }
 
 export async function updateConversion(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const purchased_item_id = formData.get("purchased_item_id") as string;
   const purchased_unit = formData.get("purchased_unit") as string;
@@ -308,6 +341,9 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
 }
 
 export async function deleteConversion(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   try {
     await remove("UOM_Conversions", id);
@@ -320,6 +356,9 @@ export async function deleteConversion(formData: FormData): Promise<ActionRespon
 
 // --- UNITS (Đơn vị) ---
 export async function addUnit(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   
@@ -340,6 +379,9 @@ export async function addUnit(formData: FormData): Promise<ActionResponse> {
 }
 
 export async function updateUnit(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
@@ -355,6 +397,9 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
 }
 
 export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   try {
     await remove("Units", id);

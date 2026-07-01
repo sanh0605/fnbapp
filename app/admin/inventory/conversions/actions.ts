@@ -4,6 +4,7 @@ import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db"
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBUOMConversion, DBPurchasedItem, DBBaseIngredient, DBUnit } from "@/types/db";
+import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "UOM_Conversions";
 const PATH = "/admin/inventory/conversions";
@@ -30,6 +31,9 @@ export async function getConversionsData(): Promise<{
 }
 
 export async function addConversion(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const purchased_item_id = formData.get("purchased_item_id") as string;
   const purchased_unit = formData.get("purchased_unit") as string;
   const conversion_rate = formData.get("conversion_rate") as string;
@@ -59,6 +63,9 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
 }
 
 export async function updateConversion(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   const purchased_item_id = formData.get("purchased_item_id") as string;
   const purchased_unit = formData.get("purchased_unit") as string;
@@ -109,6 +116,9 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
 }
 
 export async function deleteConversionAction(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
 
