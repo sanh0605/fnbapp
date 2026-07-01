@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-01 (Antigravity) – Live Debugging & Bug Fixes
+
+**Trigger:** Live user support session. Required immediate fixes for engine/data correctness and UI syncing.
+
+### Completed Work
+| Phase | Description | Status |
+|---|---|---|
+| MAC / Cost Accuracy | Patched `batch_yield` handling in `products/page.tsx` & `cogs-estimate` to prevent cost inflation. | ✓ |
+| DB Constraint Sync | Changed `PromotionForm.tsx` to use `FLAT_VND` (passing DB check `promotions_discount_type_check`). | ✓ |
+| Duplicate Recipe Cleanup | Scoped down redundant/broken recipes for "Cà phê caramel kem muối". | ✓ |
+
+*Codex review requested for `batch_yield` math and `FLAT_VND` constraints in `docs/audits/antigravity-handoff-2026-07-01.md`.*
+
+---
+
 ## 2026-06-29 (Claude Coordinator) — Session wrap: Supabase migration complete
 
 **Trigger:** End of Claude session. Final state summary cho Codex review queue.
