@@ -23,9 +23,11 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
   (`81aca92`).
 - `[x]` Migration validation rejects null/malformed payloads before ID
   allocation (`29a9e3c`).
-- `[x]` Full test gate: 227/227 pass.
+- `[x]` Full test gate: 232/232 pass after snapshot tooling.
 - `[x]` Read-only readiness source audit: 8/8.
 - `[x]` Read-only remote probe: `NOT_DEPLOYED`.
+- `[x]` Initial immutable dual-source snapshot captured and verified:
+  `recovery-20260701T151428127Z` (108/108 files valid).
 
 ### Must not be skipped
 
@@ -33,7 +35,8 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 - `[!]` Re-run
   `scripts/audit-purchase-order-transaction-readiness.ts --remote`; required
   result: `READY`.
-- `[!]` Create a fresh immutable snapshot and hashes before any data repair.
+- `[!]` Create another fresh immutable snapshot immediately before migration
+  or data repair; operational data may have changed after the initial capture.
 - `[ ]` Switch `savePurchaseOrder` from adapter delete/reinsert to
   `savePurchaseOrderAtomic` in a separate commit.
 - `[ ]` Verify a forced RPC failure leaves PO, lines, and ledger unchanged.

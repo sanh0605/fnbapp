@@ -4,6 +4,34 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-01 (Codex) - Immutable dual-source recovery snapshot
+
+**Trigger:** The approved recovery contract requires raw, hashed snapshots
+before any schema deployment or historical data repair.
+
+### Completed
+
+- Added append-only snapshot primitives and SHA-256 verification.
+- Added Google Sheets batch capture for formatted, unformatted, and formula
+  representations.
+- Added paginated full-table Supabase capture for 27 mapped tables.
+- Added dry-run-by-default capture and read-only verification commands.
+- Captured run `recovery-20260701T151428127Z`.
+- Verified 108/108 data files; 9,664 Sheets rows and 10,646 Supabase rows.
+- Kept the full sensitive bundle local and gitignored.
+
+### Verification
+
+- Snapshot tests: 5/5 pass.
+- Full Vitest after snapshot tooling: 232/232 pass across 38 files.
+- Manifest SHA-256:
+  `7CBA4EB14D8D76946F73C88F13F460AEF880999A705524A66C55CB4A9284CB07`.
+- Receipt:
+  `docs/audits/2026-07-01-recovery-snapshot-receipt.md`.
+- No operational data was written.
+
+---
+
 ## 2026-07-01 (Codex) - Supabase integrity recovery Phase B prepared
 
 **Trigger:** Purchase-order writes still used non-atomic delete/reinsert,
