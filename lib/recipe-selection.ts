@@ -3,6 +3,7 @@ export type EffectiveRecipe = {
   target_type?: string;
   target_id?: string;
   status?: string;
+  ingredients_json?: string;
   start_date?: string | null;
   end_date?: string | null;
   created_at?: string;
