@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, it, expect, vi } from "vitest";
 import { buildOrderFromCart } from "@/lib/order-cart";
 import type { CartInput, ReferenceData } from "@/lib/order-cart";
 
@@ -34,6 +34,15 @@ const REF: ReferenceData = {
   recipes: [],
   base_ingredients: [],
 };
+
+beforeAll(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T00:00:00.000Z"));
+});
+
+afterAll(() => {
+  vi.useRealTimers();
+});
 
 describe("buildOrderFromCart", () => {
   it("throws on empty cart", () => {

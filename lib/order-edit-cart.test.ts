@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterAll, beforeAll, describe, it, expect, vi } from "vitest";
 import { buildEditedOrderFromCart } from "@/lib/order-edit-cart";
 import { makeSuaDauStandaloneOrder } from "@/lib/__tests__/fixtures";
 import type { CartInput, ReferenceData } from "@/lib/order-cart";
@@ -18,6 +18,15 @@ const REF: ReferenceData = {
   }],
   recipes: [], base_ingredients: [],
 };
+
+beforeAll(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-06-15T00:00:00.000Z"));
+});
+
+afterAll(() => {
+  vi.useRealTimers();
+});
 
 describe("buildEditedOrderFromCart", () => {
   it("preserves created_at from original order", () => {
