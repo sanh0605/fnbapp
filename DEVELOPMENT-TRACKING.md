@@ -4,6 +4,50 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-01 (Codex) - Supabase integrity recovery Phase B prepared
+
+**Trigger:** Purchase-order writes still used non-atomic delete/reinsert,
+read-max child IDs, and integer-rounded receipt costs after the Supabase
+migration.
+
+### Completed
+
+| Item | Commit | Verification |
+|---|---|---|
+| Preserve decimal PO receipt cost | `fdde00f` | Purchase ledger rebuild tests preserve `19.6` without rounding. |
+| Prepare atomic PO transaction RPC | `207b067` | RPC wrapper and SQL contract tests; migration not deployed. |
+| Replace PO child read-max IDs with UUID-backed IDs | `81aca92` | Write-plan tests cover completed, draft, incomplete draft, and fail-before-write cases. |
+| Add fail-closed migration readiness audit | `29a9e3c` | Source checks 8/8; remote probe `NOT_DEPLOYED`; no data written. |
+
+### Gates
+
+- Full Vitest: **227/227 pass** across 37 files.
+- Admin mutation auth audit: **17 files, 0 violations**.
+- Tracked source TypeScript errors introduced by Phase B: **0**.
+- Full TypeScript remains blocked only by preserved untracked debug scripts.
+- Migration SHA-256:
+  `c3c0793fd330bc474a039b5298974a18c77649503a6ce7745fcffc924fe19936`.
+- No schema migration or production data write was executed.
+
+### Read-only data baseline
+
+- Current stock: 5,924 ledger rows; 3 negative items (`ING-021`, `ING-015`,
+  `ING-030`).
+- MAC drift: 119 lines; expected COGS is +121,370 VND above stored COGS.
+- Purchase ledger: 23 reported mismatches; material rows are `PO-048 /
+  ING-022`, `PO-047 / ING-032`, and `PO-048 / ING-012`.
+- Purchase conversion audit: 0 ambiguous, 0 missing, 0 safe backfills.
+
+### Approval gate
+
+1. Review and deploy migration `0006_atomic_purchase_order_write.sql`.
+2. Confirm the remote guard probe reports `READY`.
+3. Take a fresh immutable source snapshot.
+4. Switch the PO action to the atomic RPC in a separate commit.
+5. Run rollback/failure smoke verification before any historical correction.
+
+---
+
 ## 2026-07-01 (Codex) - Supabase integrity recovery Phase A
 
 **Trigger:** High-risk review found migration compatibility, recipe selection,

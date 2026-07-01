@@ -13,6 +13,39 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 
 ---
 
+## 2026-07-01 - Supabase recovery Phase B approval gate
+
+### Prepared and verified
+
+- `[x]` Decimal PO receipt costs are preserved (`fdde00f`).
+- `[x]` Atomic PO RPC and migration are prepared but not deployed (`207b067`).
+- `[x]` PO line and receipt-ledger IDs no longer use read-max allocation
+  (`81aca92`).
+- `[x]` Migration validation rejects null/malformed payloads before ID
+  allocation (`29a9e3c`).
+- `[x]` Full test gate: 227/227 pass.
+- `[x]` Read-only readiness source audit: 8/8.
+- `[x]` Read-only remote probe: `NOT_DEPLOYED`.
+
+### Must not be skipped
+
+- `[!]` Review/deploy `supabase/migrations/0006_atomic_purchase_order_write.sql`.
+- `[!]` Re-run
+  `scripts/audit-purchase-order-transaction-readiness.ts --remote`; required
+  result: `READY`.
+- `[!]` Create a fresh immutable snapshot and hashes before any data repair.
+- `[ ]` Switch `savePurchaseOrder` from adapter delete/reinsert to
+  `savePurchaseOrderAtomic` in a separate commit.
+- `[ ]` Verify a forced RPC failure leaves PO, lines, and ledger unchanged.
+- `[ ]` Repair historical material PO rounding drift only through a reviewed,
+  idempotent recovery manifest.
+
+Current production baseline remains dirty: 3 negative stock items, 119 MAC
+drift lines (+121,370 VND), and 3 material PO cost mismatches. No production
+data was written during Phase B.
+
+---
+
 ## Pending hand-off tasks (by owner)
 
 Bảng tổng hợp các task đang chờ owner khác pick up. Chi tiết trong từng direction log entry bên dưới.
