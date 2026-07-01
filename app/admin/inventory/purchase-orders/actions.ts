@@ -4,7 +4,10 @@ import { findAll, insert, insertMany, update, generateNewId, remove, removeMany 
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource } from "@/types/db";
-import { buildPurchaseReceipt } from "@/lib/purchase-ledger-rebuild";
+import {
+  buildPurchaseReceipt,
+  buildPurchaseReceiptLedgerEntry,
+} from "@/lib/purchase-ledger-rebuild";
 import { requireAdmin } from "@/lib/auth";
 
 const PATH = "/admin/inventory/purchase-orders";
@@ -168,15 +171,11 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
           conversions: conversions as any[],
         });
 
-        ledgerRows.push({
+        ledgerRows.push(buildPurchaseReceiptLedgerEntry(receipt, {
           id: ledger_id,
-          transaction_type: "PO_RECEIPT",
-          reference_id: po_id,
-          item_reference: receipt.item_reference,
-          quantity_change: receipt.quantity_change,
-          unit_cost: Math.round(receipt.unit_cost),
-          created_at: effectiveDate,
-        });
+          purchaseOrderId: po_id,
+          createdAt: effectiveDate,
+        }));
       }
     }
 

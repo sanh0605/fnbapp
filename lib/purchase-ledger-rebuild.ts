@@ -39,6 +39,16 @@ export type PurchaseReceiptBuildResult = {
   conversion_rate: number;
 };
 
+export type PurchaseReceiptLedgerEntry = {
+  id: string;
+  transaction_type: "PO_RECEIPT";
+  reference_id: string;
+  item_reference: string;
+  quantity_change: number;
+  unit_cost: number;
+  created_at: string;
+};
+
 export function buildPurchaseReceipt(input: {
   po: PurchaseOrderInput;
   line: PurchaseOrderLineInput;
@@ -62,6 +72,25 @@ export function buildPurchaseReceipt(input: {
     landed_cost_total: landedCostTotal,
     conversion_id: conversion?.id || "",
     conversion_rate: conversionRate,
+  };
+}
+
+export function buildPurchaseReceiptLedgerEntry(
+  receipt: PurchaseReceiptBuildResult,
+  metadata: {
+    id: string;
+    purchaseOrderId: string;
+    createdAt: string;
+  },
+): PurchaseReceiptLedgerEntry {
+  return {
+    id: metadata.id,
+    transaction_type: "PO_RECEIPT",
+    reference_id: metadata.purchaseOrderId,
+    item_reference: receipt.item_reference,
+    quantity_change: receipt.quantity_change,
+    unit_cost: receipt.unit_cost,
+    created_at: metadata.createdAt,
   };
 }
 

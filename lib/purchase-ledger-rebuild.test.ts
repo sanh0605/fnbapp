@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildPurchaseReceipt } from "@/lib/purchase-ledger-rebuild";
+import {
+  buildPurchaseReceipt,
+  buildPurchaseReceiptLedgerEntry,
+} from "@/lib/purchase-ledger-rebuild";
 
 describe("buildPurchaseReceipt", () => {
   it("uses conversion_id as the source of truth for raw item ledger quantity", () => {
@@ -50,6 +53,28 @@ describe("buildPurchaseReceipt", () => {
         ],
       }),
     ).toThrow(/không thuộc mặt hàng/);
+  });
+});
+
+describe("buildPurchaseReceiptLedgerEntry", () => {
+  it("preserves decimal unit cost in the stock ledger entry", () => {
+    const entry = buildPurchaseReceiptLedgerEntry(
+      {
+        item_reference: "ING-022",
+        quantity_change: 25000,
+        unit_cost: 19.6,
+        landed_cost_total: 490000,
+        conversion_id: "QD-001",
+        conversion_rate: 1000,
+      },
+      {
+        id: "STK-001",
+        purchaseOrderId: "PO-048",
+        createdAt: "2026-06-30T00:00:00.000Z",
+      },
+    );
+
+    expect(entry.unit_cost).toBe(19.6);
   });
 });
 
