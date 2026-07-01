@@ -1,4 +1,5 @@
 import type { RecipeIngredientSnapshot, LineRecipeSnapshot } from "@/lib/order-types";
+import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 
 export type ConsumptionRow = {
   item_reference: string;
@@ -141,16 +142,36 @@ export function buildInventoryBalances(ledger: Array<{
 }
 
 export function buildSemiProductRecipeMaps(
-  recipes: Array<{ target_type?: string; target_id?: string; ingredients_json?: string }>,
+  recipes: Array<{
+    id?: string;
+    target_type?: string;
+    target_id?: string;
+    ingredients_json?: string;
+    status?: string;
+    start_date?: string | null;
+    end_date?: string | null;
+    created_at?: string;
+  }>,
   semiProducts: Array<{ id?: string; batch_yield?: string | number }>,
+  asOf = new Date().toISOString(),
 ) {
   const semiProductRecipes = new Map<string, RecipeIngredientSnapshot[]>();
-  for (const recipe of recipes) {
-    if (recipe.target_type !== "SEMI_PRODUCT" || !recipe.target_id) continue;
+  for (const semiProduct of semiProducts) {
+    if (!semiProduct.id) continue;
+    const recipe = selectEffectiveRecipe(
+      recipes,
+      "SEMI_PRODUCT",
+      semiProduct.id,
+      asOf,
+    );
+    if (!recipe) continue;
     try {
       const parsed = JSON.parse(recipe.ingredients_json || "[]");
       if (Array.isArray(parsed)) {
-        semiProductRecipes.set(recipe.target_id, parsed as RecipeIngredientSnapshot[]);
+        semiProductRecipes.set(
+          semiProduct.id,
+          parsed as RecipeIngredientSnapshot[],
+        );
       }
     } catch {}
   }

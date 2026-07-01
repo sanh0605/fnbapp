@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { allocateRecipeConsumption } from "@/lib/inventory-consumption";
+import {
+  allocateRecipeConsumption,
+  buildSemiProductRecipeMaps,
+} from "@/lib/inventory-consumption";
 import type { RecipeIngredientSnapshot } from "@/lib/order-types";
 
 const ingredient = (overrides: Partial<RecipeIngredientSnapshot>): RecipeIngredientSnapshot => ({
@@ -70,5 +73,45 @@ describe("allocateRecipeConsumption", () => {
     ]);
     expect(balances.get("BTP-COFFEE")).toBe(0);
     expect(balances.get("ING-BEAN")).toBe(-20);
+  });
+});
+
+describe("buildSemiProductRecipeMaps", () => {
+  it("uses the effective recipe instead of input order", () => {
+    const currentIngredients = [
+      ingredient({ ingredient_id: "ING-CURRENT", quantity: 100 }),
+    ];
+    const endedIngredients = [
+      ingredient({ ingredient_id: "ING-ENDED", quantity: 100 }),
+    ];
+
+    const maps = buildSemiProductRecipeMaps(
+      [
+        {
+          id: "RC-CURRENT",
+          target_type: "SEMI_PRODUCT",
+          target_id: "BTP-COFFEE",
+          ingredients_json: JSON.stringify(currentIngredients),
+          status: "ACTIVE",
+          created_at: "2026-06-01T00:00:00.000Z",
+          end_date: null,
+        },
+        {
+          id: "RC-ENDED",
+          target_type: "SEMI_PRODUCT",
+          target_id: "BTP-COFFEE",
+          ingredients_json: JSON.stringify(endedIngredients),
+          status: "ACTIVE",
+          created_at: "2026-04-01T00:00:00.000Z",
+          end_date: "2026-05-01T00:00:00.000Z",
+        },
+      ],
+      [{ id: "BTP-COFFEE", batch_yield: 100 }],
+      "2026-07-01T00:00:00.000Z",
+    );
+
+    expect(
+      maps.semiProductRecipes.get("BTP-COFFEE")?.[0].ingredient_id,
+    ).toBe("ING-CURRENT");
   });
 });

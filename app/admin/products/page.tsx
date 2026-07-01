@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { getMacUnitCostWithRecipeFallback, MacSemiProductContext } from "@/lib/mac-cogs";
+import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 import ProductForm from "@/components/ProductForm";
 import ProductsClient from "./ProductsClient";
 import HistoryModal from "@/components/HistoryModal";
@@ -70,8 +71,9 @@ export default async function ProductsPage() {
 
   const semiProductRecipes = new Map();
   const semiProductYields = new Map();
+  const now = new Date().toISOString();
   for (const s of activeSemiProductsRaw) {
-    const r = recipes.find(x => x.target_type === "SEMI_PRODUCT" && x.target_id === s.id);
+    const r = selectEffectiveRecipe(recipes, "SEMI_PRODUCT", s.id, now);
     if (r && r.ingredients_json) {
       try { semiProductRecipes.set(s.id, JSON.parse(r.ingredients_json)); } catch (e) {}
       semiProductYields.set(s.id, s.batch_yield ? Number(s.batch_yield) : 1);
@@ -79,7 +81,6 @@ export default async function ProductsPage() {
   }
   const semiContext: MacSemiProductContext = { semiProductRecipes, semiProductYields };
   
-  const now = new Date().toISOString();
   const activeBaseIngredients = activeBaseIngredientsRaw.map(b => ({
     ...b,
     current_mac: getMacUnitCostWithRecipeFallback(b.id, ledger, now, semiContext)
@@ -93,7 +94,12 @@ export default async function ProductsPage() {
   const enhancedProducts = activeProducts.map(p => {
     const productVariants = activeVariants.filter(v => v.product_id === p.id);
     const variantsWithRecipes = productVariants.map(v => {
-      const recipe = recipes.find(r => r.target_type === "PRODUCT_VARIANT" && r.target_id === v.id);
+      const recipe = selectEffectiveRecipe(
+        recipes,
+        "PRODUCT_VARIANT",
+        v.id,
+        now,
+      );
       let ingredients = [];
       if (recipe && recipe.ingredients_json) {
         try { ingredients = JSON.parse(recipe.ingredients_json); } catch(e){}

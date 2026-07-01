@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { getMacUnitCostWithRecipeFallback, MacSemiProductContext } from "@/lib/mac-cogs";
+import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 import CogsCalculator from "./CogsCalculator";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +20,14 @@ export default async function CogsEstimatePage() {
 
   const semiProductRecipes = new Map();
   const semiProductYields = new Map();
+  const now = new Date().toISOString();
   for (const s of activeSemiProducts) {
-    const r = recipes.find((x: any) => x.target_type === "SEMI_PRODUCT" && x.target_id === s.id);
+    const r = selectEffectiveRecipe(
+      recipes,
+      "SEMI_PRODUCT",
+      s.id,
+      now,
+    );
     if (r && r.ingredients_json) {
       try { semiProductRecipes.set(s.id, JSON.parse(r.ingredients_json)); } catch (e) {}
       semiProductYields.set(s.id, s.batch_yield ? Number(s.batch_yield) : 1);
@@ -28,8 +35,6 @@ export default async function CogsEstimatePage() {
   }
   const semiContext: MacSemiProductContext = { semiProductRecipes, semiProductYields };
   
-  const now = new Date().toISOString();
-
   // Prepare ingredients list with MAC
   const ingredientsOptions: any[] = [];
   

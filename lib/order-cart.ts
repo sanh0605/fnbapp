@@ -19,6 +19,7 @@ import {
 } from "@/lib/order-snapshot";
 import { allocateOrderDiscount, assertOrderInvariants } from "@/lib/order-math";
 import { InvariantError, ORDER_STATUS, PAYMENT_METHOD } from "@/lib/order-types";
+import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 import type {
   OrderV2,
   OrderLineV2,
@@ -280,7 +281,12 @@ function buildLine(
   const modifierSnap = buildModifierSnapshotsFromCart(item.modifiers, ref.modifiers);
 
   // Pick variant recipe (most recent non-expired)
-  const variantRecipe = pickRecipe(ref.recipes, "PRODUCT_VARIANT", item.variant_id);
+  const variantRecipe = pickRecipe(
+    ref.recipes,
+    "PRODUCT_VARIANT",
+    item.variant_id,
+    createdAt,
+  );
   const variantRecipeSnap = variantRecipe ? buildRecipeSnapshot(variantRecipe) : {
     target_type: "PRODUCT_VARIANT" as const,
     target_id: item.variant_id,
@@ -290,7 +296,12 @@ function buildLine(
   // Pick each modifier's recipe (most recent non-expired)
   const modifierRecipeEntries: ModifierRecipeEntry[] = [];
   for (const mod of modifierSnap) {
-    const modRecipe = pickRecipe(ref.recipes, "MODIFIER", mod.id);
+    const modRecipe = pickRecipe(
+      ref.recipes,
+      "MODIFIER",
+      mod.id,
+      createdAt,
+    );
     if (modRecipe) {
       modifierRecipeEntries.push({
         modifier_id: mod.id,
@@ -346,18 +357,13 @@ function buildLine(
   return { spec, capacity: Math.max(0, gross - promoDiscount - manualItem) };
 }
 
-function pickRecipe(recipes: any[], targetType: string, targetId: string): any | null {
-  const now = new Date();
-  const candidates = recipes.filter(r =>
-    r.target_type === targetType &&
-    r.target_id === targetId &&
-    (!r.end_date || r.end_date === "" || new Date(r.end_date) >= now),
-  );
-  if (candidates.length === 0) return null;
-  candidates.sort((a, b) =>
-    new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
-  );
-  return candidates[0];
+function pickRecipe(
+  recipes: any[],
+  targetType: string,
+  targetId: string,
+  asOf: string,
+): any | null {
+  return selectEffectiveRecipe(recipes, targetType, targetId, asOf);
 }
 
 function computePromoForLine(
