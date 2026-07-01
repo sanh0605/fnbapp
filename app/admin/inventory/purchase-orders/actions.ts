@@ -1,13 +1,10 @@
 "use server";
 
-import { findAll, insert, insertMany, update, generateNewId, remove, removeMany } from "@/lib/sheets_db";
+import { findAll, insert, insertMany, update, generateNewId, removeMany } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource } from "@/types/db";
-import {
-  buildPurchaseReceipt,
-  buildPurchaseReceiptLedgerEntry,
-} from "@/lib/purchase-ledger-rebuild";
+import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";
 import { requireAdmin } from "@/lib/auth";
 
 const PATH = "/admin/inventory/purchase-orders";
@@ -64,11 +61,33 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       findAll("UOM_Conversions"),
     ]);
 
-    // First pass: UOM_Conversions logic was removed because conversions are now pre-defined in Purchased_Item
+    const createdAt = new Date().toISOString();
+    const po_id = id || await generateNewId("Purchase_Orders", "PO");
+    const writePlan = buildPurchaseOrderWritePlan({
+      order: {
+        id: po_id,
+        supplier_id,
+        source_id,
+        transaction_date: effectiveDate,
+        supplier_invoice_code,
+        notes,
+        subtotal_amount,
+        shipping_fee,
+        tax_amount,
+        voucher_amount,
+        discount_amount,
+        total_amount,
+        status,
+        created_by_id: auth.actor.id,
+        created_by_name: created_by,
+      },
+      lines,
+      purchasedItems: purchasedItems as any[],
+      conversions: conversions as any[],
+      createdAt,
+    });
 
-    // 1. Create or Update Purchase Order
-    let po_id = id;
-    if (po_id) {
+    if (id) {
       await update("Purchase_Orders", po_id, {
         supplier_id,
         status,
@@ -102,7 +121,6 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         await removeMany("Stock_Ledger", oldLedgerIds);
       }
     } else {
-      po_id = await generateNewId("Purchase_Orders", "PO");
       await insert("Purchase_Orders", {
         id: po_id,
         supplier_id,
@@ -119,68 +137,16 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         transaction_date: effectiveDate,
         source_id,
         supplier_invoice_code,
-        created_at: new Date().toISOString()
+        created_at: createdAt
       });
     }
 
-    // 2. Create PO Lines & Stock Ledger — Claude code — CODE-9/CODE-15: accumulate + batch insert.
-    const lineRows: any[] = [];
-    const ledgerRows: any[] = [];
-    const baseLineIdStr = await generateNewId("Purchase_Order_Lines", "POL");
-    let currentLineNum = parseInt(baseLineIdStr.replace("POL-", ""), 10);
-    const baseLedgerIdStr = await generateNewId("Stock_Ledger", "STK");
-    let currentLedgerNum = parseInt(baseLedgerIdStr.replace("STK-", ""), 10);
-
-    for (const line of lines) {
-      const line_id = `POL-${currentLineNum.toString().padStart(3, '0')}`;
-      currentLineNum++;
-      const line_subtotal = Number(line.subtotal);
-
-      // Calculate unit price backwards and round to avoid float in bigint column
-      const unit_price = Number(line.quantity) > 0 ? Math.round(line_subtotal / Number(line.quantity)) : 0;
-
-      lineRows.push({
-        id: line_id,
-        purchase_order_id: po_id,
-        purchased_item_id: line.purchased_item_id,
-        unit: line.unit,
-        quantity: line.quantity,
-        unit_price: unit_price,
-        subtotal: Math.round(line_subtotal),
-        conversion_id: line.conversion_id || "",
-      });
-
-      if (status === "COMPLETED") {
-        const ledger_id = `STK-${currentLedgerNum.toString().padStart(3, '0')}`;
-        currentLedgerNum++;
-        const item = (purchasedItems as any[]).find((p: any) => p.id === line.purchased_item_id);
-        if (!item) {
-          throw new Error(`Không tìm thấy hàng mua vào ${line.purchased_item_id}`);
-        }
-        const receipt = buildPurchaseReceipt({
-          po: {
-            id: po_id,
-            subtotal_amount,
-            shipping_fee,
-            tax_amount,
-            voucher_amount,
-            discount_amount,
-          },
-          line,
-          item,
-          conversions: conversions as any[],
-        });
-
-        ledgerRows.push(buildPurchaseReceiptLedgerEntry(receipt, {
-          id: ledger_id,
-          purchaseOrderId: po_id,
-          createdAt: effectiveDate,
-        }));
-      }
+    if (writePlan.lines.length > 0) {
+      await insertMany("Purchase_Order_Lines", writePlan.lines);
     }
-
-    if (lineRows.length > 0) await insertMany("Purchase_Order_Lines", lineRows);
-    if (ledgerRows.length > 0) await insertMany("Stock_Ledger", ledgerRows);
+    if (writePlan.ledgerRows.length > 0) {
+      await insertMany("Stock_Ledger", writePlan.ledgerRows);
+    }
 
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
