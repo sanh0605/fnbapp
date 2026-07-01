@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { buildPriceHistoryTimeline } from "@/lib/price-history";
 
 export default function HistoryModal({ title, recipeHistory, priceHistory }: any) {
   const [isOpen, setIsOpen] = useState(false);
+  const priceTimeline = buildPriceHistoryTimeline(priceHistory || []);
 
   const formatDate = (isoStr: string) => {
     if (!isoStr) return "Hiện tại";
@@ -52,23 +54,23 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
             <div className="p-6 overflow-y-auto space-y-8 bg-gray-50/30">
               
               {/* LỊCH SỬ GIÁ BÁN */}
-              {priceHistory && priceHistory.length > 0 && (
+              {priceTimeline.length > 0 && (
                 <div>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Lịch sử Giá Bán</h3>
                   <div className="space-y-3 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
-                    {priceHistory.map((h:any, idx:number) => (
-                      <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    {priceTimeline.map((entry) => (
+                      <div key={entry.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
                         <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-amber-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
                         <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-3 bg-white rounded-lg shadow-sm border border-gray-100">
                           <div className="text-xs font-bold text-gray-400 mb-1">
-                            Từ: {formatDate(h.created_at)}
+                            Từ: {formatDate(entry.effectiveAt)}
                             <br/>
-                            Đến: {formatDate(h.end_date)}
+                            Đến: {formatDate(entry.endAt || "")}
                           </div>
                           <div className="font-bold text-indigo-700 text-base">
-                            {Number(h.price).toLocaleString('vi-VN')} đ
+                            {entry.newPrice.toLocaleString('vi-VN')} đ
                           </div>
-                          {!h.end_date && (
+                          {entry.isCurrent && (
                             <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800">
                               Đang áp dụng
                             </span>

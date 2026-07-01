@@ -247,7 +247,8 @@ export interface DBProductionItem {
 export interface DBPriceHistory {
   id: string;
   variant_id: string;
-  price: string;
-  effective_date: string;
+  old_price: string | null;
+  new_price: string;
+  effective_at: string;
   created_at: string;
 }
