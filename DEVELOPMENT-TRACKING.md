@@ -4,6 +4,41 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-01 (Codex) - Supabase integrity recovery Phase A
+
+**Trigger:** High-risk review found migration compatibility, recipe selection,
+price-history UI, authorization, and time-dependent test regressions.
+
+### Completed
+
+| Item | Commit | Verification |
+|---|---|---|
+| Recovery design and data-preservation contract | `453f63e` | Spec self-review complete; no remote writes. |
+| Freeze promotion fixture time | `c520b9a` | Order cart/edit tests 23/23. |
+| Preserve legacy boolean compatibility | `4dc7cb0` | Adapter read/write tests 5/5. |
+| Deterministic effective recipe selection | `d23211f`, `9f70727` | Recipe, consumption, and order tests 31/31. |
+| Align price-history UI with Supabase schema | `f745beb` | Price-history tests 2/2. |
+| Guard all admin mutations | `c7108d2` | Auth audit: 17 files, 0 violations. |
+
+### Gates
+
+- Full Vitest: **210/210 pass**.
+- Tracked source TypeScript errors introduced by Phase A: **0**.
+- Full TypeScript command remains blocked by pre-existing untracked debug
+  scripts; those files are preserved for lossless cleanup in Phase F.
+- No Supabase or Google Sheets data was written.
+
+### Read-only data baseline
+
+- Current stock: 5,924 ledger rows; 3 negative items (`ING-021`, `ING-015`,
+  `ING-030`).
+- MAC drift: 119 lines, delta +121,370 VND.
+- Purchase ledger: 23 reported mismatches; top 3 are material rounding drift.
+- Data changed concurrently during the review, so all recovery applies require
+  a fresh immutable snapshot immediately before apply.
+
+---
+
 ## 2026-07-01 (Antigravity) – Live Debugging & Bug Fixes
 
 **Trigger:** Live user support session. Required immediate fixes for engine/data correctness and UI syncing.
