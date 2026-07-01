@@ -89,11 +89,17 @@ export const getSheetsClient = (): any => {
  * - Numbers as-is.
  * - JSON columns: Sheets stored as JSON string, Supabase as jsonb object. Convert to string for back-compat with JSON.parse callers.
  */
-function serializeRow(row: any, jsonColumns: Set<string>): any {
+function serializeRow(
+  row: any,
+  jsonColumns: Set<string>,
+  booleanColumns: Set<string>,
+): any {
   if (!row) return row;
   const out: any = {};
   for (const [key, value] of Object.entries(row)) {
-    if (value instanceof Date) {
+    if (booleanColumns.has(key) && typeof value === "boolean") {
+      out[key] = value ? "TRUE" : "FALSE";
+    } else if (value instanceof Date) {
       out[key] = value.toISOString();
     } else if (jsonColumns.has(key)) {
       if (value === null) {
@@ -133,8 +139,16 @@ const JSON_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
   pos_drafts: new Set(['cart_json']),
 };
 
+const BOOLEAN_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
+  base_ingredients: new Set(["is_non_inventory"]),
+};
+
 function getJsonColumns(tableName: string): Set<string> {
   return JSON_COLUMNS_BY_TABLE[tableName] || new Set();
+}
+
+function getBooleanColumns(tableName: string): Set<string> {
+  return BOOLEAN_COLUMNS_BY_TABLE[tableName] || new Set();
 }
 
 // ============================================================================
@@ -161,6 +175,7 @@ export const findAllNoCache = async (sheetName: string) => {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
+  const booleanCols = getBooleanColumns(tableName);
   // Claude code — Supabase migration Phase B fix: PostgREST default limit
   // is 1000 rows. Paginate to fetch full dataset.
   const PAGE_SIZE = 1000;
@@ -175,7 +190,7 @@ export const findAllNoCache = async (sheetName: string) => {
       throw new Error(`findAll(${sheetName}): ${error.message}`);
     }
     if (!data || data.length === 0) break;
-    for (const row of data) all.push(serializeRow(row, jsonCols));
+    for (const row of data) all.push(serializeRow(row, jsonCols, booleanCols));
     if (data.length < PAGE_SIZE) break;
     page += 1;
   }
@@ -186,6 +201,7 @@ export async function findById(sheetName: string, id: string) {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
+  const booleanCols = getBooleanColumns(tableName);
   const { data, error } = await supabase
     .from(tableName)
     .select('*')
@@ -194,7 +210,7 @@ export async function findById(sheetName: string, id: string) {
   if (error) {
     throw new Error(`findById(${sheetName}, ${id}): ${error.message}`);
   }
-  return data ? serializeRow(data, jsonCols) : null;
+  return data ? serializeRow(data, jsonCols, booleanCols) : null;
 }
 
 export const getHeadersNoCache = async (sheetName: string): Promise<string[]> => {
@@ -261,10 +277,21 @@ export async function generateNewId(sheetName: string, prefix: string): Promise<
  * - String JSON values → parse to object (Postgres jsonb).
  * - Empty string → null (Postgres NOT NULL friendly).
  */
-function deserializeRow(data: any, jsonColumns: Set<string>): any {
+function deserializeRow(
+  data: any,
+  jsonColumns: Set<string>,
+  booleanColumns: Set<string>,
+): any {
   const out: any = {};
   for (const [key, value] of Object.entries(data)) {
-    if (jsonColumns.has(key) && typeof value === 'string' && value.length > 0) {
+    if (booleanColumns.has(key) && typeof value === "string") {
+      const normalized = value.toUpperCase();
+      out[key] = normalized === "TRUE"
+        ? true
+        : normalized === "FALSE"
+          ? false
+          : value;
+    } else if (jsonColumns.has(key) && typeof value === 'string' && value.length > 0) {
       try {
         out[key] = JSON.parse(value);
       } catch {
@@ -296,7 +323,8 @@ export async function insert(sheetName: string, data: any) {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
-  const payload = deserializeRow(data, jsonCols);
+  const booleanCols = getBooleanColumns(tableName);
+  const payload = deserializeRow(data, jsonCols, booleanCols);
 
   const { data: inserted, error } = await supabase
     .from(tableName)
@@ -307,7 +335,7 @@ export async function insert(sheetName: string, data: any) {
     throw new Error(`insert(${sheetName}): ${error.message}`);
   }
   touchRevalidate(sheetName);
-  return serializeRow(inserted, jsonCols);
+  return serializeRow(inserted, jsonCols, booleanCols);
 }
 
 export async function insertMany(sheetName: string, dataArray: any[]) {
@@ -316,7 +344,8 @@ export async function insertMany(sheetName: string, dataArray: any[]) {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
-  const payload = dataArray.map(d => deserializeRow(d, jsonCols));
+  const booleanCols = getBooleanColumns(tableName);
+  const payload = dataArray.map(d => deserializeRow(d, jsonCols, booleanCols));
 
   const { data: inserted, error } = await supabase
     .from(tableName)
@@ -326,14 +355,15 @@ export async function insertMany(sheetName: string, dataArray: any[]) {
     throw new Error(`insertMany(${sheetName}): ${error.message}`);
   }
   touchRevalidate(sheetName);
-  return (inserted || []).map((row: any) => serializeRow(row, jsonCols));
+  return (inserted || []).map((row: any) => serializeRow(row, jsonCols, booleanCols));
 }
 
 export async function update(sheetName: string, id: string, data: any) {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
-  const payload = deserializeRow(data, jsonCols);
+  const booleanCols = getBooleanColumns(tableName);
+  const payload = deserializeRow(data, jsonCols, booleanCols);
 
   const { data: updated, error } = await supabase
     .from(tableName)
@@ -345,7 +375,7 @@ export async function update(sheetName: string, id: string, data: any) {
     throw new Error(`update(${sheetName}, ${id}): ${error.message}`);
   }
   touchRevalidate(sheetName);
-  return serializeRow(updated, jsonCols);
+  return serializeRow(updated, jsonCols, booleanCols);
 }
 
 export async function updateMany(sheetName: string, dataArray: any[]) {
@@ -354,6 +384,7 @@ export async function updateMany(sheetName: string, dataArray: any[]) {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
+  const booleanCols = getBooleanColumns(tableName);
 
   // Postgres update by primary key in parallel. Callers guarantee unique IDs.
   // Supabase JS doesn't have native batch update; use Promise.all.
@@ -361,7 +392,7 @@ export async function updateMany(sheetName: string, dataArray: any[]) {
     dataArray.map(async (data) => {
       const id = data?.id;
       if (!id) throw new Error(`updateMany(${sheetName}): missing id in ${JSON.stringify(data)}`);
-      const payload = deserializeRow(data, jsonCols);
+      const payload = deserializeRow(data, jsonCols, booleanCols);
       const { data: updated, error } = await supabase
         .from(tableName)
         .update(payload)
@@ -371,7 +402,7 @@ export async function updateMany(sheetName: string, dataArray: any[]) {
       if (error) {
         throw new Error(`updateMany(${sheetName}, ${id}): ${error.message}`);
       }
-      return serializeRow(updated, jsonCols);
+      return serializeRow(updated, jsonCols, booleanCols);
     })
   );
   touchRevalidate(sheetName);

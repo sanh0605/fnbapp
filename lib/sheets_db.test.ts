@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
+  supabaseSelect: vi.fn(),
   supabaseUpdate: vi.fn(),
 }));
 
@@ -19,6 +20,9 @@ vi.mock("next/cache", () => ({
 vi.mock("./supabase", () => ({
   getSupabaseClient: () => ({
     from: () => ({
+      select: () => ({
+        range: () => mocks.supabaseSelect(),
+      }),
       update: (payload: any) => ({
         eq: (_column: string, _value: any) => ({
           select: () => ({
@@ -30,7 +34,30 @@ vi.mock("./supabase", () => ({
   }),
 }));
 
-import { updateMany } from "./sheets_db";
+import { findAllNoCache, updateMany } from "./sheets_db";
+
+describe("findAllNoCache legacy compatibility", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("serializes Postgres booleans as legacy Sheets TRUE/FALSE strings", async () => {
+    mocks.supabaseSelect.mockResolvedValue({
+      data: [
+        { id: "ING-001", is_non_inventory: true },
+        { id: "ING-002", is_non_inventory: false },
+      ],
+      error: null,
+    });
+
+    const rows = await findAllNoCache("Base_Ingredients");
+
+    expect(rows).toEqual([
+      { id: "ING-001", is_non_inventory: "TRUE" },
+      { id: "ING-002", is_non_inventory: "FALSE" },
+    ]);
+  });
+});
 
 describe("updateMany", () => {
   beforeEach(() => {
@@ -66,5 +93,26 @@ describe("updateMany", () => {
     await expect(
       updateMany("Purchase_Order_Lines", [{ unit: "gram" }])
     ).rejects.toThrow(/missing id/);
+  });
+
+  it("deserializes legacy TRUE/FALSE strings for Postgres boolean columns", async () => {
+    mocks.supabaseUpdate.mockImplementation((payload: any) => ({
+      data: payload,
+      error: null,
+    }));
+
+    await updateMany("Base_Ingredients", [
+      { id: "ING-001", is_non_inventory: "TRUE" },
+      { id: "ING-002", is_non_inventory: "FALSE" },
+    ]);
+
+    expect(mocks.supabaseUpdate).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ is_non_inventory: true }),
+    );
+    expect(mocks.supabaseUpdate).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ is_non_inventory: false }),
+    );
   });
 });
