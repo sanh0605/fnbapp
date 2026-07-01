@@ -305,7 +305,7 @@ export function PromotionForm({
                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                >
                  <option value="PERCENT">Phần trăm (%)</option>
-                 <option value="VND">Số tiền giảm cố định (đ)</option>
+                 <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
                  <option value="FLAT_PRICE">Đồng giá (đ)</option>
                </select>
              </div>
