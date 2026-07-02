@@ -1,10 +1,11 @@
 "use server";
 
-import { findAll, insert, insertMany, update, generateNewId, removeMany } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { findAll, insert, generateNewId } from "@/lib/sheets_db";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";
+import { savePurchaseOrderAtomic } from "@/lib/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth";
 
 const PATH = "/admin/inventory/purchase-orders";
@@ -62,10 +63,9 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     ]);
 
     const createdAt = new Date().toISOString();
-    const po_id = id || await generateNewId("Purchase_Orders", "PO");
     const writePlan = buildPurchaseOrderWritePlan({
       order: {
-        id: po_id,
+        id: id || "",
         supplier_id,
         source_id,
         transaction_date: effectiveDate,
@@ -86,68 +86,17 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       conversions: conversions as any[],
       createdAt,
     });
+    const saved = await savePurchaseOrderAtomic({
+      order: writePlan.order,
+      lines: writePlan.lines,
+      ledgerRows: writePlan.ledgerRows,
+      replaceExisting: Boolean(id),
+    });
+    const po_id = saved.purchaseOrderId;
 
-    if (id) {
-      await update("Purchase_Orders", po_id, {
-        supplier_id,
-        status,
-        total_amount,
-        subtotal_amount,
-        shipping_fee,
-        tax_amount,
-        voucher_amount,
-        discount_amount,
-        notes,
-        transaction_date: effectiveDate,
-        source_id,
-        supplier_invoice_code,
-      });
-
-      // Claude code — CODE-9: batch remove để tránh fail-between mất dữ liệu.
-      // Trước đây loop remove từng row; nếu fail giữa chừng → trạng thái nửa xóa.
-      const existingLines = await findAll("Purchase_Order_Lines");
-      const oldLineIds = existingLines.filter((l:any) => (l.po_id === po_id || l.purchase_order_id === po_id)).map((l:any) => l.id);
-      if (oldLineIds.length > 0) {
-        await removeMany("Purchase_Order_Lines", oldLineIds);
-      }
-
-      // [P0 FIX] Xoá các bản ghi Stock_Ledger cũ liên quan đến PO này
-      // để tránh tồn kho bị cộng trùng khi sửa lại đơn đã COMPLETED
-      const existingLedger = await findAll("Stock_Ledger");
-      const oldLedgerIds = existingLedger
-        .filter((e: any) => e.reference_id === po_id && e.transaction_type === "PO_RECEIPT")
-        .map((e: any) => e.id);
-      if (oldLedgerIds.length > 0) {
-        await removeMany("Stock_Ledger", oldLedgerIds);
-      }
-    } else {
-      await insert("Purchase_Orders", {
-        id: po_id,
-        supplier_id,
-        status,
-        total_amount,
-        subtotal_amount,
-        shipping_fee,
-        tax_amount,
-        voucher_amount,
-        discount_amount,
-        notes,
-        created_by_name: created_by,
-        created_by_id: auth.actor.id,
-        transaction_date: effectiveDate,
-        source_id,
-        supplier_invoice_code,
-        created_at: createdAt
-      });
-    }
-
-    if (writePlan.lines.length > 0) {
-      await insertMany("Purchase_Order_Lines", writePlan.lines);
-    }
-    if (writePlan.ledgerRows.length > 0) {
-      await insertMany("Stock_Ledger", writePlan.ledgerRows);
-    }
-
+    revalidateTag("sheets-Purchase_Orders");
+    revalidateTag("sheets-Purchase_Order_Lines");
+    revalidateTag("sheets-Stock_Ledger");
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
     return ok({ po_id });
