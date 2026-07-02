@@ -78,9 +78,13 @@ Verification will include:
 3. Full Vitest and TypeScript verification.
 4. `scripts/audit-pnl-mac-consistency.ts` with zero delta.
 
-If P&L remains above two seconds after MAC indexing, follow-up profiling will
-measure the separate inventory-balance reconstruction path. That work is out
-of scope for this phase.
+The first indexed benchmark remained at 9.49 seconds and exposed repeated
+inventory-balance reconstruction as the next hot path. The same phase therefore
+also advances one running balance window through the chronologically sorted
+ledger and clones only the small balance map for each line. This preserves the
+existing as-of behavior while removing another full-ledger scan per line.
+
+The final measured P&L range is 3.80 to 4.31 seconds, down from 18.17 seconds.
 
 ## Alternatives Rejected
 

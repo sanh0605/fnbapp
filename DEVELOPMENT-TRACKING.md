@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-02 (Codex) - P&L MAC processing optimized
+
+**User-facing result:** P&L report load time fell from 18.17 seconds to a
+measured range of 3.80-4.31 seconds without changing report totals.
+
+### Completed
+
+- Grouped stock-ledger rows by ingredient once per report.
+- Reused chronologically sorted MAC rows for all historical lookups.
+- Replaced repeated full-ledger balance reconstruction with one running window.
+- Preserved the existing POS, order-edit, and audit MAC APIs.
+- Added regression tests for ledger indexing and balance-window reuse.
+
+### Verification
+
+- Full Vitest: 257/257 pass across 44 files.
+- P&L MAC consistency: product/topping delta 0 VND.
+- P&L MAC consistency: ingredient delta 0 VND.
+- Verified total COGS: 17,277,045 VND across 1,199 orders.
+- Changed tracked files introduce no TypeScript errors.
+- Full TypeScript remains blocked only by preserved untracked debug scripts.
+- Commits: `9a08486`, `5a0ada2`.
+- No operational data was written.
+
+---
+
 ## 2026-07-02 (Codex) - POS bill checkout optimized and handoffs reviewed
 
 **User-facing result:** Database work during bill checkout fell from roughly

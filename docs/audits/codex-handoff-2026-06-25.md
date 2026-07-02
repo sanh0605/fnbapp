@@ -1,5 +1,18 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-02 - P&L MAC performance
+
+- `[x]` Added a reusable stock-ledger index grouped by item.
+- `[x]` Replaced repeated historical balance rebuilds with a running window.
+- `[x]` P&L benchmark improved from 18.17s to 3.80-4.31s.
+- `[x]` Full Vitest: 257/257 pass.
+- `[x]` P&L total, product/topping, and ingredient COGS reconcile at 0 VND
+  delta.
+- `[!]` Full TypeScript remains blocked by preserved untracked debug scripts;
+  changed tracked files introduce no TypeScript errors.
+
+Commits: `9a08486`, `5a0ada2`.
+
 ## 2026-07-02 - POS checkout performance and pending data recovery
 
 - `[x]` Migration `0008_pos_checkout_performance.sql` deployed.
