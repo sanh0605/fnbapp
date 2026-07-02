@@ -41,8 +41,12 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
   correction.
 - `[!]` Create another fresh immutable snapshot immediately before historical
   data repair; operational data continues to change.
-- `[ ]` Repair historical material PO rounding drift only through a reviewed,
-  idempotent recovery manifest.
+- `[x]` Historical material PO rounding drift repaired through reviewed plan
+  `PURCHASE-COST-ROUNDING-2026-07-02`; 3 audit-log rows, idempotent re-run 0.
+- `[x]` Material purchase-cost mismatches remaining: 0.
+- `[ ]` Diagnose and resolve the 3 remaining negative-stock ingredients.
+- `[ ]` Prepare a separate recovery plan for 164 historical MAC COGS lines;
+  do not combine it with inventory-quantity corrections.
 
 Current production baseline remains dirty: 3 negative stock items, 119 MAC
 drift lines (+121,370 VND), and 3 material PO cost mismatches. No production

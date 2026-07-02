@@ -4,6 +4,38 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-02 (Codex) - Historical purchase costs corrected
+
+**User-facing result:** Three rounded historical purchase receipt costs were
+corrected without changing quantities. Every change has a before/after audit
+record and a transactional rollback path.
+
+### Corrected
+
+- PO-047 / ING-032: `69` to `68.541667`.
+- PO-048 / ING-012: `98` to `98.412698`.
+- PO-048 / ING-022: `20` to `19.6`.
+- Net inventory value impact: approximately -10,900 VND.
+
+### Safety and verification
+
+- Fresh pre-apply snapshot verified: 108/108 files.
+- Recovery log: 3 field-level before/after records.
+- Idempotent re-run: 0 changes, already applied.
+- Material purchase-cost mismatches remaining: 0.
+- Full Vitest: 242/242 pass across 41 files.
+- Inventory quantities were not changed.
+- Result record:
+  `docs/audits/2026-07-02-purchase-cost-recovery-result.md`.
+
+### Remaining business-data work
+
+- 3 negative-stock ingredients remain.
+- Corrected purchase inputs expose 164 historical MAC COGS lines requiring a
+  separate reviewed recovery plan; aggregate delta is +119,036 VND.
+
+---
+
 ## 2026-07-02 (Codex) - Purchase orders now save all-or-nothing
 
 **User-facing result:** A purchase order and its inventory receipt now either
