@@ -14,11 +14,14 @@ import type { OrderV2, OrderLineV2, LineForAllocation } from "@/lib/order-types"
 import { computeLineCostFIFO } from "@/lib/order-cogs-fifo";
 import { FIFOTracker } from "@/lib/fifo-tracker";
 import {
-  buildInventoryBalances,
   buildLineConsumptionRows,
   type SemiProductConsumptionMaps,
 } from "@/lib/inventory-consumption";
-import { getMacUnitCostWithRecipeFallback, type MacLedgerEntry } from "@/lib/mac-cogs";
+import {
+  createMacLedgerIndex,
+  getMacUnitCostWithRecipeFallback,
+  type MacLedgerEntry,
+} from "@/lib/mac-cogs";
 
 export interface ProductRevenueRow {
   product_id: string;
@@ -168,6 +171,7 @@ export function breakdownCOGSByIngredient(
   const ledgerSorted = [...(ledger as MacLedgerEntry[])].sort(
     (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
   );
+  const macLedgerIndex = createMacLedgerIndex(ledgerSorted);
   const ledgerTimes = ledgerSorted.map(row => new Date(row.created_at || 0).getTime());
 
   const sortedLines = [...lines].sort((a, b) => {
@@ -177,6 +181,7 @@ export function breakdownCOGSByIngredient(
   });
 
   let ledgerCursor = 0;
+  const runningBalances = new Map<string, number>();
   for (const line of sortedLines) {
     if (line.cost_at_sale <= 0) continue;
 
@@ -185,11 +190,16 @@ export function breakdownCOGSByIngredient(
 
     // Sliding window: advance cursor while ledger time < saleMs.
     while (ledgerCursor < ledgerTimes.length && ledgerTimes[ledgerCursor] < saleMs) {
+      const row = ledgerSorted[ledgerCursor];
+      const itemReference = row.item_reference;
+      const quantity = Number(row.quantity_change || 0);
+      if (itemReference && Number.isFinite(quantity) && quantity !== 0) {
+        runningBalances.set(itemReference, (runningBalances.get(itemReference) || 0) + quantity);
+      }
       ledgerCursor += 1;
     }
-    const ledgerBeforeSale = ledgerSorted.slice(0, ledgerCursor);
 
-    const balances = buildInventoryBalances(ledgerBeforeSale, saleTime);
+    const balances = new Map(runningBalances);
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps);
     const weightedRows = consumptionRows
@@ -198,7 +208,7 @@ export function breakdownCOGSByIngredient(
         ...row,
         rawCost: row.quantity * getMacUnitCostWithRecipeFallback(
           row.item_reference,
-          ledgerSorted,
+          macLedgerIndex,
           saleTime,
           macContext,
         ),

@@ -11,11 +11,15 @@ import {
 } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/report-time";
 import {
-  buildInventoryBalances,
   buildLineConsumptionRows,
   type SemiProductConsumptionMaps,
 } from "@/lib/inventory-consumption";
-import { getMacUnitCostWithRecipeFallback, type MacLedgerEntry } from "@/lib/mac-cogs";
+import {
+  createMacLedgerIndex,
+  getMacUnitCostWithRecipeFallback,
+  type MacLedgerEntry,
+  type MacLedgerSource,
+} from "@/lib/mac-cogs";
 
 export interface PnLReportFilters {
   startDate?: string;
@@ -569,6 +573,7 @@ function splitLineCogsBySaleSource(
   const ledgerSorted = [...(ledger as MacLedgerEntry[])].sort(
     (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
   );
+  const macLedgerIndex = createMacLedgerIndex(ledgerSorted);
   const ledgerTimes = ledgerSorted.map(row => new Date(row.created_at || 0).getTime());
 
   const sortedLines = [...lines].sort((a, b) => {
@@ -578,6 +583,7 @@ function splitLineCogsBySaleSource(
   });
 
   let ledgerCursor = 0;
+  const runningBalances = new Map<string, number>();
   for (const line of sortedLines) {
     const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const variantKey = `${line.product_id}__${line.variant_id}`;
@@ -586,14 +592,19 @@ function splitLineCogsBySaleSource(
 
     // Sliding window: advance cursor while ledger time < saleMs.
     while (ledgerCursor < ledgerTimes.length && ledgerTimes[ledgerCursor] < saleMs) {
+      const row = ledgerSorted[ledgerCursor];
+      const itemReference = row.item_reference;
+      const quantity = Number(row.quantity_change || 0);
+      if (itemReference && Number.isFinite(quantity) && quantity !== 0) {
+        runningBalances.set(itemReference, (runningBalances.get(itemReference) || 0) + quantity);
+      }
       ledgerCursor += 1;
     }
-    const ledgerBeforeSale = ledgerSorted.slice(0, ledgerCursor);
 
     const allocations = computeSourceCogsForLine(
       recipe,
-      ledgerSorted,
-      ledgerBeforeSale,
+      macLedgerIndex,
+      runningBalances,
       saleTime,
       line.qty,
       toConsumptionMaps(spContext),
@@ -633,15 +644,15 @@ function splitLineCogsBySaleSource(
 
 function computeSourceCogsForLine(
   recipe: LineRecipeSnapshot,
-  ledger: MacLedgerEntry[],
-  ledgerBeforeSale: MacLedgerEntry[],
+  ledger: MacLedgerSource,
+  inventoryBalances: Map<string, number>,
   saleTime: string,
   lineQty: number,
   consumptionMaps: SemiProductConsumptionMaps,
   macContext: ReturnType<typeof toMacSemiProductContext>,
 ): { variant: number; modifiers: Array<{ modifierId: string; cogs: number }> } {
   const variantOnly = { variant: recipe.variant, modifiers: [] };
-  const variant = computeRawMacWeight(variantOnly, ledger, ledgerBeforeSale, saleTime, lineQty, consumptionMaps, macContext);
+  const variant = computeRawMacWeight(variantOnly, ledger, inventoryBalances, saleTime, lineQty, consumptionMaps, macContext);
 
   const modifiers = recipe.modifiers.map(modifier => {
     const modifierOnly = {
@@ -650,7 +661,7 @@ function computeSourceCogsForLine(
     };
     return {
       modifierId: modifier.modifier_id,
-      cogs: computeRawMacWeight(modifierOnly, ledger, ledgerBeforeSale, saleTime, lineQty, consumptionMaps, macContext),
+      cogs: computeRawMacWeight(modifierOnly, ledger, inventoryBalances, saleTime, lineQty, consumptionMaps, macContext),
     };
   });
 
@@ -659,14 +670,14 @@ function computeSourceCogsForLine(
 
 function computeRawMacWeight(
   recipe: LineRecipeSnapshot,
-  ledger: MacLedgerEntry[],
-  ledgerBeforeSale: MacLedgerEntry[],
+  ledger: MacLedgerSource,
+  inventoryBalances: Map<string, number>,
   saleTime: string,
   lineQty: number,
   consumptionMaps: SemiProductConsumptionMaps,
   macContext: ReturnType<typeof toMacSemiProductContext>,
 ): number {
-  const balances = buildInventoryBalances(ledgerBeforeSale, saleTime);
+  const balances = new Map(inventoryBalances);
   const rows = buildLineConsumptionRows(recipe, lineQty, balances, consumptionMaps);
   return rows.reduce((sum, row) => {
     const unitCost = getMacUnitCostWithRecipeFallback(row.item_reference, ledger, saleTime, macContext);

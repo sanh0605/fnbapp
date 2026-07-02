@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import * as macCogs from "@/lib/mac-cogs";
 import {
   computeMacCostForConsumptionRows,
   computeMacCostFromUnitCosts,
@@ -14,6 +15,31 @@ const ledger = [
 ];
 
 describe("MAC COGS", () => {
+  it("reuses an item-grouped ledger without rescanning unrelated rows", () => {
+    const createMacLedgerIndex = (
+      macCogs as unknown as {
+        createMacLedgerIndex?: (rows: typeof ledger) => unknown;
+      }
+    ).createMacLedgerIndex;
+
+    expect(createMacLedgerIndex).toBeTypeOf("function");
+
+    let itemReferenceReads = 0;
+    const observedLedger = ledger.map(row => ({
+      ...row,
+      get item_reference() {
+        itemReferenceReads += 1;
+        return row.item_reference;
+      },
+    }));
+    const index = createMacLedgerIndex!(observedLedger);
+    const readsAfterIndexBuild = itemReferenceReads;
+
+    expect(getMacUnitCost(index as typeof ledger, "ING-A", "2026-06-04T00:00:00Z")).toBe(20);
+    expect(getMacUnitCost(index as typeof ledger, "ING-A", "2026-06-02T12:00:00Z")).toBe(10);
+    expect(itemReferenceReads).toBe(readsAfterIndexBuild);
+  });
+
   it("computes moving weighted average from receipt rows up to the sale time", () => {
     expect(getMacUnitCost(ledger, "ING-A", "2026-06-04T00:00:00Z")).toBe(20);
   });

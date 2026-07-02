@@ -16,10 +16,36 @@ export type MacSemiProductContext = {
   semiProductYields: Map<string, number>;
 };
 
+export type MacLedgerIndex = {
+  rowsByItem: ReadonlyMap<string, readonly MacLedgerEntry[]>;
+};
+
+export type MacLedgerSource = MacLedgerEntry[] | MacLedgerIndex;
+
 const COST_INPUT_TYPES = new Set(["PO_RECEIPT", "STOCK_ADJUST", "PRODUCTION_YIELD"]);
 
+export function createMacLedgerIndex(ledger: MacLedgerEntry[]): MacLedgerIndex {
+  const rowsByItem = new Map<string, MacLedgerEntry[]>();
+
+  for (const row of ledger) {
+    const itemReference = row.item_reference || "";
+    const rows = rowsByItem.get(itemReference);
+    if (rows) {
+      rows.push(row);
+    } else {
+      rowsByItem.set(itemReference, [row]);
+    }
+  }
+
+  for (const rows of rowsByItem.values()) {
+    rows.sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+  }
+
+  return { rowsByItem };
+}
+
 export function getMacUnitCost(
-  ledger: MacLedgerEntry[],
+  ledger: MacLedgerSource,
   itemReference: string,
   asOf: string,
 ): number {
@@ -28,9 +54,11 @@ export function getMacUnitCost(
   let totalValue = 0;
   let latestKnownMac = 0;
 
-  const rows = [...ledger]
-    .filter(row => row.item_reference === itemReference)
-    .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+  const rows = Array.isArray(ledger)
+    ? [...ledger]
+      .filter(row => row.item_reference === itemReference)
+      .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
+    : ledger.rowsByItem.get(itemReference) || [];
 
   for (const row of rows) {
     const createdAt = new Date(row.created_at || 0).getTime();
@@ -59,7 +87,7 @@ export function getMacUnitCost(
 
 export function computeMacCostForConsumptionRows(
   rows: ConsumptionRow[],
-  ledger: MacLedgerEntry[],
+  ledger: MacLedgerSource,
   saleTime: string,
   semiProductContext?: MacSemiProductContext,
 ): number {
@@ -89,7 +117,7 @@ export function computeMacCostFromUnitCosts(
 
 export function getMacUnitCostWithRecipeFallback(
   itemReference: string,
-  ledger: MacLedgerEntry[],
+  ledger: MacLedgerSource,
   saleTime: string,
   semiProductContext?: MacSemiProductContext,
 ): number {
@@ -101,7 +129,7 @@ export function getMacUnitCostWithRecipeFallback(
 
 function computeSemiProductUnitCost(
   semiProductId: string,
-  ledger: MacLedgerEntry[],
+  ledger: MacLedgerSource,
   saleTime: string,
   semiProductContext: MacSemiProductContext,
 ): number {

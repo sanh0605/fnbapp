@@ -12,6 +12,59 @@ import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__t
 describe("getPnLDataV2", () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
+  it("indexes the stock ledger once for each P&L MAC breakdown", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    const order = {
+      ...fixture.order,
+      id: "order-index",
+      created_at: "2026-07-01T00:00:00Z",
+    };
+    const baseLine = {
+      ...fixture.lines[0],
+      order_id: order.id,
+      cost_at_sale: 5000,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-INDEX",
+          ingredients: [
+            { ingredient_id: "BI-A", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+            { ingredient_id: "BI-B", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+          ],
+        },
+        modifiers: [],
+      }),
+    };
+    const lines = [
+      { ...baseLine, id: "line-index-1" },
+      { ...baseLine, id: "line-index-2" },
+    ];
+
+    let itemReferenceReads = 0;
+    const ledger = ["BI-A", "BI-B"].map(itemReference => ({
+      get item_reference() {
+        itemReferenceReads += 1;
+        return itemReference;
+      },
+      transaction_type: "PO_RECEIPT",
+      unit_cost: "100",
+      quantity_change: "10",
+      created_at: "2026-06-01T00:00:00Z",
+    }));
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return lines;
+      if (sheet === "Stock_Ledger") return ledger;
+      return [];
+    });
+    (findAll as any).mockResolvedValue([]);
+
+    await getPnLDataV2({});
+
+    expect(itemReferenceReads).toBe(ledger.length * 4);
+  });
+
   it("returns empty result when no orders match filters", async () => {
     (findAllNoCache as any).mockResolvedValue([]);
     (findAll as any).mockResolvedValue([]);

@@ -180,6 +180,91 @@ describe("breakdownCOGSByIngredient", () => {
     expect(result.find(r => r.ingredient_id === "BI-LOW")?.cogs).toBe(500);
     expect(result.find(r => r.ingredient_id === "BI-HIGH")?.cogs).toBe(4500);
   });
+
+  it("groups the ledger once before repeated ingredient MAC lookups", () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    const order = {
+      ...fixture.order,
+      id: "order-index",
+      created_at: "2026-05-01T00:00:00Z",
+    };
+    const lines: OrderLineV2[] = fixture.lines.slice(0, 1).map(line => ({
+      ...line,
+      order_id: order.id,
+      cost_at_sale: 5000,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-INDEX",
+          ingredients: [
+            { ingredient_id: "BI-A", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+            { ingredient_id: "BI-B", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+          ],
+        },
+        modifiers: [],
+      }),
+    }));
+
+    let itemReferenceReads = 0;
+    const ledger = ["BI-A", "BI-B"].map(itemReference => ({
+      get item_reference() {
+        itemReferenceReads += 1;
+        return itemReference;
+      },
+      transaction_type: "PO_RECEIPT",
+      unit_cost: "100",
+      quantity_change: "10",
+      created_at: "2026-06-01T00:00:00Z",
+    }));
+
+    breakdownCOGSByIngredient(lines, [order], ledger);
+
+    expect(itemReferenceReads).toBe(ledger.length);
+  });
+
+  it("advances inventory balances once across chronologically sorted lines", () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    const order = {
+      ...fixture.order,
+      id: "order-balance-window",
+      created_at: "2026-07-01T00:00:00Z",
+    };
+    const baseLine = {
+      ...fixture.lines[0],
+      order_id: order.id,
+      cost_at_sale: 100,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-BALANCE",
+          ingredients: [
+            { ingredient_id: "BI-A", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+          ],
+        },
+        modifiers: [],
+      }),
+    };
+    const lines: OrderLineV2[] = [
+      { ...baseLine, id: "line-balance-1" },
+      { ...baseLine, id: "line-balance-2" },
+    ];
+
+    let itemReferenceReads = 0;
+    const ledger = ["BI-A", "BI-B"].map(itemReference => ({
+      get item_reference() {
+        itemReferenceReads += 1;
+        return itemReference;
+      },
+      transaction_type: "PO_RECEIPT",
+      unit_cost: "100",
+      quantity_change: "10",
+      created_at: "2026-06-01T00:00:00Z",
+    }));
+
+    breakdownCOGSByIngredient(lines, [order], ledger);
+
+    expect(itemReferenceReads).toBe(ledger.length * 2);
+  });
 });
 
 import { breakdownCOGSBySource } from "@/lib/report-v2-allocators";
