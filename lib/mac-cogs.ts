@@ -70,6 +70,23 @@ export function computeMacCostForConsumptionRows(
   return Math.round(total);
 }
 
+export function computeMacCostFromUnitCosts(
+  rows: ConsumptionRow[],
+  unitCosts: Map<string, number>,
+  semiProductContext?: MacSemiProductContext,
+): number {
+  const total = rows.reduce((sum, row) => {
+    const unitCost = getMacUnitCostFromMap(
+      row.item_reference,
+      unitCosts,
+      semiProductContext,
+      new Set(),
+    );
+    return sum + unitCost * row.quantity;
+  }, 0);
+  return Math.round(total);
+}
+
 export function getMacUnitCostWithRecipeFallback(
   itemReference: string,
   ledger: MacLedgerEntry[],
@@ -96,6 +113,40 @@ function computeSemiProductUnitCost(
     const quantity = Number(ingredient.quantity || 0);
     if (!ingredient.ingredient_id || quantity <= 0) return sum;
     const unitCost = getMacUnitCostWithRecipeFallback(ingredient.ingredient_id, ledger, saleTime, semiProductContext);
+    return sum + (quantity / yieldQty) * unitCost;
+  }, 0);
+}
+
+function getMacUnitCostFromMap(
+  itemReference: string,
+  unitCosts: Map<string, number>,
+  semiProductContext: MacSemiProductContext | undefined,
+  visited: Set<string>,
+): number {
+  const directMac = unitCosts.get(itemReference) || 0;
+  if (directMac > 0) return directMac;
+  if (
+    !semiProductContext ||
+    !itemReference.startsWith("BTP-") ||
+    visited.has(itemReference)
+  ) {
+    return 0;
+  }
+
+  const recipe = semiProductContext.semiProductRecipes.get(itemReference) || [];
+  const yieldQty = semiProductContext.semiProductYields.get(itemReference) || 1;
+  if (recipe.length === 0 || yieldQty <= 0) return 0;
+
+  const nextVisited = new Set(visited).add(itemReference);
+  return recipe.reduce((sum, ingredient) => {
+    const quantity = Number(ingredient.quantity || 0);
+    if (!ingredient.ingredient_id || quantity <= 0) return sum;
+    const unitCost = getMacUnitCostFromMap(
+      ingredient.ingredient_id,
+      unitCosts,
+      semiProductContext,
+      nextVisited,
+    );
     return sum + (quantity / yieldQty) * unitCost;
   }, 0);
 }

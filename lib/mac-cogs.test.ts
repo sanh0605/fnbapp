@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeMacCostForConsumptionRows, getMacUnitCost } from "@/lib/mac-cogs";
+import {
+  computeMacCostForConsumptionRows,
+  computeMacCostFromUnitCosts,
+  getMacUnitCost,
+} from "@/lib/mac-cogs";
 import type { ConsumptionRow } from "@/lib/inventory-consumption";
 
 const ledger = [
@@ -57,5 +61,26 @@ describe("MAC COGS", () => {
     ], "2026-06-04T00:00:00Z");
 
     expect(cost).toBe(250);
+  });
+
+  it("computes the same cost from a compact MAC map with semi-product fallback", () => {
+    const rows: ConsumptionRow[] = [
+      { item_reference: "BTP-1", quantity: 20, source: "VARIANT_RECIPE" },
+    ];
+    const context = {
+      semiProductRecipes: new Map([
+        ["BTP-1", [
+          { ingredient_id: "ING-A", ingredient_type: "BASE_INGREDIENT" as const, quantity: 30, unit_id: "g" },
+          { ingredient_id: "ING-B", ingredient_type: "BASE_INGREDIENT" as const, quantity: 10, unit_id: "g" },
+        ]],
+      ]),
+      semiProductYields: new Map([["BTP-1", 100]]),
+    };
+
+    expect(computeMacCostFromUnitCosts(
+      rows,
+      new Map([["ING-A", 20], ["ING-B", 40]]),
+      context,
+    )).toBe(200);
   });
 });
