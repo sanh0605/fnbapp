@@ -1,0 +1,39 @@
+{
+  "run_id": "PURCHASE-COST-ROUNDING-2026-07-02",
+  "source_hash": "96857b9ad9a1c2cb773881388588f2c83934b08ba1c0031e8f8b5855134c8da5",
+  "changes": [
+    {
+      "ledger_id": "STK-014",
+      "po_id": "PO-047",
+      "item_reference": "ING-032",
+      "quantity_change": 4800,
+      "old_unit_cost": 69,
+      "new_unit_cost": 68.541667,
+      "old_total_cost": 331200,
+      "new_total_cost": 329000.0016,
+      "delta_total_cost": -2199.9984
+    },
+    {
+      "ledger_id": "STK-018",
+      "po_id": "PO-048",
+      "item_reference": "ING-012",
+      "quantity_change": 3150,
+      "old_unit_cost": 98,
+      "new_unit_cost": 98.412698,
+      "old_total_cost": 308700,
+      "new_total_cost": 309999.9987,
+      "delta_total_cost": 1299.9987
+    },
+    {
+      "ledger_id": "STK-019",
+      "po_id": "PO-048",
+      "item_reference": "ING-022",
+      "quantity_change": 25000,
+      "old_unit_cost": 20,
+      "new_unit_cost": 19.6,
+      "old_total_cost": 500000,
+      "new_total_cost": 490000,
+      "delta_total_cost": -10000
+    }
+  ]
+}
