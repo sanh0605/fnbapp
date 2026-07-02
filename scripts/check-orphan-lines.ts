@@ -1,3 +1,4 @@
+// @ts-nocheck — debug one-off script, not maintained for TS strictness.
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
