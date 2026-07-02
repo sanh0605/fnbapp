@@ -1,5 +1,23 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-02 - POS checkout performance and pending data recovery
+
+- `[x]` Migration `0008_pos_checkout_performance.sql` deployed.
+- `[x]` POS checkout uses compact inventory state and one atomic write.
+- `[x]` Forced rollback probe: 0 partial orders, 0 partial lines.
+- `[x]` Inventory-state parity: 0 mismatches across 48 items.
+- `[x]` Reviewed `batch_yield`, `FLAT_VND`, POS ACTIVE filtering, and
+  standalone topping setup/report/toggle.
+- `[x]` June import structural review: 77 orders, 110 lines, 77 events, and 61
+  ledger rows. The historical import script must not be reused.
+- `[ ]` Resolve 3 negative-stock ingredients under a separate recovery plan.
+- `[ ]` Prepare recovery for 164 historical MAC COGS line mismatches
+  (+119,036 VND).
+- `[!]` Full TypeScript hook is blocked by preserved untracked debug scripts
+  from another session; tracked POS files introduce no remaining TS errors.
+
+Record: `docs/audits/2026-07-02-pos-checkout-performance-review.md`.
+
 > **READ FIRST**: `docs/COLLABORATION.md` — communication protocol + file map.
 
 Yêu cầu gốc: review code changes của Claude (Phần A) + fix system-wide audit findings (Phần B).

@@ -4,6 +4,43 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-02 (Codex) - POS bill checkout optimized and handoffs reviewed
+
+**User-facing result:** Database work during bill checkout fell from roughly
+2.1 seconds to 0.3 seconds in the current benchmark. A bill now saves as one
+all-or-nothing database transaction.
+
+### Completed
+
+- Replaced full 5,998-row stock-ledger download with 48-item compact state.
+- Removed two full order-list reads from bill-number allocation.
+- Replaced four sequential writes with one atomic database call.
+- Deployed migration `0008_pos_checkout_performance.sql`.
+- Verified forced failure leaves 0 partial orders and 0 partial lines.
+- Reviewed Claude/Antigravity notes for batch yield, `FLAT_VND`, June import,
+  POS ACTIVE filtering, and standalone topping setup/report/toggle.
+- Added direct `FLAT_VND` regression coverage.
+
+### Safety and verification
+
+- Fresh snapshot `recovery-20260702T024525324Z`: 108/108 files valid.
+- Compact inventory state: 0 mismatches across 48 items.
+- Full Vitest: 253/253 pass across 44 files.
+- P&L MAC consistency: 0 VND delta.
+- Commit: `12dd2db`.
+- No push.
+- Detail:
+  `docs/audits/2026-07-02-pos-checkout-performance-review.md`.
+
+### Separate remaining work
+
+- 3 negative-stock ingredients.
+- 164 historical MAC COGS line mismatches (+119,036 VND).
+- Preserved untracked debug scripts block the global TypeScript hook and need
+  lossless triage by their owner.
+
+---
+
 ## 2026-07-02 (Codex) - Historical purchase costs corrected
 
 **User-facing result:** Three rounded historical purchase receipt costs were

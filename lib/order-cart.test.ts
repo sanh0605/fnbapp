@@ -117,6 +117,34 @@ describe("buildOrderFromCart", () => {
     expect(result.order.net_total).toBe(15000);
   });
 
+  it("FLAT_VND promo subtracts the configured amount per item", () => {
+    const flatVndRef: ReferenceData = {
+      ...REF,
+      promotions: [{
+        ...REF.promotions[0],
+        discount_type: "FLAT_VND",
+        discount_value: "3000",
+        applicable_products_json: JSON.stringify(["VAR-031"]),
+      }],
+    };
+    const result = buildOrderFromCart({
+      brand_id: "BR-002",
+      items: [{
+        product_id: "PROD-024",
+        variant_id: "VAR-031",
+        qty: 2,
+        modifiers: [],
+        manual_item_discount: { value: 0, type: "VND" },
+      }],
+      payment_method: "CASH",
+      actor: { id: "U1", name: "Test" },
+    }, flatVndRef);
+
+    expect(result.order.gross_total).toBe(70000);
+    expect(result.order.promo_discount_total).toBe(6000);
+    expect(result.order.net_total).toBe(64000);
+  });
+
   it("manual_item_discount VND: subtracts directly from line", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
