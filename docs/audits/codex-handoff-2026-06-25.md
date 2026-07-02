@@ -13,7 +13,7 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 
 ---
 
-## 2026-07-01 - Supabase recovery Phase B approval gate
+## 2026-07-02 - Supabase recovery Phase B deployed
 
 ### Prepared and verified
 
@@ -28,18 +28,19 @@ Trạng thái từng item sẽ được update tại chỗ bằng marker (xem `d
 - `[x]` Read-only remote probe: `NOT_DEPLOYED`.
 - `[x]` Initial immutable dual-source snapshot captured and verified:
   `recovery-20260701T151428127Z` (108/108 files valid).
+- `[x]` Fresh pre-deployment snapshot captured and verified:
+  `recovery-20260701T152243267Z` (108/108 files valid).
+- `[x]` Migration `0006_atomic_purchase_order_write.sql` deployed.
+- `[x]` Remote guard probe reports `READY`.
+- `[x]` `savePurchaseOrder` uses the atomic RPC.
+- `[x]` Forced failure on PO-048 rolled back with identical before/after hash.
 
 ### Must not be skipped
 
-- `[!]` Review/deploy `supabase/migrations/0006_atomic_purchase_order_write.sql`.
-- `[!]` Re-run
-  `scripts/audit-purchase-order-transaction-readiness.ts --remote`; required
-  result: `READY`.
-- `[!]` Create another fresh immutable snapshot immediately before migration
-  or data repair; operational data may have changed after the initial capture.
-- `[ ]` Switch `savePurchaseOrder` from adapter delete/reinsert to
-  `savePurchaseOrderAtomic` in a separate commit.
-- `[ ]` Verify a forced RPC failure leaves PO, lines, and ledger unchanged.
+- `[x]` Purchase-order safety deployment completed without historical data
+  correction.
+- `[!]` Create another fresh immutable snapshot immediately before historical
+  data repair; operational data continues to change.
 - `[ ]` Repair historical material PO rounding drift only through a reviewed,
   idempotent recovery manifest.
 

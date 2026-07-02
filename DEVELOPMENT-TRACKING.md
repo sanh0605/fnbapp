@@ -4,6 +4,40 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-02 (Codex) - Purchase orders now save all-or-nothing
+
+**User-facing result:** A purchase order and its inventory receipt now either
+save completely or remain unchanged when an error occurs. The application no
+longer performs a multi-step delete and rewrite.
+
+### Completed
+
+- Captured and verified a fresh dual-source backup before deployment.
+- Deployed Supabase migration `0006_atomic_purchase_order_write.sql`.
+- Confirmed remote safety status `READY`.
+- Switched the purchase-order form to the atomic database operation.
+- Removed client-side purchase-order ID guessing.
+- Added automatic cache refresh after a successful save.
+- Forced PO-048 to fail mid-save and confirmed its complete before/after
+  SHA-256 values were identical.
+
+### Verification
+
+- Full Vitest: 234/234 pass across 39 files.
+- Rollback verification: `UNCHANGED`.
+- Purchase conversion audit: 0 ambiguous and 0 missing.
+- No historical inventory or COGS correction was applied.
+- Deployment record:
+  `docs/audits/2026-07-02-purchase-order-safety-deployment.md`.
+
+### Existing data issues, unchanged by this deployment
+
+- 3 ingredients remain negative: `ING-021`, `ING-015`, `ING-030`.
+- 129 historical MAC COGS drift lines remain, delta +120,842 VND.
+- 3 material historical purchase-cost rounding mismatches remain.
+
+---
+
 ## 2026-07-01 (Codex) - Immutable dual-source recovery snapshot
 
 **Trigger:** The approved recovery contract requires raw, hashed snapshots
