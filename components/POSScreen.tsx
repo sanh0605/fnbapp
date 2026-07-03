@@ -38,6 +38,53 @@ export default function POSScreen({
   const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
 
+  const [isOnline, setIsOnline] = useState(true);
+  const [processingOrder, setProcessingOrder] = useState<any | null>(null);
+  const [lastCheckoutError, setLastCheckoutError] = useState<any | null>(null);
+  const [toasts, setToasts] = useState<any[]>([]);
+
+  const addToast = (
+    type: "success" | "error" | "warning" | "info",
+    message: string,
+    action?: { label: string; onClick: () => void }
+  ) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts(prev => [...prev, { id, type, message, action }]);
+    if (type !== "error") {
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, 5000);
+    }
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsOnline(window.navigator.onLine);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      addToast("success", "Đã kết nối trực tuyến trở lại.");
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      addToast("warning", "Mất kết nối internet. POS đang chạy ở chế độ ngoại tuyến.");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   const refreshDrafts = async () => {
     if (!brandId) return;
     try {
@@ -280,10 +327,12 @@ export default function POSScreen({
 
     setSelectedProduct(null);
     setEditingCartIndex(null);
+    setLastCheckoutError(null);
   };
 
   const removeFromCart = (index: number) => {
     setCart(cart.filter((_, i) => i !== index));
+    setLastCheckoutError(null);
   };
 
   const changeQty = (index: number, delta: number) => {
@@ -294,6 +343,7 @@ export default function POSScreen({
     } else {
       setCart(newCart);
     }
+    setLastCheckoutError(null);
   };
 
   const currentItemBasePrice = selectedVariant ? Number(selectedVariant.price) + selectedModifiers.reduce((sum, m) => sum + Number(m.price), 0) : 0;
@@ -595,7 +645,23 @@ export default function POSScreen({
 
 
   const handleConfirmCheckout = async (method: string) => {
+    if (cart.length === 0 || !isOnline) return;
     setIsCheckingOut(method);
+    setLastCheckoutError(null);
+
+    // Save states for rollback
+    const cartBackup = [...cart];
+    const draftIdBackup = activeDraftId;
+    const customDiscountBackup = userCustomDiscount;
+    const customDiscountTypeBackup = userCustomDiscountType;
+    const appliedPromoCodeBackup = appliedPromoCode;
+    const promoCodeInputBackup = promoCodeInput;
+    const manualPromoErrorBackup = manualPromoError;
+
+    // Calculate totals
+    const currentSubtotal = calculateSubtotal();
+    const currentTotalAmount = calculateTotalAmount();
+    const currentTotalItems = totalItems;
 
     const cartInput: CartInput = {
       brand_id: brandId || "",
@@ -628,29 +694,112 @@ export default function POSScreen({
       actor: { id: "", name: "" },
     };
 
-    const res = await submitOrderV2(cartInput);
-    setIsCheckingOut(null);
+    // Construct optimistic processing order details
+    const newProcessingOrder = {
+      items: cartBackup,
+      totalAmount: currentTotalAmount,
+      totalItems: currentTotalItems,
+      subtotal: currentSubtotal,
+      paymentMethod: method === "Chuyen khoan" ? "BANK_TRANSFER" : "CASH",
+      methodLabel: method === "Chuyen khoan" ? "CHUYỂN KHOẢN" : "TIỀN MẶT",
+      method,
+      cartInput,
+      cartBackup,
+      draftIdBackup,
+      customDiscountBackup,
+      customDiscountTypeBackup,
+      appliedPromoCodeBackup,
+      promoCodeInputBackup,
+      manualPromoErrorBackup,
+    };
 
-    if (res.success) {
-      setSuccessOrderNo(res.order_no || "");
-      setCart([]);
-      setIsCartOpen(false);
-      setUserCustomDiscount(null);
-      setUserCustomDiscountType("VND");
-      setAppliedPromoCode(null);
-      setPromoCodeInput("");
-      setManualPromoError(null);
-      
-      if (activeDraftId) {
-        deletePOSDraft(activeDraftId).then(res => {
-          if (res.success) {
-            refreshDrafts();
-          }
+    setProcessingOrder(newProcessingOrder);
+
+    // Optimistically clear cart
+    setCart([]);
+    setIsCartOpen(false);
+    setUserCustomDiscount(null);
+    setUserCustomDiscountType("VND");
+    setAppliedPromoCode(null);
+    setPromoCodeInput("");
+    setManualPromoError(null);
+    setActiveDraftId(null);
+
+    try {
+      const res = await submitOrderV2(cartInput);
+      setIsCheckingOut(null);
+      setProcessingOrder(null);
+
+      if (res.success) {
+        setSuccessOrderNo(res.order_no || "");
+        addToast("success", `Thanh toán thành công! Mã đơn: ${res.order_no || ""}`);
+        
+        if (draftIdBackup) {
+          deletePOSDraft(draftIdBackup).then(delRes => {
+            if (delRes.success) {
+              refreshDrafts();
+            }
+          });
+        }
+      } else {
+        // Rollback states
+        setCart(cartBackup);
+        setActiveDraftId(draftIdBackup);
+        setUserCustomDiscount(customDiscountBackup);
+        setUserCustomDiscountType(customDiscountTypeBackup);
+        setAppliedPromoCode(appliedPromoCodeBackup);
+        setPromoCodeInput(promoCodeInputBackup);
+        setManualPromoError(manualPromoErrorBackup);
+        setIsCartOpen(true);
+
+        setLastCheckoutError({
+          method,
+          error: res.error,
+          processingOrder: newProcessingOrder,
         });
-        setActiveDraftId(null);
+
+        addToast(
+          "error",
+          `Thanh toán thất bại: ${res.error}`,
+          {
+            label: "Thử lại",
+            onClick: () => {
+              handleConfirmCheckout(method);
+            }
+          }
+        );
       }
-    } else {
-      alert("Lỗi thanh toán: " + res.error);
+    } catch (err: any) {
+      setIsCheckingOut(null);
+      setProcessingOrder(null);
+
+      // Rollback states
+      setCart(cartBackup);
+      setActiveDraftId(draftIdBackup);
+      setUserCustomDiscount(customDiscountBackup);
+      setUserCustomDiscountType(customDiscountTypeBackup);
+      setAppliedPromoCode(appliedPromoCodeBackup);
+      setPromoCodeInput(promoCodeInputBackup);
+      setManualPromoError(manualPromoErrorBackup);
+      setIsCartOpen(true);
+
+      const errorMsg = err?.message || String(err);
+      setLastCheckoutError({
+        method,
+        error: errorMsg,
+        processingOrder: newProcessingOrder,
+      });
+
+      addToast(
+        "error",
+        `Lỗi hệ thống: ${errorMsg}`,
+        {
+          label: "Thử lại",
+          onClick: () => {
+            handleConfirmCheckout(method);
+          }
+        }
+      );
     }
   };
 
@@ -681,7 +830,7 @@ export default function POSScreen({
         setIsDraftModalOpen(false);
         setSelectedProduct(null);
         setIsCartOpen(false);
-      } else if (e.key === "Enter" && !isCheckingOut && cart.length > 0) {
+      } else if (e.key === "Enter" && !isCheckingOut && !processingOrder && isOnline && cart.length > 0) {
         e.preventDefault();
         if (confirm("Xác nhận thanh toán TIỀN MẶT cho đơn hàng?")) {
           handleConfirmCheckoutRef.current("Tien mat");
@@ -690,10 +839,59 @@ export default function POSScreen({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isCheckingOut, cart.length]);
+  }, [isCheckingOut, processingOrder, isOnline, cart.length]);
 
   return (
     <div className="fixed inset-0 flex bg-zinc-50 text-zinc-900 font-sans overflow-hidden">
+
+      {/* Toast Notification Container */}
+      <div className="fixed top-4 right-4 z-[70] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto p-4 rounded-xl shadow-xl border flex items-start gap-3 transition-all transform duration-300 animate-slide-in-right ${
+              toast.type === "success"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                : toast.type === "error"
+                ? "bg-rose-50 border-rose-200 text-rose-800"
+                : toast.type === "warning"
+                ? "bg-amber-50 border-amber-200 text-amber-800"
+                : "bg-blue-50 border-blue-200 text-blue-800"
+            }`}
+          >
+            <span className="text-xl shrink-0">
+              {toast.type === "success" && "🟢"}
+              {toast.type === "error" && "🔴"}
+              {toast.type === "warning" && "⚠️"}
+              {toast.type === "info" && "ℹ️"}
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold">{toast.message}</p>
+              {toast.action && (
+                <button
+                  onClick={() => {
+                    toast.action.onClick();
+                    removeToast(toast.id);
+                  }}
+                  className={`mt-2 font-extrabold text-xs px-4 py-2 bg-white rounded-lg border shadow-sm transition active:scale-95 flex items-center justify-center min-h-[44px] min-w-[80px] ${
+                    toast.type === "error"
+                      ? "text-rose-700 border-rose-200 hover:bg-rose-100"
+                      : "text-indigo-700 border-indigo-200 hover:bg-indigo-100"
+                  }`}
+                >
+                  {toast.action.label}
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="text-gray-400 hover:text-gray-600 shrink-0 p-2 rounded-full hover:bg-black/5"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <header className="h-14 bg-white/80 border-b border-gray-200/50 backdrop-blur-md flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
@@ -704,6 +902,17 @@ export default function POSScreen({
             <h1 className="font-extrabold text-xl text-gray-900 tracking-tight flex items-center gap-2">
               <span className="text-indigo-600">POS</span> Đơn Mới
             </h1>
+            {isOnline ? (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50 shadow-sm shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Trực tuyến
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/50 shadow-sm shrink-0">
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                Ngoại tuyến
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <button 
@@ -720,6 +929,12 @@ export default function POSScreen({
             </div>
           </div>
         </header>
+
+        {!isOnline && (
+          <div className="bg-amber-500 text-white font-extrabold text-center py-2.5 px-4 text-sm flex items-center justify-center gap-2 animate-fade-in shadow-md shrink-0 relative z-20">
+            <span>⚠️ Mất kết nối — đơn sẽ không gửi được</span>
+          </div>
+        )}
 
         <ProductGrid
           categories={categories}
@@ -762,6 +977,10 @@ export default function POSScreen({
         handleConfirmCheckout={handleConfirmCheckout}
         isCheckingOut={isCheckingOut}
         itemPromoDiscounts={itemPromoDiscounts}
+        isOnline={isOnline}
+        processingOrder={processingOrder}
+        lastCheckoutError={lastCheckoutError}
+        clearLastCheckoutError={() => setLastCheckoutError(null)}
       />
 
       {/* Mobile Floating Cart Button */}
@@ -1039,8 +1258,13 @@ export default function POSScreen({
           from { opacity: 0; transform: scale(0.95); }
           to { opacity: 1; transform: scale(1); }
         }
+        @keyframes slide-in-right {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
         .animate-slide-up { animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .animate-fade-in { animation: fade-in 0.2s ease-out; }
+        .animate-slide-in-right { animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
       `}</style>
     </div>
   );
