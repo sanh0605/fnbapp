@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-03 (Antigravity) - Navigation IA Phase 2 (Restructure & Merge)
+
+**Trigger:** Phase 2 spec ~/.claude/plans/unified-sprouting-reef.md. User requested UI modifications and acknowledged Claude's protocol violation.
+
+### Retroactive Review (Phase 1)
+- Reviewed Claude's direct commits in pp/admin/layout.tsx (IA-4/5/6).
+- Changes were structurally sound, UI logic for expandedGroups and nav items works correctly. No regressions found.
+- Protocol violation acknowledged.
+
+### Completed Work
+| Task | Description | Status | Commit |
+|---|---|---|---|
+| **IA-1** | Restructured navItems into new groups (?? Nguyên v?t li?u, ?? Nh?p hàng & T?n kho, ? Thành ph?m, ?? Bán hàng, ?? Báo cáo, ?? H? th?ng) | ? | 7c9ddae |
+| **IA-2** | Moved cogs-estimate from /admin/reports/ to /admin/products/. Updated navigation link. | ? | 3d1887c |
+| **IA-3** | Merged Topping Standalone into /admin/products/modifiers. Rendered as a tab view. Replaced 	oppings/page.tsx with a redirect. | ? | 72ee918 |
+
+### Verification
+- itest run: **257/257 pass**.
+- 	sc --noEmit: **0 errors**.
+- All UI routes load without errors.
+- Pre-commit hook: PASS.
+
+---
+
 ## 2026-07-03 (Claude) â€” Phase 1 quick wins + protocol violation acknowledge
 
 **Trigger:** User directive Æ°u tiÃªn small tasks trÆ°á»›c franchise. Plan approved `~/.claude/plans/unified-sprouting-reef.md`.
