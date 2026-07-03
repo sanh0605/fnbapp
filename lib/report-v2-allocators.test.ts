@@ -1,7 +1,21 @@
 import { describe, it, expect } from "vitest";
-import { breakdownRevenueByProduct, breakdownCOGSByIngredient } from "@/lib/report-v2-allocators";
+import {
+  breakdownRevenueByProduct,
+  breakdownCOGSByIngredient as breakdownCOGSByIngredientWithIndex,
+} from "@/lib/report-v2-allocators";
+import { createMacLedgerIndex, type MacLedgerEntry } from "@/lib/mac-cogs";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder, makePHD000540MigratedOrder } from "@/lib/__tests__/fixtures";
 import type { OrderV2, OrderLineV2 } from "@/lib/order-types";
+
+function breakdownCOGSByIngredient(
+  lines: OrderLineV2[],
+  orders: any[] = [],
+  ledger: MacLedgerEntry[] = [],
+  spContext?: any,
+) {
+  const index = createMacLedgerIndex(ledger);
+  return breakdownCOGSByIngredientWithIndex(lines, orders, ledger, index, spContext);
+}
 
 describe("breakdownRevenueByProduct", () => {
   it("returns empty array for empty input", () => {
@@ -181,7 +195,7 @@ describe("breakdownCOGSByIngredient", () => {
     expect(result.find(r => r.ingredient_id === "BI-HIGH")?.cogs).toBe(4500);
   });
 
-  it("groups the ledger once before repeated ingredient MAC lookups", () => {
+  it("uses the provided grouped ledger for repeated MAC lookups", () => {
     const fixture = makeSuaDauStandaloneOrder();
     const order = {
       ...fixture.order,

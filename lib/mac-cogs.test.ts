@@ -15,6 +15,20 @@ const ledger = [
 ];
 
 describe("MAC COGS", () => {
+  it("preserves MAC costs when callers share one request-scoped index", () => {
+    const index = macCogs.createMacLedgerIndex(ledger);
+    const lookups = [
+      ["ING-A", "2026-06-02T12:00:00Z"],
+      ["ING-A", "2026-06-04T00:00:00Z"],
+      ["ING-B", "2026-06-04T00:00:00Z"],
+    ] as const;
+
+    for (const [itemReference, asOf] of lookups) {
+      expect(getMacUnitCost(index, itemReference, asOf))
+        .toBe(getMacUnitCost(ledger, itemReference, asOf));
+    }
+  });
+
   it("reuses an item-grouped ledger without rescanning unrelated rows", () => {
     const createMacLedgerIndex = (
       macCogs as unknown as {

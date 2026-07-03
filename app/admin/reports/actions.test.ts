@@ -18,7 +18,7 @@ describe("getPnLDataV2", () => {
     ));
   });
 
-  it("indexes the stock ledger once for each P&L MAC breakdown", async () => {
+  it("reuses one request-scoped stock-ledger index across both P&L MAC breakdowns", async () => {
     const fixture = makeSuaDauStandaloneOrder();
     const order = {
       ...fixture.order,
@@ -68,7 +68,7 @@ describe("getPnLDataV2", () => {
 
     await getPnLDataV2({});
 
-    expect(itemReferenceReads).toBe(ledger.length * 4);
+    expect(itemReferenceReads).toBe(ledger.length * 3);
   });
 
   it("returns empty result when no orders match filters", async () => {

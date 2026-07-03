@@ -1,5 +1,20 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-03 - PO-2 P&L request-scoped MAC index
+
+- `[x]` Replaced two per-request P&L MAC index builds with one shared index.
+- `[x]` Rejected the module hash-cache design after measuring a CPU regression.
+- `[x]` Two builds: 24.78ms; one request-scoped build: 9.76ms.
+- `[x]` Live P&L parity: 71 orders, 1,052,701 VND COGS, 25 ingredient rows.
+- `[x]` P&L product/topping and ingredient consistency deltas: 0 VND.
+- `[x]` Vitest: 266/266 pass; TypeScript: 0 errors.
+- `[x]` Claude review approved before commit.
+- `[!]` The existing 164 historical MAC drift lines (+119,036 VND) remain a
+  separate data-recovery task and were not changed.
+
+Spec:
+`docs/superpowers/specs/2026-07-03-pnl-mac-index-reuse-design.md`.
+
 ## 2026-07-02 - P&L MAC performance
 
 - `[x]` Added a reusable stock-ledger index grouped by item.

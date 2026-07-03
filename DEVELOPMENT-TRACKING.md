@@ -4,6 +4,33 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-03 (Codex) - PO-2 request-scoped MAC index for P&L
+
+**Trigger:** The proposed module cache targeted a real duplicate index build,
+but isolated benchmarking showed a 64-bit BigInt content hash cost more than
+rebuilding the index. Claude approved the request-scoped pivot before commit.
+
+### Completed
+
+- `getPnLDataV2` builds one `MacLedgerIndex` for its stock-ledger snapshot.
+- `breakdownCOGSByIngredient` and `splitLineCogsBySaleSource` receive and reuse
+  the same required index.
+- No module-scoped cache, hash, reset API, or cross-request mutable state.
+- `scripts/benchmark-shim.ts` compares two index builds with one request-scoped
+  build and blocks P&L result drift.
+
+### Verification
+
+- MAC index benchmark: 24.78ms for two builds to 9.76ms for one build.
+- Live parity: 71 orders, 1,052,701 VND COGS, 25 ingredient rows.
+- P&L MAC consistency: product/topping delta 0 VND; ingredient delta 0 VND.
+- Vitest: 266/266 pass.
+- TypeScript: 0 errors.
+- Claude review: approved before commit.
+- No data writes and no push.
+
+---
+
 ## 2026-07-03 (Antigravity) - Optimistic checkout flow (PO-3) and online/offline indicator (PO-4)
 
 **Trigger:** User request to improve checkout latency (optimistic UI) and show online/offline status with proper warnings.

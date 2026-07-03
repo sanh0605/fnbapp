@@ -18,9 +18,9 @@ import {
   type SemiProductConsumptionMaps,
 } from "@/lib/inventory-consumption";
 import {
-  createMacLedgerIndex,
   getMacUnitCostWithRecipeFallback,
   type MacLedgerEntry,
+  type MacLedgerIndex,
 } from "@/lib/mac-cogs";
 
 export interface ProductRevenueRow {
@@ -155,8 +155,9 @@ export function breakdownRevenueByProduct(
 
 export function breakdownCOGSByIngredient(
   lines: OrderLineV2[],
-  orders: any[] = [],
-  ledger: any[] = [],
+  orders: any[],
+  ledger: any[],
+  macLedgerIndex: MacLedgerIndex,
   spContext?: any,
 ): IngredientCOGSRow[] {
   const map = new Map<string, IngredientCOGSRow>();
@@ -171,7 +172,6 @@ export function breakdownCOGSByIngredient(
   const ledgerSorted = [...(ledger as MacLedgerEntry[])].sort(
     (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
   );
-  const macLedgerIndex = createMacLedgerIndex(ledgerSorted);
   const ledgerTimes = ledgerSorted.map(row => new Date(row.created_at || 0).getTime());
 
   const sortedLines = [...lines].sort((a, b) => {

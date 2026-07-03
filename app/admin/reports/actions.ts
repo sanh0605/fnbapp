@@ -19,6 +19,7 @@ import {
   createMacLedgerIndex,
   getMacUnitCostWithRecipeFallback,
   type MacLedgerEntry,
+  type MacLedgerIndex,
   type MacLedgerSource,
 } from "@/lib/mac-cogs";
 
@@ -149,16 +150,29 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
 
     // 3. Total COGS = sum of line.cost_at_sale
     const totalCOGS = typedLines.reduce((s, l) => s + l.cost_at_sale, 0);
+    const macLedgerIndex = createMacLedgerIndex(ledger as MacLedgerEntry[]);
 
     // 4. Per-product revenue breakdown
     const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
 
     // 5. Per-ingredient COGS breakdown
-    const ingredientRows = breakdownCOGSByIngredient(typedLines, typedOrders, ledger as any[], spContext);
+    const ingredientRows = breakdownCOGSByIngredient(
+      typedLines,
+      typedOrders,
+      ledger as any[],
+      macLedgerIndex,
+      spContext,
+    );
 
     // 6. Build product profit analysis.
     // COGS is split by source so product rows do not also carry topping COGS.
-    const cogsBySourceKey = splitLineCogsBySaleSource(typedLines, typedOrders, ledger as any[], spContext);
+    const cogsBySourceKey = splitLineCogsBySaleSource(
+      typedLines,
+      typedOrders,
+      ledger as any[],
+      macLedgerIndex,
+      spContext,
+    );
     const canonicalModifiers = buildCanonicalModifierLookup(modifiers as any[]);
     const canonicalModifierCogs = canonicalizeModifierCogs(cogsBySourceKey.modifierCogs, canonicalModifiers);
 
@@ -577,6 +591,7 @@ function splitLineCogsBySaleSource(
   lines: OrderLineV2[],
   orders: OrderV2[],
   ledger: any[],
+  macLedgerIndex: MacLedgerIndex,
   spContext?: any,
 ): { variantCogs: Map<string, number>; modifierCogs: Map<string, number> } {
   const variantCogs = new Map<string, number>();
@@ -589,7 +604,6 @@ function splitLineCogsBySaleSource(
   const ledgerSorted = [...(ledger as MacLedgerEntry[])].sort(
     (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
   );
-  const macLedgerIndex = createMacLedgerIndex(ledgerSorted);
   const ledgerTimes = ledgerSorted.map(row => new Date(row.created_at || 0).getTime());
 
   const sortedLines = [...lines].sort((a, b) => {
