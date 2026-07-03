@@ -9,6 +9,7 @@ import { ModifierForm } from "./ModifierForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import type { DBModifier, DBRecipe, DBBaseIngredient, DBSemiProduct, DBUnit } from "@/types/db";
 import { parseModifierIngredients } from "@/lib/modifier-recipe";
+import ToppingsManager from "@/components/ToppingsManager";
 
 interface ModifiersClientProps {
   modifiers: Array<DBModifier & {
@@ -20,9 +21,11 @@ interface ModifiersClientProps {
   baseIngredients: DBBaseIngredient[];
   semiProducts: DBSemiProduct[];
   units: DBUnit[];
+  toppings: any[];
 }
 
-export default function ModifiersClient({ modifiers, baseIngredients, semiProducts, units }: ModifiersClientProps) {
+export default function ModifiersClient({ modifiers, baseIngredients, semiProducts, units, toppings }: ModifiersClientProps) {
+  const [activeTab, setActiveTab] = useState<"modifiers" | "standalone">("modifiers");
   const [search, setSearch] = useState("");
   const router = useRouter();
 
@@ -57,23 +60,45 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
   return (
     <div className="space-y-6">
       <StickyFilterBar 
-        title="Quản lý Tùy Chọn (Modifiers)" 
-        subtitle="Quản lý Topping, Size, và các tùy chỉnh định mức nguyên liệu."
-        rightContent={rightContent}
+        title="Topping & Tùy chọn" 
+        subtitle="Quản lý tùy chọn và cài đặt bán độc lập (POS)."
+        rightContent={activeTab === "modifiers" ? rightContent : undefined}
       >
-        <div className="shrink-0">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm tùy chọn</label>
-          <input
-            type="text"
-            placeholder="Tên hoặc nhóm..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
-          />
+        <div className="flex bg-gray-100 p-1 rounded-lg">
+          <button
+            onClick={() => setActiveTab("modifiers")}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+              activeTab === "modifiers" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-900"
+            }`}
+          >
+            Tùy chọn (Modifiers)
+          </button>
+          <button
+            onClick={() => setActiveTab("standalone")}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+              activeTab === "standalone" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-900"
+            }`}
+          >
+            Bán độc lập
+          </button>
         </div>
+
+        {activeTab === "modifiers" && (
+          <div className="shrink-0 ml-4">
+            <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm tùy chọn</label>
+            <input
+              type="text"
+              placeholder="Tên hoặc nhóm..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            />
+          </div>
+        )}
       </StickyFilterBar>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {activeTab === "modifiers" ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
@@ -156,7 +181,10 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
             </tbody>
           </table>
         </div>
-      </div>
+        </div>
+      ) : (
+        <ToppingsManager products={toppings} />
+      )}
     </div>
   );
 }
