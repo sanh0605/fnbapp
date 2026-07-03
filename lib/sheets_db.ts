@@ -176,9 +176,11 @@ export const findAllNoCache = async (sheetName: string) => {
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
   const booleanCols = getBooleanColumns(tableName);
-  // Claude code — Supabase migration Phase B fix: PostgREST default limit
-  // is 1000 rows. Paginate to fetch full dataset.
-  const PAGE_SIZE = 1000;
+  // Claude code — perf P-1: bump PAGE_SIZE to PostgREST max (5000) to
+  // reduce round trips. Most tables fit in 1 page now. Skip serialization
+  // when no jsonb/boolean columns (hot path optimization).
+  const PAGE_SIZE = 5000;
+  const needsSerialize = jsonCols.size > 0 || booleanCols.size > 0;
   const all: any[] = [];
   let page = 0;
   while (true) {
@@ -190,7 +192,11 @@ export const findAllNoCache = async (sheetName: string) => {
       throw new Error(`findAll(${sheetName}): ${error.message}`);
     }
     if (!data || data.length === 0) break;
-    for (const row of data) all.push(serializeRow(row, jsonCols, booleanCols));
+    if (needsSerialize) {
+      for (const row of data) all.push(serializeRow(row, jsonCols, booleanCols));
+    } else {
+      for (const row of data) all.push(row);
+    }
     if (data.length < PAGE_SIZE) break;
     page += 1;
   }
