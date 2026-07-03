@@ -24,15 +24,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Bảng Quy Đổi", href: "/admin/inventory/conversions" },
         { name: "Quản lý Đơn vị", href: "/admin/inventory/units" },
         { name: "Đồng bộ Tồn kho", href: "/admin/inventory/sync" },
-        { name: "Nhập Hàng", href: "/admin/inventory/purchase-orders" },
       ]
     },
     {
-      name: "Bán thành phẩm",
-      icon: "🥣",
+      name: "Nhập hàng & Tồn kho",
+      icon: "🚚",
       children: [
-        { name: "Cấu hình / Công thức", href: "/admin/semi-products" },
-        { name: "Sản xuất / Nấu Bếp", href: "/admin/production" },
+        { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
+        { name: "Sản xuất Bán TP", href: "/admin/production" },
       ]
     },
     {
@@ -43,11 +42,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Danh sách Món", href: "/admin/products" },
         { name: "Topping & Tùy chọn", href: "/admin/products/modifiers" },
         { name: "Topping Độc Lập", href: "/admin/products/toppings" },
+        { name: "Công cụ Dự toán COGS", href: "/admin/products/cogs-estimate" },
       ]
     },
-    { name: "Nhân sự & Phân quyền", href: "/admin/users", icon: "👥" },
-    { name: "Quản lý Đơn hàng", href: "/admin/orders", icon: "🧾" },
-    { name: "Khuyến mãi", href: "/admin/promotions", icon: "🏷️" },
+    {
+      name: "Bán hàng",
+      icon: "🧾",
+      children: [
+        { name: "Đơn hàng", href: "/admin/orders" },
+        { name: "Khuyến mãi", href: "/admin/promotions" },
+      ]
+    },
     {
       name: "Báo cáo",
       icon: "📈",
@@ -55,10 +60,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Báo cáo Bán hàng", href: "/admin/reports/sales" },
         { name: "Báo cáo Lãi lỗ", href: "/admin/reports/pnl" },
         { name: "Báo cáo Tồn kho", href: "/admin/reports/stock" },
-        { name: "Công cụ Dự toán COGS", href: "/admin/reports/cogs-estimate" },
       ]
     },
-    { name: "Xoá Cache", href: "/admin/clear-cache", icon: "🔄" },
+    {
+      name: "Hệ thống",
+      icon: "⚙️",
+      children: [
+        { name: "Nhân sự & Phân quyền", href: "/admin/users" },
+        { name: "Xoá Cache", href: "/admin/clear-cache" },
+      ]
+    }
   ];
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -68,9 +79,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     "Nguyên vật liệu": pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders"),
-    "Bán thành phẩm": pathname.includes("/admin/semi-products") || pathname.includes("/admin/production"),
+    "Nhập hàng & Tồn kho": pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production"),
     "Thành phẩm (Menu)": pathname.includes("/admin/products"),
+    "Bán hàng": pathname.includes("/admin/orders") || pathname.includes("/admin/promotions"),
     "Báo cáo": pathname.includes("/admin/reports"),
+    "Hệ thống": pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache"),
   });
 
   const handleOpenPosModal = async () => {
@@ -84,14 +97,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push(`/pos?brandId=${brandId}`);
   };
 
-  // Automatically expand group if active
   useEffect(() => {
     setExpandedGroups(prev => ({
       ...prev,
       "Nguyên vật liệu": prev["Nguyên vật liệu"] || (pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders")),
-      "Bán thành phẩm": prev["Bán thành phẩm"] || pathname.includes("/admin/semi-products") || pathname.includes("/admin/production"),
+      "Nhập hàng & Tồn kho": prev["Nhập hàng & Tồn kho"] || (pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production")),
       "Thành phẩm (Menu)": prev["Thành phẩm (Menu)"] || pathname.includes("/admin/products"),
+      "Bán hàng": prev["Bán hàng"] || (pathname.includes("/admin/orders") || pathname.includes("/admin/promotions")),
       "Báo cáo": prev["Báo cáo"] || pathname.includes("/admin/reports"),
+      "Hệ thống": prev["Hệ thống"] || (pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache")),
     }));
   }, [pathname]);
 
