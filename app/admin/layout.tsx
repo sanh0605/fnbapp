@@ -13,8 +13,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: "Tổng quan", href: "/admin", icon: "📊" },
     { name: "Thương hiệu", href: "/admin/brands", icon: "🏢" },
-    { 
-      name: "Hàng hoá", 
+    {
+      name: "Nguyên vật liệu",
       icon: "📦",
       children: [
         { name: "Nhà cung cấp", href: "/admin/suppliers" },
@@ -23,32 +23,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Hàng Mua Vào", href: "/admin/inventory/items" },
         { name: "Bảng Quy Đổi", href: "/admin/inventory/conversions" },
         { name: "Quản lý Đơn vị", href: "/admin/inventory/units" },
+        { name: "Đồng bộ Tồn kho", href: "/admin/inventory/sync" },
         { name: "Nhập Hàng", href: "/admin/inventory/purchase-orders" },
       ]
     },
-    { 
-      name: "Bán thành phẩm", 
+    {
+      name: "Bán thành phẩm",
       icon: "🥣",
       children: [
         { name: "Cấu hình / Công thức", href: "/admin/semi-products" },
         { name: "Sản xuất / Nấu Bếp", href: "/admin/production" },
       ]
     },
-    { 
-      name: "Thành phẩm (Menu)", 
+    {
+      name: "Thành phẩm (Menu)",
       icon: "☕",
       children: [
         { name: "Danh mục Nhóm", href: "/admin/products/categories" },
         { name: "Danh sách Món", href: "/admin/products" },
-        { name: "Tuỳ chọn (Topping)", href: "/admin/products/modifiers" },
+        { name: "Topping & Tùy chọn", href: "/admin/products/modifiers" },
         { name: "Topping Độc Lập", href: "/admin/products/toppings" },
       ]
     },
     { name: "Nhân sự & Phân quyền", href: "/admin/users", icon: "👥" },
     { name: "Quản lý Đơn hàng", href: "/admin/orders", icon: "🧾" },
     { name: "Khuyến mãi", href: "/admin/promotions", icon: "🏷️" },
-    { 
-      name: "Báo cáo & Phân tích", 
+    {
+      name: "Báo cáo",
       icon: "📈",
       children: [
         { name: "Báo cáo Bán hàng", href: "/admin/reports/sales" },
@@ -57,6 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Công cụ Dự toán COGS", href: "/admin/reports/cogs-estimate" },
       ]
     },
+    { name: "Xoá Cache", href: "/admin/clear-cache", icon: "🔄" },
   ];
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -65,10 +67,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    "Hàng hoá Đầu vào": pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders"),
+    "Nguyên vật liệu": pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders"),
     "Bán thành phẩm": pathname.includes("/admin/semi-products") || pathname.includes("/admin/production"),
     "Thành phẩm (Menu)": pathname.includes("/admin/products"),
-    "Báo cáo & Phân tích": pathname.includes("/admin/reports"),
+    "Báo cáo": pathname.includes("/admin/reports"),
   });
 
   const handleOpenPosModal = async () => {
@@ -86,10 +88,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     setExpandedGroups(prev => ({
       ...prev,
-      "Hàng hoá Đầu vào": prev["Hàng hoá Đầu vào"] || (pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders")),
+      "Nguyên vật liệu": prev["Nguyên vật liệu"] || (pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders")),
       "Bán thành phẩm": prev["Bán thành phẩm"] || pathname.includes("/admin/semi-products") || pathname.includes("/admin/production"),
       "Thành phẩm (Menu)": prev["Thành phẩm (Menu)"] || pathname.includes("/admin/products"),
-      "Báo cáo & Phân tích": prev["Báo cáo & Phân tích"] || pathname.includes("/admin/reports"),
+      "Báo cáo": prev["Báo cáo"] || pathname.includes("/admin/reports"),
     }));
   }, [pathname]);
 
