@@ -4,6 +4,42 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-03 (Codex) - P-2 SQL push-down + P-1 corrective fix
+
+**Trigger:** Claude P-1 (PAGE_SIZE 5000) had critical bug â€” Supabase caps response at 1000 rows, so P-1 "speed win" was actually data truncation (missing 71 orders in reports). Codex caught via live parity TDD test.
+
+### Done (commit `0ff0bf9`)
+
+| Item | Description |
+|---|---|
+| P-1 corrective | Revert PAGE_SIZE 5000 â†’ 1000 with explicit comment about Supabase cap. |
+| P-2 findAllWhere | New helper with SQL push-down (gte/lte/eq/in/order/limit). Pagination respects limit semantics. |
+| P-2 callers | `getPnLDataV2`, `getSalesDataV2`, `getHourlyHeatmapV2` use shared `findCompletedOrders(dateRange)` helper. |
+| Live parity test | `scripts/benchmark-shim.ts` now compares legacy findAll+filter vs findAllWhere. Throws on mismatch â€” template for future perf changes. |
+
+### Benchmark
+
+| Op | Before | After |
+|---|---|---|
+| Order query | 265ms | 97ms (3x faster) |
+| P&L | 701ms (broken, missing 71 orders) | 1.381ms (correct, complete data) |
+| Sales | 660ms | 692ms (~same) |
+| P&L vs original baseline | 14.87s | 1.38s (10.8x faster total) |
+
+### Verification
+
+- vitest: 265/265 pass.
+- tsc: 0 errors.
+- Pre-commit hook: PASS.
+- P&L consistency: delta 0 VND.
+- Live parity: 71/71 IDs match.
+
+### Lesson learned
+
+Claude's P-1 commit was incorrect. Trusted PostgREST default without verifying Supabase project config (`max_rows=1000`). Codex's TDD parity test caught it correctly â€” should be template for all future perf changes.
+
+---
+
 ## 2026-07-03 (Antigravity) - Navigation IA Phase 2 (Restructure & Merge)
 
 **Trigger:** Phase 2 spec ~/.claude/plans/unified-sprouting-reef.md. User requested UI modifications and acknowledged Claude's protocol violation.
@@ -16,7 +52,7 @@ Auto-maintained log of completed work. Newest first.
 ### Completed Work
 | Task | Description | Status | Commit |
 |---|---|---|---|
-| **IA-1** | Restructured navItems into new groups (?? Nguyên v?t li?u, ?? Nh?p hàng & T?n kho, ? Thành ph?m, ?? Bán hàng, ?? Báo cáo, ?? H? th?ng) | ? | 7c9ddae |
+| **IA-1** | Restructured navItems into new groups (?? Nguyï¿½n v?t li?u, ?? Nh?p hï¿½ng & T?n kho, ? Thï¿½nh ph?m, ?? Bï¿½n hï¿½ng, ?? Bï¿½o cï¿½o, ?? H? th?ng) | ? | 7c9ddae |
 | **IA-2** | Moved cogs-estimate from /admin/reports/ to /admin/products/. Updated navigation link. | ? | 3d1887c |
 | **IA-3** | Merged Topping Standalone into /admin/products/modifiers. Rendered as a tab view. Replaced 	oppings/page.tsx with a redirect. | ? | 72ee918 |
 
