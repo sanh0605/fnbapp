@@ -155,6 +155,19 @@ function getBooleanColumns(tableName: string): Set<string> {
 // Read APIs
 // ============================================================================
 
+// Supabase/PostgREST caps responses at 1000 rows in this project. The client
+// page size must match that cap or a short response can be mistaken for EOF.
+const PAGE_SIZE = 1000;
+
+export interface SheetFilter {
+  gte?: Record<string, string | number | Date>;
+  lte?: Record<string, string | number | Date>;
+  eq?: Record<string, string | number>;
+  in?: Record<string, Array<string | number>>;
+  order?: { column: string; ascending?: boolean };
+  limit?: number;
+}
+
 export const findAll = (sheetName: string) => {
   if (process.env.CLI_MODE === 'true') {
     return findAllNoCache(sheetName);
@@ -176,10 +189,7 @@ export const findAllNoCache = async (sheetName: string) => {
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
   const booleanCols = getBooleanColumns(tableName);
-  // Claude code — perf P-1: bump PAGE_SIZE to PostgREST max (5000) to
-  // reduce round trips. Most tables fit in 1 page now. Skip serialization
-  // when no jsonb/boolean columns (hot path optimization).
-  const PAGE_SIZE = 5000;
+  // Skip serialization when the table has no legacy JSON/boolean columns.
   const needsSerialize = jsonCols.size > 0 || booleanCols.size > 0;
   const all: any[] = [];
   let page = 0;
@@ -202,6 +212,67 @@ export const findAllNoCache = async (sheetName: string) => {
   }
   return all;
 };
+
+function normalizeFilterValue(value: string | number | Date): string | number {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+export async function findAllWhere<T = any>(
+  sheetName: string,
+  filters: SheetFilter,
+): Promise<T[]> {
+  if (filters.limit !== undefined && filters.limit <= 0) return [];
+
+  const supabase = getSupabaseClient();
+  const tableName = normalizeTableName(sheetName);
+  const jsonCols = getJsonColumns(tableName);
+  const booleanCols = getBooleanColumns(tableName);
+  const needsSerialize = jsonCols.size > 0 || booleanCols.size > 0;
+  const all: T[] = [];
+  let offset = 0;
+
+  while (filters.limit === undefined || all.length < filters.limit) {
+    const remaining = filters.limit === undefined ? PAGE_SIZE : filters.limit - all.length;
+    const pageSize = Math.min(PAGE_SIZE, remaining);
+    let query: any = supabase.from(tableName).select("*");
+
+    for (const [column, value] of Object.entries(filters.gte || {})) {
+      query = query.gte(column, normalizeFilterValue(value));
+    }
+    for (const [column, value] of Object.entries(filters.lte || {})) {
+      query = query.lte(column, normalizeFilterValue(value));
+    }
+    for (const [column, value] of Object.entries(filters.eq || {})) {
+      query = query.eq(column, value);
+    }
+    for (const [column, values] of Object.entries(filters.in || {})) {
+      query = query.in(column, values);
+    }
+    if (filters.order) {
+      query = query.order(filters.order.column, {
+        ascending: filters.order.ascending ?? true,
+      });
+    }
+
+    const { data, error } = await query
+      .limit(pageSize)
+      .range(offset, offset + pageSize - 1);
+    if (error) {
+      throw new Error(`findAllWhere(${sheetName}): ${error.message}`);
+    }
+    if (!data || data.length === 0) break;
+
+    if (needsSerialize) {
+      for (const row of data) all.push(serializeRow(row, jsonCols, booleanCols));
+    } else {
+      for (const row of data) all.push(row);
+    }
+    if (data.length < pageSize) break;
+    offset += pageSize;
+  }
+
+  return all;
+}
 
 export async function findById(sheetName: string, id: string) {
   const supabase = getSupabaseClient();

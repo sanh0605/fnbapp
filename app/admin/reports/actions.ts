@@ -1,6 +1,7 @@
 "use server";
 
-import { findAll, findAllNoCache } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, findAllWhere } from "@/lib/sheets_db";
+import type { SheetFilter } from "@/lib/sheets_db";
 import { ORDER_STATUS, parseLineRecipeSnapshot, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
 import type { LineRecipeSnapshot, OrderV2, OrderLineV2 } from "@/lib/order-types";
 import {
@@ -58,10 +59,24 @@ export interface PnLReportResult {
   v1OrderCount?: number; // optional, set by reconciliation script
 }
 
+function findCompletedOrders(
+  dateRange: ReturnType<typeof toSaigonUtcRange>,
+): Promise<any[]> {
+  const filters: SheetFilter = {
+    eq: { status: ORDER_STATUS.COMPLETED },
+  };
+  if (dateRange) {
+    filters.gte = { created_at: dateRange.startUtc };
+    filters.lte = { created_at: dateRange.endUtc };
+  }
+  return findAllWhere("Orders_V2", filters);
+}
+
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   try {
+    const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers, products] = await Promise.all([
-      findAllNoCache("Orders_V2"),
+      findCompletedOrders(queryDateRange),
       findAllNoCache("Order_Lines_V2"),
       findAll("Base_Ingredients"),
       findAll("Semi_Products"),
@@ -334,8 +349,9 @@ export interface SalesReportResult {
 
 export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<SalesReportResult> {
   try {
+    const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const [orders, orderLines, modifiers, products] = await Promise.all([
-      findAllNoCache("Orders_V2"),
+      findCompletedOrders(queryDateRange),
       findAllNoCache("Order_Lines_V2"),
       findAll("Modifiers"),
       findAll("Products"),
@@ -864,7 +880,9 @@ export interface HeatmapCell {
 
 export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promise<HeatmapCell[]> {
   try {
-    const orders = await findAllNoCache("Orders_V2");
+    const orders = await findCompletedOrders(
+      toSaigonUtcRange(filters.startDate, filters.endDate),
+    );
     const { startDate, endDate, brandId } = filters;
     // Claude code — Phase 5.3: Asia/Saigon date bounds.
     const dateRange = toSaigonUtcRange(startDate, endDate);

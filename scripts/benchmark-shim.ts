@@ -22,11 +22,25 @@ async function timeit<T>(label: string, fn: () => Promise<T>): Promise<T> {
   return result;
 }
 
+function currentSaigonMonthRange(): { startDate: string; endDate: string } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return {
+    startDate: `${values.year}-${values.month}-01`,
+    endDate: `${values.year}-${values.month}-${values.day}`,
+  };
+}
+
 async function main() {
   console.log("=== SHIM BENCHMARK ===\n");
 
   // 1. Raw findAll on hot tables.
-  const { findAllNoCache } = await import("../lib/sheets_db");
+  const { findAllNoCache, findAllWhere } = await import("../lib/sheets_db");
   const tables = [
     "Orders_V2",        // ~1098 rows
     "Order_Lines_V2",   // ~1552 rows
@@ -56,19 +70,63 @@ async function main() {
     return (await findAllNoCache("Orders_V2")).length;
   });
 
-  // 3. Composite report (heavy: reads orders + lines + ledger + recipes etc.).
+  // 3. Verify SQL push-down parity against the legacy in-memory candidate set.
+  const reportFilters = currentSaigonMonthRange();
+  const { toSaigonUtcRange } = await import("../lib/report-time");
+  const dateRange = toSaigonUtcRange(reportFilters.startDate, reportFilters.endDate)!;
+  let legacyAllCount = 0;
+  const legacyOrders = await timeit("legacy Orders_V2 load + in-memory filter", async () => {
+    const rows = await findAllNoCache("Orders_V2");
+    legacyAllCount = rows.length;
+    return rows.filter((row: any) => {
+      const createdAt = new Date(row.created_at);
+      return row.status === "COMPLETED"
+        && createdAt >= dateRange.startUtc
+        && createdAt <= dateRange.endUtc;
+    });
+  });
+  const pushedOrders = await timeit("findAllWhere(Orders_V2) SQL push-down", async () => (
+    findAllWhere("Orders_V2", {
+      gte: { created_at: dateRange.startUtc },
+      lte: { created_at: dateRange.endUtc },
+      eq: { status: "COMPLETED" },
+    })
+  ));
+  const legacyIds = legacyOrders.map((row: any) => row.id).sort();
+  const pushedIds = pushedOrders.map((row: any) => row.id).sort();
+  if (JSON.stringify(legacyIds) !== JSON.stringify(pushedIds)) {
+    console.error("Legacy all-row count:", legacyAllCount);
+    console.error("Parity range:", {
+      startUtc: dateRange.startUtc.toISOString(),
+      endUtc: dateRange.endUtc.toISOString(),
+    });
+    console.error(
+      "Pushed sample:",
+      pushedOrders.slice(0, 5).map((row: any) => ({
+        id: row.id,
+        status: row.status,
+        created_at: row.created_at,
+      })),
+    );
+    throw new Error(
+      `findAllWhere parity failed: legacy=${legacyIds.length}, pushed=${pushedIds.length}`,
+    );
+  }
+  console.log(`Orders_V2 parity: ${pushedIds.length}/${legacyIds.length} matching IDs`);
+
+  // 4. Composite report (heavy: reads orders + lines + ledger + recipes etc.).
   console.log("\n--- Composite reports ---");
-  await timeit("getSalesDataV2 (default filter = start of month to today)", async () => {
+  await timeit("getSalesDataV2 (start of month to today)", async () => {
     const { getSalesDataV2 } = await import("../app/admin/reports/actions");
-    return (await getSalesDataV2({})).totalOrders;
+    return (await getSalesDataV2(reportFilters)).totalOrders;
   });
 
-  await timeit("getPnLDataV2 (default filter = start of month to today)", async () => {
+  await timeit("getPnLDataV2 (start of month to today)", async () => {
     const { getPnLDataV2 } = await import("../app/admin/reports/actions");
-    return (await getPnLDataV2({})).orderCount;
+    return (await getPnLDataV2(reportFilters)).orderCount;
   });
 
-  // 4. Direct Supabase query (no shim) to compare overhead.
+  // 5. Direct Supabase query (no shim) to compare overhead.
   console.log("\n--- Direct Supabase (no shim, no cache) ---");
   const { getSupabaseClient } = await import("../lib/supabase");
   const supabase = getSupabaseClient();

@@ -2,15 +2,21 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/sheets_db", () => ({
   findAllNoCache: vi.fn(),
+  findAllWhere: vi.fn(),
   findAll: vi.fn(),
 }));
 
-import { findAllNoCache, findAll } from "@/lib/sheets_db";
-import { getPnLDataV2, getSalesDataV2 } from "./actions";
+import { findAllNoCache, findAllWhere, findAll } from "@/lib/sheets_db";
+import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 describe("getPnLDataV2", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findAllWhere as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
+  });
 
   it("indexes the stock ledger once for each P&L MAC breakdown", async () => {
     const fixture = makeSuaDauStandaloneOrder();
@@ -75,6 +81,11 @@ describe("getPnLDataV2", () => {
     expect(result.totalCOGS).toBe(0);
     expect(result.orderCount).toBe(0);
     expect(result.productProfitAnalysis).toEqual([]);
+    expect(findAllWhere).toHaveBeenCalledWith("Orders_V2", {
+      gte: { created_at: new Date("2026-06-18T17:00:00.000Z") },
+      lte: { created_at: new Date("2026-06-19T16:59:59.999Z") },
+      eq: { status: "COMPLETED" },
+    });
   });
 
   it("aggregates single Sữa Dâu order correctly", async () => {
@@ -646,7 +657,12 @@ describe("getPnLDataV2", () => {
 });
 
 describe("getSalesDataV2", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findAllWhere as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
+  });
 
   it("merges historical duplicate toppings into the latest active modifier id", async () => {
     const createdAt = "2026-06-15T10:00:00.000Z";
@@ -731,6 +747,34 @@ describe("getSalesDataV2", () => {
       modifier_id: "MOD-NEW-DAU",
       qty: 2,
       revenue: 20000,
+    });
+    expect(findAllWhere).toHaveBeenCalledWith("Orders_V2", {
+      eq: { status: "COMPLETED" },
+    });
+  });
+});
+
+describe("getHourlyHeatmapV2", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findAllWhere as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
+  });
+
+  it("pushes the completed-status and UTC date range into the order query", async () => {
+    (findAllNoCache as any).mockResolvedValue([]);
+
+    const result = await getHourlyHeatmapV2({
+      startDate: "2026-07-01",
+      endDate: "2026-07-02",
+    });
+
+    expect(result).toHaveLength(7 * 24);
+    expect(findAllWhere).toHaveBeenCalledWith("Orders_V2", {
+      gte: { created_at: new Date("2026-06-30T17:00:00.000Z") },
+      lte: { created_at: new Date("2026-07-02T16:59:59.999Z") },
+      eq: { status: "COMPLETED" },
     });
   });
 });
