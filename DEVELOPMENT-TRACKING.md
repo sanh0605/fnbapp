@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-03 (Antigravity) - Optimistic checkout flow (PO-3) and online/offline indicator (PO-4)
+
+**Trigger:** User request to improve checkout latency (optimistic UI) and show online/offline status with proper warnings.
+
+### Completed Work
+| Task | Description | Status | Commit |
+|---|---|---|---|
+| **PO-3** | Implemented optimistic checkout flow: backups states, clears cart immediately, displays a read-only order preview receipt with a loading spinner while processing, shows a success toast and modal on success, and rolls back cart on error with retry action buttons in toast & cart panel. | ✅ | `769be03` |
+| **PO-3 UX** | Ensured touch targets are ≥ 44px for action buttons. | ✅ | `769be03` |
+| **PO-4** | Implemented online/offline connectivity badge (Trực tuyến / Ngoại tuyến) in top header using navigator.onLine and event listeners. Displays a warning banner when connection is lost ("Mất kết nối — đơn sẽ không gửi được") and disables checkout. | ✅ | `769be03` |
+
+### Verification
+- `vitest run`: **265/265 pass**.
+- `tsc --noEmit`: **0 errors**.
+- Pre-commit hook: PASS.
+
+---
+
 ## 2026-07-03 (Codex) - P-2 SQL push-down + P-1 corrective fix
 
 **Trigger:** Claude P-1 (PAGE_SIZE 5000) had critical bug — Supabase caps response at 1000 rows, so P-1 "speed win" was actually data truncation (missing 71 orders in reports). Codex caught via live parity TDD test.
