@@ -31,8 +31,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: "🚚",
       children: [
         { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
-        { name: "Sản xuất Bán TP", href: "/admin/production" },
         { name: "Điều chỉnh Tồn kho", href: "/admin/inventory/stock-adjustments" },
+      ]
+    },
+    {
+      name: "Bán thành phẩm",
+      icon: "🥣",
+      children: [
+        { name: "Cấu hình / Công thức", href: "/admin/semi-products" },
+        { name: "Sản xuất / Nấu Bếp", href: "/admin/production" },
       ]
     },
     {
@@ -82,7 +89,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     "Nguyên vật liệu": pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders"),
-    "Nhập hàng & Tồn kho": pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production") || pathname.includes("/admin/inventory/stock-adjustments"),
+    "Nhập hàng & Tồn kho": pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/inventory/stock-adjustments"),
+    "Bán thành phẩm": pathname.includes("/admin/semi-products") || pathname.includes("/admin/production"),
     "Thành phẩm (Menu)": pathname.includes("/admin/products"),
     "Bán hàng": pathname.includes("/admin/orders") || pathname.includes("/admin/promotions"),
     "Báo cáo": pathname.includes("/admin/reports"),
@@ -104,7 +112,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setExpandedGroups(prev => ({
       ...prev,
       "Nguyên vật liệu": prev["Nguyên vật liệu"] || (pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders")),
-      "Nhập hàng & Tồn kho": prev["Nhập hàng & Tồn kho"] || (pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production") || pathname.includes("/admin/inventory/stock-adjustments")),
+      "Nhập hàng & Tồn kho": prev["Nhập hàng & Tồn kho"] || (pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/inventory/stock-adjustments")),
+      "Bán thành phẩm": prev["Bán thành phẩm"] || (pathname.includes("/admin/semi-products") || pathname.includes("/admin/production")),
       "Thành phẩm (Menu)": prev["Thành phẩm (Menu)"] || pathname.includes("/admin/products"),
       "Bán hàng": prev["Bán hàng"] || (pathname.includes("/admin/orders") || pathname.includes("/admin/promotions")),
       "Báo cáo": prev["Báo cáo"] || pathname.includes("/admin/reports"),
