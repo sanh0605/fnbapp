@@ -8,6 +8,7 @@ import {
 import {
   computeMacCostForConsumptionRows,
   createMacLedgerIndex,
+  type MacSemiProductContext,
 } from "./mac-cogs";
 import {
   parseLineRecipeSnapshot,
@@ -23,6 +24,7 @@ export type HongToLucMigrationInput = {
   sourceProductId: string;
   targetProductId: string;
   corruptRecipeId: string;
+  expectedTargetRecipeId: string;
   expectedOrderNumbers: string[];
   products: Row[];
   variants: Row[];
@@ -58,6 +60,7 @@ export type HongToLucMigrationPlan = {
     sourceLedgerRows: number;
     replayMismatchItems: Array<{
       itemReference: string;
+      source: string;
       storedQuantity: number;
       rebuiltQuantity: number;
     }>;
@@ -211,6 +214,7 @@ export function buildHongToLucMigrationPlan(
       input.semiProducts,
       order.created_at,
     );
+    const semiProductContext: MacSemiProductContext = consumptionMaps;
     const rebuiltOldRows: ConsumptionRow[] = [];
     const rebuiltNewRows: ConsumptionRow[] = [];
 
@@ -253,6 +257,11 @@ export function buildHongToLucMigrationPlan(
             `No effective target recipe for ${targetVariant.id} at ${order.created_at}.`,
           );
         }
+        assertReviewedTargetRecipe(
+          effectiveTargetRecipe,
+          input.expectedTargetRecipeId,
+          order,
+        );
         targetRecipeSnapshot = replaceVariantRecipe(
           sourceRecipe,
           targetVariant.id,
@@ -274,7 +283,7 @@ export function buildHongToLucMigrationPlan(
           newRows,
           macIndex,
           order.created_at,
-          consumptionMaps,
+          semiProductContext,
         );
         const oldCost = Number(line.cost_at_sale || 0);
         const targetPrice = Number(targetVariant?.price || 0);
@@ -396,11 +405,20 @@ export function buildSnapshotMetadata(
   snapshotId: string,
   manifestContent: string,
   verified: boolean,
+  expectedSourceHash: string,
 ): RecoverySnapshotMetadata {
-  const manifest = JSON.parse(manifestContent) as { runId?: string };
+  const manifest = JSON.parse(manifestContent) as {
+    runId?: string;
+    sourceHash?: string;
+  };
   if (manifest.runId !== snapshotId) {
     throw new Error(
       `Snapshot manifest runId ${manifest.runId || "(missing)"} does not match ${snapshotId}.`,
+    );
+  }
+  if (manifest.sourceHash !== expectedSourceHash) {
+    throw new Error(
+      `Snapshot manifest sourceHash ${manifest.sourceHash || "(missing)"} does not match plan sourceHash ${expectedSourceHash}.`,
     );
   }
   return {
@@ -525,6 +543,31 @@ function assertReviewedOrderSet(
   }
 }
 
+function assertReviewedTargetRecipe(
+  recipe: Row,
+  expectedRecipeId: string,
+  order: Row,
+): void {
+  if (recipe.id !== expectedRecipeId) {
+    throw new Error(
+      `Expected target recipe ${expectedRecipeId} for order ${order.order_no}, got ${recipe.id || "(missing)"}.`,
+    );
+  }
+  const effectiveAt = recipe.start_date || recipe.created_at;
+  const effectiveAtMs = effectiveAt ? new Date(effectiveAt).getTime() : NaN;
+  const orderCreatedAtMs = new Date(order.created_at).getTime();
+  if (!Number.isFinite(effectiveAtMs)) {
+    throw new Error(
+      `Target recipe ${expectedRecipeId} has no valid effective timestamp.`,
+    );
+  }
+  if (effectiveAtMs > orderCreatedAtMs) {
+    throw new Error(
+      `Target recipe ${expectedRecipeId} starts after order ${order.order_no}.`,
+    );
+  }
+}
+
 function buildInventoryDeltas(
   oldLedger: Map<string, number>,
   newLedger: Map<string, number>,
@@ -555,26 +598,38 @@ function compareQuantityMaps(
   rebuilt: Map<string, number>,
 ): Array<{
   itemReference: string;
+  source: string;
   storedQuantity: number;
   rebuiltQuantity: number;
 }> {
-  const ids = new Set([...stored.keys(), ...rebuilt.keys()]);
-  return [...ids]
-    .filter(id => Math.abs((stored.get(id) || 0) - (rebuilt.get(id) || 0)) > 0.00001)
-    .map(itemReference => ({
-      itemReference,
-      storedQuantity: stored.get(itemReference) || 0,
-      rebuiltQuantity: rebuilt.get(itemReference) || 0,
-    }))
-    .sort((left, right) => left.itemReference.localeCompare(right.itemReference));
+  const keys = new Set([...stored.keys(), ...rebuilt.keys()]);
+  return [...keys]
+    .filter(key => Math.abs((stored.get(key) || 0) - (rebuilt.get(key) || 0)) > 0.00001)
+    .map(key => {
+      const [itemReference, source = ""] = key.split("\u0000");
+      return {
+        itemReference,
+        source,
+        storedQuantity: stored.get(key) || 0,
+        rebuiltQuantity: rebuilt.get(key) || 0,
+      };
+    })
+    .sort((left, right) => (
+      left.itemReference.localeCompare(right.itemReference) ||
+      left.source.localeCompare(right.source)
+    ));
 }
 
 function addQuantities(
   target: Map<string, number>,
   rows: ConsumptionRow[],
 ): void {
-  for (const [id, quantity] of aggregateRows(rows)) {
-    target.set(id, (target.get(id) || 0) + quantity);
+  for (const row of rows) {
+    if (!row.item_reference) continue;
+    target.set(
+      row.item_reference,
+      (target.get(row.item_reference) || 0) + Number(row.quantity || 0),
+    );
   }
 }
 
@@ -582,9 +637,10 @@ function aggregateRows(rows: ConsumptionRow[]): Map<string, number> {
   const result = new Map<string, number>();
   for (const row of rows) {
     if (!row.item_reference) continue;
+    const key = `${row.item_reference}\u0000${row.source || ""}`;
     result.set(
-      row.item_reference,
-      (result.get(row.item_reference) || 0) + Number(row.quantity || 0),
+      key,
+      (result.get(key) || 0) + Number(row.quantity || 0),
     );
   }
   return result;

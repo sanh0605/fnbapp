@@ -84,7 +84,10 @@ describe("buildHongToLucMigrationPlan", () => {
       receipt("po-luc", "ING-LUC", 100, 3),
       receipt("po-sugar", "ING-SUGAR", 100, 1),
       receipt("po-lemon", "ING-LEMON", 100, 4),
-      consume(orderId, "ING-HONG", 5, createdAt),
+      {
+        ...consume(orderId, "ING-HONG", 5, createdAt),
+        source: "VARIANT_RECIPE:BTP_SHORTFALL:BTP-HONG",
+      },
       consume(orderId, "ING-SUGAR", 10, createdAt),
     ];
 
@@ -94,6 +97,7 @@ describe("buildHongToLucMigrationPlan", () => {
       sourceProductId: "PROD-HONG",
       targetProductId: "PROD-LUC",
       corruptRecipeId: "REC-068",
+      expectedTargetRecipeId: "REC-TARGET",
       expectedOrderNumbers: ["ORDER-1"],
       products: [
         { id: "PROD-HONG", name: "Hồng trà chanh", status: "ACTIVE" },
@@ -209,6 +213,7 @@ describe("buildHongToLucMigrationPlan", () => {
       sourceProductId: "PROD-HONG",
       targetProductId: "PROD-LUC",
       corruptRecipeId: "REC-068",
+      expectedTargetRecipeId: "REC-TARGET",
       expectedOrderNumbers: ["ORDER-NAME"],
       products: [
         { id: "PROD-HONG", name: "Hồng trà chanh", status: "ACTIVE" },
@@ -255,22 +260,110 @@ describe("buildHongToLucMigrationPlan", () => {
     });
     expect(plan.lines.map(line => line.lineId)).toEqual(["line-name"]);
   });
+
+  it("compares source ledger replay by item reference and source", () => {
+    const input = minimalPlanInput();
+    input.orderLines[0].recipe_snapshot_json = JSON.stringify({
+      variant: {
+        target_type: "PRODUCT_VARIANT",
+        target_id: "VAR-HONG",
+        ingredients: [ingredient("ING-X", 1)],
+      },
+      modifiers: [{
+        modifier_id: "MOD-X",
+        modifier_qty: 1,
+        recipe: {
+          ingredients: [ingredient("ING-X", 1)],
+        },
+      }],
+    });
+    input.stockLedger = [{
+      ...consume("order-1", "ING-X", 2, input.cutoff),
+      source: "VARIANT_RECIPE",
+    }];
+
+    expect(() => buildHongToLucMigrationPlan(input)).toThrow(
+      "Source ledger replay has 2 mismatch",
+    );
+  });
+
+  it("uses the semi-product recipe fallback when the consumed BTP has no direct MAC", () => {
+    const input = minimalPlanInput();
+    input.recipes.unshift({
+      id: "REC-BTP-LUC",
+      target_type: "SEMI_PRODUCT",
+      target_id: "BTP-LUC",
+      ingredients_json: JSON.stringify([ingredient("ING-LUC", 20)]),
+      status: "ACTIVE",
+      created_at: "2026-06-01T00:00:00Z",
+    });
+    input.recipes[1].ingredients_json = JSON.stringify([
+      ingredient("BTP-LUC", 50, "SEMI_PRODUCT"),
+    ]);
+    input.semiProducts = [{ id: "BTP-LUC", batch_yield: 100 }];
+    input.baseIngredients = [{ id: "ING-LUC", name: "Lá trà xanh" }];
+    input.stockLedger = [
+      receipt("po-luc", "ING-LUC", 100, 3),
+      {
+        id: "yield-luc",
+        item_reference: "BTP-LUC",
+        transaction_type: "PRODUCTION_YIELD",
+        quantity_change: 100,
+        unit_cost: 0,
+        reference_id: "production-luc",
+        created_at: "2026-06-20T00:00:00Z",
+      },
+    ];
+
+    const plan = buildHongToLucMigrationPlan(input);
+
+    expect(plan.lines[0].projectedCogs).toBe(30);
+  });
+
+  it("rejects a target recipe outside the reviewed recipe ID", () => {
+    const input = minimalPlanInput();
+    input.expectedTargetRecipeId = "REC-098";
+
+    expect(() => buildHongToLucMigrationPlan(input)).toThrow(
+      "Expected target recipe REC-098",
+    );
+  });
+
+  it("rejects a target recipe without an explicit effective timestamp", () => {
+    const input = minimalPlanInput();
+    delete input.recipes[0].created_at;
+
+    expect(() => buildHongToLucMigrationPlan(input)).toThrow(
+      "has no valid effective timestamp",
+    );
+  });
 });
 
 describe("dry-run output contract", () => {
   it("computes the manifest SHA-256 for an explicit verified snapshot", () => {
+    const sourceHash = "a".repeat(64);
     const metadata = buildSnapshotMetadata(
       "recovery-20260704T170000000Z",
-      "{\"runId\":\"recovery-20260704T170000000Z\"}\n",
+      `{"runId":"recovery-20260704T170000000Z","sourceHash":"${sourceHash}"}\n`,
       true,
+      sourceHash,
     );
 
     expect(metadata).toEqual({
       id: "recovery-20260704T170000000Z",
       manifestSha256:
-        "d953293a86d786e17bb768b0280b2a694ee41f631f30e3af61971e854f62267c",
+        "3c7a02860ee45ac8d7ebaad97d3e95b0f325d17faaa517a9a898ac21d936e1af",
       verified: true,
     });
+  });
+
+  it("rejects a verified snapshot captured from a different source plan", () => {
+    expect(() => buildSnapshotMetadata(
+      "recovery-20260704T170000000Z",
+      `{"runId":"recovery-20260704T170000000Z","sourceHash":"${"b".repeat(64)}"}\n`,
+      true,
+      "a".repeat(64),
+    )).toThrow("sourceHash");
   });
 
   it("renders the required migration gates and pending snapshot state", () => {
@@ -401,5 +494,66 @@ function emptyLine(
       },
       modifiers: [],
     }),
+  };
+}
+
+function minimalPlanInput(): any {
+  const cutoff = "2026-06-29T00:00:00+07:00";
+  return {
+    cutoff,
+    migrationKey: "TEST-MIGRATION",
+    sourceProductId: "PROD-HONG",
+    targetProductId: "PROD-LUC",
+    corruptRecipeId: "REC-068",
+    expectedTargetRecipeId: "REC-TARGET",
+    expectedOrderNumbers: ["ORDER-1"],
+    products: [
+      { id: "PROD-HONG", name: "Hồng trà chanh", status: "ACTIVE" },
+      { id: "PROD-LUC", name: "Lục trà chanh", status: "ACTIVE" },
+    ],
+    variants: [
+      {
+        id: "VAR-HONG",
+        product_id: "PROD-HONG",
+        size_name: "700ml",
+        price: 15_000,
+        status: "ACTIVE",
+      },
+      {
+        id: "VAR-LUC",
+        product_id: "PROD-LUC",
+        size_name: "700ml",
+        price: 15_000,
+        status: "ACTIVE",
+      },
+    ],
+    recipes: [
+      {
+        id: "REC-TARGET",
+        target_type: "PRODUCT_VARIANT",
+        target_id: "VAR-LUC",
+        ingredients_json: "[]",
+        status: "ACTIVE",
+        created_at: "2026-06-28T17:00:00Z",
+      },
+      {
+        id: "REC-068",
+        target_type: "PRODUCT_VARIANT",
+        target_id: "VAR-HONG",
+        ingredients_json: "[]",
+        status: "ACTIVE",
+        created_at: "2026-06-20T00:00:00Z",
+      },
+    ],
+    semiProducts: [],
+    baseIngredients: [],
+    orders: [order("order-1", "ORDER-1", "COMPLETED", cutoff)],
+    orderLines: [emptyLine(
+      "line-1",
+      "order-1",
+      "PROD-HONG",
+      "Hồng trà chanh",
+    )],
+    stockLedger: [],
   };
 }

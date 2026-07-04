@@ -28,6 +28,7 @@ const CUTOFF = "2026-06-29T00:00:00+07:00";
 const SOURCE_PRODUCT_ID = "PROD-011";
 const TARGET_PRODUCT_ID = "PROD-042";
 const CORRUPT_RECIPE_ID = "REC-068";
+const EXPECTED_TARGET_RECIPE_ID = "REC-098";
 const EXPECTED_ORDER_NUMBERS = [
   "UCK000364",
   "UCK000369",
@@ -64,6 +65,7 @@ async function main(): Promise<void> {
     sourceProductId: SOURCE_PRODUCT_ID,
     targetProductId: TARGET_PRODUCT_ID,
     corruptRecipeId: CORRUPT_RECIPE_ID,
+    expectedTargetRecipeId: EXPECTED_TARGET_RECIPE_ID,
     expectedOrderNumbers: EXPECTED_ORDER_NUMBERS,
     products: products as any[],
     variants: variants as any[],
@@ -124,6 +126,7 @@ async function main(): Promise<void> {
       args.snapshotId,
       manifestContent,
       true,
+      plan.sourceHash,
     );
   }
 
