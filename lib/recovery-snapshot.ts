@@ -8,6 +8,7 @@ type SheetSnapshot = {
 type SnapshotInput = {
   runId: string;
   capturedAt: string;
+  sourceHash?: string;
   sheets: Record<string, SheetSnapshot>;
   supabase: Record<string, Array<Record<string, unknown>>>;
 };
@@ -78,6 +79,7 @@ export function createSnapshotBundleFiles(
     formatVersion: 1,
     runId: input.runId,
     capturedAt: input.capturedAt,
+    ...(input.sourceHash ? { sourceHash: input.sourceHash } : {}),
     files: fileManifest,
     sources: {
       googleSheets: googleSheetsSummary,

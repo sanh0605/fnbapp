@@ -33,7 +33,22 @@ export type HongToLucMigrationInput = {
   baseIngredients: Row[];
   orders: Row[];
   orderLines: Row[];
+  orderEvents: Row[];
   stockLedger: Row[];
+};
+
+export type HongToLucMigrationWriteSet = {
+  orders: Row[];
+  lineUpdates: Array<{
+    lineId: string;
+    before: Row;
+    after: Row;
+  }>;
+  ledgerBefore: Row[];
+  ledgerAfter: Row[];
+  eventsBefore: Row[];
+  events: Row[];
+  corruptRecipe: Row;
 };
 
 export type HongToLucMigrationPlan = {
@@ -99,6 +114,7 @@ export type HongToLucMigrationPlan = {
     directSnapshotReferences: number;
     row: Row;
   };
+  writeSet: HongToLucMigrationWriteSet;
 };
 
 export type RecoverySnapshotMetadata = {
@@ -108,20 +124,22 @@ export type RecoverySnapshotMetadata = {
 };
 
 export function parseHongToLucMigrationArgs(args: string[]): {
+  apply: boolean;
   snapshotId: string | null;
 } {
-  if (args.includes("--apply")) {
-    throw new Error(
-      "Dry-run only: this phase does not contain an apply implementation.",
-    );
-  }
+  const apply = args.includes("--apply");
   const snapshotIndex = args.indexOf("--snapshot-id");
-  if (snapshotIndex === -1) return { snapshotId: null };
+  if (snapshotIndex === -1) {
+    if (apply) {
+      throw new Error("--snapshot-id is required with --apply.");
+    }
+    return { apply, snapshotId: null };
+  }
   const snapshotId = args[snapshotIndex + 1] || "";
   if (!/^recovery-\d{8}T\d{9}Z$/.test(snapshotId)) {
     throw new Error("Invalid or missing --snapshot-id value.");
   }
-  return { snapshotId };
+  return { apply, snapshotId };
 }
 
 export function buildHongToLucMigrationPlan(
@@ -189,12 +207,17 @@ export function buildHongToLucMigrationPlan(
   const totalNewLedger = new Map<string, number>();
   const planLines: HongToLucMigrationPlan["lines"] = [];
   const planOrders: HongToLucMigrationPlan["orders"] = [];
+  const writeOrders: Row[] = [];
+  const lineUpdates: HongToLucMigrationWriteSet["lineUpdates"] = [];
+  const ledgerBefore: Row[] = [];
+  const ledgerAfter: Row[] = [];
   let sourceLedgerRows = 0;
   let sourceReplayMismatchItems = 0;
   let storedCogs = 0;
   let projectedCogs = 0;
 
   for (const order of affectedOrders) {
+    writeOrders.push(orderFingerprint(order));
     const orderLines = input.orderLines
       .filter(line => line.order_id === order.id)
       .sort((left, right) => (
@@ -290,6 +313,31 @@ export function buildHongToLucMigrationPlan(
         const sourcePrice = Number(line.unit_price || 0);
         storedCogs += oldCost;
         projectedCogs += nextCost;
+        const productSnapshot = {
+          ...parseObject(line.product_snapshot_json),
+          id: targetProduct.id,
+          name: targetProduct.name,
+          category_id: targetProduct.category_id,
+        };
+        const variantSnapshot = {
+          ...sourceVariantSnapshot,
+          id: targetVariant?.id,
+          size_name: targetVariant?.size_name,
+          price: targetVariant?.price,
+        };
+        lineUpdates.push({
+          lineId: String(line.id),
+          before: lineFingerprint(line),
+          after: lineFingerprint({
+            ...line,
+            product_id: targetProduct.id,
+            product_snapshot_json: productSnapshot,
+            variant_id: targetVariant?.id,
+            variant_snapshot_json: variantSnapshot,
+            cost_at_sale: nextCost,
+            recipe_snapshot_json: targetRecipeSnapshot,
+          }),
+        });
         planLines.push({
           orderNo: String(order.order_no),
           orderId: String(order.id),
@@ -326,6 +374,38 @@ export function buildHongToLucMigrationPlan(
         quantity: Math.abs(Number(row.quantity_change || 0)),
         source: String(row.source || ""),
       }));
+    ledgerBefore.push(
+      ...input.stockLedger
+        .filter(row => (
+          row.reference_id === order.id &&
+          row.transaction_type === "SALES_CONSUME"
+        ))
+        .map(ledgerFingerprint),
+    );
+    const eventId = stableId("evt-hong-luc", input.migrationKey, order.id);
+    const nextLedgerRows = rebuiltNewRows
+      .map((row, index) => ({
+        id: stableId(
+          "stk-hong-luc",
+          input.migrationKey,
+          order.id,
+          row.item_reference,
+          row.source,
+          index,
+        ),
+        transaction_type: "SALES_CONSUME",
+        reference_id: String(order.id),
+        item_reference: row.item_reference,
+        quantity_change: -row.quantity,
+        unit_cost: 0,
+        created_at: String(order.created_at),
+        order_event_id: eventId,
+        cost_at_sale: 0,
+        source: row.source,
+        notes: input.migrationKey,
+      }))
+      .sort(compareLedgerRows);
+    ledgerAfter.push(...nextLedgerRows);
     sourceLedgerRows += storedRows.length;
     const mismatch = compareQuantityMaps(
       aggregateRows(storedRows),
@@ -361,16 +441,51 @@ export function buildHongToLucMigrationPlan(
       [input.sourceProductId, input.targetProductId].includes(variant.product_id)
     )),
     corruptRecipe,
+    recipes: normalizedRecipes,
+    semiProducts: input.semiProducts,
+    baseIngredients: input.baseIngredients,
     orders: affectedOrders,
     lines: input.orderLines.filter(line => affectedOrderIds.has(line.order_id)),
-    ledger: input.stockLedger.filter(row => affectedOrderIds.has(row.reference_id)),
+    affectedLedger: input.stockLedger.filter(
+      row => affectedOrderIds.has(row.reference_id),
+    ),
+    macLedger: input.stockLedger,
+    events: input.orderEvents.filter(row => affectedOrderIds.has(row.order_id)),
   };
+  const sourceHash = sha256(canonicalStringify(sourceRows));
+  const migrationTimestamp = new Date().toISOString();
+  const events = affectedOrders.map(order => {
+    const line = planLines.find(candidate => candidate.orderId === order.id);
+    return {
+      id: stableId("evt-hong-luc", input.migrationKey, order.id),
+      order_id: String(order.id),
+      event_type: "MIGRATED",
+      event_at: migrationTimestamp,
+      actor_id: "SYSTEM",
+      actor_name: "Codex migration",
+      from_version: Number(order.version || 1),
+      to_version: Number(order.version || 1),
+      previous_order_id: "",
+      delta_json: {
+        migration_key: input.migrationKey,
+        source_hash: sourceHash,
+        source_product_id: input.sourceProductId,
+        target_product_id: input.targetProductId,
+        source_variant_id: line?.sourceVariantId || "",
+        target_variant_id: line?.targetVariantId || "",
+        stored_cogs: line?.storedCogs || 0,
+        projected_cogs: line?.projectedCogs || 0,
+        cutoff: input.cutoff,
+      },
+      reason: "Hồng trà chanh -> Lục trà chanh",
+    };
+  });
 
   return {
     migrationKey: input.migrationKey,
     cutoff: input.cutoff,
     cutoffUtc: new Date(input.cutoff).toISOString(),
-    sourceHash: sha256(canonicalStringify(sourceRows)),
+    sourceHash,
     summary: {
       affectedOrders: affectedOrders.length,
       affectedLines: affectedLines.length,
@@ -397,6 +512,18 @@ export function buildHongToLucMigrationPlan(
         ),
       ).length,
       row: corruptRecipe,
+    },
+    writeSet: {
+      orders: writeOrders,
+      lineUpdates,
+      ledgerBefore: ledgerBefore.sort(compareLedgerRows),
+      ledgerAfter: ledgerAfter.sort(compareLedgerRows),
+      eventsBefore: input.orderEvents
+        .filter(row => affectedOrderIds.has(row.order_id))
+        .map(eventFingerprint)
+        .sort((left, right) => String(left.id).localeCompare(String(right.id))),
+      events,
+      corruptRecipe: recipeFingerprint(corruptRecipe),
     },
   };
 }
@@ -449,6 +576,12 @@ export function renderHongToLucDryRun(
     `Source ledger: ${plan.summary.sourceLedgerRows} rows / ${plan.summary.sourceReplayMismatchItems} replay mismatch items`,
     `COGS: ${formatInteger(plan.summary.storedCogs)} -> ${formatInteger(plan.summary.projectedCogs)} VND (delta ${formatSignedInteger(plan.summary.cogsDelta)})`,
     "",
+    "ATOMIC WRITE SET",
+    `Line updates: ${plan.writeSet.lineUpdates.length}`,
+    `Ledger replace: ${plan.writeSet.ledgerBefore.length} -> ${plan.writeSet.ledgerAfter.length}`,
+    `Migration events: ${plan.writeSet.events.length}`,
+    "Recipe deletes: 1",
+    "",
     "ORDERS",
   ];
 
@@ -494,9 +627,9 @@ export function renderHongToLucDryRun(
     `Row: ${canonicalStringify(plan.corruptRecipe.row)}`,
     "",
     snapshot
-      ? "Snapshot gate is populated; apply still requires separate user approval and apply implementation."
+      ? "Snapshot gate is populated; --apply will invoke one atomic database transaction."
       : "Snapshot gate is PENDING; capture and verify a fresh snapshot before apply.",
-    "--apply is not implemented in this dry-run-only phase.",
+    "Without --apply, this script is read-only.",
     "No operational data was changed.",
   );
   return `${lines.join("\n")}\n`;
@@ -506,6 +639,102 @@ function requireRow(rows: Row[], id: string, label: string): Row {
   const row = rows.find(candidate => candidate.id === id);
   if (!row) throw new Error(`Missing ${label} ${id}.`);
   return row;
+}
+
+function orderFingerprint(order: Row): Row {
+  return {
+    id: String(order.id),
+    order_no: String(order.order_no),
+    status: String(order.status),
+    superseded_by: String(order.superseded_by || ""),
+    created_at: String(order.created_at),
+    version: Number(order.version || 1),
+  };
+}
+
+function lineFingerprint(line: Row): Row {
+  return {
+    id: String(line.id),
+    order_id: String(line.order_id),
+    line_no: Number(line.line_no),
+    product_id: String(line.product_id),
+    product_snapshot_json: parseObject(line.product_snapshot_json),
+    variant_id: String(line.variant_id),
+    variant_snapshot_json: parseObject(line.variant_snapshot_json),
+    qty: Number(line.qty),
+    unit_price: Number(line.unit_price),
+    modifiers_snapshot_json: parseArray(line.modifiers_snapshot_json),
+    gross_line_total: Number(line.gross_line_total),
+    promo_discount: Number(line.promo_discount || 0),
+    manual_item_discount: Number(line.manual_item_discount || 0),
+    order_discount_allocation: Number(line.order_discount_allocation || 0),
+    net_line_total: Number(line.net_line_total),
+    cost_at_sale: Number(line.cost_at_sale || 0),
+    recipe_snapshot_json: parseObject(line.recipe_snapshot_json),
+    promo_discount_reason: String(line.promo_discount_reason || ""),
+    manual_discount_reason: String(line.manual_discount_reason || ""),
+  };
+}
+
+function ledgerFingerprint(row: Row): Row {
+  return {
+    id: String(row.id),
+    transaction_type: String(row.transaction_type),
+    reference_id: String(row.reference_id || ""),
+    item_reference: String(row.item_reference),
+    quantity_change: Number(row.quantity_change),
+    unit_cost: Number(row.unit_cost || 0),
+    created_at: String(row.created_at),
+    order_event_id: String(row.order_event_id || ""),
+    cost_at_sale: Number(row.cost_at_sale || 0),
+    source: String(row.source || ""),
+    notes: String(row.notes || ""),
+  };
+}
+
+function eventFingerprint(row: Row): Row {
+  return {
+    id: String(row.id),
+    order_id: String(row.order_id),
+    event_type: String(row.event_type),
+    event_at: String(row.event_at),
+    actor_id: String(row.actor_id || ""),
+    actor_name: String(row.actor_name || ""),
+    from_version: row.from_version === "" || row.from_version == null
+      ? null
+      : Number(row.from_version),
+    to_version: Number(row.to_version),
+    previous_order_id: String(row.previous_order_id || ""),
+    delta_json: parseObject(row.delta_json),
+    reason: String(row.reason || ""),
+  };
+}
+
+function recipeFingerprint(row: Row): Row {
+  return {
+    id: String(row.id),
+    target_type: String(row.target_type),
+    target_id: String(row.target_id),
+    ingredients_json: parseArray(row.ingredients_json),
+    start_date: row.start_date || null,
+    end_date: row.end_date || null,
+    status: String(row.status),
+    created_at: String(row.created_at),
+    updated_at: String(row.updated_at || ""),
+  };
+}
+
+function compareLedgerRows(left: Row, right: Row): number {
+  return (
+    String(left.reference_id).localeCompare(String(right.reference_id)) ||
+    String(left.item_reference).localeCompare(String(right.item_reference)) ||
+    String(left.source).localeCompare(String(right.source)) ||
+    String(left.id).localeCompare(String(right.id))
+  );
+}
+
+function stableId(prefix: string, ...parts: unknown[]): string {
+  return `${prefix}-${sha256(parts.map(String).join("\u0000")).slice(0, 32)}`;
 }
 
 function normalizeRecipe(recipe: Row): Row {

@@ -68,6 +68,13 @@ async function readSupabaseTable(
 async function capture(): Promise<void> {
   const capturedAt = new Date();
   const runId = buildRecoveryRunId(capturedAt);
+  const sourceHashIndex = process.argv.indexOf("--source-hash");
+  const sourceHash = sourceHashIndex === -1
+    ? undefined
+    : process.argv[sourceHashIndex + 1];
+  if (sourceHash !== undefined && !/^[a-f0-9]{64}$/.test(sourceHash)) {
+    throw new Error("--source-hash must be a lowercase SHA-256.");
+  }
   const sheets: Record<string, { values: unknown[][] }> = {};
   const supabase: Record<string, Array<Record<string, unknown>>> = {};
   const { readRawSheetSnapshots } = await import("../lib/sheets-source");
@@ -84,6 +91,7 @@ async function capture(): Promise<void> {
   const files = createSnapshotBundleFiles({
     runId,
     capturedAt: capturedAt.toISOString(),
+    sourceHash,
     sheets,
     supabase,
   });
@@ -118,7 +126,9 @@ async function main(): Promise<void> {
     console.log("=== IMMUTABLE RECOVERY SNAPSHOT (DRY RUN) ===");
     console.log(`Source pairs: ${SOURCE_PAIRS.length}`);
     console.log("No sources were read and no files were written.");
-    console.log("Pass --capture to create a new append-only local bundle.");
+    console.log(
+      "Pass --capture [--source-hash <sha256>] to create a new append-only local bundle.",
+    );
   } else {
     await capture();
   }

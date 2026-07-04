@@ -92,6 +92,19 @@ describe("createSnapshotBundleFiles", () => {
     });
   });
 
+  it("binds a migration source hash into the immutable manifest", () => {
+    const sourceHash = "a".repeat(64);
+    const files = createSnapshotBundleFiles({
+      runId: "recovery-20260701T120000000Z",
+      capturedAt: "2026-07-01T12:00:00.000Z",
+      sourceHash,
+      sheets: {},
+      supabase: {},
+    });
+
+    expect(JSON.parse(files["manifest.json"]).sourceHash).toBe(sourceHash);
+  });
+
   it("rejects unsafe run IDs", () => {
     expect(() =>
       createSnapshotBundleFiles({

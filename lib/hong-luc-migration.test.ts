@@ -9,13 +9,14 @@ import {
 describe("parseHongToLucMigrationArgs", () => {
   it("defaults to dry-run without a snapshot", () => {
     expect(parseHongToLucMigrationArgs([])).toEqual({
+      apply: false,
       snapshotId: null,
     });
   });
 
-  it("refuses apply because this phase is dry-run only", () => {
+  it("requires a verified snapshot ID for apply", () => {
     expect(() => parseHongToLucMigrationArgs(["--apply"])).toThrow(
-      "Dry-run only",
+      "--snapshot-id is required with --apply",
     );
   });
 
@@ -24,6 +25,18 @@ describe("parseHongToLucMigrationArgs", () => {
       "--snapshot-id",
       "recovery-20260704T170000000Z",
     ])).toEqual({
+      apply: false,
+      snapshotId: "recovery-20260704T170000000Z",
+    });
+  });
+
+  it("accepts apply only with an explicit recovery snapshot ID", () => {
+    expect(parseHongToLucMigrationArgs([
+      "--apply",
+      "--snapshot-id",
+      "recovery-20260704T170000000Z",
+    ])).toEqual({
+      apply: true,
       snapshotId: "recovery-20260704T170000000Z",
     });
   });
@@ -169,6 +182,7 @@ describe("buildHongToLucMigrationPlan", () => {
           modifiers: [],
         }),
       }],
+      orderEvents: [],
       stockLedger,
     });
 
@@ -203,6 +217,54 @@ describe("buildHongToLucMigrationPlan", () => {
       directSnapshotReferences: 0,
     });
     expect(plan.sourceHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(plan.writeSet.lineUpdates).toEqual([
+      expect.objectContaining({
+        lineId,
+        before: expect.objectContaining({
+          product_id: "PROD-HONG",
+          variant_id: "VAR-HONG-700",
+          cost_at_sale: 20,
+        }),
+        after: expect.objectContaining({
+          product_id: "PROD-LUC",
+          variant_id: "VAR-LUC-700",
+          cost_at_sale: 44,
+        }),
+      }),
+    ]);
+    expect(plan.writeSet.ledgerBefore).toHaveLength(2);
+    expect(plan.writeSet.ledgerAfter).toEqual([
+      expect.objectContaining({
+        transaction_type: "SALES_CONSUME",
+        reference_id: orderId,
+        item_reference: "ING-LEMON",
+        quantity_change: -1,
+        source: "VARIANT_RECIPE",
+      }),
+      expect.objectContaining({
+        transaction_type: "SALES_CONSUME",
+        reference_id: orderId,
+        item_reference: "ING-LUC",
+        quantity_change: -10,
+        source: "VARIANT_RECIPE:BTP_SHORTFALL:BTP-LUC",
+      }),
+      expect.objectContaining({
+        transaction_type: "SALES_CONSUME",
+        reference_id: orderId,
+        item_reference: "ING-SUGAR",
+        quantity_change: -10,
+        source: "VARIANT_RECIPE",
+      }),
+    ]);
+    expect(plan.writeSet.events).toEqual([
+      expect.objectContaining({
+        order_id: orderId,
+        event_type: "MIGRATED",
+        delta_json: expect.objectContaining({
+          migration_key: "TEST-MIGRATION",
+        }),
+      }),
+    ]);
   });
 
   it("selects normalized snapshot names but excludes drafts and pre-cutoff orders", () => {
@@ -250,6 +312,7 @@ describe("buildHongToLucMigrationPlan", () => {
         emptyLine("line-draft", "order-draft", "PROD-HONG", "Hồng trà chanh"),
         emptyLine("line-old", "order-old", "PROD-HONG", "Hồng trà chanh"),
       ],
+      orderEvents: [],
       stockLedger: [],
     });
 
@@ -337,6 +400,34 @@ describe("buildHongToLucMigrationPlan", () => {
       "has no valid effective timestamp",
     );
   });
+
+  it("rejects superseded affected orders", () => {
+    const input = minimalPlanInput();
+    input.orders[0].superseded_by = "order-2";
+
+    expect(() => buildHongToLucMigrationPlan(input)).toThrow(
+      "Affected order ORDER-1 is superseded",
+    );
+  });
+
+  it("rejects an affected order set outside the reviewed order numbers", () => {
+    const input = minimalPlanInput();
+    input.expectedOrderNumbers = ["OTHER-ORDER"];
+
+    expect(() => buildHongToLucMigrationPlan(input)).toThrow(
+      "Qualifying order set changed",
+    );
+  });
+
+  it("binds MAC and recipe dependencies into the source fingerprint", () => {
+    const input = minimalPlanInput();
+    const originalHash = buildHongToLucMigrationPlan(input).sourceHash;
+    input.stockLedger.push(
+      receipt("po-unrelated", "ING-UNRELATED", 1, 123),
+    );
+
+    expect(buildHongToLucMigrationPlan(input).sourceHash).not.toBe(originalHash);
+  });
 });
 
 describe("dry-run output contract", () => {
@@ -393,6 +484,15 @@ describe("dry-run output contract", () => {
         directSnapshotReferences: 0,
         row: {},
       },
+      writeSet: {
+        orders: [],
+        lineUpdates: [],
+        ledgerBefore: [],
+        ledgerAfter: [],
+        eventsBefore: [],
+        events: [],
+        corruptRecipe: {},
+      },
     }, null);
 
     expect(output).toContain("DRY RUN ONLY");
@@ -401,9 +501,12 @@ describe("dry-run output contract", () => {
     expect(output).toContain("Size coverage: 5/5");
     expect(output).toContain("Source ledger: 29 rows / 0 replay mismatch items");
     expect(output).toContain("COGS: 20,923 -> 11,370 VND (delta -9,553)");
+    expect(output).toContain("ATOMIC WRITE SET");
+    expect(output).toContain("Line updates: 0");
+    expect(output).toContain("Ledger replace: 0 -> 0");
     expect(output).toContain("Snapshot ID: PENDING");
     expect(output).toContain("Manifest SHA-256: PENDING");
-    expect(output).toContain("--apply is not implemented");
+    expect(output).toContain("Without --apply, this script is read-only");
   });
 });
 
@@ -554,6 +657,7 @@ function minimalPlanInput(): any {
       "PROD-HONG",
       "Hồng trà chanh",
     )],
+    orderEvents: [],
     stockLedger: [],
   };
 }

@@ -1,12 +1,10 @@
 /**
- * Read-only dry-run for Hồng trà chanh -> Lục trà chanh recovery.
- *
- * This phase intentionally has no apply path. A later, separately reviewed
- * phase will add the atomic PostgreSQL RPC and --apply integration.
+ * Guarded migration for Hồng trà chanh -> Lục trà chanh recovery.
  *
  * Usage:
  *   vite-node scripts/migrate-hong-tra-to-luc-tra.ts
  *   vite-node scripts/migrate-hong-tra-to-luc-tra.ts --snapshot-id <id>
+ *   vite-node scripts/migrate-hong-tra-to-luc-tra.ts --apply --snapshot-id <id>
  */
 import * as dotenv from "dotenv";
 import { readFileSync } from "node:fs";
@@ -19,6 +17,11 @@ import {
   type RecoverySnapshotMetadata,
 } from "../lib/hong-luc-migration";
 import { verifySnapshotBundleFiles } from "../lib/recovery-snapshot";
+import {
+  applyHongToLucMigration,
+  getHongToLucMigrationRun,
+  type HongToLucMigrationRun,
+} from "../lib/hong-luc-migration-transaction";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
@@ -38,6 +41,13 @@ const EXPECTED_ORDER_NUMBERS = [
 
 async function main(): Promise<void> {
   const args = parseHongToLucMigrationArgs(process.argv.slice(2));
+  if (args.apply) {
+    const existingRun = await getHongToLucMigrationRun(MIGRATION_KEY);
+    if (existingRun) {
+      await rerunAppliedMigration(existingRun, args.snapshotId!);
+      return;
+    }
+  }
   const { findAllNoCache } = await import("../lib/sheets_db");
   const [
     products,
@@ -47,6 +57,7 @@ async function main(): Promise<void> {
     baseIngredients,
     orders,
     orderLines,
+    orderEvents,
     stockLedger,
   ] = await Promise.all([
     findAllNoCache("Products"),
@@ -56,6 +67,7 @@ async function main(): Promise<void> {
     findAllNoCache("Base_Ingredients"),
     findAllNoCache("Orders_V2"),
     findAllNoCache("Order_Lines_V2"),
+    findAllNoCache("Order_Events"),
     findAllNoCache("Stock_Ledger"),
   ]);
 
@@ -74,6 +86,7 @@ async function main(): Promise<void> {
     baseIngredients: baseIngredients as any[],
     orders: orders as any[],
     orderLines: orderLines as any[],
+    orderEvents: orderEvents as any[],
     stockLedger: stockLedger as any[],
   });
   const expected = {
@@ -98,39 +111,98 @@ async function main(): Promise<void> {
 
   let snapshot: RecoverySnapshotMetadata | null = null;
   if (args.snapshotId) {
-    const snapshotRoot = resolve(
-      process.cwd(),
-      "recovery-snapshots",
-      args.snapshotId,
-    );
-    const manifestPath = join(snapshotRoot, "manifest.json");
-    const manifestContent = readFileSync(manifestPath, "utf8");
-    const manifest = JSON.parse(manifestContent) as {
-      files?: Record<string, unknown>;
-    };
-    const files = Object.fromEntries([
-      ["manifest.json", manifestContent],
-      ...Object.keys(manifest.files || {}).map(relativePath => [
-        relativePath,
-        readFileSync(join(snapshotRoot, relativePath), "utf8"),
-      ]),
-    ]);
-    const verification = verifySnapshotBundleFiles(files);
-    if (!verification.valid) {
-      throw new Error(
-        `Snapshot ${args.snapshotId} failed verification: ` +
-        verification.errors.join("; "),
-      );
-    }
-    snapshot = buildSnapshotMetadata(
-      args.snapshotId,
-      manifestContent,
-      true,
-      plan.sourceHash,
-    );
+    snapshot = loadRecoverySnapshot(args.snapshotId, plan.sourceHash);
   }
 
   process.stdout.write(renderHongToLucDryRun(plan, snapshot));
+  if (!args.apply) return;
+  if (!snapshot) {
+    throw new Error("Verified snapshot metadata is required before apply.");
+  }
+  const result = await applyHongToLucMigration({
+    migrationKey: plan.migrationKey,
+    sourceHash: plan.sourceHash,
+    snapshot,
+    writeSet: plan.writeSet,
+  });
+  printApplyResult(result);
+}
+
+function loadRecoverySnapshot(
+  snapshotId: string,
+  expectedSourceHash: string,
+): RecoverySnapshotMetadata {
+  const snapshotRoot = resolve(
+    process.cwd(),
+    "recovery-snapshots",
+    snapshotId,
+  );
+  const manifestPath = join(snapshotRoot, "manifest.json");
+  const manifestContent = readFileSync(manifestPath, "utf8");
+  const manifest = JSON.parse(manifestContent) as {
+    files?: Record<string, unknown>;
+  };
+  const files = Object.fromEntries([
+    ["manifest.json", manifestContent],
+    ...Object.keys(manifest.files || {}).map(relativePath => [
+      relativePath,
+      readFileSync(join(snapshotRoot, relativePath), "utf8"),
+    ]),
+  ]);
+  const verification = verifySnapshotBundleFiles(files);
+  if (!verification.valid) {
+    throw new Error(
+      `Snapshot ${snapshotId} failed verification: ` +
+      verification.errors.join("; "),
+    );
+  }
+  return buildSnapshotMetadata(
+    snapshotId,
+    manifestContent,
+    true,
+    expectedSourceHash,
+  );
+}
+
+async function rerunAppliedMigration(
+  run: HongToLucMigrationRun,
+  requestedSnapshotId: string,
+): Promise<void> {
+  if (requestedSnapshotId !== run.snapshotId) {
+    throw new Error(
+      `Migration ${run.migrationKey} was applied with snapshot ${run.snapshotId}, not ${requestedSnapshotId}.`,
+    );
+  }
+  const snapshot = loadRecoverySnapshot(run.snapshotId, run.sourceHash);
+  if (snapshot.manifestSha256 !== run.manifestSha256) {
+    throw new Error("Stored migration manifest SHA-256 no longer matches.");
+  }
+  const result = await applyHongToLucMigration({
+    migrationKey: run.migrationKey,
+    sourceHash: run.sourceHash,
+    snapshot,
+    writeSet: run.writeSet,
+  });
+  printApplyResult(result);
+}
+
+function printApplyResult(
+  result: Awaited<ReturnType<typeof applyHongToLucMigration>>,
+): void {
+  process.stdout.write(
+    [
+      "",
+      "APPLY RESULT",
+      `Migration key: ${result.migrationKey}`,
+      `Already applied: ${String(result.alreadyApplied).toUpperCase()}`,
+      `Changed lines: ${result.changedLines}`,
+      `Replaced ledger rows: ${result.replacedLedgerRows}`,
+      `Inserted ledger rows: ${result.insertedLedgerRows}`,
+      `Inserted events: ${result.insertedEvents}`,
+      `Deleted recipes: ${result.deletedRecipes}`,
+      "",
+    ].join("\n"),
+  );
 }
 
 main().catch(error => {
