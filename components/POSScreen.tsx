@@ -48,7 +48,7 @@ export default function POSScreen({
     message: string,
     action?: { label: string; onClick: () => void }
   ) => {
-    const id = Math.random().toString(36).substring(2, 9);
+    const id = crypto.randomUUID();
     setToasts(prev => [...prev, { id, type, message, action }]);
     if (type !== "error") {
       setTimeout(() => {
@@ -110,12 +110,16 @@ export default function POSScreen({
   const saveDraft = (cartToSave: any[], clearCartAfter: boolean = false) => {
     if (cartToSave.length === 0) return;
     const now = new Date();
-    const dd = String(now.getDate()).padStart(2, '0');
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const HH = String(now.getHours()).padStart(2, '0');
-    const MM = String(now.getMinutes()).padStart(2, '0');
+    const formatter = new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Ho_Chi_Minh'
+    });
+    const formattedDate = formatter.format(now);
     const firstItemName = cartToSave[0]?.product_name || "Trống";
-    const draftName = `${dd}/${mm} ${HH}:${MM} - ${firstItemName}`;
+    const draftName = `${formattedDate} - ${firstItemName}`;
 
     savePOSDraft({
       id: activeDraftId || undefined,
@@ -845,7 +849,12 @@ export default function POSScreen({
     <div className="fixed inset-0 flex bg-zinc-50 text-zinc-900 font-sans overflow-hidden">
 
       {/* Toast Notification Container */}
-      <div className="fixed top-4 right-4 z-[70] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+      <div 
+        role="region" 
+        aria-live="polite" 
+        aria-label="Thông báo"
+        className="fixed top-4 right-4 z-[70] flex flex-col gap-3 max-w-sm w-full pointer-events-none"
+      >
         {toasts.map((toast) => (
           <div
             key={toast.id}
