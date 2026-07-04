@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useId, useRef } from "react";
 import { ModalPortal } from "./ModalPortal";
 
 interface FormModalProps {
@@ -22,35 +22,86 @@ export function FormModal({
   children,
   footer,
 }: FormModalProps) {
+  const titleId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const container = containerRef.current;
+      if (!container) return;
+      const focusables = container.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKey);
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    containerRef.current?.focus();
+
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      previouslyFocused?.focus?.();
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <ModalPortal>
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className={`bg-white rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col`}>
-          {/* Header */}
+      <div
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overscroll-behavior-contain"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <div
+          ref={containerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
+          className={`bg-white rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col outline-none`}
+        >
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+              <h2 id={titleId} className="text-lg font-semibold text-gray-900">{title}</h2>
               {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition"
+              aria-label="Đóng"
+              className="text-gray-400 hover:text-gray-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none rounded p-1"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* Body */}
           <div className="p-4 overflow-y-auto flex-1">
             {children}
           </div>
 
-          {/* Footer */}
           {footer && (
             <div className="flex justify-end gap-3 p-4 border-t border-gray-100">
               {footer}
