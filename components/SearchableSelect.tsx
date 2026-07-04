@@ -60,6 +60,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
   const handleTriggerKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape" && isOpen) {
       e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
       setIsOpen(false);
       triggerRef.current?.focus();
       return;
@@ -67,6 +68,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
     if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
       e.preventDefault();
       e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
       setIsOpen(true);
     }
   };
@@ -74,6 +76,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
   const handleInputKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
       e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
       setIsOpen(false);
       triggerRef.current?.focus();
       return;
@@ -81,6 +84,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
     if (e.key === "ArrowDown") {
       e.preventDefault();
       e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
       setActiveIndex((prev) =>
         filteredOptions.length > 0
           ? (prev + 1) % filteredOptions.length
@@ -89,6 +93,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
       setActiveIndex((prev) =>
         filteredOptions.length > 0
           ? (prev - 1 + filteredOptions.length) % filteredOptions.length
@@ -97,6 +102,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
     } else if (e.key === "Enter") {
       e.preventDefault();
       e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
       if (activeIndex >= 0 && activeIndex < filteredOptions.length) {
         const selectedOpt = filteredOptions[activeIndex];
         onChange(selectedOpt.id);
