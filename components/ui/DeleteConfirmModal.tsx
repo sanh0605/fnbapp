@@ -16,8 +16,8 @@ export function DeleteConfirmModal({
   isOpen,
   onClose,
   onConfirm,
-  title = "Xac nhan xoa",
-  description = "Hanh dong nay khong the hoan tac. Ban co chac chan muon tiep tuc?",
+  title = "Xác nhận xoá",
+  description = "Hành động này không thể hoàn tác. Bạn có chắc chắn muốn tiếp tục?",
 }: DeleteConfirmModalProps) {
   const [loading, setLoading] = useState(false);
 
@@ -47,17 +47,17 @@ export function DeleteConfirmModal({
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-sm transition"
+          className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-sm transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
         >
-          Huy
+          Huỷ
         </button>
         <LoadingButton
           loading={loading}
-          loadingText="Dang xoa..."
+          loadingText="Đang xoá…"
           onClick={handleConfirm}
           variant="danger"
         >
-          Xoa
+          Xoá
         </LoadingButton>
       </div>
     </FormModal>
