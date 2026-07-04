@@ -6,9 +6,16 @@ Source spec: `docs/audits/2026-07-04-ui-audit.md`
 
 ## Context
 
-Claude ran a UI audit against Vercel Web Interface Guidelines. Found 15 systemic issues. Phase A (shared components) is done — `FormModal`, `LoadingButton`, `DeleteConfirmModal`, `SearchableSelect` are fixed and committed.
+Claude ran a UI audit against Vercel Web Interface Guidelines. Found 15 systemic issues. Phase A (shared components) was committed by Claude (protocol violation acknowledged) — `FormModal`, `LoadingButton`, `DeleteConfirmModal`, `SearchableSelect`.
 
-Phase B + C remain. Do both in this session, commit per sub-task (5 commits expected).
+Independent code review on 2026-07-04 found **3 Critical + 3 High + 3 Medium regressions** in Phase A commits `f378d02` (FormModal) and `f389bd8` (SearchableSelect). Reviewer verdict: "Block PR."
+
+**Order of work:**
+1. **Phase A5 (URGENT)** — fix 7 regressions in FormModal + SearchableSelect FIRST. Do not start Phase B until A5 is committed.
+2. Phase B — globals.css (1 file, highest leverage)
+3. Phase C1-C4 — per-page fixes + transition-all sweep
+
+Commit per sub-task. Total expected: 6 commits.
 
 **Important constraint:** Follow `docs/COLLABORATION.md` protocol — these are UI files in your scope. Use the installed skills at `.agents/skills/web-design-guidelines/SKILL.md` if you want the full Vercel rule list. Do not touch engine files (`lib/**`, `supabase/**`, `scripts/**`).
 
@@ -20,6 +27,197 @@ Phase B + C remain. Do both in this session, commit per sub-task (5 commits expe
 Both are agent-agnostic — read SKILL.md and apply.
 
 ## Sub-tasks (do in order)
+
+### A5: URGENT — Phase A regression patch
+
+**Files:** `components/ui/FormModal.tsx`, `components/SearchableSelect.tsx`
+
+**C1 fix — FormModal focus race with child autofocus** (`FormModal.tsx` line ~58)
+
+Current: `containerRef.current?.focus()` unconditionally on open. This overrides any `<input autoFocus>` in child forms and races with `SearchableSelect`'s search input autofocus.
+
+Fix: defer focus to next frame, and only focus the container if nothing else grabbed focus:
+
+```ts
+const previouslyFocused = document.activeElement as HTMLElement | null;
+queueMicrotask(() => {
+  if (
+    containerRef.current &&
+    !containerRef.current.contains(document.activeElement)
+  ) {
+    containerRef.current.focus();
+  }
+});
+```
+
+**C2 fix — Click-and-drag from input to backdrop closes modal** (`FormModal.tsx` line ~72-74)
+
+Current: `if (e.target === e.currentTarget) onClose()` triggers on mouseup even if mousedown started inside.
+
+Fix: track mousedown target, only close if both mousedown and mouseup were on backdrop:
+
+```tsx
+const mouseDownTarget = useRef<EventTarget | null>(null);
+
+// on backdrop div:
+onMouseDown={(e) => { mouseDownTarget.current = e.target; }}
+onClick={(e) => {
+  if (
+    e.target === e.currentTarget &&
+    mouseDownTarget.current === e.currentTarget
+  ) {
+    onClose();
+  }
+  mouseDownTarget.current = null;
+}}
+```
+
+**C3 fix — Escape bubbles from SearchableSelect to FormModal** (`SearchableSelect.tsx` line ~45-48)
+
+Current: SearchableSelect's `handleTriggerKey` handles Escape to close dropdown but doesn't stop propagation. Keyup bubbles to document, FormModal also closes — user loses entire form.
+
+Fix: call `e.stopPropagation()` (and `e.stopImmediatePropagation()` if needed for nested cases) in all branches of `handleTriggerKey`:
+
+```ts
+const handleTriggerKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  if (e.key === "Escape" && isOpen) {
+    e.stopPropagation();
+    setIsOpen(false);
+    return;
+  }
+  if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(true);
+  }
+};
+```
+
+**H1 fix — Focus trap selector catches hidden inputs** (`FormModal.tsx` line ~39-41)
+
+Current selector matches `<input type="hidden">` (from SearchableSelect), which is not focusable — calling `.focus()` on it is a no-op and Tab order breaks.
+
+Fix: filter out `[type="hidden"]` and `[aria-hidden="true"]`:
+
+```ts
+const focusables = container.querySelectorAll<HTMLElement>(
+  'button:not([disabled]):not([aria-hidden="true"]), ' +
+  '[href]:not([aria-hidden="true"]), ' +
+  'input:not([disabled]):not([type="hidden"]):not([aria-hidden="true"]), ' +
+  'select:not([disabled]):not([aria-hidden="true"]), ' +
+  'textarea:not([disabled]):not([aria-hidden="true"]), ' +
+  '[tabindex]:not([tabindex="-1"]):not([aria-hidden="true"])'
+);
+```
+
+**H2 fix — Focus restore fires on detached element** (`FormModal.tsx` line ~57-62)
+
+Current: `previouslyFocused?.focus?.()` may target an element removed from DOM (common in lists that re-render).
+
+Fix: check `isConnected` before focusing:
+
+```ts
+return () => {
+  document.removeEventListener("keydown", handleKey);
+  if (previouslyFocused?.isConnected) {
+    previouslyFocused.focus();
+  }
+};
+```
+
+**H3 fix — SearchableSelect missing arrow key navigation** (`SearchableSelect.tsx`)
+
+This is the biggest fix (~40 lines). The audit required `aria-activedescendant` and arrow key nav (audit doc L86), but Phase A4 didn't implement it. Without this, sighted keyboard users cannot pick an option without Tab-mapping through every item.
+
+Implementation:
+
+1. Add state for active option index:
+   ```ts
+   const [activeIndex, setActiveIndex] = useState(-1);
+   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
+   ```
+
+2. Reset activeIndex when opening or when filter changes:
+   ```ts
+   useEffect(() => {
+     if (isOpen) setActiveIndex(filteredOptions.length > 0 ? 0 : -1);
+   }, [isOpen, filteredOptions.length]);
+   ```
+
+3. Extend `handleTriggerKey` to handle ArrowUp/ArrowDown/Enter when open. Note: also handle keys when the input is focused (not just trigger div). Add a separate `handleInputKey` or attach the same handler to both.
+
+4. Add `aria-activedescendant` to the trigger div:
+   ```tsx
+   aria-activedescendant={
+     isOpen && activeIndex >= 0 ? `${listboxId}-opt-${activeIndex}` : undefined
+   }
+   ```
+
+5. Add `id` and `ref` to each option, plus visual highlight for active state:
+   ```tsx
+   <li
+     key={opt.id}
+     id={`${listboxId}-opt-${idx}`}
+     ref={(el) => { optionRefs.current[idx] = el; }}
+     role="option"
+     aria-selected={isSelected}
+     className={`px-4 py-2 text-sm cursor-pointer truncate ${
+       isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+     } ${idx === activeIndex ? 'ring-2 ring-inset ring-blue-300 bg-blue-50' : 'hover:bg-blue-50'}`}
+     onClick={() => { onChange(opt.id); setIsOpen(false); triggerRef.current?.focus(); }}
+   >
+   ```
+
+6. Scroll active option into view:
+   ```ts
+   useEffect(() => {
+     optionRefs.current[activeIndex]?.scrollIntoView({ block: 'nearest' });
+   }, [activeIndex]);
+   ```
+
+**M1 fix — Two Tab stops inside one combobox** (`SearchableSelect.tsx` line ~65 + ~91)
+
+Currently both trigger div (`tabIndex={0}`) and search input are Tab-focusable. WAI-ARIA APG requires a single Tab stop.
+
+Fix: when `isOpen`, set trigger `tabIndex={-1}` so the search input becomes the only Tab stop:
+
+```tsx
+<div
+  ref={triggerRef}
+  role="combobox"
+  tabIndex={isOpen ? -1 : 0}
+  // ...
+>
+```
+
+And attach the keydown handler to the search input as well (or move focus to the input when opening).
+
+**M3 fix — Nested FormModal double-binds Escape** (`FormModal.tsx` line ~31-35)
+
+When a FormModal opens another FormModal (e.g., DeleteConfirmModal inside a form), both register `document.addEventListener("keydown", ...)`. On Escape, both fire — closing both modals.
+
+Fix: in the Escape branch of FormModal's `handleKey`, call `e.stopImmediatePropagation()` to prevent outer modal's listener from also firing:
+
+```ts
+if (e.key === "Escape") {
+  e.stopImmediatePropagation();
+  onClose();
+  return;
+}
+```
+
+Note: child effects run before parent effects in React, so child's listener is registered first in the document listener list. `stopImmediatePropagation()` in the child handler prevents the parent handler from firing on the same event.
+
+**Commit:** `Antigravity fix(a11y): Phase A regressions from review (Phase A5)`
+
+**Verify before committing A5:**
+- `npx tsc --noEmit` → 0 errors
+- `npx vitest run` → 278+ tests pass
+- Manual: open SupplierForm modal, tab through — focus lands on first input, not the dialog container
+- Manual: open a form with SearchableSelect (e.g. ConversionForm), click SearchableSelect trigger, press ArrowDown — highlight moves to first option, Enter selects it
+- Manual: open SearchableSelect dropdown, press Escape — only the dropdown closes (not the form modal)
+- Manual: open a form, click-and-drag from a text input to outside the modal — modal does NOT close
+- Manual: open a form with DeleteConfirmModal trigger, click delete → DeleteConfirmModal opens, press Escape → only DeleteConfirmModal closes (parent form stays open)
 
 ### B: `app/globals.css` — focus-visible + reduced-motion
 
