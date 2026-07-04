@@ -173,7 +173,7 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
               return (
                 <div 
                   key={sp.id} 
-                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col ${
+                  className={`bg-white rounded-2xl border transition-colors transition-shadow duration-200 overflow-hidden flex flex-col ${
                     isExpanded 
                       ? "border-blue-300 ring-4 ring-blue-50 shadow-md" 
                       : "border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200"

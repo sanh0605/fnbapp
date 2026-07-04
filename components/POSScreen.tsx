@@ -858,7 +858,7 @@ export default function POSScreen({
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto p-4 rounded-xl shadow-xl border flex items-start gap-3 transition-all transform duration-300 animate-slide-in-right ${
+            className={`pointer-events-auto p-4 rounded-xl shadow-xl border flex items-start gap-3 transition-colors transform duration-300 animate-slide-in-right ${
               toast.type === "success"
                 ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                 : toast.type === "error"
@@ -1030,7 +1030,7 @@ export default function POSScreen({
                       <button
                         key={v.id}
                         onClick={() => setSelectedVariant(v)}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${selectedVariant?.id === v.id ? "border-orange-500 bg-orange-50" : "border-gray-100 bg-white hover:border-orange-200"}`}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-orange-500 bg-orange-50" : "border-gray-100 bg-white hover:border-orange-200"}`}
                       >
                         <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-orange-700" : "text-gray-700"}`}>{v.size_name}</span>
                         {hasPromo ? (
@@ -1055,7 +1055,7 @@ export default function POSScreen({
                     {groupedModifiers[groupName].map((mod: any) => {
                       const count = selectedModifiers.filter(m => m.id === mod.id).length;
                       return (
-                        <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all ${count > 0 ? "border-indigo-500 bg-indigo-50 shadow-sm" : "border-gray-200 bg-white hover:bg-gray-50"}`}>
+                        <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-colors ${count > 0 ? "border-indigo-500 bg-indigo-50 shadow-sm" : "border-gray-200 bg-white hover:bg-gray-50"}`}>
                           <div className="flex flex-col">
                             <span className={`text-sm ${count > 0 ? "text-indigo-700 font-bold" : "text-gray-700 font-medium"}`}>{mod.name}</span>
                             {Number(mod.price) > 0 && (
@@ -1140,7 +1140,7 @@ export default function POSScreen({
 
                 <button
                   onClick={addToCart}
-                  className="flex-1 bg-orange-600 text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center h-14"
+                  className="flex-1 bg-orange-600 text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
                 >
                   <div className="font-bold text-sm lg:text-base flex flex-col items-center">
                     <span>{editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {currentItemFinalTotal.toLocaleString('vi-VN')} đ</span>
@@ -1177,7 +1177,7 @@ export default function POSScreen({
             <div className="px-6 pb-6">
               <button
                 onClick={() => setSuccessOrderNo(null)}
-                className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-all"
+                className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-colors transition-transform"
               >
                 Tao don moi
               </button>

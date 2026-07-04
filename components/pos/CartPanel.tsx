@@ -428,7 +428,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Tien mat")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-emerald-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
+                className="flex-1 bg-emerald-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>
@@ -456,7 +456,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Chuyen khoan")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-blue-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
+                className="flex-1 bg-blue-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>

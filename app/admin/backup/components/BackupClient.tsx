@@ -127,7 +127,7 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
               <button
                 disabled={isPending}
                 onClick={handleManualTrigger}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white font-extrabold text-sm hover:bg-blue-700 active:scale-95 transition-all shadow-md min-h-[44px] disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white font-extrabold text-sm hover:bg-blue-700 active:scale-95 transition-colors transition-transform shadow-md min-h-[44px] disabled:opacity-50"
               >
                 {isPending ? (
                   <>

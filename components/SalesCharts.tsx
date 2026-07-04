@@ -78,7 +78,7 @@ export default function SalesCharts({
               </div>
               <div className="w-full max-w-[40px] bg-blue-50 rounded-t-lg relative flex items-end h-[250px]">
                 <div 
-                  className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all duration-500 ease-out"
+                  className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-[height] duration-500 ease-out"
                   style={{ height: `${heightPercent}%`, minHeight: d.amount > 0 ? '4px' : '0' }}
                 ></div>
               </div>

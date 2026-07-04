@@ -114,7 +114,7 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                   />
 
                   {/* Card content */}
-                  <div className={`bg-white rounded-xl border p-4 shadow-sm transition-all duration-200 ${
+                  <div className={`bg-white rounded-xl border p-4 shadow-sm transition-colors transition-shadow duration-200 ${
                     isActive ? "border-emerald-200 ring-2 ring-emerald-50/50" : "border-gray-100 hover:border-gray-200"
                   }`}>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -180,7 +180,7 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                   />
 
                   {/* Card content */}
-                  <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:border-gray-200 transition-all duration-200">
+                  <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:border-gray-200 transition-colors duration-200">
                     <div className="flex items-center justify-between mb-3">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">
                         Thay đổi giá

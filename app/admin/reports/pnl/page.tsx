@@ -403,7 +403,7 @@ export default async function ReportsPage({
                       <div className="flex items-center gap-3">
                         <div className="flex-1 h-3.5 bg-gray-100 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500" 
+                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-[width] duration-500" 
                             style={{ width: `${widthPct}%` }}
                           ></div>
                         </div>

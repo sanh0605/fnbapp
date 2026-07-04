@@ -64,7 +64,7 @@ export function CartItemRow({
   const currentProduct = products.find((p: any) => p.id === item.product_id);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-all hover:border-indigo-300 bg-white">
+    <div className="relative overflow-hidden rounded-xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-shadow transition-colors hover:border-indigo-300 bg-white">
       {/* Background Red Delete Button */}
       <div className="absolute top-0 right-0 bottom-0 w-20 bg-red-600 flex items-center justify-center z-0">
         <button

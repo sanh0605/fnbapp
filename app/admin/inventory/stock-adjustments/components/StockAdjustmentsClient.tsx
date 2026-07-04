@@ -112,7 +112,7 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
                 <button
                   key={tab}
                   onClick={() => setStatusFilter(tab)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all min-h-[32px] ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors min-h-[32px] ${
                     statusFilter === tab
                       ? "bg-white text-blue-700 shadow-sm border-gray-200"
                       : "text-gray-600 hover:text-gray-900"
@@ -225,14 +225,14 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
                             <button
                               disabled={isPendingAction}
                               onClick={() => handleApprove(adj.id)}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all text-xs font-bold min-h-[38px] flex items-center justify-center shadow-sm disabled:opacity-50"
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-colors transition-transform text-xs font-bold min-h-[38px] flex items-center justify-center shadow-sm disabled:opacity-50"
                             >
                               Duyệt
                             </button>
                             <button
                               disabled={isPendingAction}
                               onClick={() => handleReject(adj.id)}
-                              className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 active:scale-95 transition-all text-xs font-bold min-h-[38px] flex items-center justify-center border border-rose-200 disabled:opacity-50"
+                              className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 active:scale-95 transition-colors transition-transform text-xs font-bold min-h-[38px] flex items-center justify-center border border-rose-200 disabled:opacity-50"
                             >
                               Từ chối
                             </button>

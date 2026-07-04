@@ -67,7 +67,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
         <div className="flex bg-gray-100 p-1 rounded-lg">
           <button
             onClick={() => setActiveTab("modifiers")}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeTab === "modifiers" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-900"
             }`}
           >
@@ -75,7 +75,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
           </button>
           <button
             onClick={() => setActiveTab("standalone")}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeTab === "standalone" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-900"
             }`}
           >

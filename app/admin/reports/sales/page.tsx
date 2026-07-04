@@ -319,7 +319,7 @@ export default async function SalesReportPage({
                         <div
                           key={hour}
                           title={`${day}, ${hour}h: ${cell.revenue.toLocaleString("vi-VN")} đ (${cell.orderCount} đơn)`}
-                          className="rounded-md border border-gray-100/50 flex flex-col items-center justify-center transition-all hover:scale-105 hover:shadow-sm cursor-pointer"
+                          className="rounded-md border border-gray-100/50 flex flex-col items-center justify-center transition-transform transition-shadow hover:scale-105 hover:shadow-sm cursor-pointer"
                           style={{
                             backgroundColor: cell.revenue > 0 ? `rgba(79, 70, 229, ${scaledOpacity})` : '#f9fafb',
                             color: scaledOpacity > 0.5 ? '#ffffff' : '#1e1b4b',
