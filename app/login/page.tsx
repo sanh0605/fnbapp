@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -10,6 +10,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +29,7 @@ export default function LoginPage() {
       if (res?.error) {
         setError(res.error);
         setLoading(false);
+        usernameInputRef.current?.focus();
       } else {
         // Lấy session để kiểm tra role
         const { getSession } = await import("next-auth/react");
@@ -39,8 +43,9 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err) {
-      setError("Đã xảy ra lỗi hệ thống");
+      setError("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
       setLoading(false);
+      usernameInputRef.current?.focus();
     }
   };
 
@@ -53,38 +58,43 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center mb-4 border border-red-200">
+          <div aria-live="polite" className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center mb-4 border border-red-200">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
               Tên đăng nhập
             </label>
             <input
+              id="username"
+              ref={usernameInputRef}
               type="text"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              spellCheck={false}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Nhập tên đăng nhập"
+              placeholder="Tên đăng nhập…"
               autoComplete="username"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Mật khẩu
             </label>
             <input
+              id="password"
+              ref={passwordInputRef}
               type="password"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nhập mật khẩu"
+              placeholder="Mật khẩu…"
               autoComplete="current-password"
             />
           </div>
@@ -92,7 +102,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center disabled:bg-blue-400"
+            className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors flex justify-center items-center disabled:bg-blue-400"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -103,7 +113,7 @@ export default function LoginPage() {
         </form>
         
         <div className="mt-8 text-center text-sm text-gray-400">
-          Powered by Next.js & Google Sheets
+          Powered by Next.js & Supabase
         </div>
       </div>
     </div>
