@@ -1,9 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth";
 
 export async function triggerBackup(): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    const auth = await requireAdmin();
+    if (!auth.ok) {
+      return { success: false, error: auth.error };
+    }
+
     const url = `${process.env.SUPABASE_URL}/functions/v1/backup-to-sheets`;
     const key = process.env.SUPABASE_ANON_KEY;
     if (!url || !key) {
