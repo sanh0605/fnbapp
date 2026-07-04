@@ -541,6 +541,34 @@ export async function approveStockAdjustment(adjustmentId: string, _clientAdminU
     });
 
     revalidatePath("/admin/inventory/stock");
+    revalidatePath("/admin/inventory/stock-adjustments");
+    return ok();
+  } catch (error: any) {
+    return fail(error.message);
+  }
+}
+
+export async function rejectStockAdjustment(adjustmentId: string): Promise<ActionResponse> {
+  try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return fail(auth.error);
+    const adminUsername = auth.actor.name;
+
+    const adjustments = await findAll("Stock_Adjustments");
+    const adj = adjustments.find((a:any) => a.id === adjustmentId);
+    if (!adj) return fail("Không tìm thấy phiếu điều chỉnh");
+    if (adj.status !== "PENDING") return fail("Phiếu không ở trạng thái chờ duyệt");
+
+    const nowIso = new Date().toISOString();
+    
+    await update("Stock_Adjustments", adjustmentId, {
+      status: "REJECTED",
+      approved_by: adminUsername,
+      approved_at: nowIso
+    });
+
+    revalidatePath("/admin/inventory/stock");
+    revalidatePath("/admin/inventory/stock-adjustments");
     return ok();
   } catch (error: any) {
     return fail(error.message);
