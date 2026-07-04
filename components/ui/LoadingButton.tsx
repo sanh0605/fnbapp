@@ -22,7 +22,7 @@ const variantStyles: Record<string, string> = {
 
 export function LoadingButton({
   loading,
-  loadingText = "Dang xu ly...",
+  loadingText = "Đang xử lý…",
   children,
   onClick,
   type = "button",
@@ -37,7 +37,7 @@ export function LoadingButton({
       onClick={onClick}
       form={form}
       disabled={loading || disabled}
-      className={`px-4 py-2 rounded-lg font-medium text-sm transition ${variantStyles[variant]} ${className}`}
+      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none ${variantStyles[variant]} ${className}`}
     >
       {loading ? loadingText : children}
     </button>
