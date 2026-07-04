@@ -4,6 +4,7 @@ import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { requireAdmin } from "@/lib/auth";
+import { planRecipeSave } from "@/lib/recipe-selection";
 
 const PRODUCT_SHEET = "Products";
 const VARIANT_SHEET = "Product_Variants";
@@ -110,18 +111,22 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       }
 
       // -- XỬ LÝ LỊCH SỬ CÔNG THỨC --
-      const activeRecipe = allRecipes.find((r:any) => 
-        r.target_type === "PRODUCT_VARIANT" && 
-        r.target_id === variantId &&
-        (!r.end_date || r.end_date === "")
+      const recipePlan = planRecipeSave(
+        allRecipes,
+        "PRODUCT_VARIANT",
+        variantId,
+        v.ingredients || [],
       );
       
       const ingredientsJsonString = JSON.stringify(v.ingredients || []);
       
-      if (activeRecipe) {
-        if (activeRecipe.ingredients_json !== ingredientsJsonString) {
+      if (recipePlan.activeRecipe) {
+        if (recipePlan.decision === "CREATE_VERSION") {
+          if (!recipePlan.activeRecipe.id) {
+            throw new Error(`Active recipe for ${variantId} is missing an ID`);
+          }
           // Đóng công thức cũ
-          await update(RECIPE_SHEET, activeRecipe.id, {
+          await update(RECIPE_SHEET, recipePlan.activeRecipe.id, {
             end_date: nowIso
           });
           

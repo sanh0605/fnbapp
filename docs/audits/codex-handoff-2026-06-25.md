@@ -1,5 +1,25 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-04 - Recipe selection hardening
+
+- `[x]` Product save selects the latest ACTIVE, open recipe deterministically.
+- `[x]` Pure save planner verifies same=0 and changed=1 recipe versions.
+- `[x]` Read-only recipe audit distinguishes true drops, type replacements,
+  quantity changes, multiple-active rows, ambiguity, and invalid JSON.
+- `[x]` Live audit: 49 variants; 1 cleanup candidate.
+- `[!]` Hồng trà chanh `REC-068` removed Trái chanh and awaits the user's
+  cleanup option; no data correction was executed.
+- `[x]` Cà phê đá BTP-004 to ING-022 is a same-name type replacement, not
+  corruption.
+- `[x]` Vitest: 278/278 pass; TypeScript: 0 errors.
+- `[x]` Claude review approved before commit.
+
+Spec:
+`docs/superpowers/specs/2026-07-04-recipe-selection-hardening-design.md`.
+
+Report:
+`docs/audits/2026-07-04-recipe-audit.md`.
+
 ## 2026-07-03 - PO-2 P&L request-scoped MAC index
 
 - `[x]` Replaced two per-request P&L MAC index builds with one shared index.
