@@ -3,7 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { getBrands } from "@/app/admin/brands/actions";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -86,6 +86,63 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
   const [brands, setBrands] = useState<any[]>([]);
   const router = useRouter();
+
+  const posModalTitleId = useId();
+  const posModalContainerRef = useRef<HTMLDivElement>(null);
+  const posModalMouseDownTarget = useRef<EventTarget | null>(null);
+
+  useEffect(() => {
+    if (!isPosModalOpen) return;
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopImmediatePropagation();
+        setIsPosModalOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const container = posModalContainerRef.current;
+      if (!container) return;
+      const focusables = container.querySelectorAll<HTMLElement>(
+        'button:not([disabled]):not([aria-hidden="true"]), ' +
+        '[href]:not([aria-hidden="true"]), ' +
+        'input:not([disabled]):not([type="hidden"]):not([aria-hidden="true"]), ' +
+        'select:not([disabled]):not([aria-hidden="true"]), ' +
+        'textarea:not([disabled]):not([aria-hidden="true"]), ' +
+        '[tabindex]:not([tabindex="-1"]):not([aria-hidden="true"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKey);
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    queueMicrotask(() => {
+      if (
+        posModalContainerRef.current &&
+        !posModalContainerRef.current.contains(document.activeElement)
+      ) {
+        posModalContainerRef.current.focus();
+      }
+    });
+
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      if (previouslyFocused?.isConnected) {
+        previouslyFocused.focus();
+      }
+    };
+  }, [isPosModalOpen]);
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     "Nguyên vật liệu": pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders"),
@@ -174,7 +231,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div key={item.name} className="space-y-1 mb-1">
                   <button
                     onClick={() => toggleGroup(item.name)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
                       isGroupActive ? "text-blue-700 bg-blue-50/50 font-semibold" : "text-gray-600 hover:bg-blue-50/40 hover:text-blue-700"
                     }`}
                   >
@@ -200,7 +257,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href={child.href}
                             prefetch={false}
                             onClick={() => setIsSidebarOpen(false)}
-                            className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                            className={`block px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
                               isChildActive
                                 ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
                                 : "text-gray-500 hover:bg-blue-50/40 hover:text-blue-700 font-medium"
@@ -224,7 +281,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={item.href}
                 prefetch={false}
                 onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-all duration-200 mb-1 ${
+                className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-colors duration-200 mb-1 ${
                   isActive
                     ? "bg-blue-50 text-blue-700 shadow-sm font-semibold"
                     : "text-gray-600 hover:bg-blue-50/40 hover:text-blue-700 font-medium"
@@ -267,6 +324,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button 
             className="text-gray-500 p-2 hover:bg-gray-100 rounded-lg"
             onClick={() => setIsSidebarOpen(true)}
+            aria-label="Mở menu"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
@@ -284,13 +342,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* POS Brand Selection Modal */}
       {isPosModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in overscroll-behavior-contain"
+          onMouseDown={(e) => {
+            posModalMouseDownTarget.current = e.target;
+          }}
+          onClick={(e) => {
+            if (
+              e.target === e.currentTarget &&
+              posModalMouseDownTarget.current === e.currentTarget
+            ) {
+              setIsPosModalOpen(false);
+            }
+            posModalMouseDownTarget.current = null;
+          }}
+        >
+          <div 
+            ref={posModalContainerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={posModalTitleId}
+            tabIndex={-1}
+            className="bg-white w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up outline-none"
+          >
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-xl font-bold text-gray-900">Chọn thương hiệu</h3>
+              <h3 id={posModalTitleId} className="text-xl font-bold text-gray-900">Chọn thương hiệu</h3>
               <button 
                 onClick={() => setIsPosModalOpen(false)} 
-                className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300"
+                className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
+                aria-label="Đóng"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -302,13 +382,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </p>
               
               {brands.length === 0 ? (
-                <div className="text-center text-gray-400 py-4 animate-pulse">Đang tải danh sách...</div>
+                <div className="text-center text-gray-400 py-4 animate-pulse">Đang tải danh sách…</div>
               ) : (
                 brands.map(brand => (
                   <button 
                     key={brand.id}
                     onClick={() => selectBrandForPos(brand.id)}
-                    className="w-full bg-blue-50 text-blue-700 border-2 border-blue-200 font-bold text-lg py-4 rounded-xl hover:bg-blue-100 hover:border-blue-300 active:scale-[0.98] transition-all flex justify-center items-center gap-3"
+                    className="w-full bg-blue-50 text-blue-700 border-2 border-blue-200 font-bold text-lg py-4 rounded-xl hover:bg-blue-100 hover:border-blue-300 active:scale-[0.98] transition-colors flex justify-center items-center gap-3 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
                   >
                     <span>🏢</span>
                     <span>{brand.name}</span>
