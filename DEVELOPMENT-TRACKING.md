@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-04 (Antigravity) - Stock Adjustments (SA), Activity Log (AL), and Backup Dashboard (BD) UI
+
+**Trigger:** User request to build three new UI pages: Stock Adjustments management, Activity Log event timeline, and Backup status dashboard, along with corresponding sidebar navigation links.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Task SA** | Created Stock Adjustments page (`app/admin/inventory/stock-adjustments/page.tsx` & `StockAdjustmentsClient.tsx`) displaying request list in a desktop table and mobile cards. Added `rejectStockAdjustment` server action to support rejecting adjustments. | ✅ | `d80ab41` |
+| **Task AL** | Created Activity Log timeline page (`app/admin/activity-log/page.tsx` & `ActivityLogClient.tsx`) displaying a chronological timeline of order events (Created, Edited, Voided, Reopened, Migrated) with filters for event type, date range, and actor. | ✅ | `f7a1fe1` |
+| **Task BD** | Created Backup Status Dashboard (`app/admin/backup/page.tsx`, `actions.ts` & `BackupClient.tsx`) showing last sync timestamp, cron schedule info, Edge Function details, and a manual sync trigger button. | ✅ | `70fb950` |
+| **Nav Links** | Registered the 3 new nav links into the sidebar component of `app/admin/layout.tsx` and configured expanded group states. | ✅ | `70fb950` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **266/266 tests pass**.
+- pre-commit hooks: PASS.
+
+---
+
 ## 2026-07-03 (Codex) - PO-2 request-scoped MAC index for P&L
 
 **Trigger:** The proposed module cache targeted a real duplicate index build,
