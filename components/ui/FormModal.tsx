@@ -24,12 +24,14 @@ export function FormModal({
 }: FormModalProps) {
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const mouseDownTarget = useRef<EventTarget | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.stopImmediatePropagation();
         onClose();
         return;
       }
@@ -37,7 +39,12 @@ export function FormModal({
       const container = containerRef.current;
       if (!container) return;
       const focusables = container.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]):not([aria-hidden="true"]), ' +
+        '[href]:not([aria-hidden="true"]), ' +
+        'input:not([disabled]):not([type="hidden"]):not([aria-hidden="true"]), ' +
+        'select:not([disabled]):not([aria-hidden="true"]), ' +
+        'textarea:not([disabled]):not([aria-hidden="true"]), ' +
+        '[tabindex]:not([tabindex="-1"]):not([aria-hidden="true"])'
       );
       if (focusables.length === 0) return;
       const first = focusables[0];
@@ -55,11 +62,20 @@ export function FormModal({
     document.addEventListener("keydown", handleKey);
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    containerRef.current?.focus();
+    queueMicrotask(() => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(document.activeElement)
+      ) {
+        containerRef.current.focus();
+      }
+    });
 
     return () => {
       document.removeEventListener("keydown", handleKey);
-      previouslyFocused?.focus?.();
+      if (previouslyFocused?.isConnected) {
+        previouslyFocused.focus();
+      }
     };
   }, [isOpen, onClose]);
 
@@ -69,8 +85,17 @@ export function FormModal({
     <ModalPortal>
       <div
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overscroll-behavior-contain"
+        onMouseDown={(e) => {
+          mouseDownTarget.current = e.target;
+        }}
         onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
+          if (
+            e.target === e.currentTarget &&
+            mouseDownTarget.current === e.currentTarget
+          ) {
+            onClose();
+          }
+          mouseDownTarget.current = null;
         }}
       >
         <div

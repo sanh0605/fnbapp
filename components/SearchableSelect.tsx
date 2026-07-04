@@ -21,8 +21,10 @@ interface SearchableSelectProps {
 export function SearchableSelect({ options, value, onChange, placeholder = "-- Chọn --", name, required, onCreateNew, className }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
   const listboxId = useId();
 
   const selectedOption = options.find((opt) => opt.id === value);
@@ -41,14 +43,66 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
     opt.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  useEffect(() => {
+    if (isOpen) {
+      setActiveIndex(filteredOptions.length > 0 ? 0 : -1);
+    } else {
+      setActiveIndex(-1);
+    }
+  }, [isOpen, filteredOptions.length]);
+
+  useEffect(() => {
+    if (activeIndex >= 0) {
+      optionRefs.current[activeIndex]?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeIndex]);
+
   const handleTriggerKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape" && isOpen) {
+      e.stopPropagation();
       setIsOpen(false);
+      triggerRef.current?.focus();
       return;
     }
     if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
       e.preventDefault();
+      e.stopPropagation();
       setIsOpen(true);
+    }
+  };
+
+  const handleInputKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setIsOpen(false);
+      triggerRef.current?.focus();
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveIndex((prev) =>
+        filteredOptions.length > 0
+          ? (prev + 1) % filteredOptions.length
+          : -1
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveIndex((prev) =>
+        filteredOptions.length > 0
+          ? (prev - 1 + filteredOptions.length) % filteredOptions.length
+          : -1
+      );
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeIndex >= 0 && activeIndex < filteredOptions.length) {
+        const selectedOpt = filteredOptions[activeIndex];
+        onChange(selectedOpt.id);
+        setIsOpen(false);
+        triggerRef.current?.focus();
+      }
     }
   };
 
@@ -62,7 +116,10 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-controls={isOpen ? listboxId : undefined}
-        tabIndex={0}
+        aria-activedescendant={
+          isOpen && activeIndex >= 0 ? `${listboxId}-opt-${activeIndex}` : undefined
+        }
+        tabIndex={isOpen ? -1 : 0}
         onKeyDown={handleTriggerKey}
         aria-label={placeholder}
         className={`w-full min-w-0 border border-blue-200 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center gap-2 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none ${className || ''}`}
@@ -88,6 +145,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
               placeholder="Gõ để tìm kiếm…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleInputKey}
               autoFocus
             />
           </div>
@@ -114,14 +172,18 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
               </div>
             ) : (
               <ul id={listboxId} role="listbox" className="py-1">
-                {filteredOptions.map((opt) => {
+                {filteredOptions.map((opt, idx) => {
                   const isSelected = opt.id === value;
                   return (
                     <li
                       key={opt.id}
+                      id={`${listboxId}-opt-${idx}`}
+                      ref={(el) => { optionRefs.current[idx] = el; }}
                       role="option"
                       aria-selected={isSelected}
-                      className={`px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 truncate ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
+                      className={`px-4 py-2 text-sm cursor-pointer truncate ${
+                        isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                      } ${idx === activeIndex ? 'ring-2 ring-inset ring-blue-300 bg-blue-50' : 'hover:bg-blue-50'}`}
                       onClick={() => {
                         onChange(opt.id);
                         setIsOpen(false);
