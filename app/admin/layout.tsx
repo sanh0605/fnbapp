@@ -32,6 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       children: [
         { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
         { name: "Sản xuất Bán TP", href: "/admin/production" },
+        { name: "Điều chỉnh Tồn kho", href: "/admin/inventory/stock-adjustments" },
       ]
     },
     {
@@ -68,6 +69,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       children: [
         { name: "Nhân sự & Phân quyền", href: "/admin/users" },
         { name: "Xoá Cache", href: "/admin/clear-cache" },
+        { name: "Nhật ký Hoạt động", href: "/admin/activity-log" },
+        { name: "Sao lưu & Đồng bộ", href: "/admin/backup" },
       ]
     }
   ];
@@ -79,11 +82,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     "Nguyên vật liệu": pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders"),
-    "Nhập hàng & Tồn kho": pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production"),
+    "Nhập hàng & Tồn kho": pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production") || pathname.includes("/admin/inventory/stock-adjustments"),
     "Thành phẩm (Menu)": pathname.includes("/admin/products"),
     "Bán hàng": pathname.includes("/admin/orders") || pathname.includes("/admin/promotions"),
     "Báo cáo": pathname.includes("/admin/reports"),
-    "Hệ thống": pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache"),
+    "Hệ thống": pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache") || pathname.includes("/admin/activity-log") || pathname.includes("/admin/backup"),
   });
 
   const handleOpenPosModal = async () => {
@@ -101,11 +104,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setExpandedGroups(prev => ({
       ...prev,
       "Nguyên vật liệu": prev["Nguyên vật liệu"] || (pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders")),
-      "Nhập hàng & Tồn kho": prev["Nhập hàng & Tồn kho"] || (pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production")),
+      "Nhập hàng & Tồn kho": prev["Nhập hàng & Tồn kho"] || (pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/production") || pathname.includes("/admin/inventory/stock-adjustments")),
       "Thành phẩm (Menu)": prev["Thành phẩm (Menu)"] || pathname.includes("/admin/products"),
       "Bán hàng": prev["Bán hàng"] || (pathname.includes("/admin/orders") || pathname.includes("/admin/promotions")),
       "Báo cáo": prev["Báo cáo"] || pathname.includes("/admin/reports"),
-      "Hệ thống": prev["Hệ thống"] || (pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache")),
+      "Hệ thống": prev["Hệ thống"] || (pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache") || pathname.includes("/admin/activity-log") || pathname.includes("/admin/backup")),
     }));
   }, [pathname]);
 
