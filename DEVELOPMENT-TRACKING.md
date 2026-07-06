@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - UI Accessibility: touch-action + form labels htmlFor
+
+**Trigger:** Accessibility (a11y) audit follow-up: fixing system-wide mobile tap delay (via `touch-action: manipulation`) and screen reader element associations (via label `htmlFor` and input `id` bindings).
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **System-wide mobile tap optimization** | Added a `touch-action: manipulation` block to `app/globals.css` for buttons, links, and interactive elements to eliminate the 300ms mobile tap delay. | ✅ | `8d5d46b` |
+| **Form label htmlFor bindings** | Audited and modified all 17 active form files (and `components/SupplierForm.tsx`'s legacy `SupplierModal`) to bind `<label>` tags to their respective inputs using React's `useId` for unique prefixes. Updated `SearchableSelect` and `CustomDatePicker` to accept `id` props to support the bindings. | ✅ | `db7621f` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Antigravity) - URL state sync pilot (/admin/orders filters)
 
 **Trigger:** Phase D pilot to synchronize `/admin/orders` filtering state (search query, dates, payment method, brand, current page) with URL query parameters for shareability, refresh retention, and browser back/forward support.
