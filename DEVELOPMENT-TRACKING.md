@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - Snapshot-first lookup audit
+
+**Trigger:** Roadmap Task 3: Audit UI display of historical data (past orders, receipts, historical reports) to ensure it uses snapshot data instead of current catalog lookups to prevent display drift.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Snapshot-first Audit & Fix** | Audited `components/pos/CartPanel.tsx`, `components/pos/CartItemRow.tsx`, `app/admin/page.tsx`, `app/admin/reports/sales/page.tsx`, and report actions. Confirmed all historical context components properly use snapshot data except `CartPanel.tsx`, which was updated to strictly trust the `item.product_name` snapshot. Wrote audit report `docs/audits/2026-07-06-snapshot-first-audit.md`. | ✅ | `49ec8a3` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Antigravity) - UI Accessibility: aria-live regions for admin errors
 
 **Trigger:** Accessibility (a11y) audit follow-up: adding `aria-live="polite"` and `role="alert"` (or `role="status"` for success) to error/success message wrapper elements in admin forms and client components.
