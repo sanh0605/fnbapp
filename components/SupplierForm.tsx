@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { addSupplier, deleteSupplierAction as deleteSupplier } from "@/app/admin/suppliers/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export function SupplierForm({ initialData }: { initialData?: any }) {
   const isEdit = !!initialData;
+  const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -74,8 +75,9 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tên Nhà Cung Cấp *</label>
+                <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Nhà Cung Cấp *</label>
                 <input 
+                  id={`${formId}-name`}
                   type="text" 
                   required 
                   value={name}
@@ -86,8 +88,9 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                  <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
                   <input 
+                    id={`${formId}-phone`}
                     type="tel" 
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -95,8 +98,9 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+                  <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
                   <input 
+                    id={`${formId}-tax-id`}
                     type="text" 
                     value={taxId}
                     onChange={(e) => setTaxId(e.target.value)}
@@ -105,8 +109,9 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
                 <input 
+                  id={`${formId}-address`}
                   type="text" 
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
@@ -114,8 +119,9 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Links / Ghi chú</label>
+                <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-gray-700 mb-1">Links / Ghi chú</label>
                 <textarea 
+                  id={`${formId}-links`}
                   value={links}
                   onChange={(e) => setLinks(e.target.value)}
                   rows={2}
@@ -160,6 +166,7 @@ export function SupplierModal({
   initialName?: string;
   onSuccess?: (id: string) => void;
 }) {
+  const formId = useId();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -204,8 +211,9 @@ export function SupplierModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tên Nhà Cung Cấp *</label>
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Nhà Cung Cấp *</label>
             <input 
+              id={`${formId}-name`}
               type="text" 
               required 
               value={name}
@@ -216,8 +224,9 @@ export function SupplierModal({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+              <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
               <input 
+                id={`${formId}-phone`}
                 type="tel" 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -225,8 +234,9 @@ export function SupplierModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+              <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
               <input 
+                id={`${formId}-tax-id`}
                 type="text" 
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
@@ -235,8 +245,9 @@ export function SupplierModal({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+            <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
             <input 
+              id={`${formId}-address`}
               type="text" 
               value={address}
               onChange={(e) => setAddress(e.target.value)}
@@ -244,8 +255,9 @@ export function SupplierModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Links / Ghi chú</label>
+            <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-gray-700 mb-1">Links / Ghi chú</label>
             <textarea 
+              id={`${formId}-links`}
               value={links}
               onChange={(e) => setLinks(e.target.value)}
               rows={2}

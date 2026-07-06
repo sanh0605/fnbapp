@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { addBrand, deleteBrand, editBrand } from "../actions";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
@@ -20,6 +20,7 @@ function formatDateToYYYYMMDD(date: Date): string {
 
 export function BrandForm({ initialData }: BrandFormProps) {
   const isEdit = !!initialData;
+  const formId = useId();
 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -94,10 +95,11 @@ export function BrandForm({ initialData }: BrandFormProps) {
       >
         <form id="brand-form" action={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">
               Tên Thương Hiệu
             </label>
             <input
+              id={`${formId}-name`}
               type="text"
               name="name"
               required
@@ -107,10 +109,11 @@ export function BrandForm({ initialData }: BrandFormProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-code`} className="block text-sm font-medium text-gray-700 mb-1">
               Mã Đơn Hàng (3 ký tự)
             </label>
             <input
+              id={`${formId}-code`}
               type="text"
               name="code"
               maxLength={3}
@@ -121,10 +124,11 @@ export function BrandForm({ initialData }: BrandFormProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-start-date`} className="block text-sm font-medium text-gray-700 mb-1">
               Ngày bắt đầu hoạt động
             </label>
             <CustomDatePicker
+              id={`${formId}-start-date`}
               selected={selectedDate}
               onChange={(date: Date | null) => setSelectedDate(date)}
               dateFormat="dd/MM/yyyy"

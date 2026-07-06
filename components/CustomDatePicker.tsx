@@ -9,6 +9,7 @@ import { vi } from "date-fns/locale";
 registerLocale("vi", vi);
 
 interface CustomDatePickerProps {
+  id?: string;
   name?: string;
   selected?: Date | null;
   onChange?: (date: Date | null) => void;

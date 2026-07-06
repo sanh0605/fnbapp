@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { addUnit, updateUnit, deleteUnit } from "@/app/admin/inventory/actions";
 
 export function UnitForm({ initialData }: { initialData?: any }) {
+  const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const isEdit = !!initialData;
@@ -36,12 +37,12 @@ export function UnitForm({ initialData }: { initialData?: any }) {
             <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Đơn Vị" : "Thêm Đơn Vị Mới"}</h2>
             <form action={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tên đơn vị (VD: gram, hộp)</label>
-                <input type="text" name="name" defaultValue={initialData?.name} required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên đơn vị (VD: gram, hộp)</label>
+                <input id={`${formId}-name`} type="text" name="name" defaultValue={initialData?.name} required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú thêm</label>
-                <input type="text" name="description" defaultValue={initialData?.description} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Không bắt buộc" />
+                <label htmlFor={`${formId}-description`} className="block text-sm font-medium text-gray-700 mb-1">Ghi chú thêm</label>
+                <input id={`${formId}-description`} type="text" name="description" defaultValue={initialData?.description} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Không bắt buộc" />
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm">Huỷ</button>

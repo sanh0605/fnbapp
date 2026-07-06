@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { changePasswordAction } from "@/app/actions/auth";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 export default function ChangePasswordPage() {
+  const formId = useId();
   const { data: session, status } = useSession();
   
   const [oldPassword, setOldPassword] = useState("");
@@ -79,10 +80,11 @@ export default function ChangePasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-oldPassword`} className="block text-sm font-medium text-gray-700 mb-1">
               Mật khẩu cũ
             </label>
             <input
+              id={`${formId}-oldPassword`}
               type="password"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -92,10 +94,11 @@ export default function ChangePasswordPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-newPassword`} className="block text-sm font-medium text-gray-700 mb-1">
               Mật khẩu mới
             </label>
             <input
+              id={`${formId}-newPassword`}
               type="password"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -105,10 +108,11 @@ export default function ChangePasswordPage() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-confirmPassword`} className="block text-sm font-medium text-gray-700 mb-1">
               Xác nhận mật khẩu mới
             </label>
             <input
+              id={`${formId}-confirmPassword`}
               type="password"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"

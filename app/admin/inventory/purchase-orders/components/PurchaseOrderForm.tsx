@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { savePurchaseOrder, addPurchaseSource } from "../actions";
 import { useRouter } from "next/navigation";
 import { SearchableSelect } from "@/components/SearchableSelect";
@@ -24,6 +24,7 @@ interface PurchaseOrderFormProps {
 }
 
 export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, baseIngredients, units = [], initialData }: PurchaseOrderFormProps) {
+  const formId = useId();
   const router = useRouter();
   const isEdit = !!initialData?.po;
   const po = initialData?.po || ({} as Partial<DBPurchaseOrder>);
@@ -192,8 +193,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Nhà Cung Cấp *</label>
+          <label htmlFor={`${formId}-supplierId`} className="block text-sm font-semibold text-gray-700 mb-2">Nhà Cung Cấp *</label>
           <SearchableSelect
+            id={`${formId}-supplierId`}
             value={supplierId}
             onChange={(val) => setSupplierId(val)}
             options={suppliers.map((s: any) => ({ id: s.id, label: s.name }))}
@@ -205,8 +207,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Ngày nhập hàng thực tế</label>
+          <label htmlFor={`${formId}-transactionDate`} className="block text-sm font-semibold text-gray-700 mb-2">Ngày nhập hàng thực tế</label>
           <CustomDatePicker
+            id={`${formId}-transactionDate`}
             name="transaction_date"
             selected={transactionDate}
             onChange={(date) => setTransactionDate(date)}
@@ -215,10 +218,11 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           <p className="text-xs text-gray-500 mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Nguồn nhập hàng</label>
+          <label htmlFor={`${formId}-sourceId`} className="block text-sm font-semibold text-gray-700 mb-2">Nguồn nhập hàng</label>
           <div className="flex gap-2">
             <div className="flex-1">
               <SearchableSelect
+                id={`${formId}-sourceId`}
                 value={sourceId}
                 onChange={(val) => setSourceId(val)}
                 options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
@@ -245,8 +249,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           </div>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Mã hoá đơn (Supplier Invoice Code)</label>
+          <label htmlFor={`${formId}-supplierInvoiceCode`} className="block text-sm font-semibold text-gray-700 mb-2">Mã hoá đơn (Supplier Invoice Code)</label>
           <input
+            id={`${formId}-supplierInvoiceCode`}
             type="text"
             value={supplierInvoiceCode}
             onChange={(e) => setSupplierInvoiceCode(e.target.value)}
@@ -255,8 +260,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Ghi chú</label>
+          <label htmlFor={`${formId}-notes`} className="block text-sm font-semibold text-gray-700 mb-2">Ghi chú</label>
           <input
+            id={`${formId}-notes`}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Ghi chú thêm..."
@@ -284,6 +290,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
         ) : (
           <div className="space-y-4">
             {lines.map((line, index) => {
+              const itemRowId = `${formId}-item-${index}`;
               const availableUnits = conversions.filter(
                 (c: any) => c.purchased_item_id === line.purchased_item_id && c.status !== "INACTIVE"
               );
@@ -300,8 +307,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-3">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Mặt hàng</label>
+                      <label htmlFor={`${itemRowId}-purchased_item_id`} className="block text-xs font-medium text-gray-500 mb-1">Mặt hàng</label>
                       <SearchableSelect
+                        id={`${itemRowId}-purchased_item_id`}
                         value={line.purchased_item_id}
                         onChange={(val) => updateLine(index, "purchased_item_id", val)}
                         options={items.map((i: any) => ({ id: i.id, label: i.name }))}
@@ -310,9 +318,10 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
 
                     <div className="md:col-span-3">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Đơn vị nhập</label>
+                      <label htmlFor={`${itemRowId}-conversion_id`} className="block text-xs font-medium text-gray-500 mb-1">Đơn vị nhập</label>
                       <div className="space-y-2">
                         <select
+                          id={`${itemRowId}-conversion_id`}
                           value={line.conversion_id || ""}
                           onChange={(e) => updateLine(index, "conversion_id", e.target.value)}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
@@ -335,8 +344,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Số lượng</label>
+                      <label htmlFor={`${itemRowId}-quantity`} className="block text-xs font-medium text-gray-500 mb-1">Số lượng</label>
                       <input
+                        id={`${itemRowId}-quantity`}
                         type="number"
                         min="1"
                         value={line.quantity}
@@ -346,8 +356,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Thành tiền (đ)</label>
+                      <label htmlFor={`${itemRowId}-subtotal`} className="block text-xs font-medium text-gray-500 mb-1">Thành tiền (đ)</label>
                       <input
+                        id={`${itemRowId}-subtotal`}
                         type="number"
                         min="0"
                         value={line.subtotal}

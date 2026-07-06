@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { saveCategory, updateCategory, deleteCategory } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -12,6 +12,7 @@ interface ProductCategoryFormProps {
 }
 
 export function ProductCategoryForm({ initialData }: ProductCategoryFormProps) {
+  const formId = useId();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -102,10 +103,11 @@ export function ProductCategoryForm({ initialData }: ProductCategoryFormProps) {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">
               Tên Danh Mục
             </label>
             <input
+              id={`${formId}-name`}
               type="text"
               name="name"
               required

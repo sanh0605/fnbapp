@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { saveModifierAction } from "../actions";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { FormModal } from "@/components/ui/FormModal";
@@ -21,6 +21,7 @@ interface ModifierFormProps {
 }
 
 export function ModifierForm({ baseIngredients, semiProducts, units, initialData }: ModifierFormProps) {
+  const formId = useId();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -144,8 +145,9 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nhóm Tùy Chọn</label>
+              <label htmlFor={`${formId}-groupName`} className="block text-sm font-medium text-gray-700 mb-1">Nhóm Tùy Chọn</label>
               <select
+                id={`${formId}-groupName`}
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white"
@@ -157,8 +159,9 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Giá thêm (đ)</label>
+              <label htmlFor={`${formId}-price`} className="block text-sm font-medium text-gray-700 mb-1">Giá thêm (đ)</label>
               <input
+                id={`${formId}-price`}
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
@@ -168,8 +171,9 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tên Tùy Chọn</label>
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Tùy Chọn</label>
             <input
+              id={`${formId}-name`}
               type="text"
               required
               value={name}

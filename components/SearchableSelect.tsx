@@ -16,9 +16,10 @@ interface SearchableSelectProps {
   required?: boolean;
   onCreateNew?: (searchTerm: string) => void | Promise<void>;
   className?: string;
+  id?: string;
 }
 
-export function SearchableSelect({ options, value, onChange, placeholder = "-- Chọn --", name, required, onCreateNew, className }: SearchableSelectProps) {
+export function SearchableSelect({ options, value, onChange, placeholder = "-- Chọn --", name, required, onCreateNew, className, id }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -117,6 +118,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
       <input type="hidden" name={name} value={value} required={required} />
 
       <div
+        id={id}
         ref={triggerRef}
         role="combobox"
         aria-expanded={isOpen}

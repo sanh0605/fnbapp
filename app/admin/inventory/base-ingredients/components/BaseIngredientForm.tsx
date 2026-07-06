@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { addBaseIngredient, updateBaseIngredient } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -13,6 +13,7 @@ interface BaseIngredientFormProps {
 }
 
 export function BaseIngredientForm({ initialData, units }: BaseIngredientFormProps) {
+  const formId = useId();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -144,49 +145,55 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
           )}
           
           <div className="space-y-3">
-            {items.map((item, idx) => (
-              <div key={idx} className="flex gap-3 items-end bg-gray-50 p-3 rounded-xl border border-gray-100 relative">
-                <div className="flex-1">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tên Nguyên Liệu</label>
-                  <input
-                    type="text"
-                    required
-                    value={item.name}
-                    onChange={(e) => updateItem(idx, { name: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 text-gray-900"
-                    placeholder="VD: Cà phê bột"
-                  />
+            {items.map((item, idx) => {
+              const itemRowId = `${formId}-item-${idx}`;
+              return (
+                <div key={idx} className="flex gap-3 items-end bg-gray-50 p-3 rounded-xl border border-gray-100 relative">
+                  <div className="flex-1">
+                    <label htmlFor={`${itemRowId}-name`} className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tên Nguyên Liệu</label>
+                    <input
+                      id={`${itemRowId}-name`}
+                      type="text"
+                      required
+                      value={item.name}
+                      onChange={(e) => updateItem(idx, { name: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 text-gray-900"
+                      placeholder="VD: Cà phê bột"
+                    />
+                  </div>
+                  <div className="w-40">
+                    <label htmlFor={`${itemRowId}-base_unit`} className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Đơn vị cơ bản</label>
+                    <SearchableSelect
+                      id={`${itemRowId}-base_unit`}
+                      options={unitOptions}
+                      value={item.base_unit}
+                      onChange={(val) => updateItem(idx, { base_unit: val })}
+                      placeholder="Chọn đơn vị..."
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center pb-2">
+                    <label htmlFor={`${itemRowId}-non_inventory`} className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phi lưu kho</label>
+                    <input
+                      id={`${itemRowId}-non_inventory`}
+                      type="checkbox"
+                      checked={item.is_non_inventory}
+                      onChange={(e) => updateItem(idx, { is_non_inventory: e.target.checked })}
+                      className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </div>
+                  {!isEdit && items.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeItemRow(idx)}
+                      className="p-2 text-gray-400 hover:text-red-500 transition"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
-                <div className="w-40">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Đơn vị cơ bản</label>
-                  <SearchableSelect
-                    options={unitOptions}
-                    value={item.base_unit}
-                    onChange={(val) => updateItem(idx, { base_unit: val })}
-                    placeholder="Chọn đơn vị..."
-                    className="text-sm"
-                  />
-                </div>
-                <div className="flex flex-col items-center pb-2">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phi lưu kho</label>
-                  <input
-                    type="checkbox"
-                    checked={item.is_non_inventory}
-                    onChange={(e) => updateItem(idx, { is_non_inventory: e.target.checked })}
-                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </div>
-                {!isEdit && items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItemRow(idx)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {!isEdit && (

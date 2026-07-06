@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { addPurchasedItem, updatePurchasedItem } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -22,6 +22,7 @@ export function PurchasedItemForm({
   initialData, 
   initialConversions 
 }: PurchasedItemFormProps) {
+  const formId = useId();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -188,8 +189,9 @@ export function PurchasedItemForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tên Hàng Hóa</label>
+              <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Hàng Hóa</label>
               <input
+                id={`${formId}-name`}
                 type="text"
                 name="name"
                 required
@@ -199,8 +201,9 @@ export function PurchasedItemForm({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phân Loại</label>
+              <label htmlFor={`${formId}-categoryId`} className="block text-sm font-medium text-gray-700 mb-1">Phân Loại</label>
               <select
+                id={`${formId}-categoryId`}
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white"
@@ -221,8 +224,9 @@ export function PurchasedItemForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Liên kết Nhóm Nguyên Liệu</label>
+                <label htmlFor={`${formId}-baseIngredientId`} className="block text-sm font-medium text-gray-700 mb-1">Liên kết Nhóm Nguyên Liệu</label>
                 <SearchableSelect
+                  id={`${formId}-baseIngredientId`}
                   options={baseIngredientOptions}
                   value={selectedBaseIngredientId}
                   onChange={setSelectedBaseIngredientId}
@@ -244,54 +248,59 @@ export function PurchasedItemForm({
                   </div>
                   
                   <div className="space-y-3">
-                    {unitsState.map((u, idx) => (
-                      <div key={idx} className="flex gap-2 items-end">
-                        <div className="flex-1">
-                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đơn vị mua</label>
-                          <SearchableSelect
-                            options={unitOptions}
-                            value={u.name}
-                            onChange={(val) => updateUnitRow(idx, "name", val)}
-                            placeholder="VD: Bao 10kg"
-                          />
+                    {unitsState.map((u, idx) => {
+                      const unitRowId = `${formId}-unit-${idx}`;
+                      return (
+                        <div key={idx} className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <label htmlFor={`${unitRowId}-name`} className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đơn vị mua</label>
+                            <SearchableSelect
+                              id={`${unitRowId}-name`}
+                              options={unitOptions}
+                              value={u.name}
+                              onChange={(val) => updateUnitRow(idx, "name", val)}
+                              placeholder="VD: Bao 10kg"
+                            />
+                          </div>
+                          <div className="px-2 pb-2 text-gray-400 font-bold">=</div>
+                          <div className="w-24 relative">
+                            <label htmlFor={`${unitRowId}-conversion_rate`} className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Hệ số</label>
+                            <input
+                              id={`${unitRowId}-conversion_rate`}
+                              type="number"
+                              step="any"
+                              value={u.conversion_rate}
+                              onChange={(e) => updateUnitRow(idx, "conversion_rate", e.target.value)}
+                              className="w-full border border-gray-300 rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div className="px-2 pb-2 text-sm text-gray-600 font-medium">
+                            {baseUnitName || "cơ bản"}
+                          </div>
+                          {unitsState.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeUnitRow(idx)}
+                              className="pb-2 px-2 text-gray-400 hover:text-red-500"
+                            >
+                              ✕
+                            </button>
+                          )}
                         </div>
-                        <div className="px-2 pb-2 text-gray-400 font-bold">=</div>
-                        <div className="w-24 relative">
-                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Hệ số</label>
-                          <input
-                            type="number"
-                            step="any"
-                            value={u.conversion_rate}
-                            onChange={(e) => updateUnitRow(idx, "conversion_rate", e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:border-blue-500"
-                          />
-                        </div>
-                        <div className="px-2 pb-2 text-sm text-gray-600 font-medium">
-                          {baseUnitName || "cơ bản"}
-                        </div>
-                        {unitsState.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeUnitRow(idx)}
-                            className="pb-2 px-2 text-gray-400 hover:text-red-500"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {isEdit && (
                     <div className="mt-4 flex items-start gap-2 p-2 bg-orange-50 rounded-lg border border-orange-100">
                       <input
                         type="checkbox"
-                        id="update_history"
+                        id={`${formId}-update_history`}
                         checked={updateHistory}
                         onChange={(e) => setUpdateHistory(e.target.checked)}
                         className="mt-1 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                       />
-                      <label htmlFor="update_history" className="text-xs text-orange-800 leading-tight">
+                      <label htmlFor={`${formId}-update_history`} className="text-xs text-orange-800 leading-tight">
                         Cập nhật lại đơn vị mua cho các đơn đặt hàng cũ của mặt hàng này nếu đơn vị mua bị thay đổi.
                       </label>
                     </div>

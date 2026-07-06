@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { updateUser } from "../actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ interface EditUserFormProps {
 }
 
 export default function EditUserForm({ user }: EditUserFormProps) {
+  const formId = useId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,10 +41,11 @@ export default function EditUserForm({ user }: EditUserFormProps) {
         )}
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-gray-700 mb-1">
             Tên đăng nhập
           </label>
           <input
+            id={`${formId}-username`}
             type="text"
             disabled
             value={user.username}
@@ -53,10 +55,11 @@ export default function EditUserForm({ user }: EditUserFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-gray-700 mb-1">
             Mật khẩu mới (Để trống nếu không muốn đổi)
           </label>
           <input
+            id={`${formId}-password`}
             type="password"
             name="password"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
@@ -65,10 +68,11 @@ export default function EditUserForm({ user }: EditUserFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-gray-700 mb-1">
             Quyền hạn
           </label>
           <select
+            id={`${formId}-role`}
             name="role"
             required
             defaultValue={user.role}

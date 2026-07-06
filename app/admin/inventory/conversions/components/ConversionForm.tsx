@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useId } from "react";
 import { addConversion, updateConversion } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -15,6 +15,7 @@ interface ConversionFormProps {
 }
 
 export function ConversionForm({ items, baseIngredients, units, initialData }: ConversionFormProps) {
+  const formId = useId();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -139,8 +140,9 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hàng Hóa</label>
+            <label htmlFor={`${formId}-selectedItemId`} className="block text-sm font-medium text-gray-700 mb-1">Hàng Hóa</label>
             <SearchableSelect
+              id={`${formId}-selectedItemId`}
               options={itemOptions}
               value={selectedItemId}
               onChange={setSelectedItemId}
@@ -150,8 +152,9 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị mua</label>
+              <label htmlFor={`${formId}-selectedUnitName`} className="block text-sm font-medium text-gray-700 mb-1">Đơn vị mua</label>
               <SearchableSelect
+                id={`${formId}-selectedUnitName`}
                 options={unitOptions}
                 value={selectedUnitName}
                 onChange={setSelectedUnitName}
@@ -159,8 +162,9 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tỷ lệ quy đổi</label>
+              <label htmlFor={`${formId}-conversionRate`} className="block text-sm font-medium text-gray-700 mb-1">Tỷ lệ quy đổi</label>
               <input
+                id={`${formId}-conversionRate`}
                 type="number"
                 step="any"
                 required
@@ -188,12 +192,12 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
             <div className="flex items-start gap-2 p-2 bg-orange-50 rounded-lg border border-orange-100">
               <input
                 type="checkbox"
-                id="update_history"
+                id={`${formId}-update_history`}
                 checked={updateHistory}
                 onChange={(e) => setUpdateHistory(e.target.checked)}
                 className="mt-1 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
               />
-              <label htmlFor="update_history" className="text-xs text-orange-800 leading-tight">
+              <label htmlFor={`${formId}-update_history`} className="text-xs text-orange-800 leading-tight">
                 Cập nhật đơn vị mua cho các đơn hàng cũ của mặt hàng này nếu đơn vị mua thay đổi.
               </label>
             </div>

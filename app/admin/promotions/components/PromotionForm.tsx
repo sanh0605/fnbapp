@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { savePromotion } from "../actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
@@ -25,6 +25,7 @@ export function PromotionForm({
   onClose,
   onSuccess,
 }: PromotionFormProps) {
+  const formId = useId();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [brandId, setBrandId] = useState("");
@@ -236,8 +237,9 @@ export function PromotionForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-1 md:col-span-2">
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Tên chương trình *</label>
+              <label htmlFor={`${formId}-name`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Tên chương trình *</label>
               <input
+                id={`${formId}-name`}
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -247,8 +249,9 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Mã Code (Để nhập thủ công)</label>
+              <label htmlFor={`${formId}-code`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Mã Code (Để nhập thủ công)</label>
               <input
+                id={`${formId}-code`}
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -258,8 +261,9 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
+              <label htmlFor={`${formId}-brandId`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
               <select
+                id={`${formId}-brandId`}
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -274,8 +278,9 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Đối tượng giảm giá</label>
+              <label htmlFor={`${formId}-type`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Đối tượng giảm giá</label>
               <select
+                id={`${formId}-type`}
                 value={type}
                 onChange={(e) => setType(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -286,8 +291,9 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Trạng thái</label>
+              <label htmlFor={`${formId}-status`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Trạng thái</label>
               <select
+                id={`${formId}-status`}
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -298,8 +304,9 @@ export function PromotionForm({
             </div>
 
              <div>
-               <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Hình thức giảm giá</label>
+               <label htmlFor={`${formId}-discountType`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Hình thức giảm giá</label>
                <select
+                 id={`${formId}-discountType`}
                  value={discountType}
                  onChange={(e) => setDiscountType(e.target.value)}
                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -311,8 +318,9 @@ export function PromotionForm({
              </div>
  
              <div>
-               <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Giá trị giảm giá *</label>
+               <label htmlFor={`${formId}-discountValue`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Giá trị giảm giá *</label>
                <input
+                 id={`${formId}-discountValue`}
                  type="number"
                  value={discountValue}
                  onChange={(e) => setDiscountValue(e.target.value)}
@@ -322,8 +330,9 @@ export function PromotionForm({
              </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Đơn tối thiểu để áp dụng (đ)</label>
+              <label htmlFor={`${formId}-minOrderValue`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Đơn tối thiểu để áp dụng (đ)</label>
               <input
+                id={`${formId}-minOrderValue`}
                 type="number"
                 value={minOrderValue}
                 onChange={(e) => setMinOrderValue(e.target.value)}
@@ -333,8 +342,9 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
+              <label htmlFor={`${formId}-startDate`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
               <input
+                id={`${formId}-startDate`}
                 type="datetime-local"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -343,8 +353,9 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Ngày/Giờ kết thúc</label>
+              <label htmlFor={`${formId}-endDate`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Ngày/Giờ kết thúc</label>
               <input
+                id={`${formId}-endDate`}
                 type="datetime-local"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}

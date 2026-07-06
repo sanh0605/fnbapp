@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { addSupplier, editSupplier, deleteSupplierAction } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -13,6 +13,7 @@ interface SupplierFormProps {
 
 export function SupplierForm({ initialData }: SupplierFormProps) {
   const isEdit = !!initialData;
+  const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,10 +86,11 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">
               Tên Nhà Cung Cấp
             </label>
             <input
+              id={`${formId}-name`}
               type="text"
               name="name"
               required
@@ -98,10 +100,11 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-gray-700 mb-1">
               Số Điện Thoại
             </label>
             <input
+              id={`${formId}-phone`}
               type="tel"
               name="phone"
               defaultValue={initialData?.phone}
@@ -110,10 +113,11 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-gray-700 mb-1">
               Mã Số Thuế
             </label>
             <input
+              id={`${formId}-tax-id`}
               type="text"
               name="tax_id"
               defaultValue={initialData?.tax_id}
@@ -122,10 +126,11 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-gray-700 mb-1">
               Địa Chỉ
             </label>
             <input
+              id={`${formId}-address`}
               type="text"
               name="address"
               defaultValue={initialData?.address}
@@ -134,10 +139,11 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-gray-700 mb-1">
               Ghi chú / Links
             </label>
             <textarea
+              id={`${formId}-links`}
               name="links"
               rows={2}
               defaultValue={initialData?.links}

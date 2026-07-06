@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { saveProduct, deleteProduct } from "@/app/admin/products/actions";
 import { SearchableSelect } from "./SearchableSelect";
 import { CustomDatePicker } from "./CustomDatePicker";
@@ -8,6 +8,7 @@ import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export default function ProductForm({ categories, baseIngredients, semiProducts, units, initialData }: any) {
   const isEdit = !!initialData;
+  const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -151,12 +152,12 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">Tên món *</label>
-                      <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-orange-500" placeholder="VD: Cà phê sữa đá..." />
+                      <label htmlFor={`${formId}-name`} className="block text-sm font-bold text-gray-700 mb-1">Tên món *</label>
+                      <input id={`${formId}-name`} type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-orange-500" placeholder="VD: Cà phê sữa đá..." />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-1">Nhóm món *</label>
-                      <select required value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-orange-500 bg-white">
+                      <label htmlFor={`${formId}-category-id`} className="block text-sm font-bold text-gray-700 mb-1">Nhóm món *</label>
+                      <select id={`${formId}-category-id`} required value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-orange-500 bg-white">
                         <option value="">-- Chọn nhóm --</option>
                         {categories.map((c:any) => (
                           <option key={c.id} value={c.id}>{c.name}</option>
@@ -165,10 +166,11 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    <label className="block text-sm font-bold text-gray-800 mb-1">Ngày áp dụng giá & công thức (Tuỳ chọn)</label>
+                    <label htmlFor={`${formId}-effective-date`} className="block text-sm font-bold text-gray-800 mb-1">Ngày áp dụng giá & công thức (Tuỳ chọn)</label>
                     <p className="text-xs text-gray-500 mb-2">Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ.</p>
                     <div className="w-full md:w-1/2">
                       <CustomDatePicker
+                        id={`${formId}-effective-date`}
                         name="effective_date"
                         selected={effectiveDate}
                         onChange={(date) => setEffectiveDate(date)}
@@ -189,87 +191,90 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                   </div>
 
                   <div className="space-y-6">
-                    {variants.map((variant, vIdx) => (
-                      <div key={vIdx} className="border border-gray-200 rounded-xl overflow-visible">
-                        <div className="bg-gray-100 p-4 border-b border-gray-200 flex gap-4 items-end rounded-t-xl">
-                          <div className="flex-1">
-                            <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Tên Kích cỡ (Size)</label>
-                            <input type="text" required value={variant.size_name} onChange={e => updateVariant(vIdx, "size_name", e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-bold focus:ring-orange-500" placeholder="VD: Mặc định, Size M..." />
-                          </div>
-                          <div className="flex-1">
-                            <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Giá bán (VNĐ)</label>
-                            <input type="number" required min="0" value={variant.price} onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-bold text-indigo-700 focus:ring-orange-500" />
-                          </div>
-                          <div className="flex-1">
-                            <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Giá vốn dự kiến (VNĐ)</label>
-                            <div className="w-full border border-transparent px-3 py-2 text-sm font-bold text-gray-500 bg-white rounded-md shadow-sm">
-                              {Math.round(calculateVariantCost(variant)).toLocaleString()}đ
+                    {variants.map((variant, vIdx) => {
+                      const variantRowId = `${formId}-variant-${vIdx}`;
+                      return (
+                        <div key={vIdx} className="border border-gray-200 rounded-xl overflow-visible">
+                          <div className="bg-gray-100 p-4 border-b border-gray-200 flex gap-4 items-end rounded-t-xl">
+                            <div className="flex-1">
+                              <label htmlFor={`${variantRowId}-size-name`} className="block text-xs font-bold text-gray-600 uppercase mb-1">Tên Kích cỡ (Size)</label>
+                              <input id={`${variantRowId}-size-name`} type="text" required value={variant.size_name} onChange={e => updateVariant(vIdx, "size_name", e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-bold focus:ring-orange-500" placeholder="VD: Mặc định, Size M..." />
                             </div>
-                          </div>
-                          {variants.length > 1 && (
-                            <button type="button" onClick={() => removeVariant(vIdx)} className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-md text-sm font-medium">Xoá Size</button>
-                          )}
-                        </div>
-                        
-                        <div className="p-4 bg-white">
-                          <div className="flex justify-between items-center mb-3">
-                            <label className="text-sm font-bold text-gray-700">Công thức định lượng (Sẽ trừ kho)</label>
-                            <button type="button" onClick={() => addIngredient(vIdx)} className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded hover:bg-indigo-100">+ Thêm Nguyên Liệu</button>
+                            <div className="flex-1">
+                              <label htmlFor={`${variantRowId}-price`} className="block text-xs font-bold text-gray-600 uppercase mb-1">Giá bán (VNĐ)</label>
+                              <input id={`${variantRowId}-price`} type="number" required min="0" value={variant.price} onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-bold text-indigo-700 focus:ring-orange-500" />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Giá vốn dự kiến (VNĐ)</label>
+                              <div className="w-full border border-transparent px-3 py-2 text-sm font-bold text-gray-500 bg-white rounded-md shadow-sm">
+                                {Math.round(calculateVariantCost(variant)).toLocaleString()}đ
+                              </div>
+                            </div>
+                            {variants.length > 1 && (
+                              <button type="button" onClick={() => removeVariant(vIdx)} className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-md text-sm font-medium">Xoá Size</button>
+                            )}
                           </div>
                           
-                          {variant.ingredients.length === 0 ? (
-                            <div className="text-xs text-gray-400 italic text-center py-4 border border-dashed border-gray-200 rounded-lg">Chưa có thành phần công thức nào.</div>
-                          ) : (
-                            <div className="space-y-2">
-                              {variant.ingredients.map((ing:any, iIdx:number) => (
-                                <div key={iIdx} className="flex gap-2 items-center">
-                                  <select
-                                    value={ing.ingredient_type}
-                                    onChange={e => {
-                                      updateIngredient(vIdx, iIdx, "ingredient_type", e.target.value);
-                                      updateIngredient(vIdx, iIdx, "ingredient_id", "");
-                                    }}
-                                    className="w-1/4 text-sm border border-gray-300 rounded-md px-2 py-2 focus:ring-orange-500 bg-gray-50"
-                                  >
-                                    <option value="BASE_INGREDIENT">Nguyên liệu / Vật tư</option>
-                                    <option value="SEMI_PRODUCT">Bán thành phẩm</option>
-                                  </select>
-
-                                  <div className="flex-1">
-                                    <SearchableSelect
-                                      required
-                                      value={ing.ingredient_id}
-                                      onChange={(val) => updateIngredient(vIdx, iIdx, "ingredient_id", val)}
-                                      options={
-                                        ing.ingredient_type === "BASE_INGREDIENT"
-                                          ? baseIngredients.map((b: any) => ({ id: b.id, label: `${b.name} (Tồn kho: ${units.find((u: any) => u.id === b.base_unit)?.name || b.base_unit})` }))
-                                          : semiProducts.map((s: any) => ({ id: s.id, label: `${s.name} (Tồn kho: ${units.find((u: any) => u.id === s.base_unit)?.name || s.base_unit})` }))
-                                      }
-                                      placeholder="- Chọn -"
-                                    />
-                                  </div>
-
-                                  <input
-                                    type="number"
-                                    required
-                                    min="0.001"
-                                    step="any"
-                                    placeholder="SL"
-                                    value={ing.quantity || ""}
-                                    onChange={e => updateIngredient(vIdx, iIdx, "quantity", Number(e.target.value))}
-                                    className="w-20 text-sm text-right font-bold text-red-600 border border-gray-300 rounded-md px-2 py-2 focus:ring-orange-500"
-                                  />
-                                  
-                                  <button type="button" onClick={() => removeIngredient(vIdx, iIdx)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-md">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                  </button>
-                                </div>
-                              ))}
+                          <div className="p-4 bg-white">
+                            <div className="flex justify-between items-center mb-3">
+                              <label className="text-sm font-bold text-gray-700">Công thức định lượng (Sẽ trừ kho)</label>
+                              <button type="button" onClick={() => addIngredient(vIdx)} className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded hover:bg-indigo-100">+ Thêm Nguyên Liệu</button>
                             </div>
-                          )}
+                            
+                            {variant.ingredients.length === 0 ? (
+                              <div className="text-xs text-gray-400 italic text-center py-4 border border-dashed border-gray-200 rounded-lg">Chưa có thành phần công thức nào.</div>
+                            ) : (
+                              <div className="space-y-2">
+                                {variant.ingredients.map((ing:any, iIdx:number) => (
+                                  <div key={iIdx} className="flex gap-2 items-center">
+                                    <select
+                                      value={ing.ingredient_type}
+                                      onChange={e => {
+                                        updateIngredient(vIdx, iIdx, "ingredient_type", e.target.value);
+                                        updateIngredient(vIdx, iIdx, "ingredient_id", "");
+                                      }}
+                                      className="w-1/4 text-sm border border-gray-300 rounded-md px-2 py-2 focus:ring-orange-500 bg-gray-50"
+                                    >
+                                      <option value="BASE_INGREDIENT">Nguyên liệu / Vật tư</option>
+                                      <option value="SEMI_PRODUCT">Bán thành phẩm</option>
+                                    </select>
+  
+                                    <div className="flex-1">
+                                      <SearchableSelect
+                                        required
+                                        value={ing.ingredient_id}
+                                        onChange={(val) => updateIngredient(vIdx, iIdx, "ingredient_id", val)}
+                                        options={
+                                          ing.ingredient_type === "BASE_INGREDIENT"
+                                            ? baseIngredients.map((b: any) => ({ id: b.id, label: `${b.name} (Tồn kho: ${units.find((u: any) => u.id === b.base_unit)?.name || b.base_unit})` }))
+                                            : semiProducts.map((s: any) => ({ id: s.id, label: `${s.name} (Tồn kho: ${units.find((u: any) => u.id === s.base_unit)?.name || s.base_unit})` }))
+                                        }
+                                        placeholder="- Chọn -"
+                                      />
+                                    </div>
+  
+                                    <input
+                                      type="number"
+                                      required
+                                      min="0.001"
+                                      step="any"
+                                      placeholder="SL"
+                                      value={ing.quantity || ""}
+                                      onChange={e => updateIngredient(vIdx, iIdx, "quantity", Number(e.target.value))}
+                                      className="w-20 text-sm text-right font-bold text-red-600 border border-gray-300 rounded-md px-2 py-2 focus:ring-orange-500"
+                                    />
+                                    
+                                    <button type="button" onClick={() => removeIngredient(vIdx, iIdx)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-md">
+                                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

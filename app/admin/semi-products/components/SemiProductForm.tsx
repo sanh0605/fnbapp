@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { saveSemiProduct } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -17,6 +17,7 @@ interface SemiProductFormProps {
 }
 
 export function SemiProductForm({ units, baseIngredients, semiProducts, initialData, initialRecipe }: SemiProductFormProps) {
+  const formId = useId();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -164,8 +165,9 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tên Bán Thành Phẩm</label>
+              <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Bán Thành Phẩm</label>
               <input
+                id={`${formId}-name`}
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -175,8 +177,9 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị quản lý (cơ bản)</label>
+              <label htmlFor={`${formId}-baseUnit`} className="block text-sm font-medium text-gray-700 mb-1">Đơn vị quản lý (cơ bản)</label>
               <SearchableSelect
+                id={`${formId}-baseUnit`}
                 options={unitOptions}
                 value={baseUnit}
                 onChange={setBaseUnit}
@@ -185,9 +188,10 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quy mô mẻ chuẩn (Batch Yield)</label>
+              <label htmlFor={`${formId}-batchYield`} className="block text-sm font-medium text-gray-700 mb-1">Quy mô mẻ chuẩn (Batch Yield)</label>
               <div className="flex items-center gap-2">
                 <input
+                  id={`${formId}-batchYield`}
                   type="number"
                   step="any"
                   value={batchYield}
@@ -204,8 +208,9 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
             {isEdit && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                  <label htmlFor={`${formId}-status`} className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
                   <select
+                    id={`${formId}-status`}
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white"
@@ -215,8 +220,9 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ngày áp dụng công thức (Nếu đổi)</label>
+                  <label htmlFor={`${formId}-effectiveDate`} className="block text-sm font-medium text-gray-700 mb-1">Ngày áp dụng công thức (Nếu đổi)</label>
                   <CustomDatePicker
+                    id={`${formId}-effectiveDate`}
                     selected={effectiveDate}
                     onChange={setEffectiveDate}
                     placeholderText="Mặc định: Ngay lúc này"

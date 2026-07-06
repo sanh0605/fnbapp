@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { saveProductionOrder } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -15,6 +15,7 @@ interface ProductionFormProps {
 }
 
 export function ProductionForm({ semiProducts, recipes, baseIngredients, units }: ProductionFormProps) {
+  const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,8 +177,9 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Chọn Bán Thành Phẩm</label>
+              <label htmlFor={`${formId}-selectedSpId`} className="block text-sm font-semibold text-gray-700 mb-2">Chọn Bán Thành Phẩm</label>
               <SearchableSelect
+                id={`${formId}-selectedSpId`}
                 options={spOptions}
                 value={selectedSpId}
                 onChange={setSelectedSpId}
@@ -191,9 +193,10 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Sản lượng thực tế thu được</label>
+              <label htmlFor={`${formId}-targetYield`} className="block text-sm font-semibold text-gray-700 mb-2">Sản lượng thực tế thu được</label>
               <div className="flex gap-2">
                 <input
+                  id={`${formId}-targetYield`}
                   type="number"
                   step="any"
                   value={targetYield}
