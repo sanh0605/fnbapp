@@ -2,7 +2,13 @@ import type {
   HongToLucMigrationWriteSet,
   RecoverySnapshotMetadata,
 } from "@/lib/hong-luc-migration";
+import {
+  classifyHongToLucRpcProbe,
+  type HongToLucRpcReadiness,
+} from "@/lib/hong-luc-migration-rpc-readiness";
 import { getSupabaseClient } from "@/lib/supabase";
+
+export { classifyHongToLucRpcProbe };
 
 export type ApplyHongToLucMigrationInput = {
   migrationKey: string;
@@ -28,6 +34,33 @@ export type HongToLucMigrationRun = {
   manifestSha256: string;
   writeSet: HongToLucMigrationWriteSet;
 };
+
+export async function ensureHongToLucMigrationRpcReady(): Promise<
+  HongToLucRpcReadiness
+> {
+  const { error } = await getSupabaseClient().rpc(
+    "apply_hong_to_luc_migration",
+    {
+      p_migration_key: "__RPC_DEPLOYMENT_PROBE__",
+      p_source_hash: "",
+      p_snapshot_id: "",
+      p_manifest_sha256: "",
+      p_write_set: {},
+    },
+  );
+  const result = classifyHongToLucRpcProbe(error);
+  if (result.status === "READY") return result;
+  if (result.status === "NOT_DEPLOYED") {
+    throw new Error(
+      "Deploy supabase/migrations/0009_hong_to_luc_migration.sql first. " +
+      "See README or run via psql.",
+    );
+  }
+  if (result.status === "UNSAFE") {
+    throw new Error("RPC deployment probe payload was unexpectedly accepted.");
+  }
+  throw new Error(`RPC deployment probe failed: ${result.detail}`);
+}
 
 export async function getHongToLucMigrationRun(
   migrationKey: string,

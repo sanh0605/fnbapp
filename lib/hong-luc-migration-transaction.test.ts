@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
@@ -17,6 +19,8 @@ vi.mock("@/lib/supabase", () => ({
 
 import {
   applyHongToLucMigration,
+  classifyHongToLucRpcProbe,
+  ensureHongToLucMigrationRpcReady,
   getHongToLucMigrationRun,
 } from "@/lib/hong-luc-migration-transaction";
 
@@ -26,6 +30,81 @@ describe("applyHongToLucMigration", () => {
     mocks.from.mockReturnValue({ select: mocks.select });
     mocks.select.mockReturnValue({ eq: mocks.eq });
     mocks.eq.mockReturnValue({ maybeSingle: mocks.maybeSingle });
+  });
+
+  it("classifies an undeployed migration RPC", () => {
+    expect(classifyHongToLucRpcProbe({
+      message:
+        "Could not find the function public.apply_hong_to_luc_migration in the schema cache",
+    })).toEqual({
+      status: "NOT_DEPLOYED",
+      detail: "RPC is absent from the schema cache",
+    });
+  });
+
+  it("classifies the expected bad-payload guard as ready", () => {
+    expect(classifyHongToLucRpcProbe({
+      message: "Unsupported migration key",
+    })).toEqual({
+      status: "READY",
+      detail: "Guard rejected probe payload",
+    });
+  });
+
+  it("probes deployment with a guaranteed non-writing payload", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { message: "Unsupported migration key" },
+    });
+
+    await expect(ensureHongToLucMigrationRpcReady()).resolves.toEqual({
+      status: "READY",
+      detail: "Guard rejected probe payload",
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "apply_hong_to_luc_migration",
+      {
+        p_migration_key: "__RPC_DEPLOYMENT_PROBE__",
+        p_source_hash: "",
+        p_snapshot_id: "",
+        p_manifest_sha256: "",
+        p_write_set: {},
+      },
+    );
+  });
+
+  it("refuses apply with deployment instructions when RPC is absent", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: {
+        message:
+          "Could not find the function public.apply_hong_to_luc_migration in the schema cache",
+      },
+    });
+
+    await expect(ensureHongToLucMigrationRpcReady()).rejects.toThrow(
+      "Deploy supabase/migrations/0009_hong_to_luc_migration.sql first. See README or run via psql.",
+    );
+  });
+
+  it("runs the deployment probe before reading migration state", () => {
+    const script = readFileSync(
+      resolve(
+        process.cwd(),
+        "scripts/migrate-hong-tra-to-luc-tra.ts",
+      ),
+      "utf8",
+    );
+    const probePosition = script.indexOf(
+      "await ensureHongToLucMigrationRpcReady()",
+    );
+    const stateReadPosition = script.indexOf(
+      "await getHongToLucMigrationRun(MIGRATION_KEY)",
+    );
+
+    expect(probePosition).toBeGreaterThan(-1);
+    expect(probePosition).toBeLessThan(stateReadPosition);
+    expect(script).toContain("process.exitCode = 1");
   });
 
   it("loads the immutable write set for an idempotent rerun", async () => {

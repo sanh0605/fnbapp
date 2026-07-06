@@ -19,6 +19,7 @@ import {
 import { verifySnapshotBundleFiles } from "../lib/recovery-snapshot";
 import {
   applyHongToLucMigration,
+  ensureHongToLucMigrationRpcReady,
   getHongToLucMigrationRun,
   type HongToLucMigrationRun,
 } from "../lib/hong-luc-migration-transaction";
@@ -42,6 +43,7 @@ const EXPECTED_ORDER_NUMBERS = [
 async function main(): Promise<void> {
   const args = parseHongToLucMigrationArgs(process.argv.slice(2));
   if (args.apply) {
+    await ensureHongToLucMigrationRpcReady();
     const existingRun = await getHongToLucMigrationRun(MIGRATION_KEY);
     if (existingRun) {
       await rerunAppliedMigration(existingRun, args.snapshotId!);
