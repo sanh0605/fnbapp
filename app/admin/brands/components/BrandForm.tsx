@@ -51,14 +51,14 @@ export function BrandForm({ initialData }: BrandFormProps) {
           onClick={() => setIsOpen(true)}
           className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-4"
         >
-          Sua
+          Sửa
         </button>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
         >
-          + Them Thuong Hieu
+          + Thêm Thương Hiệu
         </button>
       )}
 
@@ -68,7 +68,7 @@ export function BrandForm({ initialData }: BrandFormProps) {
           setIsOpen(false);
           if (!isEdit) setSelectedDate(null);
         }}
-        title={isEdit ? "Sua Thuong Hieu" : "Them Thuong Hieu Moi"}
+        title={isEdit ? "Sửa Thương Hiệu" : "Thêm Thương Hiệu Mới"}
         footer={
           <>
             <button
@@ -79,15 +79,15 @@ export function BrandForm({ initialData }: BrandFormProps) {
               }}
               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
             >
-              Huy
+              Huỷ
             </button>
             <LoadingButton
               type="submit"
               form="brand-form"
               loading={loading}
-              loadingText="Dang luu..."
+              loadingText="Đang lưu…"
             >
-              {isEdit ? "Cap nhat" : "Luu Thuong Hieu"}
+              {isEdit ? "Cập nhật" : "Lưu Thương Hiệu"}
             </LoadingButton>
           </>
         }
@@ -95,7 +95,7 @@ export function BrandForm({ initialData }: BrandFormProps) {
         <form id="brand-form" action={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ten Thuong Hieu
+              Tên Thương Hiệu
             </label>
             <input
               type="text"
@@ -108,7 +108,7 @@ export function BrandForm({ initialData }: BrandFormProps) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ma Don Hang (3 ky tu)
+              Mã Đơn Hàng (3 ký tự)
             </label>
             <input
               type="text"
@@ -122,7 +122,7 @@ export function BrandForm({ initialData }: BrandFormProps) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ngay bat dau hoat dong
+              Ngày bắt đầu hoạt động
             </label>
             <CustomDatePicker
               selected={selectedDate}
@@ -162,13 +162,13 @@ export function DeleteBrandButton({ id }: DeleteBrandButtonProps) {
         disabled={loading}
         className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
       >
-        {loading ? "..." : "Xoa"}
+        {loading ? "…" : "Xoá"}
       </button>
       <DeleteConfirmModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onConfirm={handleDelete}
-        description="Ban co chac chan muon xoa thuong hieu nay?"
+        description="Bạn có chắc chắn muốn xoá thương hiệu này?"
       />
     </>
   );
