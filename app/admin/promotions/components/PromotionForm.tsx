@@ -3,6 +3,7 @@
 import { useState, useEffect, useId } from "react";
 import { savePromotion } from "../actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
+import { formatNumber } from "@/lib/format";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 
@@ -435,7 +436,7 @@ export function PromotionForm({
                                             : "text-gray-600 hover:bg-gray-50"
                                         }`}
                                       >
-                                        Size {v.size_name || "Mặc định"} ({Number(v.price).toLocaleString()}đ)
+                                        Size {v.size_name || "Mặc định"} ({formatNumber(v.price)})
                                       </button>
                                       {isSelected && (
                                         <input

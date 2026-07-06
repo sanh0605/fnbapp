@@ -1,6 +1,7 @@
 "use client";
 
 import { categoryIcon } from "@/lib/pos-category-icons";
+import { formatNumber } from "@/lib/format";
 
 interface ProductCardProps {
   product: any;
@@ -52,15 +53,15 @@ export function ProductCard({
           {promoPrice !== undefined ? (
             <div className="flex flex-col">
               <span className="text-[11px] text-gray-400 line-through leading-none">
-                {basePrice.toLocaleString("vi-VN")} đ
+                {formatNumber(basePrice)}
               </span>
               <span className="text-orange-600 font-bold text-sm leading-tight">
-                {promoPrice.toLocaleString("vi-VN")} đ
+                {formatNumber(promoPrice)}
               </span>
             </div>
           ) : (
             <div className="text-orange-600 font-bold text-sm leading-tight">
-              {basePrice.toLocaleString("vi-VN")} đ
+              {formatNumber(basePrice)}
             </div>
           )}
         </div>

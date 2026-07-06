@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { buildPriceHistoryTimeline } from "@/lib/price-history";
+import { formatNumber } from "@/lib/format";
 
 export default function HistoryModal({ title, recipeHistory, priceHistory }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,7 +69,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
                             Đến: {formatDate(entry.endAt || "")}
                           </div>
                           <div className="font-bold text-indigo-700 text-base">
-                            {entry.newPrice.toLocaleString('vi-VN')} đ
+                            {formatNumber(entry.newPrice)}
                           </div>
                           {entry.isCurrent && (
                             <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800">

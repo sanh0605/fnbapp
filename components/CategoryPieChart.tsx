@@ -1,4 +1,4 @@
-"use client";
+import { formatNumber } from "@/lib/format";
 
 export default function CategoryPieChart({ data }: { data: { label: string, amount: number }[] }) {
   const total = data.reduce((sum, d) => sum + d.amount, 0);
@@ -56,7 +56,7 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
                     <span className="text-gray-700 truncate max-w-[120px]" title={d.label}>{d.label}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-bold text-gray-900 mr-2">{d.amount.toLocaleString("vi-VN")} đ</span>
+                    <span className="font-bold text-gray-900 mr-2">{formatNumber(d.amount)}</span>
                     <span className="text-gray-400 text-xs w-8 inline-block">{percent}%</span>
                   </div>
                 </div>

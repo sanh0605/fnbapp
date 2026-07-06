@@ -2,6 +2,7 @@ import { findAll, findAllNoCache } from "@/lib/sheets_db";
 import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/order-types";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
+import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -182,11 +183,11 @@ export default async function AdminDashboard({
   };
   
   const stats = [
-    { title: "Tổng Doanh Thu", value: `${currRev.toLocaleString("vi-VN")} đ`, icon: "💰", color: "bg-green-100 text-green-700", trend: trends.rev },
+    { title: "Tổng Doanh Thu", value: formatNumber(currRev), icon: "💰", color: "bg-green-100 text-green-700", trend: trends.rev },
     { title: "Đơn hàng hoàn tất", value: currOrdCount.toString(), icon: "🧾", color: "bg-blue-100 text-blue-700", trend: trends.ord },
-    { title: "TB Đơn (AOV)", value: `${Math.round(currAOV).toLocaleString("vi-VN")} đ`, icon: "📈", color: "bg-indigo-100 text-indigo-700", trend: trends.aov },
+    { title: "TB Đơn (AOV)", value: formatNumber(Math.round(currAOV)), icon: "📈", color: "bg-indigo-100 text-indigo-700", trend: trends.aov },
     { title: "Tổng Ly Đã Bán", value: currCups.toString(), icon: "🥤", color: "bg-orange-100 text-orange-700", trend: trends.cups },
-    { title: "TB Ly", value: `${Math.round(currAvgCup).toLocaleString("vi-VN")} đ`, icon: "🏷️", color: "bg-pink-100 text-pink-700", trend: trends.avgCup },
+    { title: "TB Ly", value: formatNumber(Math.round(currAvgCup)), icon: "🏷️", color: "bg-pink-100 text-pink-700", trend: trends.avgCup },
     { title: "Nhà cung cấp", value: activeSuppliers.toString(), icon: "🏢", color: "bg-purple-100 text-purple-700", trend: undefined },
   ];
 
@@ -305,7 +306,7 @@ export default async function AdminDashboard({
                     </div>
                     <div>
                       <div className="font-medium text-gray-800 text-sm line-clamp-1" title={item.name}>{item.name}</div>
-                      <div className="text-xs text-gray-500">{item.revenue.toLocaleString("vi-VN")} đ</div>
+                      <div className="text-xs text-gray-500">{formatNumber(item.revenue)}</div>
                     </div>
                   </div>
                   <div className="text-sm font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded whitespace-nowrap">

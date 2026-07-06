@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
+import { formatNumber } from "@/lib/format";
 
 interface OrderEvent {
   id: string;
@@ -73,10 +74,10 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
 
         if (key === "gross_total") {
           label = "Doanh thu gốc";
-          formattedVal = Number(val).toLocaleString("vi-VN") + " đ";
+          formattedVal = formatNumber(Number(val));
         } else if (key === "net_total") {
           label = "Doanh thu thuần";
-          formattedVal = Number(val).toLocaleString("vi-VN") + " đ";
+          formattedVal = formatNumber(Number(val));
         } else if (key === "line_count") {
           label = "Số món";
         } else if (key === "payment_method") {

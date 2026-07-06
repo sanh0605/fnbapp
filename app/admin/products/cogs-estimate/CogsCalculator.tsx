@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
+import { formatNumber } from "@/lib/format";
 
 interface IngredientOption {
   id: string;
@@ -148,7 +149,7 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
               <div className="w-full md:w-32">
                 <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Thành tiền</label>
                 <div className="w-full border border-transparent bg-orange-50 rounded-md px-3 py-2 text-sm font-bold text-orange-700 text-right">
-                  {Math.round((item.quantity || 0) * (item.unit_cost || 0)).toLocaleString()}đ
+                  {formatNumber(Math.round((item.quantity || 0) * (item.unit_cost || 0)))}
                 </div>
               </div>
 
@@ -193,11 +194,11 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-4">
               <span className="text-lg font-medium text-gray-600">Tổng Giá Vốn:</span>
-              <span className="text-3xl font-black text-orange-600">{Math.round(totalCost).toLocaleString()}đ</span>
+              <span className="text-3xl font-black text-orange-600">{formatNumber(Math.round(totalCost))}</span>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-500">Giá bán dự kiến (COGS 40%):</span>
-              <span className="text-xl font-bold text-indigo-600">{Math.round(totalCost / 0.4).toLocaleString()}đ</span>
+              <span className="text-xl font-bold text-indigo-600">{formatNumber(Math.round(totalCost / 0.4))}</span>
             </div>
           </div>
         </div>

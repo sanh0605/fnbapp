@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import HistoryModal from "@/components/HistoryModal";
+import { formatNumber } from "@/lib/format";
 import { deleteModifierAction } from "../actions";
 import { ModifierForm } from "./ModifierForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
@@ -127,7 +128,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-900">{m.name}</td>
                     <td className="px-6 py-4 text-orange-600 font-bold">
-                      {Number(m.price || 0).toLocaleString("vi-VN")}đ
+                      {formatNumber(m.price)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1 max-w-md">

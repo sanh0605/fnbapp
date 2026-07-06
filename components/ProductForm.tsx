@@ -2,6 +2,7 @@
 
 import { useState, useId } from "react";
 import { saveProduct, deleteProduct } from "@/app/admin/products/actions";
+import { formatNumber } from "@/lib/format";
 import { SearchableSelect } from "./SearchableSelect";
 import { CustomDatePicker } from "./CustomDatePicker";
 import { ModalPortal } from "@/components/ui/ModalPortal";
@@ -207,7 +208,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                             <div className="flex-1">
                               <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Giá vốn dự kiến (VNĐ)</label>
                               <div className="w-full border border-transparent px-3 py-2 text-sm font-bold text-gray-500 bg-white rounded-md shadow-sm">
-                                {Math.round(calculateVariantCost(variant)).toLocaleString()}đ
+                               {formatNumber(Math.round(calculateVariantCost(variant)))}
                               </div>
                             </div>
                             {variants.length > 1 && (

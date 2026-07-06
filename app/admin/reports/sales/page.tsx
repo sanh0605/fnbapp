@@ -3,6 +3,7 @@ import { getSalesDataV2, getHourlyHeatmapV2 } from "../actions";
 import SalesFilter from "@/components/SalesFilter";
 import SalesCharts from "@/components/SalesCharts";
 import CategoryPieChart from "@/components/CategoryPieChart";
+import { formatNumber } from "@/lib/format";
 
 import ProductTable from "@/components/ProductTable";
 
@@ -139,11 +140,11 @@ export default async function SalesReportPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="text-sm font-medium text-gray-500 mb-1">Tổng Doanh Thu (Net)</div>
-          <div className="text-3xl font-bold text-gray-900">{totalRevenue.toLocaleString("vi-VN")} đ</div>
+          <div className="text-3xl font-bold text-gray-900">{formatNumber(totalRevenue)}</div>
           <div className="text-xs text-gray-400 mt-2">
-            Gross: {grossRevenue.toLocaleString("vi-VN")} đ
+            Gross: {formatNumber(grossRevenue)}
             {" • "}
-            Giảm giá: {totalDiscount.toLocaleString("vi-VN")} đ
+            Giảm giá: {formatNumber(totalDiscount)}
           </div>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -155,9 +156,9 @@ export default async function SalesReportPage({
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="text-sm font-medium text-gray-500 mb-1">Doanh Thu Trung Bình / Đơn</div>
-          <div className="text-3xl font-bold text-gray-900">{Math.round(avgOrderValue).toLocaleString("vi-VN")} đ</div>
+          <div className="text-3xl font-bold text-gray-900">{formatNumber(Math.round(avgOrderValue))}</div>
           <div className="text-xs text-gray-400 mt-2">
-            Khuyến mãi hệ thống: {systemPromotionDiscount.toLocaleString("vi-VN")} đ
+            Khuyến mãi hệ thống: {formatNumber(systemPromotionDiscount)}
           </div>
         </div>
       </div>
@@ -169,27 +170,27 @@ export default async function SalesReportPage({
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
               <dt className="text-gray-500">Khuyến mãi hệ thống</dt>
-              <dd className="font-medium text-gray-900">{systemPromotionDiscount.toLocaleString("vi-VN")} đ</dd>
+              <dd className="font-medium text-gray-900">{formatNumber(systemPromotionDiscount)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Giảm giá theo dòng</dt>
-              <dd className="font-medium text-gray-900">{manualItemDiscount.toLocaleString("vi-VN")} đ</dd>
+              <dd className="font-medium text-gray-900">{formatNumber(manualItemDiscount)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Giảm giá trên toàn đơn</dt>
-              <dd className="font-medium text-gray-900">{manualOrderDiscount.toLocaleString("vi-VN")} đ</dd>
+              <dd className="font-medium text-gray-900">{formatNumber(manualOrderDiscount)}</dd>
             </div>
             <div className="flex justify-between border-t border-gray-100 pt-2">
               <dt className="font-semibold text-gray-700">Tổng Giảm giá</dt>
-              <dd className="font-bold text-red-600">{totalDiscount.toLocaleString("vi-VN")} đ</dd>
+              <dd className="font-bold text-red-600">{formatNumber(totalDiscount)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Doanh thu Gross</dt>
-              <dd className="font-medium text-gray-900">{grossRevenue.toLocaleString("vi-VN")} đ</dd>
+              <dd className="font-medium text-gray-900">{formatNumber(grossRevenue)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Doanh thu Net</dt>
-              <dd className="font-bold text-green-700">{totalRevenue.toLocaleString("vi-VN")} đ</dd>
+              <dd className="font-bold text-green-700">{formatNumber(totalRevenue)}</dd>
             </div>
           </dl>
         </div>
@@ -213,7 +214,7 @@ export default async function SalesReportPage({
                       {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
                     </td>
                     <td className="py-2 text-right text-gray-700">{p.orderCount}</td>
-                    <td className="py-2 text-right text-green-700 font-medium">{p.revenue.toLocaleString("vi-VN")} đ</td>
+                    <td className="py-2 text-right text-green-700 font-medium">{formatNumber(p.revenue)}</td>
                   </tr>
                 ))
               )}
@@ -258,7 +259,7 @@ export default async function SalesReportPage({
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-green-600">{dayTotalRevenue.toLocaleString("vi-VN")} đ</div>
+                          <div className="font-bold text-green-600">{formatNumber(dayTotalRevenue)}</div>
                           <div className="text-[10px] text-gray-400 flex items-center justify-end gap-1">
                             tap để mở/đóng
                             <svg className="w-3 h-3 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -274,7 +275,7 @@ export default async function SalesReportPage({
                               <div className="w-9 text-sm font-bold text-gray-700 text-center">{c.hour}h</div>
                               <div className="text-xs text-gray-500">{c.orderCount} đơn</div>
                             </div>
-                            <div className="text-sm font-medium text-gray-900">{c.revenue.toLocaleString("vi-VN")} đ</div>
+                            <div className="text-sm font-medium text-gray-900">{formatNumber(c.revenue)}</div>
                           </div>
                         ))}
                       </div>
@@ -318,7 +319,7 @@ export default async function SalesReportPage({
                       return (
                         <div
                           key={hour}
-                          title={`${day}, ${hour}h: ${cell.revenue.toLocaleString("vi-VN")} đ (${cell.orderCount} đơn)`}
+                          title={`${day}, ${hour}h: ${formatNumber(cell.revenue)} (${cell.orderCount} đơn)`}
                           className="rounded-md border border-gray-100/50 flex flex-col items-center justify-center transition-transform transition-shadow hover:scale-105 hover:shadow-sm cursor-pointer"
                           style={{
                             backgroundColor: cell.revenue > 0 ? `rgba(79, 70, 229, ${scaledOpacity})` : '#f9fafb',
@@ -397,7 +398,7 @@ export default async function SalesReportPage({
                     <tr key={i} className="hover:bg-gray-50 transition">
                       <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
                       <td className="px-4 py-3 text-right font-bold text-gray-600">{item.qty}</td>
-                      <td className="px-4 py-3 text-right text-green-600 font-medium">{Math.round(item.revenue).toLocaleString("vi-VN")} đ</td>
+                      <td className="px-4 py-3 text-right text-green-600 font-medium">{formatNumber(Math.round(item.revenue))}</td>
                     </tr>
                   ))
                 )}
@@ -407,7 +408,7 @@ export default async function SalesReportPage({
                   <tr>
                     <td className="px-4 py-3">Tổng cộng</td>
                     <td className="px-4 py-3 text-right">{totalToppingQty.toLocaleString("vi-VN")}</td>
-                    <td className="px-4 py-3 text-right text-green-700">{Math.round(totalToppingRevenue).toLocaleString("vi-VN")} đ</td>
+                    <td className="px-4 py-3 text-right text-green-700">{formatNumber(Math.round(totalToppingRevenue))}</td>
                   </tr>
                 </tfoot>
               )}
@@ -422,7 +423,7 @@ export default async function SalesReportPage({
                 <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-2">
                   <div className="flex justify-between items-start gap-2">
                     <div className="font-bold text-gray-900">{item.name}</div>
-                    <div className="font-bold text-green-600 shrink-0">{Math.round(item.revenue).toLocaleString("vi-VN")} đ</div>
+                    <div className="font-bold text-green-600 shrink-0">{formatNumber(Math.round(item.revenue))}</div>
                   </div>
                   <div className="text-sm text-gray-600 flex items-center gap-2">
                     <span className="text-gray-400">Số lượng:</span>
@@ -437,7 +438,7 @@ export default async function SalesReportPage({
                   <span>Tổng:</span>
                   <span>{totalToppingQty.toLocaleString("vi-VN")}</span>
                 </div>
-                <div className="text-green-700">{Math.round(totalToppingRevenue).toLocaleString("vi-VN")} đ</div>
+                <div className="text-green-700">{formatNumber(Math.round(totalToppingRevenue))}</div>
               </div>
             )}
           </div>

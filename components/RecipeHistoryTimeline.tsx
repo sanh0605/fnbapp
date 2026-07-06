@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { formatDateTime } from "@/lib/datetime";
+import { formatNumber } from "@/lib/format";
 
 interface Recipe {
   id: string;
@@ -81,11 +82,7 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
     return [];
   };
 
-  const formatPrice = (p: string | number | null) => {
-    if (p === null || p === undefined) return "---";
-    const num = typeof p === "string" ? Number(p) : p;
-    return num.toLocaleString("vi-VN") + " đ";
-  };
+
 
   return (
     <div className="relative pl-6 md:pl-8">
@@ -195,12 +192,12 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                     <div className="flex items-center gap-2 text-sm">
                       {hasOldPrice ? (
                         <>
-                          <span className="text-gray-400 line-through font-medium">{formatPrice(p.old_price)}</span>
+                          <span className="text-gray-400 line-through font-medium">{formatNumber(p.old_price)}</span>
                           <span className="text-gray-400">➔</span>
-                          <span className="font-extrabold text-amber-600 text-base">{formatPrice(p.new_price)}</span>
+                          <span className="font-extrabold text-amber-600 text-base">{formatNumber(p.new_price)}</span>
                         </>
                       ) : (
-                        <span className="font-extrabold text-amber-600 text-base">Giá bán đầu: {formatPrice(p.new_price)}</span>
+                        <span className="font-extrabold text-amber-600 text-base">Giá bán đầu: {formatNumber(p.new_price)}</span>
                       )}
                     </div>
                   </div>

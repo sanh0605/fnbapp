@@ -8,6 +8,7 @@ import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
+import { formatNumber } from "@/lib/format";
 
 import type { OrderListItem } from "./actions";
 
@@ -388,7 +389,7 @@ export default function OrderTable({
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-orange-600">
-                      {Number(order.net_total || 0).toLocaleString("vi-VN")} đ
+                      {formatNumber(order.net_total)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${order.method === 'Chuyen khoan' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
@@ -441,7 +442,7 @@ export default function OrderTable({
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-orange-600 text-sm">
-                    {Number(order.net_total || 0).toLocaleString("vi-VN")} đ
+                    {formatNumber(order.net_total)}
                   </div>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${order.method === 'Chuyen khoan' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
                     {order.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"}

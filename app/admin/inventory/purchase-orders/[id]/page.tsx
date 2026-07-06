@@ -2,6 +2,7 @@ import { findById, findAll } from "@/lib/sheets_db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
+import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -85,8 +86,8 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
                         <td className="px-4 py-3 font-medium text-gray-900">{item?.name || line.purchased_item_id}</td>
                         <td className="px-4 py-3 text-gray-600">{unitName}</td>
                         <td className="px-4 py-3 text-right text-gray-900 font-medium">{Number(line.quantity).toLocaleString("vi-VN")}</td>
-                        <td className="px-4 py-3 text-right text-gray-500">{Number(line.unit_price).toLocaleString('vi-VN')} đ</td>
-                        <td className="px-4 py-3 text-right text-gray-900 font-bold">{Number(line.subtotal).toLocaleString('vi-VN')} đ</td>
+                        <td className="px-4 py-3 text-right text-gray-500">{formatNumber(line.unit_price)}</td>
+                        <td className="px-4 py-3 text-right text-gray-900 font-bold">{formatNumber(line.subtotal)}</td>
                       </tr>
                     );
                   })}
@@ -102,23 +103,23 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Tổng tiền hàng:</span>
-                <span className="font-medium text-gray-900">{Number(po.subtotal_amount || 0).toLocaleString('vi-VN')} đ</span>
+                <span className="font-medium text-gray-900">{formatNumber(po.subtotal_amount)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Phí vận chuyển:</span>
-                <span className="font-medium text-gray-900">+{Number(po.shipping_fee || 0).toLocaleString('vi-VN')} đ</span>
+                <span className="font-medium text-gray-900">+{formatNumber(po.shipping_fee)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Thuế:</span>
-                <span className="font-medium text-gray-900">+{Number(po.tax_amount || 0).toLocaleString('vi-VN')} đ</span>
+                <span className="font-medium text-gray-900">+{formatNumber(po.tax_amount)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Voucher/Giảm giá:</span>
-                <span className="font-medium text-red-600">-{Number((Number(po.voucher_amount || 0) + Number(po.discount_amount || 0))).toLocaleString('vi-VN')} đ</span>
+                <span className="font-medium text-red-600">-{formatNumber(Number(po.voucher_amount || 0) + Number(po.discount_amount || 0))}</span>
               </div>
               <div className="pt-3 border-t border-gray-100 flex justify-between font-bold text-base">
                 <span className="text-gray-900">Tổng cộng:</span>
-                <span className="text-indigo-600">{Number(po.total_amount || 0).toLocaleString('vi-VN')} đ</span>
+                <span className="text-indigo-600">{formatNumber(po.total_amount)}</span>
               </div>
             </div>
           </div>

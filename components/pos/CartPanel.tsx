@@ -2,6 +2,7 @@
 
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { CartItemRow } from "./CartItemRow";
+import { formatNumber } from "@/lib/format";
 
 interface CartPanelProps {
   cart: any[];
@@ -196,7 +197,7 @@ export function CartPanel({
                           <p className="text-[10px] text-gray-500 font-medium mt-0.5">Số lượng: {item.qty}</p>
                         </div>
                         <span className="font-semibold text-gray-700 shrink-0 ml-2">
-                          {((item.unit_price + item.modifiers.reduce((s: number, m: any) => s + Number(m.price), 0)) * item.qty).toLocaleString("vi-VN")} đ
+                          {formatNumber((item.unit_price + item.modifiers.reduce((s: number, m: any) => s + Number(m.price), 0)) * item.qty)}
                         </span>
                       </div>
                     );
@@ -206,7 +207,7 @@ export function CartPanel({
                 <div className="pt-3 border-t border-dashed border-gray-200 space-y-1.5">
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>Tạm tính:</span>
-                    <span>{processingOrder.subtotal.toLocaleString("vi-VN")} đ</span>
+                    <span>{formatNumber(processingOrder.subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>Hình thức:</span>
@@ -214,7 +215,7 @@ export function CartPanel({
                   </div>
                   <div className="flex justify-between text-sm font-extrabold text-gray-800 pt-1">
                     <span>Tổng tiền:</span>
-                    <span className="text-orange-600">{processingOrder.totalAmount.toLocaleString("vi-VN")} đ</span>
+                    <span className="text-orange-600">{formatNumber(processingOrder.totalAmount)}</span>
                   </div>
                 </div>
               </div>
@@ -311,7 +312,7 @@ export function CartPanel({
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-gray-800 truncate">{appliedPromo.name}</p>
                       <p className="text-[10px] font-medium text-gray-400">
-                        Giảm -{promoDiscountAmount.toLocaleString("vi-VN")}đ
+                        Giảm -{formatNumber(promoDiscountAmount)}
                       </p>
                     </div>
                   </div>
@@ -417,10 +418,10 @@ export function CartPanel({
               <div className="text-right">
                 {calculateCartBaseTotal() > totalAmount && (
                   <div className="text-sm text-gray-400 line-through mb-0.5 font-medium">
-                    {calculateCartBaseTotal().toLocaleString("vi-VN")} đ
+                    {formatNumber(calculateCartBaseTotal())}
                   </div>
                 )}
-                <div className="text-2xl font-black text-orange-600">{totalAmount.toLocaleString("vi-VN")} đ</div>
+                <div className="text-2xl font-black text-orange-600">{formatNumber(totalAmount)}</div>
               </div>
             </div>
 
@@ -487,7 +488,7 @@ export function CartPanel({
           <div>
             <div className="flex justify-between items-center mb-4">
               <span className="text-gray-500 font-medium">Tổng thanh toán ({processingOrder.totalItems} món)</span>
-              <span className="text-2xl font-black text-orange-600">{processingOrder.totalAmount.toLocaleString("vi-VN")} đ</span>
+              <span className="text-2xl font-black text-orange-600">{formatNumber(processingOrder.totalAmount)}</span>
             </div>
             <div className="w-full bg-gray-100 text-gray-500 font-bold text-sm py-3.5 rounded-xl flex justify-center items-center gap-2 border border-gray-200 min-h-[48px]">
               <svg className="animate-spin h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24">

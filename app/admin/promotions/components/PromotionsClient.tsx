@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { deletePromotionAction } from "../actions";
 import { PromotionForm } from "./PromotionForm";
+import { formatNumber } from "@/lib/format";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
@@ -151,9 +152,9 @@ export default function PromotionsClient({
           if (promo.discount_type === "PERCENT") {
             discountLabel = `Giảm ${promo.discount_value}%`;
           } else if (promo.discount_type === "FLAT_PRICE") {
-            discountLabel = `Đồng giá ${Number(promo.discount_value).toLocaleString('vi-VN')}đ`;
+            discountLabel = `Đồng giá ${formatNumber(promo.discount_value)}`;
           } else {
-            discountLabel = `Giảm ${Number(promo.discount_value).toLocaleString('vi-VN')}đ`;
+            discountLabel = `Giảm ${formatNumber(promo.discount_value)}`;
           }
 
           const targetLabel = isProdDiscount ? "Áp dụng cho món ăn" : "Áp dụng toàn đơn hàng";
@@ -227,7 +228,7 @@ export default function PromotionsClient({
 
                     {Number(promo.min_order_value) > 0 && (
                       <div className="text-xs font-semibold text-gray-500 bg-orange-50/50 border border-orange-100/60 px-2 py-1 rounded-lg w-fit">
-                        💰 Đơn tối thiểu: {Number(promo.min_order_value).toLocaleString('vi-VN')}đ
+                        💰 Đơn tối thiểu: {formatNumber(promo.min_order_value)}
                       </div>
                     )}
                   </div>

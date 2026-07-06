@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getOrderDetailV2, type OrderListItem } from "./actions";
 import { formatDateTime } from "@/lib/datetime";
+import { formatNumber } from "@/lib/format";
 
 interface Props {
   order: OrderListItem;
@@ -93,15 +94,15 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
                       )}
                       {(line.promo_discount + line.manual_item_discount + line.order_discount_allocation) > 0 && (
                         <div className="text-xs text-red-500 mt-1">
-                          Giảm: -{(line.promo_discount + line.manual_item_discount + line.order_discount_allocation).toLocaleString("vi-VN")} đ
+                          Giảm: -{formatNumber(line.promo_discount + line.manual_item_discount + line.order_discount_allocation)}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
                       {gross > net && (
-                        <div className="text-[11px] text-gray-400 line-through">{gross.toLocaleString("vi-VN")} đ</div>
+                        <div className="text-[11px] text-gray-400 line-through">{formatNumber(gross)}</div>
                       )}
-                      <div className="font-bold text-gray-800">{net.toLocaleString("vi-VN")} đ</div>
+                      <div className="font-bold text-gray-800">{formatNumber(net)}</div>
                     </div>
                   </div>
                 </div>
@@ -113,29 +114,29 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
           <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1">
             <div className="flex justify-between">
               <span className="text-gray-500">Tổng gốc</span>
-              <span>{currentOrder.gross_total.toLocaleString("vi-VN")} đ</span>
+              <span>{formatNumber(currentOrder.gross_total)}</span>
             </div>
             {currentOrder.promo_discount_total > 0 && (
               <div className="flex justify-between text-emerald-600">
                 <span>Khuyến mãi hệ thống</span>
-                <span>-{currentOrder.promo_discount_total.toLocaleString("vi-VN")} đ</span>
+                <span>-{formatNumber(currentOrder.promo_discount_total)}</span>
               </div>
             )}
             {currentOrder.manual_item_discount_total > 0 && (
               <div className="flex justify-between text-red-500">
                 <span>Giảm thủ công từng món</span>
-                <span>-{currentOrder.manual_item_discount_total.toLocaleString("vi-VN")} đ</span>
+                <span>-{formatNumber(currentOrder.manual_item_discount_total)}</span>
               </div>
             )}
             {currentOrder.manual_order_discount > 0 && (
               <div className="flex justify-between text-red-500">
                 <span>Giảm cả đơn</span>
-                <span>-{currentOrder.manual_order_discount.toLocaleString("vi-VN")} đ</span>
+                <span>-{formatNumber(currentOrder.manual_order_discount)}</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold pt-1 border-t border-gray-200">
               <span className="text-gray-900">Khách trả</span>
-              <span className="text-orange-600">{currentOrder.net_total.toLocaleString("vi-VN")} đ</span>
+              <span className="text-orange-600">{formatNumber(currentOrder.net_total)}</span>
             </div>
           </div>
 
@@ -156,7 +157,7 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
                     </div>
                     <div className="text-right">
                       <div className="text-gray-500">{formatDate(v.created_at)}</div>
-                      <div className="text-gray-400">{v.net_total.toLocaleString("vi-VN")} đ</div>
+                      <div className="text-gray-400">{formatNumber(v.net_total)}</div>
                     </div>
                   </div>
                 ))}

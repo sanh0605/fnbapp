@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { formatNumber } from "@/lib/format";
 
 export interface EditItem {
   product_id: string;
@@ -157,7 +158,7 @@ export function LineItemEditor({
                       : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                   }`}
                 >
-                  {v.size_name} - {Number(v.price).toLocaleString("vi-VN")}d
+                  {v.size_name} - {formatNumber(v.price)}
                 </button>
               ))}
             </div>
@@ -191,7 +192,7 @@ export function LineItemEditor({
                           </button>
                         )}
                         <span className="px-1 py-1">
-                          {mod.name} <span className="text-gray-400">+{Number(mod.price).toLocaleString("vi-VN")}d</span>
+                          {mod.name} <span className="text-gray-400">+{formatNumber(mod.price)}</span>
                         </span>
                         {count > 0 && <span className="px-1 py-1 font-bold text-indigo-600">{count}x</span>}
                         <button
@@ -268,17 +269,16 @@ export function LineItemEditor({
         <div className="bg-white rounded-lg p-2.5 border border-indigo-100 space-y-1">
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Giá gốc</span>
-            <span className="text-gray-700 font-medium">{editTotals.base.toLocaleString("vi-VN")}đ</span>
+            <span className="text-gray-700 font-medium">{formatNumber(editTotals.base)}</span>
           </div>
           {Number(item.line_discount || 0) > 0 && (
             <div className="flex justify-between text-sm text-emerald-600">
               <span>⚡ KM (tự scale theo SL)</span>
               <span>
                 -
-                {Math.round(
+                {formatNumber(Math.round(
                   Number(item.line_discount || 0) * (item.qty > 0 ? editQty / item.qty : 1)
-                ).toLocaleString("vi-VN")}
-                đ
+                ))}
               </span>
             </div>
           )}
@@ -287,20 +287,19 @@ export function LineItemEditor({
               <span>Chiết khấu</span>
               <span>
                 -
-                {(
+                {formatNumber(
                   editTotals.base -
                   editTotals.final -
                   (Number(item.line_discount || 0) > 0
                     ? Math.round(Number(item.line_discount || 0) * (item.qty > 0 ? editQty / item.qty : 1))
                     : 0)
-                ).toLocaleString("vi-VN")}
-                đ
+                )}
               </span>
             </div>
           )}
           <div className="flex justify-between font-bold pt-1 border-t border-gray-100">
             <span className="text-gray-800">Thành tiền</span>
-            <span className="text-orange-600">{editTotals.final.toLocaleString("vi-VN")}đ</span>
+            <span className="text-orange-600">{formatNumber(editTotals.final)}</span>
           </div>
         </div>
 
@@ -344,9 +343,9 @@ export function LineItemEditor({
         </div>
         <div className="text-right">
           {(item.discount_amount > 0 || item.line_discount > 0 || item.line_manual_discount > 0) && (
-            <div className="text-[11px] text-gray-400 line-through">{baseTotal.toLocaleString("vi-VN")}d</div>
+            <div className="text-[11px] text-gray-400 line-through">{formatNumber(baseTotal)}</div>
           )}
-          <div className="font-bold text-gray-800">{lineTotal.toLocaleString("vi-VN")}d</div>
+          <div className="font-bold text-gray-800">{formatNumber(lineTotal)}</div>
         </div>
       </div>
       {item.modifiers.length > 0 && (
@@ -354,7 +353,7 @@ export function LineItemEditor({
       )}
       {item.line_discount > 0 && (
         <div className="text-xs text-emerald-600 font-medium mb-0.5">
-          KM: -{item.line_discount.toLocaleString("vi-VN")}đ
+          KM: -{formatNumber(item.line_discount)}
         </div>
       )}
       {(item.discount_amount > 0 || item.line_manual_discount > 0) && (
@@ -362,7 +361,7 @@ export function LineItemEditor({
           Giảm: -
           {item.discount_type === "PERCENT"
             ? `${item.discount_amount}%`
-            : `${Number(item.discount_amount || item.line_manual_discount).toLocaleString("vi-VN")}đ`}
+            : `${formatNumber(Number(item.discount_amount || item.line_manual_discount))}`}
         </div>
       )}
       <div className="flex gap-2 mt-2">

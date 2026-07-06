@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { formatNumber } from "@/lib/format";
 import { editOrderV2 } from "./actions";
 import type { CartInput } from "@/lib/order-cart";
 import type { OrderListItem } from "./actions";
@@ -306,7 +307,7 @@ export default function OrderEditModal({
                       {variants.filter((v: any) => v.product_id === selectedNewProduct.id).map((v: any) => (
                         <button key={v.id} onClick={() => setSelectedNewVariant(v)} className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${selectedNewVariant?.id === v.id ? "border-orange-500 bg-orange-50 text-orange-700" : "border-gray-200 bg-white text-gray-600"
                           }`}>
-                          {v.size_name} - {Number(v.price).toLocaleString("vi-VN")}d
+                          {v.size_name} - {formatNumber(v.price)}
                         </button>
                       ))}
                     </div>
@@ -329,7 +330,7 @@ export default function OrderEditModal({
                                     {count > 0 && (
                                       <button onClick={() => removeNewModifier(mod)} className="px-1.5 py-1 text-emerald-400 hover:text-red-500 font-bold">-</button>
                                     )}
-                                    <span className="px-1 py-1">{mod.name} <span className="text-gray-400">+{Number(mod.price).toLocaleString("vi-VN")}d</span></span>
+                                    <span className="px-1 py-1">{mod.name} <span className="text-gray-400">+{formatNumber(mod.price)}</span></span>
                                     {count > 0 && <span className="px-1 py-1 font-bold text-emerald-600">{count}x</span>}
                                     <button onClick={() => addNewModifier(mod)} className="px-1.5 py-1 text-gray-400 hover:text-emerald-600 font-bold">+</button>
                                   </div>
@@ -354,7 +355,7 @@ export default function OrderEditModal({
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-orange-600">{((Number(selectedNewVariant.price) + selectedNewModifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0)) * newQty).toLocaleString("vi-VN")}d</div>
+                        <div className="font-bold text-orange-600">{formatNumber((Number(selectedNewVariant.price) + selectedNewModifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0)) * newQty)}</div>
                       </div>
                     </div>
                   )}
@@ -393,7 +394,7 @@ export default function OrderEditModal({
 
           <div className="px-4 py-2 flex justify-between items-center bg-white border-t border-gray-100">
             <span className="font-bold text-gray-700">Tổng cộng</span>
-            <span className="text-xl font-black text-orange-600">{totalAmount.toLocaleString("vi-VN")}đ</span>
+            <span className="text-xl font-black text-orange-600">{formatNumber(totalAmount)}</span>
           </div>
 
           <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">

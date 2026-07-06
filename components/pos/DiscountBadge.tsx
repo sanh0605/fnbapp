@@ -33,6 +33,8 @@ const KIND_CLASSES: Record<DiscountKind, { wrapper: string; dot: string; text: s
   },
 };
 
+import { formatNumber } from "@/lib/format";
+
 export function DiscountBadge({ kind, label, amount }: DiscountBadgeProps) {
   if (amount <= 0) return null;
   const c = KIND_CLASSES[kind];
@@ -40,7 +42,7 @@ export function DiscountBadge({ kind, label, amount }: DiscountBadgeProps) {
     <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border ${c.wrapper}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
       <span className={`text-[10px] font-bold uppercase ${c.text}`}>
-        {label}: −{amount.toLocaleString("vi-VN")}đ
+        {label}: −{formatNumber(amount)}
       </span>
     </div>
   );

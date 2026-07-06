@@ -1,6 +1,7 @@
 import { getPnLDataV2, getPromotionPerformanceV2 } from "../actions";
 import { findAll } from "@/lib/sheets_db";
 import SalesFilter from "@/components/SalesFilter";
+import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +69,7 @@ export default async function ReportsPage({
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng Doanh Thu</p>
-              <h3 className="text-3xl font-black text-gray-900">{data.totalRevenue.toLocaleString('vi-VN')} đ</h3>
+              <h3 className="text-3xl font-black text-gray-900">{formatNumber(data.totalRevenue)}</h3>
             </div>
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl" aria-hidden="true">
               💰
@@ -84,7 +85,7 @@ export default async function ReportsPage({
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Giá Vốn (COGS)</p>
-              <h3 className="text-3xl font-black text-red-600">{data.totalCOGS.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</h3>
+              <h3 className="text-3xl font-black text-red-600">{formatNumber(data.totalCOGS)}</h3>
             </div>
             <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center text-xl" aria-hidden="true">
               📉
@@ -100,7 +101,7 @@ export default async function ReportsPage({
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-sm font-bold text-emerald-100 uppercase tracking-wider mb-1">Lợi Nhuận Gộp</p>
-              <h3 className="text-3xl font-black">{data.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</h3>
+              <h3 className="text-3xl font-black">{formatNumber(data.grossProfit)}</h3>
             </div>
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl" aria-hidden="true">
               📈
@@ -152,10 +153,10 @@ export default async function ReportsPage({
                         {item.qty.toLocaleString('vi-VN')} {item.unitName}
                       </td>
                       <td className="px-6 py-4 text-right text-gray-700">
-                        {mac.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ / {item.unitName}
+                        {formatNumber(mac)} / {item.unitName}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-red-600">
-                        {item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                        {formatNumber(item.cogs)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -208,13 +209,13 @@ export default async function ReportsPage({
                         {item.qty.toLocaleString('vi-VN')}
                       </td>
                       <td className="px-6 py-4 text-right text-gray-700">
-                        {item.revenue.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                        {formatNumber(item.revenue)}
                       </td>
                       <td className="px-6 py-4 text-right text-red-600">
-                        {item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                        {formatNumber(item.cogs)}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-emerald-600">
-                        {item.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                        {formatNumber(item.grossProfit)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className={`inline-flex items-center px-2 py-1 rounded font-bold text-xs ${
@@ -255,15 +256,15 @@ export default async function ReportsPage({
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-gray-400">Doanh Thu</span>
-                    <span className="font-semibold text-gray-800">{item.revenue.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                    <span className="font-semibold text-gray-800">{formatNumber(item.revenue)}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs text-gray-400">Giá Vốn</span>
-                    <span className="font-semibold text-red-600">{item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                    <span className="font-semibold text-red-600">{formatNumber(item.cogs)}</span>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-gray-400">LN Gộp</span>
-                    <span className="font-bold text-emerald-600">{item.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                    <span className="font-bold text-emerald-600">{formatNumber(item.grossProfit)}</span>
                   </div>
                 </div>
               </div>
@@ -307,13 +308,13 @@ export default async function ReportsPage({
                         {item.qty.toLocaleString('vi-VN')}
                       </td>
                       <td className="px-6 py-4 text-right text-gray-700">
-                        {item.revenue.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                        {formatNumber(item.revenue)}
                       </td>
                       <td className="px-6 py-4 text-right text-red-600">
-                        {item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                        {formatNumber(item.cogs)}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-emerald-600">
-                        {item.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ
+                        {formatNumber(item.grossProfit)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className={`inline-flex items-center px-2 py-1 rounded font-bold text-xs ${
@@ -354,15 +355,15 @@ export default async function ReportsPage({
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-gray-400">Doanh Thu</span>
-                    <span className="font-semibold text-gray-800">{item.revenue.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                    <span className="font-semibold text-gray-800">{formatNumber(item.revenue)}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs text-gray-400">Giá Vốn</span>
-                    <span className="font-semibold text-red-600">{item.cogs.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                    <span className="font-semibold text-red-600">{formatNumber(item.cogs)}</span>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-gray-400">LN Gộp</span>
-                    <span className="font-bold text-emerald-600">{item.grossProfit.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} đ</span>
+                    <span className="font-bold text-emerald-600">{formatNumber(item.grossProfit)}</span>
                   </div>
                 </div>
               </div>
@@ -398,7 +399,7 @@ export default async function ReportsPage({
                     <div key={p.promotion_id} className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold text-gray-700">
                         <span>{p.name} {p.code ? `(${p.code})` : ""}</span>
-                        <span>{p.totalRevenue.toLocaleString("vi-VN")} đ</span>
+                        <span>{formatNumber(p.totalRevenue)}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="flex-1 h-3.5 bg-gray-100 rounded-full overflow-hidden">
@@ -444,10 +445,10 @@ export default async function ReportsPage({
                       </td>
                       <td className="px-6 py-4 text-center font-bold text-indigo-600">{p.appliedCount}</td>
                       <td className="px-6 py-4 text-right text-red-600 font-medium">
-                        {p.totalDiscount.toLocaleString("vi-VN")} đ
+                        {formatNumber(p.totalDiscount)}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-emerald-600">
-                        {p.totalRevenue.toLocaleString("vi-VN")} đ
+                        {formatNumber(p.totalRevenue)}
                       </td>
                     </tr>
                   ))}

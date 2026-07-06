@@ -1,4 +1,5 @@
 import React from "react";
+import { formatNumber } from "@/lib/format";
 
 interface ProductTableProps {
   title: string;
@@ -68,7 +69,7 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
                     </td>
                   ))}
                   <td className="px-4 py-3 text-right font-bold text-gray-800">{item.totalQty}</td>
-                  <td className="px-4 py-3 text-right text-green-600 font-medium">{Math.round(item.totalRevenue).toLocaleString("vi-VN")} đ</td>
+                  <td className="px-4 py-3 text-right text-green-600 font-medium">{formatNumber(Math.round(item.totalRevenue))}</td>
                 </tr>
               ))
             )}
@@ -83,7 +84,7 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
                   </td>
                 ))}
                 <td className="px-4 py-3 text-right">{totalQtyAll.toLocaleString("vi-VN")}</td>
-                <td className="px-4 py-3 text-right text-green-700">{Math.round(totalRevenueAll).toLocaleString("vi-VN")} đ</td>
+                <td className="px-4 py-3 text-right text-green-700">{formatNumber(Math.round(totalRevenueAll))}</td>
               </tr>
             </tfoot>
           )}
@@ -98,7 +99,7 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
             <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3">
               <div className="flex justify-between items-start gap-2">
                 <div className="font-bold text-gray-900">{item.name}</div>
-                <div className="font-bold text-green-600 shrink-0">{Math.round(item.totalRevenue).toLocaleString("vi-VN")} đ</div>
+                <div className="font-bold text-green-600 shrink-0">{formatNumber(Math.round(item.totalRevenue))}</div>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
@@ -119,7 +120,7 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
           <div className="mt-2 pt-3 border-t border-gray-200 flex flex-col gap-2">
             <div className="flex justify-between items-center font-bold text-gray-900">
               <span>Tổng cộng</span>
-              <span className="text-green-700">{Math.round(totalRevenueAll).toLocaleString("vi-VN")} đ</span>
+              <span className="text-green-700">{formatNumber(Math.round(totalRevenueAll))}</span>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-1">

@@ -8,6 +8,7 @@ import { SupplierModal } from "@/components/SupplierForm";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toSaigonIsoString } from "@/lib/datetime";
+import { formatNumber } from "@/lib/format";
 import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBBaseIngredient, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
 
 interface PurchaseOrderFormProps {
@@ -370,7 +371,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     <div className="md:col-span-2">
                       <label className="block text-xs font-medium text-gray-500 mb-1">Đơn giá</label>
                       <div className="px-3 py-2 text-sm font-semibold text-gray-400 bg-gray-100 rounded-lg border border-transparent">
-                        {unitPrice.toLocaleString('vi-VN', { maximumFractionDigits: 1 })} đ
+                        {formatNumber(unitPrice)}
                       </div>
                     </div>
                   </div>
@@ -393,7 +394,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
         <div className="w-full max-w-md mb-6 space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
            <div className="flex justify-between items-center text-sm text-gray-600">
               <span className="font-medium">Tổng tiền hàng:</span>
-              <span className="font-semibold text-gray-900">{subtotalAmount.toLocaleString("vi-VN")} đ</span>
+              <span className="font-semibold text-gray-900">{formatNumber(subtotalAmount)}</span>
            </div>
            
            <div className="space-y-2 pt-2 border-t border-gray-200/60">
@@ -441,7 +442,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
            <div className="flex justify-between items-center pt-4 border-t border-gray-200">
               <span className="text-base font-bold text-gray-800">Cần Thanh Toán:</span>
-              <span className="text-2xl font-bold text-emerald-600">{totalAmount.toLocaleString("vi-VN")} đ</span>
+              <span className="text-2xl font-bold text-emerald-600">{formatNumber(totalAmount)}</span>
            </div>
         </div>
 

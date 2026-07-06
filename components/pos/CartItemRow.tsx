@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
+import { formatNumber } from "@/lib/format";
 
 interface CartItemRowProps {
   item: any;
@@ -99,11 +100,11 @@ export function CartItemRow({
           <div className="text-right">
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
               <div className="text-[11px] text-gray-400 line-through mb-0.5">
-                {baseTotal.toLocaleString("vi-VN")}
+                {formatNumber(baseTotal)}
               </div>
             )}
             <div className="font-bold text-orange-600">
-              {Math.max(0, finalTotal - itemPromoDiscount).toLocaleString("vi-VN")}
+              {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
             </div>
           </div>
         </div>

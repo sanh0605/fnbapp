@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import Link from "next/link";
+import { formatNumber } from "@/lib/format";
 import type { DBPurchaseOrder, DBSupplier } from "@/types/db";
 
 interface PurchaseOrdersClientProps {
@@ -139,7 +140,7 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
                       {po.created_at ? new Date(po.created_at).toLocaleDateString('vi-VN') : "---"}
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-gray-900">
-                      {Number(po.total_amount || 0).toLocaleString("vi-VN")} đ
+                      {formatNumber(po.total_amount)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link 

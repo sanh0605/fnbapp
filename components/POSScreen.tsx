@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { formatNumber } from "@/lib/format";
 import { submitOrderV2, getPOSDrafts, savePOSDraft, deletePOSDraft } from "@/app/pos/actions";
 import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
@@ -588,7 +589,7 @@ export default function POSScreen({
     const subtotal = calculateSubtotal();
     if (subtotal < Number(matchedPromo.min_order_value || 0)) {
       setManualPromoError(
-        `Đơn hàng chưa đạt giá trị tối thiểu ${Number(matchedPromo.min_order_value).toLocaleString()}đ để áp dụng.`
+        `Đơn hàng chưa đạt giá trị tối thiểu ${formatNumber(matchedPromo.min_order_value)} để áp dụng.`
       );
       return;
     }
@@ -1002,7 +1003,7 @@ export default function POSScreen({
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-indigo-600">{totalItems}</span>
           </div>
-          <span>{totalAmount.toLocaleString('vi-VN')} đ</span>
+          <span>{formatNumber(totalAmount)}</span>
         </button>
       )}
 
@@ -1035,11 +1036,11 @@ export default function POSScreen({
                         <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-orange-700" : "text-gray-700"}`}>{v.size_name}</span>
                         {hasPromo ? (
                           <div className="flex flex-col items-center">
-                            <span className="text-xs text-gray-400 line-through">{Number(v.price).toLocaleString('vi-VN')}đ</span>
-                            <span className="text-sm font-black text-orange-600">{promoPrice!.toLocaleString('vi-VN')}đ</span>
+                            <span className="text-xs text-gray-400 line-through">{formatNumber(v.price)}</span>
+                            <span className="text-sm font-black text-orange-600">{formatNumber(promoPrice)}</span>
                           </div>
                         ) : (
-                          <span className="text-sm font-black text-gray-900">{Number(v.price).toLocaleString('vi-VN')}đ</span>
+                          <span className="text-sm font-black text-gray-900">{formatNumber(v.price)}</span>
                         )}
                       </button>
                     );
@@ -1059,7 +1060,7 @@ export default function POSScreen({
                           <div className="flex flex-col">
                             <span className={`text-sm ${count > 0 ? "text-indigo-700 font-bold" : "text-gray-700 font-medium"}`}>{mod.name}</span>
                             {Number(mod.price) > 0 && (
-                              <span className="text-xs text-gray-500 mt-0.5">+{Number(mod.price).toLocaleString('vi-VN')}đ</span>
+                              <span className="text-xs text-gray-500 mt-0.5">+{formatNumber(mod.price)}</span>
                             )}
                           </div>
 
@@ -1143,11 +1144,11 @@ export default function POSScreen({
                   className="flex-1 bg-orange-600 text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
                 >
                   <div className="font-bold text-sm lg:text-base flex flex-col items-center">
-                    <span>{editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {currentItemFinalTotal.toLocaleString('vi-VN')} đ</span>
+                    <span>{editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {formatNumber(currentItemFinalTotal)}</span>
                   </div>
                   {(currentItemManualDiscountAmount > 0 || currentItemPromoDiscountAmount > 0) && (
                     <div className="text-[10px] lg:text-xs text-orange-200 line-through font-medium mt-0.5">
-                      Gốc: {currentItemBaseTotal.toLocaleString('vi-VN')} đ
+                      Gốc: {formatNumber(currentItemBaseTotal)}
                     </div>
                   )}
                 </button>
@@ -1229,7 +1230,7 @@ export default function POSScreen({
                         <div className="min-w-0 flex-1">
                           <p className="font-bold text-sm text-gray-800 truncate">{d.name || "Đơn nháp"}</p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {totalItems} món • {totalAmt.toLocaleString("vi-VN")} đ
+                            {totalItems} món • {formatNumber(totalAmt)}
                           </p>
                         </div>
                         <div className="flex gap-2 shrink-0 ml-4">

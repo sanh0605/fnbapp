@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import ProductForm from "@/components/ProductForm";
 import HistoryModal from "@/components/HistoryModal";
+import { formatNumber } from "@/lib/format";
 import StickyFilterBar from "@/components/StickyFilterBar";
 
 interface Product {
@@ -168,7 +169,7 @@ export default function ProductsClient({
                                 >
                                   <span className="font-bold text-gray-700">{v.size_name}</span>
                                   <span className="text-gray-300">|</span>
-                                  <span className="font-black text-orange-600">{Number(v.price).toLocaleString('vi-VN')}đ</span>
+                                  <span className="font-black text-orange-600">{formatNumber(v.price)}</span>
                                   {ingCount > 0 ? (
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title={`Đã định mức: ${ingCount} món`} />
                                   ) : (
@@ -257,7 +258,7 @@ export default function ProductsClient({
                                   <span className="inline-flex items-center px-1 py-0.2 bg-rose-50 text-rose-700 text-[9px] rounded font-bold">Chưa có</span>
                                 )}
                               </div>
-                              <span className="font-black text-orange-600">{Number(v.price).toLocaleString('vi-VN')} đ</span>
+                              <span className="font-black text-orange-600">{formatNumber(v.price)}</span>
                             </div>
                           );
                         })}
