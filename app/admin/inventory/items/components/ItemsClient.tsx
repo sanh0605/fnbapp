@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/lib/use-url-state";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { PurchasedItemForm } from "./PurchasedItemForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
@@ -16,8 +17,8 @@ interface ItemsClientProps {
 }
 
 export default function ItemsClient({ categories, baseIngredients, items, conversions, units }: ItemsClientProps) {
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [search, setSearch] = useUrlState<string>("q", "");
+  const [categoryFilter, setCategoryFilter] = useUrlState<string>("category", "ALL");
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
