@@ -185,11 +185,10 @@ export function CartPanel({
 
                 <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                   {processingOrder.items.map((item: any, idx: number) => {
-                    const matchedProduct = products.find((p: any) => p.id === item.product_id);
                     return (
                       <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-gray-50 pb-2">
                         <div className="min-w-0 flex-1">
-                          <p className="font-bold text-gray-800 truncate">{item.product_name || matchedProduct?.name}</p>
+                          <p className="font-bold text-gray-800 truncate">{item.product_name}</p>
                           <p className="text-[10px] text-gray-400">
                             Size {item.size_name}
                             {item.modifiers.length > 0 && ` • +${item.modifiers.map((m: any) => m.name).join(", ")}`}
