@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import StockAdjustmentsClient from "./components/StockAdjustmentsClient";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,8 @@ export default async function StockAdjustmentsPage() {
   });
 
   return (
-    <StockAdjustmentsClient adjustments={enrichedAdjustments} />
+    <Suspense fallback={<div>Đang tải...</div>}>
+      <StockAdjustmentsClient adjustments={enrichedAdjustments} />
+    </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import { useUrlState } from "@/lib/use-url-state";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
@@ -28,8 +29,8 @@ interface StockAdjustmentsClientProps {
 }
 
 export default function StockAdjustmentsClient({ adjustments }: StockAdjustmentsClientProps) {
-  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useUrlState<string>("status", "PENDING");
+  const [searchQuery, setSearchQuery] = useUrlState<string>("q", "");
   const [isPendingAction, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
