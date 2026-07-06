@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { voidOrderV2 } from "./actions";
 import OrderDetailModal from "./OrderDetailModal";
@@ -51,18 +51,140 @@ export default function OrderTable({
 }) {
   const [orders, setOrders] = useState(initialOrders);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const parseDateParam = (value: string | null): Date | null => {
+    if (!value) return null;
+    if (value.includes("T")) return new Date(value);
+    return new Date(`${value}T00:00:00`);
+  };
+
+  const toDateOnlyForUrl = (date: Date | null): string => {
+    if (!date) return "";
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
   const [orderToVoid, setOrderToVoid] = useState<Order | null>(null);
   const [voidReason, setVoidReason] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [paymentFilter, setPaymentFilter] = useState("");
-  const [brandFilter, setBrandFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const val = searchParams.get("page");
+    return val ? parseInt(val, 10) || 1 : 1;
+  });
+
+  const [searchQuery, setSearchQuery] = useState<string>(() => {
+    return searchParams.get("q") || "";
+  });
+  const [startDate, setStartDate] = useState<Date | null>(() => {
+    return parseDateParam(searchParams.get("from"));
+  });
+  const [endDate, setEndDate] = useState<Date | null>(() => {
+    return parseDateParam(searchParams.get("to"));
+  });
+  const [paymentFilter, setPaymentFilter] = useState<string>(() => {
+    return searchParams.get("payment") || "";
+  });
+  const [brandFilter, setBrandFilter] = useState<string>(() => {
+    return searchParams.get("brand") || "";
+  });
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+
+  // Sync URL changes back to local states (handles back/forward navigation)
+  useEffect(() => {
+    const q = searchParams.get("q") || "";
+    const payment = searchParams.get("payment") || "";
+    const brand = searchParams.get("brand") || "";
+    const pageVal = searchParams.get("page");
+    const page = pageVal ? parseInt(pageVal, 10) || 1 : 1;
+    const from = parseDateParam(searchParams.get("from"));
+    const to = parseDateParam(searchParams.get("to"));
+
+    if (q !== searchQuery) setSearchQuery(q);
+    if (payment !== paymentFilter) setPaymentFilter(payment);
+    if (brand !== brandFilter) setBrandFilter(brand);
+    if (page !== currentPage) setCurrentPage(page);
+
+    const fromTime = from ? from.getTime() : 0;
+    const startTime = startDate ? startDate.getTime() : 0;
+    if (fromTime !== startTime) setStartDate(from);
+
+    const toTime = to ? to.getTime() : 0;
+    const endTime = endDate ? endDate.getTime() : 0;
+    if (toTime !== endTime) setEndDate(to);
+  }, [searchParams]);
+
+  const handleFilterChange = (updates: {
+    page?: number;
+    q?: string;
+    from?: Date | null;
+    to?: Date | null;
+    payment?: string;
+    brand?: string;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (updates.q !== undefined) {
+      if (updates.q) params.set("q", updates.q);
+      else params.delete("q");
+      setSearchQuery(updates.q);
+    }
+    if (updates.payment !== undefined) {
+      if (updates.payment) params.set("payment", updates.payment);
+      else params.delete("payment");
+      setPaymentFilter(updates.payment);
+    }
+    if (updates.brand !== undefined) {
+      if (updates.brand) params.set("brand", updates.brand);
+      else params.delete("brand");
+      setBrandFilter(updates.brand);
+    }
+    if (updates.from !== undefined) {
+      if (updates.from) params.set("from", toDateOnlyForUrl(updates.from));
+      else params.delete("from");
+      setStartDate(updates.from);
+    }
+    if (updates.to !== undefined) {
+      if (updates.to) params.set("to", toDateOnlyForUrl(updates.to));
+      else params.delete("to");
+      setEndDate(updates.to);
+    }
+
+    let targetPage = 1;
+    if (updates.page !== undefined) {
+      targetPage = updates.page;
+    } else {
+      const isFilterChange =
+        updates.q !== undefined ||
+        updates.payment !== undefined ||
+        updates.brand !== undefined ||
+        updates.from !== undefined ||
+        updates.to !== undefined;
+      if (!isFilterChange) {
+        const pageVal = params.get("page");
+        targetPage = pageVal ? parseInt(pageVal, 10) || 1 : 1;
+      }
+    }
+
+    if (targetPage === 1) {
+      params.delete("page");
+      setCurrentPage(1);
+    } else {
+      params.set("page", String(targetPage));
+      setCurrentPage(targetPage);
+    }
+
+    if (updates.q !== undefined) {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    } else {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  };
 
   const ITEMS_PER_PAGE = 20;
 
@@ -122,12 +244,14 @@ export default function OrderTable({
   };
 
   const clearFilters = () => {
-    setSearchQuery("");
-    setStartDate(null);
-    setEndDate(null);
-    setPaymentFilter("");
-    setBrandFilter("");
-    setCurrentPage(1);
+    handleFilterChange({
+      q: "",
+      from: null,
+      to: null,
+      payment: "",
+      brand: "",
+      page: 1,
+    });
   };
 
   const hasActiveFilters = searchQuery || startDate || endDate || paymentFilter || brandFilter;
@@ -165,7 +289,7 @@ export default function OrderTable({
             type="text"
             placeholder="VD: PHD000001"
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => { handleFilterChange({ q: e.target.value }); }}
             className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
@@ -173,7 +297,7 @@ export default function OrderTable({
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Từ ngày</label>
           <CustomDatePicker
             selected={startDate}
-            onChange={(date: Date | null) => { setStartDate(date); setCurrentPage(1); }}
+            onChange={(date: Date | null) => { handleFilterChange({ from: date }); }}
             className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
@@ -181,7 +305,7 @@ export default function OrderTable({
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đến ngày</label>
           <CustomDatePicker
             selected={endDate}
-            onChange={(date: Date | null) => { setEndDate(date); setCurrentPage(1); }}
+            onChange={(date: Date | null) => { handleFilterChange({ to: date }); }}
             className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
           />
         </div>
@@ -189,7 +313,7 @@ export default function OrderTable({
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">PT thanh toán</label>
           <select
             value={paymentFilter}
-            onChange={(e) => { setPaymentFilter(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => { handleFilterChange({ payment: e.target.value }); }}
             className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả</option>
@@ -201,7 +325,7 @@ export default function OrderTable({
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Thương hiệu</label>
           <select
             value={brandFilter}
-            onChange={(e) => { setBrandFilter(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => { handleFilterChange({ brand: e.target.value }); }}
             className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả</option>
@@ -360,7 +484,7 @@ export default function OrderTable({
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => handleFilterChange({ page: Math.max(1, currentPage - 1) })}
               disabled={currentPage === 1}
               className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm"
             >
@@ -370,7 +494,7 @@ export default function OrderTable({
               Trang {currentPage} / {totalPages}
             </div>
             <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => handleFilterChange({ page: Math.min(totalPages, currentPage + 1) })}
               disabled={currentPage === totalPages}
               className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm"
             >

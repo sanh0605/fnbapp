@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getOrdersV2 } from "./actions";
 import OrderTable from "./OrderTable";
 
@@ -8,14 +9,16 @@ export default async function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <OrderTable
-        initialOrders={orders as any}
-        brands={brands}
-        products={products}
-        variants={variants}
-        modifiers={modifiers}
-        categories={categories}
-      />
+      <Suspense fallback={<div className="text-gray-500 py-8 text-center text-sm font-semibold">Đang tải danh sách đơn hàng...</div>}>
+        <OrderTable
+          initialOrders={orders as any}
+          brands={brands}
+          products={products}
+          variants={variants}
+          modifiers={modifiers}
+          categories={categories}
+        />
+      </Suspense>
     </div>
   );
 }
