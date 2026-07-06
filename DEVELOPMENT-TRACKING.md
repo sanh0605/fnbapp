@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - Vietnamese diacritics sweep (BrandForm)
+
+**Trigger:** Post-migration polish of BrandForm display strings to match diacritics pattern of other forms (like SupplierForm).
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Vietnamese diacritics sweep** | Updated user-facing labels, titles, loading status messages, buttons, and confirmation descriptions in `BrandForm.tsx` to include correct Vietnamese diacritics and typography. Verified other code matches correct DB-consistency ASCII values. | ✅ | `d18f990` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Antigravity) - Order list/detail snapshot-first product and variant name lookup
 
 **Trigger:** Post-migration UX issue where orders showed blank product cells due to cached catalog drift missing newly-migrated products (e.g. Lục trà chanh).
