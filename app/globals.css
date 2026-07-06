@@ -97,3 +97,13 @@ html, body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Mobile: remove 300ms tap delay on interactive elements */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+[tabindex]:not([tabindex="-1"]) {
+  touch-action: manipulation;
+}
