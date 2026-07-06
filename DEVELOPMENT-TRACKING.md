@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - Intl.NumberFormat Centralization & price displays
+
+**Trigger:** Centralizing pricing/money formatting across the codebase to adhere to plain vi-VN locale number formatting with no currency unit suffixes.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Centralized Formatter Creation** | Created `lib/format.ts` containing the `formatNumber` utility formatting numbers using vi-VN formatting guidelines with defensive fallback handling. | ✅ | `c957e27` |
+| **centralize price display formatting** | Migrated 27 files by replacing ad-hoc `.toLocaleString("vi-VN")` money displays with `formatNumber` and removed all currency unit suffixes (" đ", " ₫", "đ", "d", " VND"). Removed local `formatPrice` helper in `components/RecipeHistoryTimeline.tsx` and replaced its usages. | ✅ | `83b2e68` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Antigravity) - UI Accessibility: touch-action + form labels htmlFor
 
 **Trigger:** Accessibility (a11y) audit follow-up: fixing system-wide mobile tap delay (via `touch-action: manipulation`) and screen reader element associations (via label `htmlFor` and input `id` bindings).
