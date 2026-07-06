@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - URL state sync pilot (/admin/orders filters)
+
+**Trigger:** Phase D pilot to synchronize `/admin/orders` filtering state (search query, dates, payment method, brand, current page) with URL query parameters for shareability, refresh retention, and browser back/forward support.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **URL State Sync** | Replaced local `useState` filters with URL search parameters in `OrderTable.tsx` using `useSearchParams`. Implemented immediate state updates + router updates via a custom `handleFilterChange` helper, and added a synchronization `useEffect` to handle back/forward actions. Wrapped `OrderTable` in a `<Suspense>` boundary in `page.tsx` for App Router compliance. | ✅ | `dc42204` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Antigravity) - Vietnamese diacritics sweep (BrandForm)
 
 **Trigger:** Post-migration polish of BrandForm display strings to match diacritics pattern of other forms (like SupplierForm).
