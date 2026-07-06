@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - URL state sync scale
+
+**Trigger:** Roadmap Task 4: Scale the validated URL state sync pattern to 3 filter-heavy pages (`/admin/inventory/items`, `/admin/inventory/stock-adjustments`, `/admin/promotions`) to support URL sharing and persistence.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **`useUrlState` Helper Extraction** | Abstracted the URL sync logic from the `OrderTable` pilot into a reusable `lib/use-url-state.ts` hook. | ✅ | `c81185e` |
+| **`/admin/inventory/items` Migration** | Migrated `ItemsClient.tsx` to use `useUrlState` for `q` and `category`. Wrapped the client component with `<Suspense>` in `page.tsx`. | ✅ | `18b14e0` |
+| **`/admin/inventory/stock-adjustments` Migration** | Migrated `StockAdjustmentsClient.tsx` to use `useUrlState` for `q` and `status`. Wrapped the client component with `<Suspense>` in `page.tsx`. | ✅ | `668c881` |
+| **`/admin/promotions` Migration** | Migrated `PromotionsClient.tsx` to use `useUrlState` for `q`, `status`, and `type`. Wrapped the client component with `<Suspense>` in `page.tsx`. | ✅ | `f4acbe0` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Antigravity) - Snapshot-first lookup audit
 
 **Trigger:** Roadmap Task 3: Audit UI display of historical data (past orders, receipts, historical reports) to ensure it uses snapshot data instead of current catalog lookups to prevent display drift.
