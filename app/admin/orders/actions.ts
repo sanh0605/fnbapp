@@ -20,6 +20,19 @@ import {
 } from "@/lib/inventory-consumption";
 import type { CartInput } from "@/lib/order-cart";
 
+function parseObject(value: any): any {
+  if (!value) return {};
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return typeof value === "object" ? value : {};
+}
+
 // ============================================================
 // Types
 // ============================================================
@@ -123,6 +136,8 @@ export async function getOrdersV2(): Promise<GetOrdersV2Result> {
             mods = JSON.parse(line.modifiers_snapshot_json);
           }
         } catch {}
+        const productSnap = parseObject(line.product_snapshot_json);
+        const variantSnap = parseObject(line.variant_snapshot_json);
         return {
           ...line,
           qty: Number(line.qty) || 0,
@@ -132,8 +147,8 @@ export async function getOrdersV2(): Promise<GetOrdersV2Result> {
           manual_item_discount: Number(line.manual_item_discount) || 0,
           order_discount_allocation: Number(line.order_discount_allocation) || 0,
           net_line_total: Number(line.net_line_total) || 0,
-          product_name: product?.name || "Unknown",
-          size_name: variant?.size_name || "Unknown",
+          product_name: productSnap.name || product?.name || "Unknown",
+          size_name: variantSnap.size_name || variant?.size_name || "Unknown",
           modifiers: mods,
         };
       });
@@ -219,6 +234,8 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
     try {
       if (line.modifiers_snapshot_json) mods = JSON.parse(line.modifiers_snapshot_json);
     } catch {}
+    const productSnap = parseObject(line.product_snapshot_json);
+    const variantSnap = parseObject(line.variant_snapshot_json);
     return {
       ...line,
       qty: Number(line.qty) || 0,
@@ -228,8 +245,8 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
       manual_item_discount: Number(line.manual_item_discount) || 0,
       order_discount_allocation: Number(line.order_discount_allocation) || 0,
       net_line_total: Number(line.net_line_total) || 0,
-      product_name: product?.name || "Unknown",
-      size_name: variant?.size_name || "Unknown",
+      product_name: productSnap.name || product?.name || "Unknown",
+      size_name: variantSnap.size_name || variant?.size_name || "Unknown",
       modifiers: mods,
     };
   });
