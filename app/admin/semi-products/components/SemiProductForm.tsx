@@ -158,7 +158,7 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
       >
         <form id="semi-product-form" action={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
               {error}
             </div>
           )}

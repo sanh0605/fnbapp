@@ -134,7 +134,7 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
       >
         <form id="conversion-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
               {error}
             </div>
           )}
