@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - Order list/detail snapshot-first product and variant name lookup
+
+**Trigger:** Post-migration UX issue where orders showed blank product cells due to cached catalog drift missing newly-migrated products (e.g. Lục trà chanh).
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Snapshot-first lookup** | Modified `getOrdersV2` and `getOrderDetailV2` in `app/admin/orders/actions.ts` to retrieve product name and size name from `product_snapshot_json` and `variant_snapshot_json` first, falling back to cached catalog maps and "Unknown" as a last resort. | ✅ | `5b315eb` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Codex + Claude) - Hồng trà chanh → Lục trà chanh migration applied
 
 **Trigger:** Phase 1 recipe audit identified REC-068 as TRUE_DROP (Hồng trà chanh variant missing Trái chanh). User decision: delete REC-068 + migrate all Hồng trà chanh orders since 2026-06-29 to Lục trà chanh (existing product).
