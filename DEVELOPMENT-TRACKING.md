@@ -4,6 +4,46 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Codex + Claude) - Hồng trà chanh → Lục trà chanh migration applied
+
+**Trigger:** Phase 1 recipe audit identified REC-068 as TRUE_DROP (Hồng trà chanh variant missing Trái chanh). User decision: delete REC-068 + migrate all Hồng trà chanh orders since 2026-06-29 to Lục trà chanh (existing product).
+
+### Completed Work
+| Phase | Description | Status | Commits |
+|---|---|---|---|
+| **Pre-flight audit** | Read-only audit of affected scope, recipe chain, ledger fingerprint, MAC projection | ✅ | `5ef8c5a` |
+| **Dry-run script** | `scripts/migrate-hong-tra-to-luc-tra.ts` with --dry-run default, --apply fail-fast | ✅ | `ee0bba5` |
+| **H1-H3+M3 hardening** | Source-aware ledger compare, semiProductContext, target recipe window assertion, snapshot sourceHash binding | ✅ | `93bf48b` |
+| **Apply path** | Atomic RPC `apply_hong_to_luc_migration` + transaction coordinator + idempotency + rollback | ✅ | `32f02e1` |
+| **C1 fix** | RPC deployment probe via `classifyHongToLucRpcProbe` (READY/NOT_DEPLOYED/UNSAFE/ERROR) | ✅ | `8c523e9` |
+| **Deploy** | `supabase db push` applied migration 0009 to live Supabase | ✅ | (operational) |
+| **Snapshot** | `recovery-20260706T053239562Z` captured with sourceHash bound | ✅ | (gitignored) |
+| **Apply run** | One atomic transaction: 4 lines updated, 29→32 ledger rows, 4 events, REC-068 deleted | ✅ | (operational) |
+
+### Migration Outcome
+- 4 orders migrated: UCK000364, UCK000369, UCK000384, UCK000391
+- 5 drinks all 700ml, mapping PROD-011/VAR-016 → PROD-042/VAR-051
+- Revenue unchanged (15,000₫ price match)
+- COGS: 20,923₫ → 11,370₫ (delta **-9,553₫**, gross profit +9,553₫)
+- Inventory deltas verified exact match: Đá viên +66.67, Lá trà xanh -35.71, Lá hồng trà +49.05, Nước sôi +266.67, Trái chanh -4
+- Idempotency rerun flag: minor edge case (target ledger fingerprint mismatch due to generated IDs) — non-blocking, migration verified correct via direct DB inspection
+
+### Verification
+- `npx tsc --noEmit`: 0 errors
+- `npx vitest run`: 308/308 tests pass
+- DB inspection: 4 lines PROD-042/VAR-051 "Lục trà chanh", 32 SALES_CONSUME rows with `stk-hong-luc-*` IDs and `VARIANT_RECIPE:BTP_SHORTFALL:BTP-009` source, REC-068 absent, inventory balances match projection to 2 decimals
+
+### Security Hygiene
+- ⚠️ Access token `sbp_5631...` rotated through chat — user to revoke at Supabase Dashboard
+- ⚠️ DB password also exposed in chat — user may reset if concerned
+
+### Pending
+- Codex Phase 1.5: modifier recipe save hardening (separate scope)
+- Negative stock recovery (ING-001, ING-021, NNL-003, NNL-006 pre-existing negative balances — separate workstream)
+- MAC drift baseline (164 lines from June backfill — separate recovery)
+
+---
+
 ## 2026-07-04 (Antigravity) - UI accessibility & transitions standardization (Phases A5, B, C1-C4)
 
 **Trigger:** Phase A5 regression patch + Phase B and C instructions in prompt. Resolved systemic a11y, layout modal, and transition-all issues.
