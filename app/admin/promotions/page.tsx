@@ -1,5 +1,6 @@
 import { getPromotionsData } from "./actions";
 import PromotionsClient from "./components/PromotionsClient";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +19,14 @@ export default async function PromotionsPage() {
   ).reverse(); // Reverse because localeCompare(a, b) sorts ascending by default if b.created_at is first
 
   return (
-    <PromotionsClient
-      promotions={sorted}
-      brands={activeBrands}
-      products={activeProducts}
-      variants={activeVariants}
-      categories={activeCategories}
-    />
+    <Suspense fallback={<div>Đang tải...</div>}>
+      <PromotionsClient
+        promotions={sorted}
+        brands={activeBrands}
+        products={activeProducts}
+        variants={activeVariants}
+        categories={activeCategories}
+      />
+    </Suspense>
   );
 }

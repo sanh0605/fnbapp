@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useUrlState } from "@/lib/use-url-state";
 import { deletePromotionAction } from "../actions";
 import { PromotionForm } from "./PromotionForm";
 import { formatNumber } from "@/lib/format";
@@ -25,9 +26,9 @@ export default function PromotionsClient({
   categories,
 }: PromotionsClientProps) {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [typeFilter, setTypeFilter] = useState("ALL");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useUrlState<string>("status", "ALL");
+  const [typeFilter, setTypeFilter] = useUrlState<string>("type", "ALL");
+  const [searchTerm, setSearchTerm] = useUrlState<string>("q", "");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState<DBPromotion | undefined>(undefined);
   const [deleteId, setDeleteConfirmId] = useState<string | null>(null);
