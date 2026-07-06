@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-06 (Antigravity) - UI Accessibility: aria-live regions for admin errors
+
+**Trigger:** Accessibility (a11y) audit follow-up: adding `aria-live="polite"` and `role="alert"` (or `role="status"` for success) to error/success message wrapper elements in admin forms and client components.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Aria-live Regions** | Audited and modified 14 admin form and client components (PromotionForm, ProductCategoryForm, ProductionForm, EditUserForm, UserForm, BaseIngredientForm, ModifierForm, SemiProductForm, ConversionForm, PurchasedItemForm, SupplierForm, inventory/sync page, StockAdjustmentsClient, BackupClient) to include standard `role="alert"` and `aria-live="polite"` attributes on error message divs, and `role="status"` on success messages. | ✅ | `d759712` |
+
+### Verification
+- `npx tsc --noEmit`: **0 errors**.
+- `npx vitest run`: **308/308 tests pass**.
+
+---
+
 ## 2026-07-06 (Antigravity) - Intl.NumberFormat Centralization & price displays
 
 **Trigger:** Centralizing pricing/money formatting across the codebase to adhere to plain vi-VN locale number formatting with no currency unit suffixes.
