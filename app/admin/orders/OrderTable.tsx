@@ -71,6 +71,7 @@ export default function OrderTable({
 
   const [orderToVoid, setOrderToVoid] = useState<Order | null>(null);
   const [voidReason, setVoidReason] = useState("");
+  const [voidError, setVoidError] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState<number>(() => {
     const val = searchParams.get("page");
@@ -221,17 +222,19 @@ export default function OrderTable({
   );
 
   const confirmVoid = async () => {
+    setVoidError(null);
     if (!orderToVoid || !voidReason.trim()) return;
     const orderId = orderToVoid.id;
     const reasonToSend = voidReason;
-    setOrderToVoid(null);
-    setVoidReason("");
+    
     const res = await voidOrderV2(orderId, reasonToSend);
     if (!res.success) {
-      alert("Lỗi hủy đơn: " + res.error);
+      setVoidError("Lỗi hủy đơn: " + res.error);
       return;
     }
     // Update local state immediately; no page reload needed.
+    setOrderToVoid(null);
+    setVoidReason("");
     setOrders(prev =>
       prev.map(o => o.id === orderId ? { ...o, status: "VOIDED" } : o)
     );
@@ -520,6 +523,12 @@ export default function OrderTable({
               <p className="text-gray-600 text-sm">
                 Đơn sẽ chuyển sang trạng thái VOIDED. Nguyên liệu sẽ được hoàn trả vào kho. Lịch sử đơn được giữ nguyên.
               </p>
+              {voidError && (
+                <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 flex justify-between">
+                  <span>{voidError}</span>
+                  <button onClick={() => setVoidError(null)} className="ml-2 text-red-500 hover:text-red-700" aria-label="Đóng">×</button>
+                </div>
+              )}
               <textarea
                 placeholder="Lý do hủy đơn (bắt buộc)"
                 value={voidReason}
@@ -530,7 +539,7 @@ export default function OrderTable({
             </div>
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-3">
               <button
-                onClick={() => { setOrderToVoid(null); setVoidReason(""); }}
+                onClick={() => { setOrderToVoid(null); setVoidReason(""); setVoidError(null); }}
                 className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50"
               >
                 Hủy bỏ

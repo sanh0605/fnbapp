@@ -72,6 +72,7 @@ export default function OrderEditModal({
   const [orderDiscountType, setOrderDiscountType] = useState("VND");
   const [paymentMethod, setPaymentMethod] = useState(order.method || "Tien mat");
   const [isSaving, setIsSaving] = useState(false);
+  const [inlineError, setInlineError] = useState<string | null>(null);
   const [editReason, setEditReason] = useState("");
 
   // Item editing state
@@ -162,9 +163,10 @@ export default function OrderEditModal({
   };
 
   const handleSave = async () => {
+    setInlineError(null);
     if (items.length === 0) return;
     if (!editReason.trim()) {
-      alert("Lý do chỉnh sửa là bắt buộc");
+      setInlineError("Lý do chỉnh sửa là bắt buộc");
       return;
     }
     setIsSaving(true);
@@ -208,7 +210,7 @@ export default function OrderEditModal({
     if (res.success) {
       onSave(order);  // parent will reload
     } else {
-      alert("Lỗi cập nhật đơn: " + res.error);
+      setInlineError("Lỗi cập nhật đơn: " + res.error);
     }
   };
 
@@ -229,6 +231,13 @@ export default function OrderEditModal({
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
+
+        {inlineError && (
+          <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 flex justify-between">
+            <span>{inlineError}</span>
+            <button onClick={() => setInlineError(null)} className="ml-2 text-red-500 hover:text-red-700" aria-label="Đóng">×</button>
+          </div>
+        )}
 
         {/* Items list */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
