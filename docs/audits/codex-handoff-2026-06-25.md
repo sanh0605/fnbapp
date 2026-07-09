@@ -1,5 +1,28 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-09 - MAC drift baseline recovery plan Task 3
+
+- `[x]` Revised live baseline: 170 `Order_Lines_V2` rows, audit total delta
+  +119,782 VND.
+- `[x]` Added read-only audit script
+  `scripts/audit-mac-drift-baseline.ts`.
+- `[x]` Added audit document
+  `docs/audits/2026-07-09-mac-drift-baseline-audit.md`.
+- `[x]` Added line artifact
+  `docs/audits/2026-07-09-mac-drift-baseline-lines.json`.
+- `[x]` Investigated the old 164-line baseline movement. Current data has 8
+  post-2026-07-02 non-migrated live POS lines for `PROD-028` totaling +713 VND;
+  only 2/170 drift lines have migrated markers.
+- `[x]` Added migration `0012_mac_drift_baseline_locks.sql` targeting
+  `order_line_id`, with an update/delete prevention trigger and atomic recovery
+  RPC.
+- `[x]` Added dry-run recovery script `scripts/recover-mac-drift.ts`; generated
+  `docs/audits/2026-07-09-mac-drift-recovery-plan.json`.
+- `[!]` Migration 0012 was not deployed; no lock rows inserted; recovery
+  `--apply` was not executed.
+
+Commit: pending.
+
 ## 2026-07-09 - Hong to Luc idempotency precision fix Task 2.1
 
 - `[x]` Chose Option C: SQL-side rounding in the idempotent rerun check.

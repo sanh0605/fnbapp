@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Codex) - MAC drift baseline recovery plan (170 lines)
+
+**Trigger:** Task 3 revised after the live audit no longer matched the old 164-line / +119,036 VND baseline.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Revised baseline audit** | Added `scripts/audit-mac-drift-baseline.ts` and `docs/audits/2026-07-09-mac-drift-baseline-audit.md`. Current live baseline is 170 order lines, audit total delta +119,782 VND. | Done | pending |
+| **+6 investigation** | Documented that the net +6 line movement is not migrated-order driven: only 2/170 lines have migrated markers, while 8 post-2026-07-02 live POS lines for `PROD-028` add +713 VND via the same `BTP_SHORTFALL` pattern. | Done | pending |
+| **Order-line lock design** | Added migration `0012_mac_drift_baseline_locks.sql`, targeting `order_line_id` rather than `ledger_id`, with a mutation-prevention trigger and reviewed recovery RPC. | Done | pending |
+| **Recovery dry-run path** | Added `scripts/recover-mac-drift.ts`, which builds a stable 170-change plan and defaults to dry-run. `--apply` calls the atomic RPC but was not executed. | Done | pending |
+
+### Verification
+- `scripts/audit-mac-drift-baseline.ts`: read-only, produced 170-line JSON artifact.
+- `scripts/recover-mac-drift.ts`: dry-run only, produced source hash `22e702ee1ec5d8fa02ea18be5c01279a234287a552139fdde23cba8d2c389bd1`.
+- No Supabase deploy, lock insert, or COGS update performed.
+
+---
+
 ## 2026-07-09 (Codex) - Hong to Luc idempotency precision fix (Task 2.1)
 
 **Trigger:** Migration 0010 still rejected an idempotent rerun because `write_set.ledgerAfter[].quantity_change` kept full JS precision while `stock_ledger.quantity_change` is stored at 6 decimal places.
