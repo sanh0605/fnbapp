@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { formatNumber } from "@/lib/format";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface OrderEvent {
   id: string;
@@ -229,9 +230,11 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
 
         <div className="space-y-6">
           {filteredEvents.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-gray-500 italic shadow-sm">
-              Không tìm thấy sự kiện nào phù hợp.
-            </div>
+            <EmptyState 
+              icon="🕒" 
+              title="Chưa có nhật ký hoạt động" 
+              description="Hệ thống sẽ ghi nhận lịch sử các thao tác thay đổi ở đây."
+            />
           ) : (
             filteredEvents.map((evt) => {
               const badge = getEventBadge(evt.event_type);

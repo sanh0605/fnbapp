@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { BrandForm, DeleteBrandButton } from "./components/BrandForm";
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -32,8 +33,12 @@ export default async function BrandsPage() {
           <tbody className="divide-y divide-gray-100">
             {brands.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                  Chưa có dữ liệu thương hiệu.
+                <td colSpan={5} className="p-0">
+                  <EmptyState 
+                    icon="🏢" 
+                    title="Chưa có thương hiệu" 
+                    description="Thêm thương hiệu đầu tiên để bắt đầu."
+                  />
                 </td>
               </tr>
             ) : (

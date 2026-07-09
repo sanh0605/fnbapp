@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SemiProductForm } from "./SemiProductForm";
 import HistoryModal from "@/components/HistoryModal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
@@ -63,9 +64,11 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
       </StickyFilterBar>
 
       {filteredSemiProducts.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-500 italic shadow-sm">
-          Không tìm thấy bán thành phẩm nào phù hợp.
-        </div>
+        <EmptyState 
+          icon="🥙" 
+          title="Chưa có bán thành phẩm" 
+          description="Tạo bán thành phẩm (sơ chế, pha sẵn) để dùng làm nguyên liệu hoặc bán trực tiếp."
+        />
       ) : (
         <>
           {/* Desktop Table View (>= 768px) */}

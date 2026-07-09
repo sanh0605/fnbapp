@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { ItemCategoryForm, DeleteBtn } from "@/components/InventoryForms";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deleteItemCategory } from "@/app/admin/inventory/actions";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,15 @@ export default async function CategoriesPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {categories.length === 0 && (
-              <tr><td colSpan={4} className="py-8 text-center text-gray-500">Chưa có dữ liệu</td></tr>
+              <tr>
+                <td colSpan={4} className="p-0">
+                  <EmptyState 
+                    icon="📂" 
+                    title="Chưa có danh mục" 
+                    description="Thêm danh mục để phân loại hàng hóa."
+                  />
+                </td>
+              </tr>
             )}
             {categories.map((c: any) => (
               <tr key={c.id} className="hover:bg-gray-50">

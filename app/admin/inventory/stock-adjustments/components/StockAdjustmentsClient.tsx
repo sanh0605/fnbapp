@@ -5,6 +5,7 @@ import { useUrlState } from "@/lib/use-url-state";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface StockAdjustment {
   id: string;
@@ -163,8 +164,12 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
             <tbody className="divide-y divide-gray-100">
               {filteredAdjustments.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-6 py-12 text-center text-gray-500 italic">
-                    Không tìm thấy phiếu điều chỉnh nào.
+                  <td colSpan={10} className="p-0">
+                    <EmptyState 
+                      icon="📋" 
+                      title="Chưa có phiếu điều chỉnh" 
+                      description="Tạo phiếu điều chỉnh để cân bằng kho thực tế."
+                    />
                   </td>
                 </tr>
               ) : (
@@ -251,9 +256,11 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
         {/* Mobile Card Layout */}
         <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/40">
           {filteredAdjustments.length === 0 ? (
-            <div className="text-center text-gray-500 italic py-8">
-              Không tìm thấy phiếu điều chỉnh nào.
-            </div>
+            <EmptyState 
+              icon="📋" 
+              title="Chưa có phiếu điều chỉnh" 
+              description="Tạo phiếu điều chỉnh để cân bằng kho thực tế."
+            />
           ) : (
             filteredAdjustments.map((adj) => {
               const diffColor =

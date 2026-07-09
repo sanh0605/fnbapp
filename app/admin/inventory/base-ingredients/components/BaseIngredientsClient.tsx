@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { BaseIngredientForm } from "./BaseIngredientForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deleteBaseIngredientAction } from "../actions";
 import type { DBBaseIngredient, DBUnit } from "@/types/db";
 
@@ -64,10 +65,14 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
             <tbody className="divide-y divide-gray-100">
               {filteredIngredients.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 italic">
-                    Không tìm thấy nguyên liệu nào phù hợp.
-                  </td>
-                </tr>
+                <td colSpan={5} className="p-0">
+                  <EmptyState 
+                    icon="🥚" 
+                    title="Chưa có nguyên liệu" 
+                    description="Thêm nguyên liệu cơ bản cho công thức món."
+                  />
+                </td>
+              </tr>
               ) : (
                 filteredIngredients.map((ing) => (
                   <tr key={ing.id} className="hover:bg-gray-50/50 transition-colors">

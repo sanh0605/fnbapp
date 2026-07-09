@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { ConversionForm } from "./ConversionForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { deleteConversionAction } from "../actions";
 import type { DBUOMConversion, DBPurchasedItem, DBBaseIngredient, DBUnit } from "@/types/db";
 
@@ -78,8 +79,12 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
             <tbody className="divide-y divide-gray-100">
               {filteredConversions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 italic">
-                    Không tìm thấy quy đổi nào phù hợp.
+                  <td colSpan={5} className="p-0">
+                    <EmptyState 
+                      icon="🔄" 
+                      title="Chưa có quy đổi" 
+                      description="Thêm quy đổi đơn vị để quản lý nguyên liệu dễ dàng hơn."
+                    />
                   </td>
                 </tr>
               ) : (

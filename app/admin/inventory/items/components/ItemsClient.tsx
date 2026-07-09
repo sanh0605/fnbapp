@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useUrlState } from "@/lib/use-url-state";
 import StickyFilterBar from "@/components/StickyFilterBar";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { PurchasedItemForm } from "./PurchasedItemForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deletePurchasedItemAction } from "../actions";
@@ -95,10 +96,14 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
             <tbody className="divide-y divide-gray-100">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 italic">
-                    Không tìm thấy hàng hóa nào phù hợp.
-                  </td>
-                </tr>
+                <td colSpan={5} className="p-0">
+                  <EmptyState 
+                    icon="📦" 
+                    title="Chưa có hàng hóa" 
+                    description="Thêm hàng hóa để quản lý tồn kho."
+                  />
+                </td>
+              </tr>
               ) : (
                 filteredItems.map(item => {
                   const itemConversions = conversions.filter(c => c.purchased_item_id === item.id);
@@ -151,10 +156,12 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
         {/* Mobile Card Layout (< 768px) */}
         <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
           {filteredItems.length === 0 ? (
-            <div className="text-center text-gray-500 italic py-8">
-              Không tìm thấy hàng hóa nào phù hợp.
-            </div>
-          ) : (
+          <EmptyState 
+            icon="📦" 
+            title="Chưa có hàng hóa" 
+            description="Thêm hàng hóa để quản lý tồn kho."
+          />
+        ) : (
             filteredItems.map(item => {
               const itemConversions = conversions.filter(c => c.purchased_item_id === item.id);
               return (

@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { UnitForm, DeleteBtn } from "./UnitForm";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -32,10 +33,14 @@ export default async function UnitsPage() {
             <tbody className="divide-y divide-gray-100">
               {units.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="p-8 text-center text-gray-500">
-                    Chưa có đơn vị nào.
-                  </td>
-                </tr>
+                <td colSpan={3} className="p-0">
+                  <EmptyState 
+                    icon="📏" 
+                    title="Chưa có đơn vị nào" 
+                    description="Thêm đơn vị tính để sử dụng trong hệ thống."
+                  />
+                </td>
+              </tr>
               ) : (
                 units.map((unit) => (
                   <tr key={unit.id} className="hover:bg-gray-50/50 transition">

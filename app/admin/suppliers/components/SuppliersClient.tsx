@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SupplierForm, DeleteSupplierButton } from "./SupplierForm";
 import type { DBSupplier } from "@/types/db";
 
@@ -75,10 +76,14 @@ export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
             <tbody className="divide-y divide-gray-100">
               {filteredSuppliers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 italic">
-                    Không tìm thấy nhà cung cấp nào phù hợp.
-                  </td>
-                </tr>
+                <td colSpan={6} className="p-0">
+                  <EmptyState 
+                    icon="🚚" 
+                    title="Chưa có nhà cung cấp" 
+                    description="Thêm nhà cung cấp để quản lý nguồn nhập hàng."
+                  />
+                </td>
+              </tr>
               ) : (
                 filteredSuppliers.map((s) => (
                   <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">

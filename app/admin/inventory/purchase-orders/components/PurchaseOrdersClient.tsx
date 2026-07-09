@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import Link from "next/link";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { formatNumber } from "@/lib/format";
 import type { DBPurchaseOrder, DBSupplier } from "@/types/db";
 
@@ -114,8 +115,12 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
             <tbody className="divide-y divide-gray-100">
               {sortedOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 italic">
-                    Không tìm thấy đơn nhập hàng nào.
+                  <td colSpan={6} className="p-0">
+                    <EmptyState 
+                      icon="📦" 
+                      title="Chưa có đơn nhập hàng" 
+                      description="Tạo đơn nhập hàng để thêm vào tồn kho."
+                    />
                   </td>
                 </tr>
               ) : (
