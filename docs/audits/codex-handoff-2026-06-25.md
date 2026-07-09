@@ -1,5 +1,18 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-09 - Postgres role timezone migration Task 4
+
+- `[x]` Added `supabase/migrations/0013_set_postgres_role_timezone.sql`.
+- `[x]` Migration uses `current_database()` in a DO block to avoid hardcoding
+  the database name.
+- `[x]` Only `postgres` receives default timezone
+  `Asia/Ho_Chi_Minh`; `service_role` and `authenticated` are intentionally
+  unchanged.
+- `[!]` Not deployed. Claude should deploy and verify from a fresh Supabase SQL
+  Editor session.
+
+Commit: pending.
+
 ## 2026-07-09 - PROD-028 BTP_SHORTFALL active drift investigation Task 3.1
 
 - `[x]` Added read-only debug trace script

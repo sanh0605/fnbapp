@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Codex) - Postgres role timezone migration (Task 4)
+
+**Trigger:** User approved narrowed Option A from the timezone display evaluation.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Postgres-only timezone default** | Added `supabase/migrations/0013_set_postgres_role_timezone.sql` to set only the `postgres` role default timezone to `Asia/Ho_Chi_Minh` for the current database. `service_role` and `authenticated` remain unchanged. | Done | pending |
+
+### Verification
+- No Supabase deploy or manual DB query performed.
+- App/UI timestamp code unchanged.
+
+---
+
 ## 2026-07-09 (Codex) - PROD-028 BTP_SHORTFALL active drift investigation (Task 3.1)
 
 **Trigger:** Task 3 revealed 8 new post-2026-07-02 live POS `PROD-028` drift lines, meaning drift was still growing.
