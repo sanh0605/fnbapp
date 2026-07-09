@@ -1,5 +1,25 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-09 - PROD-028 BTP_SHORTFALL active drift investigation Task 3.1
+
+- `[x]` Added read-only debug trace script
+  `scripts/debug-prod-028-btp-shortfall.ts`.
+- `[x]` Added investigation doc
+  `docs/audits/2026-07-09-prod-028-btp-shortfall-investigation.md`.
+- `[x]` Confirmed root cause: PO-051 for `NNL-007` was created at
+  `2026-07-06T04:38:14.956371Z` but effective in stock ledger at
+  `2026-07-04T17:00:00Z`; the 8 affected `PROD-028` sales occurred between
+  those timestamps.
+- `[x]` Replaying without PO-051 exactly matches stored COGS for sample lines:
+  PHD000883 4,512 VND and PHD000893 11,280 VND.
+- `[x]` Rejected PROD-028 recipe gap and POS-vs-audit algorithm mismatch for
+  this active source.
+- `[!]` Recommended Task 3.2 backdated purchase receipt impact detection/policy
+  before Option B recovery. Option A lock remains possible only as a snapshot.
+- `[!]` No code fix, no migration deploy, no lock insert, and no recovery apply.
+
+Commit: pending.
+
 ## 2026-07-09 - MAC drift baseline recovery plan Task 3
 
 - `[x]` Revised live baseline: 170 `Order_Lines_V2` rows, audit total delta

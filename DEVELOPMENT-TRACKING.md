@@ -4,6 +4,23 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Codex) - PROD-028 BTP_SHORTFALL active drift investigation (Task 3.1)
+
+**Trigger:** Task 3 revealed 8 new post-2026-07-02 live POS `PROD-028` drift lines, meaning drift was still growing.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Active-source trace** | Added `scripts/debug-prod-028-btp-shortfall.ts`, a read-only trace for `PHD000883` and `PHD000893`. | Done | pending |
+| **Root cause audit** | Added `docs/audits/2026-07-09-prod-028-btp-shortfall-investigation.md`. Confirmed PO-051 was entered after the affected sales but backdated before them, changing current MAC replay for `NNL-007`. | Done | pending |
+| **Sequencing recommendation** | Recommended Task 3.2 backdated purchase receipt impact detection/policy before Option B recovery. Option A lock can proceed only as a snapshot, not a future-drift prevention mechanism. | Done | pending |
+
+### Verification
+- Debug script ran read-only; no DB writes.
+- MAC drift baseline audit remains 170 lines / +119,782 VND.
+
+---
+
 ## 2026-07-09 (Codex) - MAC drift baseline recovery plan (170 lines)
 
 **Trigger:** Task 3 revised after the live audit no longer matched the old 164-line / +119,036 VND baseline.
