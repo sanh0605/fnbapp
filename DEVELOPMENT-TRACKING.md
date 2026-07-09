@@ -4,6 +4,36 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Claude) - Session wrap-up: Task 2.1 verified, Task 3 deferred, Task 4 verified
+
+**Trigger:** End-of-session coordination summary after Codex completed Tasks 2.1, 3, 3.1, 4.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Task 2.1 deploy + verify** | Deployed migration 0011 (precision fix) via `supabase db push`. Re-ran apply with snapshot `recovery-20260706T053239562Z`, output returned `already_applied: TRUE` (previously errored). | ✅ Done | 4f9a647 |
+| **Task 3.1 prompt** | Wrote `docs/handoffs/2026-07-09-codex-prod-028-btp-shortfall-investigation.md` after Task 3 audit revealed active drift source. | ✅ Done | c59bc53 |
+| **Task 3 recovery decision** | Reviewed Task 3 + Task 3.1 findings. Chose Path 3 (defer recovery entirely): 119,782 VND materiality low (~5 USD), backdated receipt policy needs business decision. Audit docs preserve evidence. | ✅ Done | - |
+| **Task 4 implementation prompt** | Wrote `docs/handoffs/2026-07-09-codex-timezone-implementation.md` for narrowed Option A from Phase A eval. | ✅ Done | 156b93a |
+| **Task 4 deploy + verify** | Deployed migration 0013 via `supabase db push`. Migration 0012 (MAC drift lock infra) also applied as side effect — empty lock table, trigger inactive, no behavior change. Verified Dashboard SQL Editor returns `Asia/Ho_Chi_Minh` for `SHOW timezone` and `created_at` displays with `+07` offset matching UI. | ✅ Done | 4121813 |
+
+### Verification
+- Migration 0011: rerun returns `already_applied: TRUE`.
+- Migration 0013: `SHOW timezone` returns `Asia/Ho_Chi_Minh`; `orders_v2.created_at` displays in Vietnam time.
+- Migration 0012: deployed as side effect, `audit_baseline_locks` table empty, trigger inactive (no locks inserted).
+- `npx tsc --noEmit`: 0 errors.
+- `npx vitest run`: 320/320 pass.
+
+### Deferred to next session
+- Task 1 (Modifier recipe save hardening) — prompt ready at `docs/handoffs/2026-07-09-codex-modifier-recipe-hardening.md`.
+- Task 3.2 (Backdated receipt policy) — needs product/business decision before implementation.
+- Task 3 recovery (Option A lock + Option B recompute) — blocked on Task 3.2.
+
+### No push
+Per collaboration protocol, all commits are local-only. User will push when ready.
+
+---
+
 ## 2026-07-09 (Codex) - Postgres role timezone migration (Task 4)
 
 **Trigger:** User approved narrowed Option A from the timezone display evaluation.
