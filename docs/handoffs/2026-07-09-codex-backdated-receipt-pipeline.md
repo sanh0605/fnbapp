@@ -1,8 +1,8 @@
-# Codex Prompt — Backdated Receipt Detection + Manual Review Pipeline (Task 3.2)
+# Codex Prompt — Backdated Receipt Detection + Recompute Engine (Task 3.2 Engine Scope)
 
 Date: 2026-07-09
 Owner: Codex (Engine Lead)
-Trigger: User interview confirmed policy direction. Single-agent execution end-to-end (4 phases), Claude reviews each phase.
+Trigger: User interview confirmed policy direction. Engine pipeline only — UI handled separately by Antigravity.
 
 ## Background
 
@@ -25,16 +25,29 @@ This is a data model design gap, not a code bug. Backdated entries inherently cr
 3. Admin reviews flag → approves recompute
 4. System recomputes atomically → drift = 0
 
-## Architecture
+## Scope (this prompt)
 
-4 phases, sequential. One commit per phase. Pause after each commit for Claude review.
+**Engine only.** Schema, trigger, RPC, TS pipeline, tests.
+
+UI (admin review page) is Antigravity scope. Claude writes separate Antigravity prompt after Phase A+B done (schema + RPC names stabilized).
+
+### Architecture overview
 
 ```
-Phase A (Detection) -> Phase B (Recompute) -> Phase C (Admin UI) -> Phase D (Tests)
-   migration 0014       TS script + RPC         admin pages           vitest
+Phase A (Detection)        Codex
+   |  migration 0014 + trigger + backfill audit
+   v
+Phase B (Recompute)        Codex
+   |  TS pipeline + lifecycle RPC (reuse apply_mac_drift_recovery)
+   v
+[Claude review checkpoint]
+   |
+   +-> Phase C (Admin UI)  Antigravity (separate prompt)
+   |
+   +-> Phase D (Tests)     Codex (engine tests only)
 ```
 
-After Phase D, Task 3 recovery (Option A lock + Option B recompute existing 170 lines) becomes meaningful — no new drift leaks in.
+Phases C and D run in parallel after Phase B done. Codex commits Phase A → Phase B → Phase D. Antigravity does Phase C in parallel.
 
 ## Coordination protocol
 
@@ -165,9 +178,9 @@ execute function public.flag_backdated_ledger_entry();
 Logic:
 1. Scan `stock_ledger` for entries where `transaction_type IN ('PO_RECEIPT', 'STOCK_ADJUST', 'PRODUCTION_YIELD')` AND `created_at < (sibling source row's created_at)`
 2. For PO_RECEIPT: join `stock_ledger.reference_id = purchase_orders.id`, compare `stock_ledger.created_at < purchase_orders.created_at`
-3. For STOCK_ADJUST / PRODUCTION_YIELD: no sibling source — use proxy `stock_ledger.created_at < now() - interval '1 day'` (very rough estimate)
+3. For STOCK_ADJUST / PRODUCTION_YIELD: no sibling source — use proxy `stock_ledger.created_at < now() - interval '1 day'` (very rough estimate, document as imprecise)
 4. Group counts by month, source_table, item_reference
-5. Compute total VND impact for each backdated entry (using existing MAC replay with/without entry)
+5. Compute total VND impact for each backdated entry (using existing MAC replay with/without entry — reuse pattern from `scripts/debug-prod-028-btp-shortfall.ts`)
 6. Output JSON artifact + console summary
 
 Do NOT actually insert these into `backdated_ledger_events`. The table is for trigger-captured future events only. Past events stay as audit-only.
@@ -181,7 +194,7 @@ Do NOT actually insert these into `backdated_ledger_events`. The table is for tr
 3. **VND impact**: sum of |drift| attributable to backdating
 4. **Sample**: 5 example entries with full trace
 5. **Coverage gap**: which entry types lack sibling source for precise detection
-6. **Recommendation**: confirm Phase B-D scope still appropriate, or adjust
+6. **Recommendation**: confirm Phase B scope still appropriate, or adjust
 
 ### Phase A verification
 
@@ -216,13 +229,13 @@ Claude directs: proceed to Phase B, or adjust Phase A first.
 
 ## Phase B: Recompute Script + Idempotency RPC
 
-**Goal:** TypeScript script that, given an event_id, finds affected order lines, computes new COGS (sale-time-known MAC), calls atomic recompute RPC.
+**Goal:** TypeScript pipeline that, given an event_id, finds affected order lines, computes new COGS (sale-time-known MAC), calls atomic recompute RPC.
 
 ### Files
 
 | File | Action | Purpose |
 |---|---|---|
-| `supabase/migrations/0015_backdated_event_recompute.sql` | Create | RPC for atomic flag update + lock |
+| `supabase/migrations/0015_backdated_event_recompute.sql` | Create | RPC for atomic lifecycle update |
 | `lib/backdated-ledger/recompute-event.ts` | Create | TS orchestration |
 | `lib/backdated-ledger/find-affected-lines.ts` | Create | Affected line discovery |
 | `lib/backdated-ledger/compute-sale-time-cogs.ts` | Create | Sale-time MAC replay |
@@ -291,6 +304,59 @@ revoke all on function public.mark_backdated_event_recomputed(uuid, text, text, 
 grant execute on function public.mark_backdated_event_recomputed(uuid, text, text, integer) to service_role;
 ```
 
+Also add a `reject_backdated_event` RPC for completeness (used by UI later):
+
+```sql
+create or replace function public.reject_backdated_event(
+  p_event_id uuid,
+  p_reviewer text,
+  p_reason text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_event public.backdated_ledger_events%rowtype;
+begin
+  if p_reviewer is null or btrim(p_reviewer) = '' then
+    raise exception 'p_reviewer required';
+  end if;
+  if p_reason is null or btrim(p_reason) = '' then
+    raise exception 'p_reason required';
+  end if;
+
+  select * into v_event
+  from public.backdated_ledger_events
+  where id = p_event_id
+  for update;
+
+  if not found then
+    raise exception 'Event % not found', p_event_id;
+  end if;
+
+  if v_event.status = 'RECOMPUTED' then
+    raise exception 'Event % already recomputed, cannot reject', p_event_id;
+  end if;
+
+  update public.backdated_ledger_events
+  set status = 'REJECTED',
+      reviewed_by = p_reviewer,
+      reviewed_at = now(),
+      notes = p_reason
+  where id = p_event_id;
+
+  return jsonb_build_object('event_id', p_event_id, 'rejected', true);
+end;
+$$;
+
+revoke all on function public.reject_backdated_event(uuid, text, text) from public;
+revoke all on function public.reject_backdated_event(uuid, text, text) from anon;
+revoke all on function public.reject_backdated_event(uuid, text, text) from authenticated;
+grant execute on function public.reject_backdated_event(uuid, text, text) to service_role;
+```
+
 ### TS modules
 
 **`lib/backdated-ledger/find-affected-lines.ts`**:
@@ -313,7 +379,7 @@ Reuse logic from `scripts/debug-prod-028-btp-shortfall.ts` (which already does t
 
 **`lib/backdated-ledger/recompute-event.ts`**:
 
-Orchestrator:
+Orchestrator (functional, no UI concerns — this is engine library importable by Antigravity later):
 1. Load event
 2. Find affected lines
 3. Compute new costs for each
@@ -323,9 +389,11 @@ Orchestrator:
 7. Call `mark_backdated_event_recomputed` RPC
 8. Return summary
 
+Export `recomputeEventDryRun(eventId)` and `recomputeEventApply(eventId, reviewer)` functions. UI (Phase C, Antigravity) will import these.
+
 **`scripts/recompute-backdated-event.ts`**:
 
-CLI:
+CLI for engine testing (UI uses lib functions directly):
 ```bash
 npx vite-node scripts/recompute-backdated-event.ts --event-id <uuid> --reviewer <name> --dry-run
 npx vite-node scripts/recompute-backdated-event.ts --event-id <uuid> --reviewer <name> --apply
@@ -343,119 +411,27 @@ Default `--dry-run`. `--apply` triggers actual recompute.
 ### Phase B commit
 
 ```
-Codex feat: backdated event recompute TS pipeline + lifecycle RPC (Task 3.2 Phase B)
+Codex feat: backdated event recompute TS pipeline + lifecycle RPCs (Task 3.2 Phase B)
 ```
 
 Commit body:
 - Reuse of existing `apply_mac_drift_recovery` (migration 0012) for atomic update
 - Sale-time MAC replay strategy (filter ledger to visibility < sale_time)
 - Dry-run plan hash example
+- Exported lib functions for Antigravity UI import
 
-### Phase B pause point
+### Phase B pause point (Claude writes Phase C Antigravity prompt here)
 
-After commit, **pause for Claude review**. Claude reviews:
-- RPC correctness (idempotency, lock, status transitions)
-- TS module design (separation of concerns)
-- Sale-time replay correctness (vs Phase A debug script evidence)
-- Dry-run plan output sanity
-
-Claude directs: proceed to Phase C, or adjust Phase B first.
+After commit, **pause for Claude review**. Claude:
+1. Reviews Phase B (RPC correctness, TS design, sale-time replay)
+2. Writes Phase C Antigravity prompt with concrete RPC names + lib function signatures
+3. Directs: Codex proceeds to Phase D in parallel with Antigravity Phase C
 
 ---
 
-## Phase C: Admin Review UI
+## Phase D: Engine Tests
 
-**Goal:** Admin page to review pending backdated events and approve recompute.
-
-**Scope note:** UI is normally Antigravity's domain. User explicitly delegated to Codex for this task. Follow existing UI patterns (see `app/admin/orders/page.tsx`, `app/admin/audit/...`).
-
-### Files
-
-| File | Action | Purpose |
-|---|---|---|
-| `app/admin/audit/backdated-ledger/page.tsx` | Create | List page |
-| `app/admin/audit/backdated-ledger/[eventId]/page.tsx` | Create | Detail page |
-| `app/admin/audit/backdated-ledger/actions.ts` | Create | Server actions |
-| `app/admin/audit/backdated-ledger/loading.tsx` | Create | Loading skeleton |
-| `components/backdated-ledger/event-row.tsx` | Create | List row component |
-| `components/backdated-ledger/event-detail.tsx` | Create | Detail view component |
-| `components/backdated-ledger/status-badge.tsx` | Create | Status pill |
-
-### Reuse existing components
-
-- `components/ui/PageHeader.tsx` — page header
-- `components/ui/EmptyState.tsx` — empty list state
-- `components/ui/SkeletonTable.tsx` — loading state
-- `lib/datetime.ts:formatDateTime` — Vietnam time display
-- `lib/format.ts:formatNumber` — VND formatting
-- `lib/supabase.ts` — server client
-
-### List page features
-
-- Filter: status (PENDING default), date range, item_reference, source_table
-- Sort: detected_at desc default
-- Pagination: 50 per page
-- Columns: detected_at, source_table, source_id, item_reference, quantity, unit_cost, status, actions
-- Row click → detail page
-
-### Detail page features
-
-- Event metadata (detected_at, effective vs visibility timestamps, source)
-- Affected order lines table (line_id, order_id, sale_time, stored COGS, would-be COGS, delta)
-- Total delta VND
-- "Approve + Recompute" button (calls server action)
-- "Reject" button (sets status = REJECTED, requires reason in notes)
-- Confirmation modal before action
-
-### Server actions
-
-```ts
-// actions.ts
-'use server';
-
-export async function approveAndRecompute(eventId: string, reviewer: string) {
-  // 1. Call lib/backdated-ledger/recompute-event.ts orchestrator
-  // 2. Return success/failure with summary
-}
-
-export async function rejectEvent(eventId: string, reviewer: string, reason: string) {
-  // 1. Update status to REJECTED with notes
-}
-```
-
-### Phase C verification
-
-- `npx tsc --noEmit` → 0 errors
-- `npx vitest run` → 320/320 pass
-- Manual: navigate to `/admin/audit/backdated-ledger` — page loads, shows empty state (no PENDING events yet)
-- Lighthouse-friendly: no console errors, no missing keys
-
-### Phase C commit
-
-```
-Codex feat: admin backdated ledger review UI (Task 3.2 Phase C)
-```
-
-Commit body:
-- Page structure overview
-- Reuse of shared components
-- Action button UX (confirmation modal pattern)
-
-### Phase C pause point
-
-After commit, **pause for Claude review**. Claude reviews:
-- UI consistency (matches existing admin pages)
-- Component reuse (no duplicate implementations)
-- Action safety (confirmation modal, error handling)
-- Accessibility (aria-* attributes, keyboard navigation)
-
-Claude directs: proceed to Phase D, or adjust Phase C first.
-
----
-
-## Phase D: Tests
-
-**Goal:** Test coverage for detection trigger, recompute pipeline, idempotency.
+**Goal:** Test coverage for detection trigger, recompute pipeline, idempotency. Engine side only — UI tests are Antigravity scope.
 
 ### Files
 
@@ -505,15 +481,16 @@ Commit body:
 - Coverage areas: detection, recompute, find-affected-lines
 - Mock strategy: real DB fixtures or in-memory mocks
 
-### Phase D pause point (final)
+### Phase D pause point (final for Codex)
 
 After commit, **pause for Claude final review**. Claude reviews:
 - Test coverage adequacy
 - Mock strategy (no over-mocking that hides real bugs)
-- All 4 phases coherent end-to-end
+- All Codex phases (A, B, D) coherent end-to-end
 
-After Claude approves Phase D, Task 3.2 is complete. Next:
+After Claude approves Phase D, Codex's Task 3.2 scope is complete. Antigravity Phase C continues independently. Next:
 - Claude deploys migrations 0014 + 0015 via `supabase db push`
+- After Antigravity Phase C: integration test through UI
 - Claude runs dry-run on first real backdated event when one appears
 - Eventually: Task 3 recovery (Option A lock + Option B recompute 170 baseline lines)
 
@@ -536,6 +513,7 @@ After Claude approves Phase D, Task 3.2 is complete. Next:
 
 ## Out of scope (do NOT do)
 
+- **Phase C (Admin UI)** — Antigravity scope. Claude writes separate prompt after Phase B.
 - Migration 0012 lock rows for existing 170 lines (Task 3 recovery, separate task)
 - Recompute existing 170-line baseline (Task 3 recovery)
 - Modify existing recipes (none need changing)
@@ -560,6 +538,7 @@ Do NOT silently work around blockers. Do NOT guess at requirements.
 - Migration 0012 (lock infrastructure) already deployed as side effect — empty lock table, safe
 - After Phase D, Claude will:
   1. Deploy migrations 0014 + 0015
-  2. Wait for first real backdated event (likely within a week per user interview)
-  3. Walk through admin UI, approve first recompute, verify drift = 0
-  4. Eventually: write Task 3 recovery prompt (Option A + B for 170 baseline lines)
+  2. Wait for Antigravity Phase C UI to land
+  3. Walk through admin UI when first real backdated event appears
+  4. Approve first recompute, verify drift = 0
+  5. Eventually: write Task 3 recovery prompt (Option A + B for 170 baseline lines)
