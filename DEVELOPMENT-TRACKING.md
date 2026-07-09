@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Codex) - Hong to Luc migration idempotency rerun fix
+
+**Trigger:** The `apply_hong_to_luc_migration` RPC could reject a safe idempotent rerun with `Partial migration state: target ledger fingerprint mismatch` after the migration had already been applied and verified.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **RPC rerun ledger check** | Added migration `0010_hong_to_luc_idempotency_fix.sql` replacing the RPC with the same write path but a semantic multiset comparison for already-applied ledger rows. The comparison includes `transaction_type`, `reference_id`, `item_reference`, `quantity_change`, and `source`, and excludes transient `id`/`created_at` fields. | ✅ | pending |
+| **Regression guard** | Added a static regression test proving migration 0010 uses semantic `EXCEPT ALL` ledger comparison and does not join by generated ledger IDs or timestamps in the existing-run branch. | ✅ | pending |
+
+### Verification
+- `npx vitest run`: **315/315 tests pass**.
+- `npx tsc --noEmit`: **0 errors**.
+- `git diff --check`: **clean**.
+- No Supabase deployment or production rerun performed.
+
+---
+
 ## 2026-07-09 (Antigravity) - UI Consistency Audit & Fixes (Phases A & B)
 
 **Trigger:** Roadmap Task 5: UI consistency audit + fixes across the admin dashboard.

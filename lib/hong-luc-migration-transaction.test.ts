@@ -107,6 +107,40 @@ describe("applyHongToLucMigration", () => {
     expect(script).toContain("process.exitCode = 1");
   });
 
+  it("documents semantic ledger idempotency comparison in migration 0010", () => {
+    const migration = readFileSync(
+      resolve(
+        process.cwd(),
+        "supabase/migrations/0010_hong_to_luc_idempotency_fix.sql",
+      ),
+      "utf8",
+    );
+    const existingRunBranch = migration.slice(
+      migration.indexOf("if v_existing.migration_key is not null then"),
+      migration.indexOf("return jsonb_build_object("),
+    );
+    const ledgerCheck = existingRunBranch.slice(
+      existingRunBranch.indexOf("with expected_rows as"),
+      existingRunBranch.indexOf(
+        "raise exception 'Partial migration state: target ledger fingerprint mismatch'",
+      ),
+    );
+
+    expect(ledgerCheck).toContain("expected->>'transaction_type' as transaction_type");
+    expect(ledgerCheck).toContain("expected->>'reference_id' as reference_id");
+    expect(ledgerCheck).toContain("expected->>'item_reference' as item_reference");
+    expect(ledgerCheck).toContain("(expected->>'quantity_change')::numeric as quantity_change");
+    expect(ledgerCheck).toContain("coalesce(expected->>'source', '') as source");
+    expect(ledgerCheck).toContain("ledger.transaction_type");
+    expect(ledgerCheck).toContain("ledger.reference_id");
+    expect(ledgerCheck).toContain("ledger.item_reference");
+    expect(ledgerCheck).toContain("ledger.quantity_change");
+    expect(ledgerCheck).toContain("coalesce(ledger.source, '') as source");
+    expect(ledgerCheck).toContain("except all");
+    expect(ledgerCheck).not.toContain("ledger.id = expected->>'id'");
+    expect(ledgerCheck).not.toContain("ledger.created_at");
+  });
+
   it("loads the immutable write set for an idempotent rerun", async () => {
     const writeSet = {
       orders: [],

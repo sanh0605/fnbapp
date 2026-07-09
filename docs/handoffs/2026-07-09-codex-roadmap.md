@@ -14,7 +14,7 @@ Inventory all pending engine work in Codex's scope. Each task has its own prompt
 | # | Task | Impact | Effort | Prompt File | Status |
 |---|---|---|---|---|---|
 | 1 | Modifier recipe save hardening (Phase 1.5) | Data integrity | Medium | `2026-07-09-codex-modifier-recipe-hardening.md` | 🔄 Prompt ready |
-| 2 | Migration RPC idempotency edge case | Robustness | Small | `2026-07-09-codex-idempotency-fix.md` | 🔄 Prompt ready |
+| 2 | Migration RPC idempotency edge case | Robustness | Small | `2026-07-09-codex-idempotency-fix.md` | ✅ Implemented by Codex, pending review/deploy |
 | 3 | MAC drift baseline recovery | Financial accuracy | Medium-Large | `2026-07-09-codex-mac-drift-recovery.md` | 🔄 Prompt ready |
 | 4 | Timezone display evaluation | UX polish | Small | `2026-07-09-codex-timezone-eval.md` | 🔄 Prompt ready |
 

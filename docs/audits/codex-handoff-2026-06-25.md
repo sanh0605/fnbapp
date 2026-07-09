@@ -1,5 +1,20 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-09 - Hong to Luc migration idempotency rerun fix
+
+- `[x]` Added migration `0010_hong_to_luc_idempotency_fix.sql` with
+  `CREATE OR REPLACE FUNCTION public.apply_hong_to_luc_migration`.
+- `[x]` Existing-run ledger verification now compares semantic ledger content as
+  a multiset: `transaction_type`, `reference_id`, `item_reference`,
+  `quantity_change`, and `source`.
+- `[x]` Existing-run ledger verification intentionally ignores transient
+  generated fields such as `id` and `created_at`.
+- `[x]` Write path remains unchanged from migration 0009.
+- `[x]` Regression test added for the SQL shape.
+- `[!]` Not deployed to Supabase and no production `--apply` rerun executed.
+
+Commit: pending.
+
 ## 2026-07-09 - Modifier recipe save hardening Phase 1.5
 
 - `[x]` Modifier save now uses `planRecipeSave` for `MODIFIER` targets.
