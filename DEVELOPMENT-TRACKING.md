@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Codex) - Hong to Luc idempotency precision fix (Task 2.1)
+
+**Trigger:** Migration 0010 still rejected an idempotent rerun because `write_set.ledgerAfter[].quantity_change` kept full JS precision while `stock_ledger.quantity_change` is stored at 6 decimal places.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Precision-safe rerun check** | Added migration `0011_hong_to_luc_idempotency_precision_fix.sql`, replacing the RPC again and rounding expected `quantity_change` to 6 decimals inside the existing-run semantic multiset comparison. | ✅ | pending |
+| **Regression guard** | Extended `lib/hong-luc-migration-transaction.test.ts` to require `round((expected->>'quantity_change')::numeric, 6)` in the 0011 idempotency branch. | ✅ | pending |
+| **Next priority recommendation** | Recommended Task 3 (MAC drift baseline recovery) before Task 4 implementation because Task 3 affects financial correctness; Task 4 is UX-only and already has a safe Phase A recommendation. | ✅ | pending |
+
+### Verification
+- `npx vitest run`: **316/316 tests pass**.
+- `npx tsc --noEmit`: **0 errors**.
+- `git diff --check`: **clean**.
+- No Supabase deployment or production rerun performed; Claude owns deploy/verify per prompt.
+
+---
+
 ## 2026-07-09 (Codex) - DB viewer timezone display evaluation
 
 **Trigger:** Supabase Dashboard SQL/Table Editor displays `timestamptz` values in UTC, while the app correctly displays Vietnam time via `lib/datetime.ts`.

@@ -1,5 +1,26 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-09 - Hong to Luc idempotency precision fix Task 2.1
+
+- `[x]` Chose Option C: SQL-side rounding in the idempotent rerun check.
+- `[x]` Added migration `0011_hong_to_luc_idempotency_precision_fix.sql`.
+- `[x]` Existing-run semantic ledger multiset comparison now rounds expected
+  `quantity_change` to 6 decimals before comparing with stored
+  `stock_ledger.quantity_change`.
+- `[x]` Rejected Option A because changing `stock_ledger.quantity_change`
+  precision is a global schema change with unnecessary blast radius.
+- `[x]` Rejected Option B as insufficient alone because existing
+  `data_migration_runs.write_set` rows would still contain full JS precision.
+- `[x]` Regression test added for the 0011 SQL shape.
+- `[!]` Not deployed to Supabase and no production `--apply` rerun executed.
+  Claude should deploy 0011 and rerun:
+  `node_modules\.bin\vite-node.cmd scripts\migrate-hong-tra-to-luc-tra.ts --apply --snapshot-id recovery-20260706T053239562Z`.
+- `[~]` Remaining priority recommendation: Task 3 MAC drift baseline recovery
+  before Task 4 timezone implementation, because Task 3 affects financial
+  correctness while Task 4 is UX-only.
+
+Commit: pending.
+
 ## 2026-07-09 - Hong to Luc migration idempotency rerun fix
 
 - `[x]` Added migration `0010_hong_to_luc_idempotency_fix.sql` with

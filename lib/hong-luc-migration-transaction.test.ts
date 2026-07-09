@@ -141,6 +141,33 @@ describe("applyHongToLucMigration", () => {
     expect(ledgerCheck).not.toContain("ledger.created_at");
   });
 
+  it("documents quantity precision rounding in migration 0011 idempotency comparison", () => {
+    const migration = readFileSync(
+      resolve(
+        process.cwd(),
+        "supabase/migrations/0011_hong_to_luc_idempotency_precision_fix.sql",
+      ),
+      "utf8",
+    );
+    const existingRunBranch = migration.slice(
+      migration.indexOf("if v_existing.migration_key is not null then"),
+      migration.indexOf("return jsonb_build_object("),
+    );
+    const ledgerCheck = existingRunBranch.slice(
+      existingRunBranch.indexOf("with expected_rows as"),
+      existingRunBranch.indexOf(
+        "raise exception 'Partial migration state: target ledger fingerprint mismatch'",
+      ),
+    );
+
+    expect(ledgerCheck).toContain(
+      "round((expected->>'quantity_change')::numeric, 6) as quantity_change",
+    );
+    expect(ledgerCheck).toContain("ledger.quantity_change");
+    expect(ledgerCheck).toContain("except all");
+    expect(ledgerCheck).not.toContain("(expected->>'quantity_change')::numeric as quantity_change");
+  });
+
   it("loads the immutable write set for an idempotent rerun", async () => {
     const writeSet = {
       orders: [],
