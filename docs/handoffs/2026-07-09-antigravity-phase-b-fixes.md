@@ -7,7 +7,7 @@ Source: `docs/audits/2026-07-06-ui-consistency-audit.md`
 
 ## Goal
 
-Apply 4 user-approved fixes from Phase A findings. Each fix is 1 commit (4 commits total). Do NOT touch Loading states (deferred).
+Apply 5 user-approved fixes from Phase A findings. Each fix is 1 commit (5 commits total).
 
 ## Fix 1: Empty states component (highest impact)
 
@@ -241,19 +241,156 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
 
 ## Workflow
 
-1. Start with **Fix 1** (largest, creates 2 new components used by later fixes)
+1. Start with **Fix 1** (largest, creates reusable components used by later fixes)
 2. Verify + commit
 3. Move to **Fix 2**, verify + commit
 4. Move to **Fix 3**, verify + commit
 5. Move to **Fix 4**, verify + commit
-6. Update `DEVELOPMENT-TRACKING.md` final entry summarizing Phase B
+6. Move to **Fix 5** (Loading states), verify + commit
+7. Update `DEVELOPMENT-TRACKING.md` final entry summarizing Phase B
 
 ## Out of scope
 
-- Do NOT touch Loading states (deferred to future task)
 - Do NOT redesign page layouts (just standardize)
 - Do NOT change information architecture
 - Do NOT add new dependencies
+
+---
+
+## Fix 5: Loading states (skeleton everywhere)
+
+**Goal:** Replace blank fallbacks and plain-text "Đang tải..." with skeleton loaders on data-heavy pages.
+
+### Step 5.1: Create Skeleton component
+
+File: `components/ui/Skeleton.tsx`
+
+```tsx
+interface SkeletonProps {
+  className?: string;
+  variant?: "text" | "rect" | "circle";
+  width?: string;
+  height?: string;
+  count?: number;  // render N stacked lines
+}
+
+export function Skeleton({ className = "", variant = "rect", width, height, count = 1 }: SkeletonProps) {
+  const baseClass = variant === "circle"
+    ? "rounded-full"
+    : variant === "text"
+    ? "rounded"
+    : "rounded-lg";
+  const style = { width, height };
+
+  if (count === 1) {
+    return (
+      <div
+        className={`animate-pulse bg-gray-200 ${baseClass} ${className}`}
+        style={style}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  return (
+    <div className={`space-y-2 ${className}`} aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} className={`animate-pulse bg-gray-200 ${baseClass}`} style={style} />
+      ))}
+    </div>
+  );
+}
+```
+
+### Step 5.2: Standard fallback patterns
+
+Create composable skeletons for common UI patterns.
+
+**Table skeleton** (`components/ui/SkeletonTable.tsx`):
+
+```tsx
+export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="bg-gray-50 px-4 py-3 flex gap-4">
+        {Array.from({ length: cols }, (_, i) => (
+          <Skeleton key={i} className="flex-1" height="12px" />
+        ))}
+      </div>
+      {/* Rows */}
+      {Array.from({ length: rows }, (_, r) => (
+        <div key={r} className="px-4 py-3 flex gap-4 border-t border-gray-100">
+          {Array.from({ length: cols }, (_, c) => (
+            <Skeleton key={c} className="flex-1" height="14px" />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+**Dashboard skeleton** (cards + chart placeholders) — define as needed.
+
+**Form skeleton** (for FormModal content while loading).
+
+### Step 5.3: Wrap pages with Suspense + skeleton
+
+For each page currently using blank or "Đang tải..." fallback:
+
+```tsx
+// Before:
+<Suspense fallback={<div>Đang tải...</div>}>
+  <ItemsClient ... />
+</Suspense>
+
+// After:
+import { SkeletonTable } from "@/components/ui/SkeletonTable";
+
+<Suspense fallback={<SkeletonTable rows={8} cols={5} />}>
+  <ItemsClient ... />
+</Suspense>
+```
+
+### Pages to update
+
+| Page | Current | New fallback |
+|---|---|---|
+| `/admin/orders` | `<div>Đang tải...</div>` | `<SkeletonTable rows={10} cols={6} />` |
+| `/admin/inventory/items` | `<div>Đang tải...</div>` | `<SkeletonTable rows={8} cols={5} />` |
+| `/admin/inventory/stock-adjustments` | `<div>Đang tải...</div>` | `<SkeletonTable rows={6} cols={4} />` |
+| `/admin/promotions` | `<div>Đang tải...</div>` | `<SkeletonTable rows={6} cols={4} />` |
+| `/admin/reports/*` | Blank (no boundary) | Local `<Suspense>` + dashboard skeleton |
+| `/admin/products/*` | Blank (no boundary) | Local `<Suspense>` + table skeleton |
+| `/admin/dashboard` | (uses global `loading.tsx`) | Consider local skeleton for charts section |
+
+Also check `app/**/loading.tsx` files — replace any text-only loaders with skeleton.
+
+### Step 5.4: prefers-reduced-motion compatibility
+
+Phase B global rule (commit `9cfbd26`) already disables animations under reduced-motion. The `animate-pulse` will be near-instant for users with that preference — acceptable behavior.
+
+### Verify Fix 5
+
+- `npx tsc --noEmit` → 0 errors
+- `npx vitest run` → 308+ tests pass
+- Manual:
+  - Throttle network (DevTools → Network → Slow 3G)
+  - Open each affected page → see skeleton, not blank/text
+  - Reduced motion: DevTools → Rendering → Emulate → skeleton shows static (no pulse)
+
+### Commit Fix 5
+
+`Antigravity ui: standardize loading states with <Skeleton> component (X pages)`
+
+---
+
+## Out of scope (all 5 fixes)
+
+- Do NOT redesign page layouts (just standardize)
+- Do NOT change information architecture
+- Do NOT add new dependencies (skeleton uses Tailwind's `animate-pulse`)
 
 ## Coordination note
 
