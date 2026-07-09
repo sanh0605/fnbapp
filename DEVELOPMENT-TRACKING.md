@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Codex) - Modifier recipe save hardening (Phase 1.5)
+
+**Trigger:** Product recipe save hardening follow-up. Modifier recipe saves still selected the first open recipe from unsorted sheet order, which could close or compare the wrong recipe when duplicate open rows exist.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Modifier save recipe planner** | Updated `saveModifierAction` to use `planRecipeSave` for `MODIFIER` targets, compare normalized ingredients, no-op when latest open recipe is unchanged, and close only the latest open recipe when creating a new version. | ✅ | pending |
+| **Regression tests** | Added action-level tests proving older duplicate open recipes are not closed/used, plus generic `MODIFIER` coverage for `findLatestActiveRecipe` and `planRecipeSave`. | ✅ | pending |
+
+### Verification
+- `npx vitest run`: **314/314 tests pass**.
+- `npx tsc --noEmit`: **0 errors**.
+- Scoped `git diff --check` for touched files: **clean**.
+- Repo-wide `git diff --check` is currently blocked by unrelated dirty UI files with trailing whitespace; Codex did not edit those files.
+
+---
+
 ## 2026-07-06 (Antigravity) - URL state sync scale
 
 **Trigger:** Roadmap Task 4: Scale the validated URL state sync pattern to 3 filter-heavy pages (`/admin/inventory/items`, `/admin/inventory/stock-adjustments`, `/admin/promotions`) to support URL sharing and persistence.

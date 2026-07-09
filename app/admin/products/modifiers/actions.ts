@@ -11,6 +11,7 @@ import {
   validateModifierIngredients,
 } from "@/lib/modifier-recipe";
 import { requireAdmin } from "@/lib/auth";
+import { planRecipeSave, type EffectiveRecipe } from "@/lib/recipe-selection";
 
 const MODIFIER_SHEET = "Modifiers";
 const RECIPE_SHEET = "Recipes";
@@ -95,7 +96,8 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
   const ingredients = parseModifierIngredients(ingredientsJson);
   const validation = validateModifierIngredients(ingredients);
   if (!validation.ok) return fail(validation.error);
-  const normalizedIngredientsJson = JSON.stringify(normalizeModifierIngredients(ingredients));
+  const normalizedIngredients = normalizeModifierIngredients(ingredients);
+  const normalizedIngredientsJson = JSON.stringify(normalizedIngredients);
 
   try {
     let finalId = modifier_id;
@@ -115,35 +117,34 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
       });
     }
 
-    // Recipe versioning -- preserve exactly
-    const allRecipes = await findAll(RECIPE_SHEET);
-    const existingActive = allRecipes.find(
-      (r: DBRecipe) =>
-        r.target_type === "MODIFIER" &&
-        r.target_id === finalId &&
-        (!r.end_date || r.end_date === "")
+    const allRecipes = (await findAll(RECIPE_SHEET)) as DBRecipe[];
+    const targetRecipes = allRecipes.filter(
+      r => r.target_type === "MODIFIER" && r.target_id === finalId,
+    ) as EffectiveRecipe[];
+    const recipePlan = planRecipeSave(
+      targetRecipes,
+      "MODIFIER",
+      finalId,
+      normalizedIngredients,
     );
 
-    if (existingActive) {
-      if (existingActive.ingredients_json !== normalizedIngredientsJson) {
-        // Close old recipe
-        await update(RECIPE_SHEET, existingActive.id, { end_date: nowIso });
-        // Create new version
-        const recipeId = await generateNewId(RECIPE_SHEET, "RC");
-        await insert(RECIPE_SHEET, {
-          id: recipeId,
-          target_type: "MODIFIER",
-          target_id: finalId,
-          ingredients_json: normalizedIngredientsJson,
-          status: "ACTIVE",
-          start_date: nowIso,
-          end_date: null,
-          created_at: nowIso,
-        });
+    if (recipePlan.decision === "CREATE_VERSION") {
+      if (!recipePlan.activeRecipe?.id) {
+        throw new Error(`Active recipe for ${finalId} is missing an ID`);
       }
-      // else: no change, no-op
-    } else {
-      // No active recipe, create one
+      await update(RECIPE_SHEET, recipePlan.activeRecipe.id, { end_date: nowIso });
+      const recipeId = await generateNewId(RECIPE_SHEET, "RC");
+      await insert(RECIPE_SHEET, {
+        id: recipeId,
+        target_type: "MODIFIER",
+        target_id: finalId,
+        ingredients_json: normalizedIngredientsJson,
+        status: "ACTIVE",
+        start_date: nowIso,
+        end_date: null,
+        created_at: nowIso,
+      });
+    } else if (recipePlan.decision === "CREATE_INITIAL") {
       const recipeId = await generateNewId(RECIPE_SHEET, "RC");
       await insert(RECIPE_SHEET, {
         id: recipeId,

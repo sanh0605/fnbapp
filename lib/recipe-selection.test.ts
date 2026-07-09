@@ -145,6 +145,39 @@ describe("findLatestActiveRecipe", () => {
       )?.id,
     ).toBe("REC-011");
   });
+
+  it("filters by both target type and target ID", () => {
+    const base = {
+      status: "ACTIVE",
+      created_at: "2026-06-25T00:00:00.000Z",
+      end_date: null,
+    };
+    const recipes = [
+      {
+        ...base,
+        id: "REC-WRONG-TYPE",
+        target_type: "PRODUCT_VARIANT",
+        target_id: "MOD-001",
+      },
+      {
+        ...base,
+        id: "REC-WRONG-ID",
+        target_type: "MODIFIER",
+        target_id: "MOD-002",
+      },
+      {
+        ...base,
+        id: "REC-MODIFIER",
+        target_type: "MODIFIER",
+        target_id: "MOD-001",
+        created_at: "2026-06-01T00:00:00.000Z",
+      },
+    ];
+
+    expect(
+      findLatestActiveRecipe(recipes, "MODIFIER", "MOD-001")?.id,
+    ).toBe("REC-MODIFIER");
+  });
 });
 
 describe("planRecipeSave", () => {
@@ -213,6 +246,83 @@ describe("planRecipeSave", () => {
         [],
         "PRODUCT_VARIANT",
         "VAR-001",
+        [
+          { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 20 },
+        ],
+      ),
+    ).toEqual({
+      decision: "CREATE_INITIAL",
+      activeRecipe: null,
+      newRecipeCount: 1,
+    });
+  });
+
+  it("returns UNCHANGED for equivalent modifier ingredients", () => {
+    const activeRecipe = {
+      id: "REC-MODIFIER",
+      target_type: "MODIFIER",
+      target_id: "MOD-001",
+      status: "ACTIVE",
+      created_at: "2026-06-25T00:00:00.000Z",
+      end_date: null,
+      ingredients_json: JSON.stringify([
+        { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 20 },
+        { ingredient_type: "SEMI_PRODUCT", ingredient_id: "BTP-001", quantity: 60 },
+      ]),
+    };
+
+    expect(
+      planRecipeSave(
+        [activeRecipe],
+        "MODIFIER",
+        "MOD-001",
+        [
+          { ingredient_type: "SEMI_PRODUCT", ingredient_id: "BTP-001", quantity: "60" },
+          { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 20 },
+        ],
+      ),
+    ).toMatchObject({
+      decision: "UNCHANGED",
+      activeRecipe,
+      newRecipeCount: 0,
+    });
+  });
+
+  it("returns CREATE_VERSION for changed modifier ingredients", () => {
+    const activeRecipe = {
+      id: "REC-MODIFIER",
+      target_type: "MODIFIER",
+      target_id: "MOD-001",
+      status: "ACTIVE",
+      created_at: "2026-06-25T00:00:00.000Z",
+      end_date: null,
+      ingredients_json: JSON.stringify([
+        { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 20 },
+      ]),
+    };
+
+    expect(
+      planRecipeSave(
+        [activeRecipe],
+        "MODIFIER",
+        "MOD-001",
+        [
+          { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 30 },
+        ],
+      ),
+    ).toMatchObject({
+      decision: "CREATE_VERSION",
+      activeRecipe,
+      newRecipeCount: 1,
+    });
+  });
+
+  it("returns CREATE_INITIAL for modifier ingredients with no active recipe", () => {
+    expect(
+      planRecipeSave(
+        [],
+        "MODIFIER",
+        "MOD-001",
         [
           { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 20 },
         ],

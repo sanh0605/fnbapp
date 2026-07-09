@@ -1,5 +1,20 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-09 - Modifier recipe save hardening Phase 1.5
+
+- `[x]` Modifier save now uses `planRecipeSave` for `MODIFIER` targets.
+- `[x]` Duplicate open modifier recipes are resolved deterministically by latest
+  `created_at`, matching the product save hardening pattern.
+- `[x]` Unchanged latest modifier recipe is a no-op; changed ingredients close
+  only the latest active recipe before inserting one new version.
+- `[x]` Regression tests added for action-level duplicate-open behavior and
+  generic `MODIFIER` helper coverage.
+- `[x]` Vitest: 314/314 pass; TypeScript: 0 errors.
+- `[!]` Modifier delete path still uses first open recipe selection and remains
+  out of scope for this phase, matching the user prompt.
+
+Commit: pending.
+
 ## 2026-07-04 - Recipe selection hardening
 
 - `[x]` Product save selects the latest ACTIVE, open recipe deterministically.
