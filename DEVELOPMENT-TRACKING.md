@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Codex) - DB viewer timezone display evaluation
+
+**Trigger:** Supabase Dashboard SQL/Table Editor displays `timestamptz` values in UTC, while the app correctly displays Vietnam time via `lib/datetime.ts`.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Phase A audit** | Added `docs/audits/2026-07-09-timezone-display-eval.md` covering local investigation limits, PostgreSQL timezone behavior, Option A/B/C tradeoffs, risk, reversibility, test plan, and rollout plan. | ✅ | pending |
+| **Recommendation** | Recommended narrowed Option A first: set `timezone` only for the human Dashboard role (`postgres`) after live verification, not `service_role`/`authenticated`. | ✅ | pending |
+
+### Verification
+- Docs-only change; no app code or DB behavior changed.
+- No Supabase deploy or SQL mutation performed.
+
+---
+
 ## 2026-07-09 (Codex) - Hong to Luc migration idempotency rerun fix
 
 **Trigger:** The `apply_hong_to_luc_migration` RPC could reject a safe idempotent rerun with `Partial migration state: target ledger fingerprint mismatch` after the migration had already been applied and verified.
