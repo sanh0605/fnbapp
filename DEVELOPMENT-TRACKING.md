@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-09 (Antigravity) - UI Consistency Audit & Fixes (Phases A & B)
+
+**Trigger:** Roadmap Task 5: UI consistency audit + fixes across the admin dashboard.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Phase A Audit** | Audited 28 admin pages for visual/interaction consistency (loading, empty, errors, headers, table layout, forms, colors). Documented findings in `docs/audits/2026-07-06-ui-consistency-audit.md`. | ✅ | (past session) |
+| **Fix 1: Empty States** | Created reusable `<EmptyState>` component. Standardized empty states across 11 list pages (Brands, Units, Categories, Suppliers, Items, Conversions, Purchase Orders, Stock Adjustments, Base Ingredients, Semi-Products, Activity Log). | ✅ | (this session) |
+| **Fix 2: Table Layouts** | Standardized `thead` typography (`text-[11px] uppercase tracking-wider`) and row hover states (`hover:bg-gray-50/50`) across admin list pages (Brands, Units, Categories, Sales). | ✅ | (this session) |
+| **Fix 3: Inline Errors** | Replaced `alert()` popups with accessible inline error banners in `OrderEditModal` and `OrderTable` (Void modal). | ✅ | (this session) |
+| **Fix 4: Page Headers** | Created reusable `<PageHeader>` component. Standardized page headers on Brands, Units, Categories, and COGS Estimate pages. | ✅ | (this session) |
+| **Fix 5: Loading Skeletons**| Created `<Skeleton>` and `<SkeletonTable>` components. Wrapped data-heavy pages (Dashboard, Orders, Sales) with `loading.tsx` Suspense boundaries. | ✅ | (this session) |
+
+### Verification
+- `npx vitest run`: **314/314 tests pass**.
+- `npx tsc --noEmit`: **0 errors**.
+
+---
 ## 2026-07-09 (Codex) - Modifier recipe save hardening (Phase 1.5)
 
 **Trigger:** Product recipe save hardening follow-up. Modifier recipe saves still selected the first open recipe from unsorted sheet order, which could close or compare the wrong recipe when duplicate open rows exist.
