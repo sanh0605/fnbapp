@@ -22,12 +22,12 @@ export default async function BrandsPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50 text-gray-600 text-sm border-b border-gray-100">
-              <th className="px-6 py-4 font-medium">ID</th>
-              <th className="px-6 py-4 font-medium">Tên Thương Hiệu</th>
-              <th className="px-6 py-4 font-medium text-center">Mã Đơn Hàng</th>
-              <th className="px-6 py-4 font-medium">Ngày Bắt Đầu</th>
-              <th className="px-6 py-4 font-medium text-right">Thao tác</th>
+            <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <th scope="col" className="px-6 py-4 font-bold">ID</th>
+              <th scope="col" className="px-6 py-4 font-bold">Tên Thương Hiệu</th>
+              <th scope="col" className="px-6 py-4 font-bold text-center">Mã Đơn Hàng</th>
+              <th scope="col" className="px-6 py-4 font-bold">Ngày Bắt Đầu</th>
+              <th scope="col" className="px-6 py-4 font-bold text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -43,7 +43,7 @@ export default async function BrandsPage() {
               </tr>
             ) : (
               brands.map((brand: DBBrand) => (
-                <tr key={brand.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={brand.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{brand.id}</td>
                   <td className="px-6 py-4 text-sm text-gray-800 font-semibold">{brand.name}</td>
                   <td className="px-6 py-4 text-sm font-bold text-blue-600 text-center">{brand.code || "N/A"}</td>

@@ -30,11 +30,11 @@ export default async function CategoriesPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className="bg-gray-50 text-gray-600 border-b border-gray-100">
-              <th className="px-6 py-4 font-medium">ID</th>
-              <th className="px-6 py-4 font-medium">Tên Phân Loại</th>
-              <th className="px-6 py-4 font-medium">Đặc Tính (System Type)</th>
-              <th className="px-6 py-4 font-medium text-right">Thao tác</th>
+            <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <th scope="col" className="px-6 py-4 font-bold">ID</th>
+              <th scope="col" className="px-6 py-4 font-bold">Tên Phân Loại</th>
+              <th scope="col" className="px-6 py-4 font-bold">Đặc Tính (System Type)</th>
+              <th scope="col" className="px-6 py-4 font-bold text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -50,7 +50,7 @@ export default async function CategoriesPage() {
               </tr>
             )}
             {categories.map((c: any) => (
-              <tr key={c.id} className="hover:bg-gray-50">
+              <tr key={c.id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-4 font-medium text-gray-900">{c.id}</td>
                 <td className="px-6 py-4 font-semibold text-gray-800">{c.name}</td>
                 <td className="px-6 py-4">{getTypeLabel(c.system_type)}</td>

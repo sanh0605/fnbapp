@@ -197,11 +197,11 @@ export default async function SalesReportPage({
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="font-bold text-gray-900 text-base mb-3">Doanh thu theo PT Thanh toán</h3>
           <table className="w-full text-sm">
-            <thead className="text-gray-400 font-medium">
+            <thead className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
               <tr>
-                <th className="text-left py-2">Phương thức</th>
-                <th className="text-right py-2">Số đơn</th>
-                <th className="text-right py-2">Doanh thu</th>
+                <th scope="col" className="px-6 py-4 font-bold text-left">Phương thức</th>
+                <th scope="col" className="px-6 py-4 font-bold text-right">Số đơn</th>
+                <th scope="col" className="px-6 py-4 font-bold text-right">Doanh thu</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -209,12 +209,12 @@ export default async function SalesReportPage({
                 <tr><td colSpan={3} className="text-center py-4 text-gray-400">Không có dữ liệu</td></tr>
               ) : (
                 paymentBreakdown.map(p => (
-                  <tr key={p.method}>
-                    <td className="py-2 font-medium text-gray-800">
+                  <tr key={p.method} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-800">
                       {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
                     </td>
-                    <td className="py-2 text-right text-gray-700">{p.orderCount}</td>
-                    <td className="py-2 text-right text-green-700 font-medium">{formatNumber(p.revenue)}</td>
+                    <td className="px-6 py-4 text-right text-gray-700">{p.orderCount}</td>
+                    <td className="px-6 py-4 text-right text-green-700 font-medium">{formatNumber(p.revenue)}</td>
                   </tr>
                 ))
               )}
@@ -383,11 +383,11 @@ export default async function SalesReportPage({
           </div>
           <div className="hidden md:block overflow-x-auto max-h-[528px] overflow-y-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-white text-gray-400 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
+              <thead className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100 sticky top-0 z-10">
                 <tr>
-                  <th className="px-4 py-3">Topping</th>
-                  <th className="px-4 py-3 text-right">Số lượng</th>
-                  <th className="px-4 py-3 text-right">Doanh thu</th>
+                  <th scope="col" className="px-6 py-4 font-bold">Topping</th>
+                  <th scope="col" className="px-6 py-4 font-bold text-right">Số lượng</th>
+                  <th scope="col" className="px-6 py-4 font-bold text-right">Doanh thu</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -395,20 +395,20 @@ export default async function SalesReportPage({
                   <tr><td colSpan={3} className="text-center py-8 text-gray-400">Không có topping nào</td></tr>
                 ) : (
                   bestToppings.map((item, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
-                      <td className="px-4 py-3 text-right font-bold text-gray-600">{item.qty}</td>
-                      <td className="px-4 py-3 text-right text-green-600 font-medium">{formatNumber(Math.round(item.revenue))}</td>
+                    <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-gray-800">{item.name}</td>
+                      <td className="px-6 py-4 text-right font-bold text-gray-600">{item.qty}</td>
+                      <td className="px-6 py-4 text-right text-green-600 font-medium">{formatNumber(Math.round(item.revenue))}</td>
                     </tr>
                   ))
                 )}
               </tbody>
               {bestToppings.length > 0 && (
                 <tfoot className="bg-gray-50 border-t-2 border-gray-200 sticky bottom-0 z-10 font-bold text-gray-900 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
-                  <tr>
-                    <td className="px-4 py-3">Tổng cộng</td>
-                    <td className="px-4 py-3 text-right">{totalToppingQty.toLocaleString("vi-VN")}</td>
-                    <td className="px-4 py-3 text-right text-green-700">{formatNumber(Math.round(totalToppingRevenue))}</td>
+                  <tr className="bg-gray-50/50">
+                    <td className="px-6 py-4 font-bold">Tổng cộng</td>
+                    <td className="px-6 py-4 text-right font-bold">{totalToppingQty.toLocaleString("vi-VN")}</td>
+                    <td className="px-6 py-4 text-right text-green-700 font-bold">{formatNumber(Math.round(totalToppingRevenue))}</td>
                   </tr>
                 </tfoot>
               )}
