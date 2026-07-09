@@ -49,35 +49,57 @@ Sample actual[0]:   quantity_change: -35.714286           (6 decimal places)
 
 All 30 mismatches are precision-related. Other fields (transaction_type, reference_id, item_reference, source) match correctly.
 
-## Fix
+## Fix (Codex evaluates and picks)
 
-Create `supabase/migrations/0011_hong_to_luc_idempotency_precision.sql`:
+Claude identified 3 viable options. **Codex evaluates all 3, picks the most appropriate based on engine judgment, and documents the reasoning in the commit message.**
 
-Update the multiset comparison to round expected quantity to 6 decimals (matching DB storage precision):
+### Option A: Change column type to full precision
 
 ```sql
--- In the expected_rows CTE, change:
-(expected->>'quantity_change')::numeric as quantity_change,
+ALTER TABLE public.stock_ledger
+  ALTER COLUMN quantity_change TYPE numeric;
+```
 
--- To:
+**Pros:** Full precision stored, future-proof for any calculation
+**Cons:** Schema change affects ALL stock_ledger queries, potential money integrity implications, larger migration
+
+### Option B: Round at write_set generation (app-side)
+
+In `lib/hong-luc-migration.ts` (or wherever write_set is built), round quantity_change to 6 decimals before storing in write_set:
+
+```ts
+quantity_change: Math.round(Number(q) * 1e6) / 1e6
+```
+
+**Pros:** write_set accurately reflects what DB stored
+**Cons:** Existing write_sets (already in `data_migration_runs`) still have full precision → those reruns still fail unless combined with Option C
+
+### Option C: Round at comparison (SQL-side)
+
+In migration 0011, update the multiset comparison to round expected:
+
+```sql
 round((expected->>'quantity_change')::numeric, 6) as quantity_change,
 ```
 
-Same change in actual_rows CTE is not needed (already at 6 decimals), but for symmetry:
-```sql
-round(ledger.quantity_change, 6) as quantity_change,
-```
+**Pros:** Works retroactively on existing write_sets, minimally invasive
+**Cons:** Hardcodes 6-decimal assumption in comparison logic
 
-Also update the regression test in `lib/hong-luc-migration-transaction.test.ts`:
-- Current test only verifies SQL text contains "except all"
-- Add a test that simulates rerun with precision-rounded values
-- Or add a test that verifies the SQL text contains "round(... , 6)"
+### Codex's decision criteria
 
-## Verification
+Pick the option that:
+1. Minimizes blast radius (avoid schema change if unnecessary)
+2. Works retroactively (existing reruns must succeed)
+3. Maintains data integrity
+4. Is testable
+
+If Codex picks Option C, also add regression test that verifies SQL text contains `round(`. If Codex picks A or B, document why C was insufficient.
+
+## Verification (regardless of option picked)
 
 1. `npx tsc --noEmit` → 0 errors
 2. `npx vitest run` → 315+/315+ pass
-3. **Deploy migration 0011 to Supabase** via `SUPABASE_DB_PASSWORD=<pwd> supabase db push`
+3. **Deploy to Supabase** via `SUPABASE_DB_PASSWORD=<pwd> supabase db push`
 4. **Re-run apply** with same snapshot:
    ```
    npx vite-node scripts/migrate-hong-tra-to-luc-tra.ts --apply --snapshot-id recovery-20260706T053239562Z
@@ -88,16 +110,29 @@ Also update the regression test in `lib/hong-luc-migration-transaction.test.ts`:
 
 Single commit:
 ```
-Codex fix: idempotency precision rounding in apply_hong_to_luc_migration (Task 2.1)
+Codex fix: idempotency precision handling in apply_hong_to_luc_migration (Task 2.1)
 ```
 
-## Out of scope
+Commit body should document:
+- Which option (A/B/C) was picked
+- Why other options were rejected
+- Trade-off analysis
 
-- Don't change write_set storage (full precision is fine for audit trail)
-- Don't change stock_ledger column precision (rounding to 6 decimals is intentional for currency-like display)
-- Don't touch migration 0009 or 0010 (0011 supersedes via CREATE OR REPLACE)
+## Also: recommend priority order for remaining tasks
+
+After Task 2.1, Codex has 2 remaining tasks:
+- Task 3: MAC drift baseline recovery (164 lines, +119,036 VND, financial scope)
+- Task 4 implementation: Timezone display (1 ALTER ROLE command, UX)
+
+**User direction:** Sequence by system impact priority.
+
+In Task 2.1 commit body (or separate recommendation doc), Codex should propose:
+- Which task to do next (Task 3 or Task 4)
+- Reasoning based on system impact
+- Estimated risk + effort
 
 ## Coordination
 
-- Migration 0010 already deployed but ineffective. Migration 0011 will supersede via CREATE OR REPLACE FUNCTION.
-- Claude will deploy 0011 + verify rerun after Codex commits.
+- Migration 0010 already deployed but ineffective
+- Migration 0011 will supersede via CREATE OR REPLACE FUNCTION (Option C) OR ALTER TABLE (Option A)
+- Claude will deploy 0011 + verify rerun after Codex commits
