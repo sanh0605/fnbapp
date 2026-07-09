@@ -57,13 +57,6 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 max-w-4xl mx-auto">
-      <div className="mb-6 border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Công cụ Dự toán Giá vốn</h1>
-        <p className="text-gray-500 mt-1">
-          Giả lập công thức để tính toán giá vốn dự kiến. Bạn có thể chọn nguyên liệu có sẵn trong hệ thống hoặc nhập tay nguyên liệu mới để ước tính.
-        </p>
-      </div>
-
       <div className="space-y-4 mb-6">
         {items.map((item, idx) => {
           const itemRowId = `${formId}-item-${idx}`;

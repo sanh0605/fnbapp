@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/sheets_db";
 import { getMacUnitCostWithRecipeFallback, MacSemiProductContext } from "@/lib/mac-cogs";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 import CogsCalculator from "./CogsCalculator";
 
@@ -62,6 +63,10 @@ export default async function CogsEstimatePage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader 
+        title="Công cụ Dự toán Giá vốn" 
+        subtitle="Giả lập công thức để tính toán giá vốn dự kiến. Bạn có thể chọn nguyên liệu có sẵn trong hệ thống hoặc nhập tay nguyên liệu mới để ước tính."
+      />
       <CogsCalculator ingredients={ingredientsOptions} />
     </div>
   );

@@ -1,6 +1,7 @@
 import { findAll } from "@/lib/sheets_db";
 import { ItemCategoryForm, DeleteBtn } from "@/components/InventoryForms";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteItemCategory } from "@/app/admin/inventory/actions";
 
 export const dynamic = "force-dynamic";
@@ -19,13 +20,11 @@ export default async function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Phân Loại Hàng Hoá</h1>
-          <p className="text-gray-500 mt-1">Tự do tạo các phân loại tuỳ chỉnh (Bao bì, Nguyên liệu ướt, v.v.).</p>
-        </div>
-        <ItemCategoryForm />
-      </div>
+      <PageHeader 
+        title="Phân Loại Hàng Hoá" 
+        subtitle="Tự do tạo các phân loại tuỳ chỉnh (Bao bì, Nguyên liệu ướt, v.v.)."
+        actions={<ItemCategoryForm />}
+      />
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-left text-sm border-collapse">

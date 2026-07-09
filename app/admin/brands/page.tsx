@@ -1,6 +1,7 @@
 import { findAll } from "@/lib/sheets_db";
 import { BrandForm, DeleteBrandButton } from "./components/BrandForm";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import type { DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -11,13 +12,11 @@ export default async function BrandsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Quản lý Thương hiệu</h1>
-          <p className="text-gray-500 mt-1">Quản lý các thương hiệu F&B đang hoạt động trên hệ thống.</p>
-        </div>
-        <BrandForm />
-      </div>
+      <PageHeader 
+        title="Quản lý Thương hiệu" 
+        subtitle="Quản lý các thương hiệu F&B đang hoạt động trên hệ thống."
+        actions={<BrandForm />}
+      />
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-left border-collapse">

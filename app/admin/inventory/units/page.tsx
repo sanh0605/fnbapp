@@ -1,6 +1,7 @@
 import { findAll } from "@/lib/sheets_db";
 import { UnitForm, DeleteBtn } from "./UnitForm";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +13,11 @@ export default async function UnitsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý Đơn vị (Units)</h1>
-          <p className="text-sm text-gray-500 mt-1">Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)</p>
-        </div>
-        <UnitForm />
-      </div>
+      <PageHeader 
+        title="Quản lý Đơn vị (Units)" 
+        subtitle="Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)"
+        actions={<UnitForm />}
+      />
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
