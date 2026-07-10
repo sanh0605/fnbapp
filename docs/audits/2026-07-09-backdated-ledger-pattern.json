@@ -1,0 +1,2142 @@
+{
+  "generated_at": "2026-07-10T03:05:59.242Z",
+  "summary": {
+    "total_entries": 123,
+    "precise_entries": 110,
+    "proxy_entries": 13,
+    "total_abs_drift_vnd": 2906,
+    "impacted_line_count": 34
+  },
+  "counts_by_month": [
+    {
+      "month": "2026-06",
+      "count": 58
+    },
+    {
+      "month": "2026-05",
+      "count": 27
+    },
+    {
+      "month": "2026-04",
+      "count": 26
+    },
+    {
+      "month": "2026-03",
+      "count": 9
+    },
+    {
+      "month": "2026-07",
+      "count": 3
+    }
+  ],
+  "counts_by_source_table": [
+    {
+      "source_table": "purchase_orders",
+      "count": 110
+    },
+    {
+      "source_table": "stock_adjustments",
+      "count": 8
+    },
+    {
+      "source_table": "production_yields",
+      "count": 5
+    }
+  ],
+  "top_item_references": [
+    {
+      "item_reference": "ING-032",
+      "count": 13
+    },
+    {
+      "item_reference": "NNL-007",
+      "count": 9
+    },
+    {
+      "item_reference": "ING-003",
+      "count": 7
+    },
+    {
+      "item_reference": "NNL-001",
+      "count": 5
+    },
+    {
+      "item_reference": "NNL-002",
+      "count": 5
+    },
+    {
+      "item_reference": "ING-006",
+      "count": 4
+    },
+    {
+      "item_reference": "ING-017",
+      "count": 4
+    },
+    {
+      "item_reference": "ING-026",
+      "count": 4
+    },
+    {
+      "item_reference": "ING-028",
+      "count": 4
+    },
+    {
+      "item_reference": "ING-029",
+      "count": 4
+    }
+  ],
+  "entries": [
+    {
+      "stock_ledger_id": "STK-GEN-1782290592715-3831",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-001",
+      "item_reference": "NNL-002",
+      "quantity_change": 500,
+      "unit_cost": 150,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:06:25.881+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96066
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592715-3896",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-001",
+      "item_reference": "NNL-002",
+      "quantity_change": 500,
+      "unit_cost": 256,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:06:25.881+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96066
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-1248",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-004",
+      "item_reference": "ING-006",
+      "quantity_change": 500,
+      "unit_cost": 184,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:46:51.071+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96107
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-1635",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-008",
+      "item_reference": "NNL-001",
+      "quantity_change": 1000,
+      "unit_cost": 35,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:07:23.145+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96127
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-4327",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-002",
+      "item_reference": "ING-002",
+      "quantity_change": 1000,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:42:08.96+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96102
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-619",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-008",
+      "item_reference": "NNL-001",
+      "quantity_change": 1000,
+      "unit_cost": 50,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:07:23.145+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96127
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-7543",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-006",
+      "item_reference": "ING-003",
+      "quantity_change": 1284,
+      "unit_cost": 46,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:49:10.286+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96109
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-7619",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-003",
+      "item_reference": "ING-004",
+      "quantity_change": 500,
+      "unit_cost": 502,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:45:40.126+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96106
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-8353",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-005",
+      "item_reference": "ING-005",
+      "quantity_change": 200,
+      "unit_cost": 817,
+      "effective_timestamp": "2026-03-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:47:51.212+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 96108
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-5105",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-007",
+      "item_reference": "ING-003",
+      "quantity_change": 380,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-04-03T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:50:44.073+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 84591
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-7876",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-007",
+      "item_reference": "NNL-002",
+      "quantity_change": 3000,
+      "unit_cost": 237,
+      "effective_timestamp": "2026-04-03T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T10:50:44.073+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 84591
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-5739",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-009",
+      "item_reference": "ING-005",
+      "quantity_change": 400,
+      "unit_cost": 695,
+      "effective_timestamp": "2026-04-05T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:08:55.545+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 81729
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-8850",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-009",
+      "item_reference": "ING-003",
+      "quantity_change": 5000,
+      "unit_cost": 42,
+      "effective_timestamp": "2026-04-05T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:08:55.545+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 81729
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592716-9948",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-009",
+      "item_reference": "NNL-001",
+      "quantity_change": 12000,
+      "unit_cost": 27,
+      "effective_timestamp": "2026-04-05T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:08:55.545+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 81729
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-1057",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-012",
+      "item_reference": "ING-006",
+      "quantity_change": 1500,
+      "unit_cost": 163,
+      "effective_timestamp": "2026-04-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:14:13.518+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 75974
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-2716",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-011",
+      "item_reference": "ING-004",
+      "quantity_change": 1500,
+      "unit_cost": 465,
+      "effective_timestamp": "2026-04-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:11:30.136+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 75972
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-1405",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-010",
+      "item_reference": "ING-003",
+      "quantity_change": 24000,
+      "unit_cost": 40,
+      "effective_timestamp": "2026-04-12T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:10:13.527+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 71650
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-1814",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-010",
+      "item_reference": "ING-005",
+      "quantity_change": 2000,
+      "unit_cost": 685,
+      "effective_timestamp": "2026-04-12T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:10:13.527+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 71650
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-2374",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-010",
+      "item_reference": "NNL-001",
+      "quantity_change": 60000,
+      "unit_cost": 27,
+      "effective_timestamp": "2026-04-12T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:10:13.527+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 71650
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-2013",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-013",
+      "item_reference": "NNL-002",
+      "quantity_change": 10000,
+      "unit_cost": 239,
+      "effective_timestamp": "2026-04-13T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:15:29.149+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 70215
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-8934",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-013",
+      "item_reference": "ING-003",
+      "quantity_change": 380,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-04-13T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:15:29.149+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 70215
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-6913",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-014",
+      "item_reference": "ING-009",
+      "quantity_change": 1000,
+      "unit_cost": 183,
+      "effective_timestamp": "2026-04-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:16:38.78+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 64457
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-730",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-014",
+      "item_reference": "ING-008",
+      "quantity_change": 454,
+      "unit_cost": 86,
+      "effective_timestamp": "2026-04-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:16:38.78+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 64457
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-7762",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-014",
+      "item_reference": "ING-011",
+      "quantity_change": 28,
+      "unit_cost": 1080,
+      "effective_timestamp": "2026-04-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:16:38.78+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 64457
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-3173",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-015",
+      "item_reference": "ING-010",
+      "quantity_change": 1000,
+      "unit_cost": 118,
+      "effective_timestamp": "2026-04-18T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:17:37.539+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 63018
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-5120",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-015",
+      "item_reference": "ING-012",
+      "quantity_change": 630,
+      "unit_cost": 110,
+      "effective_timestamp": "2026-04-18T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:17:37.539+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 63018
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-5930",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-015",
+      "item_reference": "ING-013",
+      "quantity_change": 1000,
+      "unit_cost": 80,
+      "effective_timestamp": "2026-04-18T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:17:37.539+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 63018
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-1270",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-018",
+      "quantity_change": 1400,
+      "unit_cost": 86,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-19",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-016",
+      "quantity_change": 1000,
+      "unit_cost": 95,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-2973",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-021",
+      "quantity_change": 200,
+      "unit_cost": 320,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-3260",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-017",
+      "quantity_change": 8,
+      "unit_cost": 4000,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-5300",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-017",
+      "quantity_change": 8,
+      "unit_cost": 4625,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-635",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-020",
+      "quantity_change": 200,
+      "unit_cost": 260,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-8781",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-019",
+      "quantity_change": 1000,
+      "unit_cost": 35,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592717-9728",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-016",
+      "item_reference": "ING-015",
+      "quantity_change": 750,
+      "unit_cost": 245,
+      "effective_timestamp": "2026-04-26T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:20:42.391+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 51501
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-692",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-022",
+      "item_reference": "ING-030",
+      "quantity_change": 1000,
+      "unit_cost": 108,
+      "effective_timestamp": "2026-05-03T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:27:02.706+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 41427
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-8296",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-022",
+      "item_reference": "ING-031",
+      "quantity_change": 750,
+      "unit_cost": 245,
+      "effective_timestamp": "2026-05-03T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:27:02.706+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 41427
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-2428",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-018",
+      "item_reference": "ING-027",
+      "quantity_change": 500,
+      "unit_cost": 52,
+      "effective_timestamp": "2026-05-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:23:17.424+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 32783
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-282",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-018",
+      "item_reference": "ING-026",
+      "quantity_change": 1000,
+      "unit_cost": 136,
+      "effective_timestamp": "2026-05-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:23:17.424+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 32783
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-4324",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-018",
+      "item_reference": "ING-024",
+      "quantity_change": 750,
+      "unit_cost": 259,
+      "effective_timestamp": "2026-05-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:23:17.424+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 32783
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-5781",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-018",
+      "item_reference": "ING-023",
+      "quantity_change": 750,
+      "unit_cost": 259,
+      "effective_timestamp": "2026-05-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:23:17.424+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 32783
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-8603",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-018",
+      "item_reference": "ING-025",
+      "quantity_change": 1000,
+      "unit_cost": 101,
+      "effective_timestamp": "2026-05-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:23:17.424+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 32783
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-4517",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-017",
+      "item_reference": "ING-022",
+      "quantity_change": 25000,
+      "unit_cost": 20,
+      "effective_timestamp": "2026-05-11T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:21:57.902+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 29902
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-6181",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-017",
+      "item_reference": "ING-003",
+      "quantity_change": 24000,
+      "unit_cost": 80,
+      "effective_timestamp": "2026-05-11T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:21:57.902+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 29902
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-1411",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-019",
+      "item_reference": "ING-002",
+      "quantity_change": 1000,
+      "unit_cost": 30,
+      "effective_timestamp": "2026-05-13T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:24:19.246+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 27024
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-3319",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-021",
+      "item_reference": "ING-027",
+      "quantity_change": 1000,
+      "unit_cost": 84,
+      "effective_timestamp": "2026-05-16T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:25:44.224+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 22706
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-7203",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-020",
+      "item_reference": "ING-028",
+      "quantity_change": 100,
+      "unit_cost": 570,
+      "effective_timestamp": "2026-05-16T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:24:55.135+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 22705
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-843",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-021",
+      "item_reference": "ING-003",
+      "quantity_change": 380,
+      "unit_cost": 63,
+      "effective_timestamp": "2026-05-16T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:25:44.224+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 22706
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-9570",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-021",
+      "item_reference": "ING-029",
+      "quantity_change": 500,
+      "unit_cost": 216,
+      "effective_timestamp": "2026-05-16T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:25:44.224+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 22706
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-2298",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-025",
+      "quantity_change": 4000,
+      "unit_cost": 91,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-3161",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-027",
+      "quantity_change": 4000,
+      "unit_cost": 72,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-3734",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-014",
+      "quantity_change": 6000,
+      "unit_cost": 157,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-4220",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-026",
+      "quantity_change": 4000,
+      "unit_cost": 119,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-6249",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-034",
+      "quantity_change": 6000,
+      "unit_cost": 26,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-6547",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-029",
+      "quantity_change": 1500,
+      "unit_cost": 206,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-6859",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-006",
+      "quantity_change": 1500,
+      "unit_cost": 184,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-7012",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-030",
+      "quantity_change": 4000,
+      "unit_cost": 89,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-7763",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-016",
+      "quantity_change": 4000,
+      "unit_cost": 90,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-787",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-033",
+      "quantity_change": 12000,
+      "unit_cost": 38,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-820",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-024",
+      "item_reference": "ING-017",
+      "quantity_change": 32,
+      "unit_cost": 4000,
+      "effective_timestamp": "2026-05-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:33:31.997+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6874
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-2616",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-023",
+      "item_reference": "ING-028",
+      "quantity_change": 1000,
+      "unit_cost": 412,
+      "effective_timestamp": "2026-05-28T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-01T11:29:32.84+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 5430
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-6379",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-025",
+      "item_reference": "ING-032",
+      "quantity_change": 1800,
+      "unit_cost": 61,
+      "effective_timestamp": "2026-05-31T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-05T13:52:30.572+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 7013
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592718-9767",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-026",
+      "item_reference": "ING-032",
+      "quantity_change": 1800,
+      "unit_cost": 61,
+      "effective_timestamp": "2026-06-02T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-05T13:55:15.7+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 4135
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-3898",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-027",
+      "item_reference": "ING-032",
+      "quantity_change": 1800,
+      "unit_cost": 61,
+      "effective_timestamp": "2026-06-03T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-05T13:55:54.745+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2696
+    },
+    {
+      "stock_ledger_id": "STK-005",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-039",
+      "item_reference": "NNL-007",
+      "quantity_change": 40,
+      "unit_cost": 2500,
+      "effective_timestamp": "2026-06-04T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T11:06:54.498+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 31327
+    },
+    {
+      "stock_ledger_id": "STK-001",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-036",
+      "item_reference": "ING-032",
+      "quantity_change": 4800,
+      "unit_cost": 69,
+      "effective_timestamp": "2026-06-06T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-25T03:21:30.711+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 26542
+    },
+    {
+      "stock_ledger_id": "STK-002",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-036",
+      "item_reference": "ING-032",
+      "quantity_change": 600,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-06T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-25T03:21:30.711+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 26542
+    },
+    {
+      "stock_ledger_id": "STK-006",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-040",
+      "item_reference": "NNL-007",
+      "quantity_change": 30,
+      "unit_cost": 2200,
+      "effective_timestamp": "2026-06-08T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T11:07:30.887+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 25568
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-2173",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-023",
+      "quantity_change": 750,
+      "unit_cost": 247,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-2556",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-034",
+      "quantity_change": 6000,
+      "unit_cost": 26,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-4388",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-033",
+      "quantity_change": 30000,
+      "unit_cost": 37,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-4719",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-026",
+      "quantity_change": 2000,
+      "unit_cost": 120,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-5267",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-020",
+      "quantity_change": 1000,
+      "unit_cost": 170,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-7443",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-030",
+      "quantity_change": 5000,
+      "unit_cost": 90,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-7886",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-029",
+      "quantity_change": 1500,
+      "unit_cost": 206,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-9182",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-031",
+      "quantity_change": 750,
+      "unit_cost": 247,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-9343",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-028",
+      "item_reference": "ING-015",
+      "quantity_change": 750,
+      "unit_cost": 247,
+      "effective_timestamp": "2026-06-09T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-15T07:48:27.365+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 8088
+    },
+    {
+      "stock_ledger_id": "STK-007",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-041",
+      "item_reference": "NNL-007",
+      "quantity_change": 20,
+      "unit_cost": 2000,
+      "effective_timestamp": "2026-06-11T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T11:08:06.742+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 21248
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-1509",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-032",
+      "item_reference": "ING-004",
+      "quantity_change": 2000,
+      "unit_cost": 478,
+      "effective_timestamp": "2026-06-12T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:54:38.768+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 16615
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-5403",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-031",
+      "item_reference": "NNL-002",
+      "quantity_change": 10000,
+      "unit_cost": 242,
+      "effective_timestamp": "2026-06-12T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:53:23.482+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 16613
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-7339",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-033",
+      "item_reference": "ING-028",
+      "quantity_change": 1000,
+      "unit_cost": 545,
+      "effective_timestamp": "2026-06-12T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:57:02.655+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 16617
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-5045",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-035",
+      "item_reference": "ING-032",
+      "quantity_change": 4800,
+      "unit_cost": 69,
+      "effective_timestamp": "2026-06-14T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T07:41:12.447+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 13841
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-8822",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-035",
+      "item_reference": "ING-032",
+      "quantity_change": 600,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-14T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T07:41:12.447+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 13841
+    },
+    {
+      "stock_ledger_id": "STK-008",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-042",
+      "item_reference": "NNL-007",
+      "quantity_change": 50,
+      "unit_cost": 2000,
+      "effective_timestamp": "2026-06-15T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T11:08:52.407+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 15489
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-1703",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "ING-026",
+      "quantity_change": 5000,
+      "unit_cost": 119,
+      "effective_timestamp": "2026-06-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:15:04.631+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 9375
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-2660",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "ING-025",
+      "quantity_change": 2000,
+      "unit_cost": 91,
+      "effective_timestamp": "2026-06-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:15:04.631+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 9375
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-3956",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "ING-029",
+      "quantity_change": 2500,
+      "unit_cost": 206,
+      "effective_timestamp": "2026-06-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:15:04.631+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 9375
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-5797",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "ING-034",
+      "quantity_change": 6000,
+      "unit_cost": 26,
+      "effective_timestamp": "2026-06-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:15:04.631+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 9375
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-6693",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "ING-016",
+      "quantity_change": 2000,
+      "unit_cost": 90,
+      "effective_timestamp": "2026-06-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:15:04.631+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 9375
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-6730",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "NNL-001",
+      "quantity_change": 60000,
+      "unit_cost": 27,
+      "effective_timestamp": "2026-06-17T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:15:04.631+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 9375
+    },
+    {
+      "stock_ledger_id": "STK-009",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-043",
+      "item_reference": "NNL-007",
+      "quantity_change": 30,
+      "unit_cost": 2000,
+      "effective_timestamp": "2026-06-18T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T11:09:35.441+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 11170
+    },
+    {
+      "stock_ledger_id": "STK-010",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-044",
+      "item_reference": "NNL-007",
+      "quantity_change": 50,
+      "unit_cost": 2400,
+      "effective_timestamp": "2026-06-21T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T11:10:23.569+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 6850
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-2318",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-030",
+      "item_reference": "ING-032",
+      "quantity_change": 4800,
+      "unit_cost": 69,
+      "effective_timestamp": "2026-06-21T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:51:02.347+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 3651
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-9883",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-030",
+      "item_reference": "ING-032",
+      "quantity_change": 600,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-21T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-24T05:51:02.347+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 3651
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-662",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-034",
+      "item_reference": "ING-028",
+      "quantity_change": 1000,
+      "unit_cost": 446,
+      "effective_timestamp": "2026-06-24T06:14:50.678+00:00",
+      "visibility_timestamp": "2026-06-24T06:14:51.331+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 0
+    },
+    {
+      "stock_ledger_id": "STK-003",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-037",
+      "item_reference": "ING-034",
+      "quantity_change": 4000,
+      "unit_cost": 26,
+      "effective_timestamp": "2026-06-24T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T10:49:28.689+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2509
+    },
+    {
+      "stock_ledger_id": "STK-004",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-038",
+      "item_reference": "ING-017",
+      "quantity_change": 24,
+      "unit_cost": 4750,
+      "effective_timestamp": "2026-06-24T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T10:50:20.643+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2510
+    },
+    {
+      "stock_ledger_id": "STK-011",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-045",
+      "item_reference": "NNL-007",
+      "quantity_change": 70,
+      "unit_cost": 2400,
+      "effective_timestamp": "2026-06-24T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-26T11:13:26.702+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2533
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-059cca0e-3b1d-430b-80bd-ff38188baae9",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-001",
+      "quantity_change": 27900,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-1149899e-ca90-4316-8f7f-63618d492a2d",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-003",
+      "quantity_change": 9120,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-59294273-3234-41b4-82cc-71366dddef49",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-012",
+      "quantity_change": 3280,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-6e27c1d8-9ade-42bf-82dc-0724a0f03724",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-008",
+      "quantity_change": 37370,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-aeccfddd-0882-4499-8206-a5396a1d76c3",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-011",
+      "quantity_change": 3910,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-cf40a48d-f52f-45e8-b867-360359145bb9",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-002",
+      "quantity_change": 6320,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-dda75239-0fae-4e8c-911e-7c0930bc14d6",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-010",
+      "quantity_change": 11350,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-AUDIT-fe65181a-8924-4ec2-a6f3-c8870c232738",
+      "transaction_type": "STOCK_ADJUST",
+      "source_table": "stock_adjustments",
+      "source_id": "NEGATIVE-STOCK-AUDIT-2026-06-25T07:31:08.402Z",
+      "item_reference": "BTP-007",
+      "quantity_change": 160,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-25T07:31:08.402+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 21335
+    },
+    {
+      "stock_ledger_id": "STK-PHASE9-6cac7dc7-001",
+      "transaction_type": "PRODUCTION_YIELD",
+      "source_table": "production_yields",
+      "source_id": "PHASE9-NEGATIVE-STOCK-2026-06-26",
+      "item_reference": "BTP-008",
+      "quantity_change": 1410,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-27T03:53:41.508+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 18672
+    },
+    {
+      "stock_ledger_id": "STK-PHASE9-6cac7dc7-002",
+      "transaction_type": "PRODUCTION_YIELD",
+      "source_table": "production_yields",
+      "source_id": "PHASE9-NEGATIVE-STOCK-2026-06-26",
+      "item_reference": "BTP-003",
+      "quantity_change": 440,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-27T03:53:41.508+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 18672
+    },
+    {
+      "stock_ledger_id": "STK-PHASE9-6cac7dc7-003",
+      "transaction_type": "PRODUCTION_YIELD",
+      "source_table": "production_yields",
+      "source_id": "PHASE9-NEGATIVE-STOCK-2026-06-26",
+      "item_reference": "BTP-010",
+      "quantity_change": 300,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-27T03:53:41.508+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 18672
+    },
+    {
+      "stock_ledger_id": "STK-PHASE9-6cac7dc7-004",
+      "transaction_type": "PRODUCTION_YIELD",
+      "source_table": "production_yields",
+      "source_id": "PHASE9-NEGATIVE-STOCK-2026-06-26",
+      "item_reference": "BTP-002",
+      "quantity_change": 400,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-27T03:53:41.508+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 18672
+    },
+    {
+      "stock_ledger_id": "STK-PHASE9-6cac7dc7-005",
+      "transaction_type": "PRODUCTION_YIELD",
+      "source_table": "production_yields",
+      "source_id": "PHASE9-NEGATIVE-STOCK-2026-06-26",
+      "item_reference": "BTP-011",
+      "quantity_change": 240,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-27T03:53:41.508+00:00",
+      "visibility_timestamp": "2026-07-10T03:05:52.103Z",
+      "detection_method": "OLDER_THAN_ONE_DAY_PROXY",
+      "lag_minutes": 18672
+    },
+    {
+      "stock_ledger_id": "STK-012",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-046",
+      "item_reference": "NNL-008",
+      "quantity_change": 100,
+      "unit_cost": 292,
+      "effective_timestamp": "2026-06-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:13:24.433+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 3853
+    },
+    {
+      "stock_ledger_id": "STK-013",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-046",
+      "item_reference": "ING-009",
+      "quantity_change": 500,
+      "unit_cost": 246,
+      "effective_timestamp": "2026-06-27T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:13:24.433+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 3853
+    },
+    {
+      "stock_ledger_id": "STK-014",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-047",
+      "item_reference": "ING-032",
+      "quantity_change": 4800,
+      "unit_cost": 69,
+      "effective_timestamp": "2026-06-28T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:33:26.87+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2433
+    },
+    {
+      "stock_ledger_id": "STK-015",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-047",
+      "item_reference": "ING-032",
+      "quantity_change": 600,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-06-28T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:33:26.87+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2433
+    },
+    {
+      "stock_ledger_id": "STK-016",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-048",
+      "item_reference": "ING-020",
+      "quantity_change": 5000,
+      "unit_cost": 170,
+      "effective_timestamp": "2026-06-29T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:43:06.325+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 1003
+    },
+    {
+      "stock_ledger_id": "STK-017",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-048",
+      "item_reference": "ING-006",
+      "quantity_change": 2500,
+      "unit_cost": 184,
+      "effective_timestamp": "2026-06-29T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:43:06.325+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 1003
+    },
+    {
+      "stock_ledger_id": "STK-018",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-048",
+      "item_reference": "ING-012",
+      "quantity_change": 3150,
+      "unit_cost": 98,
+      "effective_timestamp": "2026-06-29T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:43:06.325+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 1003
+    },
+    {
+      "stock_ledger_id": "STK-019",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-048",
+      "item_reference": "ING-022",
+      "quantity_change": 25000,
+      "unit_cost": 20,
+      "effective_timestamp": "2026-06-29T17:00:00+00:00",
+      "visibility_timestamp": "2026-06-30T09:43:06.325+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 1003
+    },
+    {
+      "stock_ledger_id": "STK-020",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-049",
+      "item_reference": "NNL-007",
+      "quantity_change": 60,
+      "unit_cost": 2200,
+      "effective_timestamp": "2026-06-29T17:00:00+00:00",
+      "visibility_timestamp": "2026-07-01T15:09:02.358+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2769
+    },
+    {
+      "stock_ledger_id": "STK-19fdd2f3-0265-42b4-9013-39a1fdab979f",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-050",
+      "item_reference": "ING-032",
+      "quantity_change": 600,
+      "unit_cost": 0,
+      "effective_timestamp": "2026-07-04T17:00:00+00:00",
+      "visibility_timestamp": "2026-07-05T13:22:10.453249+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 1222
+    },
+    {
+      "stock_ledger_id": "STK-2aece030-ede9-4902-bb6a-1f202ebda820",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-050",
+      "item_reference": "ING-032",
+      "quantity_change": 4800,
+      "unit_cost": 69,
+      "effective_timestamp": "2026-07-04T17:00:00+00:00",
+      "visibility_timestamp": "2026-07-05T13:22:10.453249+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 1222
+    },
+    {
+      "stock_ledger_id": "STK-c61b2518-528f-41de-b15d-0c791552f93d",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-051",
+      "item_reference": "NNL-007",
+      "quantity_change": 60,
+      "unit_cost": 2400,
+      "effective_timestamp": "2026-07-04T17:00:00+00:00",
+      "visibility_timestamp": "2026-07-06T04:38:14.956371+00:00",
+      "detection_method": "SOURCE_CREATED_AT",
+      "lag_minutes": 2138
+    }
+  ],
+  "impact_lines": [
+    {
+      "line_id": "ol-25ca7886-a401-4ef1-9b55-2f49b4f009e8",
+      "order_id": "ord-286cf609-b910-4276-af0e-ae9846e5b049",
+      "order_no": "UCK000272",
+      "sale_time": "2026-06-26T07:02:21.813+00:00",
+      "product_id": "PROD-016",
+      "stored_cost": 23807,
+      "expected_cost": 24511,
+      "delta": 704,
+      "matched_backdated_ledger_ids": [
+        "STK-004"
+      ]
+    },
+    {
+      "line_id": "ol-b9b06a57-33b8-4edd-81e7-b1714d01da69",
+      "order_id": "ord-b2a57fdd-25ad-402e-88e0-bab2dfa42dd7",
+      "order_no": "UCK000264",
+      "sale_time": "2026-06-25T13:52:10.263+00:00",
+      "product_id": "PROD-016",
+      "stored_cost": 11903,
+      "expected_cost": 12256,
+      "delta": 353,
+      "matched_backdated_ledger_ids": [
+        "STK-004"
+      ]
+    },
+    {
+      "line_id": "ol-c5f61a50-1f15-4b7b-ad67-e5a2b671d858",
+      "order_id": "ord-3d975023-177d-4cc2-b1e2-34ecfc61c92b",
+      "order_no": "UCK000255",
+      "sale_time": "2026-06-25T08:14:33.946+00:00",
+      "product_id": "PROD-016",
+      "stored_cost": 11903,
+      "expected_cost": 12256,
+      "delta": 353,
+      "matched_backdated_ledger_ids": [
+        "STK-004"
+      ]
+    },
+    {
+      "line_id": "ol-35ef2d85-9c6b-42e6-a94b-ca822e384423",
+      "order_id": "ord-1326fc6b-387f-4c36-8b35-67e864dc035c",
+      "order_no": "PHD000893",
+      "sale_time": "2026-07-06T00:53:29.949+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 11280,
+      "expected_cost": 11479,
+      "delta": 199,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-2d7494a5-daac-45bd-8e9d-87bdc9fd2787",
+      "order_id": "ord-b7e9d3e4-0fec-435d-854f-daf16054ef1e",
+      "order_no": "PHD000827",
+      "sale_time": "2026-07-01T00:55:32.356+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 11394,
+      "expected_cost": 11280,
+      "delta": -114,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-08bbc0ba-6f00-4aa4-a71c-cec7e96ff08e",
+      "order_id": "ord-2b2a68ac-626a-4390-a394-ecb361b379bb",
+      "order_no": "PHD000883",
+      "sale_time": "2026-07-05T23:42:13.801+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4512,
+      "expected_cost": 4591,
+      "delta": 79,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-11dbf85d-80dc-4ca3-80c0-f54f64563dfe",
+      "order_id": "ord-8c8e3643-a872-4c5c-9378-f900b92d02fb",
+      "order_no": "PHD000896",
+      "sale_time": "2026-07-06T01:11:08.981+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4512,
+      "expected_cost": 4591,
+      "delta": 79,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-769255d6-4063-46e8-bdd4-8b45108f57d0",
+      "order_id": "ord-d0ebc13a-ef12-4c48-9252-95b401ae2c84",
+      "order_no": "PHD000890",
+      "sale_time": "2026-07-06T00:41:43.624+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4512,
+      "expected_cost": 4591,
+      "delta": 79,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-91b3ca39-dad8-4a2d-b387-f0ad7e6407f3",
+      "order_id": "ord-bff06c00-cbe1-4a86-bb99-497f93d07ade",
+      "order_no": "PHD000897",
+      "sale_time": "2026-07-06T01:16:09.91+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4512,
+      "expected_cost": 4591,
+      "delta": 79,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-be44f399-b097-4ccb-a42c-d69e6ef22637",
+      "order_id": "ord-f56e3a8a-f352-4e06-b23a-92ad9639700c",
+      "order_no": "PHD000899",
+      "sale_time": "2026-07-06T01:23:07.816+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4512,
+      "expected_cost": 4591,
+      "delta": 79,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-db72a765-56c5-4b29-884c-a522cb51eabe",
+      "order_id": "ord-2d21ab6e-6a66-4567-8886-61a547099b90",
+      "order_no": "PHD000887",
+      "sale_time": "2026-07-06T00:15:15.538+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4512,
+      "expected_cost": 4591,
+      "delta": 79,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-0c935fa5-57c4-4b3e-91d9-61e64db22a4e",
+      "order_id": "ord-19362c54-9a72-4d7f-8d38-9c0d86d04206",
+      "order_no": "PHD000796",
+      "sale_time": "2026-06-30T00:26:47.862+00:00",
+      "product_id": "PROD-004",
+      "stored_cost": 9451,
+      "expected_cost": 9504,
+      "delta": 53,
+      "matched_backdated_ledger_ids": [
+        "STK-017"
+      ]
+    },
+    {
+      "line_id": "ol-537d7a6c-e275-4b10-b46d-be50a57b7d08",
+      "order_id": "ord-0aa06c03-750d-4f07-9dbe-f89af6bf565c",
+      "order_no": "PHD000792",
+      "sale_time": "2026-06-29T23:30:26.066+00:00",
+      "product_id": "PROD-004",
+      "stored_cost": 9451,
+      "expected_cost": 9504,
+      "delta": 53,
+      "matched_backdated_ledger_ids": [
+        "STK-017"
+      ]
+    },
+    {
+      "line_id": "ol-f301f8a8-bdc2-405b-8354-d63d4c265821",
+      "order_id": "ord-2256527a-b79f-48bc-8653-8c849db78628",
+      "order_no": "PHD000816",
+      "sale_time": "2026-06-30T02:38:03.771+00:00",
+      "product_id": "PROD-004",
+      "stored_cost": 9451,
+      "expected_cost": 9504,
+      "delta": 53,
+      "matched_backdated_ledger_ids": [
+        "STK-017"
+      ]
+    },
+    {
+      "line_id": "ol-afaf7d7e-1fb6-49c2-8553-71fe7c471d86",
+      "order_id": "ord-d5999f1f-6dba-4600-8c7a-3d44f35eb79e",
+      "order_no": "PHD000801",
+      "sale_time": "2026-06-30T00:39:59.005+00:00",
+      "product_id": "PROD-006",
+      "stored_cost": 11009,
+      "expected_cost": 11061,
+      "delta": 52,
+      "matched_backdated_ledger_ids": [
+        "STK-017"
+      ]
+    },
+    {
+      "line_id": "ol-4b3239ea-05a9-41e9-8768-ba8feda6e7cc",
+      "order_id": "ord-39b9dadd-9a55-45ed-be48-a3b1594edb05",
+      "order_no": "PHD000800",
+      "sale_time": "2026-06-30T00:33:30.13+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-6012a1b2-bc6d-4ca1-b2ca-1c2e567e3166",
+      "order_id": "ord-f5014e87-fc63-4408-80df-dd4cea084d9a",
+      "order_no": "PHD000807",
+      "sale_time": "2026-06-30T00:50:49.242+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-86a1a33a-7ce9-4d13-9fd5-19ed012bbac3",
+      "order_id": "ord-8628c282-af09-4516-a4c3-4c94c81bb37d",
+      "order_no": "PHD000803",
+      "sale_time": "2026-06-30T00:44:32.786+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-9b2e86e2-37e6-4f35-a754-936fbe0c08e5",
+      "order_id": "ord-aff6eb30-84c5-4c4d-9d2b-9916d3102e7a",
+      "order_no": "PHD000795",
+      "sale_time": "2026-06-30T00:21:08.225+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-c2cbcdb7-fb6a-4627-abc1-067fc0280465",
+      "order_id": "ord-30edf1c2-7b34-4451-aca0-9e637c086224",
+      "order_no": "PHD000823",
+      "sale_time": "2026-07-01T00:39:28.319+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-da080530-6f6f-48ca-97a1-8cb0b8e47c6c",
+      "order_id": "ord-412c6a53-45fe-4132-8aa1-9a4d1b963b8b",
+      "order_no": "PHD000799",
+      "sale_time": "2026-06-30T00:31:38.728+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-dc9d217a-f218-4e57-adab-7a3b250137d6",
+      "order_id": "ord-fce5a57c-211d-41e4-a6f4-5f52cb639623",
+      "order_no": "PHD000798",
+      "sale_time": "2026-06-30T00:30:21.258+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-e7b4d4dc-a892-4869-98bf-e74405d83cfe",
+      "order_id": "ord-429d2fd4-ff9b-43a0-87bd-b32e9583cd38",
+      "order_no": "PHD000825",
+      "sale_time": "2026-07-01T00:49:20.656+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-e9f9ec41-2680-4161-b686-4358be4cb952",
+      "order_id": "ord-5e701319-67d7-43dd-a7e7-fcbf2ff84a87",
+      "order_no": "PHD000808",
+      "sale_time": "2026-06-30T00:51:18.411+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 4558,
+      "expected_cost": 4512,
+      "delta": -46,
+      "matched_backdated_ledger_ids": [
+        "STK-020"
+      ]
+    },
+    {
+      "line_id": "ol-42cc0fcb-2830-4a64-9207-9fac5f763abf",
+      "order_id": "ord-ff0077fb-ed93-48da-b487-b19c9c468231",
+      "order_no": "PHD000894",
+      "sale_time": "2026-07-06T00:55:52.944+00:00",
+      "product_id": "PROD-028",
+      "stored_cost": 2256,
+      "expected_cost": 2296,
+      "delta": 40,
+      "matched_backdated_ledger_ids": [
+        "STK-c61b2518-528f-41de-b15d-0c791552f93d"
+      ]
+    },
+    {
+      "line_id": "ol-212c1f36-1497-4f1b-a9c1-f69b7459a1a7",
+      "order_id": "ord-c4d1caee-9803-40f3-98cc-0b320373aaad",
+      "order_no": "UCK000325",
+      "sale_time": "2026-06-29T12:51:48.432+00:00",
+      "product_id": "PROD-019",
+      "stored_cost": 58486,
+      "expected_cost": 58474,
+      "delta": -12,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-dfc547ce-546c-4567-b9c5-1a41c98323dc",
+      "order_id": "ord-a3fc0c4f-9535-4e59-97cf-2f292aaca8cd",
+      "order_no": "UCK000321",
+      "sale_time": "2026-06-29T11:14:46.43+00:00",
+      "product_id": "PROD-019",
+      "stored_cost": 35092,
+      "expected_cost": 35084,
+      "delta": -8,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-2b8614bc-817a-49ae-99c2-40d100607ae9",
+      "order_id": "ord-e20580db-e6e1-4a53-9033-a43731674643",
+      "order_no": "UCK000333",
+      "sale_time": "2026-06-30T08:17:41.949+00:00",
+      "product_id": "PROD-021",
+      "stored_cost": 39084,
+      "expected_cost": 39077,
+      "delta": -7,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-0c55be69-427d-490a-9c57-a7889f650ae2",
+      "order_id": "ord-e20580db-e6e1-4a53-9033-a43731674643",
+      "order_no": "UCK000333",
+      "sale_time": "2026-06-30T08:17:41.949+00:00",
+      "product_id": "PROD-018",
+      "stored_cost": 12869,
+      "expected_cost": 12866,
+      "delta": -3,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-27ec5f1b-a35a-4bcc-9075-945ebb369e7b",
+      "order_id": "ord-9b72d400-497c-4ead-b286-88bd90565b12",
+      "order_no": "UCK000326",
+      "sale_time": "2026-06-29T12:52:18.648+00:00",
+      "product_id": "PROD-018",
+      "stored_cost": 12869,
+      "expected_cost": 12866,
+      "delta": -3,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-9579e3ee-54c4-4768-a46c-6b8d8e5f3d19",
+      "order_id": "ord-4ee5f33c-1c30-4a73-8517-3d56433c01f5",
+      "order_no": "UCK000328",
+      "sale_time": "2026-06-29T12:52:54.223+00:00",
+      "product_id": "PROD-018",
+      "stored_cost": 12869,
+      "expected_cost": 12866,
+      "delta": -3,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-b9d0a4c2-c9fc-415f-8199-59d004277754",
+      "order_id": "ord-46aa7774-735e-47ea-8fa3-aa16c47b23a1",
+      "order_no": "UCK000316",
+      "sale_time": "2026-06-29T07:16:41.698+00:00",
+      "product_id": "PROD-018",
+      "stored_cost": 12869,
+      "expected_cost": 12866,
+      "delta": -3,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-da892e7e-5df9-4da7-95b6-935d24323e69",
+      "order_id": "ord-e20580db-e6e1-4a53-9033-a43731674643",
+      "order_no": "UCK000333",
+      "sale_time": "2026-06-30T08:17:41.949+00:00",
+      "product_id": "PROD-018",
+      "stored_cost": 12869,
+      "expected_cost": 12866,
+      "delta": -3,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    },
+    {
+      "line_id": "ol-abb981cc-db6a-4794-8b7b-187584de2c25",
+      "order_id": "ord-27373d8b-31de-4933-a746-13e6d708ecd8",
+      "order_no": "UCK000329",
+      "sale_time": "2026-06-29T13:05:36.071+00:00",
+      "product_id": "PROD-019",
+      "stored_cost": 11697,
+      "expected_cost": 11695,
+      "delta": -2,
+      "matched_backdated_ledger_ids": [
+        "STK-014",
+        "STK-015"
+      ]
+    }
+  ]
+}
