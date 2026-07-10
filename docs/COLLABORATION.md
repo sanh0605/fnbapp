@@ -18,9 +18,9 @@ Read before each session:
 - `CLAUDE.md` section 0: Claude-specific project instructions.
 - `AGENTS.md`: Codex and Antigravity project instructions.
 - `docs/COLLABORATION.md`: this protocol.
-- `DEVELOPMENT-TRACKING.md`: 3 newest entries.
-- `docs/audits/codex-handoff-2026-06-25.md`: active task status.
-- `docs/audits/2026-06-25-full-system-audit-roadmap.md`: phase status.
+- `docs/ROADMAP.md`: **single source of truth for pending work + priorities**.
+- `docs/COMPLETED.md`: archive of finished work (compact).
+- `DEVELOPMENT-TRACKING.md`: detailed chronicle log (newest first).
 - `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`: MAC/COGS spec.
 - `docs/domain-dictionary.md`: terminology when changing labels, sheets, reports, or domain code.
 
@@ -153,12 +153,13 @@ If the pre-commit hook blocks a commit that the agent believes should be allowed
 
 ## Quick Links
 
-- Active handoff: `docs/audits/codex-handoff-2026-06-25.md`
-- Roadmap: `docs/audits/2026-06-25-full-system-audit-roadmap.md`
-- Script cleanup plan: `docs/audits/script-cleanup-plan.md`
+- Roadmap (pending work): `docs/ROADMAP.md`
+- Completed archive: `docs/COMPLETED.md`
+- Detailed chronicle: `DEVELOPMENT-TRACKING.md`
 - Domain dictionary: `docs/domain-dictionary.md`
-- Tracking: `DEVELOPMENT-TRACKING.md`
+- UI audit reference: `docs/audits/2026-07-06-ui-consistency-audit.md`
 
 ## Change Log
 
+- 2026-07-10 Claude: consolidated to single ROADMAP.md + COMPLETED.md. Removed per-agent roadmaps.
 - 2026-06-26 Codex: rewrote protocol for 3-agent coordination and risk-boundary ownership.
