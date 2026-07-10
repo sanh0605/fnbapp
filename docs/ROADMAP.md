@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| **U1. Sidebar reorg plan** | Claude (audit) + Antigravity (implement) | `app/admin/layout.tsx` | TBD (Claude writes after this cleanup) | This cleanup commit |
+| **U1. Sidebar reorg + accordion UX** | Antigravity | `app/admin/layout.tsx`, `app/globals.css` | `docs/handoffs/2026-07-10-antigravity-sidebar-reorg.md` | None (prompt ready) |
 | **E1. Task 1 — Modifier recipe save hardening** | Codex | `lib/`, possibly `app/admin/products/modifiers/` | `docs/handoffs/2026-07-09-codex-modifier-recipe-hardening.md` | None |
 | **U2. UI consistency sweep** | Antigravity | 28+ admin pages per `docs/audits/2026-07-06-ui-consistency-audit.md` | TBD | U1 (sidebar reorg informs page hierarchy) |
 
