@@ -45,8 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| **E1. Task 1 — Modifier recipe save hardening** | Codex | `lib/`, possibly `app/admin/products/modifiers/` | `docs/handoffs/2026-07-09-codex-modifier-recipe-hardening.md` | None |
-| **U2. UI consistency sweep** | Antigravity | 28+ admin pages per `docs/audits/2026-07-06-ui-consistency-audit.md` | TBD (Claude writes next) | None (U1 done, page hierarchy stable) |
+| **U2. UI consistency sweep** | Antigravity | 28+ admin pages per `docs/audits/2026-07-06-ui-consistency-audit.md` | `docs/handoffs/2026-07-10-antigravity-ui-sweep.md` | None |
 
 ### P2 — Backlog (medium impact)
 

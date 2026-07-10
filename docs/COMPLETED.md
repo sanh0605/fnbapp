@@ -4,6 +4,7 @@ Compact 1-line-per-task archive of finished work. Detailed entries remain in `DE
 
 ## 2026-07-10
 
+- **E1. Task 1 — Modifier recipe save hardening (Codex)** — `planRecipeSave` for MODIFIER, only close latest active recipe when changed, same recipe is no-op. Commit `b6ffd73` (done 2026-07-09, marked complete 2026-07-10). Tests: 15/15 targeted + 335/335 full.
 - **U1. Sidebar reorg + accordion UX (Antigravity)** — Workflow-based 8-group nav structure with clear Vietnamese labels + single-open accordion + thin scrollbar safety net. Commit `6a3980c`. Subsumes U3 (backdate label/group fix).
 - **U3. Backdate page label/group fix (Antigravity)** — Resolved by U1. Page moved to "Nhập hàng & Tồn kho" group, relabeled "Nhập hàng chờ duyệt".
 - **Task 3.2 Phase E (Codex)** — Integration smoke test for backdated detection pipeline. Commit `852537c`. Verified 17 PASS / 0 FAIL against production.
