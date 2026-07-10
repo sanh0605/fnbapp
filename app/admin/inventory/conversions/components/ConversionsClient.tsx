@@ -5,6 +5,7 @@ import StickyFilterBar from "@/components/StickyFilterBar";
 import { ConversionForm } from "./ConversionForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteConversionAction } from "../actions";
 import type { DBUOMConversion, DBPurchasedItem, DBBaseIngredient, DBUnit } from "@/types/db";
 
@@ -47,11 +48,12 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
+      <PageHeader 
         title="Quản lý Bảng Quy Đổi" 
         subtitle="Thiết lập tỷ lệ quy đổi từ đơn vị mua hàng sang đơn vị cơ bản dùng trong pha chế."
-        rightContent={rightContent}
-      >
+        actions={rightContent}
+      />
+      <StickyFilterBar>
         <div className="shrink-0">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm hàng hóa</label>
           <input
@@ -143,7 +145,7 @@ function DeleteConversionButton({ id, itemName }: { id: string; itemName: string
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
+        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
       >
         {loading ? "..." : "Xóa"}
       </button>

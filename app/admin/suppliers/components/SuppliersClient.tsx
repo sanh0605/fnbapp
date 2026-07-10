@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { SupplierForm, DeleteSupplierButton } from "./SupplierForm";
 import type { DBSupplier } from "@/types/db";
 
@@ -31,11 +32,12 @@ export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
+      <PageHeader 
         title="Quản lý Nhà Cung Cấp" 
         subtitle="Quản lý thông tin liên hệ và danh sách các đối tác cung ứng."
-        rightContent={rightContent}
-      >
+        actions={rightContent}
+      />
+      <StickyFilterBar>
         <div className="shrink-0">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input

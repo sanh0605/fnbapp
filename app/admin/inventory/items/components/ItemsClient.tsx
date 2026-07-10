@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useUrlState } from "@/lib/use-url-state";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { PurchasedItemForm } from "./PurchasedItemForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deletePurchasedItemAction } from "../actions";
@@ -51,11 +52,12 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
+      <PageHeader 
         title="Quản lý Hàng Mua Vào" 
         subtitle="Danh sách các mặt hàng thực tế nhập từ nhà cung cấp."
-        rightContent={rightContent}
-      >
+        actions={rightContent}
+      />
+      <StickyFilterBar>
         <div className="shrink-0">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
@@ -237,7 +239,7 @@ function DeleteItemButton({ id, name }: { id: string; name: string }) {
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50 p-2 -m-2 md:p-0 md:m-0 min-h-[44px] md:min-h-0 flex items-center justify-center"
+        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50 p-2 -m-2 md:p-0 md:m-0 min-h-[44px] md:min-h-0 flex items-center justify-center"
       >
         {loading ? "..." : "Xóa"}
       </button>

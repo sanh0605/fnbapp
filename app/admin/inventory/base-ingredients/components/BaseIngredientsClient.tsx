@@ -5,6 +5,7 @@ import StickyFilterBar from "@/components/StickyFilterBar";
 import { BaseIngredientForm } from "./BaseIngredientForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteBaseIngredientAction } from "../actions";
 import type { DBBaseIngredient, DBUnit } from "@/types/db";
 
@@ -33,11 +34,12 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
+      <PageHeader 
         title="Quản lý Nhóm Nguyên Liệu" 
         subtitle="Quản lý các nguyên liệu cơ bản dùng trong pha chế và chế biến."
-        rightContent={rightContent}
-      >
+        actions={rightContent}
+      />
+      <StickyFilterBar>
         <div className="shrink-0">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
@@ -129,7 +131,7 @@ function DeleteBaseIngredientButton({ id, name }: { id: string; name: string }) 
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
+        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
       >
         {loading ? "..." : "Xóa"}
       </button>

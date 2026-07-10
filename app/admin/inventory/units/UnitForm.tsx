@@ -75,7 +75,7 @@ export function DeleteBtn({ id }: { id: string }) {
     <button 
       onClick={handleDelete} 
       disabled={loading}
-      className="text-red-500 hover:text-red-700 text-sm font-medium disabled:opacity-50"
+      className="text-rose-500 hover:text-rose-700 text-sm font-medium disabled:opacity-50"
     >
       {loading ? "..." : "Xoá"}
     </button>

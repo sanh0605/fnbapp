@@ -139,7 +139,7 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
       >
         <form id="base-ingredient-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
               {error}
             </div>
           )}
@@ -186,7 +186,7 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
                     <button
                       type="button"
                       onClick={() => removeItemRow(idx)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition"
+                      className="p-2 text-gray-400 hover:text-rose-500 transition"
                     >
                       ✕
                     </button>

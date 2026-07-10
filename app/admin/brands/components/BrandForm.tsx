@@ -164,7 +164,7 @@ export function DeleteBrandButton({ id }: DeleteBrandButtonProps) {
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
+        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
       >
         {loading ? "…" : "Xoá"}
       </button>

@@ -81,7 +81,7 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
       >
         <form id="supplier-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
               {error}
             </div>
           )}
@@ -178,7 +178,7 @@ export function DeleteSupplierButton({ id }: DeleteSupplierButtonProps) {
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
+        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
       >
         {loading ? "..." : "Xóa"}
       </button>

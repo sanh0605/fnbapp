@@ -182,7 +182,7 @@ export function PurchasedItemForm({
       >
         <form id="purchased-item-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
               {error}
             </div>
           )}
@@ -281,7 +281,7 @@ export function PurchasedItemForm({
                             <button
                               type="button"
                               onClick={() => removeUnitRow(idx)}
-                              className="pb-2 px-2 text-gray-400 hover:text-red-500"
+                              className="pb-2 px-2 text-gray-400 hover:text-rose-500"
                             >
                               ✕
                             </button>
