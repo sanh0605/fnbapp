@@ -12,18 +12,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: "Tổng quan", href: "/admin", icon: "📊" },
-    { name: "Thương hiệu", href: "/admin/brands", icon: "🏢" },
     {
-      name: "Nguyên vật liệu",
+      name: "Danh mục",
       icon: "📦",
       children: [
+        { name: "Thương hiệu", href: "/admin/brands" },
         { name: "Nhà cung cấp", href: "/admin/suppliers" },
-        { name: "Phân Loại Hàng", href: "/admin/inventory/categories" },
+        { name: "Phân loại Hàng", href: "/admin/inventory/categories" },
         { name: "Nhóm Nguyên Liệu", href: "/admin/inventory/base-ingredients" },
         { name: "Hàng Mua Vào", href: "/admin/inventory/items" },
         { name: "Bảng Quy Đổi", href: "/admin/inventory/conversions" },
         { name: "Quản lý Đơn vị", href: "/admin/inventory/units" },
-        { name: "Đồng bộ Tồn kho", href: "/admin/inventory/sync" },
       ]
     },
     {
@@ -32,25 +31,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       children: [
         { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
         { name: "Điều chỉnh Tồn kho", href: "/admin/inventory/stock-adjustments" },
+        { name: "Đồng bộ Tồn kho", href: "/admin/inventory/sync" },
+        { name: "Nhập hàng chờ duyệt", href: "/admin/audit/backdated-ledger" },
       ]
     },
     {
-      name: "Bán thành phẩm",
+      name: "Sản xuất",
       icon: "🥣",
       children: [
-        { name: "Cấu hình / Công thức", href: "/admin/semi-products" },
+        { name: "Công thức Bán thành phẩm", href: "/admin/semi-products" },
         { name: "Sản xuất / Nấu Bếp", href: "/admin/production" },
       ]
     },
     {
-      name: "Thành phẩm (Menu)",
+      name: "Menu Bán hàng",
       icon: "☕",
       children: [
         { name: "Danh mục Nhóm", href: "/admin/products/categories" },
         { name: "Danh sách Món", href: "/admin/products" },
         { name: "Topping & Tùy chọn", href: "/admin/products/modifiers" },
         { name: "Topping Độc Lập", href: "/admin/products/toppings" },
-        { name: "Công cụ Dự toán COGS", href: "/admin/products/cogs-estimate" },
+        { name: "Dự toán Giá vốn", href: "/admin/products/cogs-estimate" },
       ]
     },
     {
@@ -75,10 +76,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: "⚙️",
       children: [
         { name: "Nhân sự & Phân quyền", href: "/admin/users" },
-        { name: "Backdate Cần Duyệt", href: "/admin/audit/backdated-ledger" },
-        { name: "Xoá Cache", href: "/admin/clear-cache" },
         { name: "Nhật ký Hoạt động", href: "/admin/activity-log" },
         { name: "Sao lưu & Đồng bộ", href: "/admin/backup" },
+        { name: "Xoá Cache", href: "/admin/clear-cache" },
       ]
     }
   ];
@@ -145,14 +145,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
   }, [isPosModalOpen]);
 
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    "Nguyên vật liệu": pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders"),
-    "Nhập hàng & Tồn kho": pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/inventory/stock-adjustments"),
-    "Bán thành phẩm": pathname.includes("/admin/semi-products") || pathname.includes("/admin/production"),
-    "Thành phẩm (Menu)": pathname.includes("/admin/products"),
-    "Bán hàng": pathname.includes("/admin/orders") || pathname.includes("/admin/promotions"),
-    "Báo cáo": pathname.includes("/admin/reports"),
-    "Hệ thống": pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache") || pathname.includes("/admin/activity-log") || pathname.includes("/admin/backup"),
+  const [openGroup, setOpenGroup] = useState<string | null>(() => {
+    for (const item of navItems) {
+      if (item.children?.some((child: any) => pathname === child.href)) {
+        return item.name;
+      }
+    }
+    return null;
   });
 
   const handleOpenPosModal = async () => {
@@ -167,20 +166,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   useEffect(() => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      "Nguyên vật liệu": prev["Nguyên vật liệu"] || (pathname.includes("/admin/inventory") && !pathname.includes("/purchase-orders")),
-      "Nhập hàng & Tồn kho": prev["Nhập hàng & Tồn kho"] || (pathname.includes("/admin/inventory/purchase-orders") || pathname.includes("/admin/inventory/stock-adjustments")),
-      "Bán thành phẩm": prev["Bán thành phẩm"] || (pathname.includes("/admin/semi-products") || pathname.includes("/admin/production")),
-      "Thành phẩm (Menu)": prev["Thành phẩm (Menu)"] || pathname.includes("/admin/products"),
-      "Bán hàng": prev["Bán hàng"] || (pathname.includes("/admin/orders") || pathname.includes("/admin/promotions")),
-      "Báo cáo": prev["Báo cáo"] || pathname.includes("/admin/reports"),
-      "Hệ thống": prev["Hệ thống"] || (pathname.includes("/admin/users") || pathname.includes("/admin/clear-cache") || pathname.includes("/admin/activity-log") || pathname.includes("/admin/backup")),
-    }));
+    for (const item of navItems) {
+      if (item.children?.some((child: any) => pathname === child.href)) {
+        setOpenGroup(item.name);
+        return;
+      }
+    }
   }, [pathname]);
 
   const toggleGroup = (name: string) => {
-    setExpandedGroups(prev => ({ ...prev, [name]: !prev[name] }));
+    setOpenGroup(prev => prev === name ? null : name);
   };
 
   return (
@@ -222,11 +217,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 sidebar-nav-scroll">
           {navItems.map((item: any) => {
             if (item.children) {
               const isGroupActive = item.children.some((child: any) => pathname === child.href);
-              const isExpanded = !!expandedGroups[item.name];
+              const isExpanded = openGroup === item.name;
               
               return (
                 <div key={item.name} className="space-y-1 mb-1">
