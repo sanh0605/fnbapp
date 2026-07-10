@@ -56,8 +56,8 @@ export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) 
                   </Link>
                 </td>
                 <td className="px-4 py-3">{formatDateTime(line.sale_time)}</td>
-                <td className="px-4 py-3 text-gray-400">---</td>
-                <td className="px-4 py-3 text-right text-gray-400">---</td>
+                <td className="px-4 py-3">{line.product_id}</td>
+                <td className="px-4 py-3 text-right">{formatNumber(line.qty)}</td>
                 <td className="px-4 py-3 text-right">{formatNumber(oldCogs)}</td>
                 <td className="px-4 py-3 text-right">{formatNumber(newCogs)}</td>
                 <td className={`px-4 py-3 text-right font-medium ${deltaColor}`}>

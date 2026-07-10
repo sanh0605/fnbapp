@@ -63,6 +63,8 @@ export type AffectedOrderLine = {
   order_no: string;
   sale_time: string;
   stored_cost_at_sale: number;
+  product_id: string;
+  qty: number;
 };
 
 export type FindAffectedLinesInput = {
@@ -127,6 +129,8 @@ export function findAffectedLines(input: FindAffectedLinesInput): AffectedOrderL
         order_no: order.order_no || order.id,
         sale_time: order.created_at,
         stored_cost_at_sale: Number(line.cost_at_sale || 0),
+        product_id: String(line.product_id || ""),
+        qty: Number(line.qty || 0),
       });
     }
   }
