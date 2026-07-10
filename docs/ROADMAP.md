@@ -45,17 +45,15 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| **U1. Sidebar reorg + accordion UX** | Antigravity | `app/admin/layout.tsx`, `app/globals.css` | `docs/handoffs/2026-07-10-antigravity-sidebar-reorg.md` | None (prompt ready) |
 | **E1. Task 1 — Modifier recipe save hardening** | Codex | `lib/`, possibly `app/admin/products/modifiers/` | `docs/handoffs/2026-07-09-codex-modifier-recipe-hardening.md` | None |
-| **U2. UI consistency sweep** | Antigravity | 28+ admin pages per `docs/audits/2026-07-06-ui-consistency-audit.md` | TBD | U1 (sidebar reorg informs page hierarchy) |
+| **U2. UI consistency sweep** | Antigravity | 28+ admin pages per `docs/audits/2026-07-06-ui-consistency-audit.md` | TBD (Claude writes next) | None (U1 done, page hierarchy stable) |
 
 ### P2 — Backlog (medium impact)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **U3. Backdate page label/group fix** | Antigravity | `app/admin/layout.tsx` | Paused pending U1 reorg decision. Current label "Backdate Cần Duyệt" unclear, current group "Hệ thống" debatable. |
 | **E2. Task 3.3 — Investigate remaining 97.6% drift** | Codex | Audit scripts | Backdating explains only 2,906 / 119,782 VND of historical drift. Other ~116k VND source unknown (likely historical backfill). Need read-only investigation before recovery meaningful. |
-| **H1. Push local commits** | Claude | git | 14+ commits this session, all local. Push when user confirms batch is stable. |
+| **H1. Push local commits** | Claude | git | 16+ commits this session, all local. Push when user confirms batch is stable. |
 
 ### P3 — Depends on verification
 

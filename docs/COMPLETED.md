@@ -4,8 +4,10 @@ Compact 1-line-per-task archive of finished work. Detailed entries remain in `DE
 
 ## 2026-07-10
 
+- **U1. Sidebar reorg + accordion UX (Antigravity)** — Workflow-based 8-group nav structure with clear Vietnamese labels + single-open accordion + thin scrollbar safety net. Commit `6a3980c`. Subsumes U3 (backdate label/group fix).
+- **U3. Backdate page label/group fix (Antigravity)** — Resolved by U1. Page moved to "Nhập hàng & Tồn kho" group, relabeled "Nhập hàng chờ duyệt".
 - **Task 3.2 Phase E (Codex)** — Integration smoke test for backdated detection pipeline. Commit `852537c`. Verified 17 PASS / 0 FAIL against production.
-- **Task 3.2 Phase F (Claude)** — Added sidebar nav link for backdate review page. Commit pending this cleanup.
+- **Task 3.2 Phase F (Claude)** — Added sidebar nav link for backdate review page. (Subsumed by U1 reorg.)
 
 ## 2026-07-09
 
