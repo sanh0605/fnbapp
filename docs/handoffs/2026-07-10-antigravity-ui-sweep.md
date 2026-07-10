@@ -45,6 +45,62 @@ Every list/form admin page should have:
    - Error: `rose-*`
    - Warning: `amber-*`
 
+## Mobile-first requirement (CRITICAL — applies to all batches)
+
+User directive: **mobile-first, then desktop**. App is used heavily on mobile (POS, dashboard, inventory). Building desktop-first then "making it responsive" produces worse mobile UX.
+
+### Required patterns for every list page
+
+1. **Two render paths** — mobile card layout + desktop table:
+   ```tsx
+   {/* Desktop table (>= md) */}
+   <div className="overflow-x-auto hidden md:block">
+     <table>...</table>
+   </div>
+
+   {/* Mobile card layout (< md) */}
+   <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+     {items.map(item => (
+       <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+         {/* card content */}
+       </div>
+     ))}
+   </div>
+   ```
+
+2. **Touch targets min 44×44px** — buttons, links, icons clickable on mobile:
+   ```tsx
+   <button className="p-2 -m-2 md:p-0 md:m-0 min-h-[44px] md:min-h-0">
+   ```
+
+3. **StickyFilterBar mobile behavior** — must collapse or wrap on mobile, not horizontal scroll:
+   - Verify search input full width on mobile (`flex-1`)
+   - Verify filters wrap to second row or drawer on narrow screens
+
+4. **No hover-dependent primary actions** — hover tooltips OK, but click/tap must work standalone
+
+5. **Forms** — stacked labels on mobile (`block`), large inputs (`py-3` minimum), no multi-column on narrow screens (`md:grid-cols-2`)
+
+### Reference implementation
+
+See `app/admin/inventory/items/components/ItemsClient.tsx`:
+- Lines 87-156: Desktop table (`hidden md:block`)
+- Lines 158-220: Mobile card layout (`md:hidden flex flex-col`)
+
+Use this as template for other pages.
+
+### Verification per page
+
+Before marking page done:
+- Open Chrome DevTools → Toggle device toolbar
+- Test 375px width (iPhone SE) and 768px width (iPad mini)
+- Verify:
+  - No horizontal overflow
+  - All interactive elements ≥ 44px tall
+  - Text readable without zoom
+  - Filter bar wraps or collapses correctly
+  - Empty state renders correctly in card layout
+
 ## Files
 
 Antigravity owns: `app/**/*.tsx`, `components/**/*.tsx`. Do NOT touch `lib/`, `supabase/`, `scripts/`.
@@ -64,25 +120,38 @@ Antigravity owns: `app/**/*.tsx`, `components/**/*.tsx`. Do NOT touch `lib/`, `s
 
 Work through batches sequentially. Commit per batch.
 
-### Batch 1: Catalog pages (Danh mục group)
+### Batch 1R: Mobile-first retrofit for Batch 1 (NEW — required before Batch 2)
 
-Pages (per U1 sidebar):
+**Context:** Batch 1 (commit `3882798`) applied shared components but did NOT verify mobile-first consistently. Audit found:
+- `ItemsClient.tsx`: ✅ mobile-first (mobile card layout + desktop table)
+- `SuppliersClient.tsx`: ❌ desktop-only (table always shown, no mobile card layout)
+
+Suspected similar inconsistency in: `BaseIngredientsClient`, `ConversionsClient`, `BrandsClient`, `categories`, `units`.
+
+**Task:** Verify all 7 Batch 1 pages have mobile-first pattern per spec above. Add mobile card layout where missing.
+
+Pages to verify + fix:
 - `/admin/brands`
-- `/admin/suppliers`
+- `/admin/suppliers` (confirmed missing)
 - `/admin/inventory/categories`
 - `/admin/inventory/base-ingredients`
-- `/admin/inventory/items`
 - `/admin/inventory/conversions`
 - `/admin/inventory/units`
+- (`/admin/inventory/items` — reference impl, no changes needed)
 
-For each page:
-1. Replace custom header with `<PageHeader>`
-2. Add `loading.tsx` with Skeleton
-3. Replace empty states with `<EmptyState>`
-4. Standardize table headers + hover
-5. Verify form error states use `rose` color
+Reference: `ItemsClient.tsx` lines 87-220.
 
-**Commit:** `Antigravity feat: UI sweep batch 1 - catalog pages (Danh mục)`
+**Verification:**
+- Open each page in DevTools mobile (375px)
+- Confirm card layout shows on mobile, table on desktop
+- Touch targets ≥ 44px
+- No horizontal overflow
+
+**Commit:** `Antigravity fix: Batch 1 mobile-first retrofit (Task U2 Batch 1R)`
+
+**Pause after this commit** — Claude reviews mobile-first retrofit → signal Batch 2.
+
+### Batch 2: Inventory ops pages (Nhập hàng & Tồn kho)
 
 ### Batch 2: Inventory ops pages (Nhập hàng & Tồn kho)
 
