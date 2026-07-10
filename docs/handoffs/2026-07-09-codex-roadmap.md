@@ -15,8 +15,9 @@ Inventory all pending engine work in Codex's scope. Each task has its own prompt
 |---|---|---|---|---|---|
 | 1 | Modifier recipe save hardening (Phase 1.5) | Data integrity | Medium | `2026-07-09-codex-modifier-recipe-hardening.md` | 🔄 Prompt ready (next session) |
 | 2 | Migration RPC idempotency edge case | Robustness | Small | `2026-07-09-codex-idempotency-fix.md` | ✅ Done + deployed (migration 0011) + verified `already_applied: TRUE` |
-| 3 | MAC drift baseline recovery | Financial accuracy | Medium-Large | `2026-07-09-codex-mac-drift-recovery.md` | ⏸ Deferred (Path 3): audit + root cause done, recovery needs Task 3.2 backdated-receipt policy decision |
+| 3 | MAC drift baseline recovery | Financial accuracy | Medium-Large | `2026-07-09-codex-mac-drift-recovery.md` | ⏸ Deferred (Path 3): audit + root cause done, recovery needs Task 3.2 verified first |
 | 3.1 | PROD-028 BTP_SHORTFALL investigation | Diagnostic | Small | `2026-07-09-codex-prod-028-btp-shortfall-investigation.md` | ✅ Done: backdated PO-051 root cause confirmed |
+| 3.2 | Backdated receipt detection + manual review pipeline | Data integrity | Large | `2026-07-09-codex-backdated-receipt-pipeline.md` | ✅ Done + deployed (migrations 0014 + 0015). Awaiting first PENDING event for end-to-end verify |
 | 4 | Timezone display implementation | UX polish | Small | `2026-07-09-codex-timezone-implementation.md` | ✅ Done + deployed (migration 0013) + verified Dashboard shows `Asia/Ho_Chi_Minh` |
 
 ## Recommended order

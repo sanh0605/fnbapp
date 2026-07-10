@@ -4,6 +4,47 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-10 (Claude) - Task 3.2 shipped: backdated receipt detection + manual review pipeline
+
+**Trigger:** User interview confirmed policy (Allow + flag manual review, Zero tolerance). 4-phase implementation by Codex (engine) + Antigravity (UI). All phases deployed to production.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Task 3.2 prompt** | Wrote `docs/handoffs/2026-07-09-codex-backdated-receipt-pipeline.md` with 4-phase architecture (Detection, Recompute, UI, Tests). Revised to split UI to Antigravity scope. | ✅ Done | d1f057e, 296191d |
+| **Phase A (Detection)** | Migration 0014: `backdated_ledger_events` table + `detect_backdated_ledger_entry` trigger (5-min threshold). Backfill audit: 123 historical candidates, 34 item-matched current drift lines, 2,906 VND matched. | ✅ Done | c561e43 |
+| **Phase B (Recompute)** | Migration 0015: `apply_backdated_event_recovery` RPC (atomic, idempotent, advisory lock per event) + `mark_backdated_event_recomputed` + `reject_backdated_event`. TS pipeline in `lib/backdated-ledger/`: find-affected-lines, compute-sale-time-cogs, recompute-event (dry-run + apply). | ✅ Done | 2d86c45 |
+| **Phase C (Admin UI)** | `/admin/audit/backdated-ledger` list + detail pages, server actions, 6 components (EventRow, EventDetail, StatusBadge, AffectedLinesTable, ApplyModal, RejectModal). Reused PageHeader, EmptyState, SkeletonTable. Agy fixed product_id/qty propagation blocker. | ✅ Done | d686b37, b6f2895 |
+| **Phase D (Tests)** | 15 new tests: detection migration contract (5), find-affected-lines discovery (5), recompute pipeline + RPC (5). Total 335/335 pass. | ✅ Done | 03c54a0 |
+| **Deploy migrations 0014 + 0015** | Applied to Supabase production via `supabase db push`. Trigger active, RPCs live, table created. | ✅ Done | - |
+
+### Key findings during Task 3.2
+- Backdating explains only 2.4% of historical drift (2,906 / 119,782 VND). Task 3.2 is forward-looking — it won't fix the existing 170-line baseline.
+- 97.6% of historical drift comes from other sources (likely original backfill issue from Task 3). Needs Task 3.3 investigation if baseline recovery is needed.
+- 123 historical backdated candidates documented in audit doc — operator backdating is systemic (weekly frequency, 66+ day lags in some cases).
+
+### Verification
+- Migration 0014 + 0015 deployed successfully via `supabase db push`.
+- `npx tsc --noEmit`: 0 errors.
+- `npx vitest run`: 335/335 pass (320 baseline + 15 new).
+- `git diff --check`: clean.
+- UI infra ready at `/admin/audit/backdated-ledger` — will show empty state until first operator backdate triggers a PENDING event (expected within 1 week per user interview).
+
+### Local commits (not pushed)
+12 commits this session: 5 engine (Codex) + 2 UI (Antigravity) + 5 coordinator (Claude prompts + tracking).
+
+### Next session candidates
+1. **Verify Task 3.2 with first real PENDING event** — operator backdate → admin review → approve → drift = 0
+2. **UI consistency sweep** — full audit of all `/admin/*` pages (deferred from prior session per "avoid commit conflicts")
+3. **Task 3 recovery** — Option A lock + Option B recompute for existing 170-line baseline (needs Task 3.2 verified first)
+4. **Task 3.3** — investigate remaining 97.6% drift source (likely historical backfill issue)
+5. **Task 1 (Modifier recipe hardening)** — Codex, prompt ready
+
+### No push
+Per collaboration protocol, all commits are local-only. User will push when ready.
+
+---
+
 ## 2026-07-09 (Claude) - Session wrap-up: Task 2.1 verified, Task 3 deferred, Task 4 verified
 
 **Trigger:** End-of-session coordination summary after Codex completed Tasks 2.1, 3, 3.1, 4.
