@@ -75,6 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: "⚙️",
       children: [
         { name: "Nhân sự & Phân quyền", href: "/admin/users" },
+        { name: "Backdate Cần Duyệt", href: "/admin/audit/backdated-ledger" },
         { name: "Xoá Cache", href: "/admin/clear-cache" },
         { name: "Nhật ký Hoạt động", href: "/admin/activity-log" },
         { name: "Sao lưu & Đồng bộ", href: "/admin/backup" },
