@@ -54,20 +54,20 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
         actions={rightContent}
       />
       <StickyFilterBar>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm hàng hóa</label>
           <input
             type="text"
             placeholder="Tên hàng hóa..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
       </StickyFilterBar>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
@@ -122,6 +122,62 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card Layout (< 768px) */}
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+          {filteredConversions.length === 0 ? (
+            <EmptyState 
+              icon="🔄" 
+              title="Chưa có quy đổi" 
+              description="Thêm quy đổi đơn vị để quản lý nguyên liệu dễ dàng hơn."
+            />
+          ) : (
+            filteredConversions.map((conv) => (
+              <div key={conv.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div className="font-bold text-gray-900">{itemMap[conv.purchased_item_id] || conv.purchased_item_id}</div>
+                </div>
+                
+                <div className="flex items-center justify-between mt-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] text-gray-400 uppercase font-bold mb-1">Đơn vị mua</span>
+                    <span className="text-sm font-bold text-blue-600">
+                      {conv.purchased_unit ? unitMap[conv.purchased_unit] : ""}
+                      {!conv.purchased_unit && conv.from_unit_id ? unitMap[conv.from_unit_id] : ""}
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-col items-center px-4">
+                    <span className="text-gray-300 text-xs">→</span>
+                    <span className="font-mono text-xs font-bold text-gray-600">x{conv.conversion_rate}</span>
+                  </div>
+                  
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] text-gray-400 uppercase font-bold mb-1">Đơn vị chuẩn</span>
+                    <span className="text-sm font-bold text-gray-700">
+                      {conv.base_unit ? unitMap[conv.base_unit] : ""}
+                      {!conv.base_unit && conv.to_unit_id ? unitMap[conv.to_unit_id] : ""}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-gray-100/50">
+                  <div className="flex items-center min-h-[44px]">
+                    <ConversionForm 
+                      initialData={conv} 
+                      items={items} 
+                      baseIngredients={baseIngredients} 
+                      units={units} 
+                    />
+                  </div>
+                  <div className="flex items-center min-h-[44px]">
+                    <DeleteConversionButton id={conv.id} itemName={itemMap[conv.purchased_item_id] || ""} />
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

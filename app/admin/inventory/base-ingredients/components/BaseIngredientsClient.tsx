@@ -40,20 +40,20 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
         actions={rightContent}
       />
       <StickyFilterBar>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên nguyên liệu..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
       </StickyFilterBar>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
@@ -108,6 +108,51 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card Layout (< 768px) */}
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+          {filteredIngredients.length === 0 ? (
+            <EmptyState 
+              icon="🥚" 
+              title="Chưa có nguyên liệu" 
+              description="Thêm nguyên liệu cơ bản cho công thức món."
+            />
+          ) : (
+            filteredIngredients.map((ing) => (
+              <div key={ing.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-bold text-gray-900">{ing.name}</div>
+                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">{ing.id}</div>
+                  </div>
+                  {ing.is_non_inventory === "TRUE" ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">
+                      Phi lưu kho
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                      Có lưu kho
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm text-gray-600">
+                  <span className="text-gray-400">Đơn vị:</span> <span className="font-medium">
+                    {ing.base_unit ? unitMap[ing.base_unit] : ""}
+                    {!ing.base_unit && ing.unit_id ? unitMap[ing.unit_id] : ""}
+                  </span>
+                </div>
+                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-gray-100/50">
+                  <div className="flex items-center min-h-[44px]">
+                    <BaseIngredientForm initialData={ing} units={units} />
+                  </div>
+                  <div className="flex items-center min-h-[44px]">
+                    <DeleteBaseIngredientButton id={ing.id} name={ing.name} />
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
