@@ -8,6 +8,7 @@ import { formatNumber } from "@/lib/format";
 import { deleteModifierAction } from "../actions";
 import { ModifierForm } from "./ModifierForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { Button } from "@/components/ui/Button";
 import type { DBModifier, DBRecipe, DBBaseIngredient, DBSemiProduct, DBUnit } from "@/types/db";
 import { parseModifierIngredients } from "@/lib/modifier-recipe";
 import ToppingsManager from "@/components/ToppingsManager";
@@ -65,11 +66,11 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
         subtitle="Quản lý tùy chọn và cài đặt bán độc lập (POS)."
         rightContent={activeTab === "modifiers" ? rightContent : undefined}
       >
-        <div className="flex bg-gray-100 p-1 rounded-lg">
+        <div className="flex bg-surface-secondary p-1 rounded-lg">
           <button
             onClick={() => setActiveTab("modifiers")}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              activeTab === "modifiers" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-900"
+              activeTab === "modifiers" ? "bg-surface-card text-primary-active shadow-sm" : "text-text-muted hover:text-text-primary"
             }`}
           >
             Tùy chọn (Modifiers)
@@ -77,7 +78,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
           <button
             onClick={() => setActiveTab("standalone")}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              activeTab === "standalone" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500 hover:text-gray-900"
+              activeTab === "standalone" ? "bg-surface-card text-primary-active shadow-sm" : "text-text-muted hover:text-text-primary"
             }`}
           >
             Bán độc lập
@@ -86,24 +87,24 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
 
         {activeTab === "modifiers" && (
           <div className="shrink-0 ml-4">
-            <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm tùy chọn</label>
+            <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm tùy chọn</label>
             <input
               type="text"
               placeholder="Tên hoặc nhóm..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+              className="w-48 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
             />
           </div>
         )}
       </StickyFilterBar>
 
       {activeTab === "modifiers" ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 <th className="px-6 py-4 font-bold">Nhóm</th>
                 <th className="px-6 py-4 font-bold">Tên Tùy Chọn</th>
                 <th className="px-6 py-4 font-bold">Giá Thêm</th>
@@ -114,20 +115,20 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
             <tbody className="divide-y divide-gray-100">
               {filteredModifiers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 italic">
+                  <td colSpan={5} className="px-6 py-12 text-center text-text-muted italic">
                     Không tìm thấy tùy chọn nào phù hợp.
                   </td>
                 </tr>
               ) : (
                 filteredModifiers.map((m) => (
-                  <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={m.id} className="hover:bg-surface-secondary transition-colors">
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 uppercase">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-surface-secondary text-text-secondary uppercase">
                         {m.group_name}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-bold text-gray-900">{m.name}</td>
-                    <td className="px-6 py-4 text-orange-600 font-bold">
+                    <td className="px-6 py-4 font-bold text-text-primary">{m.name}</td>
+                    <td className="px-6 py-4 text-warning font-bold">
                       {formatNumber(m.price)}
                     </td>
                     <td className="px-6 py-4">
@@ -135,7 +136,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                         {m.activeRecipe ? (
                           (() => {
                             const ings = parseModifierIngredients(m.activeRecipe.ingredients_json);
-                            if (ings.length === 0) return <span className="text-gray-400 italic text-[11px]">Chưa có định mức</span>;
+                            if (ings.length === 0) return <span className="text-text-muted italic text-[11px]">Chưa có định mức</span>;
                             
                             return ings.map((ing, idx) => {
                               const source = ing.ingredient_type === "BASE_INGREDIENT"
@@ -143,17 +144,17 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                                 : semiProducts.find(sp => sp.id === ing.ingredient_id);
                               const unitName = units.find(u => u.id === source?.base_unit)?.name || "";
                               return (
-                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700 border border-blue-100">
+                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-primary-soft text-primary-active border border-primary/20">
                                   {source?.name || ing.ingredient_id}: {ing.quantity}{unitName}
                                 </span>
                               );
                             });
                           })()
                         ) : (
-                          <span className="text-gray-400 italic text-[11px]">Chưa có định mức</span>
+                          <span className="text-text-muted italic text-[11px]">Chưa có định mức</span>
                         )}
                         {m.hasMultipleActiveRecipes && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 border border-amber-100">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-warning/10 text-warning-active border border-warning/20">
                             {m.activeRecipeCount} phiên bản hoạt động
                           </span>
                         )}
@@ -205,13 +206,7 @@ function DeleteModifierButton({ id, name, onDeleted }: { id: string; name: strin
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
-      >
-        {loading ? "..." : "Xóa"}
-      </button>
+      <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)} disabled={loading} className="text-danger hover:text-danger-active hover:bg-danger/10">{loading ? "..." : "Xóa"}</Button>
       <DeleteConfirmModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
