@@ -8,7 +8,7 @@ export default function Loading() {
         title="Điều chỉnh Tồn kho" 
         subtitle="Quản lý và phê duyệt các yêu cầu điều chỉnh số lượng tồn kho thực tế." 
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={10} />
       </div>
     </div>

@@ -49,7 +49,7 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
     <div className="flex gap-3">
       <Link
         href="/admin/inventory/purchase-orders/new"
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition whitespace-nowrap shadow-sm"
+        className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition whitespace-nowrap shadow-sm"
       >
         + Tạo Đơn Nhập Hàng
       </Link>
@@ -65,21 +65,21 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
       />
       <StickyFilterBar>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Mã đơn, NCC..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Trạng thái</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-36 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-36 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả</option>
             <option value="DRAFT">Bản nháp</option>
@@ -87,11 +87,11 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
           </select>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nhà Cung Cấp</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Nhà Cung Cấp</label>
           <select
             value={supplierFilter}
             onChange={(e) => setSupplierFilter(e.target.value)}
-            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả NCC</option>
             {suppliers.map(s => (
@@ -101,11 +101,11 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
         </div>
       </StickyFilterBar>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 <th className="px-6 py-4 font-bold">Mã Đơn</th>
                 <th className="px-6 py-4 font-bold">Trạng Thái</th>
                 <th className="px-6 py-4 font-bold">Nhà Cung Cấp</th>
@@ -127,32 +127,32 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
                 </tr>
               ) : (
                 sortedOrders.map((po) => (
-                  <tr key={po.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-[11px] text-gray-500 font-bold">{po.id}</td>
+                  <tr key={po.id} className="hover:bg-surface-secondary/50 transition-colors">
+                    <td className="px-6 py-4 font-mono text-[11px] text-text-muted font-bold">{po.id}</td>
                     <td className="px-6 py-4">
                       {po.status === "COMPLETED" ? (
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-emerald-50 text-emerald-700">
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-success/10 text-success-active">
                           HOÀN THÀNH
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-surface-secondary text-text-secondary">
                           BẢN NHÁP
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-bold text-gray-900">
+                    <td className="px-6 py-4 font-bold text-text-primary">
                       {supplierMap[po.supplier_id] || "Không xác định"}
                     </td>
-                    <td className="px-6 py-4 text-gray-500">
+                    <td className="px-6 py-4 text-text-muted">
                       {po.created_at ? new Date(po.created_at).toLocaleDateString('vi-VN') : "---"}
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-gray-900">
+                    <td className="px-6 py-4 text-right font-bold text-text-primary">
                       {formatNumber(po.total_amount)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link 
                         href={`/admin/inventory/purchase-orders/${po.id}`}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        className="text-primary hover:text-primary-hover font-medium text-sm"
                       >
                         {po.status === "COMPLETED" ? "Xem chi tiết" : "Sửa đơn"}
                       </Link>
@@ -165,7 +165,7 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
         </div>
 
         {/* Mobile Card Layout (< 768px) */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
           {sortedOrders.length === 0 ? (
             <EmptyState 
               icon="📦" 
@@ -174,34 +174,34 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
             />
           ) : (
             sortedOrders.map((po) => (
-              <div key={po.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+              <div key={po.id} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-bold text-gray-900">{supplierMap[po.supplier_id] || "Không xác định"}</div>
-                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">{po.id}</div>
+                    <div className="font-bold text-text-primary">{supplierMap[po.supplier_id] || "Không xác định"}</div>
+                    <div className="text-[11px] font-mono text-text-muted mt-0.5">{po.id}</div>
                   </div>
                   {po.status === "COMPLETED" ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success-active border border-success/30">
                       HOÀN THÀNH
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-surface-secondary text-text-secondary border border-border">
                       BẢN NHÁP
                     </span>
                   )}
                 </div>
                 <div className="flex justify-between items-center text-sm mt-1">
-                  <div className="text-gray-500">
-                    <span className="text-gray-400">Ngày tạo:</span> <span className="font-medium">{po.created_at ? new Date(po.created_at).toLocaleDateString('vi-VN') : "---"}</span>
+                  <div className="text-text-muted">
+                    <span className="text-text-muted">Ngày tạo:</span> <span className="font-medium">{po.created_at ? new Date(po.created_at).toLocaleDateString('vi-VN') : "---"}</span>
                   </div>
-                  <div className="font-bold text-gray-900 text-base">
+                  <div className="font-bold text-text-primary text-base">
                     {formatNumber(po.total_amount)}
                   </div>
                 </div>
-                <div className="flex justify-end pt-3 mt-1 border-t border-gray-100/50">
+                <div className="flex justify-end pt-3 mt-1 border-t border-border">
                   <Link 
                     href={`/admin/inventory/purchase-orders/${po.id}`}
-                    className="flex items-center justify-center bg-gray-50 text-blue-600 font-bold py-2 px-4 rounded-lg text-sm w-full border border-gray-200 min-h-[44px]"
+                    className="flex items-center justify-center bg-surface-secondary text-primary font-bold py-2 px-4 rounded-lg text-sm w-full border border-border min-h-[44px]"
                   >
                     {po.status === "COMPLETED" ? "Xem chi tiết" : "Sửa đơn"}
                   </Link>

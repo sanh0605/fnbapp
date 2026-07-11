@@ -84,7 +84,7 @@ export default function SyncPage() {
         subtitle="Đối chiếu Stock Ledger với Công thức (Recipes) để sửa lỗi lệch kho do cập nhật trễ."
         actions={
           <div className="flex gap-3">
-            <Link href="/admin/inventory/items" className="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition min-h-[44px] flex items-center shadow-sm">
+            <Link href="/admin/inventory/items" className="px-4 py-2 bg-surface-card border border-border rounded-xl text-sm font-medium text-text-secondary hover:bg-surface-secondary transition min-h-[44px] flex items-center shadow-sm">
               Quay lại Kho
             </Link>
             <button
@@ -99,39 +99,39 @@ export default function SyncPage() {
       />
 
       {error && (
-        <div role="alert" aria-live="polite" className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-sm">
+        <div role="alert" aria-live="polite" className="bg-danger/10 border border-danger/30 text-danger-active px-4 py-3 rounded-xl text-sm">
           {error}
         </div>
       )}
 
       {isSyncing && (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+        <div className="bg-surface-card p-6 rounded-2xl shadow-sm border border-border space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-sm font-bold text-gray-700 uppercase tracking-wider">Tiến trình đồng bộ</span>
+            <span className="text-sm font-bold text-text-secondary uppercase tracking-wider">Tiến trình đồng bộ</span>
             <span className="text-sm font-black text-indigo-600">{progress}%</span>
           </div>
-          <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-surface-secondary rounded-full overflow-hidden">
             <div 
               className="h-full bg-indigo-600 transition-[width] duration-500 ease-out" 
               style={{ width: `${progress}%` }}
             ></div>
           </div>
-          <p className="text-xs text-gray-400 italic">Đang cập nhật Stock Ledger theo từng gói 20 đơn hàng để đảm bảo an toàn...</p>
+          <p className="text-xs text-text-muted italic">Đang cập nhật Stock Ledger theo từng gói 20 đơn hàng để đảm bảo an toàn...</p>
         </div>
       )}
 
       {!isScanning && scanComplete && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-5 border-b border-gray-100 flex justify-between items-center">
+        <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
+          <div className="p-5 border-b border-border flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Kết quả kiểm tra</h3>
-              <p className="text-sm text-gray-500">Phát hiện <span className="font-bold text-red-600">{discrepancies.length}</span> đơn hàng bị lệch tồn kho.</p>
+              <h3 className="text-lg font-bold text-text-primary">Kết quả kiểm tra</h3>
+              <p className="text-sm text-text-muted">Phát hiện <span className="font-bold text-danger">{discrepancies.length}</span> đơn hàng bị lệch tồn kho.</p>
             </div>
             {discrepancies.length > 0 && (
               <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-100 disabled:opacity-50"
+                className="px-6 py-2.5 bg-success text-white rounded-xl text-sm font-bold hover:bg-success-hover transition shadow-lg shadow-sm disabled:opacity-50"
               >
                 Đồng bộ ngay tất cả
               </button>
@@ -140,16 +140,16 @@ export default function SyncPage() {
 
           {discrepancies.length === 0 ? (
             <div className="text-center py-16 px-4">
-              <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               </div>
-              <p className="text-gray-500 font-medium">Tuyệt vời! Toàn bộ tồn kho lịch sử đều đã khớp với công thức chuẩn.</p>
+              <p className="text-text-muted font-medium">Tuyệt vời! Toàn bộ tồn kho lịch sử đều đã khớp với công thức chuẩn.</p>
             </div>
           ) : (
             <>
               <div className="overflow-x-auto max-h-[500px] hidden md:block">
-                <table className="w-full text-left text-sm text-gray-600 border-collapse">
-                  <thead className="bg-gray-50 text-gray-500 text-[11px] uppercase tracking-wider font-bold sticky top-0 border-b border-gray-100 z-10">
+                <table className="w-full text-left text-sm text-text-secondary border-collapse">
+                  <thead className="bg-surface-secondary text-text-muted text-[11px] uppercase tracking-wider font-bold sticky top-0 border-b border-border z-10">
                     <tr>
                       <th className="px-6 py-4">Mã đơn</th>
                       <th className="px-6 py-4">Ngày tạo</th>
@@ -158,19 +158,19 @@ export default function SyncPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {discrepancies.map((d, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 font-bold text-gray-800">{d.order_no}</td>
-                        <td className="px-6 py-4 text-gray-500">
+                      <tr key={idx} className="hover:bg-surface-secondary/50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-text-primary">{d.order_no}</td>
+                        <td className="px-6 py-4 text-text-muted">
                           {new Date(d.created_at).toLocaleString("vi-VN")}
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-[11px] space-y-1">
                             {d.diffs.map(diff => (
                               <div key={diff.id} className="flex gap-2">
-                                <span className="text-gray-500 font-medium min-w-[120px]">{diff.name}:</span>
-                                <span className="text-rose-600 font-bold">{diff.actual}</span>
-                                <span className="text-gray-300">→</span>
-                                <span className="text-emerald-600 font-bold">{diff.expected}</span>
+                                <span className="text-text-muted font-medium min-w-[120px]">{diff.name}:</span>
+                                <span className="text-danger font-bold">{diff.actual}</span>
+                                <span className="text-text-muted">→</span>
+                                <span className="text-success font-bold">{diff.expected}</span>
                               </div>
                             ))}
                           </div>
@@ -182,24 +182,24 @@ export default function SyncPage() {
               </div>
 
               {/* Mobile Card Layout (< 768px) */}
-              <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+              <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
                 {discrepancies.map((d, idx) => (
-                  <div key={idx} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+                  <div key={idx} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
                     <div className="flex justify-between items-start">
-                      <div className="font-bold text-gray-900">Đơn: {d.order_no}</div>
-                      <div className="text-[11px] text-gray-500">
+                      <div className="font-bold text-text-primary">Đơn: {d.order_no}</div>
+                      <div className="text-[11px] text-text-muted">
                         {new Date(d.created_at).toLocaleString("vi-VN")}
                       </div>
                     </div>
                     <div className="text-xs space-y-2 mt-1">
-                      <div className="text-[10px] uppercase font-bold text-gray-400">Sự khác biệt:</div>
+                      <div className="text-[10px] uppercase font-bold text-text-muted">Sự khác biệt:</div>
                       {d.diffs.map(diff => (
-                        <div key={diff.id} className="flex flex-col bg-gray-50 p-2 rounded-lg border border-gray-100">
-                          <span className="font-semibold text-gray-700 mb-1">{diff.name}</span>
+                        <div key={diff.id} className="flex flex-col bg-surface-secondary p-2 rounded-lg border border-border">
+                          <span className="font-semibold text-text-secondary mb-1">{diff.name}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-rose-600 font-bold">{diff.actual}</span>
-                            <span className="text-gray-300">→</span>
-                            <span className="text-emerald-600 font-bold">{diff.expected}</span>
+                            <span className="text-danger font-bold">{diff.actual}</span>
+                            <span className="text-text-muted">→</span>
+                            <span className="text-success font-bold">{diff.expected}</span>
                           </div>
                         </div>
                       ))}

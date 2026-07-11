@@ -191,10 +191,10 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+    <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-card p-6 rounded-2xl shadow-sm border border-border mb-6">
         <div>
-          <label htmlFor={`${formId}-supplierId`} className="block text-sm font-semibold text-gray-700 mb-2">Nhà Cung Cấp *</label>
+          <label htmlFor={`${formId}-supplierId`} className="block text-sm font-semibold text-text-secondary mb-2">Nhà Cung Cấp *</label>
           <SearchableSelect
             id={`${formId}-supplierId`}
             value={supplierId}
@@ -208,7 +208,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           />
         </div>
         <div>
-          <label htmlFor={`${formId}-transactionDate`} className="block text-sm font-semibold text-gray-700 mb-2">Ngày nhập hàng thực tế</label>
+          <label htmlFor={`${formId}-transactionDate`} className="block text-sm font-semibold text-text-secondary mb-2">Ngày nhập hàng thực tế</label>
           <CustomDatePicker
             id={`${formId}-transactionDate`}
             name="transaction_date"
@@ -216,10 +216,10 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             onChange={(date) => setTransactionDate(date)}
             placeholderText="Chọn ngày nhập hàng (dd/mm/yyyy)"
           />
-          <p className="text-xs text-gray-500 mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
+          <p className="text-xs text-text-muted mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
         </div>
         <div>
-          <label htmlFor={`${formId}-sourceId`} className="block text-sm font-semibold text-gray-700 mb-2">Nguồn nhập hàng</label>
+          <label htmlFor={`${formId}-sourceId`} className="block text-sm font-semibold text-text-secondary mb-2">Nguồn nhập hàng</label>
           <div className="flex gap-2">
             <div className="flex-1">
               <SearchableSelect
@@ -250,36 +250,36 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           </div>
         </div>
         <div>
-          <label htmlFor={`${formId}-supplierInvoiceCode`} className="block text-sm font-semibold text-gray-700 mb-2">Mã hoá đơn (Supplier Invoice Code)</label>
+          <label htmlFor={`${formId}-supplierInvoiceCode`} className="block text-sm font-semibold text-text-secondary mb-2">Mã hoá đơn (Supplier Invoice Code)</label>
           <input
             id={`${formId}-supplierInvoiceCode`}
             type="text"
             value={supplierInvoiceCode}
             onChange={(e) => setSupplierInvoiceCode(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 text-sm"
+            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 text-sm"
             placeholder="VD: INV-20231201"
           />
         </div>
         <div className="md:col-span-2">
-          <label htmlFor={`${formId}-notes`} className="block text-sm font-semibold text-gray-700 mb-2">Ghi chú</label>
+          <label htmlFor={`${formId}-notes`} className="block text-sm font-semibold text-text-secondary mb-2">Ghi chú</label>
           <input
             id={`${formId}-notes`}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Ghi chú thêm..."
-            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
           />
         </div>
       </div>
 
       <div className="mb-6">
         <div className="flex justify-between items-end mb-4">
-          <h3 className="text-lg font-bold text-gray-900">Chi Tiết Nhập Hàng</h3>
+          <h3 className="text-lg font-bold text-text-primary">Chi Tiết Nhập Hàng</h3>
         </div>
 
         {lines.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center">
-            <p className="text-gray-500 mb-4">Chưa có mặt hàng nào.</p>
+          <div className="text-center py-12 border-2 border-dashed border-border rounded-xl bg-surface-secondary flex flex-col items-center justify-center">
+            <p className="text-text-muted mb-4">Chưa có mặt hàng nào.</p>
             <button
               type="button"
               onClick={addLine}
@@ -298,17 +298,17 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
               const unitPrice = Number(line.quantity) > 0 ? Number(line.subtotal) / Number(line.quantity) : 0;
 
               return (
-                <div key={index} className="p-4 border border-gray-200 rounded-xl relative bg-gray-50/50">
+                <div key={index} className="p-4 border border-border rounded-xl relative bg-surface-secondary/50">
                   <button
                     onClick={() => removeLine(index)}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
+                    className="absolute top-4 right-4 text-text-muted hover:text-danger"
                   >
                     ✕
                   </button>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-3">
-                      <label htmlFor={`${itemRowId}-purchased_item_id`} className="block text-xs font-medium text-gray-500 mb-1">Mặt hàng</label>
+                      <label htmlFor={`${itemRowId}-purchased_item_id`} className="block text-xs font-medium text-text-muted mb-1">Mặt hàng</label>
                       <SearchableSelect
                         id={`${itemRowId}-purchased_item_id`}
                         value={line.purchased_item_id}
@@ -319,13 +319,13 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
 
                     <div className="md:col-span-3">
-                      <label htmlFor={`${itemRowId}-conversion_id`} className="block text-xs font-medium text-gray-500 mb-1">Đơn vị nhập</label>
+                      <label htmlFor={`${itemRowId}-conversion_id`} className="block text-xs font-medium text-text-muted mb-1">Đơn vị nhập</label>
                       <div className="space-y-2">
                         <select
                           id={`${itemRowId}-conversion_id`}
                           value={line.conversion_id || ""}
                           onChange={(e) => updateLine(index, "conversion_id", e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                          className="w-full border border-border rounded-lg px-3 py-2 text-sm"
                           disabled={!line.purchased_item_id}
                         >
                           <option value="">-- Chọn --</option>
@@ -345,32 +345,32 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
 
                     <div className="md:col-span-2">
-                      <label htmlFor={`${itemRowId}-quantity`} className="block text-xs font-medium text-gray-500 mb-1">Số lượng</label>
+                      <label htmlFor={`${itemRowId}-quantity`} className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
                       <input
                         id={`${itemRowId}-quantity`}
                         type="number"
                         min="1"
                         value={line.quantity}
                         onChange={(e) => updateLine(index, "quantity", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        className="w-full border border-border rounded-lg px-3 py-2 text-sm"
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <label htmlFor={`${itemRowId}-subtotal`} className="block text-xs font-medium text-gray-500 mb-1">Thành tiền (đ)</label>
+                      <label htmlFor={`${itemRowId}-subtotal`} className="block text-xs font-medium text-text-muted mb-1">Thành tiền (đ)</label>
                       <input
                         id={`${itemRowId}-subtotal`}
                         type="number"
                         min="0"
                         value={line.subtotal}
                         onChange={(e) => updateLine(index, "subtotal", e.target.value)}
-                        className="w-full border border-emerald-300 rounded-lg px-3 py-2 text-sm bg-emerald-50 focus:ring-2 focus:ring-emerald-500"
+                        className="w-full border border-success/40 rounded-lg px-3 py-2 text-sm bg-success/10 focus:ring-2 focus:ring-success"
                       />
                     </div>
                     
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Đơn giá</label>
-                      <div className="px-3 py-2 text-sm font-semibold text-gray-400 bg-gray-100 rounded-lg border border-transparent">
+                      <label className="block text-xs font-medium text-text-muted mb-1">Đơn giá</label>
+                      <div className="px-3 py-2 text-sm font-semibold text-text-muted bg-surface-secondary rounded-lg border border-transparent">
                         {formatNumber(unitPrice)}
                       </div>
                     </div>
@@ -390,59 +390,59 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
         )}
       </div>
 
-      <div className="flex flex-col items-end pt-6 border-t border-gray-200">
-        <div className="w-full max-w-md mb-6 space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
-           <div className="flex justify-between items-center text-sm text-gray-600">
+      <div className="flex flex-col items-end pt-6 border-t border-border">
+        <div className="w-full max-w-md mb-6 space-y-3 bg-surface-secondary p-5 rounded-xl border border-border">
+           <div className="flex justify-between items-center text-sm text-text-secondary">
               <span className="font-medium">Tổng tiền hàng:</span>
-              <span className="font-semibold text-gray-900">{formatNumber(subtotalAmount)}</span>
+              <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}</span>
            </div>
            
-           <div className="space-y-2 pt-2 border-t border-gray-200/60">
+           <div className="space-y-2 pt-2 border-t border-border/60">
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Phí vận chuyển (+):</span>
+                <span className="text-text-secondary">Phí vận chuyển (+):</span>
                 <input 
                    type="number" 
                    value={shippingFee || ''}
                    onChange={(e) => setShippingFee(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
                    placeholder="0"
                  />
              </div>
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Thuế (+):</span>
+                <span className="text-text-secondary">Thuế (+):</span>
                 <input 
                    type="number" 
                    value={taxAmount || ''}
                    onChange={(e) => setTaxAmount(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
                    placeholder="0"
                  />
              </div>
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Voucher (-):</span>
+                <span className="text-text-secondary">Voucher (-):</span>
                 <input 
                    type="number" 
                    value={voucherAmount || ''}
                    onChange={(e) => setVoucherAmount(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
+                   className="w-28 md:w-32 text-right border border-danger/30 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-danger font-medium"
                    placeholder="0"
                  />
              </div>
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Chiết khấu (-):</span>
+                <span className="text-text-secondary">Chiết khấu (-):</span>
                 <input 
                    type="number" 
                    value={discountAmount || ''}
                    onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
+                   className="w-28 md:w-32 text-right border border-danger/30 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-danger font-medium"
                    placeholder="0"
                  />
              </div>
            </div>
 
-           <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-              <span className="text-base font-bold text-gray-800">Cần Thanh Toán:</span>
-              <span className="text-2xl font-bold text-emerald-600">{formatNumber(totalAmount)}</span>
+           <div className="flex justify-between items-center pt-4 border-t border-border">
+              <span className="text-base font-bold text-text-primary">Cần Thanh Toán:</span>
+              <span className="text-2xl font-bold text-success">{formatNumber(totalAmount)}</span>
            </div>
         </div>
 

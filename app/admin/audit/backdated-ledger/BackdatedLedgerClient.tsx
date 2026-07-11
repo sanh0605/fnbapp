@@ -8,13 +8,13 @@ export default function BackdatedLedgerClient() {
   const [sourceTable, setSourceTable] = useUrlState<string>("source_table", "ALL");
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="bg-surface-card p-4 rounded-lg shadow mb-6 border border-border grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Trạng thái</label>
+        <label className="block text-xs font-medium text-text-secondary mb-1">Trạng thái</label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md text-sm bg-white"
+          className="w-full px-3 py-2 border rounded-md text-sm bg-surface-card"
         >
           <option value="ALL">Tất cả</option>
           <option value="PENDING">Chờ duyệt</option>
@@ -25,11 +25,11 @@ export default function BackdatedLedgerClient() {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Source Table</label>
+        <label className="block text-xs font-medium text-text-secondary mb-1">Source Table</label>
         <select
           value={sourceTable}
           onChange={(e) => setSourceTable(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md text-sm bg-white"
+          className="w-full px-3 py-2 border rounded-md text-sm bg-surface-card"
         >
           <option value="ALL">Tất cả</option>
           <option value="purchase_orders">Purchase Orders</option>
@@ -39,7 +39,7 @@ export default function BackdatedLedgerClient() {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Item Reference</label>
+        <label className="block text-xs font-medium text-text-secondary mb-1">Item Reference</label>
         <input
           type="text"
           value={itemRef}

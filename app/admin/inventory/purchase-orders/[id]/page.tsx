@@ -28,15 +28,15 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/admin/inventory/purchase-orders" className="p-2 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition">
+        <Link href="/admin/inventory/purchase-orders" className="p-2 bg-surface-card rounded-lg border border-border hover:bg-surface-secondary transition">
           Quay lại
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{isDraft ? "Tiếp tục tạo Phiếu Nhập Kho" : "Chi tiết Phiếu Nhập Kho"}: {po.id}</h1>
-          <p className="text-gray-500">Ngày tạo: {new Date(po.created_at).toLocaleString('vi-VN')} | Ngày giao dịch: {po.transaction_date ? new Date(po.transaction_date).toLocaleString('vi-VN') : 'N/A'}</p>
+          <h1 className="text-2xl font-bold text-text-primary">{isDraft ? "Tiếp tục tạo Phiếu Nhập Kho" : "Chi tiết Phiếu Nhập Kho"}: {po.id}</h1>
+          <p className="text-text-muted">Ngày tạo: {new Date(po.created_at).toLocaleString('vi-VN')} | Ngày giao dịch: {po.transaction_date ? new Date(po.transaction_date).toLocaleString('vi-VN') : 'N/A'}</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
-          <span className={`px-3 py-1 text-sm font-bold rounded-full ${po.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+          <span className={`px-3 py-1 text-sm font-bold rounded-full ${po.status === 'COMPLETED' ? 'bg-success/20 text-success-active' : 'bg-warning/20 text-warning-active'}`}>
             {po.status === 'COMPLETED' ? 'Đã Hoàn Thành' : 'Nháp'}
           </span>
         </div>
@@ -56,18 +56,18 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-              <h2 className="font-bold text-gray-800">Danh sách mặt hàng</h2>
+          <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
+            <div className="p-4 border-b border-border bg-surface-secondary/50">
+              <h2 className="font-bold text-text-primary">Danh sách mặt hàng</h2>
             </div>
             
             {poLines.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-6 text-center text-text-muted">
                 Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ). Vui lòng xem chi tiết ở báo cáo Tồn Kho.
               </div>
             ) : (
               <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-gray-500">
+                <thead className="bg-surface-secondary text-text-muted">
                   <tr>
                     <th className="px-4 py-3">Mặt hàng</th>
                     <th className="px-4 py-3">Đơn vị</th>
@@ -82,12 +82,12 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
                     const unitName = allUnits.find((u:any) => u.id === line.unit)?.name || line.unit;
                     
                     return (
-                      <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="px-4 py-3 font-medium text-gray-900">{item?.name || line.purchased_item_id}</td>
-                        <td className="px-4 py-3 text-gray-600">{unitName}</td>
-                        <td className="px-4 py-3 text-right text-gray-900 font-medium">{Number(line.quantity).toLocaleString("vi-VN")}</td>
-                        <td className="px-4 py-3 text-right text-gray-500">{formatNumber(line.unit_price)}</td>
-                        <td className="px-4 py-3 text-right text-gray-900 font-bold">{formatNumber(line.subtotal)}</td>
+                      <tr key={idx} className="hover:bg-surface-secondary/50">
+                        <td className="px-4 py-3 font-medium text-text-primary">{item?.name || line.purchased_item_id}</td>
+                        <td className="px-4 py-3 text-text-secondary">{unitName}</td>
+                        <td className="px-4 py-3 text-right text-text-primary font-medium">{Number(line.quantity).toLocaleString("vi-VN")}</td>
+                        <td className="px-4 py-3 text-right text-text-muted">{formatNumber(line.unit_price)}</td>
+                        <td className="px-4 py-3 text-right text-text-primary font-bold">{formatNumber(line.subtotal)}</td>
                       </tr>
                     );
                   })}
@@ -98,42 +98,42 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <h2 className="font-bold text-gray-800 mb-4">Thông tin thanh toán</h2>
+          <div className="bg-surface-card rounded-xl shadow-sm border border-border p-5">
+            <h2 className="font-bold text-text-primary mb-4">Thông tin thanh toán</h2>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-text-secondary">
                 <span>Tổng tiền hàng:</span>
-                <span className="font-medium text-gray-900">{formatNumber(po.subtotal_amount)}</span>
+                <span className="font-medium text-text-primary">{formatNumber(po.subtotal_amount)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-text-secondary">
                 <span>Phí vận chuyển:</span>
-                <span className="font-medium text-gray-900">+{formatNumber(po.shipping_fee)}</span>
+                <span className="font-medium text-text-primary">+{formatNumber(po.shipping_fee)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-text-secondary">
                 <span>Thuế:</span>
-                <span className="font-medium text-gray-900">+{formatNumber(po.tax_amount)}</span>
+                <span className="font-medium text-text-primary">+{formatNumber(po.tax_amount)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-text-secondary">
                 <span>Voucher/Giảm giá:</span>
-                <span className="font-medium text-red-600">-{formatNumber(Number(po.voucher_amount || 0) + Number(po.discount_amount || 0))}</span>
+                <span className="font-medium text-danger">-{formatNumber(Number(po.voucher_amount || 0) + Number(po.discount_amount || 0))}</span>
               </div>
-              <div className="pt-3 border-t border-gray-100 flex justify-between font-bold text-base">
-                <span className="text-gray-900">Tổng cộng:</span>
+              <div className="pt-3 border-t border-border flex justify-between font-bold text-base">
+                <span className="text-text-primary">Tổng cộng:</span>
                 <span className="text-indigo-600">{formatNumber(po.total_amount)}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-200/60 text-sm text-gray-600">
-            <h3 className="font-bold text-gray-800 mb-2">Thông tin chứng từ</h3>
+          <div className="bg-surface-secondary rounded-xl p-5 border border-border/60 text-sm text-text-secondary">
+            <h3 className="font-bold text-text-primary mb-2">Thông tin chứng từ</h3>
             <div className="space-y-2">
               <p><span className="font-medium">Mã hoá đơn:</span> {po.supplier_invoice_code || "Không có"}</p>
               <p><span className="font-medium">Nguồn nhập:</span> {allSources.find((s:any) => s.id === po.source_id)?.name || po.source_id || "Không xác định"}</p>
             </div>
           </div>
           
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-200/60 text-sm text-gray-600">
-            <h3 className="font-bold text-gray-800 mb-2">Ghi chú</h3>
+          <div className="bg-surface-secondary rounded-xl p-5 border border-border/60 text-sm text-text-secondary">
+            <h3 className="font-bold text-text-primary mb-2">Ghi chú</h3>
             <p>{po.notes || "Không có ghi chú"}</p>
           </div>
         </div>

@@ -8,7 +8,7 @@ export default function Loading() {
         title="Backdated Ledger Review" 
         subtitle="Các giao dịch nhập kho được backdate cần admin duyệt" 
       />
-      <div className="bg-white rounded-lg shadow border border-gray-200">
+      <div className="bg-surface-card rounded-lg shadow border border-border">
         <SkeletonTable />
       </div>
     </div>

@@ -30,7 +30,7 @@ export default async function EventDetailPage({ params }: { params: { eventId: s
   return (
     <div className="space-y-6 max-w-5xl mx-auto py-8">
       <div>
-        <Link href="/admin/audit/backdated-ledger" className="text-blue-600 hover:underline text-sm font-medium">
+        <Link href="/admin/audit/backdated-ledger" className="text-primary hover:underline text-sm font-medium">
           ← Quay lại danh sách
         </Link>
       </div>

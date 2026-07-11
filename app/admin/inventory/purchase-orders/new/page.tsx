@@ -21,15 +21,15 @@ export default async function NewPurchaseOrderPage() {
       <div className="flex items-center gap-4">
         <Link 
           href="/admin/inventory/purchase-orders" 
-          className="p-2 text-gray-400 hover:text-gray-900 bg-white rounded-lg border border-gray-200 shadow-sm"
+          className="p-2 text-text-muted hover:text-text-primary bg-surface-card rounded-lg border border-border shadow-sm"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tạo Phiếu Nhập Kho</h1>
-          <p className="text-sm text-gray-500 mt-1">Nhập hàng hoá từ nhà cung cấp vào kho.</p>
+          <h1 className="text-2xl font-bold text-text-primary">Tạo Phiếu Nhập Kho</h1>
+          <p className="text-sm text-text-muted mt-1">Nhập hàng hoá từ nhà cung cấp vào kho.</p>
         </div>
       </div>
 

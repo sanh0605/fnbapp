@@ -87,7 +87,7 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
       />
       <StickyFilterBar>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Tìm kiếm
           </label>
           <input
@@ -95,14 +95,14 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
             placeholder="Mã phiếu, tên món, lý do..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-64 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Trạng thái
           </label>
-          <div className="flex flex-wrap md:flex-nowrap gap-1 bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+          <div className="flex flex-wrap md:flex-nowrap gap-1 bg-surface-secondary rounded-lg p-0.5 border border-border">
             {["PENDING", "APPROVED", "REJECTED", "ALL"].map((tab) => {
               const label =
                 tab === "PENDING"
@@ -118,8 +118,8 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
                   onClick={() => setStatusFilter(tab)}
                   className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors min-h-[32px] ${
                     statusFilter === tab
-                      ? "bg-white text-blue-700 shadow-sm border-gray-200"
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "bg-surface-card text-primary-active shadow-sm border-border"
+                      : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
                   {label}
@@ -132,25 +132,25 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
 
       {/* Notifications */}
       {successMsg && (
-        <div role="status" aria-live="polite" className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
+        <div role="status" aria-live="polite" className="bg-success/10 border border-success/30 text-success-active px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
           <span>✔️ {successMsg}</span>
-          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700">✕</button>
+          <button onClick={() => setSuccessMsg(null)} className="text-success hover:text-success-active">✕</button>
         </div>
       )}
       {errorMsg && (
-        <div role="alert" aria-live="polite" className="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
+        <div role="alert" aria-live="polite" className="bg-danger/10 border border-danger/30 text-danger-active px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
           <span>⚠️ {errorMsg}</span>
-          <button onClick={() => setErrorMsg(null)} className="text-rose-500 hover:text-rose-700">✕</button>
+          <button onClick={() => setErrorMsg(null)} className="text-danger hover:text-danger-active">✕</button>
         </div>
       )}
 
       {/* Main Content List */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         {/* Desktop Table Layout */}
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 <th className="px-6 py-4 font-bold">Mã Phiếu</th>
                 <th className="px-6 py-4 font-bold">Thời Gian</th>
                 <th className="px-6 py-4 font-bold">Món / Nguyên Liệu</th>
@@ -178,51 +178,51 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
                 filteredAdjustments.map((adj) => {
                   const diffColor =
                     adj.difference > 0
-                      ? "text-emerald-600 font-bold"
+                      ? "text-success font-bold"
                       : adj.difference < 0
-                      ? "text-rose-600 font-bold"
-                      : "text-gray-500";
+                      ? "text-danger font-bold"
+                      : "text-text-muted";
                   
                   return (
-                    <tr key={adj.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 font-mono text-[11px] text-gray-400">
+                    <tr key={adj.id} className="hover:bg-surface-secondary/50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-[11px] text-text-muted">
                         {adj.id}
                       </td>
-                      <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                      <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
                         {formatDateTime(adj.created_at)}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-bold text-gray-900">{adj.item_name}</div>
-                        <div className="text-[10px] text-gray-400 font-mono">{adj.item_reference}</div>
+                        <div className="font-bold text-text-primary">{adj.item_name}</div>
+                        <div className="text-[10px] text-text-muted font-mono">{adj.item_reference}</div>
                       </td>
-                      <td className="px-6 py-4 text-center font-medium text-gray-700">
+                      <td className="px-6 py-4 text-center font-medium text-text-secondary">
                         {adj.theoretical_qty} {adj.unitName}
                       </td>
-                      <td className="px-6 py-4 text-center font-bold text-gray-900">
+                      <td className="px-6 py-4 text-center font-bold text-text-primary">
                         {adj.actual_qty} {adj.unitName}
                       </td>
                       <td className={`px-6 py-4 text-center font-bold ${diffColor}`}>
                         {adj.difference > 0 ? `+${adj.difference}` : adj.difference} {adj.unitName}
                       </td>
-                      <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={adj.reason}>
+                      <td className="px-6 py-4 text-text-secondary max-w-xs truncate" title={adj.reason}>
                         {adj.reason}
                       </td>
-                      <td className="px-6 py-4 text-gray-600 font-medium whitespace-nowrap">
+                      <td className="px-6 py-4 text-text-secondary font-medium whitespace-nowrap">
                         {adj.created_by_name}
                       </td>
                       <td className="px-6 py-4">
                         {adj.status === "PENDING" && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-warning/10 text-warning-active border border-warning/30">
                             Chờ duyệt
                           </span>
                         )}
                         {adj.status === "APPROVED" && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title={`Duyệt bởi: ${adj.approved_by || ""}`}>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-success/10 text-success-active border border-success/30" title={`Duyệt bởi: ${adj.approved_by || ""}`}>
                             Đã duyệt
                           </span>
                         )}
                         {adj.status === "REJECTED" && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-danger/10 text-danger-active border border-danger/30">
                             Từ chối
                           </span>
                         )}
@@ -233,14 +233,14 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
                             <button
                               disabled={isPendingAction}
                               onClick={() => handleApprove(adj.id)}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-colors transition-transform text-xs font-bold min-h-[38px] flex items-center justify-center shadow-sm disabled:opacity-50"
+                              className="px-3 py-1.5 rounded-lg bg-success text-white hover:bg-success-hover active:scale-95 transition-colors transition-transform text-xs font-bold min-h-[38px] flex items-center justify-center shadow-sm disabled:opacity-50"
                             >
                               Duyệt
                             </button>
                             <button
                               disabled={isPendingAction}
                               onClick={() => handleReject(adj.id)}
-                              className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 active:scale-95 transition-colors transition-transform text-xs font-bold min-h-[38px] flex items-center justify-center border border-rose-200 disabled:opacity-50"
+                              className="px-3 py-1.5 rounded-lg bg-danger/10 text-danger-active hover:bg-danger/20 active:scale-95 transition-colors transition-transform text-xs font-bold min-h-[38px] flex items-center justify-center border border-danger/30 disabled:opacity-50"
                             >
                               Từ chối
                             </button>
@@ -256,7 +256,7 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
         </div>
 
         {/* Mobile Card Layout */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
           {filteredAdjustments.length === 0 ? (
             <EmptyState 
               icon="📋" 
@@ -267,58 +267,58 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
             filteredAdjustments.map((adj) => {
               const diffColor =
                 adj.difference > 0
-                  ? "text-emerald-600"
+                  ? "text-success"
                   : adj.difference < 0
-                  ? "text-rose-600"
-                  : "text-gray-500";
+                  ? "text-danger"
+                  : "text-text-muted";
               return (
                 <div
                   key={adj.id}
-                  className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3"
+                  className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-extrabold text-gray-900 text-sm">
+                      <div className="font-extrabold text-text-primary text-sm">
                         {adj.item_name}
                       </div>
-                      <div className="text-[10px] font-mono text-gray-400 mt-0.5">
+                      <div className="text-[10px] font-mono text-text-muted mt-0.5">
                         Mã: {adj.id} • {formatDateTime(adj.created_at)}
                       </div>
                     </div>
                     <div>
                       {adj.status === "PENDING" && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-warning/10 text-warning-active border border-warning/30">
                           Chờ duyệt
                         </span>
                       )}
                       {adj.status === "APPROVED" && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success-active border border-success/30">
                           Đã duyệt
                         </span>
                       )}
                       {adj.status === "REJECTED" && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-danger/10 text-danger-active border border-danger/30">
                           Từ chối
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100 text-center text-xs">
+                  <div className="grid grid-cols-3 gap-2 bg-surface-secondary p-2.5 rounded-lg border border-border text-center text-xs">
                     <div>
-                      <div className="text-gray-400 text-[10px] uppercase font-bold">Lý Thuyết</div>
-                      <div className="font-semibold text-gray-700 mt-0.5">
+                      <div className="text-text-muted text-[10px] uppercase font-bold">Lý Thuyết</div>
+                      <div className="font-semibold text-text-secondary mt-0.5">
                         {adj.theoretical_qty} {adj.unitName}
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-400 text-[10px] uppercase font-bold">Thực Tế</div>
-                      <div className="font-bold text-gray-900 mt-0.5">
+                      <div className="text-text-muted text-[10px] uppercase font-bold">Thực Tế</div>
+                      <div className="font-bold text-text-primary mt-0.5">
                         {adj.actual_qty} {adj.unitName}
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-400 text-[10px] uppercase font-bold">Chênh Lệch</div>
+                      <div className="text-text-muted text-[10px] uppercase font-bold">Chênh Lệch</div>
                       <div className={`font-black ${diffColor} mt-0.5`}>
                         {adj.difference > 0 ? `+${adj.difference}` : adj.difference} {adj.unitName}
                       </div>
@@ -326,34 +326,34 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
                   </div>
 
                   <div className="text-xs space-y-1">
-                    <p className="text-gray-600">
-                      <span className="text-gray-400">Lý do:</span> <span className="font-medium">{adj.reason}</span>
+                    <p className="text-text-secondary">
+                      <span className="text-text-muted">Lý do:</span> <span className="font-medium">{adj.reason}</span>
                     </p>
-                    <p className="text-gray-600">
-                      <span className="text-gray-400">Người tạo:</span>{" "}
+                    <p className="text-text-secondary">
+                      <span className="text-text-muted">Người tạo:</span>{" "}
                       <span className="font-medium">{adj.created_by_name}</span>
                     </p>
                     {adj.approved_by && (
-                      <p className="text-gray-600">
-                        <span className="text-gray-400">Người duyệt:</span>{" "}
+                      <p className="text-text-secondary">
+                        <span className="text-text-muted">Người duyệt:</span>{" "}
                         <span className="font-medium">{adj.approved_by}</span>
                       </p>
                     )}
                   </div>
 
                   {adj.status === "PENDING" && (
-                    <div className="flex gap-2 pt-3 border-t border-gray-100/50 mt-1">
+                    <div className="flex gap-2 pt-3 border-t border-border mt-1">
                       <button
                         disabled={isPendingAction}
                         onClick={() => handleApprove(adj.id)}
-                        className="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-lg text-xs hover:bg-emerald-700 transition active:scale-95 min-h-[44px] flex items-center justify-center shadow-sm disabled:opacity-50"
+                        className="flex-1 bg-success text-white font-bold py-3 rounded-lg text-xs hover:bg-success-hover transition active:scale-95 min-h-[44px] flex items-center justify-center shadow-sm disabled:opacity-50"
                       >
                         Duyệt
                       </button>
                       <button
                         disabled={isPendingAction}
                         onClick={() => handleReject(adj.id)}
-                        className="flex-1 bg-rose-50 text-rose-700 font-bold py-3 rounded-lg text-xs hover:bg-rose-100 transition active:scale-95 border border-rose-200 min-h-[44px] flex items-center justify-center disabled:opacity-50"
+                        className="flex-1 bg-danger/10 text-danger-active font-bold py-3 rounded-lg text-xs hover:bg-danger/20 transition active:scale-95 border border-danger/30 min-h-[44px] flex items-center justify-center disabled:opacity-50"
                       >
                         Từ chối
                       </button>
