@@ -29,11 +29,11 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
   }).join(", ");
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[400px]">
-      <h3 className="font-bold text-gray-900 mb-6">Tỉ trọng Doanh thu theo Nhóm</h3>
+    <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border flex flex-col min-h-[400px]">
+      <h3 className="font-bold text-text-primary mb-6">Tỉ trọng Doanh thu theo Nhóm</h3>
       
       {total === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-gray-400">Không có dữ liệu</div>
+        <div className="flex-1 flex items-center justify-center text-text-muted">Không có dữ liệu</div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-8">
           <div 
@@ -41,8 +41,8 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
             style={{ background: `conic-gradient(${conicGradient})` }}
           >
             {/* Lỗ ở giữa để tạo hiệu ứng Donut Chart (Tuỳ chọn) */}
-            <div className="absolute inset-0 m-auto w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-inner">
-              <span className="font-bold text-gray-400 text-xs text-center leading-tight">Tổng<br/>{(total / 1000000).toFixed(1)}M</span>
+            <div className="absolute inset-0 m-auto w-24 h-24 bg-surface-card rounded-full flex items-center justify-center shadow-inner">
+              <span className="font-bold text-text-muted text-xs text-center leading-tight">Tổng<br/>{(total / 1000000).toFixed(1)}M</span>
             </div>
           </div>
           
@@ -53,11 +53,11 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
                 <div key={i} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: colors[i % colors.length] }}></span>
-                    <span className="text-gray-700 truncate max-w-[120px]" title={d.label}>{d.label}</span>
+                    <span className="text-text-secondary truncate max-w-[120px]" title={d.label}>{d.label}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-bold text-gray-900 mr-2">{formatNumber(d.amount)}</span>
-                    <span className="text-gray-400 text-xs w-8 inline-block">{percent}%</span>
+                    <span className="font-bold text-text-primary mr-2">{formatNumber(d.amount)}</span>
+                    <span className="text-text-muted text-xs w-8 inline-block">{percent}%</span>
                   </div>
                 </div>
               )
