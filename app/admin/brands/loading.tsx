@@ -8,7 +8,7 @@ export default function Loading() {
         title="Quản lý Thương hiệu" 
         subtitle="Quản lý các thương hiệu F&B đang hoạt động trên hệ thống." 
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={5} />
       </div>
     </div>

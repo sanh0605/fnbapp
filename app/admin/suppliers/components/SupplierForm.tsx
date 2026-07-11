@@ -39,14 +39,14 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
       {isEdit ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-4"
+          className="text-primary hover:text-primary-hover font-medium text-sm mr-4"
         >
           Sửa
         </button>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition"
         >
           + Thêm Nhà Cung Cấp
         </button>
@@ -64,7 +64,7 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
             >
               Hủy
             </button>
@@ -81,12 +81,12 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
       >
         <form id="supplier-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
               {error}
             </div>
           )}
           <div>
-            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
               Tên Nhà Cung Cấp
             </label>
             <input
@@ -95,12 +95,12 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
               name="name"
               required
               defaultValue={initialData?.name}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="VD: Cửa hàng ABC"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-text-secondary mb-1">
               Số Điện Thoại
             </label>
             <input
@@ -108,12 +108,12 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
               type="tel"
               name="phone"
               defaultValue={initialData?.phone}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="VD: 0901234567"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-text-secondary mb-1">
               Mã Số Thuế
             </label>
             <input
@@ -121,12 +121,12 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
               type="text"
               name="tax_id"
               defaultValue={initialData?.tax_id}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="VD: 0123456789"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-text-secondary mb-1">
               Địa Chỉ
             </label>
             <input
@@ -134,12 +134,12 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
               type="text"
               name="address"
               defaultValue={initialData?.address}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="VD: 123 Đường ABC, Quận XYZ"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-text-secondary mb-1">
               Ghi chú / Links
             </label>
             <textarea
@@ -147,7 +147,7 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
               name="links"
               rows={2}
               defaultValue={initialData?.links}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="Các liên kết hoặc ghi chú thêm..."
             />
           </div>
@@ -178,7 +178,7 @@ export function DeleteSupplierButton({ id }: DeleteSupplierButtonProps) {
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
+        className="text-danger hover:text-danger-active font-medium text-sm disabled:opacity-50"
       >
         {loading ? "..." : "Xóa"}
       </button>

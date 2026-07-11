@@ -19,10 +19,10 @@ export default async function UnitsPage() {
         actions={<UnitForm />}
       />
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100 text-[11px] uppercase tracking-wider text-gray-600">
+            <thead className="bg-surface-secondary border-b border-border text-[11px] uppercase tracking-wider text-text-secondary">
               <tr>
                 <th scope="col" className="px-6 py-4 font-bold">Tên đơn vị</th>
                 <th scope="col" className="px-6 py-4 font-bold">Ghi chú</th>
@@ -42,9 +42,9 @@ export default async function UnitsPage() {
               </tr>
               ) : (
                 units.map((unit) => (
-                  <tr key={unit.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 text-gray-900 font-semibold">{unit.name}</td>
-                    <td className="px-6 py-4 text-gray-500">{unit.description || "—"}</td>
+                  <tr key={unit.id} className="hover:bg-surface-secondary/50 transition-colors">
+                    <td className="px-6 py-4 text-text-primary font-semibold">{unit.name}</td>
+                    <td className="px-6 py-4 text-text-muted">{unit.description || "—"}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
                         <UnitForm initialData={unit} />
@@ -59,7 +59,7 @@ export default async function UnitsPage() {
         </div>
 
         {/* Mobile Card Layout (< 768px) */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
           {units.length === 0 ? (
             <EmptyState 
               icon="📏" 
@@ -68,14 +68,14 @@ export default async function UnitsPage() {
             />
           ) : (
             units.map((unit) => (
-              <div key={unit.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+              <div key={unit.id} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start">
-                  <div className="font-bold text-gray-900">{unit.name}</div>
+                  <div className="font-bold text-text-primary">{unit.name}</div>
                 </div>
-                <div className="text-sm text-gray-500">
-                  <span className="text-gray-400">Ghi chú:</span> {unit.description || "—"}
+                <div className="text-sm text-text-muted">
+                  <span className="text-text-muted">Ghi chú:</span> {unit.description || "—"}
                 </div>
-                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-gray-100/50">
+                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
                     <UnitForm initialData={unit} />
                   </div>

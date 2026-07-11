@@ -41,22 +41,22 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
       />
       <StickyFilterBar>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên nguyên liệu..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
       </StickyFilterBar>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 <th className="px-6 py-4 font-bold">ID</th>
                 <th className="px-6 py-4 font-bold">Tên Nguyên Liệu</th>
                 <th className="px-6 py-4 font-bold">Đơn Vị Cơ Bản</th>
@@ -77,22 +77,22 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
               </tr>
               ) : (
                 filteredIngredients.map((ing) => (
-                  <tr key={ing.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-[11px] text-gray-400">{ing.id}</td>
+                  <tr key={ing.id} className="hover:bg-surface-secondary/50 transition-colors">
+                    <td className="px-6 py-4 font-mono text-[11px] text-text-muted">{ing.id}</td>
                     <td className="px-6 py-4">
-                      <div className="font-bold text-gray-900">{ing.name}</div>
+                      <div className="font-bold text-text-primary">{ing.name}</div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 font-medium">
+                    <td className="px-6 py-4 text-text-secondary font-medium">
                       {ing.base_unit ? unitMap[ing.base_unit] : ""}
                       {!ing.base_unit && ing.unit_id ? unitMap[ing.unit_id] : ""}
                     </td>
                     <td className="px-6 py-4">
                       {ing.is_non_inventory === "TRUE" ? (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-muted">
                           Phi lưu kho
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary-soft text-primary">
                           Có lưu kho
                         </span>
                       )}
@@ -111,7 +111,7 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
         </div>
 
         {/* Mobile Card Layout (< 768px) */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
           {filteredIngredients.length === 0 ? (
             <EmptyState 
               icon="🥚" 
@@ -120,29 +120,29 @@ export default function BaseIngredientsClient({ ingredients, units }: BaseIngred
             />
           ) : (
             filteredIngredients.map((ing) => (
-              <div key={ing.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+              <div key={ing.id} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-bold text-gray-900">{ing.name}</div>
-                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">{ing.id}</div>
+                    <div className="font-bold text-text-primary">{ing.name}</div>
+                    <div className="text-[11px] font-mono text-text-muted mt-0.5">{ing.id}</div>
                   </div>
                   {ing.is_non_inventory === "TRUE" ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-muted">
                       Phi lưu kho
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary-soft text-primary border border-primary/20">
                       Có lưu kho
                     </span>
                   )}
                 </div>
-                <div className="text-sm text-gray-600">
-                  <span className="text-gray-400">Đơn vị:</span> <span className="font-medium">
+                <div className="text-sm text-text-secondary">
+                  <span className="text-text-muted">Đơn vị:</span> <span className="font-medium">
                     {ing.base_unit ? unitMap[ing.base_unit] : ""}
                     {!ing.base_unit && ing.unit_id ? unitMap[ing.unit_id] : ""}
                   </span>
                 </div>
-                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-gray-100/50">
+                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
                     <BaseIngredientForm initialData={ing} units={units} />
                   </div>
@@ -176,7 +176,7 @@ function DeleteBaseIngredientButton({ id, name }: { id: string; name: string }) 
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
+        className="text-danger hover:text-danger-active font-medium text-sm disabled:opacity-50"
       >
         {loading ? "..." : "Xóa"}
       </button>

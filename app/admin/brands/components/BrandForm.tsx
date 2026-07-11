@@ -50,14 +50,14 @@ export function BrandForm({ initialData }: BrandFormProps) {
       {isEdit ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-4"
+          className="text-primary hover:text-primary-hover font-medium text-sm mr-4"
         >
           Sửa
         </button>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition"
         >
           + Thêm Thương Hiệu
         </button>
@@ -78,7 +78,7 @@ export function BrandForm({ initialData }: BrandFormProps) {
                 setIsOpen(false);
                 if (!isEdit) setSelectedDate(null);
               }}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
             >
               Huỷ
             </button>
@@ -95,7 +95,7 @@ export function BrandForm({ initialData }: BrandFormProps) {
       >
         <form id="brand-form" action={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
               Tên Thương Hiệu
             </label>
             <input
@@ -104,12 +104,12 @@ export function BrandForm({ initialData }: BrandFormProps) {
               name="name"
               required
               defaultValue={initialData?.name}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="VD: Phin Di"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-code`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-code`} className="block text-sm font-medium text-text-secondary mb-1">
               Mã Đơn Hàng (3 ký tự)
             </label>
             <input
@@ -119,12 +119,12 @@ export function BrandForm({ initialData }: BrandFormProps) {
               maxLength={3}
               required
               defaultValue={initialData?.code}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 uppercase text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring uppercase text-text-primary"
               placeholder="VD: PHD"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-start-date`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-start-date`} className="block text-sm font-medium text-text-secondary mb-1">
               Ngày bắt đầu hoạt động
             </label>
             <CustomDatePicker
@@ -134,7 +134,7 @@ export function BrandForm({ initialData }: BrandFormProps) {
               dateFormat="dd/MM/yyyy"
               showTimeSelect={false}
               placeholderText="DD/MM/YYYY"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             />
           </div>
         </form>
@@ -164,7 +164,7 @@ export function DeleteBrandButton({ id }: DeleteBrandButtonProps) {
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
+        className="text-danger hover:text-danger-active font-medium text-sm disabled:opacity-50"
       >
         {loading ? "…" : "Xoá"}
       </button>

@@ -55,22 +55,22 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
       />
       <StickyFilterBar>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm hàng hóa</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm hàng hóa</label>
           <input
             type="text"
             placeholder="Tên hàng hóa..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
       </StickyFilterBar>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 <th className="px-6 py-4 font-bold">Hàng Hóa (Mua vào)</th>
                 <th className="px-6 py-4 font-bold">Đơn Vị Mua</th>
                 <th className="px-6 py-4 font-bold">Tỷ Lệ</th>
@@ -91,18 +91,18 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
                 </tr>
               ) : (
                 filteredConversions.map((conv) => (
-                  <tr key={conv.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-gray-900">
+                  <tr key={conv.id} className="hover:bg-surface-secondary/50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-text-primary">
                       {itemMap[conv.purchased_item_id] || conv.purchased_item_id}
                     </td>
-                    <td className="px-6 py-4 text-blue-600 font-bold">
+                    <td className="px-6 py-4 text-primary font-bold">
                       {conv.purchased_unit ? unitMap[conv.purchased_unit] : ""}
                       {!conv.purchased_unit && conv.from_unit_id ? unitMap[conv.from_unit_id] : ""}
                     </td>
-                    <td className="px-6 py-4 font-mono text-gray-500">
+                    <td className="px-6 py-4 font-mono text-text-muted">
                       x{conv.conversion_rate}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 font-medium">
+                    <td className="px-6 py-4 text-text-secondary font-medium">
                       {conv.base_unit ? unitMap[conv.base_unit] : ""}
                       {!conv.base_unit && conv.to_unit_id ? unitMap[conv.to_unit_id] : ""}
                     </td>
@@ -125,7 +125,7 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
         </div>
 
         {/* Mobile Card Layout (< 768px) */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
           {filteredConversions.length === 0 ? (
             <EmptyState 
               icon="🔄" 
@@ -134,35 +134,35 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
             />
           ) : (
             filteredConversions.map((conv) => (
-              <div key={conv.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+              <div key={conv.id} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start">
-                  <div className="font-bold text-gray-900">{itemMap[conv.purchased_item_id] || conv.purchased_item_id}</div>
+                  <div className="font-bold text-text-primary">{itemMap[conv.purchased_item_id] || conv.purchased_item_id}</div>
                 </div>
                 
-                <div className="flex items-center justify-between mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between mt-2 p-3 bg-surface-secondary rounded-lg">
                   <div className="flex flex-col items-center">
-                    <span className="text-[10px] text-gray-400 uppercase font-bold mb-1">Đơn vị mua</span>
-                    <span className="text-sm font-bold text-blue-600">
+                    <span className="text-[10px] text-text-muted uppercase font-bold mb-1">Đơn vị mua</span>
+                    <span className="text-sm font-bold text-primary">
                       {conv.purchased_unit ? unitMap[conv.purchased_unit] : ""}
                       {!conv.purchased_unit && conv.from_unit_id ? unitMap[conv.from_unit_id] : ""}
                     </span>
                   </div>
                   
                   <div className="flex flex-col items-center px-4">
-                    <span className="text-gray-300 text-xs">→</span>
-                    <span className="font-mono text-xs font-bold text-gray-600">x{conv.conversion_rate}</span>
+                    <span className="text-text-muted text-xs">→</span>
+                    <span className="font-mono text-xs font-bold text-text-secondary">x{conv.conversion_rate}</span>
                   </div>
                   
                   <div className="flex flex-col items-center">
-                    <span className="text-[10px] text-gray-400 uppercase font-bold mb-1">Đơn vị chuẩn</span>
-                    <span className="text-sm font-bold text-gray-700">
+                    <span className="text-[10px] text-text-muted uppercase font-bold mb-1">Đơn vị chuẩn</span>
+                    <span className="text-sm font-bold text-text-secondary">
                       {conv.base_unit ? unitMap[conv.base_unit] : ""}
                       {!conv.base_unit && conv.to_unit_id ? unitMap[conv.to_unit_id] : ""}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-gray-100/50">
+                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
                     <ConversionForm 
                       initialData={conv} 
@@ -201,7 +201,7 @@ function DeleteConversionButton({ id, itemName }: { id: string; itemName: string
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="text-rose-600 hover:text-rose-800 font-medium text-sm disabled:opacity-50"
+        className="text-danger hover:text-danger-active font-medium text-sm disabled:opacity-50"
       >
         {loading ? "..." : "Xóa"}
       </button>

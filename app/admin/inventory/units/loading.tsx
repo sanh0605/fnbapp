@@ -8,7 +8,7 @@ export default function Loading() {
         title="Quản lý Đơn vị (Units)" 
         subtitle="Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)" 
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={3} />
       </div>
     </div>

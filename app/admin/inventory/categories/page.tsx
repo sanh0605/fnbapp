@@ -11,9 +11,9 @@ export default async function CategoriesPage() {
 
   const getTypeLabel = (type: string) => {
     switch(type) {
-      case "RAW": return <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">Nguyên Liệu (RAW)</span>;
-      case "CONSUMABLE": return <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium">Vật Tư (CONSUMABLE)</span>;
-      case "EQUIPMENT": return <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">Dụng Cụ (EQUIPMENT)</span>;
+      case "RAW": return <span className="px-3 py-1 bg-primary/20 text-primary-active rounded-lg text-xs font-medium">Nguyên Liệu (RAW)</span>;
+      case "CONSUMABLE": return <span className="px-3 py-1 bg-warning/20 text-warning-active rounded-lg text-xs font-medium">Vật Tư (CONSUMABLE)</span>;
+      case "EQUIPMENT": return <span className="px-3 py-1 bg-surface-secondary text-text-secondary rounded-lg text-xs font-medium">Dụng Cụ (EQUIPMENT)</span>;
       default: return type;
     }
   };
@@ -26,11 +26,11 @@ export default async function CategoriesPage() {
         actions={<ItemCategoryForm />}
       />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+              <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 <th scope="col" className="px-6 py-4 font-bold">ID</th>
                 <th scope="col" className="px-6 py-4 font-bold">Tên Phân Loại</th>
                 <th scope="col" className="px-6 py-4 font-bold">Đặc Tính (System Type)</th>
@@ -50,9 +50,9 @@ export default async function CategoriesPage() {
                 </tr>
               )}
               {categories.map((c: any) => (
-                <tr key={c.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-900">{c.id}</td>
-                  <td className="px-6 py-4 font-semibold text-gray-800">{c.name}</td>
+                <tr key={c.id} className="hover:bg-surface-secondary/50 transition-colors">
+                  <td className="px-6 py-4 font-medium text-text-primary">{c.id}</td>
+                  <td className="px-6 py-4 font-semibold text-text-primary">{c.name}</td>
                   <td className="px-6 py-4">{getTypeLabel(c.system_type)}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">
@@ -67,7 +67,7 @@ export default async function CategoriesPage() {
         </div>
 
         {/* Mobile Card Layout (< 768px) */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
           {categories.length === 0 ? (
             <EmptyState 
               icon="📂" 
@@ -76,17 +76,17 @@ export default async function CategoriesPage() {
             />
           ) : (
             categories.map((c: any) => (
-              <div key={c.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+              <div key={c.id} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-bold text-gray-900">{c.name}</div>
-                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">{c.id}</div>
+                    <div className="font-bold text-text-primary">{c.name}</div>
+                    <div className="text-[11px] font-mono text-text-muted mt-0.5">{c.id}</div>
                   </div>
                 </div>
                 <div>
                   {getTypeLabel(c.system_type)}
                 </div>
-                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-gray-100/50">
+                <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
                     <ItemCategoryForm initialData={c} />
                   </div>

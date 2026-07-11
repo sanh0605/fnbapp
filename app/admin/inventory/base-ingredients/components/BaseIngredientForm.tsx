@@ -95,14 +95,14 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
       {isEdit ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-4"
+          className="text-primary hover:text-primary-hover font-medium text-sm mr-4"
         >
           Sửa
         </button>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition"
         >
           + Thêm Nguyên Liệu
         </button>
@@ -122,7 +122,7 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
             >
               Hủy
             </button>
@@ -139,7 +139,7 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
       >
         <form id="base-ingredient-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
               {error}
             </div>
           )}
@@ -148,21 +148,21 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
             {items.map((item, idx) => {
               const itemRowId = `${formId}-item-${idx}`;
               return (
-                <div key={idx} className="flex gap-3 items-end bg-gray-50 p-3 rounded-xl border border-gray-100 relative">
+                <div key={idx} className="flex gap-3 items-end bg-surface-secondary p-3 rounded-xl border border-border relative">
                   <div className="flex-1">
-                    <label htmlFor={`${itemRowId}-name`} className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tên Nguyên Liệu</label>
+                    <label htmlFor={`${itemRowId}-name`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tên Nguyên Liệu</label>
                     <input
                       id={`${itemRowId}-name`}
                       type="text"
                       required
                       value={item.name}
                       onChange={(e) => updateItem(idx, { name: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 text-gray-900"
+                      className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
                       placeholder="VD: Cà phê bột"
                     />
                   </div>
                   <div className="w-40">
-                    <label htmlFor={`${itemRowId}-base_unit`} className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Đơn vị cơ bản</label>
+                    <label htmlFor={`${itemRowId}-base_unit`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đơn vị cơ bản</label>
                     <SearchableSelect
                       id={`${itemRowId}-base_unit`}
                       options={unitOptions}
@@ -173,20 +173,20 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
                     />
                   </div>
                   <div className="flex flex-col items-center pb-2">
-                    <label htmlFor={`${itemRowId}-non_inventory`} className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phi lưu kho</label>
+                    <label htmlFor={`${itemRowId}-non_inventory`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Phi lưu kho</label>
                     <input
                       id={`${itemRowId}-non_inventory`}
                       type="checkbox"
                       checked={item.is_non_inventory}
                       onChange={(e) => updateItem(idx, { is_non_inventory: e.target.checked })}
-                      className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="w-5 h-5 rounded border-border text-primary focus:ring-focus-ring"
                     />
                   </div>
                   {!isEdit && items.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeItemRow(idx)}
-                      className="p-2 text-gray-400 hover:text-rose-500 transition"
+                      className="p-2 text-text-muted hover:text-danger transition"
                     >
                       ✕
                     </button>
@@ -200,7 +200,7 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
             <button
               type="button"
               onClick={addItemRow}
-              className="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-sm font-medium hover:border-blue-300 hover:text-blue-500 transition"
+              className="w-full py-2 border-2 border-dashed border-border rounded-xl text-text-muted text-sm font-medium hover:border-primary/40 hover:text-primary transition"
             >
               + Thêm dòng mới
             </button>
