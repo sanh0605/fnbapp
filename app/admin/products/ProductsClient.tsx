@@ -55,7 +55,7 @@ export default function ProductsClient({
 
   const rightContent = (
     <div className="flex items-center gap-3">
-      <div className="hidden sm:block text-xs font-bold text-gray-500 whitespace-nowrap px-3 py-1.5 bg-gray-100 rounded-lg">
+      <div className="hidden sm:block text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
         {filteredProducts.length} / {enhancedProducts.length} món
       </div>
       <ProductForm 
@@ -75,21 +75,21 @@ export default function ProductsClient({
         subtitle="Quản lý Menu bán hàng, cấu hình Size và Định mức pha chế."
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm món</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm món</label>
           <input
             type="text"
             placeholder="Tên món..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm bg-white"
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none shadow-sm bg-surface-card text-text-primary"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Danh mục</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Danh mục</label>
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
           >
             <option value="">Tất cả danh mục</option>
             {activeCategories.map(c => (
@@ -98,11 +98,11 @@ export default function ProductsClient({
           </select>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Trạng thái</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
           >
             <option value="">Tất cả</option>
             <option value="ACTIVE">Đang bán</option>
@@ -121,11 +121,11 @@ export default function ProductsClient({
       ) : (
         <>
           {/* Desktop Table View (>= 768px) */}
-          <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="hidden md:block bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+                  <tr className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                     <th className="px-6 py-4 font-bold w-20">Ảnh</th>
                     <th className="px-6 py-4 font-bold">Tên Món</th>
                     <th className="px-6 py-4 font-bold">Phân Loại</th>
@@ -134,13 +134,13 @@ export default function ProductsClient({
                     <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {filteredProducts.map(product => {
                     const categoryName = activeCategories.find(c => c.id === product.category_id)?.name || "Chưa phân loại";
                     return (
-                      <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr key={product.id} className="hover:bg-page transition-colors">
                         <td className="px-6 py-4">
-                          <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-page border border-border flex items-center justify-center overflow-hidden shrink-0">
                             {product.image_url ? (
                               <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                             ) : (
@@ -149,13 +149,11 @@ export default function ProductsClient({
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-bold text-gray-900 text-sm">{product.name}</div>
-                          <div className="text-[10px] font-mono text-gray-400 mt-0.5">ID: {product.id}</div>
+                          <div className="font-bold text-text-primary text-sm">{product.name}</div>
+                          <div className="text-[10px] font-mono text-text-muted mt-0.5">ID: {product.id}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                            {categoryName}
-                          </span>
+                          <Badge variant="neutral">{categoryName}</Badge>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-2 max-w-lg">
@@ -164,15 +162,15 @@ export default function ProductsClient({
                               return (
                                 <div 
                                   key={idx} 
-                                  className="flex items-center gap-2 bg-gray-50 border border-gray-150 px-2.5 py-1 rounded-lg text-xs"
+                                  className="flex items-center gap-2 bg-page border border-border px-2.5 py-1 rounded-lg text-xs"
                                 >
-                                  <span className="font-bold text-gray-700">{v.size_name}</span>
-                                  <span className="text-gray-300">|</span>
-                                  <span className="font-black text-orange-600">{formatNumber(v.price)}</span>
+                                  <span className="font-bold text-text-primary">{v.size_name}</span>
+                                  <span className="text-border">|</span>
+                                  <span className="font-black text-primary">{formatNumber(v.price)}</span>
                                   {ingCount > 0 ? (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title={`Đã định mức: ${ingCount} món`} />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-success" title={`Đã định mức: ${ingCount} món`} />
                                   ) : (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400" title="Chưa có định mức" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-danger" title="Chưa có định mức" />
                                   )}
                                 </div>
                               );
@@ -217,48 +215,48 @@ export default function ProductsClient({
             {filteredProducts.map(product => {
               const categoryName = activeCategories.find(c => c.id === product.category_id)?.name || "Chưa phân loại";
               return (
-                <div key={product.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                <div key={product.id} className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden flex flex-col">
                   {/* Card Image Banner */}
-                  <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 relative">
+                  <div className="h-28 bg-page flex items-center justify-center border-b border-border relative">
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                      <ImageIcon className="w-8 h-8 text-text-muted" />
                     )}
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-0.5 rounded-full text-[10px] font-bold text-indigo-700 border border-indigo-100 shadow-sm">
+                    <div className="absolute top-3 right-3 bg-surface-card/90 backdrop-blur px-2 py-0.5 rounded-full text-[10px] font-bold text-primary border border-primary/20 shadow-sm">
                       {categoryName}
                     </div>
                   </div>
 
                   <div className="p-4 flex-1 flex flex-col gap-3">
                     <div>
-                      <h3 className="text-base font-extrabold text-gray-900 leading-tight">{product.name}</h3>
-                      <div className="text-[10px] font-mono text-gray-400 mt-0.5">ID: {product.id}</div>
+                      <h3 className="text-base font-extrabold text-text-primary leading-tight">{product.name}</h3>
+                      <div className="text-[10px] font-mono text-text-muted mt-0.5">ID: {product.id}</div>
                     </div>
 
                     <div className="space-y-2 flex-1">
-                      <div className="text-[10px] uppercase font-bold text-gray-400">Các kích cỡ & Giá:</div>
+                      <div className="text-[10px] uppercase font-bold text-text-muted">Các kích cỡ & Giá:</div>
                       <div className="grid grid-cols-1 gap-1.5">
                         {product.variants.map((v: any, idx: number) => {
                           const ingCount = v.ingredients?.length || 0;
                           return (
-                            <div key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100 text-xs">
+                            <div key={idx} className="flex justify-between items-center bg-page p-2 rounded-lg border border-border text-xs">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-gray-700">{v.size_name}</span>
+                                <span className="font-bold text-text-primary">{v.size_name}</span>
                                 {ingCount > 0 ? (
-                                  <span className="inline-flex items-center px-1 py-0.2 bg-emerald-50 text-emerald-700 text-[9px] rounded font-bold">Định mức</span>
+                                  <span className="inline-flex items-center px-1 py-0.2 bg-green-100 text-success text-[9px] rounded font-bold">Định mức</span>
                                 ) : (
-                                  <span className="inline-flex items-center px-1 py-0.2 bg-rose-50 text-rose-700 text-[9px] rounded font-bold">Chưa có</span>
+                                  <span className="inline-flex items-center px-1 py-0.2 bg-red-100 text-danger text-[9px] rounded font-bold">Chưa có</span>
                                 )}
                               </div>
-                              <span className="font-black text-orange-600">{formatNumber(v.price)}</span>
+                              <span className="font-black text-primary">{formatNumber(v.price)}</span>
                             </div>
                           );
                         })}
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-gray-50 flex justify-between items-center gap-2">
+                    <div className="pt-3 border-t border-border flex justify-between items-center gap-2">
                       <div>
                         {product.status === "ACTIVE" ? (
                           <Badge variant="success">Đang bán</Badge>
