@@ -104,18 +104,18 @@ export function FormModal({
           aria-modal="true"
           aria-labelledby={titleId}
           tabIndex={-1}
-          className={`bg-white rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col outline-none`}
+          className={`bg-surface-card rounded-card shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col outline-none`}
         >
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 border-b border-border">
             <div>
-              <h2 id={titleId} className="text-lg font-semibold text-gray-900">{title}</h2>
-              {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
+              <h2 id={titleId} className="text-lg font-semibold text-text-primary">{title}</h2>
+              {subtitle && <p className="text-sm text-text-secondary mt-0.5">{subtitle}</p>}
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="Đóng"
-              className="text-gray-400 hover:text-gray-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none rounded p-1"
+              className="text-text-muted hover:text-text-primary transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none rounded p-1"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -123,12 +123,12 @@ export function FormModal({
             </button>
           </div>
 
-          <div className="p-4 overflow-y-auto flex-1">
+          <div className="p-4 overflow-y-auto flex-1 text-text-primary">
             {children}
           </div>
 
           {footer && (
-            <div className="flex justify-end gap-3 p-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3 p-4 border-t border-border">
               {footer}
             </div>
           )}
