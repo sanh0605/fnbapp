@@ -51,14 +51,14 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
         subtitle="Tổng quan danh sách nguyên liệu đã qua chế biến sơ bộ (như trà ủ, thạch, trân châu nấu...) dùng để pha chế."
         rightContent={rightContent}
       >
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên hoặc mã bán thành phẩm..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
       </StickyFilterBar>

@@ -71,22 +71,22 @@ export default function ProductsClient({
         title="Thành phẩm (Menu)"
         subtitle="Quản lý Menu bán hàng, cấu hình Size và Định mức pha chế."
       >
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm món</label>
           <input
             type="text"
             placeholder="Tên món..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm bg-white"
+            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm bg-white"
           />
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Danh mục</label>
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả danh mục</option>
             {activeCategories.map(c => (
@@ -94,12 +94,12 @@ export default function ProductsClient({
             ))}
           </select>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="">Tất cả</option>
             <option value="ACTIVE">Đang bán</option>
