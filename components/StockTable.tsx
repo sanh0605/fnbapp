@@ -22,6 +22,8 @@ export default function StockTable({
   const [actualQty, setActualQty] = useState("");
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const pendingAdjustments = adjustments.filter(a => a.status === "PENDING");
 
@@ -35,6 +37,8 @@ export default function StockTable({
     if (!isAdjusting || !actualQty) return;
     
     setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     const diff = Number(actualQty) - Number(isAdjusting.current_stock);
     
     const res = await submitStockAdjustment({
@@ -47,22 +51,41 @@ export default function StockTable({
 
     setIsSubmitting(false);
     if (res.error) {
-      alert("Lỗi: " + res.error);
+      setErrorMessage("Lỗi: " + res.error);
     } else {
       setIsAdjusting(null);
       setActualQty("");
       setReason("");
+      setSuccessMessage("Đã tạo yêu cầu / Cân bằng kho thành công.");
+      setTimeout(() => setSuccessMessage(""), 3000);
     }
   };
 
   const handleApprove = async (adjId: string) => {
-    if (role !== "ADMIN") return alert("Chỉ Admin mới có quyền duyệt");
+    if (role !== "ADMIN") return setErrorMessage("Chỉ Admin mới có quyền duyệt");
+    setErrorMessage("");
+    setSuccessMessage("");
     const res = await approveStockAdjustment(adjId, username);
-    if (res.error) alert(res.error);
+    if (res.error) setErrorMessage(res.error);
+    else {
+      setSuccessMessage("Đã duyệt thành công.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {errorMessage && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-xl border border-red-200 text-sm">
+          {errorMessage}
+        </div>
+      )}
+      {successMessage && (
+        <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-200 text-sm">
+          {successMessage}
+        </div>
+      )}
+
       {pendingAdjustments.length > 0 && role === "ADMIN" && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
           <h3 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
@@ -83,7 +106,7 @@ export default function StockTable({
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleApprove(adj.id)}
-                      className="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700"
+                      className="px-3 py-1.5 min-h-[44px] bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition"
                     >
                       Duyệt & Ép kho
                     </button>
@@ -105,7 +128,7 @@ export default function StockTable({
           <input 
             type="text" 
             placeholder="Tìm nguyên liệu, bán thành phẩm..." 
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            className="w-full pl-10 pr-4 py-2 min-h-[44px] border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -145,7 +168,7 @@ export default function StockTable({
                   <td className="px-6 py-4 text-right">
                     <button 
                       onClick={() => setIsAdjusting(item)}
-                      className="text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                      className="text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 min-h-[44px] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                     >
                       Cân bằng
                     </button>
@@ -182,7 +205,7 @@ export default function StockTable({
             <div className="flex justify-end pt-2 border-t border-gray-50">
               <button 
                 onClick={() => setIsAdjusting(item)}
-                className="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 font-semibold px-3 py-1.5 min-h-[44px] rounded-lg transition-colors"
               >
                 Cân bằng
               </button>

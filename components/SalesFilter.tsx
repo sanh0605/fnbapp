@@ -125,9 +125,9 @@ function SalesFilterInner({
 
   const rightContent = (
     <div className="flex gap-2">
-      <button onClick={() => setPreset(0)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[36px]">Hôm nay</button>
-      <button onClick={() => setPreset(7)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[36px]">7 ngày</button>
-      <button onClick={() => setPreset(30)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[36px]">30 ngày</button>
+      <button onClick={() => setPreset(0)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[44px]">Hôm nay</button>
+      <button onClick={() => setPreset(7)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[44px]">7 ngày</button>
+      <button onClick={() => setPreset(30)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[44px]">30 ngày</button>
     </div>
   );
 
@@ -142,7 +142,7 @@ function SalesFilterInner({
         <CustomDatePicker
           selected={startDate}
           onChange={(date: Date | null) => setStartDate(date)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         />
       </div>
       <div className="w-full md:w-auto">
@@ -150,7 +150,7 @@ function SalesFilterInner({
         <CustomDatePicker
           selected={endDate}
           onChange={(date: Date | null) => setEndDate(date)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         />
       </div>
       <div className="w-full md:w-auto">
@@ -158,7 +158,7 @@ function SalesFilterInner({
         <select 
           value={brandId} 
           onChange={(e) => setBrandId(e.target.value)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -169,7 +169,7 @@ function SalesFilterInner({
         <select 
           value={staffName} 
           onChange={(e) => setStaffName(e.target.value)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
@@ -180,7 +180,7 @@ function SalesFilterInner({
         <select 
           value={categoryId} 
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}

@@ -106,22 +106,22 @@ export default function PromotionsClient({
         subtitle="Quản lý mã giảm giá, chiết khấu hóa đơn và khuyến mãi theo sản phẩm."
         rightContent={rightContent}
       >
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên, mã code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="ALL">Tất cả</option>
             <option value="ACTIVE">Đang chạy</option>
@@ -129,12 +129,12 @@ export default function PromotionsClient({
             <option value="EXPIRED">Chỉ đã hết hạn</option>
           </select>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Loại hình</label>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="w-44 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-44 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="ALL">Mọi đối tượng</option>
             <option value="ORDER_DISCOUNT">Giảm đơn hàng</option>
@@ -261,13 +261,13 @@ export default function PromotionsClient({
                     setEditingPromo(promo);
                     setIsFormOpen(true);
                   }}
-                  className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-100 text-blue-700 font-bold text-xs rounded-lg transition active:scale-95"
+                  className="px-3.5 py-1.5 min-h-[44px] bg-blue-50 hover:bg-blue-100 border border-blue-100 text-blue-700 font-bold text-xs rounded-lg transition active:scale-95"
                 >
                   Sửa
                 </button>
                 <button
                   onClick={() => setDeleteConfirmId(promo.id)}
-                  className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 font-bold text-xs rounded-lg transition active:scale-95"
+                  className="px-3.5 py-1.5 min-h-[44px] bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 font-bold text-xs rounded-lg transition active:scale-95"
                 >
                   Xóa
                 </button>
