@@ -180,7 +180,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="fixed inset-0 flex bg-gray-50 font-sans text-text-primary overflow-hidden">
+    <div className="fixed inset-0 flex bg-page font-sans text-text-primary overflow-hidden">
       
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
