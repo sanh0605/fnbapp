@@ -202,7 +202,7 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
               </div>
             </div>
 
-            <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-850 text-xs leading-relaxed space-y-1.5 shadow-sm">
+            <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-xs leading-relaxed space-y-1.5 shadow-sm">
               <p className="font-bold">💡 Lưu ý thiết lập pg_cron:</p>
               <p>Mặc định pg_cron cần được bật thủ công trên Supabase Dashboard thông qua SQL Editor để kích hoạt lịch trình tự động hàng ngày.</p>
             </div>

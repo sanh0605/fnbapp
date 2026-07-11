@@ -28,7 +28,7 @@ export function UserForm() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+        className="bg-blue-600 text-white px-4 py-2 min-h-[44px] rounded-lg font-medium hover:bg-blue-700 transition"
       >
         + Thêm Nhân Sự
       </button>
@@ -62,7 +62,7 @@ export function UserForm() {
       >
         <form id="user-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
               {error}
             </div>
           )}
@@ -75,7 +75,7 @@ export function UserForm() {
               type="text"
               name="username"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] outline-none focus:border-blue-500 text-gray-900"
               placeholder="VD: nhanvien01"
             />
           </div>
@@ -88,7 +88,7 @@ export function UserForm() {
               type="password"
               name="password"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] outline-none focus:border-blue-500 text-gray-900"
               placeholder="******"
             />
           </div>
@@ -100,7 +100,7 @@ export function UserForm() {
               id={`${formId}-role`}
               name="role"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white text-gray-900"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] outline-none focus:border-blue-500 bg-white text-gray-900"
             >
               <option value="STAFF">Nhân viên (STAFF)</option>
               <option value="MANAGER">Quản lý (MANAGER)</option>
@@ -134,7 +134,7 @@ export function DeleteUserButton({ id, username }: DeleteUserButtonProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="text-red-600 hover:text-red-800 font-medium text-sm"
+        className="px-3 py-1.5 min-h-[44px] bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-600 font-bold text-xs rounded-lg transition active:scale-95"
       >
         Xóa
       </button>

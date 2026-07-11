@@ -154,7 +154,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
         title="Nhật ký Hoạt động"
         subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
       >
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
             Tìm kiếm
           </label>
@@ -163,17 +163,17 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             placeholder="Tìm mã đơn, người tạo, lý do..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-56 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-56 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
             Loại Sự Kiện
           </label>
           <select
             value={eventType}
             onChange={(e) => setEventType(e.target.value)}
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="ALL">Tất cả</option>
             <option value="CREATED">Tạo mới (CREATED)</option>
@@ -183,14 +183,14 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             <option value="MIGRATED">Di trú (MIGRATED)</option>
           </select>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
             Tài Khoản
           </label>
           <select
             value={actorFilter}
             onChange={(e) => setActorFilter(e.target.value)}
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="ALL">Tất cả tài khoản</option>
             {actors.map((actor) => (
@@ -200,7 +200,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             ))}
           </select>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
             Từ ngày
           </label>
@@ -208,10 +208,10 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-auto border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
             Đến ngày
           </label>
@@ -219,7 +219,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-auto border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
       </StickyFilterBar>
