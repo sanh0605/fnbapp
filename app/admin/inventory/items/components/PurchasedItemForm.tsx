@@ -4,6 +4,7 @@ import { useState, useId } from "react";
 import { addPurchasedItem, updatePurchasedItem } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
 
@@ -137,19 +138,22 @@ export function PurchasedItemForm({
   return (
     <>
       {isEdit ? (
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
           onClick={() => setIsOpen(true)}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-4"
+          className="mr-2"
         >
           Sửa
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
+          variant="primary"
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
         >
           + Thêm Hàng Mua Vào
-        </button>
+        </Button>
       )}
 
       <FormModal
@@ -162,13 +166,13 @@ export function PurchasedItemForm({
         maxWidth="max-w-2xl"
         footer={
           <>
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
             >
               Hủy
-            </button>
+            </Button>
             <LoadingButton
               type="submit"
               form="purchased-item-form"
@@ -182,31 +186,31 @@ export function PurchasedItemForm({
       >
         <form id="purchased-item-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Hàng Hóa</label>
+              <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">Tên Hàng Hóa</label>
               <input
                 id={`${formId}-name`}
                 type="text"
                 name="name"
                 required
                 defaultValue={initialData?.name}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
                 placeholder="VD: Cà phê hạt Robusta 500g"
               />
             </div>
             <div>
-              <label htmlFor={`${formId}-categoryId`} className="block text-sm font-medium text-gray-700 mb-1">Phân Loại</label>
+              <label htmlFor={`${formId}-categoryId`} className="block text-sm font-medium text-text-secondary mb-1">Phân Loại</label>
               <select
                 id={`${formId}-categoryId`}
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white"
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
                 required
               >
                 <option value="">Chọn phân loại...</option>
@@ -218,13 +222,13 @@ export function PurchasedItemForm({
           </div>
 
           {isRaw && (
-            <div className="pt-4 border-t border-gray-100 space-y-4">
-              <div className="p-3 bg-blue-50 text-blue-800 text-sm rounded-lg border border-blue-100">
+            <div className="pt-4 border-t border-border space-y-4">
+              <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
                 Đây là nhóm <strong>Hàng Hóa Chế Biến (RAW)</strong>. Hàng mua vào phải được liên kết với một Nhóm Nguyên Liệu để hệ thống biết cách lưu kho và quản lý định lượng.
               </div>
 
               <div>
-                <label htmlFor={`${formId}-baseIngredientId`} className="block text-sm font-medium text-gray-700 mb-1">Liên kết Nhóm Nguyên Liệu</label>
+                <label htmlFor={`${formId}-baseIngredientId`} className="block text-sm font-medium text-text-secondary mb-1">Liên kết Nhóm Nguyên Liệu</label>
                 <SearchableSelect
                   id={`${formId}-baseIngredientId`}
                   options={baseIngredientOptions}
@@ -235,13 +239,13 @@ export function PurchasedItemForm({
               </div>
 
               {selectedBaseIngredientId && (
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <div className="bg-page p-4 rounded-xl border border-border">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-bold text-gray-900">Quy đổi đơn vị mua</h4>
+                    <h4 className="text-sm font-bold text-text-primary">Quy đổi đơn vị mua</h4>
                     <button
                       type="button"
                       onClick={addUnitRow}
-                      className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                      className="text-xs font-bold text-primary hover:text-primary-hover"
                     >
                       + Thêm đơn vị mua
                     </button>
@@ -253,7 +257,7 @@ export function PurchasedItemForm({
                       return (
                         <div key={idx} className="flex gap-2 items-end">
                           <div className="flex-1">
-                            <label htmlFor={`${unitRowId}-name`} className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đơn vị mua</label>
+                            <label htmlFor={`${unitRowId}-name`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đơn vị mua</label>
                             <SearchableSelect
                               id={`${unitRowId}-name`}
                               options={unitOptions}
@@ -262,26 +266,26 @@ export function PurchasedItemForm({
                               placeholder="VD: Bao 10kg"
                             />
                           </div>
-                          <div className="px-2 pb-2 text-gray-400 font-bold">=</div>
+                          <div className="px-2 pb-2 text-text-muted font-bold">=</div>
                           <div className="w-24 relative">
-                            <label htmlFor={`${unitRowId}-conversion_rate`} className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Hệ số</label>
+                            <label htmlFor={`${unitRowId}-conversion_rate`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Hệ số</label>
                             <input
                               id={`${unitRowId}-conversion_rate`}
                               type="number"
                               step="any"
                               value={u.conversion_rate}
                               onChange={(e) => updateUnitRow(idx, "conversion_rate", e.target.value)}
-                              className="w-full border border-gray-300 rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:border-blue-500"
+                              className="w-full border border-border rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
                             />
                           </div>
-                          <div className="px-2 pb-2 text-sm text-gray-600 font-medium">
+                          <div className="px-2 pb-2 text-sm text-text-secondary font-medium">
                             {baseUnitName || "cơ bản"}
                           </div>
                           {unitsState.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeUnitRow(idx)}
-                              className="pb-2 px-2 text-gray-400 hover:text-rose-500"
+                              className="pb-2 px-2 text-text-muted hover:text-danger"
                             >
                               ✕
                             </button>
@@ -292,15 +296,15 @@ export function PurchasedItemForm({
                   </div>
 
                   {isEdit && (
-                    <div className="mt-4 flex items-start gap-2 p-2 bg-orange-50 rounded-lg border border-orange-100">
+                    <div className="mt-4 flex items-start gap-2 p-2 bg-warning/10 rounded-lg border border-warning/20">
                       <input
                         type="checkbox"
                         id={`${formId}-update_history`}
                         checked={updateHistory}
                         onChange={(e) => setUpdateHistory(e.target.checked)}
-                        className="mt-1 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                        className="mt-1 w-4 h-4 rounded border-border text-warning focus:ring-warning"
                       />
-                      <label htmlFor={`${formId}-update_history`} className="text-xs text-orange-800 leading-tight">
+                      <label htmlFor={`${formId}-update_history`} className="text-xs text-warning-active leading-tight">
                         Cập nhật lại đơn vị mua cho các đơn đặt hàng cũ của mặt hàng này nếu đơn vị mua bị thay đổi.
                       </label>
                     </div>

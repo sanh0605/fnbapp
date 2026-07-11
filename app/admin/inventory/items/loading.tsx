@@ -8,7 +8,7 @@ export default function Loading() {
         title="Quản lý Hàng Mua Vào" 
         subtitle="Danh sách các mặt hàng thực tế nhập từ nhà cung cấp." 
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={5} />
       </div>
     </div>
