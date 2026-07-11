@@ -2,6 +2,14 @@
 
 Compact 1-line-per-task archive of finished work. Detailed entries remain in `DEVELOPMENT-TRACKING.md` (chronicle log, newest first).
 
+## 2026-07-12
+
+- **U4. Fresh Blue Admin Design System (Antigravity)** — Full design system migration across all admin pages. 17 commits: Phase 0 audit → Phase 1 tokens → Phase 2 dark sidebar + Lucide → Phase 3 component library (Button/Alert/Badge/Card) → Phase 4 high-impact pages (Products/Orders/Dashboard/Reports/Inventory) → Phase 5 remaining pages by sidebar group → Phase 5 cleanup → Phase 6 final report. ~143 files changed, 0 hardcoded Tailwind colors (except Codex `modifiers/` scope). Final report at `docs/audits/2026-07-12-fresh-blue-admin-final-report.md`. Subsumes U2 (UI consistency sweep batches 1-5 + mobile retrofit + Batch 4 re-commit).
+
+## 2026-07-11
+
+- **U2. UI consistency sweep — partial (Antigravity)** — Batches 1, 1R (mobile-first retrofit), 2, 3, 4 (re-committed surgical), 5. Subsumed by U4 design system which standardized all patterns comprehensively.
+
 ## 2026-07-10
 
 - **E1. Task 1 — Modifier recipe save hardening (Codex)** — `planRecipeSave` for MODIFIER, only close latest active recipe when changed, same recipe is no-op. Commit `b6ffd73` (done 2026-07-09, marked complete 2026-07-10). Tests: 15/15 targeted + 335/335 full.
