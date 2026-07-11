@@ -15,14 +15,14 @@ export function DiscountEditor({
 }: DiscountEditorProps) {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm font-medium text-gray-700 w-28">Giảm giá đơn:</span>
+      <span className="text-sm font-medium text-text-secondary w-28">Giảm giá đơn:</span>
       <div className="flex items-center gap-2 flex-1">
-        <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
+        <div className="flex rounded-lg overflow-hidden border border-border shrink-0">
           <button
             type="button"
             onClick={() => setOrderDiscountType("VND")}
             className={`px-2 py-1 text-xs font-bold ${
-              orderDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"
+              orderDiscountType === "VND" ? "bg-primary-soft text-primary" : "bg-surface-card text-text-muted hover:bg-page"
             }`}
           >
             VND
@@ -31,7 +31,7 @@ export function DiscountEditor({
             type="button"
             onClick={() => setOrderDiscountType("PERCENT")}
             className={`px-2 py-1 text-xs font-bold ${
-              orderDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"
+              orderDiscountType === "PERCENT" ? "bg-primary-soft text-primary" : "bg-surface-card text-text-muted hover:bg-page"
             }`}
           >
             %
@@ -42,7 +42,7 @@ export function DiscountEditor({
           min="0"
           value={orderDiscount || ""}
           onChange={(e) => setOrderDiscount(Number(e.target.value))}
-          className="flex-1 px-2 py-1 border border-gray-200 rounded-lg text-sm text-right outline-none focus:ring-1 focus:ring-indigo-500"
+          className="flex-1 px-2 py-1 border border-border rounded-lg text-sm text-right outline-none focus:ring-1 focus:ring-focus-ring bg-surface-card text-text-primary"
         />
       </div>
     </div>

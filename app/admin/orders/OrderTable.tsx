@@ -9,6 +9,9 @@ import OrderEditModal from "./OrderEditModal";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { formatNumber } from "@/lib/format";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { AlertCircle, X } from "lucide-react";
 
 import type { OrderListItem } from "./actions";
 
@@ -266,14 +269,14 @@ export default function OrderTable({
   const rightContent = (
     <>
       {hasActiveFilters && (
-        <button
+        <Button
+          variant="ghost" size="sm" className="!text-danger hover:!bg-red-50"
           onClick={clearFilters}
-          className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition whitespace-nowrap"
         >
           Xóa bộ lọc
-        </button>
+        </Button>
       )}
-      <div className="text-xs font-bold text-gray-500 whitespace-nowrap px-3 py-1.5 bg-gray-100 rounded-lg">
+      <div className="text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
         {filteredOrders.length} / {orders.length}
       </div>
     </>
@@ -288,37 +291,37 @@ export default function OrderTable({
         subtitle="Quản lý và xem lại tất cả các đơn hàng đã được tạo."
       >
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm mã đơn</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm mã đơn</label>
           <input
             type="text"
             placeholder="VD: PHD000001"
             value={searchQuery}
             onChange={(e) => { handleFilterChange({ q: e.target.value }); }}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary outline-none shadow-sm"
           />
         </div>
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Từ ngày</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Từ ngày</label>
           <CustomDatePicker
             selected={startDate}
             onChange={(date: Date | null) => { handleFilterChange({ from: date }); }}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary outline-none shadow-sm"
           />
         </div>
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đến ngày</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đến ngày</label>
           <CustomDatePicker
             selected={endDate}
             onChange={(date: Date | null) => { handleFilterChange({ to: date }); }}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary outline-none shadow-sm"
           />
         </div>
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">PT thanh toán</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">PT thanh toán</label>
           <select
             value={paymentFilter}
             onChange={(e) => { handleFilterChange({ payment: e.target.value }); }}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
           >
             <option value="">Tất cả</option>
             <option value="Tien mat">Tiền mặt</option>
@@ -326,11 +329,11 @@ export default function OrderTable({
           </select>
         </div>
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Thương hiệu</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Thương hiệu</label>
           <select
             value={brandFilter}
             onChange={(e) => { handleFilterChange({ brand: e.target.value }); }}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
           >
             <option value="">Tất cả</option>
             {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -339,10 +342,10 @@ export default function OrderTable({
       </StickyFilterBar>
 
       {/* Desktop Table - hidden on mobile, shown on desktop */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden md:block">
+      <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 font-medium">
+          <table className="w-full text-left text-sm text-text-secondary">
+            <thead className="bg-page border-b border-border text-text-secondary font-medium">
               <tr>
                 <th className="px-6 py-4">Mã Đơn</th>
                 <th className="px-6 py-4">Thời gian</th>
@@ -352,10 +355,10 @@ export default function OrderTable({
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {currentOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-text-muted">
                     Không tìm thấy đơn hàng nào
                   </td>
                 </tr>
@@ -363,13 +366,13 @@ export default function OrderTable({
                 currentOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className={`hover:bg-gray-50 transition-colors cursor-pointer`}
+                    className={`hover:bg-page transition-colors cursor-pointer`}
                     onClick={() => setSelectedOrder(order)}
                   >
-                    <td className="px-6 py-4 font-bold text-gray-900">
+                    <td className="px-6 py-4 font-bold text-text-primary">
                       {order.display_order_no || order.order_no}
                       {order.parent_order_id && (
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800">
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary-soft text-primary">
                           v{order.version}
                         </span>
                       )}
@@ -380,10 +383,10 @@ export default function OrderTable({
                     <td className="px-6 py-4">
                       <div className="space-y-1.5">
                         {order.lines && order.lines.map((line: OrderLine, idx: number) => (
-                          <div key={idx} className="text-xs">
-                            <span className="font-bold text-gray-700">{line.qty}x</span> {line.product_name} <span className="text-gray-400">({line.size_name})</span>
+                          <div key={idx} className="text-xs text-text-secondary">
+                            <span className="font-bold text-text-primary">{line.qty}x</span> {line.product_name} <span className="text-text-muted">({line.size_name})</span>
                             {line.modifiers && line.modifiers.length > 0 && (
-                              <div className="text-[10px] text-gray-500 ml-4 mt-0.5">
+                              <div className="text-[10px] text-text-muted ml-4 mt-0.5">
                                 + {line.modifiers.map((m: any) => m.name).join(", ")}
                               </div>
                             )}
@@ -391,22 +394,26 @@ export default function OrderTable({
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-orange-600">
+                    <td className="px-6 py-4 text-right font-bold text-primary">
                       {formatNumber(order.net_total)}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${order.method === 'Chuyen khoan' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                        {order.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"}
-                      </span>
+                      {order.method === "Chuyen khoan" ? (
+                        <Badge variant="neutral">Chuyển khoản</Badge>
+                      ) : (
+                        <Badge variant="success">Tiền mặt</Badge>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="!text-danger hover:!bg-red-50"
                         onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
                         disabled={order.status !== "COMPLETED"}
-                        className="text-red-500 hover:text-red-700 font-medium px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
                       >
                         Hủy đơn
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -419,46 +426,50 @@ export default function OrderTable({
       {/* Mobile Card List - shown on mobile, hidden on desktop */}
       <div className="space-y-3 md:hidden">
         {currentOrders.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">
+          <div className="bg-surface-card rounded-card border border-border p-8 text-center text-text-muted">
             Không tìm thấy đơn hàng nào
           </div>
         ) : (
           currentOrders.map((order) => (
             <div
               key={order.id}
-              className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-3 active:bg-gray-50 transition-colors cursor-pointer"
+              className="bg-surface-card rounded-card border border-border p-4 shadow-sm space-y-3 active:bg-page transition-colors cursor-pointer"
               onClick={() => setSelectedOrder(order)}
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="font-bold text-gray-900 text-sm">
+                  <span className="font-bold text-text-primary text-sm">
                     {order.display_order_no || order.order_no}
                   </span>
                   {order.parent_order_id && (
-                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-purple-100 text-purple-800">
+                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-primary-soft text-primary">
                       v{order.version}
                     </span>
                   )}
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-[11px] text-text-muted mt-0.5">
                     {formatDate(order.created_at)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-orange-600 text-sm">
+                  <div className="font-bold text-primary text-sm">
                     {formatNumber(order.net_total)}
                   </div>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${order.method === 'Chuyen khoan' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                    {order.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"}
-                  </span>
+                  <div className="mt-1">
+                    {order.method === "Chuyen khoan" ? (
+                      <Badge variant="neutral">Chuyển khoản</Badge>
+                    ) : (
+                      <Badge variant="success">Tiền mặt</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-2 space-y-1">
+              <div className="border-t border-border pt-2 space-y-1">
                 {order.lines && order.lines.map((line: OrderLine, idx: number) => (
-                  <div key={idx} className="text-xs text-gray-600">
-                    <span className="font-bold text-gray-800">{line.qty}x</span> {line.product_name} <span className="text-gray-400">({line.size_name})</span>
+                  <div key={idx} className="text-xs text-text-secondary">
+                    <span className="font-bold text-text-primary">{line.qty}x</span> {line.product_name} <span className="text-text-muted">({line.size_name})</span>
                     {line.modifiers && line.modifiers.length > 0 && (
-                      <div className="text-[10px] text-gray-500 ml-4 mt-0.5">
+                      <div className="text-[10px] text-text-muted ml-4 mt-0.5">
                         + {line.modifiers.map((m: any) => m.name).join(", ")}
                       </div>
                     )}
@@ -466,14 +477,16 @@ export default function OrderTable({
                 ))}
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-gray-50">
-                <button
+              <div className="flex justify-end pt-2 border-t border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="!text-danger hover:!bg-red-50"
                   onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
                   disabled={order.status !== "COMPLETED"}
-                  className="text-xs text-red-600 bg-red-50 hover:bg-red-100 font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                 >
                   Hủy đơn
-                </button>
+                </Button>
               </div>
             </div>
           ))
@@ -482,28 +495,30 @@ export default function OrderTable({
 
       {/* Pagination Wrapper */}
       {totalPages > 1 && (
-        <div className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-sm text-gray-500 text-center sm:text-left">
-            Hiển thị <span className="font-bold text-gray-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-bold text-gray-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)}</span> trong tổng số <span className="font-bold text-gray-900">{filteredOrders.length}</span> đơn hàng
+        <div className="bg-page rounded-card shadow-sm border border-border px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-sm text-text-secondary text-center sm:text-left">
+            Hiển thị <span className="font-bold text-text-primary">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-bold text-text-primary">{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)}</span> trong tổng số <span className="font-bold text-text-primary">{filteredOrders.length}</span> đơn hàng
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => handleFilterChange({ page: Math.max(1, currentPage - 1) })}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm"
             >
               Trước
-            </button>
-            <div className="flex items-center px-2 font-medium text-gray-700 text-sm">
+            </Button>
+            <div className="flex items-center px-2 font-medium text-text-secondary text-sm">
               Trang {currentPage} / {totalPages}
             </div>
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => handleFilterChange({ page: Math.min(totalPages, currentPage + 1) })}
               disabled={currentPage === totalPages}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors text-sm"
             >
               Sau
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -511,22 +526,22 @@ export default function OrderTable({
       {/* Void Confirmation Modal */}
       {orderToVoid && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl flex flex-col overflow-hidden">
-            <div className="p-5 border-b border-gray-100 bg-red-50 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl shrink-0">!</div>
+          <div className="bg-surface-card w-full max-w-sm rounded-card shadow-xl flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-border bg-red-50 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 text-danger flex items-center justify-center shrink-0"><AlertCircle className="w-5 h-5"/></div>
               <div>
-                <h3 className="font-bold text-red-800">Hủy đơn hàng</h3>
-                <p className="text-sm text-red-600 font-medium">{orderToVoid.display_order_no}</p>
+                <h3 className="font-bold text-danger">Hủy đơn hàng</h3>
+                <p className="text-sm text-danger font-medium">{orderToVoid.display_order_no}</p>
               </div>
             </div>
             <div className="p-5 space-y-3">
-              <p className="text-gray-600 text-sm">
+              <p className="text-text-secondary text-sm">
                 Đơn sẽ chuyển sang trạng thái VOIDED. Nguyên liệu sẽ được hoàn trả vào kho. Lịch sử đơn được giữ nguyên.
               </p>
               {voidError && (
-                <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 flex justify-between">
+                <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-danger text-sm rounded-lg border border-red-200 flex justify-between">
                   <span>{voidError}</span>
-                  <button onClick={() => setVoidError(null)} className="ml-2 text-red-500 hover:text-red-700" aria-label="Đóng">×</button>
+                  <button onClick={() => setVoidError(null)} className="ml-2 text-danger hover:opacity-80" aria-label="Đóng"><X className="w-4 h-4"/></button>
                 </div>
               )}
               <textarea
@@ -534,23 +549,25 @@ export default function OrderTable({
                 value={voidReason}
                 onChange={(e) => setVoidReason(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
               />
             </div>
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-3">
-              <button
+            <div className="p-4 border-t border-border bg-page flex gap-3">
+              <Button
+                variant="secondary"
+                className="flex-1"
                 onClick={() => { setOrderToVoid(null); setVoidReason(""); setVoidError(null); }}
-                className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50"
               >
                 Hủy bỏ
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1 !bg-danger hover:!bg-danger/90"
                 onClick={confirmVoid}
                 disabled={!voidReason.trim()}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 disabled:opacity-50"
               >
                 Đồng ý hủy
-              </button>
+              </Button>
             </div>
           </div>
         </div>

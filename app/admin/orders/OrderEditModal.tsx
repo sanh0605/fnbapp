@@ -8,6 +8,8 @@ import type { OrderListItem } from "./actions";
 import { LineItemEditor } from "./components/LineItemEditor";
 import { DiscountEditor } from "./components/DiscountEditor";
 import type { EditItem } from "./components/LineItemEditor";
+import { Button } from "@/components/ui/Button";
+import { X, Search } from "lucide-react";
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
@@ -220,29 +222,29 @@ export default function OrderEditModal({
 
   return (
     <div className="fixed inset-0 z-[55] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-lg h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+      <div className="bg-surface-card w-full max-w-lg h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-card shadow-2xl flex flex-col overflow-hidden animate-slide-up">
         {/* Header */}
-        <div className="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center shrink-0">
+        <div className="p-4 border-b border-border bg-page flex justify-between items-center shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Sửa đơn hàng</h3>
-            <p className="text-sm text-gray-500">{order.display_order_no || order.order_no}</p>
+            <h3 className="text-lg font-bold text-text-primary">Sửa đơn hàng</h3>
+            <p className="text-sm text-text-secondary">{order.display_order_no || order.order_no}</p>
           </div>
-          <button onClick={onClose} disabled={isSaving} className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300 disabled:opacity-50">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <button onClick={onClose} disabled={isSaving} className="p-1.5 bg-surface-secondary rounded-full text-text-muted hover:bg-border disabled:opacity-50">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {inlineError && (
-          <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 flex justify-between">
+          <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-red-50 text-danger text-sm rounded-lg border border-red-200 flex justify-between">
             <span>{inlineError}</span>
-            <button onClick={() => setInlineError(null)} className="ml-2 text-red-500 hover:text-red-700" aria-label="Đóng">×</button>
+            <button onClick={() => setInlineError(null)} className="ml-2 text-danger hover:opacity-80" aria-label="Đóng"><X className="w-4 h-4"/></button>
           </div>
         )}
 
         {/* Items list */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {items.length === 0 && !isAddingProduct && (
-            <div className="text-center text-gray-400 py-8">Không có món nào trong đơn</div>
+            <div className="text-center text-text-muted py-8">Không có món nào trong đơn</div>
           )}
 
           {items.map((item, idx) => (
@@ -271,50 +273,53 @@ export default function OrderEditModal({
 
           {/* Add Product Section */}
           {isAddingProduct ? (
-            <div className="bg-emerald-50 p-3 rounded-xl border-2 border-emerald-200 space-y-3">
+            <div className="bg-primary-soft p-3 rounded-xl border border-primary/20 space-y-3">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-emerald-700">Thêm sản phẩm</span>
-                <button onClick={() => { setIsAddingProduct(false); setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); setNewQty(1); }} className="text-gray-400 hover:text-gray-600">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <span className="font-bold text-primary">Thêm sản phẩm</span>
+                <button onClick={() => { setIsAddingProduct(false); setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); setNewQty(1); }} className="text-text-muted hover:text-text-secondary">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               {!selectedNewProduct ? (
                 <>
                   {/* Search */}
-                  <input type="text" placeholder="Tìm sản phẩm..." value={addSearch} onChange={(e) => setAddSearch(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-emerald-500" />
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-text-muted" />
+                    <input type="text" placeholder="Tìm sản phẩm..." value={addSearch} onChange={(e) => setAddSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring" />
+                  </div>
 
                   {/* Category filter */}
                   <div className="flex flex-wrap gap-1.5">
-                    <button onClick={() => setAddCategory("ALL")} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === "ALL" ? "bg-emerald-600 text-white" : "bg-white text-gray-600 border border-gray-200"}`}>Tất cả</button>
+                    <button onClick={() => setAddCategory("ALL")} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === "ALL" ? "bg-primary text-white" : "bg-surface-card text-text-secondary border border-border"}`}>Tất cả</button>
                     {categories.map((c: any) => (
-                      <button key={c.id} onClick={() => setAddCategory(c.id)} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === c.id ? "bg-emerald-600 text-white" : "bg-white text-gray-600 border border-gray-200"}`}>{c.name}</button>
+                      <button key={c.id} onClick={() => setAddCategory(c.id)} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === c.id ? "bg-primary text-white" : "bg-surface-card text-text-secondary border border-border"}`}>{c.name}</button>
                     ))}
                   </div>
 
                   {/* Product grid */}
                   <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                     {filteredAddProducts.map((p: any) => (
-                      <button key={p.id} onClick={() => { setSelectedNewProduct(p); setSelectedNewVariant(null); }} className="p-2 rounded-lg border border-gray-200 bg-white hover:border-emerald-400 text-center transition-colors">
-                        <div className="text-sm font-medium text-gray-800 truncate">{p.name}</div>
+                      <button key={p.id} onClick={() => { setSelectedNewProduct(p); setSelectedNewVariant(null); }} className="p-2 rounded-lg border border-border bg-surface-card hover:border-primary text-center transition-colors">
+                        <div className="text-sm font-medium text-text-primary truncate">{p.name}</div>
                       </button>
                     ))}
                     {filteredAddProducts.length === 0 && (
-                      <div className="col-span-3 text-center text-gray-400 text-sm py-4">Không tìm thấy sản phẩm</div>
+                      <div className="col-span-3 text-center text-text-muted text-sm py-4">Không tìm thấy sản phẩm</div>
                     )}
                   </div>
                 </>
               ) : (
                 <>
                   {/* Selected product detail */}
-                  <div className="font-bold text-gray-800">{selectedNewProduct.name}</div>
+                  <div className="font-bold text-text-primary">{selectedNewProduct.name}</div>
 
                   {/* Variant selection */}
                   <div>
-                    <div className="text-xs font-medium text-gray-500 mb-1.5">Size</div>
+                    <div className="text-xs font-medium text-text-muted mb-1.5">Size</div>
                     <div className="flex flex-wrap gap-2">
                       {variants.filter((v: any) => v.product_id === selectedNewProduct.id).map((v: any) => (
-                        <button key={v.id} onClick={() => setSelectedNewVariant(v)} className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${selectedNewVariant?.id === v.id ? "border-orange-500 bg-orange-50 text-orange-700" : "border-gray-200 bg-white text-gray-600"
+                        <button key={v.id} onClick={() => setSelectedNewVariant(v)} className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${selectedNewVariant?.id === v.id ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface-card text-text-secondary hover:border-border-hover"
                           }`}>
                           {v.size_name} - {formatNumber(v.price)}
                         </button>
@@ -325,23 +330,23 @@ export default function OrderEditModal({
                   {/* Modifier selection */}
                   {selectedNewVariant && (
                     <div>
-                      <div className="text-xs font-medium text-gray-500 mb-1.5">Topping</div>
+                      <div className="text-xs font-medium text-text-muted mb-1.5">Topping</div>
                       <div className="space-y-2">
                         {Object.entries(groupedModifiers).map(([groupName, mods]) => (
                           <div key={groupName}>
-                            <div className="text-[11px] text-gray-400 mb-1">{groupName}</div>
+                            <div className="text-[11px] text-text-muted mb-1">{groupName}</div>
                             <div className="flex flex-wrap gap-1.5">
                               {mods.map((mod: any) => {
                                 const count = selectedNewModifiers.filter((m: any) => m.id === mod.id).length;
                                 return (
-                                  <div key={mod.id} className={`flex items-center gap-1 rounded-lg border text-xs ${count > 0 ? "border-emerald-400 bg-emerald-50" : "border-gray-200 bg-white"
+                                  <div key={mod.id} className={`flex items-center gap-1 rounded-lg border text-xs ${count > 0 ? "border-primary bg-primary-soft" : "border-border bg-surface-card"
                                     }`}>
                                     {count > 0 && (
-                                      <button onClick={() => removeNewModifier(mod)} className="px-1.5 py-1 text-emerald-400 hover:text-red-500 font-bold">-</button>
+                                      <button onClick={() => removeNewModifier(mod)} className="px-1.5 py-1 text-primary hover:text-danger font-bold">-</button>
                                     )}
-                                    <span className="px-1 py-1">{mod.name} <span className="text-gray-400">+{formatNumber(mod.price)}</span></span>
-                                    {count > 0 && <span className="px-1 py-1 font-bold text-emerald-600">{count}x</span>}
-                                    <button onClick={() => addNewModifier(mod)} className="px-1.5 py-1 text-gray-400 hover:text-emerald-600 font-bold">+</button>
+                                    <span className="px-1 py-1 text-text-primary">{mod.name} <span className="text-text-muted">+{formatNumber(mod.price)}</span></span>
+                                    {count > 0 && <span className="px-1 py-1 font-bold text-primary">{count}x</span>}
+                                    <button onClick={() => addNewModifier(mod)} className="px-1.5 py-1 text-text-muted hover:text-primary font-bold">+</button>
                                   </div>
                                 );
                               })}
@@ -356,36 +361,36 @@ export default function OrderEditModal({
                   {selectedNewVariant && (
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700">SL:</span>
-                        <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-gray-200">
-                          <button onClick={() => setNewQty(Math.max(1, newQty - 1))} className="w-7 h-7 flex items-center justify-center bg-white rounded border text-gray-600 font-bold">-</button>
-                          <span className="font-bold w-6 text-center">{newQty}</span>
-                          <button onClick={() => setNewQty(newQty + 1)} className="w-7 h-7 flex items-center justify-center bg-white rounded border text-gray-600 font-bold">+</button>
+                        <span className="text-sm font-medium text-text-secondary">SL:</span>
+                        <div className="flex items-center gap-1 bg-surface-card rounded-lg p-1 border border-border">
+                          <button onClick={() => setNewQty(Math.max(1, newQty - 1))} className="w-7 h-7 flex items-center justify-center bg-surface-card rounded border border-border text-text-secondary font-bold hover:bg-page">-</button>
+                          <span className="font-bold w-6 text-center text-text-primary">{newQty}</span>
+                          <button onClick={() => setNewQty(newQty + 1)} className="w-7 h-7 flex items-center justify-center bg-surface-card rounded border border-border text-text-secondary font-bold hover:bg-page">+</button>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-orange-600">{formatNumber((Number(selectedNewVariant.price) + selectedNewModifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0)) * newQty)}</div>
+                        <div className="font-bold text-primary">{formatNumber((Number(selectedNewVariant.price) + selectedNewModifiers.reduce((s: number, m: any) => s + Number(m.price || 0), 0)) * newQty)}</div>
                       </div>
                     </div>
                   )}
 
                   <div className="flex gap-2">
-                    <button onClick={() => { setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); }} className="flex-1 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Quay lại</button>
-                    <button onClick={confirmAddProduct} disabled={!selectedNewVariant} className="flex-1 py-1.5 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-40">Thêm vào đơn</button>
+                    <Button variant="secondary" onClick={() => { setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); }} className="flex-1">Quay lại</Button>
+                    <Button variant="primary" onClick={confirmAddProduct} disabled={!selectedNewVariant} className="flex-1">Thêm vào đơn</Button>
                   </div>
                 </>
               )}
             </div>
           ) : (
-            <button onClick={() => setIsAddingProduct(true)} className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-400 hover:border-indigo-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors">
+            <Button variant="secondary" className="w-full border-dashed" onClick={() => setIsAddingProduct(true)}>
               + Thêm sản phẩm
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-100 shrink-0">
-          <div className="px-4 py-3 bg-gray-50 space-y-3">
+        <div className="border-t border-border shrink-0">
+          <div className="px-4 py-3 bg-page space-y-3">
             <DiscountEditor
               orderDiscount={orderDiscount}
               orderDiscountType={orderDiscountType}
@@ -393,35 +398,35 @@ export default function OrderEditModal({
               setOrderDiscountType={setOrderDiscountType}
             />
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 w-28">Thanh toán:</span>
-              <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white outline-none focus:ring-1 focus:ring-indigo-500">
+              <span className="text-sm font-medium text-text-secondary w-28">Thanh toán:</span>
+              <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="flex-1 border border-border rounded-lg px-3 py-1.5 text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring">
                 <option value="Tien mat">Tiền mặt</option>
                 <option value="Chuyen khoan">Chuyển khoản</option>
               </select>
             </div>
           </div>
 
-          <div className="px-4 py-2 flex justify-between items-center bg-white border-t border-gray-100">
-            <span className="font-bold text-gray-700">Tổng cộng</span>
-            <span className="text-xl font-black text-orange-600">{formatNumber(totalAmount)}</span>
+          <div className="px-4 py-2 flex justify-between items-center bg-surface-card border-t border-border">
+            <span className="font-bold text-text-primary">Tổng cộng</span>
+            <span className="text-xl font-black text-primary">{formatNumber(totalAmount)}</span>
           </div>
 
-          <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-            <label className="block text-xs font-bold text-gray-700 mb-1.5">Lý do chỉnh sửa (bắt buộc)</label>
+          <div className="px-4 py-3 bg-page border-t border-border">
+            <label className="block text-xs font-bold text-text-secondary mb-1.5">Lý do chỉnh sửa (bắt buộc)</label>
             <textarea
               placeholder="VD: Khách đổi từ 1 ly thành 2 ly"
               value={editReason}
               onChange={(e) => setEditReason(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-2 focus:ring-focus-ring"
             />
           </div>
 
-          <div className="px-4 py-3 flex gap-3 bg-white">
-            <button onClick={onClose} disabled={isSaving} className="flex-1 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-colors disabled:opacity-50">Hủy</button>
-            <button onClick={handleSave} disabled={isSaving || items.length === 0 || !editReason.trim()} className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50">
+          <div className="px-4 py-3 flex gap-3 bg-surface-card">
+            <Button variant="secondary" onClick={onClose} disabled={isSaving} className="flex-1">Hủy</Button>
+            <Button variant="primary" onClick={handleSave} disabled={isSaving || items.length === 0 || !editReason.trim()} className="flex-1">
               {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

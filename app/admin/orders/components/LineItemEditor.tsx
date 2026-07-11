@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { formatNumber } from "@/lib/format";
+import { Button } from "@/components/ui/Button";
 
 export interface EditItem {
   product_id: string;
@@ -139,13 +140,13 @@ export function LineItemEditor({
 
   if (isEditing) {
     return (
-      <div className="bg-indigo-50 p-3 rounded-xl border-2 border-indigo-200 space-y-3">
-        <div className="font-bold text-gray-800">{item.product_name}</div>
+      <div className="bg-primary-soft p-3 rounded-xl border border-primary/20 space-y-3">
+        <div className="font-bold text-text-primary">{item.product_name}</div>
 
         {/* Size selection */}
         {editVariants.length > 1 && (
           <div>
-            <div className="text-xs font-medium text-gray-500 mb-1.5">Size</div>
+            <div className="text-xs font-medium text-text-muted mb-1.5">Size</div>
             <div className="flex flex-wrap gap-2">
               {editVariants.map((v: any) => (
                 <button
@@ -154,8 +155,8 @@ export function LineItemEditor({
                   onClick={() => setEditVariantId(v.id)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
                     editVariantId === v.id
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-border bg-surface-card text-text-secondary hover:border-border-hover"
                   }`}
                 >
                   {v.size_name} - {formatNumber(v.price)}
@@ -167,11 +168,11 @@ export function LineItemEditor({
 
         {/* Topping editing */}
         <div>
-          <div className="text-xs font-medium text-gray-500 mb-1.5">Topping</div>
+          <div className="text-xs font-medium text-text-muted mb-1.5">Topping</div>
           <div className="space-y-2">
             {Object.entries(groupedModifiers).map(([groupName, mods]) => (
               <div key={groupName}>
-                <div className="text-[11px] text-gray-400 mb-1">{groupName}</div>
+                <div className="text-[11px] text-text-muted mb-1">{groupName}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {mods.map((mod: any) => {
                     const count = editModifiers.filter((m: any) => m.id === mod.id).length;
@@ -179,26 +180,26 @@ export function LineItemEditor({
                       <div
                         key={mod.id}
                         className={`flex items-center gap-1 rounded-lg border text-xs ${
-                          count > 0 ? "border-indigo-400 bg-indigo-50" : "border-gray-200 bg-white"
+                          count > 0 ? "border-primary bg-primary-soft" : "border-border bg-surface-card"
                         }`}
                       >
                         {count > 0 && (
                           <button
                             type="button"
                             onClick={() => removeModifierFromEdit(mod)}
-                            className="px-1.5 py-1 text-indigo-400 hover:text-red-500 font-bold"
+                            className="px-1.5 py-1 text-primary hover:text-danger font-bold"
                           >
                             -
                           </button>
                         )}
-                        <span className="px-1 py-1">
-                          {mod.name} <span className="text-gray-400">+{formatNumber(mod.price)}</span>
+                        <span className="px-1 py-1 text-text-primary">
+                          {mod.name} <span className="text-text-muted">+{formatNumber(mod.price)}</span>
                         </span>
-                        {count > 0 && <span className="px-1 py-1 font-bold text-indigo-600">{count}x</span>}
+                        {count > 0 && <span className="px-1 py-1 font-bold text-primary">{count}x</span>}
                         <button
                           type="button"
                           onClick={() => addModifierToEdit(mod)}
-                          className="px-1.5 py-1 text-gray-400 hover:text-indigo-600 font-bold"
+                          className="px-1.5 py-1 text-text-muted hover:text-primary font-bold"
                         >
                           +
                         </button>
@@ -214,33 +215,33 @@ export function LineItemEditor({
         {/* Qty & Discount */}
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">SL:</span>
-            <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-gray-200">
+            <span className="text-sm font-medium text-text-secondary">SL:</span>
+            <div className="flex items-center gap-1 bg-surface-card rounded-lg p-1 border border-border">
               <button
                 type="button"
                 onClick={() => setEditQty(Math.max(1, editQty - 1))}
-                className="w-7 h-7 flex items-center justify-center bg-white rounded border text-gray-600 font-bold"
+                className="w-7 h-7 flex items-center justify-center bg-surface-card rounded border border-border text-text-secondary font-bold hover:bg-page"
               >
                 -
               </button>
-              <span className="font-bold w-6 text-center">{editQty}</span>
+              <span className="font-bold w-6 text-center text-text-primary">{editQty}</span>
               <button
                 type="button"
                 onClick={() => setEditQty(editQty + 1)}
-                className="w-7 h-7 flex items-center justify-center bg-white rounded border text-gray-600 font-bold"
+                className="w-7 h-7 flex items-center justify-center bg-surface-card rounded border border-border text-text-secondary font-bold hover:bg-page"
               >
                 +
               </button>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-1">
-            <span className="text-sm font-medium text-gray-700">Giảm:</span>
-            <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0">
+            <span className="text-sm font-medium text-text-secondary">Giảm:</span>
+            <div className="flex rounded-lg overflow-hidden border border-border shrink-0">
               <button
                 type="button"
                 onClick={() => setEditDiscountType("VND")}
                 className={`px-2 py-1 text-xs font-bold ${
-                  editDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"
+                  editDiscountType === "VND" ? "bg-primary-soft text-primary" : "bg-surface-card text-text-muted hover:bg-page"
                 }`}
               >
                 VND
@@ -249,7 +250,7 @@ export function LineItemEditor({
                 type="button"
                 onClick={() => setEditDiscountType("PERCENT")}
                 className={`px-2 py-1 text-xs font-bold ${
-                  editDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-white text-gray-400"
+                  editDiscountType === "PERCENT" ? "bg-primary-soft text-primary" : "bg-surface-card text-text-muted hover:bg-page"
                 }`}
               >
                 %
@@ -260,19 +261,19 @@ export function LineItemEditor({
               min="0"
               value={editDiscount || ""}
               onChange={(e) => setEditDiscount(Number(e.target.value))}
-              className="flex-1 px-2 py-1 border border-gray-200 rounded-lg text-sm text-right outline-none focus:ring-1 focus:ring-indigo-500"
+              className="flex-1 px-2 py-1 border border-border rounded-lg text-sm text-right bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring"
             />
           </div>
         </div>
 
         {/* Price totals */}
-        <div className="bg-white rounded-lg p-2.5 border border-indigo-100 space-y-1">
+        <div className="bg-surface-card rounded-lg p-2.5 border border-border space-y-1">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Giá gốc</span>
-            <span className="text-gray-700 font-medium">{formatNumber(editTotals.base)}</span>
+            <span className="text-text-secondary">Giá gốc</span>
+            <span className="text-text-primary font-medium">{formatNumber(editTotals.base)}</span>
           </div>
           {Number(item.line_discount || 0) > 0 && (
-            <div className="flex justify-between text-sm text-emerald-600">
+            <div className="flex justify-between text-sm text-success">
               <span>⚡ KM (tự scale theo SL)</span>
               <span>
                 -
@@ -283,7 +284,7 @@ export function LineItemEditor({
             </div>
           )}
           {editDiscount > 0 && (
-            <div className="flex justify-between text-sm text-red-500">
+            <div className="flex justify-between text-sm text-danger">
               <span>Chiết khấu</span>
               <span>
                 -
@@ -297,27 +298,27 @@ export function LineItemEditor({
               </span>
             </div>
           )}
-          <div className="flex justify-between font-bold pt-1 border-t border-gray-100">
-            <span className="text-gray-800">Thành tiền</span>
-            <span className="text-orange-600">{formatNumber(editTotals.final)}</span>
+          <div className="flex justify-between font-bold pt-1 border-t border-border">
+            <span className="text-text-primary">Thành tiền</span>
+            <span className="text-primary">{formatNumber(editTotals.final)}</span>
           </div>
         </div>
 
         <div className="flex gap-2 pt-1">
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             onClick={onCancelEdit}
-            className="flex-1 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            className="flex-1"
           >
             Hủy
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="primary"
             onClick={handleSave}
-            className="flex-1 py-1.5 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+            className="flex-1"
           >
             Lưu
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -334,30 +335,30 @@ export function LineItemEditor({
   const lineTotal = Math.max(0, baseTotal - disc);
 
   return (
-    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+    <div className="bg-page p-3 rounded-xl border border-border">
       <div className="flex justify-between items-start mb-1">
         <div className="flex-1">
-          <span className="font-bold text-orange-600 mr-1">{item.qty}x</span>
-          <span className="font-bold text-gray-800">{item.product_name}</span>
-          <span className="text-gray-400 text-xs ml-1">({item.size_name})</span>
+          <span className="font-bold text-primary mr-1">{item.qty}x</span>
+          <span className="font-bold text-text-primary">{item.product_name}</span>
+          <span className="text-text-muted text-xs ml-1">({item.size_name})</span>
         </div>
         <div className="text-right">
           {(item.discount_amount > 0 || item.line_discount > 0 || item.line_manual_discount > 0) && (
-            <div className="text-[11px] text-gray-400 line-through">{formatNumber(baseTotal)}</div>
+            <div className="text-[11px] text-text-muted line-through">{formatNumber(baseTotal)}</div>
           )}
-          <div className="font-bold text-gray-800">{formatNumber(lineTotal)}</div>
+          <div className="font-bold text-text-primary">{formatNumber(lineTotal)}</div>
         </div>
       </div>
       {item.modifiers.length > 0 && (
-        <div className="text-xs text-indigo-600 mb-1">+ {summarizeModifiers(item.modifiers)}</div>
+        <div className="text-xs text-primary mb-1">+ {summarizeModifiers(item.modifiers)}</div>
       )}
       {item.line_discount > 0 && (
-        <div className="text-xs text-emerald-600 font-medium mb-0.5">
+        <div className="text-xs text-success font-medium mb-0.5">
           KM: -{formatNumber(item.line_discount)}
         </div>
       )}
       {(item.discount_amount > 0 || item.line_manual_discount > 0) && (
-        <div className="text-xs text-red-500 font-medium mb-1">
+        <div className="text-xs text-danger font-medium mb-1">
           Giảm: -
           {item.discount_type === "PERCENT"
             ? `${item.discount_amount}%`
@@ -368,14 +369,14 @@ export function LineItemEditor({
         <button
           type="button"
           onClick={() => onStartEdit(idx)}
-          className="text-xs font-medium text-indigo-600 px-2 py-1 bg-indigo-50 rounded hover:bg-indigo-100"
+          className="text-xs font-medium text-primary px-2 py-1 bg-primary-soft rounded hover:bg-primary-soft/80"
         >
           Sửa
         </button>
         <button
           type="button"
           onClick={() => onRemove(idx)}
-          className="text-xs font-medium text-red-500 px-2 py-1 bg-red-50 rounded hover:bg-red-100"
+          className="text-xs font-medium text-danger px-2 py-1 bg-red-100 rounded hover:bg-red-200"
         >
           Xóa
         </button>

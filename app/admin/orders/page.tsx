@@ -9,7 +9,7 @@ export default async function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <Suspense fallback={<div className="text-gray-500 py-8 text-center text-sm font-semibold">Đang tải danh sách đơn hàng...</div>}>
+      <Suspense fallback={<div className="text-text-muted py-8 text-center text-sm font-semibold">Đang tải danh sách đơn hàng...</div>}>
         <OrderTable
           initialOrders={orders as any}
           brands={brands}
