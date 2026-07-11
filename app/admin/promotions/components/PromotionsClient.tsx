@@ -93,7 +93,7 @@ export default function PromotionsClient({
         setEditingPromo(undefined);
         setIsFormOpen(true);
       }}
-      className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-md active:scale-[0.98]"
+      className="bg-primary hover:bg-primary-hover text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-md active:scale-[0.98]"
     >
       + Tạo Khuyến Mãi
     </button>
@@ -107,21 +107,21 @@ export default function PromotionsClient({
         rightContent={rightContent}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên, mã code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Trạng thái</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả</option>
             <option value="ACTIVE">Đang chạy</option>
@@ -130,11 +130,11 @@ export default function PromotionsClient({
           </select>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Loại hình</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Loại hình</label>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="w-full md:w-44 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-44 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Mọi đối tượng</option>
             <option value="ORDER_DISCOUNT">Giảm đơn hàng</option>
@@ -171,21 +171,21 @@ export default function PromotionsClient({
           return (
             <div
               key={promo.id}
-              className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition duration-200 ${
-                !isActive ? "opacity-75 bg-gray-50/50" : ""
+              className={`bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col hover:shadow-md transition duration-200 ${
+                !isActive ? "opacity-75 bg-surface-secondary/50" : ""
               }`}
             >
-              <div className="p-4 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center">
-                <span className="text-xs font-bold text-gray-500 bg-gray-200/60 px-2.5 py-1 rounded-full">
+              <div className="p-4 bg-surface-secondary/50 border-b border-border flex justify-between items-center">
+                <span className="text-xs font-bold text-text-muted border-border/60 px-2.5 py-1 rounded-full">
                   🏢 {getBrandName(promo.brand_id || "")}
                 </span>
                 <span
                   className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                     expired
-                      ? "bg-red-50 text-red-600 border border-red-100"
+                      ? "bg-danger/10 text-danger border border-danger/20"
                       : promo.status === "INACTIVE"
                       ? "bg-yellow-50 text-yellow-600 border border-yellow-100"
-                      : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                      : "bg-success/10 text-success border border-success/20"
                   }`}
                 >
                   {expired ? "Đã hết hạn" : promo.status === "INACTIVE" ? "Tạm ngưng" : "Đang chạy"}
@@ -194,7 +194,7 @@ export default function PromotionsClient({
 
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 leading-snug mb-2 line-clamp-1">
+                  <h3 className="text-lg font-bold text-text-primary leading-snug mb-2 line-clamp-1">
                     {promo.name}
                   </h3>
 
@@ -210,43 +210,43 @@ export default function PromotionsClient({
 
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl font-black text-orange-600">
+                      <span className="text-2xl font-black text-warning">
                         {discountLabel}
                       </span>
-                      <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      <span className="text-xs font-bold text-text-muted uppercase tracking-wider block">
                         ({promo.discount_type})
                       </span>
                     </div>
 
-                    <div className="text-sm font-medium text-gray-700">
+                    <div className="text-sm font-medium text-text-secondary">
                       🎯 {targetLabel}{" "}
                       {isProdDiscount && (
-                        <span className="text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded ml-1">
+                        <span className="text-primary font-bold bg-primary-soft px-1.5 py-0.5 rounded ml-1">
                           ({applicableCount} món)
                         </span>
                       )}
                     </div>
 
                     {Number(promo.min_order_value) > 0 && (
-                      <div className="text-xs font-semibold text-gray-500 bg-orange-50/50 border border-orange-100/60 px-2 py-1 rounded-lg w-fit">
+                      <div className="text-xs font-semibold text-text-muted bg-warning/10 border border-warning/20 px-2 py-1 rounded-lg w-fit">
                         💰 Đơn tối thiểu: {formatNumber(promo.min_order_value)}
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="border-t border-gray-100 pt-4 mt-2">
-                  <div className="text-[11px] font-medium text-gray-400 space-y-1">
+                <div className="border-t border-border pt-4 mt-2">
+                  <div className="text-[11px] font-medium text-text-muted space-y-1">
                     <div className="flex justify-between">
                       <span>Bắt đầu:</span>
-                      <span className="font-bold text-gray-600">
+                      <span className="font-bold text-text-secondary">
                         {formatDateTime(promo.start_date || "")}
                       </span>
                     </div>
                     {promo.end_date && (
                       <div className="flex justify-between">
                         <span>Kết thúc:</span>
-                        <span className="font-bold text-gray-600">
+                        <span className="font-bold text-text-secondary">
                           {formatDateTime(promo.end_date)}
                         </span>
                       </div>
@@ -255,19 +255,19 @@ export default function PromotionsClient({
                 </div>
               </div>
 
-              <div className="p-4 border-t border-gray-50 bg-gray-50/30 flex justify-end gap-2.5">
+              <div className="p-4 border-t border-border bg-surface-secondary/30 flex justify-end gap-2.5">
                 <button
                   onClick={() => {
                     setEditingPromo(promo);
                     setIsFormOpen(true);
                   }}
-                  className="px-3.5 py-1.5 min-h-[44px] bg-blue-50 hover:bg-blue-100 border border-blue-100 text-blue-700 font-bold text-xs rounded-lg transition active:scale-95"
+                  className="px-3.5 py-1.5 min-h-[44px] bg-primary-soft hover:bg-primary/20 border border-primary/20 text-primary-active font-bold text-xs rounded-lg transition active:scale-95"
                 >
                   Sửa
                 </button>
                 <button
                   onClick={() => setDeleteConfirmId(promo.id)}
-                  className="px-3.5 py-1.5 min-h-[44px] bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 font-bold text-xs rounded-lg transition active:scale-95"
+                  className="px-3.5 py-1.5 min-h-[44px] bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger font-bold text-xs rounded-lg transition active:scale-95"
                 >
                   Xóa
                 </button>
@@ -278,12 +278,12 @@ export default function PromotionsClient({
       </div>
 
       {filteredPromotions.length === 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 text-center py-16 px-4">
-          <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+        <div className="bg-surface-card rounded-2xl shadow-sm border border-border text-center py-16 px-4">
+          <div className="w-16 h-16 bg-primary-soft text-primary rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
             🏷️
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-1">Không tìm thấy khuyến mãi nào</h3>
-          <p className="text-gray-500">
+          <h3 className="text-lg font-bold text-text-primary mb-1">Không tìm thấy khuyến mãi nào</h3>
+          <p className="text-text-muted">
             Hãy điều chỉnh bộ lọc hoặc tạo một chương trình khuyến mãi mới.
           </p>
         </div>

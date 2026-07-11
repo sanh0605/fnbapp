@@ -216,14 +216,14 @@ export function PromotionForm({
   return (
     <ModalPortal>
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up max-h-[90vh]">
-        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 className="text-xl font-bold text-gray-900">
+      <div className="bg-surface-card w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up max-h-[90vh]">
+        <div className="p-5 border-b border-border flex justify-between items-center bg-surface-secondary/50">
+          <h3 className="text-xl font-bold text-text-primary">
             {initialData ? "Chỉnh sửa khuyến mãi" : "Thêm chương trình khuyến mãi mới"}
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300"
+            className="p-1.5 border-border rounded-full text-text-muted hover:bg-gray-300"
           >
             ✕
           </button>
@@ -231,43 +231,43 @@ export function PromotionForm({
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
           {error && (
-            <div role="alert" aria-live="polite" className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-100 font-medium">
+            <div role="alert" aria-live="polite" className="bg-danger/10 text-danger text-sm px-4 py-3 rounded-xl border border-danger/20 font-medium">
               ⚠️ {error}
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-1 md:col-span-2">
-              <label htmlFor={`${formId}-name`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Tên chương trình *</label>
+              <label htmlFor={`${formId}-name`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Tên chương trình *</label>
               <input
                 id={`${formId}-name`}
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ví dụ: Happy Hour Giảm 10%"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               />
             </div>
 
             <div>
-              <label htmlFor={`${formId}-code`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Mã Code (Để nhập thủ công)</label>
+              <label htmlFor={`${formId}-code`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Mã Code (Để nhập thủ công)</label>
               <input
                 id={`${formId}-code`}
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm uppercase focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               />
             </div>
 
             <div>
-              <label htmlFor={`${formId}-brandId`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
+              <label htmlFor={`${formId}-brandId`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
               <select
                 id={`${formId}-brandId`}
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               >
                 <option value="">Tất cả thương hiệu (Toàn hệ thống)</option>
                 {brands.map((b) => (
@@ -279,12 +279,12 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label htmlFor={`${formId}-type`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Đối tượng giảm giá</label>
+              <label htmlFor={`${formId}-type`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đối tượng giảm giá</label>
               <select
                 id={`${formId}-type`}
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               >
                 <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
                 <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
@@ -292,12 +292,12 @@ export function PromotionForm({
             </div>
 
             <div>
-              <label htmlFor={`${formId}-status`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Trạng thái</label>
+              <label htmlFor={`${formId}-status`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Trạng thái</label>
               <select
                 id={`${formId}-status`}
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               >
                 <option value="ACTIVE">Hoạt động (Active)</option>
                 <option value="INACTIVE">Không hoạt động (Inactive)</option>
@@ -305,12 +305,12 @@ export function PromotionForm({
             </div>
 
              <div>
-               <label htmlFor={`${formId}-discountType`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Hình thức giảm giá</label>
+               <label htmlFor={`${formId}-discountType`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Hình thức giảm giá</label>
                <select
                  id={`${formId}-discountType`}
                  value={discountType}
                  onChange={(e) => setDiscountType(e.target.value)}
-                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                 className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
                >
                  <option value="PERCENT">Phần trăm (%)</option>
                  <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
@@ -319,68 +319,68 @@ export function PromotionForm({
              </div>
  
              <div>
-               <label htmlFor={`${formId}-discountValue`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Giá trị giảm giá *</label>
+               <label htmlFor={`${formId}-discountValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Giá trị giảm giá *</label>
                <input
                  id={`${formId}-discountValue`}
                  type="number"
                  value={discountValue}
                  onChange={(e) => setDiscountValue(e.target.value)}
                  placeholder={discountType === "PERCENT" ? "Ví dụ: 10" : discountType === "FLAT_PRICE" ? "Ví dụ: 15000" : "Ví dụ: 20000"}
-                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                 className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
                />
              </div>
 
             <div>
-              <label htmlFor={`${formId}-minOrderValue`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Đơn tối thiểu để áp dụng (đ)</label>
+              <label htmlFor={`${formId}-minOrderValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đơn tối thiểu để áp dụng (đ)</label>
               <input
                 id={`${formId}-minOrderValue`}
                 type="number"
                 value={minOrderValue}
                 onChange={(e) => setMinOrderValue(e.target.value)}
                 placeholder="Ví dụ: 50000"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               />
             </div>
 
             <div>
-              <label htmlFor={`${formId}-startDate`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
+              <label htmlFor={`${formId}-startDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
               <input
                 id={`${formId}-startDate`}
                 type="datetime-local"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               />
             </div>
 
             <div>
-              <label htmlFor={`${formId}-endDate`} className="block text-xs font-bold uppercase text-gray-400 mb-1.5 tracking-wider">Ngày/Giờ kết thúc</label>
+              <label htmlFor={`${formId}-endDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ kết thúc</label>
               <input
                 id={`${formId}-endDate`}
                 type="datetime-local"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
               />
             </div>
           </div>
 
           {type === "PRODUCT_DISCOUNT" && (
-            <div className="border border-gray-100 rounded-xl p-4 bg-gray-50/50 space-y-3">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-gray-100">
-                <label className="block text-xs font-bold uppercase text-gray-400 tracking-wider">Chọn các món áp dụng giảm giá *</label>
+            <div className="border border-border rounded-xl p-4 bg-surface-secondary/50 space-y-3">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-border">
+                <label className="block text-xs font-bold uppercase text-text-muted tracking-wider">Chọn các món áp dụng giảm giá *</label>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedVariants(variants.map((v: any) => v.id))}
-                    className="text-[11px] text-blue-600 hover:text-blue-800 font-bold px-2 py-1 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition active:scale-95"
+                    className="text-[11px] text-primary hover:text-primary-hover font-bold px-2 py-1 bg-surface-card border border-primary/20 rounded-lg hover:bg-primary-soft transition active:scale-95"
                   >
                     Chọn tất cả
                   </button>
                   <button
                     type="button"
                     onClick={() => setSelectedVariants([])}
-                    className="text-[11px] text-red-600 hover:text-red-800 font-bold px-2 py-1 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition active:scale-95"
+                    className="text-[11px] text-danger hover:text-danger-active font-bold px-2 py-1 bg-surface-card border border-danger/30 rounded-lg hover:bg-danger/10 transition active:scale-95"
                   >
                     Bỏ chọn tất cả
                   </button>
@@ -392,18 +392,18 @@ export function PromotionForm({
                   
                   return (
                     <div key={category.id} className="pt-4 first:pt-0">
-                      <div className="flex items-center justify-between mb-3 bg-gray-100/50 p-2 rounded-lg">
-                        <h4 className="font-bold text-gray-800 uppercase tracking-wide text-[13px]">{category.name}</h4>
+                      <div className="flex items-center justify-between mb-3 bg-surface-secondary/50 p-2 rounded-lg">
+                        <h4 className="font-bold text-text-primary uppercase tracking-wide text-[13px]">{category.name}</h4>
                         <button
                           type="button"
                           onClick={() => handleSelectGroup(allVariantIds, !isCatSelected)}
-                          className={`text-[11px] font-bold px-2.5 py-1 rounded-md transition ${isCatSelected ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-md transition ${isCatSelected ? 'bg-primary/20 text-primary-active hover:bg-primary/30' : 'bg-surface-card border border-border text-text-secondary hover:bg-surface-secondary'}`}
                         >
                           {isCatSelected ? "Bỏ chọn nhóm" : "Chọn nhóm này"}
                         </button>
                       </div>
 
-                      <div className="space-y-4 pl-2 border-l-2 border-gray-100 ml-1">
+                      <div className="space-y-4 pl-2 border-l-2 border-border ml-1">
                         {catProducts.map(({ product, variants: prodVariants }) => {
                           const prodVariantIds = prodVariants.map((v: any) => v.id as string);
                           const isProdSelected = prodVariantIds.every((id: string) => selectedVariants.includes(id)) && prodVariantIds.length > 0;
@@ -411,11 +411,11 @@ export function PromotionForm({
                           return (
                             <div key={product.id} className="relative">
                               <div className="flex items-center gap-2 mb-1.5">
-                                <p className="text-sm font-bold text-gray-700">{product.name}</p>
+                                <p className="text-sm font-bold text-text-secondary">{product.name}</p>
                                 <button
                                   type="button"
                                   onClick={() => handleSelectGroup(prodVariantIds, !isProdSelected)}
-                                  className={`text-[10px] px-1.5 py-0.5 rounded transition ${isProdSelected ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                                  className={`text-[10px] px-1.5 py-0.5 rounded transition ${isProdSelected ? 'bg-primary-soft text-primary' : 'bg-surface-secondary text-text-muted hover:border-border'}`}
                                 >
                                   {isProdSelected ? "Bỏ chọn" : "Chọn tất cả size"}
                                 </button>
@@ -425,15 +425,15 @@ export function PromotionForm({
                                   const isSelected = selectedVariants.includes(v.id);
                                   return (
                                     <div key={v.id} className={`flex items-center gap-1.5 p-1 border rounded-xl transition ${
-                                      isSelected ? "bg-blue-50/50 border-blue-400" : "bg-white border-gray-200"
+                                      isSelected ? "bg-primary-soft/50 border-primary/40" : "bg-surface-card border-border"
                                     }`}>
                                       <button
                                         type="button"
                                         onClick={() => toggleVariantSelection(v.id)}
                                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                                           isSelected
-                                            ? "text-blue-700"
-                                            : "text-gray-600 hover:bg-gray-50"
+                                            ? "text-primary-active"
+                                            : "text-text-secondary hover:bg-surface-secondary"
                                         }`}
                                       >
                                         Size {v.size_name || "Mặc định"} ({formatNumber(v.price)})
@@ -450,7 +450,7 @@ export function PromotionForm({
                                               [v.id]: val
                                             }));
                                           }}
-                                          className="w-16 px-2 py-0.5 border border-gray-200 rounded-lg text-[11px] focus:outline-none focus:border-blue-500 text-right font-bold text-blue-700 bg-white"
+                                          className="w-16 px-2 py-0.5 border border-border rounded-lg text-[11px] focus:outline-none focus:ring-2 focus:ring-focus-ring text-right font-bold text-primary-active bg-surface-card"
                                         />
                                       )}
                                     </div>
@@ -468,12 +468,12 @@ export function PromotionForm({
             </div>
           )}
 
-          <div className="border-t border-gray-100 pt-5 flex justify-end gap-3 bg-white sticky bottom-0 z-10 pb-2">
+          <div className="border-t border-border pt-5 flex justify-end gap-3 bg-surface-card sticky bottom-0 z-10 pb-2">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-5 py-2.5 text-sm font-medium border border-gray-200 rounded-xl hover:bg-gray-50 active:scale-[0.98] transition"
+              className="px-5 py-2.5 text-sm font-medium border border-border rounded-xl hover:bg-surface-secondary active:scale-[0.98] transition"
             >
               Hủy
             </button>
@@ -481,7 +481,7 @@ export function PromotionForm({
               type="submit"
               loading={loading}
               loadingText="Đang lưu..."
-              className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition shadow-md"
+              className="px-6 py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary-hover active:scale-[0.98] transition shadow-md"
             >
               Lưu thông tin
             </LoadingButton>
