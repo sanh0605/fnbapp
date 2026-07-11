@@ -3,6 +3,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { EventRow } from "@/components/backdated-ledger/event-row";
 import BackdatedLedgerClient from "./BackdatedLedgerClient";
+import Link from "next/link";
+import { formatDateTime } from "@/lib/datetime";
+import { formatNumber } from "@/lib/format";
+import { StatusBadge } from "@/components/backdated-ledger/status-badge";
 
 export const dynamic = "force-dynamic";
 
@@ -52,26 +56,83 @@ export default async function BackdatedLedgerPage({
       <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
         {events && events.length > 0 ? (
           <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto hidden md:block">
+              <table className="min-w-full divide-y divide-gray-100 border-collapse text-sm">
+                <thead className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detected at</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Qty Change</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Cost</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lag</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 font-bold text-left">Detected at</th>
+                    <th className="px-6 py-4 font-bold text-left">Source</th>
+                    <th className="px-6 py-4 font-bold text-left">Item</th>
+                    <th className="px-6 py-4 font-bold text-right">Qty Change</th>
+                    <th className="px-6 py-4 font-bold text-right">Unit Cost</th>
+                    <th className="px-6 py-4 font-bold text-left">Lag</th>
+                    <th className="px-6 py-4 font-bold text-left">Status</th>
+                    <th className="px-6 py-4 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-100">
                   {events.map((event) => (
                     <EventRow key={event.id} event={event} />
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card Layout (< 768px) */}
+            <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+              {events.map((event) => {
+                const effectiveTime = new Date(event.effective_timestamp).getTime();
+                const visibilityTime = new Date(event.visibility_timestamp).getTime();
+                const lagMs = visibilityTime - effectiveTime;
+                const lagDays = Math.floor(lagMs / (1000 * 60 * 60 * 24));
+                const lagHours = Math.floor((lagMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const lagText = lagDays > 0 ? `${lagDays}d ${lagHours}h` : `${lagHours}h`;
+
+                return (
+                  <div key={event.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-bold text-gray-900">{event.item_reference}</div>
+                        <div className="text-[11px] font-mono text-gray-400 mt-0.5">
+                          {event.source_table} / {event.source_id}
+                        </div>
+                      </div>
+                      <StatusBadge status={event.status} />
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-1 text-sm">
+                      <div className="text-gray-500">
+                        {formatDateTime(event.detected_at)}
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="text-right">
+                          <div className="text-[10px] text-gray-400 uppercase font-bold">Lag</div>
+                          <div className="font-medium">{lagText}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[10px] text-gray-400 uppercase font-bold">Qty / Cost</div>
+                          <div className="font-bold">
+                            <span className={event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-rose-600' : ''}>
+                              {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
+                            </span>
+                            <span className="text-gray-400 font-normal mx-1">@</span>
+                            {formatNumber(event.unit_cost)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end pt-3 mt-1 border-t border-gray-100/50">
+                      <Link 
+                        href={`/admin/audit/backdated-ledger/${event.id}`}
+                        className="flex items-center justify-center bg-gray-50 text-blue-600 font-bold py-2 px-4 rounded-lg text-sm w-full border border-gray-200 min-h-[44px]"
+                      >
+                        Chi tiết →
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-500 flex justify-between items-center">
               <div>

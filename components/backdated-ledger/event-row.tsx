@@ -13,7 +13,7 @@ export function EventRow({ event }: { event: any }) {
   const lagText = lagDays > 0 ? `${lagDays}d ${lagHours}h` : `${lagHours}h`;
 
   return (
-    <tr className="hover:bg-gray-50 group">
+    <tr className="hover:bg-gray-50/50 transition-colors group">
       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
         {formatDateTime(event.detected_at)}
       </td>

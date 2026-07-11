@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface Discrepancy {
   order_id: string;
@@ -78,27 +79,27 @@ export default function SyncPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Đồng bộ Tồn kho Lịch sử</h1>
-          <p className="text-gray-500 mt-1">Đối chiếu Stock Ledger với Công thức (Recipes) để sửa lỗi lệch kho do cập nhật trễ.</p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/admin/inventory/items" className="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-            Quay lại Kho
-          </Link>
-          <button
-            onClick={handleScan}
-            disabled={isScanning || isSyncing}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50"
-          >
-            {isScanning ? "Đang quét..." : "Quét toàn bộ dữ liệu"}
-          </button>
-        </div>
-      </div>
+      <PageHeader 
+        title="Đồng bộ Tồn kho Lịch sử" 
+        subtitle="Đối chiếu Stock Ledger với Công thức (Recipes) để sửa lỗi lệch kho do cập nhật trễ."
+        actions={
+          <div className="flex gap-3">
+            <Link href="/admin/inventory/items" className="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition min-h-[44px] flex items-center shadow-sm">
+              Quay lại Kho
+            </Link>
+            <button
+              onClick={handleScan}
+              disabled={isScanning || isSyncing}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50 min-h-[44px] shadow-sm"
+            >
+              {isScanning ? "Đang quét..." : "Quét toàn bộ dữ liệu"}
+            </button>
+          </div>
+        }
+      />
 
       {error && (
-        <div role="alert" aria-live="polite" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+        <div role="alert" aria-live="polite" className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-sm">
           {error}
         </div>
       )}
@@ -145,39 +146,68 @@ export default function SyncPage() {
               <p className="text-gray-500 font-medium">Tuyệt vời! Toàn bộ tồn kho lịch sử đều đã khớp với công thức chuẩn.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto max-h-[500px]">
-              <table className="w-full text-left text-sm text-gray-600">
-                <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0 border-b border-gray-100 shadow-sm z-10">
-                  <tr>
-                    <th className="px-6 py-4">Mã đơn</th>
-                    <th className="px-6 py-4">Ngày tạo</th>
-                    <th className="px-6 py-4">Sự khác biệt</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {discrepancies.map((d, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50/50 transition">
-                      <td className="px-6 py-4 font-bold text-gray-800">{d.order_no}</td>
-                      <td className="px-6 py-4 text-gray-500">
-                        {new Date(d.created_at).toLocaleString("vi-VN")}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-[11px] space-y-1">
-                          {d.diffs.map(diff => (
-                            <div key={diff.id} className="flex gap-2">
-                              <span className="text-gray-500 font-medium min-w-[120px]">{diff.name}:</span>
-                              <span className="text-red-600 font-bold">{diff.actual}</span>
-                              <span className="text-gray-300">→</span>
-                              <span className="text-emerald-600 font-bold">{diff.expected}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </td>
+            <>
+              <div className="overflow-x-auto max-h-[500px] hidden md:block">
+                <table className="w-full text-left text-sm text-gray-600 border-collapse">
+                  <thead className="bg-gray-50 text-gray-500 text-[11px] uppercase tracking-wider font-bold sticky top-0 border-b border-gray-100 z-10">
+                    <tr>
+                      <th className="px-6 py-4">Mã đơn</th>
+                      <th className="px-6 py-4">Ngày tạo</th>
+                      <th className="px-6 py-4">Sự khác biệt</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {discrepancies.map((d, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-gray-800">{d.order_no}</td>
+                        <td className="px-6 py-4 text-gray-500">
+                          {new Date(d.created_at).toLocaleString("vi-VN")}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-[11px] space-y-1">
+                            {d.diffs.map(diff => (
+                              <div key={diff.id} className="flex gap-2">
+                                <span className="text-gray-500 font-medium min-w-[120px]">{diff.name}:</span>
+                                <span className="text-rose-600 font-bold">{diff.actual}</span>
+                                <span className="text-gray-300">→</span>
+                                <span className="text-emerald-600 font-bold">{diff.expected}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card Layout (< 768px) */}
+              <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+                {discrepancies.map((d, idx) => (
+                  <div key={idx} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+                    <div className="flex justify-between items-start">
+                      <div className="font-bold text-gray-900">Đơn: {d.order_no}</div>
+                      <div className="text-[11px] text-gray-500">
+                        {new Date(d.created_at).toLocaleString("vi-VN")}
+                      </div>
+                    </div>
+                    <div className="text-xs space-y-2 mt-1">
+                      <div className="text-[10px] uppercase font-bold text-gray-400">Sự khác biệt:</div>
+                      {d.diffs.map(diff => (
+                        <div key={diff.id} className="flex flex-col bg-gray-50 p-2 rounded-lg border border-gray-100">
+                          <span className="font-semibold text-gray-700 mb-1">{diff.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-rose-600 font-bold">{diff.actual}</span>
+                            <span className="text-gray-300">→</span>
+                            <span className="text-emerald-600 font-bold">{diff.expected}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}

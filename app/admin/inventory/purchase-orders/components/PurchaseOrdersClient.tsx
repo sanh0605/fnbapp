@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import StickyFilterBar from "@/components/StickyFilterBar";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { formatNumber } from "@/lib/format";
 import type { DBPurchaseOrder, DBSupplier } from "@/types/db";
 
@@ -57,39 +58,40 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
+      <PageHeader 
         title="Quản lý Nhập Hàng" 
         subtitle="Quản lý các đơn đặt hàng từ nhà cung cấp và theo dõi công nợ."
-        rightContent={rightContent}
-      >
-        <div className="shrink-0">
+        actions={rightContent}
+      />
+      <StickyFilterBar>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Mã đơn, NCC..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-36 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="ALL">Tất cả</option>
             <option value="DRAFT">Bản nháp</option>
             <option value="COMPLETED">Đã hoàn thành</option>
           </select>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nhà Cung Cấp</label>
           <select
             value={supplierFilter}
             onChange={(e) => setSupplierFilter(e.target.value)}
-            className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-48 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           >
             <option value="ALL">Tất cả NCC</option>
             {suppliers.map(s => (
@@ -100,7 +102,7 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
       </StickyFilterBar>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
@@ -160,6 +162,53 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card Layout (< 768px) */}
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
+          {sortedOrders.length === 0 ? (
+            <EmptyState 
+              icon="📦" 
+              title="Chưa có đơn nhập hàng" 
+              description="Tạo đơn nhập hàng để thêm vào tồn kho."
+            />
+          ) : (
+            sortedOrders.map((po) => (
+              <div key={po.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-bold text-gray-900">{supplierMap[po.supplier_id] || "Không xác định"}</div>
+                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">{po.id}</div>
+                  </div>
+                  {po.status === "COMPLETED" ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      HOÀN THÀNH
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                      BẢN NHÁP
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between items-center text-sm mt-1">
+                  <div className="text-gray-500">
+                    <span className="text-gray-400">Ngày tạo:</span> <span className="font-medium">{po.created_at ? new Date(po.created_at).toLocaleDateString('vi-VN') : "---"}</span>
+                  </div>
+                  <div className="font-bold text-gray-900 text-base">
+                    {formatNumber(po.total_amount)}
+                  </div>
+                </div>
+                <div className="flex justify-end pt-3 mt-1 border-t border-gray-100/50">
+                  <Link 
+                    href={`/admin/inventory/purchase-orders/${po.id}`}
+                    className="flex items-center justify-center bg-gray-50 text-blue-600 font-bold py-2 px-4 rounded-lg text-sm w-full border border-gray-200 min-h-[44px]"
+                  >
+                    {po.status === "COMPLETED" ? "Xem chi tiết" : "Sửa đơn"}
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

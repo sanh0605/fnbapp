@@ -6,6 +6,7 @@ import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface StockAdjustment {
   id: string;
@@ -80,11 +81,12 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar
-        title="Điều chỉnh Tồn kho"
+      <PageHeader 
+        title="Điều chỉnh Tồn kho" 
         subtitle="Quản lý và phê duyệt các yêu cầu điều chỉnh số lượng tồn kho thực tế."
-      >
-        <div className="shrink-0">
+      />
+      <StickyFilterBar>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
             Tìm kiếm
           </label>
@@ -93,14 +95,14 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
             placeholder="Mã phiếu, tên món, lý do..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
           />
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
             Trạng thái
           </label>
-          <div className="flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+          <div className="flex flex-wrap md:flex-nowrap gap-1 bg-gray-100 rounded-lg p-0.5 border border-gray-200">
             {["PENDING", "APPROVED", "REJECTED", "ALL"].map((tab) => {
               const label =
                 tab === "PENDING"
@@ -254,7 +256,7 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
         </div>
 
         {/* Mobile Card Layout */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/40">
+        <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/30">
           {filteredAdjustments.length === 0 ? (
             <EmptyState 
               icon="📋" 
