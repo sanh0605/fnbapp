@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { buildPriceHistoryTimeline } from "@/lib/price-history";
 import { formatNumber } from "@/lib/format";
+import { History, X } from "lucide-react";
 
 export default function HistoryModal({ title, recipeHistory, priceHistory }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,31 +29,25 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
         className="text-sm font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1"
         title="Xem lịch sử thay đổi"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+        <History className="w-4 h-4" />
         Lịch sử
       </button>
 
       {isOpen && (
         <ModalPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <svg className="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          <div className="bg-surface-card rounded-card shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-border flex justify-between items-center bg-page">
+              <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
+                <History className="w-6 h-6 text-amber-500" />
                 Lịch sử: {title}
               </h2>
-              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-8 bg-gray-50/30">
+            <div className="p-6 overflow-y-auto space-y-8 bg-page">
               
               {/* LỊCH SỬ GIÁ BÁN */}
               {priceTimeline.length > 0 && (

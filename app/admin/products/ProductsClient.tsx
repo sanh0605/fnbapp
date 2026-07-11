@@ -5,6 +5,9 @@ import ProductForm from "@/components/ProductForm";
 import HistoryModal from "@/components/HistoryModal";
 import { formatNumber } from "@/lib/format";
 import StickyFilterBar from "@/components/StickyFilterBar";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
+import { Search, Image as ImageIcon } from "lucide-react";
 
 interface Product {
   id: string;
@@ -110,15 +113,11 @@ export default function ProductsClient({
       </StickyFilterBar>
 
       {filteredProducts.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 text-center py-16 px-4">
-          <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">Không tìm thấy món nào</h3>
-          <p className="text-gray-500">Vui lòng thử điều chỉnh lại bộ lọc tìm kiếm.</p>
-        </div>
+        <EmptyState
+          icon={<Search className="w-8 h-8" />}
+          title="Không tìm thấy món nào"
+          description="Vui lòng thử điều chỉnh lại bộ lọc tìm kiếm."
+        />
       ) : (
         <>
           {/* Desktop Table View (>= 768px) */}
@@ -145,7 +144,7 @@ export default function ProductsClient({
                             {product.image_url ? (
                               <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                             ) : (
-                              <span className="text-2xl">☕</span>
+                              <ImageIcon className="w-6 h-6 text-gray-400" />
                             )}
                           </div>
                         </td>
@@ -182,17 +181,11 @@ export default function ProductsClient({
                         </td>
                         <td className="px-6 py-4">
                           {product.status === "ACTIVE" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              Đang bán
-                            </span>
+                            <Badge variant="success">Đang bán</Badge>
                           ) : product.status === "INACTIVE" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                              Ngừng bán
-                            </span>
+                            <Badge variant="warning">Ngừng bán</Badge>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
-                              Đã xóa
-                            </span>
+                            <Badge variant="neutral">Đã xóa</Badge>
                           )}
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -230,7 +223,7 @@ export default function ProductsClient({
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="text-3xl">☕</div>
+                      <ImageIcon className="w-8 h-8 text-gray-400" />
                     )}
                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-0.5 rounded-full text-[10px] font-bold text-indigo-700 border border-indigo-100 shadow-sm">
                       {categoryName}
@@ -268,9 +261,9 @@ export default function ProductsClient({
                     <div className="pt-3 border-t border-gray-50 flex justify-between items-center gap-2">
                       <div>
                         {product.status === "ACTIVE" ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Đang bán</span>
+                          <Badge variant="success">Đang bán</Badge>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-100">Ngừng bán</span>
+                          <Badge variant="warning">Ngừng bán</Badge>
                         )}
                       </div>
                       <div className="flex gap-2 items-center">

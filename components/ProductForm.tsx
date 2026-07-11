@@ -6,6 +6,9 @@ import { formatNumber } from "@/lib/format";
 import { SearchableSelect } from "./SearchableSelect";
 import { CustomDatePicker } from "./CustomDatePicker";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { Button } from "@/components/ui/Button";
+import { Plus, X, Trash2 } from "lucide-react";
 
 export default function ProductForm({ categories, baseIngredients, semiProducts, units, initialData }: any) {
   const isEdit = !!initialData;
@@ -114,40 +117,36 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
   return (
     <>
       {!isEdit ? (
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition shadow-sm"
-        >
-          + Thêm Món Mới
-        </button>
+        <Button variant="primary" onClick={() => setIsOpen(true)}>
+          <Plus className="w-4 h-4 mr-1.5" />
+          Thêm Món Mới
+        </Button>
       ) : (
-        <div className="flex justify-end gap-3">
-          <button type="button" onClick={() => setIsOpen(true)} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">Sửa</button>
-          <button type="button" onClick={() => setIsDeleteOpen(true)} className="text-sm font-medium text-red-600 hover:text-red-800">Xoá</button>
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>Sửa</Button>
+          <Button variant="ghost" size="sm" className="!text-danger hover:!bg-red-50" onClick={() => setIsDeleteOpen(true)}>Xoá</Button>
         </div>
       )}
 
       {isOpen && (
         <ModalPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h2 className="text-xl font-bold text-gray-800">
+          <div className="bg-surface-card rounded-card shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-border flex justify-between items-center bg-page">
+              <h2 className="text-xl font-bold text-text-primary">
                 {isEdit ? "Sửa Món" : "Tạo Món Mới (Product Builder)"}
               </h2>
-              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto bg-gray-50/30">
+            <div className="p-6 overflow-y-auto bg-page">
               <form id={isEdit ? `editProd-${initialData.id}` : "addProd"} onSubmit={handleSubmit} className="space-y-6 pb-48">
                 
                 {/* THÔNG TIN CHUNG */}
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="bg-surface-card p-5 rounded-xl border border-border shadow-sm">
+                  <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
                     <span className="bg-orange-100 text-orange-600 w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
                     Thông Tin Cơ Bản
                   </h3>
@@ -265,8 +264,8 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                                       className="w-20 text-sm text-right font-bold text-red-600 border border-gray-300 rounded-md px-2 py-2 focus:ring-orange-500"
                                     />
                                     
-                                    <button type="button" onClick={() => removeIngredient(vIdx, iIdx)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-md">
-                                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    <button type="button" onClick={() => removeIngredient(vIdx, iIdx)} className="p-1.5 text-text-muted hover:text-danger rounded-md">
+                                      <Trash2 className="w-4 h-4" />
                                     </button>
                                   </div>
                                 ))}
@@ -284,16 +283,16 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
               </form>
             </div>
 
-            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-auto">
-              <button type="button" onClick={() => setIsOpen(false)} className="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Huỷ</button>
-              <button 
+            <div className="p-5 border-t border-border bg-page flex justify-end gap-3 mt-auto">
+              <Button variant="secondary" onClick={() => setIsOpen(false)}>Huỷ</Button>
+              <Button 
+                variant="primary"
                 type="submit" 
                 form={isEdit ? `editProd-${initialData.id}` : "addProd"} 
-                disabled={loading} 
-                className="px-5 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 disabled:opacity-50 transition shadow-sm"
+                loading={loading}
               >
-                {loading ? "Đang xử lý..." : "Lưu Menu"}
-              </button>
+                Lưu Menu
+              </Button>
             </div>
           </div>
         </div>
@@ -301,41 +300,13 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
       )}
 
       {isDeleteOpen && (
-        <ModalPortal>
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-            <div className="p-5 border-b border-gray-100 flex items-center gap-3 bg-red-50/50">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h2 className="text-lg font-bold text-gray-800">
-                Xác nhận xoá
-              </h2>
-            </div>
-            <div className="p-5">
-              <p className="text-gray-600 text-sm text-left">
-                Bạn có chắc chắn muốn xoá món <span className="font-bold text-gray-900">{initialData.name}</span> không?<br/>
-                Thao tác này không thể hoàn tác.
-              </p>
-            </div>
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-              <button type="button" onClick={() => setIsDeleteOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">
-                Huỷ
-              </button>
-              <button 
-                type="button" 
-                onClick={handleDelete} 
-                disabled={loading} 
-                className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 transition shadow-sm"
-              >
-                {loading ? "Đang xử lý..." : "Xoá Món"}
-              </button>
-            </div>
-          </div>
-        </div>
-        </ModalPortal>
+        <DeleteConfirmModal
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          onConfirm={handleDelete}
+          title="Xác nhận xoá"
+          description={`Bạn có chắc chắn muốn xoá món ${initialData.name} không? Thao tác này không thể hoàn tác.`}
+        />
       )}
     </>
   );
