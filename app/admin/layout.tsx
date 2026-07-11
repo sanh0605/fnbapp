@@ -5,16 +5,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useId } from "react";
 import { getBrands } from "@/app/admin/brands/actions";
+import { LayoutDashboard, Package, Truck, CookingPot, Coffee, Receipt, TrendingUp, Settings, LogOut, Store } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Tổng quan", href: "/admin", icon: "📊" },
+    { name: "Tổng quan", href: "/admin", icon: <LayoutDashboard size={20} /> },
     {
       name: "Danh mục",
-      icon: "📦",
+      icon: <Package size={20} />,
       children: [
         { name: "Thương hiệu", href: "/admin/brands" },
         { name: "Nhà cung cấp", href: "/admin/suppliers" },
@@ -27,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       name: "Nhập hàng & Tồn kho",
-      icon: "🚚",
+      icon: <Truck size={20} />,
       children: [
         { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
         { name: "Điều chỉnh Tồn kho", href: "/admin/inventory/stock-adjustments" },
@@ -37,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       name: "Sản xuất",
-      icon: "🥣",
+      icon: <CookingPot size={20} />,
       children: [
         { name: "Công thức Bán thành phẩm", href: "/admin/semi-products" },
         { name: "Sản xuất / Nấu Bếp", href: "/admin/production" },
@@ -45,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       name: "Menu Bán hàng",
-      icon: "☕",
+      icon: <Coffee size={20} />,
       children: [
         { name: "Danh mục Nhóm", href: "/admin/products/categories" },
         { name: "Danh sách Món", href: "/admin/products" },
@@ -56,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       name: "Bán hàng",
-      icon: "🧾",
+      icon: <Receipt size={20} />,
       children: [
         { name: "Đơn hàng", href: "/admin/orders" },
         { name: "Khuyến mãi", href: "/admin/promotions" },
@@ -64,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       name: "Báo cáo",
-      icon: "📈",
+      icon: <TrendingUp size={20} />,
       children: [
         { name: "Báo cáo Bán hàng", href: "/admin/reports/sales" },
         { name: "Báo cáo Lãi lỗ", href: "/admin/reports/pnl" },
@@ -73,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       name: "Hệ thống",
-      icon: "⚙️",
+      icon: <Settings size={20} />,
       children: [
         { name: "Nhân sự & Phân quyền", href: "/admin/users" },
         { name: "Nhật ký Hoạt động", href: "/admin/activity-log" },
@@ -191,28 +192,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside 
-        className={`fixed inset-y-0 left-0 w-64 bg-white/95 border-r border-gray-200/80 backdrop-blur-md flex flex-col shadow-sm z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 w-64 bg-sidebar border-r border-sidebar/50 flex flex-col shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 pt-[env(safe-area-inset-top)] md:pt-0">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Admin Workspace
+        <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 pt-[env(safe-area-inset-top)] md:pt-0">
+          <h1 className="text-xl font-bold text-white tracking-tight">
+            Admin <span className="text-primary-soft font-medium opacity-80">Workspace</span>
           </h1>
           <button 
-            className="md:hidden text-gray-500 hover:text-gray-700"
+            className="md:hidden text-text-muted hover:text-white transition-colors"
             onClick={() => setIsSidebarOpen(false)}
           >
             ✕
           </button>
         </div>
         
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3 border-b border-white/10">
           <button 
             onClick={handleOpenPosModal}
-            className="w-full flex items-center justify-center gap-2 bg-orange-600 text-white font-bold py-2.5 rounded-lg hover:bg-orange-700 transition shadow-sm"
+            className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 rounded-button hover:bg-primary-hover active:bg-primary-active transition shadow-sm"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            <Store size={18} />
             MỞ MÁY POS
           </button>
         </div>
@@ -228,15 +229,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <button
                     onClick={() => toggleGroup(item.name)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                      isGroupActive ? "text-blue-700 bg-blue-50/50 font-semibold" : "text-gray-600 hover:bg-blue-50/40 hover:text-blue-700"
+                      isGroupActive ? "bg-primary text-white font-semibold" : "text-text-muted hover:bg-white/10 hover:text-white"
                     }`}
                   >
                     <div className="flex items-center">
-                      <span className="mr-3 text-lg">{item.icon}</span>
+                      <span className="mr-3">{item.icon}</span>
                       {item.name}
                     </div>
                     <svg
-                      className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-90 text-blue-600" : "text-gray-400"}`}
+                      className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-90 text-white" : "text-text-muted"}`}
                       fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -255,8 +256,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             onClick={() => setIsSidebarOpen(false)}
                             className={`block px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
                               isChildActive
-                                ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
-                                : "text-gray-500 hover:bg-blue-50/40 hover:text-blue-700 font-medium"
+                                ? "bg-primary text-white font-semibold shadow-sm"
+                                : "text-text-muted hover:bg-white/10 hover:text-white font-medium"
                             }`}
                           >
                             {child.name}
@@ -279,36 +280,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-colors duration-200 mb-1 ${
                   isActive
-                    ? "bg-blue-50 text-blue-700 shadow-sm font-semibold"
-                    : "text-gray-600 hover:bg-blue-50/40 hover:text-blue-700 font-medium"
+                    ? "bg-primary text-white shadow-sm font-semibold"
+                    : "text-text-muted hover:bg-white/10 hover:text-white font-medium"
                 }`}
               >
-                <span className="mr-3 text-lg">{item.icon}</span>
+                <span className="mr-3">{item.icon}</span>
                 {item.name}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-100 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="p-4 border-t border-white/10 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">
               {session?.user?.name?.charAt(0).toUpperCase() || "A"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-white truncate">
                 {session?.user?.name || "Admin User"}
               </p>
-              <p className="text-xs text-gray-500 truncate capitalize">
+              <p className="text-xs text-text-muted truncate capitalize">
                 {(session?.user as any)?.role || "Admin"}
               </p>
             </div>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white/80 bg-white/5 rounded-lg hover:bg-danger hover:text-white transition-colors"
           >
-            <span>🚪</span> Đăng xuất
+            <LogOut size={16} />
+            Đăng xuất
           </button>
         </div>
       </aside>
@@ -384,9 +386,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <button 
                     key={brand.id}
                     onClick={() => selectBrandForPos(brand.id)}
-                    className="w-full bg-blue-50 text-blue-700 border-2 border-blue-200 font-bold text-lg py-4 rounded-xl hover:bg-blue-100 hover:border-blue-300 active:scale-[0.98] transition-colors flex justify-center items-center gap-3 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
+                    className="w-full bg-primary text-white border border-primary font-bold text-lg py-4 rounded-button hover:bg-primary-hover active:bg-primary-active active:scale-[0.98] transition-colors flex justify-center items-center gap-3 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
                   >
-                    <span>🏢</span>
+                    <Store size={24} />
                     <span>{brand.name}</span>
                   </button>
                 ))
