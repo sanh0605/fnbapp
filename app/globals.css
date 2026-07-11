@@ -7,6 +7,26 @@
 :root {
   --background: #fafafa;
   --foreground: #09090b;
+  
+  /* Fresh Blue Admin Tokens */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-active: #1E40AF;
+  --color-primary-soft: #EFF6FF;
+  --color-accent-cyan: #06B6D4;
+  --color-bg-page: #F6F8FC;
+  --color-surface-card: #FFFFFF;
+  --color-surface-secondary: #F1F5F9;
+  --color-sidebar: #172033;
+  --color-text-primary: #172033;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-border: #E2E8F0;
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  --color-processing: #7C3AED;
+  --color-focus-ring: #2563EB;
 }
 
 body {
@@ -78,7 +98,7 @@ html, body {
 
 /* Keyboard focus visibility — system-wide */
 :focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
   border-radius: 4px;
 }
