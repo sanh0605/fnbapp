@@ -270,7 +270,7 @@ export default function OrderTable({
     <>
       {hasActiveFilters && (
         <Button
-          variant="ghost" size="sm" className="!text-danger hover:!bg-red-50"
+          variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10"
           onClick={clearFilters}
         >
           Xóa bộ lọc
@@ -408,7 +408,7 @@ export default function OrderTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="!text-danger hover:!bg-red-50"
+                        className="!text-danger hover:!bg-danger/10"
                         onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
                         disabled={order.status !== "COMPLETED"}
                       >
@@ -481,7 +481,7 @@ export default function OrderTable({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="!text-danger hover:!bg-red-50"
+                  className="!text-danger hover:!bg-danger/10"
                   onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
                   disabled={order.status !== "COMPLETED"}
                 >
@@ -527,8 +527,8 @@ export default function OrderTable({
       {orderToVoid && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-surface-card w-full max-w-sm rounded-card shadow-xl flex flex-col overflow-hidden">
-            <div className="p-5 border-b border-border bg-red-50 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-100 text-danger flex items-center justify-center shrink-0"><AlertCircle className="w-5 h-5"/></div>
+            <div className="p-5 border-b border-border bg-danger/10 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-danger/20 text-danger flex items-center justify-center shrink-0"><AlertCircle className="w-5 h-5"/></div>
               <div>
                 <h3 className="font-bold text-danger">Hủy đơn hàng</h3>
                 <p className="text-sm text-danger font-medium">{orderToVoid.display_order_no}</p>
@@ -539,7 +539,7 @@ export default function OrderTable({
                 Đơn sẽ chuyển sang trạng thái VOIDED. Nguyên liệu sẽ được hoàn trả vào kho. Lịch sử đơn được giữ nguyên.
               </p>
               {voidError && (
-                <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-danger text-sm rounded-lg border border-red-200 flex justify-between">
+                <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
                   <span>{voidError}</span>
                   <button onClick={() => setVoidError(null)} className="ml-2 text-danger hover:opacity-80" aria-label="Đóng"><X className="w-4 h-4"/></button>
                 </div>

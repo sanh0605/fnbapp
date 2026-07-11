@@ -73,14 +73,14 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
                     value={item.custom_name} 
                     onChange={e => updateItem(idx, "custom_name", e.target.value)} 
                     placeholder="VD: Trà ô long mới..."
-                    className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-orange-500"
+                    className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-warning"
                   />
                 ) : (
                   <select 
                     id={`${itemRowId}-ingredient`}
                     value={item.ingredient_id} 
                     onChange={e => updateItem(idx, "ingredient_id", e.target.value)}
-                    className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-orange-500"
+                    className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-warning"
                   >
                     <option value="">-- Chọn nguyên liệu --</option>
                     {ingredients.map(ing => (
@@ -101,7 +101,7 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
                     value={item.unit} 
                     onChange={e => updateItem(idx, "unit", e.target.value)} 
                     placeholder="VD: kg"
-                    className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-orange-500"
+                    className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-warning"
                   />
                 ) : (
                   <div className="w-full border border-border bg-surface-secondary rounded-md px-3 py-2 min-h-[44px] flex items-center text-sm text-text-muted font-medium">
@@ -121,7 +121,7 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
                       onChange={e => updateItem(idx, "unit_cost", Number(e.target.value))} 
                       disabled={!item.isCustom}
                       placeholder="0"
-                      className={`w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold focus:ring-orange-500 ${!item.isCustom ? "bg-surface-secondary text-text-muted" : "text-indigo-700"}`}
+                      className={`w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold focus:ring-warning ${!item.isCustom ? "bg-surface-secondary text-text-muted" : "text-primary-active"}`}
                     />
                 </div>
               </div>
@@ -135,7 +135,7 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
                   step="any"
                   value={item.quantity === 0 ? "" : item.quantity} 
                   onChange={e => updateItem(idx, "quantity", Number(e.target.value))} 
-                  className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold text-danger focus:ring-orange-500"
+                  className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold text-danger focus:ring-warning"
                 />
               </div>
 
@@ -167,7 +167,7 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
       <div className="flex flex-wrap gap-3 mb-8">
         <button 
           onClick={() => addItem(false)}
-          className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-indigo-50 text-indigo-700 font-medium rounded-lg hover:bg-indigo-100 transition-colors text-sm"
+          className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-primary-soft/50 text-primary-active font-medium rounded-lg hover:bg-primary-soft transition-colors text-sm"
         >
           <span>+</span> Thêm NL Hệ thống
         </button>
@@ -191,7 +191,7 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-text-muted">Giá bán dự kiến (COGS 40%):</span>
-              <span className="text-xl font-bold text-indigo-600">{formatNumber(Math.round(totalCost / 0.4))}</span>
+              <span className="text-xl font-bold text-primary">{formatNumber(Math.round(totalCost / 0.4))}</span>
             </div>
           </div>
         </div>

@@ -119,7 +119,7 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
               </div>
               <div className="pt-3 border-t border-border flex justify-between font-bold text-base">
                 <span className="text-text-primary">Tổng cộng:</span>
-                <span className="text-indigo-600">{formatNumber(po.total_amount)}</span>
+                <span className="text-primary">{formatNumber(po.total_amount)}</span>
               </div>
             </div>
           </div>

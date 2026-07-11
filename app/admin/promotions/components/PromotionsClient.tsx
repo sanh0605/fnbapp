@@ -199,7 +199,7 @@ export default function PromotionsClient({
                   </h3>
 
                   {promo.code ? (
-                    <div className="inline-flex items-center gap-1.5 border border-dashed border-indigo-300 bg-indigo-50/50 px-3 py-1 rounded-xl text-indigo-700 font-black text-sm tracking-wider uppercase mb-4">
+                    <div className="inline-flex items-center gap-1.5 border border-dashed border-primary/40 bg-primary-soft/50 px-3 py-1 rounded-xl text-primary-active font-black text-sm tracking-wider uppercase mb-4">
                       🎟️ {promo.code}
                     </div>
                   ) : (

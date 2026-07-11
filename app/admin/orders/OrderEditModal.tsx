@@ -235,7 +235,7 @@ export default function OrderEditModal({
         </div>
 
         {inlineError && (
-          <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-red-50 text-danger text-sm rounded-lg border border-red-200 flex justify-between">
+          <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
             <span>{inlineError}</span>
             <button onClick={() => setInlineError(null)} className="ml-2 text-danger hover:opacity-80" aria-label="Đóng"><X className="w-4 h-4"/></button>
           </div>

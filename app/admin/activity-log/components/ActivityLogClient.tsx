@@ -137,7 +137,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
         return {
           label: "Di trú",
           classes: "bg-surface-secondary text-text-secondary border-border",
-          dotColor: "bg-gray-400 ring-gray-100",
+          dotColor: "bg-border ring-border",
         };
       default:
         return {

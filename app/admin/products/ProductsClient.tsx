@@ -144,7 +144,7 @@ export default function ProductsClient({
                             {product.image_url ? (
                               <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                             ) : (
-                              <ImageIcon className="w-6 h-6 text-gray-400" />
+                              <ImageIcon className="w-6 h-6 text-text-muted" />
                             )}
                           </div>
                         </td>
@@ -246,7 +246,7 @@ export default function ProductsClient({
                                 {ingCount > 0 ? (
                                   <span className="inline-flex items-center px-1 py-0.2 bg-green-100 text-success text-[9px] rounded font-bold">Định mức</span>
                                 ) : (
-                                  <span className="inline-flex items-center px-1 py-0.2 bg-red-100 text-danger text-[9px] rounded font-bold">Chưa có</span>
+                                  <span className="inline-flex items-center px-1 py-0.2 bg-danger/20 text-danger text-[9px] rounded font-bold">Chưa có</span>
                                 )}
                               </div>
                               <span className="font-black text-primary">{formatNumber(v.price)}</span>

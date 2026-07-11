@@ -90,7 +90,7 @@ export default function SyncPage() {
             <button
               onClick={handleScan}
               disabled={isScanning || isSyncing}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition disabled:opacity-50 min-h-[44px] shadow-sm"
+              className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-hover transition disabled:opacity-50 min-h-[44px] shadow-sm"
             >
               {isScanning ? "Đang quét..." : "Quét toàn bộ dữ liệu"}
             </button>
@@ -108,11 +108,11 @@ export default function SyncPage() {
         <div className="bg-surface-card p-6 rounded-2xl shadow-sm border border-border space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-sm font-bold text-text-secondary uppercase tracking-wider">Tiến trình đồng bộ</span>
-            <span className="text-sm font-black text-indigo-600">{progress}%</span>
+            <span className="text-sm font-black text-primary">{progress}%</span>
           </div>
           <div className="w-full h-3 bg-surface-secondary rounded-full overflow-hidden">
             <div 
-              className="h-full bg-indigo-600 transition-[width] duration-500 ease-out" 
+              className="h-full bg-primary transition-[width] duration-500 ease-out" 
               style={{ width: `${progress}%` }}
             ></div>
           </div>

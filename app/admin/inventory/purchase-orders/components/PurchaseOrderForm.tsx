@@ -243,7 +243,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                   }
                 }
               }}
-              className="px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-100 border border-indigo-100 whitespace-nowrap"
+              className="px-3 py-2 bg-primary-soft/50 text-primary-active rounded-lg text-sm font-medium hover:bg-primary-soft border border-primary/20 whitespace-nowrap"
             >
               + Thêm
             </button>
@@ -283,7 +283,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             <button
               type="button"
               onClick={addLine}
-              className="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-6 py-2.5 rounded-lg text-sm font-medium transition"
+              className="text-primary-active bg-primary-soft/50 hover:bg-primary-soft px-6 py-2.5 rounded-lg text-sm font-medium transition"
             >
               + Thêm Mặt Hàng Đầu Tiên
             </button>
@@ -382,7 +382,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             <button
               type="button"
               onClick={addLine}
-              className="mt-4 w-full text-center text-indigo-600 bg-indigo-50 border border-dashed border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300 py-3 rounded-xl text-sm font-medium transition"
+              className="mt-4 w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition"
             >
               + Thêm Mặt Hàng
             </button>

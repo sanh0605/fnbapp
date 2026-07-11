@@ -376,7 +376,7 @@ export function LineItemEditor({
         <button
           type="button"
           onClick={() => onRemove(idx)}
-          className="text-xs font-medium text-danger px-2 py-1 bg-red-100 rounded hover:bg-red-200"
+          className="text-xs font-medium text-danger px-2 py-1 bg-danger/20 rounded hover:bg-danger/30"
         >
           Xóa
         </button>

@@ -203,7 +203,7 @@ export default function OrderDetailModal({ order, brands, onClose, onEdit, onVoi
             </Button>
             <Button
               variant="secondary"
-              className="!text-danger hover:!bg-red-50"
+              className="!text-danger hover:!bg-danger/10"
               onClick={onVoid}
               disabled={currentOrder.status !== "COMPLETED"}
             >

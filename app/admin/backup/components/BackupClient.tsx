@@ -85,7 +85,7 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
                 <div>
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold border ${statusColor}`}>
                     <span className={`w-2 h-2 rounded-full mr-2 ${
-                      status === "success" ? "bg-success/100 animate-pulse" : status === "failure" ? "bg-danger/100" : "bg-gray-400"
+                      status === "success" ? "bg-success/100 animate-pulse" : status === "failure" ? "bg-danger/100" : "bg-border"
                     }`} />
                     {statusLabel}
                   </span>
@@ -198,7 +198,7 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
               </div>
               <div className="flex justify-between items-center py-1">
                 <span className="text-text-muted font-medium">Công nghệ:</span>
-                <span className="font-bold text-indigo-600">pg_cron + pg_net (Supabase)</span>
+                <span className="font-bold text-primary">pg_cron + pg_net (Supabase)</span>
               </div>
             </div>
 

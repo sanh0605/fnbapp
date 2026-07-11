@@ -223,7 +223,7 @@ export function PromotionForm({
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 border-border rounded-full text-text-muted hover:bg-gray-300"
+            className="p-1.5 border-border rounded-full text-text-muted hover:bg-surface-secondary"
           >
             ✕
           </button>

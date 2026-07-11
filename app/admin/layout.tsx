@@ -180,7 +180,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="fixed inset-0 flex bg-gray-50 font-sans text-gray-900 overflow-hidden">
+    <div className="fixed inset-0 flex bg-gray-50 font-sans text-text-primary overflow-hidden">
       
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
@@ -316,17 +316,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-white/50 relative">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-surface-card/50 relative">
         {/* Top Header Mobile */}
-        <div className="md:hidden h-auto min-h-[4rem] bg-white border-b border-gray-200 flex items-center px-4 justify-between pt-[env(safe-area-inset-top)]">
+        <div className="md:hidden h-auto min-h-[4rem] bg-surface-card border-b border-border flex items-center px-4 justify-between pt-[env(safe-area-inset-top)]">
           <button 
-            className="text-gray-500 p-2 hover:bg-gray-100 rounded-lg"
+            className="text-text-muted p-2 hover:bg-surface-secondary rounded-lg"
             onClick={() => setIsSidebarOpen(true)}
             aria-label="Mở menu"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
-          <span className="font-bold text-gray-900">Admin</span>
+          <span className="font-bold text-text-primary">Admin</span>
           <div className="w-10"></div>
         </div>
 
@@ -361,26 +361,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             aria-modal="true"
             aria-labelledby={posModalTitleId}
             tabIndex={-1}
-            className="bg-white w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up outline-none"
+            className="bg-surface-card w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up outline-none"
           >
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 id={posModalTitleId} className="text-xl font-bold text-gray-900">Chọn thương hiệu</h3>
+            <div className="p-5 border-b border-border flex justify-between items-center bg-surface-secondary">
+              <h3 id={posModalTitleId} className="text-xl font-bold text-text-primary">Chọn thương hiệu</h3>
               <button 
                 onClick={() => setIsPosModalOpen(false)} 
-                className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
+                className="p-1.5 bg-surface-secondary rounded-full text-text-muted hover:bg-border focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
                 aria-label="Đóng"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             
-            <div className="p-6 bg-white space-y-3">
-              <p className="text-sm text-gray-500 mb-4 text-center">
+            <div className="p-6 bg-surface-card space-y-3">
+              <p className="text-sm text-text-muted mb-4 text-center">
                 Mở máy POS để bắt đầu bán hàng cho thương hiệu nào?
               </p>
               
               {brands.length === 0 ? (
-                <div className="text-center text-gray-400 py-4 animate-pulse">Đang tải danh sách…</div>
+                <div className="text-center text-text-muted py-4 animate-pulse">Đang tải danh sách…</div>
               ) : (
                 brands.map(brand => (
                   <button 
