@@ -39,13 +39,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| (none) | — | — | — | All current work moved to P1 |
+| **U4. Fresh Blue Admin Design System** | Antigravity (full-time) | All `app/**/*.tsx`, `components/**/*.tsx`, `globals.css`, `tailwind.config.ts` | 2026-07-11 | Plan: `docs/superpowers/plans/2026-07-11-fresh-blue-admin-design-system.md`. 6 phases, 8-10 days. All other UI work paused until done. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| **U2. UI consistency sweep** | Antigravity | 28+ admin pages per `docs/audits/2026-07-06-ui-consistency-audit.md` | `docs/handoffs/2026-07-10-antigravity-ui-sweep.md` | None |
+| **U2. UI consistency sweep** | Antigravity | 28+ admin pages per `docs/audits/2026-07-06-ui-consistency-audit.md` | `docs/handoffs/2026-07-10-antigravity-ui-sweep.md` | **U4 (Paused during design system)** |
 
 ### P2 — Backlog (medium impact)
 
