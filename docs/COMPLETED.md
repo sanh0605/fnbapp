@@ -4,6 +4,7 @@ Compact 1-line-per-task archive of finished work. Detailed entries remain in `DE
 
 ## 2026-07-12
 
+- **U5. Modifiers page design system migration (Antigravity)** — Final U4 cleanup. 36 hardcoded colors → 0 in `/admin/products/modifiers/`. Did NOT touch `actions.ts` (Codex logic). Commit `31c2a95`. **Design System 100% complete**.
 - **U4. Fresh Blue Admin Design System (Antigravity)** — Full design system migration across all admin pages. 17 commits: Phase 0 audit → Phase 1 tokens → Phase 2 dark sidebar + Lucide → Phase 3 component library (Button/Alert/Badge/Card) → Phase 4 high-impact pages (Products/Orders/Dashboard/Reports/Inventory) → Phase 5 remaining pages by sidebar group → Phase 5 cleanup → Phase 6 final report. ~143 files changed, 0 hardcoded Tailwind colors (except Codex `modifiers/` scope). Final report at `docs/audits/2026-07-12-fresh-blue-admin-final-report.md`. Subsumes U2 (UI consistency sweep batches 1-5 + mobile retrofit + Batch 4 re-commit).
 
 ## 2026-07-11

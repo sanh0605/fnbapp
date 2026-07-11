@@ -39,13 +39,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| (none) | — | — | — | Design System complete |
+| (none) | — | — | — | Design System fully complete |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| **U5. Modifiers page design system migration** | Antigravity | `/admin/products/modifiers/*` (UI only) | `docs/handoffs/2026-07-12-antigravity-u5-modifiers-migration.md` | None |
+| **E2. Task 3.3 — Investigate remaining 97.6% drift** | Codex | Audit scripts | TBD (Claude writes next) | None |
 
 ### P2 — Backlog (medium impact)
 
