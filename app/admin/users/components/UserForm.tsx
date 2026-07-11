@@ -28,7 +28,7 @@ export function UserForm() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 min-h-[44px] rounded-lg font-medium hover:bg-blue-700 transition"
+        className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition"
       >
         + Thêm Nhân Sự
       </button>
@@ -45,7 +45,7 @@ export function UserForm() {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
             >
               Hủy
             </button>
@@ -62,12 +62,12 @@ export function UserForm() {
       >
         <form id="user-form" action={handleSubmit} className="space-y-4">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-rose-50 text-rose-600 text-sm rounded-lg border border-rose-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
               {error}
             </div>
           )}
           <div>
-            <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-text-secondary mb-1">
               Tên đăng nhập
             </label>
             <input
@@ -75,12 +75,12 @@ export function UserForm() {
               type="text"
               name="username"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="VD: nhanvien01"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-text-secondary mb-1">
               Mật khẩu
             </label>
             <input
@@ -88,19 +88,19 @@ export function UserForm() {
               type="password"
               name="password"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] outline-none focus:border-blue-500 text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
               placeholder="******"
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-text-secondary mb-1">
               Quyền hạn
             </label>
             <select
               id={`${formId}-role`}
               name="role"
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] outline-none focus:border-blue-500 bg-white text-gray-900"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
             >
               <option value="STAFF">Nhân viên (STAFF)</option>
               <option value="MANAGER">Quản lý (MANAGER)</option>
@@ -134,7 +134,7 @@ export function DeleteUserButton({ id, username }: DeleteUserButtonProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="px-3 py-1.5 min-h-[44px] bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-600 font-bold text-xs rounded-lg transition active:scale-95"
+        className="px-3 py-1.5 min-h-[44px] bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger font-bold text-xs rounded-lg transition active:scale-95"
       >
         Xóa
       </button>

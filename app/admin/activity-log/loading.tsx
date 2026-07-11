@@ -8,7 +8,7 @@ export default function Loading() {
         title="Nhật ký Hoạt động" 
         subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={4} />
       </div>
     </div>

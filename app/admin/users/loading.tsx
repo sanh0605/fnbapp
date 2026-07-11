@@ -8,7 +8,7 @@ export default function Loading() {
         title="Quản lý Nhân Sự" 
         subtitle="Quản lý tài khoản đăng nhập và phân quyền hệ thống."
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={5} />
       </div>
     </div>

@@ -89,9 +89,9 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
         return (
           <span
             key={key}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-secondary text-text-secondary border border-border"
           >
-            <span className="text-[10px] uppercase font-bold text-gray-400">{label}:</span>
+            <span className="text-[10px] uppercase font-bold text-text-muted">{label}:</span>
             <span>{formattedVal}</span>
           </span>
         );
@@ -100,7 +100,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
       return <div className="flex flex-wrap gap-2 mt-2">{items}</div>;
     } catch (e) {
       return (
-        <pre className="text-[10px] text-gray-400 font-mono bg-gray-50 p-2 rounded-lg border border-gray-100 mt-2 overflow-x-auto">
+        <pre className="text-[10px] text-text-muted font-mono bg-surface-secondary p-2 rounded-lg border border-border mt-2 overflow-x-auto">
           {deltaJson}
         </pre>
       );
@@ -112,31 +112,31 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
       case "CREATED":
         return {
           label: "Tạo mới",
-          classes: "bg-emerald-50 text-emerald-700 border-emerald-200",
-          dotColor: "bg-emerald-500 ring-emerald-100",
+          classes: "bg-success/10 text-success-active border-success/30",
+          dotColor: "bg-success/100 ring-emerald-100",
         };
       case "EDITED":
         return {
           label: "Chỉnh sửa",
-          classes: "bg-blue-50 text-blue-700 border-blue-200",
-          dotColor: "bg-blue-500 ring-blue-100",
+          classes: "bg-primary-soft text-primary-active border-primary/20",
+          dotColor: "bg-primary-soft0 ring-blue-100",
         };
       case "VOIDED":
         return {
           label: "Hủy đơn",
-          classes: "bg-rose-50 text-rose-700 border-rose-200",
-          dotColor: "bg-rose-500 ring-rose-100",
+          classes: "bg-danger/10 text-danger-active border-danger/30",
+          dotColor: "bg-danger/100 ring-rose-100",
         };
       case "REOPENED":
         return {
           label: "Mở lại",
-          classes: "bg-amber-50 text-amber-700 border-amber-200",
-          dotColor: "bg-amber-500 ring-amber-100",
+          classes: "bg-warning/10 text-warning-active border-warning/30",
+          dotColor: "bg-warning/100 ring-amber-100",
         };
       case "MIGRATED":
         return {
           label: "Di trú",
-          classes: "bg-gray-50 text-gray-700 border-gray-200",
+          classes: "bg-surface-secondary text-text-secondary border-border",
           dotColor: "bg-gray-400 ring-gray-100",
         };
       default:
@@ -155,7 +155,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
         subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Tìm kiếm
           </label>
           <input
@@ -163,17 +163,17 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             placeholder="Tìm mã đơn, người tạo, lý do..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-56 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-56 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Loại Sự Kiện
           </label>
           <select
             value={eventType}
             onChange={(e) => setEventType(e.target.value)}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả</option>
             <option value="CREATED">Tạo mới (CREATED)</option>
@@ -184,13 +184,13 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
           </select>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Tài Khoản
           </label>
           <select
             value={actorFilter}
             onChange={(e) => setActorFilter(e.target.value)}
-            className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả tài khoản</option>
             {actors.map((actor) => (
@@ -201,32 +201,32 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
           </select>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Từ ngày
           </label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full md:w-auto border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Đến ngày
           </label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full md:w-auto border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
       </StickyFilterBar>
 
       <div className="relative pl-6 md:pl-10">
         {/* Vertical Timeline Line */}
-        <div className="absolute top-4 bottom-4 left-[34px] md:left-[50px] w-0.5 bg-gray-200" />
+        <div className="absolute top-4 bottom-4 left-[34px] md:left-[50px] w-0.5 border-border" />
 
         <div className="space-y-6">
           {filteredEvents.length === 0 ? (
@@ -246,7 +246,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
                   />
 
                   {/* Card Container */}
-                  <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                  <div className="bg-surface-card rounded-2xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div className="space-y-2 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
@@ -254,39 +254,39 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
                         >
                           {badge.label}
                         </span>
-                        <span className="font-extrabold text-sm text-gray-900">
+                        <span className="font-extrabold text-sm text-text-primary">
                           Đơn hàng {evt.order_no}
                         </span>
-                        <span className="text-[11px] text-gray-400 font-medium">
+                        <span className="text-[11px] text-text-muted font-medium">
                           ({evt.id})
                         </span>
                       </div>
 
-                      <div className="text-xs text-gray-600 space-y-1">
+                      <div className="text-xs text-text-secondary space-y-1">
                         <p className="flex items-center gap-1.5">
-                          <span className="text-gray-400">Thời gian:</span>
-                          <span className="font-medium text-gray-700">
+                          <span className="text-text-muted">Thời gian:</span>
+                          <span className="font-medium text-text-secondary">
                             {formatDateTime(evt.event_at)}
                           </span>
                         </p>
                         <p className="flex items-center gap-1.5">
-                          <span className="text-gray-400">Thực hiện:</span>
-                          <span className="font-bold text-gray-800">
+                          <span className="text-text-muted">Thực hiện:</span>
+                          <span className="font-bold text-text-primary">
                             {evt.actor_name}
                           </span>
                         </p>
                         {evt.from_version !== undefined && evt.to_version !== undefined && (
                           <p className="flex items-center gap-1.5">
-                            <span className="text-gray-400">Phiên bản:</span>
-                            <span className="font-mono bg-gray-50 border border-gray-100 rounded px-1 text-[10px]">
+                            <span className="text-text-muted">Phiên bản:</span>
+                            <span className="font-mono bg-surface-secondary border border-border rounded px-1 text-[10px]">
                               v{evt.from_version || 0} ➔ v{evt.to_version}
                             </span>
                           </p>
                         )}
                         {evt.reason && (
-                          <p className="mt-1 pt-1 border-t border-gray-50/50">
-                            <span className="text-gray-400">Lý do:</span>{" "}
-                            <span className="font-medium text-gray-800 italic">
+                          <p className="mt-1 pt-1 border-t border-border">
+                            <span className="text-text-muted">Lý do:</span>{" "}
+                            <span className="font-medium text-text-primary italic">
                               "{evt.reason}"
                             </span>
                           </p>
@@ -297,7 +297,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
                     </div>
 
                     <div className="shrink-0 flex items-center md:self-stretch justify-end">
-                      <span className="text-[11px] text-gray-400 font-medium bg-gray-50 border border-gray-100 rounded px-2.5 py-1">
+                      <span className="text-[11px] text-text-muted font-medium bg-surface-secondary border border-border rounded px-2.5 py-1">
                         Mã đơn: {evt.order_id}
                       </span>
                     </div>

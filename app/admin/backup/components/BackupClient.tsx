@@ -32,17 +32,17 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
   // Determine status (success/failure/never)
   let status: "success" | "failure" | "never" = "never";
   let statusLabel = "Chưa có sao lưu";
-  let statusColor = "bg-gray-100 text-gray-700 border-gray-200";
+  let statusColor = "bg-surface-secondary text-text-secondary border-border";
 
   if (lastSyncedAt) {
     if (notes && (notes.toLowerCase().includes("error") || notes.toLowerCase().includes("fail"))) {
       status = "failure";
       statusLabel = "Thất bại";
-      statusColor = "bg-rose-50 text-rose-700 border-rose-200";
+      statusColor = "bg-danger/10 text-danger-active border-danger/30";
     } else {
       status = "success";
       statusLabel = "Hoạt động";
-      statusColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+      statusColor = "bg-success/10 text-success-active border-success/30";
     }
   }
 
@@ -59,33 +59,33 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
 
       {/* Notifications */}
       {successMsg && (
-        <div role="status" aria-live="polite" className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
+        <div role="status" aria-live="polite" className="bg-success/10 border border-success/30 text-success-active px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
           <span>✔️ {successMsg}</span>
-          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700">✕</button>
+          <button onClick={() => setSuccessMsg(null)} className="text-success hover:text-success-active">✕</button>
         </div>
       )}
       {errorMsg && (
-        <div role="alert" aria-live="polite" className="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
+        <div role="alert" aria-live="polite" className="bg-danger/10 border border-danger/30 text-danger-active px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
           <span>⚠️ {errorMsg}</span>
-          <button onClick={() => setErrorMsg(null)} className="text-rose-500 hover:text-rose-700">✕</button>
+          <button onClick={() => setErrorMsg(null)} className="text-danger hover:text-danger-active">✕</button>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column - Status Overview */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-6">
-            <h3 className="font-extrabold text-gray-900 text-base border-b border-gray-50 pb-3 flex items-center gap-2">
+          <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm space-y-6">
+            <h3 className="font-extrabold text-text-primary text-base border-b border-border pb-3 flex items-center gap-2">
               <span>📊</span> Trạng thái đồng bộ
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Trạng thái</span>
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Trạng thái</span>
                 <div>
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold border ${statusColor}`}>
                     <span className={`w-2 h-2 rounded-full mr-2 ${
-                      status === "success" ? "bg-emerald-500 animate-pulse" : status === "failure" ? "bg-rose-500" : "bg-gray-400"
+                      status === "success" ? "bg-success/100 animate-pulse" : status === "failure" ? "bg-danger/100" : "bg-gray-400"
                     }`} />
                     {statusLabel}
                   </span>
@@ -93,41 +93,41 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Mục tiêu đồng bộ</span>
-                <p className="text-sm font-bold text-gray-800 font-mono">Orders_V2 ➔ Google Sheets</p>
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Mục tiêu đồng bộ</span>
+                <p className="text-sm font-bold text-text-primary font-mono">Orders_V2 ➔ Google Sheets</p>
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Lần đồng bộ cuối</span>
-                <p className="text-sm font-bold text-gray-800">
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Lần đồng bộ cuối</span>
+                <p className="text-sm font-bold text-text-primary">
                   {lastSyncedAt ? formatDateTime(lastSyncedAt) : "Chưa từng thực hiện"}
                 </p>
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cập nhật lúc</span>
-                <p className="text-sm font-medium text-gray-600">
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Cập nhật lúc</span>
+                <p className="text-sm font-medium text-text-secondary">
                   {updatedAt ? formatDateTime(updatedAt) : "---"}
                 </p>
               </div>
             </div>
 
             {notes && (
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nhật ký chi tiết</span>
-                <p className="text-xs text-gray-600 font-mono break-all leading-relaxed">{notes}</p>
+              <div className="bg-surface-secondary p-4 rounded-xl border border-border">
+                <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Nhật ký chi tiết</span>
+                <p className="text-xs text-text-secondary font-mono break-all leading-relaxed">{notes}</p>
               </div>
             )}
 
-            <div className="pt-4 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Kích hoạt thủ công</span>
-                <p className="text-xs text-gray-500">Đồng bộ tức thời dữ liệu hiện tại lên Google Sheets.</p>
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Kích hoạt thủ công</span>
+                <p className="text-xs text-text-muted">Đồng bộ tức thời dữ liệu hiện tại lên Google Sheets.</p>
               </div>
               <button
                 disabled={isPending}
                 onClick={handleManualTrigger}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white font-extrabold text-sm hover:bg-blue-700 active:scale-95 transition-colors transition-transform shadow-md min-h-[44px] disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition active:scale-95 transition-colors transition-transform shadow-md min-h-[44px] disabled:opacity-50"
               >
                 {isPending ? (
                   <>
@@ -150,27 +150,27 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
         {/* Right column - Configurations & Info */}
         <div className="space-y-6">
           {/* Edge Function Info */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-            <h3 className="font-extrabold text-gray-900 text-base border-b border-gray-50 pb-3 flex items-center gap-2">
+          <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm space-y-4">
+            <h3 className="font-extrabold text-text-primary text-base border-b border-border pb-3 flex items-center gap-2">
               <span>⚙️</span> Cấu hình Edge Function
             </h3>
             
             <div className="space-y-3">
               <div>
-                <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tên Function</span>
-                <p className="text-xs font-bold text-gray-800 font-mono bg-gray-50 border border-gray-100 rounded px-2 py-1 inline-block">backup-to-sheets</p>
+                <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tên Function</span>
+                <p className="text-xs font-bold text-text-primary font-mono bg-surface-secondary border border-border rounded px-2 py-1 inline-block">backup-to-sheets</p>
               </div>
 
               <div>
-                <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Đường dẫn gọi (URL)</span>
-                <p className="text-[11px] text-gray-600 font-mono bg-gray-50 p-2.5 rounded-lg border border-gray-100 break-all select-all leading-normal">
+                <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đường dẫn gọi (URL)</span>
+                <p className="text-[11px] text-text-secondary font-mono bg-surface-secondary p-2.5 rounded-lg border border-border break-all select-all leading-normal">
                   {edgeFunctionUrl}
                 </p>
               </div>
 
               <div>
-                <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Xác thực</span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Xác thực</span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-primary-soft text-primary-active border border-primary/20">
                   Bearer Token (Anon key)
                 </span>
               </div>
@@ -178,31 +178,31 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
           </div>
 
           {/* Cron Info */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-            <h3 className="font-extrabold text-gray-900 text-base border-b border-gray-50 pb-3 flex items-center gap-2">
+          <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm space-y-4">
+            <h3 className="font-extrabold text-text-primary text-base border-b border-border pb-3 flex items-center gap-2">
               <span>⏰</span> Lịch trình đồng bộ tự động
             </h3>
 
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center py-1">
-                <span className="text-gray-500 font-medium">Tần suất:</span>
-                <span className="font-bold text-gray-800">Hàng ngày (Daily)</span>
+                <span className="text-text-muted font-medium">Tần suất:</span>
+                <span className="font-bold text-text-primary">Hàng ngày (Daily)</span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-gray-500 font-medium">Giờ chạy:</span>
-                <span className="font-bold text-gray-800">02:00 (UTC+7 / Vietnam)</span>
+                <span className="text-text-muted font-medium">Giờ chạy:</span>
+                <span className="font-bold text-text-primary">02:00 (UTC+7 / Vietnam)</span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-gray-500 font-medium">Giờ chuẩn:</span>
-                <span className="font-mono text-xs bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded text-gray-600">19:00 UTC (prev day)</span>
+                <span className="text-text-muted font-medium">Giờ chuẩn:</span>
+                <span className="font-mono text-xs bg-surface-secondary border border-border px-1.5 py-0.5 rounded text-text-secondary">19:00 UTC (prev day)</span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-gray-500 font-medium">Công nghệ:</span>
+                <span className="text-text-muted font-medium">Công nghệ:</span>
                 <span className="font-bold text-indigo-600">pg_cron + pg_net (Supabase)</span>
               </div>
             </div>
 
-            <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-xs leading-relaxed space-y-1.5 shadow-sm">
+            <div className="bg-warning/10 p-4 rounded-xl border border-warning/30 text-warning-active text-xs leading-relaxed space-y-1.5 shadow-sm">
               <p className="font-bold">💡 Lưu ý thiết lập pg_cron:</p>
               <p>Mặc định pg_cron cần được bật thủ công trên Supabase Dashboard thông qua SQL Editor để kích hoạt lịch trình tự động hàng ngày.</p>
             </div>

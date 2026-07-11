@@ -14,15 +14,15 @@ export default async function EditUserPage({ params }: { params: { id: string } 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Link href="/admin/users" className="hover:text-blue-600">Nhân sự</Link>
+      <div className="flex items-center gap-2 text-sm text-text-muted">
+        <Link href="/admin/users" className="hover:text-primary">Nhân sự</Link>
         <span>/</span>
-        <span className="text-gray-900 font-medium">Chỉnh sửa</span>
+        <span className="text-text-primary font-medium">Chỉnh sửa</span>
       </div>
 
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Chỉnh sửa nhân sự: {user.username}</h1>
-        <p className="text-sm text-gray-500 mt-1">Cập nhật quyền hạn hoặc thay đổi mật khẩu cho tài khoản này.</p>
+        <h1 className="text-2xl font-bold text-text-primary">Chỉnh sửa nhân sự: {user.username}</h1>
+        <p className="text-sm text-text-muted mt-1">Cập nhật quyền hạn hoặc thay đổi mật khẩu cho tài khoản này.</p>
       </div>
 
       <EditUserForm user={user} />

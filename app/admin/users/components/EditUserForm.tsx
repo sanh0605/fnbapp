@@ -32,16 +32,16 @@ export default function EditUserForm({ user }: EditUserFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-2xl mx-auto">
+    <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6 max-w-2xl mx-auto">
       <form action={handleSubmit} className="space-y-6">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
           </div>
         )}
         
         <div>
-          <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-text-secondary mb-1">
             Tên đăng nhập
           </label>
           <input
@@ -49,26 +49,26 @@ export default function EditUserForm({ user }: EditUserFormProps) {
             type="text"
             disabled
             value={user.username}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-500 outline-none"
+            className="w-full border border-border rounded-lg px-3 py-2 bg-surface-secondary text-text-muted outline-none"
           />
-          <p className="text-[10px] text-gray-400 mt-1">Tên đăng nhập không thể thay đổi.</p>
+          <p className="text-[10px] text-text-muted mt-1">Tên đăng nhập không thể thay đổi.</p>
         </div>
 
         <div>
-          <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-text-secondary mb-1">
             Mật khẩu mới (Để trống nếu không muốn đổi)
           </label>
           <input
             id={`${formId}-password`}
             type="password"
             name="password"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-gray-900"
+            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="******"
           />
         </div>
 
         <div>
-          <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-text-secondary mb-1">
             Quyền hạn
           </label>
           <select
@@ -76,7 +76,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
             name="role"
             required
             defaultValue={user.role}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 bg-white text-gray-900"
+            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
           >
             <option value="STAFF">Nhân viên (STAFF)</option>
             <option value="MANAGER">Quản lý (MANAGER)</option>
@@ -84,10 +84,10 @@ export default function EditUserForm({ user }: EditUserFormProps) {
           </select>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Link
             href="/admin/users"
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition"
+            className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition"
           >
             Hủy bỏ
           </Link>

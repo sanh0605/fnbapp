@@ -13,7 +13,7 @@ export default async function ClearCachePage() {
         title="Xóa Bộ Nhớ Đệm (Clear Cache)" 
         subtitle="Hệ thống đã tự động làm mới bộ nhớ đệm khi bạn truy cập trang này."
       />
-      <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-4 rounded-2xl shadow-sm">
+      <div className="bg-success/10 border border-success/30 text-success-active px-4 py-4 rounded-2xl shadow-sm">
         <div className="flex items-center gap-3">
           <span className="text-xl" aria-hidden="true">✔️</span>
           <div>
