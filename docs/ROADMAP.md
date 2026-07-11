@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| **U5. Modifiers page design system migration** | Codex (engine scope) or Antigravity (after coord with Codex) | `/admin/products/modifiers/*` | TBD | None — 36 hardcoded colors remain per final report |
+| **U5. Modifiers page design system migration** | Antigravity | `/admin/products/modifiers/*` (UI only) | `docs/handoffs/2026-07-12-antigravity-u5-modifiers-migration.md` | None |
 
 ### P2 — Backlog (medium impact)
 
