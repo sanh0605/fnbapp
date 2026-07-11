@@ -135,7 +135,7 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition"
+        className="bg-success text-white px-4 py-2 rounded-lg font-medium hover:bg-success-hover transition"
       >
         + Ghi Nhận Lệnh Nấu
       </button>
@@ -153,7 +153,7 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
             >
               Hủy
             </button>
@@ -170,14 +170,14 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
       >
         <form id="production-form" action={handleSubmit} className="space-y-6">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor={`${formId}-selectedSpId`} className="block text-sm font-semibold text-gray-700 mb-2">Chọn Bán Thành Phẩm</label>
+              <label htmlFor={`${formId}-selectedSpId`} className="block text-sm font-semibold text-text-secondary mb-2">Chọn Bán Thành Phẩm</label>
               <SearchableSelect
                 id={`${formId}-selectedSpId`}
                 options={spOptions}
@@ -186,14 +186,14 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
                 placeholder="VD: Trà đen ủ..."
               />
               {selectedSp && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-muted mt-1">
                   Mẻ chuẩn: {selectedSp.batch_yield} {units.find(u => u.id === selectedSp.base_unit)?.name}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor={`${formId}-targetYield`} className="block text-sm font-semibold text-gray-700 mb-2">Sản lượng thực tế thu được</label>
+              <label htmlFor={`${formId}-targetYield`} className="block text-sm font-semibold text-text-secondary mb-2">Sản lượng thực tế thu được</label>
               <div className="flex gap-2">
                 <input
                   id={`${formId}-targetYield`}
@@ -201,40 +201,40 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
                   step="any"
                   value={targetYield}
                   onChange={(e) => setTargetYield(e.target.value === "" ? "" : Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-border rounded-lg px-4 py-2 focus:ring-2 focus:ring-success"
                   placeholder="VD: 4800"
                 />
-                <span className="inline-flex items-center px-3 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-600 font-medium">
+                <span className="inline-flex items-center px-3 bg-surface-secondary border border-border rounded-lg text-sm text-text-secondary font-medium">
                   {selectedSp ? units.find(u => u.id === selectedSp.base_unit)?.name : "---"}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-4">
-            <h4 className="text-sm font-bold text-gray-900 mb-3">Nguyên liệu tiêu hao (Dự kiến)</h4>
+          <div className="border-t border-border pt-4">
+            <h4 className="text-sm font-bold text-text-primary mb-3">Nguyên liệu tiêu hao (Dự kiến)</h4>
             
             {!selectedSpId ? (
-              <div className="text-center py-8 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+              <div className="text-center py-8 text-sm text-text-muted border-2 border-dashed border-border rounded-xl">
                 Vui lòng chọn Bán thành phẩm
               </div>
             ) : !targetYield ? (
-              <div className="text-center py-8 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+              <div className="text-center py-8 text-sm text-text-muted border-2 border-dashed border-border rounded-xl">
                 Vui lòng nhập sản lượng thu được để tính định mức
               </div>
             ) : !activeRecipe ? (
-              <div className="text-center py-8 text-sm text-red-500 border-2 border-dashed border-red-200 bg-red-50 rounded-xl">
+              <div className="text-center py-8 text-sm text-danger border-2 border-dashed border-danger/30 bg-danger/10 rounded-xl">
                 Bán thành phẩm này chưa có công thức! Vui lòng cài đặt công thức trước.
               </div>
             ) : (
               <div className="space-y-3">
                 {consumedIngredients.map((ing, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                  <div key={idx} className="flex items-center justify-between p-3 bg-surface-secondary rounded-xl border border-border">
                     <div>
-                      <div className="font-semibold text-gray-900 text-sm">{ing.name}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="font-semibold text-text-primary text-sm">{ing.name}</div>
+                      <div className="text-xs text-text-muted">
                         {ing.is_non_inventory ? (
-                          <span className="text-amber-600">Phi lưu kho (Không trừ tồn)</span>
+                          <span className="text-warning">Phi lưu kho (Không trừ tồn)</span>
                         ) : (
                           <span>Trừ tồn kho</span>
                         )}
@@ -249,16 +249,16 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
                         onChange={(e) => handleQtyChange(idx, e.target.value)}
                         className={`w-24 text-right border rounded-md px-2 py-1 text-sm focus:ring-2 ${
                            Number(ing.qtyNeeded) !== ing.defaultQty 
-                            ? "border-amber-400 bg-amber-50 focus:ring-amber-500" 
-                            : "border-gray-300 focus:ring-emerald-500"
+                            ? "border-warning bg-warning/10 focus:ring-warning" 
+                            : "border-border focus:ring-success"
                         }`}
                       />
-                      <span className="text-sm text-gray-600 font-medium w-8">{ing.unitName}</span>
+                      <span className="text-sm text-text-secondary font-medium w-8">{ing.unitName}</span>
                     </div>
                   </div>
                 ))}
 
-                <p className="text-xs text-gray-500 italic mt-2">
+                <p className="text-xs text-text-muted italic mt-2">
                   * Bạn có thể sửa số lượng nguyên liệu tiêu hao nếu thực tế sử dụng khác với công thức chuẩn.
                 </p>
               </div>

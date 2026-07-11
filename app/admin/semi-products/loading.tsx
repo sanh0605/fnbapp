@@ -8,7 +8,7 @@ export default function Loading() {
         title="Bán Thành Phẩm" 
         subtitle="Tổng quan danh sách nguyên liệu đã qua chế biến sơ bộ (như trà ủ, thạch, trân châu nấu...) dùng để pha chế."
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={5} />
       </div>
     </div>

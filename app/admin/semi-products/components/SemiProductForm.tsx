@@ -115,14 +115,14 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
       {isEdit ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-4"
+          className="text-primary hover:text-primary-hover font-medium text-sm mr-4"
         >
           Sửa
         </button>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition"
         >
           + Thêm Bán Thành Phẩm
         </button>
@@ -141,7 +141,7 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
             >
               Hủy
             </button>
@@ -158,26 +158,26 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
       >
         <form id="semi-product-form" action={handleSubmit} className="space-y-6">
           {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Bán Thành Phẩm</label>
+              <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">Tên Bán Thành Phẩm</label>
               <input
                 id={`${formId}-name`}
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring"
                 placeholder="VD: Trà đen ủ, Trân châu nấu..."
               />
             </div>
             
             <div>
-              <label htmlFor={`${formId}-baseUnit`} className="block text-sm font-medium text-gray-700 mb-1">Đơn vị quản lý (cơ bản)</label>
+              <label htmlFor={`${formId}-baseUnit`} className="block text-sm font-medium text-text-secondary mb-1">Đơn vị quản lý (cơ bản)</label>
               <SearchableSelect
                 id={`${formId}-baseUnit`}
                 options={unitOptions}
@@ -188,7 +188,7 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
             </div>
 
             <div>
-              <label htmlFor={`${formId}-batchYield`} className="block text-sm font-medium text-gray-700 mb-1">Quy mô mẻ chuẩn (Batch Yield)</label>
+              <label htmlFor={`${formId}-batchYield`} className="block text-sm font-medium text-text-secondary mb-1">Quy mô mẻ chuẩn (Batch Yield)</label>
               <div className="flex items-center gap-2">
                 <input
                   id={`${formId}-batchYield`}
@@ -196,10 +196,10 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
                   step="any"
                   value={batchYield}
                   onChange={(e) => setBatchYield(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring"
                   placeholder="VD: 5000"
                 />
-                <span className="text-gray-500 font-medium text-sm w-12">
+                <span className="text-text-muted font-medium text-sm w-12">
                   {units.find(u => u.id === baseUnit)?.name || "---"}
                 </span>
               </div>
@@ -208,42 +208,42 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
             {isEdit && (
               <>
                 <div>
-                  <label htmlFor={`${formId}-status`} className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                  <label htmlFor={`${formId}-status`} className="block text-sm font-medium text-text-secondary mb-1">Trạng thái</label>
                   <select
                     id={`${formId}-status`}
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white"
+                    className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
                   >
                     <option value="ACTIVE">Đang sử dụng</option>
                     <option value="INACTIVE">Ngừng sử dụng</option>
                   </select>
                 </div>
                 <div>
-                  <label htmlFor={`${formId}-effectiveDate`} className="block text-sm font-medium text-gray-700 mb-1">Ngày áp dụng công thức (Nếu đổi)</label>
+                  <label htmlFor={`${formId}-effectiveDate`} className="block text-sm font-medium text-text-secondary mb-1">Ngày áp dụng công thức (Nếu đổi)</label>
                   <CustomDatePicker
                     id={`${formId}-effectiveDate`}
                     selected={effectiveDate}
                     onChange={setEffectiveDate}
                     placeholderText="Mặc định: Ngay lúc này"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 text-gray-900"
+                    className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
                   />
-                  <p className="text-[10px] text-gray-500 mt-1">Để trống hệ thống sẽ ghi nhận thay đổi từ lúc bấm lưu.</p>
+                  <p className="text-[10px] text-text-muted mt-1">Để trống hệ thống sẽ ghi nhận thay đổi từ lúc bấm lưu.</p>
                 </div>
               </>
             )}
           </div>
 
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-border">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h4 className="text-base font-bold text-gray-900">Công thức (Recipe) cho mẻ chuẩn</h4>
-                <p className="text-xs text-gray-500">Định lượng để tạo ra {batchYield || "0"} {units.find(u => u.id === baseUnit)?.name || "đơn vị"}</p>
+                <h4 className="text-base font-bold text-text-primary">Công thức (Recipe) cho mẻ chuẩn</h4>
+                <p className="text-xs text-text-muted">Định lượng để tạo ra {batchYield || "0"} {units.find(u => u.id === baseUnit)?.name || "đơn vị"}</p>
               </div>
               <button
                 type="button"
                 onClick={addIngredient}
-                className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition"
+                className="text-xs font-bold text-primary bg-primary-soft px-3 py-1.5 rounded-lg hover:bg-primary/20 transition"
               >
                 + Thêm thành phần
               </button>
@@ -251,11 +251,11 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
 
             <div className="space-y-2">
               {ingredients.map((ing, idx) => (
-                <div key={idx} className="flex gap-2 items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
+                <div key={idx} className="flex gap-2 items-center bg-surface-secondary p-3 rounded-xl border border-border">
                   <select
                     value={ing.ingredient_type}
                     onChange={(e) => updateIngredient(idx, { ingredient_type: e.target.value, ingredient_id: "" })}
-                    className="w-40 border border-gray-300 rounded-lg px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white"
+                    className="w-40 border border-border rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
                   >
                     <option value="BASE_INGREDIENT">Nguyên liệu thô</option>
                     <option value="SEMI_PRODUCT">Bán thành phẩm</option>
@@ -265,7 +265,7 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
                     <select
                       value={ing.ingredient_id}
                       onChange={(e) => updateIngredient(idx, { ingredient_id: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm outline-none focus:border-blue-500 bg-white"
+                      className="w-full border border-border rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
                     >
                       <option value="">-- Chọn --</option>
                       {ing.ingredient_type === "BASE_INGREDIENT" 
@@ -281,9 +281,9 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
                       step="any"
                       value={ing.quantity}
                       onChange={(e) => updateIngredient(idx, { quantity: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:border-blue-500 font-mono text-right"
+                      className="w-full border border-border rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring font-mono text-right"
                     />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-muted font-bold">
                       {getIngredientBaseUnit(ing.ingredient_type, ing.ingredient_id)}
                     </span>
                   </div>
@@ -291,14 +291,14 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
                   <button
                     type="button"
                     onClick={() => removeIngredient(idx)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                    className="p-2 text-text-muted hover:text-danger transition-colors"
                   >
                     ✕
                   </button>
                 </div>
               ))}
               {ingredients.length === 0 && (
-                <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                <div className="text-center py-6 text-sm text-text-muted border-2 border-dashed border-border rounded-xl">
                   Chưa có thành phần nguyên liệu. Nhấn "+ Thêm thành phần"
                 </div>
               )}

@@ -52,13 +52,13 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
         rightContent={rightContent}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên hoặc mã bán thành phẩm..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white shadow-sm"
+            className="w-full md:w-64 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
       </StickyFilterBar>
@@ -72,11 +72,11 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
       ) : (
         <>
           {/* Desktop Table View (>= 768px) */}
-          <div className="hidden md:block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+          <div className="hidden md:block bg-surface-card rounded-2xl border border-border overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-100">
+                  <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                     <th className="px-6 py-4 font-bold">Tên Bán Thành Phẩm</th>
                     <th className="px-6 py-4 font-bold">ID</th>
                     <th className="px-6 py-4 font-bold">Trạng Thái</th>
@@ -98,35 +98,35 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                     const unitName = unitMap[sp.base_unit || sp.unit_id || ""] || "";
 
                     return (
-                      <tr key={sp.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 font-bold text-gray-900">{sp.name}</td>
-                        <td className="px-6 py-4 font-mono text-[11px] text-gray-400">{sp.id}</td>
+                      <tr key={sp.id} className="hover:bg-surface-secondary/50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-text-primary">{sp.name}</td>
+                        <td className="px-6 py-4 font-mono text-[11px] text-text-muted">{sp.id}</td>
                         <td className="px-6 py-4">
                           {sp.status === "ACTIVE" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success-active border border-success/30">
                               Hoạt động
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-surface-secondary text-text-secondary border border-border">
                               Ngừng bán
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-gray-700 font-semibold">
+                        <td className="px-6 py-4 text-text-secondary font-semibold">
                           1 Mẻ = {sp.batch_yield || 1} {unitName}
                         </td>
                         <td className="px-6 py-4">
                           {hasRecipe ? (
-                            <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[10px]" title="Đã cấu hình công thức định lượng">
+                            <span className="font-bold text-primary bg-primary-soft px-2 py-0.5 rounded text-[10px]" title="Đã cấu hình công thức định lượng">
                               {ingredientCount} thành phần
                             </span>
                           ) : (
-                            <span className="font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-[10px]">
+                            <span className="font-medium text-warning bg-warning/10 px-2 py-0.5 rounded text-[10px]">
                               Chưa cấu hình
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-gray-500 text-xs">
+                        <td className="px-6 py-4 text-text-muted text-xs">
                           {hasRecipe && sp.activeRecipe?.created_at ? (
                             new Date(sp.activeRecipe.created_at).toLocaleDateString("vi-VN")
                           ) : (
@@ -176,10 +176,10 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
               return (
                 <div 
                   key={sp.id} 
-                  className={`bg-white rounded-2xl border transition-colors transition-shadow duration-200 overflow-hidden flex flex-col ${
+                  className={`bg-surface-card rounded-2xl border transition-colors transition-shadow duration-200 overflow-hidden flex flex-col ${
                     isExpanded 
-                      ? "border-blue-300 ring-4 ring-blue-50 shadow-md" 
-                      : "border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200"
+                      ? "border-primary/40 ring-4 ring-blue-50 shadow-md" 
+                      : "border-border shadow-sm hover:shadow-md hover:border-border"
                   }`}
                 >
                   {/* Card Header & Main Info */}
@@ -189,24 +189,24 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                   >
                     <div className="space-y-3">
                       <div className="flex justify-between items-start gap-2">
-                        <div className="bg-blue-50 text-blue-700 w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0">
+                        <div className="bg-primary-soft text-primary-active w-9 h-9 rounded-xl flex items-center justify-center font-bold shrink-0">
                           🥣
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-extrabold text-gray-900 text-sm leading-tight truncate">
+                          <h4 className="font-extrabold text-text-primary text-sm leading-tight truncate">
                             {sp.name}
                           </h4>
-                          <p className="text-[10px] font-mono text-gray-400 mt-0.5">
+                          <p className="text-[10px] font-mono text-text-muted mt-0.5">
                             ID: {sp.id}
                           </p>
                         </div>
                         <div className="shrink-0">
                           {sp.status === "ACTIVE" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-success/10 text-success-active border border-success/20">
                               Hoạt động
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 border border-gray-150">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-surface-secondary text-text-secondary border border-border">
                               Ngừng bán
                             </span>
                           )}
@@ -214,20 +214,20 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                       </div>
 
                       <div className="space-y-1.5 pt-2">
-                        <div className="text-xs text-gray-500 flex justify-between items-center">
+                        <div className="text-xs text-text-muted flex justify-between items-center">
                           <span>Quy chuẩn mẻ nấu:</span>
-                          <span className="font-bold text-gray-800">
+                          <span className="font-bold text-text-primary">
                             1 Mẻ = {sp.batch_yield || 1} {unitName}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-500 flex justify-between items-center">
+                        <div className="text-xs text-text-muted flex justify-between items-center">
                           <span>Công thức:</span>
                           {hasRecipe ? (
-                            <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[10px]">
+                            <span className="font-bold text-primary bg-primary-soft px-2 py-0.5 rounded text-[10px]">
                               {ingredientCount} thành phần
                             </span>
                           ) : (
-                            <span className="font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-[10px]">
+                            <span className="font-medium text-warning bg-warning/10 px-2 py-0.5 rounded text-[10px]">
                               Chưa cấu hình
                             </span>
                           )}
@@ -235,7 +235,7 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400">
+                    <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-text-muted">
                       <span>{isExpanded ? "Thu gọn chi tiết ▲" : "Xem chi tiết công thức ▼"}</span>
                       {hasRecipe && sp.activeRecipe?.created_at && (
                         <span>Áp dụng từ: {new Date(sp.activeRecipe.created_at).toLocaleDateString("vi-VN")}</span>
@@ -245,9 +245,9 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
 
                   {/* Collapsible Expanded Details */}
                   {isExpanded && (
-                    <div className="bg-gray-50 border-t border-gray-100 p-4 space-y-4 animate-slide-down">
+                    <div className="bg-surface-secondary border-t border-border p-4 space-y-4 animate-slide-down">
                       <div className="space-y-2">
-                        <h5 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                        <h5 className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
                           Thành phần trong 1 mẻ chuẩn ({sp.batch_yield || 1} {unitName})
                         </h5>
                         {hasRecipe && parsedIngredients.length > 0 ? (
@@ -261,10 +261,10 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                               return (
                                 <div 
                                   key={idx} 
-                                  className="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-100 text-xs shadow-sm"
+                                  className="flex justify-between items-center bg-surface-card p-2.5 rounded-lg border border-border text-xs shadow-sm"
                                 >
-                                  <span className="font-semibold text-gray-800">{source?.name || ing.ingredient_id}</span>
-                                  <span className="font-mono bg-gray-50 px-2 py-0.5 rounded border border-gray-200 text-gray-600">
+                                  <span className="font-semibold text-text-primary">{source?.name || ing.ingredient_id}</span>
+                                  <span className="font-mono bg-surface-secondary px-2 py-0.5 rounded border border-border text-text-secondary">
                                     {ing.quantity} {ingUnit}
                                   </span>
                                 </div>
@@ -272,14 +272,14 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                             })}
                           </div>
                         ) : (
-                          <p className="text-xs text-gray-400 italic py-2">
+                          <p className="text-xs text-text-muted italic py-2">
                             Chưa có công thức nào đang được sử dụng hoặc cấu hình bị lỗi.
                           </p>
                         )}
                       </div>
 
                       {/* Actions and Metadata */}
-                      <div className="flex flex-col gap-3 pt-3 border-t border-gray-200/50">
+                      <div className="flex flex-col gap-3 pt-3 border-t border-border/50">
                         <div className="flex flex-wrap gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
                           {sp.recipeHistory.length > 0 && (
                             <HistoryModal title={sp.name} recipeHistory={sp.recipeHistory} />
@@ -297,7 +297,7 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                         </div>
                         
                         {hasRecipe && sp.activeRecipe?.id && (
-                          <span className="text-[9px] font-mono text-gray-400 select-all text-right block">
+                          <span className="text-[9px] font-mono text-text-muted select-all text-right block">
                             Mã CT: {sp.activeRecipe.id}
                           </span>
                         )}
@@ -334,7 +334,7 @@ function DeleteSemiProductButton({ id, name }: { id: string; name: string }) {
           setIsOpen(true);
         }}
         disabled={loading}
-        className="px-3.5 py-2 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 active:scale-95 transition text-xs font-bold border border-rose-200 min-h-[38px] flex items-center justify-center disabled:opacity-50"
+        className="px-3.5 py-2 rounded-lg bg-danger/10 text-danger-active hover:bg-danger/20 active:scale-95 transition text-xs font-bold border border-danger/30 min-h-[38px] flex items-center justify-center disabled:opacity-50"
       >
         {loading ? "..." : "Xóa"}
       </button>

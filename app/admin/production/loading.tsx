@@ -8,7 +8,7 @@ export default function Loading() {
         title="Sản Xuất / Nấu Bếp" 
         subtitle="Ghi nhận lịch sử nấu bếp, chế biến bán thành phẩm để hệ thống tự động trừ kho nguyên liệu."
       />
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={4} />
       </div>
     </div>
