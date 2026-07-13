@@ -4,6 +4,37 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-13 (Claude) - IA-3 residual cleanup + Phase 1+2 wrap-up
+
+**Trigger:** Plan `unified-sprouting-reef.md` Phase 1+2 final sweep. Verified IA-1/IA-2/IA-4/IA-5/IA-6 already done in prior sessions (Antigravity). IA-3 was 95% shipped (page redirect + tab integration done earlier) — only the redundant sidebar nav link remained.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **IA-3 sidebar cleanup** | Removed "Topping Độc Lập" entry from `app/admin/layout.tsx:54`. The `/admin/products/toppings` URL still redirects to `/admin/products/modifiers` for backward compat; the sidebar entry was redundant since the modifiers page exposes the same data via "Bán độc lập" tab. | ✅ | this commit |
+| **Cursor pagination handoff** | Authored `docs/handoffs/2026-07-12-codex-p1-cursor-pagination.md` briefing Codex on P-1 alternative B (cursor keyset pagination). Codex executed same day (`059960b`). | ✅ | this commit |
+
+### Phase 1+2 final state
+| Task | Status | Owner |
+|---|---|---|
+| IA-1 Restructure navItems | ✅ | Antigravity (prior session) |
+| IA-2 Move COGS estimate | ✅ | Antigravity (prior session) |
+| IA-3 Merge Topping standalone | ✅ | Antigravity page-merge (prior) + Claude nav cleanup (this session) |
+| IA-4 Rename labels | ✅ | Antigravity (prior session) |
+| IA-5 Fix expandedGroups | ✅ | Antigravity (prior session) |
+| IA-6 Orphan nav links | ✅ | Antigravity (prior session) |
+| P-1 Cursor pagination | ✅ | Codex (`059960b`) |
+
+### Verification
+- Visual: sidebar group "Menu Bán hàng" now has 4 entries (Danh mục Nhóm, Danh sách Món, Topping & Tùy chọn, Dự toán Giá vốn) — redundant "Topping Độc Lập" gone; modifiers page "Bán độc lập" tab intact.
+- `tsc --noEmit` not re-run for 1-line array removal (cannot break TypeScript typing).
+- Pre-existing dirty files (`supabase/.temp/cli-latest`, `scripts/debug-*.ts`, etc.) intentionally untouched.
+
+### No push
+Per collaboration protocol, changes remain local-only.
+
+---
+
 ## 2026-07-13 (Codex) - P-1 alternative B cursor pagination for findAll*
 
 **Trigger:** User approved handoff direction 1 and required implementation of cursor pagination in `lib/sheets_db.ts`, with explicit test split for `findAllWhere` ordering support and benchmark before/after evidence.

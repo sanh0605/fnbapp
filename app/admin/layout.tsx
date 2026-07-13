@@ -51,7 +51,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Danh mục Nhóm", href: "/admin/products/categories" },
         { name: "Danh sách Món", href: "/admin/products" },
         { name: "Topping & Tùy chọn", href: "/admin/products/modifiers" },
-        { name: "Topping Độc Lập", href: "/admin/products/toppings" },
         { name: "Dự toán Giá vốn", href: "/admin/products/cogs-estimate" },
       ]
     },
