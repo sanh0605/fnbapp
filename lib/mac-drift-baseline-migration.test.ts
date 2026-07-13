@@ -1,8 +1,26 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("MAC drift baseline lock migration", () => {
+  it("reapplies the hardened lock and recovery definitions in a forward migration", () => {
+    const migrationPath = resolve(
+      process.cwd(),
+      "supabase/migrations/0016_harden_mac_drift_baseline_locks.sql",
+    );
+
+    expect(existsSync(migrationPath), "forward migration 0016 must exist").toBe(true);
+    if (!existsSync(migrationPath)) return;
+
+    const migration = readFileSync(migrationPath, "utf8");
+    expect(migration).toContain("alter table public.audit_baseline_locks enable row level security");
+    expect(migration).toContain("prevent_audit_locked_order_line_mutation");
+    expect(migration).toContain("drop function if exists public.apply_mac_drift_recovery(text, text, jsonb)");
+    expect(migration).toContain("drop function if exists public.apply_mac_drift_recovery(jsonb, text, text)");
+    expect(migration).toContain("p_dry_run boolean default true");
+    expect(migration).toContain("grant execute on function public.apply_mac_drift_recovery(text, text, jsonb, boolean) to service_role");
+  });
+
   it("locks audit baselines by order_line_id instead of ledger_id", () => {
     const migration = readFileSync(
       resolve(process.cwd(), "supabase/migrations/0012_mac_drift_baseline_locks.sql"),

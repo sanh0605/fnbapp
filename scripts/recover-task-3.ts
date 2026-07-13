@@ -6,6 +6,7 @@ import { verifySnapshotBundleFiles } from "../lib/recovery-snapshot";
 import {
   assessTask3BaselineLocks,
   buildTask3RecoveryPlan,
+  resolveSupabasePublicKey,
   type Task3BaselineLock,
 } from "../lib/task-3-recovery";
 
@@ -114,7 +115,7 @@ async function readBaselineLocks(supabase: any): Promise<Task3BaselineLock[]> {
 
 async function verifyAnonCannotReadLocks(): Promise<void> {
   const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  const key = resolveSupabasePublicKey(process.env);
   if (!url || !key) throw new Error("Missing Supabase anon configuration for RLS verification");
   const anon = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },

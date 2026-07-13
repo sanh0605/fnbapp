@@ -5,10 +5,18 @@ import {
   assessTask3BaselineLocks,
   buildTask3RecoveryPlan,
   buildTask3SnapshotSelection,
+  resolveSupabasePublicKey,
   verifyTask3RecoveryState,
 } from "@/lib/task-3-recovery";
 
 describe("buildTask3RecoveryPlan", () => {
+  it("prefers the active publishable key when verifying anonymous RLS", () => {
+    expect(resolveSupabasePublicKey({
+      SUPABASE_PUBLISHABLE_KEY: "sb_publishable_active",
+      SUPABASE_ANON_KEY: "legacy-disabled",
+    })).toBe("sb_publishable_active");
+  });
+
   it("builds 170 locks and only the 40 confirmed purchase-cost changes", () => {
     const baselineRaw = readFileSync(
       resolve(process.cwd(), "docs/audits/2026-07-09-mac-drift-baseline-lines.json"),
@@ -29,6 +37,8 @@ describe("buildTask3RecoveryPlan", () => {
       "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
     );
     expect(plan.locks).toHaveLength(170);
+    expect(plan.locks.every(lock => lock.locked_by === "codex@task-3-recovery")).toBe(true);
+    expect(plan.locks.every(lock => lock.reason === "MAC drift baseline 2026-07-13")).toBe(true);
     expect(plan.changes).toHaveLength(40);
     expect(plan.total_delta_vnd).toBe(-933);
     expect(new Set(plan.changes.map(change => change.line_id)).size).toBe(40);
@@ -93,8 +103,8 @@ describe("buildTask3RecoveryPlan", () => {
   it("refuses to seed over a partial or different baseline lock set", () => {
     const expected = [{
       order_line_id: "line-1",
-      locked_by: "TASK_3_E3",
-      reason: "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      locked_by: "codex@task-3-recovery",
+      reason: "MAC drift baseline 2026-07-13",
       source_hash: "a".repeat(64),
       stored_cost_at_sale: 100,
       expected_cost_at_sale: 90,
@@ -174,8 +184,8 @@ describe("buildTask3RecoveryPlan", () => {
 function makeLock(lineId: string, stored: number, expected: number) {
   return {
     order_line_id: lineId,
-    locked_by: "TASK_3_E3",
-    reason: "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+    locked_by: "codex@task-3-recovery",
+    reason: "MAC drift baseline 2026-07-13",
     source_hash: "a".repeat(64),
     stored_cost_at_sale: stored,
     expected_cost_at_sale: expected,

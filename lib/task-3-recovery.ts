@@ -65,6 +65,12 @@ export type Task3SnapshotSelection = {
   itemReferences: string[];
 };
 
+export function resolveSupabasePublicKey(
+  env: Record<string, string | undefined>,
+): string | undefined {
+  return env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY;
+}
+
 export function buildTask3RecoveryPlan(input: {
   baselineRaw: string;
   investigationRaw: string;
@@ -129,8 +135,8 @@ export function buildTask3RecoveryPlan(input: {
     .sort(compareLineId)
     .map(line => ({
       order_line_id: line.line_id,
-      locked_by: "TASK_3_E3",
-      reason: "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      locked_by: "codex@task-3-recovery",
+      reason: "MAC drift baseline 2026-07-13",
       source_hash: sourceHash,
       stored_cost_at_sale: line.stored_cost,
       expected_cost_at_sale: line.expected_cost,
