@@ -2,13 +2,11 @@ import { createHash } from "node:crypto";
 import * as dotenv from "dotenv";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import {
-  buildRecoveryRunId,
-  createSnapshotBundleFiles,
-} from "../lib/recovery-snapshot";
+import { createSnapshotBundleFiles } from "../lib/recovery-snapshot";
 import {
   assessTask3BaselineLocks,
   buildTask3RecoveryPlan,
+  buildTask3RecoveryRunId,
   buildTask3SnapshotSelection,
 } from "../lib/task-3-recovery";
 
@@ -17,12 +15,10 @@ process.env.CLI_MODE = "true";
 
 const BASELINE_PATH = "docs/audits/2026-07-09-mac-drift-baseline-lines.json";
 const INVESTIGATION_PATH = "docs/audits/2026-07-13-task-3.3-drift-investigation.json";
-const RUN_ID = "TASK-3-E3-SELECTIVE-2026-07-13";
-
 async function main(): Promise<void> {
   if (!process.argv.includes("--capture")) {
     console.log("=== TASK 3 PRE-RECOVERY SNAPSHOT (DRY RUN) ===");
-    console.log("Targets: 40 order lines, their order headers, relevant ledger items, 170 baseline locks.");
+    console.log("Targets: 40 order lines, their order headers, relevant ledger items, 40 matching baseline locks.");
     console.log("No sources were read and no files were written.");
     console.log("Pass --capture after Phase A lock verification.");
     return;
@@ -30,7 +26,8 @@ async function main(): Promise<void> {
 
   const baselineRaw = readFileSync(BASELINE_PATH, "utf8");
   const investigationRaw = readFileSync(INVESTIGATION_PATH, "utf8");
-  const plan = buildTask3RecoveryPlan({ baselineRaw, investigationRaw, runId: RUN_ID });
+  const snapshotId = buildTask3RecoveryRunId();
+  const plan = buildTask3RecoveryPlan({ baselineRaw, investigationRaw, runId: snapshotId });
   const selection = buildTask3SnapshotSelection(plan, investigationRaw);
   const { getSupabaseClient } = await import("../lib/supabase");
   const supabase = getSupabaseClient();
@@ -39,8 +36,10 @@ async function main(): Promise<void> {
     readRows(supabase, "orders_v2", "id", query => query.in("id", selection.orderIds)),
     readRows(supabase, "order_lines_v2", "id", query => query.in("id", selection.orderLineIds)),
     readRows(supabase, "stock_ledger", "id", query => query.in("item_reference", selection.itemReferences)),
-    readRows(supabase, "audit_baseline_locks", "order_line_id", query => query),
-    readRows(supabase, "data_recovery_changes", "row_id", query => query.eq("run_id", RUN_ID)),
+    readRows(supabase, "audit_baseline_locks", "order_line_id", query =>
+      query.in("order_line_id", selection.orderLineIds)
+    ),
+    readRows(supabase, "data_recovery_changes", "row_id", query => query.eq("run_id", snapshotId)),
   ]);
 
   if (orders.length !== selection.orderIds.length) {
@@ -52,7 +51,11 @@ async function main(): Promise<void> {
   if (recoveryChanges.length !== 0) {
     throw new Error("Task 3 recovery already has change-log rows; refusing a pre-recovery snapshot");
   }
-  assessTask3BaselineLocks(plan.locks, locks);
+  const selectedLineIds = new Set(selection.orderLineIds);
+  const selectedLocks = plan.locks.filter(lock => selectedLineIds.has(lock.order_line_id));
+  if (assessTask3BaselineLocks(selectedLocks, locks) !== "MATCHED") {
+    throw new Error("Snapshot did not find all 40 matching audit baseline locks");
+  }
   const expectedByLineId = new Map(plan.changes.map(change => [change.line_id, change]));
   for (const line of lines) {
     const expected = expectedByLineId.get(String(line.id));
@@ -61,7 +64,6 @@ async function main(): Promise<void> {
     }
   }
 
-  const snapshotId = buildRecoveryRunId();
   const files = createSnapshotBundleFiles({
     runId: snapshotId,
     capturedAt: new Date().toISOString(),

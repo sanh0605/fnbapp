@@ -3,7 +3,7 @@ import {
   readdirSync,
 } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
-import { verifySnapshotBundleFiles } from "../lib/recovery-snapshot";
+import { isRecoveryRunId, verifySnapshotBundleFiles } from "../lib/recovery-snapshot";
 
 function listFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
@@ -14,7 +14,7 @@ function listFiles(directory: string): string[] {
 
 function main(): void {
   const runId = process.argv.slice(2).find(arg => !arg.startsWith("--"));
-  if (!runId || !/^recovery-\d{8}T\d{9}Z$/.test(runId)) {
+  if (!runId || !isRecoveryRunId(runId)) {
     throw new Error(
       "Usage: vite-node scripts/verify-recovery-snapshot.ts <recovery-run-id>",
     );

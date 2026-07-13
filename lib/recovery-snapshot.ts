@@ -26,6 +26,11 @@ export function buildRecoveryRunId(date = new Date()): string {
   return `recovery-${compactTimestamp}`;
 }
 
+export function isRecoveryRunId(runId: string): boolean {
+  return /^recovery-\d{8}T\d{9}Z$/.test(runId)
+    || /^task-3-recovery-\d{4}-\d{2}-\d{2}-\d{9}Z$/.test(runId);
+}
+
 export function createSnapshotBundleFiles(
   input: SnapshotInput,
 ): Record<string, string> {
@@ -137,7 +142,7 @@ export function verifySnapshotBundleFiles(
 }
 
 function assertSafeRunId(runId: string): void {
-  if (!/^recovery-\d{8}T\d{9}Z$/.test(runId)) {
+  if (!isRecoveryRunId(runId)) {
     throw new Error(`Invalid recovery run ID: ${runId}`);
   }
 }

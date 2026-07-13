@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-13T06:35:23.350Z",
-  "mode": "APPLY_LOCKS",
-  "run_id": "TASK-3-E3-SELECTIVE-2026-07-13",
+  "generated_at": "2026-07-13T08:20:41.773Z",
+  "mode": "RPC_PREVIEW",
+  "run_id": "task-3-recovery-2026-07-13-081930193Z",
   "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
   "baseline_line_count": 170,
   "selected_line_count": 40,

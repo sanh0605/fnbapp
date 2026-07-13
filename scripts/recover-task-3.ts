@@ -2,12 +2,16 @@ import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { verifySnapshotBundleFiles } from "../lib/recovery-snapshot";
+import { isRecoveryRunId } from "../lib/recovery-snapshot";
 import {
   assessTask3BaselineLocks,
   buildTask3RecoveryPlan,
+  buildTask3RpcChanges,
+  buildTask3SnapshotSelection,
   resolveSupabasePublicKey,
   type Task3BaselineLock,
+  type Task3RecoveryPlan,
+  verifyTask3SnapshotFiles,
 } from "../lib/task-3-recovery";
 
 dotenv.config({ path: ".env.local" });
@@ -16,7 +20,7 @@ process.env.CLI_MODE = "true";
 const BASELINE_PATH = "docs/audits/2026-07-09-mac-drift-baseline-lines.json";
 const INVESTIGATION_PATH = "docs/audits/2026-07-13-task-3.3-drift-investigation.json";
 const PLAN_PATH = "docs/audits/2026-07-13-task-3-recovery-plan.json";
-const RUN_ID = "TASK-3-E3-SELECTIVE-2026-07-13";
+const DEFAULT_RUN_ID = "TASK-3-E3-SELECTIVE-2026-07-13";
 const EXPECTED_BASELINE_LINES = 170;
 const EXPECTED_SELECTED_LINES = 40;
 const EXPECTED_TOTAL_DELTA = -933;
@@ -29,11 +33,20 @@ async function main(): Promise<void> {
     throw new Error("Choose only one mode: --apply-locks, --rpc-preview, or --apply");
   }
 
+  const requestedRunId = getArgValue("--run-id");
+  if ((rpcPreview || apply) && !requestedRunId) {
+    throw new Error("--rpc-preview and --apply require --run-id");
+  }
+  const runId = requestedRunId || DEFAULT_RUN_ID;
+
+  const baselineRaw = readFileSync(BASELINE_PATH, "utf8");
+  const investigationRaw = readFileSync(INVESTIGATION_PATH, "utf8");
   const plan = buildTask3RecoveryPlan({
-    baselineRaw: readFileSync(BASELINE_PATH, "utf8"),
-    investigationRaw: readFileSync(INVESTIGATION_PATH, "utf8"),
-    runId: RUN_ID,
+    baselineRaw,
+    investigationRaw,
+    runId,
   });
+  const selection = buildTask3SnapshotSelection(plan, investigationRaw);
   assertFixedScope(plan);
   writeJson(PLAN_PATH, {
     generated_at: new Date().toISOString(),
@@ -68,24 +81,38 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (apply) {
+  if (rpcPreview || apply) {
     const snapshotId = getArgValue("--snapshot-id");
     if (!snapshotId) {
-      throw new Error("--apply requires --snapshot-id from a verified pre-recovery snapshot");
+      throw new Error("--rpc-preview and --apply require --snapshot-id from a verified pre-recovery snapshot");
     }
-    verifySnapshot(plan.source_hash, snapshotId);
+    if (snapshotId !== plan.run_id) {
+      throw new Error("Task 3 snapshot ID must match the requested recovery run ID");
+    }
+    verifySnapshot(plan, selection, snapshotId);
   }
+
+  const selectedLineIds = new Set(selection.orderLineIds);
+  const expectedSelectedLocks = plan.locks.filter(lock => selectedLineIds.has(lock.order_line_id));
+  const selectedLocks = await readBaselineLocks(supabase, selection.orderLineIds);
+  if (assessTask3BaselineLocks(expectedSelectedLocks, selectedLocks) !== "MATCHED") {
+    throw new Error("The 40 selected recovery lines do not have matching baseline locks");
+  }
+  console.log(`Verified selected locks: ${selectedLocks.length}`);
 
   const { data, error } = await supabase.rpc("apply_mac_drift_recovery", {
     p_run_id: plan.run_id,
     p_source_hash: plan.source_hash,
-    p_changes: plan.changes,
+    p_changes: buildTask3RpcChanges(plan),
     p_dry_run: !apply,
   });
   if (error) throw new Error(`apply_mac_drift_recovery: ${error.message}`);
-  assertRpcResult(data, apply);
+  assertRpcResult(data, apply, plan.run_id);
   console.log(`RPC result: ${JSON.stringify(data, null, 2)}`);
-  if (!apply) console.log("No database rows were written by RPC preview.");
+  if (!apply) {
+    await verifyRpcPreviewDidNotWrite(supabase, plan);
+    console.log("No database rows were written by RPC preview.");
+  }
 }
 
 function assertFixedScope(plan: {
@@ -104,11 +131,16 @@ function assertFixedScope(plan: {
   }
 }
 
-async function readBaselineLocks(supabase: any): Promise<Task3BaselineLock[]> {
-  const { data, error } = await supabase
+async function readBaselineLocks(
+  supabase: any,
+  orderLineIds?: string[],
+): Promise<Task3BaselineLock[]> {
+  let query = supabase
     .from("audit_baseline_locks")
     .select("order_line_id,locked_by,reason,source_hash,stored_cost_at_sale,expected_cost_at_sale,delta_vnd")
     .order("order_line_id", { ascending: true });
+  if (orderLineIds) query = query.in("order_line_id", orderLineIds);
+  const { data, error } = await query;
   if (error) throw new Error(`Read audit baseline locks: ${error.message}`);
   return (data || []) as Task3BaselineLock[];
 }
@@ -126,8 +158,8 @@ async function verifyAnonCannotReadLocks(): Promise<void> {
   }
 }
 
-function assertRpcResult(data: any, apply: boolean): void {
-  if (!data || data.run_id !== RUN_ID) throw new Error("Recovery RPC returned an unexpected run ID");
+function assertRpcResult(data: any, apply: boolean, expectedRunId: string): void {
+  if (!data || data.run_id !== expectedRunId) throw new Error("Recovery RPC returned an unexpected run ID");
   if (data.already_applied) {
     if (!apply) throw new Error("Recovery was already applied before the requested preview");
     return;
@@ -146,8 +178,12 @@ function assertRpcResult(data: any, apply: boolean): void {
   }
 }
 
-function verifySnapshot(sourceHash: string, snapshotId: string): void {
-  if (!/^recovery-\d{8}T\d{9}Z$/.test(snapshotId)) {
+function verifySnapshot(
+  plan: Task3RecoveryPlan,
+  selection: ReturnType<typeof buildTask3SnapshotSelection>,
+  snapshotId: string,
+): void {
+  if (!isRecoveryRunId(snapshotId)) {
     throw new Error(`Invalid recovery snapshot ID: ${snapshotId}`);
   }
   const bundleDirectory = resolve(process.cwd(), "recovery-snapshots", snapshotId);
@@ -157,16 +193,46 @@ function verifySnapshot(sourceHash: string, snapshotId: string): void {
       readFileSync(filePath, "utf8"),
     ]),
   );
-  const verification = verifySnapshotBundleFiles(files);
-  if (!verification.valid) {
-    throw new Error(`Recovery snapshot integrity failed: ${verification.errors.join("; ")}`);
+  verifyTask3SnapshotFiles({ files, snapshotId, plan, selection });
+}
+
+async function verifyRpcPreviewDidNotWrite(
+  supabase: any,
+  plan: Task3RecoveryPlan,
+): Promise<void> {
+  const lineIds = plan.changes.map(change => change.line_id);
+  const [linesResult, recoveryResult] = await Promise.all([
+    supabase
+      .from("order_lines_v2")
+      .select("id,order_id,cost_at_sale")
+      .in("id", lineIds)
+      .order("id", { ascending: true }),
+    supabase
+      .from("data_recovery_changes")
+      .select("row_id", { count: "exact" })
+      .eq("run_id", plan.run_id),
+  ]);
+  if (linesResult.error) throw new Error(`Verify dry-run order lines: ${linesResult.error.message}`);
+  if (recoveryResult.error) throw new Error(`Verify dry-run recovery rows: ${recoveryResult.error.message}`);
+  const liveById = new Map((linesResult.data || []).map((line: any) => [String(line.id), line]));
+  for (const change of plan.changes) {
+    const line = liveById.get(change.line_id) as any;
+    if (
+      !line
+      || String(line.order_id) !== change.order_id
+      || Number(line.cost_at_sale) !== change.old_cost_at_sale
+    ) {
+      throw new Error(`Dry-run changed or lost order line: ${change.line_id}`);
+    }
   }
-  const manifest = JSON.parse(files["manifest.json"]) as {
-    sourceHash?: string;
-  };
-  if (manifest.sourceHash !== sourceHash) {
-    throw new Error("Recovery snapshot source hash does not match the Task 3 baseline");
+  if (liveById.size !== plan.selected_line_count) {
+    throw new Error(`Dry-run verification found ${liveById.size}/40 order lines`);
   }
+  if ((recoveryResult.count || 0) !== 0 || (recoveryResult.data || []).length !== 0) {
+    throw new Error("Dry-run unexpectedly wrote data_recovery_changes rows");
+  }
+  console.log(`Verified unchanged order lines: ${liveById.size}`);
+  console.log(`Recovery audit rows for run ID: ${recoveryResult.count || 0}`);
 }
 
 function listFiles(directory: string): string[] {

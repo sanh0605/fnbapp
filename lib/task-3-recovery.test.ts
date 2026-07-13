@@ -1,15 +1,92 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { createSnapshotBundleFiles } from "@/lib/recovery-snapshot";
 import {
   assessTask3BaselineLocks,
   buildTask3RecoveryPlan,
+  buildTask3RecoveryRunId,
+  buildTask3RpcChanges,
   buildTask3SnapshotSelection,
   resolveSupabasePublicKey,
+  verifyTask3SnapshotFiles,
   verifyTask3RecoveryState,
 } from "@/lib/task-3-recovery";
 
 describe("buildTask3RecoveryPlan", () => {
+  it("builds a timestamped Task 3 recovery run ID", () => {
+    expect(buildTask3RecoveryRunId(new Date("2026-07-13T07:15:30.123Z")))
+      .toBe("task-3-recovery-2026-07-13-071530123Z");
+  });
+
+  it("builds the exact four-field RPC change payload", () => {
+    expect(buildTask3RpcChanges({
+      changes: [{
+        line_id: "line-1",
+        order_id: "order-1",
+        order_no: "UCK000001",
+        old_cost_at_sale: 100,
+        new_cost_at_sale: 90,
+        delta_vnd: -10,
+        classification: "PURCHASE_COST_RECOVERY",
+      }],
+    })).toEqual([{
+      line_id: "line-1",
+      order_id: "order-1",
+      old_cost_at_sale: 100,
+      new_cost_at_sale: 90,
+    }]);
+  });
+
+  it("verifies a targeted snapshot against its exact plan and selection", () => {
+    const runId = "task-3-recovery-2026-07-13-071530123Z";
+    const lock = makeLock("line-1", 100, 90);
+    const plan = {
+      run_id: runId,
+      source_hash: "a".repeat(64),
+      baseline_line_count: 1,
+      selected_line_count: 1,
+      total_delta_vnd: -10,
+      locks: [lock],
+      changes: [{
+        line_id: "line-1",
+        order_id: "order-1",
+        order_no: "UCK000001",
+        old_cost_at_sale: 100,
+        new_cost_at_sale: 90,
+        delta_vnd: -10,
+        classification: "PURCHASE_COST_RECOVERY",
+      }],
+    };
+    const selection = {
+      orderLineIds: ["line-1"],
+      orderIds: ["order-1"],
+      itemReferences: ["ING-1"],
+    };
+    const files = createSnapshotBundleFiles({
+      runId,
+      capturedAt: "2026-07-13T07:15:30.123Z",
+      sourceHash: plan.source_hash,
+      sheets: {},
+      supabase: {
+        orders_v2: [{ id: "order-1" }],
+        order_lines_v2: [{ id: "line-1", order_id: "order-1", cost_at_sale: 100 }],
+        stock_ledger: [{ id: "ledger-1", item_reference: "ING-1" }],
+        audit_baseline_locks: [lock],
+        data_recovery_changes: [],
+      },
+    });
+
+    expect(verifyTask3SnapshotFiles({ files, snapshotId: runId, plan, selection })).toEqual({
+      checkedFiles: 10,
+      orderCount: 1,
+      orderLineCount: 1,
+      ledgerRowCount: 1,
+      baselineLockCount: 1,
+      recoveryChangeCount: 0,
+    });
+  });
+
   it("prefers the active publishable key when verifying anonymous RLS", () => {
     expect(resolveSupabasePublicKey({
       SUPABASE_PUBLISHABLE_KEY: "sb_publishable_active",

@@ -115,6 +115,15 @@ describe("createSnapshotBundleFiles", () => {
       }),
     ).toThrow("Invalid recovery run ID");
   });
+
+  it("accepts a scoped Task 3 recovery run ID", () => {
+    expect(() => createSnapshotBundleFiles({
+      runId: "task-3-recovery-2026-07-13-071530123Z",
+      capturedAt: "2026-07-13T07:15:30.123Z",
+      sheets: {},
+      supabase: {},
+    })).not.toThrow();
+  });
 });
 
 describe("buildRecoveryRunId", () => {

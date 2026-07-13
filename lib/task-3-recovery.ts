@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { verifySnapshotBundleFiles } from "./recovery-snapshot";
 
 type BaselineLine = {
   line_id: string;
@@ -64,6 +65,117 @@ export type Task3SnapshotSelection = {
   orderIds: string[];
   itemReferences: string[];
 };
+
+export type Task3RpcChange = Pick<
+  Task3RecoveryChange,
+  "line_id" | "order_id" | "old_cost_at_sale" | "new_cost_at_sale"
+>;
+
+export type Task3SnapshotVerification = {
+  checkedFiles: number;
+  orderCount: number;
+  orderLineCount: number;
+  ledgerRowCount: number;
+  baselineLockCount: number;
+  recoveryChangeCount: number;
+};
+
+export function buildTask3RecoveryRunId(date = new Date()): string {
+  const iso = date.toISOString();
+  const datePart = iso.slice(0, 10);
+  const timePart = iso.slice(11).replace(/[:.]/g, "");
+  return `task-3-recovery-${datePart}-${timePart}`;
+}
+
+export function buildTask3RpcChanges(
+  plan: Pick<Task3RecoveryPlan, "changes">,
+): Task3RpcChange[] {
+  return plan.changes.map(change => ({
+    line_id: change.line_id,
+    order_id: change.order_id,
+    old_cost_at_sale: change.old_cost_at_sale,
+    new_cost_at_sale: change.new_cost_at_sale,
+  }));
+}
+
+export function verifyTask3SnapshotFiles(input: {
+  files: Record<string, string>;
+  snapshotId: string;
+  plan: Task3RecoveryPlan;
+  selection: Task3SnapshotSelection;
+}): Task3SnapshotVerification {
+  const integrity = verifySnapshotBundleFiles(input.files);
+  if (!integrity.valid) {
+    throw new Error(`Task 3 snapshot integrity failed: ${integrity.errors.join("; ")}`);
+  }
+
+  const manifest = parseArtifact<{
+    runId?: string;
+    sourceHash?: string;
+  }>(input.files["manifest.json"], "snapshot manifest");
+  if (manifest.runId !== input.snapshotId) {
+    throw new Error("Task 3 snapshot manifest run ID mismatch");
+  }
+  if (manifest.sourceHash !== input.plan.source_hash) {
+    throw new Error("Task 3 snapshot source hash mismatch");
+  }
+
+  const orders = parseSnapshotRows(input.files, "orders_v2");
+  const lines = parseSnapshotRows(input.files, "order_lines_v2");
+  const ledger = parseSnapshotRows(input.files, "stock_ledger");
+  const locks = parseSnapshotRows(input.files, "audit_baseline_locks");
+  const recoveryChanges = parseSnapshotRows(input.files, "data_recovery_changes");
+
+  assertExactIds(orders, input.selection.orderIds, "order headers", "id");
+  assertExactIds(lines, input.selection.orderLineIds, "order lines", "id");
+  for (const change of input.plan.changes) {
+    const line = lines.find(row => String(row.id || "") === change.line_id);
+    if (
+      !line
+      || String(line.order_id || "") !== change.order_id
+      || Number(line.cost_at_sale) !== change.old_cost_at_sale
+    ) {
+      throw new Error(`Task 3 snapshot order line mismatch: ${change.line_id}`);
+    }
+  }
+
+  const selectedIds = new Set(input.selection.orderLineIds);
+  const expectedLocks = input.plan.locks.filter(lock => selectedIds.has(lock.order_line_id));
+  if (expectedLocks.length !== input.selection.orderLineIds.length) {
+    throw new Error("Task 3 snapshot plan is missing selected locks");
+  }
+  if (assessTask3BaselineLocks(expectedLocks, locks) !== "MATCHED") {
+    throw new Error("Task 3 snapshot selected locks are missing");
+  }
+
+  const expectedItems = new Set(input.selection.itemReferences);
+  const actualItems = new Set<string>();
+  for (const row of ledger) {
+    const itemReference = String(row.item_reference || "");
+    if (!expectedItems.has(itemReference)) {
+      throw new Error(`Task 3 snapshot contains unrelated ledger item: ${itemReference}`);
+    }
+    actualItems.add(itemReference);
+  }
+  if (
+    actualItems.size !== expectedItems.size
+    || [...expectedItems].some(itemReference => !actualItems.has(itemReference))
+  ) {
+    throw new Error("Task 3 snapshot ledger item set is incomplete");
+  }
+  if (recoveryChanges.length !== 0) {
+    throw new Error("Task 3 snapshot contains pre-existing recovery changes");
+  }
+
+  return {
+    checkedFiles: integrity.checkedFiles,
+    orderCount: orders.length,
+    orderLineCount: lines.length,
+    ledgerRowCount: ledger.length,
+    baselineLockCount: locks.length,
+    recoveryChangeCount: recoveryChanges.length,
+  };
+}
 
 export function resolveSupabasePublicKey(
   env: Record<string, string | undefined>,
@@ -306,6 +418,34 @@ function parseArtifact<T>(raw: string, name: string): T {
     return JSON.parse(raw) as T;
   } catch {
     throw new Error(`Invalid ${name} artifact JSON`);
+  }
+}
+
+function parseSnapshotRows(
+  files: Record<string, string>,
+  tableName: string,
+): Array<Record<string, unknown>> {
+  const path = `canonical/supabase/${tableName}.json`;
+  const rows = parseArtifact<unknown>(files[path], `snapshot ${tableName}`);
+  if (!Array.isArray(rows) || rows.some(row => !row || typeof row !== "object" || Array.isArray(row))) {
+    throw new Error(`Invalid Task 3 snapshot rows: ${tableName}`);
+  }
+  return rows as Array<Record<string, unknown>>;
+}
+
+function assertExactIds(
+  rows: Array<Record<string, unknown>>,
+  expectedIds: string[],
+  label: string,
+  idColumn: string,
+): void {
+  const actualIds = rows.map(row => String(row[idColumn] || "")).sort();
+  const sortedExpected = [...expectedIds].sort();
+  if (
+    actualIds.length !== sortedExpected.length
+    || actualIds.some((id, index) => id !== sortedExpected[index])
+  ) {
+    throw new Error(`Task 3 snapshot ${label} do not match the selected IDs`);
   }
 }
 
