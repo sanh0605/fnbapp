@@ -2,6 +2,10 @@
 
 Compact 1-line-per-task archive of finished work. Detailed entries remain in `DEVELOPMENT-TRACKING.md` (chronicle log, newest first).
 
+## 2026-07-13
+
+- **E2. Task 3.3 — Investigate remaining 97.6% drift (Codex)** — Read-only replay classified the fixed 170-line baseline into 40 purchase-cost-recovery lines, 34 known backdated-ledger lines, and 96 lines whose exact write-time inputs are no longer reconstructable. Added a reproducible audit script, structured JSON artifact, and investigation report. Verification: 336/336 tests, TypeScript 0 errors.
+
 ## 2026-07-12
 
 - **U5. Modifiers page design system migration (Antigravity)** — Final U4 cleanup. 36 hardcoded colors → 0 in `/admin/products/modifiers/`. Did NOT touch `actions.ts` (Codex logic). Commit `31c2a95`. **Design System 100% complete**.

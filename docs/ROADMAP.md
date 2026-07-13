@@ -45,13 +45,12 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| **E2. Task 3.3 — Investigate remaining 97.6% drift** | Codex | Audit scripts | TBD (Claude writes next) | None |
+| (none) | — | — | — | — |
 
 ### P2 — Backlog (medium impact)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **E2. Task 3.3 — Investigate remaining 97.6% drift** | Codex | Audit scripts | Backdating explains only 2,906 / 119,782 VND of historical drift. Other ~116k VND source unknown (likely historical backfill). Need read-only investigation before recovery meaningful. |
 | **H1. Push local commits** | Claude | git | 16+ commits this session, all local. Push when user confirms batch is stable. |
 
 ### P3 — Depends on verification
@@ -64,7 +63,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Blocker | Resolution path |
 |---|---|---|
-| **E3. Task 3 recovery** — Option A lock + Option B recompute 170 baseline | Needs E2 (root cause of 97.6% non-backdating drift) first | Run E2 investigation, then decide recovery scope |
+| **E3. Task 3 recovery** — Option A lock + selective recompute | Needs an accounting-policy decision after E2 | Decide whether to recompute the 40 confirmed purchase-cost lines, manually review 34 backdated lines, and lock the 96 provenance-gap lines |
 
 ## Out of scope (do not start without explicit approval)
 

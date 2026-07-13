@@ -4,6 +4,33 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-13 (Codex) - Task 3.3 MAC drift investigation
+
+**Trigger:** Read-only handoff to investigate the 170-line MAC drift baseline after Task 3.2 explained only 2.4% of the absolute drift.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Fixed-baseline replay** | Added `scripts/investigate-task-3-3-drift.ts` to replay the fixed 170-line baseline against current MAC, legacy recipe selection, FIFO variants, visibility windows, sale-time recipes, and pre-recovery purchase costs. The script reads production data and writes only a local JSON artifact. | Done | this commit |
+| **Root-cause classification** | Classified all 170 lines into 40 purchase-cost-recovery lines (-933 VND signed), 34 previously detected backdated-ledger lines (+1,762 VND signed; 2,906 VND absolute), and 96 provenance-gap lines (+118,954 VND signed) whose exact write-time inputs are no longer reconstructable. | Done | this commit |
+| **Audit artifacts** | Added the structured JSON result and `docs/audits/2026-07-13-task-3.3-drift-investigation.md` with H1-H6 verdicts, dead ends, recovery boundaries, and schema recommendations. | Done | this commit |
+
+### Verification
+- `node_modules/.bin/vite-node.cmd scripts/investigate-task-3-3-drift.ts`: completed; all 170 current expected costs matched the fixed baseline, root-cause buckets totaled 170, and the script confirmed no database rows were written.
+- `node_modules/.bin/vitest.cmd run`: 336/336 pass across 54 test files.
+- `node_modules/.bin/tsc.cmd --noEmit`: 0 errors.
+- `git diff --check`: clean.
+
+### Recovery recommendation
+- Recompute candidates: 40 purchase-cost-recovery lines, using the reviewed baseline list and existing recovery controls.
+- Manual review: 34 backdated-ledger lines through the Task 3.2 workflow.
+- Do not auto-recompute the remaining 96 lines under a claimed root cause; retain stored historical COGS unless an explicit accounting-policy decision approves a bulk restatement.
+
+### No push
+Per collaboration protocol, the commit remains local-only.
+
+---
+
 ## 2026-07-13 (Claude) - IA-3 residual cleanup + Phase 1+2 wrap-up
 
 **Trigger:** Plan `unified-sprouting-reef.md` Phase 1+2 final sweep. Verified IA-1/IA-2/IA-4/IA-5/IA-6 already done in prior sessions (Antigravity). IA-3 was 95% shipped (page redirect + tab integration done earlier) — only the redundant sidebar nav link remained.
