@@ -30,4 +30,18 @@ describe("MAC drift baseline lock migration", () => {
     expect(migration).toContain("'cost_at_sale'");
     expect(migration).toContain("update public.order_lines_v2");
   });
+
+  it("supports a read-only preview and fail-fast per-line advisory locks", () => {
+    const migration = readFileSync(
+      resolve(process.cwd(), "supabase/migrations/0012_mac_drift_baseline_locks.sql"),
+      "utf8",
+    );
+
+    expect(migration).toContain("p_dry_run boolean default true");
+    expect(migration).toContain("set_config('lock_timeout', '5s', true)");
+    expect(migration).toContain("pg_advisory_xact_lock(hashtext('mac-drift-line:' || v_line_id))");
+    expect(migration).toContain("order by value->>'line_id'");
+    expect(migration).toContain("if p_dry_run then");
+    expect(migration).toContain("'preview', v_preview");
+  });
 });

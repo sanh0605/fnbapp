@@ -1,0 +1,1903 @@
+{
+  "generated_at": "2026-07-13T04:04:13.610Z",
+  "mode": "LOCAL_PREVIEW",
+  "run_id": "TASK-3-E3-SELECTIVE-2026-07-13",
+  "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+  "baseline_line_count": 170,
+  "selected_line_count": 40,
+  "total_delta_vnd": -933,
+  "locks": [
+    {
+      "order_line_id": "ol-02baef8b-78de-4935-8b16-90dc30f9d7aa",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7286,
+      "expected_cost_at_sale": 7513,
+      "delta_vnd": 227
+    },
+    {
+      "order_line_id": "ol-0607f92b-27d5-4fe5-b374-96eb800120b8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11797,
+      "expected_cost_at_sale": 11751,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-08bbc0ba-6f00-4aa4-a71c-cec7e96ff08e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4512,
+      "expected_cost_at_sale": 4591,
+      "delta_vnd": 79
+    },
+    {
+      "order_line_id": "ol-09d140e1-b29d-4727-b478-4aa7a61bf0ae",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 13150,
+      "expected_cost_at_sale": 14363,
+      "delta_vnd": 1213
+    },
+    {
+      "order_line_id": "ol-0bcf1489-3321-431a-9796-e42ab394f80f",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 1471,
+      "expected_cost_at_sale": 5220,
+      "delta_vnd": 3749
+    },
+    {
+      "order_line_id": "ol-0c55be69-427d-490a-9c57-a7889f650ae2",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12869,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-0c935fa5-57c4-4b3e-91d9-61e64db22a4e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 9451,
+      "expected_cost_at_sale": 9504,
+      "delta_vnd": 53
+    },
+    {
+      "order_line_id": "ol-0ca9c46f-ea63-48ad-a80c-75d18baf7ca1",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 22900,
+      "expected_cost_at_sale": 23506,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-0dd7e0eb-049f-47ff-bc26-8ecc5c50e4a6",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8996,
+      "expected_cost_at_sale": 9451,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-100de072-8147-4a32-b7ef-457d5318f6e5",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11741,
+      "expected_cost_at_sale": 11695,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-11d14c0e-cb1d-40e0-9d2e-8fc59aa307c0",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10530,
+      "expected_cost_at_sale": 10521,
+      "delta_vnd": -9
+    },
+    {
+      "order_line_id": "ol-11dbf85d-80dc-4ca3-80c0-f54f64563dfe",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4512,
+      "expected_cost_at_sale": 4591,
+      "delta_vnd": 79
+    },
+    {
+      "order_line_id": "ol-1410566f-d683-4d2a-8a7a-77ed52fa2d1a",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-17d621bd-8160-438e-9160-d0758d825515",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12241,
+      "expected_cost_at_sale": 13151,
+      "delta_vnd": 910
+    },
+    {
+      "order_line_id": "ol-189223d1-d63e-4e10-9a03-b85c98ad985c",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7527,
+      "expected_cost_at_sale": 8133,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-190ed664-a9b6-4140-8b8c-21ea01f40f22",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11433,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-19dc6b50-8e36-4c42-ac3b-d1c33c21f02d",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 5118,
+      "expected_cost_at_sale": 5107,
+      "delta_vnd": -11
+    },
+    {
+      "order_line_id": "ol-1ba174cf-9b30-4ca2-8dc5-976d28925ac3",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10779,
+      "expected_cost_at_sale": 11753,
+      "delta_vnd": 974
+    },
+    {
+      "order_line_id": "ol-1c680878-3b15-476e-a540-f38ab4c85248",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 14806,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 354
+    },
+    {
+      "order_line_id": "ol-1ed03b43-482c-44f2-85a1-a3b9214776d3",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 5246,
+      "expected_cost_at_sale": 8473,
+      "delta_vnd": 3227
+    },
+    {
+      "order_line_id": "ol-2050e85f-56b3-4182-ba4e-a896b60ef966",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 19265,
+      "expected_cost_at_sale": 38887,
+      "delta_vnd": 19622
+    },
+    {
+      "order_line_id": "ol-212c1f36-1497-4f1b-a9c1-f69b7459a1a7",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 58486,
+      "expected_cost_at_sale": 58474,
+      "delta_vnd": -12
+    },
+    {
+      "order_line_id": "ol-21ff85ab-b038-459b-a1ae-b80bfb37b5a6",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-24ce9f0f-821d-4b9b-aca7-091e56d7e87e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7527,
+      "expected_cost_at_sale": 8133,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-24dd1735-16e6-4a7f-a69a-5a7f05d487e4",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12912,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-2503f594-c200-48c4-9b3c-6f74be7c47c5",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10491,
+      "expected_cost_at_sale": 10521,
+      "delta_vnd": 30
+    },
+    {
+      "order_line_id": "ol-2530a268-724f-4b53-9595-d376f0d40a38",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8021,
+      "expected_cost_at_sale": 8016,
+      "delta_vnd": -5
+    },
+    {
+      "order_line_id": "ol-25ca7886-a401-4ef1-9b55-2f49b4f009e8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 23807,
+      "expected_cost_at_sale": 24511,
+      "delta_vnd": 704
+    },
+    {
+      "order_line_id": "ol-270d3467-e00e-4e74-a588-80ca687dd7e8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12707,
+      "expected_cost_at_sale": 12700,
+      "delta_vnd": -7
+    },
+    {
+      "order_line_id": "ol-27ec5f1b-a35a-4bcc-9075-945ebb369e7b",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12869,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-2b8614bc-817a-49ae-99c2-40d100607ae9",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 39084,
+      "expected_cost_at_sale": 39077,
+      "delta_vnd": -7
+    },
+    {
+      "order_line_id": "ol-2c84bb22-58c5-4000-bcc8-b84eb7f15863",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8890,
+      "expected_cost_at_sale": 9497,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-2d1add95-23a8-4371-8b70-e0f5e1649235",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-2d2daf58-0823-4986-90c4-0b7aaa158510",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-2d7494a5-daac-45bd-8e9d-87bdc9fd2787",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11394,
+      "expected_cost_at_sale": 11280,
+      "delta_vnd": -114
+    },
+    {
+      "order_line_id": "ol-2de57ff1-9295-49a0-ac10-c61510b7fc78",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4992,
+      "expected_cost_at_sale": 5220,
+      "delta_vnd": 228
+    },
+    {
+      "order_line_id": "ol-2f759bea-52bd-42ac-b8ad-5e002e46523e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 3081,
+      "expected_cost_at_sale": 3070,
+      "delta_vnd": -11
+    },
+    {
+      "order_line_id": "ol-302b9c16-4ee6-4315-8b48-0d5c2d263ef1",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10530,
+      "expected_cost_at_sale": 10521,
+      "delta_vnd": -9
+    },
+    {
+      "order_line_id": "ol-328e2777-96ff-434f-854a-6ec8dea070a6",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6115,
+      "expected_cost_at_sale": 6110,
+      "delta_vnd": -5
+    },
+    {
+      "order_line_id": "ol-33f776a0-9628-4d31-8952-b3fa6abce970",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11432,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -7
+    },
+    {
+      "order_line_id": "ol-35ef2d85-9c6b-42e6-a94b-ca822e384423",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11280,
+      "expected_cost_at_sale": 11479,
+      "delta_vnd": 199
+    },
+    {
+      "order_line_id": "ol-39feeb71-c9fc-49de-b8dc-0ec665cf6b87",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11741,
+      "expected_cost_at_sale": 11695,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-3d801340-0a70-4649-8f53-35f31292b493",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7527,
+      "expected_cost_at_sale": 8133,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-3eabeae1-7644-4078-99e0-9324824313b7",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 14806,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 354
+    },
+    {
+      "order_line_id": "ol-3f8e8167-c725-4682-a052-24320785ff1e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12843,
+      "expected_cost_at_sale": 19290,
+      "delta_vnd": 6447
+    },
+    {
+      "order_line_id": "ol-415d491a-8fc6-499f-84b9-5fd47a99e03e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11797,
+      "expected_cost_at_sale": 11751,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-42cc0fcb-2830-4a64-9207-9fac5f763abf",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 2256,
+      "expected_cost_at_sale": 2296,
+      "delta_vnd": 40
+    },
+    {
+      "order_line_id": "ol-44752083-a455-40f7-926d-174ebae9e014",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11805,
+      "expected_cost_at_sale": 11796,
+      "delta_vnd": -9
+    },
+    {
+      "order_line_id": "ol-45a78ac1-8f80-4a30-ac57-4c15c2c0a6fb",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11338,
+      "expected_cost_at_sale": 11944,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-45d70f7a-4370-44f5-91c1-0731193343af",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 784,
+      "expected_cost_at_sale": 4136,
+      "delta_vnd": 3352
+    },
+    {
+      "order_line_id": "ol-463bfc8b-f2b2-45c9-ba48-9312b6374d7c",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10692,
+      "expected_cost_at_sale": 10684,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-46fee712-f057-4b10-89a1-53f0fc47a330",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11967,
+      "expected_cost_at_sale": 11959,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-47f4246a-d80a-49c9-b8ed-5184e5545700",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-4926a414-646f-4612-8043-80af626a4ec8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 13006,
+      "expected_cost_at_sale": 14219,
+      "delta_vnd": 1213
+    },
+    {
+      "order_line_id": "ol-4aa3fdbb-5724-4737-96be-f02ed29e0cb4",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 9143,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": 2282
+    },
+    {
+      "order_line_id": "ol-4b3239ea-05a9-41e9-8768-ba8feda6e7cc",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-4b6c5fdb-e90c-4285-a921-d3256d9bcfd2",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10692,
+      "expected_cost_at_sale": 10684,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-4bc25931-1363-412d-ab77-4c7e5dfd4d9e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12595,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 2565
+    },
+    {
+      "order_line_id": "ol-4fadad25-4f78-4643-a274-2ab0ee47a0d8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12566,
+      "expected_cost_at_sale": 12869,
+      "delta_vnd": 303
+    },
+    {
+      "order_line_id": "ol-50418b9d-ad79-4f3a-b81d-116860e5d167",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12566,
+      "expected_cost_at_sale": 12869,
+      "delta_vnd": 303
+    },
+    {
+      "order_line_id": "ol-510ae865-1447-4266-b0f1-d9cf2f67d415",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11905,
+      "expected_cost_at_sale": 12869,
+      "delta_vnd": 964
+    },
+    {
+      "order_line_id": "ol-51571095-c6a4-492a-98a7-b82f8f3f788d",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 5223,
+      "expected_cost_at_sale": 5220,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-5158bf2a-f098-40a0-b14d-f22c99576bc3",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11433,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-537d7a6c-e275-4b10-b46d-be50a57b7d08",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 9451,
+      "expected_cost_at_sale": 9504,
+      "delta_vnd": 53
+    },
+    {
+      "order_line_id": "ol-575cecb2-6c3e-4ac9-968e-ca5d04795ecf",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 14806,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 354
+    },
+    {
+      "order_line_id": "ol-58de83dc-a404-4d0f-bf28-78249c381a94",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12566,
+      "expected_cost_at_sale": 12869,
+      "delta_vnd": 303
+    },
+    {
+      "order_line_id": "ol-59f05df9-52b1-48a4-894e-ca9a62d0713c",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 15054,
+      "expected_cost_at_sale": 16267,
+      "delta_vnd": 1213
+    },
+    {
+      "order_line_id": "ol-5a3bc120-e249-4b6a-b537-b841e4842698",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 14806,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 354
+    },
+    {
+      "order_line_id": "ol-5a7e6d9b-bbaf-4076-acdb-74681e899620",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4992,
+      "expected_cost_at_sale": 5220,
+      "delta_vnd": 228
+    },
+    {
+      "order_line_id": "ol-5bc858f6-879b-4470-becd-04f9e540fa3e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8890,
+      "expected_cost_at_sale": 9497,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-5c6ad57b-944b-44f5-bf10-d1e4f22d8d69",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6503,
+      "expected_cost_at_sale": 7109,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-6012a1b2-bc6d-4ca1-b2ca-1c2e567e3166",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-61daef94-d8eb-44b3-9504-286679fbe8dc",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10530,
+      "expected_cost_at_sale": 10521,
+      "delta_vnd": -9
+    },
+    {
+      "order_line_id": "ol-63e31e53-150e-4771-bc5d-4f20afdcb67e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11432,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -7
+    },
+    {
+      "order_line_id": "ol-659bc0f4-be4a-4b22-9f97-cfc7be936a28",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11432,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -7
+    },
+    {
+      "order_line_id": "ol-680363dc-2816-4347-bfff-d48513e2c5e8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6121,
+      "expected_cost_at_sale": 6576,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-68b741f5-49cb-4286-b299-a57a3facc4ac",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-702dd00c-ef77-43a5-bb9f-f28b42541b76",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6115,
+      "expected_cost_at_sale": 6110,
+      "delta_vnd": -5
+    },
+    {
+      "order_line_id": "ol-74493ba1-9a99-4c26-9416-4de6e1373f64",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 9143,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": 2282
+    },
+    {
+      "order_line_id": "ol-7484bc0a-6835-4643-b962-945efbcce4d8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11344,
+      "expected_cost_at_sale": 11697,
+      "delta_vnd": 353
+    },
+    {
+      "order_line_id": "ol-765c687e-5b9d-4732-a229-f4640241bf6a",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12566,
+      "expected_cost_at_sale": 12869,
+      "delta_vnd": 303
+    },
+    {
+      "order_line_id": "ol-769255d6-4063-46e8-bdd4-8b45108f57d0",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4512,
+      "expected_cost_at_sale": 4591,
+      "delta_vnd": 79
+    },
+    {
+      "order_line_id": "ol-7750236a-6537-42ca-8769-b707379cc7d5",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11741,
+      "expected_cost_at_sale": 11695,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-78205eb7-4784-483a-a09c-cf227de78dcc",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6422,
+      "expected_cost_at_sale": 9645,
+      "delta_vnd": 3223
+    },
+    {
+      "order_line_id": "ol-78d9a454-fb4a-4cea-9243-9dfc8c7bc7b5",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12843,
+      "expected_cost_at_sale": 19290,
+      "delta_vnd": 6447
+    },
+    {
+      "order_line_id": "ol-808f6cfd-c8f4-42a6-ab48-7613ef944ee1",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11797,
+      "expected_cost_at_sale": 11751,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-82d206f2-d760-4f6f-a3b7-28c485d6609f",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 23599,
+      "expected_cost_at_sale": 25418,
+      "delta_vnd": 1819
+    },
+    {
+      "order_line_id": "ol-85284dd8-2bab-466f-a8c7-e33e7324fbde",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 5223,
+      "expected_cost_at_sale": 5220,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-8537af3a-9c83-4294-8015-2801baf9c280",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8890,
+      "expected_cost_at_sale": 9497,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-86a1a33a-7ce9-4d13-9fd5-19ed012bbac3",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-8884d8e2-45be-4c1d-961e-5e06c8d40e45",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 18346,
+      "expected_cost_at_sale": 18330,
+      "delta_vnd": -16
+    },
+    {
+      "order_line_id": "ol-8b65b6ac-47e8-4c34-83a1-8cebab1ffb31",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6503,
+      "expected_cost_at_sale": 7109,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-8c7deabb-d7b4-4c5b-8e2b-c02ab8d78448",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12901,
+      "expected_cost_at_sale": 13110,
+      "delta_vnd": 209
+    },
+    {
+      "order_line_id": "ol-8d719814-6197-4c00-94d9-d9a1e1366334",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6503,
+      "expected_cost_at_sale": 7109,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-8f83a553-e90d-4caa-8d57-8070a75d0d68",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6121,
+      "expected_cost_at_sale": 6576,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-902c0e65-19f0-4910-af59-951647b78037",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 3081,
+      "expected_cost_at_sale": 3070,
+      "delta_vnd": -11
+    },
+    {
+      "order_line_id": "ol-91b3ca39-dad8-4a2d-b387-f0ad7e6407f3",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4512,
+      "expected_cost_at_sale": 4591,
+      "delta_vnd": 79
+    },
+    {
+      "order_line_id": "ol-9579e3ee-54c4-4768-a46c-6b8d8e5f3d19",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12869,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-9b2e86e2-37e6-4f35-a754-936fbe0c08e5",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-9b754ba8-dfe3-4fe5-acbe-4869acaff1cf",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6422,
+      "expected_cost_at_sale": 10669,
+      "delta_vnd": 4247
+    },
+    {
+      "order_line_id": "ol-9e4e3133-ca8a-4695-a5b5-de45a0a28fdd",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 23481,
+      "expected_cost_at_sale": 23390,
+      "delta_vnd": -91
+    },
+    {
+      "order_line_id": "ol-9fc9f4f1-6306-4774-a7ec-74bccd14eac5",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6422,
+      "expected_cost_at_sale": 10669,
+      "delta_vnd": 4247
+    },
+    {
+      "order_line_id": "ol-a4940c82-1217-4b32-8ec4-f331acc006be",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7527,
+      "expected_cost_at_sale": 8133,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-a7a7c39a-e712-4294-9afb-9832eeb89a81",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11741,
+      "expected_cost_at_sale": 11695,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-a81ee038-bdb9-498c-a72a-56ee88fe9e07",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8021,
+      "expected_cost_at_sale": 8016,
+      "delta_vnd": -5
+    },
+    {
+      "order_line_id": "ol-a8e05839-0c32-4d4f-be39-cf6cec40c564",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-a9bb7c30-b443-49a5-aceb-6cbdbf821568",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10491,
+      "expected_cost_at_sale": 10521,
+      "delta_vnd": 30
+    },
+    {
+      "order_line_id": "ol-abb981cc-db6a-4794-8b7b-187584de2c25",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11697,
+      "expected_cost_at_sale": 11695,
+      "delta_vnd": -2
+    },
+    {
+      "order_line_id": "ol-ac9ec05d-ae63-44e4-870e-6bc6512ee9d8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 5223,
+      "expected_cost_at_sale": 5220,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-ae874be4-c557-4990-ada7-7548ef1b5127",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12901,
+      "expected_cost_at_sale": 13110,
+      "delta_vnd": 209
+    },
+    {
+      "order_line_id": "ol-aea83950-51ed-41df-b386-2199673f6fa0",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11432,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -7
+    },
+    {
+      "order_line_id": "ol-afaf7d7e-1fb6-49c2-8553-71fe7c471d86",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11009,
+      "expected_cost_at_sale": 11061,
+      "delta_vnd": 52
+    },
+    {
+      "order_line_id": "ol-affd3f69-2b81-4474-b0eb-6b30680d20cb",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7866,
+      "expected_cost_at_sale": 8473,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-b0d2e1de-0551-4a69-b2bd-5da39e4fe18b",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12566,
+      "expected_cost_at_sale": 12869,
+      "delta_vnd": 303
+    },
+    {
+      "order_line_id": "ol-b0dd7440-c073-42ea-9d13-9bd587a6a983",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6422,
+      "expected_cost_at_sale": 10669,
+      "delta_vnd": 4247
+    },
+    {
+      "order_line_id": "ol-b0ff251a-bffa-4226-b220-e854dffda1eb",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 3843,
+      "expected_cost_at_sale": 3832,
+      "delta_vnd": -11
+    },
+    {
+      "order_line_id": "ol-b1dd572b-51f0-4a32-883e-6b4aba5c5942",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10491,
+      "expected_cost_at_sale": 10521,
+      "delta_vnd": 30
+    },
+    {
+      "order_line_id": "ol-b231ff9e-70da-49e4-b3a4-192966f07a86",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11433,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-b3c169cc-84f7-4ddc-a3a6-e8ea8df18649",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10491,
+      "expected_cost_at_sale": 10521,
+      "delta_vnd": 30
+    },
+    {
+      "order_line_id": "ol-b442e906-7922-4790-a620-bade6d1a9131",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 14806,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 354
+    },
+    {
+      "order_line_id": "ol-b4a5dd85-70b1-4612-bd4e-4159e8c812b3",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8414,
+      "expected_cost_at_sale": 10684,
+      "delta_vnd": 2270
+    },
+    {
+      "order_line_id": "ol-b4d1aafb-1bb4-4a61-b57b-fe6909816930",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12912,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-b693be1d-65df-493c-aef2-98ec4835329e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6422,
+      "expected_cost_at_sale": 9645,
+      "delta_vnd": 3223
+    },
+    {
+      "order_line_id": "ol-b6ab696a-1b8a-4e90-ac41-480104cd4d67",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7866,
+      "expected_cost_at_sale": 8473,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-b912c413-0b4f-4663-92fc-0d8dfa96b906",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8996,
+      "expected_cost_at_sale": 9451,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-b924aca2-20ab-4892-8dc3-cbcca36cfdf2",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12264,
+      "expected_cost_at_sale": 12256,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-b9b06a57-33b8-4edd-81e7-b1714d01da69",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11903,
+      "expected_cost_at_sale": 12256,
+      "delta_vnd": 353
+    },
+    {
+      "order_line_id": "ol-b9d0a4c2-c9fc-415f-8199-59d004277754",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12869,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-b9d1e922-1bdc-479f-8fef-13574985e0f6",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 21412,
+      "expected_cost_at_sale": 23394,
+      "delta_vnd": 1982
+    },
+    {
+      "order_line_id": "ol-b9f58a5d-edea-403b-86c8-e61842df46eb",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 7866,
+      "expected_cost_at_sale": 8473,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-bde112ec-581f-48d3-9f43-739bc39fe4c9",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11733,
+      "expected_cost_at_sale": 11687,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-be44f399-b097-4ccb-a42c-d69e6ef22637",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4512,
+      "expected_cost_at_sale": 4591,
+      "delta_vnd": 79
+    },
+    {
+      "order_line_id": "ol-befacc18-deec-4ba3-8a3c-5d2b00089015",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11733,
+      "expected_cost_at_sale": 11687,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-c048fdec-c3ab-402d-b137-1a797b707a01",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 14806,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 354
+    },
+    {
+      "order_line_id": "ol-c2cbcdb7-fb6a-4627-abc1-067fc0280465",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-c5f61a50-1f15-4b7b-ad67-e5a2b671d858",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11903,
+      "expected_cost_at_sale": 12256,
+      "delta_vnd": 353
+    },
+    {
+      "order_line_id": "ol-c875b978-af3a-48d8-9d30-48de591bdbe9",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12901,
+      "expected_cost_at_sale": 13110,
+      "delta_vnd": 209
+    },
+    {
+      "order_line_id": "ol-cbece64b-8040-41ec-8be8-5706fef20d54",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6422,
+      "expected_cost_at_sale": 12962,
+      "delta_vnd": 6540
+    },
+    {
+      "order_line_id": "ol-cd6fd652-70e0-453a-9fb4-3602e4e76d3a",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11432,
+      "expected_cost_at_sale": 11425,
+      "delta_vnd": -7
+    },
+    {
+      "order_line_id": "ol-cd8d4e3e-44d6-4841-8002-c670383599e3",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 9039,
+      "expected_cost_at_sale": 9645,
+      "delta_vnd": 606
+    },
+    {
+      "order_line_id": "ol-d0412788-d717-4031-a478-d95309a54bbc",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10692,
+      "expected_cost_at_sale": 10684,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-d33c1234-41ee-4856-94b1-a53228c1bba1",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6115,
+      "expected_cost_at_sale": 6110,
+      "delta_vnd": -5
+    },
+    {
+      "order_line_id": "ol-d4372f15-5153-463e-985f-cdf0bee67c70",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10706,
+      "expected_cost_at_sale": 11697,
+      "delta_vnd": 991
+    },
+    {
+      "order_line_id": "ol-da080530-6f6f-48ca-97a1-8cb0b8e47c6c",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-da892e7e-5df9-4da7-95b6-935d24323e69",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12869,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -3
+    },
+    {
+      "order_line_id": "ol-db282b67-d673-4cca-8164-9549420b9995",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 22772,
+      "expected_cost_at_sale": 23379,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-db72a765-56c5-4b29-884c-a522cb51eabe",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4512,
+      "expected_cost_at_sale": 4591,
+      "delta_vnd": 79
+    },
+    {
+      "order_line_id": "ol-dc898bd1-d15a-48b2-86cc-d31244b05a7a",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-dc9d217a-f218-4e57-adab-7a3b250137d6",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-dce181b4-9b07-4c56-aed0-7a70a1585ae4",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 23599,
+      "expected_cost_at_sale": 25418,
+      "delta_vnd": 1819
+    },
+    {
+      "order_line_id": "ol-dfc547ce-546c-4567-b9c5-1a41c98323dc",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 35092,
+      "expected_cost_at_sale": 35084,
+      "delta_vnd": -8
+    },
+    {
+      "order_line_id": "ol-dff9f6c1-13f5-45a6-a4bc-02eb7632c09e",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12901,
+      "expected_cost_at_sale": 13110,
+      "delta_vnd": 209
+    },
+    {
+      "order_line_id": "ol-e0ef5036-13b7-4da5-971a-07f341789faf",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 23481,
+      "expected_cost_at_sale": 23390,
+      "delta_vnd": -91
+    },
+    {
+      "order_line_id": "ol-e15558ce-2c4a-4cd0-8807-feb560b74419",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6121,
+      "expected_cost_at_sale": 6576,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-e6a9c075-45c7-4d06-ab9d-5490da009194",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6121,
+      "expected_cost_at_sale": 6576,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-e7b4d4dc-a892-4869-98bf-e74405d83cfe",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-e846bccd-eb1c-4310-9677-31518bcbdd83",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 8890,
+      "expected_cost_at_sale": 9497,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-e903c60d-6d8b-4969-b7e9-3628fc8e53dd",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4992,
+      "expected_cost_at_sale": 5220,
+      "delta_vnd": 228
+    },
+    {
+      "order_line_id": "ol-e9f9ec41-2680-4161-b686-4358be4cb952",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 4558,
+      "expected_cost_at_sale": 4512,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-ea340de6-88db-434d-badc-35428567546d",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6121,
+      "expected_cost_at_sale": 6576,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-eb9dc60e-af96-4cc4-b418-89b7715f6fd8",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12912,
+      "expected_cost_at_sale": 12866,
+      "delta_vnd": -46
+    },
+    {
+      "order_line_id": "ol-ed1b8624-76d4-49c0-9493-eb5ba543ea25",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 12566,
+      "expected_cost_at_sale": 12869,
+      "delta_vnd": 303
+    },
+    {
+      "order_line_id": "ol-ed997c9d-e355-4394-baa6-62c2c54e12c7",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6115,
+      "expected_cost_at_sale": 6110,
+      "delta_vnd": -5
+    },
+    {
+      "order_line_id": "ol-ed9eafce-40c2-4599-a956-55fe2e6e2dbe",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6575,
+      "expected_cost_at_sale": 7182,
+      "delta_vnd": 607
+    },
+    {
+      "order_line_id": "ol-f1f3d6c7-269a-4f18-9aea-585325466a22",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 6121,
+      "expected_cost_at_sale": 6576,
+      "delta_vnd": 455
+    },
+    {
+      "order_line_id": "ol-f301f8a8-bdc2-405b-8354-d63d4c265821",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 9451,
+      "expected_cost_at_sale": 9504,
+      "delta_vnd": 53
+    },
+    {
+      "order_line_id": "ol-f332b728-22e8-4004-8a3a-44c7da88096d",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 20981,
+      "expected_cost_at_sale": 21043,
+      "delta_vnd": 62
+    },
+    {
+      "order_line_id": "ol-f36fb99a-5e61-4e00-bbd3-98378a2b1a76",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 14806,
+      "expected_cost_at_sale": 15160,
+      "delta_vnd": 354
+    },
+    {
+      "order_line_id": "ol-f7761d3e-b3e1-4cf7-adcb-d4c7d14e09a7",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 11344,
+      "expected_cost_at_sale": 11697,
+      "delta_vnd": 353
+    },
+    {
+      "order_line_id": "ol-f86592a3-13de-44e4-bd2b-a09b9a503a1b",
+      "locked_by": "TASK_3_E3",
+      "reason": "TASK_3_MAC_DRIFT_BASELINE_2026_07_09",
+      "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+      "stored_cost_at_sale": 10711,
+      "expected_cost_at_sale": 11689,
+      "delta_vnd": 978
+    }
+  ],
+  "changes": [
+    {
+      "line_id": "ol-0607f92b-27d5-4fe5-b374-96eb800120b8",
+      "order_id": "ord-f6e4d241-254e-4933-9d61-47c5823ab452",
+      "order_no": "UCK000336",
+      "old_cost_at_sale": 11797,
+      "new_cost_at_sale": 11751,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-100de072-8147-4a32-b7ef-457d5318f6e5",
+      "order_id": "ord-1732b03a-1b6e-4fc2-ae8e-c865c7ff1fdf",
+      "order_no": "UCK000343",
+      "old_cost_at_sale": 11741,
+      "new_cost_at_sale": 11695,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-11d14c0e-cb1d-40e0-9d2e-8fc59aa307c0",
+      "order_id": "ord-8fc1f2a1-80df-4557-9372-4e0bff117e0f",
+      "order_no": "UCK000365",
+      "old_cost_at_sale": 10530,
+      "new_cost_at_sale": 10521,
+      "delta_vnd": -9,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-190ed664-a9b6-4140-8b8c-21ea01f40f22",
+      "order_id": "ord-cd8c98df-ddb8-45d3-a58b-b84e4feae87a",
+      "order_no": "UCK000353",
+      "old_cost_at_sale": 11433,
+      "new_cost_at_sale": 11425,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-19dc6b50-8e36-4c42-ac3b-d1c33c21f02d",
+      "order_id": "ord-72ff10a1-116d-405f-94aa-0fac2c0b5b4e",
+      "order_no": "UCK000346",
+      "old_cost_at_sale": 5118,
+      "new_cost_at_sale": 5107,
+      "delta_vnd": -11,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-24dd1735-16e6-4a7f-a69a-5a7f05d487e4",
+      "order_id": "ord-4de63bb7-298b-4504-8f28-37e7397b35a9",
+      "order_no": "UCK000344",
+      "old_cost_at_sale": 12912,
+      "new_cost_at_sale": 12866,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-2530a268-724f-4b53-9595-d376f0d40a38",
+      "order_id": "ord-429d2fd4-ff9b-43a0-87bd-b32e9583cd38",
+      "order_no": "PHD000825",
+      "old_cost_at_sale": 8021,
+      "new_cost_at_sale": 8016,
+      "delta_vnd": -5,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-2f759bea-52bd-42ac-b8ad-5e002e46523e",
+      "order_id": "ord-345530b2-3108-488e-82c2-d780eabe122a",
+      "order_no": "UCK000354",
+      "old_cost_at_sale": 3081,
+      "new_cost_at_sale": 3070,
+      "delta_vnd": -11,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-302b9c16-4ee6-4315-8b48-0d5c2d263ef1",
+      "order_id": "ord-73165bb4-8cb0-4ff8-b884-abb7b3ccdec6",
+      "order_no": "UCK000347",
+      "old_cost_at_sale": 10530,
+      "new_cost_at_sale": 10521,
+      "delta_vnd": -9,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-328e2777-96ff-434f-854a-6ec8dea070a6",
+      "order_id": "ord-e12cf706-f0bd-4cd2-a912-216680fa60db",
+      "order_no": "PHD000818",
+      "old_cost_at_sale": 6115,
+      "new_cost_at_sale": 6110,
+      "delta_vnd": -5,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-39feeb71-c9fc-49de-b8dc-0ec665cf6b87",
+      "order_id": "ord-10dd5354-78d2-4f03-88a9-2600250e1a4f",
+      "order_no": "UCK000350",
+      "old_cost_at_sale": 11741,
+      "new_cost_at_sale": 11695,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-415d491a-8fc6-499f-84b9-5fd47a99e03e",
+      "order_id": "ord-4dafa651-9926-42b9-a708-1ba5722ae4aa",
+      "order_no": "UCK000340",
+      "old_cost_at_sale": 11797,
+      "new_cost_at_sale": 11751,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-44752083-a455-40f7-926d-174ebae9e014",
+      "order_id": "ord-2c2665df-4366-4564-88da-5485c1b1b24c",
+      "order_no": "UCK000335",
+      "old_cost_at_sale": 11805,
+      "new_cost_at_sale": 11796,
+      "delta_vnd": -9,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-463bfc8b-f2b2-45c9-ba48-9312b6374d7c",
+      "order_id": "ord-85ae2ec8-9c4e-4aa7-8574-92848656974b",
+      "order_no": "UCK000364",
+      "old_cost_at_sale": 10692,
+      "new_cost_at_sale": 10684,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-46fee712-f057-4b10-89a1-53f0fc47a330",
+      "order_id": "ord-dd7f13ac-7848-4562-85af-8e77a2a046c4",
+      "order_no": "UCK000363",
+      "old_cost_at_sale": 11967,
+      "new_cost_at_sale": 11959,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-4b6c5fdb-e90c-4285-a921-d3256d9bcfd2",
+      "order_id": "ord-8a2ac95f-c6ef-4408-9391-bc4b97103ad7",
+      "order_no": "UCK000339",
+      "old_cost_at_sale": 10692,
+      "new_cost_at_sale": 10684,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-51571095-c6a4-492a-98a7-b82f8f3f788d",
+      "order_id": "ord-354cf323-dfc5-4a63-a799-cb18e069792c",
+      "order_no": "UCK000355",
+      "old_cost_at_sale": 5223,
+      "new_cost_at_sale": 5220,
+      "delta_vnd": -3,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-5158bf2a-f098-40a0-b14d-f22c99576bc3",
+      "order_id": "ord-14c5466b-b309-45f5-bc6e-36aa17f82b48",
+      "order_no": "UCK000348",
+      "old_cost_at_sale": 11433,
+      "new_cost_at_sale": 11425,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-61daef94-d8eb-44b3-9504-286679fbe8dc",
+      "order_id": "ord-53c54609-a59e-4798-b459-af9c8480c3cd",
+      "order_no": "UCK000349",
+      "old_cost_at_sale": 10530,
+      "new_cost_at_sale": 10521,
+      "delta_vnd": -9,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-702dd00c-ef77-43a5-bb9f-f28b42541b76",
+      "order_id": "ord-6b1dc7bf-b692-4d9c-a08a-df305224f35f",
+      "order_no": "PHD000838",
+      "old_cost_at_sale": 6115,
+      "new_cost_at_sale": 6110,
+      "delta_vnd": -5,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-7750236a-6537-42ca-8769-b707379cc7d5",
+      "order_id": "ord-f6e4d241-254e-4933-9d61-47c5823ab452",
+      "order_no": "UCK000336",
+      "old_cost_at_sale": 11741,
+      "new_cost_at_sale": 11695,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-808f6cfd-c8f4-42a6-ab48-7613ef944ee1",
+      "order_id": "ord-4de63bb7-298b-4504-8f28-37e7397b35a9",
+      "order_no": "UCK000344",
+      "old_cost_at_sale": 11797,
+      "new_cost_at_sale": 11751,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-85284dd8-2bab-466f-a8c7-e33e7324fbde",
+      "order_id": "ord-cd8c98df-ddb8-45d3-a58b-b84e4feae87a",
+      "order_no": "UCK000353",
+      "old_cost_at_sale": 5223,
+      "new_cost_at_sale": 5220,
+      "delta_vnd": -3,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-8884d8e2-45be-4c1d-961e-5e06c8d40e45",
+      "order_id": "ord-4dd54994-46f2-4658-bc58-64ad1c60a981",
+      "order_no": "PHD000841",
+      "old_cost_at_sale": 18346,
+      "new_cost_at_sale": 18330,
+      "delta_vnd": -16,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-902c0e65-19f0-4910-af59-951647b78037",
+      "order_id": "ord-2f795d4f-c45a-45e2-8145-4abcda026972",
+      "order_no": "UCK000341",
+      "old_cost_at_sale": 3081,
+      "new_cost_at_sale": 3070,
+      "delta_vnd": -11,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-9e4e3133-ca8a-4695-a5b5-de45a0a28fdd",
+      "order_id": "ord-ed9d68fb-1d53-4e57-b3b7-0d316187eb20",
+      "order_no": "UCK000338",
+      "old_cost_at_sale": 23481,
+      "new_cost_at_sale": 23390,
+      "delta_vnd": -91,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-a7a7c39a-e712-4294-9afb-9832eeb89a81",
+      "order_id": "ord-acabf6bb-821d-413f-87e9-3490aff2ea03",
+      "order_no": "UCK000352",
+      "old_cost_at_sale": 11741,
+      "new_cost_at_sale": 11695,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-a81ee038-bdb9-498c-a72a-56ee88fe9e07",
+      "order_id": "ord-b3d29969-ecdc-452b-9437-e6d06834e77e",
+      "order_no": "PHD000843",
+      "old_cost_at_sale": 8021,
+      "new_cost_at_sale": 8016,
+      "delta_vnd": -5,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-ac9ec05d-ae63-44e4-870e-6bc6512ee9d8",
+      "order_id": "ord-7469267b-24ef-488e-a345-62e0616143b6",
+      "order_no": "UCK000357",
+      "old_cost_at_sale": 5223,
+      "new_cost_at_sale": 5220,
+      "delta_vnd": -3,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-b0ff251a-bffa-4226-b220-e854dffda1eb",
+      "order_id": "ord-a57d7c90-9914-4048-a629-c6367b54b7d0",
+      "order_no": "UCK000360",
+      "old_cost_at_sale": 3843,
+      "new_cost_at_sale": 3832,
+      "delta_vnd": -11,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-b231ff9e-70da-49e4-b3a4-192966f07a86",
+      "order_id": "ord-60ab9a4b-8831-4128-8d31-f33dd9d0f8b6",
+      "order_no": "UCK000367",
+      "old_cost_at_sale": 11433,
+      "new_cost_at_sale": 11425,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-b4d1aafb-1bb4-4a61-b57b-fe6909816930",
+      "order_id": "ord-053d2cf7-135c-43bf-acdd-336e0fb828cc",
+      "order_no": "UCK000369",
+      "old_cost_at_sale": 12912,
+      "new_cost_at_sale": 12866,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-b924aca2-20ab-4892-8dc3-cbcca36cfdf2",
+      "order_id": "ord-759d48dc-d6a4-4018-b5de-91e1100fcab1",
+      "order_no": "UCK000345",
+      "old_cost_at_sale": 12264,
+      "new_cost_at_sale": 12256,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-bde112ec-581f-48d3-9f43-739bc39fe4c9",
+      "order_id": "ord-4de63bb7-298b-4504-8f28-37e7397b35a9",
+      "order_no": "UCK000344",
+      "old_cost_at_sale": 11733,
+      "new_cost_at_sale": 11687,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-befacc18-deec-4ba3-8a3c-5d2b00089015",
+      "order_id": "ord-56bb172e-4b2e-449a-829b-5ac5a1b3c4ec",
+      "order_no": "UCK000368",
+      "old_cost_at_sale": 11733,
+      "new_cost_at_sale": 11687,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-d0412788-d717-4031-a478-d95309a54bbc",
+      "order_id": "ord-0c6687c2-af36-4993-9708-a0bd350c5444",
+      "order_no": "UCK000359",
+      "old_cost_at_sale": 10692,
+      "new_cost_at_sale": 10684,
+      "delta_vnd": -8,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-d33c1234-41ee-4856-94b1-a53228c1bba1",
+      "order_id": "ord-4c8182c9-7672-4aa8-8260-a6ef12731c8b",
+      "order_no": "PHD000830",
+      "old_cost_at_sale": 6115,
+      "new_cost_at_sale": 6110,
+      "delta_vnd": -5,
+      "classification": "BTP_SHORTFALL"
+    },
+    {
+      "line_id": "ol-e0ef5036-13b7-4da5-971a-07f341789faf",
+      "order_id": "ord-f6e4d241-254e-4933-9d61-47c5823ab452",
+      "order_no": "UCK000336",
+      "old_cost_at_sale": 23481,
+      "new_cost_at_sale": 23390,
+      "delta_vnd": -91,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-eb9dc60e-af96-4cc4-b418-89b7715f6fd8",
+      "order_id": "ord-605f4568-97da-4235-af08-46eb32888410",
+      "order_no": "UCK000366",
+      "old_cost_at_sale": 12912,
+      "new_cost_at_sale": 12866,
+      "delta_vnd": -46,
+      "classification": "MAC_REPRICE"
+    },
+    {
+      "line_id": "ol-ed997c9d-e355-4394-baa6-62c2c54e12c7",
+      "order_id": "ord-d14e373c-e92c-4cd8-ae88-296ceda72941",
+      "order_no": "PHD000820",
+      "old_cost_at_sale": 6115,
+      "new_cost_at_sale": 6110,
+      "delta_vnd": -5,
+      "classification": "BTP_SHORTFALL"
+    }
+  ]
+}

@@ -39,7 +39,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| (none) | — | — | — | Design System fully complete |
+| [~X] **E3. Task 3 selective recovery** | Codex | Engine/data recovery | 2026-07-13 | Local plan verified: 170 locks, 40 selective changes, -933 VND. Awaiting Phase A production approval. |
 
 ### P1 — Next up (high impact, unblocked)
 
@@ -63,7 +63,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Blocker | Resolution path |
 |---|---|---|
-| **E3. Task 3 recovery** — Option A lock + selective recompute | Needs an accounting-policy decision after E2 | Decide whether to recompute the 40 confirmed purchase-cost lines, manually review 34 backdated lines, and lock the 96 provenance-gap lines |
+| (none) | — | — |
 
 ## Out of scope (do not start without explicit approval)
 

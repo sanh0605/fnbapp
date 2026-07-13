@@ -60,10 +60,13 @@ revoke all on function public.prevent_audit_locked_order_line_mutation() from pu
 revoke all on function public.prevent_audit_locked_order_line_mutation() from anon;
 revoke all on function public.prevent_audit_locked_order_line_mutation() from authenticated;
 
+drop function if exists public.apply_mac_drift_recovery(text, text, jsonb);
+
 create or replace function public.apply_mac_drift_recovery(
   p_run_id text,
   p_source_hash text,
-  p_changes jsonb
+  p_changes jsonb,
+  p_dry_run boolean default true
 )
 returns jsonb
 language plpgsql
@@ -80,6 +83,8 @@ declare
   v_actual_cost bigint;
   v_existing_count integer;
   v_change_count integer;
+  v_total_delta bigint := 0;
+  v_preview jsonb := '[]'::jsonb;
 begin
   if p_run_id is null or btrim(p_run_id) = '' then
     raise exception 'p_run_id is required';
@@ -90,7 +95,19 @@ begin
   if p_changes is null or jsonb_typeof(p_changes) <> 'array' then
     raise exception 'p_changes must be a JSON array';
   end if;
+  if jsonb_array_length(p_changes) = 0 then
+    raise exception 'p_changes must not be empty';
+  end if;
+  if exists (
+    select 1
+    from jsonb_array_elements(p_changes) as change(value)
+    group by value->>'line_id'
+    having count(*) > 1
+  ) then
+    raise exception 'p_changes contains duplicate line IDs';
+  end if;
 
+  perform set_config('lock_timeout', '5s', true);
   perform pg_advisory_xact_lock(hashtext('mac-drift-recovery:' || p_run_id));
   v_change_count := jsonb_array_length(p_changes);
 
@@ -126,17 +143,37 @@ begin
     ) then
       raise exception 'MAC drift recovery run % no longer matches current order line values', p_run_id;
     end if;
+    if exists (
+      select 1
+      from jsonb_array_elements(p_changes) as requested(value)
+      left join public.data_recovery_changes change_log
+        on change_log.run_id = p_run_id
+       and change_log.row_id = requested.value->>'line_id'
+      where change_log.row_id is null
+        or (change_log.old_value #>> '{}')::bigint
+          <> (requested.value->>'old_cost_at_sale')::bigint
+        or (change_log.new_value #>> '{}')::bigint
+          <> (requested.value->>'new_cost_at_sale')::bigint
+    ) then
+      raise exception 'MAC drift recovery run % does not match the requested changes', p_run_id;
+    end if;
     return jsonb_build_object(
       'run_id', p_run_id,
       'change_count', 0,
-      'already_applied', true
+      'already_applied', true,
+      'dry_run', p_dry_run,
+      'preview', '[]'::jsonb
     );
   end if;
 
-  perform set_config('app.mac_drift_recovery', 'on', true);
+  if not p_dry_run then
+    perform set_config('app.mac_drift_recovery', 'on', true);
+  end if;
 
   for v_change in
-    select value from jsonb_array_elements(p_changes)
+    select value
+    from jsonb_array_elements(p_changes)
+    order by value->>'line_id'
   loop
     v_line_id := nullif(btrim(v_change->>'line_id'), '');
     v_order_id := nullif(btrim(v_change->>'order_id'), '');
@@ -147,12 +184,18 @@ begin
       raise exception 'MAC drift recovery change is missing required fields';
     end if;
 
+    perform pg_advisory_xact_lock(hashtext('mac-drift-line:' || v_line_id));
+
     if not exists (
       select 1
       from public.audit_baseline_locks lock
       where lock.order_line_id = v_line_id
+        and lock.source_hash = p_source_hash
+        and lock.stored_cost_at_sale = v_old_cost
+        and lock.expected_cost_at_sale = v_new_cost
+        and lock.delta_vnd = v_new_cost - v_old_cost
     ) then
-      raise exception 'Order line % is not audit-baseline locked', v_line_id;
+      raise exception 'Order line % does not have a matching audit-baseline lock', v_line_id;
     end if;
 
     select order_id, cost_at_sale
@@ -166,6 +209,19 @@ begin
     end if;
     if v_actual_order_id <> v_order_id or v_actual_cost <> v_old_cost then
       raise exception 'Order line % changed after planning', v_line_id;
+    end if;
+
+    v_total_delta := v_total_delta + (v_new_cost - v_old_cost);
+    v_preview := v_preview || jsonb_build_array(jsonb_build_object(
+      'line_id', v_line_id,
+      'order_id', v_order_id,
+      'current_stored', v_actual_cost,
+      'expected_stored', v_new_cost,
+      'delta_vnd', v_new_cost - v_old_cost
+    ));
+
+    if p_dry_run then
+      continue;
     end if;
 
     insert into public.data_recovery_changes (
@@ -192,15 +248,29 @@ begin
     where id = v_line_id;
   end loop;
 
+  if p_dry_run then
+    return jsonb_build_object(
+      'run_id', p_run_id,
+      'change_count', v_change_count,
+      'total_delta_vnd', v_total_delta,
+      'already_applied', false,
+      'dry_run', true,
+      'preview', v_preview
+    );
+  end if;
+
   return jsonb_build_object(
     'run_id', p_run_id,
     'change_count', v_change_count,
-    'already_applied', false
+    'total_delta_vnd', v_total_delta,
+    'already_applied', false,
+    'dry_run', false,
+    'preview', v_preview
   );
 end;
 $$;
 
-revoke all on function public.apply_mac_drift_recovery(text, text, jsonb) from public;
-revoke all on function public.apply_mac_drift_recovery(text, text, jsonb) from anon;
-revoke all on function public.apply_mac_drift_recovery(text, text, jsonb) from authenticated;
-grant execute on function public.apply_mac_drift_recovery(text, text, jsonb) to service_role;
+revoke all on function public.apply_mac_drift_recovery(text, text, jsonb, boolean) from public;
+revoke all on function public.apply_mac_drift_recovery(text, text, jsonb, boolean) from anon;
+revoke all on function public.apply_mac_drift_recovery(text, text, jsonb, boolean) from authenticated;
+grant execute on function public.apply_mac_drift_recovery(text, text, jsonb, boolean) to service_role;
