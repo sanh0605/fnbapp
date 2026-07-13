@@ -4,6 +4,51 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-13 (Codex) - P-1 alternative B cursor pagination for findAll*
+
+**Trigger:** User approved handoff direction 1 and required implementation of cursor pagination in `lib/sheets_db.ts`, with explicit test split for `findAllWhere` ordering support and benchmark before/after evidence.
+
+### Completed Work
+| Task | Description | Status | Commits |
+|---|---|---|---|
+| **Cursor pagination** | Replaced offset-based `.range(...)` pagination in `findAllNoCache` with keyset pagination on `id` via `.order('id') + .gt('id', lastId) + .limit(PAGE_SIZE)`. | ✅ | this commit |
+| **Filtered cursor pagination** | Replaced offset-based pagination in `findAllWhere` with keyset pagination on `id`. Default order is `id ASC`; `id DESC` also supported through `.lt('id', lastId)`. | ✅ | this commit |
+| **Explicit ordering guard** | `findAllWhere` now rejects non-`id` `filters.order.column` with clear error: `findAllWhere only supports ordering by 'id', got: <column>`. | ✅ | this commit |
+| **Type comment** | Added `SheetFilter` inline note documenting that `order.column` only accepts `"id"` for cursor pagination. | ✅ | this commit |
+| **TDD coverage** | Split `lib/sheets_db.test.ts` coverage into: (1) id-cursor pagination for asc + desc, (2) clear throw for non-id order column. Updated Supabase mock harness to model awaitable query builders. | ✅ | this commit |
+
+### Benchmark (`vite-node scripts/benchmark-shim.ts`)
+
+Hot tables required by handoff:
+
+| Table | Before | After | Delta |
+|---|---:|---:|---:|
+| `Stock_Ledger` | 3297ms | 1454ms | -1843ms |
+| `Orders_V2` | 996ms | 656ms | -340ms |
+| `Order_Lines_V2` | 1073ms | 610ms | -463ms |
+
+Additional observed improvement:
+
+| Table | Before | After | Delta |
+|---|---:|---:|---:|
+| `Order_Events` | 1042ms | 315ms | -727ms |
+
+### Verification
+- `node_modules/.bin/vite-node.cmd scripts/benchmark-shim.ts` (before on offset baseline): parity passed, `findAllWhere(Orders_V2)` matched 279/279 IDs.
+- `node_modules/.bin/vite-node.cmd scripts/benchmark-shim.ts` (after on cursor version): parity passed, `findAllWhere(Orders_V2)` matched 280/280 IDs.
+- `node_modules/.bin/vitest.cmd run`: 336/336 pass.
+- `node_modules/.bin/tsc.cmd --noEmit`: 0 errors.
+- `git diff --check`: clean (CRLF warnings only, no diff errors).
+
+### Notes
+- The parity count changed from 279 to 280 between benchmark runs because live data changed between the two executions; both runs passed their own parity check.
+- Scope intentionally stays narrow: `findAllWhere` does not implement composite cursors for non-unique order columns in this phase.
+
+### No push
+Per collaboration protocol, changes remain local-only.
+
+---
+
 ## 2026-07-12 (Claude) - Fresh Blue Admin Design System complete
 
 **Trigger:** User wanted comprehensive UI consistency + dark sidebar + Lucide icons. Provided detailed "Fresh Blue Admin" spec with 17 color tokens. Antigravity executed 6 phases over 1 day (full-time focus).

@@ -23,16 +23,16 @@ vi.mock("./supabase", () => ({
     from: (tableName: string) => ({
       select: () => {
         const query: any = {};
-        for (const method of ["gte", "lte", "eq", "in", "order", "limit"]) {
+        for (const method of ["gte", "lte", "eq", "in", "order", "limit", "gt", "lt"]) {
           query[method] = (...args: any[]) => {
             mocks.queryCalls.push({ method, args });
             return query;
           };
         }
-        query.range = (...args: any[]) => {
-          mocks.queryCalls.push({ method: "range", args });
-          return mocks.supabaseSelect(tableName, ...args);
-        };
+        const resolveQuery = () => Promise.resolve(mocks.supabaseSelect(tableName));
+        query.then = (onFulfilled: any, onRejected: any) => resolveQuery().then(onFulfilled, onRejected);
+        query.catch = (onRejected: any) => resolveQuery().catch(onRejected);
+        query.finally = (onFinally: any) => resolveQuery().finally(onFinally);
         return query;
       },
       update: (payload: any) => ({
@@ -81,9 +81,16 @@ describe("findAllNoCache legacy compatibility", () => {
     const rows = await findAllNoCache("Orders_V2");
 
     expect(rows).toHaveLength(1001);
-    expect(mocks.queryCalls.filter(call => call.method === "range")).toEqual([
-      { method: "range", args: [0, 999] },
-      { method: "range", args: [1000, 1999] },
+    expect(mocks.queryCalls.filter(call => call.method === "order")).toEqual([
+      { method: "order", args: ["id", { ascending: true }] },
+      { method: "order", args: ["id", { ascending: true }] },
+    ]);
+    expect(mocks.queryCalls.filter(call => call.method === "limit")).toEqual([
+      { method: "limit", args: [1000] },
+      { method: "limit", args: [1000] },
+    ]);
+    expect(mocks.queryCalls.filter(call => call.method === "gt")).toEqual([
+      { method: "gt", args: ["id", "ORD-999"] },
     ]);
   });
 });
@@ -95,33 +102,53 @@ describe("findAllWhere", () => {
     mocks.queryCalls.length = 0;
   });
 
-  it("chains filters, normalizes Dates, orders, and returns matching rows", async () => {
-    mocks.supabaseSelect.mockResolvedValue({
-      data: [{ id: "ORD-1", status: "COMPLETED" }],
-      error: null,
+  it("uses id cursor pagination for both ascending and descending order", async () => {
+    const ascendingFirstPage = Array.from({ length: 1000 }, (_, index) => ({ id: `ORD-${index}` }));
+    const ascendingSecondPage = [{ id: "ORD-1000" }];
+    const descendingFirstPage = Array.from({ length: 1000 }, (_, index) => ({ id: `ORD-${1000 - index}` }));
+    const descendingSecondPage = [{ id: "ORD-0" }];
+    mocks.supabaseSelect
+      .mockResolvedValueOnce({ data: ascendingFirstPage, error: null })
+      .mockResolvedValueOnce({ data: ascendingSecondPage, error: null })
+      .mockResolvedValueOnce({ data: descendingFirstPage, error: null })
+      .mockResolvedValueOnce({ data: descendingSecondPage, error: null });
+
+    const ascendingRows = await findAllWhere("Orders_V2", {
+      order: { column: "id", ascending: true },
     });
+    const descendingRows = await findAllWhere("Orders_V2", {
+      order: { column: "id", ascending: false },
+    });
+
+    expect(ascendingRows).toHaveLength(1001);
+    expect(descendingRows).toHaveLength(1001);
+    expect(mocks.queryCalls.filter(call => call.method === "order")).toEqual([
+      { method: "order", args: ["id", { ascending: true }] },
+      { method: "order", args: ["id", { ascending: true }] },
+      { method: "order", args: ["id", { ascending: false }] },
+      { method: "order", args: ["id", { ascending: false }] },
+    ]);
+    expect(mocks.queryCalls.filter(call => call.method === "gt")).toEqual([
+      { method: "gt", args: ["id", "ORD-999"] },
+    ]);
+    expect(mocks.queryCalls.filter(call => call.method === "lt")).toEqual([
+      { method: "lt", args: ["id", "ORD-1"] },
+    ]);
+  });
+
+  it("throws a clear error when filters.order uses a non-id column", async () => {
     const start = new Date("2026-07-01T00:00:00.000Z");
     const end = new Date("2026-07-02T00:00:00.000Z");
 
-    const rows = await findAllWhere("Orders_V2", {
+    await expect(findAllWhere("Orders_V2", {
       gte: { created_at: start },
       lte: { created_at: end },
       eq: { status: "COMPLETED", version: 1 },
       in: { brand_id: ["BR-001", "BR-002"] },
       order: { column: "created_at", ascending: false },
-    });
-
-    expect(rows).toEqual([{ id: "ORD-1", status: "COMPLETED" }]);
-    expect(mocks.queryCalls).toEqual([
-      { method: "gte", args: ["created_at", start.toISOString()] },
-      { method: "lte", args: ["created_at", end.toISOString()] },
-      { method: "eq", args: ["status", "COMPLETED"] },
-      { method: "eq", args: ["version", 1] },
-      { method: "in", args: ["brand_id", ["BR-001", "BR-002"]] },
-      { method: "order", args: ["created_at", { ascending: false }] },
-      { method: "limit", args: [1000] },
-      { method: "range", args: [0, 999] },
-    ]);
+    })).rejects.toThrow(
+      "findAllWhere only supports ordering by 'id', got: created_at",
+    );
   });
 
   it("paginates filtered results beyond the Supabase 1000-row response cap", async () => {
@@ -137,9 +164,12 @@ describe("findAllWhere", () => {
       { method: "limit", args: [1000] },
       { method: "limit", args: [1000] },
     ]);
-    expect(mocks.queryCalls.filter(call => call.method === "range")).toEqual([
-      { method: "range", args: [0, 999] },
-      { method: "range", args: [1000, 1999] },
+    expect(mocks.queryCalls.filter(call => call.method === "order")).toEqual([
+      { method: "order", args: ["id", { ascending: true }] },
+      { method: "order", args: ["id", { ascending: true }] },
+    ]);
+    expect(mocks.queryCalls.filter(call => call.method === "gt")).toEqual([
+      { method: "gt", args: ["id", "ORD-999"] },
     ]);
   });
 
@@ -156,9 +186,8 @@ describe("findAllWhere", () => {
       { method: "limit", args: [1000] },
       { method: "limit", args: [1] },
     ]);
-    expect(mocks.queryCalls.filter(call => call.method === "range")).toEqual([
-      { method: "range", args: [0, 999] },
-      { method: "range", args: [1000, 1000] },
+    expect(mocks.queryCalls.filter(call => call.method === "gt")).toEqual([
+      { method: "gt", args: ["id", "ORD-999"] },
     ]);
   });
 

@@ -164,6 +164,8 @@ export interface SheetFilter {
   lte?: Record<string, string | number | Date>;
   eq?: Record<string, string | number>;
   in?: Record<string, Array<string | number>>;
+  // Cursor pagination only supports ordering by the unique primary key.
+  // order.column must be "id"; other columns are rejected explicitly.
   order?: { column: string; ascending?: boolean };
   limit?: number;
 }
@@ -192,12 +194,17 @@ export const findAllNoCache = async (sheetName: string) => {
   // Skip serialization when the table has no legacy JSON/boolean columns.
   const needsSerialize = jsonCols.size > 0 || booleanCols.size > 0;
   const all: any[] = [];
-  let page = 0;
+  let lastId: string | null = null;
   while (true) {
-    const { data, error } = await supabase
+    let query: any = supabase
       .from(tableName)
       .select('*')
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+      .order("id", { ascending: true })
+      .limit(PAGE_SIZE);
+    if (lastId !== null) {
+      query = query.gt("id", lastId);
+    }
+    const { data, error } = await query;
     if (error) {
       throw new Error(`findAll(${sheetName}): ${error.message}`);
     }
@@ -208,7 +215,7 @@ export const findAllNoCache = async (sheetName: string) => {
       for (const row of data) all.push(row);
     }
     if (data.length < PAGE_SIZE) break;
-    page += 1;
+    lastId = String(data[data.length - 1]?.id ?? "");
   }
   return all;
 };
@@ -222,6 +229,11 @@ export async function findAllWhere<T = any>(
   filters: SheetFilter,
 ): Promise<T[]> {
   if (filters.limit !== undefined && filters.limit <= 0) return [];
+  if (filters.order && filters.order.column !== "id") {
+    throw new Error(
+      `findAllWhere only supports ordering by 'id', got: ${filters.order.column}`,
+    );
+  }
 
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
@@ -229,7 +241,8 @@ export async function findAllWhere<T = any>(
   const booleanCols = getBooleanColumns(tableName);
   const needsSerialize = jsonCols.size > 0 || booleanCols.size > 0;
   const all: T[] = [];
-  let offset = 0;
+  const ascending = filters.order?.ascending ?? true;
+  let lastId: string | null = null;
 
   while (filters.limit === undefined || all.length < filters.limit) {
     const remaining = filters.limit === undefined ? PAGE_SIZE : filters.limit - all.length;
@@ -248,15 +261,14 @@ export async function findAllWhere<T = any>(
     for (const [column, values] of Object.entries(filters.in || {})) {
       query = query.in(column, values);
     }
-    if (filters.order) {
-      query = query.order(filters.order.column, {
-        ascending: filters.order.ascending ?? true,
-      });
+    query = query.order("id", { ascending }).limit(pageSize);
+    if (lastId !== null) {
+      query = ascending
+        ? query.gt("id", lastId)
+        : query.lt("id", lastId);
     }
 
-    const { data, error } = await query
-      .limit(pageSize)
-      .range(offset, offset + pageSize - 1);
+    const { data, error } = await query;
     if (error) {
       throw new Error(`findAllWhere(${sheetName}): ${error.message}`);
     }
@@ -268,7 +280,7 @@ export async function findAllWhere<T = any>(
       for (const row of data) all.push(row);
     }
     if (data.length < pageSize) break;
-    offset += pageSize;
+    lastId = String(data[data.length - 1]?.id ?? "");
   }
 
   return all;
