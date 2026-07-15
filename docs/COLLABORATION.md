@@ -6,8 +6,8 @@ All agents read it at the start of every session.
 Agents:
 
 - Claude Code / GLM 5.1: coordination, specs, review, surgical fixes, tracking.
-- Codex / GPT 5.5: engine, data correctness, migrations, audits, multi-file refactors.
-- Antigravity / Gemini 3.1 stable: UI/frontend, responsive layouts, forms, visual QA.
+- Codex / GPT 5.6 family (`gpt-5.6-sol` frontier, `gpt-5.6-terra` balanced, `gpt-5.6-luna` fast, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`): engine, data correctness, migrations, audits, multi-file refactors.
+- Antigravity / Gemini family (`Gemini 3.1 Pro` Low/High effort, `Gemini 3.5 Flash` Low/Medium/High, also Claude Sonnet/Opus 4.6 Thinking, GPT-OSS 120B): UI/frontend, responsive layouts, forms, visual QA.
 
 Do not treat ownership as identity-based permission. Ownership follows risk boundary.
 
@@ -143,7 +143,46 @@ If the pre-commit hook blocks a commit that the agent believes should be allowed
 8. Commit.
 9. Update tracking and handoff from `[~*]` to `[x]`, `[!]`, or `[-]`.
 
-## Current Direction
+## G. Model Selection per Task Type
+
+Pick the model tier that matches task complexity. Start lower, escalate if the agent gets stuck. Token cost scales with reasoning level — don't burn Pro High on trivial work.
+
+### Codex (engine)
+
+| Task type | Model | Reasoning | Example |
+|---|---|---|---|
+| Mechanical 1-2 lines | `gpt-5.4-mini` | Low | Rename, delete nav link, constant change |
+| Standard refactor + tests | `gpt-5.4` | Medium | 1-2 functions with pattern already in codebase |
+| Multi-file refactor / logic | `gpt-5.5` | Medium | Cursor pagination, audit script with new logic |
+| Architecture / schema / migration | `gpt-5.6-sol` | High | RPC design, RLS policies, migration with trigger |
+| Debug investigation / drift | `gpt-5.6-sol` | High | Root cause analysis, race condition, data drift |
+| Multi-agent agentic workflow | `gpt-5.6-sol` | Max or Ultra | Franchise spec, multi-tenant RLS design |
+| Fast/cheap agentic batch | `gpt-5.6-luna` | Medium | Bulk edits, mechanical refactors across many files |
+
+### Antigravity (UI)
+
+| Task type | Model | Example |
+|---|---|---|
+| Mechanical 1-2 lines | `Gemini 3.5 Flash (Low)` | Rename label, delete redundant entry |
+| Single component / small form | `Gemini 3.5 Flash (Medium)` | Form update, modal tweak |
+| Multi-component page | `Gemini 3.5 Flash (High)` | New admin page with several sections |
+| Design system consistency | `Gemini 3.1 Pro (Low)` | Apply design tokens across multiple files |
+| Mobile-first complex / critical UI | `Gemini 3.1 Pro (High)` | POS mobile redesign, accessibility-critical flows |
+| Free tier / bulk read-only | `GPT-OSS 120B (Medium)` | Summary tasks, doc reads (no production writes) |
+
+### Claude (this agent)
+
+Single model `GLM 5.1[1m]`. Used for coordination, review, planning, surgical fixes. Claude does not get delegated engine/UI implementation — that goes to Codex/Antigravity.
+
+### Selection rules
+
+- Match tier to risk: production migration → at least `gpt-5.6-sol` High. Trivial UI tweak → Flash Low.
+- User explicitly approves model choice for high-cost tiers (`gpt-5.6-sol` Max/Ultra, `Gemini 3.1 Pro (High)`).
+- If agent stuck at lower tier for >2 iterations, escalate one level.
+- For long sessions (1+ hour), prefer mid-tier to conserve token budget.
+- Codex `/model` and Antigravity `/model` commands show available tiers per project plan.
+
+
 
 - COGS valuation: MAC, pinned into `Order_Lines_V2.cost_at_sale`.
 - Inventory quantity: `Stock_Ledger.quantity_change`.
@@ -161,5 +200,6 @@ If the pre-commit hook blocks a commit that the agent believes should be allowed
 
 ## Change Log
 
+- 2026-07-13 Claude: added Section G "Model Selection per Task Type" with Codex/Antigravity/Claude matrix. Updated agent lineup with available model tiers.
 - 2026-07-10 Claude: consolidated to single ROADMAP.md + COMPLETED.md. Removed per-agent roadmaps.
 - 2026-06-26 Codex: rewrote protocol for 3-agent coordination and risk-boundary ownership.
