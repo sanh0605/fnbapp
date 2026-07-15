@@ -4,6 +4,56 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-15 (Codex) - Task 3.4 outside-cohort MAC drift investigation
+
+**Trigger:** E3 isolated 224 live MAC mismatches outside the fixed 170-line
+baseline. The user approved a read-only causal investigation and required a
+Claude review before opening any forward-drift task.
+
+### Completed work
+
+- Added `scripts/investigate-task-3.4-outside-cohort.ts`, a SELECT-only live
+  replay that freezes the captured 224 IDs, subtracts the exact 170 database
+  locks, and emits structured per-line evidence without database writes.
+- Added JSON and Markdown artifacts under `docs/audits/` with H1-H7 verdicts,
+  sign/product/BTP concentration, recovery boundaries, and Task 3.5 inputs.
+- Final 224-line classification: 41 `BACKDATED_LEDGER_LIKE` (-43,809 VND),
+  90 `PRE_BASELINE_WINDOW` (-107,225 VND), 22
+  `BASELINE_SELECTION_GAP` (-25,662 VND), and 71
+  `POST_CUTOFF_NEW_DRIFT` (-67,221 VND). Total: -243,917 VND.
+- Refined 95 raw sale-window backdating matches using actual order write
+  visibility: 41 were causally hidden at write time; 54 were legacy migration
+  correlations where the PO was already visible before migration write.
+- Confirmed zero `PURCHASE_COST_RECOVERY_LIKE` lines and no automatic recovery
+  candidate. The 41 causal backdated lines remain on the Task 3.2 review path.
+- Confirmed 224/224 captured lines are `BTP_SHORTFALL`; 71/71 post-cutoff lines
+  extend through 2026-07-14. A final live rerun found 42 additional outside
+  lines after capture (266 current outside), which were reported separately and
+  not folded into Task 3.4.
+- Recorded the locked-cohort replay shift from the frozen +120,716 VND review
+  delta to current +102,621 VND (-18,095 VND) without changing stored COGS.
+  The coherent current captured-cohort reconciliation is +102,621 locked plus
+  -243,917 outside = -141,296 VND mismatch-line delta.
+
+### Verification
+
+- Read-only investigation script: completed; frozen classification sums to
+  224 and reports zero mutation/RPC helpers.
+- Full Vitest: 353/353 passed across 55 test files; no tests modified.
+- `node_modules/.bin/tsc.cmd --noEmit`: 0 errors.
+- `git diff --check`: clean.
+- Baseline source JSON was read only and retained its approved SHA-256.
+
+### Review boundary
+
+No recovery, migration, lock, MAC-engine change, or production write was
+performed. Wait for Claude review before opening the forward BTP-shortfall
+drift task. No push per collaboration protocol.
+
+Commit: this commit.
+
+---
+
 ## 2026-07-13 (Codex) - Task 3 recovery applied — 40 PURCHASE_COST_RECOVERY lines recomputed
 
 **Trigger:** User approved the production apply after Phase B snapshot and
