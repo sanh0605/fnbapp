@@ -39,13 +39,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| [~X] **E3. Task 3 selective recovery** | Codex | Engine/data recovery | 2026-07-13 | Local plan verified: 170 locks, 40 selective changes, -933 VND. Awaiting Phase A production approval. |
+| [x] **E3. Task 3 selective recovery** | Codex | Engine/data recovery | 2026-07-13 | Complete: 170 locks retained, exact 40-line recovery applied atomically, -933 VND COGS correction, six cohort gates passed. Awaiting final Claude review only. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| (none) | — | — | — | — |
+| [ ] **Task 3.4. Investigate 224 outside-cohort MAC mismatches** | Codex | Read-only engine/data investigation | Split 153 historical and 71 post-cutoff lines; classify provenance and determine whether any recovery is justified. | Claude prioritization and a read-only handoff |
 
 ### P2 — Backlog (medium impact)
 
@@ -58,6 +58,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 | Task | Owner | Notes |
 |---|---|---|
 | **V1. First real operator backdate verify** | Claude | Wait for operator to backdate PO (frequency: weekly per user interview). Walk through UI: list → detail → approve → verify drift = 0. |
+| [ ] **Task 3.5. Make MAC baseline audit cohort-aware** | Codex | Fix `scripts/audit-mac-drift-baseline.ts` to verify an explicit locked/source-hash cohort and avoid overwriting the reviewed baseline artifact; decide separately whether a new baseline extension is needed. |
 
 ### Blocked — needs decision or unblock
 
@@ -90,4 +91,5 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-13 Codex: closed E3 after atomic 40-line recovery and added Task 3.4/3.5 follow-ups.
 - 2026-07-10 Claude: created as single source of truth. Superseded `docs/handoffs/2026-07-09-codex-roadmap.md` and `docs/handoffs/2026-07-06-antigravity-roadmap.md` (both deleted).

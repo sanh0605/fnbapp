@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-07-15T05:37:18.361Z",
+  "run_id": "task-3-recovery-2026-07-13-081930193Z",
+  "source_hash": "cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3",
+  "checks": {
+    "recovered_line_mismatches": 0,
+    "non_recovered_lines_changed": 0,
+    "recovery_audit_row_count": 40,
+    "trigger_blocked_message": "Order line ol-0607f92b-27d5-4fe5-b374-96eb800120b8 is audit-baseline locked and cannot be modified",
+    "cohort_drift": {
+      "preDeltaVnd": -933,
+      "postDeltaVnd": 0,
+      "effectVnd": 933
+    },
+    "current_live_drift": {
+      "total_mismatches": 354,
+      "total_delta_vnd": -141297,
+      "locked_mismatches": 130,
+      "outside_locked_cohort": 224,
+      "outside_after_cutoff": 71,
+      "outside_before_or_at_cutoff": 153,
+      "earliest_outside_mismatch": "2026-04-20T01:25:46.485544+00:00",
+      "latest_outside_mismatch": "2026-07-14T06:20:30.154+00:00"
+    }
+  },
+  "recovered_samples": [
+    {
+      "line_id": "ol-0607f92b-27d5-4fe5-b374-96eb800120b8",
+      "actual_cost_at_sale": 11751,
+      "expected_cost_at_sale": 11751
+    },
+    {
+      "line_id": "ol-100de072-8147-4a32-b7ef-457d5318f6e5",
+      "actual_cost_at_sale": 11695,
+      "expected_cost_at_sale": 11695
+    },
+    {
+      "line_id": "ol-11d14c0e-cb1d-40e0-9d2e-8fc59aa307c0",
+      "actual_cost_at_sale": 10521,
+      "expected_cost_at_sale": 10521
+    },
+    {
+      "line_id": "ol-190ed664-a9b6-4140-8b8c-21ea01f40f22",
+      "actual_cost_at_sale": 11425,
+      "expected_cost_at_sale": 11425
+    },
+    {
+      "line_id": "ol-19dc6b50-8e36-4c42-ac3b-d1c33c21f02d",
+      "actual_cost_at_sale": 5107,
+      "expected_cost_at_sale": 5107
+    }
+  ],
+  "untouched_samples": [
+    {
+      "line_id": "ol-02baef8b-78de-4935-8b16-90dc30f9d7aa",
+      "actual_cost_at_sale": 7286,
+      "original_cost_at_sale": 7286
+    },
+    {
+      "line_id": "ol-08bbc0ba-6f00-4aa4-a71c-cec7e96ff08e",
+      "actual_cost_at_sale": 4512,
+      "original_cost_at_sale": 4512
+    },
+    {
+      "line_id": "ol-09d140e1-b29d-4727-b478-4aa7a61bf0ae",
+      "actual_cost_at_sale": 13150,
+      "original_cost_at_sale": 13150
+    },
+    {
+      "line_id": "ol-0bcf1489-3321-431a-9796-e42ab394f80f",
+      "actual_cost_at_sale": 1471,
+      "original_cost_at_sale": 1471
+    },
+    {
+      "line_id": "ol-0c55be69-427d-490a-9c57-a7889f650ae2",
+      "actual_cost_at_sale": 12869,
+      "original_cost_at_sale": 12869
+    }
+  ],
+  "recoveredLineCount": 40,
+  "untouchedLineCount": 130,
+  "mismatchLineCount": 130,
+  "mismatchLineDeltaVnd": 120716
+}

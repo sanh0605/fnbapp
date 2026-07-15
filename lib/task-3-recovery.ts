@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { verifySnapshotBundleFiles } from "./recovery-snapshot";
+import { isRecoveryRunId, verifySnapshotBundleFiles } from "./recovery-snapshot";
 
 type BaselineLine = {
   line_id: string;
@@ -85,6 +85,77 @@ export function buildTask3RecoveryRunId(date = new Date()): string {
   const datePart = iso.slice(0, 10);
   const timePart = iso.slice(11).replace(/[:.]/g, "");
   return `task-3-recovery-${datePart}-${timePart}`;
+}
+
+export function resolveTask3RunId(args: string[]): string {
+  const index = args.indexOf("--run-id");
+  const runId = index === -1 ? undefined : args[index + 1];
+  if (!runId) {
+    throw new Error("--run-id is required for Task 3 recovery verification");
+  }
+  if (!isRecoveryRunId(runId)) {
+    throw new Error(`Invalid Task 3 recovery run ID: ${runId}`);
+  }
+  return runId;
+}
+
+export function assertAuditBaselineTriggerBlocked(
+  error: { message?: string } | null,
+): string {
+  if (!error) {
+    throw new Error("Locked-line update unexpectedly succeeded");
+  }
+  const message = String(error.message || "");
+  if (!message.includes("audit-baseline locked")) {
+    throw new Error(`Unexpected locked-line update error: ${message}`);
+  }
+  return message;
+}
+
+export function assessTask3CohortDrift(
+  preDeltaVnd: number,
+  postDeltaVnd: number,
+  expectedEffectVnd = 933,
+): { preDeltaVnd: number; postDeltaVnd: number; effectVnd: number } {
+  const effectVnd = postDeltaVnd - preDeltaVnd;
+  if (effectVnd !== expectedEffectVnd) {
+    throw new Error(
+      `Cohort drift effect is ${effectVnd} VND, expected ${expectedEffectVnd} VND`,
+    );
+  }
+  return { preDeltaVnd, postDeltaVnd, effectVnd };
+}
+
+export function partitionTask3RecoveryLocks(input: {
+  locks: Task3BaselineLock[];
+  changes: Array<{ line_id: string }>;
+}): { recoveredLocks: Task3BaselineLock[]; untouchedLocks: Task3BaselineLock[] } {
+  const selectedIds = new Set(input.changes.map(change => change.line_id));
+  if (selectedIds.size !== input.changes.length) {
+    throw new Error("Task 3 recovery changes contain duplicate line IDs");
+  }
+  const recoveredLocks = input.locks.filter(lock => selectedIds.has(lock.order_line_id));
+  if (recoveredLocks.length !== selectedIds.size) {
+    throw new Error("Task 3 recovery changes do not match the baseline locks");
+  }
+  return {
+    recoveredLocks,
+    untouchedLocks: input.locks.filter(lock => !selectedIds.has(lock.order_line_id)),
+  };
+}
+
+export function normalizeTask3SnapshotLinesForAudit(
+  lines: Array<Record<string, unknown>>,
+): Array<Record<string, unknown>> {
+  return lines.map(line => ({
+    ...line,
+    recipe_snapshot_json: typeof line.recipe_snapshot_json === "string"
+      ? line.recipe_snapshot_json
+      : JSON.stringify(line.recipe_snapshot_json ?? {}),
+    modifiers_snapshot_json: typeof line.modifiers_snapshot_json === "string"
+      ? line.modifiers_snapshot_json
+      : JSON.stringify(line.modifiers_snapshot_json ?? []),
+  }));
 }
 
 export function buildTask3RpcChanges(
@@ -375,7 +446,9 @@ export function verifyTask3RecoveryState(input: {
       .filter(lock => !selectedById.has(lock.order_line_id) && lock.delta_vnd !== 0)
       .map(lock => lock.order_line_id),
   );
-  const actualMismatchIds = new Set(input.mismatchLineIds);
+  const actualMismatchIds = new Set(
+    input.mismatchLineIds.filter(lineId => liveById.has(lineId)),
+  );
   if (
     actualMismatchIds.size !== expectedMismatchIds.size
     || [...expectedMismatchIds].some(lineId => !actualMismatchIds.has(lineId))

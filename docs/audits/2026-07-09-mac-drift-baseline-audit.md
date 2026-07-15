@@ -203,3 +203,40 @@ Current user decision.
 - `node_modules\.bin\vite-node.cmd scripts\recover-mac-drift.ts`: dry-run
   produced a 170-change recovery plan and did not write database rows.
 - Targeted Vitest for baseline helper and migration SQL shape passed.
+
+## Post-E3 recovery (2026-07-13)
+
+Task E3 selectively recovered the 40 lines classified as
+`PURCHASE_COST_RECOVERY`. The fixed 170-line baseline remains the reviewed
+source cohort; its JSON artifact has SHA-256
+`cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3`.
+
+Production recovery run
+`task-3-recovery-2026-07-13-081930193Z` atomically:
+
+- updated the exact 40 approved `order_lines_v2.cost_at_sale` values;
+- reduced stored COGS for those lines from 415,160 VND to 414,227 VND;
+- produced a -933 VND COGS correction and a corresponding +933 VND gross
+  profit effect for the affected period;
+- inserted 40 matching `data_recovery_changes` audit rows; and
+- left the other 130 locked baseline lines unchanged.
+
+Cohort-isolated verification passed all six gates: zero recovered-value
+mismatches, zero non-recovered changes, 40 recovery audit rows, the normal
+lock trigger still blocked mutation, snapshot drift moved from -933 VND to
+0 VND, and the current live mismatch population was separated from the fixed
+baseline cohort. See
+`docs/audits/2026-07-13-task-3-recovery-result.md` and
+`docs/audits/2026-07-13-task-3-recovery-verification.json`.
+
+The recovery was prepared in commits `996b09d`, `da525d3`, and `02bfc3c`;
+the final verification and documentation are in the Task E3 closing commit.
+
+### Audit-tool follow-up
+
+`scripts/audit-mac-drift-baseline.ts` currently recomputes the entire live
+population and rewrites the fixed baseline artifact. It is therefore not a
+cohort-aware post-recovery verifier. Task 3.4 tracks investigation of the 224
+live mismatches outside the locked cohort. Task 3.5 separately tracks making
+the baseline audit cohort-aware and preventing accidental replacement of the
+reviewed source artifact. Neither follow-up is part of E3.

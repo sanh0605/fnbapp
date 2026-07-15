@@ -4,6 +4,55 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-13 (Codex) - Task 3 recovery applied — 40 PURCHASE_COST_RECOVERY lines recomputed
+
+**Trigger:** User approved the production apply after Phase B snapshot and
+Phase C dry-run review for the fixed 170-line MAC drift baseline.
+
+### Phases A-E
+
+| Phase | Outcome | Commit |
+|---|---|---|
+| A - recovery gates | Added exact-scope planning, migration/RPC guards, lock and source-hash validation | `996b09d` |
+| A - production baseline locks | Deployed migration 0012, inserted and verified 170 locks, verified RLS/trigger boundary | `da525d3` |
+| B/C - snapshot and dry-run | Captured verified targeted snapshot; previewed exact 40-line payload totaling -933 VND | `02bfc3c` |
+| C - production apply | RPC run `task-3-recovery-2026-07-13-081930193Z` atomically updated 40 lines and inserted 40 audit rows | operational result |
+| D - cohort verification | All six recovery gates passed; no rollback required | this commit |
+| E - documentation | Updated baseline/result audits and added Task 3.4/3.5 follow-ups | this commit |
+
+### Verification
+
+- Recovered lines not matching reviewed expected values: 0/40.
+- Non-recovered locked lines changed: 0/130.
+- `data_recovery_changes` rows for the recovery run: 40.
+- Normal no-op update of a locked line: blocked by the audit-baseline trigger.
+- Recovered-cohort drift: -933 VND before, 0 VND after, exactly +933 VND effect.
+- Current live mismatch population: 130 inside the locked cohort and 224 outside it.
+- Targeted recovery tests: 14/14 passed.
+- Full Vitest suite: 353/353 passed across 55 test files.
+- `node_modules/.bin/tsc.cmd --noEmit`: 0 errors.
+- Baseline source SHA-256 restored to
+  `cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3`.
+
+### Accounting effect
+
+- Stored COGS for the recovered cohort decreased by 933 VND.
+- Gross profit for the affected period increased by 933 VND.
+- The other 130 locked baseline lines retained their original stored COGS.
+
+### Follow-up discovery
+
+The live audit is not cohort-aware. It found 224 mismatches outside the locked
+baseline: 153 dated on or before 2026-07-02 and 71 after the cutoff. Task 3.4
+will investigate this population. Task 3.5 will fix baseline-audit cohort
+filtering and artifact overwrite behavior; neither is part of E3.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
+
+---
+
 ## 2026-07-13 (Codex) - Task 3.3 MAC drift investigation
 
 **Trigger:** Read-only handoff to investigate the 170-line MAC drift baseline after Task 3.2 explained only 2.4% of the absolute drift.

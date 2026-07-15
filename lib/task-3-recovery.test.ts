@@ -3,17 +3,76 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createSnapshotBundleFiles } from "@/lib/recovery-snapshot";
 import {
+  assertAuditBaselineTriggerBlocked,
+  assessTask3CohortDrift,
   assessTask3BaselineLocks,
   buildTask3RecoveryPlan,
   buildTask3RecoveryRunId,
   buildTask3RpcChanges,
   buildTask3SnapshotSelection,
+  partitionTask3RecoveryLocks,
+  normalizeTask3SnapshotLinesForAudit,
+  resolveTask3RunId,
   resolveSupabasePublicKey,
   verifyTask3SnapshotFiles,
   verifyTask3RecoveryState,
 } from "@/lib/task-3-recovery";
 
 describe("buildTask3RecoveryPlan", () => {
+  it("normalizes canonical snapshot JSON fields for the MAC audit", () => {
+    expect(normalizeTask3SnapshotLinesForAudit([{
+      id: "line-1",
+      recipe_snapshot_json: { variant: { ingredients: [] }, modifiers: [] },
+      modifiers_snapshot_json: [{ id: "mod-1", qty: 2 }],
+    }])).toEqual([{
+      id: "line-1",
+      recipe_snapshot_json: JSON.stringify({ variant: { ingredients: [] }, modifiers: [] }),
+      modifiers_snapshot_json: JSON.stringify([{ id: "mod-1", qty: 2 }]),
+    }]);
+  });
+
+  it("partitions recovery locks by approved line ID instead of delta sign", () => {
+    const selected = makeLock("line-selected", 100, 90);
+    const negativeButUntouched = makeLock("line-untouched", 200, 190);
+
+    expect(partitionTask3RecoveryLocks({
+      locks: [selected, negativeButUntouched],
+      changes: [{ line_id: "line-selected" }],
+    })).toEqual({
+      recoveredLocks: [selected],
+      untouchedLocks: [negativeButUntouched],
+    });
+  });
+
+  it("requires the cohort drift effect to equal the approved 933 VND", () => {
+    expect(assessTask3CohortDrift(-933, 0)).toEqual({
+      preDeltaVnd: -933,
+      postDeltaVnd: 0,
+      effectVnd: 933,
+    });
+    expect(() => assessTask3CohortDrift(-933, 1))
+      .toThrow("Cohort drift effect is 934 VND, expected 933 VND");
+  });
+
+  it("accepts only the audit-baseline trigger rejection", () => {
+    expect(assertAuditBaselineTriggerBlocked({
+      message: "Order line line-1 is audit-baseline locked and cannot be modified",
+    })).toContain("audit-baseline locked");
+    expect(() => assertAuditBaselineTriggerBlocked(null))
+      .toThrow("Locked-line update unexpectedly succeeded");
+    expect(() => assertAuditBaselineTriggerBlocked({ message: "network error" }))
+      .toThrow("Unexpected locked-line update error: network error");
+  });
+
+  it("requires an explicit timestamped run ID for production verification", () => {
+    const runId = "task-3-recovery-2026-07-13-081930193Z";
+
+    expect(resolveTask3RunId(["--run-id", runId])).toBe(runId);
+    expect(() => resolveTask3RunId([])).toThrow("--run-id is required");
+    expect(() => resolveTask3RunId(["--run-id", "TASK-3-E3-SELECTIVE-2026-07-13"]))
+      .toThrow("Invalid Task 3 recovery run ID");
+  });
+
   it("builds a timestamped Task 3 recovery run ID", () => {
     expect(buildTask3RecoveryRunId(new Date("2026-07-13T07:15:30.123Z")))
       .toBe("task-3-recovery-2026-07-13-071530123Z");
@@ -238,7 +297,7 @@ describe("buildTask3RecoveryPlan", () => {
     expect(verifyTask3RecoveryState({
       plan,
       liveLines,
-      mismatchLineIds: ["line-2", "line-3"],
+      mismatchLineIds: ["line-2", "line-3", "line-outside"],
       recoveryRows,
     })).toEqual({
       recoveredLineCount: 1,
