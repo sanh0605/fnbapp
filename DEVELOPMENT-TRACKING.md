@@ -4,6 +4,58 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-15 (Codex) - Task 3.6 active BTP shortfall investigation
+
+**Trigger:** Task 3.4 isolated 71 frozen post-cutoff BTP_SHORTFALL lines and
+recorded 42 additional lines that appeared after its initial live capture.
+Claude opened a read-only Task 3.6 investigation to identify the forward data
+or replay mechanism.
+
+### Completed work
+
+- Added `scripts/investigate-task-3.6-forward-drift.ts`, a SELECT-only
+  113-line harness covering the exact frozen 71 IDs plus the exact 42 newer IDs
+  recorded by Task 3.4.
+- Classified the frozen 71 as `RECIPE_OR_BATCH_YIELD_MUTATION` (-67,221 VND).
+  Historical/effective BTP recipe replay reproduced 64 stored costs exactly;
+  the immediately previous recipe reproduced the remaining seven exactly.
+- Identified the temporal gap: line snapshots freeze top-level recipes, while
+  historical BTP shortfalls are replayed through the currently selected nested
+  BTP recipe. Compact POS and full-ledger audit cost formulas differed on 0/113
+  identical inputs; no MAC write-formula bug was found.
+- Isolated BTP-002: 32 lines / -41,910 VND, including PROD-006 at 17 lines /
+  -18,099 VND. `RC-002` to `RC-031` reduced ING-004 from 200 to 150. BTP-009
+  accounts for 39 lines / -25,311 VND through the analogous `RC-022` to
+  `RC-030` change.
+- Classified all 42 newer IDs as durable `LATE_PO_RECEIPT` exposures (+6,809
+  VND) from PO-052/053/054. All map to migration-0014 events and remain on the
+  Task 3.2 review path.
+- Dismissed the operator stop gate against its base rate: `tuyen2612` accounts
+  for 69/71 drift lines (97.18%) and 331/338 all July 1-14 completed or
+  superseded orders (97.93%).
+- Documented the known locked-cohort replay shift from +120,716 to +102,621 VND
+  as evidence that current nested recipe state is not a frozen historical
+  replay, without changing or re-auditing the locked rows.
+
+### Verification
+
+- Investigation: 71 + 42 = 113 unique, currently mismatched IDs; mechanisms
+  reconcile 113/113; `database_mutation_methods_used: []`.
+- Full Vitest: 353/353 passed across 55 test files; no tests modified.
+- `node_modules/.bin/tsc.cmd --noEmit`: 0 errors.
+- `git diff --check`: clean.
+
+### Review boundary
+
+No production write, recovery, migration, lock, MAC-engine change, or Task 3.5
+audit fix was performed. The 71 frozen lines are not recompute candidates. Wait
+for Claude review before opening a forward-drift remediation task. No push per
+collaboration protocol.
+
+Commit: this commit.
+
+---
+
 ## 2026-07-15 (Codex) - Task 3.4 outside-cohort MAC drift investigation
 
 **Trigger:** E3 isolated 224 live MAC mismatches outside the fixed 170-line
