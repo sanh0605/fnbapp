@@ -51,7 +51,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~A] **UI-REMED-5. Button warning variant + Dialog icons (polish)** | Antigravity | UI: 2-file change — Button warning variant + DialogHost icon rendering | `docs/handoffs/2026-07-17-antigravity-ui-remed-5-polish.md` (Claude authored 2026-07-17). (1) Add `warning` variant to `components/ui/Button.tsx`; (2) Update `components/DialogHost.tsx` line 40 mapping (warning→warning, not →danger); (3) Add icon block by variant (info: CheckCircle2/success, warning: AlertTriangle/warning, danger: XCircle/danger). ~0.5 session. | (unblocked) |
+| (none) | — | — | — | — |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 

@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Antigravity) - UI-REMED-5 Button warning variant + Dialog icons (polish)
+
+**Trigger:** Phase 1 UI audit flagged missing warning button variant and lack of icons in confirmation dialogs. Under UI-REMED-5, warning button variant was added and dialogs were updated to support variant-specific icons (info, warning, danger).
+
+### Completed Work
+- Added `warning` variant to `components/ui/Button.tsx` mapping to `bg-warning text-white hover:bg-warning/90 active:bg-warning/80 shadow-sm`.
+- Updated `components/DialogHost.tsx` mapping to map dialog `warning` variant to button `warning` variant instead of `danger`.
+- Integrated Lucide-React icons into `components/DialogHost.tsx` to render icon blocks with variant-specific styling (info -> CheckCircle2/success, warning -> AlertTriangle/warning, danger -> XCircle/danger) in a centered circular layout matching the `DeleteConfirmModal` pattern.
+- Created `components/DialogHost.test.tsx` containing comprehensive unit tests to programmatically verify rendering and visual styles of all three variants.
+- Ran tests verifying 403/403 pass baseline.
+
+### Verification
+- Production build `npm run build` is successful.
+- Typescript compiler `tsc --noEmit` runs clean.
+- Unit tests baseline passes (403/403).
+- Clean `git diff --check`.
+
+Commit: Antigravity ui: Button warning variant + Dialog icons (UI-REMED-5 polish)
+
+
+
 ## 2026-07-17 (Antigravity) - UI-REMED-4 Root Error and Loading Boundaries
 
 **Trigger:** Phase 1 UI audit flagged missing `error.tsx` and `loading.tsx` boundaries. Under Option A (Minimal), root-level boundaries were required alongside filling missing segment loading fallbacks.
