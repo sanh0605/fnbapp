@@ -7,6 +7,7 @@ import type { CartInput } from "@/lib/order-cart";
 import Link from "next/link";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { CartPanel } from "@/components/pos/CartPanel";
+import { alert, confirm } from "@/lib/dialog";
 
 export default function POSScreen({
   brandId,
@@ -127,7 +128,7 @@ export default function POSScreen({
       name: draftName,
       cart_json: JSON.stringify(cartToSave),
       brand_id: brandId || "",
-    }).then(res => {
+    }).then(async res => {
       if (res.success && res.draft) {
         refreshDrafts();
         if (clearCartAfter) {
@@ -137,17 +138,17 @@ export default function POSScreen({
           setActiveDraftId(res.draft.id);
         }
       } else {
-        alert("Lỗi lưu đơn nháp: " + (res as any).error);
+        await alert({ title: "Lỗi", message: "Lỗi lưu đơn nháp: " + (res as any).error, variant: "danger" });
       }
     });
   };
 
-  const loadDraft = (draftId: string) => {
+  const loadDraft = async (draftId: string) => {
     const draft = drafts.find(d => d.id === draftId);
     if (!draft) return;
     
     if (cart.length > 0) {
-      if (confirm("Bạn đang có món trong giỏ. Lưu giỏ hiện tại thành nháp mới trước khi mở nháp này?")) {
+      if (await confirm({ title: "Xác nhận", message: "Bạn đang có món trong giỏ. Lưu giỏ hiện tại thành nháp mới trước khi mở nháp này?", variant: "warning" })) {
         saveDraft(cart, false);
       }
     }
@@ -158,14 +159,14 @@ export default function POSScreen({
   };
 
   const deleteDraft = (draftId: string) => {
-    deletePOSDraft(draftId).then(res => {
+    deletePOSDraft(draftId).then(async res => {
       if (res.success) {
         refreshDrafts();
         if (activeDraftId === draftId) {
           setActiveDraftId(null);
         }
       } else {
-        alert("Lỗi xóa đơn nháp: " + res.error);
+        await alert({ title: "Lỗi", message: "Lỗi xóa đơn nháp: " + res.error, variant: "danger" });
       }
     });
   };
@@ -270,9 +271,9 @@ export default function POSScreen({
     return { promoProductsMap: prodMap, promoVariantsMap: varMap, promoDetailsMap: detailsMap };
   }, [promotions, variants, brandId]);
 
-  const openProductModal = (product: any, editIndex: number | null = null) => {
+  const openProductModal = async (product: any, editIndex: number | null = null) => {
     const prodVariants = variants.filter((v: any) => v.product_id === product.id);
-    if (prodVariants.length === 0) return alert("Món này chưa cấu hình kích cỡ & giá.");
+    if (prodVariants.length === 0) return await alert({ message: "Món này chưa cấu hình kích cỡ & giá." });
 
     setSelectedProduct(product);
     setEditingCartIndex(editIndex);
@@ -814,7 +815,7 @@ export default function POSScreen({
   });
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
       if (
         e.target instanceof HTMLInputElement || 
@@ -837,7 +838,7 @@ export default function POSScreen({
         setIsCartOpen(false);
       } else if (e.key === "Enter" && !isCheckingOut && !processingOrder && isOnline && cart.length > 0) {
         e.preventDefault();
-        if (confirm("Xác nhận thanh toán TIỀN MẶT cho đơn hàng?")) {
+        if (await confirm({ title: "Xác nhận", message: "Xác nhận thanh toán TIỀN MẶT cho đơn hàng?", variant: "warning" })) {
           handleConfirmCheckoutRef.current("Tien mat");
         }
       }

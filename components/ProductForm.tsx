@@ -9,6 +9,7 @@ import { ModalPortal } from "@/components/ui/ModalPortal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";
 import { Plus, X, Trash2 } from "lucide-react";
+import { alert, confirm } from "@/lib/dialog";
 
 export default function ProductForm({ categories, baseIngredients, semiProducts, units, initialData }: any) {
   const isEdit = !!initialData;
@@ -28,8 +29,8 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !categoryId) return alert("Vui lòng nhập Tên món và chọn Nhóm.");
-    if (variants.length === 0) return alert("Phải có ít nhất 1 kích cỡ/size.");
+    if (!name || !categoryId) return await alert({ title: "Thiếu thông tin", message: "Vui lòng nhập Tên món và chọn Nhóm.", variant: "warning" });
+    if (variants.length === 0) return await alert({ title: "Thiếu thông tin", message: "Phải có ít nhất 1 kích cỡ/size.", variant: "warning" });
 
     setLoading(true);
     const formData = new FormData();
@@ -52,7 +53,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
         setVariants([{ size_name: "Mặc định", price: 0, ingredients: [] }]);
       }
     } else {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     }
   };
 
@@ -63,7 +64,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
     const res = await deleteProduct(formData);
     setLoading(false);
     if (res?.error) {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     } else {
       setIsDeleteOpen(false);
     }

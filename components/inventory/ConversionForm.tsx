@@ -4,6 +4,7 @@ import { useState } from "react";
 import { addConversion, updateConversion } from "@/app/admin/inventory/actions";
 import { SearchableSelect } from "../SearchableSelect";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export function ConversionForm({
   items,
@@ -38,7 +39,7 @@ export function ConversionForm({
     const inputUnit = selectedUnit;
     const unitObj = units.find((u) => u.name.toLowerCase() === inputUnit.toLowerCase());
     if (!unitObj) {
-      alert(`Đơn vị '${inputUnit}' không hợp lệ. Vui lòng chọn từ danh sách.`);
+      await alert({ title: "Thiếu thông tin", message: `Đơn vị '${inputUnit}' không hợp lệ. Vui lòng chọn từ danh sách.`, variant: "warning" });
       return;
     }
 

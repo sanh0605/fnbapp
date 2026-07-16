@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { saveCategory as saveProductCategory, updateCategory as updateProductCategory, deleteCategory as deleteProductCategory } from "@/app/admin/products/categories/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export default function ProductCategoryForm({ initialData }: any) {
   const isEdit = !!initialData;
@@ -38,7 +39,7 @@ export default function ProductCategoryForm({ initialData }: any) {
     const res = await deleteProductCategory(formData);
     setLoading(false);
     if (res?.error) {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     } else {
       setIsDeleteOpen(false);
     }

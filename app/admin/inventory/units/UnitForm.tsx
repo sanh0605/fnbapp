@@ -2,6 +2,7 @@
 
 import { useState, useId } from "react";
 import { addUnit, updateUnit, deleteUnit } from "@/app/admin/inventory/actions";
+import { alert, confirm } from "@/lib/dialog";
 
 export function UnitForm({ initialData }: { initialData?: any }) {
   const formId = useId();
@@ -62,7 +63,7 @@ export function DeleteBtn({ id }: { id: string }) {
   const [loading, setLoading] = useState(false);
   
   const handleDelete = async () => {
-    if (confirm("Xác nhận xoá đơn vị này?")) {
+    if (await confirm({ title: "Xác nhận xóa", message: "Xác nhận xoá đơn vị này?", variant: "danger" })) {
       setLoading(true);
       const fd = new FormData();
       fd.append("id", id);

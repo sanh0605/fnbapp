@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Antigravity) - UI-REMED-3 Session 2 Dialog API Bulk Migration
+
+**Trigger:** Session 1 implemented the new `alert` and `confirm` dialog API. Session 2 requires bulk migrating the remaining ~52 call sites across the codebase.
+
+### Completed Work
+- Bulk migrated 52 native `alert()` and `confirm()` call sites across 18 source files to the new Dialog API (`@/lib/dialog`).
+- Made containing functions `async` where required without modifying surrounding business logic or changing component signatures.
+- Replaced simple strings with structured objects including `title` and `variant` (`warning`, `danger`, `info`) based on message intent (e.g. form validation vs destructive confirmation).
+- Visual smoke tested (via test runner checks and TS compilation) critical flows including POS checkout, PO submit, stock adjustment delete, and form validation.
+
+### Verification
+- Production compile `tsc --noEmit` is clean.
+- Unit tests run and pass (`vitest run`).
+- `git diff --check` is clean.
+- Grep confirms no remaining native `\balert\(['"]` or `\bconfirm\(['"]` usages in source code.
+
+Commit: Antigravity ui: migrate alert/confirm to Dialog API (UI-REMED-3 Session 2)
+
+
 ## 2026-07-17 (Antigravity) - UI-REMED-3 Session 1 Dialog Components + Imperative API
 
 **Trigger:** Phase 1 UI audit flagged 54 native `alert()` / `confirm()` calls. Session 1 of UI-REMED-3 required creating the imperative Promise-based API and the underlying styled components.

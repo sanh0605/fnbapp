@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { addUser, deleteUserAction as deleteUser } from "@/app/admin/users/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export function UserForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -103,7 +104,7 @@ export function DeleteUserButton({ id }: { id: string }) {
   return (
     <button 
       onClick={async () => {
-        if (confirm("Bạn có chắc chắn muốn xoá tài khoản này?")) {
+        if (await confirm({ title: "Xác nhận xóa", message: "Bạn có chắc chắn muốn xoá tài khoản này?", variant: "danger" })) {
           setLoading(true);
           const formData = new FormData();
           formData.append("id", id);

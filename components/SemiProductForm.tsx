@@ -5,6 +5,7 @@ import { saveSemiProduct } from "@/app/admin/semi-products/actions";
 import { SearchableSelect } from "./SearchableSelect";
 import { CustomDatePicker } from "./CustomDatePicker";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export default function SemiProductForm({ units, baseIngredients, semiProducts, initialData, initialRecipe }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -71,19 +72,19 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!baseUnit) {
-      return alert("Vui lòng chọn Đơn vị gốc từ danh sách gợi ý.");
+      return await alert({ title: "Thiếu thông tin", message: "Vui lòng chọn Đơn vị gốc từ danh sách gợi ý.", variant: "warning" });
     }
     
     if (ingredients.length === 0) {
-      return alert("Vui lòng thêm ít nhất 1 thành phần công thức.");
+      return await alert({ title: "Thiếu thông tin", message: "Vui lòng thêm ít nhất 1 thành phần công thức.", variant: "warning" });
     }
     
     for (let i = 0; i < ingredients.length; i++) {
       if (!ingredients[i].ingredient_id) {
-        return alert(`Thành phần dòng ${i + 1} chưa được chọn.`);
+        return await alert({ title: "Thiếu thông tin", message: `Thành phần dòng ${i + 1} chưa được chọn.`, variant: "warning" });
       }
       if (!ingredients[i].quantity || Number(ingredients[i].quantity) <= 0) {
-        return alert(`Số lượng dòng ${i + 1} không hợp lệ.`);
+        return await alert({ title: "Thiếu thông tin", message: `Số lượng dòng ${i + 1} không hợp lệ.`, variant: "warning" });
       }
     }
 
@@ -112,7 +113,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
       }
       setIsOpen(false);
     } else {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     }
   };
 

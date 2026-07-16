@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toggleToppingStandalone } from "@/app/admin/products/toppings/actions";
 import type { DBProduct } from "@/types/db";
+import { alert, confirm } from "@/lib/dialog";
 
 interface ToppingsManagerProps {
   products: DBProduct[]; // đã filter CAT-007 + có topping standalone flag
@@ -17,7 +18,7 @@ export default function ToppingsManager({ products }: ToppingsManagerProps) {
     setPending(productId);
     const res = await toggleToppingStandalone(productId, enabled);
     if (!res.ok) {
-      alert(res.error || "Có lỗi xảy ra khi bật/tắt topping.");
+      await alert({ title: "Lỗi", message: res.error || "Có lỗi xảy ra khi bật/tắt topping.", variant: "danger" });
     }
     setPending(null);
     router.refresh();

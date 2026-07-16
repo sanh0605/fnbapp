@@ -3,6 +3,7 @@
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { CartItemRow } from "./CartItemRow";
 import { formatNumber } from "@/lib/format";
+import { alert, confirm } from "@/lib/dialog";
 
 interface CartPanelProps {
   cart: any[];
@@ -141,8 +142,8 @@ export function CartPanel({
                 Lưu Nháp
               </button>
               <button
-                onClick={() => {
-                  if (confirm("Xoá hết món trong giỏ hàng?")) {
+                onClick={async () => {
+                  if (await confirm({ title: "Xác nhận xóa", message: "Xoá hết món trong giỏ hàng?", variant: "danger" })) {
                     setCart([]);
                     setActiveDraftId(null);
                   }

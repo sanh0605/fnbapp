@@ -4,6 +4,7 @@ import { useState } from "react";
 import { addPurchasedItem, updatePurchasedItem } from "@/app/admin/inventory/actions";
 import { SearchableSelect } from "../SearchableSelect";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export function PurchasedItemForm({
   itemCategories,
@@ -49,7 +50,7 @@ export function PurchasedItemForm({
         const inputUnit = unitsState[i].name;
         const unitObj = units.find((u) => u.name.toLowerCase() === inputUnit.toLowerCase());
         if (!unitObj) {
-          alert(`Đơn vị '${inputUnit}' ở dòng ${i + 1} không hợp lệ. Vui lòng chọn từ danh sách.`);
+          await alert({ title: "Thiếu thông tin", message: `Đơn vị '${inputUnit}' ở dòng ${i + 1} không hợp lệ. Vui lòng chọn từ danh sách.`, variant: "warning" });
           return;
         }
       }

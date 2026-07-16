@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { saveModifierAction as saveModifier, deleteModifierAction as deleteModifier } from "@/app/admin/products/modifiers/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export default function ModifierForm({ baseIngredients, semiProducts, units, initialData, initialRecipe }: any) {
   const isEdit = !!initialData;
@@ -21,7 +22,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !groupName) return alert("Vui lòng nhập tên và chọn nhóm tuỳ chọn.");
+    if (!name || !groupName) return await alert({ title: "Thiếu thông tin", message: "Vui lòng nhập tên và chọn nhóm tuỳ chọn.", variant: "warning" });
     
     setLoading(true);
     const formData = new FormData();
@@ -43,12 +44,12 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
         setIngredients([]);
       }
     } else {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     }
   };
 
   const handleDelete = async () => {
-    if (confirm(`Bạn có chắc muốn xoá ${initialData.name}?`)) {
+    if (await confirm({ title: "Xác nhận xóa", message: `Bạn có chắc muốn xoá ${initialData.name}?`, variant: "danger" })) {
       const formData = new FormData();
       formData.append("id", initialData.id);
       await deleteModifier(formData);

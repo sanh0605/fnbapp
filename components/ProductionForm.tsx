@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { saveProductionOrder } from "@/app/admin/production/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export default function ProductionForm({ semiProducts, recipes, baseIngredients, units }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,11 +77,11 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedSpId) return alert("Vui lòng chọn Bán Thành Phẩm cần nấu.");
-    if (!targetYield || targetYield <= 0) return alert("Sản lượng mong muốn phải lớn hơn 0.");
+    if (!selectedSpId) return await alert({ title: "Thiếu thông tin", message: "Vui lòng chọn Bán Thành Phẩm cần nấu.", variant: "warning" });
+    if (!targetYield || targetYield <= 0) return await alert({ message: "Sản lượng mong muốn phải lớn hơn 0." });
 
     if (consumedIngredients.length === 0) {
-      return alert("Bán thành phẩm này chưa được khai báo công thức. Hãy cấu hình công thức trước khi nấu.");
+      return await alert({ title: "Thiếu thông tin", message: "Bán thành phẩm này chưa được khai báo công thức. Hãy cấu hình công thức trước khi nấu.", variant: "warning" });
     }
 
     setLoading(true);
@@ -93,12 +94,12 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
     setLoading(false);
 
     if (res.success) {
-      alert("Đã tạo Lệnh nấu thành công và trừ kho tự động!");
+      await alert({ title: "Thành công", message: "Đã tạo Lệnh nấu thành công và trừ kho tự động!" });
       setIsOpen(false);
       setSelectedSpId("");
       setTargetYield("");
     } else {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     }
   };
 

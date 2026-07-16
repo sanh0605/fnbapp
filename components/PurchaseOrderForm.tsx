@@ -7,6 +7,7 @@ import { SearchableSelect } from "./SearchableSelect";
 import { SupplierModal } from "./SupplierForm";
 import { CustomDatePicker } from "./CustomDatePicker";
 import { formatNumber } from "@/lib/format";
+import { alert, confirm } from "@/lib/dialog";
 
 export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, baseIngredients, units = [], initialData }: any) {
   const router = useRouter();
@@ -102,15 +103,15 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
   const handleSubmit = async (status: string) => {
     if (status === "COMPLETED") {
-      if (!supplierId) return alert("Vui lòng chọn nhà cung cấp");
-      if (lines.length === 0) return alert("Vui lòng thêm ít nhất 1 mặt hàng");
+      if (!supplierId) return await alert({ title: "Thiếu thông tin", message: "Vui lòng chọn nhà cung cấp", variant: "warning" });
+      if (lines.length === 0) return await alert({ title: "Thiếu thông tin", message: "Vui lòng thêm ít nhất 1 mặt hàng", variant: "warning" });
 
       // Validation
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        if (!line.purchased_item_id) return alert(`Dòng ${i + 1}: Vui lòng chọn hàng hoá`);
-        if (!line.unit) return alert(`Dòng ${i + 1}: Vui lòng nhập hoặc chọn đơn vị`);
-        if (!line.conversion_id) return alert(`Dòng ${i + 1}: Vui lòng chọn đơn vị`);
+        if (!line.purchased_item_id) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: Vui lòng chọn hàng hoá`, variant: "warning" });
+        if (!line.unit) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: Vui lòng nhập hoặc chọn đơn vị`, variant: "warning" });
+        if (!line.conversion_id) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: Vui lòng chọn đơn vị`, variant: "warning" });
       }
     }
 
@@ -140,7 +141,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
       router.push("/admin/inventory/purchase-orders");
       router.refresh();
     } else {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     }
   };
 
@@ -189,9 +190,9 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                   const res = await addPurchaseSource(name.trim());
                   if (res.success) {
                     // Update current selected visually, requires page refresh to fully sync list but we can fake it or just refresh
-                    alert("Đã thêm nguồn thành công! Vui lòng tải lại trang để cập nhật danh sách.");
+                    await alert({ title: "Thiếu thông tin", message: "Đã thêm nguồn thành công! Vui lòng tải lại trang để cập nhật danh sách.", variant: "warning" });
                   } else {
-                    alert("Lỗi: " + res.error);
+                    await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
                   }
                 }
               }}
@@ -417,10 +418,10 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
         isOpen={isSupplierModalOpen} 
         onClose={() => setIsSupplierModalOpen(false)} 
         initialName={newSupplierName}
-        onSuccess={(id) => {
+        onSuccess={async (id) => {
           setSupplierId(id);
           router.refresh();
-          alert("Đã thêm nhà cung cấp thành công!");
+          await alert({ title: "Thành công", message: "Đã thêm nhà cung cấp thành công!" });
         }}
       />
     </div>

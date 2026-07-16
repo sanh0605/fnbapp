@@ -7,6 +7,7 @@ import { formatDateTime } from "@/lib/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { alert, confirm } from "@/lib/dialog";
 
 interface StockAdjustment {
   id: string;
@@ -49,8 +50,8 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
     });
   }, [adjustments, statusFilter, searchQuery]);
 
-  const handleApprove = (id: string) => {
-    if (confirm("Bạn có chắc chắn muốn DUYỆT phiếu điều chỉnh tồn kho này?")) {
+  const handleApprove = async (id: string) => {
+    if (await confirm({ title: "Xác nhận", message: "Bạn có chắc chắn muốn DUYỆT phiếu điều chỉnh tồn kho này?", variant: "warning" })) {
       setErrorMsg(null);
       setSuccessMsg(null);
       startTransition(async () => {
@@ -64,8 +65,8 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
     }
   };
 
-  const handleReject = (id: string) => {
-    if (confirm("Bạn có chắc chắn muốn TỪ CHỐI phiếu điều chỉnh tồn kho này?")) {
+  const handleReject = async (id: string) => {
+    if (await confirm({ title: "Xác nhận xóa", message: "Bạn có chắc chắn muốn TỪ CHỐI phiếu điều chỉnh tồn kho này?", variant: "danger" })) {
       setErrorMsg(null);
       setSuccessMsg(null);
       startTransition(async () => {

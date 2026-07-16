@@ -3,6 +3,7 @@
 import { useState, useId } from "react";
 import { addSupplier, deleteSupplierAction as deleteSupplier } from "@/app/admin/suppliers/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export function SupplierForm({ initialData }: { initialData?: any }) {
   const isEdit = !!initialData;
@@ -300,7 +301,7 @@ export function DeleteSupplierButton({ id }: { id: string }) {
     const res = await deleteSupplier(formData);
     setLoading(false);
     if (res?.error) {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     } else {
       setIsDeleteOpen(false);
     }

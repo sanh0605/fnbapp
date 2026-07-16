@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 // Re-export forms from sub-components
 export { ItemCategoryForm, CategoryForm } from "./inventory/CategoryForm";
@@ -29,7 +30,7 @@ export function ActionGroup({
     const res = await deleteFn(fd);
     setLoading(false);
     if (res?.error) {
-      alert("Lỗi: " + res.error);
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     } else {
       setIsDeleteOpen(false);
     }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { addBaseIngredient, updateBaseIngredient } from "@/app/admin/inventory/actions";
 import { SearchableSelect } from "../SearchableSelect";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert, confirm } from "@/lib/dialog";
 
 export function BaseIngredientForm({ initialData, units = [] }: { initialData?: any; units?: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +28,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
     const inputUnit = items[0].base_unit;
     const unitObj = units.find((u) => u.name.toLowerCase() === inputUnit.toLowerCase());
     if (!unitObj) {
-      alert(`Đơn vị '${inputUnit}' không hợp lệ. Vui lòng chọn từ danh sách gợi ý hoặc yêu cầu Admin thêm mới.`);
+      await alert({ title: "Thiếu thông tin", message: `Đơn vị '${inputUnit}' không hợp lệ. Vui lòng chọn từ danh sách gợi ý hoặc yêu cầu Admin thêm mới.`, variant: "warning" });
       return;
     }
 
