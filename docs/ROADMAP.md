@@ -60,7 +60,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~A] **UI-REMED-4. Root error/loading boundaries (minimal)** | Antigravity | UI: additive — root error.tsx + loading.tsx + fill missing | `docs/handoffs/2026-07-17-antigravity-ui-remed-4-boundaries.md` (Claude authored 2026-07-17). User chose Option A (minimal). Root `app/error.tsx` catches all unhandled errors. Fill ~3-5 missing `loading.tsx`. ~5-7 new files total. ~0.5 session. | (unblocked) |
+| (none) | — | — | — | UI-REMED-4 closed 2026-07-17 (commit `c923086`, reviewed). UI-REMED saga 4/5 small tasks done. Last remaining: UI-REMED-1 TOKEN-SWAP in P2 (largest, multi-session). |
 
 ### P3 — Depends on verification
 
@@ -111,6 +111,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-17 Claude: UI-REMED-4 closed (commit `c923086`, reviewed). Root error/loading boundaries + 5 missing loading.tsx. UI-REMED saga 4/5 done. P1 cleared. Last: UI-REMED-1 TOKEN-SWAP.
 - 2026-07-17 Claude: UI-REMED-3 Session 2 closed (commit `2f91b3f`, reviewed). All 52 native alert/confirm migrated to Dialog API. Independent grep confirms 0 remaining. UI-REMED-3 saga complete (Sessions 1+2). P1 cleared.
 - 2026-07-17 Claude: UI-REMED-3 Session 1 closed (commit `dd51dae`, reviewed). Dialog API + components + proof-of-concept migration done. Opened Session 2 (bulk migrate 53 call sites across 18 files) as new P1.
 - 2026-07-17 Claude: UI-REMED-3 split into 2 sessions. Authored Session 1 handoff (Dialog primitive + lib/dialog imperative API + DialogHost + proof-of-concept migration). Session 2 (bulk migration 53 call sites) deferred to next handoff.
