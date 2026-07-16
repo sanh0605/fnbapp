@@ -61,7 +61,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~X] **Task 3.10. Audit operational clean definition + display** | Codex | Engine: script display + exit code + tests + policy doc | `docs/handoffs/2026-07-16-codex-task-3.10-audit-display.md` (Claude authored 2026-07-16). User chose Option B (accept informational, no DB write) + improve audit display. ~30 min Codex. | (unblocked) |
+| (none) | — | — | — | MAC drift audit saga complete 2026-07-16 (E3 → Task 3.10). 436 total locks, audit OPERATIONALLY CLEAN exit 0. See `COMPLETED.md`. |
 
 ### P3 — Depends on verification
 
@@ -108,6 +108,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-16 Claude: Task 3.10 closed (commit `6a5bdec`, reviewed). Audit OPERATIONALLY CLEAN exit 0. MAC drift saga complete (E3 → Task 3.10). P1 cleared.
 - 2026-07-16 Claude: User + Codex chose Task 3.10 Option B (accept informational, no DB write) + improve audit display. Authored handoff brief. Small scope ~30 min Codex.
 - 2026-07-16 Claude: Task 3.5 closed (commit `c28319d`, reviewed). 4-bucket classifier + sub-classification for LOCKED_VIOLATION. 16 LOCKED_VIOLATION_REPLAY surfaced = E3 baseline lines also affected by BTP drift. Opened Task 3.10 (P1, user decision required: re-classify vs accept).
 - 2026-07-16 Claude: User picked up Task 3.5 (cohort-aware MAC drift baseline audit) after Phase 3 push. Authored handoff brief. Promoted from P3 to P1. Other Task 3.5 P3 items remain deprioritized (V1 wait-for-event, UI-CONSISTENCY-1).
