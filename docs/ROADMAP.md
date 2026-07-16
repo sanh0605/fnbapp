@@ -51,9 +51,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **UI-REMED-3. REPLACE-ALERT** | Antigravity | 54 native alert/confirm → custom modal/toast | 12 source files. Need generic Modal/Toast component first (not in components/ui/). ~2 sessions. Gemini 3.1 Pro Low. |
-| **UI-REMED-4. ADD-BOUNDARY** | Antigravity | 37 error.tsx + 10 loading.tsx missing | Add to each route segment. ~1 session. Gemini 3.5 Flash Medium. |
 | **UI-REMED-1. TOKEN-SWAP migration** | Antigravity | 1105 raw Tailwind color occurrences → design tokens | Phase 1 audit found 1105 instances. Mechanical but volume. Multi-session. Gemini 3.5 Flash Medium. Can split by color family or page group. |
+| **UI-REMED-5. Button warning variant + Dialog icons (polish)** | Antigravity | (1) Add `warning` variant to `components/ui/Button.tsx` using `bg-warning` token; (2) Update `components/DialogHost.tsx` line 40 mapping: warning→warning (not →danger); (3) Add icon rendering by variant in DialogHost (info: CheckCircle, warning: AlertTriangle, danger: XCircle — use lucide-react). | Surfaced during UI-REMED-3 verification pass. Non-blocking: dialogs functional + accessible. Visual polish only. ~0.5-1 session. Gemini 3.5 Flash Medium. |
 | **H1. Push local commits** | Claude | git | After next batch ready. |
 
 ### P1 — Next up (high impact, unblocked)
