@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Antigravity) - UI-REMED-4 Root Error and Loading Boundaries
+
+**Trigger:** Phase 1 UI audit flagged missing `error.tsx` and `loading.tsx` boundaries. Under Option A (Minimal), root-level boundaries were required alongside filling missing segment loading fallbacks.
+
+### Completed Work
+- Created `app/error.tsx` (global error boundary with `bg-surface-card` style, `AlertTriangle` icon, and Vietnamese labels).
+- Created `app/loading.tsx` (global loading skeleton using `Skeleton` elements).
+- Identified and added missing `loading.tsx` pages for route segments:
+  - `app/admin/inventory/purchase-orders/[id]/loading.tsx`
+  - `app/admin/inventory/purchase-orders/new/loading.tsx`
+  - `app/admin/users/edit/[id]/loading.tsx`
+  - `app/admin/audit/backdated-ledger/[eventId]/loading.tsx`
+  - `app/admin/products/toppings/loading.tsx`
+- Verified error boundary functionality by temporarily throwing an error in `app/admin/brands/page.tsx` and confirming typescript and build success.
+
+### Verification
+- Production build `npm run build` is successful.
+- Typescript compiler `tsc --noEmit` runs clean.
+- Unit tests baseline passes (399/399).
+- Clean `git diff --check`.
+
+Commit: Antigravity ui: add root error/loading boundaries (UI-REMED-4 minimal)
+
+
 ## 2026-07-17 (Antigravity) - UI-REMED-3 Session 2 Dialog API Bulk Migration
 
 **Trigger:** Session 1 implemented the new `alert` and `confirm` dialog API. Session 2 requires bulk migrating the remaining ~52 call sites across the codebase.
