@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [ ] **Stabilization Phase 3. Push 70+ local commits** | Claude | git | `docs/superpowers/plans/2026-07-16-stabilization-phase.md` Phase 3 section. Build gate (`npm run build` clean), commit dirty docs + handoffs, update `.gitignore`, `git push origin main` fast-forward, Vercel smoke + Supabase fn check. | (unblocked — Phase 1 + 2 closed) |
+| (none) | — | — | — | Stabilization Phase 3 closed 2026-07-16. HEAD = origin/main = `3a55939`. See `COMPLETED.md`. |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
@@ -57,12 +57,17 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 | **UI-REMED-4. ADD-BOUNDARY** | Antigravity | 37 error.tsx + 10 loading.tsx missing | Add to each route segment. ~1 session. Gemini 3.5 Flash Medium. |
 | **H1. Push local commits** | Claude | git | 70+ commits local (after Phase 2 + Phase 3). Push per Stabilization Phase 3 plan. |
 
+### P1 — Next up (high impact, unblocked)
+
+| Task | Owner | Scope | Prompt | Blocked by |
+|---|---|---|---|---|
+| [ ] **Task 3.10. Handle 16 LOCKED_VIOLATION_REPLAY lines** | Codex | Engine: production write to `audit_baseline_locks.reason` | 16 E3 baseline lines also affected by BTP-002 recipe drift (PROD-006/PROD-023). Decision required: re-classify reason to BTP_RECIPE_REPLAY_DRIFT (clean audit output) OR accept as known informational drift. | User decision (A re-classify vs B accept) |
+
 ### P3 — Depends on verification
 
 | Task | Owner | Notes |
 |---|---|---|
 | **V1. First real operator backdate verify** | Claude | Wait for operator to backdate PO (frequency: weekly per user interview). Walk through UI: list → detail → approve → verify drift = 0. |
-| [ ] **Task 3.5. Make MAC baseline audit cohort-aware** | Codex | Fix `scripts/audit-mac-drift-baseline.ts` to verify an explicit locked/source-hash cohort and avoid overwriting the reviewed baseline artifact; decide separately whether a new baseline extension is needed. |
 | [ ] **UI-CONSISTENCY-1. Remove sticky filter bar pattern** | Antigravity | 15+ admin pages currently use sticky filter bar (ModifiersClient, OrderTable, ProductsClient, etc.). User decision 2026-07-16: pattern causes UI inconsistency + degrades UX. Scope: remove existing sticky positioning, ensure new pages don't add it. Mechanical removal + visual QA. ~1 session. |
 
 ### Blocked — needs decision or unblock
@@ -82,7 +87,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-16-codex-task-3.9-historical-gap-lock.md` → Task 3.9 (P1, ready for Codex)
+- `2026-07-16-codex-task-3.5-cohort-aware-audit.md` → Task 3.5 (P1, ready for Codex)
+- `2026-07-16-codex-task-3.9-historical-gap-lock.md` → Task 3.9 — historical reference, work complete (commit `09bf26a`)
 - `2026-07-16-codex-task-3.8-backdated-events-surface.md` → Task 3.8 — historical reference, work complete (commit `ad7f7ba`)
 - `2026-07-16-codex-task-3.7-btp-drift-lock.md` → Task 3.7 — historical reference, work complete (commit `d2177ca`)
 - `2026-07-15-codex-task-3.6-forward-drift-investigation.md` → Task 3.6 — historical reference, work complete (commit `d32d4d4`)
@@ -101,6 +107,9 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-16 Claude: Task 3.5 closed (commit `c28319d`, reviewed). 4-bucket classifier + sub-classification for LOCKED_VIOLATION. 16 LOCKED_VIOLATION_REPLAY surfaced = E3 baseline lines also affected by BTP drift. Opened Task 3.10 (P1, user decision required: re-classify vs accept).
+- 2026-07-16 Claude: User picked up Task 3.5 (cohort-aware MAC drift baseline audit) after Phase 3 push. Authored handoff brief. Promoted from P3 to P1. Other Task 3.5 P3 items remain deprioritized (V1 wait-for-event, UI-CONSISTENCY-1).
+- 2026-07-16 Claude: Stabilization Phase 3 closed. Build gate passed, 2 close-out commits (`86f2b89` + `3a55939`), fast-forward push to `origin/main` (HEAD now `3a55939`). 50+ commits live on GitHub. Vercel auto-deploys. Stabilization saga complete.
 - 2026-07-16 Claude: Stabilization Phase 2 closed (commits `98557ed` + `0fb8f9d` + `9dddc4a`, reviewed). Production verified: Apps Script pull-model, 32 tables, daily+monthly retention, file xuất hiện trong Drive. Backup ownership added to COLLABORATION.md Section C (Codex owns backup architecture). P1 cleared → opened Stabilization Phase 3 (push 70+ commits) as new P1.
 - 2026-07-16 Claude: Task 3.9 closed (commit `09bf26a`, reviewed). MAC drift audit fully clean (436 locks). Phase 1 UI audit closed (commit `cdc8d56`, reviewed). 1279 issues → 4 post-push remediation backlog items (UI-REMED-1 to 4). P1 cleared → opened Stabilization Phase 2 (Drive backup) as new P1.
 - 2026-07-16 Claude: Task 3.8 closed (commit `ad7f7ba`, reviewed). 41 lines map to 5 historical ledger rows, 0 durable events (migration 0014 gap). User chose Option A (accept as drift). Authored Task 3.9 handoff brief for lock cohort.

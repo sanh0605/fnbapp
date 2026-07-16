@@ -4,6 +4,52 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Claude) - Task 3.5 closed, Task 3.10 opened
+
+**Trigger:** Codex completed Task 3.5 cohort-aware baseline audit (commit `c28319d`), hit mandatory stop gate when LOCKED_VIOLATION > 0 on first live run.
+
+### Review verdict: APPROVED with semantic split
+
+- Commit scope: 7 files / +8,977 / -66 (mostly date-stamped JSON output 8445 lines).
+- 4 top-level buckets implemented: LOCKED_MATCHED, LOCKED_VIOLATION, KNOWN_NOT_LOCKED, NEW_INVESTIGATION_NEEDED.
+- LOCKED_VIOLATION sub-classified into STORED (critical, security incident) + REPLAY (informational, known drift pattern). Per Claude decision after Codex hit 16 LOCKED_VIOLATION that were all replay drift, not stored violations.
+- Frozen artifact protection: refuses to overwrite `2026-07-09-mac-drift-baseline-lines.json`, SHA-256 assertion. Verified unchanged.
+- Date-stamped output: `docs/audits/2026-07-16-mac-drift-baseline-audit.json`.
+- Tests: 388/388 (was 385 + 3 classification tests).
+- TypeScript clean, diff clean, no DB writes.
+
+### First live classification (2026-07-16)
+
+| Bucket | Count | Note |
+|---|---:|---|
+| LOCKED_MATCHED | 380 | Cohort understood, no action |
+| LOCKED_VIOLATION_STORED | 0 | No security incident |
+| LOCKED_VIOLATION_REPLAY | 16 | E3 baseline lines affected by BTP-002 recipe drift (PROD-006/PROD-023) |
+| KNOWN_NOT_LOCKED | 0 | |
+| NEW_INVESTIGATION_NEEDED | 0 | Audit "clean" for actionable population |
+
+Combined replay drift: +27,531 VND (positive direction). Stored COGS unchanged for all 16 — no integrity issue.
+
+### Task 3.10 opened
+
+16 LOCKED_VIOLATION_REPLAY lines = E3 baseline cohort that ALSO has BTP-002 recipe drift. Same mechanism as Task 3.7 cohort (225 lines), but missed because already locked by E3.
+
+Decision required from user:
+- **Option A**: Re-classify 16 locks from E3 reason to BTP_RECIPE_REPLAY_DRIFT cohort. Production write. Audit output cleaner.
+- **Option B**: Accept as known informational drift. No write. Audit shows 16 LOCKED_VIOLATION_REPLAY each run (informational bucket).
+
+### Actions
+
+- `docs/COMPLETED.md`: Task 3.5 entry added under 2026-07-16.
+- `docs/ROADMAP.md`: Task 3.5 removed from P1; Task 3.10 added as new P1 (blocked on user decision).
+- This entry: chronicle log updated.
+
+### No push
+
+Per protocol, all commits remain local-only until next explicit push request.
+
+---
+
 ## 2026-07-16 (Codex) - Task 3.5 cohort-aware MAC drift audit
 
 **Trigger:** The legacy live audit overwrote the frozen 170-line baseline and
@@ -35,6 +81,67 @@ reported one flat mismatch population without lock context.
 ### Review state
 
 Local commit only. Awaiting Claude review before Task 3.10 is opened.
+
+---
+
+## 2026-07-16 (Claude) - Stabilization Phase 3 closed — pushed to origin/main
+
+**Trigger:** User approved Phase 3 push after Phase 2 verification. Executed build gate, 2 close-out commits, fast-forward push.
+
+### Pre-push verification
+
+- `npm run build`: clean (all admin/POS/login routes generated, no TypeScript errors, no compile errors). Build gate passed.
+- `git status --short`: 5 modified docs + 6 untracked handoff/plan MDs + 18 debug scripts + `.agents/` + `skills-lock.json` + `supabase/.temp/cli-latest`.
+- Commits ahead of `origin/main`: 50.
+
+### Actions
+
+1. **`.gitignore` update** — exclude ephemeral artifacts going forward:
+   - `scripts/debug-*.ts`, `scripts/inspect-*.ts`, `scripts/dump-*.ts`, `scripts/delete-*.ts`, `scripts/fix-pos*.ts`, `scripts/test-*.ts`, `scripts/search-*.ts`, `scripts/print-recipe-json.ts`, `scripts/u5*.js`
+   - `.agents/`, `skills-lock.json`, `supabase/.temp/`
+2. **Untrack `supabase/.temp/cli-latest`** — `git rm --cached` (file remains on disk, just untracked).
+3. **Commit A `86f2b89`**: docs sync (DEVELOPMENT-TRACKING + COLLABORATION + COMPLETED + ROADMAP + .gitignore + untrack). Title: `docs: stabilization phase close-out sync (Phase 1+2)`.
+4. **Commit B `3a55939`**: 5 handoff briefs (Task 3.4/3.6/3.7/3.8/3.9) + 1 stabilization phase plan. Title: `docs: add Task 3.4-3.9 handoff briefs + stabilization phase plan`.
+5. **`git push origin main`**: fast-forward successful. HEAD = `origin/main` = `3a55939`.
+
+### Post-push state
+
+- 0 commits ahead of `origin/main`.
+- 50+ commits live on GitHub spanning: E3 recovery, MAC drift saga Task 3.4-3.9, U4 Fresh Blue design system, modifiers page redesign, cursor pagination, Phase 1 UI audit, Phase 2 Drive backup, stabilization close-out.
+- Working tree: clean (only gitignored debug scripts + `.agents/` + `skills-lock.json` remain locally, all properly excluded).
+- Vercel: auto-deploys on push to `main`. User should verify deploy at project URL.
+
+### Stabilization phase macro summary (E3 → Phase 3)
+
+| Phase | Outcome | Commit |
+|---|---|---|
+| E3 Task 3 recovery | 40 lines recomputed, -933 VND stored COGS correction | `f4722a6` |
+| Task 3.4 outside-cohort | 224 lines classified, no recovery | `fea097d` |
+| Task 3.6 forward-drift | 113 lines root caused (BTP recipe replay asymmetry) | `d32d4d4` |
+| Task 3.7 BTP drift lock | 225 lines locked (BTP_RECIPE_REPLAY_DRIFT) | `d2177ca` |
+| Task 3.8 gap report | 41 lines map to 5 historical ledger rows, 0 durable events | `ad7f7ba` |
+| Task 3.9 historical gap lock | 41 lines locked (BACKDATED_LEDGER_HISTORICAL_GAP) | `09bf26a` |
+| Phase 1 UI audit | 1279 issues documented (REPORT ONLY) | `cdc8d56` |
+| Phase 2 Drive backup | Apps Script pull-model live, 32 tables daily | `98557ed` + `0fb8f9d` + `9dddc4a` |
+| Phase 3 push | 50+ commits on origin/main, HEAD `3a55939` | `86f2b89` + `3a55939` |
+
+**MAC drift audit**: fully clean (436 baseline locks, 0 unexplained mismatches).
+**Backup**: production live, daily 02:30 UTC+7, file xuất hiện trong Drive.
+**UI**: 1279 known inconsistencies documented, post-push remediation backlog (UI-REMED-1 to 4).
+
+### Next
+
+Pick up from P2 backlog when ready:
+- UI-REMED-1 TOKEN-SWAP (1105 occurrences, multi-session)
+- UI-REMED-2 REMOVE-STICKYBAR (16 clients)
+- UI-REMED-3 REPLACE-ALERT (54 native alert/confirm → custom modal)
+- UI-REMED-4 ADD-BOUNDARY (37 error.tsx + 10 loading.tsx)
+
+Or other priorities user defines.
+
+### No further push pending
+
+Per protocol, all commits now on origin/main. Future commits will be local until next explicit push request.
 
 ---
 
