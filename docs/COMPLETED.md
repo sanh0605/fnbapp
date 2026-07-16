@@ -2,6 +2,10 @@
 
 Compact 1-line-per-task archive of finished work. Detailed entries remain in `DEVELOPMENT-TRACKING.md` (chronicle log, newest first).
 
+## 2026-07-17
+
+- **UI-REMED-3 Session 1 — Imperative Dialog API + components (Antigravity, Claude reviewed)** — Created `components/ui/Dialog.tsx` (ARIA + focus trap + smart click-outside detection via `mouseDownTarget` pattern, mobile-first bottom-sheet at 375px, centered at md+), `lib/dialog.ts` (queue semantics via `useSyncExternalStore`, Promise-based `alert()` + `confirm()` with variant defaults), `components/DialogHost.tsx` (global mount in `app/layout.tsx`). Added `jsdom` devDep + `vitest.config.ts` tsx support. Proof-of-concept migration: 2 `alert()` calls in `app/admin/inventory/sync/page.tsx` replaced with `await alert({...})`. Tests: Dialog (ESC, click-outside, focus trap) + dialog lib (queue, Promise resolve). Commit `dd51dae`. Session 2 (53 remaining call sites) next.
+
 ## 2026-07-16
 
 - **UI-REMED-2 — Redesign StickyFilterBar with design system tokens (Antigravity, Claude reviewed)** — Single-file redesign of `components/StickyFilterBar.tsx`. Hardcoded Tailwind colors → design tokens (`bg-surface-card`, `text-text-primary`, `text-text-secondary`, `border-border`, `bg-surface-secondary`, `rounded-button`). Mobile expand button aligned to Button secondary variant style. API preserved 100% (props unchanged) — 16 client components inherit new style automatically. Sticky positioning + mobile expand logic preserved. Title typography aligned to PageHeader (`text-2xl`, dropped responsive `md:text-3xl`). Tests: TS 0 errors, build success. Commit `6b65aba`.
