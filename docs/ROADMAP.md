@@ -47,12 +47,17 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 |---|---|---|---|---|
 | (none) | — | — | — | Stabilization Phase 3 closed 2026-07-16. HEAD = origin/main = `3a55939`. See `COMPLETED.md`. |
 
+### P1 — Next up (high impact, unblocked)
+
+| Task | Owner | Scope | Prompt | Blocked by |
+|---|---|---|---|---|
+| [~A] **UI-REMED-5. Button warning variant + Dialog icons (polish)** | Antigravity | UI: 2-file change — Button warning variant + DialogHost icon rendering | `docs/handoffs/2026-07-17-antigravity-ui-remed-5-polish.md` (Claude authored 2026-07-17). (1) Add `warning` variant to `components/ui/Button.tsx`; (2) Update `components/DialogHost.tsx` line 40 mapping (warning→warning, not →danger); (3) Add icon block by variant (info: CheckCircle2/success, warning: AlertTriangle/warning, danger: XCircle/danger). ~0.5 session. | (unblocked) |
+
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
 | **UI-REMED-1. TOKEN-SWAP migration** | Antigravity | 1105 raw Tailwind color occurrences → design tokens | Phase 1 audit found 1105 instances. Mechanical but volume. Multi-session. Gemini 3.5 Flash Medium. Can split by color family or page group. |
-| **UI-REMED-5. Button warning variant + Dialog icons (polish)** | Antigravity | (1) Add `warning` variant to `components/ui/Button.tsx` using `bg-warning` token; (2) Update `components/DialogHost.tsx` line 40 mapping: warning→warning (not →danger); (3) Add icon rendering by variant in DialogHost (info: CheckCircle, warning: AlertTriangle, danger: XCircle — use lucide-react). | Surfaced during UI-REMED-3 verification pass. Non-blocking: dialogs functional + accessible. Visual polish only. ~0.5-1 session. Gemini 3.5 Flash Medium. |
 | **H1. Push local commits** | Claude | git | After next batch ready. |
 
 ### P1 — Next up (high impact, unblocked)
@@ -85,7 +90,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-antigravity-ui-remed-4-boundaries.md` → UI-REMED-4 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-5-polish.md` → UI-REMED-5 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-4-boundaries.md` → UI-REMED-4 — historical reference, work complete (commit `c923086`)
 - `2026-07-17-antigravity-ui-remed-3-session-2.md` → UI-REMED-3 Session 2 — historical reference, work complete (commit `2f91b3f`)
 - `2026-07-17-antigravity-ui-remed-3-session-1.md` → UI-REMED-3 Session 1 — historical reference, work complete (commit `dd51dae`)
 - `2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` → UI-REMED-2 — historical reference, work complete (commit `6b65aba`)
