@@ -60,7 +60,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [ ] **UI-REMED-3 Session 2. Bulk migrate 53 native alert/confirm call sites** | Antigravity | UI: mechanical migration across 18 source files | Migrate remaining `alert()` / `confirm()` calls (53 across 18 files: PurchaseOrderForm 9, ProductionForm 5, POSScreen 5, SemiProductForm 5, ProductForm 4, ModifierForm 3, others 1-2 each) to `lib/dialog` imperative API. Visual verify critical flows. ~1 session. | (unblocked — Session 1 commit `dd51dae` proves API) |
+| [~A] **UI-REMED-3 Session 2. Bulk migrate 52 native alert/confirm call sites** | Antigravity | UI: mechanical migration across 18 source files | `docs/handoffs/2026-07-17-antigravity-ui-remed-3-session-2.md` (Claude authored 2026-07-17). Migrate remaining ~52 `alert()` / `confirm()` calls across 18 files to `lib/dialog` imperative API. Pattern: `alert("X")` → `await alert({ message: "X", variant: "..." })`. Make containing functions async. Visual verify critical flows at 375px + 1280px. ~1 session. | (unblocked — Session 1 API proven) |
 
 ### P3 — Depends on verification
 
@@ -86,7 +86,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-antigravity-ui-remed-3-session-1.md` → UI-REMED-3 Session 1 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-3-session-2.md` → UI-REMED-3 Session 2 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-3-session-1.md` → UI-REMED-3 Session 1 — historical reference, work complete (commit `dd51dae`)
 - `2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` → UI-REMED-2 — historical reference, work complete (commit `6b65aba`)
 - `2026-07-16-codex-task-3.10-audit-display.md` → Task 3.10 — historical reference, work complete (commit `6a5bdec`)
 - `2026-07-16-codex-task-3.5-cohort-aware-audit.md` → Task 3.5 — historical reference, work complete (commit `c28319d`)
