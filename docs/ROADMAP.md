@@ -60,7 +60,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| (none) | — | — | — | UI-REMED-2 closed 2026-07-16 (commit `6b65aba`, Claude reviewed). Next UI-REMED-3 REPLACE-ALERT in P2. |
+| [~A] **UI-REMED-3 Session 1. Imperative Dialog API + components** | Antigravity | UI: new components + lib + tests + proof-of-concept migration | `docs/handoffs/2026-07-17-antigravity-ui-remed-3-session-1.md` (Claude authored 2026-07-17). Build Dialog primitive + lib/dialog imperative API + DialogHost. Proof-of-concept migrate 2 alert() in inventory/sync. ~1 session. | (unblocked) |
 
 ### P3 — Depends on verification
 
@@ -86,7 +86,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` → UI-REMED-2 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-3-session-1.md` → UI-REMED-3 Session 1 (P1, ready for Antigravity)
+- `2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` → UI-REMED-2 — historical reference, work complete (commit `6b65aba`)
 - `2026-07-16-codex-task-3.10-audit-display.md` → Task 3.10 — historical reference, work complete (commit `6a5bdec`)
 - `2026-07-16-codex-task-3.5-cohort-aware-audit.md` → Task 3.5 — historical reference, work complete (commit `c28319d`)
 - `2026-07-16-codex-task-3.9-historical-gap-lock.md` → Task 3.9 — historical reference, work complete (commit `09bf26a`)
@@ -108,6 +109,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-17 Claude: UI-REMED-3 split into 2 sessions. Authored Session 1 handoff (Dialog primitive + lib/dialog imperative API + DialogHost + proof-of-concept migration). Session 2 (bulk migration 53 call sites) deferred to next handoff.
 - 2026-07-16 Claude: UI-REMED-2 closed (commit `6b65aba`, reviewed). StickyFilterBar redesigned with design tokens, API + sticky + mobile expand preserved. 16 clients auto-inherit. P1 cleared → next UI-REMED-3 REPLACE-ALERT.
 - 2026-07-16 Claude: Task 3.10 closed (commit `6a5bdec`, reviewed). Audit OPERATIONALLY CLEAN exit 0. MAC drift saga complete (E3 → Task 3.10). P1 cleared.
 - 2026-07-16 Claude: User + Codex chose Task 3.10 Option B (accept informational, no DB write) + improve audit display. Authored handoff brief. Small scope ~30 min Codex.
