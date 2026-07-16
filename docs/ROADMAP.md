@@ -39,32 +39,20 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| (none) | — | — | — | E3 closed 2026-07-15 (Claude reviewed). See `COMPLETED.md`. |
+| (none) | — | — | — | See `COMPLETED.md` for recent closures. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| (none) | — | — | — | Stabilization Phase 3 closed 2026-07-16. HEAD = origin/main = `3a55939`. See `COMPLETED.md`. |
-
-### P1 — Next up (high impact, unblocked)
-
-| Task | Owner | Scope | Prompt | Blocked by |
-|---|---|---|---|---|
-| (none) | — | — | — | — |
+| (none) | — | — | — | UI-REMED-5 closed 2026-07-17 (commit `11c566b`, reviewed). UI-REMED saga 4/5 + 1 polish done. Last: UI-REMED-1 TOKEN-SWAP in P2 (largest, multi-session). |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
 | **UI-REMED-1. TOKEN-SWAP migration** | Antigravity | 1105 raw Tailwind color occurrences → design tokens | Phase 1 audit found 1105 instances. Mechanical but volume. Multi-session. Gemini 3.5 Flash Medium. Can split by color family or page group. |
-| **H1. Push local commits** | Claude | git | After next batch ready. |
-
-### P1 — Next up (high impact, unblocked)
-
-| Task | Owner | Scope | Prompt | Blocked by |
-|---|---|---|---|---|
-| (none) | — | — | — | UI-REMED-4 closed 2026-07-17 (commit `c923086`, reviewed). UI-REMED saga 4/5 small tasks done. Last remaining: UI-REMED-1 TOKEN-SWAP in P2 (largest, multi-session). |
+| **H1. Push local commits** | Claude | git | After next batch ready. 17+ commits local pending. |
 
 ### P3 — Depends on verification
 
@@ -90,7 +78,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-antigravity-ui-remed-5-polish.md` → UI-REMED-5 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-5-polish.md` → UI-REMED-5 — historical reference, work complete (commit `11c566b`))
 - `2026-07-17-antigravity-ui-remed-4-boundaries.md` → UI-REMED-4 — historical reference, work complete (commit `c923086`)
 - `2026-07-17-antigravity-ui-remed-3-session-2.md` → UI-REMED-3 Session 2 — historical reference, work complete (commit `2f91b3f`)
 - `2026-07-17-antigravity-ui-remed-3-session-1.md` → UI-REMED-3 Session 1 — historical reference, work complete (commit `dd51dae`)
@@ -116,6 +104,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-17 Claude: UI-REMED-5 closed (commit `11c566b`, reviewed). Button warning variant + Dialog icons by variant. UI-REMED saga 4/5 + 1 polish complete. ROADMAP cleaned up duplicate P1 sections. Only UI-REMED-1 TOKEN-SWAP remaining (P2, largest, multi-session).
 - 2026-07-17 Claude: UI-REMED-4 closed (commit `c923086`, reviewed). Root error/loading boundaries + 5 missing loading.tsx. UI-REMED saga 4/5 done. P1 cleared. Last: UI-REMED-1 TOKEN-SWAP.
 - 2026-07-17 Claude: UI-REMED-3 Session 2 closed (commit `2f91b3f`, reviewed). All 52 native alert/confirm migrated to Dialog API. Independent grep confirms 0 remaining. UI-REMED-3 saga complete (Sessions 1+2). P1 cleared.
 - 2026-07-17 Claude: UI-REMED-3 Session 1 closed (commit `dd51dae`, reviewed). Dialog API + components + proof-of-concept migration done. Opened Session 2 (bulk migrate 53 call sites across 18 files) as new P1.
