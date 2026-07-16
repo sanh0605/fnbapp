@@ -57,10 +57,10 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
+    <div className="min-h-screen bg-page p-8">
+      <div className="max-w-md mx-auto bg-surface-card rounded-xl shadow-lg p-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">Đổi mật khẩu</h1>
+          <h1 className="text-2xl font-bold text-text-primary">Đổi mật khẩu</h1>
           <Link href="/pos" className="text-blue-600 hover:underline text-sm">
             Về trang POS
           </Link>
@@ -80,42 +80,42 @@ export default function ChangePasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor={`${formId}-oldPassword`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-oldPassword`} className="block text-sm font-medium text-text-primary mb-1">
               Mật khẩu cũ
             </label>
             <input
               id={`${formId}-oldPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
             />
           </div>
 
           <div>
-            <label htmlFor={`${formId}-newPassword`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-newPassword`} className="block text-sm font-medium text-text-primary mb-1">
               Mật khẩu mới
             </label>
             <input
               id={`${formId}-newPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
           </div>
           
           <div>
-            <label htmlFor={`${formId}-confirmPassword`} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`${formId}-confirmPassword`} className="block text-sm font-medium text-text-primary mb-1">
               Xác nhận mật khẩu mới
             </label>
             <input
               id={`${formId}-confirmPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />

@@ -57,7 +57,7 @@ export default async function BackdatedLedgerPage({
         {events && events.length > 0 ? (
           <>
             <div className="overflow-x-auto hidden md:block">
-              <table className="min-w-full divide-y divide-gray-100 border-collapse text-sm">
+              <table className="min-w-full divide-y divide-border border-collapse text-sm">
                 <thead className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                   <tr>
                     <th className="px-6 py-4 font-bold text-left">Detected at</th>
@@ -70,7 +70,7 @@ export default async function BackdatedLedgerPage({
                     <th className="px-6 py-4 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-surface-card divide-y divide-gray-100">
+                <tbody className="bg-surface-card divide-y divide-border">
                   {events.map((event) => (
                     <EventRow key={event.id} event={event} />
                   ))}

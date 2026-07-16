@@ -228,7 +228,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <button
                     onClick={() => toggleGroup(item.name)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                      isGroupActive ? "bg-primary text-white font-semibold" : "text-text-muted hover:bg-white/10 hover:text-white"
+                      isGroupActive ? "bg-primary text-white font-semibold" : "text-text-muted hover:bg-surface-card/10 hover:text-white"
                     }`}
                   >
                     <div className="flex items-center">
@@ -256,7 +256,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             className={`block px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
                               isChildActive
                                 ? "bg-primary text-white font-semibold shadow-sm"
-                                : "text-text-muted hover:bg-white/10 hover:text-white font-medium"
+                                : "text-text-muted hover:bg-surface-card/10 hover:text-white font-medium"
                             }`}
                           >
                             {child.name}
@@ -280,7 +280,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-colors duration-200 mb-1 ${
                   isActive
                     ? "bg-primary text-white shadow-sm font-semibold"
-                    : "text-text-muted hover:bg-white/10 hover:text-white font-medium"
+                    : "text-text-muted hover:bg-surface-card/10 hover:text-white font-medium"
                 }`}
               >
                 <span className="mr-3">{item.icon}</span>
@@ -292,7 +292,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="p-4 border-t border-white/10 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">
+            <div className="w-8 h-8 rounded-full bg-surface-card/10 flex items-center justify-center text-white font-bold">
               {session?.user?.name?.charAt(0).toUpperCase() || "A"}
             </div>
             <div className="flex-1 min-w-0">
@@ -306,7 +306,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white/80 bg-white/5 rounded-lg hover:bg-danger hover:text-white transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white/80 bg-surface-card/5 rounded-lg hover:bg-danger hover:text-white transition-colors"
           >
             <LogOut size={16} />
             Đăng xuất

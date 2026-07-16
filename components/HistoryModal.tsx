@@ -52,13 +52,13 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
               {/* LỊCH SỬ GIÁ BÁN */}
               {priceTimeline.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Lịch sử Giá Bán</h3>
+                  <h3 className="text-lg font-bold text-text-primary mb-4 border-b pb-2">Lịch sử Giá Bán</h3>
                   <div className="space-y-3 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
                     {priceTimeline.map((entry) => (
                       <div key={entry.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
                         <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-amber-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
-                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <div className="text-xs font-bold text-gray-400 mb-1">
+                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-3 bg-surface-card rounded-lg shadow-sm border border-border">
+                          <div className="text-xs font-bold text-text-muted mb-1">
                             Từ: {formatDate(entry.effectiveAt)}
                             <br/>
                             Đến: {formatDate(entry.endAt || "")}
@@ -81,28 +81,28 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
               {/* LỊCH SỬ CÔNG THỨC */}
               {recipeHistory && recipeHistory.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Lịch sử Công Thức (Định mức)</h3>
+                  <h3 className="text-lg font-bold text-text-primary mb-4 border-b pb-2">Lịch sử Công Thức (Định mức)</h3>
                   <div className="space-y-4">
                     {recipeHistory.map((r:any, idx:number) => (
-                      <div key={idx} className={`p-4 rounded-xl border ${!r.end_date ? 'bg-emerald-50/50 border-emerald-200' : 'bg-white border-gray-200'} shadow-sm relative`}>
+                      <div key={idx} className={`p-4 rounded-xl border ${!r.end_date ? 'bg-emerald-50/50 border-emerald-200' : 'bg-surface-card border-border'} shadow-sm relative`}>
                         {!r.end_date && (
                           <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded">
                             Đang áp dụng
                           </div>
                         )}
-                        <div className="text-sm font-bold text-gray-500 mb-3 flex flex-col sm:flex-row sm:gap-4">
-                          <span>Bắt đầu: <span className="text-gray-800">{formatDate(r.created_at)}</span></span>
-                          {r.end_date && <span>Kết thúc: <span className="text-gray-800">{formatDate(r.end_date)}</span></span>}
+                        <div className="text-sm font-bold text-text-secondary mb-3 flex flex-col sm:flex-row sm:gap-4">
+                          <span>Bắt đầu: <span className="text-text-primary">{formatDate(r.created_at)}</span></span>
+                          {r.end_date && <span>Kết thúc: <span className="text-text-primary">{formatDate(r.end_date)}</span></span>}
                         </div>
                         
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <div className="bg-page p-3 rounded-lg border border-border">
                           {r.ingredients.length === 0 ? (
-                            <span className="text-gray-400 italic text-sm">Chưa khai báo thành phần</span>
+                            <span className="text-text-muted italic text-sm">Chưa khai báo thành phần</span>
                           ) : (
                             <ul className="space-y-1.5">
                               {r.ingredients.map((ing:any, iIdx:number) => (
-                                <li key={iIdx} className="text-sm flex justify-between border-b border-gray-200/60 pb-1.5 last:border-0 last:pb-0">
-                                  <span className="font-medium text-gray-700">{ing.name}</span>
+                                <li key={iIdx} className="text-sm flex justify-between border-b border-border/60 pb-1.5 last:border-0 last:pb-0">
+                                  <span className="font-medium text-text-primary">{ing.name}</span>
                                   <span className="font-bold text-indigo-600">{ing.quantity} {ing.unitName}</span>
                                 </li>
                               ))}
@@ -116,7 +116,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
               )}
               
               {(!priceHistory || priceHistory.length === 0) && (!recipeHistory || recipeHistory.length === 0) && (
-                <div className="text-center py-8 text-gray-500 italic">
+                <div className="text-center py-8 text-text-secondary italic">
                   Chưa có lịch sử thay đổi nào.
                 </div>
               )}

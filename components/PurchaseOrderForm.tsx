@@ -146,10 +146,10 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+    <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-card p-6 rounded-2xl shadow-sm border border-border mb-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Nhà Cung Cấp *</label>
+          <label className="block text-sm font-semibold text-text-primary mb-2">Nhà Cung Cấp *</label>
           <SearchableSelect
             value={supplierId}
             onChange={(val) => setSupplierId(val)}
@@ -162,17 +162,17 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Ngày nhập hàng thực tế</label>
+          <label className="block text-sm font-semibold text-text-primary mb-2">Ngày nhập hàng thực tế</label>
           <CustomDatePicker
             name="transaction_date"
             selected={transactionDate}
             onChange={(date) => setTransactionDate(date)}
             placeholderText="dd/mm/yyyy hh:mm:ss"
           />
-          <p className="text-xs text-gray-500 mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
+          <p className="text-xs text-text-secondary mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Nguồn nhập hàng</label>
+          <label className="block text-sm font-semibold text-text-primary mb-2">Nguồn nhập hàng</label>
           <div className="flex gap-2">
             <div className="flex-1">
               <SearchableSelect
@@ -203,34 +203,34 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           </div>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Mã hoá đơn (Supplier Invoice Code)</label>
+          <label className="block text-sm font-semibold text-text-primary mb-2">Mã hoá đơn (Supplier Invoice Code)</label>
           <input
             type="text"
             value={supplierInvoiceCode}
             onChange={(e) => setSupplierInvoiceCode(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 text-sm"
+            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 text-sm"
             placeholder="VD: INV-20231201"
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Ghi chú</label>
+          <label className="block text-sm font-semibold text-text-primary mb-2">Ghi chú</label>
           <input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Ghi chú thêm..."
-            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
           />
         </div>
       </div>
 
       <div className="mb-6">
         <div className="flex justify-between items-end mb-4">
-          <h3 className="text-lg font-bold text-gray-900">Chi Tiết Nhập Hàng</h3>
+          <h3 className="text-lg font-bold text-text-primary">Chi Tiết Nhập Hàng</h3>
         </div>
 
         {lines.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center">
-            <p className="text-gray-500 mb-4">Chưa có mặt hàng nào.</p>
+          <div className="text-center py-12 border-2 border-dashed border-border rounded-xl bg-page flex flex-col items-center justify-center">
+            <p className="text-text-secondary mb-4">Chưa có mặt hàng nào.</p>
             <button
               type="button"
               onClick={addLine}
@@ -246,17 +246,17 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
               const unitPrice = Number(line.quantity) > 0 ? Number(line.subtotal) / Number(line.quantity) : 0;
 
               return (
-                <div key={index} className="p-4 border border-gray-200 rounded-xl relative bg-gray-50/50">
+                <div key={index} className="p-4 border border-border rounded-xl relative bg-page/50">
                   <button
                     onClick={() => removeLine(index)}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
+                    className="absolute top-4 right-4 text-text-muted hover:text-red-500"
                   >
                     ✕
                   </button>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-3">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Mặt hàng</label>
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Mặt hàng</label>
                       <SearchableSelect
                         value={line.purchased_item_id}
                         onChange={(val) => updateLine(index, "purchased_item_id", val)}
@@ -266,12 +266,12 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
 
                     <div className="md:col-span-3">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Đơn vị nhập</label>
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Đơn vị nhập</label>
                       <div className="space-y-2">
                         <select
                           value={line.conversion_id || ""}
                           onChange={(e) => updateLine(index, "conversion_id", e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                          className="w-full border border-border rounded-lg px-3 py-2 text-sm"
                           disabled={!line.purchased_item_id}
                         >
                           <option value="">-- Chọn --</option>
@@ -291,18 +291,18 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Số lượng</label>
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Số lượng</label>
                       <input
                         type="number"
                         min="1"
                         value={line.quantity}
                         onChange={(e) => updateLine(index, "quantity", e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        className="w-full border border-border rounded-lg px-3 py-2 text-sm"
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Thành tiền (đ)</label>
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Thành tiền (đ)</label>
                       <input
                         type="number"
                         min="0"
@@ -313,8 +313,8 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                     </div>
                     
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Đơn giá</label>
-                      <div className="px-3 py-2 text-sm font-semibold text-gray-400 bg-gray-100 rounded-lg border border-transparent">
+                      <label className="block text-xs font-medium text-text-secondary mb-1">Đơn giá</label>
+                      <div className="px-3 py-2 text-sm font-semibold text-text-muted bg-surface-secondary rounded-lg border border-transparent">
                         {formatNumber(unitPrice)}
                       </div>
                     </div>
@@ -334,36 +334,36 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
         )}
       </div>
 
-      <div className="flex flex-col items-end pt-6 border-t border-gray-200">
-        <div className="w-full max-w-md mb-6 space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200">
-           <div className="flex justify-between items-center text-sm text-gray-600">
+      <div className="flex flex-col items-end pt-6 border-t border-border">
+        <div className="w-full max-w-md mb-6 space-y-3 bg-page p-5 rounded-xl border border-border">
+           <div className="flex justify-between items-center text-sm text-text-secondary">
               <span className="font-medium">Tổng tiền hàng:</span>
-              <span className="font-semibold text-gray-900">{formatNumber(subtotalAmount)}</span>
+              <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}</span>
            </div>
            
-           <div className="space-y-2 pt-2 border-t border-gray-200/60">
+           <div className="space-y-2 pt-2 border-t border-border/60">
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Phí vận chuyển (+):</span>
+                <span className="text-text-secondary">Phí vận chuyển (+):</span>
                 <input 
                    type="number" 
                    value={shippingFee || ''}
                    onChange={(e) => setShippingFee(Number(e.target.value))}
-                   className="w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
                    placeholder="0"
                  />
              </div>
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Thuế (+):</span>
+                <span className="text-text-secondary">Thuế (+):</span>
                 <input 
                    type="number" 
                    value={taxAmount || ''}
                    onChange={(e) => setTaxAmount(Number(e.target.value))}
-                   className="w-32 text-right border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
                    placeholder="0"
                  />
              </div>
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Voucher (-):</span>
+                <span className="text-text-secondary">Voucher (-):</span>
                 <input 
                    type="number" 
                    value={voucherAmount || ''}
@@ -373,7 +373,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                  />
              </div>
              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Chiết khấu (-):</span>
+                <span className="text-text-secondary">Chiết khấu (-):</span>
                 <input 
                    type="number" 
                    value={discountAmount || ''}
@@ -384,8 +384,8 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
              </div>
            </div>
 
-           <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-              <span className="text-base font-bold text-gray-800">Cần Thanh Toán:</span>
+           <div className="flex justify-between items-center pt-4 border-t border-border">
+              <span className="text-base font-bold text-text-primary">Cần Thanh Toán:</span>
               <span className="text-2xl font-bold text-emerald-600">{formatNumber(totalAmount)}</span>
            </div>
         </div>
@@ -394,7 +394,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           <button
             disabled={loading}
             onClick={() => handleSubmit("DRAFT")}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+            className="px-6 py-2.5 border border-border text-text-primary font-medium rounded-lg hover:bg-page transition"
           >
             Lưu Nháp (Draft)
           </button>

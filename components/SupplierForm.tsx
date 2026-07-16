@@ -69,73 +69,73 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
       {isOpen && (
         <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">{isEdit ? "Sửa Nhà Cung Cấp" : "Thêm Nhà Cung Cấp Mới"}</h2>
+          <div className="bg-surface-card rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4 text-text-primary">{isEdit ? "Sửa Nhà Cung Cấp" : "Thêm Nhà Cung Cấp Mới"}</h2>
             
             {error && <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Nhà Cung Cấp *</label>
+                <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-primary mb-1">Tên Nhà Cung Cấp *</label>
                 <input 
                   id={`${formId}-name`}
                   type="text" 
                   required 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   placeholder="VD: Cty Cà phê Việt"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                  <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-text-primary mb-1">Số điện thoại</label>
                   <input 
                     id={`${formId}-phone`}
                     type="tel" 
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                    className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   />
                 </div>
                 <div>
-                  <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+                  <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-text-primary mb-1">Mã số thuế</label>
                   <input 
                     id={`${formId}-tax-id`}
                     type="text" 
                     value={taxId}
                     onChange={(e) => setTaxId(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                    className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-text-primary mb-1">Địa chỉ</label>
                 <input 
                   id={`${formId}-address`}
                   type="text" 
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
                 />
               </div>
               <div>
-                <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-gray-700 mb-1">Links / Ghi chú</label>
+                <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-text-primary mb-1">Links / Ghi chú</label>
                 <textarea 
                   id={`${formId}-links`}
                   value={links}
                   onChange={(e) => setLinks(e.target.value)}
                   rows={2}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   placeholder="Link đặt hàng, ghi chú..."
                 />
               </div>
               
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
                 <button 
                   type="button" 
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                  className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition-colors"
                 >
                   Huỷ
                 </button>
@@ -205,73 +205,73 @@ export function SupplierModal({
   return (
     <ModalPortal>
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 text-gray-900">Thêm Nhà Cung Cấp Mới</h2>
+      <div className="bg-surface-card rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4 text-text-primary">Thêm Nhà Cung Cấp Mới</h2>
         
         {error && <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-gray-700 mb-1">Tên Nhà Cung Cấp *</label>
+            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-primary mb-1">Tên Nhà Cung Cấp *</label>
             <input 
               id={`${formId}-name`}
               type="text" 
               required 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
               placeholder="VD: Cty Cà phê Việt"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+              <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-text-primary mb-1">Số điện thoại</label>
               <input 
                 id={`${formId}-phone`}
                 type="tel" 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
               />
             </div>
             <div>
-              <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-gray-700 mb-1">Mã số thuế</label>
+              <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-text-primary mb-1">Mã số thuế</label>
               <input 
                 id={`${formId}-tax-id`}
                 type="text" 
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
               />
             </div>
           </div>
           <div>
-            <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+            <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-text-primary mb-1">Địa chỉ</label>
             <input 
               id={`${formId}-address`}
               type="text" 
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
             />
           </div>
           <div>
-            <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-gray-700 mb-1">Links / Ghi chú</label>
+            <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-text-primary mb-1">Links / Ghi chú</label>
             <textarea 
               id={`${formId}-links`}
               value={links}
               onChange={(e) => setLinks(e.target.value)}
               rows={2}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
               placeholder="Link đặt hàng, ghi chú..."
             />
           </div>
           
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <button 
               type="button" 
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition-colors"
             >
               Huỷ
             </button>
@@ -321,25 +321,25 @@ export function DeleteSupplierButton({ id }: { id: string }) {
       {isDeleteOpen && (
         <ModalPortal>
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 text-left">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-            <div className="p-5 border-b border-gray-100 flex items-center gap-3 bg-red-50/50">
+          <div className="bg-surface-card rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div className="p-5 border-b border-border flex items-center gap-3 bg-red-50/50">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-gray-800">
+              <h2 className="text-lg font-bold text-text-primary">
                 Xác nhận xoá
               </h2>
             </div>
             <div className="p-5">
-              <p className="text-gray-600 text-sm text-left">
+              <p className="text-text-secondary text-sm text-left">
                 Bạn có chắc chắn muốn xoá nhà cung cấp này không?<br/>
                 Các liên kết hàng hoá có thể bị ảnh hưởng.
               </p>
             </div>
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-              <button type="button" onClick={() => setIsDeleteOpen(false)} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">
+            <div className="p-4 border-t border-border bg-page flex justify-end gap-3">
+              <button type="button" onClick={() => setIsDeleteOpen(false)} className="px-4 py-2 text-text-secondary font-medium hover:bg-border rounded-lg transition">
                 Huỷ
               </button>
               <button 

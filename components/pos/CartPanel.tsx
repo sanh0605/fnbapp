@@ -116,7 +116,7 @@ export function CartPanel({
 
   return (
     <div
-      className={`fixed inset-y-0 right-0 w-full md:w-96 bg-white border-l border-gray-200 shadow-2xl flex flex-col z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
+      className={`fixed inset-y-0 right-0 w-full md:w-96 bg-surface-card border-l border-border shadow-2xl flex flex-col z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
         isCartOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
@@ -137,7 +137,7 @@ export function CartPanel({
             <>
               <button
                 onClick={() => saveDraft(cart, true)}
-                className="text-xs font-bold bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
+                className="text-xs font-bold bg-surface-card/10 hover:bg-surface-card/20 px-2 py-1 rounded transition-colors"
               >
                 Lưu Nháp
               </button>
@@ -154,7 +154,7 @@ export function CartPanel({
               </button>
             </>
           )}
-          <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-1 bg-white/20 rounded hover:bg-white/30">
+          <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-1 bg-surface-card/20 rounded hover:bg-surface-card/30">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -162,12 +162,12 @@ export function CartPanel({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-3">
+      <div className="flex-1 overflow-y-auto bg-page p-3">
         {cart.length === 0 ? (
           processingOrder ? (
             <div className="h-full flex flex-col justify-between">
-              <div className="bg-white border border-gray-200/60 rounded-2xl p-4 shadow-sm space-y-4 animate-pulse">
-                <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <div className="bg-surface-card border border-border/60 rounded-2xl p-4 shadow-sm space-y-4 animate-pulse">
+                <div className="flex items-center gap-3 pb-3 border-b border-border">
                   <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
                     <svg className="animate-spin h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -179,8 +179,8 @@ export function CartPanel({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wide">Đang xử lý đơn hàng...</h3>
-                    <p className="text-[11px] text-gray-500 font-medium">Vui lòng chờ trong giây lát</p>
+                    <h3 className="font-extrabold text-sm text-text-primary uppercase tracking-wide">Đang xử lý đơn hàng...</h3>
+                    <p className="text-[11px] text-text-secondary font-medium">Vui lòng chờ trong giây lát</p>
                   </div>
                 </div>
 
@@ -189,14 +189,14 @@ export function CartPanel({
                     return (
                       <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-gray-50 pb-2">
                         <div className="min-w-0 flex-1">
-                          <p className="font-bold text-gray-800 truncate">{item.product_name}</p>
-                          <p className="text-[10px] text-gray-400">
+                          <p className="font-bold text-text-primary truncate">{item.product_name}</p>
+                          <p className="text-[10px] text-text-muted">
                             Size {item.size_name}
                             {item.modifiers.length > 0 && ` • +${item.modifiers.map((m: any) => m.name).join(", ")}`}
                           </p>
-                          <p className="text-[10px] text-gray-500 font-medium mt-0.5">Số lượng: {item.qty}</p>
+                          <p className="text-[10px] text-text-secondary font-medium mt-0.5">Số lượng: {item.qty}</p>
                         </div>
-                        <span className="font-semibold text-gray-700 shrink-0 ml-2">
+                        <span className="font-semibold text-text-primary shrink-0 ml-2">
                           {formatNumber((item.unit_price + item.modifiers.reduce((s: number, m: any) => s + Number(m.price), 0)) * item.qty)}
                         </span>
                       </div>
@@ -204,27 +204,27 @@ export function CartPanel({
                   })}
                 </div>
 
-                <div className="pt-3 border-t border-dashed border-gray-200 space-y-1.5">
-                  <div className="flex justify-between text-xs text-gray-500">
+                <div className="pt-3 border-t border-dashed border-border space-y-1.5">
+                  <div className="flex justify-between text-xs text-text-secondary">
                     <span>Tạm tính:</span>
                     <span>{formatNumber(processingOrder.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500">
+                  <div className="flex justify-between text-xs text-text-secondary">
                     <span>Hình thức:</span>
                     <span className="font-bold text-indigo-600">{processingOrder.methodLabel}</span>
                   </div>
-                  <div className="flex justify-between text-sm font-extrabold text-gray-800 pt-1">
+                  <div className="flex justify-between text-sm font-extrabold text-text-primary pt-1">
                     <span>Tổng tiền:</span>
                     <span className="text-orange-600">{formatNumber(processingOrder.totalAmount)}</span>
                   </div>
                 </div>
               </div>
-              <div className="text-center text-xs text-gray-400 py-4 font-medium animate-fade-in">
+              <div className="text-center text-xs text-text-muted py-4 font-medium animate-fade-in">
                 Bạn có thể tạo đơn mới trong khi hệ thống đang xử lý đơn hàng này.
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            <div className="h-full flex flex-col items-center justify-center text-text-muted">
               <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -254,7 +254,7 @@ export function CartPanel({
         )}
       </div>
 
-      <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div className="bg-surface-card border-t border-border p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
         {lastCheckoutError && (
           <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-xl text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
             <div className="flex-1 min-w-0">
@@ -275,9 +275,9 @@ export function CartPanel({
 
         {cart.length > 0 ? (
           <>
-            <div className="mb-4 pb-4 border-b border-gray-100">
+            <div className="mb-4 pb-4 border-b border-border">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Khuyến Mãi</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Khuyến Mãi</span>
                 {appliedPromo && (
                   <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                     Đã áp dụng
@@ -292,7 +292,7 @@ export function CartPanel({
                   onChange={(e) => {
                     setPromoCodeInput(e.target.value);
                   }}
-                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 uppercase font-medium animate-fade-in"
+                  className="flex-1 px-3 py-1.5 border border-border rounded-lg text-sm focus:outline-none focus:border-indigo-500 uppercase font-medium animate-fade-in"
                 />
                 <button
                   type="button"
@@ -306,12 +306,12 @@ export function CartPanel({
               {manualPromoError && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {manualPromoError}</p>}
 
               {appliedPromo && (
-                <div className="mt-3 flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl p-2.5">
+                <div className="mt-3 flex items-center justify-between bg-page border border-border rounded-xl p-2.5">
                   <div className="flex items-start gap-2 min-w-0">
                     <span className="text-lg shrink-0 mt-0.5">{appliedPromo.code ? "🎟️" : "⚡"}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-gray-800 truncate">{appliedPromo.name}</p>
-                      <p className="text-[10px] font-medium text-gray-400">
+                      <p className="text-xs font-bold text-text-primary truncate">{appliedPromo.name}</p>
+                      <p className="text-[10px] font-medium text-text-muted">
                         Giảm -{formatNumber(promoDiscountAmount)}
                       </p>
                     </div>
@@ -320,7 +320,7 @@ export function CartPanel({
                     <button
                       type="button"
                       onClick={handleRemovePromoCode}
-                      className="text-gray-400 hover:text-red-500 text-sm font-bold px-1.5 py-0.5 hover:bg-red-50 rounded animate-fade-in"
+                      className="text-text-muted hover:text-red-500 text-sm font-bold px-1.5 py-0.5 hover:bg-red-50 rounded animate-fade-in"
                     >
                       ✕
                     </button>
@@ -329,12 +329,12 @@ export function CartPanel({
               )}
 
               {/* Chiết khấu đơn hàng */}
-              <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
+              <div className="mt-3 pt-3 border-t border-dashed border-border">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Chiết khấu đơn hàng</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Chiết khấu đơn hàng</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0 h-9 bg-white">
+                  <div className="flex rounded-lg overflow-hidden border border-border shrink-0 h-9 bg-surface-card">
                     <button
                       type="button"
                       onClick={() => {
@@ -343,7 +343,7 @@ export function CartPanel({
                       className={`px-3 py-1.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "VND"
                           ? "bg-indigo-500 text-white"
-                          : "bg-white text-gray-500 hover:bg-gray-100"
+                          : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
                       }`}
                     >
                       VNĐ
@@ -356,7 +356,7 @@ export function CartPanel({
                       className={`px-3 py-1.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "PERCENT"
                           ? "bg-indigo-500 text-white"
-                          : "bg-white text-gray-500 hover:bg-gray-100"
+                          : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
                       }`}
                     >
                       %
@@ -371,7 +371,7 @@ export function CartPanel({
                       const val = e.target.value === "" ? null : Number(e.target.value);
                       setUserCustomDiscount(val);
                     }}
-                    className="flex-1 w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 text-right font-medium text-sm h-9"
+                    className="flex-1 w-full px-3 py-1.5 border border-border rounded-lg focus:outline-none focus:border-indigo-500 text-right font-medium text-sm h-9"
                   />
                   {userCustomDiscount !== null && (
                     <button
@@ -379,7 +379,7 @@ export function CartPanel({
                       onClick={() => {
                         setUserCustomDiscount(null);
                       }}
-                      className="text-gray-400 hover:text-red-500 text-sm font-bold px-2 py-1.5 hover:bg-red-50 rounded"
+                      className="text-text-muted hover:text-red-500 text-sm font-bold px-2 py-1.5 hover:bg-red-50 rounded"
                     >
                       ✕
                     </button>
@@ -390,7 +390,7 @@ export function CartPanel({
 
             {userCustomDiscount !== null && (
               <div className="flex justify-between items-center mb-3">
-                <span className="text-gray-500 text-sm">Giảm giá Hoá đơn</span>
+                <span className="text-text-secondary text-sm">Giảm giá Hoá đơn</span>
                 <DiscountBadge
                   kind={DISCOUNT_KIND.ORDER}
                   label="Thu ngân"
@@ -407,17 +407,17 @@ export function CartPanel({
                 if (amount <= 0) return null;
                 return (
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-gray-500 text-sm">Khuyến mãi hệ thống</span>
+                    <span className="text-text-secondary text-sm">Khuyến mãi hệ thống</span>
                     <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={amount} />
                   </div>
                 );
               })()}
 
             <div className="flex justify-between items-center mb-4">
-              <span className="text-gray-500 font-medium">Tổng tiền ({totalItems} món)</span>
+              <span className="text-text-secondary font-medium">Tổng tiền ({totalItems} món)</span>
               <div className="text-right">
                 {calculateCartBaseTotal() > totalAmount && (
-                  <div className="text-sm text-gray-400 line-through mb-0.5 font-medium">
+                  <div className="text-sm text-text-muted line-through mb-0.5 font-medium">
                     {formatNumber(calculateCartBaseTotal())}
                   </div>
                 )}
@@ -487,11 +487,11 @@ export function CartPanel({
         ) : processingOrder ? (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <span className="text-gray-500 font-medium">Tổng thanh toán ({processingOrder.totalItems} món)</span>
+              <span className="text-text-secondary font-medium">Tổng thanh toán ({processingOrder.totalItems} món)</span>
               <span className="text-2xl font-black text-orange-600">{formatNumber(processingOrder.totalAmount)}</span>
             </div>
-            <div className="w-full bg-gray-100 text-gray-500 font-bold text-sm py-3.5 rounded-xl flex justify-center items-center gap-2 border border-gray-200 min-h-[48px]">
-              <svg className="animate-spin h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24">
+            <div className="w-full bg-surface-secondary text-text-secondary font-bold text-sm py-3.5 rounded-xl flex justify-center items-center gap-2 border border-border min-h-[48px]">
+              <svg className="animate-spin h-4 w-4 text-text-secondary" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"

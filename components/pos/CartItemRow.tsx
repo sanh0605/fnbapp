@@ -65,7 +65,7 @@ export function CartItemRow({
   const currentProduct = products.find((p: any) => p.id === item.product_id);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-shadow transition-colors hover:border-indigo-300 bg-white">
+    <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-shadow transition-colors hover:border-indigo-300 bg-surface-card">
       {/* Background Red Delete Button */}
       <div className="absolute top-0 right-0 bottom-0 w-20 bg-red-600 flex items-center justify-center z-0">
         <button
@@ -82,7 +82,7 @@ export function CartItemRow({
 
       {/* Main Sliding Content */}
       <div
-        className="bg-white p-3 transition-transform duration-300 relative z-10"
+        className="bg-surface-card p-3 transition-transform duration-300 relative z-10"
         style={{ transform: isSwiped ? "translateX(-80px)" : "translateX(0)" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -92,14 +92,14 @@ export function CartItemRow({
           onClick={() => currentProduct && openProductModal(currentProduct, idx)}
         >
           <div>
-            <h4 className="font-bold text-gray-800 leading-tight hover:text-indigo-600 transition-colors">
+            <h4 className="font-bold text-text-primary leading-tight hover:text-indigo-600 transition-colors">
               {item.product_name} ✏️
             </h4>
             <p className="text-xs font-semibold text-indigo-600 mt-0.5">Size {item.size_name}</p>
           </div>
           <div className="text-right">
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
-              <div className="text-[11px] text-gray-400 line-through mb-0.5">
+              <div className="text-[11px] text-text-muted line-through mb-0.5">
                 {formatNumber(baseTotal)}
               </div>
             )}
@@ -110,7 +110,7 @@ export function CartItemRow({
         </div>
 
         {item.modifiers.length > 0 && (
-          <div className="text-[11px] text-gray-500 bg-gray-50 p-1.5 rounded mb-2 leading-relaxed">
+          <div className="text-[11px] text-text-secondary bg-page p-1.5 rounded mb-2 leading-relaxed">
             {Object.entries(
               item.modifiers.reduce((acc: any, m: any) => {
                 acc[m.name] = (acc[m.name] || 0) + 1;
@@ -144,17 +144,17 @@ export function CartItemRow({
           >
             Xoá
           </button>
-          <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-3 bg-surface-secondary rounded-lg p-1">
             <button
               onClick={() => changeQty(idx, -1)}
-              className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold"
+              className="w-6 h-6 flex items-center justify-center bg-surface-card rounded shadow-sm text-text-secondary font-bold"
             >
               -
             </button>
             <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
             <button
               onClick={() => changeQty(idx, 1)}
-              className="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm text-gray-600 font-bold"
+              className="w-6 h-6 flex items-center justify-center bg-surface-card rounded shadow-sm text-text-secondary font-bold"
             >
               +
             </button>

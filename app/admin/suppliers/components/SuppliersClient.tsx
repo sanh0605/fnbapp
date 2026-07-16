@@ -75,7 +75,7 @@ export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
                 <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {filteredSuppliers.length === 0 ? (
                 <tr>
                 <td colSpan={6} className="p-0">

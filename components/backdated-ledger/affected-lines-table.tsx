@@ -13,7 +13,7 @@ interface AffectedLinesTableProps {
 export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) {
   if (!lines || lines.length === 0) {
     return (
-      <div className="text-sm text-gray-500 py-4 italic">
+      <div className="text-sm text-text-secondary py-4 italic">
         Không có order line nào bị ảnh hưởng — giao dịch này có thể là nhập kho cho item chưa được bán trong cửa sổ thời gian.
       </div>
     );
@@ -24,20 +24,20 @@ export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) 
   let totalDelta = 0;
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-border">
+      <table className="min-w-full divide-y divide-border text-sm">
+        <thead className="bg-page">
           <tr>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Order #</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Sale time (Vietnam)</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-500">Product ID</th>
-            <th className="px-4 py-3 text-right font-medium text-gray-500">Qty</th>
-            <th className="px-4 py-3 text-right font-medium text-gray-500">Stored COGS</th>
-            <th className="px-4 py-3 text-right font-medium text-gray-500">New COGS</th>
-            <th className="px-4 py-3 text-right font-medium text-gray-500">Delta VND</th>
+            <th className="px-4 py-3 text-left font-medium text-text-secondary">Order #</th>
+            <th className="px-4 py-3 text-left font-medium text-text-secondary">Sale time (Vietnam)</th>
+            <th className="px-4 py-3 text-left font-medium text-text-secondary">Product ID</th>
+            <th className="px-4 py-3 text-right font-medium text-text-secondary">Qty</th>
+            <th className="px-4 py-3 text-right font-medium text-text-secondary">Stored COGS</th>
+            <th className="px-4 py-3 text-right font-medium text-text-secondary">New COGS</th>
+            <th className="px-4 py-3 text-right font-medium text-text-secondary">Delta VND</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-border bg-surface-card">
           {lines.map((line) => {
             const change = changeByLineId.get(line.line_id);
             const oldCogs = line.stored_cost_at_sale;
@@ -45,11 +45,11 @@ export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) 
             const delta = newCogs - oldCogs;
             totalDelta += delta;
 
-            const deltaColor = delta > 0 ? "text-emerald-600" : delta < 0 ? "text-rose-600" : "text-gray-500";
+            const deltaColor = delta > 0 ? "text-emerald-600" : delta < 0 ? "text-rose-600" : "text-text-secondary";
             const deltaSign = delta > 0 ? "+" : "";
 
             return (
-              <tr key={line.line_id} className="hover:bg-gray-50">
+              <tr key={line.line_id} className="hover:bg-page">
                 <td className="px-4 py-3 text-blue-600 hover:underline">
                   <Link href={`/admin/orders/${line.order_id}`}>
                     {line.order_no}
@@ -67,10 +67,10 @@ export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) 
             );
           })}
         </tbody>
-        <tfoot className="bg-gray-50 font-medium">
+        <tfoot className="bg-page font-medium">
           <tr>
             <td colSpan={6} className="px-4 py-3 text-right">Tổng chênh lệch:</td>
-            <td className={`px-4 py-3 text-right ${totalDelta > 0 ? "text-emerald-600" : totalDelta < 0 ? "text-rose-600" : "text-gray-900"}`}>
+            <td className={`px-4 py-3 text-right ${totalDelta > 0 ? "text-emerald-600" : totalDelta < 0 ? "text-rose-600" : "text-text-primary"}`}>
               {totalDelta > 0 ? "+" : ""}{formatNumber(totalDelta)} VND
             </td>
           </tr>

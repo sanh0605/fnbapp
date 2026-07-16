@@ -91,17 +91,17 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
       {isOpen && (
         <ModalPortal>
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-xl">
+            <div className="bg-surface-card rounded-2xl p-6 w-full max-w-2xl shadow-xl">
               <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Nguyên Liệu" : "Thêm Nguyên Liệu Gốc"}</h2>
               <form action={handleSubmit} className="space-y-4">
                 <div className="max-h-[60vh] overflow-y-auto space-y-4 pr-2">
                   {items.map((item, index) => (
                     <div
                       key={index}
-                      className="grid grid-cols-[1.5fr_1fr_auto] gap-3 items-start p-4 border border-gray-100 bg-gray-50 rounded-xl relative"
+                      className="grid grid-cols-[1.5fr_1fr_auto] gap-3 items-start p-4 border border-border bg-page rounded-xl relative"
                     >
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-text-primary mb-1">
                           Tên Nguyên Liệu (VD: Sữa tươi)
                         </label>
                         <input
@@ -109,20 +109,20 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
                           required
                           value={item.name}
                           onChange={(e) => updateItem(index, "name", e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                          className="w-full border border-border rounded-lg px-3 py-2"
                         />
-                        <label className="flex items-center gap-2 mt-2 text-sm text-gray-600 cursor-pointer">
+                        <label className="flex items-center gap-2 mt-2 text-sm text-text-secondary cursor-pointer">
                           <input
                             type="checkbox"
                             checked={item.is_non_inventory}
                             onChange={(e) => updateItem(index, "is_non_inventory", e.target.checked)}
-                            className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                            className="w-4 h-4 text-emerald-600 rounded border-border focus:ring-emerald-500"
                           />
                           <span>Không trừ tồn kho (Nước lọc, đá...)</span>
                         </label>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị gốc (VD: ml, gram)</label>
+                        <label className="block text-sm font-medium text-text-primary mb-1">Đơn vị gốc (VD: ml, gram)</label>
                         <SearchableSelect
                           required
                           value={item.base_unit}
@@ -154,11 +154,11 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
                   </button>
                 )}
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <div className="flex justify-end gap-3 pt-4 border-t border-border">
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+                    className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg text-sm"
                   >
                     Huỷ
                   </button>

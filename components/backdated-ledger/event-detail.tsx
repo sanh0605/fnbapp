@@ -52,39 +52,39 @@ export function EventDetail({ event, plan }: EventDetailProps) {
   return (
     <div className="space-y-6">
       {/* Event Metadata Card */}
-      <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+      <div className="bg-surface-card rounded-lg shadow border border-border p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-lg font-medium text-gray-900 mb-1">Chi tiết giao dịch</h2>
-            <div className="text-sm text-gray-500">ID: {event.id}</div>
+            <h2 className="text-lg font-medium text-text-primary mb-1">Chi tiết giao dịch</h2>
+            <div className="text-sm text-text-secondary">ID: {event.id}</div>
           </div>
           <StatusBadge status={event.status} className="text-sm px-3 py-1" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
           <div>
-            <div className="text-gray-500 mb-1">Detected at</div>
+            <div className="text-text-secondary mb-1">Detected at</div>
             <div className="font-medium">{formatDateTime(event.detected_at)}</div>
           </div>
           <div>
-            <div className="text-gray-500 mb-1">Source</div>
+            <div className="text-text-secondary mb-1">Source</div>
             <div className="font-medium">{event.source_table} / {event.source_id}</div>
           </div>
           
           <div>
-            <div className="text-gray-500 mb-1">Time Lag (Effective → Visibility)</div>
+            <div className="text-text-secondary mb-1">Time Lag (Effective → Visibility)</div>
             <div className="font-medium">
               {formatDateTime(event.effective_timestamp)} → {formatDateTime(event.visibility_timestamp)}
-              <span className="text-gray-500 ml-2">({lagText})</span>
+              <span className="text-text-secondary ml-2">({lagText})</span>
             </div>
           </div>
           <div>
-            <div className="text-gray-500 mb-1">Item Reference</div>
+            <div className="text-text-secondary mb-1">Item Reference</div>
             <div className="font-medium">{event.item_reference}</div>
           </div>
 
           <div>
-            <div className="text-gray-500 mb-1">Quantity Change</div>
+            <div className="text-text-secondary mb-1">Quantity Change</div>
             <div className={`font-medium flex items-center ${event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-rose-600' : ''}`}>
               {event.quantity_change > 0 && <span className="mr-1">↑</span>}
               {event.quantity_change < 0 && <span className="mr-1">↓</span>}
@@ -92,24 +92,24 @@ export function EventDetail({ event, plan }: EventDetailProps) {
             </div>
           </div>
           <div>
-            <div className="text-gray-500 mb-1">Unit Cost</div>
+            <div className="text-text-secondary mb-1">Unit Cost</div>
             <div className="font-medium">{formatNumber(event.unit_cost)} VND</div>
           </div>
           
           {event.stock_ledger_id && (
             <div>
-              <div className="text-gray-500 mb-1">Stock Ledger ID</div>
+              <div className="text-text-secondary mb-1">Stock Ledger ID</div>
               <div className="font-medium">{event.stock_ledger_id}</div>
             </div>
           )}
 
           {event.reviewed_by && (
-            <div className="col-span-1 md:col-span-2 mt-4 pt-4 border-t border-gray-100">
-              <div className="text-gray-500 mb-1">Review Info</div>
+            <div className="col-span-1 md:col-span-2 mt-4 pt-4 border-t border-border">
+              <div className="text-text-secondary mb-1">Review Info</div>
               <div className="font-medium">
                 Người duyệt: {event.reviewed_by} vào {formatDateTime(event.reviewed_at)}
               </div>
-              {event.notes && <div className="mt-1 text-gray-700 italic">Lý do: {event.notes}</div>}
+              {event.notes && <div className="mt-1 text-text-primary italic">Lý do: {event.notes}</div>}
               {event.recompute_run_id && (
                 <div className="mt-1 text-emerald-600">
                   Đã tính lại: {plan?.affected_lines?.length || 0} order lines, total delta {formatNumber(totalDeltaVnd)} VND (Run ID: {event.recompute_run_id})
@@ -131,7 +131,7 @@ export function EventDetail({ event, plan }: EventDetailProps) {
           </button>
           <button
             onClick={() => setShowRejectModal(true)}
-            className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md font-medium text-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-surface-card text-text-primary border border-border rounded-md font-medium text-sm hover:bg-page transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Từ chối
           </button>
@@ -140,9 +140,9 @@ export function EventDetail({ event, plan }: EventDetailProps) {
 
       {/* Affected Lines */}
       {plan && (
-        <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Order lines bị ảnh hưởng</h3>
+        <div className="bg-surface-card rounded-lg shadow border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
+            <h3 className="text-lg font-medium text-text-primary">Order lines bị ảnh hưởng</h3>
           </div>
           <div className="p-0">
             <AffectedLinesTable lines={plan.affected_lines} changes={plan.changes} />

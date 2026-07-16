@@ -64,24 +64,24 @@ export function ProductGrid({
 
   return (
     <>
-      <div className="bg-white px-4 py-3 shrink-0 border-b border-gray-100">
+      <div className="bg-surface-card px-4 py-3 shrink-0 border-b border-border">
         <input
           type="text"
           placeholder="Tìm kiếm món (vd: đào, cà phê)..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-gray-100 border-none rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 outline-none placeholder-gray-400"
+          className="w-full bg-surface-secondary border-none rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 outline-none placeholder-gray-400"
         />
       </div>
 
-      <div className="bg-white border-b border-gray-200 p-3 shrink-0">
+      <div className="bg-surface-card border-b border-border p-3 shrink-0">
         <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
           <button
             onClick={() => setActiveCategory("BEST_SELLERS")}
             className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
               activeCategory === "BEST_SELLERS"
                 ? "bg-orange-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-surface-secondary text-text-secondary hover:bg-border"
             }`}
           >
             🔥 Bán chạy
@@ -91,7 +91,7 @@ export function ProductGrid({
             className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
               activeCategory === "ALL"
                 ? "bg-orange-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-surface-secondary text-text-secondary hover:bg-border"
             }`}
           >
             Tất cả món
@@ -103,7 +103,7 @@ export function ProductGrid({
               className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
                 activeCategory === c.id
                   ? "bg-orange-600 text-white shadow-md"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-surface-secondary text-text-secondary hover:bg-border"
               }`}
             >
               {c.name}

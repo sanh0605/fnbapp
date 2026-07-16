@@ -112,7 +112,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                 <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {filteredModifiers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-text-muted italic">

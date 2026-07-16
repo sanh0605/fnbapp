@@ -848,7 +848,7 @@ export default function POSScreen({
   }, [isCheckingOut, processingOrder, isOnline, cart.length]);
 
   return (
-    <div className="fixed inset-0 flex bg-zinc-50 text-zinc-900 font-sans overflow-hidden">
+    <div className="fixed inset-0 flex bg-page text-text-primary font-sans overflow-hidden">
 
       {/* Toast Notification Container */}
       <div 
@@ -884,7 +884,7 @@ export default function POSScreen({
                     toast.action.onClick();
                     removeToast(toast.id);
                   }}
-                  className={`mt-2 font-extrabold text-xs px-4 py-2 bg-white rounded-lg border shadow-sm transition active:scale-95 flex items-center justify-center min-h-[44px] min-w-[80px] ${
+                  className={`mt-2 font-extrabold text-xs px-4 py-2 bg-surface-card rounded-lg border shadow-sm transition active:scale-95 flex items-center justify-center min-h-[44px] min-w-[80px] ${
                     toast.type === "error"
                       ? "text-rose-700 border-rose-200 hover:bg-rose-100"
                       : "text-indigo-700 border-indigo-200 hover:bg-indigo-100"
@@ -896,7 +896,7 @@ export default function POSScreen({
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-gray-400 hover:text-gray-600 shrink-0 p-2 rounded-full hover:bg-black/5"
+              className="text-text-muted hover:text-text-secondary shrink-0 p-2 rounded-full hover:bg-black/5"
             >
               ✕
             </button>
@@ -905,12 +905,12 @@ export default function POSScreen({
       </div>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="h-14 bg-white/80 border-b border-gray-200/50 backdrop-blur-md flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
+        <header className="h-14 bg-surface-card/80 border-b border-border/50 backdrop-blur-md flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-gray-400 hover:text-indigo-600 transition-colors">
+            <Link href="/admin" className="text-text-muted hover:text-indigo-600 transition-colors">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </Link>
-            <h1 className="font-extrabold text-xl text-gray-900 tracking-tight flex items-center gap-2">
+            <h1 className="font-extrabold text-xl text-text-primary tracking-tight flex items-center gap-2">
               <span className="text-indigo-600">POS</span> Đơn Mới
             </h1>
             {isOnline ? (
@@ -935,7 +935,7 @@ export default function POSScreen({
             >
               📝 Nháp <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
             </button>
-            <div className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+            <div className="text-sm font-medium text-text-secondary bg-surface-secondary px-3 py-1.5 rounded-full">
               {new Date().toLocaleDateString("vi-VN")}
             </div>
           </div>
@@ -1011,18 +1011,18 @@ export default function POSScreen({
       {/* Product Selection Modal (Popup Chọn Món) */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white/95 backdrop-blur-2xl border border-gray-200/40 w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-fade-in">
-            <div className="p-4 border-b border-gray-100/50 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-xl font-bold text-gray-900">{selectedProduct.name}</h3>
-              <button onClick={() => setSelectedProduct(null)} className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300">
+          <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-fade-in">
+            <div className="p-4 border-b border-border/50 flex justify-between items-center bg-page/50">
+              <h3 className="text-xl font-bold text-text-primary">{selectedProduct.name}</h3>
+              <button onClick={() => setSelectedProduct(null)} className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-gray-300">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto flex-1 space-y-6 bg-white">
+            <div className="p-5 overflow-y-auto flex-1 space-y-6 bg-surface-card">
               {/* SIZE SELECTION */}
               <div>
-                <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase">Chọn Kích Cỡ</h4>
+                <h4 className="font-bold text-sm text-text-primary mb-3 uppercase">Chọn Kích Cỡ</h4>
                 <div className="grid grid-cols-2 gap-3">
                   {variants.filter((v: any) => v.product_id === selectedProduct.id).map((v: any) => {
                     const hasPromo = promoVariantsMap.has(v.id);
@@ -1032,16 +1032,16 @@ export default function POSScreen({
                       <button
                         key={v.id}
                         onClick={() => setSelectedVariant(v)}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-orange-500 bg-orange-50" : "border-gray-100 bg-white hover:border-orange-200"}`}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-orange-500 bg-orange-50" : "border-border bg-surface-card hover:border-orange-200"}`}
                       >
-                        <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-orange-700" : "text-gray-700"}`}>{v.size_name}</span>
+                        <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-orange-700" : "text-text-primary"}`}>{v.size_name}</span>
                         {hasPromo ? (
                           <div className="flex flex-col items-center">
-                            <span className="text-xs text-gray-400 line-through">{formatNumber(v.price)}</span>
+                            <span className="text-xs text-text-muted line-through">{formatNumber(v.price)}</span>
                             <span className="text-sm font-black text-orange-600">{formatNumber(promoPrice)}</span>
                           </div>
                         ) : (
-                          <span className="text-sm font-black text-gray-900">{formatNumber(v.price)}</span>
+                          <span className="text-sm font-black text-text-primary">{formatNumber(v.price)}</span>
                         )}
                       </button>
                     );
@@ -1052,16 +1052,16 @@ export default function POSScreen({
               {/* MODIFIERS (TOPPINGS, SUGAR, ICE) */}
               {Object.keys(groupedModifiers).map(groupName => (
                 <div key={groupName}>
-                  <h4 className="font-bold text-sm text-gray-800 mb-3 uppercase">{groupName}</h4>
+                  <h4 className="font-bold text-sm text-text-primary mb-3 uppercase">{groupName}</h4>
                   <div className="flex flex-col gap-2">
                     {groupedModifiers[groupName].map((mod: any) => {
                       const count = selectedModifiers.filter(m => m.id === mod.id).length;
                       return (
-                        <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-colors ${count > 0 ? "border-indigo-500 bg-indigo-50 shadow-sm" : "border-gray-200 bg-white hover:bg-gray-50"}`}>
+                        <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-colors ${count > 0 ? "border-indigo-500 bg-indigo-50 shadow-sm" : "border-border bg-surface-card hover:bg-page"}`}>
                           <div className="flex flex-col">
-                            <span className={`text-sm ${count > 0 ? "text-indigo-700 font-bold" : "text-gray-700 font-medium"}`}>{mod.name}</span>
+                            <span className={`text-sm ${count > 0 ? "text-indigo-700 font-bold" : "text-text-primary font-medium"}`}>{mod.name}</span>
                             {Number(mod.price) > 0 && (
-                              <span className="text-xs text-gray-500 mt-0.5">+{formatNumber(mod.price)}</span>
+                              <span className="text-xs text-text-secondary mt-0.5">+{formatNumber(mod.price)}</span>
                             )}
                           </div>
 
@@ -1069,16 +1069,16 @@ export default function POSScreen({
                             <button
                               onClick={() => removeModifier(mod)}
                               disabled={count === 0}
-                              className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-100 shadow-sm" : "bg-gray-100 text-gray-300 cursor-not-allowed"}`}
+                              className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-surface-card text-indigo-600 border border-indigo-200 hover:bg-indigo-100 shadow-sm" : "bg-surface-secondary text-gray-300 cursor-not-allowed"}`}
                             >
                               -
                             </button>
-                            <span className={`font-bold w-4 text-center ${count > 0 ? "text-indigo-800" : "text-gray-500"}`}>
+                            <span className={`font-bold w-4 text-center ${count > 0 ? "text-indigo-800" : "text-text-secondary"}`}>
                               {count}
                             </span>
                             <button
                               onClick={() => addModifier(mod)}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold text-lg transition-colors shadow-sm"
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-card text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold text-lg transition-colors shadow-sm"
                             >
                               +
                             </button>
@@ -1091,22 +1091,22 @@ export default function POSScreen({
               ))}
             </div>
 
-            <div className="p-4 border-t border-gray-100/50 bg-white/95 backdrop-blur-md shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] flex flex-col gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
+            <div className="p-4 border-t border-border/50 bg-surface-card/95 backdrop-blur-md shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] flex flex-col gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
 
               {/* CHIẾT KHẤU MÓN (Dời xuống footer) */}
               <div className="flex items-center justify-between gap-4">
-                <span className="font-bold text-sm text-gray-800 whitespace-nowrap">Chiết khấu:</span>
+                <span className="font-bold text-sm text-text-primary whitespace-nowrap">Chiết khấu:</span>
                 <div className="flex items-center gap-2 flex-1">
-                  <div className="flex rounded-lg overflow-hidden border border-gray-200 shrink-0 h-10">
+                  <div className="flex rounded-lg overflow-hidden border border-border shrink-0 h-10">
                     <button
                       onClick={() => setItemDiscountType("VND")}
-                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                     >
                       VNĐ
                     </button>
                     <button
                       onClick={() => setItemDiscountType("PERCENT")}
-                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                     >
                       %
                     </button>
@@ -1117,24 +1117,24 @@ export default function POSScreen({
                     placeholder="Nhập số..."
                     value={itemDiscount || ""}
                     onChange={(e) => setItemDiscount(Number(e.target.value))}
-                    className="flex-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none h-10 text-right"
+                    className="flex-1 w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none h-10 text-right"
                   />
                 </div>
               </div>
 
               {/* TỔNG TIỀN & NÚT CẬP NHẬT */}
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 bg-gray-100 rounded-xl p-1.5 shrink-0 h-14">
+                <div className="flex items-center gap-3 bg-surface-secondary rounded-xl p-1.5 shrink-0 h-14">
                   <button
                     onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
-                    className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-orange-600 transition-colors"
                   >
                     -
                   </button>
-                  <span className="text-lg font-black w-6 text-center text-gray-800">{selectedQty}</span>
+                  <span className="text-lg font-black w-6 text-center text-text-primary">{selectedQty}</span>
                   <button
                     onClick={() => setSelectedQty(selectedQty + 1)}
-                    className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm text-gray-600 font-bold text-xl hover:text-orange-600 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-orange-600 transition-colors"
                   >
                     +
                   </button>
@@ -1165,14 +1165,14 @@ export default function POSScreen({
       {/* Success Modal */}
       {successOrderNo && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white/95 backdrop-blur-2xl border border-gray-200/40 w-full max-w-sm rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+          <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full max-w-sm rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
             <div className="p-8 text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-4">
                 &#10003;
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Thanh toan thanh cong!</h3>
-              <p className="text-sm text-gray-500 mb-3">Ma don hang</p>
-              <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-4 mb-4">
+              <h3 className="text-xl font-bold text-text-primary mb-2">Thanh toan thanh cong!</h3>
+              <p className="text-sm text-text-secondary mb-3">Ma don hang</p>
+              <div className="bg-page border-2 border-dashed border-border rounded-xl p-4 mb-4">
                 <span className="text-3xl font-black text-orange-600 tracking-wider">{successOrderNo}</span>
               </div>
             </div>
@@ -1191,20 +1191,20 @@ export default function POSScreen({
       {/* Draft Modal */}
       {isDraftModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white/95 backdrop-blur-2xl border border-gray-200/40 w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
-            <div className="p-5 border-b border-gray-100/50 flex justify-between items-center bg-gray-50/50">
-              <h3 className="text-xl font-bold text-gray-900">Danh sách đơn nháp</h3>
+          <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            <div className="p-5 border-b border-border/50 flex justify-between items-center bg-page/50">
+              <h3 className="text-xl font-bold text-text-primary">Danh sách đơn nháp</h3>
               <button
                 onClick={() => setIsDraftModalOpen(false)}
-                className="p-1.5 bg-gray-200 rounded-full text-gray-500 hover:bg-gray-300"
+                className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-gray-300"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
-            <div className="p-6 bg-white space-y-4 max-h-[60vh] overflow-y-auto">
+            <div className="p-6 bg-surface-card space-y-4 max-h-[60vh] overflow-y-auto">
               {drafts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 font-medium">
+                <div className="text-center py-8 text-text-secondary font-medium">
                   Chưa có đơn nháp nào.
                 </div>
               ) : (
@@ -1227,10 +1227,10 @@ export default function POSScreen({
                     const totalItems = d.cart.reduce((sum: number, item: any) => sum + item.qty, 0);
 
                     return (
-                      <div key={d.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between">
+                      <div key={d.id} className="p-3 bg-page border border-border rounded-xl flex items-center justify-between">
                         <div className="min-w-0 flex-1">
-                          <p className="font-bold text-sm text-gray-800 truncate">{d.name || "Đơn nháp"}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="font-bold text-sm text-text-primary truncate">{d.name || "Đơn nháp"}</p>
+                          <p className="text-xs text-text-secondary mt-0.5">
                             {totalItems} món • {formatNumber(totalAmt)}
                           </p>
                         </div>

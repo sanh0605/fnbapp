@@ -29,7 +29,7 @@ export default async function UnitsPage() {
                 <th scope="col" className="px-6 py-4 font-bold text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {units.length === 0 ? (
                 <tr>
                 <td colSpan={3} className="p-0">

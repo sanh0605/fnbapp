@@ -13,23 +13,23 @@ export function EventRow({ event }: { event: any }) {
   const lagText = lagDays > 0 ? `${lagDays}d ${lagHours}h` : `${lagHours}h`;
 
   return (
-    <tr className="hover:bg-gray-50/50 transition-colors group">
-      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+    <tr className="hover:bg-page/50 transition-colors group">
+      <td className="px-4 py-3 whitespace-nowrap text-sm text-text-primary">
         {formatDateTime(event.detected_at)}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-900">
-        {event.source_table} <span className="text-gray-400 mx-1">/</span> {event.source_id}
+      <td className="px-4 py-3 text-sm text-text-primary">
+        {event.source_table} <span className="text-text-muted mx-1">/</span> {event.source_id}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-900">
+      <td className="px-4 py-3 text-sm text-text-primary">
         {event.item_reference}
       </td>
       <td className={`px-4 py-3 text-sm text-right font-medium ${event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-rose-600' : ''}`}>
         {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
       </td>
-      <td className="px-4 py-3 text-sm text-right text-gray-900">
+      <td className="px-4 py-3 text-sm text-right text-text-primary">
         {formatNumber(event.unit_cost)}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+      <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
         {lagText}
       </td>
       <td className="px-4 py-3 whitespace-nowrap text-sm">

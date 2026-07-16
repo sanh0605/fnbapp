@@ -157,7 +157,7 @@ export default function SyncPage() {
                       <th className="px-6 py-4">Sự khác biệt</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-border">
                     {discrepancies.map((d, idx) => (
                       <tr key={idx} className="hover:bg-surface-secondary/50 transition-colors">
                         <td className="px-6 py-4 font-bold text-text-primary">{d.order_no}</td>

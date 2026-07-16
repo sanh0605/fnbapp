@@ -97,7 +97,7 @@ export default function ProductionClient({ orders, productionItems, semiProducts
                     <th className="px-6 py-4 font-bold text-center">Trạng Thái</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {sortedOrders.map(o => (
                     <tr key={o.id} className="hover:bg-surface-secondary/50 transition-colors">
                       <td className="px-6 py-4 font-mono text-[11px] text-text-muted font-bold">{o.id}</td>

@@ -48,7 +48,7 @@ export default function SalesFilter(props: {
   subtitle?: string;
 }) {
   return (
-    <React.Suspense fallback={<div className="h-20 bg-gray-50 animate-pulse rounded-xl mb-6 border border-gray-100"></div>}>
+    <React.Suspense fallback={<div className="h-20 bg-page animate-pulse rounded-xl mb-6 border border-border"></div>}>
       <SalesFilterInner {...props} />
     </React.Suspense>
   );
@@ -125,9 +125,9 @@ function SalesFilterInner({
 
   const rightContent = (
     <div className="flex gap-2">
-      <button onClick={() => setPreset(0)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[44px]">Hôm nay</button>
-      <button onClick={() => setPreset(7)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[44px]">7 ngày</button>
-      <button onClick={() => setPreset(30)} className="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 min-h-[44px]">30 ngày</button>
+      <button onClick={() => setPreset(0)} className="px-3 py-2 text-xs font-medium text-text-secondary bg-surface-secondary rounded-lg hover:bg-border min-h-[44px]">Hôm nay</button>
+      <button onClick={() => setPreset(7)} className="px-3 py-2 text-xs font-medium text-text-secondary bg-surface-secondary rounded-lg hover:bg-border min-h-[44px]">7 ngày</button>
+      <button onClick={() => setPreset(30)} className="px-3 py-2 text-xs font-medium text-text-secondary bg-surface-secondary rounded-lg hover:bg-border min-h-[44px]">30 ngày</button>
     </div>
   );
 
@@ -138,49 +138,49 @@ function SalesFilterInner({
       subtitle={subtitle}
     >
       <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Từ ngày</label>
+        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Từ ngày</label>
         <CustomDatePicker
           selected={startDate}
           onChange={(date: Date | null) => setStartDate(date)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
         />
       </div>
       <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Đến ngày</label>
+        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Đến ngày</label>
         <CustomDatePicker
           selected={endDate}
           onChange={(date: Date | null) => setEndDate(date)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
         />
       </div>
       <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Thương hiệu</label>
+        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Thương hiệu</label>
         <select 
           value={brandId} 
           onChange={(e) => setBrandId(e.target.value)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
       </div>
       <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nhân viên</label>
+        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhân viên</label>
         <select 
           value={staffName} 
           onChange={(e) => setStaffName(e.target.value)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
         </select>
       </div>
       <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nhóm SP</label>
+        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhóm SP</label>
         <select 
           value={categoryId} 
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full md:w-40 border border-gray-300 rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}

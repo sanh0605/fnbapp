@@ -118,12 +118,12 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
       {isOpen && (
         <ModalPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <div className="bg-surface-card rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-border flex justify-between items-center bg-page/50">
+              <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
                 <span className="text-orange-500">🔥</span> Lệnh Nấu Bếp
               </h2>
-              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-secondary">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -133,7 +133,7 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
             <div className="p-6 overflow-y-auto">
               <form id="productionForm" onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Chọn Bán Thành Phẩm *</label>
+                  <label className="block text-sm font-bold text-text-primary mb-1.5">Chọn Bán Thành Phẩm *</label>
                   <select
                     required
                     value={selectedSpId}
@@ -142,7 +142,7 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
                       const sp = semiProducts.find((s:any) => s.id === e.target.value);
                       if (sp) setTargetYield(Number(sp.batch_yield)); // Gợi ý luôn sản lượng 1 mẻ
                     }}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 bg-white"
+                    className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 bg-surface-card"
                   >
                     <option value="">-- Chọn món cần nấu --</option>
                     {semiProducts.map((sp:any) => (
@@ -165,21 +165,21 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
                           step="any"
                           value={targetYield}
                           onChange={(e) => setTargetYield(e.target.value === "" ? "" : Number(e.target.value))}
-                          className="w-32 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 text-center font-black text-xl text-orange-600"
+                          className="w-32 border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 text-center font-black text-xl text-orange-600"
                         />
-                        <span className="text-gray-600 font-semibold text-lg">{spUnitName}</span>
+                        <span className="text-text-secondary font-semibold text-lg">{spUnitName}</span>
                       </div>
                       <p className="text-xs text-orange-700 mt-2 italic">
                         Định mức 1 mẻ chuẩn của món này là {yieldPerBatch} {spUnitName}. Khi bạn thay đổi số trên, nguyên liệu tiêu hao sẽ tự động tính tỷ lệ chéo tương ứng.
                       </p>
                     </div>
 
-                    <div className="mt-6 border border-gray-200 rounded-xl overflow-hidden">
-                      <div className="bg-gray-100 px-4 py-2.5 border-b border-gray-200 flex justify-between items-center">
-                        <h3 className="text-sm font-bold text-gray-700">Nguyên Liệu Tiêu Hao</h3>
-                        <span className="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded">Có thể sửa thủ công</span>
+                    <div className="mt-6 border border-border rounded-xl overflow-hidden">
+                      <div className="bg-surface-secondary px-4 py-2.5 border-b border-border flex justify-between items-center">
+                        <h3 className="text-sm font-bold text-text-primary">Nguyên Liệu Tiêu Hao</h3>
+                        <span className="text-xs font-medium bg-border text-text-secondary px-2 py-1 rounded">Có thể sửa thủ công</span>
                       </div>
-                      <div className="p-4 bg-white space-y-4">
+                      <div className="p-4 bg-surface-card space-y-4">
                         {consumedIngredients.length === 0 ? (
                           <div className="text-sm text-red-500 italic text-center py-2">
                             ⚠️ Bán thành phẩm này chưa có công thức nấu.
@@ -188,7 +188,7 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
                           consumedIngredients.map((ing, idx) => (
                             <div key={idx} className="flex justify-between items-center">
                               <div className="flex flex-col">
-                                <span className="text-sm font-medium text-gray-800">{ing.name}</span>
+                                <span className="text-sm font-medium text-text-primary">{ing.name}</span>
                                 {ing.is_non_inventory && (
                                   <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-sm mt-1 w-fit">
                                     Không trừ kho
@@ -202,9 +202,9 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
                                   step="any"
                                   value={ing.qtyNeeded}
                                   onChange={(e) => handleQtyChange(idx, Number(e.target.value))}
-                                  className="w-20 text-right border border-gray-300 rounded-md px-2 py-1 text-sm font-bold focus:ring-orange-500 focus:border-orange-500"
+                                  className="w-20 text-right border border-border rounded-md px-2 py-1 text-sm font-bold focus:ring-orange-500 focus:border-orange-500"
                                 />
-                                <span className="text-sm font-medium text-gray-600 w-10">{ing.unit}</span>
+                                <span className="text-sm font-medium text-text-secondary w-10">{ing.unit}</span>
                               </div>
                             </div>
                           ))
@@ -216,8 +216,8 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
               </form>
             </div>
 
-            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-auto">
-              <button type="button" onClick={() => setIsOpen(false)} className="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Huỷ</button>
+            <div className="p-5 border-t border-border bg-page flex justify-end gap-3 mt-auto">
+              <button type="button" onClick={() => setIsOpen(false)} className="px-5 py-2.5 text-text-secondary font-medium hover:bg-border rounded-lg transition">Huỷ</button>
               <button 
                 type="submit" 
                 form="productionForm" 

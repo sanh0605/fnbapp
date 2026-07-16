@@ -1,215 +1,287 @@
-# Task: UI-REMED-1 — TOKEN-SWAP Migration (Async Overnight)
+# Task: UI-REMED-1 — TOKEN-SWAP Migration (AUTONOMOUS OVERNIGHT)
 
-## Context
+## ⚠️ AUTONOMOUS MODE — READ FIRST
 
-User Going to sleep. Antigravity authorized to run this task asynchronously overnight. **CRITICAL: NO PUSH ALLOWED.** Commits only. User will forward final report to Claude in morning for review.
+**User is sleeping. You CANNOT ask questions. Use defaults from this brief.**
 
-Phase 1 UI audit (`docs/audits/ui-consistency-2026-07-16.md`) flagged 1105 raw Tailwind color occurrences across 39 source files. This task migrates them to Fresh Blue design tokens in 5 phases (color family order).
+If you encounter ambiguity: **pick the closest semantic match, apply it, document the decision in commit body + final report. NEVER STOP to ask.**
 
-## HARD RULES (read first)
+If you encounter a hard error (TypeScript fail, build fail): **revert the last 1-2 changes, retry with conservative mapping, document in report. NEVER STOP to ask.**
 
-1. **NO `git push`** at any point. Local commits only. Verify with `git status` after each commit.
-2. **NO `--force`** anything.
-3. **NO migrations, NO database writes, NO Supabase deploys.** Pure UI code change.
-4. **Commit per phase** (5 phases total). Don't bundle phases.
-5. **If any phase fails visual smoke**: STOP, commit what's done with note in tracking, do NOT continue to next phase.
-6. **If you hit ambiguity** (no clear token mapping): use closest semantic match, document in commit body.
-7. **Final report required** (see section 11 below) — without report, morning review blocked.
+If you complete all 5 phases: **write final report and stop.**
+
+If you hit the 6-hour mark: **commit whatever phase is in progress, write final report, stop.**
+
+**THERE IS NO SCENARIO WHERE YOU ASK A QUESTION.** Everything is decided upfront below.
+
+## HARD RULES
+
+1. **NEVER `git push`.** Local commits only. Verify with `git status` after each commit shows "ahead of origin/main by N".
+2. **NEVER `--force` anything.**
+3. **NEVER ask user/Claude questions.** Use defaults below.
+4. **NEVER run database writes, migrations, or Supabase deploys.**
+5. **NEVER touch test files** (`*.test.ts`, `*.test.tsx`, `*.spec.ts`, `__tests__/`).
+6. **ALWAYS commit per phase** (5 phases total, 5 commits).
+7. **ALWAYS use the token mapping tables below verbatim.** Don't invent mappings.
+8. **ALWAYS document deviations** in commit body AND final report.
 
 ## Color family breakdown (5 phases)
 
-Phase order: largest first (mechanical patterns establish momentum).
+Phase order: largest first.
 
-| Phase | Family | Count | Files | Est. time |
-|---|---|---:|---:|---|
-| 1 | gray/slate/zinc/neutral/stone | ~466 | 37 | 2-3h |
-| 2 | blue/indigo/sky/cyan | ~141 | 39 | 1h |
-| 3 | red/rose/pink | ~64 | 30 | 30min |
-| 4 | emerald/green/teal | ~33 | 16 | 15min |
-| 5 | amber/yellow/orange + violet/purple/fuchsia + hex literals | ~400 | various | 1h |
+| Phase | Family | Count | Est. time |
+|---|---|---:|---|
+| 1 | gray/slate/zinc/neutral/stone | ~466 | 2-3h |
+| 2 | blue/indigo/sky/cyan | ~141 | 1h |
+| 3 | red/rose/pink | ~64 | 30min |
+| 4 | emerald/green/teal | ~33 | 15min |
+| 5 | amber/yellow/orange + violet/purple/fuchsia + hex literals | ~400 | 1h |
 
-Total: ~1105 occurrences, ~5h.
+## Token mapping (USE VERBATIM)
 
-## Token mapping reference
+### Phase 1: Gray family
 
-Consult `tailwind.config.ts` + `app/globals.css` for authoritative token list. Key mappings:
+| Old | New token |
+|---|---|
+| `bg-white` | `bg-surface-card` |
+| `bg-gray-50` | `bg-surface-secondary` |
+| `bg-gray-100` | `bg-surface-secondary` |
+| `bg-gray-200` | `bg-border` |
+| `bg-gray-300` | `bg-border` |
+| `bg-gray-400` | `bg-border` |
+| `border-gray-100` | `border-border` |
+| `border-gray-200` | `border-border` |
+| `border-gray-300` | `border-border` |
+| `divide-gray-100` | `divide-border` |
+| `divide-gray-200` | `divide-border` |
+| `ring-gray-100` | `ring-border` |
+| `ring-gray-200` | `ring-border` |
+| `ring-gray-300` | `ring-border` |
+| `ring-gray-400` | `ring-border` |
+| `text-gray-400` | `text-text-muted` |
+| `text-gray-500` | `text-text-secondary` |
+| `text-gray-600` | `text-text-secondary` |
+| `text-gray-700` | `text-text-primary` |
+| `text-gray-800` | `text-text-primary` |
+| `text-gray-900` | `text-text-primary` |
+| `shadow-gray-*` | KEEP (no token) |
+| `from-gray-*`, `to-gray-*`, `via-gray-*` (gradients) | KEEP (no token) |
 
-### Gray family (Phase 1)
+**Slate/zinc/neutral/stone**: apply SAME mappings as gray.
 
-| Old | New token | Use case |
-|---|---|---|
-| `bg-white` | `bg-surface-card` | Card backgrounds |
-| `bg-gray-50` | `bg-surface-secondary` OR `bg-page` | Light page background |
-| `bg-gray-100` | `bg-surface-secondary` | Secondary surface |
-| `bg-gray-200` | `bg-border` | Stronger surface (rare) |
-| `border-gray-100` | `border-border` | Light border |
-| `border-gray-200` | `border-border` | Default border |
-| `border-gray-300` | `border-border` | Stronger border |
-| `text-gray-400` | `text-text-muted` | Muted text |
-| `text-gray-500` | `text-text-secondary` | Secondary text |
-| `text-gray-600` | `text-text-secondary` | Slightly darker secondary |
-| `text-gray-700` | `text-text-primary` | Dark text |
-| `text-gray-800` | `text-text-primary` | Darker text |
-| `text-gray-900` | `text-text-primary` | Darkest text |
-| `ring-gray-*` | `ring-focus-ring` OR `ring-border` | Focus rings |
-| `divide-gray-*` | `divide-border` | Dividers |
-| `shadow-gray-*` | keep (no token equivalent) | Custom shadows |
-| Hover/active variants (`hover:bg-gray-*`) | apply same mapping to hover/active | Hover states |
+**Hover/active/focus variants** (`hover:bg-gray-*`, `active:bg-gray-*`, `focus:bg-gray-*`, etc.): apply SAME mapping to the base color. Example: `hover:bg-gray-100` → `hover:bg-surface-secondary`.
 
-Slate/zinc/neutral/stone → map to same tokens (all "neutral grays").
-
-### Blue family (Phase 2)
+### Phase 2: Blue family
 
 | Old | New token |
 |---|---|
 | `bg-blue-50` | `bg-primary-soft` |
 | `bg-blue-100` | `bg-primary-soft` |
+| `bg-blue-200` | `bg-primary-soft` |
+| `bg-blue-300` | `bg-primary` |
+| `bg-blue-400` | `bg-primary` |
 | `bg-blue-500` | `bg-primary` |
 | `bg-blue-600` | `bg-primary` |
 | `bg-blue-700` | `bg-primary-hover` |
 | `bg-blue-800` | `bg-primary-active` |
-| `text-blue-*` | `text-primary` |
-| `border-blue-*` | `border-primary` |
-| `ring-blue-*` | `ring-focus-ring` |
+| `bg-blue-900` | `bg-primary-active` |
+| `text-blue-*` (any shade) | `text-primary` |
+| `border-blue-*` (any shade) | `border-primary` |
+| `ring-blue-*` (any shade) | `ring-focus-ring` |
 
-Indigo/sky/cyan → use `primary` family (closest semantic).
+**Indigo/sky/cyan**: apply SAME mappings as blue.
 
-### Red/Rose/Pink family (Phase 3)
+### Phase 3: Red/Rose/Pink family
 
 | Old | New token |
 |---|---|
 | `bg-red-50` | `bg-danger/10` |
+| `bg-red-100` | `bg-danger/10` |
+| `bg-red-200` | `bg-danger/20` |
 | `bg-red-500` | `bg-danger` |
 | `bg-red-600` | `bg-danger` |
-| `bg-red-700` | `bg-danger` (no hover token, accept slight visual diff) |
-| `text-red-*` | `text-danger` |
-| `border-red-*` | `border-danger` (if no token, use `border-border`) |
+| `bg-red-700` | `bg-danger` |
+| `bg-red-800` | `bg-danger` |
+| `text-red-400` | `text-danger` |
+| `text-red-500` | `text-danger` |
+| `text-red-600` | `text-danger` |
+| `text-red-700` | `text-danger` |
+| `border-red-200` | `border-border` (fallback) |
+| `border-red-300` | `border-border` (fallback) |
+| `border-red-400` | `border-danger` |
+| `border-red-500` | `border-danger` |
 | `ring-red-*` | `ring-danger` |
 
-Rose/pink → map to danger.
+**Rose/pink**: apply SAME mappings as red.
 
-### Emerald/Green/Teal family (Phase 4)
+### Phase 4: Emerald/Green/Teal family
 
 | Old | New token |
 |---|---|
 | `bg-emerald-50` | `bg-success/10` |
+| `bg-emerald-100` | `bg-success/10` |
 | `bg-emerald-500` | `bg-success` |
 | `bg-emerald-600` | `bg-success` |
-| `text-emerald-*` | `text-success` |
-| `border-emerald-*` | `border-success` (fallback: `border-border`) |
+| `bg-emerald-700` | `bg-success` |
+| `text-emerald-400` | `text-success` |
+| `text-emerald-500` | `text-success` |
+| `text-emerald-600` | `text-success` |
+| `text-emerald-700` | `text-success` |
+| `border-emerald-*` | `border-success` (if 400+) else `border-border` |
+| `ring-emerald-*` | `ring-success` fallback `ring-border` |
 
-Green/teal → map to success.
+**Green/teal**: apply SAME mappings as emerald.
 
-### Phase 5: amber/yellow/orange + violet/purple/fuchsia + hex literals
+### Phase 5: Other families + hex literals
 
-- amber/yellow/orange → `warning` family (use `bg-warning/10`, `text-warning`, `bg-warning`)
-- violet/purple/fuchsia → `processing` family (use `bg-processing/10`, `text-processing`)
-- Hex literals (`#2563EB`, etc.) → match to closest token via `globals.css` lookup
+**Amber/yellow/orange:**
+- `*-amber-50/100` → `*-warning/10`
+- `*-amber-500/600` → `*-warning`
+- `*-yellow-*` → apply SAME as amber
+- `*-orange-*` → apply SAME as amber
 
-## Per-phase workflow
+**Violet/purple/fuchsia:**
+- `*-violet-50/100` → `*-processing/10`
+- `*-violet-500/600` → `*-processing`
+- `*-purple-*` → apply SAME as violet
+- `*-fuchsia-*` → apply SAME as violet
+
+**Hex literals** (`#2563EB`, `#dc2626`, etc.):
+- Look up in `app/globals.css` for matching token value
+- If exact match: replace with token
+- If close match (within color family): replace with token, note in report
+- If no match: KEEP literal, note in report
+
+## DEFAULTS for ambiguous situations
+
+| Situation | Default action |
+|---|---|
+| Token mapping unclear | Pick closest semantic match from table. Document in commit body. |
+| File has mix of mapped + unmapped colors | Migrate what's mappable, leave rest, document count in commit. |
+| TypeScript error after change | Revert last 1-2 file changes, retry with conservative mapping (`border-border` for any gray). |
+| Build error | Same as TS error — revert last 1-2 changes, retry conservatively. |
+| Visual smoke reveals regression on 1 route | Note in report, continue to next phase. Smoke test other routes next phase. |
+| Visual smoke reveals severe regression (page unusable) on multiple routes | Stop. Commit current phase. Skip remaining phases. Write final report. |
+| Grep returns unexpected file (test, story, generated) | Skip file. Document count in report. |
+| Color shade not in mapping table | Use closest shade in same family. |
+| Conditional className (e.g., `${cond ? 'bg-red' : 'bg-green'}`) | Apply same mapping to both branches. |
+| Template literal with color in string | Apply mapping if pattern matches. Skip otherwise. |
+| CSS file with raw color | Skip (only `.ts`/`.tsx` in scope). |
+| Hit 6-hour mark mid-phase | Commit current progress. Skip remaining phases. Write final report. |
+
+## Per-phase workflow (FOLLOW EXACTLY)
 
 For EACH phase (1 through 5):
 
-1. **Grep** for the color family pattern in `app/` + `components/` (exclude tests/stories).
-2. **Filter** to relevant matches (exclude comments, strings, stories).
-3. **Apply mappings** above. Use search-replace with regex.
-4. **Per-file spot-check**: open 1-2 modified files, verify syntax correct.
-5. **TypeScript check**: `npx tsc --noEmit` clean.
-6. **Build check**: `npm run build` success.
-7. **Visual smoke**: dev server `npm run dev`, visit 2-3 representative pages, verify no obvious visual breakage (colors look right, layout intact).
-8. **Commit**: `Antigravity ui: TOKEN-SWAP phase N - <color family> → tokens (UI-REMED-1/<N>)`.
-9. **Append to tracking**: note phase done + any deviations.
+1. **Grep** for the color family pattern in `app/**/*.tsx` + `components/**/*.tsx` (NOT tests, NOT stories, NOT `.css` files).
+2. **Apply mappings** per tables above. Use search-replace with regex if confident, or manual per-file if not.
+3. **TypeScript check**: `npx tsc --noEmit` MUST pass.
+   - If fails: revert 1-2 recent changes until passes. Document.
+4. **Build check**: `npm run build` MUST succeed.
+   - If fails: revert 1-2 recent changes until passes. Document.
+5. **Visual smoke**: start dev server `npm run dev` (background), visit 2 routes from list below, verify page loads (not crash). Visual perfection NOT required — just "no white screen, layout intact".
+   - Recommended routes per phase:
+     - Phase 1 (gray): `/admin/orders`, `/admin/products`
+     - Phase 2 (blue): `/admin/inventory/items`, `/admin/production`
+     - Phase 3 (red): `/admin/inventory/stock-adjustments`, `/admin/users`
+     - Phase 4 (emerald): `/admin/reports/sales`, `/admin/audit/backdated-ledger`
+     - Phase 5 (mixed): `/pos`, `/admin/inventory/purchase-orders`
+6. **Commit** (one per phase):
+   ```
+   Antigravity ui: TOKEN-SWAP phase N - <family> → tokens (UI-REMED-1/N)
+   
+   <N> occurrences migrated across <M> files.
+   Deviations: <list any, or "none">
+   Smoke routes visited: <list>
+   ```
+7. **Append to tracking**: note phase done.
 
-**Do NOT run tests** for this task — these are className string changes, no behavior changes. TS check + build is enough.
+**Do NOT run tests.** TS + build is enough for className string changes.
 
-## Stop conditions (per phase)
+## Stop conditions (HARD)
 
-STOP the entire task and write final report if:
+STOP ALL WORK and write final report if ANY of:
 
-- TypeScript errors that can't be resolved by reverting 1-2 changes.
-- Build fails with non-color-related errors.
-- Visual regression severe (layout breaks, components unrecognizable) on a route.
-- You've worked > 6 hours (safety cutoff).
-- You've completed all 5 phases (then write final report).
+- TypeScript errors can't be resolved by reverting ≤5 file changes.
+- Build fails with errors that can't be resolved by reverting ≤5 file changes.
+- Visual regression severe on 3+ routes (page unusable, not just color slightly off).
+- 6 hours elapsed since phase 1 start.
+- All 5 phases complete.
 
-When stopping mid-phase: commit what's done, note in commit body where you stopped.
+**NEVER STOP for**: questions, ambiguities, "should I do X", token mapping doubts. Use defaults.
 
-## Final report format
+## Final report (REQUIRED)
 
-Create `docs/reports/ui-remed-1-overnight-report.md` with this structure:
+Create `docs/reports/ui-remed-1-overnight-report.md`:
 
 ```markdown
 # UI-REMED-1 TOKEN-SWAP Overnight Report
 
-Date: 2026-07-17 → 2026-07-18 (overnight)
-Owner: Antigravity (async)
-Reviewer: Claude (pending, morning)
+Date: 2026-07-17 → 2026-07-18
+Owner: Antigravity (autonomous)
+Reviewer: Claude (pending morning)
 
 ## Summary
 
 - Phases completed: N/5
 - Total occurrences migrated: ~N / 1105
 - Total commits: N
-- Time spent: ~Nh
+- Elapsed time: ~Nh
+- Push executed: NO (verified via `git log origin/main..HEAD`)
 
 ## Per-phase status
 
-### Phase 1: gray/slate/zinc/neutral/stone
+### Phase 1: gray family
 - Status: COMPLETE | PARTIAL | SKIPPED
 - Occurrences migrated: N
 - Files touched: N
-- Commit: `<sha>`
-- Notes: <any deviations, ambiguities, token gaps>
+- Commit: <sha>
+- Smoke routes: <list>
+- Smoke result: PASS | MINOR_DIFF | REGRESSION
+- Deviations: <list, or "none">
 
 ### Phase 2-5: (same structure)
 
 ## Token gaps discovered
 
-- List any old colors with no clean token equivalent
-- Suggest new tokens to add (for future task)
+(List any old colors with no clean token equivalent. Suggest new tokens to add.)
 
-## Visual smoke test results
+- gray-XXX → text-text-secondary (closest, slight darkness diff)
+- ...
 
-Per phase, list:
-- Pages visited (URLs)
-- Visual outcome: PASS | MINOR_DIFF | REGRESSION
-- Screenshot paths if regression (save to scratch/ui-remed-1/)
+## TypeScript + Build status (final)
 
-## TypeScript + Build status
+- `tsc --noEmit`: PASS | FAIL
+- `npm run build`: PASS | FAIL
 
-- Final `tsc --noEmit`: PASS | FAIL
-- Final `npm run build`: PASS | FAIL
+## Deviations from brief
 
-## Push status
+(Anything you decided differently from the brief. Use this section liberally — Claude will review.)
 
-- Confirm: NO `git push` executed at any point. Local commits only.
+## Pending Claude morning review
 
-## Pending Claude review
+(Leave blank — Claude fills in morning)
+```
 
-- Token mapping decisions to verify
-- Visual regressions to assess
-- Token gaps to decide (add new tokens or accept)
+## Final commit (after report)
+
+Commit the report:
+```
+Antigravity ui: UI-REMED-1 overnight report (autonomous, no push)
+
+5 phases attempted, N completed. Report at docs/reports/ui-remed-1-overnight-report.md.
+No git push executed. Local only.
 ```
 
 ## Priority
 
-P2 → P1 promotion (user pickup, async). Antigravity solo. Multi-hour.
+P1 — autonomous async. ~5 hours max. Gemini 3.5 Flash High.
 
-Model per `docs/COLLABORATION.md` Section G: `Gemini 3.5 Flash (High)` — bulk mechanical work + autonomous decisions on token mappings + self-verification.
+## Recap of critical rules
 
-## Questions (Claude pre-review, morning)
-
-These will be reviewed by Claude in the morning:
-
-1. Are token mappings semantically correct? (especially gray-600/700 boundary)
-2. Did phases complete in order, or any skipped?
-3. Any visual regression that warrants follow-up fix task?
-4. Should new tokens be added to fill gaps? (separate task)
-
-## Constraints recap
-
-- **NO PUSH** (critical)
-- Commit per phase
-- Self-verify per phase before next
-- Final report required for morning review
-- Token gap documentation > silent wrong mapping
+1. NO PUSH
+2. NO QUESTIONS — use defaults
+3. Commit per phase
+4. Self-verify (tsc + build) per phase
+5. Final report required
+6. Stop only on hard errors or 6h limit or all-phases-done

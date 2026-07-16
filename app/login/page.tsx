@@ -50,11 +50,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-surface-secondary">
+      <div className="max-w-md w-full bg-surface-card rounded-xl shadow-lg p-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Phin Đi</h2>
-          <p className="text-gray-500 mt-2">Hệ thống Quản lý F&B V2</p>
+          <h2 className="text-3xl font-bold text-text-primary">Phin Đi</h2>
+          <p className="text-text-secondary mt-2">Hệ thống Quản lý F&B V2</p>
         </div>
 
         {error && (
@@ -65,7 +65,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="block text-sm font-medium text-text-primary mb-1">
               Tên đăng nhập
             </label>
             <input
@@ -74,7 +74,7 @@ export default function LoginPage() {
               type="text"
               required
               spellCheck={false}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Tên đăng nhập…"
@@ -83,7 +83,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-1">
               Mật khẩu
             </label>
             <input
@@ -91,7 +91,7 @@ export default function LoginPage() {
               ref={passwordInputRef}
               type="password"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Mật khẩu…"
@@ -112,7 +112,7 @@ export default function LoginPage() {
           </button>
         </form>
         
-        <div className="mt-8 text-center text-sm text-gray-400">
+        <div className="mt-8 text-center text-sm text-text-muted">
           Powered by Next.js & Supabase
         </div>
       </div>

@@ -43,16 +43,16 @@ export function ApplyModal({
       maxWidth="max-w-md"
     >
       <div className="space-y-4 py-2">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-text-secondary">
           Hành động này sẽ cập nhật COGS cho <strong>{affectedLineCount}</strong> order lines, tổng chênh lệch <strong>{formatNumber(totalDeltaVnd)} VND</strong>. Không thể hoàn tác.
         </p>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Người duyệt</label>
+          <label className="block text-xs font-medium text-text-primary mb-1">Người duyệt</label>
           <input
             type="text"
             value={reviewer}
             onChange={(e) => setReviewer(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+            className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-page"
             readOnly
           />
         </div>
@@ -62,7 +62,7 @@ export function ApplyModal({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-sm transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
+          className="px-4 py-2 text-text-primary bg-surface-secondary hover:bg-border rounded-lg font-medium text-sm transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
         >
           Hủy
         </button>

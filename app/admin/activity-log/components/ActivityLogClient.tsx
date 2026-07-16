@@ -142,7 +142,7 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
       default:
         return {
           label: type,
-          classes: "bg-zinc-50 text-zinc-700 border-zinc-200",
+          classes: "bg-page text-text-primary border-border",
           dotColor: "bg-zinc-400 ring-zinc-100",
         };
     }

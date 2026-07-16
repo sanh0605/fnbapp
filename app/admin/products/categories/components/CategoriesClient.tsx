@@ -60,7 +60,7 @@ export default function CategoriesClient({ categories, counts }: CategoriesClien
                     <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {filteredCategories.map((c, idx) => (
                     <tr key={c.id} className="hover:bg-surface-secondary/50 transition-colors">
                       <td className="px-6 py-4 text-text-muted font-medium">{idx + 1}</td>

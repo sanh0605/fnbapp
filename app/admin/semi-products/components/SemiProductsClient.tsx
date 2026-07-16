@@ -86,7 +86,7 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                     <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {filteredSemiProducts.map(sp => {
                     const hasRecipe = !!sp.activeRecipe;
                     let ingredientCount = 0;

@@ -46,7 +46,7 @@ export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
         dateFormat={props.dateFormat || "dd/MM/yyyy HH:mm:ss"}
         locale="vi"
         placeholderText={placeholderText || "dd/mm/yyyy hh:mm:ss"}
-        className={className || "w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"}
+        className={className || "w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"}
         wrapperClassName="w-full"
         isClearable
         withPortal={isMobile}

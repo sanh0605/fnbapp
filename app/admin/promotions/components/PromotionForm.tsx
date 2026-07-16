@@ -386,7 +386,7 @@ export function PromotionForm({
                   </button>
                 </div>
               </div>
-              <div className="max-h-[400px] overflow-y-auto space-y-6 pr-2 divide-y divide-gray-100">
+              <div className="max-h-[400px] overflow-y-auto space-y-6 pr-2 divide-y divide-border">
                 {groupedByCategory.map(({ category, products: catProducts, allVariantIds }) => {
                   const isCatSelected = allVariantIds.every((id: string) => selectedVariants.includes(id)) && allVariantIds.length > 0;
                   

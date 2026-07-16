@@ -78,7 +78,7 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
                 <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {filteredConversions.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-0">

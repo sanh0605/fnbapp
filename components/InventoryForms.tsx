@@ -57,8 +57,8 @@ export function ActionGroup({
       {isDeleteOpen && (
         <ModalPortal>
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-              <div className="p-5 border-b border-gray-100 flex items-center gap-3 bg-red-50/50">
+            <div className="bg-surface-card rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+              <div className="p-5 border-b border-border flex items-center gap-3 bg-red-50/50">
                 <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -69,20 +69,20 @@ export function ActionGroup({
                     />
                   </svg>
                 </div>
-                <h2 className="text-lg font-bold text-gray-800">Xác nhận xoá</h2>
+                <h2 className="text-lg font-bold text-text-primary">Xác nhận xoá</h2>
               </div>
               <div className="p-5">
-                <p className="text-gray-600 text-sm text-left">
+                <p className="text-text-secondary text-sm text-left">
                   Bạn có chắc chắn muốn xoá mục này không?
                   <br />
                   Thao tác này không thể hoàn tác.
                 </p>
               </div>
-              <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <div className="p-4 border-t border-border bg-page flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsDeleteOpen(false)}
-                  className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition"
+                  className="px-4 py-2 text-text-secondary font-medium hover:bg-border rounded-lg transition"
                 >
                   Huỷ
                 </button>

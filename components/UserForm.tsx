@@ -35,37 +35,37 @@ export function UserForm() {
       {isOpen && (
         <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+          <div className="bg-surface-card rounded-xl p-6 w-full max-w-md shadow-xl">
             <h2 className="text-xl font-bold mb-4">Thêm Nhân Sự Mới</h2>
             
             {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
 
             <form action={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
+                <label className="block text-sm font-medium text-text-primary mb-1">Tên đăng nhập</label>
                 <input 
                   type="text" 
                   name="username" 
                   required 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500" 
                   placeholder="VD: nhanvien01"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                <label className="block text-sm font-medium text-text-primary mb-1">Mật khẩu</label>
                 <input 
                   type="password" 
                   name="password" 
                   required 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phân quyền</label>
+                <label className="block text-sm font-medium text-text-primary mb-1">Phân quyền</label>
                 <select 
                   name="role" 
                   required 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500"
                 >
                   <option value="STAFF">Staff (Bán hàng)</option>
                   <option value="MANAGER">Manager (Quản lý)</option>
@@ -77,7 +77,7 @@ export function UserForm() {
                 <button 
                   type="button" 
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg"
                 >
                   Huỷ
                 </button>

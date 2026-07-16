@@ -28,38 +28,38 @@ export default function EditUserForm({ user }: { user: any }) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-xl">
+    <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6 max-w-xl">
       {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{error}</div>}
 
       <form action={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Tên đăng nhập</label>
+          <label className="block text-sm font-medium text-text-primary mb-1.5">Tên đăng nhập</label>
           <input 
             type="text" 
             value={user.username} 
             disabled
-            className="w-full border border-gray-200 bg-gray-50 text-gray-500 rounded-lg px-3 py-2.5 outline-none cursor-not-allowed" 
+            className="w-full border border-border bg-page text-text-secondary rounded-lg px-3 py-2.5 outline-none cursor-not-allowed" 
           />
-          <p className="text-xs text-gray-400 mt-1">Tên đăng nhập không thể thay đổi.</p>
+          <p className="text-xs text-text-muted mt-1">Tên đăng nhập không thể thay đổi.</p>
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Mật khẩu mới</label>
+          <label className="block text-sm font-medium text-text-primary mb-1.5">Mật khẩu mới</label>
           <input 
             type="password" 
             name="password" 
-            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
+            className="w-full border border-border rounded-lg px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
             placeholder="Để trống nếu không muốn đổi mật khẩu"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Phân quyền</label>
+          <label className="block text-sm font-medium text-text-primary mb-1.5">Phân quyền</label>
           <select 
             name="role" 
             required 
             defaultValue={user.role}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+            className="w-full border border-border rounded-lg px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-surface-card"
           >
             <option value="STAFF">Staff (Bán hàng)</option>
             <option value="MANAGER">Manager (Quản lý)</option>
@@ -67,10 +67,10 @@ export default function EditUserForm({ user }: { user: any }) {
           </select>
         </div>
         
-        <div className="flex gap-3 pt-4 border-t border-gray-100 mt-6">
+        <div className="flex gap-3 pt-4 border-t border-border mt-6">
           <Link 
             href="/admin/users"
-            className="flex-1 text-center px-4 py-2.5 text-gray-700 font-medium border border-gray-300 bg-white hover:bg-gray-50 rounded-lg transition-colors"
+            className="flex-1 text-center px-4 py-2.5 text-text-primary font-medium border border-border bg-surface-card hover:bg-page rounded-lg transition-colors"
           >
             Huỷ
           </Link>

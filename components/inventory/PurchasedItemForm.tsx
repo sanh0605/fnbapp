@@ -117,11 +117,11 @@ export function PurchasedItemForm({
       {isOpen && (
         <ModalPortal>
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-surface-card rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
               <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Hàng Mua Vào" : "Thêm Hàng Mua Vào"}</h2>
               <form action={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-text-primary mb-1">
                     Tên Hàng Mua (VD: Thùng Sữa Vinamilk)
                   </label>
                   <input
@@ -129,16 +129,16 @@ export function PurchasedItemForm({
                     name="name"
                     defaultValue={initialData?.name}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    className="w-full border border-border rounded-lg px-3 py-2"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phân loại Hàng Hoá</label>
+                  <label className="block text-sm font-medium text-text-primary mb-1">Phân loại Hàng Hoá</label>
                   <select
                     name="item_category_id"
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    className="w-full border border-border rounded-lg px-3 py-2"
                     value={selectedCategoryId}
                     onChange={(e) => setSelectedCategoryId(e.target.value)}
                   >
@@ -240,11 +240,11 @@ export function PurchasedItemForm({
                   </label>
                 )}
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <div className="flex justify-end gap-3 pt-4 border-t border-border">
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+                    className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg text-sm"
                   >
                     Huỷ
                   </button>

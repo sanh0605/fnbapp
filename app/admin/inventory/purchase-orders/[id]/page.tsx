@@ -76,7 +76,7 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
                     <th className="px-4 py-3 text-right">Thành tiền</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {poLines.map((line: any, idx: number) => {
                     const item = allItems.find((i:any) => i.id === line.purchased_item_id);
                     const unitName = allUnits.find((u:any) => u.id === line.unit)?.name || line.unit;

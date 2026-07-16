@@ -24,18 +24,18 @@ export function ProductCard({
     <button
       onClick={() => !isOOS && onClick()}
       disabled={isOOS}
-      className={`bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col transition text-left h-48 relative ${
+      className={`bg-surface-card rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border overflow-hidden flex flex-col transition text-left h-48 relative ${
         isOOS ? "opacity-50 grayscale cursor-not-allowed" : "hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] active:scale-95"
       }`}
     >
       {isOOS && (
-        <div className="absolute inset-0 bg-white/40 z-20 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 bg-surface-card/40 z-20 flex flex-col items-center justify-center">
           <span className="bg-red-600 text-white font-bold px-3 py-1 rounded-full shadow border-2 border-white transform -rotate-12">
             HẾT HÀNG
           </span>
         </div>
       )}
-      <div className="h-28 bg-gray-50 flex items-center justify-center border-b border-gray-100 w-full shrink-0 relative">
+      <div className="h-28 bg-page flex items-center justify-center border-b border-border w-full shrink-0 relative">
         {promoPrice !== undefined && (
           <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10 shadow-sm shadow-red-500/50">
             🔥 PROMO
@@ -48,11 +48,11 @@ export function ProductCard({
         )}
       </div>
       <div className="p-3 flex-1 flex flex-col justify-between">
-        <h3 className="font-bold text-gray-800 text-sm leading-tight line-clamp-2">{product.name}</h3>
+        <h3 className="font-bold text-text-primary text-sm leading-tight line-clamp-2">{product.name}</h3>
         <div className="mt-1">
           {promoPrice !== undefined ? (
             <div className="flex flex-col">
-              <span className="text-[11px] text-gray-400 line-through leading-none">
+              <span className="text-[11px] text-text-muted line-through leading-none">
                 {formatNumber(basePrice)}
               </span>
               <span className="text-orange-600 font-bold text-sm leading-tight">
