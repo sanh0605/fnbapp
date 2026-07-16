@@ -60,7 +60,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~A] **UI-REMED-2. Redesign StickyFilterBar with design system tokens** | Antigravity | UI: single component redesign, preserve API | `docs/handoffs/2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` (Claude authored 2026-07-16). User chose Redesign (not Remove). Replace hardcoded colors with tokens, preserve sticky + mobile expand. ~0.5 session. | (unblocked) |
+| (none) | — | — | — | UI-REMED-2 closed 2026-07-16 (commit `6b65aba`, Claude reviewed). Next UI-REMED-3 REPLACE-ALERT in P2. |
 
 ### P3 — Depends on verification
 
@@ -108,6 +108,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-16 Claude: UI-REMED-2 closed (commit `6b65aba`, reviewed). StickyFilterBar redesigned with design tokens, API + sticky + mobile expand preserved. 16 clients auto-inherit. P1 cleared → next UI-REMED-3 REPLACE-ALERT.
 - 2026-07-16 Claude: Task 3.10 closed (commit `6a5bdec`, reviewed). Audit OPERATIONALLY CLEAN exit 0. MAC drift saga complete (E3 → Task 3.10). P1 cleared.
 - 2026-07-16 Claude: User + Codex chose Task 3.10 Option B (accept informational, no DB write) + improve audit display. Authored handoff brief. Small scope ~30 min Codex.
 - 2026-07-16 Claude: Task 3.5 closed (commit `c28319d`, reviewed). 4-bucket classifier + sub-classification for LOCKED_VIOLATION. 16 LOCKED_VIOLATION_REPLAY surfaced = E3 baseline lines also affected by BTP drift. Opened Task 3.10 (P1, user decision required: re-classify vs accept).
