@@ -31,7 +31,9 @@ describe("Drive backup deployment contract", () => {
     expect(appsScriptSource).toContain("Session.getActiveUser().getEmail()");
     expect(appsScriptSource).toContain("MailApp.sendEmail");
     expect(appsScriptSource).toContain("setTrashed(true)");
-    expect(appsScriptSource).toContain("RETENTION_COUNT = 30");
+    expect(appsScriptSource).toContain("DAILY_RETENTION_COUNT = 180");
+    expect(appsScriptSource).toContain("MONTHLY_RETENTION_COUNT = 24");
+    expect(appsScriptSource).toContain("fnbapp-monthly-");
     expect(appsScriptSource).toContain("nearMinute(30)");
     expect(appsScriptSource).toContain('inTimezone("Asia/Ho_Chi_Minh")');
   });
@@ -40,7 +42,10 @@ describe("Drive backup deployment contract", () => {
     expect(guide).toContain("Script Properties");
     expect(guide).toContain("GOOGLE_DRIVE_FOLDER_ID");
     expect(guide).toContain("BACKUP_PULL_TOKEN");
-    expect(policy).toMatch(/35.{0,3}40 MB/);
+    expect(policy).toMatch(/20 MB/);
+    expect(policy).toMatch(/25 MB/);
+    expect(policy).toMatch(/180/);
+    expect(policy).toMatch(/24/);
     expect(policy).toMatch(/R2|B2/);
   });
 });

@@ -34,8 +34,10 @@ Open **Project Settings → Script Properties** and add:
 2. Approve URL Fetch, Drive, and email permissions for the owner account.
 3. Confirm the execution succeeds.
 4. Confirm the folder contains `fnbapp-backup-YYYY-MM-DD.json`.
-5. Open the file and confirm `schemaVersion` is `1` and `tables` has exactly 27 keys.
-6. Run it again. Confirm only one non-trashed file exists for that date.
+5. Open the file and confirm `schemaVersion` is `2` and `tables` has exactly 32 keys.
+6. Confirm both the daily file and `fnbapp-monthly-YYYY-MM.json` exist.
+7. Run it again. Confirm only one non-trashed daily and monthly file exists for
+   the current periods.
 
 Failure alerts are sent with `MailApp` to
 `Session.getActiveUser().getEmail()`, which is the account that owns the
@@ -51,16 +53,15 @@ from the requested minute.
 ## 5. Verify the first scheduled run
 
 The next day, check **Executions** in Apps Script and confirm the dated file is
-present. The script keeps the newest 30 matching backup files and trashes older
-ones. Files unrelated to the `fnbapp-backup-YYYY-MM-DD.json` pattern are never
-touched.
+present. The script keeps 180 daily files and 24 monthly files, trashing older
+matching files. Unrelated files are never touched.
 
 ## Restore check
 
 Download a backup JSON and verify:
 
-- `schemaVersion === 1`;
-- all 27 table keys are present;
+- `schemaVersion === 2`;
+- all 32 table keys are present;
 - every table `count` equals `rows.length`;
 - the file size is plausible compared with the latest local dry-run.
 

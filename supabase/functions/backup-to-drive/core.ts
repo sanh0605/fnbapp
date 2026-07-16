@@ -26,15 +26,26 @@ export const BACKUP_TABLES = [
   "production_items",
   "pos_drafts",
   "users",
+  "sync_state",
+  "data_migration_runs",
+  "data_recovery_changes",
+  "audit_baseline_locks",
+  "backdated_ledger_events",
 ] as const;
 
 export const PAGE_SIZE = 1000;
+export const BACKUP_TABLE_ORDER_COLUMNS: Partial<Record<typeof BACKUP_TABLES[number], string>> = {
+  sync_state: "sync_key",
+  data_migration_runs: "migration_key",
+  data_recovery_changes: "run_id.asc,table_name.asc,row_id.asc,column_name",
+  audit_baseline_locks: "order_line_id",
+};
 
 export type JsonRow = Record<string, unknown>;
 
 export type BackupBundle = {
   capturedAt: string;
-  schemaVersion: 1;
+  schemaVersion: 2;
   tables: Record<string, { rows: JsonRow[]; count: number }>;
 };
 
@@ -58,11 +69,11 @@ export function buildBackupBundle(
     const rows = tableRows.get(table) || [];
     bundleTables[table] = { rows, count: rows.length };
   }
-  return { capturedAt, schemaVersion: 1, tables: bundleTables };
+  return { capturedAt, schemaVersion: 2, tables: bundleTables };
 }
 
 export function validateBackupBundle(bundle: BackupBundle): SnapshotSummary {
-  if (bundle.schemaVersion !== 1) {
+  if (bundle.schemaVersion !== 2) {
     throw new Error(`Unsupported backup schema version: ${bundle.schemaVersion}`);
   }
   const actualKeys = Object.keys(bundle.tables).sort();
@@ -103,7 +114,9 @@ export async function dumpTable(
   }
   const rows: JsonRow[] = [];
   for (let offset = 0; ; offset += PAGE_SIZE) {
-    const url = `${env.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${table}?select=*&order=id.asc&offset=${offset}&limit=${PAGE_SIZE}`;
+    const orderColumn = BACKUP_TABLE_ORDER_COLUMNS[table as typeof BACKUP_TABLES[number]] || "id";
+    const order = orderColumn.includes(".") ? orderColumn : `${orderColumn}.asc`;
+    const url = `${env.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${table}?select=*&order=${order}&offset=${offset}&limit=${PAGE_SIZE}`;
     const response = await fetchImpl(url, {
       headers: {
         apikey: env.SUPABASE_SERVICE_ROLE_KEY,

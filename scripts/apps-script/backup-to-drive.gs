@@ -5,9 +5,15 @@ const EXPECTED_TABLES = [
   "uom_conversions", "product_price_history", "orders_v2", "order_lines_v2",
   "order_events", "stock_ledger", "purchase_orders", "purchase_order_lines",
   "stock_adjustments", "production_orders", "production_items", "pos_drafts", "users",
+  "sync_state", "data_migration_runs", "data_recovery_changes",
+  "audit_baseline_locks", "backdated_ledger_events",
 ];
-const RETENTION_COUNT = 30;
-const BACKUP_PREFIX = "fnbapp-backup-";
+const DAILY_RETENTION_COUNT = 180;
+const MONTHLY_RETENTION_COUNT = 24;
+const DAILY_PREFIX = "fnbapp-backup-";
+const MONTHLY_PREFIX = "fnbapp-monthly-";
+const WARNING_BUNDLE_BYTES = 20 * 1024 * 1024;
+const MIGRATION_BUNDLE_BYTES = 25 * 1024 * 1024;
 const HANDLER_NAME = "runDailyDriveBackup";
 
 function runDailyDriveBackup() {
@@ -30,19 +36,21 @@ function runDailyDriveBackup() {
     const content = response.getContentText();
     const bundle = JSON.parse(content);
     validateBundle_(bundle);
-    const fileName = buildFileName_(bundle.capturedAt);
+    const dailyFileName = buildDailyFileName_(bundle.capturedAt);
+    const monthlyFileName = buildMonthlyFileName_(bundle.capturedAt);
     const folder = DriveApp.getFolderById(folderId);
-    const existing = collectFilesByName_(folder, fileName);
-
-    // Create first. Old same-day files are trashed only after the new file exists.
-    const created = folder.createFile(Utilities.newBlob(content, "application/json", fileName));
-    existing.forEach(file => file.setTrashed(true));
-    pruneBackups_(folder, created.getId());
+    const daily = createReplacement_(folder, content, dailyFileName);
+    const monthly = createReplacement_(folder, content, monthlyFileName);
+    pruneBackups_(folder, /^fnbapp-backup-\d{4}-\d{2}-\d{2}\.json$/, DAILY_RETENTION_COUNT);
+    pruneBackups_(folder, /^fnbapp-monthly-\d{4}-\d{2}\.json$/, MONTHLY_RETENTION_COUNT);
+    alertCapacity_(daily.getSize());
     console.log(JSON.stringify({
       success: true,
-      fileName,
-      fileId: created.getId(),
-      sizeBytes: created.getSize(),
+      dailyFileName,
+      dailyFileId: daily.getId(),
+      monthlyFileName,
+      monthlyFileId: monthly.getId(),
+      sizeBytes: daily.getSize(),
       tableCount: EXPECTED_TABLES.length,
     }));
   } catch (error) {
@@ -65,7 +73,7 @@ function installDailyTrigger() {
 }
 
 function validateBundle_(bundle) {
-  if (!bundle || bundle.schemaVersion !== 1 || !bundle.tables || !bundle.capturedAt) {
+  if (!bundle || bundle.schemaVersion !== 2 || !bundle.tables || !bundle.capturedAt) {
     throw new Error("Snapshot bundle header is invalid");
   }
   const actual = Object.keys(bundle.tables).sort();
@@ -83,9 +91,14 @@ function validateBundle_(bundle) {
   });
 }
 
-function buildFileName_(capturedAt) {
+function buildDailyFileName_(capturedAt) {
   const date = Utilities.formatDate(new Date(capturedAt), "Asia/Ho_Chi_Minh", "yyyy-MM-dd");
-  return `${BACKUP_PREFIX}${date}.json`;
+  return `${DAILY_PREFIX}${date}.json`;
+}
+
+function buildMonthlyFileName_(capturedAt) {
+  const month = Utilities.formatDate(new Date(capturedAt), "Asia/Ho_Chi_Minh", "yyyy-MM");
+  return `${MONTHLY_PREFIX}${month}.json`;
 }
 
 function collectFilesByName_(folder, fileName) {
@@ -95,18 +108,33 @@ function collectFilesByName_(folder, fileName) {
   return files;
 }
 
-function pruneBackups_(folder, currentFileId) {
+function createReplacement_(folder, content, fileName) {
+  const existing = collectFilesByName_(folder, fileName);
+  // Create first. Existing copies are trashed only after the replacement exists.
+  const created = folder.createFile(Utilities.newBlob(content, "application/json", fileName));
+  existing.forEach(file => file.setTrashed(true));
+  return created;
+}
+
+function pruneBackups_(folder, pattern, retentionCount) {
   const files = [];
   const iterator = folder.getFiles();
   while (iterator.hasNext()) {
     const file = iterator.next();
-    if (/^fnbapp-backup-\d{4}-\d{2}-\d{2}\.json$/.test(file.getName())) files.push(file);
+    if (pattern.test(file.getName())) files.push(file);
   }
   files.sort((left, right) => right.getName().localeCompare(left.getName())
     || right.getDateCreated().getTime() - left.getDateCreated().getTime());
-  files.slice(RETENTION_COUNT).forEach(file => {
-    if (file.getId() !== currentFileId) file.setTrashed(true);
-  });
+  files.slice(retentionCount).forEach(file => file.setTrashed(true));
+}
+
+function alertCapacity_(sizeBytes) {
+  if (sizeBytes < WARNING_BUNDLE_BYTES) return;
+  const threshold = sizeBytes >= MIGRATION_BUNDLE_BYTES ? "migration" : "warning";
+  const email = Session.getActiveUser().getEmail();
+  const message = `Backup bundle ${sizeBytes} bytes reached the ${threshold} threshold. Review R2/B2 migration policy.`;
+  console.warn(message);
+  if (email) MailApp.sendEmail(email, `[fnbapp] Backup capacity ${threshold}`, message);
 }
 
 function alertFailure_(error) {
