@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Antigravity) - UI-REMED-2 StickyFilterBar Redesign
+
+**Trigger:** Phase 1 UI audit flagged 73 StickyFilterBar usages. User decided to redesign the component rather than remove the pattern.
+
+### Completed Work
+- Redesigned `components/StickyFilterBar.tsx` to align with Fresh Blue design system tokens:
+  - Background: `bg-white/95` -> `bg-surface-card/95`
+  - Border: `border-gray-100` -> `border-border`
+  - Typography: Title updated to `text-text-primary text-2xl font-bold tracking-tight` (matching `PageHeader.tsx`), subtitle updated to `text-text-secondary text-sm mt-0.5`.
+  - Mobile button: Updated to use `text-text-primary bg-surface-secondary hover:bg-border border border-border rounded-button transition-colors` to match the secondary button variant styles and tokens.
+- Preserved 100% of the existing API signature, mobile expand/collapse state logic, and sticky positioning (`sticky -top-4 md:-top-8 z-40`).
+- Validated compile correctness via `tsc --noEmit` and production build via `npm run build`.
+
+### Verification
+- Production build exits 0.
+- `git diff --check` is clean.
+- Smoke tested on three representative clients: `OrderTable.tsx`, `ProductsClient.tsx`, and `ItemsClient.tsx` at both desktop (1280px) and mobile (375px).
+
+Commit: this commit.
+
+---
+
 ## 2026-07-16 (Codex) - Task 3.10 operational clean audit display
 
 **Trigger:** Task 3.5 correctly separated stored-cost integrity failures from

@@ -20,14 +20,14 @@ export default function StickyFilterBar({
   const hasMultipleChildren = childrenArray.length > 1;
 
   return (
-    <div className="sticky -top-4 md:-top-8 z-40 -mx-4 px-4 md:-mx-8 md:px-8 -mt-4 pt-4 md:-mt-8 md:pt-8 mb-6 pb-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+    <div className="sticky -top-4 md:-top-8 z-40 -mx-4 px-4 md:-mx-8 md:px-8 -mt-4 pt-4 md:-mt-8 md:pt-8 mb-6 pb-4 bg-surface-card/95 backdrop-blur-md border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto w-full flex flex-col gap-4">
         {/* Header Row */}
         {(title || subtitle) && (
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
             <div>
-              {title && <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">{title}</h1>}
-              {subtitle && <p className="text-gray-500 text-sm mt-1">{subtitle}</p>}
+              {title && <h1 className="text-2xl font-bold text-text-primary tracking-tight">{title}</h1>}
+              {subtitle && <p className="text-text-secondary text-sm mt-0.5">{subtitle}</p>}
             </div>
             {!title && rightContent && (
               <div className="hidden md:flex items-center gap-2">
@@ -47,7 +47,7 @@ export default function StickyFilterBar({
                   {hasMultipleChildren && (
                     <button 
                       onClick={() => setIsMobileExpanded(!isMobileExpanded)}
-                      className="md:hidden px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 border border-gray-200 shadow-sm whitespace-nowrap h-[38px] flex items-center gap-1 shrink-0"
+                      className="md:hidden px-3 py-2 text-sm font-medium text-text-primary bg-surface-secondary rounded-button hover:bg-border border border-border shadow-sm whitespace-nowrap h-[38px] flex items-center gap-1 shrink-0 transition-colors"
                     >
                       <svg className={`w-4 h-4 transition-transform ${isMobileExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                       {isMobileExpanded ? 'Thu gọn' : 'Lọc thêm'}
