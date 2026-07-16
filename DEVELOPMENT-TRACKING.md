@@ -4,6 +4,128 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Claude) - Stabilization Phase 2 closed, Phase 3 next
+
+**Trigger:** Codex completed Phase 2 production verification (3 commits: `98557ed`, `0fb8f9d`, `9dddc4a`) and requested ownership scope update for backup architecture.
+
+### Phase 2 verdict: APPROVED
+
+- 3 commits clean, add-only (13→26 files across 3 commits).
+- Production deployed: Edge Function live at `https://zicuawpwyhmtqmzawvau.supabase.co/functions/v1/backup-to-drive`.
+- Apps Script verified: manual `runDailyDriveBackup` ran successfully, file xuất hiện trong Drive folder `11yPMeq5RdjVSAVE0z0W-bg3PUs3N8hEQ`.
+- Token issue resolved (mismatch → fixed → 401 gone).
+- schemaVersion 2 with 32 tables (added `sync_state`, `data_migration_runs`, `data_recovery_changes`, `audit_baseline_locks`, `backdated_ledger_events`).
+- Drive folder layout: `daily/fnbapp-backup-YYYY-MM-DD.json` (180 retention) + `monthly/fnbapp-monthly-YYYY-MM.json` (indefinite).
+- Migration threshold updated: 20MB warning + 25MB migrate (lower than original 35-40MB plan, more conservative).
+- Tests: 385/385 full + 10/10 contract tests.
+- No pg_cron/pg_net migration (per Plan B pull-model architecture).
+
+### Architecture enhancements vs original plan
+
+| Aspect | Original plan | Codex implementation |
+|---|---|---|
+| Tables | 27 | 32 (added audit + migration tables) |
+| Daily retention | 30 days | 180 days |
+| Monthly retention | None | Indefinite (1 file cuối tháng) |
+| Folder layout | Flat | daily/ + monthly/ subfolders |
+| Migration threshold | 35-40MB | 20MB warning + 25MB migrate |
+| Legacy file handling | None | Auto-move to appropriate child folder |
+
+### Ownership update
+
+Per Codex request + Claude approval, added "Backup Files" subsection to `docs/COLLABORATION.md` Section C. Codex owns:
+- `supabase/functions/backup-to-drive/**`
+- `scripts/apps-script/backup-to-drive.gs`
+- `lib/drive-backup*.ts` + tests
+- `docs/operations/apps-script-drive-backup.md`
+- Backup schema decisions (allowlist, schemaVersion, retention)
+- Drive folder layout + idempotency + capacity monitoring
+- `BACKUP_PULL_TOKEN` rotation runbook
+- Restore planning/verification
+- Future Drive → R2/B2 migration
+
+Claude retains: final architecture/policy approval, protocol ownership. Production restore still requires reviewed dry-run/apply plan.
+
+### Actions
+
+- `docs/COLLABORATION.md`: Section C extended with Backup Files subsection. Change Log updated.
+- `docs/COMPLETED.md`: Phase 2 entry added under 2026-07-16.
+- `docs/ROADMAP.md`: Phase 2 removed from P1; Phase 3 (push 70+ commits) added as new P1.
+- This entry: chronicle log updated.
+
+### Next
+
+Phase 3 — push 70+ local commits to `origin/main`. Per plan:
+1. `npm run build` gate (Vercel auto-deploys on push, no CI).
+2. Commit dirty docs (DEVELOPMENT-TRACKING.md, COLLABORATION.md, COMPLETED.md, ROADMAP.md).
+3. Commit handoff MDs (4 files).
+4. Update `.gitignore` (debug scripts + .agents/ + skills-lock.json).
+5. `git push origin main` fast-forward.
+6. Verify Vercel deploy + smoke 3 routes.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only until Phase 3 explicitly executed.
+
+---
+
+## 2026-07-16 (Claude) - Task 3.9 + Phase 1 closed, Phase 2 next
+
+**Trigger:** Codex completed Task 3.9 lock apply (commit `09bf26a`) and Antigravity completed Stabilization Phase 1 UI audit (commit `cdc8d56`). Both paused at review gate.
+
+### Task 3.9 verdict: APPROVED
+
+- Commit scope: 6 files / +958 / 0 deletions (add-only).
+- 395 → 436 total locks (170 E3 + 225 Task 3.7 + 41 Task 3.9).
+- 41/41 cohort match, 41/41 cost unchanged, trigger blocks, idempotent rerun `ALREADY_APPLIED`.
+- Tests: 375/375 (was 365 + 10 new planner tests).
+- Pattern: pure planner + tests cloned from Task 3.7.
+- **MAC drift audit fully clean** — 0 unexplained mismatches.
+
+### Phase 1 UI audit verdict: APPROVED with noise note
+
+- Commit scope: detection script + report MD, zero source edits (REPORT ONLY).
+- 1279 issues: 1105 TOKEN-SWAP / 73 REMOVE-STICKYBAR / 54 REPLACE-ALERT / 37 ADD-ERROR-BOUNDARY / 10 ADD-LOADING.
+- **Noise flag**: duplicate detections on same line (regex matches both import and usage). ~5-10% noise. Acceptable for report-only; dedup is post-push if needed.
+- Drives 4 post-push remediation backlog items: UI-REMED-1 (TOKEN-SWAP), UI-REMED-2 (REMOVE-STICKYBAR, expanded from UI-CONSISTENCY-1), UI-REMED-3 (REPLACE-ALERT), UI-REMED-4 (ADD-BOUNDARY).
+
+### Macro state
+
+- MAC drift audit: 436 locks, 0 unexplained mismatches. Saga E3 → Task 3.9 officially complete.
+- Frontend: 1279 known inconsistencies documented, remediation is post-push.
+- Stabilization phase status: Phase 1 done, Phase 2 next, Phase 3 final.
+
+### Next
+
+Phase 2 (Google Drive daily backup) — Codex scope. Blocked on user creating Drive folder + sharing SA email. After Phase 2 commit + Claude review, Phase 3 (push).
+
+### Actions
+
+- `docs/COMPLETED.md`: Task 3.9 + Phase 1 entries added under 2026-07-16.
+- `docs/ROADMAP.md`: Task 3.9 removed from P1; Phase 2 (Drive backup) added as new P1; 4 UI-REMED backlog items added to P2; H1 push entry retained.
+- Change log updated.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
+
+---
+
+## 2026-07-16 (Antigravity) - Stabilization Phase 1 (UI Consistency Audit)
+
+**Trigger:** Stabilization phase 1 requested by Claude.
+
+### Completed Work
+- Added scripts/audit-ui-consistency.ts for regex-based reporting.
+- Ran the script which generated docs/audits/ui-consistency-2026-07-16.md with 1279 findings.
+- Code remains REPORT ONLY. No source modifications were made.
+- Wait for Claude to review.
+
+Commit: cdc8d56
+
+---
+---
+
 ## 2026-07-16 (Codex) - Phase 2 backup scope and retention expanded
 
 **Trigger:** Owner approved six-month daily retention and questioned whether
@@ -168,6 +290,53 @@ operator walkthrough or forward-drift task is opened by this phase.
 
 ---
 
+## 2026-07-16 (Claude) - Task 3.7 final review approved, P1 cleared
+
+**Trigger:** Codex completed Task 3.7 production lock apply (commit `d2177ca`), stopped at final review gate per protocol.
+
+### Review verdict: APPROVED
+
+- Commit scope: 7 files / +1,113 / 0 deletions (add-only, no risk to existing code).
+- Arithmetic corrected in policy + result docs: 170 baseline locks (40 E3-recovered included) + 225 drift cohort = **395 total**.
+- Cohort: 225/225 exact match with approved source hash `a24f0d1fba13f1c73e853055ada598b3227b94ed7e788720a6e3948fc8c48c2e`.
+- Cost integrity: 225/225 `cost_at_sale` values unchanged (no recompute).
+- Trigger probe: sample no-op UPDATE blocked with `audit-baseline locked`.
+- Idempotent rerun: `ALREADY_APPLIED`, 0 rows inserted, 0 validation failures.
+- Tests: 363/363 (was 353 + 10 new planner tests).
+- TypeScript: 0 errors. Diff check clean.
+- Pure planner + CLI apply pattern matches E3 design — testable, atomic, idempotent.
+
+### Policy state
+
+- `docs/audits/2026-07-16-btp-recipe-replay-drift-policy.md`: active. Documents temporal asymmetry root cause, financial impact (none), cohort lock approach, revisit triggers.
+- `docs/audits/2026-07-16-task-3.7-lock-result.md`: apply record with before/after/dry-run/atomic/idempotent sections.
+
+### Actions
+
+- `docs/COMPLETED.md`: Task 3.7 entry added under new 2026-07-16 section.
+- `docs/ROADMAP.md`: Task 3.7 removed from P1; P1 cleared. Pending prompts updated (Task 3.7 → historical). Change log updated.
+
+### Macro state: MAC drift audit
+
+After E3 + Task 3.4 + Task 3.6 + Task 3.7:
+- 170 baseline locks (E3 cohort): 40 recovered + 130 intentionally retained.
+- 225 drift cohort locks (Task 3.7): replay-only drift, financial-neutral.
+- **Total: 395 locked lines.**
+- **Remaining unexplained live mismatches: 41 BACKDATED_LEDGER_LIKE** (Task 3.2 admin UI review path, awaiting operator walk-through).
+
+### Remaining work
+
+- **Task 3.2 review path**: 41 BACKDATED_LEDGER_LIKE outside-cohort lines (-43,809 VND). Need operator walk-through via admin UI at `/admin/audit/backdated-ledger`. No code change.
+- **Task 3.5 (P3)**: baseline audit cohort-aware — deprioritized per H3 finding (frozen snapshot, not filter bug).
+- **V1**: first real operator backdate verify — wait for operator PO backdate event.
+- **H1**: push 65+ local commits when user confirms batch stable.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
+
+---
+
 ## 2026-07-16 (Codex) - Task 3.7 BTP recipe replay drift cohort locked
 
 **Trigger:** User selected Option B (accept + lock), then Claude approved the
@@ -219,6 +388,86 @@ after the read-only dry-run passed.
   were not modified.
 
 Commit: this commit.
+
+---
+
+## 2026-07-16 (Claude) - Task 3.7 decision made (Option B), handoff ready
+
+**Trigger:** User reviewed Task 3.6 findings and chose Option B (accept + lock) for forward-drift remediation.
+
+### Decision rationale (from user)
+
+- Drift is replay-only artifact, financial reports use stored COGS → no financial impact.
+- Recipe edits are infrequent in single-shop operation (BTP-002 changed once in 6 months).
+- Engine/schema fix (Option A) is overkill for current scale.
+- Process-only (Option C) too passive — no protection against silent drift accumulation.
+
+### Deliverables
+
+- `docs/audits/2026-07-16-btp-recipe-replay-drift-policy.md`: policy doc explaining temporal asymmetry, financial impact (none), cohort lock approach, revisit triggers.
+- `docs/handoffs/2026-07-16-codex-task-3.7-btp-drift-lock.md`: handoff brief for Codex to execute 225-line cohort lock.
+
+### Cohort composition (225 lines)
+
+| Source | Bucket | Lines | Delta |
+|---|---|---:|---:|
+| Task 3.4 outside-cohort | PRE_BASELINE_WINDOW | 90 | -107,225 VND |
+| Task 3.4 outside-cohort | BASELINE_SELECTION_GAP | 22 | -25,662 VND |
+| Task 3.6 post-cutoff frozen | POST_CUTOFF_NEW_DRIFT | 71 | -67,221 VND |
+| Task 3.6 newer lines | LATE_PO_RECEIPT (durable) | 42 | +6,809 VND |
+| **Total** | | **225** | **-193,299 VND** |
+
+### Explicitly excluded from lock
+
+- 41 BACKDATED_LEDGER_LIKE (Task 3.2 admin UI review path).
+- 130 already-locked E3 cohort lines.
+- 40 already-reconciled PURCHASE_COST_RECOVERY lines.
+
+### Next
+
+Codex pickup Task 3.7. Same model tier (`gpt-5.6-sol` High — production write requires careful reasoning). Stop-and-ping triggers defined for: missing line IDs, cost_at_sale mismatch, ID overlap with existing locks, partial insert failure.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
+
+---
+
+## 2026-07-15 (Claude) - Task 3.6 closed, Task 3.7 remediation decision opened
+
+**Trigger:** Codex completed Task 3.6 forward-drift investigation (commit `d32d4d4`), stopped at review gate per protocol.
+
+### Review verdict: APPROVED
+
+- Commit scope: 4 files / +12,570 / 0 deletions (add-only, no risk to existing code).
+- Classification: 113/113 lines explained (71 frozen + 42 newer).
+- Root cause identified: temporal asymmetry between write-time and replay-time recipe selection. Order line pins top-level recipe but BTP shortfall decomposition uses CURRENT nested BTP recipe at replay.
+- MAC formula bug hypothesis (mine) rejected: POS vs audit formula 0/113 difference. Both use same `buildLineConsumptionRows` + `computeMacCost*` path.
+- tuyen2612 concentration dismissed: 97.18% drift vs 97.93% all July orders base rate.
+- 42 newer lines classified as durable late PO receipts (migration 0014 captured). Expected backdating behavior.
+- 7 ambiguous-recipe lines honestly documented: schema lacks `Recipes.recorded_at`, cannot distinguish backdated insert from stale application view.
+
+### Key business insight
+
+Stored COGS correct at sale time. Drift is replay-only artifact. P&L and financial reports use stored COGS → unaffected. Audit script will keep showing drift on every future BTP recipe edit.
+
+### Actions
+
+- `docs/COMPLETED.md`: Task 3.6 entry added.
+- `docs/ROADMAP.md`: Task 3.6 removed from P1; Task 3.7 (remediation decision) added as new P1.
+- Change log updated.
+
+### Decision required from user (Task 3.7)
+
+Three remediation paths:
+
+A) **Engine/schema fix**: pin nested BTP recipe snapshot in `Order_Lines_V2`. Migration + engine changes. ~3-5 Codex sessions. Eliminates future drift.
+B) **Accept + lock**: lock 113 forward-drift + 112 historical lines in `audit_baseline_locks` as audit drift. Document policy. ~1 Claude session. Drift continues on future recipe edits.
+C) **Process only**: document that BTP recipe edits cause replay drift. No code change. ~30 min. Operators informally aware.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
 
 ---
 
@@ -274,6 +523,42 @@ Commit: this commit.
 
 ---
 
+## 2026-07-15 (Claude) - Task 3.4 closed, Task 3.6 forward-drift opened
+
+**Trigger:** Codex completed Task 3.4 investigation (commit `fea097d`), stopped at review gate per protocol.
+
+### Review verdict: APPROVED
+
+- Commit scope: 4 files / +14,036 / 0 deletions (add-only, no risk to existing code).
+- Classification arithmetic: 41+90+22+71 = 224; deltas sum to -243,917 VND.
+- Risk flag from prior review resolved: 95 raw backdated fingerprints split honestly into 41 causal exposures (Task 3.2 review path) + 54 legacy migration correlations (folded into PRE_BASELINE_WINDOW). Final PRE_BASELINE_WINDOW count 90 (was 36 in first pass).
+- Sign semantics correct in report (over-stored, not under-stored).
+- Locked replay shift (+120,716 → +102,621 VND) documented.
+- Read-only contract explicit (`database_mutation_methods_used: []`).
+
+### Key forward-drift evidence
+
+- 71 post-cutoff lines (2026-07-03 → 2026-07-14) all BTP_SHORTFALL.
+- During verification, 42 new outside lines appeared → live audit advanced 354 → 396 mismatches.
+- Concentration: PROD-006 = 126/224 (56%), BTP-002 = 183/224 (81%).
+
+### Actions
+
+- `docs/COMPLETED.md`: Task 3.4 entry added under 2026-07-15.
+- `docs/ROADMAP.md`: Task 3.4 removed from P1; Task 3.6 (forward-drift investigation) added as new P1. Two backlog items added: 41 BACKDATED_LEDGER_LIKE review path + 112 historical drift acceptance decision.
+- `docs/handoffs/2026-07-15-codex-task-3.6-forward-drift-investigation.md`: new handoff brief authored.
+- Pending prompts list updated; change log updated.
+
+### Next
+
+Codex pickup Task 3.6. Same model tier (`gpt-5.6-sol` High). Stop-and-ping triggers defined for: single-line delta >10K VND, engine bug in MAC write path, locked cohort affected, workflow concentration >50%.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
+
+---
+
 ## 2026-07-15 (Codex) - Task 3.4 outside-cohort MAC drift investigation
 
 **Trigger:** E3 isolated 224 live MAC mismatches outside the fixed 170-line
@@ -321,6 +606,73 @@ performed. Wait for Claude review before opening the forward BTP-shortfall
 drift task. No push per collaboration protocol.
 
 Commit: this commit.
+
+---
+
+## 2026-07-15 (Claude) - Task 3.4 read-only handoff brief authored
+
+**Trigger:** E3 review closed P0. Next P1 item (Task 3.4) was blocked on "Claude prioritization and a read-only handoff". Wrote the brief to unblock Codex pickup.
+
+### Deliverable
+
+- `docs/handoffs/2026-07-15-codex-task-3.4-outside-cohort-investigation.md`
+
+### Scope framed for Codex
+
+- Population: 224 lines outside the locked baseline cohort (153 pre-cutoff + 71 post-cutoff, date range 2026-04-20 to 2026-07-14).
+- Implied outside-cohort delta: ~-262,013 VND (opposite sign from locked cohort +120,716 VND; total live drift -141,297 VND).
+- Read-only contract: no DB writes, no migration, no engine changes, no `--apply`, no push.
+- Classification target: every line in exactly one of `PURCHASE_COST_RECOVERY_LIKE` / `BACKDATED_LEDGER_LIKE` / `UNRESOLVED_WRITE_TIME_PROVENANCE` / `POST_CUTOFF_NEW_DRIFT` / `PRE_BASELINE_WINDOW` / `BASELINE_SELECTION_GAP`. Per-bucket totals must reconcile to 224.
+- 7 hypotheses to test (H1-H7): post-cutoff backdating, post-cutoff engine drift, baseline scope gap, pre-baseline window lines, sign asymmetry, BTP shortfall recurrence, edit-order side effects.
+- Stop-and-ping triggers: any single-line delta >10,000 VND mapped to PURCHASE_COST_RECOVERY_LIKE, any active forward-looking drift mechanism, any audit-script misclassification bug.
+
+### Actions
+
+- `docs/handoffs/`: new brief created.
+- `docs/ROADMAP.md`: Task 3.4 marked `[~X]`, blocked-by cleared, added to Pending prompts list, change log updated.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
+
+---
+
+## 2026-07-15 (Claude) - E3 final review closed, P0 cleared
+
+**Trigger:** User requested "continue next task" — ROADMAP listed E3 as `[x]` but with caveat "Awaiting final Claude review only". Reviewing before opening Task 3.4 handoff.
+
+### Verification reviewed
+
+- Six cohort gates: all pass
+  - Recovered lines not matching reviewed expected value: 0/40
+  - Non-recovered locked lines changed: 0/130
+  - Recovery audit rows for run: 40
+  - Trigger probe: blocked with "audit-baseline locked" message
+  - Cohort drift: -933 VND → 0 VND (+933 VND effect)
+  - Live mismatch population isolated from locked cohort: 130 locked / 224 outside
+- Atomicity: single RPC transaction, run_id `task-3-recovery-2026-07-13-081930193Z`, source SHA-256 `cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3`, snapshot manifest SHA-256 `a6f2ec13b3d1cd0238c3d12549baab929e5d14a46cb926de8f576fc183d74cf0`.
+- Scope discipline: only the 40 PURCHASE_COST_RECOVERY lines touched. The 34 BACKDATED_LEDGER and 96 UNRESOLVED_WRITE_TIME_PROVENANCE cohorts remain locked with their original stored COGS.
+- Migration `0012_mac_drift_baseline_locks.sql`: RLS enabled, advisory locks (run-level + per-line), expected-old-value checks, idempotent re-run support, security-definer RPC restricted to service_role.
+- Rollback procedure documented in `docs/audits/2026-07-13-task-3-recovery-result.md` (snapshot-verify → dedicated atomic RPC → re-run all six gates). No ad-hoc row updates.
+
+### Actions
+
+- `docs/COMPLETED.md`: added E3 entry under new 2026-07-15 section.
+- `docs/ROADMAP.md`: P0 cleared (E3 removed, replaced with "(none)" placeholder). Change log updated.
+- This entry: chronicle log updated, newest-first position.
+
+### Findings carried forward to Task 3.4
+
+The live replay now reports 354 total mismatches / -141,297 VND delta:
+- 130 inside the locked cohort (intentionally non-recovered)
+- 224 outside the locked cohort — split as 153 on/before 2026-07-02 and 71 after
+- Outside-cohort date range: 2026-04-20 through 2026-07-14
+
+Task 3.4 (read-only handoff next) will scope the 224-line investigation.
+
+### No push
+
+Per collaboration protocol, all commits remain local-only.
 
 ---
 

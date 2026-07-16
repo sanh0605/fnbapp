@@ -60,6 +60,20 @@ Codex owns these. If another agent touches them, Codex review is required.
 - `app/admin/orders/actions.ts` transaction/order-mutation paths only.
 - `app/pos/actions.ts` transaction paths only.
 
+### Backup Files
+
+Codex owns the backup architecture and its future maintenance (added 2026-07-16 per Stabilization Phase 2 close). Claude retains final architecture/policy approval. Any production restore or production data write still requires explicit reviewed dry-run/apply plan.
+
+- `supabase/functions/backup-to-drive/**` (Edge Function snapshot endpoint)
+- `scripts/apps-script/backup-to-drive.gs` (Apps Script pull-model script)
+- `lib/drive-backup*.ts` and `lib/drive-backup*.test.ts` (contract/handler/integration tests)
+- `docs/operations/apps-script-drive-backup.md` (owner setup runbook)
+- Backup schema decisions: table allowlist, `schemaVersion` bumps, retention policy (daily/monthly split, counts)
+- Drive folder layout, idempotency, capacity monitoring
+- `BACKUP_PULL_TOKEN` rotation runbook
+- Backup completeness audits and restore planning/verification
+- Future Drive → R2/B2 migration when bundle reaches 25 MB threshold (or runtime > 90 sec, or Apps Script unreliability)
+
 ### UI Files
 
 Antigravity owns these. Claude review is required before commit when the change is user-facing.
@@ -182,6 +196,44 @@ Single model `GLM 5.1[1m]`. Used for coordination, review, planning, surgical fi
 - For long sessions (1+ hour), prefer mid-tier to conserve token budget.
 - Codex `/model` and Antigravity `/model` commands show available tiers per project plan.
 
+## H. Handoff Message Format
+
+Khi Claude giao task cho Codex/Antigravity, output cho user copy-paste phải:
+
+1. **1 dòng directive tiếng Việt, nói như người** — trong quotes, reference file handoff bằng backtick path. User copy nguyên câu quotes dán vào chat của agent.
+   - ĐÚNG: `"Đọc và triển khai Task 3.4 theo \`docs/handoffs/2026-07-15-codex-task-3.4-outside-cohort-investigation.md\`, commit rồi chờ Claude review"`
+   - SAI: "Pickup Task 3.4 — investigate 224 outside-cohort MAC mismatches (read-only)."
+   - Tránh "Pickup", "execute", "process this task" — bureaucratic, không phải lời nói.
+   - Không dùng `cat` command — agent tự mở file khi đọc.
+2. **Model recommendation** — 1 dòng riêng bên dưới, kèm lý do ngắn, reference Section G.
+
+### Template
+
+```
+Paste cho [Agent]:
+"<câu directive tiếng Việt> theo `docs/handoffs/<file>.md`, commit rồi chờ Claude review"
+
+Model: `<model>` `<reasoning>` — <lý do ngắn> (Section G).
+```
+
+### Ví dụ cụ thể
+
+**Cho Codex (engine):**
+```
+Paste cho Codex:
+"Đọc và triển khai Task 3.4 theo `docs/handoffs/2026-07-15-codex-task-3.4-outside-cohort-investigation.md`, commit rồi chờ Claude review"
+
+Model: `gpt-5.6-sol` High — drift root cause investigation (Section G).
+```
+
+**Cho Antigravity (UI):**
+```
+Paste cho Antigravity:
+"Đọc và triển khai UI-XX theo `docs/handoffs/2026-07-XX-antigravity-...md`, commit rồi chờ Claude review"
+
+Model: `Gemini 3.5 Flash (Medium)` — single component form update (Section G).
+```
+
 
 
 - COGS valuation: MAC, pinned into `Order_Lines_V2.cost_at_sale`.
@@ -189,6 +241,48 @@ Single model `GLM 5.1[1m]`. Used for coordination, review, planning, surgical fi
 - FIFO: audit/debug only, not the primary P&L contract.
 - P&L MAC breakdown refactor: implemented by Codex in commits `a63f0b1` and `4bf795c`.
 - P&L consistency audit: `scripts/audit-pnl-mac-consistency.ts`.
+
+## I. Communication Style with Business Owner
+
+**The user is the business owner, not a system builder.** All agents (Claude, Codex, Antigravity) must apply this rule to every chat response, paste message, and user-facing artifact.
+
+### Rules
+
+1. **Plain Vietnamese by default.** No high-level tech jargon unless user asks deeper.
+   - ĐÚNG: "Backup chạy mỗi ngày 02:30, file lưu 30 ngày rồi tự xóa."
+   - SAI: "pg_cron schedule triggers Apps Script pull-model endpoint with 30-day rolling retention."
+
+2. **Explain when asked, not before.** Don't preempt with technical detail unless user requests depth. If user asks "why?" or "explain deeper", THEN use technical terms freely, but always define on first use.
+
+3. **Translate tech issues to business impact.** When a technical issue blocks work, frame in business terms:
+   - ĐÚNG: "Backup hiện lỗi vì Google chặn kiểu kết nối đó — cần đổi cách. Có 3 lựa chọn với đánh đổi X/Y/Z."
+   - SAI: "403 storageQuotaExceeded — SA has no quota in My Drive, need OAuth delegation or Workspace."
+
+4. **Decisions belong to user.** Agents recommend options with tradeoffs; user picks. Don't decide unilaterally. Don't push one option without surfacing alternatives.
+
+5. **Code in English, communication in Vietnamese.** Per existing protocol — code/comments English, user-facing text Vietnamese. Apply same to chat with user.
+
+6. **Audit docs and policy docs**: English for technical detail (audience = future devs/agents). Add plain Vietnamese summary at top if user will read directly.
+
+### Why
+
+User has explicitly stated they are the business owner, not a developer. They make business decisions based on agent recommendations. Tech jargon creates barrier to decision-making. Plain language = better decisions, fewer miscommunications, faster sessions.
+
+### How to apply
+
+| Output type | Language | Style |
+|---|---|---|
+| Chat response to user | Vietnamese | Plain, business framing |
+| Paste message for agent | Vietnamese | Plain directive (Pattern A per Section H) |
+| Commit message | English | Per existing protocol |
+| Code + comments | English | Per existing protocol |
+| Audit / investigation report | English | Technical, for devs/agents |
+| Policy doc user reads | Vietnamese summary + English detail | Plain top, technical bottom |
+| Tracking entries | Mixed OK | English facts, Vietnamese context |
+
+### Drift trigger
+
+If user asks "what does X mean?" more than once in a session, or says "anh nghĩ cần trao đổi trực tiếp với [agent]", communication style is drifting technical. Reset to plain language + offer to bridge user to the right agent for deep technical (per Section C risk-boundary ownership).
 
 ## Quick Links
 
@@ -200,6 +294,8 @@ Single model `GLM 5.1[1m]`. Used for coordination, review, planning, surgical fi
 
 ## Change Log
 
+- 2026-07-16 Codex+Claude: Stabilization Phase 2 closed. Added "Backup Files" subsection to Section C — Codex owns backup architecture (`supabase/functions/backup-to-drive/**`, `scripts/apps-script/backup-to-drive.gs`, `lib/drive-backup*.ts`, retention/schema decisions, restore planning, R2/B2 migration trigger). Claude retains final architecture/policy approval + protocol ownership. Any production restore still requires reviewed dry-run/apply plan.
+- 2026-07-16 Claude: added Section I "Communication Style with Business Owner" per explicit user directive. User is business owner, not a developer — all agents must use plain Vietnamese, no high-level tech jargon by default. Applies to chat responses, paste messages, policy docs read by user.
 - 2026-07-13 Claude: added Section G "Model Selection per Task Type" with Codex/Antigravity/Claude matrix. Updated agent lineup with available model tiers.
 - 2026-07-10 Claude: consolidated to single ROADMAP.md + COMPLETED.md. Removed per-agent roadmaps.
 - 2026-06-26 Codex: rewrote protocol for 3-agent coordination and risk-boundary ownership.

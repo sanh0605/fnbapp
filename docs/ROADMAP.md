@@ -39,19 +39,23 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| [x] **E3. Task 3 selective recovery** | Codex | Engine/data recovery | 2026-07-13 | Complete: 170 locks retained, exact 40-line recovery applied atomically, -933 VND COGS correction, six cohort gates passed. Awaiting final Claude review only. |
+| (none) | — | — | — | E3 closed 2026-07-15 (Claude reviewed). See `COMPLETED.md`. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [ ] **Task 3.4. Investigate 224 outside-cohort MAC mismatches** | Codex | Read-only engine/data investigation | Split 153 historical and 71 post-cutoff lines; classify provenance and determine whether any recovery is justified. | Claude prioritization and a read-only handoff |
+| [ ] **Stabilization Phase 3. Push 70+ local commits** | Claude | git | `docs/superpowers/plans/2026-07-16-stabilization-phase.md` Phase 3 section. Build gate (`npm run build` clean), commit dirty docs + handoffs, update `.gitignore`, `git push origin main` fast-forward, Vercel smoke + Supabase fn check. | (unblocked — Phase 1 + 2 closed) |
 
-### P2 — Backlog (medium impact)
+### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **H1. Push local commits** | Claude | git | 16+ commits this session, all local. Push when user confirms batch is stable. |
+| **UI-REMED-1. TOKEN-SWAP migration** | Antigravity | 1105 raw Tailwind color occurrences → design tokens | Phase 1 audit found 1105 instances. Mechanical but volume. Multi-session. Gemini 3.5 Flash Medium. |
+| **UI-REMED-2. REMOVE-STICKYBAR** | Antigravity | 73 StickyFilterBar usages removal | UI-CONSISTENCY-1 expanded. 16 client files. ~1 session. Gemini 3.5 Flash Medium. |
+| **UI-REMED-3. REPLACE-ALERT** | Antigravity | 54 native alert/confirm → custom modal/toast | 12 source files. Need generic Modal/Toast component first (not in components/ui/). ~2 sessions. Gemini 3.1 Pro Low. |
+| **UI-REMED-4. ADD-BOUNDARY** | Antigravity | 37 error.tsx + 10 loading.tsx missing | Add to each route segment. ~1 session. Gemini 3.5 Flash Medium. |
+| **H1. Push local commits** | Claude | git | 70+ commits local (after Phase 2 + Phase 3). Push per Stabilization Phase 3 plan. |
 
 ### P3 — Depends on verification
 
@@ -59,6 +63,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 |---|---|---|
 | **V1. First real operator backdate verify** | Claude | Wait for operator to backdate PO (frequency: weekly per user interview). Walk through UI: list → detail → approve → verify drift = 0. |
 | [ ] **Task 3.5. Make MAC baseline audit cohort-aware** | Codex | Fix `scripts/audit-mac-drift-baseline.ts` to verify an explicit locked/source-hash cohort and avoid overwriting the reviewed baseline artifact; decide separately whether a new baseline extension is needed. |
+| [ ] **UI-CONSISTENCY-1. Remove sticky filter bar pattern** | Antigravity | 15+ admin pages currently use sticky filter bar (ModifiersClient, OrderTable, ProductsClient, etc.). User decision 2026-07-16: pattern causes UI inconsistency + degrades UX. Scope: remove existing sticky positioning, ensure new pages don't add it. Mechanical removal + visual QA. ~1 session. |
 
 ### Blocked — needs decision or unblock
 
@@ -77,7 +82,12 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-09-codex-modifier-recipe-hardening.md` → E1 (Task 1)
+- `2026-07-16-codex-task-3.9-historical-gap-lock.md` → Task 3.9 (P1, ready for Codex)
+- `2026-07-16-codex-task-3.8-backdated-events-surface.md` → Task 3.8 — historical reference, work complete (commit `ad7f7ba`)
+- `2026-07-16-codex-task-3.7-btp-drift-lock.md` → Task 3.7 — historical reference, work complete (commit `d2177ca`)
+- `2026-07-15-codex-task-3.6-forward-drift-investigation.md` → Task 3.6 — historical reference, work complete (commit `d32d4d4`)
+- `2026-07-15-codex-task-3.4-outside-cohort-investigation.md` → Task 3.4 — historical reference, work complete (commit `fea097d`)
+- `2026-07-09-codex-modifier-recipe-hardening.md` → E1 (Task 1) — historical reference, work complete
 - All other prompts in `docs/handoffs/` reference completed work — see `COMPLETED.md` for outcomes
 
 ## Quick links
@@ -91,5 +101,15 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-16 Claude: Stabilization Phase 2 closed (commits `98557ed` + `0fb8f9d` + `9dddc4a`, reviewed). Production verified: Apps Script pull-model, 32 tables, daily+monthly retention, file xuất hiện trong Drive. Backup ownership added to COLLABORATION.md Section C (Codex owns backup architecture). P1 cleared → opened Stabilization Phase 3 (push 70+ commits) as new P1.
+- 2026-07-16 Claude: Task 3.9 closed (commit `09bf26a`, reviewed). MAC drift audit fully clean (436 locks). Phase 1 UI audit closed (commit `cdc8d56`, reviewed). 1279 issues → 4 post-push remediation backlog items (UI-REMED-1 to 4). P1 cleared → opened Stabilization Phase 2 (Drive backup) as new P1.
+- 2026-07-16 Claude: Task 3.8 closed (commit `ad7f7ba`, reviewed). 41 lines map to 5 historical ledger rows, 0 durable events (migration 0014 gap). User chose Option A (accept as drift). Authored Task 3.9 handoff brief for lock cohort.
+- 2026-07-16 Claude: User chose walk-through approach A (Codex surface first). Authored Task 3.8 handoff brief for read-only investigation: map 41 BACKDATED_LEDGER_LIKE line IDs to `backdated_ledger_events` + status breakdown. Old P2 "Task 3.2 review path" row removed (subsumed by Task 3.8 in P1).
+- 2026-07-16 Claude: Task 3.7 final review approved (commit `d2177ca`). 170 → 395 locks, 225/225 cost unchanged, idempotent rerun `ALREADY_APPLIED`. Moved to `COMPLETED.md`; P1 cleared. MAC drift audit clean except 41 BACKDATED_LEDGER_LIKE (Task 3.2 path).
+- 2026-07-16 Claude: User chose Option B (accept + lock). Authored policy doc `docs/audits/2026-07-16-btp-recipe-replay-drift-policy.md` and handoff brief `docs/handoffs/2026-07-16-codex-task-3.7-btp-drift-lock.md`. Task 3.7 marked `[~X]`, ready for Codex pickup.
+- 2026-07-15 Claude: Task 3.6 closed (commit `d32d4d4`, Claude reviewed). Root cause: nested BTP recipe snapshot not pinned in audit replay; stored COGS correct at sale time. Opened Task 3.7 as P1 decision task (user picks remediation path A/B/C).
+- 2026-07-15 Claude: Task 3.4 closed (commit `fea097d`, Claude reviewed). Moved to `COMPLETED.md`. Opened Task 3.6 forward-drift investigation as new P1. Added 2 backlog items: 41 BACKDATED_LEDGER_LIKE review path, 112 historical drift acceptance decision.
+- 2026-07-15 Claude: authored Task 3.4 read-only handoff brief (`docs/handoffs/2026-07-15-codex-task-3.4-outside-cohort-investigation.md`). P1 ready for Codex pickup. Marked `[~X]` in priority queue.
+- 2026-07-15 Claude: E3 final review complete. Six cohort gates pass, audit trail intact (snapshot/source/run IDs), rollback procedure documented. E3 moved to `COMPLETED.md`; P0 cleared.
 - 2026-07-13 Codex: closed E3 after atomic 40-line recovery and added Task 3.4/3.5 follow-ups.
 - 2026-07-10 Claude: created as single source of truth. Superseded `docs/handoffs/2026-07-09-codex-roadmap.md` and `docs/handoffs/2026-07-06-antigravity-roadmap.md` (both deleted).
