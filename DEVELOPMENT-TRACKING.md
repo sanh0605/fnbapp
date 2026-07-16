@@ -4,6 +4,47 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Codex) - Stabilization Phase 2 Apps Script pull backup implemented
+
+**Trigger:** Service-account Drive upload was blocked by consumer-Gmail storage
+quota. The owner approved an Apps Script pull architecture before continuing
+Phase 2.
+
+### Implementation
+
+- Refactored `backup-to-drive` into a POST-only snapshot Edge Function. It
+  requires a dedicated `BACKUP_PULL_TOKEN`, uses the new-format Supabase secret
+  key when available, and returns a schema-versioned full snapshot of 27
+  allowlisted tables with `Cache-Control: no-store`.
+- Added a portable handler with constant-time exact-token comparison. Missing or
+  incorrect tokens return 401 before any database read.
+- Added owner-account Apps Script code for Drive write, exact 27-key/count
+  validation, create-before-replace same-day idempotency, 30-backup retention,
+  MailApp failure alerting, and a daily trigger around 02:30
+  `Asia/Ho_Chi_Minh`.
+- Added owner setup/runbook and a policy migration threshold: move to
+  Cloudflare R2 or Backblaze B2 at 35-40 MB or earlier operational triggers.
+- Removed the proposed `0017_drive_backup_cron.sql`; Apps Script owns scheduling
+  and no production database migration is part of this architecture.
+
+### Verification
+
+- Local read-only snapshot: 27/27 tables, 13,680 rows, 7,649,649 bytes; no
+  Drive or database writes.
+- Targeted backup tests: 10/10 pass, including unauthorized requests not
+  invoking the snapshot builder.
+- Full Vitest: 385/385 pass across 63 files.
+- TypeScript: 0 errors. `git diff --check`: clean.
+
+### Deployment state
+
+- Implementation commit only. Edge Function, `BACKUP_PULL_TOKEN`, Apps Script
+  authorization, owner trigger, and first Drive file remain pending Claude
+  review and an explicit production deployment step.
+- Commit: this commit. No push.
+
+---
+
 ## 2026-07-16 (Codex) - Task 3.9 historical backdated gap cohort locked
 
 **Trigger:** Task 3.8 confirmed that 41 `BACKDATED_LEDGER_LIKE` lines had five
