@@ -60,7 +60,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~A] **UI-REMED-3 Session 2. Bulk migrate 52 native alert/confirm call sites** | Antigravity | UI: mechanical migration across 18 source files | `docs/handoffs/2026-07-17-antigravity-ui-remed-3-session-2.md` (Claude authored 2026-07-17). Migrate remaining ~52 `alert()` / `confirm()` calls across 18 files to `lib/dialog` imperative API. Pattern: `alert("X")` → `await alert({ message: "X", variant: "..." })`. Make containing functions async. Visual verify critical flows at 375px + 1280px. ~1 session. | (unblocked — Session 1 API proven) |
+| (none) | — | — | — | UI-REMED-3 saga complete 2026-07-17 (Sessions 1+2). Next UI-REMED-4 ADD-BOUNDARY in P2. |
 
 ### P3 — Depends on verification
 
@@ -110,6 +110,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-17 Claude: UI-REMED-3 Session 2 closed (commit `2f91b3f`, reviewed). All 52 native alert/confirm migrated to Dialog API. Independent grep confirms 0 remaining. UI-REMED-3 saga complete (Sessions 1+2). P1 cleared.
 - 2026-07-17 Claude: UI-REMED-3 Session 1 closed (commit `dd51dae`, reviewed). Dialog API + components + proof-of-concept migration done. Opened Session 2 (bulk migrate 53 call sites across 18 files) as new P1.
 - 2026-07-17 Claude: UI-REMED-3 split into 2 sessions. Authored Session 1 handoff (Dialog primitive + lib/dialog imperative API + DialogHost + proof-of-concept migration). Session 2 (bulk migration 53 call sites) deferred to next handoff.
 - 2026-07-16 Claude: UI-REMED-2 closed (commit `6b65aba`, reviewed). StickyFilterBar redesigned with design tokens, API + sticky + mobile expand preserved. 16 clients auto-inherit. P1 cleared → next UI-REMED-3 REPLACE-ALERT.
