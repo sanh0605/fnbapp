@@ -52,6 +52,157 @@ export type MacDriftRecoveryPlan = {
   changes: MacDriftRecoveryChange[];
 };
 
+export const MAC_DRIFT_AUDIT_CATEGORIES = [
+  "LOCKED_MATCHED",
+  "LOCKED_VIOLATION",
+  "KNOWN_NOT_LOCKED",
+  "NEW_INVESTIGATION_NEEDED",
+] as const;
+
+export type MacDriftAuditCategory = typeof MAC_DRIFT_AUDIT_CATEGORIES[number];
+
+export const LOCKED_VIOLATION_SUBCATEGORIES = [
+  "LOCKED_VIOLATION_STORED",
+  "LOCKED_VIOLATION_REPLAY",
+] as const;
+
+export type LockedViolationSubcategory =
+  typeof LOCKED_VIOLATION_SUBCATEGORIES[number];
+
+export type MacDriftBaselineLock = {
+  order_line_id: string;
+  reason: string;
+  source_hash: string | null;
+  stored_cost_at_sale: number | null;
+  expected_cost_at_sale: number | null;
+};
+
+export type KnownMacDriftCohortArtifact = {
+  path: string;
+  sourceHash: string;
+  lineIds: ReadonlySet<string>;
+};
+
+export type ClassifiedMacDriftLine = MacCogsLineMismatch & {
+  audit_category: MacDriftAuditCategory;
+  lock_reason?: string;
+  lock_source_hash?: string | null;
+  locked_stored_cost_at_sale?: number | null;
+  locked_expected_cost_at_sale?: number | null;
+  locked_violation_subcategory?: LockedViolationSubcategory;
+  violation_fields?: string[];
+  known_artifact_path?: string;
+  known_artifact_source_hash?: string;
+};
+
+export type ClassifiedMacDriftReport = {
+  summary: Record<MacDriftAuditCategory, number>;
+  lockedViolationSummary: Record<LockedViolationSubcategory, number>;
+  cohortBreakdown: Array<{ cohort: string; count: number; delta: number }>;
+  lines: ClassifiedMacDriftLine[];
+};
+
+export const FROZEN_MAC_DRIFT_BASELINE_PATH =
+  "docs/audits/2026-07-09-mac-drift-baseline-lines.json";
+
+export function classifyMacDriftMismatches(input: {
+  mismatches: MacCogsLineMismatch[];
+  locks: MacDriftBaselineLock[];
+  knownCohortArtifacts: KnownMacDriftCohortArtifact[];
+}): ClassifiedMacDriftReport {
+  const lockByLineId = new Map(input.locks.map(lock => [lock.order_line_id, lock]));
+  const summary = Object.fromEntries(
+    MAC_DRIFT_AUDIT_CATEGORIES.map(category => [category, 0]),
+  ) as Record<MacDriftAuditCategory, number>;
+  const lockedViolationSummary = Object.fromEntries(
+    LOCKED_VIOLATION_SUBCATEGORIES.map(category => [category, 0]),
+  ) as Record<LockedViolationSubcategory, number>;
+
+  const lines = input.mismatches.map(line => {
+    const lock = lockByLineId.get(line.line_id);
+    let classified: ClassifiedMacDriftLine;
+
+    if (lock) {
+      const violationFields: string[] = [];
+      if (line.stored_cost !== lock.stored_cost_at_sale) {
+        violationFields.push("stored_cost_at_sale");
+      }
+      if (line.expected_cost !== lock.expected_cost_at_sale) {
+        violationFields.push("expected_cost_at_sale");
+      }
+      const auditCategory: MacDriftAuditCategory = violationFields.length === 0
+        ? "LOCKED_MATCHED"
+        : "LOCKED_VIOLATION";
+      const violationSubcategory: LockedViolationSubcategory | undefined =
+        violationFields.includes("stored_cost_at_sale")
+          ? "LOCKED_VIOLATION_STORED"
+          : violationFields.length > 0
+            ? "LOCKED_VIOLATION_REPLAY"
+            : undefined;
+      classified = {
+        ...line,
+        audit_category: auditCategory,
+        lock_reason: lock.reason,
+        lock_source_hash: lock.source_hash,
+        locked_stored_cost_at_sale: lock.stored_cost_at_sale,
+        locked_expected_cost_at_sale: lock.expected_cost_at_sale,
+        ...(violationSubcategory
+          ? { locked_violation_subcategory: violationSubcategory }
+          : {}),
+        ...(violationFields.length > 0 ? { violation_fields: violationFields } : {}),
+      };
+    } else {
+      const artifact = input.knownCohortArtifacts.find(candidate =>
+        candidate.lineIds.has(line.line_id),
+      );
+      classified = artifact
+        ? {
+            ...line,
+            audit_category: "KNOWN_NOT_LOCKED",
+            known_artifact_path: artifact.path,
+            known_artifact_source_hash: artifact.sourceHash,
+          }
+        : { ...line, audit_category: "NEW_INVESTIGATION_NEEDED" };
+    }
+
+    summary[classified.audit_category] += 1;
+    if (classified.locked_violation_subcategory) {
+      lockedViolationSummary[classified.locked_violation_subcategory] += 1;
+    }
+    return classified;
+  });
+
+  const cohortMap = new Map<string, { count: number; delta: number }>();
+  for (const line of lines) {
+    if (line.audit_category !== "LOCKED_MATCHED" || !line.lock_reason) continue;
+    const current = cohortMap.get(line.lock_reason) || { count: 0, delta: 0 };
+    current.count += 1;
+    current.delta += line.delta;
+    cohortMap.set(line.lock_reason, current);
+  }
+
+  return {
+    summary,
+    lockedViolationSummary,
+    cohortBreakdown: Array.from(cohortMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([cohort, value]) => ({ cohort, ...value })),
+    lines,
+  };
+}
+
+export function buildMacDriftAuditOutputPath(
+  now: Date,
+  outputPath?: string,
+): string {
+  const path = outputPath ||
+    `docs/audits/${now.toISOString().slice(0, 10)}-mac-drift-baseline-audit.json`;
+  if (normalizePath(path) === normalizePath(FROZEN_MAC_DRIFT_BASELINE_PATH)) {
+    throw new Error(`Refusing to overwrite frozen baseline artifact: ${path}`);
+  }
+  return path;
+}
+
 export function buildMacDriftBaselineReport(input: {
   drift: MacCogsDriftAuditReport;
   orders: MacDriftOrder[];
@@ -149,4 +300,8 @@ function dateKey(value: string): string {
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function normalizePath(value: string): string {
+  return value.replace(/\\/g, "/").toLowerCase();
 }

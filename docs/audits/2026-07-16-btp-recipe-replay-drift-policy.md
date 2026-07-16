@@ -79,6 +79,12 @@ When the kitchen changes a BTP recipe:
 4. **Lock**: insert new cohort into `audit_baseline_locks` with reason `BTP_RECIPE_REPLAY_DRIFT` and source hash.
 5. **Do not** recompute stored COGS.
 
+The operator entry point is
+`scripts/audit-mac-drift-baseline.ts`. Its cohort-aware report separates stored
+COGS integrity failures (`LOCKED_VIOLATION_STORED`) from expected-value replay
+evolution (`LOCKED_VIOLATION_REPLAY`) and isolates lines with no reviewed
+evidence as `NEW_INVESTIGATION_NEEDED`.
+
 ### What would change this policy
 
 This policy would be revisited if any of the following becomes true:

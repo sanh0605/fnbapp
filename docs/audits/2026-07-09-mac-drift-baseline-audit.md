@@ -232,11 +232,36 @@ baseline cohort. See
 The recovery was prepared in commits `996b09d`, `da525d3`, and `02bfc3c`;
 the final verification and documentation are in the Task E3 closing commit.
 
+## Cohort-aware operator audit (Task 3.5, 2026-07-16)
+
+`scripts/audit-mac-drift-baseline.ts` now treats this document and
+`2026-07-09-mac-drift-baseline-lines.json` as frozen evidence. Before reading
+live data it verifies the approved artifact SHA-256, and its output is written
+to `docs/audits/<YYYY-MM-DD>-mac-drift-baseline-audit.json`. A same-day rerun
+replaces only that day's operational report; it never rewrites the frozen
+170-line source.
+
+Each live mismatch is assigned to exactly one operator bucket:
+
+- `LOCKED_MATCHED`: stored and replay values still equal their locked values.
+- `LOCKED_VIOLATION`: at least one locked value changed. This splits into
+  `LOCKED_VIOLATION_STORED`, a critical stored-COGS integrity incident, and
+  `LOCKED_VIOLATION_REPLAY`, an informational replay shift with stored COGS
+  intact.
+- `KNOWN_NOT_LOCKED`: the line appears in a reviewed Task 3.4, 3.6, or 3.8
+  artifact but has no database lock.
+- `NEW_INVESTIGATION_NEEDED`: the line has neither a lock nor reviewed artifact
+  evidence.
+
+The first cohort-aware run found 396 live mismatches: 380 `LOCKED_MATCHED`, 16
+`LOCKED_VIOLATION_REPLAY`, zero stored violations, zero known-but-unlocked
+lines, and zero new investigation lines. All 16 replay shifts retain the exact
+locked stored COGS; they are E3-baseline lines exhibiting the known BTP recipe
+replay pattern. Task 3.10 owns their policy decision and any future re-locking.
+
 ### Audit-tool follow-up
 
-`scripts/audit-mac-drift-baseline.ts` currently recomputes the entire live
-population and rewrites the fixed baseline artifact. It is therefore not a
-cohort-aware post-recovery verifier. Task 3.4 tracks investigation of the 224
-live mismatches outside the locked cohort. Task 3.5 separately tracks making
-the baseline audit cohort-aware and preventing accidental replacement of the
-reviewed source artifact. Neither follow-up is part of E3.
+The former script behavior recomputed the entire live population and rewrote
+the fixed baseline artifact. Task 3.5 replaced that behavior with the
+cohort-aware, frozen-artifact-safe workflow above. Task 3.4 remains the source
+investigation for the original 224 outside-cohort mismatches.

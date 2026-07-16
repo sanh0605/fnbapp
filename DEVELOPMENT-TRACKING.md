@@ -4,6 +4,40 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Codex) - Task 3.5 cohort-aware MAC drift audit
+
+**Trigger:** The legacy live audit overwrote the frozen 170-line baseline and
+reported one flat mismatch population without lock context.
+
+### Result
+
+- Added four exclusive operator buckets: `LOCKED_MATCHED`,
+  `LOCKED_VIOLATION`, `KNOWN_NOT_LOCKED`, and `NEW_INVESTIGATION_NEEDED`.
+- Split locked violations into critical `LOCKED_VIOLATION_STORED` and
+  informational `LOCKED_VIOLATION_REPLAY` subcategories.
+- Protected the frozen baseline with an approved SHA-256 assertion and explicit
+  output-path refusal; new reports use a date-stamped operational artifact.
+- First read-only live run: 396 mismatches = 380 locked matched + 16 locked
+  replay violations + 0 known-not-locked + 0 new investigation. Stored
+  violations are zero, so security integrity is clean.
+- The 16 replay shifts are E3-baseline lines matching the known BTP recipe drift
+  pattern. Task 3.10 owns their policy/re-lock decision; Task 3.5 performs no DB
+  writes.
+
+### Verification
+
+- Frozen artifact SHA-256 remains
+  `cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3`.
+- Classification reconciles 396/396 lines and all 436 lock references exist.
+- Targeted classifier tests: 5/5 pass. Full suite: 388/388 pass; TypeScript: 0
+  errors; `git diff --check`: clean.
+
+### Review state
+
+Local commit only. Awaiting Claude review before Task 3.10 is opened.
+
+---
+
 ## 2026-07-16 (Claude) - Stabilization Phase 2 closed, Phase 3 next
 
 **Trigger:** Codex completed Phase 2 production verification (3 commits: `98557ed`, `0fb8f9d`, `9dddc4a`) and requested ownership scope update for backup architecture.
