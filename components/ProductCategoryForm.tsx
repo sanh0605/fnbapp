@@ -56,7 +56,7 @@ export default function ProductCategoryForm({ initialData }: any) {
         </button>
       ) : (
         <div className="flex justify-end gap-3">
-          <button type="button" onClick={() => setIsOpen(true)} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+          <button type="button" onClick={() => setIsOpen(true)} className="text-sm font-medium text-primary hover:text-indigo-800">
             Sửa
           </button>
           <button type="button" onClick={() => setIsDeleteOpen(true)} className="text-sm font-medium text-red-600 hover:text-red-800">

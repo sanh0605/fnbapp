@@ -79,7 +79,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
         </button>
       ) : (
         <div className="flex gap-2">
-          <button onClick={() => setIsOpen(true)} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">Sửa</button>
+          <button onClick={() => setIsOpen(true)} className="text-sm font-medium text-primary hover:text-indigo-800">Sửa</button>
           <button onClick={handleDelete} className="text-sm font-medium text-red-600 hover:text-red-800">Xoá</button>
         </div>
       )}
@@ -123,7 +123,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
                 <div className="border border-border rounded-lg p-4 bg-page/50">
                   <div className="flex justify-between items-center mb-3">
                     <label className="text-sm font-bold text-text-primary">Định mức trừ kho (Cho Topping)</label>
-                    <button type="button" onClick={addIngredient} className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded hover:bg-indigo-100">+ Thêm nguyên liệu</button>
+                    <button type="button" onClick={addIngredient} className="text-xs font-bold text-primary bg-primary-soft px-2 py-1 rounded hover:bg-primary-soft">+ Thêm nguyên liệu</button>
                   </div>
                   
                   {ingredients.length === 0 ? (

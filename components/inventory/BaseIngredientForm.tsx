@@ -76,7 +76,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
   return (
     <>
       {isEdit ? (
-        <button onClick={() => setIsOpen(true)} className="text-blue-500 hover:text-blue-700 text-sm font-medium">
+        <button onClick={() => setIsOpen(true)} className="text-primary hover:text-primary text-sm font-medium">
           Sửa
         </button>
       ) : (

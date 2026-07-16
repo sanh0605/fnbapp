@@ -17,7 +17,7 @@ interface DiscountBadgeProps {
 
 const KIND_CLASSES: Record<DiscountKind, { wrapper: string; dot: string; text: string }> = {
   promo: {
-    wrapper: "bg-cyan-500/10 border-cyan-500/20",
+    wrapper: "bg-primary/10 border-primary/20",
     dot: "bg-cyan-400 animate-pulse",
     text: "text-cyan-400",
   },

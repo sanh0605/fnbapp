@@ -120,7 +120,7 @@ export function CartPanel({
         isCartOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
-      <div className="h-14 bg-indigo-600 flex items-center justify-between px-4 shrink-0 text-white">
+      <div className="h-14 bg-primary flex items-center justify-between px-4 shrink-0 text-white">
         <h2 className="font-bold text-lg flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -168,8 +168,8 @@ export function CartPanel({
             <div className="h-full flex flex-col justify-between">
               <div className="bg-surface-card border border-border/60 rounded-2xl p-4 shadow-sm space-y-4 animate-pulse">
                 <div className="flex items-center gap-3 pb-3 border-b border-border">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <svg className="animate-spin h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center">
+                    <svg className="animate-spin h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path
                         className="opacity-75"
@@ -211,7 +211,7 @@ export function CartPanel({
                   </div>
                   <div className="flex justify-between text-xs text-text-secondary">
                     <span>Hình thức:</span>
-                    <span className="font-bold text-indigo-600">{processingOrder.methodLabel}</span>
+                    <span className="font-bold text-primary">{processingOrder.methodLabel}</span>
                   </div>
                   <div className="flex justify-between text-sm font-extrabold text-text-primary pt-1">
                     <span>Tổng tiền:</span>
@@ -292,12 +292,12 @@ export function CartPanel({
                   onChange={(e) => {
                     setPromoCodeInput(e.target.value);
                   }}
-                  className="flex-1 px-3 py-1.5 border border-border rounded-lg text-sm focus:outline-none focus:border-indigo-500 uppercase font-medium animate-fade-in"
+                  className="flex-1 px-3 py-1.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary uppercase font-medium animate-fade-in"
                 />
                 <button
                   type="button"
                   onClick={handleApplyPromoCode}
-                  className="px-4 py-1.5 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-lg hover:bg-indigo-100 transition active:scale-95 shrink-0"
+                  className="px-4 py-1.5 bg-primary-soft text-primary font-bold text-xs rounded-lg hover:bg-primary-soft transition active:scale-95 shrink-0"
                 >
                   Áp dụng
                 </button>
@@ -342,7 +342,7 @@ export function CartPanel({
                       }}
                       className={`px-3 py-1.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "VND"
-                          ? "bg-indigo-500 text-white"
+                          ? "bg-primary text-white"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
                       }`}
                     >
@@ -355,7 +355,7 @@ export function CartPanel({
                       }}
                       className={`px-3 py-1.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "PERCENT"
-                          ? "bg-indigo-500 text-white"
+                          ? "bg-primary text-white"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
                       }`}
                     >
@@ -371,7 +371,7 @@ export function CartPanel({
                       const val = e.target.value === "" ? null : Number(e.target.value);
                       setUserCustomDiscount(val);
                     }}
-                    className="flex-1 w-full px-3 py-1.5 border border-border rounded-lg focus:outline-none focus:border-indigo-500 text-right font-medium text-sm h-9"
+                    className="flex-1 w-full px-3 py-1.5 border border-border rounded-lg focus:outline-none focus:border-primary text-right font-medium text-sm h-9"
                   />
                   {userCustomDiscount !== null && (
                     <button
@@ -457,7 +457,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Chuyen khoan")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-blue-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
+                className="flex-1 bg-primary text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-primary-hover active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>

@@ -203,7 +203,7 @@ export default function PromotionsClient({
                       🎟️ {promo.code}
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-3 py-1 rounded-xl font-bold text-xs mb-4">
+                    <div className="inline-flex items-center gap-1.5 bg-primary-soft text-primary px-3 py-1 rounded-xl font-bold text-xs mb-4">
                       ⚡ Tự động áp dụng
                     </div>
                   )}

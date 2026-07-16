@@ -63,7 +63,7 @@ export default function ToppingsManager({ products }: ToppingsManagerProps) {
                             aria-label={`Bật/tắt bán độc lập cho ${product.name}`}
                           >
                             <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              isActive ? 'bg-blue-600' : 'bg-border'
+                              isActive ? 'bg-primary' : 'bg-border'
                             }`}>
                               <span
                                 className={`inline-block h-4 w-4 transform rounded-full bg-surface-card transition-transform ${
@@ -112,7 +112,7 @@ export default function ToppingsManager({ products }: ToppingsManagerProps) {
                       aria-label={`Bật/tắt bán độc lập cho ${product.name}`}
                     >
                       <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        isActive ? 'bg-blue-600' : 'bg-border'
+                        isActive ? 'bg-primary' : 'bg-border'
                       }`}>
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-surface-card transition-transform ${

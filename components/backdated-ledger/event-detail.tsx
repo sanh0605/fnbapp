@@ -125,13 +125,13 @@ export function EventDetail({ event, plan }: EventDetailProps) {
         <div className="flex gap-4">
           <button
             onClick={() => setShowApplyModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium text-sm hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-primary text-white rounded-md font-medium text-sm hover:bg-primary-hover transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring"
           >
             Duyệt + Tính lại COGS
           </button>
           <button
             onClick={() => setShowRejectModal(true)}
-            className="px-4 py-2 bg-surface-card text-text-primary border border-border rounded-md font-medium text-sm hover:bg-page transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-surface-card text-text-primary border border-border rounded-md font-medium text-sm hover:bg-page transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring"
           >
             Từ chối
           </button>

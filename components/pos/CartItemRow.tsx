@@ -92,10 +92,10 @@ export function CartItemRow({
           onClick={() => currentProduct && openProductModal(currentProduct, idx)}
         >
           <div>
-            <h4 className="font-bold text-text-primary leading-tight hover:text-indigo-600 transition-colors">
+            <h4 className="font-bold text-text-primary leading-tight hover:text-primary transition-colors">
               {item.product_name} ✏️
             </h4>
-            <p className="text-xs font-semibold text-indigo-600 mt-0.5">Size {item.size_name}</p>
+            <p className="text-xs font-semibold text-primary mt-0.5">Size {item.size_name}</p>
           </div>
           <div className="text-right">
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (

@@ -61,7 +61,7 @@ export default function ChangePasswordPage() {
       <div className="max-w-md mx-auto bg-surface-card rounded-xl shadow-lg p-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-text-primary">Đổi mật khẩu</h1>
-          <Link href="/pos" className="text-blue-600 hover:underline text-sm">
+          <Link href="/pos" className="text-primary hover:underline text-sm">
             Về trang POS
           </Link>
         </div>
@@ -87,7 +87,7 @@ export default function ChangePasswordPage() {
               id={`${formId}-oldPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary outline-none"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
             />
@@ -101,7 +101,7 @@ export default function ChangePasswordPage() {
               id={`${formId}-newPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary outline-none"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
@@ -115,7 +115,7 @@ export default function ChangePasswordPage() {
               id={`${formId}-confirmPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary outline-none"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -124,7 +124,7 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors flex justify-center items-center disabled:bg-blue-400 mt-2"
+            className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-hover transition-colors flex justify-center items-center disabled:bg-blue-400 mt-2"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

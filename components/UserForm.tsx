@@ -27,7 +27,7 @@ export function UserForm() {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+        className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition"
       >
         + Thêm Nhân Sự
       </button>
@@ -47,7 +47,7 @@ export function UserForm() {
                   type="text" 
                   name="username" 
                   required 
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary" 
                   placeholder="VD: nhanvien01"
                 />
               </div>
@@ -57,7 +57,7 @@ export function UserForm() {
                   type="password" 
                   name="password" 
                   required 
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary" 
                 />
               </div>
               <div>
@@ -65,7 +65,7 @@ export function UserForm() {
                 <select 
                   name="role" 
                   required 
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500"
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary"
                 >
                   <option value="STAFF">Staff (Bán hàng)</option>
                   <option value="MANAGER">Manager (Quản lý)</option>
@@ -84,7 +84,7 @@ export function UserForm() {
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-blue-400"
                 >
                   {loading ? "Đang lưu..." : "Lưu Nhân Sự"}
                 </button>

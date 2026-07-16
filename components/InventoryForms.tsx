@@ -40,7 +40,7 @@ export function ActionGroup({
     <>
       <div className="flex items-center justify-end gap-3">
         {onEdit && (
-          <button onClick={onEdit} className="text-blue-500 hover:text-blue-700 text-sm font-medium">
+          <button onClick={onEdit} className="text-primary hover:text-primary text-sm font-medium">
             Sửa
           </button>
         )}

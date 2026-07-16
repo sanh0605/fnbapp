@@ -15,7 +15,7 @@ interface LoadingButtonProps {
 }
 
 const variantStyles: Record<string, string> = {
-  primary: "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400",
+  primary: "bg-primary text-white hover:bg-primary-hover disabled:bg-blue-400",
   danger: "bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400",
   secondary: "bg-surface-secondary text-text-primary hover:bg-border disabled:bg-surface-secondary",
 };
@@ -37,7 +37,7 @@ export function LoadingButton({
       onClick={onClick}
       form={form}
       disabled={loading || disabled}
-      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none ${variantStyles[variant]} ${className}`}
+      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none ${variantStyles[variant]} ${className}`}
     >
       {loading ? loadingText : children}
     </button>

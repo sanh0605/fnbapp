@@ -74,7 +74,7 @@ export default function LoginPage() {
               type="text"
               required
               spellCheck={false}
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none transition-colors"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Tên đăng nhập…"
@@ -91,7 +91,7 @@ export default function LoginPage() {
               ref={passwordInputRef}
               type="password"
               required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none transition-colors"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Mật khẩu…"
@@ -102,7 +102,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none transition-colors flex justify-center items-center disabled:bg-blue-400"
+            className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none transition-colors flex justify-center items-center disabled:bg-blue-400"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

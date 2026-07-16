@@ -60,7 +60,7 @@ export function ConversionForm({
   return (
     <>
       {isEdit ? (
-        <button onClick={() => setIsOpen(true)} className="text-blue-500 hover:text-blue-700 text-sm font-medium">
+        <button onClick={() => setIsOpen(true)} className="text-primary hover:text-primary text-sm font-medium">
           Sửa
         </button>
       ) : (
@@ -134,20 +134,20 @@ export function ConversionForm({
                         className="w-full border border-border rounded-lg px-3 py-2 bg-page text-text-secondary"
                       />
                     </div>
-                    <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
+                    <div className="text-sm text-primary bg-primary-soft p-2 rounded">
                       💡 1 [Đơn vị mua] = [Hệ số] {baseUnitName}
                     </div>
                   </>
                 )}
 
                 {isEdit && (
-                  <label className="flex items-center gap-2 mt-4 text-sm text-indigo-800 bg-indigo-50 p-3 rounded-lg border border-indigo-100 cursor-pointer">
+                  <label className="flex items-center gap-2 mt-4 text-sm text-indigo-800 bg-primary-soft p-3 rounded-lg border border-indigo-100 cursor-pointer">
                     <input
                       type="checkbox"
                       name="update_history"
                       value="true"
                       defaultChecked
-                      className="w-4 h-4 text-indigo-600 rounded border-indigo-300 focus:ring-indigo-500"
+                      className="w-4 h-4 text-primary rounded border-indigo-300 focus:ring-focus-ring"
                     />
                     <span className="font-medium">
                       Đồng bộ thay đổi đơn vị cho toàn bộ Phiếu Nhập Kho cũ (Khuyên dùng)

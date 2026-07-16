@@ -257,7 +257,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             type="text"
             value={supplierInvoiceCode}
             onChange={(e) => setSupplierInvoiceCode(e.target.value)}
-            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 text-sm"
+            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring text-sm"
             placeholder="VD: INV-20231201"
           />
         </div>
@@ -268,7 +268,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Ghi chú thêm..."
-            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"
           />
         </div>
       </div>
@@ -405,7 +405,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={shippingFee || ''}
                    onChange={(e) => setShippingFee(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-focus-ring"
                    placeholder="0"
                  />
              </div>
@@ -415,7 +415,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={taxAmount || ''}
                    onChange={(e) => setTaxAmount(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500"
+                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-focus-ring"
                    placeholder="0"
                  />
              </div>

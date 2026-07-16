@@ -53,14 +53,14 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
       {!isEdit ? (
         <button 
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition shadow-sm"
+          className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm"
         >
           + Thêm Nhà Cung Cấp
         </button>
       ) : (
         <button 
           onClick={() => setIsOpen(true)}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+          className="text-primary hover:text-blue-800 font-medium text-sm"
         >
           Sửa
         </button>
@@ -83,7 +83,7 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                   required 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   placeholder="VD: Cty Cà phê Việt"
                 />
               </div>
@@ -95,7 +95,7 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                     type="tel" 
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                    className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   />
                 </div>
                 <div>
@@ -105,7 +105,7 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                     type="text" 
                     value={taxId}
                     onChange={(e) => setTaxId(e.target.value)}
-                    className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                    className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   />
                 </div>
               </div>
@@ -116,7 +116,7 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                   type="text" 
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
                 />
               </div>
               <div>
@@ -126,7 +126,7 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                   value={links}
                   onChange={(e) => setLinks(e.target.value)}
                   rows={2}
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
                   placeholder="Link đặt hàng, ghi chú..."
                 />
               </div>
@@ -142,7 +142,7 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 font-medium transition-colors shadow-sm"
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-blue-400 font-medium transition-colors shadow-sm"
                 >
                   {loading ? "Đang lưu..." : "Lưu Thông Tin"}
                 </button>
@@ -219,7 +219,7 @@ export function SupplierModal({
               required 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
               placeholder="VD: Cty Cà phê Việt"
             />
           </div>
@@ -231,7 +231,7 @@ export function SupplierModal({
                 type="tel" 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
               />
             </div>
             <div>
@@ -241,7 +241,7 @@ export function SupplierModal({
                 type="text" 
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
               />
             </div>
           </div>
@@ -252,7 +252,7 @@ export function SupplierModal({
               type="text" 
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
             />
           </div>
           <div>
@@ -262,7 +262,7 @@ export function SupplierModal({
               value={links}
               onChange={(e) => setLinks(e.target.value)}
               rows={2}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
               placeholder="Link đặt hàng, ghi chú..."
             />
           </div>
@@ -278,7 +278,7 @@ export function SupplierModal({
             <button 
               type="submit" 
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 font-medium transition-colors shadow-sm"
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-blue-400 font-medium transition-colors shadow-sm"
             >
               {loading ? "Đang lưu..." : "Lưu Thông Tin"}
             </button>

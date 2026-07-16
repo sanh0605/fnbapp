@@ -63,7 +63,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
                             <br/>
                             Đến: {formatDate(entry.endAt || "")}
                           </div>
-                          <div className="font-bold text-indigo-700 text-base">
+                          <div className="font-bold text-primary text-base">
                             {formatNumber(entry.newPrice)}
                           </div>
                           {entry.isCurrent && (
@@ -103,7 +103,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
                               {r.ingredients.map((ing:any, iIdx:number) => (
                                 <li key={iIdx} className="text-sm flex justify-between border-b border-border/60 pb-1.5 last:border-0 last:pb-0">
                                   <span className="font-medium text-text-primary">{ing.name}</span>
-                                  <span className="font-bold text-indigo-600">{ing.quantity} {ing.unitName}</span>
+                                  <span className="font-bold text-primary">{ing.quantity} {ing.unitName}</span>
                                 </li>
                               ))}
                             </ul>

@@ -50,7 +50,7 @@ export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) 
 
             return (
               <tr key={line.line_id} className="hover:bg-page">
-                <td className="px-4 py-3 text-blue-600 hover:underline">
+                <td className="px-4 py-3 text-primary hover:underline">
                   <Link href={`/admin/orders/${line.order_id}`}>
                     {line.order_no}
                   </Link>

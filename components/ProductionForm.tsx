@@ -190,7 +190,7 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
                               <div className="flex flex-col">
                                 <span className="text-sm font-medium text-text-primary">{ing.name}</span>
                                 {ing.is_non_inventory && (
-                                  <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-sm mt-1 w-fit">
+                                  <span className="text-[10px] bg-primary-soft text-primary px-1.5 py-0.5 rounded-sm mt-1 w-fit">
                                     Không trừ kho
                                   </span>
                                 )}

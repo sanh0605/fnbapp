@@ -40,7 +40,7 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
     <div className="xl:col-span-1 bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col h-full">
       <div className="p-5 border-b border-border bg-page/50 flex justify-between items-center">
         <h3 className="font-bold text-text-primary">{title}</h3>
-        <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded">
+        <span className="text-xs font-medium bg-primary-soft text-primary px-2 py-1 rounded">
           Tổng: {totalQtyAll.toLocaleString("vi-VN")}
         </span>
       </div>

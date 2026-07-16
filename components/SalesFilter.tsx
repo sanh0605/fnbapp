@@ -142,7 +142,7 @@ function SalesFilterInner({
         <CustomDatePicker
           selected={startDate}
           onChange={(date: Date | null) => setStartDate(date)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
         />
       </div>
       <div className="w-full md:w-auto">
@@ -150,7 +150,7 @@ function SalesFilterInner({
         <CustomDatePicker
           selected={endDate}
           onChange={(date: Date | null) => setEndDate(date)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
         />
       </div>
       <div className="w-full md:w-auto">
@@ -158,7 +158,7 @@ function SalesFilterInner({
         <select 
           value={brandId} 
           onChange={(e) => setBrandId(e.target.value)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -169,7 +169,7 @@ function SalesFilterInner({
         <select 
           value={staffName} 
           onChange={(e) => setStaffName(e.target.value)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
@@ -180,7 +180,7 @@ function SalesFilterInner({
         <select 
           value={categoryId} 
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-blue-500 bg-surface-card shadow-sm"
+          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
         >
           <option value="">Tất cả</option>
           {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}

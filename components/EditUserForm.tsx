@@ -48,7 +48,7 @@ export default function EditUserForm({ user }: { user: any }) {
           <input 
             type="password" 
             name="password" 
-            className="w-full border border-border rounded-lg px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" 
+            className="w-full border border-border rounded-lg px-3 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-focus-ring transition-colors" 
             placeholder="Để trống nếu không muốn đổi mật khẩu"
           />
         </div>
@@ -59,7 +59,7 @@ export default function EditUserForm({ user }: { user: any }) {
             name="role" 
             required 
             defaultValue={user.role}
-            className="w-full border border-border rounded-lg px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-surface-card"
+            className="w-full border border-border rounded-lg px-3 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-focus-ring transition-colors bg-surface-card"
           >
             <option value="STAFF">Staff (Bán hàng)</option>
             <option value="MANAGER">Manager (Quản lý)</option>
@@ -77,7 +77,7 @@ export default function EditUserForm({ user }: { user: any }) {
           <button 
             type="submit" 
             disabled={loading}
-            className="flex-1 px-4 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-4 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? "Đang lưu..." : "Lưu thay đổi"}
           </button>

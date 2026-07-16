@@ -24,13 +24,13 @@ export function CategoryForm({ initialData }: { initialData?: any }) {
   return (
     <>
       {isEdit ? (
-        <button onClick={() => setIsOpen(true)} className="text-blue-500 hover:text-blue-700 text-sm font-medium">
+        <button onClick={() => setIsOpen(true)} className="text-primary hover:text-primary text-sm font-medium">
           Sửa
         </button>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+          className="bg-primary text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition"
         >
           + Phân loại Hàng Hoá
         </button>
@@ -77,7 +77,7 @@ export function CategoryForm({ initialData }: { initialData?: any }) {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover disabled:opacity-50"
                   >
                     Lưu
                   </button>

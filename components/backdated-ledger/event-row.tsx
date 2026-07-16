@@ -38,7 +38,7 @@ export function EventRow({ event }: { event: any }) {
       <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
         <Link 
           href={`/admin/audit/backdated-ledger/${event.id}`}
-          className="text-blue-600 hover:text-blue-900 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="text-primary hover:text-blue-900 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           Chi tiết →
         </Link>

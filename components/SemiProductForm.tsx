@@ -121,7 +121,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className={isEdit ? "text-indigo-600 hover:text-indigo-900 text-sm font-medium" : "px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition"}
+        className={isEdit ? "text-primary hover:text-indigo-900 text-sm font-medium" : "px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition"}
       >
         {isEdit ? "Sửa" : "+ Thêm Bán Thành Phẩm"}
       </button>
@@ -150,7 +150,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Ví dụ: Nước đường, Sốt Thái..."
-                      className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"
                     />
                   </div>
                   
@@ -176,7 +176,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
                       step="any"
                       value={batchYield}
                       onChange={(e) => setBatchYield(e.target.value === "" ? "" : e.target.value)}
-                      className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"
                     />
                   </div>
                   
@@ -200,7 +200,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
                     <select
                       value={status}
                       onChange={(e) => setStatus(e.target.value)}
-                      className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500"
+                      className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"
                     >
                       <option value="ACTIVE">Đang sử dụng (ACTIVE)</option>
                       <option value="INACTIVE">Tạm ngưng (INACTIVE)</option>
@@ -269,7 +269,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
                     <button
                       type="button"
                       onClick={addIngredient}
-                      className="w-full py-2.5 border-2 border-dashed border-indigo-200 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-50 transition mb-2"
+                      className="w-full py-2.5 border-2 border-dashed border-indigo-200 text-primary rounded-lg text-sm font-medium hover:bg-primary-soft transition mb-2"
                     >
                       + Thêm thành phần
                     </button>
@@ -280,7 +280,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
 
             <div className="p-6 border-t border-border bg-page flex justify-end gap-3 mt-auto">
               <button type="button" onClick={() => setIsOpen(false)} className="px-5 py-2.5 text-text-secondary font-medium hover:bg-border rounded-lg transition">Huỷ</button>
-              <button type="submit" form="semiProductForm" disabled={loading} className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition shadow-sm">
+              <button type="submit" form="semiProductForm" disabled={loading} className="px-5 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover disabled:opacity-50 transition shadow-sm">
                 {loading ? "Đang lưu..." : "Lưu Bán Thành Phẩm"}
               </button>
             </div>

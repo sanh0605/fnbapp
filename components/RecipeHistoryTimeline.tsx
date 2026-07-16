@@ -107,7 +107,7 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                 <div key={evt.id} className="relative group">
                   {/* Circle Dot */}
                   <div
-                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-blue-500 ring-4 ring-blue-50 transition-transform group-hover:scale-110 z-10`}
+                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-primary ring-4 ring-blue-50 transition-transform group-hover:scale-110 z-10`}
                   />
 
                   {/* Card content */}
@@ -116,7 +116,7 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                   }`}>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary-soft text-primary border border-blue-100">
                           Công thức
                         </span>
                         <span className="text-[11px] font-mono text-text-muted">ID: {r.id}</span>
@@ -155,7 +155,7 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                             return (
                               <li key={iIdx} className="text-xs flex justify-between border-b border-border/50 pb-1.5 last:border-0 last:pb-0">
                                 <span className="font-medium text-text-primary">{name}</span>
-                                <span className="font-bold text-blue-600">{ing.quantity} {unit}</span>
+                                <span className="font-bold text-primary">{ing.quantity} {unit}</span>
                               </li>
                             );
                           })}

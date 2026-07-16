@@ -102,13 +102,13 @@ export function PurchasedItemForm({
   return (
     <>
       {isEdit ? (
-        <button onClick={() => setIsOpen(true)} className="text-blue-500 hover:text-blue-700 text-sm font-medium">
+        <button onClick={() => setIsOpen(true)} className="text-primary hover:text-primary text-sm font-medium">
           Sửa
         </button>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition"
+          className="bg-primary text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition"
         >
           + Thêm Hàng Mua Vào
         </button>
@@ -152,10 +152,10 @@ export function PurchasedItemForm({
                 </div>
 
                 {isRaw && (
-                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl space-y-4">
+                  <div className="p-4 bg-primary-soft border border-blue-100 rounded-xl space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-blue-900 mb-1">Nguyên Liệu Gốc</label>
-                      <p className="text-xs text-blue-700 mb-2">
+                      <p className="text-xs text-primary mb-2">
                         Vui lòng trỏ nó về đúng Nguyên liệu gốc để dùng trong Công thức.
                       </p>
                       <SearchableSelect
@@ -216,7 +216,7 @@ export function PurchasedItemForm({
                         <button
                           type="button"
                           onClick={addUnitRow}
-                          className="mt-3 text-indigo-600 text-sm font-medium hover:text-indigo-800 flex items-center gap-1"
+                          className="mt-3 text-primary text-sm font-medium hover:text-indigo-800 flex items-center gap-1"
                         >
                           <span>+ Thêm đơn vị mua khác</span>
                         </button>
@@ -226,13 +226,13 @@ export function PurchasedItemForm({
                 )}
 
                 {isEdit && (
-                  <label className="flex items-center gap-2 mt-4 text-sm text-indigo-800 bg-indigo-50 p-3 rounded-lg border border-indigo-100 cursor-pointer">
+                  <label className="flex items-center gap-2 mt-4 text-sm text-indigo-800 bg-primary-soft p-3 rounded-lg border border-indigo-100 cursor-pointer">
                     <input
                       type="checkbox"
                       name="update_history"
                       value="true"
                       defaultChecked
-                      className="w-4 h-4 text-indigo-600 rounded border-indigo-300 focus:ring-indigo-500"
+                      className="w-4 h-4 text-primary rounded border-indigo-300 focus:ring-focus-ring"
                     />
                     <span className="font-medium">
                       Đồng bộ thay đổi đơn vị cho toàn bộ Phiếu Nhập Kho cũ (Khuyên dùng)
@@ -251,7 +251,7 @@ export function PurchasedItemForm({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover disabled:opacity-50"
                   >
                     Lưu
                   </button>

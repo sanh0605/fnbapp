@@ -867,7 +867,7 @@ export default function POSScreen({
                 ? "bg-rose-50 border-rose-200 text-rose-800"
                 : toast.type === "warning"
                 ? "bg-amber-50 border-amber-200 text-amber-800"
-                : "bg-blue-50 border-blue-200 text-blue-800"
+                : "bg-primary-soft border-blue-200 text-blue-800"
             }`}
           >
             <span className="text-xl shrink-0">
@@ -887,7 +887,7 @@ export default function POSScreen({
                   className={`mt-2 font-extrabold text-xs px-4 py-2 bg-surface-card rounded-lg border shadow-sm transition active:scale-95 flex items-center justify-center min-h-[44px] min-w-[80px] ${
                     toast.type === "error"
                       ? "text-rose-700 border-rose-200 hover:bg-rose-100"
-                      : "text-indigo-700 border-indigo-200 hover:bg-indigo-100"
+                      : "text-primary border-indigo-200 hover:bg-primary-soft"
                   }`}
                 >
                   {toast.action.label}
@@ -907,11 +907,11 @@ export default function POSScreen({
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <header className="h-14 bg-surface-card/80 border-b border-border/50 backdrop-blur-md flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-text-muted hover:text-indigo-600 transition-colors">
+            <Link href="/admin" className="text-text-muted hover:text-primary transition-colors">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </Link>
             <h1 className="font-extrabold text-xl text-text-primary tracking-tight flex items-center gap-2">
-              <span className="text-indigo-600">POS</span> Đơn Mới
+              <span className="text-primary">POS</span> Đơn Mới
             </h1>
             {isOnline ? (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50 shadow-sm shrink-0">
@@ -931,9 +931,9 @@ export default function POSScreen({
                 refreshDrafts();
                 setIsDraftModalOpen(true);
               }}
-              className="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition flex items-center gap-1.5"
+              className="text-sm font-bold text-primary bg-primary-soft px-3 py-1.5 rounded-full hover:bg-primary-soft transition flex items-center gap-1.5"
             >
-              📝 Nháp <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
+              📝 Nháp <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
             </button>
             <div className="text-sm font-medium text-text-secondary bg-surface-secondary px-3 py-1.5 rounded-full">
               {new Date().toLocaleDateString("vi-VN")}
@@ -998,11 +998,11 @@ export default function POSScreen({
       {!isCartOpen && cart.length > 0 && (
         <button
           onClick={() => setIsCartOpen(true)}
-          className="lg:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 font-bold active:scale-95 transition-transform z-30"
+          className="lg:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 font-bold active:scale-95 transition-transform z-30"
         >
           <div className="relative">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-indigo-600">{totalItems}</span>
+            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-primary">{totalItems}</span>
           </div>
           <span>{formatNumber(totalAmount)}</span>
         </button>
@@ -1057,9 +1057,9 @@ export default function POSScreen({
                     {groupedModifiers[groupName].map((mod: any) => {
                       const count = selectedModifiers.filter(m => m.id === mod.id).length;
                       return (
-                        <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-colors ${count > 0 ? "border-indigo-500 bg-indigo-50 shadow-sm" : "border-border bg-surface-card hover:bg-page"}`}>
+                        <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-colors ${count > 0 ? "border-primary bg-primary-soft shadow-sm" : "border-border bg-surface-card hover:bg-page"}`}>
                           <div className="flex flex-col">
-                            <span className={`text-sm ${count > 0 ? "text-indigo-700 font-bold" : "text-text-primary font-medium"}`}>{mod.name}</span>
+                            <span className={`text-sm ${count > 0 ? "text-primary font-bold" : "text-text-primary font-medium"}`}>{mod.name}</span>
                             {Number(mod.price) > 0 && (
                               <span className="text-xs text-text-secondary mt-0.5">+{formatNumber(mod.price)}</span>
                             )}
@@ -1069,7 +1069,7 @@ export default function POSScreen({
                             <button
                               onClick={() => removeModifier(mod)}
                               disabled={count === 0}
-                              className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-surface-card text-indigo-600 border border-indigo-200 hover:bg-indigo-100 shadow-sm" : "bg-surface-secondary text-gray-300 cursor-not-allowed"}`}
+                              className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-surface-card text-primary border border-indigo-200 hover:bg-primary-soft shadow-sm" : "bg-surface-secondary text-gray-300 cursor-not-allowed"}`}
                             >
                               -
                             </button>
@@ -1078,7 +1078,7 @@ export default function POSScreen({
                             </span>
                             <button
                               onClick={() => addModifier(mod)}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-card text-indigo-600 border border-indigo-200 hover:bg-indigo-100 font-bold text-lg transition-colors shadow-sm"
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-card text-primary border border-indigo-200 hover:bg-primary-soft font-bold text-lg transition-colors shadow-sm"
                             >
                               +
                             </button>
@@ -1179,7 +1179,7 @@ export default function POSScreen({
             <div className="px-6 pb-6">
               <button
                 onClick={() => setSuccessOrderNo(null)}
-                className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-[0.98] transition-colors transition-transform"
+                className="w-full bg-primary text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-primary-hover active:scale-[0.98] transition-colors transition-transform"
               >
                 Tao don moi
               </button>
@@ -1237,7 +1237,7 @@ export default function POSScreen({
                         <div className="flex gap-2 shrink-0 ml-4">
                           <button
                             onClick={() => loadDraft(d.id)}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
+                            className="bg-primary hover:bg-primary-hover text-white font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
                           >
                             Nạp
                           </button>
