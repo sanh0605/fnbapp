@@ -4,6 +4,49 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Codex) - Task 3.9 historical backdated gap cohort locked
+
+**Trigger:** Task 3.8 confirmed that 41 `BACKDATED_LEDGER_LIKE` lines had five
+precise historical ledger fingerprints but no migration-0014 durable events.
+The user accepted this replay-only population as historical drift and approved
+the exact Task 3.9 hash/payload after dry-run.
+
+### Result
+
+- Built a pure planner and dry-run-by-default CLI with canonical SHA-256,
+  missing/edited/overlap/count checks, exact-cohort idempotency, and one atomic
+  bulk INSERT behind `--apply`.
+- Approved source hash:
+  `2ac54a604fc03c438dbf8f99039e57d068b8b270aadb092bf74a2e5a0538ae24`.
+- Inserted 41 `BACKDATED_LEDGER_HISTORICAL_GAP` locks: total lock count moved
+  from 395 to 436.
+- Cohort delta is -43,809 VND. This is replay drift only; all 41 stored
+  `cost_at_sale` values remained unchanged.
+- Post-apply verification: exact cohort 41/41, total 436, trigger sample blocked
+  with `audit-baseline locked`, and idempotent rerun returned
+  `ALREADY_APPLIED` with zero rows to insert.
+
+### Deliverables
+
+- `lib/backdated-historical-gap-lock.ts`
+- `lib/backdated-historical-gap-lock.test.ts`
+- `lib/backdated-historical-gap-lock-script.test.ts`
+- `scripts/lock-backdated-historical-gap-cohort.ts`
+- `docs/audits/2026-07-16-task-3.9-lock-result.md`
+
+### Verification
+
+- Task 3.9 targeted tests: 10/10 pass.
+- Full Vitest: 375/375 pass across 60 files.
+- TypeScript: 0 errors. `git diff --check`: clean.
+- Commit: this commit. No push.
+
+### Next
+
+Pause for Claude final review before the stabilization phase proceeds.
+
+---
+
 ## 2026-07-16 (Codex) - Task 3.8 historical backdated-events gap surfaced
 
 **Trigger:** The 41 `BACKDATED_LEDGER_LIKE` lines excluded from the Task 3.7
