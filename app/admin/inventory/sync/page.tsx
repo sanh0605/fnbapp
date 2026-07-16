@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { alert } from "@/lib/dialog";
 
 interface Discrepancy {
   order_id: string;
@@ -68,10 +69,10 @@ export default function SyncPage() {
       
       // Clear discrepancies after success
       setDiscrepancies([]);
-      alert("Đồng bộ hoàn tất!");
+      await alert({ title: "Thành công", message: "Đồng bộ hoàn tất!", variant: "info" });
     } catch (err: any) {
       setError(err.message);
-      alert("Có lỗi xảy ra trong quá trình đồng bộ: " + err.message);
+      await alert({ title: "Lỗi đồng bộ", message: "Có lỗi xảy ra trong quá trình đồng bộ: " + err.message, variant: "danger" });
     } finally {
       setIsSyncing(false);
     }

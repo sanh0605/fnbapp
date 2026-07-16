@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Antigravity) - UI-REMED-3 Session 1 Dialog Components + Imperative API
+
+**Trigger:** Phase 1 UI audit flagged 54 native `alert()` / `confirm()` calls. Session 1 of UI-REMED-3 required creating the imperative Promise-based API and the underlying styled components.
+
+### Completed Work
+- Created `lib/dialog.ts` containing the imperative `alert()` and `confirm()` API with queue semantics.
+- Created `components/ui/Dialog.tsx` as the presentational component with Fresh Blue styling (backdrop, surface card), focus trapping, and dismissibility.
+- Created `components/DialogHost.tsx` and mounted it in `app/layout.tsx`.
+- Wrote comprehensive unit tests for both `lib/dialog.ts` and `components/ui/Dialog.tsx` (using `jsdom`).
+- Migrated 2 `alert()` calls in `app/admin/inventory/sync/page.tsx` as a proof-of-concept.
+
+### Verification
+- Production compile `tsc --noEmit` is clean.
+- Unit tests run and pass (`vitest run`).
+- `git diff --check` is clean.
+
+Commit: Antigravity ui: imperative dialog API + components (UI-REMED-3 Session 1)
+
+---
+
 ## 2026-07-16 (Antigravity) - UI-REMED-2 StickyFilterBar Redesign
 
 **Trigger:** Phase 1 UI audit flagged 73 StickyFilterBar usages. User decided to redesign the component rather than remove the pattern.

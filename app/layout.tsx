@@ -5,6 +5,7 @@ if (typeof window === "undefined") {
 import type { Metadata } from "next";
 import "./globals.css";
 import NextAuthSessionProvider from "@/components/SessionProvider";
+import { DialogHost } from "@/components/DialogHost";
 
 export const metadata: Metadata = {
   title: "FNB App v2 - Google Sheets",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body>
         <NextAuthSessionProvider>
           {children}
+          <DialogHost />
         </NextAuthSessionProvider>
       </body>
     </html>
