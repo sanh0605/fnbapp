@@ -4,6 +4,60 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Codex) - Task 3.7 BTP recipe replay drift cohort locked
+
+**Trigger:** User selected Option B (accept + lock), then Claude approved the
+exact 225-line payload and source SHA-256
+`a24f0d1fba13f1c73e853055ada598b3227b94ed7e788720a6e3948fc8c48c2e`
+after the read-only dry-run passed.
+
+### Implementation
+
+- Added a pure Task 3.7 planner with canonical hashing, exact four-bucket
+  policy checks, duplicate/excluded-cohort guards, live cost validation, and
+  strict idempotency assessment.
+- Added a dry-run-default CLI. Its `--apply` path uses one bulk INSERT for the
+  complete cohort, has no conflict-ignore or automatic retry path, and verifies
+  unchanged order-line costs plus the mutation-blocking trigger.
+- Added 10 tests covering the 225-line contract, stable hash, excluded 41-line
+  overlap, count/delta failures, missing/edited rows, 170-lock precondition,
+  395-lock postcondition, exact idempotent rerun, and CLI safety shape.
+
+### Dry-run and apply
+
+- Dry-run: 225 lines / -193,299 VND; 170 existing locks; zero target overlap;
+  zero missing/edited lines; zero validation failures; state `READY`.
+- Bucket breakdown: 90 PRE_BASELINE_WINDOW (-107,225 VND), 22
+  BASELINE_SELECTION_GAP (-25,662 VND), 71 POST_CUTOFF_NEW_DRIFT (-67,221
+  VND), and 42 LATE_PO_RECEIPT (+6,809 VND).
+- Atomic apply inserted 225 `BTP_RECIPE_REPLAY_DRIFT` lock rows. Total locks
+  moved from 170 to 395; the corrected total does not double-count the 40 E3
+  recovery lines already included in the original 170 locks.
+
+### Verification
+
+- Exact source-hash cohort: 225/225 rows.
+- Total `audit_baseline_locks`: 395.
+- `cost_at_sale` unchanged: 225/225.
+- No-op UPDATE without escape hatch: blocked with `audit-baseline locked`.
+- Post-apply dry-run: `ALREADY_APPLIED`, 225 exact target locks, zero
+  validation failures, zero rows to insert.
+- Full Vitest: 363/363 passed across 57 files.
+- `tsc --noEmit`: 0 errors.
+- `git diff --check`: clean.
+
+### Documentation and boundary
+
+- Updated the active policy implementation section and added
+  `docs/audits/2026-07-16-task-3.7-lock-result.md` with dry-run/apply evidence.
+- No COGS recompute, migration, MAC engine change, Task 3.5 change, or push.
+- The excluded 41 BACKDATED_LEDGER_LIKE lines and original 170 lock records
+  were not modified.
+
+Commit: this commit.
+
+---
+
 ## 2026-07-15 (Codex) - Task 3.6 active BTP shortfall investigation
 
 **Trigger:** Task 3.4 isolated 71 frozen post-cutoff BTP_SHORTFALL lines and
