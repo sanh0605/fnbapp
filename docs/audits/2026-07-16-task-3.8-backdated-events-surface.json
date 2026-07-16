@@ -1,0 +1,1228 @@
+{
+  "task": "3.8",
+  "generated_at": "2026-07-16T04:27:18.411Z",
+  "mode": "READ_ONLY_GAP_REPORT",
+  "source_artifacts": [
+    "docs/audits/2026-07-15-task-3.4-outside-cohort-investigation.json",
+    "docs/audits/2026-07-09-backdated-ledger-pattern.json"
+  ],
+  "database_tables_read": [
+    "backdated_ledger_events",
+    "stock_ledger",
+    "purchase_orders"
+  ],
+  "database_mutation_methods_used": [],
+  "finding": {
+    "verdict": "MIGRATION_0014_HISTORICAL_BACKFILL_GAP",
+    "summary": "41/41 lines have no durable event row; 5 precise Task 3.2 ledger fingerprints remain available for operator review.",
+    "operator_ui_ready": false,
+    "backfill_performed": false
+  },
+  "gap_status_breakdown": [
+    {
+      "status": "HISTORICAL_GAP",
+      "line_count": 41,
+      "unique_delta_vnd": -43809
+    }
+  ],
+  "population": {
+    "line_count": 41,
+    "unique_delta_vnd": -43809,
+    "historical_ledger_row_count": 5,
+    "lines_with_multiple_ledger_rows": 22,
+    "durable_event_count": 0,
+    "lines_with_durable_event": 0,
+    "lines_without_durable_event": 41
+  },
+  "definitions": {
+    "historical_gap": "A Task 3.2 precise historical fingerprint has no migration-0014 durable backdated_ledger_events row because the trigger was not backfilled.",
+    "affected_line_total_delta_vnd": "Full delta of every affected line for this ledger row. Values overlap when a line maps to multiple rows and must not be summed across rows.",
+    "likely_available": "Heuristic only: a positive-cost PO receipt became effective before mapped sales, its source header was created later, and every mapped line consumed the received item inside that window."
+  },
+  "lines": [
+    {
+      "line_id": "ol-167612cf-7e80-4ef3-b1ea-33957fc35156",
+      "order_id": "ord-139bc4dd-9f86-46aa-8878-7c58d66f59d0",
+      "order_no": "UCK000219",
+      "sale_time": "2026-06-22T14:04:49.456+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9497,
+      "expected_cost": 8544,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-322b362c-8c26-44b6-80f6-d30217ad3123",
+      "order_id": "ord-86eea41f-7bc3-42a4-b800-498626ab7941",
+      "order_no": "UCK000203",
+      "sale_time": "2026-06-22T09:57:03.024+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9497,
+      "expected_cost": 8544,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-3b10d69b-08b3-4b41-bc92-b7a263aea472",
+      "order_id": "ord-b254c5a4-6702-410c-810e-ad153c101b99",
+      "order_no": "UCK000207",
+      "sale_time": "2026-06-22T12:25:33.864+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 12962,
+      "expected_cost": 12010,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-003",
+        "ING-004",
+        "ING-029",
+        "ING-033",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-3956",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-474d5562-0dea-464a-9835-557fbb51b5c5",
+      "order_id": "ord-e7e37f51-f5f2-4830-870d-2101d8dad6a8",
+      "order_no": "PHD000609",
+      "sale_time": "2026-06-24T00:54:06.947+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-59a8d854-58e3-42dc-bf00-966d48d79026",
+      "order_id": "ord-98c315c9-6ae0-4323-ba30-d8bbe5836240",
+      "order_no": "UCK000229",
+      "sale_time": "2026-06-23T12:40:35.203+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9497,
+      "expected_cost": 8544,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-5a9bff04-efbb-42c1-bd1a-a00e35ea62aa",
+      "order_id": "ord-83a7b9f8-9ad3-4873-be2e-9934d1c1dcc6",
+      "order_no": "UCK000227",
+      "sale_time": "2026-06-23T12:39:18.848+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9497,
+      "expected_cost": 8544,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-826d508a-6727-4784-ad4f-8452b8e74494",
+      "order_id": "ord-286cf609-b910-4276-af0e-ae9846e5b049",
+      "order_no": "UCK000272",
+      "sale_time": "2026-06-26T07:02:21.813+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 11944,
+      "expected_cost": 10992,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "ING-034",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-003"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-94124c1e-985d-40bf-90c4-50141524bde8",
+      "order_id": "ord-a3e5650d-17e8-4b32-827e-d6f85b90b251",
+      "order_no": "PHD000579",
+      "sale_time": "2026-06-22T00:42:10.109+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-9788fd1a-bbf5-4f41-84cd-f2a885101c34",
+      "order_id": "ord-38c09807-7656-4dca-bec5-4d6ded5ec2bf",
+      "order_no": "PHD000608",
+      "sale_time": "2026-06-24T00:50:04.054+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-9fd446a0-1c72-435b-b1cd-6e183243bb98",
+      "order_id": "ord-4ffb1b4e-4160-4572-8301-de1b6879136e",
+      "order_no": "UCK000232",
+      "sale_time": "2026-06-23T13:54:04.546+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 11944,
+      "expected_cost": 10992,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "ING-034",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-5797"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-a9cef0e7-1d17-4ab6-8f7e-39bedb9c5916",
+      "order_id": "ord-4f5d14c8-5add-4cbf-82e9-df4151f658dc",
+      "order_no": "UCK000193",
+      "sale_time": "2026-06-21T23:41:48.059+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 11944,
+      "expected_cost": 10992,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "ING-034",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-5797"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-d063bc5e-f552-48cf-8ad6-243337de91e5",
+      "order_id": "ord-c4cfbb24-3154-47e2-bf94-69913fdb44e8",
+      "order_no": "PHD000618",
+      "sale_time": "2026-06-24T02:08:13.144+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-d4163495-b8fd-487a-8c6a-ffcdc01f02ef",
+      "order_id": "ord-01e1ca11-46cb-491c-9263-d1d0e8e50c23",
+      "order_no": "UCK000185",
+      "sale_time": "2026-06-21T23:38:42.147+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9497,
+      "expected_cost": 8544,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-dd560d54-b2d0-4841-a0ad-508fab1e86d2",
+      "order_id": "ord-11f5ef26-8c0c-4670-8d8e-8e08107217c3",
+      "order_no": "PHD000615",
+      "sale_time": "2026-06-24T02:05:19.18+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-e26f4e9e-5e2b-400e-9acd-2728e033fb62",
+      "order_id": "ord-9ea2a29d-352e-4e26-ae31-8063794b9baf",
+      "order_no": "UCK000234",
+      "sale_time": "2026-06-23T14:02:20.251+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-e6d33491-fb62-4960-bfe6-76e47ea6d323",
+      "order_id": "ord-8431f69b-ed23-4835-a05a-0a420a8a15e3",
+      "order_no": "UCK000221",
+      "sale_time": "2026-06-23T06:48:52.776+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 23888,
+      "expected_cost": 21983,
+      "delta_vnd": -1905,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "ING-034",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-5797"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-fa353809-dc5d-424c-b13c-3e6475c888e1",
+      "order_id": "ord-01e1ca11-46cb-491c-9263-d1d0e8e50c23",
+      "order_no": "UCK000185",
+      "sale_time": "2026-06-21T23:38:42.147+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-fccc0960-3518-47e7-b853-52cbf6230f67",
+      "order_id": "ord-61af9043-9a45-48af-ab69-ce1d61181dda",
+      "order_no": "UCK000209",
+      "sale_time": "2026-06-22T12:53:07.687+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9497,
+      "expected_cost": 8544,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-ffd9a038-054c-41f3-8a48-7cf081f14764",
+      "order_id": "ord-7d3f0cf1-9569-42b7-a543-f4a88166f696",
+      "order_no": "PHD000592",
+      "sale_time": "2026-06-23T00:27:13.753+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-19b75903-5e66-47e2-bb34-df3e3af42e1f",
+      "order_id": "ord-migrated-272a1e6a-7757-4715-b4a3-19b68f872de3",
+      "order_no": "UCK000168",
+      "sale_time": "2026-06-17T12:36:43.318+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9532,
+      "expected_cost": 8579,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-1d36e5f3-c6e7-4a15-85fa-08467926064a",
+      "order_id": "ord-migrated-107cae18-f3f3-4c0c-ac4b-6f2df702e68b",
+      "order_no": "UCK000116",
+      "sale_time": "2026-06-13T14:21:32.914+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-2e1a55b3-5180-409f-a242-059f8dc1fe85",
+      "order_id": "ord-migrated-5fc40443-8a5b-4816-b23a-8c45377eab95",
+      "order_no": "UCK000150",
+      "sale_time": "2026-06-16T11:44:45.784+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-2fdf21ea-79cd-4e56-83d8-abbe217a7bb6",
+      "order_id": "ord-migrated-70696e6f-0f67-4f5c-9b68-959d90c3e4d5",
+      "order_no": "PHD000543",
+      "sale_time": "2026-06-18T00:49:30.69+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-39ef559e-2bb2-45e4-999f-d552cd6e70ed",
+      "order_id": "ord-migrated-cd6d1bf2-0292-4322-978a-6d0d55fce9fe",
+      "order_no": "PHD000508",
+      "sale_time": "2026-06-16T23:50:57.173+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8154,
+      "expected_cost": 7201,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-500e1fd7-7753-425c-9b95-38d378ebc7a8",
+      "order_id": "ord-migrated-24e5f9e9-f2f3-46d9-bd03-d7cc9f5a7cf7",
+      "order_no": "UCK000181",
+      "sale_time": "2026-06-18T12:30:34.164+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 18993,
+      "expected_cost": 17088,
+      "delta_vnd": -1905,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-55643116-5677-40a1-a9a3-3cb5b86e153d",
+      "order_id": "ord-migrated-dff179bd-f368-448c-b321-d95f05021a45",
+      "order_no": "UCK000183",
+      "sale_time": "2026-06-19T06:27:16.626+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-58c05b1a-a89b-49b6-91b2-9d37cc660070",
+      "order_id": "ord-migrated-5b7991b3-40a1-4ba6-9aa8-9063196a6014",
+      "order_no": "UCK000171",
+      "sale_time": "2026-06-17T13:18:58.382+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-6523bf1c-d98e-42ce-b6f8-e70268228e5f",
+      "order_id": "ord-migrated-bf0971ec-f92f-41be-8d3a-b7194489d676",
+      "order_no": "PHD000509",
+      "sale_time": "2026-06-16T23:56:18.788+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8154,
+      "expected_cost": 7201,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-681c8267-a5d7-420d-9ad7-c14ff3f1d72c",
+      "order_id": "ord-migrated-d2f9899f-be84-4623-970a-8630ab470317",
+      "order_no": "UCK000123",
+      "sale_time": "2026-06-14T11:43:21.087+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-6a9f0bc8-bdc3-4ddf-9131-e42b8a213935",
+      "order_id": "ord-migrated-5fc40443-8a5b-4816-b23a-8c45377eab95",
+      "order_no": "UCK000150",
+      "sale_time": "2026-06-16T11:44:45.784+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 25943,
+      "expected_cost": 24038,
+      "delta_vnd": -1905,
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-003",
+        "ING-004",
+        "ING-029",
+        "ING-033",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-6f952d88-9327-43d0-a07f-882491a929c0",
+      "order_id": "ord-migrated-32665e4d-b20d-4c5a-a38a-25c2be22f3ea",
+      "order_no": "UCK000175",
+      "sale_time": "2026-06-17T14:31:02.528+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9532,
+      "expected_cost": 8579,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-769beb9f-94cd-409c-8ac1-02e35825d71d",
+      "order_id": "ord-migrated-cbc51052-33a1-41bc-9aa1-2f9f798701e5",
+      "order_no": "PHD000502",
+      "sale_time": "2026-06-16T01:49:36.975+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8154,
+      "expected_cost": 7201,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-95250552-29e0-4349-a454-a86d433f1fcf",
+      "order_id": "ord-migrated-9ec2d8d8-fdfd-48a6-96e4-9e374a9ec8c5",
+      "order_no": "UCK000154",
+      "sale_time": "2026-06-16T12:54:17.281+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 9532,
+      "expected_cost": 8579,
+      "delta_vnd": -953,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-a43155f3-d171-4930-97f7-ffb265b264ec",
+      "order_id": "ord-migrated-7d708d2a-7264-4a10-9a7e-e20c6856468c",
+      "order_no": "UCK000151",
+      "sale_time": "2026-06-16T12:01:38.838+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-a88f3473-439d-49d3-9743-9d9883e031e3",
+      "order_id": "ord-migrated-eb604a26-115f-43d4-a39a-e5d91c0eb726",
+      "order_no": "UCK000146",
+      "sale_time": "2026-06-15T14:20:55.29+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-a940ba49-180d-429b-a3fe-04efeb8994a9",
+      "order_id": "ord-migrated-8928a09c-8fa1-40a2-9caf-dff45de9de07",
+      "order_no": "UCK000157",
+      "sale_time": "2026-06-16T13:51:34.986+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 21338,
+      "expected_cost": 19433,
+      "delta_vnd": -1905,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-b1144e02-0913-4697-a16f-f6f1f0dbe5af",
+      "order_id": "ord-migrated-6c5bfcd0-1bf7-41c8-be6d-9bccceb0f337",
+      "order_no": "UCK000105",
+      "sale_time": "2026-06-13T11:42:36.175+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-035",
+      "stored_cost": 19063,
+      "expected_cost": 17158,
+      "delta_vnd": -1905,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-b2cf22ea-3309-4a87-b09a-cc37fede80dd",
+      "order_id": "ord-migrated-28654cb1-2e15-423b-928d-3f86ec63d451",
+      "order_no": "PHD000541",
+      "sale_time": "2026-06-18T00:48:59.368+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-bc26b84c-81fb-4d39-bb3e-3dd5395d85ea",
+      "order_id": "ord-migrated-88aabcee-fc69-46e1-bf25-3827f9452a35",
+      "order_no": "UCK000128",
+      "sale_time": "2026-06-14T13:02:29.856+00:00",
+      "product_id": "PROD-023",
+      "variant_id": "VAR-030",
+      "stored_cost": 10669,
+      "expected_cost": 9717,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "ING-033",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-dc79d643-910d-4bf7-97f5-db26a661d3f3",
+      "order_id": "ord-migrated-e41caaeb-40cd-40a8-a6c1-9511d34b9ec5",
+      "order_no": "PHD000533",
+      "sale_time": "2026-06-17T23:56:10.684+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    },
+    {
+      "line_id": "ol-migrated-fad0f162-674f-4077-bde6-4eec583ed337",
+      "order_id": "ord-migrated-0b5e4901-82b9-4082-87dd-bae28ead0fc4",
+      "order_no": "PHD000528",
+      "sale_time": "2026-06-17T23:28:11.121+00:00",
+      "product_id": "PROD-006",
+      "variant_id": "VAR-006",
+      "stored_cost": 8133,
+      "expected_cost": 7181,
+      "delta_vnd": -952,
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-004",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "causal_backdated_ledger_ids": [
+        "STK-GEN-1782290592719-1509",
+        "STK-GEN-1782290592719-6730"
+      ],
+      "associated_event_ids": [],
+      "durable_event_coverage": "HISTORICAL_GAP"
+    }
+  ],
+  "ledger_rows": [
+    {
+      "stock_ledger_id": "STK-003",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-037",
+      "item_reference": "ING-034",
+      "quantity_change": 4000,
+      "unit_cost": 26,
+      "effective_at": "2026-06-24T17:00:00+00:00",
+      "created_at": "2026-06-26T10:49:28.689+00:00",
+      "created_at_semantics": "Source header created_at used as the Task 3.2 visibility timestamp",
+      "lag_ms": 150568689,
+      "lag_minutes": 2509,
+      "affected_line_ids": [
+        "ol-826d508a-6727-4784-ad4f-8452b8e74494"
+      ],
+      "affected_line_count": 1,
+      "affected_line_total_delta_vnd": -952,
+      "delta_is_additive_across_ledger_rows": false,
+      "durable_event_ids": [],
+      "durable_event_statuses": [],
+      "availability_heuristic": "LIKELY_AVAILABLE",
+      "availability_heuristic_reason": "Positive-cost PO receipt; all mapped sales fall between effective_at and source created_at and consume this item.",
+      "heuristic_is_operator_decision": false,
+      "operator_decision": "UNSET",
+      "operator_notes": "",
+      "live_validation": {
+        "stock_ledger_row_found": true,
+        "stock_ledger_created_at": "2026-06-24T17:00:00+00:00",
+        "source_header_found": true,
+        "source_header_created_at": "2026-06-26T10:49:28.689+00:00",
+        "stock_ledger_effective_at_matches": true,
+        "source_created_at_matches_visibility": true
+      }
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-1509",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-032",
+      "item_reference": "ING-004",
+      "quantity_change": 2000,
+      "unit_cost": 478,
+      "effective_at": "2026-06-12T17:00:00+00:00",
+      "created_at": "2026-06-24T05:54:38.768+00:00",
+      "created_at_semantics": "Source header created_at used as the Task 3.2 visibility timestamp",
+      "lag_ms": 996878768,
+      "lag_minutes": 16615,
+      "affected_line_ids": [
+        "ol-167612cf-7e80-4ef3-b1ea-33957fc35156",
+        "ol-322b362c-8c26-44b6-80f6-d30217ad3123",
+        "ol-3b10d69b-08b3-4b41-bc92-b7a263aea472",
+        "ol-474d5562-0dea-464a-9835-557fbb51b5c5",
+        "ol-59a8d854-58e3-42dc-bf00-966d48d79026",
+        "ol-5a9bff04-efbb-42c1-bd1a-a00e35ea62aa",
+        "ol-94124c1e-985d-40bf-90c4-50141524bde8",
+        "ol-9788fd1a-bbf5-4f41-84cd-f2a885101c34",
+        "ol-9fd446a0-1c72-435b-b1cd-6e183243bb98",
+        "ol-a9cef0e7-1d17-4ab6-8f7e-39bedb9c5916",
+        "ol-d063bc5e-f552-48cf-8ad6-243337de91e5",
+        "ol-d4163495-b8fd-487a-8c6a-ffcdc01f02ef",
+        "ol-dd560d54-b2d0-4841-a0ad-508fab1e86d2",
+        "ol-e26f4e9e-5e2b-400e-9acd-2728e033fb62",
+        "ol-e6d33491-fb62-4960-bfe6-76e47ea6d323",
+        "ol-fa353809-dc5d-424c-b13c-3e6475c888e1",
+        "ol-fccc0960-3518-47e7-b853-52cbf6230f67",
+        "ol-ffd9a038-054c-41f3-8a48-7cf081f14764",
+        "ol-migrated-19b75903-5e66-47e2-bb34-df3e3af42e1f",
+        "ol-migrated-1d36e5f3-c6e7-4a15-85fa-08467926064a",
+        "ol-migrated-2e1a55b3-5180-409f-a242-059f8dc1fe85",
+        "ol-migrated-2fdf21ea-79cd-4e56-83d8-abbe217a7bb6",
+        "ol-migrated-39ef559e-2bb2-45e4-999f-d552cd6e70ed",
+        "ol-migrated-500e1fd7-7753-425c-9b95-38d378ebc7a8",
+        "ol-migrated-55643116-5677-40a1-a9a3-3cb5b86e153d",
+        "ol-migrated-58c05b1a-a89b-49b6-91b2-9d37cc660070",
+        "ol-migrated-6523bf1c-d98e-42ce-b6f8-e70268228e5f",
+        "ol-migrated-681c8267-a5d7-420d-9ad7-c14ff3f1d72c",
+        "ol-migrated-6a9f0bc8-bdc3-4ddf-9131-e42b8a213935",
+        "ol-migrated-6f952d88-9327-43d0-a07f-882491a929c0",
+        "ol-migrated-769beb9f-94cd-409c-8ac1-02e35825d71d",
+        "ol-migrated-95250552-29e0-4349-a454-a86d433f1fcf",
+        "ol-migrated-a43155f3-d171-4930-97f7-ffb265b264ec",
+        "ol-migrated-a88f3473-439d-49d3-9743-9d9883e031e3",
+        "ol-migrated-a940ba49-180d-429b-a3fe-04efeb8994a9",
+        "ol-migrated-b1144e02-0913-4697-a16f-f6f1f0dbe5af",
+        "ol-migrated-b2cf22ea-3309-4a87-b09a-cc37fede80dd",
+        "ol-migrated-bc26b84c-81fb-4d39-bb3e-3dd5395d85ea",
+        "ol-migrated-dc79d643-910d-4bf7-97f5-db26a661d3f3",
+        "ol-migrated-fad0f162-674f-4077-bde6-4eec583ed337"
+      ],
+      "affected_line_count": 40,
+      "affected_line_total_delta_vnd": -42857,
+      "delta_is_additive_across_ledger_rows": false,
+      "durable_event_ids": [],
+      "durable_event_statuses": [],
+      "availability_heuristic": "LIKELY_AVAILABLE",
+      "availability_heuristic_reason": "Positive-cost PO receipt; all mapped sales fall between effective_at and source created_at and consume this item.",
+      "heuristic_is_operator_decision": false,
+      "operator_decision": "UNSET",
+      "operator_notes": "",
+      "live_validation": {
+        "stock_ledger_row_found": true,
+        "stock_ledger_created_at": "2026-06-12T17:00:00+00:00",
+        "source_header_found": true,
+        "source_header_created_at": "2026-06-24T05:54:38.768+00:00",
+        "stock_ledger_effective_at_matches": true,
+        "source_created_at_matches_visibility": true
+      }
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-3956",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "ING-029",
+      "quantity_change": 2500,
+      "unit_cost": 206,
+      "effective_at": "2026-06-17T17:00:00+00:00",
+      "created_at": "2026-06-24T05:15:04.631+00:00",
+      "created_at_semantics": "Source header created_at used as the Task 3.2 visibility timestamp",
+      "lag_ms": 562504631,
+      "lag_minutes": 9375,
+      "affected_line_ids": [
+        "ol-3b10d69b-08b3-4b41-bc92-b7a263aea472"
+      ],
+      "affected_line_count": 1,
+      "affected_line_total_delta_vnd": -952,
+      "delta_is_additive_across_ledger_rows": false,
+      "durable_event_ids": [],
+      "durable_event_statuses": [],
+      "availability_heuristic": "LIKELY_AVAILABLE",
+      "availability_heuristic_reason": "Positive-cost PO receipt; all mapped sales fall between effective_at and source created_at and consume this item.",
+      "heuristic_is_operator_decision": false,
+      "operator_decision": "UNSET",
+      "operator_notes": "",
+      "live_validation": {
+        "stock_ledger_row_found": true,
+        "stock_ledger_created_at": "2026-06-17T17:00:00+00:00",
+        "source_header_found": true,
+        "source_header_created_at": "2026-06-24T05:15:04.631+00:00",
+        "stock_ledger_effective_at_matches": true,
+        "source_created_at_matches_visibility": true
+      }
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-5797",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "ING-034",
+      "quantity_change": 6000,
+      "unit_cost": 26,
+      "effective_at": "2026-06-17T17:00:00+00:00",
+      "created_at": "2026-06-24T05:15:04.631+00:00",
+      "created_at_semantics": "Source header created_at used as the Task 3.2 visibility timestamp",
+      "lag_ms": 562504631,
+      "lag_minutes": 9375,
+      "affected_line_ids": [
+        "ol-9fd446a0-1c72-435b-b1cd-6e183243bb98",
+        "ol-a9cef0e7-1d17-4ab6-8f7e-39bedb9c5916",
+        "ol-e6d33491-fb62-4960-bfe6-76e47ea6d323"
+      ],
+      "affected_line_count": 3,
+      "affected_line_total_delta_vnd": -3809,
+      "delta_is_additive_across_ledger_rows": false,
+      "durable_event_ids": [],
+      "durable_event_statuses": [],
+      "availability_heuristic": "LIKELY_AVAILABLE",
+      "availability_heuristic_reason": "Positive-cost PO receipt; all mapped sales fall between effective_at and source created_at and consume this item.",
+      "heuristic_is_operator_decision": false,
+      "operator_decision": "UNSET",
+      "operator_notes": "",
+      "live_validation": {
+        "stock_ledger_row_found": true,
+        "stock_ledger_created_at": "2026-06-17T17:00:00+00:00",
+        "source_header_found": true,
+        "source_header_created_at": "2026-06-24T05:15:04.631+00:00",
+        "stock_ledger_effective_at_matches": true,
+        "source_created_at_matches_visibility": true
+      }
+    },
+    {
+      "stock_ledger_id": "STK-GEN-1782290592719-6730",
+      "transaction_type": "PO_RECEIPT",
+      "source_table": "purchase_orders",
+      "source_id": "PO-029",
+      "item_reference": "NNL-001",
+      "quantity_change": 60000,
+      "unit_cost": 27,
+      "effective_at": "2026-06-17T17:00:00+00:00",
+      "created_at": "2026-06-24T05:15:04.631+00:00",
+      "created_at_semantics": "Source header created_at used as the Task 3.2 visibility timestamp",
+      "lag_ms": 562504631,
+      "lag_minutes": 9375,
+      "affected_line_ids": [
+        "ol-167612cf-7e80-4ef3-b1ea-33957fc35156",
+        "ol-322b362c-8c26-44b6-80f6-d30217ad3123",
+        "ol-3b10d69b-08b3-4b41-bc92-b7a263aea472",
+        "ol-474d5562-0dea-464a-9835-557fbb51b5c5",
+        "ol-59a8d854-58e3-42dc-bf00-966d48d79026",
+        "ol-5a9bff04-efbb-42c1-bd1a-a00e35ea62aa",
+        "ol-94124c1e-985d-40bf-90c4-50141524bde8",
+        "ol-9788fd1a-bbf5-4f41-84cd-f2a885101c34",
+        "ol-d063bc5e-f552-48cf-8ad6-243337de91e5",
+        "ol-d4163495-b8fd-487a-8c6a-ffcdc01f02ef",
+        "ol-dd560d54-b2d0-4841-a0ad-508fab1e86d2",
+        "ol-e26f4e9e-5e2b-400e-9acd-2728e033fb62",
+        "ol-fccc0960-3518-47e7-b853-52cbf6230f67",
+        "ol-ffd9a038-054c-41f3-8a48-7cf081f14764",
+        "ol-migrated-2fdf21ea-79cd-4e56-83d8-abbe217a7bb6",
+        "ol-migrated-500e1fd7-7753-425c-9b95-38d378ebc7a8",
+        "ol-migrated-b2cf22ea-3309-4a87-b09a-cc37fede80dd",
+        "ol-migrated-dc79d643-910d-4bf7-97f5-db26a661d3f3",
+        "ol-migrated-fad0f162-674f-4077-bde6-4eec583ed337"
+      ],
+      "affected_line_count": 19,
+      "affected_line_total_delta_vnd": -19047,
+      "delta_is_additive_across_ledger_rows": false,
+      "durable_event_ids": [],
+      "durable_event_statuses": [],
+      "availability_heuristic": "LIKELY_AVAILABLE",
+      "availability_heuristic_reason": "Positive-cost PO receipt; all mapped sales fall between effective_at and source created_at and consume this item.",
+      "heuristic_is_operator_decision": false,
+      "operator_decision": "UNSET",
+      "operator_notes": "",
+      "live_validation": {
+        "stock_ledger_row_found": true,
+        "stock_ledger_created_at": "2026-06-17T17:00:00+00:00",
+        "source_header_found": true,
+        "source_header_created_at": "2026-06-24T05:15:04.631+00:00",
+        "stock_ledger_effective_at_matches": true,
+        "source_created_at_matches_visibility": true
+      }
+    }
+  ],
+  "durable_events": [],
+  "status_breakdown": [],
+  "validation": {
+    "expected_line_count": 41,
+    "expected_unique_delta_vnd": -43809,
+    "expected_historical_ledger_row_count": 5,
+    "missing_historical_ledger_ids": [],
+    "unexpected_event_statuses": [],
+    "every_line_has_historical_ledger_row": true,
+    "every_line_has_durable_event": false,
+    "live_stock_ledger_rows_found": 5,
+    "live_source_headers_found": 5
+  }
+}

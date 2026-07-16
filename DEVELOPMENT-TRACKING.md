@@ -4,6 +4,51 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Codex) - Task 3.8 historical backdated-events gap surfaced
+
+**Trigger:** The 41 `BACKDATED_LEDGER_LIKE` lines excluded from the Task 3.7
+lock needed a read-only operator decision surface before any walkthrough.
+
+### Outcome
+
+- Mapped 41/41 lines (-43,809 VND unique delta) to five precise Task 3.2
+  historical PO-receipt ledger rows.
+- Confirmed 0/41 lines and 0/5 ledger rows have a durable
+  `backdated_ledger_events` record. Migration 0014 captures future inserts but
+  did not backfill this historical population.
+- Live SELECT validation found all 5 stock-ledger rows and all 5 source purchase
+  orders; their effective and source-created timestamps match the frozen Task
+  3.2 evidence.
+- Added per-ledger decision inputs: effective/source-created timestamps, lag,
+  affected line IDs/count, overlapping affected-line delta, and a conservative
+  `LIKELY_AVAILABLE` heuristic. All operator decisions remain `UNSET`.
+- 22/41 lines map to multiple rows, so per-ledger deltas are explicitly
+  non-additive; the unique cohort delta remains -43,809 VND.
+
+### Deliverables
+
+- `scripts/investigate-task-3.8-backdated-events-surface.ts`
+- `lib/backdated-ledger/task-3.8-gap-report.ts` plus pure mapper tests
+- `docs/audits/2026-07-16-task-3.8-backdated-events-surface.json`
+- `docs/audits/2026-07-16-task-3.8-backdated-events-surface.md`
+
+### Safety and verification
+
+- Production access was SELECT-only on `backdated_ledger_events`,
+  `stock_ledger`, and `purchase_orders`.
+- `database_mutation_methods_used: []`; no backfill, RPC, status change, or
+  recovery apply.
+- Vitest: 365/365 pass. TypeScript: 0 errors. `git diff --check`: clean.
+- Commit: this commit. No push.
+
+### Next
+
+Pause for Claude final review. The current admin UI cannot surface these five
+historical rows without a separately authorized write-capable design; no
+operator walkthrough or forward-drift task is opened by this phase.
+
+---
+
 ## 2026-07-16 (Codex) - Task 3.7 BTP recipe replay drift cohort locked
 
 **Trigger:** User selected Option B (accept + lock), then Claude approved the
