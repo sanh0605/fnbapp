@@ -60,7 +60,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| (none) | — | — | — | UI-REMED-3 saga complete 2026-07-17 (Sessions 1+2). Next UI-REMED-4 ADD-BOUNDARY in P2. |
+| [~A] **UI-REMED-4. Root error/loading boundaries (minimal)** | Antigravity | UI: additive — root error.tsx + loading.tsx + fill missing | `docs/handoffs/2026-07-17-antigravity-ui-remed-4-boundaries.md` (Claude authored 2026-07-17). User chose Option A (minimal). Root `app/error.tsx` catches all unhandled errors. Fill ~3-5 missing `loading.tsx`. ~5-7 new files total. ~0.5 session. | (unblocked) |
 
 ### P3 — Depends on verification
 
@@ -86,7 +86,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-antigravity-ui-remed-3-session-2.md` → UI-REMED-3 Session 2 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-4-boundaries.md` → UI-REMED-4 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-ui-remed-3-session-2.md` → UI-REMED-3 Session 2 — historical reference, work complete (commit `2f91b3f`)
 - `2026-07-17-antigravity-ui-remed-3-session-1.md` → UI-REMED-3 Session 1 — historical reference, work complete (commit `dd51dae`)
 - `2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` → UI-REMED-2 — historical reference, work complete (commit `6b65aba`)
 - `2026-07-16-codex-task-3.10-audit-display.md` → Task 3.10 — historical reference, work complete (commit `6a5bdec`)
