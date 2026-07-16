@@ -1,0 +1,1306 @@
+# UI Consistency Audit Report
+Date: 2026-07-16
+Status: REPORT ONLY
+
+## Summary
+
+| Rule | Severity | Count |
+|---|---|---|
+| StickyFilterBar usage | high | 73 |
+| Raw semantic Tailwind colors | medium | 1105 |
+| Missing error.tsx boundary per route | medium | 37 |
+| Missing loading.tsx | low | 10 |
+| Native alert/confirm | high | 54 |
+
+## Per-route findings
+
+### admin grouped
+
+- **StickyFilterBar usage** [high] in `app\admin\activity-log\components\ActivityLogClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\activity-log\components\ActivityLogClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L116`  (`ring-emerald-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L122`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L128`  (`ring-rose-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L134`  (`ring-amber-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L145`  (`bg-zinc-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L145`  (`text-zinc-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L145`  (`border-zinc-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L146`  (`bg-zinc-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\activity-log\components\ActivityLogClient.tsx:L146`  (`ring-zinc-100`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `app\admin\activity-log\components\ActivityLogClient.tsx:L153`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\activity-log\components\ActivityLogClient.tsx:L225`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\backup\components\BackupClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\backup\components\BackupClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\backup\components\BackupClient.tsx:L53`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\backup\components\BackupClient.tsx:L58`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\base-ingredients\components\BaseIngredientsClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\base-ingredients\components\BaseIngredientsClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\base-ingredients\components\BaseIngredientsClient.tsx:L42`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\base-ingredients\components\BaseIngredientsClient.tsx:L53`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\conversions\components\ConversionsClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\conversions\components\ConversionsClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\conversions\components\ConversionsClient.tsx:L56`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\conversions\components\ConversionsClient.tsx:L67`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\items\components\ItemsClient.tsx:L5`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\items\components\ItemsClient.tsx:L5`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\items\components\ItemsClient.tsx:L62`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\items\components\ItemsClient.tsx:L86`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L152`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L153`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L158`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L159`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L160`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L189`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L240`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L242`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L259`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L270`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L407`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L417`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrderForm.tsx:L480`  (`alert(`) → Category: REPLACE-ALERT
+- **StickyFilterBar usage** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrdersClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrdersClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrdersClient.tsx:L66`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\purchase-orders\components\PurchaseOrdersClient.tsx:L102`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\stock-adjustments\components\StockAdjustmentsClient.tsx:L5`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\stock-adjustments\components\StockAdjustmentsClient.tsx:L5`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Native alert/confirm** [high] in `app\admin\inventory\stock-adjustments\components\StockAdjustmentsClient.tsx:L53`  (`confirm(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\stock-adjustments\components\StockAdjustmentsClient.tsx:L68`  (`confirm(`) → Category: REPLACE-ALERT
+- **StickyFilterBar usage** [high] in `app\admin\inventory\stock-adjustments\components\StockAdjustmentsClient.tsx:L88`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\inventory\stock-adjustments\components\StockAdjustmentsClient.tsx:L131`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Native alert/confirm** [high] in `app\admin\inventory\sync\page.tsx:L71`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\sync\page.tsx:L74`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `app\admin\inventory\units\UnitForm.tsx:L65`  (`confirm(`) → Category: REPLACE-ALERT
+- **StickyFilterBar usage** [high] in `app\admin\orders\OrderTable.tsx:L9`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\orders\OrderTable.tsx:L9`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\orders\OrderTable.tsx:L288`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\orders\OrderTable.tsx:L342`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\production\components\ProductionClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\production\components\ProductionClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\production\components\ProductionClient.tsx:L64`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\production\components\ProductionClient.tsx:L79`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\categories\components\CategoriesClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\categories\components\CategoriesClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\categories\components\CategoriesClient.tsx:L27`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\categories\components\CategoriesClient.tsx:L42`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\modifiers\components\ModifiersClient.tsx:L5`  (`StickyFilterBar`) → Category: DEFERRED (modifiers module)
+- **StickyFilterBar usage** [high] in `app\admin\products\modifiers\components\ModifiersClient.tsx:L5`  (`StickyFilterBar`) → Category: DEFERRED (modifiers module)
+- **StickyFilterBar usage** [high] in `app\admin\products\modifiers\components\ModifiersClient.tsx:L64`  (`StickyFilterBar`) → Category: DEFERRED (modifiers module)
+- **StickyFilterBar usage** [high] in `app\admin\products\modifiers\components\ModifiersClient.tsx:L100`  (`StickyFilterBar`) → Category: DEFERRED (modifiers module)
+- **StickyFilterBar usage** [high] in `app\admin\products\ProductsClient.tsx:L7`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\ProductsClient.tsx:L7`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\ProductsClient.tsx:L72`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\products\ProductsClient.tsx:L113`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `app\admin\products\ProductsClient.tsx:L247`  (`bg-green-100`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `app\admin\promotions\components\PromotionsClient.tsx:L9`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\promotions\components\PromotionsClient.tsx:L9`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\promotions\components\PromotionsClient.tsx:L104`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\promotions\components\PromotionsClient.tsx:L144`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `app\admin\promotions\components\PromotionsClient.tsx:L187`  (`bg-yellow-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\promotions\components\PromotionsClient.tsx:L187`  (`text-yellow-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\promotions\components\PromotionsClient.tsx:L187`  (`border-yellow-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\promotions\components\PromotionsClient.tsx:L206`  (`bg-sky-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\admin\promotions\components\PromotionsClient.tsx:L206`  (`text-sky-700`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `app\admin\semi-products\components\SemiProductsClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\semi-products\components\SemiProductsClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\semi-products\components\SemiProductsClient.tsx:L49`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\semi-products\components\SemiProductsClient.tsx:L64`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `app\admin\semi-products\components\SemiProductsClient.tsx:L181`  (`ring-blue-50`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `app\admin\suppliers\components\SuppliersClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\suppliers\components\SuppliersClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\suppliers\components\SuppliersClient.tsx:L40`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\suppliers\components\SuppliersClient.tsx:L63`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\users\components\UsersClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\users\components\UsersClient.tsx:L4`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\users\components\UsersClient.tsx:L30`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `app\admin\users\components\UsersClient.tsx:L58`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+
+### public/others
+
+- **Missing error.tsx boundary per route** [medium] in `admin\activity-log\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\audit\backdated-ledger\[eventId]\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `admin\audit\backdated-ledger\[eventId]\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\audit\backdated-ledger\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\backup\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\brands\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\clear-cache\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\base-ingredients\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\categories\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\conversions\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\items\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\purchase-orders\new\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `admin\inventory\purchase-orders\new\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\purchase-orders\[id]\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `admin\inventory\purchase-orders\[id]\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\purchase-orders\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\stock-adjustments\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\sync\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\units\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\inventory\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `admin\inventory\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\orders\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\production\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\products\categories\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\products\cogs-estimate\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\products\modifiers\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `admin\products\modifiers\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\products\toppings\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `admin\products\toppings\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\products\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\promotions\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\reports\pnl\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\reports\sales\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\reports\stock\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\semi-products\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\suppliers\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\users\edit\[id]\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `admin\users\edit\[id]\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\users\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `admin\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `login\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `login\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `pos\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L60`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L63`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L64`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L70`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L70`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L70`  (`border-red-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L76`  (`bg-green-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L76`  (`text-green-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L76`  (`border-green-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L83`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L90`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L90`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L90`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L97`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L104`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L104`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L104`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L111`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L118`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L118`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L118`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L127`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L127`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\settings\password\page.tsx:L127`  (`bg-blue-400`) → Category: TOKEN-SWAP
+- **Missing error.tsx boundary per route** [medium] in `settings\password\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `settings\password\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing error.tsx boundary per route** [medium] in `\error.tsx:File`  → Category: ADD-BOUNDARY
+- **Missing loading.tsx** [low] in `\loading.tsx:File`  → Category: ADD-BOUNDARY
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L16`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L27`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L29`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L31`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L32`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L33`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L34`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L35`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L36`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L37`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L48`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L48`  (`text-rose-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L48`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L52`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L53`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L70`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L73`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L73`  (`text-rose-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\affected-lines-table.tsx:L73`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L46`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L50`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L55`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L55`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L59`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L65`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L65`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L65`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\apply-modal.tsx:L65`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L55`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L58`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L59`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L66`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L70`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L75`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L78`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L82`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L87`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L88`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L88`  (`text-rose-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L95`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L101`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L107`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L108`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L112`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L114`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L128`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L128`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L128`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L134`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L134`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L134`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L134`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L143`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L144`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-detail.tsx:L145`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L16`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L17`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L20`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L21`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L23`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L26`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L26`  (`text-rose-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L29`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L32`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L41`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\event-row.tsx:L41`  (`text-blue-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L42`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L53`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L59`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L64`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L64`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L68`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L74`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L74`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L74`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\reject-modal.tsx:L74`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L4`  (`bg-amber-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L4`  (`text-amber-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L4`  (`border-amber-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L5`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L5`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L5`  (`border-blue-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L6`  (`bg-emerald-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L6`  (`text-emerald-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L6`  (`border-emerald-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L7`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L7`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L7`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L11`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L11`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\backdated-ledger\status-badge.tsx:L11`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\CustomDatePicker.tsx:L49`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\CustomDatePicker.tsx:L49`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L31`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L32`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L32`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L32`  (`border-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L36`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L41`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L41`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L41`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L43`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L47`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L51`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L51`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L51`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L57`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L62`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L62`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L62`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L70`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L73`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L73`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L73`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L80`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L80`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\EditUserForm.tsx:L80`  (`bg-blue-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L29`  (`text-amber-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L29`  (`text-amber-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L42`  (`text-amber-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L55`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L59`  (`bg-amber-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L60`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L61`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L66`  (`text-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L70`  (`bg-emerald-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L70`  (`text-emerald-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L84`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L87`  (`bg-emerald-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L87`  (`border-emerald-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L87`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L89`  (`bg-emerald-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L93`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L94`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L95`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L98`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L98`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L100`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L104`  (`border-gray-200/60`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L105`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L106`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\HistoryModal.tsx:L119`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\inventory\BaseIngredientForm.tsx:L30`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L78`  (`text-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L78`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L84`  (`bg-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L84`  (`bg-emerald-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L100`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L100`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L103`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L111`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L113`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L118`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L118`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L118`  (`ring-emerald-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L124`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L137`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L137`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L150`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L150`  (`text-emerald-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L156`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L160`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L160`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L167`  (`bg-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\BaseIngredientForm.tsx:L167`  (`bg-emerald-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L27`  (`text-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L27`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L33`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L33`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L46`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L54`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L58`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L62`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L69`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L73`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L73`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L80`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\CategoryForm.tsx:L80`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\inventory\ConversionForm.tsx:L41`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L62`  (`text-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L62`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L68`  (`bg-purple-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L68`  (`bg-purple-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L81`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L87`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L104`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L115`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L122`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L128`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L133`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L133`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L133`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L136`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L136`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L143`  (`text-indigo-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L143`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L143`  (`border-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L149`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L149`  (`border-indigo-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L149`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L157`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L161`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L161`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L168`  (`bg-purple-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\ConversionForm.tsx:L168`  (`bg-purple-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\inventory\PurchasedItemForm.tsx:L52`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L104`  (`text-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L104`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L110`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L110`  (`bg-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L123`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L131`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L136`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L140`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L154`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L154`  (`border-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L156`  (`text-blue-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L157`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L174`  (`border-blue-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L175`  (`text-blue-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L182`  (`text-blue-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L192`  (`text-blue-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L199`  (`border-blue-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L207`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L207`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L218`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L218`  (`text-indigo-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L228`  (`text-indigo-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L228`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L228`  (`border-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L234`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L234`  (`border-indigo-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L234`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L242`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L246`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L246`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L253`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\inventory\PurchasedItemForm.tsx:L253`  (`bg-indigo-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\InventoryForms.tsx:L32`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L42`  (`text-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L42`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L50`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L50`  (`text-red-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L60`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L60`  (`bg-red-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L61`  (`bg-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L61`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L71`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L74`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L80`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L80`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L84`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L84`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L92`  (`bg-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\InventoryForms.tsx:L92`  (`bg-red-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\ModifierForm.tsx:L24`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ModifierForm.tsx:L46`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ModifierForm.tsx:L51`  (`confirm(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L75`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L75`  (`bg-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L81`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L81`  (`text-indigo-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L82`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L82`  (`text-red-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L90`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L90`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L91`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L94`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L94`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L103`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L104`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L104`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L112`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L113`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L113`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L118`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L119`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L119`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L122`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L122`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L124`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L125`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L125`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L125`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L129`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L137`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L147`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L160`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L160`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L163`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L163`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L174`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L174`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L175`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L175`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L176`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ModifierForm.tsx:L176`  (`bg-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L68`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L68`  (`border-indigo-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L70`  (`bg-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L76`  (`bg-red-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L95`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L95`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L98`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L102`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L106`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L113`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L113`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L143`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L143`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L143`  (`bg-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L147`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L150`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartItemRow.tsx:L157`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L118`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L122`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\pos\CartPanel.tsx:L145`  (`confirm(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L150`  (`bg-red-500/20`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L150`  (`text-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L150`  (`bg-red-500/40`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L164`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L168`  (`border-gray-200/60`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L169`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L170`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L171`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L181`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L182`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L189`  (`border-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L191`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L192`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L196`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L198`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L206`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L207`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L211`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L213`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L215`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L217`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L221`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L226`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L227`  (`text-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L256`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L258`  (`bg-rose-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L258`  (`border-rose-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L258`  (`text-rose-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L261`  (`text-rose-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L268`  (`bg-rose-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L268`  (`bg-rose-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L277`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L279`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L281`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L281`  (`bg-emerald-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L294`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L294`  (`border-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L299`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L299`  (`text-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L299`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L305`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L308`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L308`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L312`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L313`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L322`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L322`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L322`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L331`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L333`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L336`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L344`  (`bg-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L345`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L345`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L357`  (`bg-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L358`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L358`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L373`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L373`  (`border-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L381`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L381`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L381`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L392`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L409`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L416`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L419`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L423`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L431`  (`bg-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L431`  (`bg-emerald-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L459`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L459`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L489`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L490`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L492`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L492`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L492`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\CartPanel.tsx:L493`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L20`  (`bg-cyan-500/10`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L20`  (`border-cyan-500/20`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L21`  (`bg-cyan-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L22`  (`text-cyan-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L25`  (`bg-orange-500/10`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L25`  (`border-orange-500/20`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L26`  (`bg-orange-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L27`  (`text-orange-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L30`  (`bg-rose-500/10`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L30`  (`border-rose-500/20`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L31`  (`bg-rose-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\DiscountBadge.tsx:L32`  (`text-rose-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L27`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L33`  (`bg-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L38`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L38`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L40`  (`bg-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L51`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L55`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L58`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductCard.tsx:L63`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L67`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L73`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L73`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L77`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L83`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L84`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L84`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L84`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L93`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L94`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L94`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L94`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L105`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L106`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L106`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\pos\ProductGrid.tsx:L106`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\POSScreen.tsx:L140`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\POSScreen.tsx:L150`  (`confirm(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\POSScreen.tsx:L168`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\POSScreen.tsx:L275`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\POSScreen.tsx:L840`  (`confirm(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L850`  (`bg-zinc-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L850`  (`text-zinc-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L864`  (`bg-emerald-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L864`  (`border-emerald-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L864`  (`text-emerald-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L866`  (`bg-rose-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L866`  (`border-rose-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L866`  (`text-rose-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L868`  (`bg-amber-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L868`  (`border-amber-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L868`  (`text-amber-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L869`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L869`  (`border-blue-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L869`  (`text-blue-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L888`  (`text-rose-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L888`  (`border-rose-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L888`  (`bg-rose-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L889`  (`text-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L889`  (`border-indigo-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L889`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L898`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L898`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L907`  (`border-gray-200/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L909`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L909`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L912`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L913`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L916`  (`bg-emerald-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L916`  (`text-emerald-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L916`  (`border-emerald-200/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L917`  (`bg-emerald-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L921`  (`bg-rose-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L921`  (`text-rose-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L921`  (`border-rose-200/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L922`  (`bg-rose-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L933`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L933`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L933`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L935`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L937`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L937`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L944`  (`bg-amber-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1000`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1004`  (`bg-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1004`  (`border-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1013`  (`border-gray-200/40`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1014`  (`border-gray-100/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1014`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1015`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1016`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1016`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1016`  (`bg-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1024`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1034`  (`border-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1034`  (`bg-orange-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1034`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1034`  (`border-orange-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1036`  (`text-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1036`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1039`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1040`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1043`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1054`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1059`  (`border-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1059`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1059`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1059`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1061`  (`text-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1061`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1063`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1071`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1071`  (`border-indigo-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1071`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1071`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1071`  (`text-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1075`  (`text-indigo-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1075`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1080`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1080`  (`border-indigo-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1080`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1093`  (`border-gray-100/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1097`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1099`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1102`  (`bg-orange-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1102`  (`text-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1102`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1102`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1102`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1108`  (`bg-orange-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1108`  (`text-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1108`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1108`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1108`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1119`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1119`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1126`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1129`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1129`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1133`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1136`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1136`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1144`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1144`  (`bg-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1150`  (`text-orange-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1167`  (`border-gray-200/40`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1169`  (`bg-emerald-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1169`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1172`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1173`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1174`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1174`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1175`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1181`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1181`  (`bg-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1193`  (`border-gray-200/40`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1194`  (`border-gray-100/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1194`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1195`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1198`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1198`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1198`  (`bg-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1206`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1229`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1229`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1231`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1232`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1239`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1239`  (`bg-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1245`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1245`  (`bg-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\POSScreen.tsx:L1245`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\ProductCategoryForm.tsx:L41`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L52`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L52`  (`bg-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L58`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L58`  (`text-indigo-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L61`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L61`  (`text-red-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L71`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L71`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L72`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L75`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L75`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L85`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L91`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L91`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L98`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L98`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L99`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L99`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L104`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L104`  (`bg-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L118`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L118`  (`bg-red-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L119`  (`bg-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L119`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L124`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L129`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L130`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L134`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L134`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L135`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L135`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L142`  (`bg-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductCategoryForm.tsx:L142`  (`bg-red-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\ProductForm.tsx:L31`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ProductForm.tsx:L32`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ProductForm.tsx:L55`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ProductForm.tsx:L66`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\ProductForm.tsx:L127`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductForm.tsx:L214`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\ProductionForm.tsx:L79`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ProductionForm.tsx:L80`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ProductionForm.tsx:L83`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ProductionForm.tsx:L96`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\ProductionForm.tsx:L101`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L109`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L109`  (`bg-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L121`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L121`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L122`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L123`  (`text-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L125`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L125`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L135`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L144`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L144`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L155`  (`bg-orange-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L155`  (`border-orange-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L156`  (`text-orange-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L156`  (`border-orange-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L167`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L167`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L167`  (`text-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L169`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L171`  (`text-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L176`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L177`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L177`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L178`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L179`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L179`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L183`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L190`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L192`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L192`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L204`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L204`  (`ring-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L204`  (`border-orange-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L206`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L218`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L218`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L219`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L219`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L224`  (`bg-orange-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductionForm.tsx:L224`  (`bg-orange-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L40`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L41`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L41`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L42`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L43`  (`bg-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L43`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L49`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L49`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L55`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L56`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L61`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L64`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L65`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L67`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L71`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L72`  (`text-green-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L78`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L78`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L78`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L87`  (`text-green-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L94`  (`bg-gray-50/30`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L96`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L99`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L101`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L102`  (`text-green-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L104`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L106`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L107`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L111`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L112`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L120`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L121`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L123`  (`text-green-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L125`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L127`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L128`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L132`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ProductTable.tsx:L133`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L105`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L106`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L111`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L112`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L113`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L143`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L148`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L149`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L151`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L164`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L171`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L174`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L192`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L194`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L198`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L198`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L198`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L198`  (`border-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L205`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L210`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L210`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L215`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L220`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L220`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L227`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L231`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L231`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L232`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L236`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L236`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L236`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L248`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L248`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L251`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L251`  (`text-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L258`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L268`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L273`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L293`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L299`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L304`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L310`  (`border-emerald-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L310`  (`bg-emerald-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L310`  (`ring-emerald-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L315`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L316`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L316`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L328`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L328`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L328`  (`border-indigo-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L328`  (`bg-indigo-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L328`  (`border-indigo-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L336`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L337`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L337`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L338`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L340`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L343`  (`border-gray-200/60`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L345`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L350`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L350`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L355`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L360`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L360`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L365`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L370`  (`border-red-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L370`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L370`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L370`  (`ring-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L375`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L380`  (`border-red-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L380`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L380`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L380`  (`ring-red-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L386`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L387`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L388`  (`text-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L396`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L396`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L396`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L403`  (`bg-emerald-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\PurchaseOrderForm.tsx:L403`  (`bg-emerald-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\PurchaseOrderForm.tsx:L423`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L90`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L94`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L94`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L110`  (`bg-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L110`  (`ring-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L115`  (`border-emerald-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L115`  (`ring-emerald-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L115`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L115`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L119`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L119`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L119`  (`border-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L122`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L126`  (`bg-emerald-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L126`  (`text-emerald-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L126`  (`border-emerald-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L132`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L135`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L140`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L146`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L146`  (`border-gray-100/80`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L147`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L149`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L156`  (`border-gray-200/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L157`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L158`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L176`  (`bg-amber-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L176`  (`ring-amber-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L180`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L180`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L182`  (`bg-amber-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L182`  (`text-amber-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L182`  (`border-amber-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L187`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L189`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L195`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L196`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L197`  (`text-amber-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\RecipeHistoryTimeline.tsx:L200`  (`text-amber-600`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `components\SalesFilter.tsx:L6`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `components\SalesFilter.tsx:L6`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L51`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L51`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L128`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L128`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L128`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L129`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L129`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L129`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L130`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L130`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L130`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `components\SalesFilter.tsx:L135`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L141`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L145`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L145`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L149`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L153`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L153`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L157`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L161`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L161`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L168`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L172`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L172`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L179`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L183`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SalesFilter.tsx:L183`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `components\SalesFilter.tsx:L189`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L133`  (`border-blue-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L133`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L139`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L139`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L142`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L148`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L149`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L152`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L152`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L162`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L167`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L167`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L167`  (`bg-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L167`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L193`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L193`  (`text-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L193`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L194`  (`ring-blue-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L194`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SearchableSelect.tsx:L194`  (`bg-blue-50`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\SemiProductForm.tsx:L74`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\SemiProductForm.tsx:L78`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\SemiProductForm.tsx:L83`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\SemiProductForm.tsx:L86`  (`alert(`) → Category: REPLACE-ALERT
+- **Native alert/confirm** [high] in `components\SemiProductForm.tsx:L115`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L123`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L123`  (`text-indigo-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L123`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L123`  (`bg-indigo-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L132`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L132`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L133`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L134`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L134`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L145`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L152`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L152`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L157`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L158`  (`border-red-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L158`  (`ring-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L170`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L178`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L178`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L182`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L183`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L184`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L198`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L202`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L202`  (`ring-indigo-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L210`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L212`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L217`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L217`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L221`  (`bg-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L221`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L221`  (`bg-red-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L230`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L258`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L261`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L271`  (`border-indigo-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L271`  (`text-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L271`  (`bg-indigo-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L280`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L280`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L281`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L281`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L282`  (`bg-indigo-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SemiProductForm.tsx:L282`  (`bg-indigo-700`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `components\StickyFilterBar.tsx:L12`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `components\StickyFilterBar.tsx:L23`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\StickyFilterBar.tsx:L29`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\StickyFilterBar.tsx:L30`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\StickyFilterBar.tsx:L50`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\StickyFilterBar.tsx:L50`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\StickyFilterBar.tsx:L50`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\StickyFilterBar.tsx:L50`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **StickyFilterBar usage** [high] in `components\StockTable.tsx:L5`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `components\StockTable.tsx:L5`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `components\StockTable.tsx:L126`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **StickyFilterBar usage** [high] in `components\StockTable.tsx:L142`  (`StickyFilterBar`) → Category: REMOVE-STICKYBAR
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L55`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L55`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L62`  (`text-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L62`  (`text-blue-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L72`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L74`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L74`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L74`  (`border-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L78`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L85`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L85`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L85`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L91`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L97`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L97`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L97`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L101`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L107`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L107`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L107`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L112`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L118`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L118`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L118`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L122`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L128`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L128`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L128`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L133`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L137`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L137`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L144`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L144`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L144`  (`bg-blue-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L208`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L210`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L210`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L210`  (`border-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L214`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L221`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L221`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L221`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L227`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L233`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L233`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L233`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L237`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L243`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L243`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L243`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L248`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L254`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L254`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L254`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L258`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L264`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L264`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L264`  (`ring-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L269`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L273`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L273`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L280`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L280`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L280`  (`bg-blue-400`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\SupplierForm.tsx:L303`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L315`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L315`  (`text-red-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L324`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L324`  (`bg-red-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L325`  (`bg-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L325`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L330`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L335`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L340`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L340`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L341`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L341`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L348`  (`bg-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\SupplierForm.tsx:L348`  (`bg-red-700`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\ToppingsManager.tsx:L20`  (`alert(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L28`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L33`  (`bg-gray-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L33`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L33`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L42`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L51`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L52`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L53`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L65`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L65`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L85`  (`bg-gray-50/30`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L87`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L95`  (`border-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L97`  (`text-gray-900`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L98`  (`text-gray-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L103`  (`border-gray-100/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L104`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L114`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ToppingsManager.tsx:L114`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Alert.tsx:L13`  (`bg-green-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Alert.tsx:L13`  (`border-green-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Alert.tsx:L14`  (`bg-orange-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Alert.tsx:L14`  (`border-orange-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Alert.tsx:L15`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Alert.tsx:L15`  (`border-red-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Alert.tsx:L16`  (`border-blue-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L11`  (`bg-green-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L11`  (`border-green-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L12`  (`bg-orange-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L12`  (`border-orange-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L13`  (`bg-red-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L13`  (`border-red-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L14`  (`bg-purple-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Badge.tsx:L14`  (`border-purple-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Button.tsx:L23`  (`bg-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Button.tsx:L24`  (`bg-blue-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Button.tsx:L25`  (`bg-red-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\Button.tsx:L25`  (`bg-red-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\DeleteConfirmModal.tsx:L40`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L18`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L18`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L18`  (`bg-blue-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L19`  (`bg-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L19`  (`bg-red-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L19`  (`bg-red-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L20`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L20`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L20`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L20`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\ui\LoadingButton.tsx:L40`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L29`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L29`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L40`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L44`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L49`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L49`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L54`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L59`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L59`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L63`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L67`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L67`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L79`  (`text-gray-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L79`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L86`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L86`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L86`  (`bg-blue-400`) → Category: TOKEN-SWAP
+- **Native alert/confirm** [high] in `components\UserForm.tsx:L106`  (`confirm(`) → Category: REPLACE-ALERT
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L115`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `components\UserForm.tsx:L115`  (`text-red-800`) → Category: TOKEN-SWAP
+
+### login
+
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L53`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L56`  (`text-gray-800`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L57`  (`text-gray-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L61`  (`bg-red-50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L61`  (`text-red-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L61`  (`border-red-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L68`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L77`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L77`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L77`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L77`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L86`  (`text-gray-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L94`  (`border-gray-300`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L94`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L94`  (`border-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L94`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L105`  (`bg-blue-600`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L105`  (`bg-blue-700`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L105`  (`ring-blue-500`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L105`  (`bg-blue-400`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\login\page.tsx:L115`  (`text-gray-400`) → Category: TOKEN-SWAP
+
+### POS
+
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L3`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L5`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L6`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L7`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L9`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L10`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L12`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L15`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L20`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L21`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L21`  (`bg-gray-50/50`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L22`  (`bg-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L25`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L26`  (`bg-gray-100`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L28`  (`border-gray-200`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L28`  (`bg-gray-50/80`) → Category: TOKEN-SWAP
+- **Raw semantic Tailwind colors** [medium] in `app\pos\loading.tsx:L29`  (`bg-gray-200`) → Category: TOKEN-SWAP
