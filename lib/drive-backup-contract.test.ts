@@ -32,8 +32,13 @@ describe("Drive backup deployment contract", () => {
     expect(appsScriptSource).toContain("MailApp.sendEmail");
     expect(appsScriptSource).toContain("setTrashed(true)");
     expect(appsScriptSource).toContain("DAILY_RETENTION_COUNT = 180");
-    expect(appsScriptSource).toContain("MONTHLY_RETENTION_COUNT = 24");
+    expect(appsScriptSource).not.toContain("MONTHLY_RETENTION_COUNT");
     expect(appsScriptSource).toContain("fnbapp-monthly-");
+    expect(appsScriptSource).toContain('getOrCreateFolder_(rootFolder, "daily")');
+    expect(appsScriptSource).toContain('getOrCreateFolder_(rootFolder, "monthly")');
+    expect(appsScriptSource).toContain("migrateLegacyRootFiles_");
+    expect(appsScriptSource).toContain("file.moveTo(");
+    expect(appsScriptSource).toContain(".trim()");
     expect(appsScriptSource).toContain("nearMinute(30)");
     expect(appsScriptSource).toContain('inTimezone("Asia/Ho_Chi_Minh")');
   });
@@ -45,7 +50,7 @@ describe("Drive backup deployment contract", () => {
     expect(policy).toMatch(/20 MB/);
     expect(policy).toMatch(/25 MB/);
     expect(policy).toMatch(/180/);
-    expect(policy).toMatch(/24/);
+    expect(policy).toMatch(/monthly.*indefinitely/i);
     expect(policy).toMatch(/R2|B2/);
   });
 });

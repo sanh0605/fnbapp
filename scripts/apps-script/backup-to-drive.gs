@@ -9,7 +9,6 @@ const EXPECTED_TABLES = [
   "audit_baseline_locks", "backdated_ledger_events",
 ];
 const DAILY_RETENTION_COUNT = 180;
-const MONTHLY_RETENTION_COUNT = 24;
 const DAILY_PREFIX = "fnbapp-backup-";
 const MONTHLY_PREFIX = "fnbapp-monthly-";
 const WARNING_BUNDLE_BYTES = 20 * 1024 * 1024;
@@ -30,6 +29,9 @@ function runDailyDriveBackup() {
       muteHttpExceptions: true,
     });
     if (response.getResponseCode() !== 200) {
+      if (response.getResponseCode() === 401) {
+        throw new Error("Snapshot endpoint returned 401. BACKUP_PULL_TOKEN in Script Properties does not match the Supabase secret.");
+      }
       throw new Error(`Snapshot endpoint returned ${response.getResponseCode()}: ${response.getContentText()}`);
     }
 
@@ -38,11 +40,13 @@ function runDailyDriveBackup() {
     validateBundle_(bundle);
     const dailyFileName = buildDailyFileName_(bundle.capturedAt);
     const monthlyFileName = buildMonthlyFileName_(bundle.capturedAt);
-    const folder = DriveApp.getFolderById(folderId);
-    const daily = createReplacement_(folder, content, dailyFileName);
-    const monthly = createReplacement_(folder, content, monthlyFileName);
-    pruneBackups_(folder, /^fnbapp-backup-\d{4}-\d{2}-\d{2}\.json$/, DAILY_RETENTION_COUNT);
-    pruneBackups_(folder, /^fnbapp-monthly-\d{4}-\d{2}\.json$/, MONTHLY_RETENTION_COUNT);
+    const rootFolder = DriveApp.getFolderById(folderId);
+    const dailyFolder = getOrCreateFolder_(rootFolder, "daily");
+    const monthlyFolder = getOrCreateFolder_(rootFolder, "monthly");
+    migrateLegacyRootFiles_(rootFolder, dailyFolder, monthlyFolder);
+    const daily = createReplacement_(dailyFolder, content, dailyFileName);
+    const monthly = createReplacement_(monthlyFolder, content, monthlyFileName);
+    pruneBackups_(dailyFolder, /^fnbapp-backup-\d{4}-\d{2}-\d{2}\.json$/, DAILY_RETENTION_COUNT);
     alertCapacity_(daily.getSize());
     console.log(JSON.stringify({
       success: true,
@@ -108,6 +112,23 @@ function collectFilesByName_(folder, fileName) {
   return files;
 }
 
+function getOrCreateFolder_(parent, name) {
+  const folders = parent.getFoldersByName(name);
+  return folders.hasNext() ? folders.next() : parent.createFolder(name);
+}
+
+function migrateLegacyRootFiles_(rootFolder, dailyFolder, monthlyFolder) {
+  const files = rootFolder.getFiles();
+  while (files.hasNext()) {
+    const file = files.next();
+    if (/^fnbapp-backup-\d{4}-\d{2}-\d{2}\.json$/.test(file.getName())) {
+      file.moveTo(dailyFolder);
+    } else if (/^fnbapp-monthly-\d{4}-\d{2}\.json$/.test(file.getName())) {
+      file.moveTo(monthlyFolder);
+    }
+  }
+}
+
 function createReplacement_(folder, content, fileName) {
   const existing = collectFilesByName_(folder, fileName);
   // Create first. Existing copies are trashed only after the replacement exists.
@@ -153,5 +174,5 @@ function alertFailure_(error) {
 function requiredProperty_(properties, name) {
   const value = properties.getProperty(name);
   if (!value) throw new Error(`Missing Script Property: ${name}`);
-  return value;
+  return value.trim();
 }

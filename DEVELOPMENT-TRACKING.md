@@ -20,9 +20,10 @@ the original 27-table allowlist matched the live schema.
 - Production verification: HTTP 200, 32/32 tables, 14,164 rows, 7,890,329
   bytes; the added tables contain 484 rows including 43 recovery records and
   436 audit locks.
-- Apps Script policy now retains 180 daily full snapshots and 24 monthly full
-  snapshots. Both names use create-before-replace idempotency; unrelated Drive
-  files are untouched.
+- Apps Script policy now retains 180 daily full snapshots and monthly full
+  snapshots indefinitely. It creates separate `daily/` and `monthly/` child
+  folders and migrates matching legacy root files without touching unrelated
+  Drive files.
 - Capacity policy now starts R2/B2 work at 20 MB and requires production
   migration by 25 MB or runtime above 90 seconds.
 
@@ -31,8 +32,10 @@ the original 27-table allowlist matched the live schema.
 - Targeted backup tests: 10/10 pass. Full Vitest: 385/385 pass.
 - TypeScript: 0 errors. `git diff --check`: clean.
 - `backup-to-drive` schema-v2 Edge Function deployed and verified in production.
-- Owner must replace the Apps Script source with the new version and run once
-  to create the first monthly file. No database migration and no push.
+- A 401 during the owner run was traced to mismatched token values, not the
+  `BACKUP_PULL_TOKEN` property name. The owner must copy the exact current Apps
+  Script token value into the Supabase secret, replace the Apps Script source,
+  and run once. No database migration and no push.
 
 ---
 

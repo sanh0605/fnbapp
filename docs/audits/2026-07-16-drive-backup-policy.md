@@ -13,9 +13,12 @@ Architecture: owner-account Apps Script pull to Google Drive
   before writing to Drive.
 - Same-day runs are idempotent: create the replacement first, then trash older
   files with the same name.
-- Retention is 180 daily full snapshots plus 24 monthly full snapshots. The
+- Retention is 180 daily full snapshots; monthly full snapshots are retained indefinitely. The
   monthly file is replaced during each successful run, so it becomes the last
   successful snapshot of that month. Unrelated Drive files are outside scope.
+- Daily and monthly files live in separate `daily/` and `monthly/` child folders
+  under the configured Drive folder. Matching legacy files at the root are moved
+  into the appropriate child folder on the next successful run.
 - Failures trigger `MailApp` notification to the installable-trigger owner's
   active-user email.
 

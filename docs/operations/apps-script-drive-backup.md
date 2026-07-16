@@ -33,10 +33,12 @@ Open **Project Settings → Script Properties** and add:
 1. Select `runDailyDriveBackup` and click **Run**.
 2. Approve URL Fetch, Drive, and email permissions for the owner account.
 3. Confirm the execution succeeds.
-4. Confirm the folder contains `fnbapp-backup-YYYY-MM-DD.json`.
-5. Open the file and confirm `schemaVersion` is `2` and `tables` has exactly 32 keys.
-6. Confirm both the daily file and `fnbapp-monthly-YYYY-MM.json` exist.
-7. Run it again. Confirm only one non-trashed daily and monthly file exists for
+4. Confirm the configured root folder contains `daily/` and `monthly/` child
+   folders.
+5. Confirm `daily/` contains `fnbapp-backup-YYYY-MM-DD.json`.
+6. Open the file and confirm `schemaVersion` is `2` and `tables` has exactly 32 keys.
+7. Confirm `monthly/` contains `fnbapp-monthly-YYYY-MM.json`.
+8. Run it again. Confirm only one non-trashed daily and monthly file exists for
    the current periods.
 
 Failure alerts are sent with `MailApp` to
@@ -53,8 +55,9 @@ from the requested minute.
 ## 5. Verify the first scheduled run
 
 The next day, check **Executions** in Apps Script and confirm the dated file is
-present. The script keeps 180 daily files and 24 monthly files, trashing older
-matching files. Unrelated files are never touched.
+present. The script keeps 180 daily files and retains monthly files indefinitely.
+Matching legacy backup files in the configured root folder are moved into the
+appropriate child folder. Unrelated files are never touched.
 
 ## Restore check
 
