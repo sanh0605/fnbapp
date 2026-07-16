@@ -51,17 +51,16 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **UI-REMED-1. TOKEN-SWAP migration** | Antigravity | 1105 raw Tailwind color occurrences → design tokens | Phase 1 audit found 1105 instances. Mechanical but volume. Multi-session. Gemini 3.5 Flash Medium. |
-| **UI-REMED-2. REMOVE-STICKYBAR** | Antigravity | 73 StickyFilterBar usages removal | UI-CONSISTENCY-1 expanded. 16 client files. ~1 session. Gemini 3.5 Flash Medium. |
 | **UI-REMED-3. REPLACE-ALERT** | Antigravity | 54 native alert/confirm → custom modal/toast | 12 source files. Need generic Modal/Toast component first (not in components/ui/). ~2 sessions. Gemini 3.1 Pro Low. |
 | **UI-REMED-4. ADD-BOUNDARY** | Antigravity | 37 error.tsx + 10 loading.tsx missing | Add to each route segment. ~1 session. Gemini 3.5 Flash Medium. |
-| **H1. Push local commits** | Claude | git | 70+ commits local (after Phase 2 + Phase 3). Push per Stabilization Phase 3 plan. |
+| **UI-REMED-1. TOKEN-SWAP migration** | Antigravity | 1105 raw Tailwind color occurrences → design tokens | Phase 1 audit found 1105 instances. Mechanical but volume. Multi-session. Gemini 3.5 Flash Medium. Can split by color family or page group. |
+| **H1. Push local commits** | Claude | git | After next batch ready. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| (none) | — | — | — | MAC drift audit saga complete 2026-07-16 (E3 → Task 3.10). 436 total locks, audit OPERATIONALLY CLEAN exit 0. See `COMPLETED.md`. |
+| [~A] **UI-REMED-2. Redesign StickyFilterBar with design system tokens** | Antigravity | UI: single component redesign, preserve API | `docs/handoffs/2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` (Claude authored 2026-07-16). User chose Redesign (not Remove). Replace hardcoded colors with tokens, preserve sticky + mobile expand. ~0.5 session. | (unblocked) |
 
 ### P3 — Depends on verification
 
@@ -87,7 +86,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-16-codex-task-3.10-audit-display.md` → Task 3.10 (P1, ready for Codex)
+- `2026-07-16-antigravity-ui-remed-2-sticky-filter-bar.md` → UI-REMED-2 (P1, ready for Antigravity)
+- `2026-07-16-codex-task-3.10-audit-display.md` → Task 3.10 — historical reference, work complete (commit `6a5bdec`)
 - `2026-07-16-codex-task-3.5-cohort-aware-audit.md` → Task 3.5 — historical reference, work complete (commit `c28319d`)
 - `2026-07-16-codex-task-3.9-historical-gap-lock.md` → Task 3.9 — historical reference, work complete (commit `09bf26a`)
 - `2026-07-16-codex-task-3.8-backdated-events-surface.md` → Task 3.8 — historical reference, work complete (commit `ad7f7ba`)
