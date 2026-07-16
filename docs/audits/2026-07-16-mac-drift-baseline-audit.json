@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-16T11:46:16.849Z",
+  "generated_at": "2026-07-16T16:18:26.832Z",
   "mode": "READ_ONLY",
   "contract": {
     "database_tables_read": [
@@ -34,6 +34,7 @@
   ],
   "summary": {
     "audit_clean": false,
+    "operationally_clean": true,
     "security_integrity_clean": true,
     "total_live_mismatches": 396,
     "total_live_delta_vnd": -134488,

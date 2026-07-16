@@ -19,8 +19,7 @@ import {
   buildMacDriftAuditOutputPath,
   classifyMacDriftMismatches,
   FROZEN_MAC_DRIFT_BASELINE_PATH,
-  LOCKED_VIOLATION_SUBCATEGORIES,
-  MAC_DRIFT_AUDIT_CATEGORIES,
+  getMacDriftAuditExitCode,
   type KnownMacDriftCohortArtifact,
   type MacDriftBaselineLock,
 } from "../lib/mac-drift-baseline";
@@ -111,6 +110,7 @@ async function main(): Promise<void> {
   const securityIntegrityClean =
     classified.lockedViolationSummary.LOCKED_VIOLATION_STORED === 0;
   const auditClean = lockedViolations.length === 0 && newInvestigationNeeded.length === 0;
+  const isOperationallyClean = classified.isOperationallyClean;
 
   writeJsonReport(reportPath, {
     generated_at: generatedAt.toISOString(),
@@ -136,6 +136,7 @@ async function main(): Promise<void> {
     })),
     summary: {
       audit_clean: auditClean,
+      operationally_clean: isOperationallyClean,
       security_integrity_clean: securityIntegrityClean,
       total_live_mismatches: drift.lineMismatches.length,
       total_live_delta_vnd: drift.totalDelta,
@@ -152,19 +153,34 @@ async function main(): Promise<void> {
     lines: classified.lines,
   });
 
-  console.log("=== COHORT-AWARE MAC DRIFT AUDIT (READ ONLY) ===");
-  console.log(`Total live mismatches:       ${drift.lineMismatches.length}`);
-  console.log(`Mismatch-line delta:         ${fmtMoney(sum(classified.lines.map(line => line.delta)))}`);
-  console.log(`Audit baseline locks:        ${locks.length}`);
-  for (const category of MAC_DRIFT_AUDIT_CATEGORIES) {
-    console.log(`${category.padEnd(29)} ${classified.summary[category]}`);
+  console.log(
+    `MAC Drift Baseline Audit: ${isOperationallyClean ? "OPERATIONALLY CLEAN" : "REVIEW REQUIRED"}`,
+  );
+  if (!isOperationallyClean) {
+    console.log(
+      `Critical: ${classified.lockedViolationSummary.LOCKED_VIOLATION_STORED} LOCKED_VIOLATION_STORED (security incident)`,
+    );
+    console.log(
+      `Action: ${classified.summary.NEW_INVESTIGATION_NEEDED} NEW_INVESTIGATION_NEEDED (new drift to investigate)`,
+    );
+    console.log(
+      `Action: ${classified.summary.KNOWN_NOT_LOCKED} KNOWN_NOT_LOCKED (reviewed line missing lock)`,
+    );
   }
-  for (const category of LOCKED_VIOLATION_SUBCATEGORIES) {
-    console.log(`  ${category.padEnd(27)} ${classified.lockedViolationSummary[category]}`);
-  }
-  console.log(`Security integrity:          ${securityIntegrityClean ? "CLEAN" : "CRITICAL"}`);
-  console.log(`Audit status:                ${auditClean ? "AUDIT CLEAN" : "FOLLOW-UP REQUIRED"}`);
-  console.log(`JSON artifact:               ${reportPath}`);
+  console.log(`- ${classified.summary.LOCKED_MATCHED} LOCKED_MATCHED (cohort understood, no action)`);
+  console.log(
+    `- ${classified.lockedViolationSummary.LOCKED_VIOLATION_REPLAY} LOCKED_VIOLATION_REPLAY (informational, known BTP drift pattern)`,
+  );
+  console.log(
+    `- ${classified.lockedViolationSummary.LOCKED_VIOLATION_STORED} LOCKED_VIOLATION_STORED (no security incident when zero)`,
+  );
+  console.log(`- ${classified.summary.KNOWN_NOT_LOCKED} KNOWN_NOT_LOCKED (all understood lines locked when zero)`);
+  console.log(`- ${classified.summary.NEW_INVESTIGATION_NEEDED} NEW_INVESTIGATION_NEEDED (no new drift when zero)`);
+  console.log(`Total live mismatches: ${drift.lineMismatches.length}`);
+  console.log(`Mismatch-line delta:   ${fmtMoney(sum(classified.lines.map(line => line.delta)))}`);
+  console.log(`Audit baseline locks:  ${locks.length}`);
+  console.log(`Security integrity:    ${securityIntegrityClean ? "CLEAN" : "CRITICAL"}`);
+  console.log(`JSON artifact:         ${reportPath}`);
 
   if (lockedViolations.length > 0) {
     console.log("\nLocked violations");
@@ -183,6 +199,7 @@ async function main(): Promise<void> {
     }
   }
   console.log("\nNo database rows were written.");
+  process.exitCode = getMacDriftAuditExitCode(classified);
 }
 
 async function selectAllLocks(client: SupabaseClient): Promise<MacDriftBaselineLock[]> {

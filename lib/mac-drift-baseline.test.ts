@@ -5,6 +5,7 @@ import {
   buildMacDriftRecoveryPlan,
   buildMacDriftAuditOutputPath,
   classifyMacDriftMismatches,
+  getMacDriftAuditExitCode,
 } from "@/lib/mac-drift-baseline";
 
 describe("buildMacDriftBaselineReport", () => {
@@ -176,6 +177,7 @@ describe("classifyMacDriftMismatches", () => {
       KNOWN_NOT_LOCKED: 1,
       NEW_INVESTIGATION_NEEDED: 1,
     });
+    expect(result.isOperationallyClean).toBe(false);
     expect(result.lockedViolationSummary).toEqual({
       LOCKED_VIOLATION_STORED: 1,
       LOCKED_VIOLATION_REPLAY: 0,
@@ -223,6 +225,63 @@ describe("classifyMacDriftMismatches", () => {
     expect(result.lines[0].locked_violation_subcategory)
       .toBe("LOCKED_VIOLATION_REPLAY");
     expect(result.lines[0].violation_fields).toEqual(["expected_cost_at_sale"]);
+  });
+
+  it("is operationally clean with only matched and replay-shifted locks", () => {
+    const result = classifyMacDriftMismatches({
+      mismatches: [
+        makeLine(),
+        makeLine({ line_id: "line-2", expected_cost: 121, delta: 21 }),
+      ],
+      locks: [
+        {
+          order_line_id: "line-1",
+          reason: "BASELINE",
+          source_hash: "hash",
+          stored_cost_at_sale: 100,
+          expected_cost_at_sale: 120,
+        },
+        {
+          order_line_id: "line-2",
+          reason: "BASELINE",
+          source_hash: "hash",
+          stored_cost_at_sale: 100,
+          expected_cost_at_sale: 120,
+        },
+      ],
+      knownCohortArtifacts: [],
+    });
+
+    expect(result.isOperationallyClean).toBe(true);
+    expect(getMacDriftAuditExitCode(result)).toBe(0);
+  });
+
+  it("requires review when a locked stored value changes", () => {
+    const result = classifyMacDriftMismatches({
+      mismatches: [makeLine()],
+      locks: [{
+        order_line_id: "line-1",
+        reason: "BASELINE",
+        source_hash: "hash",
+        stored_cost_at_sale: 99,
+        expected_cost_at_sale: 120,
+      }],
+      knownCohortArtifacts: [],
+    });
+
+    expect(result.isOperationallyClean).toBe(false);
+    expect(getMacDriftAuditExitCode(result)).toBe(1);
+  });
+
+  it("requires review when a new mismatch needs investigation", () => {
+    const result = classifyMacDriftMismatches({
+      mismatches: [makeLine()],
+      locks: [],
+      knownCohortArtifacts: [],
+    });
+
+    expect(result.isOperationallyClean).toBe(false);
+    expect(getMacDriftAuditExitCode(result)).toBe(1);
   });
 });
 

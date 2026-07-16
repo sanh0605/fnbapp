@@ -85,6 +85,25 @@ COGS integrity failures (`LOCKED_VIOLATION_STORED`) from expected-value replay
 evolution (`LOCKED_VIOLATION_REPLAY`) and isolates lines with no reviewed
 evidence as `NEW_INVESTIGATION_NEEDED`.
 
+### Operational clean definition
+
+The audit is **operationally clean** only when all three actionable counts are
+zero:
+
+- `LOCKED_VIOLATION_STORED = 0`: no locked stored COGS changed;
+- `KNOWN_NOT_LOCKED = 0`: every reviewed mismatch has its expected lock; and
+- `NEW_INVESTIGATION_NEEDED = 0`: no unexplained live drift exists.
+
+`LOCKED_VIOLATION_REPLAY` does not make the audit operationally unclean. It is
+an informational signal that current recipe or ledger replay has evolved while
+the protected sale-time COGS remains intact. Operators should retain its count
+for trend visibility, but it is not a security incident and requires no
+production data rewrite.
+
+The script exits with code `0` for `OPERATIONALLY CLEAN` and code `1` for
+`REVIEW REQUIRED`. A non-zero result means at least one stored-cost violation,
+known-but-unlocked line, or new investigation line requires action.
+
 ### What would change this policy
 
 This policy would be revisited if any of the following becomes true:

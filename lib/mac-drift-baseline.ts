@@ -96,6 +96,7 @@ export type ClassifiedMacDriftLine = MacCogsLineMismatch & {
 };
 
 export type ClassifiedMacDriftReport = {
+  isOperationallyClean: boolean;
   summary: Record<MacDriftAuditCategory, number>;
   lockedViolationSummary: Record<LockedViolationSubcategory, number>;
   cohortBreakdown: Array<{ cohort: string; count: number; delta: number }>;
@@ -182,6 +183,10 @@ export function classifyMacDriftMismatches(input: {
   }
 
   return {
+    isOperationallyClean:
+      lockedViolationSummary.LOCKED_VIOLATION_STORED === 0 &&
+      summary.KNOWN_NOT_LOCKED === 0 &&
+      summary.NEW_INVESTIGATION_NEEDED === 0,
     summary,
     lockedViolationSummary,
     cohortBreakdown: Array.from(cohortMap.entries())
@@ -201,6 +206,12 @@ export function buildMacDriftAuditOutputPath(
     throw new Error(`Refusing to overwrite frozen baseline artifact: ${path}`);
   }
   return path;
+}
+
+export function getMacDriftAuditExitCode(
+  report: Pick<ClassifiedMacDriftReport, "isOperationallyClean">,
+): 0 | 1 {
+  return report.isOperationallyClean ? 0 : 1;
 }
 
 export function buildMacDriftBaselineReport(input: {

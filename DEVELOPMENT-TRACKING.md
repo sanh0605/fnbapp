@@ -4,6 +4,40 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-16 (Codex) - Task 3.10 operational clean audit display
+
+**Trigger:** Task 3.5 correctly separated stored-cost integrity failures from
+expected replay evolution, but the first display still treated all 16 replay
+shifts as requiring follow-up.
+
+### Result
+
+- Defined operationally clean as zero `LOCKED_VIOLATION_STORED`, zero
+  `KNOWN_NOT_LOCKED`, and zero `NEW_INVESTIGATION_NEEDED`.
+- Kept `LOCKED_VIOLATION_REPLAY` visible as informational evidence without
+  failing the operator health check.
+- Restructured stdout so `OPERATIONALLY CLEAN` or `REVIEW REQUIRED` appears
+  first, followed by plain action-oriented category descriptions.
+- Added deterministic exit semantics: `0` when operationally clean and `1`
+  when review is required.
+- Current read-only production audit is operationally clean: 380 matched, 16
+  replay shifts, zero stored violations, zero known-but-unlocked, and zero new
+  investigation lines. No database rows were written.
+
+### Verification
+
+- Added three scenarios covering clean replay evolution, stored-cost violation,
+  and new unexplained drift, including exit-code assertions.
+- Live script returned exit code 0. Full Vitest: 391/391 pass; TypeScript: 0
+  errors; `git diff --check`: clean. Frozen baseline SHA-256 remains
+  `cd0a2b13d6e52cf7cd53dd8223b805686c7fa579ef76a245a588d484fe630dc3`.
+
+### Review state
+
+Local commit only. Awaiting Claude review.
+
+---
+
 ## 2026-07-16 (Claude) - Task 3.5 closed, Task 3.10 opened
 
 **Trigger:** Codex completed Task 3.5 cohort-aware baseline audit (commit `c28319d`), hit mandatory stop gate when LOCKED_VIOLATION > 0 on first live run.
