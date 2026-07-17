@@ -4,6 +4,34 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - Gate 2 Reviewed and Closed, Split Into 2 Remediation Waves
+
+**Trigger:** Codex reported Gate 2 complete (2 commits) with 25 access findings, correctly stopped short of the 5-item unreviewed remediation cap, and requested Claude split the findings into reviewed tasks.
+
+### Review Performed
+
+- Confirmed commit scope: `3570da0` (tool rewrite) and `f14b092` (report + doc updates) touch only the expected files.
+- Read `docs/audits/2026-07-18-gate2-access-map.md` in full: 81 Server Action exports across 21 files, 5 API route handlers across 4 files, 4 Edge Functions, 25 total findings (4 mutation-capable, 21 read-only), 3 POS actions with an unauthenticated SYSTEM-actor fallback, 1 Edge Function with an unsigned service-role JWT check.
+- Independently reread `lib/admin-auth-guard-audit.ts`'s rewrite: confirmed it replaced name-prefix mutation detection with actual write-call detection (`insert`/`update`/`remove`/`rpc`/`upsert`/atomic-helper calls), added arrow-function and wrapped-arrow export coverage, and distinguishes guard-presence from guard-enforcement — closing all 3 blind spots identified when Gate 2 was scoped.
+- Directly read source (not just the report) for the 4 highest-risk claims:
+  - `app/pos/actions.ts`: confirmed `submitOrderV2` and `savePOSDraft` call `getServerSession()` only to pick an actor-id fallback (`|| "system"`), with no rejecting guard anywhere in either function. Confirmed `deletePOSDraft` and `getPOSDrafts` have zero guard or session lookup at all.
+  - `app/admin/inventory/actions.ts` `submitStockAdjustment`: confirmed `resolveActor()` rejects unauthenticated callers but any authenticated role can proceed; confirmed the actual behavior is a `PENDING`-status `Stock_Adjustments` row with no `Stock_Ledger` write unless the caller is ADMIN (`isApproved`), and that the separate `approveStockAdjustment` which does write the ledger is properly `requireAdmin()`-guarded. This is a narrower, less severe finding than "STAFF can write the ledger directly."
+  - `supabase/functions/user-admin/index.ts` `_isServiceRole`: confirmed it does `JSON.parse(atob(jwt.split('.')[1]))` and checks `payload.role === 'service_role'` with no signature verification at all — a forged token with that claim in its payload passes this check regardless of the platform's own JWT enforcement setting.
+- Independently reran `npx vitest run`: 71 files, 422/422 pass (matches claim). Independently reran `npx tsc --noEmit`: 0 errors. Noted the working tree has unrelated in-progress `.tsx` changes (Antigravity's UI-REMED-1 visual smoke test work) and took care not to touch or stage any of those files.
+
+### Outcome
+
+- Gate 2 approved and closed. `docs/COMPLETED.md` updated with full verification summary.
+- Split remediation into 2 scoped waves rather than one large unreviewed fix:
+  - **Wave 1 (P0)**: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md` — the 3 POS SYSTEM-actor gaps + the Edge Function signature fix. No business decision needed.
+  - **Wave 2 (P1)**: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` — the 20 unguarded admin read actions, mechanical guard-add.
+- Opened `SEC-5` in the Blocked section: `submitStockAdjustment`'s wrong-role behavior is a genuine business/workflow question (does STAFF submitting for approval remain intended, or should it become ADMIN-only), not something to let Codex decide unilaterally.
+- Opened `SEC-4` in P2: verifying actual deployed JWT settings for 3 Edge Functions needs Supabase dashboard access, not a code change — flagged separately rather than folded into a code-fix wave.
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-18 (Codex) - Gate 2 Access Map Completed, Remediation Stop Gate Triggered
 
 **Outcome:** A per-export access map now covers the current application, but Gate 2 does not silently remediate the newly visible gaps because the finding population exceeds the approved small-wave limit.

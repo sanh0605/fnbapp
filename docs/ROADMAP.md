@@ -39,13 +39,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| (none) | — | — | — | Gate 1 closed and reviewed 2026-07-18. See `COMPLETED.md`. |
+| [ ] **Gate 2 Remediation Wave 1 — POS system-actor gaps + Edge Function signature** | Codex | `app/pos/actions.ts` (`submitOrderV2`, `savePOSDraft`, `deletePOSDraft`, `getPOSDrafts`); `supabase/functions/user-admin/index.ts` `_isServiceRole` | 2026-07-18 | Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md`. Highest-risk Gate 2 findings — financially material POS writes reachable without a session, and an Edge Function that decodes a claimed `service_role` JWT without verifying its signature. No business decision needed, unambiguous fix. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| [!] **Full audit Gate 2 — Architecture and access map** | Codex | Audit tool fixed and full access map produced; application remediation intentionally stopped | `docs/audits/2026-07-18-gate2-access-map.md` covers 21 Server Action files/81 exports, 4 API files/5 handlers, and 4 Edge Functions. Findings: 4 mutation gaps + 21 unguarded reads, 0 API-route gaps, and unresolved Edge deployment boundaries. This exceeds the ≤5 remediation gate; Claude review/scope is required before any guard wave. Items 4/5/9/10 remain for Gate 3+. |
+| [ ] **Gate 2 Remediation Wave 2 — 20 unguarded admin read actions** | Codex | 15 files under `app/admin/**/actions.ts`, see handoff for full list | Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md`. Mechanical guard-add wave; lower risk than Wave 1 (read-only). |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
@@ -56,6 +56,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 | **H1. Push local commits** | Claude | git | Khi anh yêu cầu. 41+ commits local pending. |
 | **REV-1. Spot-check 2 scripts/ tooling fixes made by Claude** | Codex | `scripts/generate-script-cleanup-plan.ts`, `scripts/verify-delete-candidates.ts` (commits `b5170da`, `24a57bd`) | Made before the 2026-07-18 `scripts/**` ownership rule closed the gray zone (see `docs/COLLABORATION.md` Section C change log). Both are read-only reporting tools (fixed a hardcoded date, fixed a regex that missed extension-less imports); Claude self-verified by running them and checking output, but no second agent has reviewed the diffs. Low priority, not urgent — closes the review gap retroactively. |
 | [~A] **UI-REMED-1 visual smoke test (overdue)** | Antigravity | Visual regression check of the 2026-07-17 color-token migration across `/pos`, `/admin` pages, and dialogs at mobile+desktop breakpoints | Handoff: `docs/handoffs/2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md`. UI-REMED-1 closed on automated checks only (TS/build/tests) — never had a human look at it. Independent of Gate 2, safe to run in parallel. |
+| **SEC-4. Verify deployed JWT settings for 3 Supabase Edge Functions** | User/Claude (needs Supabase dashboard access, not just repo) | `backup-to-sheets`, `notify-order`, `user-admin` (non-`/migrate` routes) | Gate 2 2026-07-18 finding: repository source can't tell whether these are deployed with platform JWT verification on or off (`--no-verify-jwt` or not). `backup-to-sheets` is legacy anyway (see FIX-2); `notify-order` has no application caller today but would send arbitrary caller-supplied content to Telegram if reachable and open; `user-admin`'s normal routes check the caller's Supabase Auth role locally but deployment-level enforcement is unverified. Needs someone with Supabase project access to check actual deployed function settings, not a code change. |
 
 ### P3 — Depends on verification
 
@@ -67,7 +68,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Blocker | Resolution path |
 |---|---|---|
-| (none) | — | Owner triggered the eight-gate audit 2026-07-17 (see P0). The 17-section F&B capability checklist remains a separate, not-yet-scheduled follow-up. |
+| **SEC-5. `submitStockAdjustment` wrong-role policy** | Gate 2 2026-07-18 found any authenticated role (not just ADMIN) can call this; current actual behavior is STAFF creates a `PENDING` row with no ledger write, ADMIN auto-approves with an immediate ledger write (the approval step itself is properly ADMIN-only guarded). Business question: is "staff submits, admin approves" the intended workflow (in which case this isn't really a bug, just a labeling mismatch — `FEATURE-CATALOG.md` says intended access is ADMIN when it should say ADMIN-approves/STAFF-submits), or should submission itself become ADMIN-only now, closing the STAFF path entirely? | Ask owner. Do not let Codex decide this unilaterally — it changes who can currently do what, not just a security posture. |
 
 ## Future direction (owner priority, set 2026-07-18 — not started, sequencing only)
 
@@ -122,7 +123,9 @@ records intent and order, not authorization to start.
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
 - `2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md` → UI-REMED-1 visual smoke test — ready for Antigravity pickup
-- `2026-07-18-codex-gate2-access-map.md` → Full audit Gate 2 — in progress with Codex
+- `2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md` → Gate 2 Remediation Wave 1 — ready for Codex pickup, P0
+- `2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` → Gate 2 Remediation Wave 2 — ready for Codex pickup, P1
+- `2026-07-18-codex-gate2-access-map.md` → Full audit Gate 2 — historical reference, work complete and Claude-reviewed (commits `3570da0`, `f14b092`)
 - `2026-07-17-codex-gate1-p0-security-exposures.md` → Full audit Gate 1 — historical reference, work complete and Claude-reviewed (commits `dd2f970`, `57d298a`, `9a8ee66`)
 - `2026-07-17-codex-pre-audit-c-feature-inventory.md` → Pre-Audit C — historical reference, work complete and Claude-reviewed (commit `99f466d`)
 - `2026-07-17-codex-pre-audit-b-execution.md` → Pre-Audit B Execution — historical reference, work complete and Claude-reviewed (commits `7c2409b`, `b238411`, `caacc58`)
@@ -164,6 +167,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-18 Claude: Gate 2 reviewed and closed (commits `3570da0`, `f14b092`). Independently reran the suite (422/422) and TypeScript (clean), then directly read source for the 4 highest-risk claims before trusting them — confirmed the POS SYSTEM-actor fallback, the zero-guard `deletePOSDraft`/`getPOSDrafts`, the `submitStockAdjustment` PENDING-vs-approved distinction, and the Edge Function's unsigned service-role JWT check all hold up exactly as reported. Split the 25 findings into 2 scoped remediation waves (P0: POS + Edge Function signature; P1: 20 admin-read guards) rather than one big unreviewed fix. Flagged `submitStockAdjustment`'s policy as a genuine business decision (changes who can currently do what, not just security posture) rather than letting Codex decide unilaterally. Flagged Edge Function deployment-config verification as needing dashboard access, not a code task.
 - 2026-07-18 Claude: found genuine ready work for idle Antigravity (user asked directly) rather than inventing busywork — UI-REMED-1's visual smoke test was closed on automated checks only and never actually looked at in a browser. Authored handoff, added as P2, cleaned up the stale "pending prompts" list (Pre-Audit C was listed as still needing pickup despite being closed weeks-equivalent ago in session time; added Gate 1/Gate 2 entries).
 - 2026-07-18 Claude: scoped and authored Gate 2 handoff. Read `lib/admin-auth-guard-audit.ts` directly and found 3 concrete blind spots in the existing audit tool before writing the handoff: it only scans `app/admin/` (misses `app/pos/actions.ts` and `app/actions/auth.ts`), its mutation-name prefix list misses void/reject/create/change-named functions (this is exactly why `rejectEventAction`'s Gate 1 gap wasn't caught by the tool itself), and its guard check only tests for substring presence, not enforcement, and misses arrow-function exports entirely. Gate 2 scope: fix the tool, extend it to API routes, produce a dated evidence report, remediate small unambiguous findings, cap silent remediation at 5 items before requiring a stop-and-report.
 - 2026-07-18 Claude: Gate 1 reviewed and closed (commits `dd2f970`, `57d298a`, `9a8ee66`). Independently reread every diff line, confirmed the remaining `select('*')` never leaks to a response, read all 5 new regression tests, and reran the suite (414/414) and TypeScript (clean) rather than trusting the report. Moved to `COMPLETED.md`. Opened Gate 2 (architecture/access map) as P1 — scoped pragmatically since the source spec's own Gate 2/Phase 3 text is incomplete.
