@@ -45,13 +45,14 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| (none) | — | — | — | UI-REMED saga fully complete 2026-07-17 (UI-REMED-1/2/3/4/5 done, ~94% color migration coverage). 26 commits local pending push. See `COMPLETED.md`. |
+| [~A] **UI-REMED-6. Remove StickyFilterBar, use PageHeader** | Antigravity | UI: 16+ client files migration + delete StickyFilterBar | `docs/handoffs/2026-07-17-antigravity-ui-remed-6-remove-stickybar.md` (Claude authored 2026-07-17). User visual review found StickyFilterBar "box" feel vs flat PageHeader (brands/suppliers). Migrate 16+ files, delete component. ~1.5-2 sessions. | (unblocked) |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **H1. Push local commits** | Claude | git | After UI-REMED-1 visual smoke test. 26 commits local pending. |
+| **POS-REDESIGN-1. POS visual refresh** | Antigravity | UI: POSScreen + CartPanel + ProductGrid redesign | User complaint: "POS không nhận ra sự thay đổi, trông không bắt mắt". Bigger scope. Defer until StickyFilterBar migration done. Multi-session. Gemini 3.1 Pro High. |
+| **H1. Push local commits** | Claude | git | After UI-REMED-6 visual smoke test. 27+ commits local pending. |
 
 ### P3 — Depends on verification
 
@@ -77,6 +78,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
+- `2026-07-17-antigravity-ui-remed-6-remove-stickybar.md` → UI-REMED-6 (P1, ready for Antigravity)
 - `2026-07-17-antigravity-ui-remed-1-token-swap-overnight.md` → UI-REMED-1 — historical reference, work complete (5 phases: `c33033f` + `8f93742` + `d239cbb` + `55ef69d` + `ee33450`)
 - `2026-07-17-antigravity-ui-remed-5-polish.md` → UI-REMED-5 — historical reference, work complete (commit `11c566b`))
 - `2026-07-17-antigravity-ui-remed-4-boundaries.md` → UI-REMED-4 — historical reference, work complete (commit `c923086`)
