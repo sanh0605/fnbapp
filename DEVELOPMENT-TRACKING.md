@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Codex) - Pre-Audit A Documentation Manifest
+
+**Trigger:** Full-system audit Pre-Audit A required a preservation-first, read-only inventory of every root Markdown file and every Markdown/JSON document under `docs/`, plus narrow P0 exposure checks.
+
+### Completed Work
+- Inventoried 189 documents: 7 root Markdown files, 138 `docs/**` Markdown files, and 44 structured JSON audit artifacts.
+- Classified every record with Git update metadata, purpose, actual path consumers, claims-vs-code evidence, successor, deletion risk, and preservation requirement.
+- Reconciled the approved distribution: 14 CURRENT, 115 HISTORICAL_EVIDENCE, 8 SUPERSEDED, 1 DUPLICATE, 51 GENERATED_ARTIFACT, and 0 DELETE_CANDIDATE.
+- Preserved all 47 completed handoffs as historical evidence and all 44 audit JSON files as generated evidence.
+- Recorded eight documentation contradictions and Pre-Audit B consolidation recommendations without editing, moving, or deleting source documents.
+- Confirmed Phase 0 commit `d1152d9` removed the public diagnostic route. The backdated-ledger and POS mutations remain route-contained but need action-local hardening in Phase 3.
+- Flagged one remaining credential-material exposure: raw Users rows can carry `password_hash` into authenticated admin Client Component payloads. This audit documents the finding only; no security code was changed.
+
+### Verification
+- Manifest JSON parses and contains 189 unique records with every required field populated.
+- Source coverage is exact: 0 missing paths and 0 extra paths; classification totals reconcile to 189.
+- Bulk rules verified: 47/47 handoffs are HISTORICAL_EVIDENCE; 44/44 audit JSON files are GENERATED_ARTIFACT with KEEP_AS_EVIDENCE.
+- Five representative documents were spot-checked against source content, Git history, consumers, and current code anchors.
+- No database operation, production write, migration, source-document mutation, or remote push was performed.
+
+Commit: `Codex audit: Pre-Audit A documentation manifest (read-only baseline)`
+
 ## 2026-07-17 (Antigravity) - POS-REDESIGN-1 Session 1 Leaf Components
 
 **Trigger:** POS redesign request for Modern minimal soft aesthetic (Option A). Focus on mobile-first (375px) layout, larger touch targets, and subtle micro-transitions.
