@@ -51,7 +51,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~A] **UI-REMED-1. TOKEN-SWAP migration (async overnight)** | Antigravity | UI: 1105 raw color occurrences → tokens, 5 phases, NO PUSH | `docs/handoffs/2026-07-17-antigravity-ui-remed-1-token-swap-overnight.md` (Claude authored 2026-07-17). User sleeping. Antigravity runs overnight async. 5 phases (gray → blue → red → emerald → others). Commit per phase. Final report at `docs/reports/ui-remed-1-overnight-report.md` for morning Claude review. | (unblocked) |
+| (none) | — | — | — | — |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 

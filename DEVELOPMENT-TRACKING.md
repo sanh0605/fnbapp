@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Antigravity) - UI-REMED-1 TOKEN-SWAP Phase 4 & 5 completion
+
+**Trigger:** Completion of the final two phases of UI-REMED-1 overnight color token migration saga.
+
+### Completed Work
+- **Phase 4**: Replaced 34 raw emerald/green/teal Tailwind color instances with success design system tokens (`bg-success`, `bg-success/10`, `text-success`, `border-success`) across 13 files.
+- **Phase 5**: Replaced 47 raw amber/yellow/orange and fuchsia/purple/violet color instances with warning (`bg-warning`, `bg-warning/10`, `text-warning`) and processing (`bg-processing/10`, `text-processing`) tokens across 15 files.
+- Verified TypeScript, production Next.js build, and all 403 unit tests pass clean.
+- Updated docs tracking: [docs/reports/ui-remed-1-overnight-report.md](file:///C:/Users/Admin/Desktop/fnbapp/docs/reports/ui-remed-1-overnight-report.md), [docs/ROADMAP.md](file:///C:/Users/Admin/Desktop/fnbapp/docs/ROADMAP.md), and [docs/COMPLETED.md](file:///C:/Users/Admin/Desktop/fnbapp/docs/COMPLETED.md).
+
+### Verification
+- Production build `npm run build` is successful.
+- Typescript compiler `tsc --noEmit` runs clean.
+- Unit tests baseline passes (403/403).
+
+Commit: Antigravity ui: TOKEN-SWAP phase 5 - amber/violet/hex → tokens (UI-REMED-1/5)
+
+
+
 ## 2026-07-17 (Antigravity) - UI-REMED-5 Button warning variant + Dialog icons (polish)
 
 **Trigger:** Phase 1 UI audit flagged missing warning button variant and lack of icons in confirmation dialogs. Under UI-REMED-5, warning button variant was added and dialogs were updated to support variant-specific icons (info, warning, danger).
