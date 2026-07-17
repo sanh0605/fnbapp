@@ -168,6 +168,35 @@ Commit: this commit.
 
 ---
 
+## 2026-07-17 (Antigravity) - POS redesign Session 3 - polish + transitions (mobile-first final)
+
+**Trigger:** POS-REDESIGN-1 Session 3 request by Claude.
+
+### Completed Work
+- Integrated micro-transitions into POS UI per Option A:
+  - `ProductCard`: Added smooth `scale-[1.02]` on hover and `active:scale-[0.98]` on click, with `will-change-transform` and `transition-all duration-200`.
+  - `CartItemRow`: Implemented smooth entrance animation (`animate-cart-item-in`) using CSS keyframes. Added scale shrink `active:scale-95` on quantity buttons and scale shrink `active:scale-90` on quantity numbers.
+  - `CartPanel`: Rendered Backdrop dynamically using classes `opacity-100` / `opacity-0` and `pointer-events` for high performance CSS transition.
+  - `ProductGrid`: Added `animate-fade-in-quick` on the search clear (✕) button.
+- Audited and updated Mobile Touch Targets (>=44px):
+  - Category Pills: Increased minimum height on mobile to `min-h-[44px]`.
+  - Search Clear Button: Wrapped in a `w-11 h-11` (44px) button wrapper.
+  - Cart Header Action Buttons ("Lưu Nháp", "Xoá hết") & Mobile Close Button ("✕"): Resized to `min-h-[44px]`.
+  - Promo discount inputs & Custom discount buttons ("VNĐ/%") & Custom discount inputs: Resized to `h-11` (44px) to satisfy ergonomics.
+- Addressed Edge Cases:
+  - Search Empty Results: Implemented friendly empty state UI in `ProductGrid` when search queries yield no products.
+  - Accessibility: Enhanced focus indicator (`focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none`) on interactive buttons.
+
+### Verification
+- Production build passes successfully (`npm run build`).
+- TypeScript compile is clean (`npx tsc --noEmit`).
+- All 403 vitest tests pass successfully (`npx vitest run`).
+- Checked layout visually for both desktop (1280px) and mobile (375px).
+
+Commit: this commit.
+
+---
+
 ## 2026-07-17 (Antigravity) - POS redesign Session 2 - layout overhaul (mobile-first)
 
 **Trigger:** POS-REDESIGN-1 Session 2 request by Claude.
