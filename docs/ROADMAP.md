@@ -76,7 +76,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~X] **Pre-Audit A. Documentation discovery and classification (read-only)** | Codex | Audit: inventory + classify all root MD + docs/** | `docs/handoffs/2026-07-17-codex-pre-audit-a-documentation.md` (Claude authored 2026-07-17). Owner triggered full audit program. Pre-Audit A = read-only doc inventory + classification + P0 exposure flag. Baseline HEAD `d1db0c1`. ~1 session. | (unblocked) |
+| [~X] **Pre-Audit B. Canonical document set proposal (read-only)** | Codex | Audit: propose structure for 10 canonical docs + SUPERSEDED/DUPLICATE handling plan | `docs/handoffs/2026-07-17-codex-pre-audit-b-canonical-proposal.md` (Claude authored 2026-07-17). Pre-Audit A done (commit `f12725f`). Pre-Audit B = propose structure for README, CONTEXT, ARCHITECTURE, FEATURE-CATALOG, BUSINESS-RULES, ACCESS-MODEL, ROADMAP, COMPLETED, TESTING, COLLABORATION. Plus transition plan for 8 SUPERSEDED + 1 DUPLICATE. NO file modifications — proposal only. ~1 session. | (unblocked) |
 
 ## Out of scope (do not start without explicit approval)
 
@@ -90,7 +90,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-codex-pre-audit-a-documentation.md` → Pre-Audit A (P1, ready for Codex)
+- `2026-07-17-codex-pre-audit-b-canonical-proposal.md` → Pre-Audit B (P1, ready for Codex)
+- `2026-07-17-codex-pre-audit-a-documentation.md` → Pre-Audit A — historical reference, work complete (commit `f12725f`)
 - `2026-07-17-antigravity-pos-redesign-1-session-3.md` → POS-REDESIGN-1 Session 3 — historical reference, work complete (commit `20a1d38`)
 - `2026-07-17-antigravity-pos-redesign-1-session-2.md` → POS-REDESIGN-1 Session 2 — historical reference, work complete (commit `c61f5a1`)
 - `2026-07-17-antigravity-pos-redesign-1-session-1.md` → POS-REDESIGN-1 Session 1 — historical reference, work complete (commit `a3682db`)
