@@ -115,52 +115,102 @@ export function CartPanel({
   const totalAmount = calculateTotalAmount();
 
   return (
-    <div
-      className={`fixed inset-y-0 right-0 w-full md:w-96 bg-surface-card border-l border-border shadow-2xl flex flex-col z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
-        isCartOpen ? "translate-x-0" : "translate-x-full"
-      }`}
-    >
-      <div className="h-14 bg-primary flex items-center justify-between px-4 shrink-0 text-white">
-        <h2 className="font-bold text-lg flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          Hoá Đơn
-        </h2>
-        <div className="flex items-center gap-2">
-          {cart.length > 0 && (
-            <>
-              <button
-                onClick={() => saveDraft(cart, true)}
-                className="text-xs font-bold bg-surface-card/10 hover:bg-surface-card/20 px-2 py-1 rounded transition-colors"
-              >
-                Lưu Nháp
-              </button>
-              <button
-                onClick={async () => {
-                  if (await confirm({ title: "Xác nhận xóa", message: "Xoá hết món trong giỏ hàng?", variant: "danger" })) {
-                    setCart([]);
-                    setActiveDraftId(null);
-                  }
-                }}
-                className="text-xs font-bold bg-danger/20 text-red-100 hover:bg-danger/40 px-2 py-1 rounded transition-colors"
-              >
-                Xoá hết
-              </button>
-            </>
-          )}
-          <button onClick={() => setIsCartOpen(false)} className="lg:hidden p-1 bg-surface-card/20 rounded hover:bg-surface-card/30">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+    <>
+      {/* Backdrop (Mobile only, shown when expanded) */}
+      {isCartOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 z-30 md:hidden transition-opacity duration-300"
+          onClick={() => setIsCartOpen(false)}
+        />
+      )}
+
+      {/* Collapsed Bar at Bottom (Mobile only, shown when NOT expanded and cart has items) */}
+      {!isCartOpen && cart.length > 0 && (
+        <div 
+          onClick={() => setIsCartOpen(true)}
+          className="fixed bottom-0 left-0 right-0 bg-surface-card border-t border-border shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-4 py-3 flex items-center justify-between z-30 md:hidden cursor-pointer active:bg-surface-secondary/50 min-h-[68px] pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+        >
+          <div className="flex items-center gap-3">
+            <div className="relative bg-primary-soft p-2 rounded-xl text-primary">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-bold">
+                {totalItems}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider leading-none">Giỏ hàng</span>
+              <span className="text-base font-black text-text-primary mt-0.5">{formatNumber(totalAmount)}</span>
+            </div>
+          </div>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsCartOpen(true);
+            }}
+            className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-transform"
+          >
+            Thanh toán ({totalItems})
           </button>
         </div>
-      </div>
+      )}
+
+      {/* Main CartPanel Container */}
+      <div
+        className={`fixed left-0 right-0 bg-surface-card shadow-[0_-8px_30px_rgba(0,0,0,0.12)] md:shadow-none flex flex-col z-40 transition-transform duration-300 ease-out 
+          bottom-0 rounded-t-3xl max-h-[85vh] 
+          md:relative md:translate-y-0 md:rounded-none md:max-h-none md:h-full md:w-80 lg:w-96 md:border-l md:border-border md:translate-x-0
+          ${isCartOpen ? "translate-y-0" : "translate-y-full md:translate-y-0 md:flex"}`}
+      >
+        {/* Drag Handle (Mobile only) */}
+        <div 
+          className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-2 shrink-0 md:hidden cursor-pointer" 
+          onClick={() => setIsCartOpen(false)} 
+        />
+
+        <div className="h-14 bg-surface-card flex items-center justify-between px-4 shrink-0 border-b border-border/50">
+          <h2 className="font-bold text-text-primary text-base md:text-lg flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            Hoá Đơn <span className="text-xs text-text-secondary">({totalItems})</span>
+          </h2>
+          <div className="flex items-center gap-2">
+            {cart.length > 0 && (
+              <>
+                <button
+                  onClick={() => saveDraft(cart, true)}
+                  className="text-xs font-bold text-primary bg-primary-soft hover:bg-primary/20 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px] flex items-center"
+                >
+                  Lưu Nháp
+                </button>
+                <button
+                  onClick={async () => {
+                    if (await confirm({ title: "Xác nhận xóa", message: "Xoá hết món trong giỏ hàng?", variant: "danger" })) {
+                      setCart([]);
+                      setActiveDraftId(null);
+                    }
+                  }}
+                  className="text-xs font-bold text-danger bg-danger/10 hover:bg-danger/20 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px] flex items-center"
+                >
+                  Xoá hết
+                </button>
+              </>
+            )}
+            <button 
+              onClick={() => setIsCartOpen(false)} 
+              className="md:hidden p-2 text-text-muted hover:bg-surface-secondary rounded-full min-h-[36px] min-w-[36px] flex items-center justify-center"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
 
       <div className="flex-1 overflow-y-auto bg-page p-3">
         {cart.length === 0 ? (
@@ -429,7 +479,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Tien mat")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
+                className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-emerald-700 active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>
@@ -457,7 +507,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Chuyen khoan")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-primary text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-primary-hover active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
+                className="flex-1 bg-primary text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>
@@ -490,7 +540,7 @@ export function CartPanel({
               <span className="text-text-secondary font-medium">Tổng thanh toán ({processingOrder.totalItems} món)</span>
               <span className="text-2xl font-black text-warning">{formatNumber(processingOrder.totalAmount)}</span>
             </div>
-            <div className="w-full bg-surface-secondary text-text-secondary font-bold text-sm py-3.5 rounded-xl flex justify-center items-center gap-2 border border-border min-h-[48px]">
+            <div className="w-full bg-surface-secondary text-text-secondary font-bold text-sm py-3.5 rounded-2xl flex justify-center items-center gap-2 border border-border min-h-[52px]">
               <svg className="animate-spin h-4 w-4 text-text-secondary" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
@@ -505,5 +555,6 @@ export function CartPanel({
         ) : null}
       </div>
     </div>
+  </>
   );
 }
