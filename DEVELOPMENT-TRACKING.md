@@ -4,6 +4,29 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Claude) - Structural Cleanup: Dead Component Removed, Script Cleanup Plan Refreshed
+
+**Trigger:** User asked for a health check on agent collaboration, folder structure, and large files. Investigation (not requested audit work, a direct structural review) surfaced two concrete findings; user approved acting on both immediately.
+
+### Findings and Actions
+
+- **Dead code removed:** `components/PurchaseOrderForm.tsx` (429 lines) was not imported anywhere in the repository. Both purchase-order pages (`app/admin/inventory/purchase-orders/new/page.tsx`, `.../[id]/page.tsx`) use the co-located `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx` instead. Confirmed via repo-wide grep before deletion. Root cause: no repo convention for where shared vs. page-local components live, so the file was orphaned when the code was moved to the co-located pattern.
+- **Script cleanup plan refreshed:** `scripts/` grew from 135 classified scripts (2026-06-25 plan) to 208 today, mostly new `audit-*`/`check-*` scripts from the MAC drift saga. Fixed a hardcoded date bug in `scripts/generate-script-cleanup-plan.ts` (literal `2026-06-25` regardless of run date) and reran it. New counts: KEEP_AUDIT 77, KEEP_RUNBOOK 20, KEEP_MIGRATION_HISTORY 16, ARCHIVE_DOC_ONLY 31, DELETE_ONE_OFF 64.
+- **Classifier accuracy caution added:** cross-checked the new `DELETE_ONE_OFF` list against tracking history and found the filename-keyword classifier misclassifies at least 4 scripts that actually wrote production data: `lock-backdated-historical-gap-cohort.ts` (41-row `audit_baseline_locks` insert, Task 3.9), `lock-btp-recipe-replay-drift-cohort.ts` (225-row insert, Task 3.7), `import-june-2026-sales.ts` (77 orders/110 lines backfilled), `setup-topping-standalone.ts` (CAT-007 + 7 products/variants/recipes). Added a "Manual review flags" section to `docs/audits/script-cleanup-plan.md` naming these plus one sensitivity flag (`hash-user-passwords.ts`), and an explicit instruction that the `DELETE_ONE_OFF` list is a starting inventory, not an execution list — no deletion pass should trust it without checking `DEVELOPMENT-TRACKING.md`/`git log` per file first.
+- No script files were deleted this session — only the classification document was regenerated and annotated. Actual `scripts/` deletion remains a separate, owner-reviewed task.
+
+### Large files — no action taken
+
+User asked whether the largest source files (`components/POSScreen.tsx` 1282 lines, `app/admin/reports/actions.ts` 1025 lines, `lib/hong-luc-migration.ts` 980 lines, others) need splitting now. Recommendation: no — split only when a real change touches that file, not preemptively, since these are financial/POS-critical paths where a speculative refactor risks introducing regressions without a concrete reason to change them right now.
+
+### Verification
+
+- `npx tsc --noEmit`: 0 errors after deletion.
+- `npx vitest run`: 66 files, 403/403 tests pass, unchanged from baseline.
+- Confirmed by grep: zero remaining references to the deleted component anywhere in the repo.
+
+Commit: pending.
+
 ## 2026-07-17 (Claude) - Pre-Audit B Execution Review: Closed, Pre-Audit C Handoff Authored
 
 **Trigger:** Codex reported Pre-Audit B execution complete across commits `f7f3098`, `7c2409b`, `b238411`, `caacc58` and requested Claude review to close the phase and open Pre-Audit C.
