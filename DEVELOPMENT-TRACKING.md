@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Codex) - Gate 2 Access Audit Tool Blind Spots Closed
+
+**Outcome:** The read-only access audit now inventories every current Server Action and API route handler, detects arrow/cached exports, classifies writes by reviewed call evidence, and requires a guard result to gate execution rather than merely appearing in a function body.
+
+### Changes
+
+- Replaced the mutation-name prefix heuristic in `lib/admin-auth-guard-audit.ts` with TypeScript AST inspection of current write primitives, reviewed transaction helpers, shared entity wrappers, RPC calls, and POST fetches.
+- Added export discovery for function declarations, direct async arrows, cached/wrapped async arrows, and aliased API route handlers.
+- Tightened guard evidence: `requireAdmin`, `resolveActor`, and session results count only when a failure branch returns or throws; `resolveActor` plus an explicit ADMIN-role rejection is recognized as ADMIN enforcement.
+- Expanded file discovery from `app/admin/**/actions.ts` to all 20 current `actions.ts` files plus the explicit `'use server'` file `app/actions/auth.ts`.
+- Extended `scripts/audit-admin-action-auth.ts` to audit `app/api/**/route.ts`, distinguish intentional NextAuth public handlers and the retired HTTP 410 endpoint, emit detailed text or `--json`, and remain read-only/fail-closed when findings exist.
+
+### TDD and verification
+
+- RED proved the old helper missed unguarded arrow exports, unchecked guard calls, arbitrary mutation names, route aliases, the explicit-use-server auth file, cached exports, and reviewed shared write wrappers.
+- GREEN: 10/10 focused helper tests pass; `tsc --noEmit` clean.
+- First corrected run: 21 Server Action files / 81 exports and 4 API route files / 5 handlers. It found 4 mutation access findings, 21 read/direct-invocation findings, and 0 unguarded API routes.
+- The 25 action findings exceed a small remediation wave. Per the Gate 2 stop gate, this commit changes audit tooling only; no application guard, production data, migration, deployment, or push.
+
+Commit: pending (`Codex audit: Gate 2 expand access audit coverage`).
+
 ## 2026-07-18 (Claude) - Owner Long-Term Direction Recorded: Multi-Branch, Franchise, Final Security Phase
 
 **Trigger:** While Codex ran Gate 2, owner stated the long-term product direction across two messages: (1) system must eventually support multi-branch, then franchise, but only after finishing current audit work + a feature-completeness pass (inventory control, cash in/out, sales/order/financial/stock reports) + UI/UX unification; (2) full permissions/security hardening comes last, after the system's final shape (including multi-branch/franchise) is known.
