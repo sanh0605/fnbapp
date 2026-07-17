@@ -47,13 +47,18 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 |---|---|---|---|---|
 | (none) | — | — | — | — |
 
+### P1 — Next up (high impact, unblocked)
+
+| Task | Owner | Scope | Prompt | Blocked by |
+|---|---|---|---|---|
+| [~A] **POS-REDESIGN-1 Session 2. Layout overhaul (mobile-first)** | Antigravity | UI: ProductGrid + CartPanel (bottom-sheet mobile) + category bar + search | `docs/handoffs/2026-07-17-antigravity-pos-redesign-1-session-2.md` (Claude authored 2026-07-17). Session 1 done (commit `a3682db`). User chose to continue without visual smoke. ~2 sessions. Gemini 3.1 Pro Medium. | (unblocked) |
+
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **POS-REDESIGN-1 Session 2** | Antigravity | UI: ProductGrid + CartPanel + category bar + search layout overhaul | After Session 1 visual approved. Mobile-first bottom-sheet cart on mobile. ~2 sessions. |
 | **POS-REDESIGN-1 Session 3** | Antigravity | UI: polish + transitions + mobile verify | After Session 2. ~1 session. |
-| **H1. Push local commits** | Claude | git | After POS-REDESIGN-1 visual smoke test. 29+ commits local pending. |
+| **H1. Push local commits** | Claude | git | After POS-REDESIGN-1 Session 2+3 visual smoke. 32+ commits local pending. |
 
 ### P3 — Depends on verification
 
@@ -79,7 +84,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-antigravity-pos-redesign-1-session-1.md` → POS-REDESIGN-1 Session 1 — historical reference, work complete (commit pending)
+- `2026-07-17-antigravity-pos-redesign-1-session-2.md` → POS-REDESIGN-1 Session 2 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-pos-redesign-1-session-1.md` → POS-REDESIGN-1 Session 1 — historical reference, work complete (commit `a3682db`)
 - `2026-07-17-antigravity-ui-remed-6-remove-stickybar.md` → UI-REMED-6 — historical reference, work complete (commit `7eecf7e`)
 - `2026-07-17-antigravity-ui-remed-1-token-swap-overnight.md` → UI-REMED-1 — historical reference, work complete (5 phases: `c33033f` + `8f93742` + `d239cbb` + `55ef69d` + `ee33450`)
 - `2026-07-17-antigravity-ui-remed-5-polish.md` → UI-REMED-5 — historical reference, work complete (commit `11c566b`))
