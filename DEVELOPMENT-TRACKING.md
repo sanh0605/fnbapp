@@ -4,6 +4,38 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Codex) - Pre-Audit C Evidence-Backed Feature Inventory
+
+**Trigger:** Claude-reviewed Pre-Audit B opened a module-level population pass for the canonical feature catalog before the eight-gate full-system audit.
+
+### Inventory outcome
+
+- Populated `docs/FEATURE-CATALOG.md` with 51 unique business capabilities across all 15 approved module groups.
+- Applied only the approved evidence-aware vocabulary: 15 `LIVE_VERIFIED`, 18 `LIVE_UNVERIFIED`, 14 `PARTIAL`, 3 `PLANNED`, 0 `DEFERRED`, and 1 `RETIRED`.
+- Every `LIVE_VERIFIED` row names a current test, read-only audit, reviewed production artifact, or documented operator result appropriate to the capability risk.
+- Folded mobile, offline, multi-brand/outlet, access enforcement, actor/audit trail, historical snapshot, export/notification, failure recovery/idempotency, backup/restore, Vietnamese UI, and accessibility findings into the affected feature records.
+- Preserved the Pre-Audit B contract sections and limited this pass to module-level capability inventory. The 17-section mandatory F&B checklist and eight-gate audit remain separate follow-up work after Claude/owner review.
+
+### Important gaps recorded, not remediated
+
+- `SET-PASSWORD` uses a legacy Google Sheets + SHA-256 path while active login/user administration uses Supabase + bcrypt; it also expects a session `username` field not set by the current callback.
+- The read-only admin-action auth audit checked 19 action files and found one unguarded mutation path: `approveAndRecomputeAction` in the backdated-ledger review flow.
+- `/api/revalidate` and `/api/inventory/sync/scan` sit outside the protected middleware matcher and have no local session/secret guard; the latter can expose discrepancy metadata. The legacy sync execute endpoint is correctly retired with HTTP 410.
+- Admin manual backup still calls legacy `backup-to-sheets`; the approved scheduled Apps Script/Drive backup remains separately production-verified.
+- Order edit, order void, stock adjustment, and production-order flows retain sequential multi-write limitations; the catalog does not overstate them as fully verified.
+- SEC-1 password-hash serialization, incomplete role/RLS verification, missing restore drill, unwired Telegram notifications, offline ordering, and multi-outlet operation remain visible limitations.
+
+### Verification
+
+- Catalog structure: 15/15 module groups; 51/51 unique feature IDs; 0 invalid statuses; 0 duplicate IDs.
+- Evidence rule: 15/15 `LIVE_VERIFIED` records include a named, checkable artifact.
+- Internal links: 5 checked, 0 missing; all concrete backticked evidence paths checked during authoring.
+- Vitest: 66 files, 403/403 tests passed. Existing React `act(...)` warnings remain informational.
+- TypeScript: `tsc --noEmit` clean.
+- `git diff --check`: clean; no code, historical artifact, migration, database, production data, secret, or remote repository changed.
+
+Commit: pending (`Codex audit: Pre-Audit C evidence-backed feature inventory`).
+
 ## 2026-07-17 (Claude) - Structural Cleanup: Dead Component Removed, Script Cleanup Plan Refreshed
 
 **Trigger:** User asked for a health check on agent collaboration, folder structure, and large files. Investigation (not requested audit work, a direct structural review) surfaced two concrete findings; user approved acting on both immediately.
