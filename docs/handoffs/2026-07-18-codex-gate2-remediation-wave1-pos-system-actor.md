@@ -63,12 +63,33 @@ This is a one-time migration endpoint (`/migrate`) — check
 changing anything, and don't touch the other 3 Edge Functions in this wave
 (see Out of scope).
 
+### 3. `app/admin/inventory/actions.ts` — lock `submitStockAdjustment` to ADMIN
+
+Owner decision 2026-07-18: stock adjustment submission is a manager/admin
+responsibility, not a cashier/staff task. Staff should no longer be able to
+submit an adjustment request at all (today they can, landing it in a
+`PENDING` status pending admin approval).
+
+Fix: change `submitStockAdjustment`'s guard from `resolveActor()` (accepts
+any authenticated role) to `requireAdmin()` (matching `approveStockAdjustment`
+and `rejectStockAdjustment` in the same file). Once this is ADMIN-only, the
+existing `isApproved = role === "ADMIN"` branch and the `PENDING` status
+path become dead code for this entry point — every successful call is now
+from an ADMIN, so it will always auto-approve. Simplify accordingly (remove
+the now-unreachable `PENDING`/`isApproved` branching in this function) rather
+than leaving dead conditional logic behind, but do not touch
+`approveStockAdjustment`/`rejectStockAdjustment` — those still serve a
+purpose if a `PENDING` row exists from before this change (historical rows),
+and the model may reintroduce a submit/approve split later with a proper
+Inventory role.
+
+Update `docs/FEATURE-CATALOG.md`'s `INV-STOCK-ADJUSTMENT` record's "Intended
+users" field to reflect ADMIN-only submission, and note in "Known
+limitations" that this is a policy narrowing (staff can no longer submit),
+not a workflow bug fix.
+
 ## Explicitly out of scope for Wave 1
 
-- `submitStockAdjustment`'s wrong-role gap — **do not touch**. This needs
-  an owner decision first (does STAFF submitting a PENDING adjustment for
-  later ADMIN approval remain the intended workflow, or should this become
-  ADMIN-only now). Tracked separately in `docs/ROADMAP.md`.
 - The 21 unguarded admin read actions — separate Wave 2, mechanical, lower
   risk than these financially-material POS writes.
 - `backup-to-sheets`, `notify-order` Edge Functions, and `user-admin`'s
