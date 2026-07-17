@@ -4,6 +4,23 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Antigravity) - UI-REMED-1 Visual Smoke Test Gaps Resolved
+
+**Outcome:** Visually checked all critical routes (`/pos`, `/admin`, `/admin/orders`, `/admin/reports/sales`, `/admin/reports/pnl`, `/admin/inventory/items`, `/admin/products`, `/admin/products/modifiers`, `/login`) at mobile (375px) and desktop (1280px+) breakpoints. Cleaned up remaining raw colors and typos.
+
+### Changes
+
+- Standardized `Button`, `LoadingButton`, `Alert`, `Badge`, `ModifierForm`, `POSScreen`, `ActivityLogClient`, and `SemiProductsClient` to use design system tokens instead of raw colors (emerald, rose, red, orange, indigo, blue, fuchsia/purple) and raw borders/focus rings.
+- Fixed a typo: `bg-primary-soft0` -> `bg-primary` in `ActivityLogClient.tsx`.
+
+### Verification
+
+- `npm run build` PASS (Compiled successfully)
+- `npx tsc --noEmit` PASS (0 errors)
+- `npm test` PASS (422/422 tests passed)
+
+Commit: `2cabde9`
+
 ## 2026-07-18 (Claude) - Gate 2 Reviewed and Closed, Split Into 2 Remediation Waves
 
 **Trigger:** Codex reported Gate 2 complete (2 commits) with 25 access findings, correctly stopped short of the 5-item unreviewed remediation cap, and requested Claude split the findings into reviewed tasks.
