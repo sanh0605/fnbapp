@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Claude) - Full Eight-Gate Audit Triggered by Owner, Gate 1 Opened
+
+**Trigger:** After Pre-Audit C closed (51 capabilities, 5 P2 findings surfaced), owner was asked which direction to take next: fix the 4 concrete findings first, populate the 17-section F&B checklist, start the full eight-gate audit, or pause. Owner explicitly chose to start the full eight-gate audit directly.
+
+### Actions
+
+- Recorded audit baseline commit: `24a57bd9ee08e164ec2f0497e4aca3b7f0d3b921`.
+- Updated `docs/superpowers/specs/2026-07-17-full-system-audit-program.md` status from "Pending owner trigger" to "ACTIVE". Replaced the forward-looking "First action when owner triggers" checklist with a "Progress against the trigger sequence" record showing steps 1-7 already done (with commit references) and step 8/9 reflecting the owner's actual choice (skip P2 backlog, go straight to Gate 1).
+- Of the 5 P2 findings from Pre-Audit C review, folded the 3 that are genuine security exposures (SEC-1 password_hash leakage, SEC-2 unguarded backdated-ledger approval action, SEC-3 two unauthenticated maintenance routes) into a Gate 1 handoff: `docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`. Kept the 2 that are functional bugs, not security exposures (FIX-1 broken password change, FIX-2 manual backup wrong endpoint) as separate P2 backlog — did not blur Gate 1's scope with unrelated bug fixes.
+- Gate 1 handoff scopes each fix precisely (file, function, exact gap, comparison to the existing `requireAdmin`/`resolveActor` guard pattern already used elsewhere), states explicit out-of-scope boundaries (no RBAC redesign, no RLS work, no touching the 2 P2 functional bugs), and requires a regression test per fix proving the previously-open path is now rejected.
+- `docs/ROADMAP.md`: moved Gate 1 to P0, cleared the "Blocked — next audit stage" row (resolved by owner's explicit choice), updated "Out of scope" to reflect Gates 2-8 waiting on Gate 1 closure and the F&B checklist remaining a separate deferred item.
+
+### Verification
+
+- No code changed this entry — documentation/handoff authoring only.
+
+Commit: pending.
+
 ## 2026-07-17 (Claude) - Pre-Audit C Review: Closed, Findings Promoted to Backlog
 
 **Trigger:** Codex reported Pre-Audit C complete at commit `99f466d` and requested Claude review to close the phase.

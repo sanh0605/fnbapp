@@ -1,19 +1,24 @@
-# Full System Audit Program (Future)
+# Full System Audit Program
 
 Date: 2026-07-17
-Status: **Pending owner trigger** — NOT current work
+Status: **ACTIVE — triggered by owner 2026-07-17**
 Estimated effort: multi-month, multi-agent program
 
-## Owner decision required
+## Owner decision record
 
-Đây là plan audit toàn diện (pre-audit + 8 gates + 4 phases). Trước khi start, cần owner confirm:
+Owner confirmed all 4 pre-conditions on 2026-07-17 after reviewing the closed
+Pre-Audit C feature inventory (51 capabilities, commit `99f466d`,
+Claude-reviewed at commit `24a57bd`):
 
-1. **Scope**: audit toàn hệ thống (current code + production data) — OK?
-2. **Priority**: business-priority order (docs → features → baseline → P0 → business logic → security → UI) — accept?
-3. **Resources**: this is multi-month program. Antigravity + Codex + Claude coordination. OK?
-4. **Production data**: read-only audit phases, no production writes without explicit approval — accept?
+1. **Scope**: audit toàn hệ thống (current code + production data) — confirmed.
+2. **Priority**: business-priority order (docs → features → baseline → P0 → business logic → security → UI) — confirmed.
+3. **Resources**: multi-month program, Antigravity + Codex + Claude coordination — confirmed.
+4. **Production data**: read-only audit phases, no production writes without explicit approval — confirmed.
 
-**Until owner confirms**, current work continues per `docs/ROADMAP.md` (POS-REDESIGN-1 Session 1 next).
+**Baseline commit for the audit program:** `24a57bd9ee08e164ec2f0497e4aca3b7f0d3b921`.
+
+Pre-Audit A, B, and C are complete (see `docs/COMPLETED.md`). Gate 1 is open
+— see `docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`.
 
 ## Full methodology
 
@@ -463,17 +468,17 @@ Preferred containment:
 - P2: important reliability, maintainability, or workflow issue.
 - P3: polish, optimization, or low-impact improvement.
 
-## First action when owner triggers
+## Progress against the trigger sequence
 
-1. Record the current commit SHA and working-tree/deployment baseline.
-2. Execute Pre-Audit A as a read-only documentation inventory. Produce the complete classification manifest and contradiction list.
-3. Propose the canonical document set and the exact merge/archive/supersede/delete treatment for every existing document.
-4. Separately flag any immediately exploitable P0 exposure discovered during this read-only pass.
-5. Present the documentation plan in plain Vietnamese and wait for owner approval before moving, rewriting, archiving, or deleting documents.
-6. After documentation consolidation is approved and completed, execute Pre-Audit C and produce the full feature/function catalog with acceptance scenarios.
-7. Present missing, partial, duplicate, legacy, and unresolved functions to the owner for scope decisions.
-8. Complete only the owner-approved feature roadmap, verify it, freeze the baseline SHA, and refresh canonical documents.
-9. Ask for explicit authorization to begin the full eight-gate audit.
+1. `[x]` Baseline recorded: `24a57bd9ee08e164ec2f0497e4aca3b7f0d3b921`.
+2. `[x]` Pre-Audit A read-only documentation inventory — commit `f12725f`.
+3. `[x]` Canonical document set proposed — commit `8016ae8`.
+4. `[x]` P0 exposure from the read-only pass flagged and contained (diagnose-order endpoint, Phase 0, commit `d1152d9`, prior session).
+5. `[x]` Documentation plan approved by owner (D1-D8) and executed — commits `7c2409b`, `b238411`, `caacc58`.
+6. `[x]` Pre-Audit C feature/function catalog executed — commit `99f466d`, 51 capabilities, Claude-reviewed at `24a57bd`.
+7. `[x]` Findings presented to owner (5 P2 backlog items with evidence: SEC-1, FIX-1, SEC-2, SEC-3, FIX-2).
+8. `[~]` Owner chose to proceed directly to the eight-gate audit rather than complete the P2 backlog or the 17-section F&B checklist first (2026-07-17 decision). SEC-1/SEC-2/SEC-3 are folded into Gate 1 since they are security exposures; FIX-1/FIX-2 remain P2 backlog (functional bugs, not security).
+9. `[x]` Owner explicitly authorized the eight-gate audit, 2026-07-17. Gate 1 open — see `docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`.
 
 ## Notes for fnbapp context
 
