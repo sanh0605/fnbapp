@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Codex) - Pre-Audit B Canonical Document Proposal
+
+**Trigger:** Pre-Audit A found 189 documents with stale entry points and a preservation-heavy evidence set. Pre-Audit B was authorized to propose, but not execute, a ten-document canonical structure.
+
+### Completed Work
+- Proposed ten canonical entry documents and a three-tier authority model that keeps specialized policy/runbook sources and historical evidence outside the entry set without weakening their authority or preservation.
+- Verified current state: 7/10 canonical paths exist and 3 are missing. Corrected the handoff assumption for `docs/TESTING.md`: it exists as a 131-line April manual checklist but is historical rather than current.
+- Defined purpose, section outline, source material, maintenance trigger, and owner-decision references for each canonical document.
+- Mapped all 8 SUPERSEDED documents to successors with preservation-safe banners and exact live-link handling. Corrected `_legacy/README.md` substring matches that were not links to root `README.md`.
+- Defined a keep-and-label plan for the single duplicate web-interface guideline snapshot; no merge into product policy and no deletion proposed.
+- Confirmed 0 DELETE_CANDIDATE and listed 8 owner decisions for review before any canonical document is edited.
+- Verified actual authentication evidence uses NextAuth credentials backed by Supabase data; the proposal does not incorrectly claim active Supabase Auth or Storage usage.
+
+### Verification
+- Proposal covers exactly 10 canonical sections, 8 superseded table rows, 1 duplicate plan, 0 deletion candidates, and 8 owner decisions.
+- Placeholder scan is clean; source/code claims were checked against the Pre-Audit A manifest, exact Git references, current files, package scripts, auth code, test configuration, and migration/function inventory.
+- No canonical, superseded, duplicate, policy, handoff, code, database, or production artifact was modified.
+- No remote push was performed.
+
+Commit: `Codex audit: Pre-Audit B canonical proposal (read-only)`
+
 ## 2026-07-17 (Codex) - Pre-Audit A Documentation Manifest
 
 **Trigger:** Full-system audit Pre-Audit A required a preservation-first, read-only inventory of every root Markdown file and every Markdown/JSON document under `docs/`, plus narrow P0 exposure checks.
