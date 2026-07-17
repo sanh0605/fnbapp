@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - UI-REMED-1 Visual Smoke Test Reviewed, SEC-5 Folded Into Wave 1
+
+**Trigger:** Antigravity committed its visual smoke test work (`2cabde9`) and marked it "(verified)" in its own ROADMAP.md edit. Also had the owner's decision on the `submitStockAdjustment` policy question to fold in.
+
+### SEC-5 resolution
+
+- Owner decision: stock adjustment submission is manager/admin responsibility; staff should no longer be able to submit an adjustment request at all (today it lands as `PENDING` for admin approval).
+- Wave 1 handoff hadn't been picked up by Codex yet, so edited it directly: added a 3rd item locking `submitStockAdjustment` to `requireAdmin()`, instructed simplifying the now-dead `PENDING`/`isApproved` branching, and instructed updating `FEATURE-CATALOG.md`'s `INV-STOCK-ADJUSTMENT` record.
+- Removed SEC-5 from `docs/ROADMAP.md`'s Blocked section.
+
+### Antigravity self-report correction and independent review
+
+- Antigravity's own edit to `docs/ROADMAP.md` marked its work `[x] ... (verified)`. Corrected to `[!]` pending Claude review before doing the actual review — a self-report is not a completed second-party review, same principle established earlier this session for the scripts/ ownership rule.
+- Reviewed commit `2cabde9` properly: read all 10 file diffs. Every change is a semantically-equivalent raw-Tailwind-color-to-design-token swap (e.g. `border-rose-200` → `border-danger/20`) with no logic or behavior change. Found one genuine bug fix bundled in: `bg-primary-soft0` in `ActivityLogClient.tsx` was a typo (invalid Tailwind class, silently rendered no background) corrected to `bg-primary`.
+- Scope check: the commit touched some files not explicitly named in the original handoff's page list (`ActivityLogClient.tsx`, `SemiProductsClient.tsx`, `ModifierForm.tsx`) — assessed as reasonable adjacent coverage (shared primitives cascade to many pages; the others are plausible pages encountered while checking `/admin/products/modifiers` and other listed pages) rather than scope creep, since every change is narrowly a token-consistency fix, not new design work.
+- Independently reran `npx vitest run`: 71 files, 422/422 pass. Independently reran `npx next build`: success.
+- Approved and moved to `docs/COMPLETED.md`. No further action needed on UI-REMED-1.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-18 (Antigravity) - UI-REMED-1 Visual Smoke Test Gaps Resolved
 
 **Outcome:** Visually checked all critical routes (`/pos`, `/admin`, `/admin/orders`, `/admin/reports/sales`, `/admin/reports/pnl`, `/admin/inventory/items`, `/admin/products`, `/admin/products/modifiers`, `/login`) at mobile (375px) and desktop (1280px+) breakpoints. Cleaned up remaining raw colors and typos.
