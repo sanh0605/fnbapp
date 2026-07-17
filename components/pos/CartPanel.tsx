@@ -117,12 +117,12 @@ export function CartPanel({
   return (
     <>
       {/* Backdrop (Mobile only, shown when expanded) */}
-      {isCartOpen && (
-        <div 
-          className="fixed inset-0 bg-black/40 z-30 md:hidden transition-opacity duration-300"
-          onClick={() => setIsCartOpen(false)}
-        />
-      )}
+      <div 
+        className={`fixed inset-0 bg-black/40 z-30 md:hidden transition-opacity duration-300 ${
+          isCartOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setIsCartOpen(false)}
+      />
 
       {/* Collapsed Bar at Bottom (Mobile only, shown when NOT expanded and cart has items) */}
       {!isCartOpen && cart.length > 0 && (
@@ -149,7 +149,7 @@ export function CartPanel({
               e.stopPropagation();
               setIsCartOpen(true);
             }}
-            className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-transform"
+            className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-transform min-h-[44px]"
           >
             Thanh toán ({totalItems})
           </button>
@@ -165,7 +165,7 @@ export function CartPanel({
       >
         {/* Drag Handle (Mobile only) */}
         <div 
-          className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-2 shrink-0 md:hidden cursor-pointer" 
+          className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-2 shrink-0 md:hidden cursor-pointer animate-fade-in-quick" 
           onClick={() => setIsCartOpen(false)} 
         />
 
@@ -186,7 +186,7 @@ export function CartPanel({
               <>
                 <button
                   onClick={() => saveDraft(cart, true)}
-                  className="text-xs font-bold text-primary bg-primary-soft hover:bg-primary/20 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px] flex items-center"
+                  className="text-xs font-bold text-primary bg-primary-soft hover:bg-primary/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center"
                 >
                   Lưu Nháp
                 </button>
@@ -197,7 +197,7 @@ export function CartPanel({
                       setActiveDraftId(null);
                     }
                   }}
-                  className="text-xs font-bold text-danger bg-danger/10 hover:bg-danger/20 px-2.5 py-1.5 rounded-lg transition-colors min-h-[36px] flex items-center"
+                  className="text-xs font-bold text-danger bg-danger/10 hover:bg-danger/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center"
                 >
                   Xoá hết
                 </button>
@@ -205,7 +205,7 @@ export function CartPanel({
             )}
             <button 
               onClick={() => setIsCartOpen(false)} 
-              className="md:hidden p-2 text-text-muted hover:bg-surface-secondary rounded-full min-h-[36px] min-w-[36px] flex items-center justify-center"
+              className="md:hidden p-2 text-text-muted hover:bg-surface-secondary rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
             >
               ✕
             </button>
@@ -342,12 +342,12 @@ export function CartPanel({
                   onChange={(e) => {
                     setPromoCodeInput(e.target.value);
                   }}
-                  className="flex-1 px-3 py-1.5 border border-border rounded-lg text-sm focus:outline-none focus:border-primary uppercase font-medium animate-fade-in"
+                  className="flex-1 px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary uppercase font-medium h-11"
                 />
                 <button
                   type="button"
                   onClick={handleApplyPromoCode}
-                  className="px-4 py-1.5 bg-primary-soft text-primary font-bold text-xs rounded-lg hover:bg-primary-soft transition active:scale-95 shrink-0"
+                  className="px-4 bg-primary-soft text-primary font-bold text-xs rounded-xl hover:bg-primary-soft transition active:scale-95 shrink-0 h-11"
                 >
                   Áp dụng
                 </button>
@@ -370,7 +370,7 @@ export function CartPanel({
                     <button
                       type="button"
                       onClick={handleRemovePromoCode}
-                      className="text-text-muted hover:text-danger text-sm font-bold px-1.5 py-0.5 hover:bg-danger/10 rounded animate-fade-in"
+                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all animate-fade-in-quick"
                     >
                       ✕
                     </button>
@@ -384,13 +384,13 @@ export function CartPanel({
                   <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Chiết khấu đơn hàng</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex rounded-lg overflow-hidden border border-border shrink-0 h-9 bg-surface-card">
+                  <div className="flex rounded-xl overflow-hidden border border-border shrink-0 h-11 bg-surface-card">
                     <button
                       type="button"
                       onClick={() => {
                         setUserCustomDiscountType("VND");
                       }}
-                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${
+                      className={`px-4 py-2.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "VND"
                           ? "bg-primary text-white"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
@@ -403,7 +403,7 @@ export function CartPanel({
                       onClick={() => {
                         setUserCustomDiscountType("PERCENT");
                       }}
-                      className={`px-3 py-1.5 text-xs font-bold transition-colors ${
+                      className={`px-4 py-2.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "PERCENT"
                           ? "bg-primary text-white"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
@@ -421,7 +421,7 @@ export function CartPanel({
                       const val = e.target.value === "" ? null : Number(e.target.value);
                       setUserCustomDiscount(val);
                     }}
-                    className="flex-1 w-full px-3 py-1.5 border border-border rounded-lg focus:outline-none focus:border-primary text-right font-medium text-sm h-9"
+                    className="flex-1 w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:border-primary text-right font-medium text-sm h-11"
                   />
                   {userCustomDiscount !== null && (
                     <button
@@ -429,7 +429,7 @@ export function CartPanel({
                       onClick={() => {
                         setUserCustomDiscount(null);
                       }}
-                      className="text-text-muted hover:text-danger text-sm font-bold px-2 py-1.5 hover:bg-danger/10 rounded"
+                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all"
                     >
                       ✕
                     </button>

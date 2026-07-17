@@ -65,7 +65,7 @@ export function CartItemRow({
   const currentProduct = products.find((p: any) => p.id === item.product_id);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] bg-surface-card transition-shadow duration-200">
+    <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] bg-surface-card transition-all duration-200 animate-cart-item-in">
       {/* Background Red Delete Button */}
       <div className="absolute top-0 right-0 bottom-0 w-20 bg-danger flex items-center justify-center z-0">
         <button
@@ -149,17 +149,17 @@ export function CartItemRow({
         <div className="flex items-center justify-between border-t border-border/50 pt-2 mt-1 md:border-t-0 md:pt-0 md:mt-0 md:justify-end md:gap-4 shrink-0">
           
           {/* Quantity Controls */}
-          <div className="flex items-center gap-2 bg-surface-secondary rounded-lg p-0.5">
+          <div className="flex items-center gap-2 bg-surface-secondary rounded-xl p-1">
             <button
               onClick={() => changeQty(idx, -1)}
-              className="w-9 h-9 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-colors select-none"
+              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
             >
               -
             </button>
-            <span className="text-sm font-semibold tabular-nums min-w-[2ch] text-center text-text-primary">{item.qty}</span>
+            <span className="text-sm font-semibold tabular-nums min-w-[2ch] text-center text-text-primary transition-transform duration-100 active:scale-90 transform select-none">{item.qty}</span>
             <button
               onClick={() => changeQty(idx, 1)}
-              className="w-9 h-9 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-colors select-none"
+              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
             >
               +
             </button>
@@ -198,7 +198,7 @@ export function CartItemRow({
                 setIsSwiped(true);
               }
             }}
-            className="md:hidden text-xs text-danger font-semibold px-3 py-1.5 bg-danger/10 active:bg-danger/20 rounded-lg min-h-[36px] transition-colors"
+            className="md:hidden text-xs text-danger font-semibold px-4 py-2 bg-danger/10 active:bg-danger/20 rounded-xl min-h-[44px] transition-colors"
           >
             Xoá
           </button>

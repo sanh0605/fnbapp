@@ -149,3 +149,22 @@ input[type="button"],
 .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.3);
 }
+
+/* POS Redesign Animations & Utilities */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+  from { transform: translateY(4px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-cart-item-in {
+  animation: slideInFromBottom 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in-quick {
+  animation: fadeIn 0.15s ease-out forwards;
+}

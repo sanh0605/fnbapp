@@ -75,15 +75,17 @@ export function ProductGrid({
             placeholder="Tìm kiếm món (vd: đào, cà phê)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-secondary border border-border rounded-2xl pl-12 pr-10 py-3 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent min-h-[48px]"
+            className="w-full bg-surface-secondary border border-border rounded-2xl pl-12 pr-12 py-3 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent min-h-[48px]"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-surface-card border border-border text-text-muted active:bg-border flex items-center justify-center hover:text-text-primary transition-colors"
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-text-muted hover:text-text-primary active:scale-95 transition-all animate-fade-in-quick"
               aria-label="Xoá tìm kiếm"
             >
-              ✕
+              <span className="w-6 h-6 rounded-full bg-surface-card border border-border flex items-center justify-center text-xs shadow-sm hover:bg-surface-secondary">
+                ✕
+              </span>
             </button>
           )}
         </div>
@@ -93,7 +95,7 @@ export function ProductGrid({
         <div className="flex gap-2 overflow-x-auto md:flex-wrap pb-2 md:pb-0 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setActiveCategory("BEST_SELLERS")}
-            className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[40px] md:min-h-[44px] flex items-center transition-all duration-200 active:bg-border ${
+            className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[44px] flex items-center transition-all duration-150 active:scale-95 transform ${
               activeCategory === "BEST_SELLERS"
                 ? "bg-primary text-white shadow-md shadow-indigo-100"
                 : "bg-surface-secondary text-text-secondary hover:bg-border"
@@ -103,7 +105,7 @@ export function ProductGrid({
           </button>
           <button
             onClick={() => setActiveCategory("ALL")}
-            className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[40px] md:min-h-[44px] flex items-center transition-all duration-200 active:bg-border ${
+            className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[44px] flex items-center transition-all duration-150 active:scale-95 transform ${
               activeCategory === "ALL"
                 ? "bg-primary text-white shadow-md shadow-indigo-100"
                 : "bg-surface-secondary text-text-secondary hover:bg-border"
@@ -115,7 +117,7 @@ export function ProductGrid({
             <button
               key={c.id}
               onClick={() => setActiveCategory(c.id)}
-              className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[40px] md:min-h-[44px] flex items-center transition-all duration-200 active:bg-border ${
+              className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[44px] flex items-center transition-all duration-150 active:scale-95 transform ${
                 activeCategory === c.id
                   ? "bg-primary text-white shadow-md shadow-indigo-100"
                   : "bg-surface-secondary text-text-secondary hover:bg-border"
@@ -128,27 +130,37 @@ export function ProductGrid({
       </div>
  
       <div className="flex-1 overflow-y-auto p-4 pb-28 md:pb-6" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-          {filteredProducts.map((p: any) => {
-            const cat = categories.find((c) => c.id === p.category_id);
-            const prodVariants = variants.filter((v: any) => v.product_id === p.id);
-            const basePrice = prodVariants.length > 0 ? Number(prodVariants[0].price) : 0;
-            const isOOS = (outOfStockProductIds || []).includes(p.id);
-            const promoPrice = promoProductsMap.get(p.id);
+        {filteredProducts.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-text-muted py-16 animate-fade-in-quick">
+            <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm font-semibold">Không tìm thấy sản phẩm nào</p>
+            <p className="text-xs text-text-muted mt-1">Thử tìm kiếm với từ khóa khác</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+            {filteredProducts.map((p: any) => {
+              const cat = categories.find((c) => c.id === p.category_id);
+              const prodVariants = variants.filter((v: any) => v.product_id === p.id);
+              const basePrice = prodVariants.length > 0 ? Number(prodVariants[0].price) : 0;
+              const isOOS = (outOfStockProductIds || []).includes(p.id);
+              const promoPrice = promoProductsMap.get(p.id);
  
-            return (
-              <ProductCard
-                key={p.id}
-                product={p}
-                category={cat}
-                basePrice={basePrice}
-                isOOS={isOOS}
-                promoPrice={promoPrice}
-                onClick={() => onProductClick(p)}
-              />
-            );
-          })}
-        </div>
+              return (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  category={cat}
+                  basePrice={basePrice}
+                  isOOS={isOOS}
+                  promoPrice={promoPrice}
+                  onClick={() => onProductClick(p)}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </>
   );

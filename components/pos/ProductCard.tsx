@@ -24,10 +24,10 @@ export function ProductCard({
     <button
       onClick={() => !isOOS && onClick()}
       disabled={isOOS}
-      className={`bg-surface-card rounded-2xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-200 text-left relative w-full h-full ${
+      className={`bg-surface-card rounded-2xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-200 text-left relative w-full h-full focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
         isOOS 
           ? "opacity-50 grayscale cursor-not-allowed" 
-          : "hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] md:hover:scale-[1.02] active:scale-[0.98]"
+          : "hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:scale-[1.02] active:scale-[0.98] will-change-transform"
       }`}
     >
       {isOOS && (
