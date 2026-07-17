@@ -244,7 +244,18 @@ Model: `Gemini 3.5 Flash (Medium)` — single component form update (Section G).
 
 ## I. Communication Style with Business Owner
 
-**The user is the business owner, not a system builder.** All agents (Claude, Codex, Antigravity) must apply this rule to every chat response, paste message, and user-facing artifact.
+**The user is the business owner, not a system builder.** All agents (Claude, Codex, Antigravity) must apply this rule to EVERY communication that reaches the user — whether direct chat response, paste message, status report, summary, or any artifact the user will read.
+
+### Critical scope (apply to ALL agents, ALL user-facing output)
+
+This rule applies whenever an agent's output will be read by the user:
+- **Direct chat responses** from Claude to user
+- **Paste messages** that user will copy to Codex/Antigravity (Pattern A in Section H)
+- **Codex/Antigravity responses** that user will paste back to Claude or read directly
+- **Status reports, summaries, audit results** presented to user
+- **Vietnamese-facing parts** of any doc the user reads
+
+When in doubt: translate to plain Vietnamese before showing to user. Technical English OK in code, audit reports, internal agent-to-agent communication. NOT OK when user is audience.
 
 ### Rules
 
@@ -264,16 +275,21 @@ Model: `Gemini 3.5 Flash (Medium)` — single component form update (Section G).
 
 6. **Audit docs and policy docs**: English for technical detail (audience = future devs/agents). Add plain Vietnamese summary at top if user will read directly.
 
+7. **Agent → user translation layer (Claude's job)**: When Codex/Antigravity sends a technical response, Claude MUST translate to plain Vietnamese before showing to user. Don't copy-paste raw technical content. Don't forward commit SHAs, file paths, or technical identifiers unless user explicitly asked for them.
+
 ### Why
 
 User has explicitly stated they are the business owner, not a developer. They make business decisions based on agent recommendations. Tech jargon creates barrier to decision-making. Plain language = better decisions, fewer miscommunications, faster sessions.
+
+User explicit feedback 2026-07-17: "em vẫn chưa dùng cách nói phù hợp với người dùng enduser như anh" — communication still too technical even after Section I added. Strengthen rule.
 
 ### How to apply
 
 | Output type | Language | Style |
 |---|---|---|
-| Chat response to user | Vietnamese | Plain, business framing |
-| Paste message for agent | Vietnamese | Plain directive (Pattern A per Section H) |
+| Chat response to user | Vietnamese | Plain, business framing, no jargon |
+| Paste message for agent (user copies) | Vietnamese | Plain directive (Pattern A per Section H) |
+| Codex/Antigravity response to user | **Vietnamese, translated by Claude** | Claude translates raw technical response → plain Vietnamese before showing |
 | Commit message | English | Per existing protocol |
 | Code + comments | English | Per existing protocol |
 | Audit / investigation report | English | Technical, for devs/agents |
@@ -282,7 +298,28 @@ User has explicitly stated they are the business owner, not a developer. They ma
 
 ### Drift trigger
 
-If user asks "what does X mean?" more than once in a session, or says "anh nghĩ cần trao đổi trực tiếp với [agent]", communication style is drifting technical. Reset to plain language + offer to bridge user to the right agent for deep technical (per Section C risk-boundary ownership).
+If user asks "what does X mean?" more than once in a session, says "anh nghĩ cần trao đổi trực tiếp với [agent]", or says "em vẫn chưa dùng cách nói phù hợp" — communication style is drifting technical. **STOP, reset to plain language, translate any pending technical content.**
+
+### Specific words to avoid (use plain alternative)
+
+| Avoid | Use instead |
+|---|---|
+| endpoint | đường dẫn / cổng truy cập |
+| middleware | lớp bảo vệ / bỏ qua |
+| commit / SHA | lần lưu thay đổi / phiên bản |
+| push | đưa lên mạng / đưa lên GitHub |
+| Codex / Antigravity | đội kiểm tra / đội giao diện |
+| Phase 0 / containment | bước đầu bảo vệ / khóa nguy hiểm |
+| P0 exposure | lỗ hổng nghiêm trọng |
+| deprecated | lỗi thời / không còn dùng |
+| adapter | bộ kết nối |
+| grep | tìm kiếm |
+| TS clean / build pass | code chạy OK, không lỗi |
+| regression | hỏng sau khi sửa |
+| refactor | cấu trúc lại |
+| migration | cập nhật cấu trúc dữ liệu |
+
+When forced to use a technical term, **always** define on first use in same response.
 
 ## Quick Links
 
@@ -294,8 +331,9 @@ If user asks "what does X mean?" more than once in a session, or says "anh nghĩ
 
 ## Change Log
 
+- 2026-07-17 Claude: Strengthened Section I "Communication Style with Business Owner" per user explicit feedback. Rule now applies to ALL agents (Codex/Antigravity/Claude) for ALL user-facing output. Added rule 7 (Claude translates technical agent responses → plain Vietnamese before showing user). Added word-to-avoid table with plain alternatives. Drift trigger expanded to include user complaint "em vẫn chưa dùng cách nói phù hợp".
 - 2026-07-16 Codex+Claude: Stabilization Phase 2 closed. Added "Backup Files" subsection to Section C — Codex owns backup architecture (`supabase/functions/backup-to-drive/**`, `scripts/apps-script/backup-to-drive.gs`, `lib/drive-backup*.ts`, retention/schema decisions, restore planning, R2/B2 migration trigger). Claude retains final architecture/policy approval + protocol ownership. Any production restore still requires reviewed dry-run/apply plan.
-- 2026-07-16 Claude: added Section I "Communication Style with Business Owner" per explicit user directive. User is business owner, not a developer — all agents must use plain Vietnamese, no high-level tech jargon by default. Applies to chat responses, paste messages, policy docs read by user.
+- 2026-07-16 Claude: added Section I "Communication Style with Business Owner" per explicit user directive (strengthened 2026-07-17 above).
 - 2026-07-13 Claude: added Section G "Model Selection per Task Type" with Codex/Antigravity/Claude matrix. Updated agent lineup with available model tiers.
 - 2026-07-10 Claude: consolidated to single ROADMAP.md + COMPLETED.md. Removed per-agent roadmaps.
 - 2026-06-26 Codex: rewrote protocol for 3-agent coordination and risk-boundary ownership.
