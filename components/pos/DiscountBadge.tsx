@@ -17,19 +17,19 @@ interface DiscountBadgeProps {
 
 const KIND_CLASSES: Record<DiscountKind, { wrapper: string; dot: string; text: string }> = {
   promo: {
-    wrapper: "bg-primary/10 border-primary/20",
-    dot: "bg-cyan-400 animate-pulse",
-    text: "text-cyan-400",
+    wrapper: "bg-primary-soft border-primary/10",
+    dot: "bg-primary animate-pulse",
+    text: "text-primary",
   },
   manualItem: {
-    wrapper: "bg-warning/10 border-orange-500/20",
-    dot: "bg-orange-400",
-    text: "text-orange-400",
+    wrapper: "bg-primary-soft/80 border-primary/10",
+    dot: "bg-primary/70",
+    text: "text-primary/90",
   },
   order: {
-    wrapper: "bg-danger/10 border-danger/20",
-    dot: "bg-rose-400",
-    text: "text-rose-400",
+    wrapper: "bg-primary-soft/60 border-primary/10",
+    dot: "bg-primary/50",
+    text: "text-primary/80",
   },
 };
 
@@ -39,9 +39,9 @@ export function DiscountBadge({ kind, label, amount }: DiscountBadgeProps) {
   if (amount <= 0) return null;
   const c = KIND_CLASSES[kind];
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border ${c.wrapper}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-      <span className={`text-[10px] font-bold uppercase ${c.text}`}>
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border whitespace-nowrap transition-colors ${c.wrapper}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.dot}`} />
+      <span className={`text-[10px] font-semibold uppercase ${c.text}`}>
         {label}: −{formatNumber(amount)}
       </span>
     </div>

@@ -65,7 +65,7 @@ export function CartItemRow({
   const currentProduct = products.find((p: any) => p.id === item.product_id);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-shadow transition-colors hover:border-indigo-300 bg-surface-card">
+    <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] bg-surface-card transition-shadow duration-200">
       {/* Background Red Delete Button */}
       <div className="absolute top-0 right-0 bottom-0 w-20 bg-danger flex items-center justify-center z-0">
         <button
@@ -82,56 +82,114 @@ export function CartItemRow({
 
       {/* Main Sliding Content */}
       <div
-        className="bg-surface-card p-3 transition-transform duration-300 relative z-10"
+        className="bg-surface-card p-3 transition-transform duration-300 relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-2 hover:bg-surface-secondary/30 active:bg-surface-secondary/50 transition-colors"
         style={{ transform: isSwiped ? "translateX(-80px)" : "translateX(0)" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div
-          className="flex justify-between items-start mb-2 cursor-pointer"
-          onClick={() => currentProduct && openProductModal(currentProduct, idx)}
-        >
-          <div>
-            <h4 className="font-bold text-text-primary leading-tight hover:text-primary transition-colors">
-              {item.product_name} ✏️
-            </h4>
-            <p className="text-xs font-semibold text-primary mt-0.5">Size {item.size_name}</p>
-          </div>
-          <div className="text-right">
+        {/* Line 1 (Mobile) / Left Content (Desktop) */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Photo Thumbnail */}
+          {currentProduct?.image_url ? (
+            <img src={currentProduct.image_url} alt={item.product_name} className="w-12 h-12 rounded-lg bg-surface-secondary object-cover shrink-0" />
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center shrink-0 text-xl">
+              ☕
+            </div>
+          )}
+          
+          {/* Name & Details */}
+          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => currentProduct && openProductModal(currentProduct, idx)}>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <h4 className="font-bold text-text-primary text-sm leading-tight hover:text-primary transition-colors line-clamp-1">
+                {item.product_name}
+              </h4>
+              <span className="text-[10px] font-semibold text-primary">Size {item.size_name}</span>
+            </div>
+            
+            {/* Display modifiers list */}
+            {item.modifiers.length > 0 && (
+              <p className="text-[10px] text-text-secondary line-clamp-1 mt-0.5">
+                + {Object.entries(
+                  item.modifiers.reduce((acc: any, m: any) => {
+                    acc[m.name] = (acc[m.name] || 0) + 1;
+                    return acc;
+                  }, {})
+                ).map(([name, count]: [string, any]) => `${count > 1 ? count + "x " : ""}${name}`).join(", ")}
+              </p>
+            )}
+
+            {/* Discount Badges */}
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
-              <div className="text-[11px] text-text-muted line-through mb-0.5">
+              <div className="mt-1 flex flex-wrap gap-1">
+                {itemPromoDiscount > 0 && (
+                  <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={itemPromoDiscount} />
+                )}
+                {manualItemDiscount > 0 && (
+                  <DiscountBadge kind={DISCOUNT_KIND.MANUAL_ITEM} label="Thu ngân" amount={manualItemDiscount} />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Price (Mobile only, hidden on Desktop md) */}
+          <div className="text-right shrink-0 md:hidden">
+            {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
+              <div className="text-[10px] text-text-muted line-through mb-0.5">
                 {formatNumber(baseTotal)}
               </div>
             )}
-            <div className="font-bold text-warning">
+            <div className="font-bold text-text-primary text-sm leading-tight">
               {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
             </div>
           </div>
         </div>
 
-        {item.modifiers.length > 0 && (
-          <div className="text-[11px] text-text-secondary bg-page p-1.5 rounded mb-2 leading-relaxed">
-            {Object.entries(
-              item.modifiers.reduce((acc: any, m: any) => {
-                acc[m.name] = (acc[m.name] || 0) + 1;
-                return acc;
-              }, {})
-            )
-              .map(([name, count]: [string, any]) => `${count > 1 ? count + " x " : ""}${name}`)
-              .join(", ")}
+        {/* Line 2 (Mobile) / Right Content (Desktop) */}
+        <div className="flex items-center justify-between border-t border-border/50 pt-2 mt-1 md:border-t-0 md:pt-0 md:mt-0 md:justify-end md:gap-4 shrink-0">
+          
+          {/* Quantity Controls */}
+          <div className="flex items-center gap-2 bg-surface-secondary rounded-lg p-0.5">
+            <button
+              onClick={() => changeQty(idx, -1)}
+              className="w-9 h-9 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-colors select-none"
+            >
+              -
+            </button>
+            <span className="text-sm font-semibold tabular-nums min-w-[2ch] text-center text-text-primary">{item.qty}</span>
+            <button
+              onClick={() => changeQty(idx, 1)}
+              className="w-9 h-9 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-colors select-none"
+            >
+              +
+            </button>
           </div>
-        )}
 
-        <div className="mt-2 flex flex-wrap gap-2">
-          {itemPromoDiscount > 0 && (
-            <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={itemPromoDiscount} />
-          )}
-          {manualItemDiscount > 0 && (
-            <DiscountBadge kind={DISCOUNT_KIND.MANUAL_ITEM} label="Thu ngân" amount={manualItemDiscount} />
-          )}
-        </div>
+          {/* Price & Remove (Desktop only) */}
+          <div className="hidden md:flex items-center gap-4 text-right">
+            <div>
+              {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
+                <div className="text-[10px] text-text-muted line-through mb-0.5">
+                  {formatNumber(baseTotal)}
+                </div>
+              )}
+              <div className="font-bold text-text-primary text-sm leading-tight tabular-nums">
+                {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
+              </div>
+            </div>
 
-        <div className="flex justify-between items-center mt-2">
+            <button
+              onClick={() => removeFromCart(idx)}
+              className="w-8 h-8 rounded-lg text-text-muted active:text-danger md:hover:text-danger active:bg-danger/10 md:hover:bg-danger/10 transition-colors flex items-center justify-center"
+              aria-label="Xoá"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Remove Button (left side of Line 2) */}
           <button
             onClick={() => {
               if (isSwiped) {
@@ -140,25 +198,10 @@ export function CartItemRow({
                 setIsSwiped(true);
               }
             }}
-            className="text-xs text-danger font-medium px-2 py-1 bg-danger/10 rounded hover:bg-red-100"
+            className="md:hidden text-xs text-danger font-semibold px-3 py-1.5 bg-danger/10 active:bg-danger/20 rounded-lg min-h-[36px] transition-colors"
           >
             Xoá
           </button>
-          <div className="flex items-center gap-3 bg-surface-secondary rounded-lg p-1">
-            <button
-              onClick={() => changeQty(idx, -1)}
-              className="w-6 h-6 flex items-center justify-center bg-surface-card rounded shadow-sm text-text-secondary font-bold"
-            >
-              -
-            </button>
-            <span className="text-sm font-bold w-4 text-center">{item.qty}</span>
-            <button
-              onClick={() => changeQty(idx, 1)}
-              className="w-6 h-6 flex items-center justify-center bg-surface-card rounded shadow-sm text-text-secondary font-bold"
-            >
-              +
-            </button>
-          </div>
         </div>
       </div>
     </div>

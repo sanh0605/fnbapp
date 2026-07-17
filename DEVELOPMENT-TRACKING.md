@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Antigravity) - POS-REDESIGN-1 Session 1 Leaf Components
+
+**Trigger:** POS redesign request for Modern minimal soft aesthetic (Option A). Focus on mobile-first (375px) layout, larger touch targets, and subtle micro-transitions.
+
+### Completed Work
+- **ProductCard**: Redesigned as rounded-2xl (16px) with soft shadow `shadow-[0_2px_8px_rgba(0,0,0,0.04)]`, hover grow `md:hover:scale-[1.02]`, active scale-down `active:scale-[0.98]`, and aspect-square images. Shifted promo label and formatted prices to standard `text-text-primary`.
+- **CartItemRow**: Modified to stack into a 2-line layout on mobile (Line 1: photo + name + price, Line 2: quantity controls + swipe-to-delete indicator) and remain single-line on desktop. Increased touch targets of controls to `w-9 h-9` on mobile.
+- **DiscountBadge**: Softened and uniformized all discount badges using primary-soft blue (`bg-primary-soft text-primary`) with varying opacity depending on the discount type (promo, manual, order), replacing legacy multi-color badges.
+- **Validation**: Verified build and tests pass cleanly, and TS types are fully compliant.
+
+### Verification
+- Production build `npm run build` is successful.
+- Typescript compiler `tsc --noEmit` runs clean.
+- Unit tests baseline passes (403/403).
+
+Commit: Antigravity ui: POS redesign Session 1 - leaf components (Modern minimal soft, mobile-first)
+
+
+
 ## 2026-07-17 (Antigravity) - UI-REMED-6 StickyFilterBar Removal
 
 **Trigger:** Phase 1 UI audit and post-remediation review flagged StickyFilterBar as introducing an inconsistent "box overlay" feel (bg, border, shadow, negative margins). User requested aligning all pages to use flat PageHeader and inline filter rows.
