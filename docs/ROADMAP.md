@@ -71,19 +71,26 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 |---|---|---|
 | (none) | — | — |
 
+### P1 — Next up (high impact, unblocked)
+
+| Task | Owner | Scope | Prompt | Blocked by |
+|---|---|---|---|---|
+| [~X] **Pre-Audit A. Documentation discovery and classification (read-only)** | Codex | Audit: inventory + classify all root MD + docs/** | `docs/handoffs/2026-07-17-codex-pre-audit-a-documentation.md` (Claude authored 2026-07-17). Owner triggered full audit program. Pre-Audit A = read-only doc inventory + classification + P0 exposure flag. Baseline HEAD `d1db0c1`. ~1 session. | (unblocked) |
+
 ## Out of scope (do not start without explicit approval)
 
 - **Negative stock recovery** (ING-001, ING-021, NNL-003, NNL-006) — needs physical count decision from user
 - **Franchise system** — separate phase, needs design + business rules (multi-tenant RLS, franchisee role, outlet management)
 - **Historical data rewrite** — any rewrite of pre-2026-07 data requires explicit user approval + dry-run + atomic transaction
 - **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope
-- **Full system audit program** (Pre-Audit A/B/C + 8 gates + 4 phases) — comprehensive multi-month audit per `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`. **Owner trigger required.** Not active until owner confirms scope/priority/production-data access.
+- **Full system audit program beyond Pre-Audit A** — Pre-Audit B (canonical consolidation), Pre-Audit C (feature inventory), 8 gates, 4 phases — all deferred until Pre-Audit A complete + owner approves canonical doc set. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
 
 ## Pending prompts in `docs/handoffs/`
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-antigravity-pos-redesign-1-session-3.md` → POS-REDESIGN-1 Session 3 (P1, ready for Antigravity)
+- `2026-07-17-codex-pre-audit-a-documentation.md` → Pre-Audit A (P1, ready for Codex)
+- `2026-07-17-antigravity-pos-redesign-1-session-3.md` → POS-REDESIGN-1 Session 3 — historical reference, work complete (commit `20a1d38`)
 - `2026-07-17-antigravity-pos-redesign-1-session-2.md` → POS-REDESIGN-1 Session 2 — historical reference, work complete (commit `c61f5a1`)
 - `2026-07-17-antigravity-pos-redesign-1-session-1.md` → POS-REDESIGN-1 Session 1 — historical reference, work complete (commit `a3682db`)
 - `2026-07-17-antigravity-ui-remed-6-remove-stickybar.md` → UI-REMED-6 — historical reference, work complete (commit `7eecf7e`)
