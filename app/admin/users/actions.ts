@@ -10,9 +10,22 @@ import { requireAdmin } from "@/lib/auth";
 const SHEET = "Users";
 const PATH = "/admin/users";
 
+type DBUserRow = DBUser & Record<string, unknown>;
+
+function toClientUser(user: DBUserRow): DBUser {
+  return {
+    id: user.id,
+    username: user.username,
+    role: user.role,
+    status: user.status,
+    created_at: user.created_at,
+  };
+}
+
 export async function getUsers(): Promise<DBUser[]> {
   try {
-    return await findAll(SHEET) as DBUser[];
+    const users = await findAll(SHEET) as DBUserRow[];
+    return users.map(toClientUser);
   } catch (error) {
     console.error("Loi getUsers:", error);
     return [];
@@ -21,8 +34,9 @@ export async function getUsers(): Promise<DBUser[]> {
 
 export async function getUserById(id: string): Promise<DBUser | null> {
   try {
-    const users = await findAll(SHEET) as DBUser[];
-    return users.find(u => u.id === id) || null;
+    const users = await findAll(SHEET) as DBUserRow[];
+    const user = users.find(candidate => candidate.id === id);
+    return user ? toClientUser(user) : null;
   } catch (error) {
     console.error("Loi getUserById:", error);
     return null;

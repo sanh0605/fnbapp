@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Codex) - Gate 1 SEC-1 User Credential Payload Exposure Closed
+
+**Outcome:** Raw user credential material no longer crosses into authenticated admin Client Component props or the `user-admin` list JSON response.
+
+### Changes
+
+- Added an explicit five-field client projection (`id`, `username`, `role`, `status`, `created_at`) in `app/admin/users/actions.ts` for both the list and edit-page reads. Unknown/raw fields such as `password_hash`, legacy `password`, and reset tokens are discarded by construction.
+- Corrected the client-facing `DBUser` type so it no longer declares a password field.
+- Replaced the `user-admin` Edge Function's GET-list `select('*')` with an explicit non-credential column projection. The service-role-only migration read remains internal and returns only per-user migration results, not raw rows.
+- Updated the `USR-ADMIN` feature record from `PARTIAL` to `LIVE_UNVERIFIED`: SEC-1 is closed, while full CRUD/operator verification and session invalidation remain separate limitations.
+- Marked Gate 1 in progress; SEC-2 and SEC-3 remain untouched for their own test-first commits.
+
+### TDD and verification
+
+- RED: 2 action tests returned raw `password_hash`/legacy password/reset-token fields; 1 Edge Function contract test found the raw list `select('*')`.
+- GREEN: 3/3 focused security regressions pass.
+- TypeScript: `tsc --noEmit` clean after the client type/projection change.
+- No production data write, migration, deployment, secret change, UI behavior change, or push.
+
+Commit: pending (`Codex security: Gate 1 SEC-1 strip user credential payloads`).
+
 ## 2026-07-17 (Claude) - Full Eight-Gate Audit Triggered by Owner, Gate 1 Opened
 
 **Trigger:** After Pre-Audit C closed (51 capabilities, 5 P2 findings surfaced), owner was asked which direction to take next: fix the 4 concrete findings first, populate the 17-section F&B checklist, start the full eight-gate audit, or pause. Owner explicitly chose to start the full eight-gate audit directly.

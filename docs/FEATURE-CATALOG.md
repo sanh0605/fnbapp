@@ -92,8 +92,8 @@ The inventory below is a repository-and-evidence assessment, not the eight-gate 
 | Status | Capability count |
 |---|---:|
 | `LIVE_VERIFIED` | 15 |
-| `LIVE_UNVERIFIED` | 18 |
-| `PARTIAL` | 14 |
+| `LIVE_UNVERIFIED` | 19 |
+| `PARTIAL` | 13 |
 | `PLANNED` | 3 |
 | `DEFERRED` | 0 |
 | `RETIRED` | 1 |
@@ -198,7 +198,7 @@ The inventory below is a repository-and-evidence assessment, not the eight-gate 
 
 | Feature ID | Business capability | Intended users | Current entry points | Status | Evidence | Known limitations | Data affected | Last verified | Owner/maintainer |
 |---|---|---|---|---|---|---|---|---|---|
-| `USR-ADMIN` | Create, edit, delete, and reset technical ADMIN/STAFF users | Owner and administrator | `/admin/users`; user actions | `PARTIAL` | Current ADMIN-guarded mutations; bcrypt hashing in `app/admin/users/actions.ts`; login reads Supabase `users` | SEC-1: read actions can serialize `password_hash` to authenticated admin client payloads; no CRUD integration/operator test; deletion is physical and session invalidation is unverified | `users` and active sessions | 2026-07-17; repository inspection | Codex (server/data); Antigravity (UI); Claude security coordination |
+| `USR-ADMIN` | Create, edit, delete, and reset technical ADMIN/STAFF users | Owner and administrator | `/admin/users`; user actions; `user-admin` Edge Function | `LIVE_UNVERIFIED` | ADMIN-guarded mutations and bcrypt hashing in `app/admin/users/actions.ts`; safe client projections verified by `app/admin/users/actions.test.ts` and `lib/user-admin-security-contract.test.ts` | SEC-1 is closed: client props and the Edge Function list response expose only required non-credential fields. Full CRUD/operator behavior remains unverified; deletion is physical and session invalidation is unverified | `users` and active sessions | 2026-07-18; repository/tests | Codex (server/data); Antigravity (UI); Claude security coordination |
 | `USR-ROLE-ENFORCEMENT` | Enforce technical ADMIN/STAFF/SYSTEM roles while documenting intended business roles separately | Owner, administrator, cashier/service staff, inventory/production staff | `middleware.ts`; `resolveActor`; `requireAdmin`; admin action guards | `PARTIAL` | `lib/admin-auth-guard-audit.test.ts`; `scripts/audit-admin-action-auth.ts`; `docs/ACCESS-MODEL.md` | Current roles do not represent owner/inventory roles separately; one unguarded backdated mutation was found; API routes, RLS, session expiry/status changes, and direct invocation are not certified | Authorization decisions across all business data | 2026-07-17; repository audit | Claude (access policy); Codex (server enforcement); Antigravity (UI visibility) |
 
 ### 13. Backup, retention, and restore readiness

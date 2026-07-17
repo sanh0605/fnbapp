@@ -60,7 +60,9 @@ Deno.serve(async (req: Request) => {
 
     // GET / — list users
     if (req.method === 'GET' && !pathSuffix) {
-      const { data } = await admin.from('users').select('*').order('role').order('name')
+      const { data } = await admin
+        .from('users').select('id, username, name, role, active, created_at')
+        .order('role').order('name')
       return ok(data)
     }
 
