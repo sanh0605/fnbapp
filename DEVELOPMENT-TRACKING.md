@@ -4,6 +4,19 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - Owner Long-Term Direction Recorded: Multi-Branch, Franchise, Final Security Phase
+
+**Trigger:** While Codex ran Gate 2, owner stated the long-term product direction across two messages: (1) system must eventually support multi-branch, then franchise, but only after finishing current audit work + a feature-completeness pass (inventory control, cash in/out, sales/order/financial/stock reports) + UI/UX unification; (2) full permissions/security hardening comes last, after the system's final shape (including multi-branch/franchise) is known.
+
+### Actions
+
+- `docs/ROADMAP.md`: added a "Future direction" section recording the 6-phase sequence in order, explicit that it records intent/order only — not authorization to start any phase without a fresh go-ahead even after the prior one closes. Updated the "Out of scope" Franchise line and added a matching Multi-branch line, both pointing to the new section. Updated the "Auth system overhaul" line to note the final-phase placement.
+- `CONTEXT.md`: updated the multi-brand/outlet/franchise and access-control future-scope lines to reference the new sequencing and reasoning (avoid designing permissions twice).
+- `docs/FEATURE-CATALOG.md`: updated `ORG-MULTI-OUTLET` evidence to reference the sequencing decision; added new `ORG-FRANCHISE` record (`PLANNED`, explicitly ordered after `ORG-MULTI-OUTLET`). Summary counts updated (51 → 52 total, `PLANNED` 3 → 4) and re-verified with the same precise per-row parser used in prior reviews.
+- Did not start implementation on any of these phases — Gate 2 continues as the current active work.
+
+Commit: pending.
+
 ## 2026-07-18 (Claude) - Closed the scripts/ Ownership Gray Zone
 
 **Trigger:** User asked whether the current Claude/Codex/Antigravity work split was still appropriate. Claude flagged, unprompted, that it had directly fixed 2 files under `scripts/` (nominally Codex's domain per `docs/ROADMAP.md`'s ownership table) without Codex review, and asked the user to decide whether that should be allowed going forward for small mechanical fixes. User decided: no — keep routing through Codex, specifically to preserve Claude's ability to independently review Codex's work rather than self-review.

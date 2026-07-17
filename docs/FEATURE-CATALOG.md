@@ -94,10 +94,10 @@ The inventory below is a repository-and-evidence assessment, not the eight-gate 
 | `LIVE_VERIFIED` | 15 |
 | `LIVE_UNVERIFIED` | 22 |
 | `PARTIAL` | 10 |
-| `PLANNED` | 3 |
+| `PLANNED` | 4 |
 | `DEFERRED` | 0 |
 | `RETIRED` | 1 |
-| **Total** | **51** |
+| **Total** | **52** |
 
 ### 1. Authentication and sessions
 
@@ -112,7 +112,8 @@ The inventory below is a repository-and-evidence assessment, not the eight-gate 
 |---|---|---|---|---|---|---|---|---|---|
 | `ORG-BRAND-MASTER` | Create, edit, list, and delete brands used by catalog, POS, and reports | Owner and administrator | `/admin/brands`; `app/admin/brands/actions.ts` | `LIVE_UNVERIFIED` | Current route and ADMIN-guarded mutations in `app/admin/brands/actions.ts` | No brand CRUD test or current operator walkthrough; deletion impact on historical references is not verified; UI mobile/accessibility verification is incomplete | `brands` | 2026-07-17; repository inspection | Codex (data path); Antigravity (UI); Claude review |
 | `ORG-BRAND-SCOPED-OPERATIONS` | Select a brand for POS and filter financial reports by brand | Owner, administrator, cashier/service staff | Admin POS launcher; `/pos?brandId=...`; report filters | `LIVE_UNVERIFIED` | `app/admin/layout.tsx`; `app/pos/page.tsx`; `app/admin/reports/actions.test.ts` verifies `brandId` filtering | One-shop operation is the approved scope; data isolation between independently operated brands/outlets is not certified; POS brand-selection walkthrough is missing | `brands`, products, orders, report results | 2026-07-17; repository/tests | Codex (data); Antigravity (UI); Claude review |
-| `ORG-MULTI-OUTLET` | Operate multiple outlets with outlet-specific data and permissions | Future owner, outlet managers | No current canonical entry point | `PLANNED` | Owner decision D1 in `docs/audits/2026-07-17-pre-audit-b-owner-decisions.md`; `CONTEXT.md` | No outlet entity, tenant isolation, outlet-scoped roles, consolidated reporting contract, or verified cross-outlet workflow | Future outlet and tenant records | 2026-07-17; policy review | Claude (scope/policy); Codex (future data model); Antigravity (future UI) |
+| `ORG-MULTI-OUTLET` | Operate multiple outlets with outlet-specific data and permissions | Future owner, outlet managers | No current canonical entry point | `PLANNED` | Owner decision D1 in `docs/audits/2026-07-17-pre-audit-b-owner-decisions.md`; `CONTEXT.md`; owner sequencing decision 2026-07-18 (`docs/ROADMAP.md` "Future direction" item 4) places this before `ORG-FRANCHISE`, after the current audit + feature-completeness + UI/UX phases | No outlet entity, tenant isolation, outlet-scoped roles, consolidated reporting contract, or verified cross-outlet workflow | Future outlet and tenant records | 2026-07-18; policy review | Claude (scope/policy); Codex (future data model); Antigravity (future UI) |
+| `ORG-FRANCHISE` | Operate franchised outlets with franchisee roles, fee/royalty model, and stronger tenant isolation than plain multi-outlet | Future owner, franchisees | No current canonical entry point | `PLANNED` | Owner sequencing decision 2026-07-18 (`docs/ROADMAP.md` "Future direction" item 5); explicitly ordered after `ORG-MULTI-OUTLET`, not concurrent | No franchisee role, fee/royalty model, tenant isolation stronger than multi-outlet, or design work has started | Future franchisee, fee, and tenant records | 2026-07-18; policy review | Claude (scope/policy); Codex (future data model); Antigravity (future UI) |
 
 ### 3. POS and drafts
 

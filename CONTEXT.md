@@ -44,8 +44,8 @@ Hỗ trợ nhiều thương hiệu, nhiều chi nhánh hoặc nhượng quyền 
 ### Chưa được xác minh hoặc chưa thuộc phạm vi hiện tại
 
 - **Bán hàng khi mất mạng:** chưa được Pre-Audit C xác minh; không được quảng cáo là tính năng đang hoạt động.
-- **Nhiều thương hiệu/nhiều chi nhánh/nhượng quyền:** để trong roadmap tương lai.
-- **Quyền truy cập chi tiết theo vai trò:** mục tiêu được mô tả trong [`docs/ACCESS-MODEL.md`](docs/ACCESS-MODEL.md), nhưng việc thực thi cần Phase 3 kiểm tra bảo mật.
+- **Nhiều thương hiệu/nhiều chi nhánh/nhượng quyền:** để trong roadmap tương lai. Chủ quán đã xác nhận thứ tự ưu tiên (2026-07-18): đa chi nhánh trước, nhượng quyền sau, cả hai đều chờ sau khi hoàn tất audit hiện tại + hoàn thiện chức năng cốt lõi + nâng cấp UI/UX. Chi tiết trình tự: [`docs/ROADMAP.md`](docs/ROADMAP.md) mục "Future direction".
+- **Quyền truy cập chi tiết theo vai trò:** mục tiêu được mô tả trong [`docs/ACCESS-MODEL.md`](docs/ACCESS-MODEL.md), nhưng việc thực thi đầy đủ được chủ quán xếp là bước cuối cùng trong lộ trình (sau khi có hình dạng cuối cùng của hệ thống, bao gồm cả đa chi nhánh/nhượng quyền), để tránh thiết kế phân quyền hai lần.
 - **Tự động phục hồi từ backup:** không có. Mọi lần phục hồi cần kế hoạch và phê duyệt riêng.
 - **Tự động sửa dữ liệu lịch sử:** không có. Mọi thay đổi lịch sử cần dry-run, xác minh và đường quay lui đã duyệt.
 

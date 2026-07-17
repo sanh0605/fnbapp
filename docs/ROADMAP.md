@@ -68,12 +68,51 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 |---|---|---|
 | (none) | — | Owner triggered the eight-gate audit 2026-07-17 (see P0). The 17-section F&B capability checklist remains a separate, not-yet-scheduled follow-up. |
 
+## Future direction (owner priority, set 2026-07-18 — not started, sequencing only)
+
+Owner-stated long-term direction, in order. Nothing below starts until the
+phase before it is done; do not begin implementation on any of these without
+a fresh, explicit go-ahead even after the prior phase closes — this section
+records intent and order, not authorization to start.
+
+1. **Finish current work** — the eight-gate audit in progress (Gate 2 running
+   as of 2026-07-18; Gates 3-8 follow). See P0/P1 above.
+2. **Feature-completeness pass** — plan and close gaps so the single-shop
+   system fully covers: inventory control (kiểm soát hàng tồn), cash
+   in/out control (kiểm soát tiền vào tiền ra), sales reports (báo cáo bán
+   hàng), order reports (báo cáo đặt hàng), financial reports (báo cáo tài
+   chính), and stock reports (báo cáo tồn kho). Likely overlaps
+   significantly with Pre-Audit C's `FEATURE-CATALOG.md` findings and the
+   deferred 17-section F&B checklist — reconcile rather than duplicate when
+   this phase starts.
+3. **UI/UX upgrade and frontend unification** (đồng nhất frontend) — after
+   feature completeness, not before; a consistent UI on top of incomplete
+   features would need rework.
+4. **Multi-branch management** (đa chi nhánh) — first of the two expansion
+   features. Needs outlet entity, data isolation, outlet-scoped roles,
+   consolidated reporting design (see `docs/FEATURE-CATALOG.md`
+   `ORG-MULTI-OUTLET` and the F&B spec's "Organization, brand, outlet, and
+   device setup" checklist section).
+5. **Franchise management** (nhượng quyền) — after multi-branch, since it
+   likely extends the same outlet/tenant model rather than replacing it.
+   Needs franchisee role, fee/royalty model, and stronger tenant isolation
+   than plain multi-branch.
+6. **Full permissions and security hardening** (phân quyền và bảo mật) —
+   explicitly the *last* phase, done once the system's final shape
+   (including multi-branch/franchise) is known, to avoid designing the
+   permission model twice. This is distinct from Gate 1 (P0 exposures,
+   already closed) and Gate 2 (access map, in progress) — those stay
+   scoped to the current single-shop system; this final phase is the full
+   `docs/ACCESS-MODEL.md` Phase 3 verification plus whatever multi-branch/
+   franchise roles add.
+
 ## Out of scope (do not start without explicit approval)
 
 - **Negative stock recovery** (ING-001, ING-021, NNL-003, NNL-006) — needs physical count decision from user
-- **Franchise system** — separate phase, needs design + business rules (multi-tenant RLS, franchisee role, outlet management)
+- **Franchise system** — see "Future direction" above; comes after multi-branch, needs design + business rules (multi-tenant RLS, franchisee role, outlet management)
+- **Multi-branch system** — see "Future direction" above; comes after the feature-completeness pass and UI/UX unification, needs design + business rules (outlet entity, data isolation, outlet-scoped roles)
 - **Historical data rewrite** — any rewrite of pre-2026-07 data requires explicit user approval + dry-run + atomic transaction
-- **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope
+- **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope; see "Future direction" item 6, deliberately last
 - **Gates 3-8 of the full audit** — Gate 2 is open (see P1). Do not start Gate 3+ until Gate 2 closes and Claude reviews it. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
 - **17-section F&B capability checklist** — deferred from Pre-Audit C; needs owner per-item priority classification when scheduled.
 
