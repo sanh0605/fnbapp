@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [ ] **Pre-Audit C. Evidence-backed feature inventory** | Codex + Claude review | Populate `docs/FEATURE-CATALOG.md` from current routes, actions, scripts, tests, integrations, and operator evidence | Handoff to be authored after Pre-Audit B execution review. Use the approved status vocabulary; do not begin the eight-gate audit. | Claude review of Pre-Audit B execution |
+| [ ] **Pre-Audit C. Evidence-backed feature inventory** | Codex + Claude review | Populate `docs/FEATURE-CATALOG.md` from current routes, actions, scripts, tests, integrations, and operator evidence, module group by module group | `docs/handoffs/2026-07-17-codex-pre-audit-c-feature-inventory.md`. Use the approved status vocabulary; do not begin the eight-gate audit; full F&B capability checklist deferred as a follow-up. | none — ready for Codex pickup |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
@@ -78,7 +78,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-codex-pre-audit-b-execution.md` → Pre-Audit B Execution — historical reference, implementation complete pending Claude review
+- `2026-07-17-codex-pre-audit-c-feature-inventory.md` → Pre-Audit C — ready for Codex pickup, populate `docs/FEATURE-CATALOG.md`
+- `2026-07-17-codex-pre-audit-b-execution.md` → Pre-Audit B Execution — historical reference, work complete and Claude-reviewed (commits `7c2409b`, `b238411`, `caacc58`)
 - `2026-07-17-codex-pre-audit-b-canonical-proposal.md` → Pre-Audit B proposal — historical reference, work complete (commit `8016ae8`)
 - `2026-07-17-codex-pre-audit-a-documentation.md` → Pre-Audit A — historical reference, work complete (commit `f12725f`)
 - `2026-07-17-antigravity-pos-redesign-1-session-3.md` → POS-REDESIGN-1 Session 3 — historical reference, work complete (commit `20a1d38`)
@@ -117,6 +118,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-17 Claude: closed Pre-Audit B execution review. Independently reproduced all claims (10/10 canonical docs, 64/64 links, 403/403 tests, TS clean, build clean 41 routes, 7 SUPERSEDED + 1 DUPLICATE banners spot-checked). Authored Pre-Audit C handoff (`docs/handoffs/2026-07-17-codex-pre-audit-c-feature-inventory.md`), scoped to the 15-module FEATURE-CATALOG population pass; deferred the full F&B capability checklist as a separate follow-up. P1 unblocked for Codex pickup.
 - 2026-07-17 Codex: Pre-Audit B execution created/refreshed the ten canonical entry documents, preserved Tier 2/3 sources, and moved Pre-Audit C to the next P1 gate. Pending Claude review; no push.
 - 2026-07-17 Claude: UI-REMED-1 saga closed. All 5 phases done (commits `c33033f` + `8f93742` + `d239cbb` + `55ef69d` + `ee33450`). ~94% color migration coverage (145 raw occurrences remain — ui/* primitives + gradient stops + complex utility classes). TS clean, build clean, 403/403 tests pass. Visual smoke test pending. UI-REMED saga 5/5 + 1 polish complete. ROADMAP cleaned up duplicate P1 sections.
 - 2026-07-17 Claude: UI-REMED-1 async overnight brief authored. User sleeping, Antigravity authorized to run 5-phase TOKEN-SWAP migration overnight. NO PUSH rule. Final report to `docs/reports/ui-remed-1-overnight-report.md` for morning Claude review.
