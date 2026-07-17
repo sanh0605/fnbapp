@@ -4,6 +4,23 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Codex) - Pre-Audit B Execution 1/3: Foundational Canonical Documents
+
+**Outcome:** Replaced four stale entry documents with current, evidence-bounded sources.
+
+### Completed Work
+- Rewrote `README.md` for the one-shop operating scope, current Next.js/NextAuth/Supabase/Vercel stack, safe local setup, production-write boundaries, and the ten-document navigation map.
+- Rewrote `CONTEXT.md` in owner-facing Vietnamese with current business scope, success outcomes, explicit future/unverified capabilities, terminology, and decision authority.
+- Replaced the generated file-list `ARCHITECTURE.md` with runtime components, observed data/auth flows, trust boundaries, major modules, reliability controls, environments, and explicit non-claims.
+- Rewrote `docs/TESTING.md` around actual Vitest/fast-check/jsdom/TypeScript/build/audit gates; recorded that Husky is local rather than CI and deferred manual feature scenarios to Pre-Audit C.
+- Applied D1, D2, D5, and D7: one shop, offline unverified, section-level language policy, and preservation of only revalidated April manual scenarios.
+
+### Safety
+- No Supabase Auth, Supabase Storage, offline POS, multi-outlet operation, RLS coverage, or action-level authorization was claimed without evidence.
+- No code, production data, migration, secret, historical evidence, or remote repository was changed.
+
+Commit: `Codex audit: Pre-Audit B execution - rewrite foundational docs (README, CONTEXT, ARCHITECTURE, TESTING)`
+
 ## 2026-07-17 (Codex continuation) - Pre-Audit B Owner Approval and Execution Handoff
 
 **Trigger:** Owner selected the fast approval path for all eight decisions in the reviewed Pre-Audit B proposal and asked Codex to continue after the Claude session resets.
