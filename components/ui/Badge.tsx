@@ -8,10 +8,10 @@ interface BadgeProps {
 
 export function Badge({ variant = 'neutral', children, className = '' }: BadgeProps) {
   const variants = {
-    success: "bg-green-100 text-success border border-green-200",
-    warning: "bg-orange-100 text-warning border border-orange-200",
-    danger: "bg-red-100 text-danger border border-red-200",
-    processing: "bg-purple-100 text-processing border border-purple-200",
+    success: "bg-success/10 text-success border border-success/20",
+    warning: "bg-warning/10 text-warning border border-warning/20",
+    danger: "bg-danger/10 text-danger border border-danger/20",
+    processing: "bg-processing/10 text-processing border border-processing/20",
     neutral: "bg-surface-secondary text-text-secondary border border-border",
   };
 

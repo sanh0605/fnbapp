@@ -113,25 +113,25 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
         return {
           label: "Tạo mới",
           classes: "bg-success/10 text-success-active border-success/30",
-          dotColor: "bg-success/100 ring-emerald-100",
+          dotColor: "bg-success ring-success/20",
         };
       case "EDITED":
         return {
           label: "Chỉnh sửa",
           classes: "bg-primary-soft text-primary-active border-primary/20",
-          dotColor: "bg-primary-soft0 ring-blue-100",
+          dotColor: "bg-primary ring-primary/20",
         };
       case "VOIDED":
         return {
           label: "Hủy đơn",
           classes: "bg-danger/10 text-danger-active border-danger/30",
-          dotColor: "bg-danger/100 ring-rose-100",
+          dotColor: "bg-danger ring-danger/20",
         };
       case "REOPENED":
         return {
           label: "Mở lại",
           classes: "bg-warning/10 text-warning-active border-warning/30",
-          dotColor: "bg-warning/100 ring-amber-100",
+          dotColor: "bg-warning ring-warning/20",
         };
       case "MIGRATED":
         return {

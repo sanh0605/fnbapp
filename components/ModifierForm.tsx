@@ -73,14 +73,14 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
       {!isEdit ? (
         <button 
           onClick={() => setIsOpen(true)}
-          className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition shadow-sm"
+          className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-warning/90 transition shadow-sm"
         >
           + Thêm Tuỳ chọn
         </button>
       ) : (
         <div className="flex gap-2">
-          <button onClick={() => setIsOpen(true)} className="text-sm font-medium text-primary hover:text-indigo-800">Sửa</button>
-          <button onClick={handleDelete} className="text-sm font-medium text-danger hover:text-red-800">Xoá</button>
+          <button onClick={() => setIsOpen(true)} className="text-sm font-medium text-primary hover:text-primary-hover">Sửa</button>
+          <button onClick={handleDelete} className="text-sm font-medium text-danger hover:text-danger">Xoá</button>
         </div>
       )}
 
@@ -102,7 +102,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-text-primary mb-1">Nhóm tuỳ chọn</label>
-                    <select required value={groupName} onChange={e => setGroupName(e.target.value)} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-orange-500">
+                    <select required value={groupName} onChange={e => setGroupName(e.target.value)} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring">
                       <option value="Thêm Topping">Thêm Topping</option>
                       <option value="Mức Đường">Mức Đường (Ghi chú)</option>
                       <option value="Mức Đá">Mức Đá (Ghi chú)</option>
@@ -111,13 +111,13 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-text-primary mb-1">Giá bán thêm (Nếu có)</label>
-                    <input type="number" min="0" required value={price} onChange={e => setPrice(Number(e.target.value))} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-orange-500" />
+                    <input type="number" min="0" required value={price} onChange={e => setPrice(Number(e.target.value))} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring" />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-text-primary mb-1">Tên Tuỳ chọn (VD: Trân châu trắng, 50% Đường)</label>
-                  <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-orange-500" placeholder="Nhập tên..." />
+                  <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring" placeholder="Nhập tên..." />
                 </div>
 
                 <div className="border border-border rounded-lg p-4 bg-page/50">
@@ -174,7 +174,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
 
             <div className="p-5 border-t border-border bg-page flex justify-end gap-3 mt-auto">
               <button type="button" onClick={() => setIsOpen(false)} className="px-5 py-2.5 text-text-secondary font-medium hover:bg-border rounded-lg transition">Huỷ</button>
-              <button type="submit" form={isEdit ? `editMod-${initialData.id}` : "addMod"} disabled={loading} className="px-5 py-2.5 bg-warning text-white font-bold rounded-lg hover:bg-orange-700 disabled:opacity-50">
+              <button type="submit" form={isEdit ? `editMod-${initialData.id}` : "addMod"} disabled={loading} className="px-5 py-2.5 bg-warning text-white font-bold rounded-lg hover:bg-warning/90 disabled:opacity-50">
                 {loading ? "Đang lưu..." : "Lưu Tuỳ Chọn"}
               </button>
             </div>

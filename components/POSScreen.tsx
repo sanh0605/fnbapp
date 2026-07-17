@@ -862,12 +862,12 @@ export default function POSScreen({
             key={toast.id}
             className={`pointer-events-auto p-4 rounded-xl shadow-xl border flex items-start gap-3 transition-colors transform duration-300 animate-slide-in-right ${
               toast.type === "success"
-                ? "bg-success/10 border-emerald-200 text-emerald-800"
+                ? "bg-success/10 border-success/20 text-success"
                 : toast.type === "error"
-                ? "bg-danger/10 border-rose-200 text-rose-800"
+                ? "bg-danger/10 border-danger/20 text-danger"
                 : toast.type === "warning"
-                ? "bg-warning/10 border-amber-200 text-amber-800"
-                : "bg-primary-soft border-blue-200 text-blue-800"
+                ? "bg-warning/10 border-warning/20 text-warning"
+                : "bg-primary-soft border-primary/20 text-primary"
             }`}
           >
             <span className="text-xl shrink-0">
@@ -886,8 +886,8 @@ export default function POSScreen({
                   }}
                   className={`mt-2 font-extrabold text-xs px-4 py-2 bg-surface-card rounded-lg border shadow-sm transition active:scale-95 flex items-center justify-center min-h-[44px] min-w-[80px] ${
                     toast.type === "error"
-                      ? "text-danger border-rose-200 hover:bg-rose-100"
-                      : "text-primary border-indigo-200 hover:bg-primary-soft"
+                      ? "text-danger border-danger/20 hover:bg-danger/5"
+                      : "text-primary border-primary/20 hover:bg-primary-soft"
                   }`}
                 >
                   {toast.action.label}
@@ -914,12 +914,12 @@ export default function POSScreen({
               <span className="text-primary">POS</span> Đơn Mới
             </h1>
             {isOnline ? (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-success/10 text-success border border-emerald-200/50 shadow-sm shrink-0">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-success/10 text-success border border-success/20 shadow-sm shrink-0">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                 Trực tuyến
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-rose-200/50 shadow-sm shrink-0">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20 shadow-sm shrink-0">
                 <span className="w-2 h-2 rounded-full bg-danger animate-ping"></span>
                 Ngoại tuyến
               </span>
@@ -1014,7 +1014,7 @@ export default function POSScreen({
           <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-fade-in">
             <div className="p-4 border-b border-border/50 flex justify-between items-center bg-page/50">
               <h3 className="text-xl font-bold text-text-primary">{selectedProduct.name}</h3>
-              <button onClick={() => setSelectedProduct(null)} className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-gray-300">
+              <button onClick={() => setSelectedProduct(null)} className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-border">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -1032,7 +1032,7 @@ export default function POSScreen({
                       <button
                         key={v.id}
                         onClick={() => setSelectedVariant(v)}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-orange-500 bg-warning/10" : "border-border bg-surface-card hover:border-orange-200"}`}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-warning bg-warning/10" : "border-border bg-surface-card hover:border-warning/30"}`}
                       >
                         <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-warning" : "text-text-primary"}`}>{v.size_name}</span>
                         {hasPromo ? (
@@ -1069,16 +1069,16 @@ export default function POSScreen({
                             <button
                               onClick={() => removeModifier(mod)}
                               disabled={count === 0}
-                              className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-surface-card text-primary border border-indigo-200 hover:bg-primary-soft shadow-sm" : "bg-surface-secondary text-gray-300 cursor-not-allowed"}`}
+                              className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-surface-card text-primary border border-primary/20 hover:bg-primary-soft shadow-sm" : "bg-surface-secondary text-text-muted cursor-not-allowed"}`}
                             >
                               -
                             </button>
-                            <span className={`font-bold w-4 text-center ${count > 0 ? "text-indigo-800" : "text-text-secondary"}`}>
+                            <span className={`font-bold w-4 text-center ${count > 0 ? "text-primary" : "text-text-secondary"}`}>
                               {count}
                             </span>
                             <button
                               onClick={() => addModifier(mod)}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-card text-primary border border-indigo-200 hover:bg-primary-soft font-bold text-lg transition-colors shadow-sm"
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-card text-primary border border-primary/20 hover:bg-primary-soft font-bold text-lg transition-colors shadow-sm"
                             >
                               +
                             </button>
@@ -1100,13 +1100,13 @@ export default function POSScreen({
                   <div className="flex rounded-lg overflow-hidden border border-border shrink-0 h-10">
                     <button
                       onClick={() => setItemDiscountType("VND")}
-                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-orange-100 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-warning/10 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                     >
                       VNĐ
                     </button>
                     <button
                       onClick={() => setItemDiscountType("PERCENT")}
-                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-orange-100 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-warning/10 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                     >
                       %
                     </button>
@@ -1117,7 +1117,7 @@ export default function POSScreen({
                     placeholder="Nhập số..."
                     value={itemDiscount || ""}
                     onChange={(e) => setItemDiscount(Number(e.target.value))}
-                    className="flex-1 w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none h-10 text-right"
+                    className="flex-1 w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring outline-none h-10 text-right"
                   />
                 </div>
               </div>
@@ -1142,13 +1142,13 @@ export default function POSScreen({
 
                 <button
                   onClick={addToCart}
-                  className="flex-1 bg-warning text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
+                  className="flex-1 bg-warning text-white py-2 px-3 rounded-xl hover:bg-warning/90 active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
                 >
                   <div className="font-bold text-sm lg:text-base flex flex-col items-center">
                     <span>{editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {formatNumber(currentItemFinalTotal)}</span>
                   </div>
                   {(currentItemManualDiscountAmount > 0 || currentItemPromoDiscountAmount > 0) && (
-                    <div className="text-[10px] lg:text-xs text-orange-200 line-through font-medium mt-0.5">
+                    <div className="text-[10px] lg:text-xs text-white/70 line-through font-medium mt-0.5">
                       Gốc: {formatNumber(currentItemBaseTotal)}
                     </div>
                   )}
@@ -1167,7 +1167,7 @@ export default function POSScreen({
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full max-w-sm rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
             <div className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-success flex items-center justify-center text-3xl mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full bg-success/10 text-success flex items-center justify-center text-3xl mx-auto mb-4">
                 &#10003;
               </div>
               <h3 className="text-xl font-bold text-text-primary mb-2">Thanh toan thanh cong!</h3>
@@ -1179,7 +1179,7 @@ export default function POSScreen({
             <div className="px-6 pb-6">
               <button
                 onClick={() => setSuccessOrderNo(null)}
-                className="w-full bg-primary text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-primary-hover active:scale-[0.98] transition-colors transition-transform"
+                className="w-full bg-primary text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-hover active:scale-[0.98] transition-colors transition-transform"
               >
                 Tao don moi
               </button>
@@ -1196,7 +1196,7 @@ export default function POSScreen({
               <h3 className="text-xl font-bold text-text-primary">Danh sách đơn nháp</h3>
               <button
                 onClick={() => setIsDraftModalOpen(false)}
-                className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-gray-300"
+                className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-border"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -1243,7 +1243,7 @@ export default function POSScreen({
                           </button>
                           <button
                             onClick={() => deleteDraft(d.id)}
-                            className="bg-danger/10 hover:bg-red-100 text-danger font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
+                            className="bg-danger/10 hover:bg-danger/20 text-danger font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
                           >
                             Xóa
                           </button>

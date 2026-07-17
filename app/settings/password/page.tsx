@@ -67,13 +67,13 @@ export default function ChangePasswordPage() {
         </div>
 
         {error && (
-          <div className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-6 border border-red-200">
+          <div className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-6 border border-danger/20">
             {error}
           </div>
         )}
         
         {success && (
-          <div className="bg-success/10 text-success p-3 rounded-lg text-sm text-center mb-6 border border-green-200">
+          <div className="bg-success/10 text-success p-3 rounded-lg text-sm text-center mb-6 border border-success/20">
             {success}
           </div>
         )}
@@ -124,7 +124,7 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-hover transition-colors flex justify-center items-center disabled:bg-blue-400 mt-2"
+            className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-hover transition-colors flex justify-center items-center disabled:opacity-50 mt-2"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

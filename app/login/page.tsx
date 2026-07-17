@@ -58,7 +58,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div aria-live="polite" className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-4 border border-red-200">
+          <div aria-live="polite" className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-4 border border-danger/20">
             {error}
           </div>
         )}
@@ -102,7 +102,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none transition-colors flex justify-center items-center disabled:bg-blue-400"
+            className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none transition-colors flex justify-center items-center disabled:opacity-50"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

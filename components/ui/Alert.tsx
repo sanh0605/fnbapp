@@ -10,10 +10,10 @@ interface AlertProps {
 
 export function Alert({ variant = 'info', title, children, className = '' }: AlertProps) {
   const styles = {
-    success: { wrapper: "bg-success/10 border-green-200 text-success", icon: <CheckCircle2 className="w-5 h-5 text-success" /> },
-    warning: { wrapper: "bg-warning/10 border-orange-200 text-warning", icon: <AlertTriangle className="w-5 h-5 text-warning" /> },
-    danger: { wrapper: "bg-danger/10 border-red-200 text-danger", icon: <XCircle className="w-5 h-5 text-danger" /> },
-    info: { wrapper: "bg-primary-soft border-blue-200 text-primary", icon: <Info className="w-5 h-5 text-primary" /> },
+    success: { wrapper: "bg-success/10 border-success/30 text-success", icon: <CheckCircle2 className="w-5 h-5 text-success" /> },
+    warning: { wrapper: "bg-warning/10 border-warning/30 text-warning", icon: <AlertTriangle className="w-5 h-5 text-warning" /> },
+    danger: { wrapper: "bg-danger/10 border-danger/30 text-danger", icon: <XCircle className="w-5 h-5 text-danger" /> },
+    info: { wrapper: "bg-primary-soft border-primary/30 text-primary", icon: <Info className="w-5 h-5 text-primary" /> },
   };
 
   const current = styles[variant];

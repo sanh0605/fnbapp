@@ -181,7 +181,7 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
                   key={sp.id} 
                   className={`bg-surface-card rounded-2xl border transition-colors transition-shadow duration-200 overflow-hidden flex flex-col ${
                     isExpanded 
-                      ? "border-primary/40 ring-4 ring-blue-50 shadow-md" 
+                      ? "border-primary/40 ring-4 ring-primary-soft shadow-md" 
                       : "border-border shadow-sm hover:shadow-md hover:border-border"
                   }`}
                 >
