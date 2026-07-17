@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - Found Real Work for Idle Antigravity
+
+**Trigger:** User noticed Codex was busy (Gate 2) while Antigravity was idle and asked if there was work for it. Checked for genuinely ready work rather than inventing a task.
+
+### Finding
+
+- `docs/ROADMAP.md` change log still had an orphaned note from 2026-07-17: "UI-REMED-1 saga closed... Visual smoke test pending." The saga was closed on TypeScript/build/test checks only — none of those can see color or layout, and no one had opened the app in a browser since the ~1039-occurrence color-token migration finished. This is the same gap already surfaced once earlier in this session under identical circumstances (also asked "what's ready for Antigravity") and it was still unaddressed.
+
+### Actions
+
+- Authored `docs/handoffs/2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md`: scoped as pure regression verification (not new design work), listing specific pages/breakpoints to check, explicit that the known-remaining 145 raw-color occurrences are out of scope, and that this doesn't count as starting the owner's separate future "UI/UX upgrade and frontend unification" roadmap phase.
+- Added to `docs/ROADMAP.md` P2 as `[~A]` in progress, cleaned up the "Pending prompts" list which had gone stale (Pre-Audit C still listed as "ready for pickup" despite being closed; added Gate 1/Gate 2 entries that were missing).
+
+Commit: pending.
+
 ## 2026-07-18 (Codex) - Gate 2 Access Audit Tool Blind Spots Closed
 
 **Outcome:** The read-only access audit now inventories every current Server Action and API route handler, detects arrow/cached exports, classifies writes by reviewed call evidence, and requires a guard result to gate execution rather than merely appearing in a function body.

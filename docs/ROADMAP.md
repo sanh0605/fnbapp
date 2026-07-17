@@ -55,6 +55,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 | **FIX-2. Nút sao lưu thủ công gọi nhầm hệ cũ** | Codex | `app/admin/backup/actions.ts` `triggerBackup` | Pre-Audit C 2026-07-17, Claude verified. Bấm nút sao lưu thủ công trên trang admin vẫn gọi hàm sao lưu cũ (`backup-to-sheets`), không phải hệ sao lưu Drive hằng ngày đã xác minh production. Không ảnh hưởng backup tự động hằng ngày, nhưng nút thủ công hiện không làm đúng như tên gọi. |
 | **H1. Push local commits** | Claude | git | Khi anh yêu cầu. 41+ commits local pending. |
 | **REV-1. Spot-check 2 scripts/ tooling fixes made by Claude** | Codex | `scripts/generate-script-cleanup-plan.ts`, `scripts/verify-delete-candidates.ts` (commits `b5170da`, `24a57bd`) | Made before the 2026-07-18 `scripts/**` ownership rule closed the gray zone (see `docs/COLLABORATION.md` Section C change log). Both are read-only reporting tools (fixed a hardcoded date, fixed a regex that missed extension-less imports); Claude self-verified by running them and checking output, but no second agent has reviewed the diffs. Low priority, not urgent — closes the review gap retroactively. |
+| [~A] **UI-REMED-1 visual smoke test (overdue)** | Antigravity | Visual regression check of the 2026-07-17 color-token migration across `/pos`, `/admin` pages, and dialogs at mobile+desktop breakpoints | Handoff: `docs/handoffs/2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md`. UI-REMED-1 closed on automated checks only (TS/build/tests) — never had a human look at it. Independent of Gate 2, safe to run in parallel. |
 
 ### P3 — Depends on verification
 
@@ -120,7 +121,10 @@ records intent and order, not authorization to start.
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-codex-pre-audit-c-feature-inventory.md` → Pre-Audit C — ready for Codex pickup, populate `docs/FEATURE-CATALOG.md`
+- `2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md` → UI-REMED-1 visual smoke test — ready for Antigravity pickup
+- `2026-07-18-codex-gate2-access-map.md` → Full audit Gate 2 — in progress with Codex
+- `2026-07-17-codex-gate1-p0-security-exposures.md` → Full audit Gate 1 — historical reference, work complete and Claude-reviewed (commits `dd2f970`, `57d298a`, `9a8ee66`)
+- `2026-07-17-codex-pre-audit-c-feature-inventory.md` → Pre-Audit C — historical reference, work complete and Claude-reviewed (commit `99f466d`)
 - `2026-07-17-codex-pre-audit-b-execution.md` → Pre-Audit B Execution — historical reference, work complete and Claude-reviewed (commits `7c2409b`, `b238411`, `caacc58`)
 - `2026-07-17-codex-pre-audit-b-canonical-proposal.md` → Pre-Audit B proposal — historical reference, work complete (commit `8016ae8`)
 - `2026-07-17-codex-pre-audit-a-documentation.md` → Pre-Audit A — historical reference, work complete (commit `f12725f`)
@@ -160,6 +164,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-18 Claude: found genuine ready work for idle Antigravity (user asked directly) rather than inventing busywork — UI-REMED-1's visual smoke test was closed on automated checks only and never actually looked at in a browser. Authored handoff, added as P2, cleaned up the stale "pending prompts" list (Pre-Audit C was listed as still needing pickup despite being closed weeks-equivalent ago in session time; added Gate 1/Gate 2 entries).
 - 2026-07-18 Claude: scoped and authored Gate 2 handoff. Read `lib/admin-auth-guard-audit.ts` directly and found 3 concrete blind spots in the existing audit tool before writing the handoff: it only scans `app/admin/` (misses `app/pos/actions.ts` and `app/actions/auth.ts`), its mutation-name prefix list misses void/reject/create/change-named functions (this is exactly why `rejectEventAction`'s Gate 1 gap wasn't caught by the tool itself), and its guard check only tests for substring presence, not enforcement, and misses arrow-function exports entirely. Gate 2 scope: fix the tool, extend it to API routes, produce a dated evidence report, remediate small unambiguous findings, cap silent remediation at 5 items before requiring a stop-and-report.
 - 2026-07-18 Claude: Gate 1 reviewed and closed (commits `dd2f970`, `57d298a`, `9a8ee66`). Independently reread every diff line, confirmed the remaining `select('*')` never leaks to a response, read all 5 new regression tests, and reran the suite (414/414) and TypeScript (clean) rather than trusting the report. Moved to `COMPLETED.md`. Opened Gate 2 (architecture/access map) as P1 — scoped pragmatically since the source spec's own Gate 2/Phase 3 text is incomplete.
 - 2026-07-17 Claude: owner triggered the full eight-gate audit program after reviewing Pre-Audit C findings. Froze baseline `24a57bd`, updated the program spec status to ACTIVE, folded SEC-1/SEC-2/SEC-3 into a Gate 1 handoff (`docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`) since they are security exposures; kept FIX-1/FIX-2 as separate P2 functional-bug backlog. Gate 1 open for Codex, P0.
