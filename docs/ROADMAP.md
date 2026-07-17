@@ -45,13 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~A] **UI-REMED-6. Remove StickyFilterBar, use PageHeader** | Antigravity | UI: 16+ client files migration + delete StickyFilterBar | `docs/handoffs/2026-07-17-antigravity-ui-remed-6-remove-stickybar.md` (Claude authored 2026-07-17). User visual review found StickyFilterBar "box" feel vs flat PageHeader (brands/suppliers). Migrate 16+ files, delete component. ~1.5-2 sessions. | (unblocked) |
-
-### P1 — Next up (high impact, unblocked)
-
-| Task | Owner | Scope | Prompt | Blocked by |
-|---|---|---|---|---|
-| [~A] **POS-REDESIGN-1 Session 1. Leaf components (mobile-first, Modern minimal soft)** | Antigravity | UI: ProductCard + CartItemRow + DiscountBadge redesign | `docs/handoffs/2026-07-17-antigravity-pos-redesign-1-session-1.md` (Claude authored 2026-07-17). User chose Option A direction. **Mobile-first PRIMARY design target** (375px first). Touch targets ≥44px. ~1 session. |
+| (none) | — | — | — | — |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
@@ -79,12 +73,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 - **Franchise system** — separate phase, needs design + business rules (multi-tenant RLS, franchisee role, outlet management)
 - **Historical data rewrite** — any rewrite of pre-2026-07 data requires explicit user approval + dry-run + atomic transaction
 - **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope
+- **Full system audit program** (Pre-Audit A/B/C + 8 gates + 4 phases) — comprehensive multi-month audit per `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`. **Owner trigger required.** Not active until owner confirms scope/priority/production-data access.
 
 ## Pending prompts in `docs/handoffs/`
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-antigravity-pos-redesign-1-session-1.md` → POS-REDESIGN-1 Session 1 (P1, ready for Antigravity)
+- `2026-07-17-antigravity-pos-redesign-1-session-1.md` → POS-REDESIGN-1 Session 1 — historical reference, work complete (commit pending)
 - `2026-07-17-antigravity-ui-remed-6-remove-stickybar.md` → UI-REMED-6 — historical reference, work complete (commit `7eecf7e`)
 - `2026-07-17-antigravity-ui-remed-1-token-swap-overnight.md` → UI-REMED-1 — historical reference, work complete (5 phases: `c33033f` + `8f93742` + `d239cbb` + `55ef69d` + `ee33450`)
 - `2026-07-17-antigravity-ui-remed-5-polish.md` → UI-REMED-5 — historical reference, work complete (commit `11c566b`))
@@ -110,6 +105,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 - UI audit reference: `docs/audits/2026-07-06-ui-consistency-audit.md`
 - MAC drift baseline: `docs/audits/2026-07-09-mac-drift-baseline-audit.md`
 - Backdated ledger investigation: `docs/audits/2026-07-09-prod-028-btp-shortfall-investigation.md`
+- **Full system audit program** (future, owner-triggered): `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`
 
 ## Change log
 
