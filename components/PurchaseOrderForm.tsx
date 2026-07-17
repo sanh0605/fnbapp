@@ -249,7 +249,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                 <div key={index} className="p-4 border border-border rounded-xl relative bg-page/50">
                   <button
                     onClick={() => removeLine(index)}
-                    className="absolute top-4 right-4 text-text-muted hover:text-red-500"
+                    className="absolute top-4 right-4 text-text-muted hover:text-danger"
                   >
                     ✕
                   </button>
@@ -368,7 +368,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={voucherAmount || ''}
                    onChange={(e) => setVoucherAmount(Number(e.target.value))}
-                   className="w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
+                   className="w-32 text-right border border-red-200 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
                    placeholder="0"
                  />
              </div>
@@ -378,7 +378,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                    type="number" 
                    value={discountAmount || ''}
                    onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                   className="w-32 text-right border border-red-200 bg-red-50 text-red-600 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
+                   className="w-32 text-right border border-red-200 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-red-500 font-medium"
                    placeholder="0"
                  />
              </div>

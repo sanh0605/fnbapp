@@ -27,7 +27,7 @@ const KIND_CLASSES: Record<DiscountKind, { wrapper: string; dot: string; text: s
     text: "text-orange-400",
   },
   order: {
-    wrapper: "bg-rose-500/10 border-rose-500/20",
+    wrapper: "bg-danger/10 border-danger/20",
     dot: "bg-rose-400",
     text: "text-rose-400",
   },

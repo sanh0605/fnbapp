@@ -135,7 +135,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
                         <button
                           type="button"
                           onClick={() => removeItemRow(index)}
-                          className="px-3 py-2 mt-6 text-red-500 hover:bg-red-50 rounded-lg"
+                          className="px-3 py-2 mt-6 text-danger hover:bg-danger/10 rounded-lg"
                         >
                           Xoá
                         </button>

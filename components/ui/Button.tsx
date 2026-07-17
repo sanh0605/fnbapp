@@ -22,7 +22,7 @@ export function Button({
     primary: "bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm",
     secondary: "bg-surface-secondary text-text-primary hover:bg-border active:bg-gray-300",
     ghost: "bg-transparent text-primary hover:bg-primary-soft active:bg-primary-soft",
-    danger: "bg-danger text-white hover:bg-red-700 active:bg-red-800 shadow-sm",
+    danger: "bg-danger text-white hover:bg-danger active:bg-red-800 shadow-sm",
     warning: "bg-warning text-white hover:bg-warning/90 active:bg-warning/80 shadow-sm",
   };
   

@@ -67,7 +67,7 @@ export default function ChangePasswordPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center mb-6 border border-red-200">
+          <div className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-6 border border-red-200">
             {error}
           </div>
         )}

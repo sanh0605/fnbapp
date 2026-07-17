@@ -864,7 +864,7 @@ export default function POSScreen({
               toast.type === "success"
                 ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                 : toast.type === "error"
-                ? "bg-rose-50 border-rose-200 text-rose-800"
+                ? "bg-danger/10 border-rose-200 text-rose-800"
                 : toast.type === "warning"
                 ? "bg-amber-50 border-amber-200 text-amber-800"
                 : "bg-primary-soft border-blue-200 text-blue-800"
@@ -886,7 +886,7 @@ export default function POSScreen({
                   }}
                   className={`mt-2 font-extrabold text-xs px-4 py-2 bg-surface-card rounded-lg border shadow-sm transition active:scale-95 flex items-center justify-center min-h-[44px] min-w-[80px] ${
                     toast.type === "error"
-                      ? "text-rose-700 border-rose-200 hover:bg-rose-100"
+                      ? "text-danger border-rose-200 hover:bg-rose-100"
                       : "text-primary border-indigo-200 hover:bg-primary-soft"
                   }`}
                 >
@@ -919,8 +919,8 @@ export default function POSScreen({
                 Trực tuyến
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/50 shadow-sm shrink-0">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-rose-200/50 shadow-sm shrink-0">
+                <span className="w-2 h-2 rounded-full bg-danger animate-ping"></span>
                 Ngoại tuyến
               </span>
             )}
@@ -1243,7 +1243,7 @@ export default function POSScreen({
                           </button>
                           <button
                             onClick={() => deleteDraft(d.id)}
-                            className="bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
+                            className="bg-danger/10 hover:bg-red-100 text-danger font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
                           >
                             Xóa
                           </button>

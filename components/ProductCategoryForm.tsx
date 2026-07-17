@@ -59,7 +59,7 @@ export default function ProductCategoryForm({ initialData }: any) {
           <button type="button" onClick={() => setIsOpen(true)} className="text-sm font-medium text-primary hover:text-indigo-800">
             Sửa
           </button>
-          <button type="button" onClick={() => setIsDeleteOpen(true)} className="text-sm font-medium text-red-600 hover:text-red-800">
+          <button type="button" onClick={() => setIsDeleteOpen(true)} className="text-sm font-medium text-danger hover:text-red-800">
             Xoá
           </button>
         </div>
@@ -116,8 +116,8 @@ export default function ProductCategoryForm({ initialData }: any) {
         <ModalPortal>
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-surface-card rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-            <div className="p-5 border-b border-border flex items-center gap-3 bg-red-50/50">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+            <div className="p-5 border-b border-border flex items-center gap-3 bg-danger/10/50">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-danger shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -140,7 +140,7 @@ export default function ProductCategoryForm({ initialData }: any) {
                 type="button" 
                 onClick={handleDelete} 
                 disabled={loading} 
-                className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 transition shadow-sm"
+                className="px-4 py-2 bg-danger text-white font-bold rounded-lg hover:bg-danger disabled:opacity-50 transition shadow-sm"
               >
                 {loading ? "Đang xử lý..." : "Xoá Nhóm"}
               </button>

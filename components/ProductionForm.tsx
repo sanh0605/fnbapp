@@ -181,7 +181,7 @@ export default function ProductionForm({ semiProducts, recipes, baseIngredients,
                       </div>
                       <div className="p-4 bg-surface-card space-y-4">
                         {consumedIngredients.length === 0 ? (
-                          <div className="text-sm text-red-500 italic text-center py-2">
+                          <div className="text-sm text-danger italic text-center py-2">
                             ⚠️ Bán thành phẩm này chưa có công thức nấu.
                           </div>
                         ) : (

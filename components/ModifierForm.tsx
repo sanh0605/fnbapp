@@ -80,7 +80,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
       ) : (
         <div className="flex gap-2">
           <button onClick={() => setIsOpen(true)} className="text-sm font-medium text-primary hover:text-indigo-800">Sửa</button>
-          <button onClick={handleDelete} className="text-sm font-medium text-red-600 hover:text-red-800">Xoá</button>
+          <button onClick={handleDelete} className="text-sm font-medium text-danger hover:text-red-800">Xoá</button>
         </div>
       )}
 
@@ -158,10 +158,10 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
                             type="number" required min="0.001" step="any" placeholder="SL"
                             value={ing.quantity || ""}
                             onChange={e => updateIngredient(iIdx, "quantity", Number(e.target.value))}
-                            className="w-20 text-sm text-right font-bold text-red-600 border border-border rounded-md px-2 py-1.5"
+                            className="w-20 text-sm text-right font-bold text-danger border border-border rounded-md px-2 py-1.5"
                           />
                           
-                          <button type="button" onClick={() => removeIngredient(iIdx)} className="p-1.5 text-text-muted hover:text-red-500">
+                          <button type="button" onClick={() => removeIngredient(iIdx)} className="p-1.5 text-text-muted hover:text-danger">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                           </button>
                         </div>

@@ -23,7 +23,7 @@ export function EventRow({ event }: { event: any }) {
       <td className="px-4 py-3 text-sm text-text-primary">
         {event.item_reference}
       </td>
-      <td className={`px-4 py-3 text-sm text-right font-medium ${event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-rose-600' : ''}`}>
+      <td className={`px-4 py-3 text-sm text-right font-medium ${event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-danger' : ''}`}>
         {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
       </td>
       <td className="px-4 py-3 text-sm text-right text-text-primary">

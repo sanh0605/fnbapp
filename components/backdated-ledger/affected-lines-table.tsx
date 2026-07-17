@@ -45,7 +45,7 @@ export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) 
             const delta = newCogs - oldCogs;
             totalDelta += delta;
 
-            const deltaColor = delta > 0 ? "text-emerald-600" : delta < 0 ? "text-rose-600" : "text-text-secondary";
+            const deltaColor = delta > 0 ? "text-emerald-600" : delta < 0 ? "text-danger" : "text-text-secondary";
             const deltaSign = delta > 0 ? "+" : "";
 
             return (
@@ -70,7 +70,7 @@ export function AffectedLinesTable({ lines, changes }: AffectedLinesTableProps) 
         <tfoot className="bg-page font-medium">
           <tr>
             <td colSpan={6} className="px-4 py-3 text-right">Tổng chênh lệch:</td>
-            <td className={`px-4 py-3 text-right ${totalDelta > 0 ? "text-emerald-600" : totalDelta < 0 ? "text-rose-600" : "text-text-primary"}`}>
+            <td className={`px-4 py-3 text-right ${totalDelta > 0 ? "text-emerald-600" : totalDelta < 0 ? "text-danger" : "text-text-primary"}`}>
               {totalDelta > 0 ? "+" : ""}{formatNumber(totalDelta)} VND
             </td>
           </tr>

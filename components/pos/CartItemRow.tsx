@@ -67,13 +67,13 @@ export function CartItemRow({
   return (
     <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-shadow transition-colors hover:border-indigo-300 bg-surface-card">
       {/* Background Red Delete Button */}
-      <div className="absolute top-0 right-0 bottom-0 w-20 bg-red-600 flex items-center justify-center z-0">
+      <div className="absolute top-0 right-0 bottom-0 w-20 bg-danger flex items-center justify-center z-0">
         <button
           onClick={() => {
             removeFromCart(idx);
             setIsSwiped(false);
           }}
-          className="w-full h-full text-white font-extrabold text-sm flex flex-col items-center justify-center gap-1 active:bg-red-700"
+          className="w-full h-full text-white font-extrabold text-sm flex flex-col items-center justify-center gap-1 active:bg-danger"
         >
           <span className="text-lg">🗑️</span>
           <span>Xoá</span>
@@ -140,7 +140,7 @@ export function CartItemRow({
                 setIsSwiped(true);
               }
             }}
-            className="text-xs text-red-500 font-medium px-2 py-1 bg-red-50 rounded hover:bg-red-100"
+            className="text-xs text-danger font-medium px-2 py-1 bg-danger/10 rounded hover:bg-red-100"
           >
             Xoá
           </button>

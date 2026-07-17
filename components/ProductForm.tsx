@@ -125,7 +125,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
       ) : (
         <div className="flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>Sửa</Button>
-          <Button variant="ghost" size="sm" className="!text-danger hover:!bg-red-50" onClick={() => setIsDeleteOpen(true)}>Xoá</Button>
+          <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => setIsDeleteOpen(true)}>Xoá</Button>
         </div>
       )}
 
@@ -212,7 +212,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                               </div>
                             </div>
                             {variants.length > 1 && (
-                              <Button variant="ghost" size="sm" className="!text-danger hover:!bg-red-50" onClick={() => removeVariant(vIdx)}>Xoá Size</Button>
+                              <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => removeVariant(vIdx)}>Xoá Size</Button>
                             )}
                           </div>
                           

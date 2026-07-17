@@ -72,7 +72,7 @@ export function SupplierForm({ initialData }: { initialData?: any }) {
           <div className="bg-surface-card rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4 text-text-primary">{isEdit ? "Sửa Nhà Cung Cấp" : "Thêm Nhà Cung Cấp Mới"}</h2>
             
-            {error && <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">{error}</div>}
+            {error && <div className="mb-4 bg-danger/10 text-danger p-3 rounded-lg text-sm border border-red-100">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -208,7 +208,7 @@ export function SupplierModal({
       <div className="bg-surface-card rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold mb-4 text-text-primary">Thêm Nhà Cung Cấp Mới</h2>
         
-        {error && <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">{error}</div>}
+        {error && <div className="mb-4 bg-danger/10 text-danger p-3 rounded-lg text-sm border border-red-100">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -313,7 +313,7 @@ export function DeleteSupplierButton({ id }: { id: string }) {
         type="button"
         onClick={() => setIsDeleteOpen(true)}
         disabled={loading}
-        className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
+        className="text-danger hover:text-red-800 font-medium text-sm disabled:opacity-50"
       >
         {loading ? "..." : "Xoá"}
       </button>
@@ -322,8 +322,8 @@ export function DeleteSupplierButton({ id }: { id: string }) {
         <ModalPortal>
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 text-left">
           <div className="bg-surface-card rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-            <div className="p-5 border-b border-border flex items-center gap-3 bg-red-50/50">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+            <div className="p-5 border-b border-border flex items-center gap-3 bg-danger/10/50">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-danger shrink-0">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -346,7 +346,7 @@ export function DeleteSupplierButton({ id }: { id: string }) {
                 type="button" 
                 onClick={performDelete} 
                 disabled={loading} 
-                className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 transition shadow-sm"
+                className="px-4 py-2 bg-danger text-white font-bold rounded-lg hover:bg-danger disabled:opacity-50 transition shadow-sm"
               >
                 {loading ? "Đang xử lý..." : "Xác nhận xoá"}
               </button>

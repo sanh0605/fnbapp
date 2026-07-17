@@ -58,7 +58,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div aria-live="polite" className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center mb-4 border border-red-200">
+          <div aria-live="polite" className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-4 border border-red-200">
             {error}
           </div>
         )}

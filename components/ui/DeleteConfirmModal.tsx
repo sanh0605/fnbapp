@@ -37,7 +37,7 @@ export function DeleteConfirmModal({
       maxWidth="max-w-sm"
     >
       <div className="text-center py-2">
-        <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-50 rounded-full mb-4">
+        <div className="flex items-center justify-center w-12 h-12 mx-auto bg-danger/10 rounded-full mb-4">
           <AlertTriangle className="w-6 h-6 text-danger" />
         </div>
         <p className="text-text-secondary text-sm">{description}</p>

@@ -205,7 +205,7 @@ export function PurchasedItemForm({
                                 <button
                                   type="button"
                                   onClick={() => removeUnitRow(index)}
-                                  className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg mb-[1px]"
+                                  className="px-3 py-2 text-danger hover:bg-danger/10 rounded-lg mb-[1px]"
                                 >
                                   Xoá
                                 </button>

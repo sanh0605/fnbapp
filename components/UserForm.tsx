@@ -38,7 +38,7 @@ export function UserForm() {
           <div className="bg-surface-card rounded-xl p-6 w-full max-w-md shadow-xl">
             <h2 className="text-xl font-bold mb-4">Thêm Nhân Sự Mới</h2>
             
-            {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
+            {error && <div className="mb-4 text-danger text-sm">{error}</div>}
 
             <form action={handleSubmit} className="space-y-4">
               <div>
@@ -113,7 +113,7 @@ export function DeleteUserButton({ id }: { id: string }) {
         }
       }}
       disabled={loading}
-      className="text-red-600 hover:text-red-800 font-medium text-sm disabled:opacity-50"
+      className="text-danger hover:text-red-800 font-medium text-sm disabled:opacity-50"
     >
       {loading ? "..." : "Xoá"}
     </button>

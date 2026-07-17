@@ -219,7 +219,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
                         <button 
                           type="button" 
                           onClick={() => removeIngredient(index)}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs hover:bg-red-200"
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-danger rounded-full flex items-center justify-center text-xs hover:bg-red-200"
                         >
                           ✕
                         </button>

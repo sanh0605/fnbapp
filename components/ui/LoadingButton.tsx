@@ -16,7 +16,7 @@ interface LoadingButtonProps {
 
 const variantStyles: Record<string, string> = {
   primary: "bg-primary text-white hover:bg-primary-hover disabled:bg-blue-400",
-  danger: "bg-red-600 text-white hover:bg-red-700 disabled:bg-red-400",
+  danger: "bg-danger text-white hover:bg-danger disabled:bg-red-400",
   secondary: "bg-surface-secondary text-text-primary hover:bg-border disabled:bg-surface-secondary",
 };
 

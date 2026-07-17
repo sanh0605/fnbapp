@@ -148,7 +148,7 @@ export function CartPanel({
                     setActiveDraftId(null);
                   }
                 }}
-                className="text-xs font-bold bg-red-500/20 text-red-100 hover:bg-red-500/40 px-2 py-1 rounded transition-colors"
+                className="text-xs font-bold bg-danger/20 text-red-100 hover:bg-danger/40 px-2 py-1 rounded transition-colors"
               >
                 Xoá hết
               </button>
@@ -256,17 +256,17 @@ export function CartPanel({
 
       <div className="bg-surface-card border-t border-border p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
         {lastCheckoutError && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-xl text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
+          <div className="bg-danger/10 border border-rose-200 text-rose-800 p-3 rounded-xl text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
             <div className="flex-1 min-w-0">
               <p className="font-bold">⚠️ Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"})</p>
-              <p className="text-[11px] text-rose-600 mt-0.5 truncate">{lastCheckoutError.error}</p>
+              <p className="text-[11px] text-danger mt-0.5 truncate">{lastCheckoutError.error}</p>
             </div>
             <button
               onClick={() => {
                 handleConfirmCheckout(lastCheckoutError.method);
                 clearLastCheckoutError();
               }}
-              className="bg-rose-600 text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-rose-700 active:scale-95 transition min-h-[44px] min-w-[80px] shrink-0 ml-2 shadow-sm flex items-center justify-center text-xs"
+              className="bg-danger text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-danger active:scale-95 transition min-h-[44px] min-w-[80px] shrink-0 ml-2 shadow-sm flex items-center justify-center text-xs"
             >
               Thử lại
             </button>
@@ -303,7 +303,7 @@ export function CartPanel({
                 </button>
               </div>
 
-              {manualPromoError && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {manualPromoError}</p>}
+              {manualPromoError && <p className="text-danger text-xs mt-1.5 font-semibold">⚠️ {manualPromoError}</p>}
 
               {appliedPromo && (
                 <div className="mt-3 flex items-center justify-between bg-page border border-border rounded-xl p-2.5">
@@ -320,7 +320,7 @@ export function CartPanel({
                     <button
                       type="button"
                       onClick={handleRemovePromoCode}
-                      className="text-text-muted hover:text-red-500 text-sm font-bold px-1.5 py-0.5 hover:bg-red-50 rounded animate-fade-in"
+                      className="text-text-muted hover:text-danger text-sm font-bold px-1.5 py-0.5 hover:bg-danger/10 rounded animate-fade-in"
                     >
                       ✕
                     </button>
@@ -379,7 +379,7 @@ export function CartPanel({
                       onClick={() => {
                         setUserCustomDiscount(null);
                       }}
-                      className="text-text-muted hover:text-red-500 text-sm font-bold px-2 py-1.5 hover:bg-red-50 rounded"
+                      className="text-text-muted hover:text-danger text-sm font-bold px-2 py-1.5 hover:bg-danger/10 rounded"
                     >
                       ✕
                     </button>

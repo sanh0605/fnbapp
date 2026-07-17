@@ -29,7 +29,7 @@ export default function EditUserForm({ user }: { user: any }) {
 
   return (
     <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6 max-w-xl">
-      {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{error}</div>}
+      {error && <div className="mb-4 p-3 bg-danger/10 text-danger text-sm rounded-lg border border-red-100">{error}</div>}
 
       <form action={handleSubmit} className="space-y-5">
         <div>

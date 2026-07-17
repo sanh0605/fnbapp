@@ -30,14 +30,14 @@ export function ProductCard({
     >
       {isOOS && (
         <div className="absolute inset-0 bg-surface-card/40 z-20 flex flex-col items-center justify-center">
-          <span className="bg-red-600 text-white font-bold px-3 py-1 rounded-full shadow border-2 border-white transform -rotate-12">
+          <span className="bg-danger text-white font-bold px-3 py-1 rounded-full shadow border-2 border-white transform -rotate-12">
             HẾT HÀNG
           </span>
         </div>
       )}
       <div className="h-28 bg-page flex items-center justify-center border-b border-border w-full shrink-0 relative">
         {promoPrice !== undefined && (
-          <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10 shadow-sm shadow-red-500/50">
+          <div className="absolute top-0 right-0 bg-danger text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10 shadow-sm shadow-red-500/50">
             🔥 PROMO
           </div>
         )}

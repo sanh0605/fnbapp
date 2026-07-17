@@ -12,7 +12,7 @@ export function Alert({ variant = 'info', title, children, className = '' }: Ale
   const styles = {
     success: { wrapper: "bg-green-50 border-green-200 text-success", icon: <CheckCircle2 className="w-5 h-5 text-success" /> },
     warning: { wrapper: "bg-orange-50 border-orange-200 text-warning", icon: <AlertTriangle className="w-5 h-5 text-warning" /> },
-    danger: { wrapper: "bg-red-50 border-red-200 text-danger", icon: <XCircle className="w-5 h-5 text-danger" /> },
+    danger: { wrapper: "bg-danger/10 border-red-200 text-danger", icon: <XCircle className="w-5 h-5 text-danger" /> },
     info: { wrapper: "bg-primary-soft border-blue-200 text-primary", icon: <Info className="w-5 h-5 text-primary" /> },
   };
 

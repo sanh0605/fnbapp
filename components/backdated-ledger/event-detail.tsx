@@ -85,7 +85,7 @@ export function EventDetail({ event, plan }: EventDetailProps) {
 
           <div>
             <div className="text-text-secondary mb-1">Quantity Change</div>
-            <div className={`font-medium flex items-center ${event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-rose-600' : ''}`}>
+            <div className={`font-medium flex items-center ${event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-danger' : ''}`}>
               {event.quantity_change > 0 && <span className="mr-1">↑</span>}
               {event.quantity_change < 0 && <span className="mr-1">↓</span>}
               {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
