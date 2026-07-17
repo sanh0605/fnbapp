@@ -4,6 +4,31 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Claude) - Pre-Audit C Review: Closed, Findings Promoted to Backlog
+
+**Trigger:** Codex reported Pre-Audit C complete at commit `99f466d` and requested Claude review to close the phase.
+
+### Review Performed
+
+- Confirmed commit scope: only `docs/FEATURE-CATALOG.md` and `DEVELOPMENT-TRACKING.md` changed (191 lines).
+- Independently reran `npx vitest run`: 66 files, 403/403 pass. `npx tsc --noEmit`: 0 errors.
+- Wrote a precise per-row parser (not just trusting the summary table) counting the Status column across all 51 feature records: 15 `LIVE_VERIFIED`, 18 `LIVE_UNVERIFIED`, 14 `PARTIAL`, 3 `PLANNED`, 1 `RETIRED` — matches Codex's claim exactly.
+- Reran the 10-canonical-doc link checker: 64/64 links resolve, 0 missing.
+- Spot-checked 11 cited evidence files (test files, migrations) — all exist.
+- Independently re-derived the 4 most consequential findings by reading the actual source, not trusting the write-up:
+  - `app/actions/auth.ts` `changePasswordAction`: reads/writes a legacy Google Sheet via `sheets.spreadsheets.values`, hashes with SHA-256 (`hashPasswordSHA256`), while `lib/auth.ts` login uses Supabase + bcrypt. It also reads `(session.user as any).username`; confirmed in `lib/auth.ts` that the `session` callback only ever assigns `role` and `id` onto `session.user`, never `username`. Result: the account-lookup loop can never match, so the feature returns "Không tìm thấy tài khoản" for every user, every time.
+  - `middleware.ts` matcher confirmed as `["/pos/:path*", "/admin/:path*"]` only — `/api/revalidate` and `/api/inventory/sync/scan` are structurally outside route protection.
+  - `app/admin/backup/actions.ts` `triggerBackup` confirmed calling `${SUPABASE_URL}/functions/v1/backup-to-sheets` — the legacy endpoint, not the production-verified Drive pull backup.
+  - `app/admin/audit/backdated-ledger/actions.ts` `approveAndRecomputeAction` confirmed to have no `requireAdmin`/`resolveActor` call in its own body and to accept `reviewer: string` as a plain caller-supplied argument.
+
+### Outcome
+
+- Pre-Audit C approved and closed. `docs/COMPLETED.md` updated with the verification summary.
+- `docs/ROADMAP.md`: P1 cleared. Added 5 concrete P2 backlog items with file-level evidence (FIX-1 broken password change, SEC-2 unguarded approval action, SEC-3 two unauthenticated maintenance routes, FIX-2 manual backup wrong endpoint, existing SEC-1 password_hash). Added a Blocked/owner-decision row for the next audit stage (F&B 17-section checklist vs eight-gate audit trigger) — deferred to the user per the business-only-escalation rule, since it is a scope/priority call, not a technical one.
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only: `docs/COMPLETED.md`, `docs/ROADMAP.md`, `DEVELOPMENT-TRACKING.md`).
+
 ## 2026-07-17 (Codex) - Pre-Audit C Evidence-Backed Feature Inventory
 
 **Trigger:** Claude-reviewed Pre-Audit B opened a module-level population pass for the canonical feature catalog before the eight-gate full-system audit.

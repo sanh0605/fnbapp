@@ -1,14 +1,15 @@
 /**
  * Phase 6.2: Verify DELETE_ONE_OFF script safety.
  *
- * For each script in DELETE_ONE_OFF category (from script-cleanup-plan.md):
+ * For each script in DELETE_ONE_OFF category (read live from script-cleanup-plan.md,
+ * not hardcoded -- the plan is regenerated periodically and the list drifts):
  * 1. Check if file still exists.
  * 2. Grep codebase for references (excluding the script itself + cleanup plan + tracking docs).
  * 3. Flag if referenced anywhere meaningful.
  *
- * Output: docs/audits/2026-06-27-script-deletion-verification.md
+ * Output: docs/audits/<today>-script-deletion-verification.md
  *
- * Claude code — Phase 6.2 read-only audit.
+ * Claude code -- Phase 6.2 read-only audit.
  */
 
 import * as fs from "node:fs";
@@ -17,59 +18,21 @@ import * as path from "node:path";
 const REPO_ROOT = process.cwd();
 const SCRIPTS_DIR = path.join(REPO_ROOT, "scripts");
 
-const DELETE_ONE_OFF = [
-  "add-non-inventory-column.ts",
-  "archive-review-sheet-candidates.ts",
-  "archive-sheet-candidates.ts",
-  "batch-sheets-orders.ts",
-  "classify-order-ledger-audit.ts",
-  "classify-orphan-order-ledger.ts",
-  "classify-promo-context.ts",
-  "cleanup-test-orders-v2.ts",
-  "compare-order-dates.js",
-  "diff-promo-id-loss.ts",
-  "find-promo-plus-order-discount.ts",
-  "find-promo-undercount-bugs.ts",
-  "find-revenue-anomalies-broad.ts",
-  "fix-historical-discounts.ts",
-  "fix-phd000522-promo.ts",
-  "fix-phd522-and-uck161.ts",
-  "fix-product-discount-overrides.ts",
-  "fix-subtotal-and-line-discounts.ts",
-  "fix-ws7-migration-issues.ts",
-  "generate-knowledge-graph.ts",
-  "generate-phase3-briefing.ts",
-  "inspect-lines.ts",
-  "inspect-order-v2.ts",
-  "inspect-phd000522.ts",
-  "inspect-uck000094.ts",
-  "inspect-uck000161.ts",
-  "inspect.ts",
-  "investigate-caphe-da-detail.ts",
-  "investigate-caphe-da.ts",
-  "investigate-dao-mieng.ts",
-  "investigate-negative-stock.ts",
-  "investigate-pnl-bugs.ts",
-  "investigate-revenue-anomaly.ts",
-  "investigate-revenue-mismatch.ts",
-  "investigate-topping-cogs.ts",
-  "list-all-v2-orders.ts",
-  "read-user-sheet.ts",
-  "recover-product-discount.ts",
-  "seed-admin.js",
-  "sync-supabase-sales.js",
-  "test-edit-order-v2.ts",
-  "test-pnl-v2.ts",
-  "test-submit-order-v2.ts",
-  "test-void-order-v2.ts",
-  "verify-e1-fix.ts",
-  "verify-june-revenue.ts",
-  "verify-latest-test-order.ts",
-  "verify-orders-schema.ts",
-  "verify-pnl-patterns.ts",
-  "verify-v2-invariants.ts",
-  "verify-v2-schema.ts",
-];
+function loadDeleteOneOffList(): string[] {
+  const planPath = path.join(REPO_ROOT, "docs/audits/script-cleanup-plan.md");
+  const text = fs.readFileSync(planPath, "utf8");
+  const section = text.split("## DELETE_ONE_OFF")[1]?.split(/\n## /)[0];
+  if (!section) {
+    throw new Error("Could not find DELETE_ONE_OFF section in script-cleanup-plan.md");
+  }
+  const names = [...section.matchAll(/`([^`]+\.(?:ts|js))`/g)].map(m => m[1]);
+  if (names.length === 0) {
+    throw new Error("Parsed 0 DELETE_ONE_OFF entries -- plan format may have changed");
+  }
+  return names;
+}
+
+const DELETE_ONE_OFF = loadDeleteOneOffList();
 
 function walkDir(dir: string, results: string[] = []): string[] {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -92,16 +55,22 @@ function findReferences(scriptName: string): string[] {
     /^scripts\/verify-delete-candidates\.ts$/,
     /^scripts\/script-name-placeholder$/, // never match
   ];
-  // Substantive reference patterns: imports, script-path strings, command lines.
+  // Base name without extension -- TS/JS imports commonly omit the extension
+  // (e.g. `from "./batch-sheets-orders"`), so match both forms.
+  const base = scriptName.replace(/\.(ts|js)$/, "");
+  const escBase = base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escFull = scriptName.replace(/\./g, "\\.");
+  // Substantive reference patterns: imports (with/without extension), script-path strings, command lines.
   const refPatterns = [
-    new RegExp(`from\\s+['"]\\.\\./${scriptName.replace(/\./g, "\\.")}['"]`),
-    new RegExp(`from\\s+['"]\\./${scriptName.replace(/\./g, "\\.")}['"]`),
-    new RegExp(`require\\(['"]\\.\\./${scriptName.replace(/\./g, "\\.")}['"]\\)`),
-    new RegExp(`require\\(['"]\\./${scriptName.replace(/\./g, "\\.")}['"]\\)`),
-    new RegExp(`scripts/${scriptName.replace(/\./g, "\\.")}`),
-    new RegExp(`node_modules/.bin/vite-node\\.cmd scripts\\s+${scriptName.replace(/\./g, "\\.")}`),
-    new RegExp(`\\.bin/vite-node\\.cmd\\s+${scriptName.replace(/\./g, "\\.")}`),
-    new RegExp(`vite-node\\.\\w+\\s+${scriptName.replace(/\./g, "\\.")}`),
+    new RegExp(`from\\s+['"]\\.\\./${escBase}(?:\\.(?:ts|js))?['"]`),
+    new RegExp(`from\\s+['"]\\./${escBase}(?:\\.(?:ts|js))?['"]`),
+    new RegExp(`require\\(['"]\\.\\./${escBase}(?:\\.(?:ts|js))?['"]\\)`),
+    new RegExp(`require\\(['"]\\./${escBase}(?:\\.(?:ts|js))?['"]\\)`),
+    new RegExp(`scripts/${escFull}`),
+    new RegExp(`node_modules/.bin/vite-node\\.cmd scripts\\s+${escFull}`),
+    new RegExp(`\\.bin/vite-node\\.cmd\\s+${escFull}`),
+    new RegExp(`vite-node\\.\\w+\\s+${escFull}`),
+    new RegExp(`execSync\\([^)]*scripts/${escFull}`),
   ];
 
   for (const file of allFiles) {
@@ -115,7 +84,7 @@ function findReferences(scriptName: string): string[] {
     if (relPath === "docs/audits/sheet-usage-report.json") continue;
     if (relPath === "docs/audits/2026-06-26-folder-cleanup-proposal.md") continue;
     if (relPath === "docs/audits/script-cleanup-plan.md") continue;
-    if (relPath === "docs/audits/2026-06-27-script-deletion-verification.md") continue;
+    if (/^docs\/audits\/\d{4}-\d{2}-\d{2}-script-deletion-verification\.md$/.test(relPath)) continue;
     if (relPath === "DEVELOPMENT-TRACKING.md") continue;
     if (relPath === "docs/audits/codex-handoff-2026-06-25.md") continue;
     if (relPath === "docs/audits/2026-06-25-full-system-audit-roadmap.md") continue;
@@ -133,10 +102,11 @@ function findReferences(scriptName: string): string[] {
 }
 
 function main() {
+  const today = new Date().toISOString().slice(0, 10);
   const lines: string[] = [];
   lines.push("# Phase 6.2 — Script Deletion Verification");
   lines.push("");
-  lines.push(`Date: 2026-06-27`);
+  lines.push(`Date: ${today}`);
   lines.push(`Generated by: scripts/verify-delete-candidates.ts`);
   lines.push("");
   lines.push(`Audited ${DELETE_ONE_OFF.length} DELETE_ONE_OFF scripts.`);
@@ -197,7 +167,7 @@ function main() {
     lines.push("");
   }
 
-  const outputPath = path.join(REPO_ROOT, "docs/audits/2026-06-27-script-deletion-verification.md");
+  const outputPath = path.join(REPO_ROOT, `docs/audits/${today}-script-deletion-verification.md`);
   fs.writeFileSync(outputPath, lines.join("\n"));
   console.log(`Output: ${path.relative(REPO_ROOT, outputPath)}`);
   console.log(`Safe: ${safe.length}, Referenced: ${referenced.length}, Missing: ${missing.length}`);

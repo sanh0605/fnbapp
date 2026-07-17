@@ -43,15 +43,19 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 ### P1 — Next up (high impact, unblocked)
 
-| Task | Owner | Scope | Prompt | Blocked by |
-|---|---|---|---|---|
-| [ ] **Pre-Audit C. Evidence-backed feature inventory** | Codex + Claude review | Populate `docs/FEATURE-CATALOG.md` from current routes, actions, scripts, tests, integrations, and operator evidence, module group by module group | `docs/handoffs/2026-07-17-codex-pre-audit-c-feature-inventory.md`. Use the approved status vocabulary; do not begin the eight-gate audit; full F&B capability checklist deferred as a follow-up. | none — ready for Codex pickup |
+| Task | Owner | Scope | Notes |
+|---|---|---|---|
+| (none) | — | — | Pre-Audit C closed. Next stage requires an owner decision — see "Blocked" section. |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
 | **SEC-1. password_hash leakage qua admin pages** | Codex | Bảo mật: bỏ trường password_hash trước khi serialize Users payload | Pre-Audit A flag EXPOSED 2026-07-17. User quyết định xử lý ở phase bảo mật đầy đủ (sau Pre-Audit B+C). Không khẩn cấp vì trang admin đã có lớp bảo vệ đăng nhập. |
+| **FIX-1. Đổi mật khẩu đang hỏng** | Codex | `app/actions/auth.ts` `changePasswordAction` | Pre-Audit C 2026-07-17, Claude verified in code. Đọc/ghi Google Sheet cũ bằng SHA-256, không dùng hệ Supabase+bcrypt hiện tại; đọc `session.user.username` mà hệ đăng nhập không hề gán giá trị này. Kết quả: mọi người dùng bấm đổi mật khẩu đều nhận lỗi "không tìm thấy tài khoản", tính năng không hoạt động. Không khẩn cấp về dữ liệu/tiền, nhưng là tính năng hỏng thật đang hiển thị cho người dùng. |
+| **SEC-2. Duyệt dữ liệu quá khứ thiếu lớp bảo vệ riêng** | Codex | `app/admin/audit/backdated-ledger/actions.ts` `approveAndRecomputeAction` | Pre-Audit C 2026-07-17, Claude verified in code. Hàm không tự kiểm tra quyền (dựa hoàn toàn vào lớp bảo vệ trang), và nhận tên người duyệt trực tiếp từ tham số gọi vào thay vì lấy từ phiên đăng nhập đã xác thực. |
+| **SEC-3. Hai cổng bảo trì chưa được bảo vệ** | Codex | `/api/revalidate`, `/api/inventory/sync/scan` | Pre-Audit C 2026-07-17, Claude verified `middleware.ts` matcher only covers `/pos/*` and `/admin/*`. Cổng quét phát hiện lệch dữ liệu (`sync/scan`) có thể lộ thông tin lệch kho; cổng revalidate ảnh hưởng cache, không phải dữ liệu. |
+| **FIX-2. Nút sao lưu thủ công gọi nhầm hệ cũ** | Codex | `app/admin/backup/actions.ts` `triggerBackup` | Pre-Audit C 2026-07-17, Claude verified. Bấm nút sao lưu thủ công trên trang admin vẫn gọi hàm sao lưu cũ (`backup-to-sheets`), không phải hệ sao lưu Drive hằng ngày đã xác minh production. Không ảnh hưởng backup tự động hằng ngày, nhưng nút thủ công hiện không làm đúng như tên gọi. |
 | **H1. Push local commits** | Claude | git | Khi anh yêu cầu. 41+ commits local pending. |
 
 ### P3 — Depends on verification
@@ -64,7 +68,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Blocker | Resolution path |
 |---|---|---|
-| (none) | — | — |
+| **Next audit stage** | Pre-Audit C closed 2026-07-17 (51 capabilities inventoried, Claude-verified). Two paths available, both owner-triggered per `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`: (a) populate the 17-section F&B capability checklist with per-item priority classification, which needs owner input on business priority per item; (b) trigger the eight-gate full audit directly using the current inventory as baseline. | Ask owner which path, or whether to work the P2 findings above first. |
 
 ## Out of scope (do not start without explicit approval)
 
@@ -118,6 +122,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-17 Claude: closed Pre-Audit C review (commit `99f466d`). Independently re-derived the 4 most consequential findings from source code rather than trusting the write-up: broken password-change feature, unguarded backdated-ledger approval action, 2 unauthenticated maintenance routes, manual backup button calling the legacy path. Precise per-row status count matches claim exactly (15/18/14/3/0/1 = 51). Added 5 concrete P2 backlog items with evidence. Opened "next audit stage" as a Blocked/owner-decision item — F&B 17-section checklist vs eight-gate audit trigger.
 - 2026-07-17 Claude: closed Pre-Audit B execution review. Independently reproduced all claims (10/10 canonical docs, 64/64 links, 403/403 tests, TS clean, build clean 41 routes, 7 SUPERSEDED + 1 DUPLICATE banners spot-checked). Authored Pre-Audit C handoff (`docs/handoffs/2026-07-17-codex-pre-audit-c-feature-inventory.md`), scoped to the 15-module FEATURE-CATALOG population pass; deferred the full F&B capability checklist as a separate follow-up. P1 unblocked for Codex pickup.
 - 2026-07-17 Codex: Pre-Audit B execution created/refreshed the ten canonical entry documents, preserved Tier 2/3 sources, and moved Pre-Audit C to the next P1 gate. Pending Claude review; no push.
 - 2026-07-17 Claude: UI-REMED-1 saga closed. All 5 phases done (commits `c33033f` + `8f93742` + `d239cbb` + `55ef69d` + `ee33450`). ~94% color migration coverage (145 raw occurrences remain — ui/* primitives + gradient stops + complex utility classes). TS clean, build clean, 403/403 tests pass. Visual smoke test pending. UI-REMED saga 5/5 + 1 polish complete. ROADMAP cleaned up duplicate P1 sections.
