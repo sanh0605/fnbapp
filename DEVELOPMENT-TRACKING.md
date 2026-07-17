@@ -4,6 +4,17 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - Closed the scripts/ Ownership Gray Zone
+
+**Trigger:** User asked whether the current Claude/Codex/Antigravity work split was still appropriate. Claude flagged, unprompted, that it had directly fixed 2 files under `scripts/` (nominally Codex's domain per `docs/ROADMAP.md`'s ownership table) without Codex review, and asked the user to decide whether that should be allowed going forward for small mechanical fixes. User decided: no — keep routing through Codex, specifically to preserve Claude's ability to independently review Codex's work rather than self-review.
+
+### Actions
+
+- `docs/COLLABORATION.md` Section C: added `scripts/**` as a blanket Codex-owned category (superseding the narrower `scripts/*cogs*`/`scripts/*ledger*`/one-named-file list), with the reasoning spelled out inline so future sessions don't have to re-derive it.
+- Added `REV-1` to `docs/ROADMAP.md` P2 backlog: a low-priority retroactive spot-check for Codex on the 2 scripts Claude already fixed before this rule existed (`scripts/generate-script-cleanup-plan.ts`, `scripts/verify-delete-candidates.ts`, commits `b5170da`/`24a57bd`) — closes the review gap those changes left open rather than leaving them permanently unreviewed.
+
+Commit: pending.
+
 ## 2026-07-18 (Claude) - Gate 2 Scoped and Handed Off
 
 **Trigger:** User asked to continue after Gate 1 closed. Audit-program spec has no real detail for Gate 2 ("Full content per owner's spec" placeholder), so scope had to be built rather than copied.

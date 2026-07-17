@@ -67,9 +67,14 @@ Codex owns these. If another agent touches them, Codex review is required.
 - `lib/cogs-drift-audit.ts`
 - `lib/mac-cogs-audit.ts`
 - `lib/purchase-ledger-rebuild.ts`
-- `scripts/*cogs*`
-- `scripts/*ledger*`
-- `scripts/audit-pnl-mac-consistency.ts`
+- `scripts/**` (all of it — engine/data scripts, audit tooling, and repo-maintenance
+  scripts like the script-cleanup-plan generator alike. No gray zone: Claude does
+  not edit `scripts/*` directly, even for small mechanical fixes, and hands them
+  to Codex instead. Reason: the point of the two-agent split is that Claude can
+  independently review Codex's work; Claude fixing its own script and then
+  reviewing itself defeats that, however low-risk the individual fix looks.
+  User decision 2026-07-18, after Claude fixed 2 script-cleanup tooling bugs
+  directly and flagged it as a boundary crossing.)
 - `app/admin/orders/actions.ts` transaction/order-mutation paths only.
 - `app/pos/actions.ts` transaction paths only.
 
@@ -346,6 +351,7 @@ When forced to use a technical term, **always** define on first use in same resp
 
 ## Change Log
 
+- 2026-07-18 Claude: closed the `scripts/` gray zone in Section C "Engine Files" — all of `scripts/**` is Codex-owned, no exception for small/mechanical fixes. User explicit decision after Claude directly fixed 2 script-cleanup tooling bugs (`scripts/generate-script-cleanup-plan.ts`, `scripts/verify-delete-candidates.ts`) and flagged it as a boundary crossing: keeping the line firm preserves Claude's ability to independently review Codex's work, which a self-fix-then-self-review pattern would erode even for low-risk changes.
 - 2026-07-17 Claude: Section I rule 4 narrowed — agents escalate only business-impact decisions to the user; technical/implementation choices are decided by agents and reported in plain language, not gated on approval. Clarified that CLI tool-permission prompts are a separate, user-controlled setting, not an agent asking a question.
 - 2026-07-17 Codex: refreshed Section A for the approved ten-document canonical entry set and three-tier authority model. Specialist MAC/backup/domain sources remain supporting authority; audits/handoffs/completed plans remain historical evidence. Pending Claude protocol review.
 - 2026-07-17 Claude: Strengthened Section I "Communication Style with Business Owner" per user explicit feedback. Rule now applies to ALL agents (Codex/Antigravity/Claude) for ALL user-facing output. Added rule 7 (Claude translates technical agent responses → plain Vietnamese before showing user). Added word-to-avoid table with plain alternatives. Drift trigger expanded to include user complaint "em vẫn chưa dùng cách nói phù hợp".
