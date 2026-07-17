@@ -282,7 +282,9 @@ When in doubt: translate to plain Vietnamese before showing to user. Technical E
    - ĐÚNG: "Backup hiện lỗi vì Google chặn kiểu kết nối đó — cần đổi cách. Có 3 lựa chọn với đánh đổi X/Y/Z."
    - SAI: "403 storageQuotaExceeded — SA has no quota in My Drive, need OAuth delegation or Workspace."
 
-4. **Decisions belong to user.** Agents recommend options with tradeoffs; user picks. Don't decide unilaterally. Don't push one option without surfacing alternatives.
+4. **Decisions belong to user — but only business decisions.** Escalate to the user only for business-impact calls: priorities, scope, risk/time tradeoffs, anything touching real data or money, irreversible actions. For pure technical/implementation choices (which file to fix, how to phrase a script fix, which internal doc to update), agents decide using best judgment, act, then report in plain language what was done and why. Do not ask the user to approve routine technical execution. If a technical choice is unusually good or worth the user learning from, proactively point it out with the reasoning when reporting — don't withhold it, just don't gate the work behind it.
+   - User explicit feedback 2026-07-17: "Anh không hiểu kỹ thuật sâu... những việc liên quan đến kỹ thuật anh cần em dùng ngôn ngữ dễ hiểu để anh biết em dùng cái đó làm gì... còn lại đều có thể nghe theo em khuyến nghị." User is an end-user of the product, not a developer; wants technical execution decided by agents, not gated on approval.
+   - Note: this is separate from the CLI's own tool-permission prompts (e.g., "This command requires approval" before running a shell command). Those come from the user's Claude Code permission-mode settings, not from an agent's question — agents cannot suppress them. If the user wants fewer of those, they adjust their own permission mode; agents should explain this distinction rather than let the user think an agent is the one asking.
 
 5. **Code in English, communication in Vietnamese.** Per existing protocol — code/comments English, user-facing text Vietnamese. Apply same to chat with user.
 
@@ -344,6 +346,7 @@ When forced to use a technical term, **always** define on first use in same resp
 
 ## Change Log
 
+- 2026-07-17 Claude: Section I rule 4 narrowed — agents escalate only business-impact decisions to the user; technical/implementation choices are decided by agents and reported in plain language, not gated on approval. Clarified that CLI tool-permission prompts are a separate, user-controlled setting, not an agent asking a question.
 - 2026-07-17 Codex: refreshed Section A for the approved ten-document canonical entry set and three-tier authority model. Specialist MAC/backup/domain sources remain supporting authority; audits/handoffs/completed plans remain historical evidence. Pending Claude protocol review.
 - 2026-07-17 Claude: Strengthened Section I "Communication Style with Business Owner" per user explicit feedback. Rule now applies to ALL agents (Codex/Antigravity/Claude) for ALL user-facing output. Added rule 7 (Claude translates technical agent responses → plain Vietnamese before showing user). Added word-to-avoid table with plain alternatives. Drift trigger expanded to include user complaint "em vẫn chưa dùng cách nói phù hợp".
 - 2026-07-16 Codex+Claude: Stabilization Phase 2 closed. Added "Backup Files" subsection to Section C — Codex owns backup architecture (`supabase/functions/backup-to-drive/**`, `scripts/apps-script/backup-to-drive.gs`, `lib/drive-backup*.ts`, retention/schema decisions, restore planning, R2/B2 migration trigger). Claude retains final architecture/policy approval + protocol ownership. Any production restore still requires reviewed dry-run/apply plan.
