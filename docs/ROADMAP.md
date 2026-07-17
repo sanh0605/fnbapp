@@ -57,7 +57,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| **H1. Push local commits** | Claude | git | After POS-REDESIGN-1 Session 3 visual smoke. 35+ commits local pending. |
+| **SEC-1. password_hash leakage qua admin pages** | Codex | Bảo mật: bỏ trường password_hash trước khi serialize Users payload | Pre-Audit A flag EXPOSED 2026-07-17. User quyết định xử lý ở phase bảo mật đầy đủ (sau Pre-Audit B+C). Không khẩn cấp vì trang admin đã có lớp bảo vệ đăng nhập. |
+| **H1. Push local commits** | Claude | git | Khi anh yêu cầu. 41+ commits local pending. |
 
 ### P3 — Depends on verification
 
