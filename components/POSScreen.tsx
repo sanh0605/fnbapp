@@ -866,7 +866,7 @@ export default function POSScreen({
                 : toast.type === "error"
                 ? "bg-danger/10 border-rose-200 text-rose-800"
                 : toast.type === "warning"
-                ? "bg-amber-50 border-amber-200 text-amber-800"
+                ? "bg-warning/10 border-amber-200 text-amber-800"
                 : "bg-primary-soft border-blue-200 text-blue-800"
             }`}
           >
@@ -942,7 +942,7 @@ export default function POSScreen({
         </header>
 
         {!isOnline && (
-          <div className="bg-amber-500 text-white font-extrabold text-center py-2.5 px-4 text-sm flex items-center justify-center gap-2 animate-fade-in shadow-md shrink-0 relative z-20">
+          <div className="bg-warning text-white font-extrabold text-center py-2.5 px-4 text-sm flex items-center justify-center gap-2 animate-fade-in shadow-md shrink-0 relative z-20">
             <span>⚠️ Mất kết nối — đơn sẽ không gửi được</span>
           </div>
         )}
@@ -1002,7 +1002,7 @@ export default function POSScreen({
         >
           <div className="relative">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-primary">{totalItems}</span>
+            <span className="absolute -top-2 -right-2 bg-warning text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-primary">{totalItems}</span>
           </div>
           <span>{formatNumber(totalAmount)}</span>
         </button>
@@ -1032,13 +1032,13 @@ export default function POSScreen({
                       <button
                         key={v.id}
                         onClick={() => setSelectedVariant(v)}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-orange-500 bg-orange-50" : "border-border bg-surface-card hover:border-orange-200"}`}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-orange-500 bg-warning/10" : "border-border bg-surface-card hover:border-orange-200"}`}
                       >
-                        <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-orange-700" : "text-text-primary"}`}>{v.size_name}</span>
+                        <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-warning" : "text-text-primary"}`}>{v.size_name}</span>
                         {hasPromo ? (
                           <div className="flex flex-col items-center">
                             <span className="text-xs text-text-muted line-through">{formatNumber(v.price)}</span>
-                            <span className="text-sm font-black text-orange-600">{formatNumber(promoPrice)}</span>
+                            <span className="text-sm font-black text-warning">{formatNumber(promoPrice)}</span>
                           </div>
                         ) : (
                           <span className="text-sm font-black text-text-primary">{formatNumber(v.price)}</span>
@@ -1100,13 +1100,13 @@ export default function POSScreen({
                   <div className="flex rounded-lg overflow-hidden border border-border shrink-0 h-10">
                     <button
                       onClick={() => setItemDiscountType("VND")}
-                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-orange-100 text-orange-700" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-orange-100 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                     >
                       VNĐ
                     </button>
                     <button
                       onClick={() => setItemDiscountType("PERCENT")}
-                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-orange-100 text-orange-700" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
+                      className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-orange-100 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                     >
                       %
                     </button>
@@ -1127,14 +1127,14 @@ export default function POSScreen({
                 <div className="flex items-center gap-3 bg-surface-secondary rounded-xl p-1.5 shrink-0 h-14">
                   <button
                     onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
-                    className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-orange-600 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-warning transition-colors"
                   >
                     -
                   </button>
                   <span className="text-lg font-black w-6 text-center text-text-primary">{selectedQty}</span>
                   <button
                     onClick={() => setSelectedQty(selectedQty + 1)}
-                    className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-orange-600 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-warning transition-colors"
                   >
                     +
                   </button>
@@ -1142,7 +1142,7 @@ export default function POSScreen({
 
                 <button
                   onClick={addToCart}
-                  className="flex-1 bg-orange-600 text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
+                  className="flex-1 bg-warning text-white py-2 px-3 rounded-xl hover:bg-orange-700 active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
                 >
                   <div className="font-bold text-sm lg:text-base flex flex-col items-center">
                     <span>{editingCartIndex !== null ? "CẬP NHẬT" : "THÊM"} - {formatNumber(currentItemFinalTotal)}</span>
@@ -1173,7 +1173,7 @@ export default function POSScreen({
               <h3 className="text-xl font-bold text-text-primary mb-2">Thanh toan thanh cong!</h3>
               <p className="text-sm text-text-secondary mb-3">Ma don hang</p>
               <div className="bg-page border-2 border-dashed border-border rounded-xl p-4 mb-4">
-                <span className="text-3xl font-black text-orange-600 tracking-wider">{successOrderNo}</span>
+                <span className="text-3xl font-black text-warning tracking-wider">{successOrderNo}</span>
               </div>
             </div>
             <div className="px-6 pb-6">

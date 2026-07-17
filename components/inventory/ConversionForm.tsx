@@ -66,7 +66,7 @@ export function ConversionForm({
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-700 transition"
+          className="bg-processing text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-700 transition"
         >
           + Thêm Quy đổi
         </button>
@@ -166,7 +166,7 @@ export function ConversionForm({
                   <button
                     type="submit"
                     disabled={loading || !selectedItemId}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-processing text-white rounded-lg text-sm hover:bg-purple-700 disabled:opacity-50"
                   >
                     Lưu
                   </button>

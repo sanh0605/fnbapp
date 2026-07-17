@@ -1,7 +1,7 @@
 import React from "react";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  PENDING: { label: "Chờ duyệt", className: "bg-amber-50 text-amber-700 border-amber-200" },
+  PENDING: { label: "Chờ duyệt", className: "bg-warning/10 text-warning border-amber-200" },
   APPROVED: { label: "Đã duyệt", className: "bg-primary-soft text-primary border-blue-200" },
   RECOMPUTED: { label: "Đã tính lại", className: "bg-success/10 text-success border-emerald-200" },
   REJECTED: { label: "Đã từ chối", className: "bg-page text-text-primary border-border" },

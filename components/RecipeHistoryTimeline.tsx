@@ -173,13 +173,13 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                 <div key={evt.id} className="relative group">
                   {/* Circle Dot */}
                   <div
-                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-amber-500 ring-4 ring-amber-50 transition-transform group-hover:scale-110 z-10`}
+                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-warning ring-4 ring-amber-50 transition-transform group-hover:scale-110 z-10`}
                   />
 
                   {/* Card content */}
                   <div className="bg-surface-card rounded-xl border border-border p-4 shadow-sm hover:border-border transition-colors duration-200">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-warning/10 text-warning border border-amber-100">
                         Thay đổi giá
                       </span>
                     </div>
@@ -194,10 +194,10 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                         <>
                           <span className="text-text-muted line-through font-medium">{formatNumber(p.old_price)}</span>
                           <span className="text-text-muted">➔</span>
-                          <span className="font-extrabold text-amber-600 text-base">{formatNumber(p.new_price)}</span>
+                          <span className="font-extrabold text-warning text-base">{formatNumber(p.new_price)}</span>
                         </>
                       ) : (
-                        <span className="font-extrabold text-amber-600 text-base">Giá bán đầu: {formatNumber(p.new_price)}</span>
+                        <span className="font-extrabold text-warning text-base">Giá bán đầu: {formatNumber(p.new_price)}</span>
                       )}
                     </div>
                   </div>

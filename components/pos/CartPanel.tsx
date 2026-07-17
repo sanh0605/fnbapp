@@ -215,7 +215,7 @@ export function CartPanel({
                   </div>
                   <div className="flex justify-between text-sm font-extrabold text-text-primary pt-1">
                     <span>Tổng tiền:</span>
-                    <span className="text-orange-600">{formatNumber(processingOrder.totalAmount)}</span>
+                    <span className="text-warning">{formatNumber(processingOrder.totalAmount)}</span>
                   </div>
                 </div>
               </div>
@@ -421,7 +421,7 @@ export function CartPanel({
                     {formatNumber(calculateCartBaseTotal())}
                   </div>
                 )}
-                <div className="text-2xl font-black text-orange-600">{formatNumber(totalAmount)}</div>
+                <div className="text-2xl font-black text-warning">{formatNumber(totalAmount)}</div>
               </div>
             </div>
 
@@ -488,7 +488,7 @@ export function CartPanel({
           <div>
             <div className="flex justify-between items-center mb-4">
               <span className="text-text-secondary font-medium">Tổng thanh toán ({processingOrder.totalItems} món)</span>
-              <span className="text-2xl font-black text-orange-600">{formatNumber(processingOrder.totalAmount)}</span>
+              <span className="text-2xl font-black text-warning">{formatNumber(processingOrder.totalAmount)}</span>
             </div>
             <div className="w-full bg-surface-secondary text-text-secondary font-bold text-sm py-3.5 rounded-xl flex justify-center items-center gap-2 border border-border min-h-[48px]">
               <svg className="animate-spin h-4 w-4 text-text-secondary" fill="none" viewBox="0 0 24 24">

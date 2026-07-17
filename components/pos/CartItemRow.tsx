@@ -103,7 +103,7 @@ export function CartItemRow({
                 {formatNumber(baseTotal)}
               </div>
             )}
-            <div className="font-bold text-orange-600">
+            <div className="font-bold text-warning">
               {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
             </div>
           </div>

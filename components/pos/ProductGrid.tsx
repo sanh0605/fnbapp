@@ -80,7 +80,7 @@ export function ProductGrid({
             onClick={() => setActiveCategory("BEST_SELLERS")}
             className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
               activeCategory === "BEST_SELLERS"
-                ? "bg-orange-600 text-white shadow-md"
+                ? "bg-warning text-white shadow-md"
                 : "bg-surface-secondary text-text-secondary hover:bg-border"
             }`}
           >
@@ -90,7 +90,7 @@ export function ProductGrid({
             onClick={() => setActiveCategory("ALL")}
             className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
               activeCategory === "ALL"
-                ? "bg-orange-600 text-white shadow-md"
+                ? "bg-warning text-white shadow-md"
                 : "bg-surface-secondary text-text-secondary hover:bg-border"
             }`}
           >
@@ -102,7 +102,7 @@ export function ProductGrid({
               onClick={() => setActiveCategory(c.id)}
               className={`snap-start whitespace-nowrap px-4 py-2 rounded-xl font-medium text-sm transition-colors ${
                 activeCategory === c.id
-                  ? "bg-orange-600 text-white shadow-md"
+                  ? "bg-warning text-white shadow-md"
                   : "bg-surface-secondary text-text-secondary hover:bg-border"
               }`}
             >

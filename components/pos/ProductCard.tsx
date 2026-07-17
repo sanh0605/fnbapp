@@ -55,12 +55,12 @@ export function ProductCard({
               <span className="text-[11px] text-text-muted line-through leading-none">
                 {formatNumber(basePrice)}
               </span>
-              <span className="text-orange-600 font-bold text-sm leading-tight">
+              <span className="text-warning font-bold text-sm leading-tight">
                 {formatNumber(promoPrice)}
               </span>
             </div>
           ) : (
-            <div className="text-orange-600 font-bold text-sm leading-tight">
+            <div className="text-warning font-bold text-sm leading-tight">
               {formatNumber(basePrice)}
             </div>
           )}

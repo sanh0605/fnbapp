@@ -26,7 +26,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
     <>
       <button 
         onClick={() => setIsOpen(true)} 
-        className="text-sm font-medium text-amber-600 hover:text-amber-800 flex items-center gap-1"
+        className="text-sm font-medium text-warning hover:text-amber-800 flex items-center gap-1"
         title="Xem lịch sử thay đổi"
       >
         <History className="w-4 h-4" />
@@ -39,7 +39,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
           <div className="bg-surface-card rounded-card shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-5 border-b border-border flex justify-between items-center bg-page">
               <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-                <History className="w-6 h-6 text-amber-500" />
+                <History className="w-6 h-6 text-warning" />
                 Lịch sử: {title}
               </h2>
               <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary">
@@ -56,7 +56,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
                   <div className="space-y-3 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
                     {priceTimeline.map((entry) => (
                       <div key={entry.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                        <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-amber-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
+                        <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-warning text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
                         <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-3 bg-surface-card rounded-lg shadow-sm border border-border">
                           <div className="text-xs font-bold text-text-muted mb-1">
                             Từ: {formatDate(entry.effectiveAt)}

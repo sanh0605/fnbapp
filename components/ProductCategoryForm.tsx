@@ -50,7 +50,7 @@ export default function ProductCategoryForm({ initialData }: any) {
       {!isEdit ? (
         <button 
           onClick={() => setIsOpen(true)}
-          className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition shadow-sm"
+          className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition shadow-sm"
         >
           + Thêm Nhóm Mới
         </button>
@@ -102,7 +102,7 @@ export default function ProductCategoryForm({ initialData }: any) {
                 type="submit" 
                 form={isEdit ? `editCat-${initialData.id}` : "addCat"} 
                 disabled={loading || !name} 
-                className="px-5 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 disabled:opacity-50 transition shadow-sm"
+                className="px-5 py-2.5 bg-warning text-white font-bold rounded-lg hover:bg-orange-700 disabled:opacity-50 transition shadow-sm"
               >
                 {loading ? "Đang xử lý..." : "Lưu Nhóm"}
               </button>

@@ -22,7 +22,7 @@ const KIND_CLASSES: Record<DiscountKind, { wrapper: string; dot: string; text: s
     text: "text-cyan-400",
   },
   manualItem: {
-    wrapper: "bg-orange-500/10 border-orange-500/20",
+    wrapper: "bg-warning/10 border-orange-500/20",
     dot: "bg-orange-400",
     text: "text-orange-400",
   },

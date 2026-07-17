@@ -73,7 +73,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
       {!isEdit ? (
         <button 
           onClick={() => setIsOpen(true)}
-          className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition shadow-sm"
+          className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition shadow-sm"
         >
           + Thêm Tuỳ chọn
         </button>
@@ -174,7 +174,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
 
             <div className="p-5 border-t border-border bg-page flex justify-end gap-3 mt-auto">
               <button type="button" onClick={() => setIsOpen(false)} className="px-5 py-2.5 text-text-secondary font-medium hover:bg-border rounded-lg transition">Huỷ</button>
-              <button type="submit" form={isEdit ? `editMod-${initialData.id}` : "addMod"} disabled={loading} className="px-5 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 disabled:opacity-50">
+              <button type="submit" form={isEdit ? `editMod-${initialData.id}` : "addMod"} disabled={loading} className="px-5 py-2.5 bg-warning text-white font-bold rounded-lg hover:bg-orange-700 disabled:opacity-50">
                 {loading ? "Đang lưu..." : "Lưu Tuỳ Chọn"}
               </button>
             </div>
