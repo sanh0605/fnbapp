@@ -1,5 +1,7 @@
 # Google Sheets Backup Implementation Plan
 
+> **SUPERSEDED:** This plan is retained as historical evidence. Current backup operation: [`docs/operations/apps-script-drive-backup.md`](../../operations/apps-script-drive-backup.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build an automated daily backup system that copies orders from Supabase to Google Sheets as a safety net against potential Supabase free tier termination.

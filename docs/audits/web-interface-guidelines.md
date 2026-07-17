@@ -3,6 +3,8 @@ description: Review UI code for Vercel Web Interface Guidelines compliance
 argument-hint: <file-or-pattern>
 ---
 
+> **DUPLICATE / HISTORICAL SNAPSHOT:** This embedded guideline copy is retained as evidence and has no current consumers. Operational UI reviews use the installed `web-design-guidelines` skill and its maintained [Vercel source](https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md).
+
 # Web Interface Guidelines
 
 Review these files for compliance: $ARGUMENTS

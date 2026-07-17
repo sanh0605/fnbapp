@@ -1,5 +1,7 @@
 # Full System Audit And Optimization Roadmap
 
+> **SUPERSEDED:** This document is retained as historical audit evidence. Current audit program: [`docs/superpowers/specs/2026-07-17-full-system-audit-program.md`](../superpowers/specs/2026-07-17-full-system-audit-program.md).
+
 Date: 2026-06-25
 Repo: `fnbapp`
 Mode: local commits only, no push

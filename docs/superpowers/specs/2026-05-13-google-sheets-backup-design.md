@@ -1,4 +1,7 @@
 # Google Sheets Backup Design
+
+> **SUPERSEDED:** This design is retained as historical evidence. Current backup policy: [`docs/audits/2026-07-16-drive-backup-policy.md`](../../audits/2026-07-16-drive-backup-policy.md).
+
 **Date:** 2026-05-13
 **Status:** Approved
 

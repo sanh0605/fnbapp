@@ -1,5 +1,7 @@
 # Stabilization Phase — UI Audit + Drive Backup + Push
 
+> **SUPERSEDED / COMPLETED:** This plan is retained as execution evidence. Current completion index: [`docs/COMPLETED.md`](../../COMPLETED.md).
+
 Date: 2026-07-16
 Status: Pending approval
 Owner: Claude (coordination); Antigravity (Phase 1); Codex (Phase 2)

@@ -45,13 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| (none) | — | — | — | — |
-
-### P1 — Next up (high impact, unblocked)
-
-| Task | Owner | Scope | Prompt | Blocked by |
-|---|---|---|---|---|
-| [~A] **POS-REDESIGN-1 Session 3. Polish + transitions + final mobile verify** | Antigravity | UI: micro-transitions, edge cases, final mobile audit | `docs/handoffs/2026-07-17-antigravity-pos-redesign-1-session-3.md` (Claude authored 2026-07-17). Session 1+2 done. Polish pass: smooth transitions, edge cases (empty/error/many-items), final 375px verify. ~1 session. | (unblocked) |
+| [ ] **Pre-Audit C. Evidence-backed feature inventory** | Codex + Claude review | Populate `docs/FEATURE-CATALOG.md` from current routes, actions, scripts, tests, integrations, and operator evidence | Handoff to be authored after Pre-Audit B execution review. Use the approved status vocabulary; do not begin the eight-gate audit. | Claude review of Pre-Audit B execution |
 
 ### P2 — Backlog (medium impact, post-push remediation from Phase 1 audit)
 
@@ -72,25 +66,19 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 |---|---|---|
 | (none) | — | — |
 
-### P1 — Next up (high impact, unblocked)
-
-| Task | Owner | Scope | Prompt | Blocked by |
-|---|---|---|---|---|
-| [~X] **Pre-Audit B Execution. Rewrite/create 10 canonical documents** | Codex | Audit: 4 foundational rewrites + 3 new docs + 3 refresh + 9 banners | `docs/handoffs/2026-07-17-codex-pre-audit-b-execution.md` (Claude authored 2026-07-17). Owner approved D1-D8 in `docs/audits/2026-07-17-pre-audit-b-owner-decisions.md`. Execute proposal: rewrite README/CONTEXT/ARCHITECTURE/TESTING, create FEATURE-CATALOG/BUSINESS-RULES/ACCESS-MODEL, refresh ROADMAP/COMPLETED/COLLABORATION, add superseded banners. ~2-3 sessions. | (unblocked) |
-
 ## Out of scope (do not start without explicit approval)
 
 - **Negative stock recovery** (ING-001, ING-021, NNL-003, NNL-006) — needs physical count decision from user
 - **Franchise system** — separate phase, needs design + business rules (multi-tenant RLS, franchisee role, outlet management)
 - **Historical data rewrite** — any rewrite of pre-2026-07 data requires explicit user approval + dry-run + atomic transaction
 - **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope
-- **Full system audit program beyond Pre-Audit A** — Pre-Audit B (canonical consolidation), Pre-Audit C (feature inventory), 8 gates, 4 phases — all deferred until Pre-Audit A complete + owner approves canonical doc set. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
+- **Eight-gate audit and four remediation phases** — do not start until Pre-Audit C is complete, Claude reviews its evidence, and the owner explicitly triggers the next stage. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
 
 ## Pending prompts in `docs/handoffs/`
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-codex-pre-audit-b-execution.md` → Pre-Audit B Execution (P1, ready for Codex)
+- `2026-07-17-codex-pre-audit-b-execution.md` → Pre-Audit B Execution — historical reference, implementation complete pending Claude review
 - `2026-07-17-codex-pre-audit-b-canonical-proposal.md` → Pre-Audit B proposal — historical reference, work complete (commit `8016ae8`)
 - `2026-07-17-codex-pre-audit-a-documentation.md` → Pre-Audit A — historical reference, work complete (commit `f12725f`)
 - `2026-07-17-antigravity-pos-redesign-1-session-3.md` → POS-REDESIGN-1 Session 3 — historical reference, work complete (commit `20a1d38`)
@@ -118,6 +106,10 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 - Completed work archive: `docs/COMPLETED.md`
 - Detailed chronicle log: `DEVELOPMENT-TRACKING.md`
 - Protocol: `docs/COLLABORATION.md`
+- Feature evidence contract: `docs/FEATURE-CATALOG.md`
+- Business rule index: `docs/BUSINESS-RULES.md`
+- Access intent and verification boundary: `docs/ACCESS-MODEL.md`
+- Test strategy: `docs/TESTING.md`
 - UI audit reference: `docs/audits/2026-07-06-ui-consistency-audit.md`
 - MAC drift baseline: `docs/audits/2026-07-09-mac-drift-baseline-audit.md`
 - Backdated ledger investigation: `docs/audits/2026-07-09-prod-028-btp-shortfall-investigation.md`
@@ -125,6 +117,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-17 Codex: Pre-Audit B execution created/refreshed the ten canonical entry documents, preserved Tier 2/3 sources, and moved Pre-Audit C to the next P1 gate. Pending Claude review; no push.
 - 2026-07-17 Claude: UI-REMED-1 saga closed. All 5 phases done (commits `c33033f` + `8f93742` + `d239cbb` + `55ef69d` + `ee33450`). ~94% color migration coverage (145 raw occurrences remain — ui/* primitives + gradient stops + complex utility classes). TS clean, build clean, 403/403 tests pass. Visual smoke test pending. UI-REMED saga 5/5 + 1 polish complete. ROADMAP cleaned up duplicate P1 sections.
 - 2026-07-17 Claude: UI-REMED-1 async overnight brief authored. User sleeping, Antigravity authorized to run 5-phase TOKEN-SWAP migration overnight. NO PUSH rule. Final report to `docs/reports/ui-remed-1-overnight-report.md` for morning Claude review.
 - 2026-07-17 Claude: UI-REMED-5 closed (commit `11c566b`, reviewed). Button warning variant + Dialog icons by variant. UI-REMED saga 4/5 + 1 polish complete. ROADMAP cleaned up duplicate P1 sections. Only UI-REMED-1 TOKEN-SWAP remaining (P2, largest, multi-session).

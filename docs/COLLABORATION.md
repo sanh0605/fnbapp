@@ -18,11 +18,24 @@ Read before each session:
 - `CLAUDE.md` section 0: Claude-specific project instructions.
 - `AGENTS.md`: Codex and Antigravity project instructions.
 - `docs/COLLABORATION.md`: this protocol.
+- `README.md`: product/setup entry point and canonical documentation map.
+- `CONTEXT.md`: current business context and scope.
+- `ARCHITECTURE.md`: runtime architecture and trust boundaries.
+- `docs/FEATURE-CATALOG.md`: feature status and verification evidence (population begins in Pre-Audit C).
+- `docs/BUSINESS-RULES.md`: approved/observed/unresolved operating-rule index.
+- `docs/ACCESS-MODEL.md`: intended roles versus observed/verified enforcement.
 - `docs/ROADMAP.md`: **single source of truth for pending work + priorities**.
-- `docs/COMPLETED.md`: archive of finished work (compact).
+- `docs/COMPLETED.md`: compact archive of finished outcomes.
+- `docs/TESTING.md`: test strategy, commands, risk gates, and known gaps.
+- `docs/COLLABORATION.md`: ownership, workflow, review, and communication protocol.
 - `DEVELOPMENT-TRACKING.md`: detailed chronicle log (newest first).
-- `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`: MAC/COGS spec.
+
+Supporting authority remains outside the ten entry documents when specialist detail is required:
+
 - `docs/domain-dictionary.md`: terminology when changing labels, sheets, reports, or domain code.
+- `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`: MAC/COGS policy and design detail.
+- `docs/audits/2026-07-16-drive-backup-policy.md` and `docs/operations/apps-script-drive-backup.md`: backup policy and operation.
+- `docs/audits/**`, `docs/handoffs/**`, and completed plans: historical evidence, not current entry-point authority unless explicitly labeled.
 
 ## B. Status Markers
 
@@ -331,6 +344,7 @@ When forced to use a technical term, **always** define on first use in same resp
 
 ## Change Log
 
+- 2026-07-17 Codex: refreshed Section A for the approved ten-document canonical entry set and three-tier authority model. Specialist MAC/backup/domain sources remain supporting authority; audits/handoffs/completed plans remain historical evidence. Pending Claude protocol review.
 - 2026-07-17 Claude: Strengthened Section I "Communication Style with Business Owner" per user explicit feedback. Rule now applies to ALL agents (Codex/Antigravity/Claude) for ALL user-facing output. Added rule 7 (Claude translates technical agent responses → plain Vietnamese before showing user). Added word-to-avoid table with plain alternatives. Drift trigger expanded to include user complaint "em vẫn chưa dùng cách nói phù hợp".
 - 2026-07-16 Codex+Claude: Stabilization Phase 2 closed. Added "Backup Files" subsection to Section C — Codex owns backup architecture (`supabase/functions/backup-to-drive/**`, `scripts/apps-script/backup-to-drive.gs`, `lib/drive-backup*.ts`, retention/schema decisions, restore planning, R2/B2 migration trigger). Claude retains final architecture/policy approval + protocol ownership. Any production restore still requires reviewed dry-run/apply plan.
 - 2026-07-16 Claude: added Section I "Communication Style with Business Owner" per explicit user directive (strengthened 2026-07-17 above).

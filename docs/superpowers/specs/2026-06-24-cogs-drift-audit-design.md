@@ -1,5 +1,7 @@
 # COGS Drift Audit Design
 
+> **SUPERSEDED:** This FIFO-first design is retained as historical evidence. Current valuation design: [`2026-06-25-mac-cogs-inventory-design.md`](2026-06-25-mac-cogs-inventory-design.md); replay-drift policy: [`docs/audits/2026-07-16-btp-recipe-replay-drift-policy.md`](../../audits/2026-07-16-btp-recipe-replay-drift-policy.md).
+
 Date: 2026-06-24
 
 ## Goal

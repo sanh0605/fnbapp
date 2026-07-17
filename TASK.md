@@ -1,4 +1,7 @@
 # Phin Đi - Business Growth Roadmap (Task List)
+
+> **SUPERSEDED:** This April checklist is retained as historical evidence and is not current operating guidance. Current pending work: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
 # Last Updated: 2026-04-29
 
 ## PHASE 1: THE FOUNDATION (Setup)

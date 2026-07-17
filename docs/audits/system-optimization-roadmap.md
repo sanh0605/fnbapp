@@ -1,5 +1,7 @@
 # System Optimization Roadmap
 
+> **SUPERSEDED:** This optimization list is retained as historical evidence. Current pending work: [`docs/ROADMAP.md`](../ROADMAP.md).
+
 Danh sách task tối ưu hệ thống FNB App, sắp xếp theo priority. Mỗi task có: motivation, scope gợi ý, dependencies, owner đề xuất.
 
 Cập nhật lần cuối: 2026-06-27.

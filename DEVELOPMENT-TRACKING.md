@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Codex) - Pre-Audit B Execution 3/3: Canonical Refresh and Historical Transition
+
+**Outcome:** Completed the approved canonical consolidation and prepared the repository for Pre-Audit C review.
+
+### Completed Work
+- Refreshed `docs/ROADMAP.md` to one P1 queue with Pre-Audit C as the next gate; moved Pre-Audit B execution out of pending work and corrected the later-audit dependency.
+- Added compact Pre-Audit A/B outcomes to `docs/COMPLETED.md` and expanded `docs/COLLABORATION.md` Section A to the ten canonical entry documents plus Tier 2/3 authority guidance.
+- Updated the live `CLAUDE.md` session link from the superseded 2026-06-25 roadmap to the current roadmap/full-audit program.
+- Added `SUPERSEDED` banners to 7 historical superseded files and a `DUPLICATE / HISTORICAL SNAPSHOT` banner to the copied web-interface guideline. `README.md`, the eighth Pre-Audit A superseded record, was rewritten in place as the current canonical document and intentionally has no self-contradicting superseded banner.
+- Preserved all historical bodies, audit references, tracking references, and deletion-safety exclusions; no file was moved or deleted.
+
+### Verification
+- Canonical documents: 10/10 present; 64 internal links checked; 0 missing.
+- Historical transition: 7/7 historical superseded banners present, 1/1 duplicate banner present, canonical README banner absent by approved in-place-rewrite rule.
+- Vitest: 66 files, 403/403 tests pass (existing React `act(...)` warnings remain informational).
+- TypeScript: `tsc --noEmit` clean.
+- Production build: success; 41 static/dynamic application routes generated.
+- `git diff --check`: clean; no deletion, database call, production write, migration, secret change, or remote push.
+
+Commit: `Codex audit: Pre-Audit B execution - refresh ROADMAP, COMPLETED, COLLABORATION + superseded banners`
+
 ## 2026-07-17 (Codex) - Pre-Audit B Execution 2/3: New Canonical Contracts
 
 **Outcome:** Created the three missing canonical entry documents without claiming feature or security verification that belongs to later audits.
