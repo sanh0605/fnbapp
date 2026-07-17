@@ -1,14 +1,14 @@
 # Access Model
 
-Status: canonical intent and evidence boundary; enforcement verification pending Phase 3
+Status: canonical intent plus Gate 2 source-level access evidence; remediation and deeper enforcement verification remain open
 
-Last verified: 2026-07-17
+Last verified: 2026-07-18
 
 ## Tóm tắt cho chủ doanh nghiệp
 
 Tài liệu này tách hai việc khác nhau: “ai nên được làm gì” và “hệ thống hiện đã chặn đúng hay chưa”. Tên vai trò kinh doanh gồm chủ quán, quản trị, thu ngân và kho. Code hiện chỉ có các vai trò kỹ thuật `ADMIN`, `STAFF` và tài khoản nội bộ `SYSTEM`, vì vậy chưa thể nói hệ thống đã phân quyền đúng theo bốn vai trò kinh doanh.
 
-Ma trận dưới đây là định hướng để kiểm tra, không phải chứng nhận bảo mật. Phase 3 sẽ kiểm tra từng đường thao tác, quyền dữ liệu và lớp bảo vệ trước khi chuyển trạng thái sang `VERIFIED`.
+Gate 2 đã lập bản đồ 81 thao tác phía máy chủ và 5 cổng API. Kết quả cho thấy 25 thao tác chưa tự chặn đầy đủ khi bị gọi trực tiếp. Đây là bằng chứng để chia việc sửa, chưa phải chứng nhận toàn hệ thống đã an toàn; quyền dữ liệu, thời hạn đăng nhập và phạm vi nhiều chi nhánh vẫn cần các đợt kiểm tra sau.
 
 ## Evidence labels
 
@@ -86,8 +86,8 @@ This table is a review baseline, not final authorization. `Allowed` means intend
 | Submit stock adjustments | Allowed | Allowed | No | Allowed within policy | Admin-oriented checks observed; mapping unresolved |
 | Manage production/BTP | Allowed | Allowed | No | Allowed | Inventory role not technically available |
 | View revenue/COGS/P&L reports | Allowed | Allowed | No/UNRESOLVED | Limited/UNRESOLVED | Phase 3 pending |
-| Manage users and technical roles | Allowed | Allowed within owner policy | No | No | Admin UI exists; SEC-1 open |
-| Approve backdated event recompute | Owner approval | Allowed within reviewed policy | No | No/UNRESOLVED | Route protection observed; action-local hardening pending |
+| Manage users and technical roles | Allowed | Allowed within owner policy | No | No | Credential response exposure closed in Gate 1; read-action direct invocation remains in the Gate 2 findings |
+| Approve backdated event recompute | Owner approval | Allowed within reviewed policy | No | No/UNRESOLVED | ADMIN action-local guards and direct rejection tests verified in Gate 1 |
 | Run historical recovery/apply | Owner approval only | No by default | No | No | Separate reviewed tooling, not normal UI permission |
 | Rotate secrets or deploy backup function | Owner approval | Designated maintainer only | No | No | Operational process, not application role |
 | Restore production data | Owner approval only | No by default | No | No | Separate restore plan required |
@@ -116,34 +116,36 @@ These observations do not prove every Server Action, RPC, API route, or Edge Fun
 
 ### Known gaps
 
-- **SEC-1 (`GAP`):** raw Users rows can include `password_hash` when passed to authenticated admin Client Components. It is protected by login but violates the server-only sensitive-field rule.
-- **System fallback (`UNRESOLVED`):** selected POS actions can attribute an operation to SYSTEM if a session is absent. Phase 3 must determine reachability and business impact.
-- **Action-local guards (`UNRESOLVED`):** some admin mutation actions rely on protected routes without an internal role check. Phase 3 must test direct invocation boundaries.
+- **SEC-1 (`VERIFIED`):** Gate 1 removed raw credential material from the identified admin client/JSON responses and added regression coverage.
+- **System fallback (`GAP`):** Gate 2 confirmed that `submitOrderV2` and `savePOSDraft` do not reject a missing session and instead attribute the operation to SYSTEM. SYSTEM is therefore not currently CLI-only.
+- **Action-local guards (`GAP`):** Gate 2 found 4 mutation access findings and 21 unguarded read actions. The full per-export evidence is in [`audits/2026-07-18-gate2-access-map.md`](audits/2026-07-18-gate2-access-map.md).
+- **Edge Function boundary (`UNRESOLVED`):** `backup-to-drive` has a verified dedicated token, while three legacy/unused functions still depend on deployment JWT settings or incomplete local checks that are not repository-verifiable.
 - **RLS coverage (`UNRESOLVED`):** this document does not certify policy coverage, especially because server code uses privileged credentials.
 
-## Verification requirements for Phase 3
+## Verification requirements and current evidence
 
-Phase 3 should produce an evidence matrix covering:
+| # | Requirement | Current disposition |
+|---:|---|---|
+| 1 | Every user-reachable route and Server Action | `EVIDENCE_BACKED` for the current repository: 21 Server Action files / 81 exports and 4 API files / 5 handlers are inventoried in Gate 2 |
+| 2 | Direct invocation without a session | `GAP`: 3 POS mutations and 21 reads lack a rejecting local guard; guarded rows have source-level early-exit evidence |
+| 3 | Wrong-role invocation | `PARTIAL/GAP`: 56 mutations have matching local gates; `submitStockAdjustment` accepts any authenticated technical role; unguarded admin reads have no local role gate |
+| 4 | Brand/shop/outlet data scope | Open; one-shop operation does not prove future multi-branch isolation |
+| 5 | RPC execution and privileged server-client use | Open for Gate 3 |
+| 6 | API route and Edge Function authentication | API inventory evidence-backed with 0 undocumented gaps; Edge Functions remain partial as recorded in the Gate 2 report |
+| 7 | Sensitive-field serialization/logging | Gate 1 closed the named credential leak; broad review remains open |
+| 8 | SYSTEM/CLI-only paths | `GAP`: unauthenticated POS fallback can currently obtain SYSTEM attribution |
+| 9 | RLS policies and bypass assumptions | Open for Gate 3 |
+| 10 | Session expiry, disabled users, and role changes | Open for Gate 3 or later |
 
-1. every user-reachable route and Server Action;
-2. direct invocation without a session;
-3. wrong-role invocation;
-4. brand/shop/outlet data scope;
-5. RPC execution and privileged server-client use;
-6. API route and Edge Function authentication;
-7. sensitive-field serialization/logging;
-8. SYSTEM/CLI-only paths;
-9. RLS policies and bypass assumptions;
-10. session expiry, disabled users, and role changes.
-
-Only rows with reproducible evidence should become `VERIFIED`. Findings and implementation changes belong in the security task, not in silent edits to this document.
+Only rows with reproducible failure-path evidence should become `VERIFIED`. Gate 2 source evidence identifies what must be tested or remediated next; it does not silently certify unresolved rows.
 
 ## Supporting documents
 
 - [`../ARCHITECTURE.md`](../ARCHITECTURE.md) — runtime/trust boundaries
 - [`BUSINESS-RULES.md`](BUSINESS-RULES.md) — approved access and write-safety rules
 - [`FEATURE-CATALOG.md`](FEATURE-CATALOG.md) — capability evidence
-- [`ROADMAP.md`](ROADMAP.md) — SEC-1 and future security work
+- [`ROADMAP.md`](ROADMAP.md) — pending access remediation and future security work
+- [`audits/2026-07-18-gate2-access-map.md`](audits/2026-07-18-gate2-access-map.md) — per-action, API-route, Edge Function, and SYSTEM evidence
 - [`COLLABORATION.md`](COLLABORATION.md) — risk-boundary ownership and production-write protocol
 - [`audits/2026-07-17-pre-audit-b-owner-decisions.md`](audits/2026-07-17-pre-audit-b-owner-decisions.md) — D1–D8 approval record
 

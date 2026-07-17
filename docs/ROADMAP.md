@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| [~X] **Full audit Gate 2 — Architecture and access map** | Codex | Fix the audit tool's 3 confirmed blind spots (directory scope misses `app/pos/actions.ts` + `app/actions/*.ts`, prefix filter misses void/reject/create/change-named mutations, guard check only tests for substring presence not enforcement), extend to API routes, produce `docs/audits/2026-07-18-gate2-access-map.md`, remediate ≤5 unambiguous new findings | Handoff: `docs/handoffs/2026-07-18-codex-gate2-access-map.md`. Covers ACCESS-MODEL.md Phase 3 items 1/2/3/6/8; items 4/5/9/10 (RLS, privileged client, session lifecycle) deferred to Gate 3. |
+| [!] **Full audit Gate 2 — Architecture and access map** | Codex | Audit tool fixed and full access map produced; application remediation intentionally stopped | `docs/audits/2026-07-18-gate2-access-map.md` covers 21 Server Action files/81 exports, 4 API files/5 handlers, and 4 Edge Functions. Findings: 4 mutation gaps + 21 unguarded reads, 0 API-route gaps, and unresolved Edge deployment boundaries. This exceeds the ≤5 remediation gate; Claude review/scope is required before any guard wave. Items 4/5/9/10 remain for Gate 3+. |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 

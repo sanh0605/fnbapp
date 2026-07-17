@@ -4,6 +4,37 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Codex) - Gate 2 Access Map Completed, Remediation Stop Gate Triggered
+
+**Outcome:** A per-export access map now covers the current application, but Gate 2 does not silently remediate the newly visible gaps because the finding population exceeds the approved small-wave limit.
+
+### Evidence produced
+
+- Added `docs/audits/2026-07-18-gate2-access-map.md` with a plain Vietnamese owner summary and technical evidence for all 81 Server Actions, all 5 API route handlers, and all 4 Supabase Edge Function packages.
+- Reconciled the action inventory to 60 mutations and 21 reads: 56 mutations have a matching local gate; 4 mutation access findings and all 21 reads require follow-up.
+- Confirmed 0 undocumented API route gaps: NextAuth is intentionally public, the legacy execute route is retired with HTTP 410, and the scan/revalidate routes retain Gate 1 ADMIN guards.
+- Recorded Edge Function boundaries without guessing deployment flags: `backup-to-drive` has a verified dedicated token; `backup-to-sheets`, `notify-order`, and the `user-admin /migrate` path require deployment/auth review.
+- Updated `docs/ACCESS-MODEL.md` verification items 1/2/3/6/8 and only the feature-catalog rows directly affected by the evidence.
+- Marked Gate 2 as needs-review in `docs/ROADMAP.md`; items 4/5/9/10 remain open for Gate 3+.
+
+### Stop-gate decision
+
+- No application guards were changed. The 25 action findings exceed the handoff cap of five for an unreviewed remediation wave.
+- The temporary access rule for `submitStockAdjustment` is also ambiguous because the intended Inventory business role has no technical role yet.
+- POS remediation, admin read guards, stock-adjustment policy, and Edge deployment verification require Claude to split/approve follow-up scope.
+- No production data write, migration, secret change, deployment, or push.
+
+### Verification
+
+- Report reconciliation: 81/81 action rows, 5/5 API handlers, and 4/4 Edge Function packages.
+- Full Vitest suite: 71 files, 422/422 tests pass.
+- TypeScript: `tsc --noEmit` clean.
+- `git diff --check`: clean.
+
+Tool commit: `3570da0` (`Codex audit: Gate 2 expand access audit coverage`).
+
+Evidence commit: pending (`Codex audit: Gate 2 architecture and access map`).
+
 ## 2026-07-18 (Claude) - Found Real Work for Idle Antigravity
 
 **Trigger:** User noticed Codex was busy (Gate 2) while Antigravity was idle and asked if there was work for it. Checked for genuinely ready work rather than inventing a task.
