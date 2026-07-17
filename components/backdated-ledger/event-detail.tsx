@@ -85,7 +85,7 @@ export function EventDetail({ event, plan }: EventDetailProps) {
 
           <div>
             <div className="text-text-secondary mb-1">Quantity Change</div>
-            <div className={`font-medium flex items-center ${event.quantity_change > 0 ? 'text-emerald-600' : event.quantity_change < 0 ? 'text-danger' : ''}`}>
+            <div className={`font-medium flex items-center ${event.quantity_change > 0 ? 'text-success' : event.quantity_change < 0 ? 'text-danger' : ''}`}>
               {event.quantity_change > 0 && <span className="mr-1">↑</span>}
               {event.quantity_change < 0 && <span className="mr-1">↓</span>}
               {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
@@ -111,7 +111,7 @@ export function EventDetail({ event, plan }: EventDetailProps) {
               </div>
               {event.notes && <div className="mt-1 text-text-primary italic">Lý do: {event.notes}</div>}
               {event.recompute_run_id && (
-                <div className="mt-1 text-emerald-600">
+                <div className="mt-1 text-success">
                   Đã tính lại: {plan?.affected_lines?.length || 0} order lines, total delta {formatNumber(totalDeltaVnd)} VND (Run ID: {event.recompute_run_id})
                 </div>
               )}

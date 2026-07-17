@@ -308,7 +308,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                         min="0"
                         value={line.subtotal}
                         onChange={(e) => updateLine(index, "subtotal", e.target.value)}
-                        className="w-full border border-emerald-300 rounded-lg px-3 py-2 text-sm bg-emerald-50 focus:ring-2 focus:ring-emerald-500"
+                        className="w-full border border-emerald-300 rounded-lg px-3 py-2 text-sm bg-success/10 focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                     
@@ -386,7 +386,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
            <div className="flex justify-between items-center pt-4 border-t border-border">
               <span className="text-base font-bold text-text-primary">Cần Thanh Toán:</span>
-              <span className="text-2xl font-bold text-emerald-600">{formatNumber(totalAmount)}</span>
+              <span className="text-2xl font-bold text-success">{formatNumber(totalAmount)}</span>
            </div>
         </div>
 
@@ -401,7 +401,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           <button
             disabled={loading}
             onClick={() => handleSubmit("COMPLETED")}
-            className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition shadow-sm"
+            className="px-6 py-2.5 bg-success text-white font-medium rounded-lg hover:bg-emerald-700 transition shadow-sm"
           >
             {loading ? "Đang xử lý..." : "Tạo"}
           </button>

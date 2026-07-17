@@ -84,9 +84,9 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
                   <h3 className="text-lg font-bold text-text-primary mb-4 border-b pb-2">Lịch sử Công Thức (Định mức)</h3>
                   <div className="space-y-4">
                     {recipeHistory.map((r:any, idx:number) => (
-                      <div key={idx} className={`p-4 rounded-xl border ${!r.end_date ? 'bg-emerald-50/50 border-emerald-200' : 'bg-surface-card border-border'} shadow-sm relative`}>
+                      <div key={idx} className={`p-4 rounded-xl border ${!r.end_date ? 'bg-success/10/50 border-emerald-200' : 'bg-surface-card border-border'} shadow-sm relative`}>
                         {!r.end_date && (
-                          <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded">
+                          <div className="absolute top-3 right-3 bg-success text-white text-[10px] font-bold px-2 py-1 rounded">
                             Đang áp dụng
                           </div>
                         )}

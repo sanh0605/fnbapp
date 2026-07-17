@@ -123,7 +123,7 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                       </div>
                       
                       {isActive && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 animate-pulse">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success border border-emerald-200 animate-pulse">
                           Đang áp dụng
                         </span>
                       )}

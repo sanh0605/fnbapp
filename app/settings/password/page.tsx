@@ -73,7 +73,7 @@ export default function ChangePasswordPage() {
         )}
         
         {success && (
-          <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm text-center mb-6 border border-green-200">
+          <div className="bg-success/10 text-success p-3 rounded-lg text-sm text-center mb-6 border border-green-200">
             {success}
           </div>
         )}

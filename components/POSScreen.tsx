@@ -862,7 +862,7 @@ export default function POSScreen({
             key={toast.id}
             className={`pointer-events-auto p-4 rounded-xl shadow-xl border flex items-start gap-3 transition-colors transform duration-300 animate-slide-in-right ${
               toast.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                ? "bg-success/10 border-emerald-200 text-emerald-800"
                 : toast.type === "error"
                 ? "bg-danger/10 border-rose-200 text-rose-800"
                 : toast.type === "warning"
@@ -914,8 +914,8 @@ export default function POSScreen({
               <span className="text-primary">POS</span> Đơn Mới
             </h1>
             {isOnline ? (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50 shadow-sm shrink-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-success/10 text-success border border-emerald-200/50 shadow-sm shrink-0">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                 Trực tuyến
               </span>
             ) : (
@@ -1167,7 +1167,7 @@ export default function POSScreen({
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full max-w-sm rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
             <div className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-success flex items-center justify-center text-3xl mx-auto mb-4">
                 &#10003;
               </div>
               <h3 className="text-xl font-bold text-text-primary mb-2">Thanh toan thanh cong!</h3>

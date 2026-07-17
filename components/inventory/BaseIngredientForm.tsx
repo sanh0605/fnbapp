@@ -82,7 +82,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
+          className="bg-success text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
         >
           + Nhóm Nguyên Liệu Gốc
         </button>
@@ -116,7 +116,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
                             type="checkbox"
                             checked={item.is_non_inventory}
                             onChange={(e) => updateItem(index, "is_non_inventory", e.target.checked)}
-                            className="w-4 h-4 text-emerald-600 rounded border-border focus:ring-emerald-500"
+                            className="w-4 h-4 text-success rounded border-border focus:ring-emerald-500"
                           />
                           <span>Không trừ tồn kho (Nước lọc, đá...)</span>
                         </label>
@@ -148,7 +148,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
                   <button
                     type="button"
                     onClick={addItemRow}
-                    className="text-emerald-600 text-sm font-medium hover:text-emerald-700"
+                    className="text-success text-sm font-medium hover:text-success"
                   >
                     + Thêm dòng khác
                   </button>
@@ -165,7 +165,7 @@ export function BaseIngredientForm({ initialData, units = [] }: { initialData?: 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-success text-white rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-50"
                   >
                     Lưu
                   </button>

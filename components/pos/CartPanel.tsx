@@ -279,7 +279,7 @@ export function CartPanel({
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Khuyến Mãi</span>
                 {appliedPromo && (
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                  <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-md">
                     Đã áp dụng
                   </span>
                 )}
@@ -429,7 +429,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Tien mat")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-emerald-600 text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
+                className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-colors transition-transform opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>
