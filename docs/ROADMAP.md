@@ -76,7 +76,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Prompt | Blocked by |
 |---|---|---|---|---|
-| [~X] **Pre-Audit B. Canonical document set proposal (read-only)** | Codex | Audit: propose structure for 10 canonical docs + SUPERSEDED/DUPLICATE handling plan | `docs/handoffs/2026-07-17-codex-pre-audit-b-canonical-proposal.md` (Claude authored 2026-07-17). Pre-Audit A done (commit `f12725f`). Pre-Audit B = propose structure for README, CONTEXT, ARCHITECTURE, FEATURE-CATALOG, BUSINESS-RULES, ACCESS-MODEL, ROADMAP, COMPLETED, TESTING, COLLABORATION. Plus transition plan for 8 SUPERSEDED + 1 DUPLICATE. NO file modifications — proposal only. ~1 session. | (unblocked) |
+| [~X] **Pre-Audit B Execution. Rewrite/create 10 canonical documents** | Codex | Audit: 4 foundational rewrites + 3 new docs + 3 refresh + 9 banners | `docs/handoffs/2026-07-17-codex-pre-audit-b-execution.md` (Claude authored 2026-07-17). Owner approved D1-D8 in `docs/audits/2026-07-17-pre-audit-b-owner-decisions.md`. Execute proposal: rewrite README/CONTEXT/ARCHITECTURE/TESTING, create FEATURE-CATALOG/BUSINESS-RULES/ACCESS-MODEL, refresh ROADMAP/COMPLETED/COLLABORATION, add superseded banners. ~2-3 sessions. | (unblocked) |
 
 ## Out of scope (do not start without explicit approval)
 
@@ -90,7 +90,8 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-17-codex-pre-audit-b-canonical-proposal.md` → Pre-Audit B (P1, ready for Codex)
+- `2026-07-17-codex-pre-audit-b-execution.md` → Pre-Audit B Execution (P1, ready for Codex)
+- `2026-07-17-codex-pre-audit-b-canonical-proposal.md` → Pre-Audit B proposal — historical reference, work complete (commit `8016ae8`)
 - `2026-07-17-codex-pre-audit-a-documentation.md` → Pre-Audit A — historical reference, work complete (commit `f12725f`)
 - `2026-07-17-antigravity-pos-redesign-1-session-3.md` → POS-REDESIGN-1 Session 3 — historical reference, work complete (commit `20a1d38`)
 - `2026-07-17-antigravity-pos-redesign-1-session-2.md` → POS-REDESIGN-1 Session 2 — historical reference, work complete (commit `c61f5a1`)

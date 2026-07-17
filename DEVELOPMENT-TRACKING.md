@@ -4,6 +4,19 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Codex continuation) - Pre-Audit B Owner Approval and Execution Handoff
+
+**Trigger:** Owner selected the fast approval path for all eight decisions in the reviewed Pre-Audit B proposal and asked Codex to continue after the Claude session resets.
+
+### Recorded Decisions
+- Current business footprint is one operating shop; multi-brand/outlet capability remains future roadmap scope.
+- Offline ordering is not advertised as live until Pre-Audit C verifies it.
+- Business roles are documented separately from current technical roles; Phase 3 will verify enforcement.
+- The three-tier documentation model, evidence-aware feature statuses, language policy, manual-test preservation rule, and no-delete historical-banner policy are approved.
+- Added the execution handoff and marked Pre-Audit B Execution in progress without changing application or production data.
+
+Commit: `Codex docs: record Pre-Audit B owner decisions and execution handoff`
+
 ## 2026-07-17 (Codex) - Pre-Audit B Canonical Document Proposal
 
 **Trigger:** Pre-Audit A found 189 documents with stale entry points and a preservation-heavy evidence set. Pre-Audit B was authorized to propose, but not execute, a ten-document canonical structure.
