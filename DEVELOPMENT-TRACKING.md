@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Codex) - Gate 1 SEC-2 Backdated Review Authorization Closed
+
+**Outcome:** Backdated-ledger approve and reject mutations now require an action-local ADMIN session and record the authenticated actor instead of trusting a reviewer supplied by the client.
+
+### Changes
+
+- Added `requireAdmin()` to both `approveAndRecomputeAction` and `rejectEventAction` before any recompute or RPC call.
+- Preserved the existing server-action signatures for UI compatibility, but deliberately ignore the caller-supplied reviewer and pass `auth.actor.name` to the recompute/RPC paths.
+- Covered the identical reject-path gap found while testing SEC-2; it had the same missing guard and caller-controlled reviewer as the approved scope.
+- Updated the feature catalog authorization and backdated-review records. `AUD-BACKDATE-REVIEW` moves from `PARTIAL` to `LIVE_UNVERIFIED`; an operator walkthrough and notification path are still missing.
+- Gate 1 remains in progress for SEC-3 only.
+
+### TDD and verification
+
+- RED: all 4 focused tests failed against the open paths (unauthenticated approve, spoofed approve reviewer, wrong-role reject, spoofed reject reviewer).
+- GREEN: 4/4 focused security regressions pass.
+- TypeScript: `tsc --noEmit` clean.
+- No recompute/RPC was called in rejection cases. No production data write, migration, deployment, UI change, or push.
+
+Commit: pending (`Codex security: Gate 1 SEC-2 guard backdated review actions`).
+
 ## 2026-07-18 (Codex) - Gate 1 SEC-1 User Credential Payload Exposure Closed
 
 **Outcome:** Raw user credential material no longer crosses into authenticated admin Client Component props or the `user-admin` list JSON response.
@@ -23,7 +44,7 @@ Auto-maintained log of completed work. Newest first.
 - TypeScript: `tsc --noEmit` clean after the client type/projection change.
 - No production data write, migration, deployment, secret change, UI behavior change, or push.
 
-Commit: pending (`Codex security: Gate 1 SEC-1 strip user credential payloads`).
+Commit: `dd2f970` (`Codex security: Gate 1 SEC-1 strip user credential payloads`).
 
 ## 2026-07-17 (Claude) - Full Eight-Gate Audit Triggered by Owner, Gate 1 Opened
 
