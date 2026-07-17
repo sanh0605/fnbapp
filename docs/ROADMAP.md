@@ -39,7 +39,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| [~X] **Full audit Gate 1 — Close P0 security exposures** | Codex | SEC-1 (password_hash leakage), SEC-2 (unguarded backdated-ledger approval action), SEC-3 (2 unauthenticated maintenance routes) | 2026-07-17 | SEC-1 and SEC-2 closed in separate test-first commits; SEC-3 remains in progress. Baseline `24a57bd`. Handoff: `docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`. Program spec: `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`. |
+| [~X] **Full audit Gate 1 — Close P0 security exposures** | Codex | SEC-1 (password_hash leakage), SEC-2 (unguarded backdated-ledger approval action), SEC-3 (2 unauthenticated maintenance routes) | 2026-07-17 | SEC-1/SEC-2/SEC-3 implementation and focused verification complete in three test-first commits; awaiting Claude review before Gate 1 is moved to completed and Gate 2 opens. Baseline `24a57bd`. Handoff: `docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`. Program spec: `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`. |
 
 ### P1 — Next up (high impact, unblocked)
 

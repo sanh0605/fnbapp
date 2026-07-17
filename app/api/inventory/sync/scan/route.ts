@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { findAllNoCache } from "@/lib/sheets_db";
 import { auditOrderLedger } from "@/lib/order-ledger-audit";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET() {
+  const auth = await requireAdmin();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
+  }
+
   try {
     const [orders, orderLines, stockLedger, baseIngredients, semiProducts] = await Promise.all([
       findAllNoCache("Orders_V2"),

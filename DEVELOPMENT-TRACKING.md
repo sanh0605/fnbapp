@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Codex) - Gate 1 SEC-3 Maintenance Route Exposure Closed
+
+**Outcome:** The cache-revalidation and inventory-discrepancy scan routes now require an authenticated ADMIN session before cache state changes or business data reads.
+
+### Changes
+
+- Added a narrow local `requireAdmin()` guard to `GET /api/revalidate`; rejected requests cannot call `revalidateTag`.
+- Added the same local guard to `GET /api/inventory/sync/scan`; rejected requests cannot read orders, lines, stock ledger, or item names.
+- Preserved each authorized route's existing behavior and left the retired inventory execute endpoint and global middleware matcher unchanged.
+- Updated the affected feature records from `PARTIAL` to `LIVE_UNVERIFIED`: the security exposure is closed and regression-tested, while operator walkthrough/cache-coverage evidence remains separate.
+- All three Gate 1 exposures are implemented and focused-verified; the roadmap remains in progress pending Claude review and final full-suite verification.
+
+### TDD and verification
+
+- RED: both anonymous-request tests reached the previously open handlers (`/api/revalidate` returned 200; the scan entered its data path and returned 500 under empty mocks).
+- GREEN: 4/4 focused route tests pass, covering anonymous rejection before side effects and preserved ADMIN behavior.
+- TypeScript: `tsc --noEmit` clean.
+- No production data write, migration, deployment, middleware change, UI change, or push.
+
+Commit: pending (`Codex security: Gate 1 SEC-3 guard maintenance routes`).
+
 ## 2026-07-18 (Codex) - Gate 1 SEC-2 Backdated Review Authorization Closed
 
 **Outcome:** Backdated-ledger approve and reject mutations now require an action-local ADMIN session and record the authenticated actor instead of trusting a reviewer supplied by the client.
@@ -23,7 +44,7 @@ Auto-maintained log of completed work. Newest first.
 - TypeScript: `tsc --noEmit` clean.
 - No recompute/RPC was called in rejection cases. No production data write, migration, deployment, UI change, or push.
 
-Commit: pending (`Codex security: Gate 1 SEC-2 guard backdated review actions`).
+Commit: `57d298a` (`Codex security: Gate 1 SEC-2 guard backdated review actions`).
 
 ## 2026-07-18 (Codex) - Gate 1 SEC-1 User Credential Payload Exposure Closed
 
