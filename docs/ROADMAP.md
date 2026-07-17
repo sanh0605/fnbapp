@@ -39,13 +39,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| [~X] **Full audit Gate 1 — Close P0 security exposures** | Codex | SEC-1 (password_hash leakage), SEC-2 (unguarded backdated-ledger approval action), SEC-3 (2 unauthenticated maintenance routes) | 2026-07-17 | SEC-1/SEC-2/SEC-3 implementation and focused verification complete in three test-first commits; awaiting Claude review before Gate 1 is moved to completed and Gate 2 opens. Baseline `24a57bd`. Handoff: `docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`. Program spec: `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`. |
+| (none) | — | — | — | Gate 1 closed and reviewed 2026-07-18. See `COMPLETED.md`. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| (none) | — | — | Gate 2 (architecture/access map) opens after Gate 1 closes and Claude reviews it. |
+| [ ] **Full audit Gate 2 — Architecture and access map** | Codex + Claude scoping | Verify `ARCHITECTURE.md`/`docs/ACCESS-MODEL.md` claims against actual code; produce the evidence matrix `docs/ACCESS-MODEL.md` already promises for Phase 3 (every route/action, direct-invocation and wrong-role behavior, RLS/privileged-client boundary) | Handoff to be authored. The audit-program spec's own Gate 2/Phase 3 sections are thin ("Full content per owner's spec" placeholders) — Claude will scope Gate 2 pragmatically from what already exists (`docs/ACCESS-MODEL.md` "Verification requirements for Phase 3" section) rather than reconstruct missing spec text. |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
@@ -73,7 +73,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 - **Franchise system** — separate phase, needs design + business rules (multi-tenant RLS, franchisee role, outlet management)
 - **Historical data rewrite** — any rewrite of pre-2026-07 data requires explicit user approval + dry-run + atomic transaction
 - **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope
-- **Gates 2-8 of the full audit** — Gate 1 is open (see P0). Do not start Gate 2+ until Gate 1 closes and Claude reviews it. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
+- **Gates 3-8 of the full audit** — Gate 2 is open (see P1). Do not start Gate 3+ until Gate 2 closes and Claude reviews it. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
 - **17-section F&B capability checklist** — deferred from Pre-Audit C; needs owner per-item priority classification when scheduled.
 
 ## Pending prompts in `docs/handoffs/`
@@ -120,6 +120,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-18 Claude: Gate 1 reviewed and closed (commits `dd2f970`, `57d298a`, `9a8ee66`). Independently reread every diff line, confirmed the remaining `select('*')` never leaks to a response, read all 5 new regression tests, and reran the suite (414/414) and TypeScript (clean) rather than trusting the report. Moved to `COMPLETED.md`. Opened Gate 2 (architecture/access map) as P1 — scoped pragmatically since the source spec's own Gate 2/Phase 3 text is incomplete.
 - 2026-07-17 Claude: owner triggered the full eight-gate audit program after reviewing Pre-Audit C findings. Froze baseline `24a57bd`, updated the program spec status to ACTIVE, folded SEC-1/SEC-2/SEC-3 into a Gate 1 handoff (`docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`) since they are security exposures; kept FIX-1/FIX-2 as separate P2 functional-bug backlog. Gate 1 open for Codex, P0.
 - 2026-07-17 Claude: closed Pre-Audit C review (commit `99f466d`). Independently re-derived the 4 most consequential findings from source code rather than trusting the write-up: broken password-change feature, unguarded backdated-ledger approval action, 2 unauthenticated maintenance routes, manual backup button calling the legacy path. Precise per-row status count matches claim exactly (15/18/14/3/0/1 = 51). Added 5 concrete P2 backlog items with evidence. Opened "next audit stage" as a Blocked/owner-decision item — F&B 17-section checklist vs eight-gate audit trigger.
 - 2026-07-17 Claude: closed Pre-Audit B execution review. Independently reproduced all claims (10/10 canonical docs, 64/64 links, 403/403 tests, TS clean, build clean 41 routes, 7 SUPERSEDED + 1 DUPLICATE banners spot-checked). Authored Pre-Audit C handoff (`docs/handoffs/2026-07-17-codex-pre-audit-c-feature-inventory.md`), scoped to the 15-module FEATURE-CATALOG population pass; deferred the full F&B capability checklist as a separate follow-up. P1 unblocked for Codex pickup.

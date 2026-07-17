@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - Full Audit Gate 1 Reviewed and Closed, Gate 2 Opened
+
+**Trigger:** Codex reported Gate 1 complete across 3 commits and requested Claude review before closing Gate 1 and opening Gate 2.
+
+### Review Performed
+
+- Confirmed all 3 commits (`dd2f970`, `57d298a`, `9a8ee66`) touch only the files named in the Gate 1 handoff, plus tests and doc updates.
+- **SEC-1:** read the full diff. `getUsers`/`getUserById` in `app/admin/users/actions.ts` now project through a new `toClientUser()` whitelist (id/username/role/status/created_at) before returning. `supabase/functions/user-admin/index.ts` GET list changed from `select('*')` to an explicit non-credential column list. `types/db.ts` dropped a stray `password` field from `DBUser`. Grepped the whole repo for remaining `password_hash` references outside tests: all 6 remaining hits are legitimate server-only write/compare paths (hashing on create/update, bcrypt compare in `lib/auth.ts`, placeholder value on migration insert) — none serialize to a client response. Found one remaining `select('*')` at the service-role-only `/migrate` endpoint in the same Edge Function; read the surrounding code and confirmed the raw row is only used internally (to call `admin.auth.admin.createUser`) and the response only ever includes `username`/`ok`/`error`, never the full row — matches Codex's own caveat about this exactly.
+- **SEC-2:** read the full diff. Both `approveAndRecomputeAction` and `rejectEventAction` (Codex correctly checked `rejectEventAction` too, which the original handoff flagged as needing verification) now call `requireAdmin()` and use `auth.actor.name` as the reviewer instead of the caller-supplied parameter (kept as `_reviewer`, unused). Read the new test file `app/admin/audit/backdated-ledger/actions.test.ts`: 4 tests proving (a) an unauthenticated/wrong-role call is rejected before the underlying RPC/apply function is ever invoked, and (b) even when a `"spoofed-reviewer"` string is passed in, the recorded reviewer is the session actor's name, not the spoofed value.
+- **SEC-3:** read the full diff. Both `/api/revalidate` and `/api/inventory/sync/scan` gained a local `requireAdmin()` guard returning 401 before any cache/data operation. Checked actual current callers before accepting the session-based guard as correct: `/api/inventory/sync/scan` is only called client-side from an already-authenticated admin page (`app/admin/inventory/sync/page.tsx`); `/api/revalidate` has no caller anywhere in the codebase (manually triggered), so a session guard doesn't break any automated/webhook caller. Read both new test files: each proves rejection-before-mutation and preserves the authenticated-admin happy path.
+- Reviewed the `docs/FEATURE-CATALOG.md` diff across all 3 commits: surgical — only the 6 directly affected records (`AUTH-SESSION-AUTHZ`, `AUD-BACKDATE-REVIEW`, `USR-ADMIN`, `USR-ROLE-ENFORCEMENT`, `MAINT-CACHE`, `MAINT-INVENTORY-SCAN`) changed, 4 moved `PARTIAL` → `LIVE_UNVERIFIED` (appropriately conservative — not jumped to `LIVE_VERIFIED` since operator walkthrough is still missing), summary counts updated consistently (18→22 `LIVE_UNVERIFIED`, 14→10 `PARTIAL`). `SET-PASSWORD` (FIX-1, out of Gate 1 scope) correctly untouched.
+- Independently reran `npx vitest run`: 71 files, 414/414 pass (matches Codex's claim exactly, up from 403 baseline). Independently reran `npx tsc --noEmit`: 0 errors. Independently ran `git diff --check`: clean.
+
+### Outcome
+
+- Gate 1 approved and closed. Moved to `docs/COMPLETED.md` with full verification summary.
+- `docs/ROADMAP.md`: P0 cleared. Opened Gate 2 (architecture/access map) as P1. Noted that the audit-program spec's own Gate 2/Phase 3 text is incomplete ("Full content per owner's spec" placeholders) — Gate 2 will be scoped pragmatically from what already exists (`docs/ACCESS-MODEL.md` "Verification requirements for Phase 3" section) rather than blocked on reconstructing missing spec text.
+- Updated `docs/superpowers/specs/2026-07-17-full-system-audit-program.md` progress tracker and added a note on how gate-scoping ambiguity will be handled going forward (structuring decisions resolved by Claude; anything changing business priority/risk goes to the owner).
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only).
+
 ## 2026-07-18 (Codex) - Gate 1 SEC-3 Maintenance Route Exposure Closed
 
 **Outcome:** The cache-revalidation and inventory-discrepancy scan routes now require an authenticated ADMIN session before cache state changes or business data reads.

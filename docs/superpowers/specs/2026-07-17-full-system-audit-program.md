@@ -478,7 +478,19 @@ Preferred containment:
 6. `[x]` Pre-Audit C feature/function catalog executed — commit `99f466d`, 51 capabilities, Claude-reviewed at `24a57bd`.
 7. `[x]` Findings presented to owner (5 P2 backlog items with evidence: SEC-1, FIX-1, SEC-2, SEC-3, FIX-2).
 8. `[~]` Owner chose to proceed directly to the eight-gate audit rather than complete the P2 backlog or the 17-section F&B checklist first (2026-07-17 decision). SEC-1/SEC-2/SEC-3 are folded into Gate 1 since they are security exposures; FIX-1/FIX-2 remain P2 backlog (functional bugs, not security).
-9. `[x]` Owner explicitly authorized the eight-gate audit, 2026-07-17. Gate 1 open — see `docs/handoffs/2026-07-17-codex-gate1-p0-security-exposures.md`.
+9. `[x]` Owner explicitly authorized the eight-gate audit, 2026-07-17. Gate 1 closed and Claude-reviewed 2026-07-18 (commits `dd2f970`, `57d298a`, `9a8ee66`) — see `docs/COMPLETED.md`. Gate 2 (architecture/access map) open, P1 in `docs/ROADMAP.md`.
+
+## Note on gate/phase detail gaps
+
+Sections below for Gates 2-8 and Phases 1-4 were saved as placeholders
+("Full content per owner's spec") rather than full text. When scoping each
+gate, Claude will build a pragmatic, narrow scope from what already exists
+in the canonical docs (e.g. `docs/ACCESS-MODEL.md` already has a
+"Verification requirements for Phase 3" section that doubles as Gate 2/3
+material) rather than block on reconstructing missing original text. If a
+gate's scope is genuinely ambiguous in a way that changes business
+priority or risk exposure, that gets raised to the owner; pure structuring
+decisions do not.
 
 ## Notes for fnbapp context
 
