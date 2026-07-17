@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Codex) - Pre-Audit B Execution 2/3: New Canonical Contracts
+
+**Outcome:** Created the three missing canonical entry documents without claiming feature or security verification that belongs to later audits.
+
+### Completed Work
+- Added `docs/FEATURE-CATALOG.md` with the approved evidence-aware status vocabulary, record schema, module discovery scope, cross-cutting checks, and a strict Pre-Audit C population gate.
+- Added `docs/BUSINESS-RULES.md` as an indexed summary of approved/observed/unresolved rules for sales, MAC COGS, inventory, backdating, recovery, backup, access, and change control while preserving Tier 2 policy authority.
+- Added `docs/ACCESS-MODEL.md` with intended business roles, current technical-role mapping, a preliminary permission matrix, observed boundaries, known gaps, and Phase 3 verification requirements.
+- Applied D3, D4, and D6: business roles remain distinct from technical enforcement, specialized policies remain Tier 2 authority, and feature records use the approved six-status vocabulary.
+
+### Verification
+- All internal links across the seven foundational/new canonical documents resolve.
+- FEATURE-CATALOG assigns no live feature status before Pre-Audit C.
+- ACCESS-MODEL labels intent, observation, verification, gaps, and unresolved decisions separately.
+- No code, test, production data, migration, historical evidence, or remote repository was changed.
+
+Commit: `Codex audit: Pre-Audit B execution - create new canonical docs (FEATURE-CATALOG, BUSINESS-RULES, ACCESS-MODEL)`
+
 ## 2026-07-17 (Codex) - Pre-Audit B Execution 1/3: Foundational Canonical Documents
 
 **Outcome:** Replaced four stale entry documents with current, evidence-bounded sources.
