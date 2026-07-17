@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -63,7 +62,8 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
         subtitle="Quản lý các đơn đặt hàng từ nhà cung cấp và theo dõi công nợ."
         actions={rightContent}
       />
-      <StickyFilterBar>
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
@@ -99,7 +99,8 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
             ))}
           </select>
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">

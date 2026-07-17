@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { ConversionForm } from "./ConversionForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -53,7 +52,8 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
         subtitle="Thiết lập tỷ lệ quy đổi từ đơn vị mua hàng sang đơn vị cơ bản dùng trong pha chế."
         actions={rightContent}
       />
-      <StickyFilterBar>
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm hàng hóa</label>
           <input
@@ -64,7 +64,8 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
             className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">

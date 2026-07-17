@@ -1,7 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SemiProductForm } from "./SemiProductForm";
 import HistoryModal from "@/components/HistoryModal";
@@ -46,11 +46,13 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
-        title="Bán Thành Phẩm" 
+      <PageHeader
+        title="Bán Thành Phẩm"
         subtitle="Tổng quan danh sách nguyên liệu đã qua chế biến sơ bộ (như trà ủ, thạch, trân châu nấu...) dùng để pha chế."
-        rightContent={rightContent}
-      >
+        actions={rightContent}
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
@@ -61,7 +63,8 @@ export default function SemiProductsClient({ semiProducts, baseIngredients, unit
             className="w-full md:w-64 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       {filteredSemiProducts.length === 0 ? (
         <EmptyState 

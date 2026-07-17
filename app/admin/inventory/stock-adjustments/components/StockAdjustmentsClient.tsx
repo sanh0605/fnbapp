@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useTransition } from "react";
 import { useUrlState } from "@/lib/use-url-state";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -86,7 +85,8 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
         title="Điều chỉnh Tồn kho" 
         subtitle="Quản lý và phê duyệt các yêu cầu điều chỉnh số lượng tồn kho thực tế."
       />
-      <StickyFilterBar>
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Tìm kiếm
@@ -129,7 +129,8 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
             })}
           </div>
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       {/* Notifications */}
       {successMsg && (

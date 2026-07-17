@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-17 (Antigravity) - UI-REMED-6 StickyFilterBar Removal
+
+**Trigger:** Phase 1 UI audit and post-remediation review flagged StickyFilterBar as introducing an inconsistent "box overlay" feel (bg, border, shadow, negative margins). User requested aligning all pages to use flat PageHeader and inline filter rows.
+
+### Completed Work
+- Replaced `StickyFilterBar` with standard `PageHeader` (with actions prop) and an inline `div` filter wrapper (`flex flex-wrap items-end gap-3 mb-6`) across 18 client files.
+- Wrapped JSX return with React Fragment in `components/SalesFilter.tsx` to handle sibling nodes and fixed the PageHeader `title` type assignment.
+- Force deleted `components/StickyFilterBar.tsx`.
+- Ran full validation: verified `tsc --noEmit` and production Next.js build pass cleanly, and all 403 unit tests run and pass.
+
+### Verification
+- Production build `npm run build` is successful.
+- Typescript compiler `tsc --noEmit` runs clean.
+- Unit tests baseline passes (403/403).
+- Grep `StickyFilterBar` in `app/` and `components/` returns 0 results.
+
+Commit: Antigravity ui: remove StickyFilterBar, use PageHeader (UI-REMED-6)
+
+
+
 ## 2026-07-17 (Antigravity) - UI-REMED-1 TOKEN-SWAP Phase 4 & 5 completion
 
 **Trigger:** Completion of the final two phases of UI-REMED-1 overnight color token migration saga.

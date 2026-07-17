@@ -1,8 +1,8 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState } from "react";
 import { submitStockAdjustment, approveStockAdjustment } from "@/app/admin/inventory/actions";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -123,10 +123,12 @@ export default function StockTable({
       )}
 
       {/* Control Bar */}
-      <StickyFilterBar
+      <PageHeader
         title="Quản lý & Cân bằng Tồn kho"
         subtitle="Kiểm kê số lượng thực tế và điều chỉnh nếu có sai lệch."
-      >
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="relative w-full sm:w-96">
           <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted" aria-hidden="true">
             <Search className="w-5 h-5" />
@@ -139,7 +141,8 @@ export default function StockTable({
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       {/* Desktop Table - hidden on mobile */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden hidden md:block">

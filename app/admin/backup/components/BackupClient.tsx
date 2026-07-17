@@ -1,7 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useTransition } from "react";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { triggerBackup } from "../actions";
 
@@ -50,12 +50,15 @@ export default function BackupClient({ lastSyncedAt, notes, updatedAt }: BackupC
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar
+      <PageHeader
         title="Sao lưu & Đồng bộ"
         subtitle="Quản lý đồng bộ dữ liệu tự động và thủ công từ Supabase lên Google Sheets."
-      >
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div />
-      </StickyFilterBar>
+      
+      </div>
 
       {/* Notifications */}
       {successMsg && (

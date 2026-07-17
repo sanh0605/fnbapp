@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
-import StickyFilterBar from "@/components/StickyFilterBar";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 // Claude code — UI-3: encode URL date as YYYY-MM-DD (friendly + shareable).
 // Backward compat: accept both ISO datetime and date-only when reading.
@@ -132,60 +132,63 @@ function SalesFilterInner({
   );
 
   return (
-    <StickyFilterBar 
-      rightContent={rightContent}
-      title={title}
-      subtitle={subtitle}
-    >
-      <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Từ ngày</label>
-        <CustomDatePicker
-          selected={startDate}
-          onChange={(date: Date | null) => setStartDate(date)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-        />
+    <>
+      <PageHeader 
+        title={title || ""}
+        subtitle={subtitle}
+        actions={rightContent}
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+        <div className="w-full md:w-auto">
+          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Từ ngày</label>
+          <CustomDatePicker
+            selected={startDate}
+            onChange={(date: Date | null) => setStartDate(date)}
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+          />
+        </div>
+        <div className="w-full md:w-auto">
+          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Đến ngày</label>
+          <CustomDatePicker
+            selected={endDate}
+            onChange={(date: Date | null) => setEndDate(date)}
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+          />
+        </div>
+        <div className="w-full md:w-auto">
+          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Thương hiệu</label>
+          <select 
+            value={brandId} 
+            onChange={(e) => setBrandId(e.target.value)}
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+          >
+            <option value="">Tất cả</option>
+            {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </div>
+        <div className="w-full md:w-auto">
+          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhân viên</label>
+          <select 
+            value={staffName} 
+            onChange={(e) => setStaffName(e.target.value)}
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+          >
+            <option value="">Tất cả</option>
+            {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
+          </select>
+        </div>
+        <div className="w-full md:w-auto">
+          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhóm SP</label>
+          <select 
+            value={categoryId} 
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+          >
+            <option value="">Tất cả</option>
+            {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
       </div>
-      <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Đến ngày</label>
-        <CustomDatePicker
-          selected={endDate}
-          onChange={(date: Date | null) => setEndDate(date)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-        />
-      </div>
-      <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Thương hiệu</label>
-        <select 
-          value={brandId} 
-          onChange={(e) => setBrandId(e.target.value)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-        >
-          <option value="">Tất cả</option>
-          {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-      </div>
-      <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhân viên</label>
-        <select 
-          value={staffName} 
-          onChange={(e) => setStaffName(e.target.value)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-        >
-          <option value="">Tất cả</option>
-          {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
-        </select>
-      </div>
-      <div className="w-full md:w-auto">
-        <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhóm SP</label>
-        <select 
-          value={categoryId} 
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-        >
-          <option value="">Tất cả</option>
-          {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-      </div>
-    </StickyFilterBar>
+    </>
   );
 }

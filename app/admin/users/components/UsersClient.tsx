@@ -1,7 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { UserForm, DeleteUserButton } from "./UserForm";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -27,11 +27,13 @@ export default function UsersClient({ users }: UsersClientProps) {
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
-        title="Quản lý Nhân Sự" 
+      <PageHeader
+        title="Quản lý Nhân Sự"
         subtitle="Quản lý tài khoản đăng nhập và phân quyền hệ thống."
-        rightContent={rightContent}
-      >
+        actions={rightContent}
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
@@ -55,7 +57,8 @@ export default function UsersClient({ users }: UsersClientProps) {
             <option value="STAFF">STAFF</option>
           </select>
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       {/* Mobile Card Layout (< md) */}
       <div className="md:hidden flex flex-col gap-3">

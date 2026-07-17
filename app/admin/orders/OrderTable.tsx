@@ -1,12 +1,12 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { voidOrderV2 } from "./actions";
 import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { formatNumber } from "@/lib/format";
 import { Button } from "@/components/ui/Button";
@@ -285,11 +285,13 @@ export default function OrderTable({
   return (
     <div className="space-y-4">
       {/* Filter Bar */}
-      <StickyFilterBar
-        rightContent={rightContent}
+      <PageHeader
         title="Quản lý Đơn hàng"
         subtitle="Quản lý và xem lại tất cả các đơn hàng đã được tạo."
-      >
+        actions={rightContent}
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm mã đơn</label>
           <input
@@ -339,7 +341,8 @@ export default function OrderTable({
             {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       {/* Desktop Table - hidden on mobile, shown on desktop */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden hidden md:block">

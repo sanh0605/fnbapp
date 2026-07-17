@@ -59,7 +59,6 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 | Task | Owner | Notes |
 |---|---|---|
 | **V1. First real operator backdate verify** | Claude | Wait for operator to backdate PO (frequency: weekly per user interview). Walk through UI: list → detail → approve → verify drift = 0. |
-| [ ] **UI-CONSISTENCY-1. Remove sticky filter bar pattern** | Antigravity | 15+ admin pages currently use sticky filter bar (ModifiersClient, OrderTable, ProductsClient, etc.). User decision 2026-07-16: pattern causes UI inconsistency + degrades UX. Scope: remove existing sticky positioning, ensure new pages don't add it. Mechanical removal + visual QA. ~1 session. |
 
 ### Blocked — needs decision or unblock
 

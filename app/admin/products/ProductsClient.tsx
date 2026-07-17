@@ -1,10 +1,10 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
 import ProductForm from "@/components/ProductForm";
 import HistoryModal from "@/components/HistoryModal";
 import { formatNumber } from "@/lib/format";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { Search, Image as ImageIcon } from "lucide-react";
@@ -69,11 +69,13 @@ export default function ProductsClient({
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
-        rightContent={rightContent}
+      <PageHeader
         title="Thành phẩm (Menu)"
         subtitle="Quản lý Menu bán hàng, cấu hình Size và Định mức pha chế."
-      >
+        actions={rightContent}
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm món</label>
           <input
@@ -110,7 +112,8 @@ export default function ProductsClient({
             <option value="DELETED">Đã xóa</option>
           </select>
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       {filteredProducts.length === 0 ? (
         <EmptyState

@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { useUrlState } from "@/lib/use-url-state";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -59,7 +58,8 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
         subtitle="Danh sách các mặt hàng thực tế nhập từ nhà cung cấp."
         actions={rightContent}
       />
-      <StickyFilterBar>
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
@@ -83,7 +83,8 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
             ))}
           </select>
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto hidden md:block">

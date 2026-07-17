@@ -1,7 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { formatDateTime } from "@/lib/datetime";
 import { formatNumber } from "@/lib/format";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -150,10 +150,12 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar
+      <PageHeader
         title="Nhật ký Hoạt động"
         subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
-      >
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Tìm kiếm
@@ -222,7 +224,8 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       <div className="relative pl-6 md:pl-10">
         {/* Vertical Timeline Line */}

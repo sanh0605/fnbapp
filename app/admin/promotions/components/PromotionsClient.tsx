@@ -1,12 +1,12 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUrlState } from "@/lib/use-url-state";
 import { deletePromotionAction } from "../actions";
 import { PromotionForm } from "./PromotionForm";
 import { formatNumber } from "@/lib/format";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 
@@ -101,11 +101,13 @@ export default function PromotionsClient({
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
-        title="Quản lý Khuyến Mãi" 
+      <PageHeader
+        title="Quản lý Khuyến Mãi"
         subtitle="Quản lý mã giảm giá, chiết khấu hóa đơn và khuyến mãi theo sản phẩm."
-        rightContent={rightContent}
-      >
+        actions={rightContent}
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
@@ -141,7 +143,8 @@ export default function PromotionsClient({
             <option value="PRODUCT_DISCOUNT">Giảm theo món</option>
           </select>
         </div>
-      </StickyFilterBar>
+      
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredPromotions.map((promo) => {

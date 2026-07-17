@@ -1,8 +1,8 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import StickyFilterBar from "@/components/StickyFilterBar";
 import HistoryModal from "@/components/HistoryModal";
 import { formatNumber } from "@/lib/format";
 import { deleteModifierAction } from "../actions";
@@ -61,11 +61,13 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
 
   return (
     <div className="space-y-6">
-      <StickyFilterBar 
-        title="Topping & Tùy chọn" 
+      <PageHeader
+        title="Topping & Tùy chọn"
         subtitle="Quản lý tùy chọn và cài đặt bán độc lập (POS)."
-        rightContent={activeTab === "modifiers" ? rightContent : undefined}
-      >
+        actions={activeTab === "modifiers" ? rightContent : undefined}
+      />
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+
         <div className="flex bg-surface-secondary p-1 rounded-lg">
           <button
             onClick={() => setActiveTab("modifiers")}
@@ -97,7 +99,8 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
             />
           </div>
         )}
-      </StickyFilterBar>
+      
+      </div>
 
       {activeTab === "modifiers" ? (
         <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
