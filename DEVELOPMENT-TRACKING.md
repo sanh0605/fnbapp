@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - Gate 2 Scoped and Handed Off
+
+**Trigger:** User asked to continue after Gate 1 closed. Audit-program spec has no real detail for Gate 2 ("Full content per owner's spec" placeholder), so scope had to be built rather than copied.
+
+### Scoping work
+
+- Read `docs/ACCESS-MODEL.md`'s existing "Verification requirements for Phase 3" checklist (10 items) as the target evidence matrix Gate 2 should start filling in.
+- Before writing the handoff, read `scripts/audit-admin-action-auth.ts` and `lib/admin-auth-guard-audit.ts` (the tool Gate 1 relied on to find SEC-2) directly rather than assuming it was comprehensive. Found 3 concrete blind spots:
+  - File discovery only walks `app/admin/`; `app/pos/actions.ts` (POS checkout) and `app/actions/auth.ts` (contains the already-known-broken `changePasswordAction`) are invisible to it.
+  - The mutation-name prefix list (`add/approve/delete/edit/save/submit/toggle/update`) silently skips functions named `void*`, `reject*`, `create*`, `remove*`, `insert*`, `apply*`, `trigger*`, `change*`, `record*`, `set*` — confirmed this is exactly why the tool itself never flagged `rejectEventAction`'s Gate 1 gap; a human catching it by reading the file directly is what actually found it.
+  - The guard check is `body.includes("requireAdmin(") || body.includes("resolveActor(")` — presence, not enforcement — and it only walks `ts.isFunctionDeclaration` nodes, so `export const foo = async () => {}` arrow-function exports are invisible to the scan entirely.
+  - Confirmed via repo-wide grep that no `"use server"` directive exists outside files named `actions.ts`, so the file-naming convention itself is a sound discovery mechanism — the gap is scope/precision, not a hidden category of files.
+- Scoped Gate 2 around fixing this tool first (since a security audit tool that under-reports is itself a risk), extending it to `app/api/**/route.ts`, producing a dated evidence report covering ACCESS-MODEL.md Phase 3 items 1/2/3/6/8, and explicitly deferring items 4/5/9/10 (RLS, privileged client, session lifecycle) to Gate 3 rather than blurring scope.
+- Capped silent remediation at 5 new findings — more than that requires a stop-and-report rather than one large unreviewed remediation wave, mirroring how Gate 1 itself started as a bounded, reviewed set of fixes.
+
+### Output
+
+- `docs/handoffs/2026-07-18-codex-gate2-access-map.md` authored.
+- `docs/ROADMAP.md` updated: Gate 2 marked in progress, change log entry added.
+
+Commit: pending.
+
 ## 2026-07-18 (Claude) - Full Audit Gate 1 Reviewed and Closed, Gate 2 Opened
 
 **Trigger:** Codex reported Gate 1 complete across 3 commits and requested Claude review before closing Gate 1 and opening Gate 2.
