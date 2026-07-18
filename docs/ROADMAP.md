@@ -39,13 +39,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| (none) | — | — | — | Gate 2 Remediation Wave 1 closed and reviewed 2026-07-18. See `COMPLETED.md`. |
+| (none) | — | — | — | Gate 2 (map + Wave 1 + Wave 2) fully closed and reviewed 2026-07-18/19. See `COMPLETED.md`. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| [!] **Gate 2 Remediation Wave 2 — 18 direct-guard admin reads + 2 split into ADMIN-only/narrow-POS-read** | Codex | 15 files under `app/admin/**/actions.ts`; `app/pos/actions.ts` (2 new functions); `app/pos/page.tsx` (call-site swap) | Implemented locally and awaiting Claude review. All 20 full admin reads now enforce `requireAdmin()`; POS uses authenticated minimal-shape reads for best-seller IDs and `{id, current_stock}` only. Static audit: 83 actions, 0 mutation findings, 0 read findings, 0 route findings. No deployment or production write. Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md`. |
+| (none) | — | — | Gate 3 (database/RPC/RLS audit) not yet scoped. |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
@@ -114,7 +114,7 @@ records intent and order, not authorization to start.
 - **Multi-branch system** — see "Future direction" above; comes after the feature-completeness pass and UI/UX unification, needs design + business rules (outlet entity, data isolation, outlet-scoped roles)
 - **Historical data rewrite** — any rewrite of pre-2026-07 data requires explicit user approval + dry-run + atomic transaction
 - **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope; see "Future direction" item 6, deliberately last
-- **Gates 3-8 of the full audit** — Gate 2 is open (see P1). Do not start Gate 3+ until Gate 2 closes and Claude reviews it. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
+- **Gates 3-8 of the full audit** — Gate 2 closed 2026-07-19 (see `COMPLETED.md`). Gate 3 (database/RPC/RLS audit) not yet scoped. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
 - **17-section F&B capability checklist** — deferred from Pre-Audit C; needs owner per-item priority classification when scheduled.
 
 ## Pending prompts in `docs/handoffs/`
@@ -123,7 +123,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 - `2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md` → UI-REMED-1 visual smoke test — historical reference, work complete and Claude-reviewed (commit `2cabde9`)
 - `2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md` → Gate 2 Remediation Wave 1 — historical reference, work complete and Claude-reviewed (commits `5c4a01b`, `a1ace53`)
-- `2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` → Gate 2 Remediation Wave 2 — in progress with Codex, amended after stop-gate approval (P0/P1)
+- `2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` → Gate 2 Remediation Wave 2 — historical reference, work complete and Claude-reviewed (commits `a20aba8`, `79bda17`, `71b319f`)
 - `2026-07-18-codex-gate2-access-map.md` → Full audit Gate 2 — historical reference, work complete and Claude-reviewed (commits `3570da0`, `f14b092`)
 - `2026-07-17-codex-gate1-p0-security-exposures.md` → Full audit Gate 1 — historical reference, work complete and Claude-reviewed (commits `dd2f970`, `57d298a`, `9a8ee66`)
 - `2026-07-17-codex-pre-audit-c-feature-inventory.md` → Pre-Audit C — historical reference, work complete and Claude-reviewed (commit `99f466d`)
@@ -166,6 +166,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-19 Claude: Gate 2 Remediation Wave 2 reviewed and closed (commits `a20aba8`, `79bda17`, `71b319f`) — **Gate 2 fully closed** (map + both waves). Read every diff line: confirmed `getPOSBestSellerProductIds` returns only a plain product-ID array (test asserts every value is a string, standalone toppings excluded) despite reusing `breakdownRevenueByProduct` internally; confirmed `getPOSStockStatus` returns only `{id, current_stock}` with no cost/supplier fields; confirmed `app/pos/page.tsx`'s swap preserves identical `bestSellers`/`stockMap` output (data-source change only). Independently reran the suite (438/438), TypeScript (clean), and the access-audit tool itself (83 actions, 100% `GUARDED`, 0 findings). Gate 3 (database/RPC/RLS) not yet scoped.
 - 2026-07-18 Claude: approved Codex's Wave 2 stop-gate proposal. Codex correctly stopped rather than blindly applying `requireAdmin()` to `getRealtimeStock`/`getSalesDataV2` (would have broken STAFF checkout, since `app/pos/page.tsx` calls both and STAFF can reach `/pos`). Checked exactly what the POS page consumes from each before approving, so the amended handoff specifies the minimal shape precisely rather than leaving it to guesswork: best-seller product IDs only (not the full sales report), `{id, current_stock}` pairs only (not full inventory detail). Amended `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` in place before Codex resumed.
 - 2026-07-18 Claude: Gate 2 Remediation Wave 1 reviewed and closed (commits `5c4a01b`, `a1ace53`). Read every diff line: `resolveActor()` correctly rejects unauthenticated POS calls while keeping CLI_MODE's env-controlled (not client-spoofable) SYSTEM path and still accepting any authenticated role (STAFF preserved for POS); `submitStockAdjustment` now `requireAdmin()`-gated per the owner's policy decision, dead PENDING branching removed; the Edge Function's JWT-payload-decode replaced with a constant-time comparison against the real runtime service key, matching the pattern already used by `backup-to-drive`. Read all 3 new test files (rejection-before-mutation, STAFF-rejected/ADMIN-succeeds, forged-JWT-rejected/real-key-accepted). Independently reran the suite (430/430), TypeScript (clean), and the access-audit tool itself (0 mutation findings, 61 guarded, 20 `UNGUARDED_READ` unchanged — exact Wave 2 scope). Wave 2 unblocked for pickup.
 - 2026-07-18 Claude: reviewed Antigravity's UI-REMED-1 visual smoke test commit (`2cabde9`) independently rather than trusting the self-report — read all 10 file diffs (Alert/Badge/Button/LoadingButton primitives, POSScreen toasts/modals, login/settings-password error states, ModifierForm, ActivityLogClient, SemiProductsClient), confirmed every change is a semantically-equivalent raw-color-to-token swap with no logic change, including a genuine typo catch (`bg-primary-soft0`, an invalid class, silently rendering no background). Independently reran the suite (422/422) and production build (success) rather than trusting the claims. Approved and moved to `COMPLETED.md`.

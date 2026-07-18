@@ -4,6 +4,33 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 2 Remediation Wave 2 Reviewed and Closed; Gate 2 Fully Closed
+
+**Trigger:** Codex reported Wave 2 complete across 3 commits and requested Claude review.
+
+### Review Performed
+
+- Confirmed the 3 commits (`a20aba8`, `79bda17`, `71b319f`) touch exactly the files the amended handoff specified: 15 admin `actions.ts` files (18 direct `requireAdmin()` additions), `app/admin/inventory/actions.ts` and `app/admin/reports/actions.ts` (`getRealtimeStock`/`getSalesDataV2` kept ADMIN-only), `app/pos/actions.ts` (2 new functions), `app/pos/page.tsx` (call-site swap), plus new tests and doc updates.
+- **New POS reads (the non-mechanical part, reviewed most closely):** read `getPOSBestSellerProductIds` in full — guarded by `resolveActor()`, internally reuses `breakdownRevenueByProduct` (the same allocator other reports use, avoiding duplicated business logic) but the function's return type is `Promise<string[]>` and the implementation explicitly strips everything down to a sorted, limited list of product IDs, filtering out `MOD:`-prefixed and standalone-topping rows the same way the original best-seller computation did. Read `getPOSStockStatus` — guarded, wraps an `unstable_cache`'d inner function, returns only `{id, current_stock}` pairs, excludes `is_non_inventory` items.
+- Read `app/pos/actions.auth.test.ts`'s new tests: one proves both new functions reject unauthenticated calls before any storage read; one proves `getPOSBestSellerProductIds` returns `["PROD-1", "PROD-2"]` (plain strings only, standalone topping `TOPPING-1` correctly excluded) for an authenticated STAFF caller; one proves `getPOSStockStatus` returns only the narrow `{id, current_stock}` shape with non-inventory items excluded.
+- Read `app/pos/page.tsx`'s diff: confirmed the new call sites (`getPOSBestSellerProductIds({...})`, `getPOSStockStatus()`) produce byte-identical `bestSellers`/`stockMap` values to the old `salesData.bestSellers.slice(0,8).map(...)`/`realtimeStock.forEach(...)` code — this is a data-source swap, not a behavior change.
+- Read `app/admin/inventory/actions.ts`'s diff: confirmed `getRealtimeStock` was correctly kept ADMIN-only, using the same "rename inner cached function, export a guarded wrapper" pattern as the new POS stock read — consistent design across both.
+- Read `app/admin/reports/actions.ts`'s diff: confirmed `getSalesDataV2` (along with `getPnLDataV2`, `getHourlyHeatmapV2`, `getPromotionPerformanceV2`) got `requireAdmin()` directly, staying ADMIN-only as planned.
+- Read the new `scripts/audit-admin-read-guards.test.ts`: reuses the audit tool's own `auditActionExports` function to assert all 20 targeted reads are `ADMIN`/enforced — a regression guard against any future silent guard removal, not just a one-time fix verification.
+- Reviewed the `docs/audits/2026-07-18-gate2-access-map.md` diff: every changed row annotated `(Wave 2, 2026-07-18)` rather than silently rewritten, preserving the original Gate 2 evidence as historical record.
+- Independently reran `npx vitest run`: 74 files, 438/438 pass (matches claim, up from 430). Independently reran `npx tsc --noEmit`: 0 errors. Independently reran `git diff --check`: clean.
+- Independently reran `scripts/audit-admin-action-auth.ts --json` and parsed the output directly: 83 total actions, 100% `GUARDED`, 0 remaining findings of any kind, 5 API routes unchanged.
+
+### Outcome
+
+- Wave 2 approved and closed. `docs/COMPLETED.md` updated with full verification summary.
+- **Gate 2 is now fully closed** — the access map, Wave 1 (POS/stock-adjustment/Edge-Function fixes), and Wave 2 (all remaining read guards + the POS narrow-read split) are all done and independently reviewed.
+- `docs/ROADMAP.md`: P0/P1 cleared. Noted Gate 3 (database/RPC/RLS audit) as not yet scoped — next step if the audit program continues.
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-18 (Codex) - Gate 2 Remediation Wave 2 Implemented, Awaiting Review
 
 **Outcome:** Closed the 20 full admin-read findings while preserving the approved STAFF-facing POS data flow through two narrow authenticated reads.
