@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   insert: vi.fn(),
   insertMany: vi.fn(),
   update: vi.fn(),
+  voidOrderAtomic: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
@@ -18,120 +19,90 @@ vi.mock("@/lib/sheets_db", () => ({
   insertMany: mocks.insertMany,
   update: mocks.update,
 }));
+vi.mock("@/lib/void-order-transaction", () => ({
+  voidOrderAtomic: mocks.voidOrderAtomic,
+}));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
 import { voidOrderV2 } from "./actions";
 
-type MutableState = {
-  orders: Array<Record<string, unknown>>;
-  events: Array<Record<string, unknown>>;
-  ledger: Array<Record<string, unknown>>;
-};
-
-describe("voidOrderV2 forced failures", () => {
-  let state: MutableState;
+describe("voidOrderV2 atomic failure handling", () => {
+  let orderStatus: string;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    state = {
-      orders: [{
-        id: "ord-void-1",
-        order_no: "UCK-VOID-1",
-        status: "COMPLETED",
-        version: 1,
-        net_total: 25_000,
-      }],
-      events: [],
-      ledger: [{
-        id: "stk-consume-1",
-        transaction_type: "SALES_CONSUME",
-        reference_id: "ord-void-1",
-        item_reference: "ING-001",
-        quantity_change: -10,
-        unit_cost: 100,
-        cost_at_sale: 1_000,
-        source: "VARIANT_RECIPE",
-      }],
-    };
-
+    orderStatus = "COMPLETED";
     mocks.requireAdmin.mockResolvedValue({
       ok: true,
-      actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
+      actor: { id: "admin-1", name: "Admin", role: "ADMIN" },
     });
     mocks.findAll.mockResolvedValue([]);
     mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
-      if (sheet === "Orders_V2") return state.orders.map(row => ({ ...row }));
-      if (sheet === "Order_Events") return state.events.map(row => ({ ...row }));
-      if (sheet === "Stock_Ledger") return state.ledger.map(row => ({ ...row }));
+      if (sheet === "Orders_V2") {
+        return [{
+          id: "ord-void-1",
+          order_no: "UCK-VOID-1",
+          status: orderStatus,
+          version: 1,
+          net_total: 25_000,
+        }];
+      }
+      if (sheet === "Stock_Ledger") {
+        return [{
+          id: "stk-consume-1",
+          transaction_type: "SALES_CONSUME",
+          reference_id: "ord-void-1",
+          item_reference: "ING-001",
+          quantity_change: -10,
+          unit_cost: 100,
+          cost_at_sale: 1_000,
+          source: "VARIANT_RECIPE",
+        }];
+      }
       return [];
     });
-    mocks.insertMany.mockImplementation(async (sheet: string, rows: Array<Record<string, unknown>>) => {
-      if (sheet === "Stock_Ledger") state.ledger.push(...rows.map(row => ({ ...row })));
-    });
-    mocks.insert.mockImplementation(async (sheet: string, row: Record<string, unknown>) => {
-      if (sheet === "Order_Events") state.events.push({ ...row });
-    });
-    mocks.update.mockImplementation(async (sheet: string, id: string, patch: Record<string, unknown>) => {
-      if (sheet !== "Orders_V2") return;
-      const order = state.orders.find(row => row.id === id);
-      if (order) Object.assign(order, patch);
-    });
   });
 
-  it("leaves no mutation when the reversal batch fails before writing", async () => {
-    mocks.insertMany.mockRejectedValueOnce(new Error("reversal write failed"));
+  it("returns the atomic rollback error and permits a clean retry without sequential fallback writes", async () => {
+    mocks.voidOrderAtomic
+      .mockRejectedValueOnce(new Error("void_order_atomic: forced rollback"))
+      .mockResolvedValueOnce({
+        orderId: "ord-void-1",
+        reversalCount: 1,
+        alreadyVoided: false,
+      });
 
-    const failed = await voidOrderV2("ord-void-1", "Khách yêu cầu hủy");
+    const failed = await voidOrderV2("ord-void-1", "Customer request");
+    expect(failed).toEqual({ success: false, error: "void_order_atomic: forced rollback" });
 
-    expect(failed).toEqual({ success: false, error: "reversal write failed" });
-    expect(reversalRows(state)).toHaveLength(0);
-    expect(state.events).toHaveLength(0);
-    expect(state.orders[0].status).toBe("COMPLETED");
-
-    const retry = await voidOrderV2("ord-void-1", "Khách yêu cầu hủy");
+    const retry = await voidOrderV2("ord-void-1", "Customer request");
     expect(retry).toEqual({ success: true });
-    expect(reversalRows(state)).toHaveLength(1);
-    expect(state.orders[0].status).toBe("VOIDED");
+    expect(mocks.voidOrderAtomic).toHaveBeenCalledTimes(2);
+    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.insertMany).not.toHaveBeenCalled();
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 
-  it("duplicates the stock reversal when event insert fails and the operator retries", async () => {
-    mocks.insert.mockRejectedValueOnce(new Error("event write failed"));
+  it("delegates an already-voided retry to the RPC idempotency guard", async () => {
+    orderStatus = "VOIDED";
+    mocks.voidOrderAtomic.mockResolvedValue({
+      orderId: "ord-void-1",
+      reversalCount: 1,
+      alreadyVoided: true,
+    });
 
-    const failed = await voidOrderV2("ord-void-1", "Khách yêu cầu hủy");
+    const result = await voidOrderV2("ord-void-1", "Customer request");
 
-    expect(failed).toEqual({ success: false, error: "event write failed" });
-    expect(reversalRows(state)).toHaveLength(1);
-    expect(state.events).toHaveLength(0);
-    expect(state.orders[0].status).toBe("COMPLETED");
-
-    const retry = await voidOrderV2("ord-void-1", "Khách yêu cầu hủy");
-
-    expect(retry).toEqual({ success: true });
-    expect(reversalRows(state)).toHaveLength(2);
-    expect(state.events).toHaveLength(1);
-    expect(state.orders[0].status).toBe("VOIDED");
+    expect(result).toEqual({ success: true });
+    expect(mocks.voidOrderAtomic).toHaveBeenCalledOnce();
   });
 
-  it("blocks retry after event succeeds but the final status update fails", async () => {
-    mocks.update.mockRejectedValueOnce(new Error("status write failed"));
+  it("rejects a non-voidable state before invoking the RPC", async () => {
+    orderStatus = "SUPERSEDED";
 
-    const failed = await voidOrderV2("ord-void-1", "Khách yêu cầu hủy");
+    const result = await voidOrderV2("ord-void-1", "Customer request");
 
-    expect(failed).toEqual({ success: false, error: "status write failed" });
-    expect(reversalRows(state)).toHaveLength(1);
-    expect(state.events).toHaveLength(1);
-    expect(state.orders[0].status).toBe("COMPLETED");
-
-    const retry = await voidOrderV2("ord-void-1", "Khách yêu cầu hủy");
-
-    expect(retry.success).toBe(false);
-    expect(retry.error).toContain("VOIDED");
-    expect(reversalRows(state)).toHaveLength(1);
-    expect(state.events).toHaveLength(1);
-    expect(state.orders[0].status).toBe("COMPLETED");
+    expect(result.success).toBe(false);
+    expect(mocks.voidOrderAtomic).not.toHaveBeenCalled();
   });
 });
-
-function reversalRows(state: MutableState): Array<Record<string, unknown>> {
-  return state.ledger.filter(row => row.transaction_type === "EDIT_REVERSAL");
-}

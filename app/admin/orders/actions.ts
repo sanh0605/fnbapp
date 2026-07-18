@@ -19,6 +19,7 @@ import {
   type ConsumptionRow,
 } from "@/lib/inventory-consumption";
 import type { CartInput } from "@/lib/order-cart";
+import { voidOrderAtomic } from "@/lib/void-order-transaction";
 
 function parseObject(value: any): any {
   if (!value) return {};
@@ -322,18 +323,8 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
     const allOrders = await findAllNoCache("Orders_V2");
     const order = (allOrders as any[]).find(o => o.id === orderId);
     if (!order) return { success: false, error: `Order ${orderId} not found` };
-    if (order.status !== ORDER_STATUS.COMPLETED) {
+    if (order.status !== ORDER_STATUS.COMPLETED && order.status !== ORDER_STATUS.VOIDED) {
       return { success: false, error: `Order status is ${order.status}, must be COMPLETED to void` };
-    }
-
-    // Claude code — CODE-8: idempotency guard. Reject if VOIDED event already exists.
-    // Protects against double-click retries creating duplicate reversal entries.
-    const existingEvents = await findAllNoCache("Order_Events");
-    const alreadyVoided = (existingEvents as any[]).some(
-      e => e.order_id === orderId && e.event_type === EVENT_TYPE.VOIDED,
-    );
-    if (alreadyVoided) {
-      return { success: false, error: `Order ${orderId} đã có event VOIDED, không hủy lại được` };
     }
 
     const eventTime = new Date().toISOString();
@@ -369,21 +360,13 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       source: l.source || "VARIANT_RECIPE",
     }));
 
-    // Claude code — CODE-8: reorder for fail-safe.
-    // 1. Insert reversal entries first (uses insertMany — atomic batch).
-    // 2. Insert event second (audit trail of intent).
-    // 3. Update order LAST (final state transition).
-    // If step 3 fails: order remains COMPLETED, user can retry safely (idempotency guard rejects duplicates).
-    // Old order (update first) left order VOIDED with no reversal on partial failure — broken stock.
-    if (reversalEntries.length > 0) {
-      await insertMany("Stock_Ledger", reversalEntries);
-    }
-    await insert("Order_Events", event);
-    await update("Orders_V2", orderId, {
-      status: ORDER_STATUS.VOIDED,
-      voided_at: eventTime,
-      voided_by_id: actor.id,
-      void_reason: reason,
+    await voidOrderAtomic({
+      orderId,
+      event,
+      reversalRows: reversalEntries,
+      voidedAt: eventTime,
+      voidedById: actor.id,
+      reason,
     });
 
     if (process.env.CLI_MODE !== "true") {
