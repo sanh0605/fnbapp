@@ -28,6 +28,7 @@ Read before each session:
 - `docs/COMPLETED.md`: compact archive of finished outcomes.
 - `docs/TESTING.md`: test strategy, commands, risk gates, and known gaps.
 - `docs/COLLABORATION.md`: ownership, workflow, review, and communication protocol.
+- `docs/FILE-ORGANIZATION.md`: where new files go and how they're named — read before creating any new file, not just at session start.
 - `DEVELOPMENT-TRACKING.md`: detailed chronicle log (newest first).
 
 Supporting authority remains outside the ten entry documents when specialist detail is required:
@@ -351,6 +352,7 @@ When forced to use a technical term, **always** define on first use in same resp
 
 ## Change Log
 
+- 2026-07-19 Claude: added `docs/FILE-ORGANIZATION.md` and referenced it in Section A. User decision: after the 8-gate audit finishes, reorganizing the whole repo's files/folders becomes the top priority before any other work resumes — but the naming/placement *rule* itself takes effect immediately, so files created during the remaining audit gates don't add to the mess that reorganization pass will need to clean up. The rule doesn't move anything that already exists (D8 preservation still applies); a future explicit owner decision is needed before any existing file gets relocated.
 - 2026-07-18 Claude: closed the `scripts/` gray zone in Section C "Engine Files" — all of `scripts/**` is Codex-owned, no exception for small/mechanical fixes. User explicit decision after Claude directly fixed 2 script-cleanup tooling bugs (`scripts/generate-script-cleanup-plan.ts`, `scripts/verify-delete-candidates.ts`) and flagged it as a boundary crossing: keeping the line firm preserves Claude's ability to independently review Codex's work, which a self-fix-then-self-review pattern would erode even for low-risk changes.
 - 2026-07-17 Claude: Section I rule 4 narrowed — agents escalate only business-impact decisions to the user; technical/implementation choices are decided by agents and reported in plain language, not gated on approval. Clarified that CLI tool-permission prompts are a separate, user-controlled setting, not an agent asking a question.
 - 2026-07-17 Codex: refreshed Section A for the approved ten-document canonical entry set and three-tier authority model. Specialist MAC/backup/domain sources remain supporting authority; audits/handoffs/completed plans remain historical evidence. Pending Claude protocol review.

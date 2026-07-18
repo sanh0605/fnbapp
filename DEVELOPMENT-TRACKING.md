@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - File Organization Rule Established; Gate 4 Stop-Gate Resolved
+
+**Trigger:** Two things arrived close together: (1) owner decided repository reorganization should be top priority right after the audit finishes, and that a placement/naming rule should exist now so new files don't add to the mess; (2) Codex hit a stop-gate mid-Gate-4 (fresh MAC drift audit found 12 new unclassified lines) and asked Claude to decide whether to block or continue.
+
+### File organization rule
+
+- Checked current scale before writing the rule: `scripts/` has grown to 212 files, `docs/audits/` to 88, `docs/handoffs/` to 57 — real growth, confirming the owner's concern is grounded, not premature.
+- Authored `docs/FILE-ORGANIZATION.md`: a directory purpose map (what belongs in `docs/audits/` vs `docs/handoffs/` vs `docs/reports/` vs `docs/operations/` vs `docs/superpowers/specs|plans/` vs root/top-level canonical docs vs `scripts/`), naming conventions (date-prefix for point-in-time records, the existing script-prefix vocabulary tied to `scripts/generate-script-cleanup-plan.ts`'s classification), and an explicit statement that this governs *new* files only — it does not retroactively move anything, preserving the D8 no-move/no-delete-without-approval decision from Pre-Audit B.
+- Referenced the new doc from `docs/COLLABORATION.md` Section A file map, with a change-log entry explaining the two-part decision (rule now, reorganization pass later).
+- Updated `docs/ROADMAP.md` "Future direction": inserted "Repository file/folder reorganization" as item 2, immediately after "finish current work" (the audit) and before feature-completeness — renumbered the remaining items (feature-completeness, UI/UX, multi-branch, franchise, final security phase) accordingly. Noted that any actual folder-level *move* is a policy change from D8 requiring fresh owner confirmation when that phase starts, not assumed now.
+
+### Gate 4 stop-gate resolution
+
+- Codex's fresh rerun of `audit-mac-drift-baseline.ts` (part of Gate 4 Phase A Item 1) found 12 `NEW_INVESTIGATION_NEEDED` lines that were 0 at the last known-good run, dated 2026-07-17–18, net delta ~+10 VND across 7 products, 0 `LOCKED_VIOLATION_STORED` (no stored/locked COGS value implicated), the pre-existing 16 replay violations unchanged.
+- Decision: don't block the rest of Gate 4 Phase A (financial impact is negligible and no stored value is at risk), but don't wave it away either — per Task 3.10's established "operationally clean" bar (`STORED=0 + NEW=0 + KNOWN_NOT_LOCKED=0`), a non-zero `NEW` count means this audit isn't currently clean by its own definition, and the Gate 4 handoff's own stop-gate trigger says exactly this needs prioritized classification, not a pass-through.
+- Added Item 1a to `docs/handoffs/2026-07-19-codex-gate4-order-inventory-cogs-audit.md`: reuse the exact classification methodology already built for Task 3.4 (`scripts/investigate-task-3.4-outside-cohort.ts`'s `classifyLine` logic and bucket model) rather than inventing a new approach, produce a dated classification report, no locking/recompute/apply — evidence only, same as the rest of Phase A.
+
+Commit: pending.
+
+
 ## 2026-07-19 (Claude) - Gate 4 Scoped and Handed Off
 
 **Trigger:** User asked to continue after Gate 3 Phase A closed. The audit-program spec has no real detail for Gate 4 (same placeholder pattern as Gates 2-3), so scope had to be built from direct investigation again.

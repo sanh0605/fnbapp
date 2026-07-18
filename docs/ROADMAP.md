@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| [ ] **Full audit Gate 4 Phase A — Order/inventory/COGS business audit** | Codex | Rerun 17 existing correctness audit scripts fresh; forced-failure (mocked) testing for 5 sequential-write paths: `supersedeOrderV2`/`editOrderV2`, `voidOrderV2`, `saveProductionOrder`, `saveProduct`, `submitStockAdjustment`+`approveStockAdjustment` | Handoff: `docs/handoffs/2026-07-19-codex-gate4-order-inventory-cogs-audit.md`. Scoped from direct code reading: `lib/sheets-db-v2-edit.ts` self-documents `supersedeOrderV2` as "Not a true transaction"; traced `voidOrderV2`'s idempotency guard and found a specific untested gap (event insert succeeds, status update fails → retry incorrectly blocked while order still reads COMPLETED). No forced-failure test exists for any of these 5 paths (only the already-atomic POS/purchase-order RPCs have one). Evidence/classification only — no new atomic RPC or fix in this phase. |
+| [~X] **Full audit Gate 4 Phase A — Order/inventory/COGS business audit** | Codex | Rerun 17 existing correctness audit scripts fresh; forced-failure (mocked) testing for 5 sequential-write paths: `supersedeOrderV2`/`editOrderV2`, `voidOrderV2`, `saveProductionOrder`, `saveProduct`, `submitStockAdjustment`+`approveStockAdjustment`; classify 12 new MAC drift lines (addendum) | Handoff: `docs/handoffs/2026-07-19-codex-gate4-order-inventory-cogs-audit.md`. Scoped from direct code reading: `lib/sheets-db-v2-edit.ts` self-documents `supersedeOrderV2` as "Not a true transaction"; traced `voidOrderV2`'s idempotency guard and found a specific untested gap. 2026-07-19 stop-gate: fresh `audit-mac-drift-baseline.ts` rerun found 12 `NEW_INVESTIGATION_NEEDED` lines (was 0), net ~+10 VND, 0 `LOCKED_VIOLATION_STORED`. Claude decision: don't block the rest of Phase A, but classify using the existing Task 3.4 methodology before Gate 4 closes — added as Item 1a addendum to the handoff. Evidence/classification only — no new atomic RPC, lock, or fix in this phase. |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
@@ -73,16 +73,27 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 |---|---|---|
 | (none) | — | SEC-5 resolved 2026-07-18 (owner: stock adjustment is admin/manager responsibility, staff should not submit) — folded into Wave 1, see P0. |
 
-## Future direction (owner priority, set 2026-07-18 — not started, sequencing only)
+## Future direction (owner priority, set 2026-07-18/19 — not started, sequencing only)
 
 Owner-stated long-term direction, in order. Nothing below starts until the
 phase before it is done; do not begin implementation on any of these without
 a fresh, explicit go-ahead even after the prior phase closes — this section
 records intent and order, not authorization to start.
 
-1. **Finish current work** — the eight-gate audit in progress (Gate 2 running
-   as of 2026-07-18; Gates 3-8 follow). See P0/P1 above.
-2. **Feature-completeness pass** — plan and close gaps so the single-shop
+1. **Finish current work** — the eight-gate audit in progress (Gate 4 running
+   as of 2026-07-19; Gates 5-8 follow). See P0/P1 above.
+2. **Repository file/folder reorganization** (added 2026-07-19) — a proposed
+   pass over existing files: act on the `scripts/` `DELETE_ONE_OFF` batch,
+   relocate anything that ended up in the wrong place before
+   `docs/FILE-ORGANIZATION.md` existed, and any folder-level moves the owner
+   approves (a policy change from the D8 "never move" decision, to be
+   explicitly re-confirmed at that time). Follow the same propose-then-
+   approve pattern used for Pre-Audit B's document consolidation — Claude
+   proposes the moves, owner approves before anything actually moves. The
+   naming/placement *rule* itself (`docs/FILE-ORGANIZATION.md`) is already
+   in effect for new files during Gates 4-8, so this pass has less to clean
+   up than if the rule had waited until now.
+3. **Feature-completeness pass** — plan and close gaps so the single-shop
    system fully covers: inventory control (kiểm soát hàng tồn), cash
    in/out control (kiểm soát tiền vào tiền ra), sales reports (báo cáo bán
    hàng), order reports (báo cáo đặt hàng), financial reports (báo cáo tài
@@ -90,26 +101,29 @@ records intent and order, not authorization to start.
    significantly with Pre-Audit C's `FEATURE-CATALOG.md` findings and the
    deferred 17-section F&B checklist — reconcile rather than duplicate when
    this phase starts.
-3. **UI/UX upgrade and frontend unification** (đồng nhất frontend) — after
+4. **UI/UX upgrade and frontend unification** (đồng nhất frontend) — after
    feature completeness, not before; a consistent UI on top of incomplete
    features would need rework.
-4. **Multi-branch management** (đa chi nhánh) — first of the two expansion
+5. **Multi-branch management** (đa chi nhánh) — first of the two expansion
    features. Needs outlet entity, data isolation, outlet-scoped roles,
    consolidated reporting design (see `docs/FEATURE-CATALOG.md`
    `ORG-MULTI-OUTLET` and the F&B spec's "Organization, brand, outlet, and
    device setup" checklist section).
-5. **Franchise management** (nhượng quyền) — after multi-branch, since it
-   likely extends the same outlet/tenant model rather than replacing it.
-   Needs franchisee role, fee/royalty model, and stronger tenant isolation
-   than plain multi-branch.
 6. **Full permissions and security hardening** (phân quyền và bảo mật) —
-   explicitly the *last* phase, done once the system's final shape
-   (including multi-branch/franchise) is known, to avoid designing the
-   permission model twice. This is distinct from Gate 1 (P0 exposures,
-   already closed) and Gate 2 (access map, in progress) — those stay
-   scoped to the current single-shop system; this final phase is the full
-   `docs/ACCESS-MODEL.md` Phase 3 verification plus whatever multi-branch/
-   franchise roles add.
+   done once the system's shape through multi-branch is known, to avoid
+   designing the permission model twice for that part. This is distinct
+   from Gates 1-3 (P0 exposures, access map, database/RLS — all closed) —
+   those stay scoped to the current single-shop system; this phase is the
+   full `docs/ACCESS-MODEL.md` Phase 3 verification plus whatever
+   multi-branch roles add.
+7. **Franchise management** (nhượng quyền) — moved to last (owner decision
+   2026-07-19): not yet certain this gets built at all, so it shouldn't
+   hold up or need to be designed around by anything before it, including
+   the security hardening phase. If franchise is later approved, its
+   franchisee role/tenant-isolation needs will require their own follow-up
+   security review at that time — accepted tradeoff for not blocking on an
+   uncertain feature. Needs franchisee role, fee/royalty model, and
+   stronger tenant isolation than plain multi-branch, whenever it starts.
 
 ## Out of scope (do not start without explicit approval)
 
@@ -173,6 +187,8 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-19 Claude: owner moved franchise management from item 6 to last (item 7, after security hardening) — not yet certain franchise gets built, so it shouldn't hold up or need to be designed around by anything before it. Security hardening (now item 6) is scoped to the system's shape through multi-branch only; franchise would need its own follow-up security review later if approved.
+- 2026-07-19 Claude: 2 owner decisions handled. (1) File/folder organization: added `docs/FILE-ORGANIZATION.md` (naming/placement rule, effective immediately for new files) and inserted "Repository file/folder reorganization" as Future direction item 2 — right after the audit finishes, before feature-completeness, per owner priority. The rule doesn't move any existing file (D8 preservation stands); the actual reorganization pass is proposed-then-approved later, same pattern as Pre-Audit B. (2) Gate 4 stop-gate: Codex's fresh `audit-mac-drift-baseline.ts` rerun found 12 new `NEW_INVESTIGATION_NEEDED` lines (net ~+10 VND, 0 `LOCKED_VIOLATION_STORED`). Decided not to block the rest of Gate 4 Phase A, but added a classification addendum (Item 1a) to the handoff reusing the established Task 3.4 methodology rather than accepting or locking anything without evidence.
 - 2026-07-19 Claude: scoped and authored Gate 4 Phase A handoff (order/inventory/COGS business audit). Read `lib/sheets-db-v2-edit.ts` directly and confirmed its own header self-documents `supersedeOrderV2` (order edit) as "Not a true transaction." Traced `voidOrderV2`'s write order and idempotency guard by hand and found a specific, previously-undocumented gap: if the VOIDED event insert succeeds but the following order-status update fails, a retry is incorrectly rejected (idempotency guard sees the event) while the order status still reads COMPLETED with reversed stock already recorded. Confirmed no forced-failure test exists for this or 4 similar sequential-write paths (`saveProductionOrder`, `saveProduct`, stock adjustment submit/approve) — only the already-atomic POS/purchase-order RPCs have one (`scripts/probe-pos-order-rollback.ts`). Scoped Phase A as fresh-audit-rerun plus mocked forced-failure testing (not live probes, to avoid orphaning real data on a non-atomic path) with a 3-way classification per path; explicitly deferred any new atomic RPC or fix to a separately reviewed Phase B.
 - 2026-07-19 Claude: Gate 3 Phase A reviewed and closed (commit `a17b0e7`). Independently re-ran the actual live-database audit script from scratch (not just read the report) using the repo's own Supabase credentials — got byte-identical results for every summary statistic and individually confirmed all 10 named RPCs' grant state. This is the strongest verification done in this audit program so far: reproducing live evidence directly rather than trusting an artifact. Also reran the suite (445/445), TypeScript (clean), and production build (success) independently. Logged 5 Phase B findings (G3-A4 through G3-A8) as P2 backlog — Low/Medium severity, no evidence of exploitation, live DB changes need their own reviewed scope.
 - 2026-07-19 Codex: implemented Gate 3 Phase A as a read-only live database/RPC/RLS audit. Confirmed 32/32 public tables have RLS enabled with zero policies, the 32-table backup allowlist matches live exactly, ten live application RPCs are service-role-only, and `exec_sql` is absent. A fresh production build placed no Supabase key name/value in 96 browser-static files. Flagged broad dormant grants, orphaned `next_order_num`, and the untracked `rls_auto_enable` event trigger as separately reviewed Phase B inputs; no live configuration changed. Awaiting Claude review.

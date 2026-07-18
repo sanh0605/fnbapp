@@ -73,6 +73,40 @@ specific drift is separately scoped work, not this task, unless it's
 trivially explained (e.g., a known, already-documented pattern from the MAC
 drift saga in `docs/COMPLETED.md`).
 
+### 1a. Addendum (2026-07-19, added after Codex's first stop-gate report) — classify the 12 new MAC drift lines
+
+The Item 1 rerun of `audit-mac-drift-baseline.ts` surfaced 12
+`NEW_INVESTIGATION_NEEDED` lines (0 at last known-good run), dated
+2026-07-17–18, net delta ~+10 VND across `PROD-005`, `PROD-022`, `PROD-024`,
+`PROD-017`, `PROD-021`, `PROD-020`, `PROD-015`, with 0
+`LOCKED_VIOLATION_STORED` (no evidence any stored/locked COGS value is
+wrong) and the pre-existing 16 replay violations unchanged. Codex correctly
+stopped rather than assuming this matches the known BTP-replay pattern.
+
+Claude's decision: don't block the rest of Gate 4 Phase A on this, but
+don't leave it unclassified either — per Task 3.10's established
+"operationally clean" bar (`STORED=0 + NEW=0 + KNOWN_NOT_LOCKED=0`), any
+non-zero `NEW_INVESTIGATION_NEEDED` count means this audit is not currently
+clean by its own definition, and per this handoff's own stop-gate trigger
+("drift that wasn't reported clean at its last known-good run... needs
+prioritized attention rather than being logged and moved past") it needs a
+real classification, not a hand-wave.
+
+Reuse the exact classification approach from
+`scripts/investigate-task-3.4-outside-cohort.ts` (`classifyLine` and
+related logic) — read-only, sorts each line into the same disjoint-bucket
+model already established (`BACKDATED_LEDGER_LIKE`,
+`PRE_BASELINE_WINDOW`, `BASELINE_SELECTION_GAP`, `POST_CUTOFF_NEW_DRIFT`,
+or a genuinely new pattern if none fit) rather than inventing a new
+methodology. Given the small size (12 lines) this should be fast. Produce
+`docs/audits/2026-07-19-gate4-mac-drift-12-line-classification.md` with the
+per-line classification and evidence. Do not lock, recompute, or apply
+anything — classification only, matching Task 3.4's own scope. If the
+classification confirms this is the known replay/recipe-timing pattern with
+no stored-value risk, say so with evidence and this addendum is done; if it
+reveals something new or larger than 12 lines/±10 VND, stop and flag rather
+than continuing Gate 4's other items.
+
 ### 2. Forced-failure testing for 5 sequential-write paths
 
 For each of `supersedeOrderV2` (order edit), `voidOrderV2`, `saveProductionOrder`,
