@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 4 Item 1 + 1a Reviewed; ING-003 Stop-Gate Resolved
+
+**Trigger:** Codex committed Gate 4 Item 1 (correctness baseline rerun) + Item 1a (MAC drift 12-line classification), then hit a second stop-gate (new negative stock on `ING-003`) and paused before Item 2, asking Claude to decide.
+
+### Review Performed
+
+- Confirmed commit `c0be7ce` scope: 2 new audit reports + JSON artifacts, 1 new lib module + test, 1 new investigation script — no application code, no production write.
+- Read `docs/audits/2026-07-19-gate4-mac-drift-12-line-classification.md` in full and hand-verified the per-line evidence table: for all 12 rows, "Pre-visible replay" exactly equals "Stored" (e.g. 7,109=7,109, 9,645=9,645, 8,853=8,853...), confirming the classification's central claim — these are `BACKDATED_LEDGER_LIKE` (six durable events effective 2026-07-16 17:00 but only visible 2026-07-18 12:43; every affected sale happened inside that window), not a new MAC engine or recipe bug. Confirmed the method reuses Task 3.4's exact classification precedence rather than inventing a new approach.
+- Read `docs/audits/2026-07-19-gate4-correctness-baseline.md` in full: 21 correctness audits rerun (more than the ~17 originally scoped — Codex correctly expanded to match "any others matching that description"), each given an explicit status (CLEAN / INFORMATIONAL / HISTORICAL EVIDENCE / KNOWN GAP / ROUNDING-ONLY / AUDIT ERROR / STOP: NEW DRIFT) rather than a blanket pass/fail. Noted good judgment calls: correctly excluded `audit-recipe-history.ts` from rerun because it overwrites an immutable evidence document, and correctly identified `audit-po-save-ledger.ts`'s 55/55 "mismatches" as a stale script bug (references old `po_id`/`qty` columns instead of current `purchase_order_id`/`quantity`) rather than real drift.
+- **Independently reran `scripts/audit-current-stock.ts` myself** against the live database to verify the new stop-gate claim rather than trusting the report — got the exact same figure: `ING-003 | Sữa đặc | BASE_INGREDIENT | stock=-131 g`. Independently reran `npx vitest run`: 76 files, 450/450 pass (matches claim, up from 445).
+
+### Decision on ING-003
+
+- `docs/ROADMAP.md` already has an established "Out of scope: Negative stock recovery — needs physical count decision from user" policy covering this exact category (previously tracked `ING-001`, `ING-021`, `NNL-003`, `NNL-006`). Reasoned that Gate 4's forced-failure testing (Item 2, about write-path atomicity under partial failure) is a different domain from inventory-data accuracy (which needs a physical count, not a code fix), so `ING-003` doesn't need to block Item 2.
+- Also reasoned through causality: Gates 1-4's own changes (auth guards, read-only audits) made no writes to `Stock_Ledger`, so `ING-003` going negative on 2026-07-18 is very likely an independent real business-operation event (e.g., a sale recorded before its corresponding purchase/production entry, matching the root-cause pattern from the earlier Phase 9 negative-stock case), not something the audit work caused.
+- Updated the `docs/ROADMAP.md` out-of-scope entry to current live state: 3 negative (`ING-003` new, `ING-021`/`ING-024` existing) rather than the stale 4-item list — and explicitly flagged that the previously tracked `ING-001`/`NNL-003`/`NNL-006` no longer appearing live is not the same as confirmed-resolved, so it doesn't get silently dropped.
+- Cleared Codex to continue Gate 4 Item 2 (forced-failure testing).
+
+Commit: pending.
+
+
 ## 2026-07-19 (Claude) - File Organization Rule Established; Gate 4 Stop-Gate Resolved
 
 **Trigger:** Two things arrived close together: (1) owner decided repository reorganization should be top priority right after the audit finishes, and that a placement/naming rule should exist now so new files don't add to the mess; (2) Codex hit a stop-gate mid-Gate-4 (fresh MAC drift audit found 12 new unclassified lines) and asked Claude to decide whether to block or continue.
