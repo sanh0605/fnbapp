@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import { sumCompletedProductionYieldBySemiProduct } from "../lib/production-stock-audit";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
@@ -20,16 +21,13 @@ async function main() {
 
   const unitById = new Map((units as any[]).map(unit => [unit.id, unit.name || unit.id]));
   const spById = new Map((semiProducts as any[]).map(sp => [sp.id, sp]));
-  const producedByItem = new Map<string, number>();
+  const producedByItem = sumCompletedProductionYieldBySemiProduct(
+    productionOrders as Array<Record<string, unknown>>,
+  );
   const yieldedByItem = new Map<string, number>();
   const soldByItem = new Map<string, number>();
   const productionConsumeByItem = new Map<string, number>();
   const adjustmentByItem = new Map<string, number>();
-
-  for (const item of productionItems as any[]) {
-    const spId = item.semi_product_id || "";
-    producedByItem.set(spId, (producedByItem.get(spId) || 0) + Number(item.qty_produced || 0));
-  }
 
   for (const row of ledger as any[]) {
     const itemId = row.item_reference || "";
@@ -51,7 +49,7 @@ async function main() {
       id,
       name: sp?.name || id,
       unitName: unitById.get(sp?.base_unit || "") || sp?.base_unit || "",
-      productionItemQty: producedByItem.get(id) || 0,
+      completedOrderYieldQty: producedByItem.get(id) || 0,
       ledgerYieldQty: yieldedByItem.get(id) || 0,
       salesConsumeQty: soldByItem.get(id) || 0,
       productionConsumeQty: productionConsumeByItem.get(id) || 0,
@@ -64,7 +62,7 @@ async function main() {
     };
   }).sort((a, b) => a.balance - b.balance);
 
-  const yieldMismatches = rows.filter(row => Math.abs(row.productionItemQty - row.ledgerYieldQty) > 0.000001);
+  const yieldMismatches = rows.filter(row => Math.abs(row.completedOrderYieldQty - row.ledgerYieldQty) > 0.000001);
   const negative = rows.filter(row => row.balance < -0.000001);
 
   console.log("=== PRODUCTION STOCK AUDIT (READ ONLY) ===");
@@ -75,9 +73,9 @@ async function main() {
   console.log(`Negative semi-products:   ${negative.length}`);
 
   if (yieldMismatches.length > 0) {
-    console.log("\nProduction items vs ledger yield mismatches:");
+    console.log("\nCompleted production orders vs ledger yield mismatches:");
     for (const row of yieldMismatches.slice(0, 30)) {
-      console.log(`${row.id} | ${row.name} | production_items=${fmt(row.productionItemQty)} | ledger_yield=${fmt(row.ledgerYieldQty)} ${row.unitName}`);
+      console.log(`${row.id} | ${row.name} | completed_orders=${fmt(row.completedOrderYieldQty)} | ledger_yield=${fmt(row.ledgerYieldQty)} ${row.unitName}`);
     }
   }
 
