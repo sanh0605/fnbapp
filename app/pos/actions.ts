@@ -1,12 +1,13 @@
 "use server";
 
-import { findAll, findAllNoCache, insert, update, remove } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { findAll, findAllNoCache, findAllWhere, insert, update, remove } from "@/lib/sheets_db";
+import type { SheetFilter } from "@/lib/sheets_db";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { resolveActor } from "@/lib/auth";
 import crypto from "node:crypto";
 
 import { buildOrderFromCart } from "@/lib/order-cart";
-import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
+import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
 import { computeMacCostFromUnitCosts } from "@/lib/mac-cogs";
 import {
@@ -16,6 +17,8 @@ import {
 } from "@/lib/inventory-consumption";
 import { getPosInventoryState } from "@/lib/pos-inventory-state";
 import { savePosOrderAtomic } from "@/lib/pos-order-transaction";
+import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
+import { toSaigonUtcRange } from "@/lib/report-time";
 import type { CartInput } from "@/lib/order-cart";
 
 export type SubmitOrderV2Result = {
@@ -25,6 +28,18 @@ export type SubmitOrderV2Result = {
 } | {
   success: false;
   error: string;
+};
+
+export type PosBestSellerFilters = {
+  startDate?: string;
+  endDate?: string;
+  brandId?: string;
+  limit?: number;
+};
+
+export type PosStockStatus = {
+  id: string;
+  current_stock: number;
 };
 
 export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Result> {
@@ -164,6 +179,102 @@ function buildStockLedgerEntries(
 }
 
 // Claude code — R12: buildLineConsumptionRows extracted to lib/inventory-consumption.ts (shared).
+
+export async function getPOSBestSellerProductIds(
+  filters: PosBestSellerFilters = {},
+): Promise<string[]> {
+  const auth = await resolveActor();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const dateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
+  const orderQuery: SheetFilter = { eq: { status: ORDER_STATUS.COMPLETED } };
+  if (dateRange) {
+    orderQuery.gte = { created_at: dateRange.startUtc };
+    orderQuery.lte = { created_at: dateRange.endUtc };
+  }
+
+  const [orders, orderLines, products] = await Promise.all([
+    findAllWhere("Orders_V2", orderQuery),
+    findAllNoCache("Order_Lines_V2"),
+    findAll("Products"),
+  ]);
+  const eligibleOrders = (orders as any[]).filter((order) => {
+    if (order.status !== ORDER_STATUS.COMPLETED) return false;
+    if (order.superseded_by) return false;
+    if (!order.created_at) return false;
+    if (dateRange) {
+      const createdAt = new Date(order.created_at);
+      if (createdAt < dateRange.startUtc || createdAt > dateRange.endUtc) return false;
+    }
+    return !filters.brandId || order.brand_id === filters.brandId;
+  });
+  const eligibleOrderIds = new Set(eligibleOrders.map((order) => order.id));
+  const eligibleLines = (orderLines as any[]).filter((line) => eligibleOrderIds.has(line.order_id));
+  const productRows = breakdownRevenueByProduct(
+    eligibleOrders.map(coerceOrderV2),
+    eligibleLines.map(coerceLineV2),
+  );
+  const standaloneToppingIds = new Set(
+    (products as any[])
+      .filter((product) => (
+        String(product.category_id) === "CAT-007"
+        && /topping-standalone::mod_id=MOD-\d+/.test(String(product.migration_notes || ""))
+      ))
+      .map((product) => String(product.id)),
+  );
+  const quantityByProduct = new Map<string, number>();
+  for (const row of productRows) {
+    if (row.product_id.startsWith("MOD:") || standaloneToppingIds.has(row.product_id)) continue;
+    quantityByProduct.set(
+      row.product_id,
+      (quantityByProduct.get(row.product_id) || 0) + row.qty,
+    );
+  }
+  const limit = Number.isFinite(filters.limit)
+    ? Math.max(0, Math.floor(filters.limit as number))
+    : 8;
+  return Array.from(quantityByProduct.entries())
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, limit)
+    .map(([productId]) => productId);
+}
+
+const loadPOSStockStatus = unstable_cache(
+  async (): Promise<PosStockStatus[]> => {
+    const [stockLedger, baseIngredients, semiProducts] = await Promise.all([
+      findAllNoCache("Stock_Ledger"),
+      findAll("Base_Ingredients"),
+      findAll("Semi_Products"),
+    ]);
+    const stockByItem = new Map<string, number>();
+    for (const entry of stockLedger as any[]) {
+      const itemId = String(entry.item_reference || "");
+      if (!itemId) continue;
+      stockByItem.set(itemId, (stockByItem.get(itemId) || 0) + Number(entry.quantity_change || 0));
+    }
+    const inventoryItems = [
+      ...(baseIngredients as any[]).filter((item) => (
+        item.is_non_inventory !== true && item.is_non_inventory !== "TRUE"
+      )),
+      ...(semiProducts as any[]),
+    ];
+    return inventoryItems.map((item) => ({
+      id: String(item.id),
+      current_stock: stockByItem.get(String(item.id)) || 0,
+    }));
+  },
+  ["pos-stock-status"],
+  {
+    revalidate: 60,
+    tags: ["sheets-Stock_Ledger", "sheets-Base_Ingredients", "sheets-Semi_Products"],
+  },
+);
+
+export async function getPOSStockStatus(): Promise<PosStockStatus[]> {
+  const auth = await resolveActor();
+  if (!auth.ok) throw new Error(auth.error);
+  return loadPOSStockStatus();
+}
 
 export async function getPOSDrafts(brandId: string) {
   const auth = await resolveActor();

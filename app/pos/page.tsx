@@ -3,8 +3,7 @@ import POSScreen from "@/components/POSScreen";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { getSalesDataV2 } from "@/app/admin/reports/actions";
-import { getRealtimeStock } from "@/app/admin/inventory/actions";
+import { getPOSBestSellerProductIds, getPOSStockStatus } from "./actions";
 
 export const dynamic = 'force-dynamic';
 
@@ -24,18 +23,18 @@ export default async function POSPage({
   const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const brandIdStr = typeof searchParams?.brandId === 'string' ? searchParams.brandId : (Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : undefined);
 
-  const [categories, products, variants, modifiers, promotions, salesData, realtimeStock, recipes] = await Promise.all([
+  const [categories, products, variants, modifiers, promotions, bestSellers, realtimeStock, recipes] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Modifiers"),
     findAll("Promotions"),
-    getSalesDataV2({
+    getPOSBestSellerProductIds({
       startDate: lastWeek.toISOString(),
       endDate: now.toISOString(),
       brandId: brandIdStr
     }),
-    getRealtimeStock(),
+    getPOSStockStatus(),
     findAll("Recipes")
   ]);
 
@@ -50,8 +49,6 @@ export default async function POSPage({
   const activePromotions = promotions.filter(p => p.status === "ACTIVE");
   
   const brandId = Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : searchParams?.brandId;
-  const bestSellers = salesData.bestSellers.slice(0, 8).map((bs: any) => bs.product_id);
-
   // Compute Out Of Stock products
   const stockMap = new Map<string, number>();
   realtimeStock.forEach((s: any) => stockMap.set(s.id, s.current_stock));
