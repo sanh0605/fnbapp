@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 4 Scoped and Handed Off
+
+**Trigger:** User asked to continue after Gate 3 Phase A closed. The audit-program spec has no real detail for Gate 4 (same placeholder pattern as Gates 2-3), so scope had to be built from direct investigation again.
+
+### Investigation before scoping
+
+- Listed the 17 existing `scripts/audit-*.ts` correctness scripts covering orders/inventory/COGS/stock (`audit-cogs-drift.ts`, `audit-current-stock.ts`, `audit-order-ledger.ts`, `audit-pnl-mac-consistency.ts`, `audit-mac-drift-baseline.ts`, and others). These were clean at their last known-good run, but substantial code has changed since (Gates 1-3), so a fresh rerun is the first, lowest-risk step.
+- Read `lib/sheets-db-v2-edit.ts` in full: its own header comment says `supersedeOrderV2` (the write path behind `editOrderV2`) does sequential inserts with reverse-order cleanup on failure and is explicitly "Not a true transaction" — matches what `docs/FEATURE-CATALOG.md` already noted for `ORD-EDIT-SUPERSEDE`.
+- Read `voidOrderV2` in `app/admin/orders/actions.ts` in full (not just the catalog summary). It already has a deliberate fail-safe write order (reversal ledger → event → order-status-update last) with an inline comment explaining the reasoning, plus an idempotency guard checking for an existing VOIDED event. Traced the failure window between the event insert succeeding and the order-status update failing: the idempotency guard would reject a legitimate retry (it sees the VOIDED event) while the order's `status` field still incorrectly reads `COMPLETED` with reversed stock already recorded. This is a specific, previously-undocumented, untested gap — more precise than a general "not atomic" statement.
+- Confirmed (via search) that no forced-failure test exists for `voidOrderV2`, `editOrderV2`/`supersedeOrderV2`, `saveProductionOrder`, or `saveProduct` — only `scripts/probe-pos-order-rollback.ts` exists, and it tests the already-atomic `create_pos_order_atomic` RPC, a structurally different code path (single transaction, not sequential writes).
+- Checked `saveProductionOrder` and `saveProduct` entry points to confirm they're in scope for the same pattern; full body review of those two deferred to the handoff itself as part of the task, not completed by Claude first.
+
+### Output
+
+- Authored `docs/handoffs/2026-07-19-codex-gate4-order-inventory-cogs-audit.md`: scoped as Phase A — rerun all 17 existing audits fresh (dated status report, no deep drift investigation unless trivially explained), plus mocked (not live) forced-failure unit tests for the 5 identified sequential-write paths, each ending in a 3-way classification (safe-by-design / narrow-gap / needs-atomic-rpc). Explicitly deferred any new atomic RPC or fix to a separately reviewed Phase B, and explicitly required a test reproducing the specific `voidOrderV2` gap found.
+- `docs/ROADMAP.md` updated: Gate 4 Phase A added to P1, pending-prompts list and change log updated.
+
+Commit: pending.
+
+
 ## 2026-07-19 (Claude) - Gate 3 Phase A Reviewed and Closed
 
 **Trigger:** Codex reported Gate 3 Phase A complete (commit `a17b0e7`) and requested Claude review.
