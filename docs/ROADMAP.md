@@ -39,13 +39,13 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| [!] **Gate 2 Remediation Wave 1 — POS system-actor gaps + Edge Function signature + stock-adjustment policy** | Codex | `app/pos/actions.ts` (`submitOrderV2`, `savePOSDraft`, `deletePOSDraft`, `getPOSDrafts`); `supabase/functions/user-admin/index.ts` service-role token check; `app/admin/inventory/actions.ts` `submitStockAdjustment` | 2026-07-18 | Implemented locally and awaiting Claude review. All four POS actions now reject anonymous callers, CLI SYSTEM remains explicit, stock-adjustment submission is ADMIN-only, and `/user-admin/migrate` requires the exact runtime service key. No deployment or production write. |
+| (none) | — | — | — | Gate 2 Remediation Wave 1 closed and reviewed 2026-07-18. See `COMPLETED.md`. |
 
 ### P1 — Next up (high impact, unblocked)
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| [ ] **Gate 2 Remediation Wave 2 — 20 unguarded admin read actions** | Codex | 15 files under `app/admin/**/actions.ts`, see handoff for full list | Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md`. Mechanical guard-add wave; lower risk than Wave 1 (read-only). |
+| [ ] **Gate 2 Remediation Wave 2 — 20 unguarded admin read actions** | Codex | 15 files under `app/admin/**/actions.ts`, see handoff for full list | Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md`. Mechanical guard-add wave; lower risk than Wave 1 (read-only). Ready for pickup — Wave 1 closed clean, independently reran the access-audit tool: 0 mutation findings, 61 guarded, 20 `UNGUARDED_READ` unchanged (this wave's exact scope). |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
@@ -122,7 +122,7 @@ records intent and order, not authorization to start.
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
 - `2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md` → UI-REMED-1 visual smoke test — historical reference, work complete and Claude-reviewed (commit `2cabde9`)
-- `2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md` → Gate 2 Remediation Wave 1 — ready for Codex pickup, P0
+- `2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md` → Gate 2 Remediation Wave 1 — historical reference, work complete and Claude-reviewed (commits `5c4a01b`, `a1ace53`)
 - `2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` → Gate 2 Remediation Wave 2 — ready for Codex pickup, P1
 - `2026-07-18-codex-gate2-access-map.md` → Full audit Gate 2 — historical reference, work complete and Claude-reviewed (commits `3570da0`, `f14b092`)
 - `2026-07-17-codex-gate1-p0-security-exposures.md` → Full audit Gate 1 — historical reference, work complete and Claude-reviewed (commits `dd2f970`, `57d298a`, `9a8ee66`)
@@ -166,6 +166,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-18 Claude: Gate 2 Remediation Wave 1 reviewed and closed (commits `5c4a01b`, `a1ace53`). Read every diff line: `resolveActor()` correctly rejects unauthenticated POS calls while keeping CLI_MODE's env-controlled (not client-spoofable) SYSTEM path and still accepting any authenticated role (STAFF preserved for POS); `submitStockAdjustment` now `requireAdmin()`-gated per the owner's policy decision, dead PENDING branching removed; the Edge Function's JWT-payload-decode replaced with a constant-time comparison against the real runtime service key, matching the pattern already used by `backup-to-drive`. Read all 3 new test files (rejection-before-mutation, STAFF-rejected/ADMIN-succeeds, forged-JWT-rejected/real-key-accepted). Independently reran the suite (430/430), TypeScript (clean), and the access-audit tool itself (0 mutation findings, 61 guarded, 20 `UNGUARDED_READ` unchanged — exact Wave 2 scope). Wave 2 unblocked for pickup.
 - 2026-07-18 Claude: reviewed Antigravity's UI-REMED-1 visual smoke test commit (`2cabde9`) independently rather than trusting the self-report — read all 10 file diffs (Alert/Badge/Button/LoadingButton primitives, POSScreen toasts/modals, login/settings-password error states, ModifierForm, ActivityLogClient, SemiProductsClient), confirmed every change is a semantically-equivalent raw-color-to-token swap with no logic change, including a genuine typo catch (`bg-primary-soft0`, an invalid class, silently rendering no background). Independently reran the suite (422/422) and production build (success) rather than trusting the claims. Approved and moved to `COMPLETED.md`.
 - 2026-07-18 Claude: owner resolved SEC-5 — `submitStockAdjustment` is being locked to ADMIN (stock adjustment is manager/admin responsibility, not staff). Folded into Wave 1 handoff before Codex picked it up, removed from Blocked. Also corrected Antigravity's own "(verified)" self-report on the UI-REMED-1 visual smoke test to `[!]` pending Claude review — a self-report isn't a completed second-party review, same principle as the scripts/ self-review rule.
 - 2026-07-18 Claude: Gate 2 reviewed and closed (commits `3570da0`, `f14b092`). Independently reran the suite (422/422) and TypeScript (clean), then directly read source for the 4 highest-risk claims before trusting them — confirmed the POS SYSTEM-actor fallback, the zero-guard `deletePOSDraft`/`getPOSDrafts`, the `submitStockAdjustment` PENDING-vs-approved distinction, and the Edge Function's unsigned service-role JWT check all hold up exactly as reported. Split the 25 findings into 2 scoped remediation waves (P0: POS + Edge Function signature; P1: 20 admin-read guards) rather than one big unreviewed fix. Flagged `submitStockAdjustment`'s policy as a genuine business decision (changes who can currently do what, not just security posture) rather than letting Codex decide unilaterally. Flagged Edge Function deployment-config verification as needing dashboard access, not a code task.

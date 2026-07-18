@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Claude) - Gate 2 Remediation Wave 1 Reviewed and Closed
+
+**Trigger:** Codex reported Wave 1 complete across 2 commits and requested Claude review.
+
+### Review Performed
+
+- Confirmed commit scope: `5c4a01b` (POS + stock-adjustment) and `a1ace53` (Edge Function + docs) touch only the files named in the Wave 1 handoff, plus new test files and doc updates.
+- **POS actions:** read the full `app/pos/actions.ts` diff. All 4 functions (`submitOrderV2`, `getPOSDrafts`, `savePOSDraft`, `deletePOSDraft`) switched from a bare `getServerSession()`-for-actor-fallback pattern to `resolveActor()`, which rejects any call without a real session. Read `resolveActor()` in `lib/auth.ts` directly: `CLI_MODE` returns the SYSTEM actor immediately via an env-var check (not client-controllable), otherwise requires a real session and accepts any authenticated role — confirmed this does not accidentally lock POS actions to ADMIN, preserving cashier/STAFF access as required.
+- **Stock adjustment:** read the `submitStockAdjustment` diff. Switched from `resolveActor()` to `requireAdmin()` per the owner's 2026-07-18 policy decision. The now-unreachable `isApproved`/`PENDING` branching was correctly removed rather than left as dead code — every successful call is now from an ADMIN and always auto-approves with an immediate ledger write.
+- **Edge Function:** read the `supabase/functions/user-admin/index.ts` and new `service-role-token.ts` diff. The old `_isServiceRole()` (JWT-payload decode, no signature check) was replaced with `isServiceRoleToken()`, a constant-time XOR-accumulation comparison against the actual runtime `SUPABASE_SERVICE_ROLE_KEY` — matching the existing pattern already used by `backup-to-drive`'s `X-Backup-Token` check, not an invented approach.
+- Read all 3 new test files: `app/pos/actions.auth.test.ts` (rejection-before-mutation for all 4 POS functions, plus a test proving the CLI SYSTEM path still works for legitimate script callers), `app/admin/inventory/actions.auth.test.ts` (STAFF rejected before any write, ADMIN succeeds with immediate ledger write), `lib/user-admin-security-contract.test.ts` (a forged token with a base64-encoded `{"role":"service_role"}` payload is rejected; the real service-role key is accepted).
+- Independently reran `npx vitest run`: 73 files, 430/430 pass (matches claim, up from 422). Independently reran `npx tsc --noEmit`: 0 errors. Independently reran `git diff --check`: clean.
+- Independently reran `scripts/audit-admin-action-auth.ts --json` (the Gate 2 tool itself) and parsed the output: 61 `GUARDED` actions, 20 `UNGUARDED_READ` — 0 remaining mutation findings, and the 20 reads exactly match Wave 2's untouched scope. This is the cleanest possible proof the wave actually closed what it claimed.
+- Reviewed the `docs/FEATURE-CATALOG.md` diff: surgical, matching only the 6 directly affected records (`AUTH-SESSION-AUTHZ`, `POS-CHECKOUT`, `POS-DRAFTS`, `INV-STOCK-ADJUSTMENT`, `USR-ADMIN`, `USR-ROLE-ENFORCEMENT`), conservative status choices preserved (no premature jump to `LIVE_VERIFIED`).
+
+### Outcome
+
+- Wave 1 approved and closed. `docs/COMPLETED.md` updated with full verification summary.
+- `docs/ROADMAP.md`: P0 cleared. Wave 2 (`docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md`) confirmed unblocked and ready for pickup.
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-18 (Codex) - Gate 2 Remediation Wave 1 Implemented, Awaiting Review
 
 **Outcome:** Closed the approved high-risk local access gaps without deployment or production data changes.
