@@ -1,69 +1,55 @@
-'use server';
+"use server";
 
-import { getSheetData, sheets, SPREADSHEET_ID } from "@/lib/sheets";
-import { hashPasswordSHA256 } from "@/lib/crypto";
+import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { getSupabaseClient } from "@/lib/supabase";
+
+const PASSWORD_SALT_ROUNDS = 10;
 
 export async function changePasswordAction(oldPassword: string, newPassword: string) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session?.user) {
       return { success: false, error: "Bạn chưa đăng nhập" };
     }
 
-    const username = (session.user as any).username;
-    
-    // Đọc users sheet
-    const res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `users!A1:Z`,
-    });
-    
-    const rows = res.data.values;
-    if (!rows) return { success: false, error: "Lỗi dữ liệu hệ thống" };
-    
-    const usernameIndex = rows[0].indexOf('username');
-    const passwordHashIndex = rows[0].indexOf('password_hash');
-    
-    if (usernameIndex === -1 || passwordHashIndex === -1) {
-      return { success: false, error: "Lỗi cấu trúc dữ liệu" };
-    }
-    
-    let targetRowIndex = -1;
-    let currentHash = "";
-    
-    for (let i = 1; i < rows.length; i++) {
-      if (rows[i][usernameIndex] === username) {
-        targetRowIndex = i + 1; // 1-based for Sheets API
-        currentHash = rows[i][passwordHashIndex];
-        break;
-      }
-    }
-    
-    if (targetRowIndex === -1) {
+    const userId = (session.user as { id?: string }).id;
+    if (!userId) {
       return { success: false, error: "Không tìm thấy tài khoản" };
     }
 
-    // Xác thực mật khẩu cũ
-    const oldHashInput = hashPasswordSHA256(oldPassword);
-    if (oldHashInput !== currentHash) {
+    const supabase = getSupabaseClient();
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id, password_hash")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (userError) {
+      console.error("Change password user lookup error:", userError);
+      return { success: false, error: "Lỗi hệ thống" };
+    }
+
+    if (!user) {
+      return { success: false, error: "Không tìm thấy tài khoản" };
+    }
+
+    const passwordMatches = await bcrypt.compare(oldPassword, user.password_hash);
+    if (!passwordMatches) {
       return { success: false, error: "Mật khẩu cũ không chính xác" };
     }
 
-    // Cập nhật mật khẩu mới
-    const newHash = hashPasswordSHA256(newPassword);
-    const columnLetter = String.fromCharCode(65 + passwordHashIndex);
-    const range = `users!${columnLetter}${targetRowIndex}`;
-    
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: range,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [[newHash]]
-      }
-    });
+    const passwordHash = await bcrypt.hash(newPassword, PASSWORD_SALT_ROUNDS);
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ password_hash: passwordHash })
+      .eq("id", userId);
+
+    if (updateError) {
+      console.error("Change password update error:", updateError);
+      return { success: false, error: "Lỗi hệ thống" };
+    }
 
     return { success: true };
   } catch (error) {
