@@ -23,6 +23,9 @@ export async function getModifiersData(): Promise<{
   semiProducts: DBSemiProduct[];
   units: DBUnit[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [modifiers, recipes, baseIngredients, semiProducts, allUnits] = await Promise.all([
       findAll(MODIFIER_SHEET) as Promise<DBModifier[]>,

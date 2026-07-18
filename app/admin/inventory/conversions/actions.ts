@@ -15,6 +15,9 @@ export async function getConversionsData(): Promise<{
   conversions: DBUOMConversion[];
   units: DBUnit[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [baseIngredients, items, conversions, allUnits] = await Promise.all([
       findAll("Base_Ingredients") as Promise<DBBaseIngredient[]>,

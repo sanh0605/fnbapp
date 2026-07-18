@@ -8,6 +8,9 @@ const SHEET = "Brands";
 const PATH = "/admin/brands";
 
 export async function getBrands() {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     return await findAll(SHEET);
   } catch (error) {

@@ -30,7 +30,7 @@ vi.mock("next/cache", () => ({
   unstable_cache: mocks.unstableCache,
 }));
 
-import { submitStockAdjustment } from "./actions";
+import { getRealtimeStock, submitStockAdjustment } from "./actions";
 
 describe("stock adjustment authorization", () => {
   beforeEach(() => {
@@ -97,5 +97,15 @@ describe("stock adjustment authorization", () => {
         transaction_type: "STOCK_ADJUST",
       }),
     );
+  });
+
+  it("rejects an unauthenticated realtime-stock read before loading data", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
+    mocks.findAll.mockResolvedValue([]);
+    mocks.findAllNoCache.mockResolvedValue([]);
+
+    await expect(getRealtimeStock()).rejects.toThrow("Yêu cầu đăng nhập");
+    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 });

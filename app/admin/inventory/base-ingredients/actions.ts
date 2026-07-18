@@ -13,6 +13,9 @@ export async function getBaseIngredientsData(): Promise<{
   ingredients: DBBaseIngredient[];
   units: DBUnit[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [ingredients, allUnits] = await Promise.all([
       findAll(SHEET) as Promise<DBBaseIngredient[]>,

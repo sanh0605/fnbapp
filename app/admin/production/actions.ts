@@ -16,6 +16,9 @@ export async function getProductionData(): Promise<{
   baseIngredients: DBBaseIngredient[];
   units: DBUnit[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [orders, productionItems, semiProducts, recipes, baseIngredients, allUnits] = await Promise.all([
       findAll("Production_Orders") as Promise<DBProductionOrder[]>,

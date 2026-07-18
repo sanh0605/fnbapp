@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findAllMock = vi.fn();
+const requireAdminMock = vi.fn();
 
 vi.mock("@/lib/sheets_db", () => ({
   findAll: findAllMock,
@@ -15,12 +16,25 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/auth", () => ({
-  requireAdmin: vi.fn(),
+  requireAdmin: requireAdminMock,
 }));
 
 describe("admin user client payloads", () => {
   beforeEach(() => {
     findAllMock.mockReset();
+    requireAdminMock.mockReset();
+    requireAdminMock.mockResolvedValue({
+      ok: true,
+      actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
+    });
+  });
+
+  it("rejects an unauthenticated user read before loading credential rows", async () => {
+    const { getUsers } = await import("./actions");
+    requireAdminMock.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
+
+    await expect(getUsers()).rejects.toThrow("Yêu cầu đăng nhập");
+    expect(findAllMock).not.toHaveBeenCalled();
   });
 
   it("projects user lists to the fields required by the client", async () => {

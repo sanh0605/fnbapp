@@ -23,6 +23,9 @@ function toClientUser(user: DBUserRow): DBUser {
 }
 
 export async function getUsers(): Promise<DBUser[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const users = await findAll(SHEET) as DBUserRow[];
     return users.map(toClientUser);
@@ -33,6 +36,9 @@ export async function getUsers(): Promise<DBUser[]> {
 }
 
 export async function getUserById(id: string): Promise<DBUser | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const users = await findAll(SHEET) as DBUserRow[];
     const user = users.find(candidate => candidate.id === id);

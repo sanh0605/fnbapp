@@ -411,7 +411,7 @@ export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
 }
 
 // --- STOCK (Tồn kho) ---
-export const getRealtimeStock = unstable_cache(
+const loadRealtimeStock = unstable_cache(
   async () => {
     const [stockLedger, baseIngredients, semiProducts, units] = await Promise.all([
       findAllNoCache("Stock_Ledger"),
@@ -453,6 +453,12 @@ export const getRealtimeStock = unstable_cache(
   ["realtime-stock-all"],
   { revalidate: 60, tags: ["sheets-Stock_Ledger", "sheets-Base_Ingredients", "sheets-Semi_Products", "sheets-Units"] }
 );
+
+export async function getRealtimeStock() {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+  return loadRealtimeStock();
+}
 
 export async function submitStockAdjustment(data: any, _clientRole?: string, _clientUsername?: string): Promise<ActionResponse> {
   try {

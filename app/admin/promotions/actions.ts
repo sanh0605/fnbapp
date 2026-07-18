@@ -16,6 +16,9 @@ export async function getPromotionsData(): Promise<{
   variants: DBProductVariant[];
   categories: DBProductCategory[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [promotions, brands, products, variants, categories] = await Promise.all([
       findAll(SHEET) as Promise<DBPromotion[]>,

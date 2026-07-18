@@ -15,6 +15,9 @@ export async function getSemiProductsData(): Promise<{
   baseIngredients: DBBaseIngredient[];
   units: DBUnit[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [semiProducts, recipes, baseIngredients, allUnits] = await Promise.all([
       findAll(SP_SHEET) as Promise<DBSemiProduct[]>,

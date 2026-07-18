@@ -16,6 +16,9 @@ export async function getItemsData(): Promise<{
   conversions: DBUOMConversion[];
   units: DBUnit[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [categories, baseIngredients, items, conversions, allUnits] = await Promise.all([
       findAll("Item_Categories") as Promise<DBItemCategory[]>,

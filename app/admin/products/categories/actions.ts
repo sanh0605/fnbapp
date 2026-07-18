@@ -13,6 +13,9 @@ export async function getCategoriesWithCounts(): Promise<{
   categories: DBProductCategory[];
   counts: Record<string, number>;
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [categories, products] = await Promise.all([
       findAll(SHEET) as Promise<DBProductCategory[]>,

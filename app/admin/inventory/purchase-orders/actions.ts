@@ -14,6 +14,9 @@ export async function getPurchaseOrdersData(): Promise<{
   orders: DBPurchaseOrder[];
   suppliers: DBSupplier[];
 }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [orders, suppliers] = await Promise.all([
       findAll("Purchase_Orders") as Promise<DBPurchaseOrder[]>,

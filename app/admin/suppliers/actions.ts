@@ -10,6 +10,9 @@ const SHEET = "Suppliers";
 const PATH = "/admin/suppliers";
 
 export async function getSuppliers(): Promise<DBSupplier[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     return await findAll(SHEET) as DBSupplier[];
   } catch (error) {
