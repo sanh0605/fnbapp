@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - voidOrderV2 Stop-Gate Reviewed; Continue Evidence Collection Decision
+
+**Trigger:** Codex committed the `voidOrderV2` forced-failure test (commit `15e3889`) and found a gap broader than the handoff anticipated, then paused per Gate 4's stop-and-ping trigger for "a path can silently duplicate a financial/inventory write."
+
+### Review Performed
+
+- Confirmed commit scope: 1 new test file (`app/admin/orders/actions.failure.test.ts`) + 1 new stop-gate report — no application code changed.
+- Read `docs/audits/2026-07-19-gate4-item2-void-order-stop-gate.md` and the test file in full. The test invokes the real `voidOrderV2` function (not a reimplementation) against an in-memory mock of the `sheets_db` boundary, injecting a failure at each of its 3 sequential write steps (reversal ledger insert → VOIDED event insert → order status update).
+- Confirmed the 3-row failure matrix directly from the test assertions: failing before any write is safe (clean retry); failing after the reversal but before the event write means a retry succeeds but writes a **second** reversal batch (test explicitly asserts `reversalRows` grows from 1 to 2 across the failed-then-retried call sequence) — a genuine silent duplicate inventory mutation; failing after the event but before the status update leaves the order stuck at `COMPLETED` with retry blocked by the event-based idempotency guard (the gap originally anticipated in the handoff, now confirmed).
+- Independently reran `npx vitest run app/admin/orders/actions.failure.test.ts`: 3/3 pass. Independently reran the full suite: 77 files, 453/453 pass (matches claim). Independently reran `npx tsc --noEmit`: 0 errors.
+
+### Decision
+
+- Classified `voidOrderV2` as `needs-atomic-rpc` (the report's own conclusion, verified) rather than the anticipated `narrow-gap` — a real data-integrity risk, but conditional on a specific mid-request failure landing in a specific window; no evidence this has occurred in production, this is proactive discovery via testing.
+- Decided **not** to open remediation immediately. Reasoning: `supersedeOrderV2` (order edit) uses a structurally similar sequential-write pattern *without* even `voidOrderV2`'s partial fail-safe ordering (confirmed earlier when Gate 4 was scoped — its own header says "Not a true transaction"), so it likely has the same or a worse gap. Finishing evidence collection across all 5 Item-2 paths first means Phase B remediation can be scoped as one coherent atomic-RPC effort (matching the `create_pos_order_atomic`/`save_purchase_order_atomic` pattern already used elsewhere) instead of fixing paths one at a time as each is separately discovered.
+- Added `2a` to the Gate 4 handoff documenting this decision and its reasoning, and tightened the stop-and-ping condition for the remaining 4 paths (flag again only if something *broader* than `voidOrderV2`'s gap surfaces).
+- `docs/ROADMAP.md`: logged `G4-B1` (P1) in the P2 backlog with full evidence, updated the Gate 4 P1 row to reflect 1-of-5 Item-2 paths tested.
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - Gate 4 Item 1 + 1a Reviewed; ING-003 Stop-Gate Resolved
 
 **Trigger:** Codex committed Gate 4 Item 1 (correctness baseline rerun) + Item 1a (MAC drift 12-line classification), then hit a second stop-gate (new negative stock on `ING-003`) and paused before Item 2, asking Claude to decide.

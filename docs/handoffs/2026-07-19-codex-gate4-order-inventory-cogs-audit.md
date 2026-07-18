@@ -107,6 +107,36 @@ no stored-value risk, say so with evidence and this addendum is done; if it
 reveals something new or larger than 12 lines/±10 VND, stop and flag rather
 than continuing Gate 4's other items.
 
+### 2a. Claude decision on the `voidOrderV2` stop-gate (2026-07-19)
+
+`voidOrderV2`'s forced-failure test (`app/admin/orders/actions.failure.test.ts`,
+commit `15e3889`) confirmed a real, previously-unknown gap broader than the
+"narrow-gap" the handoff anticipated: if the reversal batch succeeds but the
+VOIDED event insert fails, an operator retry silently writes the stock
+reversal a **second time** — not just the already-known stuck-COMPLETED
+window. Claude independently reran the test and the full suite (453/453) to
+confirm before deciding.
+
+Decision: **continue evidence collection on the remaining 4 paths, do not
+open remediation yet.** Reasoning: the trigger requires a real mid-request
+failure landing in a specific narrow window — there's no evidence this has
+happened in production, this is proactive discovery, not an active
+incident. `supersedeOrderV2` (order edit) uses a structurally similar
+sequential-write pattern *without* even `voidOrderV2`'s deliberate
+fail-safe ordering, so it may have the same or a worse gap — finishing the
+picture across all 5 paths first means Phase B can be scoped as one
+coherent atomic-RPC remediation effort (matching the
+`create_pos_order_atomic`/`save_purchase_order_atomic` pattern) instead of
+fixing paths one at a time as each is discovered.
+
+Classify `voidOrderV2` as `needs-atomic-rpc`, P1 (real data-integrity risk,
+conditional on a failure occurring — not an open/exploitable P0 like the
+Gate 1 auth gaps were), in the final report. Continue to the remaining 4
+paths under the same rules as before: mocked tests only, no fix, and the
+same stop-and-ping trigger applies if any of them shows something *broader*
+than `voidOrderV2`'s (e.g., a duplicate that isn't retry-gated at all, or a
+path with no idempotency guard whatsoever).
+
 ### 2. Forced-failure testing for 5 sequential-write paths
 
 For each of `supersedeOrderV2` (order edit), `voidOrderV2`, `saveProductionOrder`,
