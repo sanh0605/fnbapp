@@ -4,6 +4,117 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 4 Phase B Closed: Paths 3-5 Reviewed and Approved, All 5 Paths Now Atomic
+
+**Trigger:** Codex committed the final 3 paths of Gate 4 Phase B in separate commits — `576572b` (stock adjustments, migration `0019`), `22823ce` (`supersedeOrderV2`, migration `0020`), `016bed6` (`saveProduct`, migration `0021`) — completing all 5 Phase B paths, and reported final verification (491/491 tests, TS clean, migrations 0001-0021 synced local/remote, product audit 0 orphans/0 multi-active-recipes, stock unchanged, frozen baseline hash unchanged, no push/merge).
+
+### Path 3 review (stock adjustments)
+
+- Read migration `0019_atomic_stock_adjustments.sql` in full: `alter table ... add column if not exists` adds the 5 approved columns, then `submit_stock_adjustment_atomic` (insert adjustment + ledger in one transaction) and `approve_stock_adjustment_atomic` (row-locks the adjustment, guards on "does a matching `STOCK_ADJUST` ledger row already exist" — the completion condition requested in handoff section 3a — returns idempotently if already complete, raises on any inconsistent partial state instead of guessing).
+- Confirmed `approve_stock_adjustment_atomic` correctly handles both entry paths flagged in 3a: rows already `APPROVED` with a matching ledger row (idempotent no-op), rows `APPROVED` without a ledger row (repairs it), and explicitly rejects re-approving a `REJECTED` row.
+- Read the updated `app/admin/inventory/actions.ts`/`actions.failure.test.ts`: both entry points now delegate to the RPC wrapper (`lib/stock-adjustment-transaction.ts`), test asserts fixed retry-safe behavior.
+
+### Path 4 review (`supersedeOrderV2`)
+
+- Read migration `0020_atomic_supersede_order.sql` in full (294 lines, the most structurally complex of the 5, matching the handoff's own warning). Row-locks the old order, re-validates the optimistic-lock version inside the transaction (not just in TypeScript beforehand), validates the new order/lines/event/ledger cross-references extensively (event's version chain, ledger rows' `order_event_id` and transaction-type-specific sign/reference checks), then does old-order status update + new-order insert + lines insert + event insert + ledger insert as one transaction.
+- Confirmed the fix is safe-by-design even without an explicit idempotency return-path: a retry after a crash-after-commit would find the old order's status already `SUPERSEDED` (not `COMPLETED`) and cleanly reject with a clear error rather than duplicating — acceptable given a partial state is no longer possible at all (the previous bug was specifically about partial states, which the transaction eliminates).
+
+### Path 5 review (`saveProduct`)
+
+- Read migration `0021_atomic_product_save.sql` in full (300 lines). Confirmed the decisive Phase A finding is fixed at the SQL level: the variant price update and the `product_price_history` insert happen inside the same transaction block (lines ~161-191), so the previous "price changes, history insert fails silently" gap is now structurally impossible, not just retried-around.
+- Confirmed recipe handling re-validates state at write time inside the transaction (e.g. `CREATE_INITIAL` raises if a concurrent write already created an active recipe, `CREATE_VERSION`/`UNCHANGED` re-check the active recipe still matches what TypeScript planned) rather than trusting a stale read from before the transaction started.
+- Read `app/admin/products/actions.ts`: recipe-decision planning (reusing the existing, previously-tested `planRecipeSave` helper) and expected-count precomputation stay in TypeScript; the RPC wrapper (`lib/product-save-transaction.ts`) double-checks returned counts against expectations before trusting the result.
+- **Independently ran a live read-only integrity check** against the actual product catalog (42 products, 52 variants, 43 price-history rows, 99 recipes — real production data, unlike paths 2-3's empty tables): 0 orphan variants, 0 orphan price-history rows, 0 orphan recipes, 0 variants with more than one active recipe. Matches Codex's claim exactly.
+
+### Full independent re-verification (final state, all 5 paths)
+
+- `npx vitest run`: 93 files, 491/491 pass (matches claim, up from 483).
+- `npx tsc --noEmit`: 0 errors.
+- `npx supabase migration list`: `0001` through `0021` all show local/remote matching.
+- `scripts/audit-current-stock.ts` rerun live: still exactly 3 negative items (`ING-021`, `ING-024`, `ING-003`) — matches the known baseline, no new negative stock introduced.
+- `scripts/audit-mac-drift-baseline.ts` rerun live: same 12 `NEW_INVESTIGATION_NEEDED`/436 locks/`CLEAN` state as before — the script's own frozen-baseline-SHA-256 assertion didn't throw, confirming the "frozen baseline unchanged" claim independently rather than trusting it.
+- `scripts/audit-void-orders.ts` and `scripts/audit-stock-adjustments.ts` rerun live: both clean (0 mismatches; 10 `SUPERSEDED` orders still show 0 missing reversal, confirming the `supersedeOrderV2` fix didn't disturb existing edited-order data).
+- `git log --oneline main..HEAD` on the branch: 5 commits ahead, not merged; `origin/main` unchanged — confirms "no push/merge" claim.
+
+### Decision
+
+- All 5 paths approved and closed. Gate 4 Phase B is complete: `voidOrderV2`, `saveProductionOrder`, stock adjustment submit/approve, `supersedeOrderV2`, and `saveProduct` are now each backed by a single-transaction Postgres RPC (`0017`-`0021`), matching the `create_pos_order_atomic`/`save_purchase_order_atomic` house style.
+- Branch `codex/gate4-phase-b-atomic-rpcs` and its worktree kept as-is per Codex's report. **Merging this branch into `main` (and any push) is a separate decision, not yet made** — this review only closes the technical verification; a human ships/merge decision was not implied by the review itself.
+- No code changed by Claude during this review; all verification was read-only.
+
+Commit: pending (docs-only; Codex's 5 commits remain on the unmerged branch).
+
+
+## 2026-07-19 (Claude) - Phase B Path 2 (saveProductionOrder) Reviewed and Approved; Path 3 Schema Stop-Gate Resolved
+
+**Trigger:** Codex committed Path 2 of Gate 4 Phase B (`saveProductionOrder` converted to an atomic RPC, commit `31cee7f`, migration `0018_atomic_production_order.sql` applied to production), then hit an analogous stop-gate on Path 3 (`stock_adjustments`): the live table is missing 5 columns (`item_reference`, `theoretical_qty`, `actual_qty`, `difference`, `approved_by`) that the action/UI have always required.
+
+### Path 2 review (`saveProductionOrder`)
+
+- Read the full diff across 11 files: `app/admin/production/actions.ts` now maps form data to the canonical shape approved in handoff section 2a (`target_yield` -> `batch_yield`, `status: "COMPLETED"`, `created_by_id`/`created_by_name` from the session actor instead of the unused client-supplied `user` field) and delegates to `saveProductionOrderAtomic()` (`lib/production-order-transaction.ts`) -> `save_production_order_atomic` RPC.
+- Read `supabase/migrations/0018_atomic_production_order.sql` in full: validates `p_items`/`p_ledger` cross-consistency both directions (every consumed ingredient has exactly one matching `PRODUCTION_CONSUME` row and vice versa, exactly one `PRODUCTION_YIELD` row matching the batch), advisory-locks 3 ID sequences before generating IDs, single transaction for the order/items/ledger inserts, same `service_role`-only grant pattern.
+- Confirmed `types/db.ts` was updated to rename `target_yield` -> `batch_yield` (Codex's implementation choice within the freedom the handoff gave), `production_items`'s stale "Joined field" comments removed (those fields never existed on the canonical schema). `app/admin/production/components/ProductionClient.tsx` picked up the 2-line rename this forced — a mechanical, in-scope UI touch under the cross-scope exception, not a design change.
+- Confirmed `scripts/audit-production-stock.ts` was rewritten (not just renamed) per the handoff's guidance: produced quantity now sums `production_orders.batch_yield` grouped by `semi_product_id` where `status = 'COMPLETED'` (new `lib/production-stock-audit.ts`, unit-tested), replacing the old `production_items.qty_produced` read that never matched the canonical schema.
+- **Independently checked out the branch and reran everything**: `npx vitest run` — 86 files, 483/483 pass (matches claim, up from 480). `npx tsc --noEmit` — 0 errors. `npx supabase migration list` — `0018` applied both local and remote. `npx vite-node scripts/audit-production-stock.ts` against the live database — 0 production orders/items (matches: this is a code/RPC fix only, no backfill), 5 yield mismatches — cross-checked against `docs/audits/2026-07-19-gate4-correctness-baseline.md` line 44 and confirmed this is the exact same pre-existing `HISTORICAL/SEMANTIC GAP` already logged before this fix, not new drift caused by it. `npx vite-node scripts/audit-mac-drift-baseline.ts` completed without throwing — the script itself asserts the frozen baseline artifact's SHA-256 matches an approved constant and throws on mismatch, so a clean run is itself the verification of Codex's "frozen baseline unchanged" claim; output matched the known 12 `NEW_INVESTIGATION_NEEDED`/436-lock/`CLEAN` state exactly.
+- Approved. Path 2 is closed.
+
+### Path 3 stop-gate (`stock_adjustments`) — schema semantics decision
+
+- Independently queried the live database directly (same method as path 2's stop-gate). Confirmed: live `stock_adjustments` has exactly `id, reason, created_by_id, created_by_name, status, created_at, approved_at, notes` — missing precisely the 5 columns Codex named. 0 rows in production, so (same as `saveProductionOrder`) this write path has never completed a live insert either.
+- Traced the gap to `0001_init_schema.sql` itself (not later drift) — the initial schema for this table was simply incomplete relative to what the action/UI have always sent.
+- Decision: approved Codex's proposed migration `0019` (5 new columns + 2 atomic RPCs in one migration) with one addition written into the handoff addendum (section 3a): make sure `approved_by`'s nullability and both RPCs' guards correctly handle both entry paths — rows created already-`APPROVED` (`submitStockAdjustment`, current UI flow per the 2026-07-18 SEC-5 policy) and rows created `PENDING` then separately approved (`approveStockAdjustment`) — not just the one path the UI currently exercises.
+- Flagged to Codex (and to the user) that this is the second schema-completeness gap found in one afternoon (both on 0-row tables) — worth checking the remaining 2 paths' live schemas early rather than assuming `0001_init_schema.sql` is complete for them.
+- Decided as a technical correctness question, not escalated — same reasoning as path 2 (no legacy data, no user-visible tradeoff).
+
+Commit: pending (docs-only; Codex's commits `c6c61b7`/`31cee7f` remain on branch `codex/gate4-phase-b-atomic-rpcs`, not yet merged to `main`).
+
+
+## 2026-07-19 (Claude) - Phase B Path 1 (voidOrderV2) Reviewed and Approved; Path 2 Schema Stop-Gate Resolved
+
+**Trigger:** Codex committed Path 1 of Gate 4 Phase B (`voidOrderV2` converted to an atomic RPC, commit `c6c61b7` on branch `codex/gate4-phase-b-atomic-rpcs`, migration `0017_atomic_void_order.sql` applied to production), then hit a stop-gate on Path 2 (`saveProductionOrder`): the current code writes columns (`apply_date`, `qty_produced`, `total_cost`) that don't exist on the live schema at all, and asked Claude to approve a canonical-schema mapping before proceeding.
+
+### Path 1 review (`voidOrderV2`)
+
+- Read the full diff: `app/admin/orders/actions.ts` now delegates to `voidOrderAtomic()` (`lib/void-order-transaction.ts`), which calls the new `void_order_atomic` Postgres RPC instead of 3 sequential `sheets_db` calls.
+- Read `supabase/migrations/0017_atomic_void_order.sql` in full: single `security definer` plpgsql function, `select ... for update` row lock on `orders_v2` before any write (prevents concurrent double-void races), an explicit `already_voided` idempotency branch that returns the existing reversal count without re-inserting, an explicit rejection of the previously-broken "event/reversal exists but status isn't VOIDED" state (surfaces the old bug loudly instead of silently doing something wrong), and the same `revoke ... grant to service_role` pattern as the existing atomic RPCs.
+- Read the updated `app/admin/orders/actions.failure.test.ts`: now asserts the *fixed* behavior (a rejected RPC call permits a clean retry with zero direct `insert`/`insertMany`/`update` calls, an already-voided retry delegates to the RPC's own idempotency guard, a non-voidable status is rejected before the RPC is even called) rather than the old broken-behavior assertions — correctly flipped per the Phase B handoff's requirement, not just deleted.
+- **Independently checked out the branch in its existing worktree (`C:/tmp/fnbapp-gate4-phase-b`) and reran everything myself**: `npx vitest run` — 83 files, 480/480 pass (matches claim, up from 474). `npx tsc --noEmit` — 0 errors. `npx supabase migration list` — local and remote both show `0017` applied, matching. `npx vite-node scripts/audit-void-orders.ts` against the live database — 0 reversal mismatches, 0 missing VOIDED events, 0 orphaned reversals across 11 live VOIDED orders and 10 SUPERSEDED orders; script confirmed read-only ("No data was written").
+- Approved. Path 1 is closed.
+
+### Path 2 stop-gate (`saveProductionOrder`) — schema semantics decision
+
+- Independently queried the live database directly (Supabase Management API read-only endpoint, same method used for Gate 3) rather than trusting either side's description of the schema. Confirmed: live `production_orders`/`production_items` exactly match the schema Codex proposed as "canonical" and have matched it since `0001_init_schema.sql` — this was never in dispute, it's what already exists. **Both tables have 0 rows in production** — proof `saveProductionOrder` has never completed a live write against this schema; the columns it currently sends (`apply_date`, `qty_produced`, `total_cost`) don't exist on the live tables, so every real call must already error out today.
+- Cross-checked two more signals confirming canonical is the intended target, not a new design choice: `types/db.ts`'s `DBProductionOrder`/`DBProductionItem` already declare canonical-shaped fields (`semi_product_id`, `status`, `ingredient_id`, `ingredient_type`, `quantity`, `unit_id`), and `ProductionForm.tsx` already tags every consumed ingredient line with `ingredient_type` — the UI and type layer already assume canonical, only the write path lagged.
+- Decision: approved Codex's canonical mapping as-is, with 3 additions written into the handoff addendum (`docs/handoffs/2026-07-19-codex-gate4-phase-b-atomic-rpc-remediation.md` section 2a): (1) keep `target_yield` as the form-facing name, just map it to the `batch_yield` column at the RPC boundary, no need to rename the public field; (2) `scripts/audit-production-stock.ts` needs a logic rewrite, not a rename — produced quantity moves from `production_items.qty_produced` (doesn't exist under canonical) to `production_orders.batch_yield` summed per `semi_product_id` where `status = 'COMPLETED'`; (3) set `status = 'COMPLETED'`/`completed_at = now()` at creation since the current flow completes the whole batch synchronously in one call, there's no separate approval step.
+- This was decided as a technical correctness question, not escalated to the business owner — there is no legacy data to weigh a tradeoff against (0 rows) and no behavior change a user would perceive except the feature starting to actually work.
+- No code changed by Claude. Codex cleared to continue Path 2 under this mapping, then Paths 3-5.
+
+Commit: pending (docs-only; Codex's Path 1 commit `c6c61b7` remains on branch `codex/gate4-phase-b-atomic-rpcs`, not yet merged to `main`).
+
+
+## 2026-07-19 (Claude) - Gate 4 Item 2 Closed; All 5 Paths Classified needs-atomic-rpc
+
+**Trigger:** Codex committed the final 2 Item-2 paths (`saveProduct`, stock adjustment submit/approve) plus the Gate 4 Item 2 final classification report (commit `159b7c9`), completing all 5 sequential-write paths scoped in the handoff.
+
+### Review Performed
+
+- Confirmed commit scope: 2 new test files (`app/admin/products/actions.failure.test.ts`, `app/admin/inventory/actions.failure.test.ts`) + 1 new final report, no application code changed.
+- Read `docs/audits/2026-07-19-gate4-item2-forced-failure-final-report.md` in full.
+- Read both new test files in full (11 tests total, all calling the real `saveProduct`/`submitStockAdjustment`/`approveStockAdjustment` against a stateful in-memory mock, not a reimplementation).
+- Cross-checked the report's write-order claims directly against `app/admin/products/actions.ts` and `app/admin/inventory/actions.ts` source: confirmed `saveProduct`'s create path is generateId -> insert Product -> insert Variant -> insert Price History -> insert Recipe (matches the 4 forced-failure positions tested); confirmed `submitStockAdjustment` inserts an already-`APPROVED` adjustment row before its ledger row, and `approveStockAdjustment` updates status to `APPROVED` before inserting the ledger row, with the exact guard (`if (adj.status === "APPROVED") return fail("Phiếu đã được duyệt")`) that blocks a retry after a ledger-insert failure, leaving a durable stuck state with no ledger effect.
+- Confirmed the decisive `saveProduct` edit-path finding directly from the test: a price update that succeeds followed by a price-history insert failure leaves the new price visible with no history row; retry sees no price change (already applied) and writes no history row either — the audit trail is permanently lost, not just delayed.
+- Independently reran both new test files: 11/11 pass. Independently reran the full suite: 81 files, 474/474 pass (matches claim, up from 463). Independently reran `npx tsc --noEmit`: 0 errors.
+
+### Decision
+
+- Approved the final classification: all 5 Item-2 paths (`voidOrderV2`, `supersedeOrderV2`, `saveProductionOrder`, `saveProduct`, stock adjustment submit/approve) are `needs-atomic-rpc`. Gate 4 Item 2 (and with it, Phase A's Items 1/1a/2/3) is now fully closed.
+- Logged `G4-B4` (`saveProduct`) and `G4-B5` (stock adjustment) in `docs/ROADMAP.md`'s P2 backlog with full evidence; finalized `G4-B3` (`supersedeOrderV2`) from preliminary to final now that Item 2 is complete.
+- Moved the Gate 4 Phase A P1 entry to `docs/COMPLETED.md`. No Phase B remediation authorized yet — that is a scope/investment decision for the business owner now that the full 5-path picture is in, not something to start on review approval alone.
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - Production/Order-Edit Stop-Gate Reviewed; Approved Final 2 Paths
 
 **Trigger:** Codex committed forced-failure tests for `saveProductionOrder` and `supersedeOrderV2` (commit `26b2eb8`), found `saveProductionOrder`'s gap broader than `voidOrderV2`'s, and paused per Item 2a before the final 2 paths.
