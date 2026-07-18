@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 3 Phase A Reviewed and Closed
+
+**Trigger:** Codex reported Gate 3 Phase A complete (commit `a17b0e7`) and requested Claude review.
+
+### Review Performed
+
+- Confirmed commit scope: only docs, 3 new audit scripts, and their tests changed — no application code, no migration, no deployment.
+- Read `docs/audits/2026-07-19-gate3-database-rls-audit.md` in full: no raw-SQL RPC exists live (P0 stop gate cleared); 32/32 public tables RLS-enabled with 0 policies; a publishable-key `users` probe independently confirmed default-deny at the PostgREST boundary; 10 application RPCs are `SECURITY DEFINER`/`postgres`-owned/`service_role`-only; no Supabase key found in a fresh production build's static output. 5 Phase B inputs identified but not fixed (28 tables with unnecessary broad grants, orphaned `next_order_num` function, untracked `rls_auto_enable` event trigger, RPC grant-only security note, 2 stale diagnostic scripts).
+- Read `scripts/audit-gate3-database-security.ts` and its core module: confirmed the script only ever issues `SELECT` queries against `pg_catalog`/`information_schema`-equivalent views via Supabase's Management API read-only endpoint (documented by Supabase as executing under `supabase_read_only_user`), with no write/apply path anywhere in the code.
+- **Independently reran the actual audit script against the live database** (not just read the artifact) — this is the strongest verification possible for a live-evidence claim. Got byte-identical results: 32 public tables, 32 RLS-enabled, 0 policies, 28 tables with `anon`/`authenticated` grants, 16 public functions with 4 executable by `anon`/`authenticated` (`get_my_role`, `next_order_num`, `rls_auto_enable`, `touch_updated_at`), `exec_sql`/`get_table_constraints` both confirmed absent live, raw-SQL stop gate false. Individually verified all 10 named application RPCs: every one showed `anon: false, authenticated: false, service_role: true, securityDefiner: true, owner: postgres` — exact match to the report's table.
+- Reviewed the `docs/ACCESS-MODEL.md` diff: surgical — only Phase 3 checklist items 5 and 9 moved to evidence-backed, items 4/7/10 correctly left open, matching exactly what Gate 3 Phase A was scoped to answer.
+- Independently reran `npx vitest run`: 75 files, 445/445 pass (matches claim, up from 438). Independently reran `npx tsc --noEmit`: 0 errors. Independently reran `npx next build`: success.
+
+### Outcome
+
+- Gate 3 Phase A approved and closed. `docs/COMPLETED.md` updated with full verification summary.
+- `docs/ROADMAP.md`: P1 cleared. Logged the 5 Phase B findings (G3-A4 through G3-A8) as P2 backlog items with individual descriptions and severity — none urgent, no evidence of exploitation, live database changes explicitly deferred to a separately reviewed scope rather than rushed.
+- No code, test, production data, or remote repository changed during this review (the independent script rerun was itself read-only, matching the audit's own guarantee).
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Codex) - Gate 3 Phase A Live Database/RPC/RLS Audit Implemented, Awaiting Review
 
 **Outcome:** Completed the approved read-only live security audit without changing production data or database configuration.
