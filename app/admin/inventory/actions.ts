@@ -4,6 +4,10 @@ import { findAll, findAllNoCache, insert, update, remove, generateNewId } from "
 import { revalidatePath, unstable_cache } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { requireAdmin } from "@/lib/auth";
+import {
+  approveStockAdjustmentAtomic,
+  submitStockAdjustmentAtomic,
+} from "@/lib/stock-adjustment-transaction";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
 export async function addItemCategory(formData: FormData): Promise<ActionResponse> {
@@ -473,10 +477,7 @@ export async function submitStockAdjustment(data: any, _clientRole?: string, _cl
     const username = auth.actor.name;
 
     const nowIso = new Date().toISOString();
-    const id = await generateNewId("Stock_Adjustments", "SADJ");
-    
-    await insert("Stock_Adjustments", {
-      id,
+    await submitStockAdjustmentAtomic({
       item_reference: data.item_id,
       theoretical_qty: data.theoretical_qty,
       actual_qty: data.actual_qty,
@@ -488,17 +489,6 @@ export async function submitStockAdjustment(data: any, _clientRole?: string, _cl
       created_at: nowIso,
       approved_by: username,
       approved_at: nowIso
-    });
-
-    const ledger_id = await generateNewId("Stock_Ledger", "STK");
-    await insert("Stock_Ledger", {
-      id: ledger_id,
-      transaction_type: "STOCK_ADJUST",
-      reference_id: id,
-      item_reference: data.item_id,
-      quantity_change: data.difference,
-      unit_cost: 0,
-      created_at: nowIso
     });
 
     revalidatePath("/admin/inventory/stock");
@@ -515,28 +505,11 @@ export async function approveStockAdjustment(adjustmentId: string, _clientAdminU
     if (!auth.ok) return fail(auth.error);
     const adminUsername = auth.actor.name;
 
-    const adjustments = await findAll("Stock_Adjustments");
-    const adj = adjustments.find((a:any) => a.id === adjustmentId);
-    if (!adj) return fail("Không tìm thấy phiếu điều chỉnh");
-    if (adj.status === "APPROVED") return fail("Phiếu đã được duyệt");
-
     const nowIso = new Date().toISOString();
-    
-    await update("Stock_Adjustments", adjustmentId, {
-      status: "APPROVED",
-      approved_by: adminUsername,
-      approved_at: nowIso
-    });
-
-    const ledger_id = await generateNewId("Stock_Ledger", "STK");
-    await insert("Stock_Ledger", {
-      id: ledger_id,
-      transaction_type: "STOCK_ADJUST",
-      reference_id: adjustmentId,
-      item_reference: adj.item_reference,
-      quantity_change: adj.difference,
-      unit_cost: 0,
-      created_at: nowIso
+    await approveStockAdjustmentAtomic({
+      adjustmentId,
+      approvedBy: adminUsername,
+      approvedAt: nowIso,
     });
 
     revalidatePath("/admin/inventory/stock");
