@@ -1,0 +1,656 @@
+{
+  "generated_at": "2026-07-18T19:07:05.753Z",
+  "mode": "READ_ONLY",
+  "contract": {
+    "database_tables_read": [
+      "Orders_V2",
+      "Order_Lines_V2",
+      "Stock_Ledger",
+      "Recipes",
+      "Semi_Products",
+      "backdated_ledger_events",
+      "Order_Events"
+    ],
+    "database_mutation_methods_used": [],
+    "frozen_input": "docs/audits/2026-07-18-mac-drift-baseline-audit.json",
+    "output_path": "docs/audits/2026-07-19-gate4-mac-drift-12-line-classification.json"
+  },
+  "summary": {
+    "line_count": 12,
+    "total_delta_vnd": 10,
+    "stored_violation_count": 0,
+    "bucket_summary": [
+      {
+        "key": "BACKDATED_LEDGER_LIKE",
+        "line_count": 12,
+        "delta_vnd": 10
+      }
+    ],
+    "mechanism_summary": [
+      {
+        "key": "BACKDATED_LEDGER_VISIBILITY",
+        "line_count": 12,
+        "delta_vnd": 10
+      }
+    ],
+    "exact_stored_reproduction_count": 12,
+    "causal_backdated_line_count": 12,
+    "unresolved_line_count": 0
+  },
+  "lines": [
+    {
+      "line_id": "ol-86734b4a-9925-422e-ad90-501d2c651fea",
+      "order_id": "ord-a6e28d1b-3b4a-494e-abab-180a48b74543",
+      "order_no": "PHD001043",
+      "sale_time": "2026-07-17T01:43:24.193+00:00",
+      "product_id": "PROD-005",
+      "variant_id": "VAR-005",
+      "qty": 1,
+      "stored_cost": 7109,
+      "current_replay_cost": 7307,
+      "delta_vnd": 198,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-005",
+        "NNL-001",
+        "NNL-003"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-003"
+      ],
+      "causal_backdated_event_ids": [
+        "b3b98840-76e7-400d-b2aa-eaf047418998"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "b3b98840-76e7-400d-b2aa-eaf047418998",
+          "stock_ledger_id": "STK-869063f9-7d0c-4ec4-ba95-f20219511bfb",
+          "item_reference": "ING-005",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 7307,
+      "pre_visibility_replay_cost": 7109,
+      "compact_replay_cost": 7307,
+      "sale_recipe_ids": [
+        "RC-025"
+      ],
+      "current_recipe_ids": [
+        "RC-025"
+      ],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-2b7b1244-c9a8-4045-a63d-d98b97ca6d6f",
+      "order_id": "ord-66bdaa52-c95f-472f-8090-ee454b11a060",
+      "order_no": "UCK000504",
+      "sale_time": "2026-07-17T06:00:09.359+00:00",
+      "product_id": "PROD-022",
+      "variant_id": "VAR-029",
+      "qty": 1,
+      "stored_cost": 9645,
+      "current_replay_cost": 9843,
+      "delta_vnd": 198,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-005",
+        "ING-033",
+        "NNL-003"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-003"
+      ],
+      "causal_backdated_event_ids": [
+        "b3b98840-76e7-400d-b2aa-eaf047418998"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "b3b98840-76e7-400d-b2aa-eaf047418998",
+          "stock_ledger_id": "STK-869063f9-7d0c-4ec4-ba95-f20219511bfb",
+          "item_reference": "ING-005",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 9843,
+      "pre_visibility_replay_cost": 9645,
+      "compact_replay_cost": 9843,
+      "sale_recipe_ids": [
+        "RC-025"
+      ],
+      "current_recipe_ids": [
+        "RC-025"
+      ],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-c930bf7e-c1e4-43c6-af15-0904079c0b27",
+      "order_id": "ord-4cf018fb-cbd3-44ba-b747-3b11445c0f6b",
+      "order_no": "UCK000506",
+      "sale_time": "2026-07-17T08:58:06.157+00:00",
+      "product_id": "PROD-017",
+      "variant_id": "VAR-024",
+      "qty": 1,
+      "stored_cost": 8853,
+      "current_replay_cost": 8798,
+      "delta_vnd": -55,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-020",
+        "ING-022",
+        "ING-030",
+        "ING-031",
+        "NNL-003",
+        "NNL-005"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-009"
+      ],
+      "causal_backdated_event_ids": [
+        "e6642f29-a8be-4dbb-8fa1-1e3353372f5c"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "e6642f29-a8be-4dbb-8fa1-1e3353372f5c",
+          "stock_ledger_id": "STK-fbd7c19d-e7ef-4277-a867-30a0ef35fce3",
+          "item_reference": "ING-030",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 8798,
+      "pre_visibility_replay_cost": 8853,
+      "compact_replay_cost": 8798,
+      "sale_recipe_ids": [
+        "RC-030"
+      ],
+      "current_recipe_ids": [
+        "RC-030"
+      ],
+      "prior_task_3_6_fingerprint_count": 6,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-a588b03d-91a9-4489-9428-4868ebe6d332",
+      "order_id": "ord-abd0333a-fdfe-4869-a16a-1cd34126455a",
+      "order_no": "UCK000508",
+      "sale_time": "2026-07-17T11:12:17.308+00:00",
+      "product_id": "PROD-022",
+      "variant_id": "VAR-029",
+      "qty": 1,
+      "stored_cost": 9645,
+      "current_replay_cost": 9843,
+      "delta_vnd": 198,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-005",
+        "ING-033",
+        "NNL-003"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-003"
+      ],
+      "causal_backdated_event_ids": [
+        "b3b98840-76e7-400d-b2aa-eaf047418998"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "b3b98840-76e7-400d-b2aa-eaf047418998",
+          "stock_ledger_id": "STK-869063f9-7d0c-4ec4-ba95-f20219511bfb",
+          "item_reference": "ING-005",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 9843,
+      "pre_visibility_replay_cost": 9645,
+      "compact_replay_cost": 9843,
+      "sale_recipe_ids": [
+        "RC-025"
+      ],
+      "current_recipe_ids": [
+        "RC-025"
+      ],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-98496671-cc91-4249-83ed-c48c22bb6bca",
+      "order_id": "ord-5b48cee8-5d1c-4fc4-b56a-8c503ed10458",
+      "order_no": "UCK000509",
+      "sale_time": "2026-07-17T11:37:55.491+00:00",
+      "product_id": "PROD-024",
+      "variant_id": "VAR-031",
+      "qty": 2,
+      "stored_cost": 30320,
+      "current_replay_cost": 30168,
+      "delta_vnd": -152,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-003",
+        "ING-028",
+        "ING-029",
+        "ING-030",
+        "NNL-001"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-011"
+      ],
+      "causal_backdated_event_ids": [
+        "173188ff-10ba-4cf0-9fd7-d68ffd3f3cb3",
+        "e6642f29-a8be-4dbb-8fa1-1e3353372f5c"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "173188ff-10ba-4cf0-9fd7-d68ffd3f3cb3",
+          "stock_ledger_id": "STK-12a32235-b535-45a4-8daf-b24af64cabda",
+          "item_reference": "ING-029",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        },
+        {
+          "event_id": "e6642f29-a8be-4dbb-8fa1-1e3353372f5c",
+          "stock_ledger_id": "STK-fbd7c19d-e7ef-4277-a867-30a0ef35fce3",
+          "item_reference": "ING-030",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 30168,
+      "pre_visibility_replay_cost": 30320,
+      "compact_replay_cost": 30168,
+      "sale_recipe_ids": [
+        "RC-023"
+      ],
+      "current_recipe_ids": [
+        "RC-023"
+      ],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-aae02000-94c6-4218-86c8-c6f2b5a19a40",
+      "order_id": "ord-d63772d6-2920-424c-89de-8455a3592400",
+      "order_no": "UCK000510",
+      "sale_time": "2026-07-17T11:54:33.147+00:00",
+      "product_id": "PROD-021",
+      "variant_id": "VAR-028",
+      "qty": 1,
+      "stored_cost": 11751,
+      "current_replay_cost": 11730,
+      "delta_vnd": -21,
+      "audit_classification": "MAC_REPRICE",
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-025",
+        "ING-032",
+        "NNL-005"
+      ],
+      "shortfall_btp_ids": [],
+      "causal_backdated_event_ids": [
+        "3c01ac71-1079-4f2d-8c43-de0bef5694e7"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "3c01ac71-1079-4f2d-8c43-de0bef5694e7",
+          "stock_ledger_id": "STK-cdc47dfd-4b79-419f-8e01-b88004a7bb3c",
+          "item_reference": "ING-025",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 11730,
+      "pre_visibility_replay_cost": 11751,
+      "compact_replay_cost": 11730,
+      "sale_recipe_ids": [],
+      "current_recipe_ids": [],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-88a85567-d6eb-4289-be7e-cf2ed95906c4",
+      "order_id": "ord-63da17d9-5776-4eb1-868e-8fd70292f73f",
+      "order_no": "UCK000511",
+      "sale_time": "2026-07-17T12:22:37.178+00:00",
+      "product_id": "PROD-017",
+      "variant_id": "VAR-024",
+      "qty": 1,
+      "stored_cost": 8853,
+      "current_replay_cost": 8798,
+      "delta_vnd": -55,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-020",
+        "ING-022",
+        "ING-030",
+        "ING-031",
+        "NNL-003",
+        "NNL-005"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-009"
+      ],
+      "causal_backdated_event_ids": [
+        "e6642f29-a8be-4dbb-8fa1-1e3353372f5c"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "e6642f29-a8be-4dbb-8fa1-1e3353372f5c",
+          "stock_ledger_id": "STK-fbd7c19d-e7ef-4277-a867-30a0ef35fce3",
+          "item_reference": "ING-030",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 8798,
+      "pre_visibility_replay_cost": 8853,
+      "compact_replay_cost": 8798,
+      "sale_recipe_ids": [
+        "RC-030"
+      ],
+      "current_recipe_ids": [
+        "RC-030"
+      ],
+      "prior_task_3_6_fingerprint_count": 6,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-07583683-fa83-486c-9c5e-8f07ab9862ef",
+      "order_id": "ord-b7bc8a4d-fd69-4e9d-b8e7-2bd38f0ddb6f",
+      "order_no": "UCK000514",
+      "sale_time": "2026-07-17T12:54:32.713+00:00",
+      "product_id": "PROD-015",
+      "variant_id": "VAR-022",
+      "qty": 1,
+      "stored_cost": 9757,
+      "current_replay_cost": 9752,
+      "delta_vnd": -5,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-015",
+        "ING-016",
+        "ING-020",
+        "ING-022",
+        "NNL-003",
+        "NNL-005"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-009"
+      ],
+      "causal_backdated_event_ids": [
+        "796baf18-d5a1-40a0-8cad-2e253abe5f40",
+        "8f6d1b7d-3d00-46a0-8a35-7d2033163140"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "796baf18-d5a1-40a0-8cad-2e253abe5f40",
+          "stock_ledger_id": "STK-52d4a281-ebb0-4e3b-95cf-ce113b3359f3",
+          "item_reference": "ING-016",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        },
+        {
+          "event_id": "8f6d1b7d-3d00-46a0-8a35-7d2033163140",
+          "stock_ledger_id": "STK-e49bd50e-a412-4ff7-b80c-a53373068d41",
+          "item_reference": "ING-015",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 9752,
+      "pre_visibility_replay_cost": 9757,
+      "compact_replay_cost": 9752,
+      "sale_recipe_ids": [
+        "RC-030"
+      ],
+      "current_recipe_ids": [
+        "RC-030"
+      ],
+      "prior_task_3_6_fingerprint_count": 13,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-89e75ec5-1f97-4d45-86d8-079369798ec3",
+      "order_id": "ord-7ae13e3c-8c39-404b-bab8-0eec3639ec40",
+      "order_no": "UCK000515",
+      "sale_time": "2026-07-17T13:24:19.483+00:00",
+      "product_id": "PROD-024",
+      "variant_id": "VAR-031",
+      "qty": 2,
+      "stored_cost": 30320,
+      "current_replay_cost": 30168,
+      "delta_vnd": -152,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-003",
+        "ING-028",
+        "ING-029",
+        "ING-030",
+        "NNL-001"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-011"
+      ],
+      "causal_backdated_event_ids": [
+        "173188ff-10ba-4cf0-9fd7-d68ffd3f3cb3",
+        "e6642f29-a8be-4dbb-8fa1-1e3353372f5c"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "173188ff-10ba-4cf0-9fd7-d68ffd3f3cb3",
+          "stock_ledger_id": "STK-12a32235-b535-45a4-8daf-b24af64cabda",
+          "item_reference": "ING-029",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        },
+        {
+          "event_id": "e6642f29-a8be-4dbb-8fa1-1e3353372f5c",
+          "stock_ledger_id": "STK-fbd7c19d-e7ef-4277-a867-30a0ef35fce3",
+          "item_reference": "ING-030",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 30168,
+      "pre_visibility_replay_cost": 30320,
+      "compact_replay_cost": 30168,
+      "sale_recipe_ids": [
+        "RC-023"
+      ],
+      "current_recipe_ids": [
+        "RC-023"
+      ],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-cb36fff8-4632-4b39-aa80-102e5b481592",
+      "order_id": "ord-4e092624-0178-481b-aaf6-75a5291dee62",
+      "order_no": "UCK000516",
+      "sale_time": "2026-07-17T13:24:29.239+00:00",
+      "product_id": "PROD-020",
+      "variant_id": "VAR-027",
+      "qty": 1,
+      "stored_cost": 11687,
+      "current_replay_cost": 11674,
+      "delta_vnd": -13,
+      "audit_classification": "MAC_REPRICE",
+      "consumed_item_ids": [
+        "ING-003",
+        "ING-016",
+        "ING-032",
+        "NNL-005"
+      ],
+      "shortfall_btp_ids": [],
+      "causal_backdated_event_ids": [
+        "796baf18-d5a1-40a0-8cad-2e253abe5f40"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "796baf18-d5a1-40a0-8cad-2e253abe5f40",
+          "stock_ledger_id": "STK-52d4a281-ebb0-4e3b-95cf-ce113b3359f3",
+          "item_reference": "ING-016",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 11674,
+      "pre_visibility_replay_cost": 11687,
+      "compact_replay_cost": 11674,
+      "sale_recipe_ids": [],
+      "current_recipe_ids": [],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-3e30109c-f382-44fa-ae87-1997185ae604",
+      "order_id": "ord-0884ee16-dd1c-40d9-b2fc-f0b05b4e95b6",
+      "order_no": "UCK000519",
+      "sale_time": "2026-07-17T15:53:16.679+00:00",
+      "product_id": "PROD-024",
+      "variant_id": "VAR-031",
+      "qty": 1,
+      "stored_cost": 15160,
+      "current_replay_cost": 15084,
+      "delta_vnd": -76,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-003",
+        "ING-028",
+        "ING-029",
+        "ING-030",
+        "NNL-001"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-011"
+      ],
+      "causal_backdated_event_ids": [
+        "173188ff-10ba-4cf0-9fd7-d68ffd3f3cb3",
+        "e6642f29-a8be-4dbb-8fa1-1e3353372f5c"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "173188ff-10ba-4cf0-9fd7-d68ffd3f3cb3",
+          "stock_ledger_id": "STK-12a32235-b535-45a4-8daf-b24af64cabda",
+          "item_reference": "ING-029",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        },
+        {
+          "event_id": "e6642f29-a8be-4dbb-8fa1-1e3353372f5c",
+          "stock_ledger_id": "STK-fbd7c19d-e7ef-4277-a867-30a0ef35fce3",
+          "item_reference": "ING-030",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 15084,
+      "pre_visibility_replay_cost": 15160,
+      "compact_replay_cost": 15084,
+      "sale_recipe_ids": [
+        "RC-023"
+      ],
+      "current_recipe_ids": [
+        "RC-023"
+      ],
+      "prior_task_3_6_fingerprint_count": 0,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    },
+    {
+      "line_id": "ol-ce1887cf-96fc-49b1-b09c-487bf2379681",
+      "order_id": "ord-ac1ab57f-90db-4058-b570-5439b7d36642",
+      "order_no": "UCK000520",
+      "sale_time": "2026-07-18T07:01:55.159+00:00",
+      "product_id": "PROD-017",
+      "variant_id": "VAR-024",
+      "qty": 1,
+      "stored_cost": 8853,
+      "current_replay_cost": 8798,
+      "delta_vnd": -55,
+      "audit_classification": "BTP_SHORTFALL",
+      "consumed_item_ids": [
+        "ING-001",
+        "ING-020",
+        "ING-022",
+        "ING-030",
+        "ING-031",
+        "NNL-003",
+        "NNL-005"
+      ],
+      "shortfall_btp_ids": [
+        "BTP-009"
+      ],
+      "causal_backdated_event_ids": [
+        "e6642f29-a8be-4dbb-8fa1-1e3353372f5c"
+      ],
+      "causal_backdated_events": [
+        {
+          "event_id": "e6642f29-a8be-4dbb-8fa1-1e3353372f5c",
+          "stock_ledger_id": "STK-fbd7c19d-e7ef-4277-a867-30a0ef35fce3",
+          "item_reference": "ING-030",
+          "effective_timestamp": "2026-07-16T17:00:00+00:00",
+          "visibility_timestamp": "2026-07-18T12:43:23.08713+00:00"
+        }
+      ],
+      "sale_recipe_replay_cost": 8798,
+      "pre_visibility_replay_cost": 8853,
+      "compact_replay_cost": 8798,
+      "sale_recipe_ids": [
+        "RC-030"
+      ],
+      "current_recipe_ids": [
+        "RC-030"
+      ],
+      "prior_task_3_6_fingerprint_count": 6,
+      "bucket": "BACKDATED_LEDGER_LIKE",
+      "mechanism": "BACKDATED_LEDGER_VISIBILITY",
+      "exact_stored_reproduction": true,
+      "errors": []
+    }
+  ]
+}
