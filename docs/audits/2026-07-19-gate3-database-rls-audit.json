@@ -1,0 +1,1344 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-18T18:24:35.710Z",
+  "executionBoundary": {
+    "endpoint": "Supabase Management API /database/query/read-only",
+    "databaseRole": "supabase_read_only_user",
+    "databaseWritesAttempted": 0
+  },
+  "summary": {
+    "publicTables": 32,
+    "rlsEnabled": 32,
+    "rlsForced": 0,
+    "rlsPolicies": 0,
+    "anonTablesWithAnyPrivilege": 28,
+    "authenticatedTablesWithAnyPrivilege": 28,
+    "publicFunctions": 16,
+    "anonExecutableFunctions": 4,
+    "authenticatedExecutableFunctions": 4,
+    "repositoryRpcsMissingLive": [
+      "exec_sql",
+      "get_table_constraints"
+    ],
+    "rawSqlStopGate": false
+  },
+  "tableScope": {
+    "liveNotBackedUp": [],
+    "backedUpNotLive": []
+  },
+  "rawSqlExposure": {
+    "candidates": [],
+    "exposedToAnon": [],
+    "exposedToAuthenticated": [],
+    "stopGate": false
+  },
+  "tables": [
+    {
+      "tableName": "audit_baseline_locks",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "backdated_ledger_events",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "base_ingredients",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "brands",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "data_migration_runs",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "data_recovery_changes",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "item_categories",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "modifiers",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "order_events",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "order_lines_v2",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "orders_v2",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "pos_drafts",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "product_categories",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "product_price_history",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "product_variants",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "production_items",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "production_orders",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "products",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "promotions",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "purchase_order_lines",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "purchase_orders",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "purchase_sources",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "purchased_items",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "recipes",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "semi_products",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "stock_adjustments",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "stock_ledger",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "suppliers",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "sync_state",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "units",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "uom_conversions",
+      "rlsEnabled": true,
+      "rlsForced": false
+    },
+    {
+      "tableName": "users",
+      "rlsEnabled": true,
+      "rlsForced": false
+    }
+  ],
+  "policies": [],
+  "tablePrivileges": [
+    {
+      "roleName": "anon",
+      "tableName": "audit_baseline_locks",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "anon",
+      "tableName": "backdated_ledger_events",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "anon",
+      "tableName": "base_ingredients",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "brands",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "data_migration_runs",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "anon",
+      "tableName": "data_recovery_changes",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "anon",
+      "tableName": "item_categories",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "modifiers",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "order_events",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "order_lines_v2",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "orders_v2",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "pos_drafts",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "product_categories",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "product_price_history",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "product_variants",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "production_items",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "production_orders",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "products",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "promotions",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "purchase_order_lines",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "purchase_orders",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "purchase_sources",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "purchased_items",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "recipes",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "semi_products",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "stock_adjustments",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "stock_ledger",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "suppliers",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "sync_state",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "units",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "uom_conversions",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "anon",
+      "tableName": "users",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "audit_baseline_locks",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "backdated_ledger_events",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "base_ingredients",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "brands",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "data_migration_runs",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "data_recovery_changes",
+      "select": false,
+      "insert": false,
+      "update": false,
+      "delete": false,
+      "truncate": false,
+      "references": false,
+      "trigger": false
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "item_categories",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "modifiers",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "order_events",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "order_lines_v2",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "orders_v2",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "pos_drafts",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "product_categories",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "product_price_history",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "product_variants",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "production_items",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "production_orders",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "products",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "promotions",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "purchase_order_lines",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "purchase_orders",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "purchase_sources",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "purchased_items",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "recipes",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "semi_products",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "stock_adjustments",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "stock_ledger",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "suppliers",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "sync_state",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "units",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "uom_conversions",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    },
+    {
+      "roleName": "authenticated",
+      "tableName": "users",
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": true,
+      "truncate": true,
+      "references": true,
+      "trigger": true
+    }
+  ],
+  "functions": [
+    {
+      "name": "apply_backdated_event_recovery",
+      "identityArguments": "p_event_id uuid, p_reviewer text, p_changes jsonb",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "apply_backdated_event_recovery(p_event_id uuid, p_reviewer text, p_changes jsonb)",
+      "definitionSha256": "adb280cbe70b4c6ac972c85724c62c920893f2c15b8de9eb24dc288d31c68a99",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "apply_hong_to_luc_migration",
+      "identityArguments": "p_migration_key text, p_source_hash text, p_snapshot_id text, p_manifest_sha256 text, p_write_set jsonb",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "apply_hong_to_luc_migration(p_migration_key text, p_source_hash text, p_snapshot_id text, p_manifest_sha256 text, p_write_set jsonb)",
+      "definitionSha256": "f4790bc81971aec58f158776c86ed9aef94d2718688f6f2233d6be3e2b744b83",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "apply_mac_drift_recovery",
+      "identityArguments": "p_run_id text, p_source_hash text, p_changes jsonb, p_dry_run boolean",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "apply_mac_drift_recovery(p_run_id text, p_source_hash text, p_changes jsonb, p_dry_run boolean)",
+      "definitionSha256": "300a8df12164cb2f981ac0cdfb3ce3f2ca0ee60bd3c9cbeced50881b88c39bda",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "apply_purchase_cost_recovery",
+      "identityArguments": "p_run_id text, p_source_hash text, p_changes jsonb",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "apply_purchase_cost_recovery(p_run_id text, p_source_hash text, p_changes jsonb)",
+      "definitionSha256": "33fd2f4a72f683bfab8986a0e9bd5618f4d2696a674cd5c9efa047f374c263f7",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "create_pos_order_atomic",
+      "identityArguments": "p_brand_code text, p_order jsonb, p_lines jsonb, p_event jsonb, p_ledger jsonb",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "create_pos_order_atomic(p_brand_code text, p_order jsonb, p_lines jsonb, p_event jsonb, p_ledger jsonb)",
+      "definitionSha256": "74d1e67d5ac8261b15fdb450f2225756d473ed421070dc2946e85d91a71ea532",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "flag_backdated_ledger_entry",
+      "identityArguments": "",
+      "resultType": "trigger",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "flag_backdated_ledger_entry()",
+      "definitionSha256": "c73cd54b3d402412644d09451805cf7f8d02ab528a162bd35e128db1307c4329",
+      "callerCheckSignals": [],
+      "repositoryRpc": false
+    },
+    {
+      "name": "get_my_role",
+      "identityArguments": "",
+      "resultType": "text",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": true,
+      "authenticatedCanExecute": true,
+      "serviceRoleCanExecute": true,
+      "signature": "get_my_role()",
+      "definitionSha256": "50a87ec3d7699d6a93e998a1b2bcdeae8ba36b64d545681c764f5c3affbe0fca",
+      "callerCheckSignals": [
+        "auth.uid()"
+      ],
+      "repositoryRpc": false
+    },
+    {
+      "name": "get_pos_inventory_state",
+      "identityArguments": "p_as_of timestamp with time zone",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "get_pos_inventory_state(p_as_of timestamp with time zone)",
+      "definitionSha256": "4115151070bd820e53c725d522c2531a89be85bea73913266680f6855eb6bfaf",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "mark_backdated_event_recomputed",
+      "identityArguments": "p_event_id uuid, p_reviewer text, p_run_id text, p_change_count integer",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "mark_backdated_event_recomputed(p_event_id uuid, p_reviewer text, p_run_id text, p_change_count integer)",
+      "definitionSha256": "66e51aa26b005139e5a7b9c02e3c5d319080e7fc0e7c2ab3a78b0e184331993b",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "next_order_num",
+      "identityArguments": "p_outlet_id uuid",
+      "resultType": "integer",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": true,
+      "authenticatedCanExecute": true,
+      "serviceRoleCanExecute": true,
+      "signature": "next_order_num(p_outlet_id uuid)",
+      "definitionSha256": "d151ca33f112674ccb19d54b20d9affaa6993253771fdb37320fb5138eabc704",
+      "callerCheckSignals": [],
+      "repositoryRpc": false
+    },
+    {
+      "name": "prevent_audit_locked_order_line_mutation",
+      "identityArguments": "",
+      "resultType": "trigger",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "prevent_audit_locked_order_line_mutation()",
+      "definitionSha256": "bb1ab2972d47b063e79a0aae4a6636e2cd3324610c8e62e81abf985e1ae2d3bc",
+      "callerCheckSignals": [],
+      "repositoryRpc": false
+    },
+    {
+      "name": "reject_backdated_event",
+      "identityArguments": "p_event_id uuid, p_reviewer text, p_reason text",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "reject_backdated_event(p_event_id uuid, p_reviewer text, p_reason text)",
+      "definitionSha256": "d503b5b586de4e3fa3fa0f2811e273f76e623ed8ded3359dde2849df3c9128d8",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "rls_auto_enable",
+      "identityArguments": "",
+      "resultType": "event_trigger",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": true,
+      "authenticatedCanExecute": true,
+      "serviceRoleCanExecute": true,
+      "signature": "rls_auto_enable()",
+      "definitionSha256": "dd9ce3fd3905d621611cf0ea2e7591bada6d61f827445cfa2afe27e69b03f271",
+      "callerCheckSignals": [],
+      "repositoryRpc": false
+    },
+    {
+      "name": "rollback_purchase_cost_recovery",
+      "identityArguments": "p_run_id text",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "rollback_purchase_cost_recovery(p_run_id text)",
+      "definitionSha256": "43c34dc99a689632219d362d4fe5f7550c60abca4ba3d2ad027b91ec1223b393",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "save_purchase_order_atomic",
+      "identityArguments": "p_order jsonb, p_lines jsonb, p_ledger jsonb, p_replace_existing boolean",
+      "resultType": "jsonb",
+      "owner": "postgres",
+      "securityDefiner": true,
+      "anonCanExecute": false,
+      "authenticatedCanExecute": false,
+      "serviceRoleCanExecute": true,
+      "signature": "save_purchase_order_atomic(p_order jsonb, p_lines jsonb, p_ledger jsonb, p_replace_existing boolean)",
+      "definitionSha256": "c8ce75b9590c663f0d426f0813bb7f40845b0224753bba77d8df30c50b03e7be",
+      "callerCheckSignals": [],
+      "repositoryRpc": true
+    },
+    {
+      "name": "touch_updated_at",
+      "identityArguments": "",
+      "resultType": "trigger",
+      "owner": "postgres",
+      "securityDefiner": false,
+      "anonCanExecute": true,
+      "authenticatedCanExecute": true,
+      "serviceRoleCanExecute": true,
+      "signature": "touch_updated_at()",
+      "definitionSha256": "f5e4c4fbdb433e5e08c763615167420b4e89e56073bd620e4431eda71a725b3f",
+      "callerCheckSignals": [],
+      "repositoryRpc": false
+    }
+  ],
+  "repositoryRpcs": [
+    {
+      "name": "apply_backdated_event_recovery",
+      "live": true,
+      "overloads": [
+        {
+          "name": "apply_backdated_event_recovery",
+          "identityArguments": "p_event_id uuid, p_reviewer text, p_changes jsonb",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "apply_backdated_event_recovery(p_event_id uuid, p_reviewer text, p_changes jsonb)",
+          "definitionSha256": "adb280cbe70b4c6ac972c85724c62c920893f2c15b8de9eb24dc288d31c68a99",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "apply_hong_to_luc_migration",
+      "live": true,
+      "overloads": [
+        {
+          "name": "apply_hong_to_luc_migration",
+          "identityArguments": "p_migration_key text, p_source_hash text, p_snapshot_id text, p_manifest_sha256 text, p_write_set jsonb",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "apply_hong_to_luc_migration(p_migration_key text, p_source_hash text, p_snapshot_id text, p_manifest_sha256 text, p_write_set jsonb)",
+          "definitionSha256": "f4790bc81971aec58f158776c86ed9aef94d2718688f6f2233d6be3e2b744b83",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "apply_mac_drift_recovery",
+      "live": true,
+      "overloads": [
+        {
+          "name": "apply_mac_drift_recovery",
+          "identityArguments": "p_run_id text, p_source_hash text, p_changes jsonb, p_dry_run boolean",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "apply_mac_drift_recovery(p_run_id text, p_source_hash text, p_changes jsonb, p_dry_run boolean)",
+          "definitionSha256": "300a8df12164cb2f981ac0cdfb3ce3f2ca0ee60bd3c9cbeced50881b88c39bda",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "apply_purchase_cost_recovery",
+      "live": true,
+      "overloads": [
+        {
+          "name": "apply_purchase_cost_recovery",
+          "identityArguments": "p_run_id text, p_source_hash text, p_changes jsonb",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "apply_purchase_cost_recovery(p_run_id text, p_source_hash text, p_changes jsonb)",
+          "definitionSha256": "33fd2f4a72f683bfab8986a0e9bd5618f4d2696a674cd5c9efa047f374c263f7",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "create_pos_order_atomic",
+      "live": true,
+      "overloads": [
+        {
+          "name": "create_pos_order_atomic",
+          "identityArguments": "p_brand_code text, p_order jsonb, p_lines jsonb, p_event jsonb, p_ledger jsonb",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "create_pos_order_atomic(p_brand_code text, p_order jsonb, p_lines jsonb, p_event jsonb, p_ledger jsonb)",
+          "definitionSha256": "74d1e67d5ac8261b15fdb450f2225756d473ed421070dc2946e85d91a71ea532",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "exec_sql",
+      "live": false,
+      "overloads": []
+    },
+    {
+      "name": "get_pos_inventory_state",
+      "live": true,
+      "overloads": [
+        {
+          "name": "get_pos_inventory_state",
+          "identityArguments": "p_as_of timestamp with time zone",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "get_pos_inventory_state(p_as_of timestamp with time zone)",
+          "definitionSha256": "4115151070bd820e53c725d522c2531a89be85bea73913266680f6855eb6bfaf",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "get_table_constraints",
+      "live": false,
+      "overloads": []
+    },
+    {
+      "name": "mark_backdated_event_recomputed",
+      "live": true,
+      "overloads": [
+        {
+          "name": "mark_backdated_event_recomputed",
+          "identityArguments": "p_event_id uuid, p_reviewer text, p_run_id text, p_change_count integer",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "mark_backdated_event_recomputed(p_event_id uuid, p_reviewer text, p_run_id text, p_change_count integer)",
+          "definitionSha256": "66e51aa26b005139e5a7b9c02e3c5d319080e7fc0e7c2ab3a78b0e184331993b",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "reject_backdated_event",
+      "live": true,
+      "overloads": [
+        {
+          "name": "reject_backdated_event",
+          "identityArguments": "p_event_id uuid, p_reviewer text, p_reason text",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "reject_backdated_event(p_event_id uuid, p_reviewer text, p_reason text)",
+          "definitionSha256": "d503b5b586de4e3fa3fa0f2811e273f76e623ed8ded3359dde2849df3c9128d8",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "rollback_purchase_cost_recovery",
+      "live": true,
+      "overloads": [
+        {
+          "name": "rollback_purchase_cost_recovery",
+          "identityArguments": "p_run_id text",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "rollback_purchase_cost_recovery(p_run_id text)",
+          "definitionSha256": "43c34dc99a689632219d362d4fe5f7550c60abca4ba3d2ad027b91ec1223b393",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    },
+    {
+      "name": "save_purchase_order_atomic",
+      "live": true,
+      "overloads": [
+        {
+          "name": "save_purchase_order_atomic",
+          "identityArguments": "p_order jsonb, p_lines jsonb, p_ledger jsonb, p_replace_existing boolean",
+          "resultType": "jsonb",
+          "owner": "postgres",
+          "securityDefiner": true,
+          "anonCanExecute": false,
+          "authenticatedCanExecute": false,
+          "serviceRoleCanExecute": true,
+          "signature": "save_purchase_order_atomic(p_order jsonb, p_lines jsonb, p_ledger jsonb, p_replace_existing boolean)",
+          "definitionSha256": "c8ce75b9590c663f0d426f0813bb7f40845b0224753bba77d8df30c50b03e7be",
+          "callerCheckSignals": [],
+          "repositoryRpc": true
+        }
+      ]
+    }
+  ]
+}

@@ -120,7 +120,7 @@ These observations do not prove every Server Action, RPC, API route, or Edge Fun
 - **System fallback (`GAP`):** Gate 2 confirmed that `submitOrderV2` and `savePOSDraft` do not reject a missing session and instead attribute the operation to SYSTEM. SYSTEM is therefore not currently CLI-only.
 - **Action-local guards (`GAP`):** Gate 2 found 4 mutation access findings and 21 unguarded read actions. The full per-export evidence is in [`audits/2026-07-18-gate2-access-map.md`](audits/2026-07-18-gate2-access-map.md).
 - **Edge Function boundary (`UNRESOLVED`):** `backup-to-drive` has a verified dedicated token, while three legacy/unused functions still depend on deployment JWT settings or incomplete local checks that are not repository-verifiable.
-- **RLS coverage (`UNRESOLVED`):** this document does not certify policy coverage, especially because server code uses privileged credentials.
+- **RLS/RPC boundary (`EVIDENCE_BACKED`, Gate 3 Phase A):** all 32 live public tables have RLS enabled with zero policies (default-deny for ordinary roles), and a publishable-key `users` probe returned zero rows. The ten live repository RPCs are `SECURITY DEFINER` but EXECUTE is limited to `service_role`; `exec_sql` does not exist live. The server's privileged client remains the intentional bypass. See [`audits/2026-07-19-gate3-database-rls-audit.md`](audits/2026-07-19-gate3-database-rls-audit.md).
 
 ## Verification requirements and current evidence
 
@@ -130,11 +130,11 @@ These observations do not prove every Server Action, RPC, API route, or Edge Fun
 | 2 | Direct invocation without a session | `GAP`: 3 POS mutations and 21 reads lack a rejecting local guard; guarded rows have source-level early-exit evidence |
 | 3 | Wrong-role invocation | `PARTIAL/GAP`: 56 mutations have matching local gates; `submitStockAdjustment` accepts any authenticated technical role; unguarded admin reads have no local role gate |
 | 4 | Brand/shop/outlet data scope | Open; one-shop operation does not prove future multi-branch isolation |
-| 5 | RPC execution and privileged server-client use | Open for Gate 3 |
+| 5 | RPC execution and privileged server-client use | `EVIDENCE_BACKED` for current live state: ten live repository RPCs are service-role-only; `exec_sql` is absent; the server client intentionally bypasses RLS. Phase B hardening remains separately scoped. |
 | 6 | API route and Edge Function authentication | API inventory evidence-backed with 0 undocumented gaps; Edge Functions remain partial as recorded in the Gate 2 report |
 | 7 | Sensitive-field serialization/logging | Gate 1 closed the named credential leak; broad review remains open |
 | 8 | SYSTEM/CLI-only paths | `GAP`: unauthenticated POS fallback can currently obtain SYSTEM attribution |
-| 9 | RLS policies and bypass assumptions | Open for Gate 3 |
+| 9 | RLS policies and bypass assumptions | `EVIDENCE_BACKED` for current live state: 32/32 public tables have RLS enabled, zero policies produce default-deny for ordinary roles, and service-role server traffic bypasses RLS. |
 | 10 | Session expiry, disabled users, and role changes | Open for Gate 3 or later |
 
 Only rows with reproducible failure-path evidence should become `VERIFIED`. Gate 2 source evidence identifies what must be tested or remediated next; it does not silently certify unresolved rows.
@@ -146,6 +146,7 @@ Only rows with reproducible failure-path evidence should become `VERIFIED`. Gate
 - [`FEATURE-CATALOG.md`](FEATURE-CATALOG.md) — capability evidence
 - [`ROADMAP.md`](ROADMAP.md) — pending access remediation and future security work
 - [`audits/2026-07-18-gate2-access-map.md`](audits/2026-07-18-gate2-access-map.md) — per-action, API-route, Edge Function, and SYSTEM evidence
+- [`audits/2026-07-19-gate3-database-rls-audit.md`](audits/2026-07-19-gate3-database-rls-audit.md) — live RLS, table grants, RPC execution grants, and browser-key evidence
 - [`COLLABORATION.md`](COLLABORATION.md) — risk-boundary ownership and production-write protocol
 - [`audits/2026-07-17-pre-audit-b-owner-decisions.md`](audits/2026-07-17-pre-audit-b-owner-decisions.md) — D1–D8 approval record
 

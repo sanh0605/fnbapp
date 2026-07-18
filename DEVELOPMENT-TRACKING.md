@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Codex) - Gate 3 Phase A Live Database/RPC/RLS Audit Implemented, Awaiting Review
+
+**Outcome:** Completed the approved read-only live security audit without changing production data or database configuration.
+
+### Live evidence
+
+- Queried live Postgres catalogs through Supabase's `supabase_read_only_user` Management API endpoint. All 32 public tables have RLS enabled, none has forced RLS, and there are zero policies; a publishable-key `users` SELECT independently returned HTTP 200 with zero rows.
+- Reconciled all 32 live tables exactly against the backup allowlist: no missing live table and no unbacked live table.
+- Confirmed `exec_sql` and all similarly shaped raw-SQL RPCs are absent. The old service-role diagnostic probe returns `PGRST202`; `get_table_constraints` is also absent live. The P0 stop gate did not fire.
+- Confirmed all ten live repository RPCs are `SECURITY DEFINER`, owned by `postgres`, executable by `service_role`, and not executable by `anon` or `authenticated`. Their bodies contain no independent caller check, so the service-only EXECUTE grant is the database backstop behind application guards.
+- Identified three non-incident Phase B inputs: broad but RLS-blocked grants remain on 28 tables; orphaned public `next_order_num` would write through `SECURITY DEFINER` but its `order_counters` target is absent; live `rls_auto_enable` explains RLS state that is not represented in tracked migrations.
+- Built production and scanned 96 `.next/static` files. Neither live Supabase public key value nor its environment-variable name appears in the browser bundle.
+
+### Deliverables and verification
+
+- Added re-runnable `scripts/audit-gate3-database-security.ts`, pure audit helpers, and seven TDD tests including renamed raw-SQL RPC detection.
+- Added structured evidence and the self-contained report under `docs/audits/2026-07-19-gate3-database-rls-audit.{json,md}`.
+- Updated `docs/ACCESS-MODEL.md` Phase 3 items 5 and 9 to `EVIDENCE_BACKED`; moved `docs/ROADMAP.md` Gate 3 Phase A to `[!]` pending Claude review.
+- Full Vitest: 75 files / 445 tests pass. TypeScript: 0 errors. Production build: pass. `git diff --check`: clean.
+- No migration, grant/policy change, deployment, secret rotation, production write, or push performed.
+
+Status: `[!]` awaiting Claude review. Phase B is not authorized by this commit.
+
+
 ## 2026-07-19 (Claude) - Gate 3 Scoped and Handed Off
 
 **Trigger:** User asked to continue after Gate 2 fully closed. The audit-program spec has no real detail for Gate 3 either (same placeholder pattern as Gate 2), so scope had to be built from direct investigation again.
