@@ -4,6 +4,31 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Codex) - Gate 2 Remediation Wave 1 Implemented, Awaiting Review
+
+**Outcome:** Closed the approved high-risk local access gaps without deployment or production data changes.
+
+### Application boundaries
+
+- Replaced the unauthenticated SYSTEM fallback in `submitOrderV2` and `savePOSDraft` with `resolveActor()` rejection; added the same authenticated boundary to `getPOSDrafts` and `deletePOSDraft`.
+- Preserved the explicit trusted CLI path: when `resolveActor()` returns the `CLI_MODE` SYSTEM actor, draft creation retains `created_by_id=system` and `created_by_name=Hệ thống`.
+- Narrowed `submitStockAdjustment` to `requireAdmin()` per the 2026-07-18 owner decision. Successful submissions now always create an `APPROVED` adjustment and its ledger row; historical PENDING review actions remain unchanged.
+
+### Edge Function boundary
+
+- Replaced `/user-admin/migrate`'s unsigned JWT payload inspection with constant-time comparison against the runtime `SUPABASE_SERVICE_ROLE_KEY`.
+- Added a pure regression-tested token helper. A fabricated token whose payload claims `service_role` is rejected; the exact runtime key is accepted.
+- No secret, function deployment, migration, or production data was changed.
+
+### Evidence
+
+- Focused authorization tests: 9/9 pass.
+- Read-only application access audit: 81 exports; 0 mutation findings; 20 unguarded reads remain explicitly assigned to Wave 2; 0 API route findings.
+- Full Vitest: 73 files / 430 tests pass; TypeScript: 0 errors; `git diff --check`: clean.
+- Application commit: `5c4a01b`; Edge Function, documentation, and tracking are in the companion commit containing this entry.
+
+Status: `[!]` awaiting Claude review.
+
 ## 2026-07-18 (Claude) - UI-REMED-1 Visual Smoke Test Reviewed, SEC-5 Folded Into Wave 1
 
 **Trigger:** Antigravity committed its visual smoke test work (`2cabde9`) and marked it "(verified)" in its own ROADMAP.md edit. Also had the owner's decision on the `submitStockAdjustment` policy question to fold in.

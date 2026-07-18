@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
+import { isServiceRoleToken } from "./service-role-token.ts"
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -17,10 +18,10 @@ Deno.serve(async (req: Request) => {
   const pathSuffix = url.pathname.replace(/.*\/user-admin/, '') // '' | '/uuid' | '/migrate'
 
   try {
-    // ── /migrate — one-time migration, requires service_role JWT ──
+    // ── /migrate — one-time migration, requires the exact service-role key ──
     if (req.method === 'POST' && pathSuffix === '/migrate') {
       const provided = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-      if (!_isServiceRole(provided)) return err('Forbidden', 403)
+      if (!isServiceRoleToken(provided, serviceKey)) return err('Forbidden', 403)
       const { temp_password } = await req.json().catch(() => ({}))
       if (!temp_password) return err('temp_password required', 400)
 
@@ -126,13 +127,6 @@ Deno.serve(async (req: Request) => {
     return err(e instanceof Error ? e.message : String(e), 500)
   }
 })
-
-function _isServiceRole(jwt: string): boolean {
-  try {
-    const payload = JSON.parse(atob(jwt.split('.')[1]))
-    return payload.role === 'service_role'
-  } catch { return false }
-}
 
 function ok(data: unknown) {
   return new Response(JSON.stringify(data), {

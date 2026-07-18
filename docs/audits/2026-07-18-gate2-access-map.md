@@ -1,7 +1,7 @@
 # Gate 2 Architecture and Access Map
 
 Date: 2026-07-18  
-Scope: repository evidence only; no production writes, deployment changes, or application remediation  
+Scope: original repository evidence plus the scoped Wave 1 post-remediation addendum; no production writes or deployment changes
 Tool baseline: `3570da0` (`scripts/audit-admin-action-auth.ts --json`)
 
 ## Tóm tắt cho chủ doanh nghiệp
@@ -9,6 +9,12 @@ Tool baseline: `3570da0` (`scripts/audit-admin-action-auth.ts --json`)
 Đợt kiểm tra đã lập bản đồ đầy đủ cho 81 thao tác phía máy chủ và 5 cổng truy cập API hiện có. Các cổng API đang dùng không còn lỗ hổng mới, nhưng có 25 thao tác chưa tự kiểm tra quyền khi bị gọi trực tiếp: 4 thao tác có thể thay đổi dữ liệu và 21 thao tác đọc dữ liệu. Ba thao tác bán hàng/POS còn có thể gán người thực hiện là “Hệ thống” khi không có đăng nhập.
 
 Số vấn đề vượt giới hạn sửa nhỏ của Gate 2, nên đợt này chỉ ghi nhận đầy đủ và dừng để Claude chia thành nhiệm vụ bảo mật riêng. Không có dữ liệu thật nào bị thay đổi.
+
+### Cập nhật sau Remediation Wave 1 (2026-07-18)
+
+Wave 1 đã đóng đúng năm dòng được duyệt: bốn thao tác POS nay yêu cầu người dùng đăng nhập, chỉ giữ actor SYSTEM cho `CLI_MODE` được bật rõ ràng; `submitStockAdjustment` nay chỉ cho ADMIN và luôn tạo phiếu đã duyệt cùng dòng ledger; `/user-admin/migrate` so sánh token Bearer với chính `SUPABASE_SERVICE_ROLE_KEY` bằng hàm constant-time thay vì tin payload JWT chưa xác thực. Chín regression tests chứng minh các lời gọi không đủ quyền dừng trước mọi đọc/ghi, đường CLI vẫn hoạt động, và token giả chỉ có claim `service_role` bị từ chối.
+
+Audit ứng dụng sau remediation ghi nhận 0 mutation finding và 20 unguarded admin reads. Hai mươi read actions này giữ nguyên cho Wave 2. Đây là cập nhật hậu kiểm; các số 25/4/21 bên dưới vẫn được giữ làm bằng chứng tại thời điểm Gate 2 phát hiện vấn đề.
 
 ## Scope and evidence level
 
@@ -115,7 +121,7 @@ Recommended reviewed follow-ups:
 | `app/admin/inventory/actions.ts` | `updateUnit` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/actions.ts` | `deleteUnit` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/actions.ts` | `getRealtimeStock` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
-| `app/admin/inventory/actions.ts` | `submitStockAdjustment` | MUTATION | ADMIN | ACTOR/enforced | YES | NO | `WRONG_ROLE_GAP` |
+| `app/admin/inventory/actions.ts` | `submitStockAdjustment` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 1, 2026-07-18) |
 | `app/admin/inventory/actions.ts` | `approveStockAdjustment` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/actions.ts` | `rejectStockAdjustment` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/base-ingredients/actions.ts` | `getBaseIngredientsData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
@@ -168,10 +174,10 @@ Recommended reviewed follow-ups:
 | `app/admin/users/actions.ts` | `addUser` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/users/actions.ts` | `deleteUserAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/users/actions.ts` | `updateUser` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/pos/actions.ts` | `submitOrderV2` | MUTATION | AUTHENTICATED | NONE/not enforced | NO | N/A | `UNGUARDED_MUTATION` |
-| `app/pos/actions.ts` | `getPOSDrafts` | READ | AUTHENTICATED | NONE/not enforced | NO | N/A | `UNGUARDED_READ` |
-| `app/pos/actions.ts` | `savePOSDraft` | MUTATION | AUTHENTICATED | NONE/not enforced | NO | N/A | `UNGUARDED_MUTATION` |
-| `app/pos/actions.ts` | `deletePOSDraft` | MUTATION | AUTHENTICATED | NONE/not enforced | NO | N/A | `UNGUARDED_MUTATION` |
+| `app/pos/actions.ts` | `submitOrderV2` | MUTATION | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
+| `app/pos/actions.ts` | `getPOSDrafts` | READ | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
+| `app/pos/actions.ts` | `savePOSDraft` | MUTATION | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
+| `app/pos/actions.ts` | `deletePOSDraft` | MUTATION | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
 
 ## API route matrix
 
@@ -192,22 +198,22 @@ Deployment flags are not fully represented in repository source, so unknown plat
 | `backup-to-drive` | Dedicated `X-Backup-Token`, minimum 32 characters, constant-time comparison; POST only | Reads the approved full backup schema with a service-role client | `VERIFIED_TOKEN`: handler/contract tests and production Apps Script pull verification; intentionally deployed without platform JWT because the dedicated token is the boundary |
 | `backup-to-sheets` | No local caller authentication in `index.ts` | Reads with service role, writes Google Sheets and `sync_state` | `UNVERIFIED_PLATFORM_BOUNDARY`: legacy function; current deployment JWT setting is not repository-backed. Manual admin action is guarded but calls this obsolete target (FIX-2 remains separate) |
 | `notify-order` | No local caller authentication in `index.ts` | Sends arbitrary caller-supplied order content to the configured Telegram chat | `GAP_IF_DEPLOYED_OPEN`: no application caller and deployment setting unverified; platform JWT behavior must be confirmed before calling it protected |
-| `user-admin` | Normal routes validate a Supabase Auth JWT and require profile role `owner`; `/migrate` locally decodes a claimed `service_role` without signature verification | Full auth-user and profile create/update/delete; migration reads credential rows internally | `PARTIAL`: normal local owner check exists, but deployment JWT enforcement is unverified and `/migrate` is safe only if the platform verifies the token signature before invocation |
+| `user-admin` | Normal routes validate a Supabase Auth JWT and require profile role `owner`; `/migrate` requires the Bearer token to match the runtime `SUPABASE_SERVICE_ROLE_KEY` using constant-time comparison | Full auth-user and profile create/update/delete; migration reads credential rows internally | `LOCAL_BOUNDARY_VERIFIED` for `/migrate` by forged-token regression test; normal-route deployment JWT enforcement remains unverified |
 
-The `user-admin /migrate` condition is a stop-and-review item: do not deploy it with `--no-verify-jwt` unless its local service-role verification is replaced with signature-backed verification or the route is removed.
+The `user-admin /migrate` local gap was closed in Wave 1 without a new secret or deployment change. Deployment configuration for the normal routes remains a separate SEC-4 verification item.
 
 ## ACCESS-MODEL verification checklist disposition
 
 | Item | Gate 2 disposition | Evidence |
 |---:|---|---|
 | 1. Every user-reachable route and Server Action | `EVIDENCE_BACKED` for current repo | 21 action files / 81 exports; 4 API files / 5 handlers; four Edge Function packages reviewed |
-| 2. Direct invocation without session | `GAP_IDENTIFIED` | 3 unguarded POS mutations + 21 unguarded reads; guarded rows show enforced early exit statically |
-| 3. Wrong-role invocation | `PARTIAL/GAP` | 56 mutations have matching local gates; `submitStockAdjustment` permits any authenticated technical role; read actions have no local role gate |
+| 2. Direct invocation without session | `PARTIAL/GAP` | Wave 1 closed all four POS paths with direct rejection tests; 20 unguarded admin reads remain for Wave 2 |
+| 3. Wrong-role invocation | `PARTIAL/GAP` | All 60 mutations now have matching local gates; the 20 admin read actions still have no local role gate |
 | 4. Brand/shop/outlet scope | Open for later work | One-shop scope; no multi-outlet isolation claim |
 | 5. RPC and privileged server-client use | Open for Gate 3 | Not certified by this source-level map |
-| 6. API route and Edge Function authentication | `API_EVIDENCE_BACKED`, `EDGE_PARTIAL` | 0 undocumented API gaps; Edge Function table above records one verified token boundary and three unresolved deployment/local-auth boundaries |
+| 6. API route and Edge Function authentication | `API_EVIDENCE_BACKED`, `EDGE_PARTIAL` | 0 undocumented API gaps; `/user-admin/migrate` now has a verified local key boundary, while the deployment settings and two legacy/unused functions remain separate follow-up |
 | 7. Sensitive serialization/logging | Outside this Gate 2 pass | Gate 1 closed the named credential leak; broad review remains separate |
-| 8. SYSTEM/CLI-only paths | `GAP_IDENTIFIED` | `submitOrderV2` and `savePOSDraft` assign SYSTEM when no session exists; external direct calls are not rejected |
+| 8. SYSTEM/CLI-only paths | `VERIFIED_FOR_POS` | All four POS actions reject missing sessions; regression coverage preserves SYSTEM only when `resolveActor()` returns the explicit CLI actor |
 | 9. RLS policies and bypass assumptions | Open for Gate 3 | Explicitly out of scope |
 | 10. Session expiry/disabled users/role changes | Open for Gate 3+ | Explicitly out of scope |
 

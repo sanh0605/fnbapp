@@ -39,7 +39,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| [ ] **Gate 2 Remediation Wave 1 — POS system-actor gaps + Edge Function signature + stock-adjustment policy** | Codex | `app/pos/actions.ts` (`submitOrderV2`, `savePOSDraft`, `deletePOSDraft`, `getPOSDrafts`); `supabase/functions/user-admin/index.ts` `_isServiceRole`; `app/admin/inventory/actions.ts` `submitStockAdjustment` | 2026-07-18 | Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md`. Financially material POS writes reachable without a session; an Edge Function that decodes a claimed `service_role` JWT without verifying its signature; and `submitStockAdjustment` locked to ADMIN per owner decision 2026-07-18 (SEC-5 resolved — stock adjustment submission is manager/admin responsibility, staff should no longer submit at all). |
+| [!] **Gate 2 Remediation Wave 1 — POS system-actor gaps + Edge Function signature + stock-adjustment policy** | Codex | `app/pos/actions.ts` (`submitOrderV2`, `savePOSDraft`, `deletePOSDraft`, `getPOSDrafts`); `supabase/functions/user-admin/index.ts` service-role token check; `app/admin/inventory/actions.ts` `submitStockAdjustment` | 2026-07-18 | Implemented locally and awaiting Claude review. All four POS actions now reject anonymous callers, CLI SYSTEM remains explicit, stock-adjustment submission is ADMIN-only, and `/user-admin/migrate` requires the exact runtime service key. No deployment or production write. |
 
 ### P1 — Next up (high impact, unblocked)
 
