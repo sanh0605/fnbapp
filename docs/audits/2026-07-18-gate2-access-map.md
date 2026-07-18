@@ -1,7 +1,7 @@
 # Gate 2 Architecture and Access Map
 
 Date: 2026-07-18  
-Scope: original repository evidence plus the scoped Wave 1 post-remediation addendum; no production writes or deployment changes
+Scope: original repository evidence plus the scoped Wave 1 and Wave 2 post-remediation addenda; no production writes or deployment changes
 Tool baseline: `3570da0` (`scripts/audit-admin-action-auth.ts --json`)
 
 ## Tóm tắt cho chủ doanh nghiệp
@@ -15,6 +15,12 @@ Số vấn đề vượt giới hạn sửa nhỏ của Gate 2, nên đợt này
 Wave 1 đã đóng đúng năm dòng được duyệt: bốn thao tác POS nay yêu cầu người dùng đăng nhập, chỉ giữ actor SYSTEM cho `CLI_MODE` được bật rõ ràng; `submitStockAdjustment` nay chỉ cho ADMIN và luôn tạo phiếu đã duyệt cùng dòng ledger; `/user-admin/migrate` so sánh token Bearer với chính `SUPABASE_SERVICE_ROLE_KEY` bằng hàm constant-time thay vì tin payload JWT chưa xác thực. Chín regression tests chứng minh các lời gọi không đủ quyền dừng trước mọi đọc/ghi, đường CLI vẫn hoạt động, và token giả chỉ có claim `service_role` bị từ chối.
 
 Audit ứng dụng sau remediation ghi nhận 0 mutation finding và 20 unguarded admin reads. Hai mươi read actions này giữ nguyên cho Wave 2. Đây là cập nhật hậu kiểm; các số 25/4/21 bên dưới vẫn được giữ làm bằng chứng tại thời điểm Gate 2 phát hiện vấn đề.
+
+### Cập nhật sau Remediation Wave 2 (2026-07-18)
+
+Wave 2 đã thêm `requireAdmin()` vào toàn bộ 20 thao tác đọc đầy đủ dành cho trang quản trị. Hai thao tác từng được POS gọi trực tiếp (`getSalesDataV2` và `getRealtimeStock`) nay cũng chỉ dành cho ADMIN; POS dùng hai thao tác mới có kiểm tra người dùng đăng nhập và chỉ trả dữ liệu tối thiểu: danh sách ID sản phẩm bán chạy và các cặp `{id, current_stock}`. Không có thay đổi JSX hay quyền thanh toán của STAFF.
+
+Audit sau Wave 2 ghi nhận 21 action files, 83 exports (60 mutations, 23 reads), 0 mutation finding, 0 read finding và 0 API-route finding. Các số liệu baseline và stop-gate bên dưới vẫn được giữ làm bằng chứng lịch sử tại thời điểm Gate 2 phát hiện vấn đề; ma trận action đã được cập nhật theo source hiện tại.
 
 ## Scope and evidence level
 
@@ -101,7 +107,7 @@ Recommended reviewed follow-ups:
 | `app/admin/audit/backdated-ledger/actions.ts` | `approveAndRecomputeAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/audit/backdated-ledger/actions.ts` | `rejectEventAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/backup/actions.ts` | `triggerBackup` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/brands/actions.ts` | `getBrands` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/brands/actions.ts` | `getBrands` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/brands/actions.ts` | `addBrand` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/brands/actions.ts` | `editBrand` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/brands/actions.ts` | `deleteBrand` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
@@ -120,61 +126,63 @@ Recommended reviewed follow-ups:
 | `app/admin/inventory/actions.ts` | `addUnit` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/actions.ts` | `updateUnit` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/actions.ts` | `deleteUnit` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/inventory/actions.ts` | `getRealtimeStock` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/inventory/actions.ts` | `getRealtimeStock` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/inventory/actions.ts` | `submitStockAdjustment` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 1, 2026-07-18) |
 | `app/admin/inventory/actions.ts` | `approveStockAdjustment` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/actions.ts` | `rejectStockAdjustment` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/inventory/base-ingredients/actions.ts` | `getBaseIngredientsData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/inventory/base-ingredients/actions.ts` | `getBaseIngredientsData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/inventory/base-ingredients/actions.ts` | `addBaseIngredient` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/base-ingredients/actions.ts` | `updateBaseIngredient` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/base-ingredients/actions.ts` | `deleteBaseIngredientAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/inventory/conversions/actions.ts` | `getConversionsData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/inventory/conversions/actions.ts` | `getConversionsData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/inventory/conversions/actions.ts` | `addConversion` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/conversions/actions.ts` | `updateConversion` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/conversions/actions.ts` | `deleteConversionAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/inventory/items/actions.ts` | `getItemsData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/inventory/items/actions.ts` | `getItemsData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/inventory/items/actions.ts` | `addPurchasedItem` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/items/actions.ts` | `updatePurchasedItem` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/items/actions.ts` | `deletePurchasedItemAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/inventory/purchase-orders/actions.ts` | `getPurchaseOrdersData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/inventory/purchase-orders/actions.ts` | `getPurchaseOrdersData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/inventory/purchase-orders/actions.ts` | `savePurchaseOrder` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/inventory/purchase-orders/actions.ts` | `addPurchaseSource` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/orders/actions.ts` | `getOrdersV2` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
-| `app/admin/orders/actions.ts` | `getOrderDetailV2` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/orders/actions.ts` | `getOrdersV2` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
+| `app/admin/orders/actions.ts` | `getOrderDetailV2` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/orders/actions.ts` | `voidOrderV2` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/orders/actions.ts` | `editOrderV2` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/production/actions.ts` | `getProductionData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/production/actions.ts` | `getProductionData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/production/actions.ts` | `saveProductionOrder` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/products/actions.ts` | `saveProduct` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/products/actions.ts` | `deleteProduct` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/products/categories/actions.ts` | `getCategoriesWithCounts` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/products/categories/actions.ts` | `getCategoriesWithCounts` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/products/categories/actions.ts` | `saveCategory` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/products/categories/actions.ts` | `updateCategory` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/products/categories/actions.ts` | `deleteCategory` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/products/modifiers/actions.ts` | `getModifiersData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/products/modifiers/actions.ts` | `getModifiersData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/products/modifiers/actions.ts` | `saveModifierAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/products/modifiers/actions.ts` | `deleteModifierAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/products/toppings/actions.ts` | `toggleToppingStandalone` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/promotions/actions.ts` | `getPromotionsData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/promotions/actions.ts` | `getPromotionsData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/promotions/actions.ts` | `savePromotion` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/promotions/actions.ts` | `deletePromotionAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/reports/actions.ts` | `getPnLDataV2` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
-| `app/admin/reports/actions.ts` | `getSalesDataV2` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
-| `app/admin/reports/actions.ts` | `getHourlyHeatmapV2` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
-| `app/admin/reports/actions.ts` | `getPromotionPerformanceV2` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
-| `app/admin/semi-products/actions.ts` | `getSemiProductsData` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/reports/actions.ts` | `getPnLDataV2` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
+| `app/admin/reports/actions.ts` | `getSalesDataV2` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
+| `app/admin/reports/actions.ts` | `getHourlyHeatmapV2` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
+| `app/admin/reports/actions.ts` | `getPromotionPerformanceV2` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
+| `app/admin/semi-products/actions.ts` | `getSemiProductsData` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/semi-products/actions.ts` | `saveSemiProduct` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/semi-products/actions.ts` | `deleteSemiProductAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/suppliers/actions.ts` | `getSuppliers` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/suppliers/actions.ts` | `getSuppliers` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/suppliers/actions.ts` | `addSupplier` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/suppliers/actions.ts` | `editSupplier` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/suppliers/actions.ts` | `deleteSupplierAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
-| `app/admin/users/actions.ts` | `getUsers` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
-| `app/admin/users/actions.ts` | `getUserById` | READ | ADMIN | NONE/not enforced | NO | NO | `UNGUARDED_READ` |
+| `app/admin/users/actions.ts` | `getUsers` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
+| `app/admin/users/actions.ts` | `getUserById` | READ | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/admin/users/actions.ts` | `addUser` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/users/actions.ts` | `deleteUserAction` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/admin/users/actions.ts` | `updateUser` | MUTATION | ADMIN | ADMIN/enforced | YES | YES | `GUARDED` |
 | `app/pos/actions.ts` | `submitOrderV2` | MUTATION | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
+| `app/pos/actions.ts` | `getPOSBestSellerProductIds` | READ | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 2, 2026-07-18) |
+| `app/pos/actions.ts` | `getPOSStockStatus` | READ | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 2, 2026-07-18) |
 | `app/pos/actions.ts` | `getPOSDrafts` | READ | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
 | `app/pos/actions.ts` | `savePOSDraft` | MUTATION | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
 | `app/pos/actions.ts` | `deletePOSDraft` | MUTATION | AUTHENTICATED | ACTOR/enforced | YES | N/A | `GUARDED` (Wave 1, 2026-07-18) |
@@ -206,9 +214,9 @@ The `user-admin /migrate` local gap was closed in Wave 1 without a new secret or
 
 | Item | Gate 2 disposition | Evidence |
 |---:|---|---|
-| 1. Every user-reachable route and Server Action | `EVIDENCE_BACKED` for current repo | 21 action files / 81 exports; 4 API files / 5 handlers; four Edge Function packages reviewed |
-| 2. Direct invocation without session | `PARTIAL/GAP` | Wave 1 closed all four POS paths with direct rejection tests; 20 unguarded admin reads remain for Wave 2 |
-| 3. Wrong-role invocation | `PARTIAL/GAP` | All 60 mutations now have matching local gates; the 20 admin read actions still have no local role gate |
+| 1. Every user-reachable route and Server Action | `EVIDENCE_BACKED` for current repo | 21 action files / 83 exports; 4 API files / 5 handlers; four Edge Function packages reviewed |
+| 2. Direct invocation without session | `EVIDENCE_BACKED` for current repo | All 83 actions have matching enforced local gates; representative direct-rejection tests cover POS, inventory, reports, and users |
+| 3. Wrong-role invocation | `EVIDENCE_BACKED` for current repo | All 60 mutations and all 20 full admin reads enforce their intended local role; the three POS reads accept only authenticated actors and return POS-scoped data |
 | 4. Brand/shop/outlet scope | Open for later work | One-shop scope; no multi-outlet isolation claim |
 | 5. RPC and privileged server-client use | Open for Gate 3 | Not certified by this source-level map |
 | 6. API route and Edge Function authentication | `API_EVIDENCE_BACKED`, `EDGE_PARTIAL` | 0 undocumented API gaps; `/user-admin/migrate` now has a verified local key boundary, while the deployment settings and two legacy/unused functions remain separate follow-up |
@@ -219,6 +227,6 @@ The `user-admin /migrate` local gap was closed in Wave 1 without a new secret or
 
 ## Conclusion
 
-Gate 2 successfully replaced an under-reporting audit with a complete current-source map. It did not close the newly visible access gaps. The next security change must be separately reviewed because the findings span financially material POS writes, a currently unresolved Inventory-role decision, a broad set of admin reads, and deployment-dependent Edge Function boundaries.
+Gate 2 replaced an under-reporting audit with a complete current-source map, then Wave 1 and Wave 2 closed every action-level finding in that map. The remaining security work is outside this action-local scope: deployment-dependent Edge Function boundaries, RLS, session lifecycle, and future business-role design.
 
 No database, production service, secret, migration, or remote repository was changed.

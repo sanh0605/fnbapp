@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-18 (Codex) - Gate 2 Remediation Wave 2 Implemented, Awaiting Review
+
+**Outcome:** Closed the 20 full admin-read findings while preserving the approved STAFF-facing POS data flow through two narrow authenticated reads.
+
+### Access boundaries
+
+- Added enforced `requireAdmin()` checks before any data access in all 20 full admin read actions covering brands, inventory, orders, production, catalog, promotions, reports, semi-products, suppliers, and users.
+- Kept `getSalesDataV2` and `getRealtimeStock` ADMIN-only. Replaced their POS callers with `getPOSBestSellerProductIds` and `getPOSStockStatus`, both guarded by `resolveActor()` and limited to product IDs or `{id, current_stock}` pairs.
+- Preserved STAFF checkout access and made no JSX, engine, transaction, database, migration, deployment, or production-data change.
+
+### Evidence
+
+- TDD regression coverage includes anonymous rejection before reads, narrow POS response shapes, the POS call-site split, and a comprehensive assertion over all 20 full admin reads.
+- Full Vitest: 74 files / 438 tests pass.
+- TypeScript: 0 errors. `git diff --check`: clean.
+- Read-only access audit: 21 action files / 83 exports (60 mutations, 23 reads), 0 mutation findings, 0 read findings, and 0 route findings.
+- Commits: `a20aba8` (narrow authenticated POS reads), `79bda17` (inventory/catalog/admin reads), plus the companion order/report/audit/documentation commit containing this entry.
+
+Status: `[!]` awaiting Claude review. No push or deployment performed.
+
 ## 2026-07-18 (Claude) - Gate 2 Remediation Wave 1 Reviewed and Closed
 
 **Trigger:** Codex reported Wave 1 complete across 2 commits and requested Claude review.

@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| [~X] **Gate 2 Remediation Wave 2 — 18 direct-guard admin reads + 2 split into ADMIN-only/narrow-POS-read** | Codex | 15 files under `app/admin/**/actions.ts`; `app/pos/actions.ts` (2 new functions); `app/pos/page.tsx` (call-site swap) | Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md`. Codex correctly stopped at the intended stop-gate: `getRealtimeStock`/`getSalesDataV2` are called by `app/pos/page.tsx`, reachable by STAFF — a direct `requireAdmin()` guard would break checkout. Claude checked what POS actually consumes (`bestSellers.slice(0,8)` product IDs; `{id, current_stock}` pairs) and approved Codex's proposal: keep those 2 ADMIN-only as-is, add 2 new narrow `resolveActor()`-guarded POS reads returning only that minimal shape, point `/pos/page.tsx` at those instead. Amended the handoff with exact scope before giving the go-ahead. |
+| [!] **Gate 2 Remediation Wave 2 — 18 direct-guard admin reads + 2 split into ADMIN-only/narrow-POS-read** | Codex | 15 files under `app/admin/**/actions.ts`; `app/pos/actions.ts` (2 new functions); `app/pos/page.tsx` (call-site swap) | Implemented locally and awaiting Claude review. All 20 full admin reads now enforce `requireAdmin()`; POS uses authenticated minimal-shape reads for best-seller IDs and `{id, current_stock}` only. Static audit: 83 actions, 0 mutation findings, 0 read findings, 0 route findings. No deployment or production write. Handoff: `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md`. |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 

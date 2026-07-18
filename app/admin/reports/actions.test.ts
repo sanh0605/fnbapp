@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const requireAdminMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/auth", () => ({ requireAdmin: requireAdminMock }));
+
 vi.mock("@/lib/sheets_db", () => ({
   findAllNoCache: vi.fn(),
   findAllWhere: vi.fn(),
@@ -10,12 +14,28 @@ import { findAllNoCache, findAllWhere, findAll } from "@/lib/sheets_db";
 import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
+beforeEach(() => {
+  requireAdminMock.mockResolvedValue({
+    ok: true,
+    actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
+  });
+});
+
 describe("getPnLDataV2", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (findAllWhere as any).mockImplementation((sheet: string) => (
       (findAllNoCache as any)(sheet)
     ));
+  });
+
+  it("rejects an unauthenticated report read before loading data", async () => {
+    requireAdminMock.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
+
+    await expect(getPnLDataV2()).rejects.toThrow("Yêu cầu đăng nhập");
+    expect(findAllWhere).not.toHaveBeenCalled();
+    expect(findAllNoCache).not.toHaveBeenCalled();
+    expect(findAll).not.toHaveBeenCalled();
   });
 
   it("reuses one request-scoped stock-ledger index across both P&L MAC breakdowns", async () => {

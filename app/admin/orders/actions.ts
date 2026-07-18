@@ -105,6 +105,9 @@ export type EditOrderV2Result =
 // ============================================================
 
 export async function getOrdersV2(): Promise<GetOrdersV2Result> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [orders, orderLines, products, variants, brands, modifiers, categories] = await Promise.all([
       findAllNoCache("Orders_V2"),
@@ -202,6 +205,9 @@ export async function getOrdersV2(): Promise<GetOrdersV2Result> {
 // ============================================================
 
 export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Result | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   const { orders, orderLines, products, variants, brands } = {
     orders: await findAllNoCache("Orders_V2"),
     orderLines: await findAllNoCache("Order_Lines_V2"),

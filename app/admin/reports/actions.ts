@@ -22,6 +22,7 @@ import {
   type MacLedgerIndex,
   type MacLedgerSource,
 } from "@/lib/mac-cogs";
+import { requireAdmin } from "@/lib/auth";
 
 export interface PnLReportFilters {
   startDate?: string;
@@ -74,6 +75,9 @@ function findCompletedOrders(
 }
 
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers, products] = await Promise.all([
@@ -362,6 +366,9 @@ export interface SalesReportResult {
 }
 
 export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<SalesReportResult> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const [orders, orderLines, modifiers, products] = await Promise.all([
@@ -893,6 +900,9 @@ export interface HeatmapCell {
 }
 
 export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promise<HeatmapCell[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const orders = await findCompletedOrders(
       toSaigonUtcRange(filters.startDate, filters.endDate),
@@ -956,6 +966,9 @@ export interface PromotionPerformanceRow {
 }
 
 export async function getPromotionPerformanceV2(filters: PnLReportFilters = {}): Promise<PromotionPerformanceRow[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const [orders, promotions] = await Promise.all([
       findAllNoCache("Orders_V2"),
