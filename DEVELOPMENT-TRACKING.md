@@ -4,6 +4,50 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 3 Phase B (Database Hardening) Reviewed and Approved
+
+**Trigger:** Codex committed Gate 3 Phase B (commit `58aa46a` on branch `codex/gate3-phase-b-database-hardening`, migration `0022_gate3_database_hardening.sql` applied to production) and reported: 28→0 tables with `anon`/`authenticated` grants, an additional `MAINTAIN` privilege revoked beyond the handoff's scope (found live, not anticipated), `next_order_num` dropped, `rls_auto_enable` recreated with an unchanged hash, 2 stale scripts removed, migrations 0001-0022 synced, no Realtime/webhook/cron/extra-role dependency found, 498/498 tests, TS clean, build passing, frozen baseline hash unchanged.
+
+### Review Performed
+
+- Read `supabase/migrations/0022_gate3_database_hardening.sql` in full: 28 explicit `revoke` statements (one per table, no wildcard/dynamic revoke, matching the handoff's request for a reviewable line-by-line migration), `drop function if exists public.next_order_num(uuid)`, and a `create or replace function public.rls_auto_enable()` + `drop event trigger if exists ensure_rls; create event trigger ensure_rls ...` pair.
+- Counted the revoke statements (28) and cross-checked every table name against the Gate 3 report's 32-table list minus the 4 already-revoked tables (`audit_baseline_locks`, `backdated_ledger_events`, `data_migration_runs`, `data_recovery_changes`) — exact match.
+- Noted Codex added `maintain` to each revoke statement — a Postgres privilege type the original Gate 3 audit script's `has_table_privilege` check list didn't include (an undercount in the original audit, not an error in Codex's work); a good catch beyond the handoff's literal scope, with no downside to including it.
+- Read the new `lib/gate3-database-hardening-migration.test.ts` (4 tests): asserts the migration text for all 28 tables, asserts the `next_order_num` drop without accidentally creating `order_counters`, asserts the `rls_auto_enable` function/trigger text matches the live definition, asserts both stale scripts no longer exist on disk.
+- **Independently checked out the branch's worktree (`C:/tmp/fnbapp-gate3-phase-b`) and reran everything**: `npx vitest run` — 95 files, 498/498 pass (matches claim, up from 494). `npx tsc --noEmit` — 0 errors. `npx supabase migration list` — `0022` applied local and remote. Reran `scripts/audit-gate3-database-security.ts` live myself: `anonTablesWithAnyPrivilege`/`authenticatedTablesWithAnyPrivilege` both 0 (down from 28), `next_order_num` absent from the live function list, `rls_auto_enable`'s live definition hash is `dd9ce3fd3905d621611cf0ea2e7591bada6d61f827445cfa2afe27e69b03f271` — byte-identical to the hash recorded before this migration, confirming the recreate changed nothing observable, only added the tracked-migration record. Reran `scripts/audit-mac-drift-baseline.ts` — same 12/436/`CLEAN` state, frozen-baseline hash assertion still passes. Confirmed both stale scripts are gone from disk.
+- **Independently verified the "no dependency" claim myself** rather than trusting it: queried `pg_publication_tables` (0 Realtime publications on any public table), `cron.job` (the `pg_cron` extension isn't even installed), `information_schema.triggers` for any `net.http`-style webhook trigger (0 found), and `pg_roles` (only the standard Supabase system roles exist, no custom integration role).
+
+### Decision
+
+- Approved. No code changes made by Claude during this review.
+- Updated `docs/ROADMAP.md`: cleared the P2 `G3-A4/A5/A6/A8` entry, moved to `docs/COMPLETED.md`.
+- Branch and worktree kept as Codex reported. **Merging into `main` is a separate decision** (same pattern as Gate 4 Phase B) — not assumed by this review.
+
+Commit: pending (docs-only; Codex's fix remains on the unmerged branch).
+
+
+## 2026-07-19 (Claude) - FIX-1 (Password Change) + FIX-2 (Backup Page Removal) Reviewed and Approved
+
+**Trigger:** Codex committed both fixes together (commit `fe04f4a`, directly on `main`) per the handoff, and reported 494/494 tests, 3/3 new password tests, TS clean, production build passing with no `/admin/backup` route.
+
+### Review Performed
+
+- Read the full diff (7 files, 137 insertions, 342 deletions).
+- `app/actions/auth.ts`: confirmed `changePasswordAction` now looks up the actor via `session.user.id` (the field actually set by `lib/auth.ts`'s session callback) instead of the never-set `username`, queries Supabase `public.users` by `id`, verifies the old password with `bcrypt.compare`, and hashes the new one with `bcrypt.hash(newPassword, 10)` — confirmed `10` matches the salt-rounds constant already used in `app/admin/users/actions.ts` and `scripts/hash-user-passwords.ts`, not a newly invented value. All legacy Google Sheets/SHA-256 imports removed. Return shape (`{ success, error? }`) and existing Vietnamese error strings unchanged, matching `app/settings/password/page.tsx`'s existing call site exactly.
+- Read the new `app/actions/auth.test.ts` (3 tests) in full: asserts a correct-old-password call updates the right Supabase row by `id`, that the stored hash is bcrypt with exactly 10 rounds and verifies against the new password, and — notably — asserts the legacy Sheets `update`/`get` mocks are **never called** in either the success or the unauthenticated-rejection case, directly proving the old code path is gone, not just unreachable.
+- Confirmed `app/admin/backup/` (page, actions, loading, components/BackupClient.tsx) fully deleted and the nav entry removed from `app/admin/layout.tsx:80`. Confirmed `sync_state`/`backup-to-drive` were untouched (out of scope, correctly respected).
+- **Independently reran everything**: `npx vitest run` — 94 files, 494/494 pass (matches claim, up from 491). `npx tsc --noEmit` — 0 errors. `npx next build` — succeeds, and the printed route table has no `/admin/backup` entry (confirms the removal end-to-end, not just at the source level).
+- Noted `backup-to-sheets` Edge Function is explicitly left deployed-but-orphaned per the handoff's scope — Codex correctly did not attempt to undeploy it.
+
+### Decision
+
+- Approved both fixes. No code changes made by Claude during this review.
+- Updated `docs/ROADMAP.md`: cleared the P1 entry, moved to `docs/COMPLETED.md`.
+- Not pushed (per standing instruction — push only when explicitly requested).
+
+Commit: pending (docs-only; Codex's fix is already committed as `fe04f4a` on `main`).
+
+
 ## 2026-07-19 (Claude) - Gate 4 Phase B Closed: Paths 3-5 Reviewed and Approved, All 5 Paths Now Atomic
 
 **Trigger:** Codex committed the final 3 paths of Gate 4 Phase B in separate commits — `576572b` (stock adjustments, migration `0019`), `22823ce` (`supersedeOrderV2`, migration `0020`), `016bed6` (`saveProduct`, migration `0021`) — completing all 5 Phase B paths, and reported final verification (491/491 tests, TS clean, migrations 0001-0021 synced local/remote, product audit 0 orphans/0 multi-active-recipes, stock unchanged, frozen baseline hash unchanged, no push/merge).
