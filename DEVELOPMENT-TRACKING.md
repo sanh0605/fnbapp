@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 3 Scoped and Handed Off
+
+**Trigger:** User asked to continue after Gate 2 fully closed. The audit-program spec has no real detail for Gate 3 either (same placeholder pattern as Gate 2), so scope had to be built from direct investigation again.
+
+### Investigation before scoping
+
+- Read `lib/supabase.ts`: its own header comment says the server client "Uses service role key... Bypasses RLS" and that a separate browser client "should use ANON key + RLS policies." Searched the whole repo for `NEXT_PUBLIC_SUPABASE`/browser-client patterns: zero matches. The RLS half of the documented design was apparently never implemented.
+- Searched all 16 tracked migrations under `supabase/migrations/` for `ENABLE ROW LEVEL SECURITY`/`CREATE POLICY`/any RLS-related text: zero matches. This doesn't prove RLS is off live (could have been toggled via dashboard outside git), but it means Gate 3 must check live state directly rather than trust migration history.
+- Found `scripts/check-constraint-query.ts` calling `supabase.rpc("exec_sql", { query: ... })` via the service-role client — confirms an `exec_sql` (raw SQL execution) function likely exists in the live database. Whether `anon`/`authenticated` can also call it is unknown from the repo and is the single highest-priority item in the new handoff.
+- Grepped for `.rpc(` calls across the app to enumerate the financially material RPC surface (purchase order, POS checkout, backdated-event recovery, MAC drift recovery, etc.) that Gate 1/2 verified is guarded at the application layer but never checked at the database layer.
+- Confirmed `SUPABASE_ANON_KEY` exists in `.env.local` (itself correctly gitignored, never committed) but found no `NEXT_PUBLIC_`-prefixed usage anywhere in source — reduces but doesn't eliminate exposure risk, flagged for Codex to confirm against an actual build output rather than just source.
+
+### Output
+
+- Authored `docs/handoffs/2026-07-19-codex-gate3-database-rpc-rls-audit.md`: scoped as Phase A (read-only evidence only) — live RLS status per table, `anon`/`authenticated` role grants, the `exec_sql` grant question, application-RPC security-definer/grant review, and anon-key browser-exposure confirmation. Explicitly deferred any actual RLS/grant remediation to a separately reviewed Phase B, since live database configuration changes carry real availability risk that Gate 1/2's pure application-code fixes didn't.
+- `docs/ROADMAP.md` updated: Gate 3 Phase A added to P1, "Out of scope" updated from "Gates 3-8" to "Gates 4-8" with Phase B explicitly named as a separate future scope.
+
+Commit: pending.
+
+
 ## 2026-07-19 (Claude) - Gate 2 Remediation Wave 2 Reviewed and Closed; Gate 2 Fully Closed
 
 **Trigger:** Codex reported Wave 2 complete across 3 commits and requested Claude review.

@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| (none) | — | — | Gate 3 (database/RPC/RLS audit) not yet scoped. |
+| [ ] **Full audit Gate 3 Phase A — Database/RPC/RLS live audit (read-only)** | Codex | Live Supabase DB: RLS status per table, `anon`/`authenticated` role grants, `exec_sql` RPC grant check, financial-RPC security-definer/grant review, anon-key browser-exposure confirmation | Handoff: `docs/handoffs/2026-07-19-codex-gate3-database-rpc-rls-audit.md`. Scoped from direct repo investigation: `lib/supabase.ts` documents an intended anon-key+RLS browser path that was never built; 0 of 16 tracked migrations enable RLS or define a policy; `scripts/check-constraint-query.ts` confirms an `exec_sql` raw-SQL RPC likely exists live. Read-only — no RLS/grant changes in this task. |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
@@ -114,13 +114,14 @@ records intent and order, not authorization to start.
 - **Multi-branch system** — see "Future direction" above; comes after the feature-completeness pass and UI/UX unification, needs design + business rules (outlet entity, data isolation, outlet-scoped roles)
 - **Historical data rewrite** — any rewrite of pre-2026-07 data requires explicit user approval + dry-run + atomic transaction
 - **Auth system overhaul** — placeholder "admin" reviewer in backdate UI is a known gap, but full auth is separate scope; see "Future direction" item 6, deliberately last
-- **Gates 3-8 of the full audit** — Gate 2 closed 2026-07-19 (see `COMPLETED.md`). Gate 3 (database/RPC/RLS audit) not yet scoped. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
+- **Gates 4-8 of the full audit** — Gate 3 Phase A is open (see P1). Gate 3 Phase B (any RLS/grant remediation the Phase A audit finds necessary) is separately out of scope until Phase A closes and Claude scopes it — live database configuration changes are higher-risk than the Gate 1/2 application-code fixes. See `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`.
 - **17-section F&B capability checklist** — deferred from Pre-Audit C; needs owner per-item priority classification when scheduled.
 
 ## Pending prompts in `docs/handoffs/`
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
+- `2026-07-19-codex-gate3-database-rpc-rls-audit.md` → Full audit Gate 3 Phase A — ready for Codex pickup, P1
 - `2026-07-18-antigravity-ui-remed-1-visual-smoke-test.md` → UI-REMED-1 visual smoke test — historical reference, work complete and Claude-reviewed (commit `2cabde9`)
 - `2026-07-18-codex-gate2-remediation-wave1-pos-system-actor.md` → Gate 2 Remediation Wave 1 — historical reference, work complete and Claude-reviewed (commits `5c4a01b`, `a1ace53`)
 - `2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` → Gate 2 Remediation Wave 2 — historical reference, work complete and Claude-reviewed (commits `a20aba8`, `79bda17`, `71b319f`)
@@ -166,6 +167,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-19 Claude: scoped and authored Gate 3 Phase A handoff (read-only database/RPC/RLS audit). Investigated the repo directly before writing it rather than guessing from the thin spec: found `lib/supabase.ts` documents an intended anon-key+RLS browser client that was never built (0 matches for `NEXT_PUBLIC_SUPABASE`/browser-client patterns anywhere), found 0 of 16 tracked migrations enable RLS or define any policy, and found `scripts/check-constraint-query.ts` calling an `exec_sql` RPC (raw SQL execution) via the service-role client — confirming that function likely exists live, with its actual grant to `anon`/`authenticated` unknown and flagged as the single highest-priority item in the gate. Scoped Phase A as evidence-only (live RLS status, role grants, RPC security-definer review); explicitly deferred any RLS/grant remediation to a separately reviewed Phase B given live database configuration changes carry real availability risk.
 - 2026-07-19 Claude: Gate 2 Remediation Wave 2 reviewed and closed (commits `a20aba8`, `79bda17`, `71b319f`) — **Gate 2 fully closed** (map + both waves). Read every diff line: confirmed `getPOSBestSellerProductIds` returns only a plain product-ID array (test asserts every value is a string, standalone toppings excluded) despite reusing `breakdownRevenueByProduct` internally; confirmed `getPOSStockStatus` returns only `{id, current_stock}` with no cost/supplier fields; confirmed `app/pos/page.tsx`'s swap preserves identical `bestSellers`/`stockMap` output (data-source change only). Independently reran the suite (438/438), TypeScript (clean), and the access-audit tool itself (83 actions, 100% `GUARDED`, 0 findings). Gate 3 (database/RPC/RLS) not yet scoped.
 - 2026-07-18 Claude: approved Codex's Wave 2 stop-gate proposal. Codex correctly stopped rather than blindly applying `requireAdmin()` to `getRealtimeStock`/`getSalesDataV2` (would have broken STAFF checkout, since `app/pos/page.tsx` calls both and STAFF can reach `/pos`). Checked exactly what the POS page consumes from each before approving, so the amended handoff specifies the minimal shape precisely rather than leaving it to guesswork: best-seller product IDs only (not the full sales report), `{id, current_stock}` pairs only (not full inventory detail). Amended `docs/handoffs/2026-07-18-codex-gate2-remediation-wave2-admin-reads.md` in place before Codex resumed.
 - 2026-07-18 Claude: Gate 2 Remediation Wave 1 reviewed and closed (commits `5c4a01b`, `a1ace53`). Read every diff line: `resolveActor()` correctly rejects unauthenticated POS calls while keeping CLI_MODE's env-controlled (not client-spoofable) SYSTEM path and still accepting any authenticated role (STAFF preserved for POS); `submitStockAdjustment` now `requireAdmin()`-gated per the owner's policy decision, dead PENDING branching removed; the Edge Function's JWT-payload-decode replaced with a constant-time comparison against the real runtime service key, matching the pattern already used by `backup-to-drive`. Read all 3 new test files (rejection-before-mutation, STAFF-rejected/ADMIN-succeeds, forged-JWT-rejected/real-key-accepted). Independently reran the suite (430/430), TypeScript (clean), and the access-audit tool itself (0 mutation findings, 61 guarded, 20 `UNGUARDED_READ` unchanged — exact Wave 2 scope). Wave 2 unblocked for pickup.
