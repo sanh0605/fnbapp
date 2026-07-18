@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import { auditStockAdjustmentLedgerLinks } from "../lib/stock-adjustment-audit";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
@@ -41,16 +42,11 @@ async function main() {
   }
 
   // Verify each APPROVED adjustment has matching STOCK_ADJUST ledger entry
-  const approved = all.filter(a => a.status === "APPROVED");
-  let missingLedger = 0;
-  for (const a of approved) {
-    const ledgerEntry = (ledger as any[]).find(l =>
-      l.reference_id === a.id && l.transaction_type === "STOCK_ADJUST",
-    );
-    if (!ledgerEntry) missingLedger++;
-  }
-  console.log(`\nApproved adjustments:                       ${approved.length}`);
-  console.log(`Missing STOCK_ADJUST ledger entry:         ${missingLedger}`);
+  const links = auditStockAdjustmentLedgerLinks(all, ledger as any[]);
+  console.log(`\nApproved adjustments:                       ${links.approvedCount}`);
+  console.log(`Missing STOCK_ADJUST ledger entry:         ${links.missingLedgerIds.length}`);
+  console.log(`Duplicate STOCK_ADJUST ledger entry:       ${links.duplicateLedgerIds.length}`);
+  console.log(`Mismatched STOCK_ADJUST ledger entry:      ${links.mismatchedLedgerIds.length}`);
 
   console.log("\nNo data was written.");
 }

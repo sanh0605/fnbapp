@@ -3,212 +3,166 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
-  insert: vi.fn(),
   update: vi.fn(),
-  generateNewId: vi.fn(),
+  saveProductAtomic: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", () => ({
   findAll: mocks.findAll,
-  insert: mocks.insert,
   update: mocks.update,
-  generateNewId: mocks.generateNewId,
+}));
+vi.mock("@/lib/product-save-transaction", () => ({
+  saveProductAtomic: mocks.saveProductAtomic,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
 import { saveProduct } from "./actions";
 
-type Row = Record<string, unknown>;
-
-describe("saveProduct forced failures", () => {
-  let tables: Record<string, Row[]>;
-  let idCounters: Record<string, number>;
-  let failOnceAt: string | null;
-
+describe("saveProduct atomic persistence", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    tables = {
-      Products: [],
-      Product_Variants: [],
-      Product_Price_History: [],
-      Recipes: [],
-    };
-    idCounters = {};
-    failOnceAt = null;
-
     mocks.requireAdmin.mockResolvedValue({
       ok: true,
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
     });
-    mocks.findAll.mockImplementation(async (sheet: string) => cloneRows(tableFor(sheet)));
-    mocks.generateNewId.mockImplementation(async (sheet: string, prefix: string) => {
-      idCounters[sheet] = (idCounters[sheet] || 0) + 1;
-      return `${prefix}-${idCounters[sheet]}`;
-    });
-    mocks.insert.mockImplementation(async (sheet: string, row: Row) => {
-      const operation = `insert:${sheet}`;
-      if (failOnceAt === operation) {
-        failOnceAt = null;
-        throw new Error(`${operation} failed`);
-      }
-      tableFor(sheet).push({ ...row });
-    });
-    mocks.update.mockImplementation(async (sheet: string, id: string, patch: Row) => {
-      const operation = `update:${sheet}`;
-      if (failOnceAt === `${operation}:${id}` || failOnceAt === operation) {
-        failOnceAt = null;
-        throw new Error(`${operation} failed`);
-      }
-      const row = tableFor(sheet).find(value => value.id === id);
-      if (row) Object.assign(row, patch);
+    mocks.findAll.mockImplementation(async (sheet: string) => {
+      if (sheet === "Product_Variants") return [];
+      if (sheet === "Recipes") return [];
+      return [];
     });
   });
 
-  it("leaves no rows when product insert fails, then retry creates one complete product", async () => {
-    failOnceAt = "insert:Products";
+  it("creates product, variant, initial price history, and recipe through one RPC", async () => {
+    mocks.saveProductAtomic.mockResolvedValue(makeRpcResult());
 
-    const failed = await saveProduct(makeCreateFormData());
-    expect(failed).toEqual({ error: "insert:Products failed" });
-    expect(tableCounts()).toEqual([0, 0, 0, 0]);
+    await expect(saveProduct(makeCreateFormData())).resolves.toEqual({ success: true });
 
-    const retry = await saveProduct(makeCreateFormData());
-    expect(retry.success).toBe(true);
-    expect(tableCounts()).toEqual([1, 1, 1, 1]);
-  });
-
-  it("leaves an orphan product when variant insert fails, then retry creates a second product", async () => {
-    failOnceAt = "insert:Product_Variants";
-
-    const failed = await saveProduct(makeCreateFormData());
-    expect(failed).toEqual({ error: "insert:Product_Variants failed" });
-    expect(tableCounts()).toEqual([1, 0, 0, 0]);
-
-    const retry = await saveProduct(makeCreateFormData());
-    expect(retry.success).toBe(true);
-    expect(tableCounts()).toEqual([2, 1, 1, 1]);
-    expect(tables.Products.map(row => row.id)).toEqual(["PROD-1", "PROD-2"]);
-    expect(tables.Product_Variants[0].product_id).toBe("PROD-2");
-  });
-
-  it("leaves product and variant rows when price history insert fails, then retry duplicates the catalog header", async () => {
-    failOnceAt = "insert:Product_Price_History";
-
-    const failed = await saveProduct(makeCreateFormData());
-    expect(failed).toEqual({ error: "insert:Product_Price_History failed" });
-    expect(tableCounts()).toEqual([1, 1, 0, 0]);
-
-    const retry = await saveProduct(makeCreateFormData());
-    expect(retry.success).toBe(true);
-    expect(tableCounts()).toEqual([2, 2, 1, 1]);
-    expect(tables.Product_Variants.map(row => row.product_id)).toEqual(["PROD-1", "PROD-2"]);
-  });
-
-  it("leaves product, variant, and price history rows when recipe insert fails, then retry duplicates them", async () => {
-    failOnceAt = "insert:Recipes";
-
-    const failed = await saveProduct(makeCreateFormData());
-    expect(failed).toEqual({ error: "insert:Recipes failed" });
-
-    const retry = await saveProduct(makeCreateFormData());
-    expect(retry.success).toBe(true);
-
-    expect(tableCounts()).toEqual([2, 2, 2, 1]);
-    expect(tables.Recipes[0].target_id).toBe("VAR-2");
-  });
-
-  it("loses the price-history event when edit updates the variant price before history insert fails", async () => {
-    seedExistingProduct();
-    failOnceAt = "insert:Product_Price_History";
-
-    const failed = await saveProduct(makeEditFormData({ price: 30_000 }));
-    expect(failed).toEqual({ error: "insert:Product_Price_History failed" });
-    expect(tables.Product_Variants[0].price).toBe(30_000);
-    expect(tables.Product_Price_History).toHaveLength(0);
-
-    const retry = await saveProduct(makeEditFormData({ price: 30_000 }));
-    expect(retry.success).toBe(true);
-    expect(tables.Product_Variants[0].price).toBe(30_000);
-    expect(tables.Product_Price_History).toHaveLength(0);
-  });
-
-  it("temporarily leaves no active recipe when recipe version insert fails, then retry repairs the gap", async () => {
-    seedExistingProduct();
-    failOnceAt = "insert:Recipes";
-
-    const failed = await saveProduct(makeEditFormData({ ingredientId: "ING-002" }));
-    expect(failed).toEqual({ error: "insert:Recipes failed" });
-    expect(tables.Recipes).toHaveLength(1);
-    expect(tables.Recipes[0].end_date).not.toBeNull();
-
-    const retry = await saveProduct(makeEditFormData({ ingredientId: "ING-002" }));
-    expect(retry.success).toBe(true);
-    expect(tables.Recipes).toHaveLength(2);
-    expect(tables.Recipes.filter(row => row.end_date == null)).toHaveLength(1);
-  });
-
-  it("keeps a removed variant active when soft-delete fails, then retry completes the deletion", async () => {
-    seedExistingProduct(true);
-    failOnceAt = "update:Product_Variants:VAR-REMOVED";
-
-    const failed = await saveProduct(makeEditFormData());
-    expect(failed).toEqual({ error: "update:Product_Variants failed" });
-    expect(tables.Product_Variants.find(row => row.id === "VAR-REMOVED")?.status).toBe("ACTIVE");
-
-    const retry = await saveProduct(makeEditFormData());
-    expect(retry.success).toBe(true);
-    expect(tables.Product_Variants.find(row => row.id === "VAR-REMOVED")?.status).toBe("DELETED");
-  });
-
-  function tableCounts(): number[] {
-    return [
-      tables.Products.length,
-      tables.Product_Variants.length,
-      tables.Product_Price_History.length,
-      tables.Recipes.length,
-    ];
-  }
-
-  function seedExistingProduct(withRemovedVariant = false): void {
-    tables.Products.push({
-      id: "PROD-EXISTING",
-      category_id: "CAT-001",
-      name: "Existing product",
-      status: "ACTIVE",
-    });
-    tables.Product_Variants.push({
-      id: "VAR-EXISTING",
-      product_id: "PROD-EXISTING",
-      size_name: "M",
-      price: 25_000,
-      status: "ACTIVE",
-    });
-    if (withRemovedVariant) {
-      tables.Product_Variants.push({
-        id: "VAR-REMOVED",
-        product_id: "PROD-EXISTING",
-        size_name: "L",
-        price: 35_000,
+    expect(mocks.saveProductAtomic).toHaveBeenCalledTimes(1);
+    expect(mocks.saveProductAtomic.mock.calls[0][0]).toEqual({
+      isEdit: false,
+      product: {
+        category_id: "CAT-001",
+        name: "Món thử lỗi",
+        image_url: "",
         status: "ACTIVE",
-      });
-    }
-    tables.Recipes.push({
-      id: "REC-EXISTING",
-      target_type: "PRODUCT_VARIANT",
-      target_id: "VAR-EXISTING",
-      ingredients_json: JSON.stringify([makeIngredient("ING-001")]),
-      created_at: "2026-07-01T00:00:00.000Z",
-      end_date: null,
+        created_at: expect.any(String),
+      },
+      variants: [{
+        id: null,
+        size_name: "M",
+        price: 30_000,
+        recipe_decision: "CREATE_INITIAL",
+        active_recipe_id: null,
+        ingredients_json: [makeIngredient("ING-001")],
+      }],
+      removedVariantIds: [],
+      effectiveAt: "2026-07-19T00:00:00.000Z",
+      expectedPriceHistoryCount: 1,
+      expectedRecipeCount: 1,
     });
-  }
+  });
 
-  function tableFor(sheet: string): Row[] {
-    const table = tables[sheet];
-    if (!table) throw new Error(`Unexpected sheet ${sheet}`);
-    return table;
+  it("leaves no partial create state after rollback and permits retry", async () => {
+    mocks.saveProductAtomic
+      .mockRejectedValueOnce(new Error("forced rollback"))
+      .mockResolvedValueOnce(makeRpcResult());
+
+    await expect(saveProduct(makeCreateFormData())).resolves.toEqual({
+      error: "forced rollback",
+    });
+    await expect(saveProduct(makeCreateFormData())).resolves.toEqual({ success: true });
+    expect(mocks.saveProductAtomic).toHaveBeenCalledTimes(2);
+  });
+
+  it("plans an atomic price update/history insert and soft-deletes removed variants", async () => {
+    seedExisting({ withRemovedVariant: true });
+    mocks.saveProductAtomic.mockResolvedValue({
+      ...makeRpcResult(),
+      productId: "PROD-EXISTING",
+      removedVariantCount: 1,
+    });
+
+    await expect(saveProduct(makeEditFormData({ price: 30_000 }))).resolves.toEqual({
+      success: true,
+    });
+
+    const input = mocks.saveProductAtomic.mock.calls[0][0];
+    expect(input.isEdit).toBe(true);
+    expect(input.expectedPriceHistoryCount).toBe(1);
+    expect(input.expectedRecipeCount).toBe(0);
+    expect(input.removedVariantIds).toEqual(["VAR-REMOVED"]);
+    expect(input.variants[0]).toMatchObject({
+      id: "VAR-EXISTING",
+      price: 30_000,
+      recipe_decision: "UNCHANGED",
+      active_recipe_id: "REC-EXISTING",
+    });
+  });
+
+  it("plans recipe close and replacement in the same transaction", async () => {
+    seedExisting();
+    mocks.saveProductAtomic.mockResolvedValue({
+      ...makeRpcResult(),
+      productId: "PROD-EXISTING",
+      priceHistoryCount: 0,
+    });
+
+    await expect(saveProduct(makeEditFormData({ ingredientId: "ING-002" }))).resolves.toEqual({
+      success: true,
+    });
+    expect(mocks.saveProductAtomic.mock.calls[0][0].variants[0]).toMatchObject({
+      recipe_decision: "CREATE_VERSION",
+      active_recipe_id: "REC-EXISTING",
+      ingredients_json: [makeIngredient("ING-002")],
+    });
+  });
+
+  function seedExisting(options: { withRemovedVariant?: boolean } = {}): void {
+    mocks.findAll.mockImplementation(async (sheet: string) => {
+      if (sheet === "Product_Variants") {
+        return [
+          {
+            id: "VAR-EXISTING",
+            product_id: "PROD-EXISTING",
+            size_name: "M",
+            price: 25_000,
+            status: "ACTIVE",
+          },
+          ...(options.withRemovedVariant ? [{
+            id: "VAR-REMOVED",
+            product_id: "PROD-EXISTING",
+            size_name: "L",
+            price: 35_000,
+            status: "ACTIVE",
+          }] : []),
+        ];
+      }
+      if (sheet === "Recipes") {
+        return [{
+          id: "REC-EXISTING",
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-EXISTING",
+          ingredients_json: JSON.stringify([makeIngredient("ING-001")]),
+          created_at: "2026-07-01T00:00:00.000Z",
+          end_date: null,
+        }];
+      }
+      return [];
+    });
   }
 });
+
+function makeRpcResult() {
+  return {
+    productId: "PROD-001",
+    variantCount: 1,
+    priceHistoryCount: 1,
+    recipeCount: 1,
+    removedVariantCount: 0,
+  };
+}
 
 function makeCreateFormData(): FormData {
   const formData = new FormData();
@@ -239,15 +193,11 @@ function makeEditFormData(options: { price?: number; ingredientId?: string } = {
   return formData;
 }
 
-function makeIngredient(ingredientId: string): Row {
+function makeIngredient(ingredientId: string): Record<string, unknown> {
   return {
     ingredient_type: "BASE_INGREDIENT",
     ingredient_id: ingredientId,
     quantity: 10,
     unit_id: "UNT-001",
   };
-}
-
-function cloneRows(rows: Row[]): Row[] {
-  return rows.map(row => ({ ...row }));
 }

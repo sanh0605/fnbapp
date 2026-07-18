@@ -226,9 +226,10 @@ export interface DBSemiProduct {
 export interface DBProductionOrder {
   id: string;
   semi_product_id: string;
-  target_yield: string;
+  batch_yield: string;
   status: string;
   created_at: string;
+  completed_at?: string;
 }
 
 export interface DBProductionItem {
@@ -239,8 +240,6 @@ export interface DBProductionItem {
   quantity: string;
   unit_id: string;
   created_at: string;
-  semi_product_id?: string; // Joined field
-  qty_produced?: string; // Joined field
 }
 
 export interface DBPriceHistory {

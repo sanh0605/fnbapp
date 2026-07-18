@@ -115,7 +115,7 @@ export default function ProductionClient({ orders, productionItems, semiProducts
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-text-primary">{sp?.name || o.semi_product_id}</span>
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-soft text-primary-active border border-primary/20">
-                                +{o.target_yield} {uName}
+                                +{o.batch_yield} {uName}
                               </span>
                             </div>
                           );
@@ -162,7 +162,7 @@ export default function ProductionClient({ orders, productionItems, semiProducts
                     <div>
                       <div className="text-[10px] uppercase tracking-wider font-bold text-text-muted mb-1">Thu được</div>
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-soft text-primary-active border border-primary/20">
-                        +{o.target_yield} {uName}
+                        +{o.batch_yield} {uName}
                       </span>
                     </div>
                     <div className="text-right">

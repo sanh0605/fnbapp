@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   remove: vi.fn(),
   generateNewId: vi.fn(),
+  submitStockAdjustmentAtomic: vi.fn(),
   revalidatePath: vi.fn(),
   unstableCache: vi.fn((fn: unknown) => fn),
 }));
@@ -24,6 +25,10 @@ vi.mock("@/lib/sheets_db", () => ({
   update: mocks.update,
   remove: mocks.remove,
   generateNewId: mocks.generateNewId,
+}));
+vi.mock("@/lib/stock-adjustment-transaction", () => ({
+  submitStockAdjustmentAtomic: mocks.submitStockAdjustmentAtomic,
+  approveStockAdjustmentAtomic: vi.fn(),
 }));
 vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePath,
@@ -65,9 +70,10 @@ describe("stock adjustment authorization", () => {
       ok: true,
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
     });
-    mocks.generateNewId
-      .mockResolvedValueOnce("SADJ-001")
-      .mockResolvedValueOnce("STK-001");
+    mocks.submitStockAdjustmentAtomic.mockResolvedValue({
+      adjustmentId: "SADJ-001",
+      ledgerCount: 1,
+    });
 
     const result = await submitStockAdjustment({
       item_id: "BTP-001",
@@ -78,23 +84,11 @@ describe("stock adjustment authorization", () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(mocks.insert).toHaveBeenNthCalledWith(
-      1,
-      "Stock_Adjustments",
+    expect(mocks.submitStockAdjustmentAtomic).toHaveBeenCalledWith(
       expect.objectContaining({
-        id: "SADJ-001",
         status: "APPROVED",
         created_by_id: "admin-1",
         approved_by: "Quản lý",
-      }),
-    );
-    expect(mocks.insert).toHaveBeenNthCalledWith(
-      2,
-      "Stock_Ledger",
-      expect.objectContaining({
-        id: "STK-001",
-        reference_id: "SADJ-001",
-        transaction_type: "STOCK_ADJUST",
       }),
     );
   });

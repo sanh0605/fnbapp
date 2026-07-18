@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   remove: vi.fn(),
   generateNewId: vi.fn(),
+  submitStockAdjustmentAtomic: vi.fn(),
+  approveStockAdjustmentAtomic: vi.fn(),
   revalidatePath: vi.fn(),
   unstableCache: vi.fn((fn: unknown) => fn),
 }));
@@ -21,6 +23,10 @@ vi.mock("@/lib/sheets_db", () => ({
   remove: mocks.remove,
   generateNewId: mocks.generateNewId,
 }));
+vi.mock("@/lib/stock-adjustment-transaction", () => ({
+  submitStockAdjustmentAtomic: mocks.submitStockAdjustmentAtomic,
+  approveStockAdjustmentAtomic: mocks.approveStockAdjustmentAtomic,
+}));
 vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePath,
   unstable_cache: mocks.unstableCache,
@@ -28,128 +34,89 @@ vi.mock("next/cache", () => ({
 
 import { approveStockAdjustment, submitStockAdjustment } from "./actions";
 
-type Row = Record<string, unknown>;
-
-describe("stock adjustment forced failures", () => {
-  let adjustments: Row[];
-  let ledger: Row[];
-  let idCounters: Record<string, number>;
-  let failOnceAt: string | null;
-
+describe("stock adjustment atomic persistence", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    adjustments = [];
-    ledger = [];
-    idCounters = {};
-    failOnceAt = null;
-
     mocks.requireAdmin.mockResolvedValue({
       ok: true,
       actor: { id: "admin-1", name: "Admin", role: "ADMIN" },
     });
-    mocks.findAll.mockImplementation(async (sheet: string) => cloneRows(tableFor(sheet)));
-    mocks.findAllNoCache.mockImplementation(async (sheet: string) => cloneRows(tableFor(sheet)));
-    mocks.generateNewId.mockImplementation(async (sheet: string, prefix: string) => {
-      idCounters[sheet] = (idCounters[sheet] || 0) + 1;
-      return `${prefix}-${idCounters[sheet]}`;
+  });
+
+  it("submits an approved adjustment through one atomic RPC", async () => {
+    mocks.submitStockAdjustmentAtomic.mockResolvedValue({
+      adjustmentId: "SADJ-001",
+      ledgerCount: 1,
     });
-    mocks.insert.mockImplementation(async (sheet: string, row: Row) => {
-      const operation = `insert:${sheet}`;
-      if (failOnceAt === operation) {
-        failOnceAt = null;
-        throw new Error(`${operation} failed`);
-      }
-      tableFor(sheet).push({ ...row });
+
+    await expect(submitStockAdjustment(makeAdjustmentInput())).resolves.toEqual({
+      success: true,
     });
-    mocks.update.mockImplementation(async (sheet: string, id: string, patch: Row) => {
-      const operation = `update:${sheet}`;
-      if (failOnceAt === operation) {
-        failOnceAt = null;
-        throw new Error(`${operation} failed`);
-      }
-      const row = tableFor(sheet).find(value => value.id === id);
-      if (row) Object.assign(row, patch);
+    expect(mocks.submitStockAdjustmentAtomic).toHaveBeenCalledTimes(1);
+    expect(mocks.submitStockAdjustmentAtomic.mock.calls[0][0]).toMatchObject({
+      item_reference: "ING-001",
+      theoretical_qty: 10,
+      actual_qty: 9,
+      difference: -1,
+      reason: "Kiểm kê",
+      status: "APPROVED",
+      created_by_id: "admin-1",
+      created_by_name: "Admin",
+      approved_by: "Admin",
     });
   });
 
-  describe("submitStockAdjustment", () => {
-    it("leaves no rows when adjustment insert fails, then retry completes once", async () => {
-      failOnceAt = "insert:Stock_Adjustments";
+  it("leaves no partial submit state after rollback and permits a clean retry", async () => {
+    mocks.submitStockAdjustmentAtomic
+      .mockRejectedValueOnce(new Error("forced rollback"))
+      .mockResolvedValueOnce({ adjustmentId: "SADJ-001", ledgerCount: 1 });
 
-      const failed = await submitStockAdjustment(makeAdjustmentInput());
-      expect(failed).toEqual({ error: "insert:Stock_Adjustments failed" });
-      expect([adjustments.length, ledger.length]).toEqual([0, 0]);
+    await expect(submitStockAdjustment(makeAdjustmentInput())).resolves.toEqual({
+      error: "forced rollback",
+    });
+    await expect(submitStockAdjustment(makeAdjustmentInput())).resolves.toEqual({
+      success: true,
+    });
+    expect(mocks.submitStockAdjustmentAtomic).toHaveBeenCalledTimes(2);
+  });
 
-      const retry = await submitStockAdjustment(makeAdjustmentInput());
-      expect(retry).toEqual({ success: true });
-      expect([adjustments.length, ledger.length]).toEqual([1, 1]);
-      expect(ledger[0].reference_id).toBe(adjustments[0].id);
+  it("approves an existing adjustment through the completion-aware RPC", async () => {
+    mocks.approveStockAdjustmentAtomic.mockResolvedValue({
+      adjustmentId: "SADJ-EXISTING",
+      ledgerCount: 1,
+      alreadyCompleted: false,
     });
 
-    it("leaves an approved adjustment without ledger when ledger insert fails, then retry creates a second adjustment", async () => {
-      failOnceAt = "insert:Stock_Ledger";
-
-      const failed = await submitStockAdjustment(makeAdjustmentInput());
-      expect(failed).toEqual({ error: "insert:Stock_Ledger failed" });
-      expect([adjustments.length, ledger.length]).toEqual([1, 0]);
-      expect(adjustments[0]).toMatchObject({ id: "SADJ-1", status: "APPROVED" });
-
-      const retry = await submitStockAdjustment(makeAdjustmentInput());
-      expect(retry).toEqual({ success: true });
-      expect([adjustments.length, ledger.length]).toEqual([2, 1]);
-      expect(adjustments.map(row => row.status)).toEqual(["APPROVED", "APPROVED"]);
-      expect(ledger[0].reference_id).toBe("SADJ-2");
+    await expect(approveStockAdjustment("SADJ-EXISTING")).resolves.toEqual({
+      success: true,
+    });
+    expect(mocks.approveStockAdjustmentAtomic).toHaveBeenCalledWith({
+      adjustmentId: "SADJ-EXISTING",
+      approvedBy: "Admin",
+      approvedAt: expect.any(String),
     });
   });
 
-  describe("approveStockAdjustment", () => {
-    beforeEach(() => {
-      adjustments.push({
-        id: "SADJ-EXISTING",
-        item_reference: "ING-001",
-        difference: -1,
-        status: "PENDING",
+  it("repairs an approved-without-ledger legacy state on retry", async () => {
+    mocks.approveStockAdjustmentAtomic
+      .mockRejectedValueOnce(new Error("forced rollback"))
+      .mockResolvedValueOnce({
+        adjustmentId: "SADJ-EXISTING",
+        ledgerCount: 1,
+        alreadyCompleted: false,
       });
+
+    await expect(approveStockAdjustment("SADJ-EXISTING")).resolves.toEqual({
+      error: "forced rollback",
     });
-
-    it("keeps the adjustment pending when approval update fails, then retry completes once", async () => {
-      failOnceAt = "update:Stock_Adjustments";
-
-      const failed = await approveStockAdjustment("SADJ-EXISTING");
-      expect(failed).toEqual({ error: "update:Stock_Adjustments failed" });
-      expect(adjustments[0].status).toBe("PENDING");
-      expect(ledger).toHaveLength(0);
-
-      const retry = await approveStockAdjustment("SADJ-EXISTING");
-      expect(retry).toEqual({ success: true });
-      expect(adjustments[0].status).toBe("APPROVED");
-      expect(ledger).toHaveLength(1);
-      expect(ledger[0].reference_id).toBe("SADJ-EXISTING");
+    await expect(approveStockAdjustment("SADJ-EXISTING")).resolves.toEqual({
+      success: true,
     });
-
-    it("leaves the adjustment approved without ledger when ledger insert fails and blocks retry", async () => {
-      failOnceAt = "insert:Stock_Ledger";
-
-      const failed = await approveStockAdjustment("SADJ-EXISTING");
-      expect(failed).toEqual({ error: "insert:Stock_Ledger failed" });
-      expect(adjustments[0].status).toBe("APPROVED");
-      expect(ledger).toHaveLength(0);
-
-      const retry = await approveStockAdjustment("SADJ-EXISTING");
-      expect(retry).toEqual({ error: "Phiếu đã được duyệt" });
-      expect(adjustments[0].status).toBe("APPROVED");
-      expect(ledger).toHaveLength(0);
-    });
+    expect(mocks.approveStockAdjustmentAtomic).toHaveBeenCalledTimes(2);
   });
-
-  function tableFor(sheet: string): Row[] {
-    if (sheet === "Stock_Adjustments") return adjustments;
-    if (sheet === "Stock_Ledger") return ledger;
-    throw new Error(`Unexpected sheet ${sheet}`);
-  }
 });
 
-function makeAdjustmentInput(): Row {
+function makeAdjustmentInput(): Record<string, unknown> {
   return {
     item_id: "ING-001",
     theoretical_qty: 10,
@@ -157,8 +124,4 @@ function makeAdjustmentInput(): Row {
     difference: -1,
     reason: "Kiểm kê",
   };
-}
-
-function cloneRows(rows: Row[]): Row[] {
-  return rows.map(row => ({ ...row }));
 }

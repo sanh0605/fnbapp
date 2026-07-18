@@ -3,147 +3,119 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
-  insert: vi.fn(),
-  generateNewId: vi.fn(),
+  saveProductionOrderAtomic: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", () => ({
-  findAll: mocks.findAll,
-  insert: mocks.insert,
-  generateNewId: mocks.generateNewId,
+vi.mock("@/lib/sheets_db", () => ({ findAll: mocks.findAll }));
+vi.mock("@/lib/production-order-transaction", () => ({
+  saveProductionOrderAtomic: mocks.saveProductionOrderAtomic,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
 import { saveProductionOrder } from "./actions";
 
-type Row = Record<string, unknown>;
-
-describe("saveProductionOrder forced failures", () => {
-  let productionOrders: Row[];
-  let productionItems: Row[];
-  let ledger: Row[];
-  let idCounters: Record<string, number>;
-  let failOnceAt: string | null;
-
+describe("saveProductionOrder atomic persistence", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    productionOrders = [];
-    productionItems = [];
-    ledger = [];
-    idCounters = {};
-    failOnceAt = null;
-
     mocks.requireAdmin.mockResolvedValue({
       ok: true,
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
     });
-    mocks.findAll.mockImplementation(async (sheet: string) => {
-      if (sheet === "Semi_Products") return [{ id: "BTP-001", name: "Cốt cà phê" }];
-      return [];
+    mocks.findAll.mockResolvedValue([
+      { id: "BTP-001", name: "Cốt cà phê" },
+    ]);
+  });
+
+  it("leaves no partial mutation after an RPC rollback and permits a clean retry", async () => {
+    mocks.saveProductionOrderAtomic
+      .mockRejectedValueOnce(new Error("forced rollback"))
+      .mockResolvedValueOnce({
+        productionOrderId: "PRD-001",
+        itemCount: 1,
+        ledgerCount: 2,
+      });
+
+    await expect(saveProductionOrder(makeFormData())).resolves.toEqual({
+      error: "forced rollback",
     });
-    mocks.generateNewId.mockImplementation(async (sheet: string, prefix: string) => {
-      idCounters[sheet] = (idCounters[sheet] || 0) + 1;
-      return `${prefix}-${idCounters[sheet]}`;
+    expect(mocks.saveProductionOrderAtomic).toHaveBeenCalledTimes(1);
+
+    await expect(saveProductionOrder(makeFormData())).resolves.toEqual({
+      success: true,
+      order_id: "PRD-001",
     });
-    mocks.insert.mockImplementation(async (sheet: string, row: Row) => {
-      const operation = sheet === "Stock_Ledger"
-        ? `insert:${sheet}:${String(row.transaction_type)}`
-        : `insert:${sheet}`;
-      if (failOnceAt === operation) {
-        failOnceAt = null;
-        throw new Error(`${operation} failed`);
-      }
-      tableFor(sheet).push({ ...row });
+    expect(mocks.saveProductionOrderAtomic).toHaveBeenCalledTimes(2);
+  });
+
+  it("maps the form payload to the approved canonical production schema", async () => {
+    mocks.saveProductionOrderAtomic.mockResolvedValue({
+      productionOrderId: "PRD-001",
+      itemCount: 1,
+      ledgerCount: 2,
     });
+
+    await expect(saveProductionOrder(makeFormData())).resolves.toEqual({
+      success: true,
+      order_id: "PRD-001",
+    });
+
+    expect(mocks.saveProductionOrderAtomic).toHaveBeenCalledTimes(1);
+    const input = mocks.saveProductionOrderAtomic.mock.calls[0][0];
+    expect(input.order).toMatchObject({
+      semi_product_id: "BTP-001",
+      batch_yield: 100,
+      status: "COMPLETED",
+      created_by_id: "admin-1",
+      created_by_name: "Quản lý",
+    });
+    expect(input.order.created_at).toEqual(expect.any(String));
+    expect(input.order.completed_at).toBe(input.order.created_at);
+    expect(input.items).toEqual([{
+      ingredient_id: "ING-001",
+      ingredient_type: "BASE_INGREDIENT",
+      quantity: 20,
+      unit_id: "UNT-G",
+    }]);
+    expect(input.ledgerRows).toEqual([
+      {
+        transaction_type: "PRODUCTION_CONSUME",
+        item_reference: "ING-001",
+        quantity_change: -20,
+        unit_cost: 0,
+        created_at: input.order.created_at,
+      },
+      {
+        transaction_type: "PRODUCTION_YIELD",
+        item_reference: "BTP-001",
+        quantity_change: 100,
+        unit_cost: 0,
+        created_at: input.order.created_at,
+      },
+    ]);
   });
-
-  it("leaves no mutation when the first production-order insert fails and permits a clean retry", async () => {
-    failOnceAt = "insert:Production_Orders";
-
-    const failed = await saveProductionOrder(makeFormData());
-    expect(failed).toEqual({ error: "insert:Production_Orders failed" });
-    expect(productionOrders).toHaveLength(0);
-    expect(productionItems).toHaveLength(0);
-    expect(ledger).toHaveLength(0);
-
-    const retry = await saveProductionOrder(makeFormData());
-    expect(retry.success).toBe(true);
-    expect(productionOrders).toHaveLength(1);
-    expect(productionItems).toHaveLength(1);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_CONSUME")).toHaveLength(1);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_YIELD")).toHaveLength(1);
-  });
-
-  it("leaves an orphan order and creates a second order when item insert fails and the operator retries", async () => {
-    failOnceAt = "insert:Production_Items";
-
-    const failed = await saveProductionOrder(makeFormData());
-    expect(failed).toEqual({ error: "insert:Production_Items failed" });
-    expect(productionOrders).toHaveLength(1);
-    expect(productionItems).toHaveLength(0);
-    expect(ledger).toHaveLength(0);
-
-    const retry = await saveProductionOrder(makeFormData());
-    expect(retry.success).toBe(true);
-    expect(productionOrders).toHaveLength(2);
-    expect(productionItems).toHaveLength(1);
-    expect(ledger).toHaveLength(2);
-  });
-
-  it("leaves an order and item without ledger rows when consume insert fails, then creates a second complete order on retry", async () => {
-    failOnceAt = "insert:Stock_Ledger:PRODUCTION_CONSUME";
-
-    const failed = await saveProductionOrder(makeFormData());
-    expect(failed).toEqual({ error: "insert:Stock_Ledger:PRODUCTION_CONSUME failed" });
-    expect(productionOrders).toHaveLength(1);
-    expect(productionItems).toHaveLength(1);
-    expect(ledger).toHaveLength(0);
-
-    const retry = await saveProductionOrder(makeFormData());
-    expect(retry.success).toBe(true);
-    expect(productionOrders).toHaveLength(2);
-    expect(productionItems).toHaveLength(2);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_CONSUME")).toHaveLength(1);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_YIELD")).toHaveLength(1);
-  });
-
-  it("silently doubles ingredient consumption when yield insert fails and the operator retries", async () => {
-    failOnceAt = "insert:Stock_Ledger:PRODUCTION_YIELD";
-
-    const failed = await saveProductionOrder(makeFormData());
-    expect(failed).toEqual({ error: "insert:Stock_Ledger:PRODUCTION_YIELD failed" });
-    expect(productionOrders).toHaveLength(1);
-    expect(productionItems).toHaveLength(1);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_CONSUME")).toHaveLength(1);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_YIELD")).toHaveLength(0);
-
-    const retry = await saveProductionOrder(makeFormData());
-    expect(retry.success).toBe(true);
-    expect(productionOrders).toHaveLength(2);
-    expect(productionItems).toHaveLength(2);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_CONSUME")).toHaveLength(2);
-    expect(ledger.filter(row => row.transaction_type === "PRODUCTION_YIELD")).toHaveLength(1);
-  });
-
-  function tableFor(sheet: string): Row[] {
-    if (sheet === "Production_Orders") return productionOrders;
-    if (sheet === "Production_Items") return productionItems;
-    if (sheet === "Stock_Ledger") return ledger;
-    throw new Error(`Unexpected sheet ${sheet}`);
-  }
 });
 
 function makeFormData(): FormData {
   const formData = new FormData();
   formData.set("semi_product_id", "BTP-001");
   formData.set("target_yield", "100");
-  formData.set("consumed_ingredients", JSON.stringify([{
-    ingredient_id: "ING-001",
-    qtyNeeded: 20,
-    is_non_inventory: false,
-  }]));
-  formData.set("user", "Quản lý");
+  formData.set("consumed_ingredients", JSON.stringify([
+    {
+      ingredient_id: "ING-001",
+      ingredient_type: "BASE_INGREDIENT",
+      unit_id: "UNT-G",
+      qtyNeeded: 20,
+      is_non_inventory: false,
+    },
+    {
+      ingredient_id: "ING-NONINV",
+      ingredient_type: "BASE_INGREDIENT",
+      unit_id: "UNT-G",
+      qtyNeeded: 5,
+      is_non_inventory: true,
+    },
+  ]));
   return formData;
 }
