@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Production/Order-Edit Stop-Gate Reviewed; Approved Final 2 Paths
+
+**Trigger:** Codex committed forced-failure tests for `saveProductionOrder` and `supersedeOrderV2` (commit `26b2eb8`), found `saveProductionOrder`'s gap broader than `voidOrderV2`'s, and paused per Item 2a before the final 2 paths.
+
+### Review Performed
+
+- Confirmed commit scope: 2 new test files + 1 new stop-gate report, no application code changed.
+- Read `app/admin/production/actions.failure.test.ts` in full — 4 tests calling the real `saveProductionOrder` against a stateful mock. Confirmed the critical assertion directly: after a forced `PRODUCTION_YIELD` insert failure followed by an operator retry, `PRODUCTION_CONSUME` ledger rows grow from 1 to 2 (ingredients consumed twice) while `PRODUCTION_YIELD` stays at 1 (output recorded once) — a genuine silent double-deduction with no cleanup and no idempotency guard at all, worse than `voidOrderV2` (which at least partially guarded one of its three failure windows).
+- Read `lib/sheets-db-v2-edit.failure.test.ts` in full — 6 tests against the real `supersedeOrderV2`. Confirmed: single failures at all 5 sequential write steps clean up correctly and permit a safe retry (parametrized test covering all 5 positions, using a realistic unique-ID constraint model matching real DB behavior). Confirmed the compound-failure case: forcing both the event insert and the line-cleanup itself to fail leaves an orphan `Order_Lines_V2` row that then blocks every subsequent retry via primary-key conflict — a stuck state requiring manual intervention, not a silent duplicate.
+- Independently reran both new test files (10/10 pass) and the full suite: 79 files, 463/463 pass (matches claim, up from 453). Independently reran `npx tsc --noEmit`: 0 errors.
+
+### Decision
+
+- Approved continuing to the final 2 Item-2 paths (`saveProduct`, `submitStockAdjustment`/`approveStockAdjustment` as one path) under the same evidence-only rules — no remediation yet.
+- Logged `G4-B2` (`saveProductionOrder`, P1, worse than G4-B1) and `G4-B3` (`supersedeOrderV2`, preliminary — final classification held until Item 2 fully closes) in `docs/ROADMAP.md`'s P2 backlog with full evidence.
+- Noted that 3/3 tested paths are now `needs-atomic-rpc` — the pattern looks systemic across the codebase's non-atomic multi-write paths, which will matter when Phase B gets scoped (likely a combined effort rather than isolated fixes, and possibly worth a business-facing conversation about investment level once the full picture from all 5 paths is in).
+- No code, test, production data, or remote repository changed during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - voidOrderV2 Stop-Gate Reviewed; Continue Evidence Collection Decision
 
 **Trigger:** Codex committed the `voidOrderV2` forced-failure test (commit `15e3889`) and found a gap broader than the handoff anticipated, then paused per Gate 4's stop-and-ping trigger for "a path can silently duplicate a financial/inventory write."
