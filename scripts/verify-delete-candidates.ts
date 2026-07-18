@@ -14,22 +14,18 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
+import {
+  getSaigonDateStamp,
+  hasScriptReference,
+  parseDeleteOneOffList,
+} from "../lib/script-cleanup-tools";
 
 const REPO_ROOT = process.cwd();
 const SCRIPTS_DIR = path.join(REPO_ROOT, "scripts");
 
 function loadDeleteOneOffList(): string[] {
   const planPath = path.join(REPO_ROOT, "docs/audits/script-cleanup-plan.md");
-  const text = fs.readFileSync(planPath, "utf8");
-  const section = text.split("## DELETE_ONE_OFF")[1]?.split(/\n## /)[0];
-  if (!section) {
-    throw new Error("Could not find DELETE_ONE_OFF section in script-cleanup-plan.md");
-  }
-  const names = [...section.matchAll(/`([^`]+\.(?:ts|js))`/g)].map(m => m[1]);
-  if (names.length === 0) {
-    throw new Error("Parsed 0 DELETE_ONE_OFF entries -- plan format may have changed");
-  }
-  return names;
+  return parseDeleteOneOffList(fs.readFileSync(planPath, "utf8"));
 }
 
 const DELETE_ONE_OFF = loadDeleteOneOffList();
@@ -55,24 +51,6 @@ function findReferences(scriptName: string): string[] {
     /^scripts\/verify-delete-candidates\.ts$/,
     /^scripts\/script-name-placeholder$/, // never match
   ];
-  // Base name without extension -- TS/JS imports commonly omit the extension
-  // (e.g. `from "./batch-sheets-orders"`), so match both forms.
-  const base = scriptName.replace(/\.(ts|js)$/, "");
-  const escBase = base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const escFull = scriptName.replace(/\./g, "\\.");
-  // Substantive reference patterns: imports (with/without extension), script-path strings, command lines.
-  const refPatterns = [
-    new RegExp(`from\\s+['"]\\.\\./${escBase}(?:\\.(?:ts|js))?['"]`),
-    new RegExp(`from\\s+['"]\\./${escBase}(?:\\.(?:ts|js))?['"]`),
-    new RegExp(`require\\(['"]\\.\\./${escBase}(?:\\.(?:ts|js))?['"]\\)`),
-    new RegExp(`require\\(['"]\\./${escBase}(?:\\.(?:ts|js))?['"]\\)`),
-    new RegExp(`scripts/${escFull}`),
-    new RegExp(`node_modules/.bin/vite-node\\.cmd scripts\\s+${escFull}`),
-    new RegExp(`\\.bin/vite-node\\.cmd\\s+${escFull}`),
-    new RegExp(`vite-node\\.\\w+\\s+${escFull}`),
-    new RegExp(`execSync\\([^)]*scripts/${escFull}`),
-  ];
-
   for (const file of allFiles) {
     const relPath = path.relative(REPO_ROOT, file).split(path.sep).join("/");
     if (relPath === `scripts/${scriptName}`) continue;
@@ -91,7 +69,7 @@ function findReferences(scriptName: string): string[] {
 
     try {
       const content = fs.readFileSync(file, "utf8");
-      if (refPatterns.some(p => p.test(content))) {
+      if (hasScriptReference(content, scriptName)) {
         refs.push(relPath);
       }
     } catch {
@@ -102,7 +80,7 @@ function findReferences(scriptName: string): string[] {
 }
 
 function main() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getSaigonDateStamp();
   const lines: string[] = [];
   lines.push("# Phase 6.2 — Script Deletion Verification");
   lines.push("");
