@@ -3,7 +3,7 @@
 import { findAll, findAllNoCache, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath, unstable_cache } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
-import { resolveActor, requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
 export async function addItemCategory(formData: FormData): Promise<ActionResponse> {
@@ -460,18 +460,14 @@ export async function submitStockAdjustment(data: any, _clientRole?: string, _cl
     if (!data?.reason || String(data.reason).trim().length === 0) {
       return fail("Lý do điều chỉnh là bắt buộc");
     }
-    // Claude code — CODE-22: ignore client-supplied role, use server-side auth.
-    // Client params kept in signature for backward compat but no longer trusted.
-    const auth = await resolveActor();
+    // Ignore client-supplied identity and enforce the owner-approved ADMIN policy.
+    // Client params remain in the signature for backward compatibility.
+    const auth = await requireAdmin();
     if (!auth.ok) return fail(auth.error);
-    const role = auth.actor.role;
     const username = auth.actor.name;
 
     const nowIso = new Date().toISOString();
     const id = await generateNewId("Stock_Adjustments", "SADJ");
-    
-    // If admin submits, it's auto-approved
-    const isApproved = role === "ADMIN";
     
     await insert("Stock_Adjustments", {
       id,
@@ -480,27 +476,24 @@ export async function submitStockAdjustment(data: any, _clientRole?: string, _cl
       actual_qty: data.actual_qty,
       difference: data.difference,
       reason: data.reason || "",
-      status: isApproved ? "APPROVED" : "PENDING",
+      status: "APPROVED",
       created_by_name: username,
       created_by_id: auth.actor.id,
       created_at: nowIso,
-      approved_by: isApproved ? username : "",
-      approved_at: isApproved ? nowIso : ""
+      approved_by: username,
+      approved_at: nowIso
     });
 
-    if (isApproved) {
-      // Create ledger entry immediately
-      const ledger_id = await generateNewId("Stock_Ledger", "STK");
-      await insert("Stock_Ledger", {
-        id: ledger_id,
-        transaction_type: "STOCK_ADJUST",
-        reference_id: id,
-        item_reference: data.item_id,
-        quantity_change: data.difference,
-        unit_cost: 0,
-        created_at: nowIso
-      });
-    }
+    const ledger_id = await generateNewId("Stock_Ledger", "STK");
+    await insert("Stock_Ledger", {
+      id: ledger_id,
+      transaction_type: "STOCK_ADJUST",
+      reference_id: id,
+      item_reference: data.item_id,
+      quantity_change: data.difference,
+      unit_cost: 0,
+      created_at: nowIso
+    });
 
     revalidatePath("/admin/inventory/stock");
     return ok();

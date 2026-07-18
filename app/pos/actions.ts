@@ -2,8 +2,7 @@
 
 import { findAll, findAllNoCache, insert, update, remove } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { resolveActor } from "@/lib/auth";
 import crypto from "node:crypto";
 
 import { buildOrderFromCart } from "@/lib/order-cart";
@@ -38,15 +37,10 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
       return { success: false, error: "Không xác định được thương hiệu" };
     }
 
-    // 2. Resolve actor
-    let session = null;
-    if (process.env.CLI_MODE !== "true") {
-      session = await getServerSession(authOptions);
-    }
-    const actor = {
-      id: (session?.user as any)?.id || "system",
-      name: session?.user?.name || "Hệ thống",
-    };
+    // 2. Require a real session, or the explicit CLI_MODE system actor.
+    const auth = await resolveActor();
+    if (!auth.ok) return { success: false, error: auth.error };
+    const actor = auth.actor;
 
     // 3. Load reference data (cached where possible)
     const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients, semiProducts] = await Promise.all([
@@ -172,6 +166,9 @@ function buildStockLedgerEntries(
 // Claude code — R12: buildLineConsumptionRows extracted to lib/inventory-consumption.ts (shared).
 
 export async function getPOSDrafts(brandId: string) {
+  const auth = await resolveActor();
+  if (!auth.ok) throw new Error(auth.error);
+
   try {
     const allDrafts = await findAllNoCache("POS_Drafts");
     return allDrafts.filter((d: any) => d.brand_id === brandId);
@@ -188,14 +185,9 @@ export async function savePOSDraft(draft: {
   brand_id: string;
 }) {
   try {
-    let session = null;
-    if (process.env.CLI_MODE !== "true") {
-      session = await getServerSession(authOptions);
-    }
-    const actor = {
-      id: (session?.user as any)?.id || "system",
-      name: session?.user?.name || "Hệ thống",
-    };
+    const auth = await resolveActor();
+    if (!auth.ok) return { success: false as const, error: auth.error };
+    const actor = auth.actor;
 
     const now = new Date().toISOString();
     
@@ -232,6 +224,9 @@ export async function savePOSDraft(draft: {
 
 export async function deletePOSDraft(draftId: string) {
   try {
+    const auth = await resolveActor();
+    if (!auth.ok) return { success: false as const, error: auth.error };
+
     await remove("POS_Drafts", draftId);
     return { success: true as const };
   } catch (err: any) {
