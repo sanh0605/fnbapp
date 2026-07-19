@@ -60,12 +60,13 @@ the core. Wastage/loss during preparation has no dedicated entry point
 (only implicit via production yield variance) — classify
 `RECOMMENDED_NEXT`.
 
-## 5. POS ordering and checkout — covered, atomicity/idempotency now strong
+## 5. POS ordering and checkout — covered, atomicity/idempotency now strong, 1 confirmed `REQUIRED_NOW` gap
 
 `POS-CATALOG`, `POS-CHECKOUT` (now `LIVE_VERIFIED` with idempotency),
-`POS-DRAFTS`. Split/mixed payment: not evidenced in the catalog — worth
-confirming whether it's actually needed (owner interview) before
-classifying; tentatively `RECOMMENDED_NEXT` pending that check.
+`POS-DRAFTS`. **Confirmed by owner (2026-07-20): split/mixed payment on
+one order (e.g. part cash, part bank transfer) does happen in practice.**
+No current entry point supports this — checkout is single-payment-method
+only. Classified `REQUIRED_NOW`.
 
 ## 6. Offline and unreliable-network operation — **already an owner decision, not a gap**
 
@@ -76,10 +77,9 @@ the checklist lists it as its own section.
 ## 7. Order lifecycle and after-sale correction — covered, atomicity now strong
 
 `ORD-LIST-DETAIL`, `ORD-EDIT-SUPERSEDE`, `ORD-VOID` (both now
-`LIVE_VERIFIED`, atomic). Refund/repayment handling: not evidenced —
-classify `RECOMMENDED_NEXT` pending owner confirmation of whether refunds
-happen in practice today (if they do informally, this is a real gap, not
-optional — worth an explicit owner check before finalizing).
+`LIVE_VERIFIED`, atomic). **Confirmed by owner (2026-07-20): refund/
+repayment is rare enough in practice to not need dedicated support right
+now.** Classified `RECOMMENDED_NEXT`, confirmed rather than assumed.
 
 ## 8. Purchasing and supplier management — covered
 
@@ -110,12 +110,14 @@ by eye today).
 `PROMO-ADMIN` (now with server-side validation), `PROMO-CHECKOUT`,
 `PRICE-HISTORY`. No material gap identified against this section.
 
-## 12. Customer, preorder, pickup, delivery — mostly `OPTIONAL_LATER`
+## 12. Customer, preorder, pickup, delivery — `OPTIONAL_LATER`, confirmed
 
 No current entry points for preorder/pickup-queue/delivery-address
-tracking. Given the business is takeaway/cart-based per `CONTEXT.md`,
-classify `OPTIONAL_LATER` pending an explicit owner confirmation that
-preorder/delivery is or isn't part of current operations — don't assume.
+tracking. **Confirmed by owner (2026-07-20): third-party delivery
+platform integration (GrabFood/ShopeeFood-style) is a real future
+intent, but with no committed timeline — "còn rất lâu."** Classified
+`OPTIONAL_LATER`, correctly out of this phase, but noted (not forgotten)
+for whenever that timeline firms up.
 
 ## 13. Cash, payment, daily reconciliation — **same `REQUIRED_NOW` gap as section 2**
 
@@ -157,10 +159,9 @@ instruction, none should be built without an explicit owner decision.
 No action proposed; this section exists to prevent scope creep, not to
 generate a to-do list.
 
-## Summary: concrete `REQUIRED_NOW` gaps found
+## Summary: confirmed `REQUIRED_NOW` gaps (owner-approved 2026-07-20)
 
-Only **2 real gaps** rose to `REQUIRED_NOW` in this pass, and they're the
-same underlying capability seen from two checklist sections:
+3 concrete gaps, confirmed via direct owner classification review:
 
 1. **Shift and cash reconciliation** (sections 2 + 13) — no shift open/
    close, opening float, cash in/out, or expected-vs-counted variance
@@ -168,24 +169,25 @@ same underlying capability seen from two checklist sections:
 2. **Low-stock / reorder-level warning** (section 10) — no automated
    signal exists; stock depletion is only visible by manually checking
    `RPT-STOCK`.
+3. **Split/mixed payment on one order** (section 5) — confirmed to
+   happen in practice (e.g. part cash, part bank transfer); checkout
+   currently supports only a single payment method per order.
 
-Everything else found is `RECOMMENDED_NEXT` or `OPTIONAL_LATER`, or is
-already a tracked, owner-known gap (`INV-NEGATIVE-STOCK`, `BKP-RESTORE`,
-`POS-OFFLINE`, multi-outlet items) that doesn't need re-litigating here.
+Confirmed `RECOMMENDED_NEXT`/`OPTIONAL_LATER` rather than assumed:
+refund/repayment (rare in practice, stays `RECOMMENDED_NEXT`);
+preorder/third-party delivery (real future intent, no committed
+timeline, stays `OPTIONAL_LATER`).
 
-A few items are marked tentative pending a direct owner question rather
-than guessed at: split/mixed payment usage, refund/repayment frequency
-in practice, and preorder/delivery scope. These affect classification but
-aren't things I should assume either way.
+Everything else in this document is `RECOMMENDED_NEXT` or
+`OPTIONAL_LATER`, or is already a tracked, owner-known gap
+(`INV-NEGATIVE-STOCK`, `BKP-RESTORE`, `POS-OFFLINE`, multi-outlet items)
+that doesn't need re-litigating here.
 
-## Next step, pending your approval
+## Next step
 
-1. Confirm or adjust the classifications above (especially the 2
-   `REQUIRED_NOW` items — do these match how you'd prioritize it?).
-2. Answer the 3 tentative items (split payment, refunds, preorder/delivery)
-   so they can be classified properly instead of guessed.
-3. Once classification is confirmed, the next deliverable is a completion
-   roadmap for the `REQUIRED_NOW` items specifically — which I will not
-   start designing or building until you approve scope and priority on
-   *that* roadmap too (this is a 2-step approval per the audit program's
-   own exit criteria, not a rubber stamp before implementation starts).
+Classification is now confirmed. The next deliverable is a completion
+roadmap scoping these 3 `REQUIRED_NOW` items specifically — see
+`docs/superpowers/plans/2026-07-20-feature-completeness-required-now-roadmap.md`.
+Per the audit program's own exit criteria, that roadmap needs its own
+separate scope/priority approval before implementation starts — this
+classification approval is not a rubber stamp for building yet.
