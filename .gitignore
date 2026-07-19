@@ -86,16 +86,6 @@ recovery-snapshots/
 *.migration-report.json
 *.audit-report.json
 beverages-*.json
-
-# Stabilization Phase 3 (2026-07-16): exclude ephemeral debug/agent artifacts
-scripts/debug-*.ts
-scripts/inspect-*.ts
-scripts/dump-*.ts
-scripts/delete-*.ts
-scripts/fix-pos*.ts
-scripts/test-*.ts
-scripts/search-*.ts
-scripts/u5*.js
 .agents/
 skills-lock.json
 supabase/.temp/
