@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - REV-1 (Script Cleanup Cross-Check) Reviewed, Approved, and Merged
+
+**Trigger:** Codex committed REV-1 (commit `39ea6c2` on branch `codex/rev1-script-fix-crosscheck`) and reported both of Claude's pre-rule fixes were correct, plus 3 hardening additions: a UTC→Saigon-timezone date fix, a tightened reference-detection regex, and 14 new regression tests. Owner authorized continuous autonomous work overnight — merge/next-task decisions no longer require per-step approval (only genuine business/scope tradeoffs and pushing do).
+
+### Review Performed
+
+- Read the full diff (4 files): logic extracted into a new, tested `lib/script-cleanup-tools.ts` (`getSaigonDateStamp`, `parseDeleteOneOffList`, `hasScriptReference`), both scripts now call into it instead of carrying inline untested logic.
+- Traced `hasScriptReference`'s regex by hand against edge cases: confirmed `scripts/foo.ts.bak` and `scripts/foo.tsx` are correctly rejected (the trailing-character negative lookahead `(?![A-Za-z0-9_.-])` prevents both from matching a reference to `foo.ts`), confirmed alias/nested/Windows paths and dynamic `import()` are all still matched via the shared `modulePath` sub-pattern, confirmed a bare textual mention of `"foo.ts"` with no import/require/path wrapper is deliberately *not* counted as a substantive reference (matches the original tool's own design intent).
+- Confirmed `toSaigonIsoString` (used by the new `getSaigonDateStamp`) is a pre-existing utility in `lib/datetime.ts`, not newly invented.
+- Read the new `lib/script-cleanup-tools.test.ts` (14 cases via `it.each`): 8 positive cases (plain import, `.ts`-suffixed import, `require`, alias, nested path, dynamic `import()`, `execSync` invocation, Windows backslash path) and 4 negative cases (`.tsx`, `.ts.bak`, an unrelated similarly-named file, a bare word) — good coverage of exactly the ambiguous cases this fix was meant to resolve.
+- **Independently checked out the branch's worktree (`C:/tmp/fnbapp-rev1`) and reran everything**: `npx vitest run` — 96 files, 512/512 pass (matches claim, up from 498). `npx tsc --noEmit` — 0 errors. Reran `scripts/verify-delete-candidates.ts` live — 18 safe / 28 referenced / 18 missing, matching the claimed split exactly. Reran `scripts/audit-mac-drift-baseline.ts` — completed without the frozen-baseline-hash assertion throwing, confirming the "SHA unchanged" claim independently. Discarded the two harmless side-effect artifacts these reruns regenerated (a JSON timestamp, a dated report file) rather than committing them.
+- Approved. **Merged `codex/rev1-script-fix-crosscheck` into `main`** (commit, then merge — no separate approval requested per tonight's updated agreement). Reran the suite (512/512) and TypeScript (clean) again on `main` post-merge to confirm.
+
+### Decision
+
+- REV-1 closed. Handed Gate 5 (already scoped, `docs/handoffs/2026-07-19-codex-gate5-pos-checkout-idempotency.md`) to Codex as the next continuous task.
+- No code changes made by Claude during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - Gate 3 Phase B (Database Hardening) Reviewed and Approved
 
 **Trigger:** Codex committed Gate 3 Phase B (commit `58aa46a` on branch `codex/gate3-phase-b-database-hardening`, migration `0022_gate3_database_hardening.sql` applied to production) and reported: 28→0 tables with `anon`/`authenticated` grants, an additional `MAINTAIN` privilege revoked beyond the handoff's scope (found live, not anticipated), `next_order_num` dropped, `rls_auto_enable` recreated with an unchanged hash, 2 stale scripts removed, migrations 0001-0022 synced, no Realtime/webhook/cron/extra-role dependency found, 498/498 tests, TS clean, build passing, frozen baseline hash unchanged.
