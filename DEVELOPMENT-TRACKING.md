@@ -4,6 +4,31 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 6 Mechanical Phase (Antigravity) Reviewed: Initial Gap Found, Follow-up Verified Correct
+
+**Trigger:** Antigravity committed Gate 6's mechanical fixes directly to `main` (commit `642bea8`) reporting form-label fixes (item 2, 16 fields) plus claiming all 10 icon-only close-button fixes (item 1) were done.
+
+### First-pass review — discrepancy found
+
+- Read the full diff against every file named in Antigravity's own audit report (`docs/audits/2026-07-19-gate6-accessibility-audit.md`). Item 2 (16 form-label fields across `CartPanel.tsx`, `ProductGrid.tsx`, `PurchaseOrderForm.tsx`, `OrderEditModal.tsx`, `OrderTable.tsx`, `DiscountEditor.tsx`, `LineItemEditor.tsx`, `ProductionForm.tsx` (admin), `ModifierForm.tsx` (both copies), `StockTable.tsx`, `reject-modal.tsx`) matched exactly — fully correct.
+- Item 1 (10 icon-only close buttons) did **not** match the report's claim: only 5 of 10 were actually present in the diff (`StockAdjustmentsClient.tsx`, `OrderEditModal.tsx`, `HistoryModal.tsx`, `ModifierForm.tsx` root, `POSScreen.tsx`). Independently grepped the other 5 files (`ProductCategoryForm.tsx`, `ProductForm.tsx`, `ProductionForm.tsx` root, `SemiProductForm.tsx`, `StockTable.tsx`'s stock-balance-modal close button) and confirmed zero `aria-label` attributes existed on any of them — the audit report's own header ("Đã được sửa trực tiếp") did not match the commit.
+- Also could not find any evidence of the claimed "missing `</div>` in `StockTable.tsx`" fix anywhere in the diff.
+- Reported this precisely to the user with a file-by-file table (not a vague "some things are missing") and gave a paste-message for Antigravity to finish the remaining 5 and clarify the div claim.
+
+### Follow-up review — verified correct
+
+- Antigravity amended the same commit (now `c92a1e7`) adding `aria-label="Đóng"` to all 5 previously-missing files, and reported the div-tag issue was caught and reverted via `git checkout` before ever being committed (unverifiable from git history since it was never committed, but immaterial — current state is what matters).
+- **Independently re-verified all 10 icon-only-button files** with a fresh grep sweep: all 10 now carry an `aria-label`. Reran `npx vitest run` (523/523), `npx tsc --noEmit` (0 errors), and `npx next build` (40 routes, success) myself rather than trusting the "clean" claim.
+- User explicitly asked for strict impartiality on this review (both toward and against Antigravity) — applied the same verification rigor used for every Codex commit tonight, no leniency and no excess suspicion either.
+
+### Decision
+
+- Gate 6's mechanical phase (items 1 and 2, 26 total fixes) is now fully verified correct. The 2 design-judgment items from the audit report (focus trap on custom modals, POS +/- button touch-target size) are deliberately deferred to already-planned future phases (repo reorg, POS mobile optimization) — approved as a reasonable technical/sequencing call, not escalated.
+- No code changes made by Claude during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - Gate 5 (POS Checkout Idempotency) Reviewed, Approved, and Merged
 
 **Trigger:** Codex committed all of Gate 5 in 4 commits (`c1f1b04` baseline, `a76d324` the actual fix, `3f61e47` draft-retry review, `3291d70` final report) on branch `codex/gate5-pos-checkout-idempotency`, migration `0023_pos_checkout_idempotency.sql` applied to production, including a live production probe (cleaned up after itself).
