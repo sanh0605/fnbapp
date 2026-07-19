@@ -95,7 +95,6 @@ scripts/delete-*.ts
 scripts/fix-pos*.ts
 scripts/test-*.ts
 scripts/search-*.ts
-scripts/print-recipe-json.ts
 scripts/u5*.js
 .agents/
 skills-lock.json
