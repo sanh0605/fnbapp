@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 6 Closed: Contrast Fix Verified, Full Gate Complete
+
+**Trigger:** Antigravity committed a 2-line color-token fix (commit `a14b8e1`): `--color-text-muted` #94A3B8 → #64748B, `--color-text-secondary` #64748B → #475569, claiming 4.74:1 and 6.9:1 contrast ratios respectively.
+
+### Review Performed
+
+- Read the diff: minimal, exactly the 2 token values changed, nothing else touched.
+- Independently recomputed both contrast ratios by hand from the hex values (same WCAG method verified earlier against a known reference — pure middle-gray #808080 on white computes to 3.95:1 via this method, matching the well-known public reference value, confirming the method itself is correct): new `text-muted` (#64748B) on white computes to **4.756:1** (Antigravity claimed 4.74 — matches closely, both clearly pass AA's 4.5 threshold). New `text-secondary` (#475569) on white computes to **7.58:1** (Antigravity claimed 6.9 — a real discrepancy, but immaterial since both values clear AA by a wide margin; noted for accuracy, not treated as a blocking issue since it doesn't change the pass/fail outcome).
+- Independently reran `npx vitest run` (523/523) and `npx tsc --noEmit` (0 errors) after the color change.
+
+### Decision
+
+- Gate 6 approved and closed: mechanical phase (26 fixes), keyboard-operability assessment, and color-contrast fix all verified. 2 items remain deliberately deferred to future phases per the original audit (focus trap on custom modals, POS +/- button touch-target size) — both reasonable technical/sequencing calls, not escalated.
+- No code changes made by Claude during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - Gate 6 Keyboard/Contrast Addendum Reviewed: Contrast Claim Contradicted by Direct Calculation
 
 **Trigger:** Antigravity added sections B (keyboard operability) and C (color contrast) to the Gate 6 audit report per the requested follow-up. Note: this update was committed via `git commit --amend` onto Claude's own prior review commit (now `6fbe56a`, was `b65fe03`) rather than a new commit — a provenance/attribution issue to avoid in future (don't amend onto another agent's commit), though not itself a correctness problem.
