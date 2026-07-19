@@ -9,6 +9,16 @@ import { requireAdmin } from "@/lib/auth";
 const SHEET = "UOM_Conversions";
 const PATH = "/admin/inventory/conversions";
 
+function readConversionText(formData: FormData, key: string): string {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeConversionRate(value: string): string | null {
+  const rate = Number(value);
+  return Number.isFinite(rate) && rate > 0 ? String(rate) : null;
+}
+
 export async function getConversionsData(): Promise<{
   baseIngredients: DBBaseIngredient[];
   items: DBPurchasedItem[];
@@ -37,14 +47,16 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
-  const purchased_item_id = formData.get("purchased_item_id") as string;
-  const purchased_unit = formData.get("purchased_unit") as string;
-  const conversion_rate = formData.get("conversion_rate") as string;
-  const base_unit = formData.get("base_unit") as string;
+  const purchased_item_id = readConversionText(formData, "purchased_item_id");
+  const purchased_unit = readConversionText(formData, "purchased_unit");
+  const rawConversionRate = readConversionText(formData, "conversion_rate");
+  const base_unit = readConversionText(formData, "base_unit");
 
-  if (!purchased_item_id || !purchased_unit || !conversion_rate || !base_unit) {
+  if (!purchased_item_id || !purchased_unit || !rawConversionRate || !base_unit) {
     return fail("Thiếu thông tin quy đổi");
   }
+  const conversion_rate = normalizeConversionRate(rawConversionRate);
+  if (!conversion_rate) return fail("Tỷ lệ quy đổi phải là số hữu hạn lớn hơn 0");
 
   try {
     const id = await generateNewId(SHEET, "QD");
@@ -69,16 +81,18 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
-  const id = formData.get("id") as string;
-  const purchased_item_id = formData.get("purchased_item_id") as string;
-  const purchased_unit = formData.get("purchased_unit") as string;
-  const conversion_rate = formData.get("conversion_rate") as string;
-  const base_unit = formData.get("base_unit") as string;
+  const id = readConversionText(formData, "id");
+  const purchased_item_id = readConversionText(formData, "purchased_item_id");
+  const purchased_unit = readConversionText(formData, "purchased_unit");
+  const rawConversionRate = readConversionText(formData, "conversion_rate");
+  const base_unit = readConversionText(formData, "base_unit");
   const update_history = formData.get("update_history") === "true";
 
-  if (!id || !purchased_item_id || !purchased_unit || !conversion_rate || !base_unit) {
+  if (!id || !purchased_item_id || !purchased_unit || !rawConversionRate || !base_unit) {
     return fail("Thiếu thông tin");
   }
+  const conversion_rate = normalizeConversionRate(rawConversionRate);
+  if (!conversion_rate) return fail("Tỷ lệ quy đổi phải là số hữu hạn lớn hơn 0");
 
   try {
     const [allConvs, poLines] = await Promise.all([
