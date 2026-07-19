@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| (none) | — | — | Full audit Gate 5 (POS checkout idempotency) merged to `main` 2026-07-19 (commit range `c1f1b04`-`3291d70`, Claude-reviewed, including an independent production-residue check after Codex's live probe). See `COMPLETED.md`. Not pushed to `origin` yet. |
+| [ ] **Full audit Gate 6 — UI/UX/accessibility audit** | Antigravity | `app/**/*.tsx`, `components/**/*.tsx` | Next in the 8-gate sequence (owner confirmed 2026-07-19: keep gate order, don't skip to Gate 7 for Codex while Gate 6 is pending). Handoff: `docs/handoffs/2026-07-19-antigravity-gate6-accessibility-audit.md`. Prior UI-REMED work covered color/token consistency only — grepped directly, zero accessibility/ARIA/keyboard-nav coverage found, a genuinely unaudited area. Codex is idle pending this gate's completion (Gate 7 depends on it per gate ordering). |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
@@ -132,7 +132,8 @@ records intent and order, not authorization to start.
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
-- `2026-07-19-codex-gate5-pos-checkout-idempotency.md` → Full audit Gate 5 — POS checkout idempotency — ready for Codex pickup, P1
+- `2026-07-19-antigravity-gate6-accessibility-audit.md` → Full audit Gate 6 — UI/UX/accessibility audit — ready for Antigravity pickup, P1
+- `2026-07-19-codex-gate5-pos-checkout-idempotency.md` → Full audit Gate 5 — POS checkout idempotency — historical reference, work complete and Claude-reviewed (commits `c1f1b04`-`3291d70`, merged)
 - `2026-07-19-codex-rev1-script-fix-crosscheck.md` → REV-1 — cross-check 2 pre-rule script fixes — historical reference, work complete and Claude-reviewed (commit `39ea6c2`, merged)
 - `2026-07-19-codex-gate3-phase-b-database-hardening.md` → Gate 3 Phase B — database grant/function hardening (G3-A4/A5/A6/A8) — historical reference, work complete and Claude-reviewed (commit `58aa46a`, merged `d7cabb4`)
 - `2026-07-19-codex-fix1-password-fix2-remove-backup-page.md` → FIX-1 (password change) + FIX-2 (remove Backup&Sync page) — historical reference, work complete and Claude-reviewed (commit `fe04f4a`)
@@ -185,6 +186,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-19 Claude: after Gate 5 closed, checked whether Codex had further Codex-appropriate work queued. Next gate in sequence (Gate 6, UI/UX/accessibility) is Antigravity's domain, not Codex's — asked the owner rather than either skip gate order (jump Codex to Gate 7) or silently leave Codex idle without explanation. Owner chose to keep gate order and engage Antigravity for Gate 6. Scoped it from a first-pass investigation (grepped the existing UI audit for accessibility coverage: zero; found a concrete example gap — 2 icon-only close buttons with no `aria-label` — and confirmed a good existing baseline, every `<img>` already has meaningful `alt` text). Authored `docs/handoffs/2026-07-19-antigravity-gate6-accessibility-audit.md`. Codex is idle pending this gate.
 - 2026-07-19 Claude: reviewed, approved, and merged Gate 5 (commits `c1f1b04`-`3291d70`, migration `0023`). Read the migration and the client-side token/fingerprint logic in full, independently queried the live production database for probe residue after Codex's live idempotency test (found none), reran the suite (523/523), TypeScript (clean), migration list, and 4 live audits (order-ledger, current-stock, P&L MAC consistency, new POS-checkout-idempotency check) — all matched exactly. Merged without a separate approval round per the standing overnight agreement. Updated the negative-stock out-of-scope entry (`ING-003` now -201 g, live business activity during the gate, not a new issue).
 - 2026-07-19 Claude: reviewed, approved, and merged REV-1 (commit `39ea6c2`). Independently traced the tightened reference-detection regex by hand against `.tsx`/`.ts.bak` false-positive cases, reran the suite (512/512) and TypeScript (clean) on the branch and again after merging, reran the live verifier script (18/28/18 matched) and the MAC-drift frozen-hash check. Merged without a separate approval round per tonight's updated agreement. Handed Gate 5 to Codex as the next continuous task.
 - 2026-07-19 Claude: user authorized continuous autonomous work overnight — merges/next-task selection no longer need per-step approval (only genuine business/scope tradeoffs and pushing to GitHub do; see `docs/COLLABORATION.md` Section I rule 4 reinforcement). Scoped Gate 5 from direct investigation (spec placeholder had no detail): read `app/pos/actions.ts`/`lib/order-cart.ts` directly and found `submitOrderV2` has no server-side idempotency key despite its underlying write already being atomic — a real double-order risk on an ordinary network retry, not a contrived edge case. Confirmed the "offline" half of Gate 5's original name is explicitly out of scope per existing owner decision D2. Authored `docs/handoffs/2026-07-19-codex-gate5-pos-checkout-idempotency.md`, sequenced after REV-1, with instructions to proceed through both without a review checkpoint in between.
