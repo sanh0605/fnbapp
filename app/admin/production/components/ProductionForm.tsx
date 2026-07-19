@@ -243,6 +243,7 @@ export function ProductionForm({ semiProducts, recipes, baseIngredients, units }
                     
                     <div className="flex items-center gap-2">
                       <input
+                        aria-label={ing.name}
                         type="number"
                         step="any"
                         value={ing.qtyNeeded}

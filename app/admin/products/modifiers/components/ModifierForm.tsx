@@ -188,6 +188,7 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
                   className="grid grid-cols-1 sm:grid-cols-[128px_minmax(0,1fr)_96px_32px] gap-2 items-start bg-surface-secondary p-2.5 rounded-lg border border-border"
                 >
                   <select
+                    aria-label="Loại nguyên liệu"
                     value={ing.ingredient_type}
                     onChange={(e) => updateIngredient(idx, { ingredient_type: e.target.value, ingredient_id: "" })}
                     className="w-full h-9 border border-border rounded-lg px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
@@ -208,6 +209,7 @@ export function ModifierForm({ baseIngredients, semiProducts, units, initialData
 
                   <div className="relative">
                     <input
+                      aria-label="Số lượng nguyên liệu"
                       type="number"
                       step="any"
                       required

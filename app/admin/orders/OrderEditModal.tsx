@@ -229,7 +229,7 @@ export default function OrderEditModal({
             <h3 className="text-lg font-bold text-text-primary">Sửa đơn hàng</h3>
             <p className="text-sm text-text-secondary">{order.display_order_no || order.order_no}</p>
           </div>
-          <button onClick={onClose} disabled={isSaving} className="p-1.5 bg-surface-secondary rounded-full text-text-muted hover:bg-border disabled:opacity-50">
+          <button onClick={onClose} disabled={isSaving} className="p-1.5 bg-surface-secondary rounded-full text-text-muted hover:bg-border disabled:opacity-50" aria-label="Đóng">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -276,7 +276,7 @@ export default function OrderEditModal({
             <div className="bg-primary-soft p-3 rounded-xl border border-primary/20 space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">Thêm sản phẩm</span>
-                <button onClick={() => { setIsAddingProduct(false); setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); setNewQty(1); }} className="text-text-muted hover:text-text-secondary">
+                <button onClick={() => { setIsAddingProduct(false); setSelectedNewProduct(null); setSelectedNewVariant(null); setSelectedNewModifiers([]); setNewQty(1); }} className="text-text-muted hover:text-text-secondary" aria-label="Hủy thêm sản phẩm">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -286,7 +286,7 @@ export default function OrderEditModal({
                   {/* Search */}
                   <div className="relative">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-text-muted" />
-                    <input type="text" placeholder="Tìm sản phẩm..." value={addSearch} onChange={(e) => setAddSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring" />
+                    <input type="text" aria-label="Tìm sản phẩm" placeholder="Tìm sản phẩm..." value={addSearch} onChange={(e) => setAddSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring" />
                   </div>
 
                   {/* Category filter */}
@@ -399,7 +399,7 @@ export default function OrderEditModal({
             />
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-text-secondary w-28">Thanh toán:</span>
-              <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="flex-1 border border-border rounded-lg px-3 py-1.5 text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring">
+              <select aria-label="Phương thức thanh toán" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="flex-1 border border-border rounded-lg px-3 py-1.5 text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring">
                 <option value="Tien mat">Tiền mặt</option>
                 <option value="Chuyen khoan">Chuyển khoản</option>
               </select>

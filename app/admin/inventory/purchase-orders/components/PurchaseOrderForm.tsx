@@ -403,6 +403,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                 <span className="text-text-secondary">Phí vận chuyển (+):</span>
                 <input 
                    type="number" 
+                   aria-label="Phí vận chuyển"
                    value={shippingFee || ''}
                    onChange={(e) => setShippingFee(Number(e.target.value))}
                    className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-focus-ring"
@@ -413,6 +414,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                 <span className="text-text-secondary">Thuế (+):</span>
                 <input 
                    type="number" 
+                   aria-label="Thuế"
                    value={taxAmount || ''}
                    onChange={(e) => setTaxAmount(Number(e.target.value))}
                    className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-focus-ring"
@@ -423,6 +425,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                 <span className="text-text-secondary">Voucher (-):</span>
                 <input 
                    type="number" 
+                   aria-label="Voucher"
                    value={voucherAmount || ''}
                    onChange={(e) => setVoucherAmount(Number(e.target.value))}
                    className="w-28 md:w-32 text-right border border-danger/30 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-danger font-medium"
@@ -433,6 +436,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
                 <span className="text-text-secondary">Chiết khấu (-):</span>
                 <input 
                    type="number" 
+                   aria-label="Chiết khấu"
                    value={discountAmount || ''}
                    onChange={(e) => setDiscountAmount(Number(e.target.value))}
                    className="w-28 md:w-32 text-right border border-danger/30 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-danger font-medium"

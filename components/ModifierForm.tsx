@@ -92,7 +92,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
               <h2 className="text-xl font-bold text-text-primary">
                 {isEdit ? "Sửa Tuỳ chọn" : "Thêm Tuỳ chọn mới"}
               </h2>
-              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-secondary">
+              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-secondary" aria-label="Đóng">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -133,6 +133,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
                       {ingredients.map((ing:any, iIdx:number) => (
                         <div key={iIdx} className="flex gap-2 items-center">
                           <select
+                            aria-label="Loại nguyên liệu"
                             value={ing.ingredient_type}
                             onChange={e => { updateIngredient(iIdx, "ingredient_type", e.target.value); updateIngredient(iIdx, "ingredient_id", ""); }}
                             className="w-1/3 text-sm border border-border rounded-md px-2 py-1.5 bg-surface-card"
@@ -142,6 +143,7 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
                           </select>
 
                           <select
+                            aria-label="Nguyên liệu"
                             required
                             value={ing.ingredient_id}
                             onChange={e => updateIngredient(iIdx, "ingredient_id", e.target.value)}
@@ -155,13 +157,14 @@ export default function ModifierForm({ baseIngredients, semiProducts, units, ini
                           </select>
 
                           <input
+                            aria-label="Số lượng nguyên liệu"
                             type="number" required min="0.001" step="any" placeholder="SL"
                             value={ing.quantity || ""}
                             onChange={e => updateIngredient(iIdx, "quantity", Number(e.target.value))}
                             className="w-20 text-sm text-right font-bold text-danger border border-border rounded-md px-2 py-1.5"
                           />
                           
-                          <button type="button" onClick={() => removeIngredient(iIdx)} className="p-1.5 text-text-muted hover:text-danger">
+                          <button type="button" aria-label="Xoá nguyên liệu định lượng" onClick={() => removeIngredient(iIdx)} className="p-1.5 text-text-muted hover:text-danger">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                           </button>
                         </div>

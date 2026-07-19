@@ -42,7 +42,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
                 <History className="w-6 h-6 text-warning" />
                 Lịch sử: {title}
               </h2>
-              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary">
+              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary" aria-label="Đóng">
                 <X className="w-5 h-5" />
               </button>
             </div>

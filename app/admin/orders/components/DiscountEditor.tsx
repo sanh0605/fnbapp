@@ -38,6 +38,7 @@ export function DiscountEditor({
           </button>
         </div>
         <input
+          aria-label="Số tiền giảm giá đơn hàng"
           type="number"
           min="0"
           value={orderDiscount || ""}

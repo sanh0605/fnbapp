@@ -132,7 +132,7 @@ export default function SemiProductForm({ units, baseIngredients, semiProducts, 
           <div className="bg-surface-card rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-border flex justify-between items-center bg-page/50">
               <h2 className="text-xl font-bold text-text-primary">{isEdit ? "Sửa Bán Thành Phẩm" : "Thêm Bán Thành Phẩm Mới"}</h2>
-              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-secondary">
+              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-secondary" aria-label="Đóng">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

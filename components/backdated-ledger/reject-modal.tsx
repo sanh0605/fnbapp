@@ -44,6 +44,7 @@ export function RejectModal({ eventId, onConfirm, onCancel }: RejectModalProps) 
         </p>
         <div>
           <textarea
+            aria-label="Lý do từ chối"
             value={reason}
             onChange={(e) => {
               setReason(e.target.value);
@@ -56,8 +57,9 @@ export function RejectModal({ eventId, onConfirm, onCancel }: RejectModalProps) 
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-text-primary mb-1">Người duyệt</label>
+          <label htmlFor="reviewer" className="block text-xs font-medium text-text-primary mb-1">Người duyệt</label>
           <input
+            id="reviewer"
             type="text"
             value={reviewer}
             onChange={(e) => setReviewer(e.target.value)}

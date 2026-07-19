@@ -548,6 +548,7 @@ export default function OrderTable({
                 </div>
               )}
               <textarea
+                aria-label="Lý do hủy đơn"
                 placeholder="Lý do hủy đơn (bắt buộc)"
                 value={voidReason}
                 onChange={(e) => setVoidReason(e.target.value)}

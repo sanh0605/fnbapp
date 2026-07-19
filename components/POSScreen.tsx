@@ -1028,7 +1028,7 @@ export default function POSScreen({
           <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full sm:w-[500px] max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up sm:animate-fade-in">
             <div className="p-4 border-b border-border/50 flex justify-between items-center bg-page/50">
               <h3 className="text-xl font-bold text-text-primary">{selectedProduct.name}</h3>
-              <button onClick={() => setSelectedProduct(null)} className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-border">
+              <button onClick={() => setSelectedProduct(null)} className="p-1.5 bg-border rounded-full text-text-secondary hover:bg-border" aria-label="Đóng">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -1126,6 +1126,7 @@ export default function POSScreen({
                     </button>
                   </div>
                   <input
+                    aria-label="Giảm giá sản phẩm"
                     type="number"
                     min="0"
                     placeholder="Nhập số..."

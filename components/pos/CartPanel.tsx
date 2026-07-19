@@ -336,6 +336,7 @@ export function CartPanel({
               </div>
               <div className="flex gap-2">
                 <input
+                  aria-label="Mã giảm giá"
                   type="text"
                   placeholder="Nhập mã giảm giá..."
                   value={promoCodeInput}
@@ -413,6 +414,7 @@ export function CartPanel({
                     </button>
                   </div>
                   <input
+                    aria-label="Giảm giá tùy chỉnh"
                     type="number"
                     min="0"
                     placeholder="Nhập giảm giá..."

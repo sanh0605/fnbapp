@@ -257,6 +257,7 @@ export function LineItemEditor({
               </button>
             </div>
             <input
+              aria-label="Số tiền giảm giá món hàng"
               type="number"
               min="0"
               value={editDiscount || ""}

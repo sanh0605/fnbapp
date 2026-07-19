@@ -136,13 +136,13 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
       {successMsg && (
         <div role="status" aria-live="polite" className="bg-success/10 border border-success/30 text-success-active px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
           <span>✔️ {successMsg}</span>
-          <button onClick={() => setSuccessMsg(null)} className="text-success hover:text-success-active">✕</button>
+          <button onClick={() => setSuccessMsg(null)} className="text-success hover:text-success-active" aria-label="Đóng thông báo">✕</button>
         </div>
       )}
       {errorMsg && (
         <div role="alert" aria-live="polite" className="bg-danger/10 border border-danger/30 text-danger-active px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between shadow-sm animate-fade-in">
           <span>⚠️ {errorMsg}</span>
-          <button onClick={() => setErrorMsg(null)} className="text-danger hover:text-danger-active">✕</button>
+          <button onClick={() => setErrorMsg(null)} className="text-danger hover:text-danger-active" aria-label="Đóng thông báo">✕</button>
         </div>
       )}
 

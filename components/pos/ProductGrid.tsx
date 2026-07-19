@@ -71,6 +71,7 @@ export function ProductGrid({
             <Search className="w-5 h-5" />
           </span>
           <input
+            aria-label="Tìm kiếm sản phẩm"
             type="text"
             placeholder="Tìm kiếm món (vd: đào, cà phê)..."
             value={searchQuery}

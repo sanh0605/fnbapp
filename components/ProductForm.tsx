@@ -137,7 +137,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
               <h2 className="text-xl font-bold text-text-primary">
                 {isEdit ? "Sửa Món" : "Tạo Món Mới (Product Builder)"}
               </h2>
-              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary">
+              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary" aria-label="Đóng">
                 <X className="w-5 h-5" />
               </button>
             </div>

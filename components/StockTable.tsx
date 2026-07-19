@@ -134,6 +134,7 @@ export default function StockTable({
             <Search className="w-5 h-5" />
           </span>
           <input 
+            aria-label="Tìm kiếm nguyên liệu và bán thành phẩm"
             type="text" 
             placeholder="Tìm nguyên liệu, bán thành phẩm..." 
             className="w-full pl-10 pr-4 py-2 min-h-[44px] border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-page"
@@ -144,7 +145,6 @@ export default function StockTable({
       
       </div>
 
-      {/* Desktop Table - hidden on mobile */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden hidden md:block">
         <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="w-full text-left text-sm text-text-secondary">
@@ -230,7 +230,7 @@ export default function StockTable({
           <div className="bg-surface-card w-full max-w-md rounded-2xl shadow-xl flex flex-col overflow-hidden border border-border">
             <div className="p-5 border-b border-border bg-page flex justify-between items-center">
               <h3 className="font-bold text-text-primary">Cân bằng kho (Kiểm kê)</h3>
-              <button onClick={() => setIsAdjusting(null)} className="text-text-muted hover:text-text-primary transition-colors">
+              <button onClick={() => setIsAdjusting(null)} className="text-text-muted hover:text-text-primary transition-colors" aria-label="Đóng">
                 <X className="w-5 h-5" />
               </button>
             </div>

@@ -45,7 +45,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
-| [ ] **Full audit Gate 6 — UI/UX/accessibility audit** | Antigravity | `app/**/*.tsx`, `components/**/*.tsx` | Next in the 8-gate sequence (owner confirmed 2026-07-19: keep gate order, don't skip to Gate 7 for Codex while Gate 6 is pending). Handoff: `docs/handoffs/2026-07-19-antigravity-gate6-accessibility-audit.md`. Prior UI-REMED work covered color/token consistency only — grepped directly, zero accessibility/ARIA/keyboard-nav coverage found, a genuinely unaudited area. Codex is idle pending this gate's completion (Gate 7 depends on it per gate ordering). |
+| [~A] **Full audit Gate 6 — UI/UX/accessibility audit** | Antigravity | `app/**/*.tsx`, `components/**/*.tsx` | Next in the 8-gate sequence (owner confirmed 2026-07-19: keep gate order, don't skip to Gate 7 for Codex while Gate 6 is pending). Handoff: `docs/handoffs/2026-07-19-antigravity-gate6-accessibility-audit.md`. Prior UI-REMED work covered color/token consistency only — grepped directly, zero accessibility/ARIA/keyboard-nav coverage found, a genuinely unaudited area. Codex is idle pending this gate's completion (Gate 7 depends on it per gate ordering). |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
 
