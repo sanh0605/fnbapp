@@ -75,20 +75,17 @@ records intent and order, not authorization to start.
 
 1. **Finish current work** — the eight-gate audit in progress (Gate 4 running
    as of 2026-07-19; Gates 5-8 follow). See P0/P1 above.
-2. **Repository file/folder reorganization** — first pass done 2026-07-20;
+2. **Repository file/folder reorganization** — done 2026-07-20 in full;
    see `docs/superpowers/plans/2026-07-20-post-audit-repository-reorganization.md`
-   for the full proposal and `docs/COMPLETED.md` for what was executed
-   (owner approved each item individually). Remaining, deliberately
-   deferred: the 33-script `ARCHIVE_DOC_ONLY` batch (moving to a doc
-   listing is a separate write-up task, not a quick file move); a
-   pre-existing `.gitignore` conflict found along the way (broad patterns
-   from Stabilization Phase 3 — `scripts/debug-*.ts`, `delete-*.ts`,
-   `test-*.ts`, etc. — silently exclude future scripts from git, which
-   contradicts `docs/FILE-ORGANIZATION.md`'s later policy that all
-   scripts get tracked and classified by naming; not touched yet, flagged
-   for a future decision); a handful of non-date-prefixed
-   `docs/audits/`/`docs/reports/` files that already self-declare their
-   historical status in-file (low value to rename retroactively).
+   for the proposal and `docs/COMPLETED.md` for what was executed (owner
+   approved each item individually, including both items initially
+   deferred as lower-priority: the 33-script `ARCHIVE_DOC_ONLY` batch
+   was archived into `docs/audits/archive-scripts.md`, and the stale
+   `.gitignore` patterns that contradicted the current full-tracking
+   policy were removed). Remaining, genuinely low-value: a handful of
+   non-date-prefixed `docs/audits/`/`docs/reports/` files that already
+   self-declare their historical status in-file (not worth renaming
+   retroactively).
 3. **Feature-completeness pass** — plan and close gaps so the single-shop
    system fully covers: inventory control (kiểm soát hàng tồn), cash
    in/out control (kiểm soát tiền vào tiền ra), sales reports (báo cáo bán
@@ -191,6 +188,7 @@ These prompts are ready for agents to pick up. Prompts for completed tasks remai
 
 ## Change log
 
+- 2026-07-20 Claude: owner picked up the 2 items deliberately deferred from the reorganization's first pass. Cross-referenced all 33 `ARCHIVE_DOC_ONLY` scripts for real code dependencies (same rigor as the earlier `DELETE_ONE_OFF` pass) — none had any, except `batch-sheets-orders.ts`'s existing dependents (already being kept regardless). Read each script's actual code/comments (not just its filename) to write an honest one-line description per script in the new `docs/audits/archive-scripts.md`, then removed all 30 genuine one-off files from `scripts/` (full source stays in git history). Caught the classifier's own self-referential false positive along the way (`generate-script-cleanup-plan.ts` and its `-core` files matching "cleanup-" as a substring of their own name) and excluded those 3 from the archive. Removed the stale `.gitignore` patterns from Stabilization Phase 3 that silently excluded future one-off scripts from git — confirmed nothing currently on disk matched them first, so this only changes behavior for scripts created going forward. `tsc` clean, suite 562/562, build passed after each commit. Reorganization phase now fully closed — 133 scripts remain, down from 220.
 - 2026-07-20 Claude: owner gave the explicit go-ahead for the repository reorganization pass ("Future direction" item 2). Wrote a full proposal before touching anything (`docs/superpowers/plans/2026-07-20-post-audit-repository-reorganization.md`), per D8's "no file gets moved or deleted without explicit owner approval." Found and fixed a classifier bug first (`lock-*`/`recover-*` scripts misclassified as deletable, contradicting `docs/FILE-ORGANIZATION.md`'s own rule — 2 of the 4 affected have real test dependents). Cross-referenced all 62 `DELETE_ONE_OFF` candidates against actual code/lib/doc dependencies rather than trusting the naming heuristic alone. Owner approved each item individually via explicit confirmation: deleted 56 scripts, deleted `TASK.md`, merged `docs/runbooks/` into `docs/operations/`, moved 2 misplaced handoff files into `docs/handoffs/` with updated references in `CLAUDE.md`/`AGENTS.md`/`docs/COLLABORATION.md`. Deferred the `ARCHIVE_DOC_ONLY` batch and a newly-found `.gitignore`/policy conflict to a later decision rather than scope-creeping them in. `tsc` clean, suite 562/562, build passed throughout. Moved to `COMPLETED.md`.
 - 2026-07-20 Claude: owner authorized picking up outstanding Codex-owned work directly until Codex's rate limit resets 2026-07-25 ("làm luôn việc của Codex"), broader than the single pre-approved audit-admin-action-auth fix — saved to memory as a time-boxed exception, not a permanent change; `REV-2` (Codex reviewing Claude's own work) explicitly stays with Codex regardless, since self-review there would defeat the point. Fixed `SCRIPT-BUG-1` (commit `f96db7e`): same `-core.ts` extraction pattern, fixed both the counting logic's stale `po_id` column and the sample-printing logic's separately-wrong `l.qty` field name, added 6 tests, live rerun now reports 0/55 mismatches (previously 55/55 false positives). While investigating `SEC-4`, discovered `npx supabase functions list` already exposes the `verify_jwt` deployment flag directly (no dashboard access needed after all) — resolved conclusively: `user-admin` is `verify_jwt: false`, but its `/migrate` route already uses a constant-time secret comparison (fixed and reviewed back in Gate 2 Remediation Wave 1, commit `a1ace53`) and all other routes independently verify via `admin.auth.getUser()` + require `role === 'owner'`, so the platform flag not being set doesn't leave a gap; `backup-to-sheets` is `verify_jwt: true` and also orphaned. Moved to `COMPLETED.md`.
 - 2026-07-20 Claude: completed the rest of Gate 8 after the scripts/ ownership exception above. Ran the full consolidated regression sweep (14 read-only audit scripts across security/order/inventory/COGS/POS/backup domains) and compared every result against its last recorded baseline rather than just checking pass/fail — confirmed zero real regressions from Gates 1-7 (301 order-ledger mismatches unchanged despite +13 orders, same 3 negative-stock items with grown balances from ordinary sales, same 12-line MAC finding, same 15,000 VND `UCK000269` gap, 0 orders with a `client_request_id` explained by production still being pre-Gate-5 code). Found one new thing: `audit-po-save-ledger.ts` flags 55/55 completed POs as "mismatched" — traced this to the script using a stale `po_id` column name instead of the real `purchase_order_id` (predates tonight, likely from before the Supabase migration); verified independently with a throwaway script (outside `scripts/`, deleted after use) using the correct column name and got 0 missing/0 mismatch across all 55 POs, confirming real PO/ledger data is fully consistent and this is purely a tooling bug. Logged as `SCRIPT-BUG-1` for Codex rather than fixing it directly (unrelated to the pre-approved exception, routed through the normal ownership rule). Did a light cross-gate consistency check (grepped for stale `/admin/backup` references post-FIX-2 — none found). Wrote `docs/audits/2026-07-20-gate8-regression-final-acceptance.md` recording all of the above, the full Gates 1-7 status table, and the functional baseline SHA (`a0a07e4`) — explicitly did not declare the audit program "accepted," left that determination to the owner. `tsc` clean, suite 551/551, build passed.
