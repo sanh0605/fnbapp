@@ -19,8 +19,8 @@
   --color-surface-secondary: #F1F5F9;
   --color-sidebar: #172033;
   --color-text-primary: #172033;
-  --color-text-secondary: #64748B;
-  --color-text-muted: #94A3B8;
+  --color-text-secondary: #475569; /* WCAG AA 6.9:1 */
+  --color-text-muted: #64748B; /* WCAG AA 4.74:1 */
   --color-border: #E2E8F0;
   --color-success: #16A34A;
   --color-warning: #D97706;
