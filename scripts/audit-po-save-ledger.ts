@@ -1,4 +1,12 @@
 import * as dotenv from "dotenv";
+import {
+  checkCompletedPoLedger,
+  groupLinesByPurchaseOrder,
+  groupPoReceiptLedgerByPurchaseOrder,
+  type PurchaseOrderLineRow,
+  type PurchaseOrderRow,
+  type StockLedgerRow,
+} from "./audit-po-save-ledger-core";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
@@ -18,25 +26,10 @@ async function main() {
     findAllNoCache("Stock_Ledger"),
   ]);
 
-  const poById = new Map<string, any>();
-  for (const po of purchaseOrders as any[]) poById.set(po.id, po);
+  const linesByPo = groupLinesByPurchaseOrder(poLines as PurchaseOrderLineRow[]);
+  const ledgerByPo = groupPoReceiptLedgerByPurchaseOrder(ledger as StockLedgerRow[]);
 
-  const linesByPo = new Map<string, any[]>();
-  for (const line of poLines as any[]) {
-    const rows = linesByPo.get(line.po_id) || [];
-    rows.push(line);
-    linesByPo.set(line.po_id, rows);
-  }
-
-  const ledgerByPo = new Map<string, any[]>();
-  for (const row of ledger as any[]) {
-    if (row.transaction_type !== "PO_RECEIPT") continue;
-    const rows = ledgerByPo.get(row.reference_id) || [];
-    rows.push(row);
-    ledgerByPo.set(row.reference_id, rows);
-  }
-
-  const allPos = purchaseOrders as any[];
+  const allPos = purchaseOrders as PurchaseOrderRow[];
   const draftPos = allPos.filter(po => po.status === "DRAFT");
   const completedPos = allPos.filter(po => po.status === "COMPLETED");
   const cancelledPos = allPos.filter(po => po.status === "CANCELLED" || po.status === "VOIDED");
@@ -54,23 +47,13 @@ async function main() {
   }
   console.log(`\nDRAFT POs with ledger (should be 0):              ${draftWithLedger}`);
 
-  let completedMissingLedger = 0;
-  let completedLedgerLinesMismatch = 0;
-  for (const po of completedPos) {
-    const lines = linesByPo.get(po.id) || [];
-    const ledgerRows = ledgerByPo.get(po.id) || [];
-    if (ledgerRows.length === 0) {
-      completedMissingLedger++;
-      continue;
-    }
-    // Expected: 1 ledger entry per PO line that has conversion + quantity > 0
-    const expectedLedgerCount = lines.filter(l => Number(l.quantity) > 0).length;
-    if (ledgerRows.length !== expectedLedgerCount) {
-      completedLedgerLinesMismatch++;
-    }
-  }
-  console.log(`COMPLETED POs missing ledger (should be 0):      ${completedMissingLedger}`);
-  console.log(`COMPLETED POs with ledger/line count mismatch:   ${completedLedgerLinesMismatch}`);
+  const { missingLedger, ledgerLinesMismatch, mismatchSamples } = checkCompletedPoLedger(
+    completedPos,
+    linesByPo,
+    ledgerByPo,
+  );
+  console.log(`COMPLETED POs missing ledger (should be 0):      ${missingLedger}`);
+  console.log(`COMPLETED POs with ledger/line count mismatch:   ${ledgerLinesMismatch}`);
 
   let cancelledWithLedger = 0;
   for (const po of cancelledPos) {
@@ -79,18 +62,13 @@ async function main() {
   }
   console.log(`CANCELLED POs with ledger:                       ${cancelledWithLedger}`);
 
-  // Sample mismatches
-  if (completedLedgerLinesMismatch > 0) {
+  if (mismatchSamples.length > 0) {
     console.log("\nSample mismatches:");
-    let shown = 0;
-    for (const po of completedPos) {
-      const lines = linesByPo.get(po.id) || [];
-      const ledgerRows = ledgerByPo.get(po.id) || [];
-      const expected = lines.filter(l => Number(l.qty) > 0).length;
-      if (ledgerRows.length !== expected && shown < 5) {
-        console.log(`  ${po.id} (${po.po_no || ""}) | lines=${lines.length} expected_ledger=${expected} actual_ledger=${ledgerRows.length}`);
-        shown++;
-      }
+    for (const sample of mismatchSamples) {
+      console.log(
+        `  ${sample.id} (${sample.poNo}) | lines=${sample.lineCount} `
+          + `expected_ledger=${sample.expectedLedger} actual_ledger=${sample.actualLedger}`,
+      );
     }
   }
 
