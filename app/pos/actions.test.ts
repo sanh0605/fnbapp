@@ -18,6 +18,22 @@ describe("POS order COGS calculation", () => {
     expect(submitOrderSource).not.toContain("ensureUniqueOrderNo");
     expect(submitOrderSource).not.toContain("insertOrderV2Records");
     expect(submitOrderSource).not.toContain("FIFOTracker");
+    expect(submitOrderSource).toContain("requestToken?: string");
+    expect(submitOrderSource).toContain("clientRequestId: requestToken");
+  });
+
+  it("reuses a checkout token until the same payload succeeds", () => {
+    const screenSource = readFileSync(
+      resolve(process.cwd(), "components/POSScreen.tsx"),
+      "utf8",
+    );
+
+    expect(screenSource).toContain("resolvePosCheckoutAttempt");
+    expect(screenSource).toContain("checkoutAttemptRef");
+    expect(screenSource).toMatch(
+      /submitOrderV2\(\s*cartInput,\s*checkoutAttempt\.requestToken,?\s*\)/,
+    );
+    expect(screenSource).toContain("checkoutAttemptRef.current = null");
   });
 
   it("uses narrow POS reads instead of full admin reports", () => {

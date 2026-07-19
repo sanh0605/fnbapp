@@ -34,6 +34,7 @@ describe("savePosOrderAtomic", () => {
       lines: [{ id: "line-1" }],
       event: { id: "event-1" },
       ledgerRows: [{ id: "stock-1" }, { id: "stock-2" }],
+      clientRequestId: "request-1",
     });
 
     expect(mocks.rpc).toHaveBeenCalledWith("create_pos_order_atomic", {
@@ -42,6 +43,7 @@ describe("savePosOrderAtomic", () => {
       p_lines: [{ id: "line-1" }],
       p_event: { id: "event-1" },
       p_ledger: [{ id: "stock-1" }, { id: "stock-2" }],
+      p_client_request_id: "request-1",
     });
     expect(result).toEqual({
       orderId: "ord-1",
@@ -49,6 +51,107 @@ describe("savePosOrderAtomic", () => {
       lineCount: 1,
       ledgerCount: 2,
     });
+  });
+
+  it("keeps the idempotency key optional for legacy callers", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        order_id: "ord-legacy",
+        order_no: "PHD000998",
+        line_count: 1,
+        ledger_count: 0,
+      },
+      error: null,
+    });
+
+    await savePosOrderAtomic({
+      brandCode: "PHD",
+      order: { id: "ord-legacy" },
+      lines: [{ id: "line-legacy" }],
+      event: { id: "event-legacy" },
+      ledgerRows: [],
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "create_pos_order_atomic",
+      expect.not.objectContaining({ p_client_request_id: expect.anything() }),
+    );
+  });
+
+  it("returns the same persisted bill when an ambiguous success is retried", async () => {
+    const persistedOrders = new Map<string, {
+      order_id: string;
+      order_no: string;
+      line_count: number;
+      ledger_count: number;
+      idempotent_replay: boolean;
+    }>();
+    const persistedLineIds = new Set<string>();
+    const persistedLedgerIds = new Set<string>();
+    mocks.rpc.mockImplementation(async (_name: string, args: any) => {
+      const requestId = String(args.p_client_request_id);
+      const existing = persistedOrders.get(requestId);
+      if (existing) {
+        return {
+          data: { ...existing, idempotent_replay: true },
+          error: null,
+        };
+      }
+
+      const persisted = {
+        order_id: String(args.p_order.id),
+        order_no: "PHD001000",
+        line_count: args.p_lines.length,
+        ledger_count: args.p_ledger.length,
+        idempotent_replay: false,
+      };
+      persistedOrders.set(requestId, persisted);
+      args.p_lines.forEach((line: { id: string }) => persistedLineIds.add(line.id));
+      args.p_ledger.forEach((row: { id: string }) => persistedLedgerIds.add(row.id));
+      return { data: persisted, error: null };
+    });
+    const common = {
+      brandCode: "PHD",
+      clientRequestId: "request-ambiguous-success",
+    };
+
+    const firstResponse = await savePosOrderAtomic({
+      ...common,
+      order: { id: "ord-first-generated" },
+      lines: [{ id: "line-first-generated" }],
+      event: { id: "event-first-generated" },
+      ledgerRows: [{ id: "ledger-first-generated" }],
+    });
+    const retryResponse = await savePosOrderAtomic({
+      ...common,
+      order: { id: "ord-second-generated" },
+      lines: [{ id: "line-second-generated" }],
+      event: { id: "event-second-generated" },
+      ledgerRows: [{ id: "ledger-second-generated" }],
+    });
+
+    expect(retryResponse).toEqual(firstResponse);
+    expect(retryResponse).toMatchObject({
+      orderId: "ord-first-generated",
+      orderNo: "PHD001000",
+    });
+    expect(persistedOrders.size).toBe(1);
+    expect(persistedLineIds.size).toBe(1);
+    expect(persistedLedgerIds.size).toBe(1);
+    expect(mocks.rpc).toHaveBeenNthCalledWith(
+      1,
+      "create_pos_order_atomic",
+      expect.objectContaining({
+        p_client_request_id: "request-ambiguous-success",
+      }),
+    );
+    expect(mocks.rpc).toHaveBeenNthCalledWith(
+      2,
+      "create_pos_order_atomic",
+      expect.objectContaining({
+        p_client_request_id: "request-ambiguous-success",
+      }),
+    );
   });
 
   it("fails closed on database errors or count mismatches", async () => {
