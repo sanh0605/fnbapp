@@ -100,3 +100,5 @@ scripts/u5*.js
 .agents/
 skills-lock.json
 supabase/.temp/
+
+.vercel
