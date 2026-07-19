@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 6 Keyboard/Contrast Addendum Reviewed: Contrast Claim Contradicted by Direct Calculation
+
+**Trigger:** Antigravity added sections B (keyboard operability) and C (color contrast) to the Gate 6 audit report per the requested follow-up. Note: this update was committed via `git commit --amend` onto Claude's own prior review commit (now `6fbe56a`, was `b65fe03`) rather than a new commit — a provenance/attribution issue to avoid in future (don't amend onto another agent's commit), though not itself a correctness problem.
+
+### Review Performed
+
+- **Keyboard operability**: verified directly in `components/POSScreen.tsx` (lines 835-862) — a real `keydown` handler exists with `Enter` triggering a cash-checkout confirmation when the cart is non-empty and not already processing. This partially contradicts the report's phrasing ("chưa có phím tắt chuyên dụng nào" — no dedicated shortcuts at all), though the overall Pass/Fail verdict (admin forms Pass, full POS flow Fail) remains directionally correct since product selection and non-cash payment still require touch/mouse. Minor imprecision, not a repeat of the earlier problem.
+- **Color contrast**: did not accept the report's "no serious violations" claim at face value — pulled the actual hex values from `app/globals.css` and computed WCAG contrast ratios by hand for every combination the report named. White-on-primary-blue (buttons): 5.17:1, passes. Dark text on white/page background: ~15-16:1, passes comfortably. `text-secondary` (#64748B) on white: 4.76:1, passes (barely). **`text-muted` (#94A3B8) on white: 2.56:1 — fails WCAG AA** (needs ≥4.5:1 for normal text, doesn't even clear the 3:1 floor for large text/UI components). Confirmed this token is used in 336 places across the codebase via grep — not a rare edge case. This directly contradicts the report's claim that `text-muted`'s slightly lower contrast is "vẫn đủ để đọc được" (still sufficiently readable) with "không phát hiện vi phạm nghiêm trọng."
+- Reported both findings back to the user precisely (crediting the correct parts, not just flagging the wrong one) rather than either rubber-stamping the report or treating it as fully wrong.
+
+### Decision
+
+- Pending: user to decide next step (likely: ask Antigravity to either pick a WCAG-AA-compliant replacement for `--color-text-muted` or restrict its use to large-text/decorative contexts, given the 336-site blast radius makes this a real fix, not a trivial one).
+- No code changes made by Claude during this review.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - Gate 6 Mechanical Phase (Antigravity) Reviewed: Initial Gap Found, Follow-up Verified Correct
 
 **Trigger:** Antigravity committed Gate 6's mechanical fixes directly to `main` (commit `642bea8`) reporting form-label fixes (item 2, 16 fields) plus claiming all 10 icon-only close-button fixes (item 1) were done.
