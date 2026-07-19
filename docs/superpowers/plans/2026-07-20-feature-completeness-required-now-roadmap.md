@@ -2,137 +2,151 @@
 
 Scopes the 3 gaps confirmed `REQUIRED_NOW` in
 `docs/audits/2026-07-20-feature-completeness-fnb-checklist-reconciliation.md`.
-**This is a scope/sequencing proposal, not an implementation plan** — per
-the audit program's own exit criteria, the owner approves scope and
-priority here before any handoff or code starts.
+Revised 2026-07-20 per owner review: sequencing, scope, and assignment
+below are now the approved plan, not a proposal — see "Owner decisions"
+at the bottom for exactly what was confirmed.
 
-## Sequencing recommendation
+## Sequencing (owner-confirmed, revised from the original size/risk-based order)
 
-Ordered by risk and size, smallest/safest first — not by checklist order:
+1. **Split/mixed payment on one order** — build first. Confirmed to
+   happen in practice; owner wants this ahead of the other two despite
+   it touching the core atomic checkout RPC.
+2. **Smart low-stock detection + reorder-quantity suggestion** — owner
+   wants this to be more than a static threshold: the system should
+   determine what "low" means from actual consumption, and suggest how
+   much to reorder, not just flag a number.
+3. **Shift and cash reconciliation** — moved to last. There is currently
+   no staff (owner operates solo), so shift-level cash accountability
+   between multiple cashiers isn't an active problem yet. Deprioritized
+   accordingly, not dropped.
 
-1. **Low-stock / reorder-level warning** — additive, read-mostly, no
-   change to any existing write path. Lowest risk, smallest scope.
-2. **Shift and cash reconciliation** — new tables and new POS flow
-   (open/close shift), but doesn't change how an existing order is
-   written — orders gain an optional `shift_id` reference, nothing about
-   `submitOrderV2`'s core logic changes.
-3. **Split/mixed payment on one order** — touches the core atomic
-   checkout RPC (`create_pos_order_atomic`) directly, the same
-   transaction Gate 5 just added idempotency to. Highest risk, should go
-   last and get the most careful review, on its own branch, independent
-   of the other two.
+## Assignment (owner-confirmed)
 
-## 1. Low-stock / reorder-level warning
+- **Logic/backend for all 3**: Claude, standing in for Codex until its
+  rate limit resets (2026-07-25), same temporary-coverage arrangement as
+  the Gate 8 stop-gate and script fixes. Codex reviews retroactively when
+  back, same as `REV-2`.
+- **UI**: Antigravity, as with every prior gate — but functional/minimal
+  only for now. The owner explicitly wants these features' visual design
+  bundled into the later full frontend/UI/UX redesign phase (modern,
+  warm tone, soft buttons, one consistent design system across the whole
+  app) rather than styled now and restyled again later. Build whatever
+  UI is strictly needed to use each feature; do not invest in polish that
+  the redesign phase will replace anyway.
 
-**Schema**: add `reorder_level` (numeric, nullable) to `base_ingredients`,
-`purchased_items`, and `semi_products`. Nullable and defaulting to "no
-warning" preserves every existing row's behavior — this is why it's
-low-risk.
+## 1. Split/mixed payment on one order
 
-**Server**: extend the existing stock-balance computation
-(`lib/inventory-consumption.ts`, already used by `INV-STOCK-BALANCE`) to
-flag items where current stock ≤ `reorder_level`. No new transaction, no
-new atomicity concern — this reads data that's already computed.
+**Schema**: new `order_payments` table (`id`, `order_id`, `method`,
+`amount`, `reference`/note) becomes the source of truth for how an order
+was actually paid. `orders_v2.payment_method` stays for backward
+compatibility with existing orders/reports; new orders write to
+`order_payments` instead, with the single-method case being "exactly one
+row."
 
-**UI**: an admin form field to set `reorder_level` per item (alongside
-existing item edit forms); a low-stock indicator on `/admin/reports/stock`
-(badge or filter, reusing the existing report page rather than a new
-route).
+**Server**: `create_pos_order_atomic` (the RPC Gate 5 just hardened with
+an idempotency token) needs to accept an array of payments instead of one
+method + amount, and validate they sum to the order total inside the same
+transaction. Highest-risk change in this roadmap — modifies the core
+checkout RPC directly. Needs the same rigor as Gate 4/5's atomic-RPC
+work: forced-failure tests, live verification, and confirmation that
+Gate 5's idempotency behavior is unaffected.
 
-**Rough size**: 1 migration (3 nullable columns), 1 lib function
-extension, 2-3 admin form edits, 1 report UI addition. Similar size to a
-single Gate-4-style remediation item.
+**Reports**: `RPT-SALES`'s payment-method breakdown must attribute
+revenue per payment line, not per order, once split payments exist —
+otherwise a split order double-counts or misattributes revenue by
+method. Flagged as an easy-to-miss correctness risk.
 
-## 2. Shift and cash reconciliation
+**UI (minimal, Antigravity)**: POS checkout payment step needs a way to
+add multiple payment lines (method + amount) until they sum to the
+total. Functional only — no redesign investment.
+
+## 2. Smart low-stock detection + reorder-quantity suggestion
+
+Redesigned per owner feedback — not a static per-item threshold field,
+but a computed suggestion:
+
+**Approach**:
+
+1. Compute each item's average daily consumption from `stock_ledger`'s
+   `SALES_CONSUME` rows (plus production-consume for semi-product
+   ingredients) over a lookback window (proposed default: 14 days,
+   adjustable).
+2. Estimate lead time from historical `purchase_orders` (gap between
+   order creation and receipt) per item/supplier where history exists;
+   fall back to a configurable default (proposed: 3 days) where it
+   doesn't.
+3. Reorder point = average daily consumption × lead time × a safety
+   buffer (proposed: 1.3x). "Low stock" = current stock ≤ reorder point.
+4. Suggested reorder quantity = (target coverage days × average daily
+   consumption) − current stock, proposed target coverage default: 10
+   days, rounded to the item's purchase unit using existing UOM
+   conversions.
+
+This is a heuristic/forecasting feature, not a deterministic one — it
+should present as a *suggestion* an operator reviews, never an automatic
+purchase order. Items with too little sales/purchase history to compute
+a meaningful rate should show "not enough data" rather than a
+misleadingly confident number.
+
+**Server**: new `lib/reorder-suggestion.ts` computing the above from
+existing `stock_ledger`/`purchase_orders` data — read-only, no new
+write path, no atomicity concern.
+
+**UI (minimal, Antigravity)**: a low-stock/reorder view (extends
+`/admin/reports/stock` or a new lightweight page) showing current stock,
+computed reorder point, and suggested quantity; ideally pre-fills
+quantity when creating a new purchase order for that item, but that
+integration can follow once the core calculation is proven correct.
+
+**Open parameters** (proposed defaults above, adjustable by the owner
+once the first version is running and the numbers can be sanity-checked
+against real data): lookback window, safety buffer, target coverage days.
+
+## 3. Shift and cash reconciliation (last priority)
 
 **Schema**: 2 new tables.
 
-- `shifts`: `id`, `brand_id`, `opened_by` (actor), `opened_at`,
-  `opening_cash`, `closed_by`, `closed_at`, `closing_cash_counted`,
-  `expected_cash` (computed at close), `variance` (computed), `status`
+- `shifts`: `id`, `brand_id`, `opened_by`, `opened_at`, `opening_cash`,
+  `closed_by`, `closed_at`, `closing_cash_counted`, `expected_cash`
+  (computed at close), `variance` (computed), `status`
   (`OPEN`/`CLOSED`), `notes`.
 - `cash_movements`: `id`, `shift_id`, `type` (`CASH_IN`/`CASH_OUT`),
-  `amount`, `reason`, `actor`, `created_at` — for cash movements that
-  aren't sales (e.g. paying a supplier in cash, owner withdrawal).
+  `amount`, `reason`, `actor`, `created_at`.
 
-`orders_v2` gains an optional `shift_id` column (nullable — legacy/no-shift
-orders keep working, same backward-compatibility pattern Gate 5 used for
-`client_request_id`).
+`orders_v2` gains an optional `shift_id` column (nullable, same
+backward-compatible pattern as Gate 5's `client_request_id`).
 
-**Server**: `openShift`/`closeShift` actions. Closing a shift computes
-`expected_cash = opening_cash + cash sales during the shift (by shift_id)
-+ cash_in - cash_out`, compares to `closing_cash_counted`, stores
-`variance`. This is a financial calculation but not a multi-table atomic
-write the way checkout is — `shifts`/`cash_movements` are simpler,
-lower-stakes tables than `orders_v2`/`stock_ledger`.
+**Server**: `openShift`/`closeShift` actions computing
+`expected_cash = opening_cash + cash sales during the shift + cash_in -
+cash_out`, compared against `closing_cash_counted` to produce `variance`.
 
-**UI**: POS gains an open-shift gate at the start of a session (owner
-decides: mandatory before selling, or optional/skippable — this is a
-business-flow decision to make explicitly, not assume) and a close-shift
-screen with cash count entry. Admin gains a shift history list and a
-cash-movement log.
-
-**Rough size**: 1-2 migrations, 4-6 new server actions, 1 new POS screen
-flow, 1-2 new admin views. Comparable in size to Gate 5's idempotency
-work, plus UI.
-
-**Open question for the owner**: should opening a shift be *mandatory*
-before a cashier can start selling, or optional or purely a
-back-office tool for someone reviewing at the end of the day? This
-changes the POS flow materially and should be decided before
-implementation, not assumed.
-
-## 3. Split/mixed payment on one order
-
-**Schema**: new `order_payments` table (`id`, `order_id`, `method`,
-`amount`, `reference`/note) replacing the single `payment_method` field's
-role as the source of truth for how an order was actually paid.
-`orders_v2.payment_method` likely stays for backward compatibility
-(existing orders, existing reports) but new orders write to
-`order_payments` instead, with the single-method case becoming "exactly
-one row."
-
-**Server**: `create_pos_order_atomic` (the RPC Gate 5 already hardened
-with idempotency) needs to accept an array of payments instead of one
-method + amount, and validate they sum to the order total inside the
-same transaction. This is the highest-risk change in this roadmap
-because it modifies the core checkout RPC directly — needs the same
-rigor as Gate 4/5's atomic-RPC work (forced-failure tests, live
-verification, no change to the idempotency behavior Gate 5 just added).
-
-**Reports**: `RPT-SALES`'s payment-method breakdown needs to attribute
-revenue per payment line, not per order, once split payments exist —
-otherwise a split order would double-count or misattribute revenue by
-method. This is a real, easy-to-miss correctness risk worth flagging now
-rather than discovering after ship.
-
-**UI**: POS checkout payment step needs a way to add multiple
-payment lines (method + amount) until they sum to the total, instead of
-picking one method.
-
-**Rough size**: 1 migration, 1 RPC modification (careful, high-scrutiny),
-1 report-math change, 1 POS UI flow change. Comparable in risk to a Gate
-4 Phase B item — should go through the same forced-failure-test rigor.
+**UI (minimal, Antigravity)**: **owner-confirmed: opening a shift is
+mandatory before a cashier can start selling** — the POS gains a
+mandatory open-shift gate (cash count entry) before the sale screen, and
+a close-shift screen at end of shift. Functional only, same as the other
+two — full styling deferred to the redesign phase.
 
 ## What this roadmap does NOT include
 
-- No UI/UX redesign — that's a separate, later phase per
-  `docs/ROADMAP.md`'s "Future direction," even though the owner has
-  already described the visual direction they want (modern, warm tones,
-  soft buttons) for when that phase starts.
-- No multi-outlet scope creep — `shift_id`/`cash_movements` are scoped to
-  the current single-outlet model; if multi-outlet arrives later, these
-  tables gain an `outlet_id` then, not now.
-- No new UI screens beyond what's named above — e.g., no dashboard
-  redesign, no new nav sections beyond what each feature strictly needs.
+- No UI/UX redesign investment in any of these 3 features — confirmed
+  bundled into the later full frontend/UI/UX phase.
+- No multi-outlet scope creep — `shift_id`/`cash_movements` scoped to the
+  current single-outlet model.
+- No automatic purchase-order creation from the reorder suggestion —
+  it's a suggestion an operator acts on, not an automated purchase.
 
-## Approval needed before implementation starts
+## Owner decisions confirmed 2026-07-20
 
-1. Confirm the sequencing (low-stock → shift/cash → split payment) or
-   reorder it.
-2. Answer the open question in section 2 (mandatory vs. optional shift
-   open).
-3. Decide who implements: this fits Codex's normal ownership (`lib/*.ts`,
-   `supabase/migrations/*.sql`, server actions) with Antigravity for the
-   POS/admin UI pieces, same split as every gate this cycle — confirm or
-   redirect.
+- Sequencing: split payment → smart low-stock/reorder suggestion →
+  shift/cash reconciliation (deprioritized to last — no current staff
+  makes shift-level accountability a non-issue for now).
+- Low-stock feature scope expanded from a static threshold to a
+  computed suggestion (consumption-rate-based reorder point + suggested
+  quantity).
+- Shift opening is mandatory before POS selling, when that item's turn
+  comes.
+- Claude covers Codex's logic/backend role for all 3 during its
+  rate-limit window (until 2026-07-25); Codex reviews retroactively when
+  back. Antigravity builds functional-only UI for all 3; visual design
+  work is deferred to the later frontend/UI/UX redesign phase rather than
+  built and then redone.
