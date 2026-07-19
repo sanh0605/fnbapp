@@ -1,6 +1,11 @@
 "use server";
 
-import { findAll, findAllNoCache, findAllWhere } from "@/lib/sheets_db";
+import {
+  findAll,
+  findAllNoCache,
+  findAllWhere,
+  findAllWhereInBatches,
+} from "@/lib/sheets_db";
 import type { SheetFilter } from "@/lib/sheets_db";
 import { ORDER_STATUS, parseLineRecipeSnapshot, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
 import type { LineRecipeSnapshot, OrderV2, OrderLineV2 } from "@/lib/order-types";
@@ -63,10 +68,17 @@ export interface PnLReportResult {
 
 function findCompletedOrders(
   dateRange: ReturnType<typeof toSaigonUtcRange>,
+  reportFilters: PnLReportFilters = {},
 ): Promise<any[]> {
   const filters: SheetFilter = {
     eq: { status: ORDER_STATUS.COMPLETED },
   };
+  if (reportFilters.brandId) {
+    filters.eq!.brand_id = reportFilters.brandId;
+  }
+  if (reportFilters.staffName) {
+    filters.eq!.created_by_name = reportFilters.staffName;
+  }
   if (dateRange) {
     filters.gte = { created_at: dateRange.startUtc };
     filters.lte = { created_at: dateRange.endUtc };
@@ -80,9 +92,13 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
 
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
-    const [orders, orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers, products] = await Promise.all([
-      findCompletedOrders(queryDateRange),
-      findAllNoCache("Order_Lines_V2"),
+    const orders = await findCompletedOrders(queryDateRange, filters);
+    const [orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers, products] = await Promise.all([
+      findAllWhereInBatches(
+        "Order_Lines_V2",
+        "order_id",
+        orders.map(order => order.id),
+      ),
       findAll("Base_Ingredients"),
       findAll("Semi_Products"),
       findAll("Units"),
@@ -371,9 +387,13 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
 
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
-    const [orders, orderLines, modifiers, products] = await Promise.all([
-      findCompletedOrders(queryDateRange),
-      findAllNoCache("Order_Lines_V2"),
+    const orders = await findCompletedOrders(queryDateRange, filters);
+    const [orderLines, modifiers, products] = await Promise.all([
+      findAllWhereInBatches(
+        "Order_Lines_V2",
+        "order_id",
+        orders.map(order => order.id),
+      ),
       findAll("Modifiers"),
       findAll("Products"),
     ]);
@@ -970,15 +990,14 @@ export async function getPromotionPerformanceV2(filters: PnLReportFilters = {}):
   if (!auth.ok) throw new Error(auth.error);
 
   try {
+    const dateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const [orders, promotions] = await Promise.all([
-      findAllNoCache("Orders_V2"),
+      findCompletedOrders(dateRange, filters),
       findAll("Promotions"),
     ]);
 
     const { startDate, endDate, brandId } = filters;
     // Claude code — Phase 5.3: Asia/Saigon date bounds.
-    const dateRange = toSaigonUtcRange(startDate, endDate);
-
     const filteredOrders = (orders as any[]).filter(o => {
       if (o.status !== ORDER_STATUS.COMPLETED) return false;
       if (o.superseded_by && o.superseded_by !== "") return false;

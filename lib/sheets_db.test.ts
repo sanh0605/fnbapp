@@ -46,7 +46,12 @@ vi.mock("./supabase", () => ({
   }),
 }));
 
-import { findAllNoCache, findAllWhere, updateMany } from "./sheets_db";
+import {
+  findAllNoCache,
+  findAllWhere,
+  findAllWhereInBatches,
+  updateMany,
+} from "./sheets_db";
 
 describe("findAllNoCache legacy compatibility", () => {
   beforeEach(() => {
@@ -230,6 +235,35 @@ describe("findAllWhere", () => {
     await expect(findAllWhere("Orders_V2", {
       eq: { status: "COMPLETED" },
     })).rejects.toThrow("findAllWhere(Orders_V2): database unavailable");
+  });
+});
+
+describe("findAllWhereInBatches", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.supabaseSelect.mockReset();
+    mocks.queryCalls.length = 0;
+  });
+
+  it("splits large IN filters into bounded queries and preserves id ordering", async () => {
+    const orderIds = Array.from({ length: 205 }, (_, index) => `ORD-${index}`);
+    mocks.supabaseSelect
+      .mockResolvedValueOnce({ data: [{ id: "LINE-3" }], error: null })
+      .mockResolvedValueOnce({ data: [{ id: "LINE-1" }], error: null })
+      .mockResolvedValueOnce({ data: [{ id: "LINE-2" }], error: null });
+
+    const rows = await findAllWhereInBatches<{ id: string }>(
+      "Order_Lines_V2",
+      "order_id",
+      orderIds,
+    );
+
+    expect(rows.map(row => row.id)).toEqual(["LINE-1", "LINE-2", "LINE-3"]);
+    expect(mocks.queryCalls.filter(call => call.method === "in")).toEqual([
+      { method: "in", args: ["order_id", orderIds.slice(0, 100)] },
+      { method: "in", args: ["order_id", orderIds.slice(100, 200)] },
+      { method: "in", args: ["order_id", orderIds.slice(200)] },
+    ]);
   });
 });
 

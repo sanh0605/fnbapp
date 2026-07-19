@@ -286,6 +286,34 @@ export async function findAllWhere<T = any>(
   return all;
 }
 
+const IN_FILTER_BATCH_SIZE = 100;
+
+export async function findAllWhereInBatches<
+  T extends { id?: string | number } = any,
+>(
+  sheetName: string,
+  column: string,
+  values: Array<string | number>,
+): Promise<T[]> {
+  const uniqueValues = Array.from(new Set(values));
+  if (uniqueValues.length === 0) return [];
+
+  const batches: Array<Array<string | number>> = [];
+  for (let index = 0; index < uniqueValues.length; index += IN_FILTER_BATCH_SIZE) {
+    batches.push(uniqueValues.slice(index, index + IN_FILTER_BATCH_SIZE));
+  }
+
+  const rowsByBatch = await Promise.all(
+    batches.map(batch => findAllWhere<T>(sheetName, {
+      in: { [column]: batch },
+    })),
+  );
+
+  return rowsByBatch
+    .flat()
+    .sort((left, right) => String(left.id ?? "").localeCompare(String(right.id ?? "")));
+}
+
 export async function findById(sheetName: string, id: string) {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);
