@@ -7,10 +7,16 @@ vi.mock("@/lib/auth", () => ({ requireAdmin: requireAdminMock }));
 vi.mock("@/lib/sheets_db", () => ({
   findAllNoCache: vi.fn(),
   findAllWhere: vi.fn(),
+  findAllWhereInBatches: vi.fn(),
   findAll: vi.fn(),
 }));
 
-import { findAllNoCache, findAllWhere, findAll } from "@/lib/sheets_db";
+import {
+  findAll,
+  findAllNoCache,
+  findAllWhere,
+  findAllWhereInBatches,
+} from "@/lib/sheets_db";
 import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
@@ -25,6 +31,9 @@ describe("getPnLDataV2", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (findAllWhere as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (
       (findAllNoCache as any)(sheet)
     ));
   });
@@ -106,6 +115,29 @@ describe("getPnLDataV2", () => {
       lte: { created_at: new Date("2026-06-19T16:59:59.999Z") },
       eq: { status: "COMPLETED" },
     });
+  });
+
+  it("loads order lines only for the server-filtered report orders", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    (findAllWhere as any).mockResolvedValue([fixture.order]);
+    (findAllWhereInBatches as any).mockResolvedValue(fixture.lines);
+    (findAllNoCache as any).mockImplementation((sheet: string) => (
+      sheet === "Stock_Ledger" ? [] : []
+    ));
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+    });
+
+    expect(findAllWhereInBatches).toHaveBeenCalledWith(
+      "Order_Lines_V2",
+      "order_id",
+      [fixture.order.id],
+    );
+    expect(findAllNoCache).not.toHaveBeenCalledWith("Order_Lines_V2");
+    expect(result.totalCOGS).toBe(fixture.lines[0].cost_at_sale);
   });
 
   it("aggregates single Sữa Dâu order correctly", async () => {
@@ -682,6 +714,9 @@ describe("getSalesDataV2", () => {
     (findAllWhere as any).mockImplementation((sheet: string) => (
       (findAllNoCache as any)(sheet)
     ));
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
   });
 
   it("merges historical duplicate toppings into the latest active modifier id", async () => {
@@ -771,6 +806,27 @@ describe("getSalesDataV2", () => {
     expect(findAllWhere).toHaveBeenCalledWith("Orders_V2", {
       eq: { status: "COMPLETED" },
     });
+  });
+
+  it("loads sales lines only for the server-filtered report orders", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    (findAllWhere as any).mockResolvedValue([fixture.order]);
+    (findAllWhereInBatches as any).mockResolvedValue(fixture.lines);
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getSalesDataV2({
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+    });
+
+    expect(findAllWhereInBatches).toHaveBeenCalledWith(
+      "Order_Lines_V2",
+      "order_id",
+      [fixture.order.id],
+    );
+    expect(findAllNoCache).not.toHaveBeenCalledWith("Order_Lines_V2");
+    expect(result.totalOrders).toBe(1);
   });
 });
 

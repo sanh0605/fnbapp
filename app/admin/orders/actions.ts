@@ -1,6 +1,15 @@
 "use server";
 
-import { findAll, findAllNoCache, insert, insertMany, update } from "@/lib/sheets_db";
+import {
+  findAll,
+  findAllNoCache,
+  findAllWhere,
+  findAllWhereInBatches,
+  findById,
+  insert,
+  insertMany,
+  update,
+} from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import crypto from "node:crypto";
@@ -209,25 +218,39 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const { orders, orderLines, products, variants, brands } = {
-    orders: await findAllNoCache("Orders_V2"),
-    orderLines: await findAllNoCache("Order_Lines_V2"),
-    products: await findAll("Products"),
-    variants: await findAll("Product_Variants"),
-    brands: await findAll("Brands"),
-  };
-
-  const current = (orders as any[]).find(o => o.id === orderId);
+  const current = await findById("Orders_V2", orderId);
   if (!current) return null;
 
   // Find root
   const rootId = current.parent_order_id || current.id;
 
   // All versions in chain
-  const chainOrders = (orders as any[]).filter(o =>
-    o.id === rootId || o.parent_order_id === rootId,
-  );
+  const [rootOrder, childOrders] = await Promise.all([
+    rootId === current.id
+      ? Promise.resolve(current)
+      : findById("Orders_V2", rootId),
+    findAllWhere("Orders_V2", {
+      eq: { parent_order_id: rootId },
+    }),
+  ]);
+  const chainById = new Map<string, any>();
+  for (const order of [rootOrder, current, ...childOrders]) {
+    if (order?.id) chainById.set(order.id, order);
+  }
+  const chainOrders = Array.from(chainById.values());
   chainOrders.sort((a, b) => Number(a.version) - Number(b.version));
+
+  const [orderLines, products, variants, brands, events] = await Promise.all([
+    findAllWhereInBatches("Order_Lines_V2", "order_id", [orderId]),
+    findAll("Products"),
+    findAll("Product_Variants"),
+    findAll("Brands"),
+    findAllWhereInBatches(
+      "Order_Events",
+      "order_id",
+      chainOrders.map(order => order.id),
+    ),
+  ]);
 
   // Build current order detail (reuse logic from getOrdersV2)
   const orderLinesV2 = (orderLines as any[]).filter(l => l.order_id === orderId);
@@ -267,10 +290,9 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
   }
 
   // Events for this order chain
-  const allEvents = await findAllNoCache("Order_Events");
-  const events = (allEvents as any[]).filter(e =>
-    chainOrders.some(o => o.id === e.order_id),
-  ).sort((a, b) => new Date(b.event_at).getTime() - new Date(a.event_at).getTime());
+  events.sort((a: any, b: any) =>
+    new Date(b.event_at).getTime() - new Date(a.event_at).getTime(),
+  );
 
   return {
     order: {
