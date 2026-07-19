@@ -59,5 +59,6 @@ export function buildEditedOrderFromCart(
     lines: editedLines,
     resolvedPromotion: built.resolvedPromotion,
     resolvedRecipes: built.resolvedRecipes,
+    payments: built.payments,
   };
 }

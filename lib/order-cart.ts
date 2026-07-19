@@ -46,14 +46,32 @@ export interface CartItemInput {
   manual_item_discount: { value: number; type: "VND" | "PERCENT" };
 }
 
+export interface CartPaymentInput {
+  method: "CASH" | "BANK_TRANSFER";
+  amount: number;
+  reference?: string;
+}
+
 export interface CartInput {
   brand_id: string;
   items: CartItemInput[];
   payment_method: "CASH" | "BANK_TRANSFER";
+  // Optional split/mixed payment (e.g. part cash, part bank transfer). When
+  // provided with 2+ entries, this becomes the source of truth for how the
+  // order was paid instead of the single payment_method field; the amounts
+  // must sum to exactly the order's net_total.
+  payments?: CartPaymentInput[];
   manual_order_discount?: { value: number; type: "VND" | "PERCENT" } | null;
   applied_promotion_id?: string | null; // explicit override; else auto-resolve
   suppress_auto_promotion?: boolean;
   actor: { id: string; name: string };
+}
+
+export interface BuiltPayment {
+  id: string;
+  method: string;
+  amount: number;
+  reference: string;
 }
 
 export interface ReferenceData {
@@ -77,6 +95,7 @@ export interface BuildOrderResult {
   lines: OrderLineV2[];
   resolvedPromotion: PromotionSnapshot | null;
   resolvedRecipes: RecipeSnapshot[]; // per line, same order as lines
+  payments: BuiltPayment[]; // empty when the order uses a single payment_method
 }
 
 export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildOrderResult {
@@ -127,6 +146,32 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
 
   const netTotal = builtLines.reduce((s, l) => s + l.spec.net_line_total, 0);
 
+  const payments: BuiltPayment[] = [];
+  if (input.payments && input.payments.length > 0) {
+    const paymentSum = input.payments.reduce((s, p) => s + p.amount, 0);
+    if (paymentSum !== netTotal) {
+      throw new InvariantError(
+        `Payment total ${paymentSum} does not match order net_total ${netTotal}`,
+      );
+    }
+    for (const p of input.payments) {
+      if (p.amount <= 0) {
+        throw new InvariantError("Each payment amount must be greater than 0");
+      }
+      payments.push({
+        id: `pay-${crypto.randomUUID()}`,
+        method: p.method,
+        amount: p.amount,
+        reference: p.reference || "",
+      });
+    }
+  }
+
+  // The single-method field stays populated for backward compatibility with
+  // existing reports/reads; order_payments (built above when split) is the
+  // detailed, per-method source of truth going forward.
+  const primaryPaymentMethod = payments.length > 0 ? payments[0].method : input.payment_method;
+
   const order: OrderV2 = {
     id: orderId,
     order_no: "", // assigned by server action after row reservation
@@ -151,7 +196,7 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
     applied_promotion_id: resolvedPromo?.id || "",
     applied_promotion_snapshot_json: promoSnapshot ? JSON.stringify(promoSnapshot) : "",
     pos_snapshot_json: JSON.stringify({ items: input.items, payment_method: input.payment_method }),
-    payment_method: input.payment_method === "BANK_TRANSFER" ? PAYMENT_METHOD.BANK_TRANSFER : PAYMENT_METHOD.CASH,
+    payment_method: primaryPaymentMethod === "BANK_TRANSFER" ? PAYMENT_METHOD.BANK_TRANSFER : PAYMENT_METHOD.CASH,
     payment_ref: "",
     migration_notes: "",
   };
@@ -164,6 +209,7 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
     lines: builtLines.map(l => l.spec),
     resolvedPromotion: promoSnapshot,
     resolvedRecipes: builtLines.map(l => JSON.parse(l.spec.recipe_snapshot_json) as RecipeSnapshot),
+    payments,
   };
 }
 

@@ -138,6 +138,7 @@ export async function submitOrderV2(
       event,
       ledgerRows: ledgerEntries,
       clientRequestId: requestToken,
+      payments: built.payments,
     });
 
     // 10. Refresh caches

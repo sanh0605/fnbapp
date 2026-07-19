@@ -388,9 +388,14 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const orders = await findCompletedOrders(queryDateRange, filters);
-    const [orderLines, modifiers, products] = await Promise.all([
+    const [orderLines, orderPayments, modifiers, products] = await Promise.all([
       findAllWhereInBatches(
         "Order_Lines_V2",
+        "order_id",
+        orders.map(order => order.id),
+      ),
+      findAllWhereInBatches(
+        "Order_Payments",
         "order_id",
         orders.map(order => order.id),
       ),
@@ -465,13 +470,35 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     const manualItemDiscount = ordersForBreakdown.reduce((s, o) => s + o.manual_item_discount_total, 0);
     const manualOrderDiscount = ordersForBreakdown.reduce((s, o) => s + o.manual_order_discount, 0);
     const totalDiscount = systemPromotionDiscount + manualItemDiscount + manualOrderDiscount;
+    // Attribute revenue per payment line (order_payments), not per order, so a
+    // split/mixed-payment order's revenue is divided across the methods it
+    // actually used instead of being counted once under a single method.
+    const breakdownOrderIds = new Set(ordersForBreakdown.map(o => o.id));
+    const paymentsByOrder = new Map<string, any[]>();
+    for (const p of orderPayments as any[]) {
+      if (!breakdownOrderIds.has(p.order_id)) continue;
+      const rows = paymentsByOrder.get(p.order_id) || [];
+      rows.push(p);
+      paymentsByOrder.set(p.order_id, rows);
+    }
     const paymentMap = new Map<string, { orderCount: number; revenue: number }>();
+    const methodsSeenPerOrder = new Set<string>();
     for (const o of ordersForBreakdown) {
-      const method = o.payment_method || "UNKNOWN";
-      if (!paymentMap.has(method)) paymentMap.set(method, { orderCount: 0, revenue: 0 });
-      const row = paymentMap.get(method)!;
-      row.orderCount += 1;
-      row.revenue += o.net_total;
+      const rows = paymentsByOrder.get(o.id);
+      const effectiveRows = rows && rows.length > 0
+        ? rows
+        : [{ method: o.payment_method || "UNKNOWN", amount: o.net_total }];
+      for (const row of effectiveRows) {
+        const method = row.method || "UNKNOWN";
+        if (!paymentMap.has(method)) paymentMap.set(method, { orderCount: 0, revenue: 0 });
+        const bucket = paymentMap.get(method)!;
+        bucket.revenue += Number(row.amount) || 0;
+        const dedupeKey = `${o.id}:${method}`;
+        if (!methodsSeenPerOrder.has(dedupeKey)) {
+          methodsSeenPerOrder.add(dedupeKey);
+          bucket.orderCount += 1;
+        }
+      }
     }
     const paymentBreakdown = Array.from(paymentMap.entries())
       .map(([method, v]) => ({ method, ...v }))

@@ -50,7 +50,75 @@ describe("savePosOrderAtomic", () => {
       orderNo: "PHD000999",
       lineCount: 1,
       ledgerCount: 2,
+      paymentCount: 0,
     });
+  });
+
+  it("sends split payments and validates the persisted payment count", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        order_id: "ord-split",
+        order_no: "PHD001001",
+        line_count: 1,
+        ledger_count: 1,
+        payment_count: 2,
+      },
+      error: null,
+    });
+
+    const result = await savePosOrderAtomic({
+      brandCode: "PHD",
+      order: { id: "ord-split" },
+      lines: [{ id: "line-1" }],
+      event: { id: "event-1" },
+      ledgerRows: [{ id: "stock-1" }],
+      payments: [
+        { id: "pay-1", method: "CASH", amount: 30000 },
+        { id: "pay-2", method: "BANK_TRANSFER", amount: 20000, reference: "TX123" },
+      ],
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "create_pos_order_atomic",
+      expect.objectContaining({
+        p_payments: [
+          { id: "pay-1", method: "CASH", amount: 30000 },
+          { id: "pay-2", method: "BANK_TRANSFER", amount: 20000, reference: "TX123" },
+        ],
+      }),
+    );
+    expect(result).toEqual({
+      orderId: "ord-split",
+      orderNo: "PHD001001",
+      lineCount: 1,
+      ledgerCount: 1,
+      paymentCount: 2,
+    });
+  });
+
+  it("fails closed when the persisted payment count does not match what was sent", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        order_id: "ord-split",
+        order_no: "PHD001001",
+        line_count: 1,
+        ledger_count: 1,
+        payment_count: 1,
+      },
+      error: null,
+    });
+
+    await expect(savePosOrderAtomic({
+      brandCode: "PHD",
+      order: { id: "ord-split" },
+      lines: [{ id: "line-1" }],
+      event: { id: "event-1" },
+      ledgerRows: [{ id: "stock-1" }],
+      payments: [
+        { id: "pay-1", method: "CASH", amount: 30000 },
+        { id: "pay-2", method: "BANK_TRANSFER", amount: 20000 },
+      ],
+    })).rejects.toThrow("persisted row count mismatch");
   });
 
   it("keeps the idempotency key optional for legacy callers", async () => {

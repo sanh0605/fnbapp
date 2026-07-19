@@ -1,5 +1,12 @@
 import { getSupabaseClient } from "@/lib/supabase";
 
+export type PosOrderPaymentInput = {
+  id: string;
+  method: string;
+  amount: number;
+  reference?: string;
+};
+
 export type PosOrderAtomicInput = {
   brandCode: string;
   order: object;
@@ -7,6 +14,7 @@ export type PosOrderAtomicInput = {
   event: object;
   ledgerRows: object[];
   clientRequestId?: string;
+  payments?: PosOrderPaymentInput[];
 };
 
 type PosOrderAtomicResult = {
@@ -14,6 +22,7 @@ type PosOrderAtomicResult = {
   order_no: string;
   line_count: number;
   ledger_count: number;
+  payment_count?: number;
 };
 
 export async function savePosOrderAtomic(
@@ -23,8 +32,10 @@ export async function savePosOrderAtomic(
   orderNo: string;
   lineCount: number;
   ledgerCount: number;
+  paymentCount: number;
 }> {
   const clientRequestId = normalizeClientRequestId(input.clientRequestId);
+  const payments = input.payments ?? [];
   const rpcArgs: Record<string, unknown> = {
     p_brand_code: input.brandCode,
     p_order: parseJsonColumns(input.order, [
@@ -43,6 +54,9 @@ export async function savePosOrderAtomic(
   if (clientRequestId) {
     rpcArgs.p_client_request_id = clientRequestId;
   }
+  if (payments.length > 0) {
+    rpcArgs.p_payments = payments;
+  }
 
   const { data, error } = await getSupabaseClient().rpc(
     "create_pos_order_atomic",
@@ -57,10 +71,14 @@ export async function savePosOrderAtomic(
   }
   const lineCount = Number(result.line_count) || 0;
   const ledgerCount = Number(result.ledger_count) || 0;
+  const paymentCount = Number(result.payment_count) || 0;
   if (
     lineCount !== input.lines.length ||
     ledgerCount !== input.ledgerRows.length
   ) {
+    throw new Error("create_pos_order_atomic persisted row count mismatch");
+  }
+  if (payments.length > 0 && paymentCount !== payments.length) {
     throw new Error("create_pos_order_atomic persisted row count mismatch");
   }
   return {
@@ -68,6 +86,7 @@ export async function savePosOrderAtomic(
     orderNo: result.order_no,
     lineCount,
     ledgerCount,
+    paymentCount,
   };
 }
 

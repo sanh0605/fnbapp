@@ -398,4 +398,78 @@ describe("buildOrderFromCart", () => {
     expect(result.lines[0].order_discount_allocation).toBe(3000);
     expect(result.lines[0].net_line_total).toBe(17000);
   });
+
+  describe("split/mixed payment", () => {
+    const singleItemCart = {
+      brand_id: "BR-002",
+      items: [
+        {
+          product_id: "PROD-024",
+          variant_id: "VAR-031",
+          qty: 1,
+          modifiers: [],
+          manual_item_discount: { value: 0, type: "VND" as const },
+        },
+      ],
+      actor: { id: "U1", name: "Test" },
+    };
+
+    it("returns no payments array when payments is omitted (single payment_method, unchanged behavior)", () => {
+      const result = buildOrderFromCart({
+        ...singleItemCart,
+        payment_method: "CASH",
+      }, REF);
+
+      expect(result.payments).toEqual([]);
+      expect(result.order.payment_method).toBe("CASH");
+    });
+
+    it("builds a payments array that sums to net_total when split payments are provided", () => {
+      // net_total for this cart is 25000 (see "Sữa Dâu standalone" test above)
+      const result = buildOrderFromCart({
+        ...singleItemCart,
+        payment_method: "CASH",
+        payments: [
+          { method: "CASH", amount: 15000 },
+          { method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },
+        ],
+      }, REF);
+
+      expect(result.order.net_total).toBe(25000);
+      expect(result.payments).toHaveLength(2);
+      expect(result.payments[0]).toMatchObject({ method: "CASH", amount: 15000, reference: "" });
+      expect(result.payments[1]).toMatchObject({ method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" });
+      expect(result.payments[0].id).toMatch(/^pay-/);
+      expect(result.payments[1].id).toMatch(/^pay-/);
+      expect(result.payments[0].id).not.toBe(result.payments[1].id);
+      // Primary payment_method column reflects the first payment for backward compatibility.
+      expect(result.order.payment_method).toBe("CASH");
+    });
+
+    it("rejects a payments array that doesn't sum to net_total", () => {
+      expect(() =>
+        buildOrderFromCart({
+          ...singleItemCart,
+          payment_method: "CASH",
+          payments: [
+            { method: "CASH", amount: 15000 },
+            { method: "BANK_TRANSFER", amount: 5000 },
+          ],
+        }, REF),
+      ).toThrow(/payment total.*does not match/i);
+    });
+
+    it("rejects a zero or negative payment amount", () => {
+      expect(() =>
+        buildOrderFromCart({
+          ...singleItemCart,
+          payment_method: "CASH",
+          payments: [
+            { method: "CASH", amount: 25000 },
+            { method: "BANK_TRANSFER", amount: 0 },
+          ],
+        }, REF),
+      ).toThrow(/greater than 0/i);
+    });
+  });
 });

@@ -828,6 +828,68 @@ describe("getSalesDataV2", () => {
     expect(findAllNoCache).not.toHaveBeenCalledWith("Order_Lines_V2");
     expect(result.totalOrders).toBe(1);
   });
+
+  it("attributes revenue per payment line for a split/mixed-payment order, not per order", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    // net_total for this fixture is 25000 (see order-cart tests) — split it
+    // across two methods to confirm the breakdown attributes by amount, not
+    // by the single legacy payment_method column.
+    const payments = [
+      { order_id: fixture.order.id, method: "CASH", amount: 15000, reference: "" },
+      { order_id: fixture.order.id, method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },
+    ];
+    (findAllWhere as any).mockResolvedValue([fixture.order]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => {
+      if (sheet === "Order_Lines_V2") return fixture.lines;
+      if (sheet === "Order_Payments") return payments;
+      return [];
+    });
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getSalesDataV2({
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+    });
+
+    expect(findAllWhereInBatches).toHaveBeenCalledWith(
+      "Order_Payments",
+      "order_id",
+      [fixture.order.id],
+    );
+    const cash = result.paymentBreakdown.find(b => b.method === "CASH");
+    const bank = result.paymentBreakdown.find(b => b.method === "BANK_TRANSFER");
+    expect(cash).toMatchObject({ orderCount: 1, revenue: 15000 });
+    expect(bank).toMatchObject({ orderCount: 1, revenue: 10000 });
+    // The order's full net_total is still represented across the split, not
+    // double-counted under one method.
+    const totalAttributed = result.paymentBreakdown.reduce((s, b) => s + b.revenue, 0);
+    expect(totalAttributed).toBe(fixture.order.net_total);
+  });
+
+  it("falls back to the legacy payment_method for an order with no order_payments rows", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    (findAllWhere as any).mockResolvedValue([fixture.order]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => {
+      if (sheet === "Order_Lines_V2") return fixture.lines;
+      if (sheet === "Order_Payments") return [];
+      return [];
+    });
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getSalesDataV2({
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+    });
+
+    expect(result.paymentBreakdown).toHaveLength(1);
+    expect(result.paymentBreakdown[0]).toMatchObject({
+      method: fixture.order.payment_method,
+      orderCount: 1,
+      revenue: fixture.order.net_total,
+    });
+  });
 });
 
 describe("getHourlyHeatmapV2", () => {
