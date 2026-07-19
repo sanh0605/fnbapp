@@ -6,10 +6,15 @@ import {
   isServerActionSourceFile,
   type GuardKind,
 } from "../lib/admin-auth-guard-audit";
-
-type IntendedAccess = "ADMIN" | "AUTHENTICATED" | "PUBLIC_AUTH" | "PUBLIC_RETIRED";
-type ActionStatus = "GUARDED" | "UNGUARDED_MUTATION" | "UNGUARDED_READ" | "WRONG_ROLE_GAP";
-type RouteStatus = "GUARDED" | "INTENTIONAL_PUBLIC" | "RETIRED" | "UNGUARDED_ROUTE";
+import {
+  classifyActionStatus,
+  classifyRouteStatus,
+  getActionIntendedAccess,
+  getRoutePolicy,
+  type ActionStatus,
+  type IntendedAccess,
+  type RouteStatus,
+} from "./audit-admin-action-auth-core";
 
 type ActionRow = {
   file: string;
@@ -52,27 +57,6 @@ function findTypeScriptFiles(directory: string): string[] {
   return files.sort();
 }
 
-function getActionIntendedAccess(relativeFile: string): IntendedAccess {
-  return relativeFile.startsWith("app/admin/") ? "ADMIN" : "AUTHENTICATED";
-}
-
-function classifyActionStatus(
-  intendedAccess: IntendedAccess,
-  isMutation: boolean,
-  guardKind: GuardKind,
-  guardEnforced: boolean,
-): ActionStatus {
-  if (!guardEnforced) return isMutation ? "UNGUARDED_MUTATION" : "UNGUARDED_READ";
-  if (intendedAccess === "ADMIN" && guardKind !== "ADMIN") return "WRONG_ROLE_GAP";
-  return "GUARDED";
-}
-
-function getRoutePolicy(relativeFile: string): IntendedAccess {
-  if (relativeFile === "app/api/auth/[...nextauth]/route.ts") return "PUBLIC_AUTH";
-  if (relativeFile === "app/api/inventory/sync/execute/route.ts") return "PUBLIC_RETIRED";
-  return "ADMIN";
-}
-
 function auditActions(files: string[], cwd: string): ActionRow[] {
   const rows: ActionRow[] = [];
   for (const file of files) {
@@ -112,12 +96,11 @@ function auditRoutes(files: string[], cwd: string): RouteRow[] {
     const intendedAccess = getRoutePolicy(relativeFile);
     const source = fs.readFileSync(file, "utf8");
     for (const handler of auditRouteHandlers(source)) {
-      let status: RouteStatus;
-      if (intendedAccess === "PUBLIC_AUTH") status = "INTENTIONAL_PUBLIC";
-      else if (intendedAccess === "PUBLIC_RETIRED") status = "RETIRED";
-      else status = handler.guardEnforced && handler.guardKind === "ADMIN"
-        ? "GUARDED"
-        : "UNGUARDED_ROUTE";
+      const status: RouteStatus = classifyRouteStatus(
+        intendedAccess,
+        handler.guardKind,
+        handler.guardEnforced,
+      );
 
       rows.push({
         file: relativeFile,
