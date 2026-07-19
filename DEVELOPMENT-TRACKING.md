@@ -4,6 +4,31 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-19 (Claude) - Gate 5 (POS Checkout Idempotency) Reviewed, Approved, and Merged
+
+**Trigger:** Codex committed all of Gate 5 in 4 commits (`c1f1b04` baseline, `a76d324` the actual fix, `3f61e47` draft-retry review, `3291d70` final report) on branch `codex/gate5-pos-checkout-idempotency`, migration `0023_pos_checkout_idempotency.sql` applied to production, including a live production probe (cleaned up after itself).
+
+### Review Performed
+
+- Read `supabase/migrations/0023_pos_checkout_idempotency.sql` in full: adds a nullable `orders_v2.client_request_id` column with a partial unique index (only enforced when non-null, so legacy callers are unaffected), and a new 6-argument `create_pos_order_atomic` with an optional `p_client_request_id`. Before any insert, if a token is given, the function takes a transaction-scoped advisory lock keyed on that token (serializing genuinely concurrent same-token calls, not just checking-then-racing), checks whether an order with that token already exists, and if so returns the *existing* order's id/order_no/line_count/ledger_count with `idempotent_replay: true` — the second call's freshly-generated row IDs are simply never inserted. All original row-count integrity checks remain intact.
+- Read `lib/pos-checkout-idempotency.ts`: `resolvePosCheckoutAttempt` compares a stable, sorted-key JSON fingerprint of the checkout payload against the previous attempt; if unchanged, it reuses the same token (a retry of the identical cart/payment/discount/promo), otherwise it mints a new one (a genuinely new checkout). Read the `components/POSScreen.tsx` diff: the token lives in a `useRef` (survives re-renders without extra renders), is cleared only on success, so a retry after a failure naturally reuses the same token via the fingerprint match — no manual state-clearing logic needed.
+- Confirmed `submitOrderV2`'s new `requestToken` parameter and `savePosOrderAtomic`'s `clientRequestId` field are both optional and only included in the RPC call when present, matching the migration's backward-compatible default-null design.
+- Read `scripts/verify-pos-checkout-idempotency.ts` (the live production probe) in full before trusting its "cleaned up" claim: uses an isolated `G5T` order-number prefix and `gate5-`-prefixed row IDs (won't collide with real data), calls the RPC twice with the same token asserting the second call returns the first's committed order, wraps cleanup in a `finally` block that deletes `stock_ledger` rows explicitly then `orders_v2` (which cascades to `order_lines_v2`/`order_events` per their `on delete cascade` FKs, confirmed by reading `0001_init_schema.sql`), and throws if any row remains after cleanup rather than silently reporting success.
+- **Independently queried the live production database myself** for any `G5T`/`gate5-`-prefixed or probe-tagged residue across all 4 tables — all empty, confirming the "0 remaining" claim directly rather than trusting the script's self-check.
+- Read `docs/audits/2026-07-19-gate5-pos-draft-retry-check.md`: correctly scoped as read-only — a duplicate draft has no revenue/COGS/stock effect, so no idempotency mechanism was added, matching the handoff's own guidance not to add complexity to a low-stakes path.
+- Confirmed the offline-capability documentation check found no new localStorage/IndexedDB/service-worker/offline-queue code — `docs/FEATURE-CATALOG.md`'s `PLANNED` and `ARCHITECTURE.md`'s `UNVERIFIED` status remain accurate, no doc or code change needed there.
+- **Independently checked out the branch's worktree (`C:/tmp/fnbapp-gate5`) and reran everything**: `npx vitest run` — 98 files, 523/523 pass (matches claim, up from 512). `npx tsc --noEmit` — 0 errors. `npx supabase migration list` — `0023` applied local and remote. Reran `scripts/audit-order-ledger.ts` (301 mismatches, 0 orphans — exact match), `scripts/audit-current-stock.ts` (same 3 known negative items, `ING-003` now at -201 g matching the report's noted live-activity change, not a new mismatch category), `scripts/audit-pnl-mac-consistency.ts` (1,561 orders, 0 VND delta — exact match), and the new `scripts/audit-pos-checkout-idempotency.ts` (1,582 orders, 0 with a request ID yet since the live client hasn't been redeployed, 0 duplicates).
+- Approved. **Merged `codex/gate5-pos-checkout-idempotency` into `main`** (no separate approval round, per the standing overnight agreement). Reran the suite (523/523) and TypeScript (clean) again on `main` post-merge.
+
+### Decision
+
+- Gate 5 closed: the real, reachable double-order risk on the POS's main revenue path (an ordinary network retry after an ambiguous response, no partial-write precondition needed) is fixed.
+- Noted `ING-003`'s negative stock grew from -131 g to -201 g during real sales while Gate 5 was in progress — continuation of the already-tracked, out-of-scope negative-stock-recovery issue (needs a physical count), not something Gate 5 caused or a new problem to open.
+- No code changes made by Claude during this review; the one live-database action (querying for probe residue) was read-only.
+
+Commit: pending (docs-only).
+
+
 ## 2026-07-19 (Claude) - REV-1 (Script Cleanup Cross-Check) Reviewed, Approved, and Merged
 
 **Trigger:** Codex committed REV-1 (commit `39ea6c2` on branch `codex/rev1-script-fix-crosscheck`) and reported both of Claude's pre-rule fixes were correct, plus 3 hardening additions: a UTC→Saigon-timezone date fix, a tightened reference-detection regex, and 14 new regression tests. Owner authorized continuous autonomous work overnight — merge/next-task decisions no longer require per-step approval (only genuine business/scope tradeoffs and pushing do).
