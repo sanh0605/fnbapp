@@ -6,6 +6,7 @@ export type PosOrderAtomicInput = {
   lines: object[];
   event: object;
   ledgerRows: object[];
+  clientRequestId?: string;
 };
 
 type PosOrderAtomicResult = {
@@ -23,23 +24,29 @@ export async function savePosOrderAtomic(
   lineCount: number;
   ledgerCount: number;
 }> {
+  const clientRequestId = normalizeClientRequestId(input.clientRequestId);
+  const rpcArgs: Record<string, unknown> = {
+    p_brand_code: input.brandCode,
+    p_order: parseJsonColumns(input.order, [
+      "applied_promotion_snapshot_json",
+      "pos_snapshot_json",
+    ]),
+    p_lines: input.lines.map(line => parseJsonColumns(line, [
+      "product_snapshot_json",
+      "variant_snapshot_json",
+      "modifiers_snapshot_json",
+      "recipe_snapshot_json",
+    ])),
+    p_event: parseJsonColumns(input.event, ["delta_json"]),
+    p_ledger: input.ledgerRows,
+  };
+  if (clientRequestId) {
+    rpcArgs.p_client_request_id = clientRequestId;
+  }
+
   const { data, error } = await getSupabaseClient().rpc(
     "create_pos_order_atomic",
-    {
-      p_brand_code: input.brandCode,
-      p_order: parseJsonColumns(input.order, [
-        "applied_promotion_snapshot_json",
-        "pos_snapshot_json",
-      ]),
-      p_lines: input.lines.map(line => parseJsonColumns(line, [
-        "product_snapshot_json",
-        "variant_snapshot_json",
-        "modifiers_snapshot_json",
-        "recipe_snapshot_json",
-      ])),
-      p_event: parseJsonColumns(input.event, ["delta_json"]),
-      p_ledger: input.ledgerRows,
-    },
+    rpcArgs,
   );
   if (error) {
     throw new Error(`create_pos_order_atomic: ${error.message}`);
@@ -62,6 +69,15 @@ export async function savePosOrderAtomic(
     lineCount,
     ledgerCount,
   };
+}
+
+function normalizeClientRequestId(value: string | undefined): string | null {
+  const normalized = value?.trim() || "";
+  if (!normalized) return null;
+  if (normalized.length > 128) {
+    throw new Error("POS checkout request token exceeds 128 characters");
+  }
+  return normalized;
 }
 
 function parseJsonColumns(

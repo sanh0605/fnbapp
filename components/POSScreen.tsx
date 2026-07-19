@@ -8,6 +8,10 @@ import Link from "next/link";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { CartPanel } from "@/components/pos/CartPanel";
 import { alert, confirm } from "@/lib/dialog";
+import {
+  resolvePosCheckoutAttempt,
+  type PosCheckoutAttempt,
+} from "@/lib/pos-checkout-idempotency";
 
 export default function POSScreen({
   brandId,
@@ -39,6 +43,7 @@ export default function POSScreen({
   const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
   const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const checkoutAttemptRef = useRef<PosCheckoutAttempt | null>(null);
 
   const [isOnline, setIsOnline] = useState(true);
   const [processingOrder, setProcessingOrder] = useState<any | null>(null);
@@ -699,6 +704,11 @@ export default function POSScreen({
       applied_promotion_id: appliedPromo?.id || null,
       actor: { id: "", name: "" },
     };
+    const checkoutAttempt = resolvePosCheckoutAttempt(
+      checkoutAttemptRef.current,
+      cartInput,
+    );
+    checkoutAttemptRef.current = checkoutAttempt;
 
     // Construct optimistic processing order details
     const newProcessingOrder = {
@@ -732,11 +742,15 @@ export default function POSScreen({
     setActiveDraftId(null);
 
     try {
-      const res = await submitOrderV2(cartInput);
+      const res = await submitOrderV2(
+        cartInput,
+        checkoutAttempt.requestToken,
+      );
       setIsCheckingOut(null);
       setProcessingOrder(null);
 
       if (res.success) {
+        checkoutAttemptRef.current = null;
         setSuccessOrderNo(res.order_no || "");
         addToast("success", `Thanh toán thành công! Mã đơn: ${res.order_no || ""}`);
         

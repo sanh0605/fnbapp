@@ -42,7 +42,10 @@ export type PosStockStatus = {
   current_stock: number;
 };
 
-export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Result> {
+export async function submitOrderV2(
+  input: CartInput,
+  requestToken?: string,
+): Promise<SubmitOrderV2Result> {
   try {
     // 1. Validate input
     if (!input.items || input.items.length === 0) {
@@ -134,6 +137,7 @@ export async function submitOrderV2(input: CartInput): Promise<SubmitOrderV2Resu
       lines: built.lines,
       event,
       ledgerRows: ledgerEntries,
+      clientRequestId: requestToken,
     });
 
     // 10. Refresh caches
