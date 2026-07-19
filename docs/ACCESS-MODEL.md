@@ -110,7 +110,7 @@ These observations do not prove every Server Action, RPC, API route, or Edge Fun
 ### Intended rules
 
 - Password hashes remain server-side and are used only for authentication/password updates.
-- Supabase privileged keys, NextAuth secret, Google credentials, Telegram tokens, and backup pull token remain in approved secret stores.
+- Supabase privileged keys, NextAuth secret, Google credentials, and backup pull token remain in approved secret stores.
 - Browser payloads and logs contain only the minimum fields needed by the user-facing flow.
 - Documentation, screenshots, audit JSON, and test output never include live secret values.
 

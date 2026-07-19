@@ -39,7 +39,6 @@ This document describes the current runtime shape, major modules, trust boundari
 - **Google Apps Script:** scheduled pull of the database snapshot endpoint.
 - **Google Drive:** daily and monthly full-snapshot storage.
 - **Google Sheets:** legacy migration, audit, and compatibility paths remain in the repository; Pre-Audit C must distinguish any live consumer from historical tooling.
-- **Telegram:** an Edge Function contains notification integration; operational status belongs in the feature catalog and is not asserted here.
 
 ## Request and data flows
 

@@ -87,11 +87,11 @@ new paid service or SDK:
   (`console.error("[GlobalError]", error)` / `console.error("[RootGlobalError]", error)`
   currently just log to the browser console, which is lost once the tab
   closes), send the error (message, stack, digest, URL, timestamp) to a
-  simple logging endpoint — either a new minimal API route that inserts
-  into a new `client_error_log` table (read-only, admin-viewable), or reuse
-  the existing Telegram notification pattern from `notify-order` if that's
-  simpler to stand up quickly. Pick whichever is less new surface area;
-  note the tradeoff in your report rather than assuming.
+  simple logging endpoint — a new minimal API route that inserts into a
+  new `client_error_log` table (read-only, admin-viewable). (Note: the
+  `notify-order` Telegram Edge Function mentioned in an earlier draft of
+  this handoff was deleted 2026-07-19 at the owner's request — do not
+  reuse or resurrect that pattern.)
 - Keep this deliberately minimal — no dashboards, no alerting thresholds,
   just "the next time this happens, there's a retrievable record of the
   actual error text and stack trace" instead of nothing.

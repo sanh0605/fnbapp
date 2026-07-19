@@ -215,7 +215,7 @@ The inventory below is a repository-and-evidence assessment, not the eight-gate 
 
 | Feature ID | Business capability | Intended users | Current entry points | Status | Evidence | Known limitations | Data affected | Last verified | Owner/maintainer |
 |---|---|---|---|---|---|---|---|---|---|
-| `EXT-TELEGRAM-ORDER` | Send an order summary to a configured Telegram chat | Owner/operations recipient | `supabase/functions/notify-order/index.ts` | `PARTIAL` | Gate 2 reviewed the full Edge Function source; message formatting remains present | No application caller exists; the function has no local request authorization and deployment JWT settings are unverified. If deployed open, callers could send arbitrary content to the configured chat; retry/idempotency and operator evidence are absent | External message containing order summary fields | 2026-07-18; repository access audit | Codex (server integration); Claude review |
+| `EXT-TELEGRAM-ORDER` | ~~Send an order summary to a configured Telegram chat~~ — feature removed 2026-07-19 at owner's request (no longer needed); `supabase/functions/notify-order` deleted | N/A | N/A | `REMOVED` | Owner instruction 2026-07-19; Claude removed the Edge Function and its references | N/A | N/A | 2026-07-19 | Claude (removal) |
 
 ### 15. Settings and maintenance tools
 
