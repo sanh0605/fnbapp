@@ -168,7 +168,7 @@ If the pre-commit hook blocks a commit that the agent believes should be allowed
 
 1. Read `CLAUDE.md` section 0 or `AGENTS.md`, depending on agent.
 2. Read `DEVELOPMENT-TRACKING.md` 3 newest entries.
-3. Read `docs/audits/codex-handoff-2026-06-25.md`.
+3. Read `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md`.
 4. Run `git status` and `git log -5`.
 5. Pick a `[ ]` task and mark it in-progress with `[~C]`, `[~X]`, or `[~A]`.
 6. Do the work.

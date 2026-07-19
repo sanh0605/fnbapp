@@ -13,7 +13,7 @@ Read that file first every session. This file mirrors only the operational subse
 1. Read this file.
 2. Read `docs/COLLABORATION.md`.
 3. Read `DEVELOPMENT-TRACKING.md` 3 newest entries.
-4. Read `docs/audits/codex-handoff-2026-06-25.md`.
+4. Read `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md`.
 5. Run `git status` and `git log -5`.
 6. Pick a `[ ]` task and mark it `[~X]` for Codex or `[~A]` for Antigravity.
 7. Work, verify, commit, update tracking and handoff.
