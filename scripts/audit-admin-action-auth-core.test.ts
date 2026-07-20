@@ -28,9 +28,8 @@ describe("admin action/route auth audit core", () => {
     expect(classifyActionStatus("AUTHENTICATED", false, "NONE", false)).toBe("UNGUARDED_READ");
   });
 
-  it("keeps the 2 existing route policy exceptions unchanged", () => {
+  it("keeps the existing route policy exception unchanged", () => {
     expect(getRoutePolicy("app/api/auth/[...nextauth]/route.ts")).toBe("PUBLIC_AUTH");
-    expect(getRoutePolicy("app/api/inventory/sync/execute/route.ts")).toBe("PUBLIC_RETIRED");
   });
 
   it("classifies /api/client-errors as AUTHENTICATED, not ADMIN", () => {
@@ -39,7 +38,6 @@ describe("admin action/route auth audit core", () => {
 
   it("defaults every other route to ADMIN (no policy regression)", () => {
     expect(getRoutePolicy("app/api/revalidate/route.ts")).toBe("ADMIN");
-    expect(getRoutePolicy("app/api/inventory/sync/scan/route.ts")).toBe("ADMIN");
   });
 
   it("classifies an AUTHENTICATED route guarded by ACTOR as GUARDED (the Gate 8 fix)", () => {

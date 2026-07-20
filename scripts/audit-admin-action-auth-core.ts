@@ -26,7 +26,6 @@ export function classifyActionStatus(
 // or SESSION satisfies that policy just as well as ADMIN does.
 export function getRoutePolicy(relativeFile: string): IntendedAccess {
   if (relativeFile === "app/api/auth/[...nextauth]/route.ts") return "PUBLIC_AUTH";
-  if (relativeFile === "app/api/inventory/sync/execute/route.ts") return "PUBLIC_RETIRED";
   if (relativeFile === "app/api/client-errors/route.ts") return "AUTHENTICATED";
   return "ADMIN";
 }

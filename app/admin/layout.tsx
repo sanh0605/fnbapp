@@ -32,7 +32,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       children: [
         { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
         { name: "Điều chỉnh Tồn kho", href: "/admin/inventory/stock-adjustments" },
-        { name: "Đồng bộ Tồn kho", href: "/admin/inventory/sync" },
         { name: "Nhập hàng chờ duyệt", href: "/admin/audit/backdated-ledger" },
       ]
     },
