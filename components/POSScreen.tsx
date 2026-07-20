@@ -655,7 +655,7 @@ export default function POSScreen({
 
 
 
-  const handleConfirmCheckout = async (method: string) => {
+  const handleConfirmCheckout = async (method: string, payments?: any[]) => {
     if (cart.length === 0 || !isOnline) return;
     setIsCheckingOut(method);
     setLastCheckoutError(null);
@@ -694,7 +694,8 @@ export default function POSScreen({
           },
         };
       }),
-      payment_method: method === "Chuyen khoan" ? "BANK_TRANSFER" : "CASH",
+      payment_method: method === "Chuyen khoan" ? "BANK_TRANSFER" : (method === "SPLIT" ? "CASH" : "CASH"),
+      payments: payments && payments.length > 0 ? payments : undefined,
       manual_order_discount: userCustomDiscount !== null
         ? {
             value: userCustomDiscount,
@@ -716,8 +717,8 @@ export default function POSScreen({
       totalAmount: currentTotalAmount,
       totalItems: currentTotalItems,
       subtotal: currentSubtotal,
-      paymentMethod: method === "Chuyen khoan" ? "BANK_TRANSFER" : "CASH",
-      methodLabel: method === "Chuyen khoan" ? "CHUYỂN KHOẢN" : "TIỀN MẶT",
+      paymentMethod: method === "Chuyen khoan" ? "BANK_TRANSFER" : (method === "SPLIT" ? "CASH" : "CASH"),
+      methodLabel: method === "Chuyen khoan" ? "CHUYỂN KHOẢN" : (method === "SPLIT" ? "NHIỀU HÌNH THỨC" : "TIỀN MẶT"),
       method,
       cartInput,
       cartBackup,

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { CartItemRow } from "./CartItemRow";
 import { formatNumber } from "@/lib/format";
@@ -29,7 +31,7 @@ interface CartPanelProps {
   setUserCustomDiscountType: (type: "VND" | "PERCENT") => void;
   userCustomDiscount: number | null;
   setUserCustomDiscount: (val: number | null) => void;
-  handleConfirmCheckout: (method: string) => void;
+  handleConfirmCheckout: (method: string, payments?: any[]) => void;
   isCheckingOut: string | null;
   itemPromoDiscounts: number[];
   isOnline: boolean;
@@ -70,6 +72,12 @@ export function CartPanel({
   lastCheckoutError,
   clearLastCheckoutError,
 }: CartPanelProps) {
+  const [isSplitPaymentOpen, setIsSplitPaymentOpen] = useState(false);
+  const [splitPayments, setSplitPayments] = useState<{ method: "CASH" | "BANK_TRANSFER", amount: number, reference: string }[]>([]);
+  const [splitMethodInput, setSplitMethodInput] = useState<"CASH" | "BANK_TRANSFER">("CASH");
+  const [splitAmountInput, setSplitAmountInput] = useState("");
+  const [splitReferenceInput, setSplitReferenceInput] = useState("");
+
   const calculateItemTotal = (item: any) => {
     const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
     const baseTotal = (item.unit_price + modsPrice) * item.qty;
@@ -113,6 +121,21 @@ export function CartPanel({
   };
 
   const totalAmount = calculateTotalAmount();
+  const totalSplitEntered = splitPayments.reduce((sum, p) => sum + p.amount, 0);
+  const splitRemaining = Math.max(0, totalAmount - totalSplitEntered);
+
+  const addSplitPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = Number(splitAmountInput);
+    if (amount <= 0) return;
+    setSplitPayments([...splitPayments, { method: splitMethodInput, amount, reference: splitReferenceInput }]);
+    setSplitAmountInput("");
+    setSplitReferenceInput("");
+  };
+
+  const removeSplitPayment = (idx: number) => {
+    setSplitPayments(splitPayments.filter((_, i) => i !== idx));
+  };
 
   return (
     <>
@@ -535,6 +558,20 @@ export function CartPanel({
                 )}
               </button>
             </div>
+            
+            <button 
+              onClick={() => {
+                setSplitPayments([]);
+                setSplitAmountInput("");
+                setSplitReferenceInput("");
+                setSplitMethodInput("CASH");
+                setIsSplitPaymentOpen(true);
+              }}
+              disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
+              className="mt-2 w-full bg-surface-secondary text-text-primary font-bold text-sm py-3 rounded-2xl shadow-sm hover:bg-border active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 border border-border min-h-[52px]"
+            >
+              <span>💳 💵 Nhiều hình thức (Split Payment)</span>
+            </button>
           </>
         ) : processingOrder ? (
           <div>
@@ -557,6 +594,93 @@ export function CartPanel({
         ) : null}
       </div>
     </div>
+
+    {isSplitPaymentOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-border flex justify-between items-center bg-page">
+            <h2 className="text-xl font-bold text-text-primary">Thanh toán nhiều hình thức</h2>
+            <button onClick={() => setIsSplitPaymentOpen(false)} className="text-text-muted hover:text-text-primary" aria-label="Đóng">Đóng</button>
+          </div>
+          <div className="p-5 overflow-y-auto max-h-[60vh]">
+            <div className="mb-4">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-text-secondary">Tổng cần thanh toán:</span>
+                <span className="font-bold">{formatNumber(totalAmount)}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-text-secondary">Đã nhập:</span>
+                <span className="font-bold text-success">{formatNumber(totalSplitEntered)}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-1 font-bold">
+                <span className="text-text-primary">Còn thiếu:</span>
+                <span className="text-danger">{formatNumber(splitRemaining)}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2 mb-6">
+              {splitPayments.map((p, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 border border-border rounded-lg bg-page">
+                  <div>
+                    <div className="font-bold text-sm">{p.method === "CASH" ? "Tiền mặt" : "Chuyển khoản"}</div>
+                    {p.reference && <div className="text-xs text-text-secondary">Mã: {p.reference}</div>}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold">{formatNumber(p.amount)}</span>
+                    <button onClick={() => removeSplitPayment(idx)} className="text-danger font-bold px-2 py-1 hover:bg-danger/10 rounded">&times;</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={addSplitPayment} className="space-y-3 bg-surface-secondary p-4 rounded-xl border border-border">
+              <div className="font-bold text-sm">Thêm phần thanh toán</div>
+              <div className="grid grid-cols-2 gap-2">
+                <select 
+                  value={splitMethodInput}
+                  onChange={(e) => setSplitMethodInput(e.target.value as any)}
+                  className="border border-border rounded-lg px-3 py-2 text-sm bg-page"
+                >
+                  <option value="CASH">Tiền mặt</option>
+                  <option value="BANK_TRANSFER">Chuyển khoản</option>
+                </select>
+                <input
+                  type="number"
+                  placeholder="Số tiền"
+                  value={splitAmountInput}
+                  onChange={(e) => setSplitAmountInput(e.target.value)}
+                  className="border border-border rounded-lg px-3 py-2 text-sm bg-page"
+                  required
+                  min="1"
+                />
+              </div>
+              {splitMethodInput === "BANK_TRANSFER" && (
+                <input
+                  type="text"
+                  placeholder="Mã giao dịch (không bắt buộc)"
+                  value={splitReferenceInput}
+                  onChange={(e) => setSplitReferenceInput(e.target.value)}
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-page"
+                />
+              )}
+              <button type="submit" className="w-full bg-primary text-white py-2 rounded-lg font-bold text-sm hover:bg-primary-hover">Thêm phần thanh toán</button>
+            </form>
+          </div>
+          <div className="p-5 border-t border-border bg-page">
+            <button
+              onClick={() => {
+                setIsSplitPaymentOpen(false);
+                handleConfirmCheckout("SPLIT", splitPayments);
+              }}
+              disabled={totalSplitEntered !== totalAmount || cart.length === 0 || !!isCheckingOut}
+              className="w-full bg-success text-white font-bold py-3.5 rounded-xl disabled:opacity-50 hover:bg-emerald-700 transition-colors"
+            >
+              Xác nhận Thanh toán
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   </>
   );
 }
