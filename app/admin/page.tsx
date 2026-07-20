@@ -4,6 +4,8 @@ import { ORDER_STATUS } from "@/lib/order-types";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
 import { formatNumber } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Banknote, Receipt, TrendingUp, Coffee, Tag, Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +28,13 @@ export default async function AdminDashboard({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const supabase = getSupabaseClient();
+  const [{ count: anomalousLedgerCount }, { count: anomalousRecipeCount }] = await Promise.all([
+    supabase.from("backdated_ledger_events").select("*", { count: "exact", head: true }).eq("status", "PENDING").eq("is_anomalous", true),
+    supabase.from("backdated_recipe_events").select("*", { count: "exact", head: true }).eq("status", "PENDING").eq("is_anomalous", true),
+  ]);
+  const anomalousBackdatedEventCount = (anomalousLedgerCount || 0) + (anomalousRecipeCount || 0);
+
   const [brands, users, suppliers, v2Orders, v2Lines, products, variants, categories] = await Promise.all([
     findAll("Brands"),
     findAll("Users"),
@@ -230,6 +239,14 @@ export default async function AdminDashboard({
 
   return (
     <div className="space-y-6">
+      {anomalousBackdatedEventCount > 0 && (
+        <Link href="/admin/audit/backdated-ledger?status=PENDING" className="block">
+          <Alert variant="warning" title="Cần xem lại: điều chỉnh giá vốn bất thường">
+            Có {anomalousBackdatedEventCount} giao dịch backdate với mức điều chỉnh lớn hơn bình thường,
+            hệ thống đã tạm dừng không tự áp dụng. Bấm để xem chi tiết.
+          </Alert>
+        </Link>
+      )}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text-primary tracking-tight">Tổng quan Hệ thống</h1>

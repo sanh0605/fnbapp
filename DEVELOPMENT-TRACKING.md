@@ -4,6 +4,132 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-20 (Claude) - COGS-1 Fully Closed: Automatic Backdated-Event Correction (PO Receipts + Recipe Versions), Recipe-Version Detection Built From Scratch, 7 Remaining Orders Corrected
+
+**Trigger:** Owner asked what happens going forward when a new backdated PO or recipe entry occurs -- did not want to be a manual-approval bottleneck (`/admin/audit/backdated-ledger` existed but needs a human to visit and act), but also correctly pointed out that fully-silent automation with zero monitoring means nobody would notice if an automated recompute were ever wrong. Full plan at `docs/superpowers/plans/` is referenced via the session's plan-mode file; see PR/commit for the design writeup.
+
+### Built (plan approved via EnterPlanMode/ExitPlanMode)
+
+- **`supabase/migrations/0027_backdated_recipe_detection.sql`**: new `backdated_recipe_events` table + `flag_backdated_recipe_entry()` trigger on `recipes` inserts (mirrors migration `0014`'s stock_ledger detection exactly: 5-minute threshold, `app.mac_drift_recovery` skip, idempotent `on conflict`). This closes the gap found earlier tonight -- recipe-version backdating (an admin-supplied past `effectiveDateStr` in `saveSemiProduct`, `app/admin/semi-products/actions.ts`) previously had zero automatic detection.
+- **`supabase/migrations/0028_backdated_events_anomaly_columns.sql`**: adds `is_anomalous`/`anomaly_reason` to the existing `backdated_ledger_events` table so both event kinds share one classification shape.
+- **`supabase/migrations/0029_backdated_recipe_event_recompute.sql`**: `apply_backdated_recipe_event_recovery`/`mark_backdated_recipe_event_recomputed`/`reject_backdated_recipe_event` RPCs, mirroring migration `0015` exactly (advisory lock, re-verify old value under `for update`, `data_recovery_changes` audit trail, idempotent), with the `search_path = public, extensions` fix (from migration `0026`) applied from the start this time.
+- **`lib/backdated-recipe-events/`** (new module): `find-affected-lines.ts` (simpler than the PO-receipt version -- a line is affected whenever the changed semi-product appears in its own frozen `recipe_snapshot_json`, no need to walk `buildLineConsumptionRows`) and `recompute-event.ts` (reuses `lib/backdated-ledger/compute-sale-time-cogs.ts` completely unchanged for the actual cost math). 16 new tests.
+- **`lib/backdated-ledger/anomaly-threshold.ts`**: shared routine-vs-anomalous classification (>20,000 VND total delta, or any single line >20% cost change, or >20 affected lines -- thresholds picked to clear tonight's actual accepted corrections comfortably). 6 tests.
+- **`app/api/cron/apply-backdated-corrections/route.ts`** + **`vercel.json`** (new): daily (03:00 ICT) cron sweep, `CRON_SECRET`-gated, auto-applies routine corrections for both event kinds with reviewer `"system-auto"`, flags anomalous ones (`is_anomalous=true`, left `PENDING`, not applied) instead. 5 tests. **Owner action still needed**: add `CRON_SECRET` to the Vercel project's environment variables before this goes live -- cannot be set from here.
+- **Dashboard banner** (`app/admin/page.tsx`): warning banner when any anomalous event is pending, linking to the existing review page -- this is the "how would anyone notice if it's wrong" answer the owner asked for, without requiring a page they have to remember to check.
+- **`/admin/audit/backdated-ledger`** extended (not replaced) to list both event kinds together (recipe events normalized into the same row shape) and show an "Bất thường" badge + reason wherever `is_anomalous` is set, on both the list and detail pages. `approveAndRecomputeAction`/`rejectEventAction` (`actions.ts`) now detect which table an event id belongs to and route to the matching ledger/recipe RPC -- this is how a flagged (anomalous) event still gets manually resolved without needing a script.
+- **`scripts/apply-backfill-recipe-backdated-events.ts`** (one-time): manually inserted the 2 `backdated_recipe_events` rows the new trigger couldn't retroactively create (BTP-002 effective 2026-07-13T17:00Z, BTP-009 effective 2026-07-11T17:00Z, both predating the trigger), then ran the real recompute/apply pipeline. Corrected 7 lines total (3 for BTP-002: 42677→38866, 10669→9717, 9497→8544; 4 for BTP-009: 9471→8853 ×2, 11205→10587, 10374→9757) -- exactly the 6-7 orders flagged during the earlier BTP-shortfall historical correction as needing this fix.
+
+### Verification
+
+- `npx tsc --noEmit`: 0 errors. `npx vitest run`: 611/611 (up from 580 at the start of tonight's COGS-1 work). `npx next build`: compiled successfully, new route and pages listed.
+- `scripts/audit-order-ledger.ts`: 209 mismatches, unchanged -- confirms the cost-only corrections (54 + 7 = 61 lines across tonight's two COGS-1 sessions) had zero effect on the quantity side, as designed.
+- Owner ran `supabase db push` for all 3 new migrations; live-verified via the actual backfill script run (dry-run then `--apply`) that the automatic pipeline produces the exact same 7-order correction independently derived earlier by hand.
+
+### Deferred, tracked as follow-up
+
+- Cross-check whether the 18 unflagged-seed-era PO_RECEIPT orders (found during the earlier COGS-1 investigation) overlap with the already-closed Task 3.8/3.9 "historical gap" lock cohort (confirmed no order-number overlap, but the underlying orders were never individually resolved -- these predate the automatic trigger and still have no `backdated_ledger_events` row).
+- Owner must add `CRON_SECRET` to Vercel's environment variables for the daily automatic sweep to actually run in production.
+
+Commit: pending.
+
+
+## 2026-07-20 (Claude) - COGS-1: Applied Existing `backdated-ledger` Module to All 9 PENDING Events (54 cost_at_sale Corrections), Fixed Two Latent Bugs Along the Way
+
+**Trigger:** Follow-up to the same-day historical correction, per owner's explicit choice of next task. Quantity was already fully fixed for all 479 shortfall orders; `cost_at_sale` for orders affected by backdated PO_RECEIPT/recipe entries was the deliberately-deferred remainder.
+
+### What was found already built (not reinvented)
+
+- `lib/backdated-ledger/` (`find-affected-lines.ts`, `compute-sale-time-cogs.ts`, `recompute-event.ts`) plus `supabase/migrations/0015_backdated_event_recompute.sql` (`apply_backdated_event_recovery`/`mark_backdated_event_recomputed`/`reject_backdated_event` RPCs, `service_role`-only, row-locked, idempotent, verifies old cost under lock before writing) -- a complete, already-tested pipeline for exactly this correction, pre-dating tonight (`docs/audits/2026-07-09-prod-028-btp-shortfall-investigation.md`, Tasks 3.4-3.9). Used it as designed rather than building a new mechanism.
+- A separate, already-closed "historical gap" cohort (Task 3.8/3.9, 41 lines, `lib/backdated-historical-gap-lock.ts`) for PO receipts that predate the backdating-detection trigger and were never auto-flagged -- distinct from, but the same general phenomenon as, the 18 unflagged seed-era orders found earlier tonight. Not yet cross-checked for overlap with tonight's 18 -- flagged as still-needed follow-up.
+
+### Bugs found and fixed before applying
+
+- **Same `asOf` recipe-version bug as `lib/order-ledger-audit.ts`** (fixed earlier same day): `find-affected-lines.ts` and `compute-sale-time-cogs.ts` both called `buildSemiProductRecipeMaps` without an `asOf` argument (defaulting to "now"). Fixed both to pass the order's own `created_at`/sale time. Added a regression test to `find-affected-lines.test.ts` (a semi-product with 2 recipe versions, event item only in the older one -- would have missed the affected line entirely under the old "now"-based lookup). 18/18 backdated-ledger tests pass.
+- **`apply_backdated_event_recovery` unresolvable `digest()`**: the RPC calls `digest()` from `pgcrypto`, declared with `set search_path = public`, but `pgcrypto` is installed in the `extensions` schema on this project (confirmed via a direct read-only Management API query), not `public`. Every apply attempt failed with `function digest(text, unknown) does not exist` before writing anything. Verified the failure was a clean no-op first (queried the 3 affected order lines: still at their original `cost_at_sale`; `data_recovery_changes` had 0 rows for that run -- Postgres rolled back the whole transaction, as expected since the failure happens before any row lock/update). Fixed via `supabase/migrations/0026_fix_backdated_event_recovery_search_path.sql` (re-declares the function with `search_path = public, extensions`, identical body otherwise). Owner ran `supabase db push` themselves (blocked at the tool-permission layer by design).
+
+### Applied
+
+- `scripts/apply-pending-backdated-events.ts` (new, dry-run by default): drove `recomputeEventDryRun`/`recomputeEventApply` over all 9 `PENDING` `backdated_ledger_events` rows. Dry-run planned 90 `cost_at_sale` changes (+13,953 VND net); live apply wrote 54 (the rest were already correct by the time later events in the same run recomputed them, since several events share raw ingredients like `NNL-007` across the same order lines -- expected convergence, not double-application). Net delta applied: +6,819 VND. All 9 events now `RECOMPUTED`.
+- `npx tsc --noEmit`: 0 errors. `npx vitest run`: 581/581 (up from 580). `scripts/audit-order-ledger.ts`: 209 mismatches, unchanged from before this correction -- confirms the cost-only change had zero effect on the quantity side, as designed.
+
+### Deferred, tracked as follow-up (not done tonight)
+
+- Cross-check whether the 18 unflagged-seed-era orders found earlier tonight overlap with the already-closed Task 3.8/3.9 "historical gap" cohort, or are a new, separate gap needing its own `backdated_ledger_events` rows (or a trigger backfill).
+- The 6-7 semi-product recipe-version-boundary orders' `cost_at_sale`: `find-affected-lines.ts`'s `BackdatedLedgerEvent` type is PO_RECEIPT-shaped only (`item_reference`/`effective_timestamp`/`visibility_timestamp`); it has no concept of a recipe-version change as the "event". Needs a small parallel mechanism or manual per-order handling given the tiny count.
+
+Commit: pending.
+
+
+## 2026-07-20 (Claude) - Remaining 102 BTP-Shortfall Orders Corrected; Root-Caused and Fixed a Double-Reversal Bug in the Correction Script
+
+**Trigger:** Continuation of the same-day implicit-production-shortfall fix. User asked to resolve the 102 orders deferred earlier (recompute-vs-recorded mismatch), rather than leaving them out indefinitely.
+
+### Root causes found for the 102 (none were real data errors)
+
+- **~20 orders**: `scripts/investigate-btp-shortfall-historical-correction.ts` compared a per-line recompute against an order-level (multi-line) aggregate when two lines shared the same item+source tag (e.g. two lines both needing the same semi-product via `VARIANT_RECIPE`, no per-line key in the ledger). Fixed by aggregating recomputed quantities across all lines before comparing, matching how the actual ledger rows are already aggregated (UCK000388 was the diagnostic example: two lines recompute to 142.857143 + 190.47619 = 333.333333, exactly matching the recorded aggregate).
+- **~76 orders**: cost_at_sale mismatches traced to backdated data -- either a `backdated_ledger_events`-flagged PO_RECEIPT (53 orders, confirmed via direct row lookup, e.g. PHD000959/NNL-007), or an unflagged seed-era PO_RECEIPT predating the backdating-detection trigger (18 orders, same phenomenon, just not auto-flagged). Cost is a separate concern from the quantity reclassification (this correction never reads/writes `cost_at_sale`); the existing, already-tested `lib/backdated-ledger/` module is the correct tool for that separate fix, left for a follow-up.
+- **7 orders**: sold right at a semi-product recipe-version boundary (e.g. BTP-002's recipe changed effective 2026-07-13T17:00, BTP-009's effective 2026-07-11T17:00). Per owner's domain clarification: production/recipe changes take effect in the kitchen immediately, but the system record can lag: the *recorded* SALES_CONSUME quantity was computed live using whatever recipe existed in the database at that instant, and can be measurably wrong once the correct (later-entered but truly-earlier-effective) recipe version is known. Confirmed via `scripts/audit-recipe-version-boundary-mismatches.ts` (checked 512 shortfall-order/semi-product pairs, found exactly these 7).
+
+### Design change from the first 377-order correction
+
+- `RECLASSIFICATION_REVERSAL` always reverses the exact **recorded** quantity (fully nets the original row).
+- `PRODUCTION_CONSUME` always uses the **recomputed** quantity (correct per the recipe version truly effective at sale time).
+- For 472 of 479 orders these are identical (no-op difference); for the 7 recipe-version-boundary orders, reversing recorded and re-consuming recomputed nets to exactly the correct final stock balance with no separate adjustment entry needed.
+- cost_at_sale check dropped entirely as a gate (previously blocked reclassification on an unrelated concern).
+
+Applied to the remaining 102 orders (377 already done earlier same day): 1,126 new `stock_ledger` entries, 0 unexplained after the redesign.
+
+### Bug found and fixed same day: double reversal on multi-line orders
+
+- Post-apply audit showed mismatches jump from 216 to 261, with previously-clean orders (UCK000388 et al.) newly broken. Root cause: `apply-btp-shortfall-historical-correction.ts`'s per-row loop looked up the **order-level aggregate** recorded quantity for each individual row instead of splitting it per line -- for any order where 2+ lines shared one item+source key, this wrote a full-aggregate `RECLASSIFICATION_REVERSAL` once per line, an exact 2x over-reversal in every case (`scripts/diagnose-double-reversal-bug.ts`: 20 orders, 54 item+source keys, all reversed = 2x recorded exactly).
+- Fixed via `scripts/apply-fix-double-reversal-bug.ts` (insert-only, same Method-1 principle): one corrective `RECLASSIFICATION_REVERSAL` per affected key with a negative quantity equal to the excess, canceling it out exactly (`buildInventoryBalances` sums `quantity_change` regardless of transaction_type, so this nets correctly). Applied: 54 corrective entries.
+
+### Final verification
+
+- `scripts/verify-all-479-clean.ts`: 478 of 479 shortfall-affected orders exactly clean; the 1 remaining delta is floating-point noise (~0.0000012 units, from chained 1/7 and 1/3 recipe ratios), not a real discrepancy.
+- `scripts/audit-current-stock.ts`: 3 pre-existing negative-stock items (unrelated to tonight's work, already tracked separately since a prior "PHASE9-NEGATIVE-STOCK" migration); confirmed the correction's own `RECLASSIFICATION_REVERSAL`/`PRODUCTION_CONSUME` pairs net to exactly zero in every case, so tonight's work contributed no new negative-stock exposure.
+- `npx tsc --noEmit`: 0 errors. `npx vitest run`: 580/580 passed.
+- Whole-dataset `audit-order-ledger.ts` mismatch count: 209 (down from the original 301 baseline), all remaining ones outside the 479-order shortfall set and pre-existing (the known `NNL-003`/`BTP-XXX` identity-drift issue in very early orders).
+
+### Deferred, tracked as follow-up (not done tonight)
+
+- cost_at_sale correction for the ~76+ orders affected by backdated PO_RECEIPT/recipe entries, using the existing `lib/backdated-ledger/` module (dry-run/apply via `apply_backdated_event_recovery` RPC). That module currently only covers PO_RECEIPT-type backdating, not semi-product recipe-version backdating (the 7 orders) -- may need a small parallel mechanism or manual handling given the small count.
+- The pre-existing `NNL-003`/`BTP-XXX` identity-drift pattern in the earliest orders (~209 remaining mismatches), unrelated to tonight's work.
+
+Commit: pending.
+
+
+## 2026-07-20 (Claude) - Implicit Production-on-Shortfall Fix, Historical Correction, and Order-Ledger-Audit Regression Fixed
+
+**Trigger:** User traced the "301 known replay mismatches" question down to a root cause: when a semi-product (BTP) shortfall occurred, the system was debiting the raw-ingredient equivalent directly as `SALES_CONSUME`, as if raw coffee beans were handed to the customer -- physically impossible in an FNB workflow, and a stopgap dating back to when the system couldn't track real-time production. User wanted the most durable long-term fix, not a patch, and wanted it applied to all eligible historical data.
+
+### Forward fix (live checkout/edit paths)
+
+- `lib/inventory-consumption.ts`: added optional `implicitYields` tracking to `ConsumptionAllocationInput`/`allocateRecipeConsumption`/`buildLineConsumptionRows` (zero behavior change for the 10 of 12 existing callers that don't pass it), plus a new exported `splitImplicitProduction()` that converts a shortfall-exploded row set into `{ saleRows, productionConsumeRows, productionYieldRows }`.
+- `app/pos/actions.ts` and `app/admin/orders/actions.ts`: `buildStockLedgerEntries` now writes `PRODUCTION_CONSUME` (raw ingredient) + `PRODUCTION_YIELD` (semi-product) + `SALES_CONSUME` (semi-product, full quantity) instead of debiting the raw ingredient as a direct sale. COGS math unchanged (proven equivalent in `lib/mac-cogs.test.ts`, since `PRODUCTION_YIELD` always carries `unit_cost: 0`).
+- New transaction type `RECLASSIFICATION_REVERSAL` added via `supabase/migrations/0025_stock_ledger_reclassification_type.sql`.
+
+### Historical correction (Method 1: insert reversal + new entries, never overwrite)
+
+- `scripts/apply-btp-shortfall-historical-correction.ts` (idempotent, tagged `RECLASSIFY_2026-07-20`): applied to 377 of 479 historically shortfall-affected orders where recomputed COGS and raw-ingredient quantities matched exactly what was recorded. Inserted 3,142 new ledger entries. The other 102 orders (recompute mismatch) were deferred for separate investigation per user's explicit choice.
+
+### Order-ledger-audit regression found and fixed post-correction
+
+- Rerunning `scripts/audit-order-ledger.ts` after the correction showed mismatches jump 301 -> 748 instead of dropping. Root cause: `lib/order-ledger-audit.ts` had never been updated for the new convention.
+- Fix applied: `expectedNetByItem` keeps summing the raw (unfolded) `allocateRecipeConsumption` output -- no folding needed on the expected side. Instead, `isOrderInventoryLedger` (`actualNetByItem`'s filter) was broadened to also count `PRODUCTION_CONSUME`, `PRODUCTION_YIELD`, and `RECLASSIFICATION_REVERSAL`, so these net out against the original entries the same way for a completed order, a historically-corrected order, and a voided/superseded corrected order alike.
+- **Bonus finding, unrelated to tonight's shortfall work**: `buildSemiProductRecipeMaps` was being called once globally with no `asOf` argument (defaulting to "now"), so any order's semi-product-shortfall recompute used TODAY's recipe version instead of the version effective at the order's own `created_at`. Fixed by moving the recipe-map construction into `expectedNetByItem`, keyed per-order on `order.created_at`. This alone cleared roughly 85 pre-existing mismatches unrelated to the shortfall fix.
+- Net result: 301 (original baseline) -> 748 (regression) -> 216 (post-fix, lower than the original baseline). Verified via `scripts/verify-corrected-377-not-in-audit-mismatches.ts` that all 377 historically-corrected orders are now clean under the fixed audit. Added regression tests to `lib/order-ledger-audit.test.ts` (8 tests total, including one specifically for the recipe-version-selection bug and one for the RECLASSIFICATION_REVERSAL/PRODUCTION_CONSUME/PRODUCTION_YIELD reconciliation).
+- Remaining 216 mismatches are the already-known, already-deferred 102-order set (recipe-version drift, mismatch classification) plus a separate, pre-existing item-identity-drift pattern in very early orders (`NNL-003` vs `BTP-XXX`) that predates tonight's work entirely -- not touched, needs its own investigation if pursued later.
+
+### Verification
+
+- `npx tsc --noEmit`: 0 errors. `npx vitest run`: 580/580 passed.
+- Live production probes confirmed P&L/current-stock 0-delta effect from both the forward fix and the historical correction.
+
+Commit: pending.
+
+
 ## 2026-07-19 (Claude) - Gate 6 Closed: Contrast Fix Verified, Full Gate Complete
 
 **Trigger:** Antigravity committed a 2-line color-token fix (commit `a14b8e1`): `--color-text-muted` #94A3B8 → #64748B, `--color-text-secondary` #64748B → #475569, claiming 4.74:1 and 6.9:1 contrast ratios respectively.

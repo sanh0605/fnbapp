@@ -24,16 +24,26 @@ export function EventRow({ event }: { event: any }) {
         {event.item_reference}
       </td>
       <td className={`px-4 py-3 text-sm text-right font-medium ${event.quantity_change > 0 ? 'text-success' : event.quantity_change < 0 ? 'text-danger' : ''}`}>
-        {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
+        {event.quantity_change === null ? "-" : `${event.quantity_change > 0 ? '+' : ''}${event.quantity_change}`}
       </td>
       <td className="px-4 py-3 text-sm text-right text-text-primary">
-        {formatNumber(event.unit_cost)}
+        {event.unit_cost !== null ? formatNumber(event.unit_cost) : "-"}
       </td>
       <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
         {lagText}
       </td>
       <td className="px-4 py-3 whitespace-nowrap text-sm">
-        <StatusBadge status={event.status} />
+        <div className="flex items-center gap-1.5">
+          <StatusBadge status={event.status} />
+          {event.is_anomalous && (
+            <span
+              title={event.anomaly_reason || "Điều chỉnh bất thường, chưa tự áp dụng"}
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-danger/10 text-danger border-red-200"
+            >
+              Bất thường
+            </span>
+          )}
+        </div>
       </td>
       <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
         <Link 

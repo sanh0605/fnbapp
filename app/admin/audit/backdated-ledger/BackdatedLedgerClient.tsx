@@ -35,6 +35,7 @@ export default function BackdatedLedgerClient() {
           <option value="purchase_orders">Purchase Orders</option>
           <option value="stock_adjustments">Stock Adjustments</option>
           <option value="production_yields">Production Yields</option>
+          <option value="recipes">Recipes</option>
         </select>
       </div>
 

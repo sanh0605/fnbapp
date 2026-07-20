@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/apply-backdated-corrections",
+      "schedule": "0 20 * * *"
+    }
+  ]
+}

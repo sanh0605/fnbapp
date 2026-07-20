@@ -58,8 +58,22 @@ export function EventDetail({ event, plan }: EventDetailProps) {
             <h2 className="text-lg font-medium text-text-primary mb-1">Chi tiết giao dịch</h2>
             <div className="text-sm text-text-secondary">ID: {event.id}</div>
           </div>
-          <StatusBadge status={event.status} className="text-sm px-3 py-1" />
+          <div className="flex items-center gap-2">
+            <StatusBadge status={event.status} className="text-sm px-3 py-1" />
+            {event.is_anomalous && (
+              <span
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border bg-danger/10 text-danger border-red-200"
+              >
+                Bất thường
+              </span>
+            )}
+          </div>
         </div>
+        {event.is_anomalous && event.anomaly_reason && (
+          <div className="mb-4 -mt-2 text-sm text-danger bg-danger/5 border border-red-200 rounded-md px-3 py-2">
+            Lý do tạm dừng tự động áp dụng: {event.anomaly_reason}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
           <div>
@@ -83,18 +97,22 @@ export function EventDetail({ event, plan }: EventDetailProps) {
             <div className="font-medium">{event.item_reference}</div>
           </div>
 
-          <div>
-            <div className="text-text-secondary mb-1">Quantity Change</div>
-            <div className={`font-medium flex items-center ${event.quantity_change > 0 ? 'text-success' : event.quantity_change < 0 ? 'text-danger' : ''}`}>
-              {event.quantity_change > 0 && <span className="mr-1">↑</span>}
-              {event.quantity_change < 0 && <span className="mr-1">↓</span>}
-              {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
+          {event.quantity_change !== null && (
+            <div>
+              <div className="text-text-secondary mb-1">Quantity Change</div>
+              <div className={`font-medium flex items-center ${event.quantity_change > 0 ? 'text-success' : event.quantity_change < 0 ? 'text-danger' : ''}`}>
+                {event.quantity_change > 0 && <span className="mr-1">↑</span>}
+                {event.quantity_change < 0 && <span className="mr-1">↓</span>}
+                {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
+              </div>
             </div>
-          </div>
-          <div>
-            <div className="text-text-secondary mb-1">Unit Cost</div>
-            <div className="font-medium">{formatNumber(event.unit_cost)} VND</div>
-          </div>
+          )}
+          {event.unit_cost !== null && (
+            <div>
+              <div className="text-text-secondary mb-1">Unit Cost</div>
+              <div className="font-medium">{formatNumber(event.unit_cost)} VND</div>
+            </div>
+          )}
           
           {event.stock_ledger_id && (
             <div>

@@ -24,25 +24,55 @@ export default async function BackdatedLedgerPage({
   const page = parseInt(pageStr, 10) || 1;
   const pageSize = 50;
 
-  let query = supabase
+  let ledgerQuery = supabase
     .from("backdated_ledger_events")
-    .select("*", { count: "exact" });
-
+    .select("*");
   if (status !== "ALL") {
-    query = query.eq("status", status);
+    ledgerQuery = ledgerQuery.eq("status", status);
   }
   if (item_reference) {
-    query = query.ilike("item_reference", `%${item_reference}%`);
+    ledgerQuery = ledgerQuery.ilike("item_reference", `%${item_reference}%`);
   }
-  if (source_table !== "ALL") {
-    query = query.eq("source_table", source_table);
+  if (source_table !== "ALL" && source_table !== "recipes") {
+    ledgerQuery = ledgerQuery.eq("source_table", source_table);
   }
 
-  query = query
-    .order("detected_at", { ascending: false })
-    .range((page - 1) * pageSize, page * pageSize - 1);
+  let recipeQuery = supabase
+    .from("backdated_recipe_events")
+    .select("*");
+  if (status !== "ALL") {
+    recipeQuery = recipeQuery.eq("status", status);
+  }
+  if (item_reference) {
+    recipeQuery = recipeQuery.ilike("target_id", `%${item_reference}%`);
+  }
 
-  const { data: events, count, error } = await query;
+  const includeLedger = source_table === "ALL" || source_table !== "recipes";
+  const includeRecipe = source_table === "ALL" || source_table === "recipes";
+
+  const [ledgerResult, recipeResult] = await Promise.all([
+    includeLedger ? ledgerQuery : Promise.resolve({ data: [], error: null }),
+    includeRecipe ? recipeQuery : Promise.resolve({ data: [], error: null }),
+  ]);
+  const error = ledgerResult.error || recipeResult.error;
+
+  // Normalize recipe events into the same shape the existing ledger-event UI
+  // (EventRow, the mobile card layout below) already knows how to render --
+  // source_table becomes "recipes", item_reference becomes the semi-product
+  // target_id, quantity_change/unit_cost don't apply so are left null.
+  const normalizedRecipeEvents = (recipeResult.data || []).map((event: any) => ({
+    ...event,
+    source_table: "recipes",
+    source_id: event.recipe_id,
+    item_reference: event.target_id,
+    quantity_change: null,
+    unit_cost: null,
+  }));
+
+  const allEvents = [...(ledgerResult.data || []), ...normalizedRecipeEvents]
+    .sort((a, b) => new Date(b.detected_at).getTime() - new Date(a.detected_at).getTime());
+  const count = allEvents.length;
+  const events = allEvents.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto py-8">
@@ -97,9 +127,19 @@ export default async function BackdatedLedgerPage({
                           {event.source_table} / {event.source_id}
                         </div>
                       </div>
-                      <StatusBadge status={event.status} />
+                      <div className="flex items-center gap-1.5">
+                        <StatusBadge status={event.status} />
+                        {event.is_anomalous && (
+                          <span
+                            title={event.anomaly_reason || "Điều chỉnh bất thường, chưa tự áp dụng"}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-danger/10 text-danger border-red-200"
+                          >
+                            Bất thường
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between mt-1 text-sm">
                       <div className="text-text-muted">
                         {formatDateTime(event.detected_at)}
@@ -112,11 +152,15 @@ export default async function BackdatedLedgerPage({
                         <div className="text-right">
                           <div className="text-[10px] text-text-muted uppercase font-bold">Qty / Cost</div>
                           <div className="font-bold">
-                            <span className={event.quantity_change > 0 ? 'text-success' : event.quantity_change < 0 ? 'text-danger' : ''}>
-                              {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
-                            </span>
+                            {event.quantity_change === null ? (
+                              <span className="text-text-muted">-</span>
+                            ) : (
+                              <span className={event.quantity_change > 0 ? 'text-success' : event.quantity_change < 0 ? 'text-danger' : ''}>
+                                {event.quantity_change > 0 ? '+' : ''}{event.quantity_change}
+                              </span>
+                            )}
                             <span className="text-text-muted font-normal mx-1">@</span>
-                            {formatNumber(event.unit_cost)}
+                            {event.unit_cost !== null ? formatNumber(event.unit_cost) : "-"}
                           </div>
                         </div>
                       </div>
