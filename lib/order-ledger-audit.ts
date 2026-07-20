@@ -3,6 +3,7 @@ import {
   allocateRecipeConsumption,
   buildInventoryBalances,
   buildSemiProductRecipeMaps,
+  type ConsumptionRow,
 } from "./inventory-consumption";
 
 type RawOrder = {
@@ -34,6 +35,10 @@ type RawRecipe = {
   target_id?: string;
   target_type?: string;
   ingredients_json?: string;
+  status?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  created_at?: string;
 };
 
 type RawSemiProduct = {
@@ -91,9 +96,6 @@ export function auditOrderLedger(input: {
     ledgerByOrder.set(row.reference_id, rows);
   }
 
-  const consumptionMaps = input.recipes && input.semiProducts
-    ? buildSemiProductRecipeMaps(input.recipes, input.semiProducts)
-    : null;
   const shortfallCutoverMs = input.shortfallCutoverAt
     ? new Date(input.shortfallCutoverAt).getTime()
     : Number.NEGATIVE_INFINITY;
@@ -107,7 +109,8 @@ export function auditOrderLedger(input: {
       order,
       linesByOrder.get(order.id) || [],
       input.ledger,
-      consumptionMaps,
+      input.recipes,
+      input.semiProducts,
       shortfallCutoverMs,
     );
     const actual = actualNetByItem(ledgerByOrder.get(order.id) || []);
@@ -145,7 +148,8 @@ function expectedNetByItem(
   order: RawOrder,
   lines: RawLine[],
   ledger: RawLedger[],
-  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps> | null,
+  recipes: RawRecipe[] | undefined,
+  semiProducts: RawSemiProduct[] | undefined,
   shortfallCutoverMs: number,
 ): Map<string, number> {
   if (order.status === "SUPERSEDED" || order.status === "VOIDED") {
@@ -157,6 +161,15 @@ function expectedNetByItem(
 
   const map = new Map<string, number>();
   const orderTime = new Date(order.created_at || 0).getTime();
+  // The semi-product recipe used to explode a shortfall must be the one
+  // effective AT THE ORDER'S OWN TIME, not whatever is effective today --
+  // otherwise a later recipe revision (e.g. a changed raw-ingredient ratio)
+  // makes this recompute silently diverge from what was actually recorded at
+  // sale time, producing a fixed-ratio false mismatch for every order sold
+  // under the old recipe version.
+  const consumptionMaps = recipes && semiProducts
+    ? buildSemiProductRecipeMaps(recipes, semiProducts, order.created_at || undefined)
+    : null;
   const shouldUseShortfallAllocator = consumptionMaps && orderTime >= shortfallCutoverMs;
   if (shouldUseShortfallAllocator) {
     const pastLedger = ledger.filter(row => {
@@ -170,30 +183,38 @@ function expectedNetByItem(
       const lineQty = Number(line.qty || 0);
       const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");
       const modifierQtyById = modifierQtyByIdFromLine(line);
+      const lineRows: ConsumptionRow[] = [];
 
-      for (const ingredient of recipe.variant.ingredients) {
-        for (const row of allocateRecipeConsumption({
-          ingredients: [ingredient],
-          multiplier: lineQty,
-          balances,
-          ...consumptionMaps,
-          source: "VARIANT_RECIPE",
-        })) {
-          add(map, row.item_reference, -row.quantity);
-        }
-      }
+      lineRows.push(...allocateRecipeConsumption({
+        ingredients: recipe.variant.ingredients,
+        multiplier: lineQty,
+        balances,
+        ...consumptionMaps,
+        source: "VARIANT_RECIPE",
+      }));
 
       for (const modifier of recipe.modifiers) {
         const modifierQty = Number(modifier.modifier_qty || modifierQtyById.get(modifier.modifier_id) || 1);
-        for (const row of allocateRecipeConsumption({
+        lineRows.push(...allocateRecipeConsumption({
           ingredients: modifier.recipe.ingredients,
           multiplier: lineQty * modifierQty,
           balances,
           ...consumptionMaps,
           source: `MODIFIER_RECIPE:${modifier.modifier_id}`,
-        })) {
-          add(map, row.item_reference, -row.quantity);
-        }
+        }));
+      }
+
+      // Expected is the raw recipe-implied consumption (not folded into the
+      // implicit-production shape): actualNetByItem below counts
+      // PRODUCTION_CONSUME/PRODUCTION_YIELD alongside SALES_CONSUME/
+      // EDIT_REVERSAL/RECLASSIFICATION_REVERSAL, so a semi-product shortfall's
+      // raw-ingredient leg and its production-yield leg net out on the actual
+      // side the same way they do here on the expected side, regardless of
+      // whether this order predates the 2026-07-20 implicit-production fix,
+      // was historically corrected, or is a brand new order under the live
+      // forward fix.
+      for (const row of lineRows) {
+        add(map, row.item_reference, -row.quantity);
       }
     }
     return map;
@@ -229,7 +250,22 @@ function actualNetByItem(rows: RawLedger[]): Map<string, number> {
 }
 
 function isOrderInventoryLedger(row: RawLedger): boolean {
-  return row.transaction_type === "SALES_CONSUME" || row.transaction_type === "EDIT_REVERSAL";
+  // A semi-product shortfall's implicit production step (2026-07-20 fix)
+  // writes PRODUCTION_CONSUME (raw ingredient) and PRODUCTION_YIELD (semi-
+  // product) rows against the order's own reference_id; RECLASSIFICATION_
+  // REVERSAL is the historical-correction counterpart that reverses the
+  // original mis-classified SALES_CONSUME row. All three must be counted
+  // alongside SALES_CONSUME/EDIT_REVERSAL so expectedNetByItem's raw,
+  // unfolded recipe expectation nets against the actual ledger the same way
+  // regardless of whether an order predates this fix, was historically
+  // corrected, or is a brand new order under the live forward fix.
+  return (
+    row.transaction_type === "SALES_CONSUME" ||
+    row.transaction_type === "EDIT_REVERSAL" ||
+    row.transaction_type === "RECLASSIFICATION_REVERSAL" ||
+    row.transaction_type === "PRODUCTION_CONSUME" ||
+    row.transaction_type === "PRODUCTION_YIELD"
+  );
 }
 
 function modifierQtyByIdFromLine(line: RawLine): Map<string, number> {

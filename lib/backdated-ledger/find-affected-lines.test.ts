@@ -169,6 +169,69 @@ describe("findAffectedLines", () => {
     expect(result.map(line => line.line_id)).toEqual(["line-1", "line-2"]);
   });
 
+  it("selects the semi-product recipe version effective at the order's own sale time, not today's", () => {
+    const result = findAffectedLines(baseInput({
+      event: { ...event, item_reference: "ING-RAW" },
+      orders: [{
+        id: "order-1",
+        order_no: "PHD000008",
+        status: "COMPLETED",
+        created_at: "2026-07-04T10:30:00.000Z",
+      }],
+      lines: [{
+        id: "line-1",
+        order_id: "order-1",
+        product_id: "PROD-BTP",
+        qty: 1,
+        cost_at_sale: 100,
+        recipe_snapshot_json: recipe("BTP-001", "SEMI_PRODUCT", 5),
+      }],
+      ledger: [{
+        id: "sale-1",
+        reference_id: "order-1",
+        item_reference: "ING-RAW",
+        transaction_type: "SALES_CONSUME",
+        quantity_change: -10,
+        created_at: "2026-07-04T10:30:00.000Z",
+      }],
+      recipes: [
+        {
+          target_type: "SEMI_PRODUCT",
+          target_id: "BTP-001",
+          status: "ACTIVE",
+          start_date: "2026-01-01T00:00:00.000Z",
+          end_date: "2026-07-10T00:00:00.000Z",
+          ingredients_json: JSON.stringify([{
+            ingredient_id: "ING-RAW",
+            ingredient_type: "BASE_INGREDIENT",
+            quantity: 20,
+            unit_id: "UNT-001",
+          }]),
+        },
+        {
+          // Effective well after this order, and no longer uses ING-RAW at
+          // all. If the lookup incorrectly used "now" instead of the
+          // order's own sale time, it would pick this version and miss the
+          // line entirely (since it never consumes the event's item).
+          target_type: "SEMI_PRODUCT",
+          target_id: "BTP-001",
+          status: "ACTIVE",
+          start_date: "2026-07-10T00:00:00.000Z",
+          ingredients_json: JSON.stringify([{
+            ingredient_id: "ING-OTHER",
+            ingredient_type: "BASE_INGREDIENT",
+            quantity: 20,
+            unit_id: "UNT-001",
+          }]),
+        },
+      ],
+      semiProducts: [{ id: "BTP-001", batch_yield: 10 }],
+    }));
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ line_id: "line-1", product_id: "PROD-BTP", qty: 1 });
+  });
+
   it("excludes sales outside the effective-to-visibility window", () => {
     const result = findAffectedLines(baseInput({
       orders: [

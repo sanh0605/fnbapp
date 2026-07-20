@@ -39,7 +39,11 @@ export function computeSaleTimeCogs(input: {
       return rowMs <= saleMs && row.reference_id !== input.order.id;
     })
     .sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
-  const consumptionMaps = buildSemiProductRecipeMaps(input.recipes, input.semiProducts);
+  // asOf = saleTime, not "now": a semi-product recipe version that started
+  // AFTER this sale must not be used to recompute it, even though the event
+  // being recovered here concerns a raw-ingredient PO_RECEIPT, not the
+  // recipe itself (same class of bug fixed in lib/order-ledger-audit.ts).
+  const consumptionMaps = buildSemiProductRecipeMaps(input.recipes, input.semiProducts, saleTime);
   const balances = buildInventoryBalances(ledgerBeforeOrder, saleTime);
   const lineRecipe = parseLineRecipeSnapshot(input.line.recipe_snapshot_json || "{}");
   applyModifierQuantitiesFromSnapshot(lineRecipe, input.line);

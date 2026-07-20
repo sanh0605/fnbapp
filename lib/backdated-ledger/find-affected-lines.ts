@@ -97,7 +97,6 @@ export function findAffectedLines(input: FindAffectedLinesInput): AffectedOrderL
 
   const ordersById = new Map(input.orders.map(order => [order.id, order]));
   const linesByOrderId = groupLinesByOrderId(input.lines);
-  const consumptionMaps = buildSemiProductRecipeMaps(input.recipes, input.semiProducts);
   const sortedLedger = [...input.ledger].sort((a, b) => timestampMs(a.created_at || "") - timestampMs(b.created_at || ""));
   const affected: AffectedOrderLine[] = [];
 
@@ -112,6 +111,11 @@ export function findAffectedLines(input: FindAffectedLinesInput): AffectedOrderL
       row.reference_id !== order.id,
     );
     const balances = buildInventoryBalances(ledgerBeforeOrder, order.created_at);
+    // asOf = this order's own sale time, not "now": a semi-product recipe
+    // version that started after this sale must not be used to decide
+    // whether it consumed the event's item (same class of bug fixed in
+    // lib/order-ledger-audit.ts).
+    const consumptionMaps = buildSemiProductRecipeMaps(input.recipes, input.semiProducts, order.created_at);
 
     for (const line of linesByOrderId.get(order.id) || []) {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");
