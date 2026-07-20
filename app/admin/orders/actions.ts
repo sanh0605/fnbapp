@@ -25,6 +25,7 @@ import {
   buildInventoryBalances,
   buildLineConsumptionRows,
   buildSemiProductRecipeMaps,
+  splitImplicitProduction,
   type ConsumptionRow,
 } from "@/lib/inventory-consumption";
 import type { CartInput } from "@/lib/order-cart";
@@ -547,7 +548,45 @@ function buildStockLedgerEntries(
   const balances = buildInventoryBalances(pastLedger, saleTime);
   for (const line of built.lines) {
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-    for (const row of buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps)) {
+    const implicitYields = new Map<string, number>();
+    const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps, implicitYields);
+    const { saleRows, productionConsumeRows, productionYieldRows } =
+      splitImplicitProduction(consumptionRows, implicitYields);
+
+    // Same reasoning as the POS checkout path: a semi-product shortfall
+    // means raw ingredients had to be implicitly "brewed" first -- record
+    // that production step explicitly instead of debiting raw ingredients
+    // as if sold directly. See
+    // docs/superpowers/plans/2026-07-20-implicit-production-shortfall-design.md.
+    for (const row of productionConsumeRows) {
+      entries.push({
+        id: `stk-${crypto.randomUUID()}`,
+        transaction_type: "PRODUCTION_CONSUME",
+        reference_id: built.order.id,
+        item_reference: row.item_reference,
+        quantity_change: -row.quantity,
+        unit_cost: 0,
+        created_at: saleTime,
+        order_event_id: eventId,
+        cost_at_sale: 0,
+        source: row.source,
+      });
+    }
+    for (const yieldRow of productionYieldRows) {
+      entries.push({
+        id: `stk-${crypto.randomUUID()}`,
+        transaction_type: "PRODUCTION_YIELD",
+        reference_id: built.order.id,
+        item_reference: yieldRow.item_reference,
+        quantity_change: yieldRow.quantity,
+        unit_cost: 0,
+        created_at: saleTime,
+        order_event_id: eventId,
+        cost_at_sale: 0,
+        source: "AUTO_SHORTFALL_PRODUCTION",
+      });
+    }
+    for (const row of saleRows) {
       entries.push({
         id: `stk-${crypto.randomUUID()}`,
         transaction_type: "SALES_CONSUME",

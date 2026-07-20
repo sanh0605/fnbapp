@@ -22,6 +22,16 @@ describe("POS order COGS calculation", () => {
     expect(submitOrderSource).toContain("clientRequestId: requestToken");
   });
 
+  it("splits a semi-product shortfall into an implicit production step instead of debiting raw ingredients as a sale", () => {
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const ledgerSource = source.slice(source.indexOf("function buildStockLedgerEntries"));
+
+    expect(source).toContain("splitImplicitProduction");
+    expect(source).toContain("implicitYields");
+    expect(ledgerSource).toContain('"PRODUCTION_CONSUME"');
+    expect(ledgerSource).toContain('"PRODUCTION_YIELD"');
+  });
+
   it("reuses a checkout token until the same payload succeeds", () => {
     const screenSource = readFileSync(
       resolve(process.cwd(), "components/POSScreen.tsx"),

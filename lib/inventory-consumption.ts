@@ -14,6 +14,18 @@ export type ConsumptionAllocationInput = {
   semiProductRecipes: Map<string, RecipeIngredientSnapshot[]>;
   semiProductYields: Map<string, number>;
   source?: string;
+  // Optional accumulator: when provided, records { shortfallSource ->
+  // quantity } every time a semi-product shortfall is exploded into its
+  // recipe ingredients -- keyed by the exact tag (e.g.
+  // "VARIANT_RECIPE:BTP_SHORTFALL:BTP-013") already attached to the exploded
+  // rows below, so the semi-product ID and the originating recipe source
+  // can both be recovered from the key. Unused by existing callers (audits/
+  // reports/COGS) -- only the live checkout/edit ledger-writing paths pass
+  // this, to know how much of each semi-product needs an implicit
+  // production step instead of debiting raw ingredients as if sold
+  // directly. Does not change the returned ConsumptionRow[] shape or any
+  // existing caller's behavior.
+  implicitYields?: Map<string, number>;
 };
 
 export type SemiProductConsumptionMaps = {
@@ -33,6 +45,7 @@ export function buildLineConsumptionRows(
   lineQty: number,
   balances: Map<string, number>,
   consumptionMaps: SemiProductConsumptionMaps,
+  implicitYields?: Map<string, number>,
 ): ConsumptionRow[] {
   const rows: ConsumptionRow[] = [];
   rows.push(...allocateRecipeConsumption({
@@ -41,6 +54,7 @@ export function buildLineConsumptionRows(
     balances,
     ...consumptionMaps,
     source: "VARIANT_RECIPE",
+    implicitYields,
   }));
 
   for (const modEntry of lineRecipe.modifiers) {
@@ -51,6 +65,7 @@ export function buildLineConsumptionRows(
       balances,
       ...consumptionMaps,
       source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
+      implicitYields,
     }));
   }
   return rows;
@@ -90,6 +105,14 @@ export function allocateRecipeConsumption(input: ConsumptionAllocationInput): Co
     }
 
     const shortfallSource = `${source}:BTP_SHORTFALL:${ingredient.ingredient_id}`;
+
+    if (input.implicitYields) {
+      input.implicitYields.set(
+        shortfallSource,
+        (input.implicitYields.get(shortfallSource) || 0) + shortfallQty,
+      );
+    }
+
     for (const recipeIngredient of recipe) {
       if (recipeIngredient.ingredient_type === "SEMI_PRODUCT") {
         rows.push(...allocateRecipeConsumption({
@@ -201,4 +224,83 @@ function mergeRows(rows: ConsumptionRow[]): ConsumptionRow[] {
     }
   }
   return [...merged.values()].filter(row => Math.abs(row.quantity) > 0.000001);
+}
+
+const SHORTFALL_TAG = ":BTP_SHORTFALL:";
+
+export type ImplicitProductionYield = {
+  item_reference: string;
+  quantity: number;
+};
+
+export type ImplicitProductionSplit = {
+  // Rows to write as the normal sale/edit consumption entries. Any
+  // semi-product that had a shortfall has its quantity increased by the
+  // shortfall amount here (folded in), and the raw-ingredient rows that
+  // would previously have been debited directly are excluded -- they move
+  // to productionConsumeRows instead.
+  saleRows: ConsumptionRow[];
+  // Raw-ingredient (or intermediate semi-product, for nested cases) rows
+  // consumed to cover the shortfall -- write these as PRODUCTION_CONSUME.
+  productionConsumeRows: ConsumptionRow[];
+  // One row per distinct shortfall event -- write these as PRODUCTION_YIELD.
+  productionYieldRows: ImplicitProductionYield[];
+};
+
+/**
+ * Converts a shortfall-exploded ConsumptionRow[] (from buildLineConsumptionRows,
+ * called with implicitYields tracking enabled) into the ledger-write shape
+ * that reflects what actually has to happen physically: raw ingredients get
+ * brewed/produced into the semi-product first, then the semi-product is what
+ * the sale actually consumes -- instead of debiting raw ingredients as if
+ * they were served to the customer directly.
+ *
+ * Only used by the live checkout/edit ledger-writing paths. Does not affect
+ * allocateRecipeConsumption/buildLineConsumptionRows's own output or any of
+ * their other callers (audits, reports, COGS calculation), which keep
+ * reading the original ConsumptionRow[] exactly as before.
+ */
+export function splitImplicitProduction(
+  rows: ConsumptionRow[],
+  implicitYields: Map<string, number>,
+): ImplicitProductionSplit {
+  if (implicitYields.size === 0) {
+    return { saleRows: rows, productionConsumeRows: [], productionYieldRows: [] };
+  }
+
+  const saleRows: ConsumptionRow[] = [];
+  const productionConsumeRows: ConsumptionRow[] = [];
+
+  for (const row of rows) {
+    if (row.source.includes(SHORTFALL_TAG)) {
+      productionConsumeRows.push(row);
+    } else {
+      saleRows.push({ ...row });
+    }
+  }
+
+  const productionYieldRows: ImplicitProductionYield[] = [];
+  for (const [shortfallSource, quantity] of implicitYields) {
+    const tagIndex = shortfallSource.lastIndexOf(SHORTFALL_TAG);
+    if (tagIndex < 0 || quantity <= 0) continue;
+    const parentSource = shortfallSource.slice(0, tagIndex);
+    const itemReference = shortfallSource.slice(tagIndex + SHORTFALL_TAG.length);
+
+    productionYieldRows.push({ item_reference: itemReference, quantity });
+
+    const existing = saleRows.find(
+      row => row.item_reference === itemReference && row.source === parentSource,
+    );
+    if (existing) {
+      existing.quantity += quantity;
+    } else {
+      saleRows.push({ item_reference: itemReference, quantity, source: parentSource });
+    }
+  }
+
+  return {
+    saleRows: saleRows.filter(row => Math.abs(row.quantity) > 0.000001),
+    productionConsumeRows,
+    productionYieldRows,
+  };
 }

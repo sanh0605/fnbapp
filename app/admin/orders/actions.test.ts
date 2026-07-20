@@ -11,4 +11,14 @@ describe("admin order edit COGS calculation", () => {
     expect(source).toContain("computeMacCostForConsumptionRows");
     expect(editOrderSource).not.toContain("FIFOTracker");
   });
+
+  it("splits a semi-product shortfall into an implicit production step in the edit/supersede ledger write, same as POS checkout", () => {
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const ledgerSource = source.slice(source.indexOf("function buildStockLedgerEntries"));
+
+    expect(source).toContain("splitImplicitProduction");
+    expect(ledgerSource).toContain("implicitYields");
+    expect(ledgerSource).toContain('"PRODUCTION_CONSUME"');
+    expect(ledgerSource).toContain('"PRODUCTION_YIELD"');
+  });
 });
