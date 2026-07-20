@@ -3,7 +3,7 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useUrlState } from "@/lib/use-url-state";
+import { useFilterForm } from "@/lib/use-filter-form";
 import { deletePromotionAction } from "../actions";
 import { PromotionForm } from "./PromotionForm";
 import { formatNumber } from "@/lib/format";
@@ -26,9 +26,11 @@ export default function PromotionsClient({
   categories,
 }: PromotionsClientProps) {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useUrlState<string>("status", "ALL");
-  const [typeFilter, setTypeFilter] = useUrlState<string>("type", "ALL");
-  const [searchTerm, setSearchTerm] = useUrlState<string>("q", "");
+  const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
+    status: "ALL",
+    type: "ALL",
+    q: "",
+  });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState<DBPromotion | undefined>(undefined);
   const [deleteId, setDeleteConfirmId] = useState<string | null>(null);
@@ -67,25 +69,25 @@ export default function PromotionsClient({
   const filteredPromotions = useMemo(() => {
     return promotions.filter((promo) => {
       const matchesSearch =
-        promo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (promo.code && promo.code.toLowerCase().includes(searchTerm.toLowerCase()));
+        promo.name.toLowerCase().includes(draft.q.toLowerCase()) ||
+        (promo.code && promo.code.toLowerCase().includes(draft.q.toLowerCase()));
 
       if (!matchesSearch) return false;
 
       const expired = isExpired(promo.end_date || "");
-      const matchesStatus = 
-        statusFilter === "ALL" || 
-        (statusFilter === "ACTIVE" && promo.status === "ACTIVE" && !expired) ||
-        (statusFilter === "INACTIVE" && (promo.status === "INACTIVE" || expired)) ||
-        (statusFilter === "EXPIRED" && expired);
+      const matchesStatus =
+        draft.status === "ALL" ||
+        (draft.status === "ACTIVE" && promo.status === "ACTIVE" && !expired) ||
+        (draft.status === "INACTIVE" && (promo.status === "INACTIVE" || expired)) ||
+        (draft.status === "EXPIRED" && expired);
 
       if (!matchesStatus) return false;
 
-      const matchesType = typeFilter === "ALL" || promo.type === typeFilter;
-      
+      const matchesType = draft.type === "ALL" || promo.type === draft.type;
+
       return matchesType;
     });
-  }, [promotions, searchTerm, statusFilter, typeFilter]);
+  }, [promotions, draft.q, draft.status, draft.type]);
 
   const rightContent = (
     <button
@@ -113,16 +115,17 @@ export default function PromotionsClient({
           <input
             type="text"
             placeholder="Tên, mã code..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={draft.q}
+            onChange={(e) => setField("q", e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters()}
             className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            value={draft.status}
+            onChange={(e) => { setField("status", e.target.value); applyFilters({ status: e.target.value }); }}
             className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả</option>
@@ -134,8 +137,8 @@ export default function PromotionsClient({
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Loại hình</label>
           <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
+            value={draft.type}
+            onChange={(e) => { setField("type", e.target.value); applyFilters({ type: e.target.value }); }}
             className="w-full md:w-44 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Mọi đối tượng</option>
@@ -143,7 +146,16 @@ export default function PromotionsClient({
             <option value="PRODUCT_DISCOUNT">Giảm theo món</option>
           </select>
         </div>
-      
+        <div className="shrink-0">
+          <button
+            onClick={() => applyFilters()}
+            disabled={isPendingFilter}
+            className="px-4 py-2 min-h-[44px] bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+          >
+            {isPendingFilter ? "Đang lọc..." : "Lọc"}
+          </button>
+        </div>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

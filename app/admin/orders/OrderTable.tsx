@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/PageHeader";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { voidOrderV2 } from "./actions";
@@ -75,6 +75,11 @@ export default function OrderTable({
   const [orderToVoid, setOrderToVoid] = useState<Order | null>(null);
   const [voidReason, setVoidReason] = useState("");
   const [voidError, setVoidError] = useState<string | null>(null);
+  // Wraps the URL sync below so isPendingFilter can show a loading
+  // indicator -- Next's loading.tsx does not fire for a same-route
+  // searchParams-only change, so without this there is no visible feedback
+  // while the server re-fetches filtered orders.
+  const [isPendingFilter, startFilterTransition] = useTransition();
 
   const [currentPage, setCurrentPage] = useState<number>(() => {
     const val = searchParams.get("page");
@@ -184,11 +189,13 @@ export default function OrderTable({
       setCurrentPage(targetPage);
     }
 
-    if (updates.q !== undefined) {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    } else {
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    }
+    startFilterTransition(() => {
+      if (updates.q !== undefined) {
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      } else {
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      }
+    });
   };
 
   const ITEMS_PER_PAGE = 20;
@@ -298,7 +305,8 @@ export default function OrderTable({
             type="text"
             placeholder="VD: PHD000001"
             value={searchQuery}
-            onChange={(e) => { handleFilterChange({ q: e.target.value }); }}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleFilterChange({ q: searchQuery })}
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary outline-none shadow-sm"
           />
         </div>
@@ -340,6 +348,15 @@ export default function OrderTable({
             <option value="">Tất cả</option>
             {brands.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
+        </div>
+        <div className="w-full md:w-auto flex items-center gap-2">
+          <button
+            onClick={() => handleFilterChange({ q: searchQuery })}
+            disabled={isPendingFilter}
+            className="px-4 py-2 min-h-[38px] bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+          >
+            {isPendingFilter ? "Đang lọc..." : "Lọc"}
+          </button>
         </div>
       
       </div>

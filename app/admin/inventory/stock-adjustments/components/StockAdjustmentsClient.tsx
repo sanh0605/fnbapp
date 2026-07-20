@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import { useUrlState } from "@/lib/use-url-state";
+import { useFilterForm } from "@/lib/use-filter-form";
 import { formatDateTime } from "@/lib/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -31,23 +31,25 @@ interface StockAdjustmentsClientProps {
 }
 
 export default function StockAdjustmentsClient({ adjustments }: StockAdjustmentsClientProps) {
-  const [statusFilter, setStatusFilter] = useUrlState<string>("status", "PENDING");
-  const [searchQuery, setSearchQuery] = useUrlState<string>("q", "");
+  const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
+    status: "PENDING",
+    q: "",
+  });
   const [isPendingAction, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const filteredAdjustments = useMemo(() => {
     return adjustments.filter((adj) => {
-      const matchStatus = statusFilter === "ALL" || adj.status === statusFilter;
+      const matchStatus = draft.status === "ALL" || adj.status === draft.status;
       const matchSearch =
-        adj.item_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        adj.created_by_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        adj.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        adj.id.toLowerCase().includes(searchQuery.toLowerCase());
+        adj.item_name.toLowerCase().includes(draft.q.toLowerCase()) ||
+        adj.created_by_name.toLowerCase().includes(draft.q.toLowerCase()) ||
+        adj.reason.toLowerCase().includes(draft.q.toLowerCase()) ||
+        adj.id.toLowerCase().includes(draft.q.toLowerCase());
       return matchStatus && matchSearch;
     });
-  }, [adjustments, statusFilter, searchQuery]);
+  }, [adjustments, draft.status, draft.q]);
 
   const handleApprove = async (id: string) => {
     if (await confirm({ title: "Xác nhận", message: "Bạn có chắc chắn muốn DUYỆT phiếu điều chỉnh tồn kho này?", variant: "warning" })) {
@@ -94,8 +96,9 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
           <input
             type="text"
             placeholder="Mã phiếu, tên món, lý do..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={draft.q}
+            onChange={(e) => setField("q", e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters()}
             className="w-full md:w-64 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
@@ -116,9 +119,12 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
               return (
                 <button
                   key={tab}
-                  onClick={() => setStatusFilter(tab)}
+                  onClick={() => {
+                    setField("status", tab);
+                    applyFilters({ status: tab });
+                  }}
                   className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors min-h-[32px] ${
-                    statusFilter === tab
+                    draft.status === tab
                       ? "bg-surface-card text-primary-active shadow-sm border-border"
                       : "text-text-secondary hover:text-text-primary"
                   }`}
@@ -129,7 +135,20 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
             })}
           </div>
         </div>
-      
+
+        <div className="shrink-0">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1 opacity-0">
+            Lọc
+          </label>
+          <button
+            onClick={() => applyFilters()}
+            disabled={isPendingFilter}
+            className="px-4 py-2 md:py-2.5 bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 min-h-[38px] whitespace-nowrap"
+          >
+            {isPendingFilter ? "Đang lọc..." : "Lọc"}
+          </button>
+        </div>
+
       </div>
 
       {/* Notifications */}

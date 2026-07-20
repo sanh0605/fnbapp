@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useUrlState } from "@/lib/use-url-state";
+import { useFilterForm } from "@/lib/use-filter-form";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -20,16 +20,18 @@ interface ItemsClientProps {
 }
 
 export default function ItemsClient({ categories, baseIngredients, items, conversions, units }: ItemsClientProps) {
-  const [search, setSearch] = useUrlState<string>("q", "");
-  const [categoryFilter, setCategoryFilter] = useUrlState<string>("category", "ALL");
+  const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
+    q: "",
+    category: "ALL",
+  });
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
-      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
-      const matchCategory = categoryFilter === "ALL" || item.item_category_id === categoryFilter;
+      const matchSearch = item.name.toLowerCase().includes(draft.q.toLowerCase());
+      const matchCategory = draft.category === "ALL" || item.item_category_id === draft.category;
       return matchSearch && matchCategory;
     });
-  }, [items, search, categoryFilter]);
+  }, [items, draft.q, draft.category]);
 
   const categoryMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -65,16 +67,17 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
           <input
             type="text"
             placeholder="Tên hàng hóa..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={draft.q}
+            onChange={(e) => setField("q", e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters()}
             className="w-48 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm text-text-primary"
           />
         </div>
         <div className="shrink-0">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Phân loại</label>
           <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            value={draft.category}
+            onChange={(e) => { setField("category", e.target.value); applyFilters({ category: e.target.value }); }}
             className="w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm text-text-primary"
           >
             <option value="ALL">Tất cả</option>
@@ -83,7 +86,16 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
             ))}
           </select>
         </div>
-      
+        <div className="shrink-0">
+          <button
+            onClick={() => applyFilters()}
+            disabled={isPendingFilter}
+            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+          >
+            {isPendingFilter ? "Đang lọc..." : "Lọc"}
+          </button>
+        </div>
+
       </div>
 
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">

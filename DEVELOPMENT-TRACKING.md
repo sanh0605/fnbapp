@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-20 (Claude) - Explicit "Lọc" Button + Loading Feedback Across All 6 Filtered Admin Pages; Removed a Misleading Legacy Inventory-Sync Page
+
+**Trigger:** Owner noticed the app feels progressively slower and specifically flagged that filters auto-reload with no visible loading indicator, causing confusion about whether the system is working. Separately, a screenshot of `/admin/inventory/sync` (631 "discrepancies") prompted a question about whether that page was still needed.
+
+### Legacy inventory-sync page removed
+
+Investigated before answering: `execute` was already retired (HTTP 410 since 2026-07-17). The remaining read-only `scan` view called `auditOrderLedger` without `recipes`/`semiProducts`/`shortfallCutoverAt` -- the exact parameters tonight's earlier BTP-shortfall work required -- so it always used the naive flat-recipe branch, producing a far larger and less accurate count (631) than the properly-parameterized `scripts/audit-order-ledger.ts` (209, same dataset). Removed the page, both API routes, the sidebar link, and the now-orphaned `PUBLIC_RETIRED` route-policy mapping in `audit-admin-action-auth-core.ts`. `FEATURE-CATALOG.md` entries marked `REMOVED`.
+
+### Filter UX root cause and fix
+
+Investigated (Explore agent): `lib/use-url-state.ts`, used by 4 client components, called `router.replace(...)` in a `useEffect` on every value change (every keystroke for text inputs), no debounce, no exposed pending state. Since these are async Server Components reading `searchParams`, this re-runs the full server fetch on every keystroke. Confirmed Next's `loading.tsx`/`Suspense` does not fire for a same-route searchParams-only change on any of the 4 routes -- so there was truly zero loading feedback today.
+
+Built `lib/use-filter-form.ts` (new shared hook, replaces `use-url-state.ts` which is now deleted): local `draft` state bound to inputs, `setField`, and `applyFilters(overrides?)` (wrapped in `useTransition`, exposing `isPending`) that only syncs the URL when explicitly called -- from a "Lọc" button, an Enter keypress in text fields, or immediately for single-click discrete actions (dropdowns, status tabs, date-range presets). The pure URL-building logic (`buildFilterSearchParams`/`readFilterValuesFromParams`) is exported separately so it's unit-testable without mocking `next/navigation` (14 tests total).
+
+Migrated all 6 filter UIs to the same pattern: `BackdatedLedgerClient.tsx`, `StockAdjustmentsClient.tsx`, `PromotionsClient.tsx`, `ItemsClient.tsx` (all via the new shared hook), `components/SalesFilter.tsx` (kept its own date-picker-specific state but adopted the same `useTransition`+button pattern, dropped its old 400ms debounce), and `app/admin/orders/OrderTable.tsx` (kept its existing per-field push/replace/pagination logic untouched -- out of scope -- but wrapped it in `useTransition` and gated the free-text search behind Enter/button instead of firing on every keystroke).
+
+**Real, evidenced finding along the way**: `StockAdjustmentsClient`'s and `PromotionsClient`'s parent pages never read `searchParams` server-side at all -- `filteredAdjustments`/`filteredPromotions` were already 100% client-side `useMemo` filters over an unfiltered full-table fetch. Same for `OrderTable`'s `getOrdersV2()`. This means every keystroke was triggering a completely wasted full-table server round-trip for zero filtering benefit (the visible list was already filtering instantly client-side). The button/Enter gate turns N wasted round-trips per search session into at most 1 -- a real perf win, not just a UX one -- but the deeper architectural question (should these pages sync to the URL via Next navigation at all, given the data never depends on it) is a separate, larger decision not made here.
+
+### Verification
+
+`npx tsc --noEmit`: 0 errors. `npx vitest run`: 617/617 (up from 609). `npx next build`: succeeded on 2 consecutive runs (first run hit the same transient Windows filesystem race seen earlier tonight, self-resolved on retry, not a real regression). Dev server starts cleanly (`Ready in 1497ms`), both changed routes respond correctly when smoke-tested.
+
+Commit: pending (local commit only, per owner's explicit instruction to hold off on `git push` until a final data-accuracy audit).
+
 ## 2026-07-20 (Claude) - COGS-1 Fully Closed: Automatic Backdated-Event Correction (PO Receipts + Recipe Versions), Recipe-Version Detection Built From Scratch, 7 Remaining Orders Corrected
 
 **Trigger:** Owner asked what happens going forward when a new backdated PO or recipe entry occurs -- did not want to be a manual-approval bottleneck (`/admin/audit/backdated-ledger` existed but needs a human to visit and act), but also correctly pointed out that fully-silent automation with zero monitoring means nobody would notice if an automated recompute were ever wrong. Full plan at `docs/superpowers/plans/` is referenced via the session's plan-mode file; see PR/commit for the design writeup.

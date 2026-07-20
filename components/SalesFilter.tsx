@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useMemo, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -83,32 +83,35 @@ function SalesFilterInner({
   const [brandId, setBrandId] = useState(searchParams.get("brandId") || "");
   const [staffName, setStaffName] = useState(searchParams.get("staffName") || "");
   const [categoryId, setCategoryId] = useState(searchParams.get("categoryId") || "");
+  const [isPending, startTransition] = useTransition();
 
-  // Use a ref to prevent auto-submitting on initial render
-  const isMounted = useRef(false);
+  // Explicit apply step (replaces the old 400ms-debounce auto-submit): the
+  // filter only reloads the page when this is called -- from the "Lọc"
+  // button, an Enter keypress, or a deliberate preset-range click -- so the
+  // user always knows exactly what triggered a reload, and isPending gives
+  // visible loading feedback that Next's loading.tsx does not (a same-route
+  // searchParams-only change doesn't trigger it).
+  const applyFilters = (overrides?: { start?: Date | null; end?: Date | null; brandId?: string; staffName?: string; categoryId?: string }) => {
+    const effectiveStart = overrides?.start !== undefined ? overrides.start : startDate;
+    const effectiveEnd = overrides?.end !== undefined ? overrides.end : endDate;
+    if (!effectiveStart || !effectiveEnd) return;
 
-  useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true;
-      return;
-    }
-    
-    // Auto submit whenever state changes
-    if (startDate && endDate) {
-      const timeoutId = setTimeout(() => {
-        const params = new URLSearchParams();
-        // Claude code — UI-3: YYYY-MM-DD friendly URL; server toSaigonUtcRange handles date-only.
-        params.set("start", toDateOnlyForUrl(startDate));
-        params.set("end", toDateOnlyForUrl(endDate));
-        if (brandId) params.set("brandId", brandId);
-        if (staffName) params.set("staffName", staffName);
-        if (categoryId) params.set("categoryId", categoryId);
-        
-        router.push(`?${params.toString()}`);
-      }, 400); // 400ms debounce
-      return () => clearTimeout(timeoutId);
-    }
-  }, [startDate, endDate, brandId, staffName, categoryId, router]);
+    const effectiveBrandId = overrides?.brandId !== undefined ? overrides.brandId : brandId;
+    const effectiveStaffName = overrides?.staffName !== undefined ? overrides.staffName : staffName;
+    const effectiveCategoryId = overrides?.categoryId !== undefined ? overrides.categoryId : categoryId;
+
+    const params = new URLSearchParams();
+    // Claude code — UI-3: YYYY-MM-DD friendly URL; server toSaigonUtcRange handles date-only.
+    params.set("start", toDateOnlyForUrl(effectiveStart));
+    params.set("end", toDateOnlyForUrl(effectiveEnd));
+    if (effectiveBrandId) params.set("brandId", effectiveBrandId);
+    if (effectiveStaffName) params.set("staffName", effectiveStaffName);
+    if (effectiveCategoryId) params.set("categoryId", effectiveCategoryId);
+
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  };
 
   const setPreset = (days: number) => {
     const end = new Date();
@@ -117,6 +120,8 @@ function SalesFilterInner({
     start.setHours(0,0,0,0);
     setStartDate(start);
     setEndDate(end);
+    // A preset click is itself a single, deliberate action -- apply immediately.
+    applyFilters({ start, end });
   };
 
   const activeBrands = useMemo(() => brands.filter(b => b.status !== "DELETED" && b.status !== "INACTIVE"), [brands]);
@@ -187,6 +192,15 @@ function SalesFilterInner({
             <option value="">Tất cả</option>
             {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+        </div>
+        <div className="w-full md:w-auto">
+          <button
+            onClick={() => applyFilters()}
+            disabled={isPending}
+            className="w-full md:w-auto px-4 py-2 min-h-[44px] bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+          >
+            {isPending ? "Đang lọc..." : "Lọc"}
+          </button>
         </div>
       </div>
     </>
