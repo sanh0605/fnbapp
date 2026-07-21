@@ -67,3 +67,16 @@ Với task nhiều bước, nêu plan ngắn trước khi làm:
 - Với task lớn (>3 file thay đổi): trình bày plan ngắn, chờ anh duyệt
 - Không tự suy diễn ý định — hỏi thẳng nếu không chắc
 - Ví dụ câu hỏi cần hỏi lại: "thêm ảnh vào X" → hỏi X là chỗ nào cụ thể nếu có nhiều chỗ
+
+## 7. Giao tiếp bằng tên thật, không dùng mã
+
+- Khi trao đổi với chủ quán, luôn dùng **tên thật** của sản phẩm/bán thành phẩm/nguyên liệu (VD: "Trứng gà", "Hồng trà", "Sữa đặc"), **không** dùng mã nội bộ (VD: `NNL-007`, `BTP-008`, `ING-003`)
+- Lý do: mã không có ý nghĩa gì với chủ quán, buộc họ phải dừng lại tra cứu mới hiểu — mất thời gian, ngược với mục đích báo cáo
+- Nếu chỉ có mã trong tay, tra tên trước (`Base_Ingredients`/`Semi_Products`/`Products`) rồi mới báo cáo
+- Mã vẫn dùng bình thường trong code/script/commit message/tài liệu kỹ thuật — quy tắc này chỉ áp dụng cho phần giao tiếp trực tiếp với chủ quán
+
+## 8. Chủ động cảnh báo ảnh hưởng chéo
+
+- Khi làm nhiều việc sửa dữ liệu liên quan trong cùng phiên (VD: nhiều đợt sửa giá vốn khác nhau), **phải chủ động dừng lại và nói rõ** nếu việc này có thể ảnh hưởng/phụ thuộc việc kia — **không đợi chủ quán hỏi mới nói**
+- Ví dụ cụ thể đã xảy ra: giá vốn MAC được tính bằng cách duyệt lại toàn bộ lịch sử nhập/xuất kho theo thứ tự — nếu số lượng xuất kho lịch sử bị ghi thiếu, nó âm thầm làm sai giá bình quân tính ra ở lần nhập tiếp theo, ảnh hưởng đến mọi đơn bán sau đó. Đã sửa giá vốn nhiều đợt trong cùng đêm mà không kiểm tra xem tồn kho các nguyên liệu đó đã đúng chưa, tới khi chủ quán hỏi thẳng mới phát hiện
+- Trước khi bắt đầu một đợt sửa/audit, kiểm tra xem có vấn đề đã biết nào (từ ROADMAP, audit trước đó) đụng vào cùng dữ liệu không, và nói ra ngay — dù ảnh hưởng nhỏ. Im lặng bị hiểu là "đã kiểm tra và ổn", tệ hơn là nói rõ còn điều chưa chắc chắn
