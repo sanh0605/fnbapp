@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-21 (Claude) - Closed the Last 2 Cost-Accuracy Gaps: Migrated-Order MAC Correction and the Task 3.9 Historical-Gap Lock Recovery
+
+**Trigger:** Owner asked to process the 2 remaining known gaps from the earlier status report: the migrated-orders MAC finding and the 926-line "unverifiable" claim, then separately the 41-line Task 3.9 lock cohort.
+
+**Self-caught error, corrected immediately:** while investigating scope before touching anything, quantified the migrated-orders finding precisely -- 751 migrated orders, 1,038 lines, 214 mismatches, 606,287 VND sum of absolute deltas, +438,131 VND net. Applied via `scripts/apply-migrated-orders-mac-correction.ts` (same targeted per-line pattern as the 23-order backfill, bypasses `findAffectedLines` entirely). Verified 0 mismatches remain. Then, when asked to also resolve the "926 unverifiable lines" point, reran the check with the *actual* production parser instead of the earlier ad hoc diagnostic and found the diagnostic had checked a nonexistent field name (`base_ingredients` instead of `variant.ingredients`) -- all 1,038 migrated lines were in fact fully checkable and already corrected. Told the owner immediately that the earlier claim was wrong rather than letting it stand.
+
+**Accidentally deleted, then restored:** `scripts/investigate-migrated-orders-mac-accuracy.ts` and `scripts/apply-migrated-orders-mac-correction.ts` were removed along with unrelated throwaway diagnostics before being committed. The database correction was unaffected (already applied and verified), but the scripts themselves had to be recreated from context and committed properly (`6f72b59`) -- a reminder to commit working scripts before cleaning up temp files in the same batch.
+
+**Task 3.9 41-line historical-gap lock, recovered:** Re-read the original 2026-07-16 report (`docs/audits/2026-07-16-task-3.8-backdated-events-surface.md`, `docs/audits/2026-07-16-task-3.9-lock-result.md`) -- 41 lines locked (not corrected) pending owner confirmation that 5 underlying backdated PO receipts genuinely predated the affected sales; owner's decision at the time was Option A, "accept as drift." Given the fresh confirmation already established earlier this session (backdated PO timestamps are accurate dates with placeholder times of day; goods always arrive before sales), asked the owner explicitly whether this now applies to these 5 receipts too -- owner confirmed, reversing the 2026-07-16 decision. Used the purpose-built `apply_mac_drift_recovery` RPC (migration `0016`) directly with the exact `stored_cost_at_sale`/`expected_cost_at_sale` values already recorded in `audit_baseline_locks` from the 2026-07-16 review (no fresh recompute needed -- those values were already reviewed and Claude-approved then). `scripts/apply-task-3.9-historical-gap-recovery.ts`: dry-run matched the original report exactly (41 lines, -43,809 VND) before `--apply`. The RPC's `app.mac_drift_recovery` escape hatch lifts the lock trigger only for this specific recovery transaction -- the `audit_baseline_locks` rows themselves are untouched, staying as a historical record.
+
+**Verification:** `audit-pnl-mac-consistency.ts` after each change: 0 VND delta throughout (22,510,084 → 22,948,215 after migrated-orders fix → 22,904,406 after Task 3.9 recovery, arithmetic matches exactly: +438,131 then -43,809). `verify-all-479-clean.ts`: stable 209-mismatch quantity baseline, unchanged (cost corrections don't touch stock quantity ledger rows). All cost-accuracy gaps raised this session are now closed; updated `docs/ROADMAP.md` (removed `COGS-2`, added a change-log entry documenting both closures and the Task 3.9 decision reversal).
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-21 (Claude) - Closed COGS-1-FOLLOWUP's 23 Unflagged Orders; Found and Avoided a Blast-Radius Bug; New Playbook Doc
 
 **Trigger:** Owner asked to process the remaining unflagged seed-era orders from `COGS-1-FOLLOWUP`. Rerunning `scripts/investigate-18-unflagged-cost-mismatches.ts` fresh found 23 (not 18 -- grew as new orders consumed old backdated batches), total delta only +391 VND, all confirmed to have zero matching `backdated_ledger_events` row.

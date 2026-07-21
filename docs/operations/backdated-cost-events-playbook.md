@@ -81,15 +81,30 @@ Either way: dry-run, confirm the numbers match what Step 1 found, only then
 `scripts/verify-all-479-clean.ts` or `scripts/audit-order-ledger.ts` (expect
 the same known baseline mismatch count, not a new one).
 
-## Known open finding (not yet investigated or corrected)
+## Resolved: migrated-order MAC accuracy (2026-07-21)
 
-The 2026-07-21 dry run surfaced that several broadly-shared raw ingredients
-(`NNL-002`, `NNL-001`, `ING-003`, `ING-006`, `ING-004`, `ING-020`, `ING-015`,
-`ING-022`, `ING-016`) have unflagged seed-era PO_RECEIPT rows going back to
-2026-03, and a full recompute against them would touch 600+ historical
-"migrated" order lines with deltas up to tens of thousands of VND on some
-lines. This suggests a large number of migrated historical orders'
-`cost_at_sale` may not reflect a true MAC recomputation at all (a different,
-much bigger question than backdating detection). Not investigated in depth
-or corrected -- see `docs/ROADMAP.md` for current status before starting
-any work here; do not backfill these items with the normal mechanism.
+The wide-blast-radius items flagged above (`NNL-002`, `NNL-001`, `ING-003`,
+`ING-006`, `ING-004`, `ING-020`, `ING-015`, `ING-022`, `ING-016`) turned out
+to matter most for `ord-migrated-*` orders (bulk-imported historical data).
+Investigated in full via `scripts/investigate-migrated-orders-mac-accuracy.ts`:
+751 migrated orders, 1,038 lines, all fully checkable (an earlier claim that
+926 of them lacked usable recipe data was wrong -- it came from a diagnostic
+checking a nonexistent field name, `base_ingredients` instead of the real
+`variant.ingredients`; always verify a "no data" finding against the actual
+production parser, not an ad hoc check, before reporting it). 214 lines
+mismatched (606,287 VND sum of absolute deltas, +438,131 VND net), corrected
+directly per-line via `scripts/apply-migrated-orders-mac-correction.ts`
+(same bypass-`findAffectedLines` pattern as the shared-ingredient template
+above). Verified 0 mismatches remain afterward.
+
+Separately, the 41-line Task 3.9 `BACKDATED_LEDGER_HISTORICAL_GAP` lock
+cohort (`docs/audits/2026-07-16-task-3.9-lock-result.md`, previously left
+locked under an "accept as drift" decision) was recovered the same night,
+once the owner confirmed the same backdated-PO-timestamp trust established
+earlier in the session also covered those 5 receipts. Used the existing
+`apply_mac_drift_recovery` RPC (migration `0016`) directly with the exact
+values already recorded in `audit_baseline_locks` from the original
+2026-07-16 review -- no fresh recompute needed. Template:
+`scripts/apply-task-3.9-historical-gap-recovery.ts`. If a similar lock
+cohort surfaces again, check `audit_baseline_locks` first for an
+already-approved plan before building a new one.
