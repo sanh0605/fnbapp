@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-21 (Claude) - Caught a Self-Introduced Regression Mid-Session: Rolled Back a Bad 992-Order Stock Correction, Wrote Up the Incident
+
+**Trigger:** Owner asked a sharp, correct question after the cost-accuracy status report: how can cost_at_sale be trusted as accurate if stock-quantity deduction itself hasn't been verified? Also gave direct feedback: stop using internal item codes (`NNL-007` etc.) when talking to the owner -- use real names -- and proactively flag cross-impacts between fixes instead of waiting to be asked. Both saved to `CLAUDE.md` directly (not just private memory) so they apply across sessions and to Codex/Antigravity too.
+
+**Confirmed the owner's concern was materially correct:** MAC cost recomputation replays an ingredient's entire ledger history in order; a mis-recorded historical consumption entry silently skews the MAC rate for every sale after the next receipt of that item, not just the mis-recorded order itself. Verified this empirically against the actual NNL-007 (Trứng gà / egg) timeline before concluding anything.
+
+**Root-caused the 209 known quantity mismatches**: 90 lines / 77 orders matched the exact pre-2026-07-20 "direct raw-ingredient debit instead of semi-product + implicit production" bug (commit `21f7438` fixed this forward; Round 1, 2026-07-20, corrected 479 orders tagged `BTP_SHORTFALL` in the ledger, but this population was never tagged that way, so Round 1 missed it entirely). Confirmed via a full ledger dump for a sample order (`PHD000702`): sold 6× a product needing "Trứng luộc" (boiled egg, semi-product), but the ledger shows a direct `SALES_CONSUME` of 6× raw "Trứng gà" at cost 0 -- the exact old bug.
+
+**Removed Round 1's `BTP_SHORTFALL`-tag filter to catch the missed 77 orders -- found 992 instead.** Investigated before applying: the implicit-yield pattern turned out to span nearly every common semi-product (Cốt cà phê 583 orders, Hồng trà 202, Cốt matcha 194, Cốt cacao 152, Kem muối phô mai 78, etc.) -- this was the *normal* historical recording method for semi-product sales before the forward fix, not a rare exception. Owner explicitly confirmed proceeding at this larger scale after being told plainly.
+
+**Applied it (10,054 new `Stock_Ledger` rows across 992 orders), then immediately re-ran the standard verification audits as required by the process -- and the mismatch count went the WRONG way (209 → 2,853, "still-mismatched shortfall orders" 1 → 971).** Did not treat "no errors thrown" as success; caught this because the audits are always re-run right after any apply. Root-caused within the hour by dumping one affected order's full ledger (`PHD000194`): it had already been through an earlier, unrelated correction pass where the semi-product itself (`BTP-001` Cốt cà phê) was directly debited via `SALES_CONSUME`, meaning its raw ingredients were already accounted for elsewhere. The new logic blindly inserted a *fresh* raw-ingredient debit on top of that for every matching order, without checking whether that order's actual recorded ledger matched the assumed "old bug" shape -- double-counting consumption for orders where it didn't.
+
+**Rolled back cleanly**: every Round 2 row shared the `RECLASSIFY_2026-07-20` tag but was inserted with `created_at` on 2026-07-21 (today), distinctly separable from Round 1's legitimate 2026-07-20 rows sharing the same tag. `scripts/rollback-btp-shortfall-round2.ts` deleted exactly the 10,054 Round 2 rows (verified count matched exactly before deleting), leaving Round 1's 4,322 rows untouched. Reverified: back to the exact pre-Round-2 baseline (209 mismatches, 1 known floating-point residual, 0 VND P&L/MAC delta, 22,904,406 VND total COGS -- unchanged).
+
+**Wrote up the full incident** in `docs/operations/implicit-production-quantity-correction-playbook.md`: the exact failure mode, why the rollback was safe, and the corrected per-order check needed before retrying (check whether the semi-product itself already has a ledger row for that order -- if so, its raw ingredients were already accounted for and must not be re-debited). Logged the still-needed corrected retry as `COGS-3` in `docs/ROADMAP.md`. The 119 remaining quantity mismatches with a different root cause (e.g. untracked zero-cost ingredients like Nước sôi/hot water) are also still open, not yet investigated in depth.
+
+**Net effect on production data**: zero -- the bad correction was written and then fully rolled back within the same session, verified byte-for-byte against the known-good baseline before moving on. No commit was made of the broken Round 2 script; only the rollback script and the incident writeup are committed.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-21 (Claude) - Closed the Last 2 Cost-Accuracy Gaps: Migrated-Order MAC Correction and the Task 3.9 Historical-Gap Lock Recovery
 
 **Trigger:** Owner asked to process the 2 remaining known gaps from the earlier status report: the migrated-orders MAC finding and the 926-line "unverifiable" claim, then separately the 41-line Task 3.9 lock cohort.
