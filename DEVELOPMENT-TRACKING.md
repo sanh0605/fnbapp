@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-21 (Claude) - Closed COGS-1-FOLLOWUP's 23 Unflagged Orders; Found and Avoided a Blast-Radius Bug; New Playbook Doc
+
+**Trigger:** Owner asked to process the remaining unflagged seed-era orders from `COGS-1-FOLLOWUP`. Rerunning `scripts/investigate-18-unflagged-cost-mismatches.ts` fresh found 23 (not 18 -- grew as new orders consumed old backdated batches), total delta only +391 VND, all confirmed to have zero matching `backdated_ledger_events` row.
+
+**Mistake caught before it reached production data:** the first backfill attempt anchored one event per causal item at that item's *earliest* unflagged PO_RECEIPT. For `NNL-007` (narrow, recent) this correctly produced exactly 18 changes. For the other items involved (`NNL-002`, `ING-003`, `NNL-001`, `ING-006`, `ING-004`, `ING-020`, `ING-015`, `ING-022`, `ING-016`) the earliest unflagged receipt dated back to 2026-03 (the original data migration) -- a dry run (verified read-only, nothing written) showed this would retroactively recompute 600+ historical "migrated" order lines with deltas up to tens of thousands of VND, none of which were part of the actual 23-line investigation. Stopped, reported this to the owner instead of applying, and got two explicit decisions: fix the remaining 5 known lines directly (bypassing the wide mechanism), and investigate the broader migrated-order finding separately before deciding anything (logged as `COGS-2`).
+
+**Applied:** `scripts/apply-backfill-nnl007-ledger-event.ts` (standard item+time-window backfill, safe/narrow, 18 lines) and `scripts/apply-targeted-cost-correction-shared-ingredient-lines.ts` (new pattern: computes the correct cost directly per known line via `computeSaleTimeCogs`, bypassing `findAffectedLines` entirely so no other line can be touched regardless of how shared the ingredient is, still applied through the same audited `apply_backdated_event_recovery`/`mark_backdated_event_recomputed` RPCs for a consistent audit trail -- 5 lines). All 23 lines corrected exactly as predicted.
+
+**Verification:** rerun of `investigate-18-unflagged-cost-mismatches.ts` now reports 0 mismatches. `audit-pnl-mac-consistency.ts`: 0 VND delta (1616 orders, 22,510,084 VND). `verify-all-479-clean.ts`: same known baseline (209 mismatches, 1 pre-existing floating-point-noise residual on `UCK000370`, unchanged). `tsc --noEmit`: 0 errors (no application code touched, only new one-off scripts).
+
+**New:** `docs/operations/backdated-cost-events-playbook.md` -- documents this exact failure mode (the blast-radius mistake) and the decision procedure (dry-run first, check whether "Affected lines" roughly matches expectation before ever using `--apply`) so any agent hitting a future unflagged-cost-event gap follows this instead of re-deriving it, per owner's explicit request not to have to re-explain this each time. Linked from `docs/COLLABORATION.md`'s file map and `docs/ROADMAP.md`'s quick links. `docs/ROADMAP.md` updated: `COGS-1-FOLLOWUP` now only tracks the outstanding `CRON_SECRET` step; added `COGS-2` for the deferred migrated-orders investigation.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-20 (Claude) - Explicit "Lọc" Button + Loading Feedback Across All 6 Filtered Admin Pages; Removed a Misleading Legacy Inventory-Sync Page
 
 **Trigger:** Owner noticed the app feels progressively slower and specifically flagged that filters auto-reload with no visible loading indicator, causing confusion about whether the system is working. Separately, a screenshot of `/admin/inventory/sync` (631 "discrepancies") prompted a question about whether that page was still needed.

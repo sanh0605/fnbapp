@@ -36,6 +36,7 @@ Supporting authority remains outside the ten entry documents when specialist det
 - `docs/domain-dictionary.md`: terminology when changing labels, sheets, reports, or domain code.
 - `docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`: MAC/COGS policy and design detail.
 - `docs/audits/2026-07-16-drive-backup-policy.md` and `docs/operations/apps-script-drive-backup.md`: backup policy and operation.
+- `docs/operations/backdated-cost-events-playbook.md`: **read before touching any `cost_at_sale` mismatch with no `backdated_ledger_events`/`backdated_recipe_events` row** -- the blast-radius mistake made 2026-07-21 and how to avoid repeating it.
 - `docs/audits/**`, `docs/handoffs/**`, and completed plans: historical evidence, not current entry-point authority unless explicitly labeled.
 
 ## B. Status Markers
