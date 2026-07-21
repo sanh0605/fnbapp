@@ -77,12 +77,34 @@ comparing the mismatch count before and after, not just checking "no
 errors thrown." A silently-wrong correction looks identical to a correct
 one unless you check the aggregate number moved in the right direction.
 
-## Known unresolved scope
+## Resolved (2026-07-21, same night): the corrected retry
 
-The true scope of orders using the pre-2026-07-20 semi-product recording
-gap is still not corrected (Round 2 was rolled back in full). A corrected
-version of this fix, with the per-order check described above, is still
-needed. Also remember: fixing stock quantity for these items will shift
-the MAC cost basis for every subsequent sale of the same raw ingredients
-(see `docs/operations/backdated-cost-events-playbook.md`) -- cost-accuracy
-work already done this session will need re-verification afterward.
+Rewrote the script with exactly the per-order check above (does the
+semi-product itself already have a ledger row for this order?), fixed a
+second bug caught by the same immediate-reverify discipline (a double-
+reversal when 2+ order lines shared the same item+source key -- the exact
+same bug class as `scripts/apply-fix-double-reversal-bug.ts` from
+2026-07-20's original correction, reintroduced by copying that script's
+structure without re-checking this edge case; fixed the same way, an
+insert-only compensating negative-quantity reversal for the exact excess).
+Result: of the 992 orders originally suspected, only **23** were the true
+old-bug pattern needing correction; **903** already had the semi-product
+tracked elsewhere (no action needed, confirming most of the "992" alarm was
+this same false-positive shape); **66** remain genuinely unexplained
+(neither the semi-product nor its raw ingredients have any ledger row --
+not safe to guess at, left open, see `COGS-4`).
+
+Also recomputed `cost_at_sale` for all 23 corrected orders' lines
+afterward, using the same targeted per-line pattern as
+`scripts/apply-migrated-orders-mac-correction.ts` (bypasses
+`findAffectedLines`, only touches known lines). Result: **0 lines needed a
+cost change** -- confirms commit `21f7438`'s own stated invariant that this
+class of reclassification is cost-neutral by construction (a semi-product's
+MAC cost already falls back to its recipe's raw-ingredient cost whenever
+its own direct MAC is 0, which `PRODUCTION_YIELD` always writes as). Final
+state reverified clean: 209 mismatches (same stable baseline), 0 VND P&L/MAC
+delta, 22,904,406 VND total COGS unchanged.
+
+**Still open**: the 66 unexplained orders and the 119 mismatches from the
+separate low-cost-ingredient root cause (see `COGS-4` in `docs/ROADMAP.md`)
+-- neither was touched, both are low financial risk but not yet root-caused.

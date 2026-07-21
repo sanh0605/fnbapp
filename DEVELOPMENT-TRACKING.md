@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-21 (Claude) - Corrected Retry of the Implicit-Production Quantity Fix: 23 Orders Fixed, Caught and Fixed a Second Bug, Cost Recompute Confirmed Neutral
+
+**Trigger:** Owner: "Xử lý cho xong đi em... Đừng hỏi anh dừng lại hay không" -- finish the work properly, including verifying whether cost_at_sale is correct after the quantity reclassification (dependent on true raw-ingredient receipt dates), and stop asking whether to pause.
+
+**Rewrote Round 2 with the missing per-order check**: before reclassifying anything, check whether the semi-product itself already has ANY stock_ledger row for that order -- if so, its raw ingredients are already accounted for elsewhere and must not be re-debited (this is exactly what the rolled-back attempt skipped). First version of the check had a bug of its own: `implicitYields` is keyed by a compound string (`"<parentSource>:BTP_SHORTFALL:<itemReference>"`), not the plain item id, so the lookup against the ledger's item references never matched anything -- fixed by parsing the key the same way `splitImplicitProduction` does before comparing.
+
+**Result with the corrected logic**: of the 992 orders originally suspected, only **23** were the genuine old-bug pattern; **903** already had the semi-product tracked elsewhere (confirming the "992" alarm was mostly this exact false-positive shape); **66** remain genuinely unexplained (neither the semi-product nor raw ingredients recorded at all) and were left untouched rather than guessed at.
+
+**Caught a second bug via the same immediate-reverify discipline**: applying the 23-order fix (188 new rows) brought the quantity-mismatch count to 212 (from 209), not back to 209 -- a small but real regression, not accepted as "close enough." Root-caused in minutes: order `UCK000539` has 2 lines both needing the same semi-product (Lục trà/green tea concentrate) via the same recipe path, so both lines shared one item+source key; the insert loop pushed a full order-level-aggregate `RECLASSIFICATION_REVERSAL` once per matching line-row instead of once per key, double-reversing 3 items for that one order. This is the exact same bug class fixed the night before (`scripts/apply-fix-double-reversal-bug.ts`) reintroduced by copying that script's structure without re-checking this edge case. Fixed the same way: `scripts/apply-fix-round2-double-reversal.ts`, 3 insert-only compensating negative-quantity reversals for the exact excess (364.29 units total across ING-020/NNL-003/ING-001). Reverified: back to the exact 209-mismatch/0-VND-delta baseline.
+
+**Cost recompute for the 23 corrected orders**: recomputed `cost_at_sale` directly per line (`scripts/apply-round2-cost-recompute.ts`, same targeted per-line pattern used earlier tonight, bypasses `findAffectedLines`). Result: 0 lines needed a change -- confirms commit `21f7438`'s own documented invariant that this reclassification is cost-neutral by construction (a semi-product's MAC cost always falls back to its recipe's raw-ingredient cost, since `PRODUCTION_YIELD` always records the semi-product's own unit_cost as 0). Final state: 209 mismatches (stable baseline), 0 VND P&L/MAC delta, 22,904,406 VND total COGS unchanged.
+
+**Still open, logged as `COGS-4`**: the 66 unexplained orders and a separate population of 119 mismatches from a likely-low-value root cause (e.g. untracked near-zero-cost ingredients like Nước sôi/hot water never being ledger-recorded historically) -- both low financial risk, neither root-caused yet.
+
+Updated `docs/operations/implicit-production-quantity-correction-playbook.md` with the full corrected-retry writeup and `docs/ROADMAP.md` (removed the "needs a retry" `COGS-3` entry, added `COGS-4` for the residual).
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-21 (Claude) - Caught a Self-Introduced Regression Mid-Session: Rolled Back a Bad 992-Order Stock Correction, Wrote Up the Incident
 
 **Trigger:** Owner asked a sharp, correct question after the cost-accuracy status report: how can cost_at_sale be trusted as accurate if stock-quantity deduction itself hasn't been verified? Also gave direct feedback: stop using internal item codes (`NNL-007` etc.) when talking to the owner -- use real names -- and proactively flag cross-impacts between fixes instead of waiting to be asked. Both saved to `CLAUDE.md` directly (not just private memory) so they apply across sessions and to Codex/Antigravity too.
