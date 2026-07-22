@@ -65,7 +65,7 @@ export default function StockTable({
   };
 
   const handleApprove = async (adjId: string) => {
-    if (role !== "ADMIN") return setErrorMessage("Chỉ Admin mới có quyền duyệt");
+    if (role !== "ADMIN" && role !== "MANAGER") return setErrorMessage("Chỉ Admin hoặc Manager mới có quyền duyệt");
     setErrorMessage("");
     setSuccessMessage("");
     const res = await approveStockAdjustment(adjId, username);
@@ -91,7 +91,7 @@ export default function StockTable({
         </div>
       )}
 
-      {pendingAdjustments.length > 0 && role === "ADMIN" && (
+      {pendingAdjustments.length > 0 && (role === "ADMIN" || role === "MANAGER") && (
         <div className="bg-warning-soft border border-warning/30 rounded-xl p-4">
           <h3 className="font-bold text-warning mb-3 flex items-center gap-2">
             <AlertCircle className="w-5 h-5" /> Yêu cầu cân bằng kho chờ duyệt ({pendingAdjustments.length})
@@ -280,7 +280,7 @@ export default function StockTable({
                 />
               </div>
 
-              {role !== "ADMIN" && (
+              {role !== "ADMIN" && role !== "MANAGER" && (
                 <div className="text-xs text-warning flex items-start gap-1">
                   <AlertCircle className="w-4 h-4 shrink-0" /> Yêu cầu cân bằng sẽ được gửi cho Admin phê duyệt.
                 </div>
@@ -300,7 +300,7 @@ export default function StockTable({
                   disabled={isSubmitting || actualQty === ""}
                   className="flex-1"
                 >
-                  {isSubmitting ? "Đang xử lý..." : (role === "ADMIN" ? "Ép Tồn Kho Ngay" : "Gửi Duyệt")}
+                  {isSubmitting ? "Đang xử lý..." : (role === "ADMIN" || role === "MANAGER" ? "Ép Tồn Kho Ngay" : "Gửi Duyệt")}
                 </Button>
               </div>
             </form>

@@ -14,8 +14,9 @@ export default withAuth(
         return NextResponse.redirect(new URL("/pos", req.url));
       }
 
-      // ADMIN can access anything
-      // We can refine MANAGER permissions later based on the Permissions table
+      // ADMIN and MANAGER can access anything (owner decision 2026-07-22:
+      // granular per-role permissions deferred to the later security-
+      // hardening phase; only STAFF is restricted for now)
     }
   },
   {

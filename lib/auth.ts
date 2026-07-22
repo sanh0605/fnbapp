@@ -6,7 +6,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 export type AuthActor = {
   id: string;
   name: string;
-  role: "ADMIN" | "STAFF" | "SYSTEM";
+  role: "ADMIN" | "MANAGER" | "STAFF" | "SYSTEM";
 };
 
 export type AuthResult =
@@ -43,15 +43,19 @@ export async function resolveActor(): Promise<AuthResult> {
 }
 
 /**
- * Require ADMIN role. Returns actor on success or error message on failure.
+ * Require ADMIN or MANAGER role -- full admin-panel access, including
+ * personnel management. Only STAFF is restricted (POS-only). Granular
+ * per-role permissions are deliberately deferred to the later security-
+ * hardening roadmap phase; for now Manager and Admin are equivalent.
  *
- * Claude code — CODE-22.
+ * Claude code — CODE-22. Widened to include MANAGER 2026-07-22 (owner
+ * decision).
  */
 export async function requireAdmin(): Promise<AuthResult> {
   const result = await resolveActor();
   if (!result.ok) return result;
-  if (result.actor.role !== "ADMIN" && result.actor.role !== "SYSTEM") {
-    return { ok: false, error: "Chỉ ADMIN mới có quyền thực hiện thao tác này" };
+  if (result.actor.role !== "ADMIN" && result.actor.role !== "MANAGER" && result.actor.role !== "SYSTEM") {
+    return { ok: false, error: "Chỉ Admin hoặc Manager mới có quyền thực hiện thao tác này" };
   }
   return result;
 }

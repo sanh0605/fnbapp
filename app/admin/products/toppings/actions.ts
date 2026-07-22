@@ -2,7 +2,7 @@
 
 import { findAll, update } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
-import { requireAdmin, resolveActor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 
 export async function toggleToppingStandalone(
@@ -10,10 +10,8 @@ export async function toggleToppingStandalone(
   enabled: boolean
 ): Promise<ActionResponse> {
   // CODE-22: server-side auth
-  const result = await resolveActor();
-  if (!result.ok || result.actor.role !== "ADMIN") {
-    return fail("Chỉ ADMIN mới có quyền toggling topping standalone.");
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
 
   const products = await findAll("Products");
   const product = (products as any[]).find(p => p.id === productId);
