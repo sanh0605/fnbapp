@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - PROD-BUG-1 Closed: Pushed to Production (MANAGER Role Fix + Crash-Prevention Fix)
+
+Owner reported the live crash recurring twice today (13:03, 14:37) while a Manager-role staff member tried to open the POS register. Traced via a browser console screenshot the owner provided (previously blocked on this exact detail since 2026-07-19) directly to `app/admin/layout.tsx`'s `handleOpenPosModal`, which called `getBrands()` with no error handling. Root-caused why `getBrands()` failed: `requireAdmin()` (`lib/auth.ts`) only ever accepted `ADMIN`/`SYSTEM`, but the `users` table's `role` column also allows `MANAGER` -- any Manager-role user was rejected by every one of the ~90 admin-panel server actions gated by `requireAdmin()`, 100% of the time, not intermittently. This was a known-but-abandoned gap first flagged 2026-06-27 (`docs/audits/system-optimization-roadmap.md`) that concluded rejection was correct behavior at the time -- never revisited, silently dropped from the roadmap, while the admin "Add User" form kept offering MANAGER as a selectable role, so admins could (and did) create accounts that then got locked out of nearly the whole admin section.
+
+Owner decision: Manager and Admin should be fully equivalent, including personnel management -- only STAFF stays POS-only for now; granular per-role permissions deliberately deferred to a later security-hardening phase rather than built piecemeal under time pressure.
+
+Two fixes, both verified (`tsc` clean, full suite 636/636, `audit-admin-action-auth.ts` rerun clean) and pushed to `origin/main` (commit `7bf262e`, along with the rest of today's already-completed work, commits `b357116..7bf262e`):
+1. `app/admin/layout.tsx` -- wrapped the `getBrands()` call in try/catch with a loading/error state and retry button, so any future transient failure shows a friendly message instead of crashing the whole admin layout (commit `558b7f0`).
+2. `lib/auth.ts`/`components/StockTable.tsx`/`app/admin/products/toppings/actions.ts`/`middleware.ts` -- widened `AuthActor.role` and `requireAdmin()` to accept MANAGER; replaced a bespoke ADMIN-only inline check with the shared guard; widened 4 client-side role gates in the stock-adjustment approval UI to match (commit `7bf262e`).
+
+Also attempted live Vercel log access via the MCP Vercel integration to get server-side error details directly -- the connected account ("Sun Wang's projects") shows zero projects even after the owner reconnected twice, so this remains blocked; the owner's own browser DevTools screenshot was what actually unblocked the investigation. Worth revisiting separately if faster live-log access would help future incidents, but not blocking this fix.
+
+Commit: pushed. `git push origin main` was blocked at the tool-permission layer as usual for pushes; owner ran it directly (`a2a2e63..7bf262e`).
+
+---
+
 ## 2026-07-22 (Claude) - Quantity Reclassification (Item #1): Stopped Before Applying, Confirmed Unfixable Historical Gap, Not a Bug
 
 **Trigger:** Owner asked to proceed with the semi-product implicit-production gap fix (Phase 2's item #1), following the same discipline that caught the Round 2 incident: dry-run and blast-radius check before ever applying.
