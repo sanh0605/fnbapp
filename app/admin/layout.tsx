@@ -84,6 +84,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
   const [brands, setBrands] = useState<any[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
+  const [brandsError, setBrandsError] = useState<string | null>(null);
   const router = useRouter();
 
   const posModalTitleId = useId();
@@ -152,10 +154,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return null;
   });
 
-  const handleOpenPosModal = async () => {
+  const loadBrandsForPosModal = async () => {
+    setBrandsLoading(true);
+    setBrandsError(null);
+    try {
+      const fetchedBrands = await getBrands();
+      setBrands(fetchedBrands);
+    } catch {
+      setBrandsError("Không tải được danh sách thương hiệu. Vui lòng thử lại.");
+    } finally {
+      setBrandsLoading(false);
+    }
+  };
+
+  const handleOpenPosModal = () => {
     setIsPosModalOpen(true);
-    const fetchedBrands = await getBrands();
-    setBrands(fetchedBrands);
+    void loadBrandsForPosModal();
   };
 
   const selectBrandForPos = (brandId: string) => {
@@ -376,7 +390,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 Mở máy POS để bắt đầu bán hàng cho thương hiệu nào?
               </p>
               
-              {brands.length === 0 ? (
+              {brandsError ? (
+                <div className="text-center py-4 space-y-3">
+                  <p className="text-sm text-danger">{brandsError}</p>
+                  <button
+                    onClick={() => void loadBrandsForPosModal()}
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-button hover:bg-primary-hover transition-colors"
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              ) : brandsLoading || brands.length === 0 ? (
                 <div className="text-center text-text-muted py-4 animate-pulse">Đang tải danh sách…</div>
               ) : (
                 brands.map(brand => (
