@@ -16,7 +16,7 @@ Auto-maintained log of completed work. Newest first.
 
 **Net state**: quantity ledger corrected for every order where the correction mechanism and the audit's own methodology agree (Round 1 + Round 3, ~140 orders total across tonight). The ~203 remaining mismatches are real but concentrated in the pre-2026-06-25 balance-reset period, where the underlying data foundation itself is the limiting factor, not a fixable script bug -- logged as `COGS-4`, explicitly deferred, `shortfallCutoverAt` must not be extended without a dedicated pre-reset balance investigation first.
 
-Commit: pending (local commit only; per updated owner direction this session, push is next).
+Commit: `a2a2e63`. Pushed to `origin/main` (owner: "Anh nghĩ nên push trước, vấn đề audit data sẽ để cuối để áp dụng cách nhập data mới cho các đơn mới" -- push now, revisit `COGS-4` as its own dedicated investigation later).
 
 ---
 
