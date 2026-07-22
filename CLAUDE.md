@@ -80,3 +80,15 @@ Với task nhiều bước, nêu plan ngắn trước khi làm:
 - Khi làm nhiều việc sửa dữ liệu liên quan trong cùng phiên (VD: nhiều đợt sửa giá vốn khác nhau), **phải chủ động dừng lại và nói rõ** nếu việc này có thể ảnh hưởng/phụ thuộc việc kia — **không đợi chủ quán hỏi mới nói**
 - Ví dụ cụ thể đã xảy ra: giá vốn MAC được tính bằng cách duyệt lại toàn bộ lịch sử nhập/xuất kho theo thứ tự — nếu số lượng xuất kho lịch sử bị ghi thiếu, nó âm thầm làm sai giá bình quân tính ra ở lần nhập tiếp theo, ảnh hưởng đến mọi đơn bán sau đó. Đã sửa giá vốn nhiều đợt trong cùng đêm mà không kiểm tra xem tồn kho các nguyên liệu đó đã đúng chưa, tới khi chủ quán hỏi thẳng mới phát hiện
 - Trước khi bắt đầu một đợt sửa/audit, kiểm tra xem có vấn đề đã biết nào (từ ROADMAP, audit trước đó) đụng vào cùng dữ liệu không, và nói ra ngay — dù ảnh hưởng nhỏ. Im lặng bị hiểu là "đã kiểm tra và ổn", tệ hơn là nói rõ còn điều chưa chắc chắn
+
+## 9. Nguyên tắc nền tảng: tính tồn kho và giá vốn (owner xác nhận 2026-07-22)
+
+Quy tắc này là sự thật nền tảng về cách vận hành thực tế của quán — mọi agent (Claude/Codex/Antigravity) đều phải tuân theo khi đụng đến tồn kho hoặc giá vốn, không suy diễn khác đi.
+
+1. **Team chưa từng lập lệnh nấu bán thành phẩm chính thức trong lịch sử.** Không có dữ liệu lệnh sản xuất đáng tin cho quá khứ — đừng giả định lệnh sản xuất từng được ghi đầy đủ khi audit/tính lại dữ liệu cũ.
+2. **Chỉ có 3 nguồn dữ liệu đáng tin để tính toán:** (a) công thức — cả công thức nấu bán thành phẩm lẫn công thức pha chế sản phẩm bán, (b) đơn bán hàng, (c) đơn nhập hàng. Dùng **công thức + đơn bán hàng** để tính trừ tồn kho; dùng **đơn nhập hàng** để tính giá vốn (bình quân gia quyền). Mọi dữ liệu khác trong `Stock_Ledger` (SALES_CONSUME, PRODUCTION_CONSUME/YIELD, RECLASSIFICATION_REVERSAL ghi từ trước) là **suy ra**, không phải nguồn gốc — không được tin làm chuẩn khi tính lại từ đầu.
+3. **Quy tắc trừ tồn khi bán hàng:**
+   - Sản phẩm dùng **nguyên liệu thô** trực tiếp để pha chế → trừ thẳng tồn nguyên liệu.
+   - Sản phẩm dùng **bán thành phẩm** để pha chế: nếu tồn bán thành phẩm không đủ, hệ thống tự sinh "lệnh nấu ngầm" (implicit production) — trừ tồn nguyên liệu thô theo đúng công thức nấu bán thành phẩm đó, cộng tồn bán thành phẩm tương ứng, rồi mới trừ tồn bán thành phẩm để pha chế sản phẩm bán ra.
+   - Tóm gọn: mỗi lần phát sinh lệnh nấu (kể cả ngầm) → trừ tồn nguyên liệu thô, cộng tồn bán thành phẩm.
+   - Đây chính xác là cơ chế `allocateRecipeConsumption`/`splitImplicitProduction` (`lib/inventory-consumption.ts`) và `lib/full-history-recompute.ts` đã cài đặt — không cần thiết kế lại, chỉ cần nhớ đây là quy tắc chuẩn khi audit hoặc giải thích số liệu cho chủ quán.
