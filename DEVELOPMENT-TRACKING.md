@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - Owner Decision: Removed All Remaining Cost Locks, Applied Ground-Truth Engine Uniformly (287 More Lines)
+
+**Trigger:** Owner reviewed Phase 2's report and decided against preserving per-cohort locked cost decisions: "Anh cần sửa tất cả mà, anh đâu có muốn khoá nữa. Anh cần chính xác 100% theo từng sản phẩm từng đơn." Confirmed explicitly this means overriding prior reviewed decisions (including the owner's own 2026-07-21 Task 3.9 approval) with the new engine's uniform computation.
+
+**New capability**: `remove_audit_baseline_lock` RPC (migration `0032`) -- requires a reviewer and reason, logs the full prior lock row to `data_recovery_changes` before deleting, so removing protection is itself a durable, provable decision. `scripts/remove-locks-and-recompute-cost.ts`: for every locked line where the engine disagrees with the current value, removes the lock then applies the correction via the existing `apply_full_history_recovery` RPC.
+
+**Applied**: dry-run matched exactly (287 lines, 248 orders, 161,556 VND net) before `--apply`. 287 locks removed, 287 lines corrected, 0 failures. Reverified: 0 remaining, locked-line count 436 -> 149 (the 149 remaining already matched the engine's computed value, untouched -- only real differences were acted on). Quantity baseline unchanged (203). P&L consistency clean (0 VND). `tsc` clean. Full suite 641/641.
+
+**Combined total for today's cost recompute**: 703 lines corrected across ~628 orders (416 Category A earlier + 287 formerly-locked this pass), 173,526 VND net, all via the single `lib/full-history-recompute.ts` engine -- matches the owner's "one consistent method for everything" goal for the cost side. Full writeup: `docs/audits/2026-07-22-lock-removal-and-full-recompute.md`.
+
+**Also saved as a standing rule** (owner explicitly asked this persist across sessions and be visible to Codex/Antigravity too): added `CLAUDE.md` section 9 documenting the 3 foundational facts about inventory/COGS calculation (no historical Production Order logging ever existed; only recipes+sales orders+purchase orders are trustworthy; the exact implicit-production deduction rule) -- confirmed this matches `lib/full-history-recompute.ts`'s existing design exactly, no rework needed, just formalized what was already built.
+
+**Next**: the quantity side (5,479 compensating entries across 1,350 orders, the semi-product implicit-production gap previously deferred as `COGS-6`) -- owner wants this applied too, same "fix everything, no more locks" direction. Not yet executed this session.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit) -- though note `PROD-BUG-1`'s fix was pushed today as an explicit exception given live business impact; this cost-correction work has not been separately pushed yet.
+
+---
+
 ## 2026-07-22 (Claude) - PROD-BUG-1 Closed: Pushed to Production (MANAGER Role Fix + Crash-Prevention Fix)
 
 Owner reported the live crash recurring twice today (13:03, 14:37) while a Manager-role staff member tried to open the POS register. Traced via a browser console screenshot the owner provided (previously blocked on this exact detail since 2026-07-19) directly to `app/admin/layout.tsx`'s `handleOpenPosModal`, which called `getBrands()` with no error handling. Root-caused why `getBrands()` failed: `requireAdmin()` (`lib/auth.ts`) only ever accepted `ADMIN`/`SYSTEM`, but the `users` table's `role` column also allows `MANAGER` -- any Manager-role user was rejected by every one of the ~90 admin-panel server actions gated by `requireAdmin()`, 100% of the time, not intermittently. This was a known-but-abandoned gap first flagged 2026-06-27 (`docs/audits/system-optimization-roadmap.md`) that concluded rejection was correct behavior at the time -- never revisited, silently dropped from the roadmap, while the admin "Add User" form kept offering MANAGER as a selectable role, so admins could (and did) create accounts that then got locked out of nearly the whole admin section.
