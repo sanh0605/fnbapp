@@ -4,6 +4,17 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - Phase 0.5 Deployed and Live-Verified: Lock-Bypass Vulnerability Closed
+
+Owner ran `supabase db push` to deploy migration `0030`. Live-probed immediately after (insert a
+throwaway backdated event, attempt `apply_backdated_event_recovery` against a real locked line):
+rejected with `"One or more order lines in this backdated event are audit-baseline locked..."`,
+line's `cost_at_sale` confirmed unchanged, probe event cleaned up. The vulnerability behind
+today's COGS-5 incident and the 127 prior 2026-07-20/21 violations (`docs/audits/2026-07-22-lock-bypass-forensic-audit.md`) is now closed and confirmed live, not just statically tested. Moving to
+Phase 1 of the approved rebuild plan (`C:\Users\Admin\.claude\plans\toasty-mapping-hollerith.md`).
+
+---
+
 ## 2026-07-22 (Claude) - Full-History Rebuild Plan Approved; Phase 0 Forensic Audit Found and Reverted 127 More Prior Lock Violations (2026-07-20/21, Predating Today's Incident)
 
 **Trigger:** Owner, after today's COGS-5 lock-bypass incident, directed a full stop on cluster-by-cluster patching. Asked for a written, step-by-step plan to recompute raw-ingredient inventory from day one (driven by sales-order data + the recipe effective at each order's own time) and cost of goods from chronologically replaying purchase receipts, with explicit review/approval before any processing starts, plus an audit of all inventory/cost-processing features.
