@@ -4,6 +4,16 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - Fixed git push Permission Config; Reviewed and Closed Out FC-1 (Found Stale Tracking)
+
+**Permission config fix:** owner noticed `git push` was being silently denied outright instead of prompting for approval like it used to. Read `.claude/settings.json` and found `"Bash(git push *)"` in the `deny` array (deny rules never prompt, unlike `ask`). Moved it to a new `ask` array, left `"Bash(git push --force *)"` in `deny` (owner only asked about normal push, force-push stays hard-blocked per this project's own safety conventions). Validated JSON, confirmed the fix live: next `git push origin main` prompted normally and the owner approved it (`7bf262e..65b2a83`). Noted `.claude/` is gitignored, so this fix is local-only to this machine.
+
+**FC-1 review:** owner asked to check Antigravity's split-payment POS UI progress before moving to FC-2/FC-3. Found `docs/ROADMAP.md` had stale tracking -- Antigravity's commit (`d631b10`) implementing the UI was already merged to `main` on 2026-07-20, two days before this session even started, but the roadmap still showed "[~] in progress." Reviewed the actual diff and current code (not just the commit message): the split-payment modal in `components/pos/CartPanel.tsx` correctly builds payment entries matching `lib/order-cart.ts`'s `CartPaymentInput` type exactly, gates the confirm button on the entered total exactly matching the order total (mirroring the server-side strict-equality invariant), and the data flows correctly through `POSScreen.tsx` -> `buildOrderFromCart` -> `app/pos/actions.ts` with no gaps found. `tsc` clean, full suite 641/641. Closed out `FC-1` in `docs/ROADMAP.md`/`docs/COMPLETED.md` -- feature-completeness pass is now 1 of 3 items done (`FC-2`/`FC-3` remain).
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit) -- though note this session already pushed twice today given explicit owner approval each time (`PROD-BUG-1` fix, and the full-history rebuild work).
+
+---
+
 ## 2026-07-22 (Claude) - COGS-6 Applied: Full-History Quantity Reclassification (5,491 Entries, 1,352 Orders)
 
 **Trigger:** Owner asked for the quantity side to be applied too, after the cost side was fully corrected -- explicitly understanding this is the engine's best-effort reconstruction from recipes+sales orders, not verified fact (no historical production-order data exists to check against).
