@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - FC-2 Closed End-to-End: Built the UI Directly Instead of Handing Off to Antigravity
+
+**Trigger:** after the backend was closed and a UI handoff written for Antigravity, owner asked which of Claude/Antigravity would do the UI piece better. Answered honestly: for a task this simple (extend an existing table with a low-stock section, functional only, no new component patterns) there's no real capability gap -- the Antigravity assignment was a workflow/independent-review convention from the 2026-07-20 role split, not a quality requirement. Owner decided the review-overhead tradeoff wasn't worth it for something this small and asked Claude to build it directly.
+
+**Built** `components/ReorderSuggestionTable.tsx`: functional-only per the owner's standing instruction (visual polish deferred to the later UI/UX redesign phase, same as FC-1's payment UI). Shows current stock, computed reorder point, suggested reorder quantity (purchase unit when a UOM conversion exists, base unit otherwise), a low-stock badge, a "Chưa đủ dữ liệu" state for items without enough consumption history, a small "(ước tính)" marker when a suggestion is using the 3-day lead-time fallback instead of real PO history, and a toggle to show only items that need reordering. Wired into `app/admin/reports/stock/page.tsx` via the existing `getReorderSuggestions()` action (built in the prior entry). Mirrors `components/StockTable.tsx`'s existing responsive table/mobile-card pattern rather than inventing a new one.
+
+**Verified**: `tsc --noEmit` clean, full suite 650/650 (unchanged -- no new tests, matching `StockTable.tsx`'s own precedent of no dedicated test file for this kind of display component), `next build` passed (page went from 6.09 kB to 7.26 kB). Could not browser-verify directly -- no login session available in this environment -- so left a `next dev` instance running on `localhost:3001` for the owner to check `/admin/reports/stock` visually themselves.
+
+**Tracking**: moved `FC-2` fully into `docs/COMPLETED.md` (previously split: backend closed, UI pending handoff) and removed its row from `docs/ROADMAP.md`'s P1 queue. `docs/handoffs/2026-07-22-antigravity-fc2-reorder-suggestion-ui.md` kept as historical reference, marked superseded. `REV-4` (Codex's retroactive review) updated to note the UI also needs a look, since it skipped Antigravity's normal independent review. Feature-completeness pass is now 2 of 3 done -- only `FC-3` (shift/cash reconciliation) remains.
+
+Commit: `7c0c4b4` (local commit only, per owner's standing instruction to hold off on `git push` until explicitly approved each time).
+
+---
+
 ## 2026-07-22 (Claude) - FC-2 Backend Closed: Consumption-Rate-Based Reorder Suggestion (Read-Only)
 
 **Trigger:** owner confirmed ("Oke") proceeding to the 2nd feature-completeness item after FC-1 was closed out. Design was already owner-approved on 2026-07-20 (`docs/superpowers/plans/2026-07-20-feature-completeness-required-now-roadmap.md`, section 2) -- a computed reorder point/suggested quantity, not a static per-item threshold.
