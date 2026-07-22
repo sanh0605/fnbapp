@@ -39,7 +39,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 
 | Task | Owner | Scope | Started | Notes |
 |---|---|---|---|---|
-| (none) | — | — | — | Gate 2 (map + Wave 1 + Wave 2) fully closed and reviewed 2026-07-18/19. Gate 4 Phase A fully closed and reviewed 2026-07-19. See `COMPLETED.md`. |
+| **REBUILD-1. Full-history inventory quantity + COGS ground-truth rebuild** | Claude (plan approved, executing) | `lib/inventory-consumption.ts`, `lib/mac-cogs.ts`, `lib/full-history-recompute.ts` (new), `audit_baseline_locks` mechanism | Started 2026-07-22 after the COGS-5 lock-bypass incident (see `docs/audits/2026-07-22-lock-bypass-forensic-audit.md`). Owner-approved plan at `C:\Users\Admin\.claude\plans\toasty-mapping-hollerith.md`: Phase 0 (forensic audit for prior undetected lock violations) done — found and reverted 127 more violations from 2026-07-20/21, predating today's incident. Phase 0.5 (harden `apply_backdated_event_recovery`/`apply_backdated_recipe_event_recovery` against `audit_baseline_locks` at the RPC level) next. Then Phase 1 (read-only from-scratch recompute engine) and Phase 2 (full diff report) before any further data write — a second explicit owner approval is required after Phase 2's report before Phase 4 (actual corrections) begins. |
 
 ### P1 — Next up (high impact, unblocked)
 
