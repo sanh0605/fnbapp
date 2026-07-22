@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - Phase 1 of the Full-History Rebuild: Recompute Engine Built, Tested, and Empirically Checked Against Live Data
+
+**Built `lib/full-history-recompute.ts`** per the approved plan: `buildTrustedPrimitiveLedger` re-derives `PO_RECEIPT` fresh from `purchase_orders`/`purchase_order_lines` (reusing `buildPurchaseReceipt` from `lib/purchase-ledger-rebuild.ts` as-is) and trusts `PRODUCTION_CONSUME`/`PRODUCTION_YIELD`/`STOCK_ADJUST` from the existing ledger; `replayFullHistory` walks every `COMPLETED`/non-superseded order chronologically, recomputing raw-ingredient consumption per line (`buildLineConsumptionRows`/`allocateRecipeConsumption` from `lib/inventory-consumption.ts`, unmodified) against a balance this same function builds forward in time -- never trusting old `SALES_CONSUME`-family rows, never depending on the old ledger's own possibly-corrupted running balance. Cost via `computeMacCostForConsumptionRows` (`lib/mac-cogs.ts`), also unmodified. 8 unit tests (`lib/full-history-recompute.test.ts`) specifically cover the plan's flagged risk case: a semi-product sold after a real Production Order batch draws from that batch and does NOT re-explode to raw ingredients (no double counting) -- plus pure shortfall, partial shortfall (the owner's own 50ml/30ml worked example), recipe-version boundaries, order-edit chain exclusion, and out-of-order PO replay. All pass. `tsc --noEmit` clean, full suite 631/631.
+
+**Empirical checkpoint run against live data** (`scripts/audit-full-history-recompute-checkpoint.ts`, read-only): the critical question was whether this from-scratch design reproduces the "209 -> 3,542" blowup seen when the OLD balance-dependent methodology (`lib/order-ledger-audit.ts`) was extended past the 2026-06-25 cutover. It does not -- pre-cutover mismatch count is 196 (out of 1,301 lines), a plausible, bounded number, not a blowup. Post-cutover shows more mismatches (507 of 884) than pre-cutover, which needed its own explanation before trusting either number: traced a sample and found (a) most individual deltas are small (3-67 VND), consistent with ordinary rounding/floating-point drift from an independently-built replay chain, not a systemic error; (b) a genuine, real finding -- 3 `PO_RECEIPT` unit costs where the re-derived landed cost differs meaningfully from the currently stored value (worth investigating properly in Phase 2, not this checkpoint); (c) a false alarm in the quick diagnostic script itself (not the engine) -- it collapsed multiple purchase-order lines for the same item into one comparison key, misreading a real supplier free-bonus-quantity line (0 cost, legitimately) as if it were the item's only cost. The core engine correctly aggregates multiple lines per item into the weighted-average calculation; only the throwaway diagnostic script's simplistic key lookup was wrong.
+
+**Conclusion**: Phase 1's empirical checkpoint is satisfied -- the design does not reproduce the known pre-cutover blowup, and the full-history mismatch scope (roughly 700 lines) is real, bounded, and explainable, appropriate for Phase 2's proper categorized diff report rather than evidence the engine itself is broken.
+
+**Next**: Phase 2 (`scripts/audit-full-history-recompute.ts`, per the plan) -- the full 3-way categorized diff report (unlocked / locked-current / locked-stale) plus the PO-receipt and production-ledger consistency sections, persisted for owner review. No further data write happens without a separate, explicit approval on that report per the approved plan.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-22 (Claude) - Phase 0.5 Deployed and Live-Verified: Lock-Bypass Vulnerability Closed
 
 Owner ran `supabase db push` to deploy migration `0030`. Live-probed immediately after (insert a
