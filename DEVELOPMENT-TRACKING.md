@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - Full Data Re-Audit Including Pre-25/6 (Read-Only): Found and Root-Caused a New 34-Line Cost Gap, Confirmed Quantity Ledger Un-Auditable Without a Physical Count
+
+**Trigger:** Owner asked for a full data re-audit and wanted the working method restated and confirmed before starting. Agreed scope via explicit questions: include the pre-2026-06-25 period (previously deferred as too risky), read-only only -- no self-fixing this round. Owner also asked mid-session to confirm this work cannot affect revenue.
+
+**Revenue safety confirmed, not just asserted:** grepped all 13 `apply-*.ts` correction scripts ever written this project for any write to `price`/`net_total`/`unit_price`/qty-sold fields -- zero matches. Every correction script writes only to `Stock_Ledger` and `cost_at_sale`. Revenue is computed from separate, untouched data.
+
+**Quantity ledger before 25/6 (COGS-4): reconfirmed as a genuine data-foundation limit, not a fixable bug.** Traced the code dependency precisely (`lib/order-ledger-audit.ts`'s shortfall allocator needs a replayed running balance built from full ledger history, and the pre-2026-06-25 balance foundation is known-untrustworthy since that exact timestamp is a one-time bulk reset). Confirmed via a repo-wide search that no physical inventory count has ever been recorded anywhere in the system -- there is no independent source to reconcile against. This is now explicitly an owner decision (do a physical count, or accept this population is permanently unauditable), not an engineering task.
+
+**Cost/MAC before 25/6: found a real, previously-unknown coverage gap.** The earlier "751 migrated orders" MAC-accuracy investigation (2026-07-21) only covered orders with an `ord-migrated-` id prefix. A quick read-only check found **216 real (non-migrated) COMPLETED orders** between 2026-06-01 and the cutover that were never checked at all. Ran the same recompute against them (same methodology as `scripts/investigate-migrated-orders-mac-accuracy.ts`, ad hoc read-only scripts in the session scratchpad, not committed): **34 of 309 lines mismatched, all understated (system recorded LESS cost than the correct recompute), 73,830 VND total, max single line 11,147 VND.**
+
+**Root-caused the 34-line gap properly instead of assuming it matched the known "unflagged" pattern.** Initial check (matching item + most recent PO_RECEIPT against `backdated_ledger_events`) showed all 34 lines' causal receipts already had a `RECOMPUTED` event -- looked like a different, more concerning class of bug (auto-correction ran and still didn't converge). Went one level deeper via `data_recovery_changes` (the append-only write log every `apply_backdated_event_recovery` call makes) to see the ACTUAL write history per line, not just whether an event existed for the item:
+- **16 of 34 lines have zero write history** -- never actually touched by any correction, despite an event existing for the same item (the event fired for *other* orders sharing that ingredient, not these). This is the same "unflagged" shape as `COGS-1-FOLLOWUP`'s original 18-order finding, just a newly-discovered population -- safe to fix later with the existing narrow per-line bypass method.
+- **18 of 34 lines have exactly one write each** -- corrected once, for one backdated receipt, but a *later* backdated receipt for the same raw ingredient (multiple of Sữa đặc/Sữa tươi/Bột cacao/Sữa yến mạch/Bột kem muối phô mai/Trân châu trắng involved, each item has 90+ separate events) never re-touched the line. Ruled out two explanations before reporting this as unresolved: (a) event visibility-window gaps -- checked directly, the relevant events' `[effective_timestamp, visibility_timestamp]` windows do cover these orders; (b) bleed-through from the same-night Round 1-3 quantity corrections -- checked directly, those `RECLASSIFICATION_REVERSAL`/`PRODUCTION_CONSUME` rows for the same raw ingredients are dated 2026-07-20/21, chronologically after these June orders, so cannot enter their balance calculation. The actual mechanism (why a second applicable event doesn't also touch the same line) is not yet pinned down -- logged as `COGS-5`, handed to Codex rather than dug into further, since it's engine/pipeline-correctness code (`lib/backdated-ledger/`) and could plausibly affect other lines elsewhere already marked "clean" that weren't specifically checked for partial convergence.
+
+**No writes made.** Per the owner's explicit scope decision this round, this was read-only throughout -- findings logged to `docs/ROADMAP.md` (`COGS-4` addendum, new `COGS-5` entry) for a future approved fix, nothing applied to `Stock_Ledger` or `cost_at_sale`.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-21 (Claude) - Round 3: 56 More Orders + 61 Egg Orders Fixed, Found the Audit Cutover's Real Meaning, Deferred Full-History Re-Audit
 
 **Trigger:** Owner: "Tiếp tục" -- continue closing out `COGS-4`'s remaining 66+119 quantity mismatches.
