@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude, standing in for Codex) - COGS-5: Applied Full-System Cost Correction (112 Lines, 85 Orders, 193,523 VND), Found the True Scope Was 3x the Initial Read-Only Finding
+
+**Trigger:** Owner: "Em đang là người thay thế codex cho đến khi codex quay lại mà, em lên kế hoạch và triển khai xử lý đi, miễn sao đạt được kết quả chính xác là được" -- explicit authorization to act as Codex's substitute for this engine-level fix during Codex's rate-limit window, same pattern as `REV-2`/`REV-3`, rather than only handing off a plan.
+
+**Checked the full scope before fixing only the known 34 lines.** The prior read-only entry (below) found 34 mismatched lines among 216 previously-unchecked pre-25/6 orders, but that population was itself only found by chance (checking whether the "751 migrated orders" MAC pass covered everything). Before writing a fix, checked whether `audit-pnl-mac-consistency.ts`'s standing "0 VND delta" result actually meant cost was correct system-wide -- read the script and found it never compares stored `cost_at_sale` against a fresh recompute at all; it only checks that different report aggregations of the *already-stored* value agree with each other. A genuine system-wide check (every COMPLETED, non-superseded order, any date) found the true scope: **112 mismatched lines across 85 orders, 193,523 VND net delta**, split almost evenly before/after the 2026-06-25 cutover (56/56) -- meaning the earlier 34-line finding was only about a third of the real problem, and orders after the cutover (previously assumed clean) are affected too.
+
+**Applied the fix using the established safe pattern**, not a novel mechanism: wrote `scripts/apply-cogs5-full-cost-correction.ts`, structurally identical to the already-tested `apply-migrated-orders-mac-correction.ts` -- computes the correct cost directly per known (order_id, line_id) via the same recompute the investigation used, bypassing `findAffectedLines` entirely so no line outside the scanned mismatch list is ever touched, one synthetic `backdated_ledger_events` row per affected order as an audit-trail anchor, applied through the same audited `apply_backdated_event_recovery`/`mark_backdated_event_recomputed` RPCs as every other correction this project has ever made. Dry-run matched the investigation exactly (85 orders/112 lines/193,523 VND) before `--apply`.
+
+**Verification after applying:** rerunning the same script finds 0 mismatches (converged). `audit-pnl-mac-consistency.ts` clean (0 VND delta, 23,197,656 VND total COGS). `audit-order-ledger.ts` quantity-mismatch baseline unchanged at 203 (the known `COGS-4` figure) -- confirms this correction was cost-only and never touched `Stock_Ledger` quantities. `tsc --noEmit` clean. Full suite 617/617.
+
+**Root cause of the underlying pipeline gap (why 41/112 lines were only partially corrected) is still open, explicitly not fixed here.** Ruled out two hypotheses before applying the backfill: event visibility-window gaps (checked directly -- the relevant events' windows do cover the affected orders) and same-night quantity-correction bleed-through (checked directly -- those rows are dated after the affected June orders, cannot enter their balance calc). The actual mechanism inside `apply-pending-backdated-events.ts`/`findAffectedLines` that lets a second applicable backdated event skip a line already touched once is unknown. This matters because today's fix is a one-time backfill of the *symptom* (the 112 currently-known mismatched lines), not a fix to the *mechanism* -- if the same raw ingredient gets a new backdated receipt in the future, the same gap could silently recur. Logged as the remaining half of `COGS-5` for Codex: root-cause the mechanism, then retroactively review this correction's diff (`scripts/apply-cogs5-full-cost-correction.ts`, the 85 new `backdated_ledger_events` rows it inserted).
+
+**Confirmed again before applying**: this correction only ever writes to `cost_at_sale`/`Stock_Ledger`-adjacent audit tables, never `price`/`net_total`/qty sold -- revenue is untouched.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-22 (Claude) - Full Data Re-Audit Including Pre-25/6 (Read-Only): Found and Root-Caused a New 34-Line Cost Gap, Confirmed Quantity Ledger Un-Auditable Without a Physical Count
 
 **Trigger:** Owner asked for a full data re-audit and wanted the working method restated and confirmed before starting. Agreed scope via explicit questions: include the pre-2026-06-25 period (previously deferred as too risky), read-only only -- no self-fixing this round. Owner also asked mid-session to confirm this work cannot affect revenue.
