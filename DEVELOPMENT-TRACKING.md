@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - COGS-6 Applied: Full-History Quantity Reclassification (5,491 Entries, 1,352 Orders)
+
+**Trigger:** Owner asked for the quantity side to be applied too, after the cost side was fully corrected -- explicitly understanding this is the engine's best-effort reconstruction from recipes+sales orders, not verified fact (no historical production-order data exists to check against).
+
+**Finished the script left mid-edit** when today's production crash interrupted work: split compensating entries by type, matching Round 1-3's own convention (semi-product corrections use `RECLASSIFICATION_REVERSAL`, raw-ingredient corrections use `PRODUCTION_CONSUME`) instead of one blanket type.
+
+**Applied**: dry-run 5,491 entries across 1,352 orders (1,676 + 3,815 by type) -- slightly more than the earlier 5,479/1,350 blast-radius check since a couple of real new orders came in during the session (recomputed fresh against live data each run, as intended). 0 failures. Reverified: rerunning the script now finds 0 remaining. `audit-pnl-mac-consistency.ts` clean (0 VND, 23,270,079 VND total COGS). `tsc` clean. Full suite 641/641.
+
+**Important finding while reverifying**: `scripts/audit-order-ledger.ts` (the older quantity-mismatch tool) now reports 3,585 mismatches, up from 203. Traced this immediately rather than treating it as a new problem: `lib/order-ledger-audit.ts` replays balance from the *recorded* ledger itself (the exact circularity `lib/full-history-recompute.ts` was built to avoid) -- now that the recorded ledger matches the new engine's ground truth, the old tool's self-referential recompute diverges from it, the same "209 -> 3,542" blowup pattern already documented for `COGS-4`, now showing project-wide because the underlying data actually changed. The correct verification going forward is the new engine's own dry-run "0 remaining" check, not the old tool. Logged the old tool as needing retirement/rebuild in a future pass -- not blocking, not a sign anything is wrong with today's work. Full writeup: `docs/audits/2026-07-22-full-history-quantity-reclassification.md`.
+
+**Grand total for today's full-history rebuild**: cost 703 lines / ~628 orders / 173,526 VND net + quantity 5,491 entries / 1,352 orders, all via one consistent method (`lib/full-history-recompute.ts`), every original historical row preserved (insert-only, fully reversible by the `FULLHISTORY_RECLASSIFY_2026-07-22` tag).
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-22 (Claude) - Owner Decision: Removed All Remaining Cost Locks, Applied Ground-Truth Engine Uniformly (287 More Lines)
 
 **Trigger:** Owner reviewed Phase 2's report and decided against preserving per-cohort locked cost decisions: "Anh cần sửa tất cả mà, anh đâu có muốn khoá nữa. Anh cần chính xác 100% theo từng sản phẩm từng đơn." Confirmed explicitly this means overriding prior reviewed decisions (including the owner's own 2026-07-21 Task 3.9 approval) with the new engine's uniform computation.
