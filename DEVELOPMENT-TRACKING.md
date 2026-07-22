@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - FC-2 Backend Closed: Consumption-Rate-Based Reorder Suggestion (Read-Only)
+
+**Trigger:** owner confirmed ("Oke") proceeding to the 2nd feature-completeness item after FC-1 was closed out. Design was already owner-approved on 2026-07-20 (`docs/superpowers/plans/2026-07-20-feature-completeness-required-now-roadmap.md`, section 2) -- a computed reorder point/suggested quantity, not a static per-item threshold.
+
+**Built** `lib/reorder-suggestion.ts`: pure function `computeReorderSuggestions(input, options)` -- no data fetching of its own, matching `lib/full-history-recompute.ts`'s convention (caller fetches, this module only computes; easy to unit test without mocking). Per active base ingredient/semi-product: avg daily consumption from `SALES_CONSUME`+`PRODUCTION_CONSUME` over a 14-day lookback; lead time derived from completed `Purchase_Orders`' `created_at` vs. the matching `PO_RECEIPT` ledger row's `created_at` (falls back to a 3-day default where no PO history exists for that item); reorder point = avg daily consumption x lead time x 1.3 safety buffer; suggested reorder qty = 10-day target coverage x avg daily consumption, minus current stock, floored at 0, converted to purchase unit via `UOM_Conversions` when available. Items with under 3 consumption events in the lookback window report `hasSufficientData: false` instead of a falsely-confident number, per the owner's explicit "not enough data" requirement.
+
+New server action `getReorderSuggestions()` in `app/admin/inventory/actions.ts`, same `requireAdmin()`/`unstable_cache` (60s revalidate) pattern as the existing `getRealtimeStock()`. Read-only throughout -- no new write path, no schema change, no atomicity concern.
+
+Considered using lodash for the grouping/aggregation logic per the global CLAUDE.md preference, but the project has zero existing lodash usage anywhere in the codebase and it isn't a dependency -- used plain `Map`-based grouping instead (same style as `lib/inventory-consumption.ts`/`lib/mac-cogs.ts`) to match existing project conventions rather than introduce a new dependency for one file.
+
+**Verified**: 9 new unit tests (`lib/reorder-suggestion.test.ts`) covering insufficient-history, avg-consumption/reorder-point math, lookback-window boundaries, lead-time derivation (completed vs. non-completed POs), purchase-unit conversion, never-negative suggested quantity, non-inventory exclusion, semi-products included. `tsc --noEmit` clean, full suite 650/650 (up from 641), `next build` passed.
+
+**Handoff**: wrote the UI piece for Antigravity (`docs/handoffs/2026-07-22-antigravity-fc2-reorder-suggestion-ui.md`) rather than building it myself, per the same owner-confirmed backend/UI split used for FC-1. Logged `REV-4` in `docs/ROADMAP.md` for Codex's retroactive review once its rate limit resets (2026-07-25).
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until explicitly approved each time).
+
+---
+
 ## 2026-07-22 (Claude) - Fixed git push Permission Config; Reviewed and Closed Out FC-1 (Found Stale Tracking)
 
 **Permission config fix:** owner noticed `git push` was being silently denied outright instead of prompting for approval like it used to. Read `.claude/settings.json` and found `"Bash(git push *)"` in the `deny` array (deny rules never prompt, unlike `ask`). Moved it to a new `ask` array, left `"Bash(git push --force *)"` in `deny` (owner only asked about normal push, force-push stays hard-blocked per this project's own safety conventions). Validated JSON, confirmed the fix live: next `git push origin main` prompted normally and the owner approved it (`7bf262e..65b2a83`). Noted `.claude/` is gitignored, so this fix is local-only to this machine.
