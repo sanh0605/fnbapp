@@ -4,6 +4,33 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - Phase 4 (Category A Only) Applied: 416 Unlocked Cost Lines Corrected
+
+Owner reviewed the Phase 2 report and said to continue. Applied only Category A (unlocked, mostly
+sub-200-VND rounding-level differences) via the new `apply_full_history_recovery` RPC (migration
+`0031`, deployed by owner via `supabase db push`, live-verified). Category B (locked, current) and
+Category C (locked, stale but matching known already-approved recoveries) were deliberately left
+untouched -- per the plan, those need their own separate, explicitly reviewed decision, not an
+automated batch.
+
+Dry-run matched the Phase 2 report exactly (416 lines, 393 orders, 11,970 VND net) before
+`--apply`. Applied: 393 orders, 416 lines, 0 failures. Reverified: rerunning the same script now
+finds 0 remaining; `audit-order-ledger.ts` quantity baseline unchanged at 203 (cost-only, no
+quantity touched); `audit-pnl-mac-consistency.ts` clean (0 VND, 23,049,523 VND total COGS);
+`tsc --noEmit` clean; full suite 636/636.
+
+**Deliberately not done this round** (flagged separately to the owner, not silently bundled in):
+the quantity-side findings from Phase 2 Section 2 -- the semi-product implicit-production gap
+(confirms/quantifies the known `COGS-4` residual) and the 6 items with a negative theoretical
+balance -- both require touching historical `Stock_Ledger` quantity data, the same class of change
+that caused the Round 2 (992-order) incident earlier in this project's history, and `COGS-4` was
+previously and deliberately deferred by the owner. Needs its own explicit decision before any
+design work starts, not a continuation of today's cost-only correction.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-22 (Claude) - Phase 2 of the Full-History Rebuild: Full Diff Report Generated (Read-Only), Ready for Owner Review
 
 **`scripts/audit-full-history-recompute.ts`**: runs the Phase 1 engine across the entire order history and produces a 4-section comparison against currently recorded data. No writes. Full artifact: `docs/audits/2026-07-22-full-history-recompute-report.json`.
