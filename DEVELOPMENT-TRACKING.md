@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - Quantity Reclassification (Item #1): Stopped Before Applying, Confirmed Unfixable Historical Gap, Not a Bug
+
+**Trigger:** Owner asked to proceed with the semi-product implicit-production gap fix (Phase 2's item #1), following the same discipline that caught the Round 2 incident: dry-run and blast-radius check before ever applying.
+
+**Blast radius check (`scripts/plan-quantity-full-history-reclassification.ts`, read-only):** diffed `replayFullHistory`'s computed ledger against currently recorded `SALES_CONSUME`/`EDIT_REVERSAL`/`RECLASSIFICATION_REVERSAL`/`PRODUCTION_CONSUME`/`PRODUCTION_YIELD` rows per (order, item). Result: **5,479 (order, item) combinations differ, across 1,350 of 1,646 orders -- 82% of the entire order history.** Only 453 of those orders were already touched by Round 1-3's known correction; 897 are entirely new. This matches the exact shape of the 2026-07-21 Round 2 incident (992 orders instead of an expected 77) -- per the established playbook's own rule ("if Y is dramatically larger than expected, stop and do not apply"), stopped here. No data written.
+
+**Root cause confirmed with the owner directly, not assumed:** asked whether staff historically logged a formal Production Order every time a semi-product batch was cooked. Owner confirmed: no -- the system wasn't complete enough at the time to manage that, so batches were often made without being logged. This means the 82% gap is a genuine historical data-foundation limit (the true production timing/quantity was simply never captured), not a software bug in either the app or `lib/full-history-recompute.ts`'s engine. Same class of finding as `COGS-4`'s pre-2026-06-25 deferral, now confirmed at a much larger true scope than previously visible.
+
+**Decision: do not attempt to reclassify historical orders for this.** There is no reliable source of truth for how much semi-product was actually on hand at any historical point before commit `21f7438` (2026-07-20)'s forward fix went live -- any reclassification would be a guess dressed up as a calculation. Going forward is not at risk: the forward fix already handles every order since 2026-07-20 correctly regardless of whether a Production Order was logged (implicit production on shortfall is automatic). Logged as `COGS-6` in `docs/ROADMAP.md`, explicitly deferred, explicitly not to be revisited via automated reclassification without a fundamentally new data source (e.g., if the owner ever recalls/reconstructs actual historical batch records from another source).
+
+**Separately clarified the owner's live test question:** confirmed why entering a backdated raw-ingredient purchase order only triggers a cost_at_sale recompute (via the existing, now-lock-guarded `backdated_ledger_events` pipeline), never a quantity/production-routing recompute -- the two are structurally independent; a raw-ingredient receipt has no bearing on whether a semi-product had enough batch-produced stock on hand.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-22 (Claude) - Phase 4 (Category A Only) Applied: 416 Unlocked Cost Lines Corrected
 
 Owner reviewed the Phase 2 report and said to continue. Applied only Category A (unlocked, mostly
