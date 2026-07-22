@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-22 (Claude) - URGENT: Reverted 96 Lines COGS-5 Wrongly Overwrote (Lock Mechanism Bypass Discovered and Undone)
+
+**What happened:** Immediately after applying `COGS-5` (see entry below), traced a sample line's write history and found it had been changed by Task 3.9's owner-approved historical-gap recovery on 2026-07-21 -- then overwritten again by COGS-5 today. Checked the full scope: **96 of the 112 lines COGS-5 "corrected" already had an `audit_baseline_locks` row** (a deliberately reviewed, protected value from the 2026-07-13 MAC drift baseline lock or Task 3.8/3.9's 2026-07-16/21 work). Only 16 of the 112 were genuinely untouched, safe corrections.
+
+**Root cause:** `audit_baseline_locks` exists specifically to block ordinary writes to these lines (enforced by a DB trigger, migration 0012) because a naive recompute is known NOT to be reliable for them -- that is the entire point of the lock. But `apply_backdated_event_recovery` (migration 0015, the RPC every cost-correction script including COGS-5 uses) unconditionally sets `app.mac_drift_recovery=on` before writing, which bypasses that trigger without the strict per-lock value validation the purpose-built `apply_mac_drift_recovery` RPC performs. COGS-5's blind system-wide recompute does not use the specialized backdated-ledger-visibility methodology those locks/recoveries used, so it silently reverted 96 previously reviewed/correct values back to a naive recompute -- including undoing Task 3.9's owner-approved 2026-07-21 decision for some of them.
+
+**Reverted:** `scripts/revert-cogs5-lock-violations.ts` -- reversed exactly what COGS-5 wrote for the 96 locked lines only (using each line's own recorded old/new value from `data_recovery_changes`, not a fresh recompute), leaving the 16 genuinely-safe corrections in place. Dry-run confirmed 96/112 needed reverting, 0 lines had changed state since (safe to revert exactly). Applied: 72 orders, 96 lines, net -137,788 VND. Reverified: `audit-order-ledger.ts` quantity baseline unchanged at 203, `tsc --noEmit` clean.
+
+**Still unresolved, now higher priority**: `apply_backdated_event_recovery`'s unconditional lock bypass is a real mechanism bug that predates today -- any correction ever applied through it (not just COGS-5) could in principle have silently overwritten a locked line. Not yet checked whether this happened before today. Logged for Codex.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until a final data-accuracy audit).
+
+---
+
 ## 2026-07-22 (Claude, standing in for Codex) - COGS-5: Applied Full-System Cost Correction (112 Lines, 85 Orders, 193,523 VND), Found the True Scope Was 3x the Initial Read-Only Finding
 
 **Trigger:** Owner: "Em đang là người thay thế codex cho đến khi codex quay lại mà, em lên kế hoạch và triển khai xử lý đi, miễn sao đạt được kết quả chính xác là được" -- explicit authorization to act as Codex's substitute for this engine-level fix during Codex's rate-limit window, same pattern as `REV-2`/`REV-3`, rather than only handing off a plan.
