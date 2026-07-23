@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-23 (Claude) - Shift Stock Check Built: Count Trứng luộc + Khoai lang at Open/Close
+
+**Trigger:** owner reconsidered the paused cash-reconciliation design (FC-3) -- "chưa cần thiết... tạm thời chỉ cần kiểm số lượng trứng và khoai lang." Went through a full re-scoping conversation: confirmed the mechanism (count at open+close, compare to theoretical, not mandatory yet), then investigated the actual items in the DB and found real gaps needing owner decisions before building -- "Trứng" resolved to 2 different things (raw egg NNL-007 vs. prepared semi-product BTP-013 "Trứng luộc" -- owner picked the latter), and "Khoai lang" turned out to have **zero inventory linkage at all** (only exists as a sellable Product with an empty recipe -- selling it deducts nothing today). Owner decided: track by "trái" (piece), not weight, since daily volume is low; will create the ingredient and link its recipe themselves via the existing UI. Also confirmed: single shared warehouse, no per-outlet split (matches how inventory already works).
+
+**Built**: new migration `0033_shift_stock_checks.sql` -- `shifts` + `shift_stock_checks` tables, `open_shift_stock_check_atomic`/`close_shift_stock_check_atomic` RPCs (same pattern as `create_pos_order_atomic`: security definer, advisory locks, sequential `SHF-`/`CHK-` ids, service-role only). Checked items resolved by **name** at read time (`lib/shift-stock-check-config.ts`'s `SHIFT_CHECKED_ITEM_NAMES`), not hardcoded id -- so "Khoai lang" will start appearing automatically the moment the owner creates it, no code change needed. Read/record only: never writes to `Stock_Ledger` -- correcting real stock still goes through the existing Cân bằng kho flow. New "Kiểm ca" section on `/admin/reports/stock`, functional-only, reusing the just-fixed `Dialog`/`Badge`/`Button` primitives. Independent of `POSScreen.tsx` entirely -- not mandatory before selling.
+
+**Verified**: 17 new tests (migration SQL assertions, RPC wrapper, server actions including the not-yet-created-item skip path), `tsc` clean, full suite 669/669 (up from 652), `next build` passed.
+
+**Not yet applied**: migration `0033` has not been pushed to the database yet (`supabase db push` is blocked at the tool-permission layer by design) -- asking the owner to run it via `!`. Will live-verify (open/close a real test shift, confirm variance math) once applied.
+
+Commit: `828b39a` (local commit only, per owner's standing instruction to hold off on `git push` until explicitly approved each time).
+
+---
+
 ## 2026-07-23 (Claude) - Two Urgent Live Bugs Fixed: Slow POS Reload, Modal Input Focus-Steal
 
 **Trigger:** owner reported live POS page reload was slow after completing an order, then (mid-investigation) sent a screen recording showing a form input in `/admin/inventory/base-ingredients` losing focus after every keystroke -- "không thể nhập một chuỗi liên tục" (can't type a continuous string) -- and asked for a full audit of other input forms.
