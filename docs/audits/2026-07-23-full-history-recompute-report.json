@@ -1,0 +1,6010 @@
+{
+  "generated_at": "2026-07-23T08:15:45.908Z",
+  "summary": {
+    "lines_replayed": 2217,
+    "replay_errors": 0,
+    "cost_mismatches": 645,
+    "cost_category_a_unlocked": 645,
+    "cost_category_b_locked_current": 0,
+    "cost_category_c_locked_stale": 0,
+    "quantity_items_with_diff": 26,
+    "quantity_items_negative_theoretical": 6,
+    "po_receipt_findings": 0,
+    "production_ledger_findings": 0
+  },
+  "cost_findings": [
+    {
+      "order_no": "PHD000347",
+      "line_id": "ol-migrated-8ff77150-0a80-464f-9fed-2f1508f075f4",
+      "sale_time": "2026-05-29T01:19:35.607311+00:00",
+      "stored_cost_at_sale": 18849,
+      "computed_cost_at_sale": 18903,
+      "delta": 54,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000366",
+      "line_id": "ol-migrated-0ad0651e-ede4-46c8-b2aa-dfe24dbb475a",
+      "sale_time": "2026-06-01T01:50:43.13295+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000377",
+      "line_id": "ol-migrated-81858bf9-27c0-4c57-93e3-de028581b7f3",
+      "sale_time": "2026-06-03T11:25:04.717+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000394",
+      "line_id": "ol-migrated-36daaa79-f4f3-42cf-a6ed-a1297602abfc",
+      "sale_time": "2026-06-04T03:34:59.039+00:00",
+      "stored_cost_at_sale": 18849,
+      "computed_cost_at_sale": 18903,
+      "delta": 54,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000396",
+      "line_id": "ol-migrated-9f008be0-a430-490d-b4d5-a154b716d9d0",
+      "sale_time": "2026-06-04T23:39:43.283+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000418",
+      "line_id": "ol-migrated-43f63acb-15fc-4b45-8583-2110c1027be2",
+      "sale_time": "2026-06-05T23:55:36.746+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000423",
+      "line_id": "ol-migrated-dd147a12-3f34-47f6-be3f-660c4fd80090",
+      "sale_time": "2026-06-06T00:20:19.572+00:00",
+      "stored_cost_at_sale": 18849,
+      "computed_cost_at_sale": 18903,
+      "delta": 54,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000427",
+      "line_id": "ol-migrated-b557b0f7-3402-4881-831e-d55ddb2943c9",
+      "sale_time": "2026-06-06T01:26:43.538+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000440",
+      "line_id": "ol-migrated-d5442ac7-5966-4765-8f82-d17f61b185f9",
+      "sale_time": "2026-06-09T00:42:22.854+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000460",
+      "line_id": "ol-migrated-82dbfbdc-5a1d-4c75-a74d-357ce132b7fd",
+      "sale_time": "2026-06-10T01:24:46.826+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000466",
+      "line_id": "ol-migrated-0cb8fa71-638e-4453-afc8-6ad641a09316",
+      "sale_time": "2026-06-11T00:46:27.898+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000472",
+      "line_id": "ol-migrated-fb372cf4-cb89-4b07-94f4-31b8a17a866b",
+      "sale_time": "2026-06-11T01:50:22.546+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000481",
+      "line_id": "ol-migrated-186335fd-29e2-4fc9-9960-37f66530cc74",
+      "sale_time": "2026-06-12T00:46:33.74+00:00",
+      "stored_cost_at_sale": 9425,
+      "computed_cost_at_sale": 9452,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000091",
+      "line_id": "ol-migrated-39ee2045-f151-4d6d-bab6-778c10067e9b",
+      "sale_time": "2026-06-12T12:13:55.647+00:00",
+      "stored_cost_at_sale": 53141,
+      "computed_cost_at_sale": 53139,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000105",
+      "line_id": "ol-migrated-b1144e02-0913-4697-a16f-f6f1f0dbe5af",
+      "sale_time": "2026-06-13T11:42:36.175+00:00",
+      "stored_cost_at_sale": 19071,
+      "computed_cost_at_sale": 19086,
+      "delta": 15,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000116",
+      "line_id": "ol-migrated-1d36e5f3-c6e7-4a15-85fa-08467926064a",
+      "sale_time": "2026-06-13T14:21:32.914+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000489",
+      "line_id": "ol-migrated-0d57f0c9-7971-4209-88c4-ce69de07f4e6",
+      "sale_time": "2026-06-14T10:57:02.824+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000123",
+      "line_id": "ol-migrated-681c8267-a5d7-420d-9ad7-c14ff3f1d72c",
+      "sale_time": "2026-06-14T11:43:21.087+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000128",
+      "line_id": "ol-migrated-bc26b84c-81fb-4d39-bb3e-3dd5395d85ea",
+      "sale_time": "2026-06-14T13:02:29.856+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000490",
+      "line_id": "ol-migrated-cf33f065-4fc2-47ac-8198-858ba8699712",
+      "sale_time": "2026-06-15T04:05:16.97+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000140",
+      "line_id": "ol-migrated-d7cfeac8-55fb-4f22-a29b-6a8d2323837e",
+      "sale_time": "2026-06-15T12:08:26.748+00:00",
+      "stored_cost_at_sale": 10243,
+      "computed_cost_at_sale": 10241,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000146",
+      "line_id": "ol-migrated-a88f3473-439d-49d3-9743-9d9883e031e3",
+      "sale_time": "2026-06-15T14:20:55.29+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000491",
+      "line_id": "ol-migrated-42622ffb-ba4d-40a8-ab21-1664f89a5c80",
+      "sale_time": "2026-06-15T23:28:38.761+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000492",
+      "line_id": "ol-migrated-669b9b9b-062f-4bac-879b-c7a400afbb6b",
+      "sale_time": "2026-06-15T23:32:30.831+00:00",
+      "stored_cost_at_sale": 9503,
+      "computed_cost_at_sale": 9573,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000493",
+      "line_id": "ol-migrated-11b7f7e9-d78e-4785-bab8-ff88586512a9",
+      "sale_time": "2026-06-16T00:29:10.401+00:00",
+      "stored_cost_at_sale": 9136,
+      "computed_cost_at_sale": 9179,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000494",
+      "line_id": "ol-migrated-dca31cf1-eb9a-4ae2-8a62-dd3d08ce8cb7",
+      "sale_time": "2026-06-16T00:29:20.114+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000496",
+      "line_id": "ol-migrated-2367d15f-cf0a-4572-99ea-9f3cca42e99c",
+      "sale_time": "2026-06-16T00:29:33.881+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000497",
+      "line_id": "ol-migrated-1873f072-c836-458b-b595-fd47031469f5",
+      "sale_time": "2026-06-16T00:30:27.346+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000498",
+      "line_id": "ol-migrated-dbcbcb5a-c2c2-420d-95b5-2abd50db2951",
+      "sale_time": "2026-06-16T00:38:31.005+00:00",
+      "stored_cost_at_sale": 7219,
+      "computed_cost_at_sale": 7244,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000499",
+      "line_id": "ol-migrated-4890d265-1c03-4262-a39e-a8733a3fdee9",
+      "sale_time": "2026-06-16T00:54:01.321+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000500",
+      "line_id": "ol-migrated-2fec79e3-cf30-4033-afd1-9ead4216d2a2",
+      "sale_time": "2026-06-16T01:05:12.465+00:00",
+      "stored_cost_at_sale": 7219,
+      "computed_cost_at_sale": 7244,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000501",
+      "line_id": "ol-migrated-462ab07b-fef8-47d8-bd61-3473d0de3a81",
+      "sale_time": "2026-06-16T01:39:41.331+00:00",
+      "stored_cost_at_sale": 25632,
+      "computed_cost_at_sale": 25686,
+      "delta": 54,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000502",
+      "line_id": "ol-migrated-769beb9f-94cd-409c-8ac1-02e35825d71d",
+      "sale_time": "2026-06-16T01:49:36.975+00:00",
+      "stored_cost_at_sale": 8158,
+      "computed_cost_at_sale": 8165,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000503",
+      "line_id": "ol-migrated-387ae1cd-2c66-45e0-a629-9fbdb62fdbf4",
+      "sale_time": "2026-06-16T02:20:40.846+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000150",
+      "line_id": "ol-migrated-2e1a55b3-5180-409f-a242-059f8dc1fe85",
+      "sale_time": "2026-06-16T11:44:45.784+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000150",
+      "line_id": "ol-migrated-6a9f0bc8-bdc3-4ddf-9131-e42b8a213935",
+      "sale_time": "2026-06-16T11:44:45.784+00:00",
+      "stored_cost_at_sale": 25950,
+      "computed_cost_at_sale": 25963,
+      "delta": 13,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000151",
+      "line_id": "ol-migrated-a43155f3-d171-4930-97f7-ffb265b264ec",
+      "sale_time": "2026-06-16T12:01:38.838+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000154",
+      "line_id": "ol-migrated-95250552-29e0-4349-a454-a86d433f1fcf",
+      "sale_time": "2026-06-16T12:54:17.281+00:00",
+      "stored_cost_at_sale": 9536,
+      "computed_cost_at_sale": 9543,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000155",
+      "line_id": "ol-migrated-68f278f7-7bd6-4092-bd74-7629ec37f5ec",
+      "sale_time": "2026-06-16T13:50:51.088+00:00",
+      "stored_cost_at_sale": 17191,
+      "computed_cost_at_sale": 17189,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000155",
+      "line_id": "ol-migrated-aed330d5-1b15-4995-a98f-0530606c38a3",
+      "sale_time": "2026-06-16T13:50:51.088+00:00",
+      "stored_cost_at_sale": 59554,
+      "computed_cost_at_sale": 59552,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000157",
+      "line_id": "ol-migrated-a940ba49-180d-429b-a3fe-04efeb8994a9",
+      "sale_time": "2026-06-16T13:51:34.986+00:00",
+      "stored_cost_at_sale": 21347,
+      "computed_cost_at_sale": 21361,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000504",
+      "line_id": "ol-migrated-ceec2e7e-50b7-4d50-8b56-d120b074c646",
+      "sale_time": "2026-06-16T23:25:04.39+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000505",
+      "line_id": "ol-migrated-1ae963df-13d6-4441-9d9e-255f385d2b46",
+      "sale_time": "2026-06-16T23:50:27.336+00:00",
+      "stored_cost_at_sale": 12287,
+      "computed_cost_at_sale": 12389,
+      "delta": 102,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000506",
+      "line_id": "ol-migrated-4a48b4f3-3448-4a5c-a879-f4816ede7d1b",
+      "sale_time": "2026-06-16T23:50:37.763+00:00",
+      "stored_cost_at_sale": 9503,
+      "computed_cost_at_sale": 9573,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000507",
+      "line_id": "ol-migrated-9dbb5bc4-c07b-455a-81d1-99968b1d220c",
+      "sale_time": "2026-06-16T23:50:47.235+00:00",
+      "stored_cost_at_sale": 7219,
+      "computed_cost_at_sale": 7244,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000508",
+      "line_id": "ol-migrated-39ef559e-2bb2-45e4-999f-d552cd6e70ed",
+      "sale_time": "2026-06-16T23:50:57.173+00:00",
+      "stored_cost_at_sale": 8158,
+      "computed_cost_at_sale": 8165,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000508",
+      "line_id": "ol-migrated-771f9dc1-534c-4548-abc7-853405597533",
+      "sale_time": "2026-06-16T23:50:57.173+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000509",
+      "line_id": "ol-migrated-6523bf1c-d98e-42ce-b6f8-e70268228e5f",
+      "sale_time": "2026-06-16T23:56:18.788+00:00",
+      "stored_cost_at_sale": 8158,
+      "computed_cost_at_sale": 8165,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000510",
+      "line_id": "ol-migrated-225e2af0-393c-43eb-b977-ce74d240a465",
+      "sale_time": "2026-06-17T00:09:07.342+00:00",
+      "stored_cost_at_sale": 7219,
+      "computed_cost_at_sale": 7244,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000511",
+      "line_id": "ol-migrated-0fb62f30-b9b8-420f-952e-4858d45bff80",
+      "sale_time": "2026-06-17T00:09:15.836+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000513",
+      "line_id": "ol-migrated-a0831f54-0ba8-46ba-ba9f-ef5cc42c4c4c",
+      "sale_time": "2026-06-17T00:14:08.117+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000514",
+      "line_id": "ol-migrated-b1683483-241e-45eb-a126-b2a53249bac0",
+      "sale_time": "2026-06-17T00:33:05.674+00:00",
+      "stored_cost_at_sale": 9503,
+      "computed_cost_at_sale": 9573,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000515",
+      "line_id": "ol-migrated-e2868164-40ce-4438-8add-58722573a96b",
+      "sale_time": "2026-06-17T00:38:01.773+00:00",
+      "stored_cost_at_sale": 9136,
+      "computed_cost_at_sale": 9179,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000516",
+      "line_id": "ol-migrated-39fa1836-7038-4b57-b654-009907ab2638",
+      "sale_time": "2026-06-17T00:38:10.82+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000517",
+      "line_id": "ol-migrated-104a8e18-fc62-4342-b42c-a2d211871ea7",
+      "sale_time": "2026-06-17T00:44:11.08+00:00",
+      "stored_cost_at_sale": 7219,
+      "computed_cost_at_sale": 7244,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000518",
+      "line_id": "ol-migrated-33746e64-d5fb-4601-8f77-12a9c29e8be9",
+      "sale_time": "2026-06-17T00:55:16.221+00:00",
+      "stored_cost_at_sale": 9503,
+      "computed_cost_at_sale": 9573,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000519",
+      "line_id": "ol-migrated-faeb8854-27d3-47ff-ade5-61773b48b8b7",
+      "sale_time": "2026-06-17T00:55:28.196+00:00",
+      "stored_cost_at_sale": 9503,
+      "computed_cost_at_sale": 9573,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000520",
+      "line_id": "ol-migrated-c6815c69-030c-4a74-ae42-905c121f8c79",
+      "sale_time": "2026-06-17T01:02:33.8+00:00",
+      "stored_cost_at_sale": 7219,
+      "computed_cost_at_sale": 7244,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000522",
+      "line_id": "ol-migrated-791ffd43-aea6-46ee-aae8-ae08881c0778",
+      "sale_time": "2026-06-17T01:18:03.295+00:00",
+      "stored_cost_at_sale": 10438,
+      "computed_cost_at_sale": 10515,
+      "delta": 77,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000523",
+      "line_id": "ol-migrated-131fa78b-903c-44bf-b4f1-206e5b698ab9",
+      "sale_time": "2026-06-17T01:25:04.697+00:00",
+      "stored_cost_at_sale": 13207,
+      "computed_cost_at_sale": 13292,
+      "delta": 85,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000524",
+      "line_id": "ol-migrated-b5b82514-6195-4c02-8b58-7fd602449c03",
+      "sale_time": "2026-06-17T01:27:15.795+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000525",
+      "line_id": "ol-migrated-9fa65f1f-a6d3-44ca-9e58-025730fdcbf9",
+      "sale_time": "2026-06-17T01:58:54.327+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000526",
+      "line_id": "ol-migrated-0ccd113a-092d-45fc-9217-7b690d4fcf99",
+      "sale_time": "2026-06-17T03:27:56.653+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000168",
+      "line_id": "ol-migrated-19b75903-5e66-47e2-bb34-df3e3af42e1f",
+      "sale_time": "2026-06-17T12:36:43.318+00:00",
+      "stored_cost_at_sale": 9536,
+      "computed_cost_at_sale": 9543,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000527",
+      "line_id": "ol-migrated-80b725b2-f207-4087-9485-3bf08f4e481a",
+      "sale_time": "2026-06-17T12:59:41.538+00:00",
+      "stored_cost_at_sale": 7219,
+      "computed_cost_at_sale": 7244,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000171",
+      "line_id": "ol-migrated-58c05b1a-a89b-49b6-91b2-9d37cc660070",
+      "sale_time": "2026-06-17T13:18:58.382+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000175",
+      "line_id": "ol-migrated-6f952d88-9327-43d0-a07f-882491a929c0",
+      "sale_time": "2026-06-17T14:31:02.528+00:00",
+      "stored_cost_at_sale": 9536,
+      "computed_cost_at_sale": 9543,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000176",
+      "line_id": "ol-migrated-76cbd05d-0731-4611-a306-2dd282752465",
+      "sale_time": "2026-06-17T15:53:44.425+00:00",
+      "stored_cost_at_sale": 29778,
+      "computed_cost_at_sale": 29776,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000528",
+      "line_id": "ol-migrated-16542723-3ad8-489e-ad15-80247be39bdd",
+      "sale_time": "2026-06-17T23:28:11.121+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000528",
+      "line_id": "ol-migrated-fad0f162-674f-4077-bde6-4eec583ed337",
+      "sale_time": "2026-06-17T23:28:11.121+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000530",
+      "line_id": "ol-migrated-969d51cf-6044-4e19-8b0d-26f9ef318439",
+      "sale_time": "2026-06-17T23:36:44.42+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000532",
+      "line_id": "ol-migrated-e5f4ca06-21a9-45e8-adc0-8c3db90163e1",
+      "sale_time": "2026-06-17T23:53:51.016+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000533",
+      "line_id": "ol-migrated-dc79d643-910d-4bf7-97f5-db26a661d3f3",
+      "sale_time": "2026-06-17T23:56:10.684+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000534",
+      "line_id": "ol-migrated-06fddd9b-7e82-43fa-994d-c56ca3861676",
+      "sale_time": "2026-06-17T23:59:45+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000535",
+      "line_id": "ol-migrated-2bca0301-828b-4dfb-ad9b-6f3649d4d93e",
+      "sale_time": "2026-06-18T00:14:30.252+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000536",
+      "line_id": "ol-migrated-0d28bea2-c4bd-4693-b757-52a030af3272",
+      "sale_time": "2026-06-18T00:17:10.394+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000537",
+      "line_id": "ol-migrated-509d6fb0-95da-4935-930e-5b47baa0bbac",
+      "sale_time": "2026-06-18T00:35:03.758+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000538",
+      "line_id": "ol-migrated-53c7a7c3-f8ca-40b1-b20a-03ea36eb1d52",
+      "sale_time": "2026-06-18T00:35:13.035+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000539",
+      "line_id": "ol-migrated-54c10ed8-0966-4514-8796-39b03775262e",
+      "sale_time": "2026-06-18T00:35:21.788+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000540",
+      "line_id": "ol-migrated-4a74b1ca-8976-405a-a7cb-5db05352786b",
+      "sale_time": "2026-06-18T00:36:56.326+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000541",
+      "line_id": "ol-migrated-b2cf22ea-3309-4a87-b09a-cc37fede80dd",
+      "sale_time": "2026-06-18T00:48:59.368+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000542",
+      "line_id": "ol-migrated-eac91fc2-e00b-42dc-b20d-0b9d2987b975",
+      "sale_time": "2026-06-18T00:49:18.361+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000543",
+      "line_id": "ol-migrated-2fdf21ea-79cd-4e56-83d8-abbe217a7bb6",
+      "sale_time": "2026-06-18T00:49:30.69+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000544",
+      "line_id": "ol-migrated-c7b90830-098f-49c5-8ca6-7c7bc77667d3",
+      "sale_time": "2026-06-18T00:49:37.956+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000545",
+      "line_id": "ol-migrated-1004a619-4fc1-46d8-a356-076f3b1e89a3",
+      "sale_time": "2026-06-18T00:49:44.903+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000546",
+      "line_id": "ol-migrated-69ac469a-f313-44ab-81f6-6d24d4b8ee69",
+      "sale_time": "2026-06-18T00:50:40.887+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000548",
+      "line_id": "ol-migrated-226bbe99-bfc9-46d3-85f8-cfb306b723b6",
+      "sale_time": "2026-06-18T01:35:09.195+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000549",
+      "line_id": "ol-migrated-2a5cc4b6-1446-47be-ba28-28587cbdd71a",
+      "sale_time": "2026-06-18T02:00:57.886+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000177",
+      "line_id": "ol-migrated-50bf1b4a-e03f-4b70-9982-b0885888dccd",
+      "sale_time": "2026-06-18T06:40:13.842+00:00",
+      "stored_cost_at_sale": 14847,
+      "computed_cost_at_sale": 14844,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000179",
+      "line_id": "ol-migrated-6761ed5f-550e-4054-9b28-f3180b8050e1",
+      "sale_time": "2026-06-18T11:05:13.663+00:00",
+      "stored_cost_at_sale": 14847,
+      "computed_cost_at_sale": 14844,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000181",
+      "line_id": "ol-migrated-500e1fd7-7753-425c-9b95-38d378ebc7a8",
+      "sale_time": "2026-06-18T12:30:34.164+00:00",
+      "stored_cost_at_sale": 19000,
+      "computed_cost_at_sale": 19013,
+      "delta": 13,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000550",
+      "line_id": "ol-migrated-91dad01a-50a9-47d3-8df2-d7e55edb391e",
+      "sale_time": "2026-06-18T23:32:58.974+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000551",
+      "line_id": "ol-migrated-a5ab0b97-57d1-45f3-9d77-4eea33477674",
+      "sale_time": "2026-06-18T23:33:08.114+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000552",
+      "line_id": "ol-migrated-5e2f5c77-1c24-4c14-9181-df4c643a448b",
+      "sale_time": "2026-06-18T23:54:01.831+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000553",
+      "line_id": "ol-migrated-1a77863c-59cc-4bed-8b8b-710d39604d6e",
+      "sale_time": "2026-06-18T23:54:09.283+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000554",
+      "line_id": "ol-migrated-87f3cd6e-4c6a-4afa-90ce-03c14f60fb74",
+      "sale_time": "2026-06-18T23:56:24.476+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000555",
+      "line_id": "ol-migrated-dbd5502b-cd5a-42cd-8780-dabd3fa1c84b",
+      "sale_time": "2026-06-19T00:08:18.228+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000556",
+      "line_id": "ol-migrated-458550e8-0cd9-4966-bd78-0b0f49e6da59",
+      "sale_time": "2026-06-19T00:28:54.71+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000557",
+      "line_id": "ol-migrated-a156f6d3-a827-4d0f-bc82-447e8f1b2551",
+      "sale_time": "2026-06-19T00:29:08.071+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000558",
+      "line_id": "ol-migrated-d8d1e3be-5cd4-448a-92f7-8c16a5ca1cc6",
+      "sale_time": "2026-06-19T00:29:14.956+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000559",
+      "line_id": "ol-migrated-0bb82a32-e511-45b4-aa1c-022c8f1c06fa",
+      "sale_time": "2026-06-19T00:35:14.799+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000560",
+      "line_id": "ol-migrated-4edc1251-0577-49bb-ac3f-e662c28b8e09",
+      "sale_time": "2026-06-19T00:39:40.285+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000561",
+      "line_id": "ol-migrated-09a1233e-3141-4672-8c2e-e3065e30c692",
+      "sale_time": "2026-06-19T00:40:30.422+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000562",
+      "line_id": "ol-migrated-4403d244-8da6-4dda-b93b-92550b4f6d18",
+      "sale_time": "2026-06-19T00:40:40.865+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000563",
+      "line_id": "ol-migrated-6908a6d6-8c0f-44c2-9c4b-00a7fcf31f60",
+      "sale_time": "2026-06-19T01:00:44.63+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000564",
+      "line_id": "ol-migrated-b0fd40bb-e6cd-48b6-b650-6da56ce3c979",
+      "sale_time": "2026-06-19T01:07:59.503+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000565",
+      "line_id": "ol-migrated-0a32df78-9868-471a-bcfb-2929e7d5c94a",
+      "sale_time": "2026-06-19T01:22:49.624+00:00",
+      "stored_cost_at_sale": 14396,
+      "computed_cost_at_sale": 14446,
+      "delta": 50,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000566",
+      "line_id": "ol-migrated-3539b378-5681-4d00-9adb-70d198ed5cc9",
+      "sale_time": "2026-06-19T01:22:59.017+00:00",
+      "stored_cost_at_sale": 14396,
+      "computed_cost_at_sale": 14446,
+      "delta": 50,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000567",
+      "line_id": "ol-migrated-28636b85-5221-4f63-a1a0-28a2b46d0844",
+      "sale_time": "2026-06-19T01:26:08.225+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000183",
+      "line_id": "ol-migrated-55643116-5677-40a1-a9a3-3cb5b86e153d",
+      "sale_time": "2026-06-19T06:27:16.626+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000185",
+      "line_id": "ol-d4163495-b8fd-487a-8c6a-ffcdc01f02ef",
+      "sale_time": "2026-06-21T23:38:42.147+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000185",
+      "line_id": "ol-fa353809-dc5d-424c-b13c-3e6475c888e1",
+      "sale_time": "2026-06-21T23:38:42.147+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000186",
+      "line_id": "ol-0901c1a8-2792-4672-85a7-05886b0e471e",
+      "sale_time": "2026-06-21T23:38:59.816+00:00",
+      "stored_cost_at_sale": 14847,
+      "computed_cost_at_sale": 14844,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000187",
+      "line_id": "ol-1daa84f2-3e29-4beb-83e5-625231671a98",
+      "sale_time": "2026-06-21T23:39:19.957+00:00",
+      "stored_cost_at_sale": 14847,
+      "computed_cost_at_sale": 14844,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000193",
+      "line_id": "ol-3585c47f-f0b8-452a-9c8f-f2437e6945ce",
+      "sale_time": "2026-06-21T23:41:48.059+00:00",
+      "stored_cost_at_sale": 13551,
+      "computed_cost_at_sale": 13549,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000193",
+      "line_id": "ol-a9cef0e7-1d17-4ab6-8f7e-39bedb9c5916",
+      "sale_time": "2026-06-21T23:41:48.059+00:00",
+      "stored_cost_at_sale": 11948,
+      "computed_cost_at_sale": 11955,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000196",
+      "line_id": "ol-d7bd4626-2ed1-4f95-84bc-dac1c08ce741",
+      "sale_time": "2026-06-21T23:42:39.098+00:00",
+      "stored_cost_at_sale": 14847,
+      "computed_cost_at_sale": 14844,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000571",
+      "line_id": "ol-1293022f-aadf-4b9e-8710-09b5508153ac",
+      "sale_time": "2026-06-21T23:48:50.024+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000572",
+      "line_id": "ol-4fed039f-4c7b-4443-a309-d304ad41855a",
+      "sale_time": "2026-06-21T23:49:02.097+00:00",
+      "stored_cost_at_sale": 8521,
+      "computed_cost_at_sale": 8580,
+      "delta": 59,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000573",
+      "line_id": "ol-20d59030-58eb-4dae-a62a-13f98e82206c",
+      "sale_time": "2026-06-21T23:55:01.95+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000574",
+      "line_id": "ol-504841af-904d-492c-8229-e59d4e542b60",
+      "sale_time": "2026-06-22T00:12:25.796+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000575",
+      "line_id": "ol-008fbbb9-f421-4bb6-9044-5f2d13ea15a0",
+      "sale_time": "2026-06-22T00:22:54.833+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000577",
+      "line_id": "ol-14abcaa4-80cf-44fe-8d2c-98ae4eaffa4e",
+      "sale_time": "2026-06-22T00:36:14.741+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000578",
+      "line_id": "ol-5fbc1196-b823-4b66-893f-911abf7c2285",
+      "sale_time": "2026-06-22T00:41:41.008+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000579",
+      "line_id": "ol-94124c1e-985d-40bf-90c4-50141524bde8",
+      "sale_time": "2026-06-22T00:42:10.109+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000580",
+      "line_id": "ol-fd5def8e-f7b8-42b3-8a87-e829ece59f6d",
+      "sale_time": "2026-06-22T00:42:19.41+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000581",
+      "line_id": "ol-f3daa9d2-56dc-4b45-bf3e-6df7e7410b3c",
+      "sale_time": "2026-06-22T00:57:00.604+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000582",
+      "line_id": "ol-ba732c61-2899-4780-834a-f18f2306d1cb",
+      "sale_time": "2026-06-22T00:57:11.104+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000583",
+      "line_id": "ol-74293c15-e1ba-4ecb-963a-b4f9be8cab5e",
+      "sale_time": "2026-06-22T00:58:38.071+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000584",
+      "line_id": "ol-d07ff7d4-ea3f-41cb-aae7-2e159dfd4b1b",
+      "sale_time": "2026-06-22T01:14:56.985+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000584",
+      "line_id": "ol-eb3638c3-20a2-4f0d-ad85-27505c34e692",
+      "sale_time": "2026-06-22T01:14:56.985+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000585",
+      "line_id": "ol-e4071b72-cafc-4ad2-b598-cddd01812f24",
+      "sale_time": "2026-06-22T01:58:37.869+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000201",
+      "line_id": "ol-94e4e621-3f77-43d8-97ed-eb30086c57dd",
+      "sale_time": "2026-06-22T06:36:23.401+00:00",
+      "stored_cost_at_sale": 14847,
+      "computed_cost_at_sale": 14844,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000203",
+      "line_id": "ol-322b362c-8c26-44b6-80f6-d30217ad3123",
+      "sale_time": "2026-06-22T09:57:03.024+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000207",
+      "line_id": "ol-3b10d69b-08b3-4b41-bc92-b7a263aea472",
+      "sale_time": "2026-06-22T12:25:33.864+00:00",
+      "stored_cost_at_sale": 12966,
+      "computed_cost_at_sale": 12972,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000209",
+      "line_id": "ol-fccc0960-3518-47e7-b853-52cbf6230f67",
+      "sale_time": "2026-06-22T12:53:07.687+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000219",
+      "line_id": "ol-167612cf-7e80-4ef3-b1ea-33957fc35156",
+      "sale_time": "2026-06-22T14:04:49.456+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000219",
+      "line_id": "ol-870f5027-9111-47a9-9144-1792c56a5948",
+      "sale_time": "2026-06-22T14:04:49.456+00:00",
+      "stored_cost_at_sale": 14847,
+      "computed_cost_at_sale": 14844,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000588",
+      "line_id": "ol-65e91285-a0ec-4c0d-a51a-e6c46c3105aa",
+      "sale_time": "2026-06-22T23:49:57.706+00:00",
+      "stored_cost_at_sale": 12789,
+      "computed_cost_at_sale": 12816,
+      "delta": 27,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000589",
+      "line_id": "ol-93e4d885-95bb-4a6a-bb80-8eae04a8c762",
+      "sale_time": "2026-06-22T23:50:25.589+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000589",
+      "line_id": "ol-d34a39e4-704e-4a18-b676-34ef07c327f6",
+      "sale_time": "2026-06-22T23:50:25.589+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000590",
+      "line_id": "ol-99ecfdb5-8ed6-4772-9411-a2438f3cd275",
+      "sale_time": "2026-06-23T00:20:17.052+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000591",
+      "line_id": "ol-9fa4159e-24d2-4163-854e-bc8b9e00c40e",
+      "sale_time": "2026-06-23T00:27:05.635+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000592",
+      "line_id": "ol-ffd9a038-054c-41f3-8a48-7cf081f14764",
+      "sale_time": "2026-06-23T00:27:13.753+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000593",
+      "line_id": "ol-e7854bfa-17dc-44e0-870b-6f37c252f850",
+      "sale_time": "2026-06-23T00:54:04.138+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000594",
+      "line_id": "ol-1ba9430b-e179-48f7-9162-a18757e9d5f6",
+      "sale_time": "2026-06-23T00:58:24.211+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000595",
+      "line_id": "ol-ae601f3a-bc0f-4e45-a27a-58c6214017e7",
+      "sale_time": "2026-06-23T01:01:52.829+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000596",
+      "line_id": "ol-6fc28de7-c0df-421c-92e6-f602747e4fcd",
+      "sale_time": "2026-06-23T01:12:14.418+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000597",
+      "line_id": "ol-ebac4fc1-9c60-4350-9c15-b4ff92de1f27",
+      "sale_time": "2026-06-23T01:18:19.325+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000597",
+      "line_id": "ol-f6c7a2b7-267b-4d35-ad8c-3515fc9e2895",
+      "sale_time": "2026-06-23T01:18:19.325+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000221",
+      "line_id": "ol-e6d33491-fb62-4960-bfe6-76e47ea6d323",
+      "sale_time": "2026-06-23T06:48:52.776+00:00",
+      "stored_cost_at_sale": 23897,
+      "computed_cost_at_sale": 23911,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000225",
+      "line_id": "ol-6c7d3333-f337-4838-a68c-a62c0f09bde3",
+      "sale_time": "2026-06-23T11:39:13.338+00:00",
+      "stored_cost_at_sale": 45035,
+      "computed_cost_at_sale": 45031,
+      "delta": -4,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000227",
+      "line_id": "ol-5a9bff04-efbb-42c1-bd1a-a00e35ea62aa",
+      "sale_time": "2026-06-23T12:39:18.848+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000229",
+      "line_id": "ol-59a8d854-58e3-42dc-bf00-966d48d79026",
+      "sale_time": "2026-06-23T12:40:35.203+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000232",
+      "line_id": "ol-9fd446a0-1c72-435b-b1cd-6e183243bb98",
+      "sale_time": "2026-06-23T13:54:04.546+00:00",
+      "stored_cost_at_sale": 11948,
+      "computed_cost_at_sale": 11955,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000232",
+      "line_id": "ol-f7e1a5f3-1226-4485-8bad-3d957573bffb",
+      "sale_time": "2026-06-23T13:54:04.546+00:00",
+      "stored_cost_at_sale": 8959,
+      "computed_cost_at_sale": 8957,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000234",
+      "line_id": "ol-e26f4e9e-5e2b-400e-9acd-2728e033fb62",
+      "sale_time": "2026-06-23T14:02:20.251+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000599",
+      "line_id": "ol-e02d5969-1256-4ff6-9801-17a844fdac22",
+      "sale_time": "2026-06-23T23:51:27.701+00:00",
+      "stored_cost_at_sale": 12287,
+      "computed_cost_at_sale": 12389,
+      "delta": 102,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000601",
+      "line_id": "ol-d24629ac-7629-4363-a446-0adc2fa80cd5",
+      "sale_time": "2026-06-23T23:52:48.088+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000602",
+      "line_id": "ol-e5b1ad52-c67e-48b3-96d0-3fc0e3c0e389",
+      "sale_time": "2026-06-24T00:01:12.426+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000603",
+      "line_id": "ol-9f677aaf-2127-4b1c-acf5-4a6b460b9cb2",
+      "sale_time": "2026-06-24T00:04:03.223+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000604",
+      "line_id": "ol-9c858a3c-0910-40e3-9339-e468f2826572",
+      "sale_time": "2026-06-24T00:32:34.684+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000605",
+      "line_id": "ol-c8bbede0-4e99-4640-8968-a0bcd4b0378a",
+      "sale_time": "2026-06-24T00:32:48.268+00:00",
+      "stored_cost_at_sale": 11032,
+      "computed_cost_at_sale": 11092,
+      "delta": 60,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000606",
+      "line_id": "ol-71266ff0-bbc4-4d52-b05d-ce20492e620e",
+      "sale_time": "2026-06-24T00:49:47.308+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000607",
+      "line_id": "ol-89354ee8-f643-4d7b-99e8-ca2b2c6cd404",
+      "sale_time": "2026-06-24T00:49:55.585+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000608",
+      "line_id": "ol-9788fd1a-bbf5-4f41-84cd-f2a885101c34",
+      "sale_time": "2026-06-24T00:50:04.054+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000609",
+      "line_id": "ol-474d5562-0dea-464a-9835-557fbb51b5c5",
+      "sale_time": "2026-06-24T00:54:06.947+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000610",
+      "line_id": "ol-b22b7133-5959-453b-834a-cf8b251f1a37",
+      "sale_time": "2026-06-24T00:55:31.247+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000611",
+      "line_id": "ol-3b167eca-50a1-4239-877a-21fc948c59ad",
+      "sale_time": "2026-06-24T00:57:53.217+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000612",
+      "line_id": "ol-f0aaedb2-cd03-49a6-bace-a034062db021",
+      "sale_time": "2026-06-24T00:59:28.003+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000613",
+      "line_id": "ol-05086af3-c726-459a-b5ba-edb371d81ab6",
+      "sale_time": "2026-06-24T02:04:49.989+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000614",
+      "line_id": "ol-4a1ba513-ffbb-47a2-ab85-885833fda7b5",
+      "sale_time": "2026-06-24T02:05:07.67+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000615",
+      "line_id": "ol-dd560d54-b2d0-4841-a0ad-508fab1e86d2",
+      "sale_time": "2026-06-24T02:05:19.18+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000616",
+      "line_id": "ol-296504cf-07a8-46c5-b673-7352a043109a",
+      "sale_time": "2026-06-24T02:05:52.656+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000617",
+      "line_id": "ol-97176ee0-ffe6-45dc-b069-7e4ec97736b2",
+      "sale_time": "2026-06-24T02:08:02.418+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000618",
+      "line_id": "ol-8bde8e68-95b2-4710-a5d3-6c9e270aa7ad",
+      "sale_time": "2026-06-24T02:08:13.144+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000618",
+      "line_id": "ol-d063bc5e-f552-48cf-8ad6-243337de91e5",
+      "sale_time": "2026-06-24T02:08:13.144+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000239",
+      "line_id": "ol-002a922a-e67c-48a3-b6a2-ecb7e92db372",
+      "sale_time": "2026-06-24T12:10:35.903+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000245",
+      "line_id": "ol-99181c5c-e54b-414b-ae09-c62a3c4fe893",
+      "sale_time": "2026-06-24T14:33:08.456+00:00",
+      "stored_cost_at_sale": 30320,
+      "computed_cost_at_sale": 30318,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000247",
+      "line_id": "ol-5354d79b-f72f-4163-8535-51927844993d",
+      "sale_time": "2026-06-24T14:33:31.507+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000248",
+      "line_id": "ol-1e9fb13e-c2cd-47b4-ba74-01835bcae890",
+      "sale_time": "2026-06-24T14:36:09.66+00:00",
+      "stored_cost_at_sale": 16945,
+      "computed_cost_at_sale": 16942,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000248",
+      "line_id": "ol-bacc9b68-65c2-46a6-b9ad-9371e41ac646",
+      "sale_time": "2026-06-24T14:36:09.66+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000620",
+      "line_id": "ol-0adeab3d-93fa-405f-8534-4c30af38cb19",
+      "sale_time": "2026-06-24T14:36:37.695+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000249",
+      "line_id": "ol-f69c9675-e2a8-4055-b416-4df776b262a2",
+      "sale_time": "2026-06-24T14:37:20.55+00:00",
+      "stored_cost_at_sale": 19918,
+      "computed_cost_at_sale": 19916,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000621",
+      "line_id": "ol-6e0af0bd-9539-4225-bea7-1531687651fb",
+      "sale_time": "2026-06-24T23:36:55.451+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000621",
+      "line_id": "ol-86af9548-0cd7-484b-8707-b6fc1bf0f290",
+      "sale_time": "2026-06-24T23:36:55.451+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000621",
+      "line_id": "ol-c538c309-def4-4513-816f-373715b5ea88",
+      "sale_time": "2026-06-24T23:36:55.451+00:00",
+      "stored_cost_at_sale": 28491,
+      "computed_cost_at_sale": 28700,
+      "delta": 209,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000623",
+      "line_id": "ol-cc012210-75b2-4ae6-868d-fb79dbf922a3",
+      "sale_time": "2026-06-25T00:01:50.806+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000624",
+      "line_id": "ol-62334d79-ad0d-4632-8326-f3d97cb851b9",
+      "sale_time": "2026-06-25T00:33:16.938+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000625",
+      "line_id": "ol-0513e842-f1c5-40c4-835c-5a14f26b9f43",
+      "sale_time": "2026-06-25T00:33:46.412+00:00",
+      "stored_cost_at_sale": 42654,
+      "computed_cost_at_sale": 42651,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000625",
+      "line_id": "ol-ec7f6595-365c-48f9-9b29-22ed80fe3640",
+      "sale_time": "2026-06-25T00:33:46.412+00:00",
+      "stored_cost_at_sale": 32549,
+      "computed_cost_at_sale": 32575,
+      "delta": 26,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000625",
+      "line_id": "ol-f8d6d7f1-5101-465c-aae5-e38eb8e16587",
+      "sale_time": "2026-06-25T00:33:46.412+00:00",
+      "stored_cost_at_sale": 47485,
+      "computed_cost_at_sale": 47833,
+      "delta": 348,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000626",
+      "line_id": "ol-656fc657-8857-42d0-875d-71525bf2a06f",
+      "sale_time": "2026-06-25T00:35:12.174+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000627",
+      "line_id": "ol-c746d348-9e7a-4234-94a5-66e3bf273c02",
+      "sale_time": "2026-06-25T00:52:25.667+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000628",
+      "line_id": "ol-7cf0fb88-294b-4982-aa30-f445bd075554",
+      "sale_time": "2026-06-25T00:52:33.877+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000629",
+      "line_id": "ol-7d262c86-6787-43b4-8425-12bdf22cd8a6",
+      "sale_time": "2026-06-25T01:02:50.606+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000629",
+      "line_id": "ol-c747c942-5eaf-4ccb-ba07-f84c05e83d32",
+      "sale_time": "2026-06-25T01:02:50.606+00:00",
+      "stored_cost_at_sale": 16274,
+      "computed_cost_at_sale": 16288,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000630",
+      "line_id": "ol-7ea0046c-8ece-43a2-9f83-07aba22b807b",
+      "sale_time": "2026-06-25T01:03:58.651+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000631",
+      "line_id": "ol-e68f50da-382b-445d-ba39-9636a7131539",
+      "sale_time": "2026-06-25T01:11:07.955+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000632",
+      "line_id": "ol-5cc6aa98-3626-4729-ab74-a51cca20f54b",
+      "sale_time": "2026-06-25T01:16:00.189+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000632",
+      "line_id": "ol-6cd1d8a6-2b96-4243-9e4e-e1715dcee8fe",
+      "sale_time": "2026-06-25T01:16:00.189+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000633",
+      "line_id": "ol-0cbaf1fc-08b9-4bed-9a4a-03f4cd415e4d",
+      "sale_time": "2026-06-25T01:16:08.532+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000634",
+      "line_id": "ol-946aac41-af78-49b9-992c-78037d66931a",
+      "sale_time": "2026-06-25T01:46:28.255+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000250",
+      "line_id": "ol-3b78f4e1-16d3-4634-b0d1-c4fb6f4bd314",
+      "sale_time": "2026-06-25T03:44:20.848+00:00",
+      "stored_cost_at_sale": 16945,
+      "computed_cost_at_sale": 16942,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000251",
+      "line_id": "ol-17a51593-31dd-4e58-bdf3-e2481a7806d5",
+      "sale_time": "2026-06-25T03:44:37.763+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000253",
+      "line_id": "ol-fac104f8-c248-400f-90c2-e48d72d6d71e",
+      "sale_time": "2026-06-25T04:10:30.541+00:00",
+      "stored_cost_at_sale": 16945,
+      "computed_cost_at_sale": 16942,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000254",
+      "line_id": "ol-63e04e8e-458c-4733-95bb-8e5f38c83c5e",
+      "sale_time": "2026-06-25T04:11:00.618+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000254",
+      "line_id": "ol-74f22acf-bcaa-43ae-896b-abd7a60f66a3",
+      "sale_time": "2026-06-25T04:11:00.618+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000254",
+      "line_id": "ol-d81da690-fd31-4f89-be94-bd71dbf23916",
+      "sale_time": "2026-06-25T04:11:00.618+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000256",
+      "line_id": "ol-667a4e28-f0c2-4f6e-a558-3130d73911d9",
+      "sale_time": "2026-06-25T10:54:09.546+00:00",
+      "stored_cost_at_sale": 17453,
+      "computed_cost_at_sale": 17450,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000256",
+      "line_id": "ol-afa3b6fc-4780-4ea2-b4f9-550e2599333a",
+      "sale_time": "2026-06-25T10:54:09.546+00:00",
+      "stored_cost_at_sale": 30320,
+      "computed_cost_at_sale": 30318,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000257",
+      "line_id": "ol-9b5ae635-1d3b-4795-8b08-959760caf0e3",
+      "sale_time": "2026-06-25T12:17:41.916+00:00",
+      "stored_cost_at_sale": 7513,
+      "computed_cost_at_sale": 7511,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000263",
+      "line_id": "ol-f5b4bdcf-2d3b-43b8-9acc-16daa5bae2f3",
+      "sale_time": "2026-06-25T13:51:23.824+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000264",
+      "line_id": "ol-02caaa33-58c7-4c11-b976-6679d4a47e60",
+      "sale_time": "2026-06-25T13:52:10.263+00:00",
+      "stored_cost_at_sale": 30320,
+      "computed_cost_at_sale": 30318,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000264",
+      "line_id": "ol-16b42f35-f64b-4880-abc3-b751b8e67dce",
+      "sale_time": "2026-06-25T13:52:10.263+00:00",
+      "stored_cost_at_sale": 17453,
+      "computed_cost_at_sale": 17450,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000266",
+      "line_id": "ol-10dfc148-b7d7-49cd-b319-ea6a3cef3c7f",
+      "sale_time": "2026-06-25T14:09:33.847+00:00",
+      "stored_cost_at_sale": 19918,
+      "computed_cost_at_sale": 19916,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000268",
+      "line_id": "ol-ecea6a6b-9288-4828-9531-d5d70fb4e858",
+      "sale_time": "2026-06-25T14:10:36.114+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000636",
+      "line_id": "ol-efc2b4d8-5f2f-4a0d-b170-f7579e96175f",
+      "sale_time": "2026-06-25T23:39:19.528+00:00",
+      "stored_cost_at_sale": 12287,
+      "computed_cost_at_sale": 12389,
+      "delta": 102,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000637",
+      "line_id": "ol-ab9209e3-53fd-4063-a5aa-0bcb6aeedd1f",
+      "sale_time": "2026-06-25T23:41:27.633+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000639",
+      "line_id": "ol-97702574-806d-4c69-9a55-52671603ba42",
+      "sale_time": "2026-06-25T23:41:47.053+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000641",
+      "line_id": "ol-ae41a5c7-9026-49d4-a94f-93de28f744bb",
+      "sale_time": "2026-06-25T23:50:14.108+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000642",
+      "line_id": "ol-155f1429-245f-446a-8dd2-f02201a0dd8e",
+      "sale_time": "2026-06-25T23:56:30.347+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000644",
+      "line_id": "ol-15d2f856-941e-46d3-962c-76d75451ebad",
+      "sale_time": "2026-06-26T00:21:56.481+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000645",
+      "line_id": "ol-43425c02-b22f-4669-9d6c-4e7f974233db",
+      "sale_time": "2026-06-26T00:39:23.693+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000646",
+      "line_id": "ol-61422d76-0729-4cf8-8336-d62451c0aace",
+      "sale_time": "2026-06-26T00:39:35.419+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000647",
+      "line_id": "ol-9a90e836-dcf3-43bd-8aee-82df366b2d3a",
+      "sale_time": "2026-06-26T00:39:41.965+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000648",
+      "line_id": "ol-606e4d14-9da7-42f2-b742-8aec28ee165f",
+      "sale_time": "2026-06-26T01:02:16.607+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000649",
+      "line_id": "ol-b89dfa8c-3239-4e29-a8c1-bb4e510475d1",
+      "sale_time": "2026-06-26T01:10:19.658+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000650",
+      "line_id": "ol-b24e2ae1-0df4-4cc0-99ce-9f9cc578e6d6",
+      "sale_time": "2026-06-26T01:10:34.408+00:00",
+      "stored_cost_at_sale": 12287,
+      "computed_cost_at_sale": 12389,
+      "delta": 102,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000651",
+      "line_id": "ol-4d93c3b9-a9f5-4704-bec0-a93516fcaf75",
+      "sale_time": "2026-06-26T01:19:17.335+00:00",
+      "stored_cost_at_sale": 18994,
+      "computed_cost_at_sale": 19133,
+      "delta": 139,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000652",
+      "line_id": "ol-dd599ba1-1aa9-4896-9ec0-34e5f9836715",
+      "sale_time": "2026-06-26T01:19:28.531+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000653",
+      "line_id": "ol-686a3edc-cff3-43bf-a683-d95309f425fc",
+      "sale_time": "2026-06-26T01:23:56.688+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000654",
+      "line_id": "ol-060f55ac-96d6-4297-85dd-32fc608a1631",
+      "sale_time": "2026-06-26T01:24:02.494+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000655",
+      "line_id": "ol-c094c8ff-afe3-4010-af47-0f9be51991c6",
+      "sale_time": "2026-06-26T01:24:37.42+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000656",
+      "line_id": "ol-87c4606f-0cca-453b-b388-b5db042fa043",
+      "sale_time": "2026-06-26T01:24:51.582+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000657",
+      "line_id": "ol-b9969647-c106-465b-8e1e-a0506b7e873d",
+      "sale_time": "2026-06-26T01:26:11.251+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000658",
+      "line_id": "ol-6c997717-d8fe-4cbb-84df-e325a6a781fc",
+      "sale_time": "2026-06-26T01:59:34.781+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000659",
+      "line_id": "ol-7bf1b4d5-d418-4ef6-9d55-300d89fb90aa",
+      "sale_time": "2026-06-26T02:08:23.728+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000271",
+      "line_id": "ol-fb2a66ae-48e8-4c3b-b28c-58873d24f863",
+      "sale_time": "2026-06-26T05:53:28.651+00:00",
+      "stored_cost_at_sale": 16945,
+      "computed_cost_at_sale": 16942,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000272",
+      "line_id": "ol-39c8be79-eb71-4be0-91c5-57b12d368fc1",
+      "sale_time": "2026-06-26T07:02:21.813+00:00",
+      "stored_cost_at_sale": 21347,
+      "computed_cost_at_sale": 21361,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000272",
+      "line_id": "ol-826d508a-6727-4784-ad4f-8452b8e74494",
+      "sale_time": "2026-06-26T07:02:21.813+00:00",
+      "stored_cost_at_sale": 11948,
+      "computed_cost_at_sale": 11955,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000277",
+      "line_id": "ol-2050e85f-56b3-4182-ba4e-a896b60ef966",
+      "sale_time": "2026-06-26T11:45:40.049+00:00",
+      "stored_cost_at_sale": 38897,
+      "computed_cost_at_sale": 38915,
+      "delta": 18,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000278",
+      "line_id": "ol-9b754ba8-dfe3-4fe5-acbe-4869acaff1cf",
+      "sale_time": "2026-06-26T12:26:58.026+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000282",
+      "line_id": "ol-cbece64b-8040-41ec-8be8-5706fef20d54",
+      "sale_time": "2026-06-26T13:23:55.921+00:00",
+      "stored_cost_at_sale": 12966,
+      "computed_cost_at_sale": 12972,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000284",
+      "line_id": "ol-4bc25931-1363-412d-ab77-4c7e5dfd4d9e",
+      "sale_time": "2026-06-26T13:24:44.931+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000285",
+      "line_id": "ol-9fc9f4f1-6306-4774-a7ec-74bccd14eac5",
+      "sale_time": "2026-06-26T14:00:40.06+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000286",
+      "line_id": "ol-b0dd7440-c073-42ea-9d13-9bd587a6a983",
+      "sale_time": "2026-06-26T14:00:50.381+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000750",
+      "line_id": "ol-2d1add95-23a8-4371-8b70-e0f5e1649235",
+      "sale_time": "2026-06-26T23:46:29.828+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000751",
+      "line_id": "ol-2d2daf58-0823-4986-90c4-0b7aaa158510",
+      "sale_time": "2026-06-26T23:47:18.484+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000752",
+      "line_id": "ol-0dd7e0eb-049f-47ff-bc26-8ecc5c50e4a6",
+      "sale_time": "2026-06-26T23:54:08.091+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000753",
+      "line_id": "ol-59f05df9-52b1-48a4-894e-ca9a62d0713c",
+      "sale_time": "2026-06-27T00:16:01.708+00:00",
+      "stored_cost_at_sale": 16274,
+      "computed_cost_at_sale": 16288,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000754",
+      "line_id": "ol-a8e05839-0c32-4d4f-be39-cf6cec40c564",
+      "sale_time": "2026-06-27T00:19:49.025+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000756",
+      "line_id": "ol-47f4246a-d80a-49c9-b8ed-5184e5545700",
+      "sale_time": "2026-06-27T00:31:04.264+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000757",
+      "line_id": "ol-05d32a8c-8ce1-4c00-ae74-97d458f9b15f",
+      "sale_time": "2026-06-27T00:32:47.413+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000761",
+      "line_id": "ol-dc898bd1-d15a-48b2-86cc-d31244b05a7a",
+      "sale_time": "2026-06-27T01:20:00.531+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000762",
+      "line_id": "ol-e6a9c075-45c7-4d06-ab9d-5490da009194",
+      "sale_time": "2026-06-27T01:31:12.036+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000763",
+      "line_id": "ol-8f83a553-e90d-4caa-8d57-8070a75d0d68",
+      "sale_time": "2026-06-27T01:49:03.901+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000289",
+      "line_id": "ol-45a78ac1-8f80-4a30-ac57-4c15c2c0a6fb",
+      "sale_time": "2026-06-27T07:36:18.307+00:00",
+      "stored_cost_at_sale": 11948,
+      "computed_cost_at_sale": 11955,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000294",
+      "line_id": "ol-82d206f2-d760-4f6f-a3b7-28c485d6609f",
+      "sale_time": "2026-06-27T12:00:25.436+00:00",
+      "stored_cost_at_sale": 25416,
+      "computed_cost_at_sale": 25413,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000297",
+      "line_id": "ol-575cecb2-6c3e-4ac9-968e-ca5d04795ecf",
+      "sale_time": "2026-06-27T12:07:52.709+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000302",
+      "line_id": "ol-c048fdec-c3ab-402d-b137-1a797b707a01",
+      "sale_time": "2026-06-27T13:18:38.341+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000305",
+      "line_id": "ol-8537af3a-9c83-4294-8015-2801baf9c280",
+      "sale_time": "2026-06-28T11:09:56.838+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000306",
+      "line_id": "ol-1c680878-3b15-476e-a540-f38ab4c85248",
+      "sale_time": "2026-06-28T11:11:23.101+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000307",
+      "line_id": "ol-5bc858f6-879b-4470-becd-04f9e540fa3e",
+      "sale_time": "2026-06-28T11:41:13.332+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000309",
+      "line_id": "ol-f36fb99a-5e61-4e00-bbd3-98378a2b1a76",
+      "sale_time": "2026-06-28T13:20:16.658+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000310",
+      "line_id": "ol-2c84bb22-58c5-4000-bcc8-b84eb7f15863",
+      "sale_time": "2026-06-28T13:54:57.969+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000311",
+      "line_id": "ol-5a3bc120-e249-4b6a-b537-b841e4842698",
+      "sale_time": "2026-06-28T14:49:52.932+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000311",
+      "line_id": "ol-b442e906-7922-4790-a620-bade6d1a9131",
+      "sale_time": "2026-06-28T14:49:52.932+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000311",
+      "line_id": "ol-dce181b4-9b07-4c56-aed0-7a70a1585ae4",
+      "sale_time": "2026-06-28T14:49:52.932+00:00",
+      "stored_cost_at_sale": 25416,
+      "computed_cost_at_sale": 25413,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000311",
+      "line_id": "ol-e846bccd-eb1c-4310-9677-31518bcbdd83",
+      "sale_time": "2026-06-28T14:49:52.932+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000312",
+      "line_id": "ol-3eabeae1-7644-4078-99e0-9324824313b7",
+      "sale_time": "2026-06-28T14:51:32.824+00:00",
+      "stored_cost_at_sale": 15161,
+      "computed_cost_at_sale": 15159,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000765",
+      "line_id": "ol-3d801340-0a70-4649-8f53-35f31292b493",
+      "sale_time": "2026-06-28T23:24:15.358+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000767",
+      "line_id": "ol-5bdd6cbf-52c4-4192-ae7e-997b9523e52d",
+      "sale_time": "2026-06-28T23:27:35.07+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000768",
+      "line_id": "ol-7dd4e1b4-3736-457a-af81-634c0506cf6f",
+      "sale_time": "2026-06-28T23:34:35.347+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000769",
+      "line_id": "ol-e15558ce-2c4a-4cd0-8807-feb560b74419",
+      "sale_time": "2026-06-28T23:43:39.77+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000770",
+      "line_id": "ol-24ce9f0f-821d-4b9b-aca7-091e56d7e87e",
+      "sale_time": "2026-06-28T23:43:52.348+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000771",
+      "line_id": "ol-189223d1-d63e-4e10-9a03-b85c98ad985c",
+      "sale_time": "2026-06-28T23:51:01.521+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000772",
+      "line_id": "ol-ea340de6-88db-434d-badc-35428567546d",
+      "sale_time": "2026-06-29T00:06:03.332+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000773",
+      "line_id": "ol-17d621bd-8160-438e-9160-d0758d825515",
+      "sale_time": "2026-06-29T00:16:12+00:00",
+      "stored_cost_at_sale": 13207,
+      "computed_cost_at_sale": 13292,
+      "delta": 85,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000774",
+      "line_id": "ol-69e58199-2b70-4a77-98d2-338a9324c709",
+      "sale_time": "2026-06-29T00:20:17.11+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000775",
+      "line_id": "ol-1410566f-d683-4d2a-8a7a-77ed52fa2d1a",
+      "sale_time": "2026-06-29T00:23:47.475+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000776",
+      "line_id": "ol-f1f3d6c7-269a-4f18-9aea-585325466a22",
+      "sale_time": "2026-06-29T00:25:04.482+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000777",
+      "line_id": "ol-0606206b-ebf6-4859-9966-fd36c8a26234",
+      "sale_time": "2026-06-29T00:27:40.508+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000778",
+      "line_id": "ol-680363dc-2816-4347-bfff-d48513e2c5e8",
+      "sale_time": "2026-06-29T00:31:35.07+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000781",
+      "line_id": "ol-b912c413-0b4f-4663-92fc-0d8dfa96b906",
+      "sale_time": "2026-06-29T00:51:12.549+00:00",
+      "stored_cost_at_sale": 9497,
+      "computed_cost_at_sale": 9567,
+      "delta": 70,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000785",
+      "line_id": "ol-21ff85ab-b038-459b-a1ae-b80bfb37b5a6",
+      "sale_time": "2026-06-29T01:18:58.114+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000786",
+      "line_id": "ol-ed9eafce-40c2-4599-a956-55fe2e6e2dbe",
+      "sale_time": "2026-06-29T01:25:21.377+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000787",
+      "line_id": "ol-68b741f5-49cb-4286-b299-a57a3facc4ac",
+      "sale_time": "2026-06-29T01:42:58.824+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000788",
+      "line_id": "ol-09d140e1-b29d-4727-b478-4aa7a61bf0ae",
+      "sale_time": "2026-06-29T01:49:03.634+00:00",
+      "stored_cost_at_sale": 14396,
+      "computed_cost_at_sale": 14446,
+      "delta": 50,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000791",
+      "line_id": "ol-a4940c82-1217-4b32-8ec4-f331acc006be",
+      "sale_time": "2026-06-29T02:23:02.246+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000314",
+      "line_id": "ol-0988fb1c-4971-4e8b-9c99-e6b83d297c0b",
+      "sale_time": "2026-06-29T05:47:59.427+00:00",
+      "stored_cost_at_sale": 21347,
+      "computed_cost_at_sale": 21361,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000315",
+      "line_id": "ol-891ae99e-3364-4d63-870f-b3e844d106b3",
+      "sale_time": "2026-06-29T05:49:52.939+00:00",
+      "stored_cost_at_sale": 45482,
+      "computed_cost_at_sale": 45477,
+      "delta": -5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000316",
+      "line_id": "ol-04746871-d977-4207-9af4-ed6f8ade8137",
+      "sale_time": "2026-06-29T07:16:41.698+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000318",
+      "line_id": "ol-99aa2f1f-9fb6-449c-bef8-7680e0c9b900",
+      "sale_time": "2026-06-29T10:37:37.995+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000323",
+      "line_id": "ol-75ad9f8c-5ab9-46fc-aedb-8bd9ebc67f32",
+      "sale_time": "2026-06-29T12:24:45.523+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000324",
+      "line_id": "ol-793097cd-d511-4ec4-8933-cd64714e8ec6",
+      "sale_time": "2026-06-29T12:51:14.463+00:00",
+      "stored_cost_at_sale": 16945,
+      "computed_cost_at_sale": 16942,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000327",
+      "line_id": "ol-7dcc71ca-0f58-43ec-a0c5-430aa5c9fcc8",
+      "sale_time": "2026-06-29T12:52:33.448+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000332",
+      "line_id": "ol-71cca2b7-8a65-49cc-8381-75a57e025e25",
+      "sale_time": "2026-06-29T14:24:26.633+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000792",
+      "line_id": "ol-537d7a6c-e275-4b10-b46d-be50a57b7d08",
+      "sale_time": "2026-06-29T23:30:26.066+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000793",
+      "line_id": "ol-fb774c0d-5d0b-4351-8c47-5b0b6a8cdec1",
+      "sale_time": "2026-06-29T23:48:22.946+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000795",
+      "line_id": "ol-3139f740-4ada-4966-b613-320949639b97",
+      "sale_time": "2026-06-30T00:21:08.225+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000796",
+      "line_id": "ol-0c935fa5-57c4-4b3e-91d9-61e64db22a4e",
+      "sale_time": "2026-06-30T00:26:47.862+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000797",
+      "line_id": "ol-68a8ebee-294a-4d9a-9187-8c606035a741",
+      "sale_time": "2026-06-30T00:27:01.371+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000801",
+      "line_id": "ol-afaf7d7e-1fb6-49c2-8553-71fe7c471d86",
+      "sale_time": "2026-06-30T00:39:59.005+00:00",
+      "stored_cost_at_sale": 11084,
+      "computed_cost_at_sale": 11115,
+      "delta": 31,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000802",
+      "line_id": "ol-cc89390c-2ccc-4e9c-b433-5b0c6bbdd8f1",
+      "sale_time": "2026-06-30T00:44:16.931+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000803",
+      "line_id": "ol-af706ea3-d599-4f81-a74b-67855caff4d7",
+      "sale_time": "2026-06-30T00:44:32.786+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000805",
+      "line_id": "ol-3fe544ad-7841-4f6e-b138-aea3ef8b8aa6",
+      "sale_time": "2026-06-30T00:45:58.317+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000806",
+      "line_id": "ol-e51e1065-cfd2-42e2-bc94-6ad0e48b655f",
+      "sale_time": "2026-06-30T00:48:52.309+00:00",
+      "stored_cost_at_sale": 19810,
+      "computed_cost_at_sale": 19939,
+      "delta": 129,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000809",
+      "line_id": "ol-f4ca40f9-99ae-4308-84d4-2105ea942b57",
+      "sale_time": "2026-06-30T01:01:19.908+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000810",
+      "line_id": "ol-24f6243e-a1f4-4a2c-a1b5-2b133b6ded5d",
+      "sale_time": "2026-06-30T01:08:06.588+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000811",
+      "line_id": "ol-1cceb25a-175f-4b6d-b381-40edb614597c",
+      "sale_time": "2026-06-30T01:08:25.19+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000812",
+      "line_id": "ol-26681706-0470-4b01-b89a-218a78193cbb",
+      "sale_time": "2026-06-30T01:08:40.98+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000813",
+      "line_id": "ol-b14dbfd5-9aea-4398-b3a0-b1b02cdba138",
+      "sale_time": "2026-06-30T01:10:42.399+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000814",
+      "line_id": "ol-f815d264-615f-486e-9883-2a5c135631c3",
+      "sale_time": "2026-06-30T01:34:01.55+00:00",
+      "stored_cost_at_sale": 12287,
+      "computed_cost_at_sale": 12389,
+      "delta": 102,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000815",
+      "line_id": "ol-43856195-6166-4637-80f4-4558e30e1063",
+      "sale_time": "2026-06-30T02:15:58.166+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000816",
+      "line_id": "ol-f301f8a8-bdc2-405b-8354-d63d4c265821",
+      "sale_time": "2026-06-30T02:38:03.771+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000333",
+      "line_id": "ol-8dd7e2fd-c053-4fe1-a009-6a69cfcb8355",
+      "sale_time": "2026-06-30T08:17:41.949+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000333",
+      "line_id": "ol-e4ec50be-717b-42df-bf4f-a6ccb3e2fc6e",
+      "sale_time": "2026-06-30T08:17:41.949+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000334",
+      "line_id": "ol-e6c9e07b-62ae-40a9-8363-8fe961497040",
+      "sale_time": "2026-06-30T08:38:33.99+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000334",
+      "line_id": "ol-edb7ccc0-1fd5-4f14-bcde-b412e7c89209",
+      "sale_time": "2026-06-30T08:38:33.99+00:00",
+      "stored_cost_at_sale": 32020,
+      "computed_cost_at_sale": 32041,
+      "delta": 21,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000337",
+      "line_id": "ol-7723d517-47df-4137-9875-2c08e61f7fd4",
+      "sale_time": "2026-06-30T12:11:24.794+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000347",
+      "line_id": "ol-fd5110a7-261a-440d-8d94-54126a40b62b",
+      "sale_time": "2026-06-30T14:08:31.863+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000348",
+      "line_id": "ol-4378cc10-9cb6-4389-bcf3-c7c16cfea1b8",
+      "sale_time": "2026-06-30T14:09:02.097+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000818",
+      "line_id": "ol-328e2777-96ff-434f-854a-6ec8dea070a6",
+      "sale_time": "2026-06-30T23:52:09.489+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000820",
+      "line_id": "ol-ed997c9d-e355-4394-baa6-62c2c54e12c7",
+      "sale_time": "2026-07-01T00:08:52.271+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000821",
+      "line_id": "ol-80c64b30-9425-4bc8-822c-c27803151782",
+      "sale_time": "2026-07-01T00:16:36.925+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000822",
+      "line_id": "ol-467762f0-3eee-4c0c-b9dd-7e68e659941b",
+      "sale_time": "2026-07-01T00:35:32.843+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000824",
+      "line_id": "ol-6e2f7ab5-9091-4e3a-9262-3f322bb327e9",
+      "sale_time": "2026-07-01T00:44:20.167+00:00",
+      "stored_cost_at_sale": 14219,
+      "computed_cost_at_sale": 14217,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000825",
+      "line_id": "ol-2530a268-724f-4b53-9595-d376f0d40a38",
+      "sale_time": "2026-07-01T00:49:20.656+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000828",
+      "line_id": "ol-ac6cd55e-3f94-4491-80ac-01333f84d73b",
+      "sale_time": "2026-07-01T00:59:57.893+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000352",
+      "line_id": "ol-b70323f5-d7be-467a-a796-2aed3084db83",
+      "sale_time": "2026-07-01T06:02:05.948+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000356",
+      "line_id": "ol-0b6d6ab1-0bd4-4f21-acb3-4f4809cdb63f",
+      "sale_time": "2026-07-01T12:08:50.087+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000361",
+      "line_id": "ol-5816f5ee-6e85-4a0f-a2d2-b5f3354209a0",
+      "sale_time": "2026-07-01T13:19:28.354+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000362",
+      "line_id": "ol-084e4eb3-7b9c-45ec-8292-877d399545fd",
+      "sale_time": "2026-07-01T13:20:15.182+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000829",
+      "line_id": "ol-0426b390-5cdc-43bb-bcec-41dd15cf7b99",
+      "sale_time": "2026-07-02T00:00:24.358+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000830",
+      "line_id": "ol-d33c1234-41ee-4856-94b1-a53228c1bba1",
+      "sale_time": "2026-07-02T00:01:41.914+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000833",
+      "line_id": "ol-59e3db8f-7bbf-4a45-9c8e-ec338f472f7f",
+      "sale_time": "2026-07-02T00:20:29.325+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000837",
+      "line_id": "ol-5691628c-b0ec-4df8-be37-ebb7c0f84287",
+      "sale_time": "2026-07-02T00:41:50.212+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000838",
+      "line_id": "ol-702dd00c-ef77-43a5-bb9f-f28b42541b76",
+      "sale_time": "2026-07-02T00:44:31.301+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000839",
+      "line_id": "ol-47ef145a-4524-4f4c-942d-86dfbd2a1947",
+      "sale_time": "2026-07-02T00:47:52.58+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000840",
+      "line_id": "ol-78bc1316-5ff0-4003-9e10-47cd71ae1fe7",
+      "sale_time": "2026-07-02T01:07:46.303+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000841",
+      "line_id": "ol-8884d8e2-45be-4c1d-961e-5e06c8d40e45",
+      "sale_time": "2026-07-02T01:19:09.494+00:00",
+      "stored_cost_at_sale": 18430,
+      "computed_cost_at_sale": 18584,
+      "delta": 154,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000842",
+      "line_id": "ol-61ce2c54-77f1-4044-bdad-3e8c828d789c",
+      "sale_time": "2026-07-02T01:19:34.829+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000843",
+      "line_id": "ol-a81ee038-bdb9-498c-a72a-56ee88fe9e07",
+      "sale_time": "2026-07-02T01:21:28.519+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000844",
+      "line_id": "ol-6d867040-14e2-4cde-bee3-4a8d446597a2",
+      "sale_time": "2026-07-02T01:25:16.528+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000846",
+      "line_id": "ol-5252a59b-1439-4fae-818e-1e17d0d54957",
+      "sale_time": "2026-07-02T01:44:17.767+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000847",
+      "line_id": "ol-e340403e-0ea2-4cf6-9e9e-98e51bde494c",
+      "sale_time": "2026-07-02T02:39:14.585+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000370",
+      "line_id": "ol-92586dca-0de9-4f8e-8a30-a7849275fb06",
+      "sale_time": "2026-07-02T05:09:33.94+00:00",
+      "stored_cost_at_sale": 19000,
+      "computed_cost_at_sale": 19013,
+      "delta": 13,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000370",
+      "line_id": "ol-ef1e910c-7c1a-4ca2-991f-940036749f81",
+      "sale_time": "2026-07-02T05:09:33.94+00:00",
+      "stored_cost_at_sale": 60643,
+      "computed_cost_at_sale": 60635,
+      "delta": -8,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000370",
+      "line_id": "ol-f0c626e6-5403-48d2-9e94-fcfa5c9fc7ad",
+      "sale_time": "2026-07-02T05:09:33.94+00:00",
+      "stored_cost_at_sale": 16945,
+      "computed_cost_at_sale": 16942,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000373",
+      "line_id": "ol-7e9001eb-2d82-4e52-820e-268b20fd85a3",
+      "sale_time": "2026-07-02T10:47:10.264+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000375",
+      "line_id": "ol-7b7e886c-1c21-437c-a5c6-8656a6274200",
+      "sale_time": "2026-07-02T13:36:48.573+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000377",
+      "line_id": "ol-f6b2f9f1-30a4-42db-9c28-7a12471de359",
+      "sale_time": "2026-07-02T14:59:29.436+00:00",
+      "stored_cost_at_sale": 16945,
+      "computed_cost_at_sale": 16942,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000849",
+      "line_id": "ol-1bbc6c69-141d-44cc-a9c5-e6aaef89ca91",
+      "sale_time": "2026-07-02T23:37:38.01+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000850",
+      "line_id": "ol-7e1b00db-949d-4d8a-8d2f-2a04851cab74",
+      "sale_time": "2026-07-02T23:38:02.379+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000852",
+      "line_id": "ol-79e0f541-4b35-4f79-b21a-464227086c00",
+      "sale_time": "2026-07-03T00:03:39.036+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000854",
+      "line_id": "ol-92621018-0299-4e90-9b5b-eb1f7e7dfd09",
+      "sale_time": "2026-07-03T00:22:38.79+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000855",
+      "line_id": "ol-4cf5a758-56fc-4f5b-9e98-a9c7bd8d2c26",
+      "sale_time": "2026-07-03T00:22:57.131+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000855",
+      "line_id": "ol-51532bc3-dd9c-40bf-bfaf-0f9a1cd85c8f",
+      "sale_time": "2026-07-03T00:22:57.131+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000856",
+      "line_id": "ol-3ee1911d-d16c-480e-adf3-55c20018a512",
+      "sale_time": "2026-07-03T00:34:58.284+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000859",
+      "line_id": "ol-0a46201d-e609-4bde-97c7-e056c783af58",
+      "sale_time": "2026-07-03T01:03:45.712+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000861",
+      "line_id": "ol-7f2bb444-4bdb-4264-94f3-14347e978f6a",
+      "sale_time": "2026-07-03T01:24:34.672+00:00",
+      "stored_cost_at_sale": 26414,
+      "computed_cost_at_sale": 26585,
+      "delta": 171,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000380",
+      "line_id": "ol-188c7e95-2368-4adb-b068-4678c6bd1286",
+      "sale_time": "2026-07-03T10:48:04.945+00:00",
+      "stored_cost_at_sale": 12966,
+      "computed_cost_at_sale": 12972,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000380",
+      "line_id": "ol-27d283e2-1dc5-4be7-baf0-19a628868721",
+      "sale_time": "2026-07-03T10:48:04.945+00:00",
+      "stored_cost_at_sale": 6125,
+      "computed_cost_at_sale": 6123,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000381",
+      "line_id": "ol-d7bf821f-a34d-44e9-a5ae-ebc55eb97c46",
+      "sale_time": "2026-07-03T11:21:55.106+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000383",
+      "line_id": "ol-c845acd7-89b2-48aa-8216-fce8597b6afd",
+      "sale_time": "2026-07-03T12:35:13.003+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000387",
+      "line_id": "ol-bb25ce1d-c13e-4043-8c6e-f8df3a71a12c",
+      "sale_time": "2026-07-03T13:33:17.818+00:00",
+      "stored_cost_at_sale": 11948,
+      "computed_cost_at_sale": 11955,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000862",
+      "line_id": "ol-b6edac67-1a3d-441f-90d9-f86d1d00c2da",
+      "sale_time": "2026-07-03T23:29:48.154+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000863",
+      "line_id": "ol-a99aad1d-4194-4eb8-94c6-099f16ba6c79",
+      "sale_time": "2026-07-03T23:33:35.655+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000864",
+      "line_id": "ol-53e965b5-cd81-481b-9cc7-a088b115fa75",
+      "sale_time": "2026-07-03T23:48:00.503+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000865",
+      "line_id": "ol-0e20f7c8-8430-4b55-ba61-26c20655257d",
+      "sale_time": "2026-07-04T00:10:49.604+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000866",
+      "line_id": "ol-c052e424-6b52-425b-a80c-aff324109a84",
+      "sale_time": "2026-07-04T00:13:18.065+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000867",
+      "line_id": "ol-9b52bf5f-5c25-4542-903c-8dfaba390e6b",
+      "sale_time": "2026-07-04T00:54:13.461+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000868",
+      "line_id": "ol-3bfc3623-23d1-4fcc-ac4f-519b34686485",
+      "sale_time": "2026-07-04T00:58:33.106+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000869",
+      "line_id": "ol-90de70d7-ca14-404f-b3da-caec69bf07a8",
+      "sale_time": "2026-07-04T00:58:36.849+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000870",
+      "line_id": "ol-2ac605ea-20cb-4301-953f-f9e45f09557e",
+      "sale_time": "2026-07-04T01:04:00.197+00:00",
+      "stored_cost_at_sale": 11468,
+      "computed_cost_at_sale": 11552,
+      "delta": 84,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000871",
+      "line_id": "ol-0620386b-c113-4623-8760-242cf07fc41c",
+      "sale_time": "2026-07-04T01:28:05.121+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000874",
+      "line_id": "ol-a58b37e2-598d-40fd-8d0a-5bfdaf405956",
+      "sale_time": "2026-07-04T01:55:49.698+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000875",
+      "line_id": "ol-db9049c2-9568-44ca-aee1-276735e3809b",
+      "sale_time": "2026-07-04T02:07:36.16+00:00",
+      "stored_cost_at_sale": 16274,
+      "computed_cost_at_sale": 16288,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000876",
+      "line_id": "ol-aaaa1547-73e9-4ce3-ac97-1d4bc7b61bb6",
+      "sale_time": "2026-07-04T02:27:27.236+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000879",
+      "line_id": "ol-04517bb0-5ec2-4513-a1c2-c7d395c00571",
+      "sale_time": "2026-07-04T02:49:43.267+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000879",
+      "line_id": "ol-89b6511a-490b-4abd-8cf6-34364c7c337d",
+      "sale_time": "2026-07-04T02:49:43.267+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000392",
+      "line_id": "ol-b52d4314-ec0e-4f95-adc6-8b3a9cebec31",
+      "sale_time": "2026-07-04T10:34:26.873+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000393",
+      "line_id": "ol-460ad2ea-3b0e-4025-a964-b57d1ef83e7b",
+      "sale_time": "2026-07-04T10:49:57.582+00:00",
+      "stored_cost_at_sale": 25416,
+      "computed_cost_at_sale": 25413,
+      "delta": -3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000396",
+      "line_id": "ol-7a4a10d2-ded1-4711-a7e5-aec1029e819c",
+      "sale_time": "2026-07-04T11:17:33.866+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000400",
+      "line_id": "ol-9f822afd-220c-4384-9e78-a8ca1acf9761",
+      "sale_time": "2026-07-04T11:39:46.979+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000402",
+      "line_id": "ol-148af9f1-3575-4de9-8561-c3bc30bd226b",
+      "sale_time": "2026-07-04T12:26:46.702+00:00",
+      "stored_cost_at_sale": 60643,
+      "computed_cost_at_sale": 60635,
+      "delta": -8,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000403",
+      "line_id": "ol-36f567bb-6f5d-4f06-b9b3-f6e438d757a0",
+      "sale_time": "2026-07-04T12:41:42.175+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000406",
+      "line_id": "ol-6c15d480-9b38-4771-a6ee-04b3c8ceb7d0",
+      "sale_time": "2026-07-04T13:28:27.327+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000415",
+      "line_id": "ol-d7a6da56-c33c-4d18-b10b-752fff74b613",
+      "sale_time": "2026-07-05T11:43:24.837+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000418",
+      "line_id": "ol-604dc569-40fd-4e82-955e-df1f155433eb",
+      "sale_time": "2026-07-05T13:54:41.62+00:00",
+      "stored_cost_at_sale": 42694,
+      "computed_cost_at_sale": 42722,
+      "delta": 28,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000419",
+      "line_id": "ol-abdee201-0b99-4f6b-bbf9-a2e2988f19a8",
+      "sale_time": "2026-07-05T14:39:42.296+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000880",
+      "line_id": "ol-214ba152-686d-4e1a-8fc3-a68d229dc936",
+      "sale_time": "2026-07-05T23:31:55.79+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000881",
+      "line_id": "ol-1026241d-1b72-44cc-9222-a1919ee9ee98",
+      "sale_time": "2026-07-05T23:32:04.545+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000884",
+      "line_id": "ol-7c81ecfd-2b2a-4c3a-9277-dc64e4568973",
+      "sale_time": "2026-07-05T23:44:38.547+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000886",
+      "line_id": "ol-b037f6ca-53db-418a-8f24-bb3911a5ac68",
+      "sale_time": "2026-07-06T00:03:42.844+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000887",
+      "line_id": "ol-af363c62-1478-4af8-9f4d-3ee4cf96187f",
+      "sale_time": "2026-07-06T00:15:15.538+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000889",
+      "line_id": "ol-14492b03-0786-4899-8fd4-2aa61ccaebb2",
+      "sale_time": "2026-07-06T00:31:37.362+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000890",
+      "line_id": "ol-b8f40cff-ad14-4b6e-b4d5-6c21e74ad632",
+      "sale_time": "2026-07-06T00:41:43.624+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000892",
+      "line_id": "ol-1de0b0a2-8433-4025-a07f-6ff1bde3157f",
+      "sale_time": "2026-07-06T00:51:41.67+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000894",
+      "line_id": "ol-8095a775-34c7-4747-bc82-648ba3452ac0",
+      "sale_time": "2026-07-06T00:55:52.944+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000895",
+      "line_id": "ol-32d1735c-3364-4e42-8a53-57cb39715960",
+      "sale_time": "2026-07-06T01:05:30.575+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000896",
+      "line_id": "ol-b91b79ab-9d89-4bd9-bda6-dd1312ce47f3",
+      "sale_time": "2026-07-06T01:11:08.981+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000898",
+      "line_id": "ol-7ec1f62f-e749-437e-bc29-c6af4dfde687",
+      "sale_time": "2026-07-06T01:16:13.181+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000899",
+      "line_id": "ol-34a22712-3cc8-4b3e-8ada-bd8cea6ac989",
+      "sale_time": "2026-07-06T01:23:07.816+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000900",
+      "line_id": "ol-361f98fb-632a-42d2-aa63-53222858c554",
+      "sale_time": "2026-07-06T01:38:20.63+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000901",
+      "line_id": "ol-f45f9666-7e3a-4096-9d86-ca094f7fdc86",
+      "sale_time": "2026-07-06T01:46:06.448+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000902",
+      "line_id": "ol-77f1d651-8ad5-4c2f-9991-1e54afa647b5",
+      "sale_time": "2026-07-06T02:14:44.115+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000903",
+      "line_id": "ol-c64abf36-b513-4ebc-a867-50907a4a641a",
+      "sale_time": "2026-07-06T02:23:56.208+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000904",
+      "line_id": "ol-a85a183b-9c6f-4a2c-9c34-a2b7b397e7aa",
+      "sale_time": "2026-07-06T02:44:58.964+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000422",
+      "line_id": "ol-676f5622-62ca-4919-abec-1b0008e47802",
+      "sale_time": "2026-07-06T07:24:18.329+00:00",
+      "stored_cost_at_sale": 75803,
+      "computed_cost_at_sale": 75794,
+      "delta": -9,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000422",
+      "line_id": "ol-7a4c82ad-4910-40e2-a806-254a2f6667e9",
+      "sale_time": "2026-07-06T07:24:18.329+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000907",
+      "line_id": "ol-267b37b4-ac20-4a3a-9670-45fd05722f52",
+      "sale_time": "2026-07-07T00:59:05.859+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000908",
+      "line_id": "ol-233f05e6-f125-4b8d-bad8-74704ef41b65",
+      "sale_time": "2026-07-07T02:11:53.227+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000909",
+      "line_id": "ol-21d6aaa2-8c43-47c4-899f-25b184c82937",
+      "sale_time": "2026-07-08T01:08:47.37+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000910",
+      "line_id": "ol-c8cde72d-ba6f-4dae-98cf-89cdbaf3869d",
+      "sale_time": "2026-07-08T23:17:04.58+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000912",
+      "line_id": "ol-03dbf958-c151-4812-bf5f-d60c8e11f57a",
+      "sale_time": "2026-07-08T23:36:34.721+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000913",
+      "line_id": "ol-492d9375-f41c-4ead-ad9a-aff54f8eef1b",
+      "sale_time": "2026-07-09T00:01:04.288+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000914",
+      "line_id": "ol-f6afd6c3-36d0-46cc-b32a-612f6e947089",
+      "sale_time": "2026-07-09T00:07:14.291+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000915",
+      "line_id": "ol-7c9ca972-0fa2-4d92-adcc-a5015147abe0",
+      "sale_time": "2026-07-09T00:13:35.073+00:00",
+      "stored_cost_at_sale": 14219,
+      "computed_cost_at_sale": 14217,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000917",
+      "line_id": "ol-dc76ba40-629b-496c-929b-3ac9e2e3778b",
+      "sale_time": "2026-07-09T00:16:02.265+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000918",
+      "line_id": "ol-06cb3302-b788-4dd7-b143-1c8e6f2f8427",
+      "sale_time": "2026-07-09T00:30:42.231+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000919",
+      "line_id": "ol-829b5b2c-542c-474c-a52e-8c7de65bfe60",
+      "sale_time": "2026-07-09T00:45:29.19+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000920",
+      "line_id": "ol-1144e2b4-9b8b-4107-a5a6-bcfb059aba3d",
+      "sale_time": "2026-07-09T00:45:32.646+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000921",
+      "line_id": "ol-d29c3131-035c-4db1-9894-905fd12c69b9",
+      "sale_time": "2026-07-09T00:45:37.564+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000924",
+      "line_id": "ol-5bbaa018-688e-43cf-b545-d61a98e2317c",
+      "sale_time": "2026-07-09T01:10:59.66+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000925",
+      "line_id": "ol-df565b23-f34a-4caf-8a9c-27d958453c19",
+      "sale_time": "2026-07-09T01:29:17.046+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000926",
+      "line_id": "ol-e8c93d37-ffb8-42f9-9d5e-1d59ca58d7a4",
+      "sale_time": "2026-07-09T01:53:00.62+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000428",
+      "line_id": "ol-2987dd20-c1d9-4a36-9988-3a36eaace536",
+      "sale_time": "2026-07-09T12:46:13.091+00:00",
+      "stored_cost_at_sale": 9748,
+      "computed_cost_at_sale": 9746,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000430",
+      "line_id": "ol-c90da81a-ec3a-4700-90f8-d24949d9d8f1",
+      "sale_time": "2026-07-09T13:26:18.099+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000431",
+      "line_id": "ol-955cd276-e91d-435e-9e16-b75e1a47efd8",
+      "sale_time": "2026-07-09T13:57:44.874+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000434",
+      "line_id": "ol-d6596632-04fe-457d-991e-609f0023ca0e",
+      "sale_time": "2026-07-09T13:58:22.194+00:00",
+      "stored_cost_at_sale": 30320,
+      "computed_cost_at_sale": 30318,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000435",
+      "line_id": "ol-238c0509-df93-4290-8648-870fb71fd86e",
+      "sale_time": "2026-07-09T13:58:40.331+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000930",
+      "line_id": "ol-293d3fc0-921a-4a11-83f9-2de2b12c253c",
+      "sale_time": "2026-07-09T23:27:09.842+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000931",
+      "line_id": "ol-3cd9cbcc-7602-4d5a-a95f-cd99783fcea7",
+      "sale_time": "2026-07-09T23:27:24.92+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000932",
+      "line_id": "ol-5e819aaf-87ba-4953-ae72-482c71d06d72",
+      "sale_time": "2026-07-09T23:28:53.17+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000933",
+      "line_id": "ol-cd8d4ecd-7f5a-4b80-b6f8-3a17e632f304",
+      "sale_time": "2026-07-09T23:32:05.06+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000935",
+      "line_id": "ol-31fe7bcb-c3f1-4580-8424-afe2be4b4d6e",
+      "sale_time": "2026-07-09T23:35:45.689+00:00",
+      "stored_cost_at_sale": 8137,
+      "computed_cost_at_sale": 8144,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000936",
+      "line_id": "ol-41e6ae3d-620a-4f81-aa1c-9627269e90e1",
+      "sale_time": "2026-07-09T23:35:53.569+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000938",
+      "line_id": "ol-f6ab43c9-e16e-4c49-8e98-a603459c6c55",
+      "sale_time": "2026-07-10T00:03:55.704+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000939",
+      "line_id": "ol-c1361315-07cf-401b-b6e3-178d3e38337e",
+      "sale_time": "2026-07-10T00:04:05.008+00:00",
+      "stored_cost_at_sale": 12287,
+      "computed_cost_at_sale": 12389,
+      "delta": 102,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000943",
+      "line_id": "ol-f3d7c8e7-5cd8-4706-9bb9-5f86cc868fce",
+      "sale_time": "2026-07-10T00:24:54.189+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000945",
+      "line_id": "ol-8e8c8d74-9b5e-4300-b881-f37c4cc696fa",
+      "sale_time": "2026-07-10T00:37:05.796+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000947",
+      "line_id": "ol-b86724a0-e3aa-4118-96c1-c2ed6c662700",
+      "sale_time": "2026-07-10T01:02:38.874+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000948",
+      "line_id": "ol-ac1604aa-b624-4675-b6e6-39bc323352d6",
+      "sale_time": "2026-07-10T02:05:23.949+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000439",
+      "line_id": "ol-8aa1b55b-1029-44ef-9e23-bdce66e864f9",
+      "sale_time": "2026-07-10T08:28:35.413+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000442",
+      "line_id": "ol-ded3e61e-47c1-4cc8-9ce1-5302124d4617",
+      "sale_time": "2026-07-10T12:43:12.589+00:00",
+      "stored_cost_at_sale": 21347,
+      "computed_cost_at_sale": 21361,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000950",
+      "line_id": "ol-9cedab94-3085-44a9-8866-86774e9d9e77",
+      "sale_time": "2026-07-10T23:26:16.48+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000954",
+      "line_id": "ol-447199e5-05d6-4e1c-a249-c235bb38cc83",
+      "sale_time": "2026-07-11T00:51:29.12+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000955",
+      "line_id": "ol-f47dc5dd-a530-4ab7-8fcf-a78fb24a5522",
+      "sale_time": "2026-07-11T00:54:38.395+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000957",
+      "line_id": "ol-ca3477a6-3253-429b-a570-08526d938f6c",
+      "sale_time": "2026-07-11T00:59:11.252+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000959",
+      "line_id": "ol-bc4db8b5-592b-4172-8b66-11cd61eebfba",
+      "sale_time": "2026-07-11T01:13:39.533+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000960",
+      "line_id": "ol-ac9264a4-f589-404d-ac75-efcf8a75f7a9",
+      "sale_time": "2026-07-11T01:46:18.422+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000961",
+      "line_id": "ol-4577f81d-aca5-4475-bc56-e078d3870e96",
+      "sale_time": "2026-07-11T02:14:43.404+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000445",
+      "line_id": "ol-e6f4bae4-6d0d-4bba-8210-b231442a7be1",
+      "sale_time": "2026-07-11T04:20:53.871+00:00",
+      "stored_cost_at_sale": 19000,
+      "computed_cost_at_sale": 19013,
+      "delta": 13,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000446",
+      "line_id": "ol-8093807a-7a6a-43d7-8628-a0c0c4ba6377",
+      "sale_time": "2026-07-11T08:49:18.394+00:00",
+      "stored_cost_at_sale": 21347,
+      "computed_cost_at_sale": 21361,
+      "delta": 14,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000447",
+      "line_id": "ol-fad29c6f-6079-48c9-a040-1cd4656d9512",
+      "sale_time": "2026-07-11T08:50:07.081+00:00",
+      "stored_cost_at_sale": 32020,
+      "computed_cost_at_sale": 32041,
+      "delta": 21,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000448",
+      "line_id": "ol-48ee5cc8-6d1d-4f0d-a83d-496f303bf93a",
+      "sale_time": "2026-07-11T11:37:18.433+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000449",
+      "line_id": "ol-0141ce7e-05ef-4312-adf1-1f08971fb30d",
+      "sale_time": "2026-07-11T11:37:30.662+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000451",
+      "line_id": "ol-755c9ca6-9321-4589-9de1-34bb0732be64",
+      "sale_time": "2026-07-11T11:45:45.723+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000451",
+      "line_id": "ol-c4317c08-6f1b-4cbd-b165-67af21771912",
+      "sale_time": "2026-07-11T11:45:45.723+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000454",
+      "line_id": "ol-de3d20d5-1806-43bc-b16f-6fe1cfc94f40",
+      "sale_time": "2026-07-11T15:13:38.583+00:00",
+      "stored_cost_at_sale": 9500,
+      "computed_cost_at_sale": 9506,
+      "delta": 6,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000460",
+      "line_id": "ol-0278b230-a544-4403-af39-0c4ffe0c1bee",
+      "sale_time": "2026-07-12T12:18:01.061+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000464",
+      "line_id": "ol-d611e541-bb9d-4268-ae77-ffdb501526b5",
+      "sale_time": "2026-07-12T12:38:13.151+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000470",
+      "line_id": "ol-42659d7a-5d1a-4262-92b7-d68cb478ea9e",
+      "sale_time": "2026-07-12T13:53:14.63+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000471",
+      "line_id": "ol-33c2cf03-2852-4b26-bde4-1c4b7897f2ca",
+      "sale_time": "2026-07-12T14:21:44.512+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000962",
+      "line_id": "ol-9b7daef0-1fc3-4525-86b3-4a3c947bd70a",
+      "sale_time": "2026-07-12T23:28:51.304+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000962",
+      "line_id": "ol-d23a922c-91c5-4ca9-bc0f-4214c2ef01c6",
+      "sale_time": "2026-07-12T23:28:51.304+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000964",
+      "line_id": "ol-0a8fd5f2-15db-43b5-be02-73d923a260c0",
+      "sale_time": "2026-07-12T23:47:01.698+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000965",
+      "line_id": "ol-dd7f8af0-4747-4f37-b006-f2e6e98f9324",
+      "sale_time": "2026-07-12T23:51:46.16+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000966",
+      "line_id": "ol-eeba900e-fb4c-4990-ba3e-cc1033c547bb",
+      "sale_time": "2026-07-12T23:54:17.493+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000967",
+      "line_id": "ol-cb462100-f6de-4157-8628-5c47f521fa68",
+      "sale_time": "2026-07-12T23:58:51.786+00:00",
+      "stored_cost_at_sale": 13090,
+      "computed_cost_at_sale": 13121,
+      "delta": 31,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000968",
+      "line_id": "ol-cc516892-a745-44f8-a328-ec26744c07be",
+      "sale_time": "2026-07-13T00:06:20.364+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000969",
+      "line_id": "ol-1a7c8afc-7dda-4dab-9d32-8f3c281a9ad8",
+      "sale_time": "2026-07-13T00:34:45.468+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000970",
+      "line_id": "ol-a2a09776-3988-4de6-bf39-81f3c9e5f2f3",
+      "sale_time": "2026-07-13T00:43:52.642+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000972",
+      "line_id": "ol-23ef2400-a070-4242-9a8e-7669a758bedd",
+      "sale_time": "2026-07-13T01:13:09.341+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000973",
+      "line_id": "ol-7f0f5d02-590e-4b1f-935e-01701d75d877",
+      "sale_time": "2026-07-13T01:17:59.597+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000974",
+      "line_id": "ol-c54d58d1-c4ca-45aa-a5dc-145765b6911f",
+      "sale_time": "2026-07-13T01:20:41.998+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000975",
+      "line_id": "ol-99c82301-e40a-4d8a-8b2a-5dfe364ed39c",
+      "sale_time": "2026-07-13T01:51:13.636+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000976",
+      "line_id": "ol-b777e4a1-d445-4b76-9a02-3b6991c2c35d",
+      "sale_time": "2026-07-13T01:58:37.748+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000978",
+      "line_id": "ol-8154474d-0ff1-4922-a9d9-df7b07eeead4",
+      "sale_time": "2026-07-13T02:06:56.836+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000979",
+      "line_id": "ol-52ae4b70-e298-4953-8411-348442292ccd",
+      "sale_time": "2026-07-13T02:17:37.741+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000980",
+      "line_id": "ol-f21bfb13-490c-45d4-88db-04ff57504825",
+      "sale_time": "2026-07-13T02:21:39.367+00:00",
+      "stored_cost_at_sale": 19101,
+      "computed_cost_at_sale": 19235,
+      "delta": 134,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000981",
+      "line_id": "ol-693626ba-74f8-4c23-98d2-65bb32376ced",
+      "sale_time": "2026-07-13T02:21:43.235+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000982",
+      "line_id": "ol-b0e41515-f9f9-4a32-bf5d-a033e902ea6f",
+      "sale_time": "2026-07-13T03:59:08.474+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000474",
+      "line_id": "ol-184691bb-199b-46b5-b57d-4c73094246eb",
+      "sale_time": "2026-07-13T11:08:38.856+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000477",
+      "line_id": "ol-72573d13-6dbd-4ff1-91ec-2d6ad57a7523",
+      "sale_time": "2026-07-13T12:34:16.133+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000479",
+      "line_id": "ol-07bce6cc-10ca-4b85-895f-eac14ef4e9bc",
+      "sale_time": "2026-07-13T13:01:12.536+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000482",
+      "line_id": "ol-4d2b5a32-32e1-4c21-b504-6fe8b2e7955f",
+      "sale_time": "2026-07-13T13:27:11.744+00:00",
+      "stored_cost_at_sale": 10673,
+      "computed_cost_at_sale": 10680,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000984",
+      "line_id": "ol-8145618b-2989-4635-9629-b90e5c63de24",
+      "sale_time": "2026-07-13T23:30:17.295+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000985",
+      "line_id": "ol-54e0923c-14dd-4e14-a3e0-afa19a9abe3b",
+      "sale_time": "2026-07-13T23:30:21.941+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000986",
+      "line_id": "ol-0a9f98ba-29f9-469a-970d-0521d4d50c9a",
+      "sale_time": "2026-07-13T23:54:48.476+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000989",
+      "line_id": "ol-b14ac859-c40c-48ad-bac3-64758f5025d0",
+      "sale_time": "2026-07-14T00:18:18.758+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000990",
+      "line_id": "ol-6796cbc5-8e9d-45d5-8ded-276a4ebf9208",
+      "sale_time": "2026-07-14T00:21:45.049+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000991",
+      "line_id": "ol-afa1ca34-276d-4c1d-95c5-3fab93a8440b",
+      "sale_time": "2026-07-14T00:21:52.478+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000993",
+      "line_id": "ol-50c3e37a-d071-473c-902b-b74643fb845a",
+      "sale_time": "2026-07-14T00:42:08.646+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD000994",
+      "line_id": "ol-16815b19-7b49-4229-9b6e-36f7a6b93f71",
+      "sale_time": "2026-07-14T00:42:12.878+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001000",
+      "line_id": "ol-530cf0dc-e26d-4055-bd6f-efd0abf202b0",
+      "sale_time": "2026-07-14T01:07:07.761+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001002",
+      "line_id": "ol-cb68fb66-af32-4680-b23a-e68f742a5e27",
+      "sale_time": "2026-07-14T01:10:50.258+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001004",
+      "line_id": "ol-44df5602-5da5-42b1-94da-e1c0e78914e5",
+      "sale_time": "2026-07-14T01:48:46.329+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000485",
+      "line_id": "ol-c625bacf-546f-49ac-886a-fef7e7fe7204",
+      "sale_time": "2026-07-14T04:24:03.075+00:00",
+      "stored_cost_at_sale": 9720,
+      "computed_cost_at_sale": 9725,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000486",
+      "line_id": "ol-782fa7b6-7896-419d-9f1f-5e99f78f9aba",
+      "sale_time": "2026-07-14T05:12:33.585+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000486",
+      "line_id": "ol-c8085cbe-4279-4211-b28c-eac49fb23772",
+      "sale_time": "2026-07-14T05:12:33.585+00:00",
+      "stored_cost_at_sale": 8546,
+      "computed_cost_at_sale": 8551,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000489",
+      "line_id": "ol-bcfdf19f-6427-4155-8d71-465bd0a040bc",
+      "sale_time": "2026-07-14T06:20:30.154+00:00",
+      "stored_cost_at_sale": 38879,
+      "computed_cost_at_sale": 38900,
+      "delta": 21,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000490",
+      "line_id": "ol-0ba88da7-5e4f-40fb-8068-a62c60cb4050",
+      "sale_time": "2026-07-14T10:55:06.644+00:00",
+      "stored_cost_at_sale": 2293,
+      "computed_cost_at_sale": 2291,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000492",
+      "line_id": "ol-71bc2748-70d7-4a94-a2de-390df4dbed05",
+      "sale_time": "2026-07-14T11:18:09.781+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001005",
+      "line_id": "ol-5a58c109-d1c1-4f7f-8967-a14a4b6375a5",
+      "sale_time": "2026-07-14T23:23:23.42+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001006",
+      "line_id": "ol-ccf81208-6727-40c0-88c0-7f39809e472e",
+      "sale_time": "2026-07-14T23:23:34.969+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001007",
+      "line_id": "ol-58f35751-cadd-4b14-a151-b3b9b7ed9145",
+      "sale_time": "2026-07-14T23:35:56.389+00:00",
+      "stored_cost_at_sale": 7183,
+      "computed_cost_at_sale": 7188,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001008",
+      "line_id": "ol-83b1543b-ecfd-4944-916d-2ca9069e9fc1",
+      "sale_time": "2026-07-14T23:36:01.773+00:00",
+      "stored_cost_at_sale": 9476,
+      "computed_cost_at_sale": 9479,
+      "delta": 3,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001009",
+      "line_id": "ol-b9824395-917e-44c4-964a-784b62974a0a",
+      "sale_time": "2026-07-14T23:36:08.59+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001010",
+      "line_id": "ol-7d07f881-d841-45a5-9b54-cf5555d05db5",
+      "sale_time": "2026-07-14T23:49:00.066+00:00",
+      "stored_cost_at_sale": 18430,
+      "computed_cost_at_sale": 18584,
+      "delta": 154,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001013",
+      "line_id": "ol-b0ad9b44-bb32-4b1b-afc7-1f645bdefc55",
+      "sale_time": "2026-07-15T00:32:27.467+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001014",
+      "line_id": "ol-ee3ee287-adae-40a0-82f3-0f7736c3b14b",
+      "sale_time": "2026-07-15T00:37:19.014+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001015",
+      "line_id": "ol-94dd27ef-fa66-4f3f-aba5-5de7badac40c",
+      "sale_time": "2026-07-15T00:37:22.312+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001017",
+      "line_id": "ol-cedeb2c0-d0c7-47d7-aa85-6b6b4f51a398",
+      "sale_time": "2026-07-15T00:44:52.265+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001019",
+      "line_id": "ol-7101d19a-a058-4b52-92bc-d60666ef463b",
+      "sale_time": "2026-07-15T01:14:39.666+00:00",
+      "stored_cost_at_sale": 7183,
+      "computed_cost_at_sale": 7188,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001020",
+      "line_id": "ol-68e3a5a3-2d60-4f33-9349-4046bd10bde8",
+      "sale_time": "2026-07-15T01:14:44.941+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001022",
+      "line_id": "ol-2a78179a-39ea-42a1-9ff7-9e0d5d583cb0",
+      "sale_time": "2026-07-15T01:59:30.543+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001022",
+      "line_id": "ol-a183460b-d013-4df4-8041-930c2feac174",
+      "sale_time": "2026-07-15T01:59:30.543+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001023",
+      "line_id": "ol-06e995f8-9e34-4387-ad08-897727f1cdae",
+      "sale_time": "2026-07-15T02:08:32.387+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001023",
+      "line_id": "ol-f955d9a1-2455-4b8a-abed-7b080b9a0e57",
+      "sale_time": "2026-07-15T02:08:32.387+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001025",
+      "line_id": "ol-a3c490fc-0c60-4147-a859-027871fe0355",
+      "sale_time": "2026-07-16T02:44:42.181+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000498",
+      "line_id": "ol-7b5da09f-f372-44df-9676-c824761c5710",
+      "sale_time": "2026-07-16T11:02:37.235+00:00",
+      "stored_cost_at_sale": 30320,
+      "computed_cost_at_sale": 30318,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000499",
+      "line_id": "ol-9b020356-ee15-482b-858e-4b33be3ffe3b",
+      "sale_time": "2026-07-16T11:16:53.596+00:00",
+      "stored_cost_at_sale": 9748,
+      "computed_cost_at_sale": 9746,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001026",
+      "line_id": "ol-6ca140a5-e901-4036-afc7-0cda280563ba",
+      "sale_time": "2026-07-16T12:19:50.567+00:00",
+      "stored_cost_at_sale": 8473,
+      "computed_cost_at_sale": 8471,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001027",
+      "line_id": "ol-744f882b-eef1-4f31-b00e-7b69d890149c",
+      "sale_time": "2026-07-16T23:31:25.11+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001028",
+      "line_id": "ol-5680f081-136f-4f9d-97b3-89148ec7cfc1",
+      "sale_time": "2026-07-16T23:54:29.525+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001029",
+      "line_id": "ol-320289c0-a1dc-4691-b438-56df7635df57",
+      "sale_time": "2026-07-16T23:54:35.445+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001031",
+      "line_id": "ol-076a9df5-c7c4-4147-9a8b-e8d3bcaaf2d9",
+      "sale_time": "2026-07-17T00:09:36.388+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001032",
+      "line_id": "ol-9f7afd33-78fa-4f2b-857a-cfe8795ace90",
+      "sale_time": "2026-07-17T00:09:40.572+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001033",
+      "line_id": "ol-19b143e4-ddb2-4da0-8b48-6026bc515859",
+      "sale_time": "2026-07-17T00:18:21.724+00:00",
+      "stored_cost_at_sale": 7183,
+      "computed_cost_at_sale": 7188,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001035",
+      "line_id": "ol-37dfdfe7-042d-4f86-8393-c300a533993e",
+      "sale_time": "2026-07-17T00:26:29.148+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001036",
+      "line_id": "ol-fada8cb7-83d4-4af3-94b1-b6876fd97c31",
+      "sale_time": "2026-07-17T00:35:53.914+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001037",
+      "line_id": "ol-2debe3a0-7ce7-4a18-a803-5fc854f56e59",
+      "sale_time": "2026-07-17T00:42:36.032+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001038",
+      "line_id": "ol-080614f1-9e48-4417-b879-92849b3e567a",
+      "sale_time": "2026-07-17T00:49:46.876+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001039",
+      "line_id": "ol-a92d0ca0-f3f4-43c6-9c9b-fdf5cda5d958",
+      "sale_time": "2026-07-17T00:52:49.848+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001041",
+      "line_id": "ol-a35e8352-0170-4197-a121-3e6155cbd951",
+      "sale_time": "2026-07-17T01:10:34.308+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001042",
+      "line_id": "ol-77ddebca-0091-4e32-ad2d-7051d0c4c937",
+      "sale_time": "2026-07-17T01:24:15.59+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001043",
+      "line_id": "ol-86734b4a-9925-422e-ad90-501d2c651fea",
+      "sale_time": "2026-07-17T01:43:24.193+00:00",
+      "stored_cost_at_sale": 7399,
+      "computed_cost_at_sale": 7522,
+      "delta": 123,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001044",
+      "line_id": "ol-9dda350a-e88f-4779-98ee-be33aad9b5ab",
+      "sale_time": "2026-07-17T01:53:58.215+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000504",
+      "line_id": "ol-2b7b1244-c9a8-4045-a63d-d98b97ca6d6f",
+      "sale_time": "2026-07-17T06:00:09.359+00:00",
+      "stored_cost_at_sale": 9935,
+      "computed_cost_at_sale": 10058,
+      "delta": 123,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000508",
+      "line_id": "ol-a588b03d-91a9-4489-9428-4868ebe6d332",
+      "sale_time": "2026-07-17T11:12:17.308+00:00",
+      "stored_cost_at_sale": 9935,
+      "computed_cost_at_sale": 10058,
+      "delta": 123,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000508",
+      "line_id": "ol-feb00d65-b4da-4a6a-ab7c-a182f47839b5",
+      "sale_time": "2026-07-17T11:12:17.308+00:00",
+      "stored_cost_at_sale": 9720,
+      "computed_cost_at_sale": 9725,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000509",
+      "line_id": "ol-98496671-cc91-4249-83ed-c48c22bb6bca",
+      "sale_time": "2026-07-17T11:37:55.491+00:00",
+      "stored_cost_at_sale": 30170,
+      "computed_cost_at_sale": 30166,
+      "delta": -4,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000515",
+      "line_id": "ol-89e75ec5-1f97-4d45-86d8-079369798ec3",
+      "sale_time": "2026-07-17T13:24:19.483+00:00",
+      "stored_cost_at_sale": 30170,
+      "computed_cost_at_sale": 30166,
+      "delta": -4,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001045",
+      "line_id": "ol-fa1748d9-34dc-456c-a676-4e2037ebd32c",
+      "sale_time": "2026-07-17T23:24:52.6+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001046",
+      "line_id": "ol-180ee7d1-b4a1-4c2e-8dd0-6e7707542c82",
+      "sale_time": "2026-07-17T23:25:12.648+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001047",
+      "line_id": "ol-71044d67-37b4-45c3-9688-e894add1a7a2",
+      "sale_time": "2026-07-17T23:33:52.792+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001048",
+      "line_id": "ol-d08504a5-5236-4429-88dd-74168132b316",
+      "sale_time": "2026-07-18T00:08:34.302+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001049",
+      "line_id": "ol-5ecfc159-68fb-4626-8e1b-61e028979eb4",
+      "sale_time": "2026-07-18T00:22:44.121+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001050",
+      "line_id": "ol-383022a0-86bd-4899-aeae-5b7a68fa674c",
+      "sale_time": "2026-07-18T00:35:10.118+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001051",
+      "line_id": "ol-aa40dfe3-07b2-4066-92eb-c08e3f00c439",
+      "sale_time": "2026-07-18T01:02:48.706+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001052",
+      "line_id": "ol-0f67013a-410d-433a-a1a0-cb35e6427404",
+      "sale_time": "2026-07-18T01:09:02.105+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001053",
+      "line_id": "ol-7f44b336-2569-47c4-9d72-440e8d4dc31b",
+      "sale_time": "2026-07-18T01:13:34.979+00:00",
+      "stored_cost_at_sale": 14396,
+      "computed_cost_at_sale": 14446,
+      "delta": 50,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001054",
+      "line_id": "ol-26955974-b496-4186-aad7-519011c23204",
+      "sale_time": "2026-07-18T01:19:21.074+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001056",
+      "line_id": "ol-620fd611-5f80-4cee-9df8-76079eeac5a9",
+      "sale_time": "2026-07-18T01:25:49.477+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001057",
+      "line_id": "ol-5cd82c7a-f4a2-4144-bffb-d273bd964fa6",
+      "sale_time": "2026-07-18T01:33:53.867+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001058",
+      "line_id": "ol-3d2b61b8-32f8-4714-8a86-e389e5216c21",
+      "sale_time": "2026-07-18T01:49:46.346+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001059",
+      "line_id": "ol-387e784d-20b7-4cab-8db7-d042f418c265",
+      "sale_time": "2026-07-18T01:56:33.853+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001059",
+      "line_id": "ol-39ce066e-a49a-442f-b064-f7b87175fc1c",
+      "sale_time": "2026-07-18T01:56:33.853+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001060",
+      "line_id": "ol-6c4dbb2a-2822-4ad6-9db9-5e7d881f2ebe",
+      "sale_time": "2026-07-18T02:28:07.174+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000521",
+      "line_id": "ol-1537bf22-395c-45ed-a090-c57666b65977",
+      "sale_time": "2026-07-18T16:22:40.441+00:00",
+      "stored_cost_at_sale": 24599,
+      "computed_cost_at_sale": 24597,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001061",
+      "line_id": "ol-dea5c83f-40df-45d5-ac7a-90d964e36849",
+      "sale_time": "2026-07-19T07:15:04.159+00:00",
+      "stored_cost_at_sale": 8521,
+      "computed_cost_at_sale": 8580,
+      "delta": 59,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000522",
+      "line_id": "ol-ab85cd22-e1b6-4066-922e-df948283aafb",
+      "sale_time": "2026-07-19T07:15:41.147+00:00",
+      "stored_cost_at_sale": 8762,
+      "computed_cost_at_sale": 8884,
+      "delta": 122,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000523",
+      "line_id": "ol-bcd4946d-9882-4385-8a7e-8da93ca704e0",
+      "sale_time": "2026-07-19T10:43:18.358+00:00",
+      "stored_cost_at_sale": 19439,
+      "computed_cost_at_sale": 19450,
+      "delta": 11,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000532",
+      "line_id": "ol-580020c3-5d01-4d0f-804b-1639f2112858",
+      "sale_time": "2026-07-19T14:19:32.813+00:00",
+      "stored_cost_at_sale": 8762,
+      "computed_cost_at_sale": 8884,
+      "delta": 122,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000532",
+      "line_id": "ol-7fcd360c-30b8-43f1-bc49-6e43b5383d1c",
+      "sale_time": "2026-07-19T14:19:32.813+00:00",
+      "stored_cost_at_sale": 8546,
+      "computed_cost_at_sale": 8551,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000532",
+      "line_id": "ol-83b71717-6e7a-443a-93d4-ca5c1645c4f6",
+      "sale_time": "2026-07-19T14:19:32.813+00:00",
+      "stored_cost_at_sale": 9720,
+      "computed_cost_at_sale": 9725,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000532",
+      "line_id": "ol-96b00c27-524e-4c0c-af34-003788790b72",
+      "sale_time": "2026-07-19T14:19:32.813+00:00",
+      "stored_cost_at_sale": 45255,
+      "computed_cost_at_sale": 45250,
+      "delta": -5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000533",
+      "line_id": "ol-76c4abe2-3732-4414-a998-431c22102f19",
+      "sale_time": "2026-07-19T14:48:37.202+00:00",
+      "stored_cost_at_sale": 45255,
+      "computed_cost_at_sale": 45250,
+      "delta": -5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001062",
+      "line_id": "ol-7d7a8676-0724-436e-8577-d6073b450858",
+      "sale_time": "2026-07-19T23:34:26.165+00:00",
+      "stored_cost_at_sale": 7183,
+      "computed_cost_at_sale": 7188,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001063",
+      "line_id": "ol-7fed723c-6e4f-42c3-93c9-6993dac89a49",
+      "sale_time": "2026-07-19T23:45:35.126+00:00",
+      "stored_cost_at_sale": 7183,
+      "computed_cost_at_sale": 7188,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001064",
+      "line_id": "ol-93c7b152-6026-4740-819d-fb27a6c1fa5d",
+      "sale_time": "2026-07-19T23:47:10.082+00:00",
+      "stored_cost_at_sale": 4875,
+      "computed_cost_at_sale": 4873,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001065",
+      "line_id": "ol-f5369ba3-61e8-4e19-836c-1488662623e2",
+      "sale_time": "2026-07-19T23:52:48.34+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001066",
+      "line_id": "ol-d9c460fe-782b-4b35-b4bf-adcd34f808e7",
+      "sale_time": "2026-07-19T23:58:39.89+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001067",
+      "line_id": "ol-b998adcd-52fa-4bdc-be7c-3718f81edd10",
+      "sale_time": "2026-07-20T00:28:43.051+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001068",
+      "line_id": "ol-1979b3c4-eee2-46ed-9692-85228ac0125e",
+      "sale_time": "2026-07-20T00:38:38.776+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001069",
+      "line_id": "ol-406465d4-25d3-4173-a98d-66aa154e3353",
+      "sale_time": "2026-07-20T00:38:46.504+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001071",
+      "line_id": "ol-5279c057-fdf8-4fc8-8bc6-d0c5b744affd",
+      "sale_time": "2026-07-20T00:51:48.199+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001072",
+      "line_id": "ol-93342a40-be46-4221-986d-080d621cf917",
+      "sale_time": "2026-07-20T01:06:22.67+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001073",
+      "line_id": "ol-f0de6cbd-abd7-42b5-99a6-617b0c4dbd25",
+      "sale_time": "2026-07-20T01:18:27.067+00:00",
+      "stored_cost_at_sale": 10899,
+      "computed_cost_at_sale": 10941,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001074",
+      "line_id": "ol-be35d17d-11d9-4c9d-a3d9-88712f4e520a",
+      "sale_time": "2026-07-20T01:42:38.357+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001075",
+      "line_id": "ol-ec11ce57-cf50-426c-9acb-ee142b668f63",
+      "sale_time": "2026-07-20T01:42:42.119+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001076",
+      "line_id": "ol-10bf483f-a4e7-4aa6-966d-7dbd4ca35e04",
+      "sale_time": "2026-07-20T01:42:55.918+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001077",
+      "line_id": "ol-4d1df832-75ca-4d95-bfbc-e863d1d93889",
+      "sale_time": "2026-07-20T01:53:48.189+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001078",
+      "line_id": "ol-1bed0870-7a21-4623-a802-c65b895e9f1f",
+      "sale_time": "2026-07-20T01:54:05.564+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001078",
+      "line_id": "ol-f5276598-f14b-4b49-9774-b4ba18ce5dea",
+      "sale_time": "2026-07-20T01:54:05.564+00:00",
+      "stored_cost_at_sale": 4875,
+      "computed_cost_at_sale": 4873,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001079",
+      "line_id": "ol-01c173a3-33e8-432b-90cd-760d76f2a9f6",
+      "sale_time": "2026-07-20T02:06:55.346+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001080",
+      "line_id": "ol-02fd08e8-a988-45d6-99d4-883ab6b437b5",
+      "sale_time": "2026-07-20T02:30:24.937+00:00",
+      "stored_cost_at_sale": 4875,
+      "computed_cost_at_sale": 4873,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001080",
+      "line_id": "ol-c7d94c0e-990d-4ab7-b9db-5dd92bb43c9c",
+      "sale_time": "2026-07-20T02:30:24.937+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000534",
+      "line_id": "ol-bec08b13-6ea9-4e09-9ba9-27a85fc8392e",
+      "sale_time": "2026-07-20T12:21:21.682+00:00",
+      "stored_cost_at_sale": 19439,
+      "computed_cost_at_sale": 19450,
+      "delta": 11,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000540",
+      "line_id": "ol-6f5c2559-8389-40eb-8fc1-a60d34ff2f48",
+      "sale_time": "2026-07-20T14:32:03.893+00:00",
+      "stored_cost_at_sale": 9935,
+      "computed_cost_at_sale": 10058,
+      "delta": 123,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001081",
+      "line_id": "ol-b36ffbab-7a0e-4832-946c-3e0528e3fbfc",
+      "sale_time": "2026-07-20T23:33:13.39+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001082",
+      "line_id": "ol-105486cc-4606-4c38-b268-32f334868cef",
+      "sale_time": "2026-07-20T23:53:29.398+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001083",
+      "line_id": "ol-01be1a66-02fb-4954-866a-75dab3b5e55e",
+      "sale_time": "2026-07-20T23:53:33.738+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001084",
+      "line_id": "ol-e723d900-80ac-482b-834f-d402b298be7b",
+      "sale_time": "2026-07-21T00:32:16.448+00:00",
+      "stored_cost_at_sale": 4875,
+      "computed_cost_at_sale": 4873,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001085",
+      "line_id": "ol-1f95d222-eecf-4fbc-bbc6-5d3474fd7927",
+      "sale_time": "2026-07-21T00:35:31.062+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001086",
+      "line_id": "ol-004a6344-bb9d-4f10-a4d5-6d90b01c6b0a",
+      "sale_time": "2026-07-21T00:38:27.954+00:00",
+      "stored_cost_at_sale": 9115,
+      "computed_cost_at_sale": 9157,
+      "delta": 42,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001087",
+      "line_id": "ol-e8d99b61-eb60-451a-993a-a6497c70c90e",
+      "sale_time": "2026-07-21T00:52:03.415+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001088",
+      "line_id": "ol-d67cc465-12b5-45f1-95eb-79b918d6d2de",
+      "sale_time": "2026-07-21T00:53:50.931+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001089",
+      "line_id": "ol-ac058419-3b9d-4e95-af8c-a9d3c7d3e159",
+      "sale_time": "2026-07-21T01:21:23.399+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001090",
+      "line_id": "ol-9b8d01b3-5563-42f1-960c-7db80ee70b94",
+      "sale_time": "2026-07-21T01:21:27.051+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001091",
+      "line_id": "ol-afcd66d1-1085-4f0d-be9d-233151c7516d",
+      "sale_time": "2026-07-21T01:21:31.887+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001092",
+      "line_id": "ol-8629ab3d-c92e-4a18-8126-f760ee56642a",
+      "sale_time": "2026-07-21T01:26:39.006+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001093",
+      "line_id": "ol-7fc9c42a-38f2-421b-a1b2-08ed870e052f",
+      "sale_time": "2026-07-21T01:45:22.792+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001094",
+      "line_id": "ol-37b24c42-5a62-470a-bc42-f8626e37c2e2",
+      "sale_time": "2026-07-21T02:23:06.634+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001095",
+      "line_id": "ol-49aefe5a-2c6c-42d8-b7f6-b81dc5341e68",
+      "sale_time": "2026-07-21T02:34:54.451+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001095",
+      "line_id": "ol-a1114abb-ab8d-47b7-9038-ae2fd9fb0d0d",
+      "sale_time": "2026-07-21T02:34:54.451+00:00",
+      "stored_cost_at_sale": 4875,
+      "computed_cost_at_sale": 4873,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001096",
+      "line_id": "ol-a63d1cdc-33f8-4ce7-bcca-c51b5ddc6276",
+      "sale_time": "2026-07-21T02:48:33.293+00:00",
+      "stored_cost_at_sale": 4875,
+      "computed_cost_at_sale": 4873,
+      "delta": -2,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001097",
+      "line_id": "ol-7354c44c-a9d1-4f2d-88a0-3428af87385f",
+      "sale_time": "2026-07-21T23:21:51.644+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001098",
+      "line_id": "ol-a089672d-0164-4b1f-8682-7b3dfc5b2e2f",
+      "sale_time": "2026-07-21T23:29:13.564+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001098",
+      "line_id": "ol-b6f8e308-e245-45f3-a753-d4657515d3af",
+      "sale_time": "2026-07-21T23:29:13.564+00:00",
+      "stored_cost_at_sale": 9551,
+      "computed_cost_at_sale": 9618,
+      "delta": 67,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001099",
+      "line_id": "ol-574b7b15-eaef-47fb-b36a-52777045b622",
+      "sale_time": "2026-07-22T00:12:03.374+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001100",
+      "line_id": "ol-37456400-bc71-402e-a637-464554186e11",
+      "sale_time": "2026-07-22T00:41:51.137+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001101",
+      "line_id": "ol-06a676ff-2f0a-40cc-ba8c-c6498189975c",
+      "sale_time": "2026-07-22T01:08:58.486+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001102",
+      "line_id": "ol-637e2afc-ffef-466f-96b4-31787bc871d0",
+      "sale_time": "2026-07-22T01:22:51.241+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001103",
+      "line_id": "ol-8701ef4f-10de-4cae-b911-198571363f7f",
+      "sale_time": "2026-07-22T01:22:57.498+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001104",
+      "line_id": "ol-6419b0e3-af77-43a3-97ec-17c4948a5ccc",
+      "sale_time": "2026-07-22T01:24:11.62+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001105",
+      "line_id": "ol-7fa6736b-5b27-4ec3-813a-31602a04fe85",
+      "sale_time": "2026-07-22T02:22:02.368+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "UCK000545",
+      "line_id": "ol-e80786cd-585b-443d-9a6e-ae9456e1152e",
+      "sale_time": "2026-07-22T11:09:44.504+00:00",
+      "stored_cost_at_sale": 8544,
+      "computed_cost_at_sale": 8551,
+      "delta": 7,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001106",
+      "line_id": "ol-bab68992-9ad6-4adb-aedc-1f7d9dbfed80",
+      "sale_time": "2026-07-22T23:25:21.846+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001107",
+      "line_id": "ol-4b1ea1f1-9478-4d4b-b0a9-3a2201d2309b",
+      "sale_time": "2026-07-22T23:36:37.638+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001108",
+      "line_id": "ol-bd1cde10-d21b-4cda-81bf-1c0f6a2252d5",
+      "sale_time": "2026-07-22T23:54:18.06+00:00",
+      "stored_cost_at_sale": 6143,
+      "computed_cost_at_sale": 6195,
+      "delta": 52,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001109",
+      "line_id": "ol-0a5f78c2-7280-427d-a91c-51c40723f87a",
+      "sale_time": "2026-07-23T00:04:40.231+00:00",
+      "stored_cost_at_sale": 2418,
+      "computed_cost_at_sale": 2437,
+      "delta": 19,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001110",
+      "line_id": "ol-3dc48bf2-86e2-40c4-b24b-1b47a5e36ab7",
+      "sale_time": "2026-07-23T00:18:33.055+00:00",
+      "stored_cost_at_sale": 7183,
+      "computed_cost_at_sale": 7188,
+      "delta": 5,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001111",
+      "line_id": "ol-1d92c2da-b726-4ba2-a31c-f3078f40617b",
+      "sale_time": "2026-07-23T00:23:44.781+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001112",
+      "line_id": "ol-0a1daa25-9687-47d1-9849-522a342c57a4",
+      "sale_time": "2026-07-23T00:37:37.069+00:00",
+      "stored_cost_at_sale": 12287,
+      "computed_cost_at_sale": 12389,
+      "delta": 102,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001113",
+      "line_id": "ol-6c471b5a-7ad9-4474-8644-1e6ca1272588",
+      "sale_time": "2026-07-23T00:38:00.984+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001114",
+      "line_id": "ol-907eb199-e4ef-43ee-8c67-d1144ced4254",
+      "sale_time": "2026-07-23T00:39:57.804+00:00",
+      "stored_cost_at_sale": 9671,
+      "computed_cost_at_sale": 9747,
+      "delta": 76,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001115",
+      "line_id": "ol-e15809dc-5170-40c3-bc2d-03b6e3ad729f",
+      "sale_time": "2026-07-23T00:40:27.949+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001116",
+      "line_id": "ol-4ee4c394-4ec7-47f1-a0c2-b5e473312032",
+      "sale_time": "2026-07-23T00:45:48.75+00:00",
+      "stored_cost_at_sale": 14895,
+      "computed_cost_at_sale": 15043,
+      "delta": 148,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001117",
+      "line_id": "ol-967836ad-eb27-4783-8101-81c3793d6760",
+      "sale_time": "2026-07-23T00:45:55.696+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001118",
+      "line_id": "ol-b305b526-73c0-4313-9a96-385af7f22b3b",
+      "sale_time": "2026-07-23T00:51:32.642+00:00",
+      "stored_cost_at_sale": 2418,
+      "computed_cost_at_sale": 2437,
+      "delta": 19,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001119",
+      "line_id": "ol-5b69f1fb-7d66-406f-b803-d8d3a4f10be4",
+      "sale_time": "2026-07-23T01:05:58.038+00:00",
+      "stored_cost_at_sale": 6603,
+      "computed_cost_at_sale": 6646,
+      "delta": 43,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001120",
+      "line_id": "ol-c64b3a2f-847c-49b4-a462-b7c6bb791dba",
+      "sale_time": "2026-07-23T01:06:35.005+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001121",
+      "line_id": "ol-c3c62d78-de11-4e21-a409-32a9ddfb6986",
+      "sale_time": "2026-07-23T01:08:36.743+00:00",
+      "stored_cost_at_sale": 12088,
+      "computed_cost_at_sale": 12184,
+      "delta": 96,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001122",
+      "line_id": "ol-7cc4f727-29e1-467e-aa1f-b046057efb67",
+      "sale_time": "2026-07-23T01:11:37.189+00:00",
+      "stored_cost_at_sale": 8521,
+      "computed_cost_at_sale": 8580,
+      "delta": 59,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001123",
+      "line_id": "ol-29be2a9d-3224-4f8c-81f3-f89a5765f50e",
+      "sale_time": "2026-07-23T01:26:39.268+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001124",
+      "line_id": "ol-46fcc3b2-5985-4d3d-9c2e-7dfbb102b078",
+      "sale_time": "2026-07-23T01:27:28.819+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001124",
+      "line_id": "ol-cefa7a88-f176-4e59-9de4-315cc906c648",
+      "sale_time": "2026-07-23T01:27:28.819+00:00",
+      "stored_cost_at_sale": 9552,
+      "computed_cost_at_sale": 9618,
+      "delta": 66,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001125",
+      "line_id": "ol-9feb340b-ae00-4e30-b340-db167f7980e6",
+      "sale_time": "2026-07-23T01:30:54.523+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001126",
+      "line_id": "ol-03025c70-4631-4ab2-91a1-ca744833ae43",
+      "sale_time": "2026-07-23T03:04:29.085+00:00",
+      "stored_cost_at_sale": 8061,
+      "computed_cost_at_sale": 8129,
+      "delta": 68,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001126",
+      "line_id": "ol-aedda833-1886-42a8-a7f3-94530a9ee08d",
+      "sale_time": "2026-07-23T03:04:29.085+00:00",
+      "stored_cost_at_sale": 4835,
+      "computed_cost_at_sale": 4873,
+      "delta": 38,
+      "category": "A_unlocked"
+    },
+    {
+      "order_no": "PHD001127",
+      "line_id": "ol-7ba77fd6-dc2f-41fd-960f-6bde5b635d07",
+      "sale_time": "2026-07-23T03:48:50.109+00:00",
+      "stored_cost_at_sale": 7198,
+      "computed_cost_at_sale": 7223,
+      "delta": 25,
+      "category": "A_unlocked"
+    }
+  ],
+  "quantity_findings": [
+    {
+      "item": "NNL-003",
+      "item_name": "Nước sôi",
+      "theoretical": -213813.71427595013,
+      "recorded": -109801.6666590001,
+      "delta": -104012.04761695003
+    },
+    {
+      "item": "BTP-008",
+      "item_name": "Hồng trà",
+      "theoretical": 35010,
+      "recorded": 20900,
+      "delta": 14110
+    },
+    {
+      "item": "ING-001",
+      "item_name": "Đá viên",
+      "theoretical": -27574.49373643973,
+      "recorded": -14122.177210000013,
+      "delta": -13452.316526439718
+    },
+    {
+      "item": "BTP-001",
+      "item_name": "Cốt cà phê",
+      "theoretical": 25420,
+      "recorded": 13460,
+      "delta": 11960
+    },
+    {
+      "item": "BTP-009",
+      "item_name": "Lục trà",
+      "theoretical": 10050,
+      "recorded": -600,
+      "delta": 10650
+    },
+    {
+      "item": "NNL-002",
+      "item_name": "Bột cà phê",
+      "theoretical": 2324,
+      "recorded": 12836,
+      "delta": -10512
+    },
+    {
+      "item": "BTP-010",
+      "item_name": "Trà sữa hồng trà",
+      "theoretical": 11200,
+      "recorded": 6100,
+      "delta": 5100
+    },
+    {
+      "item": "BTP-003",
+      "item_name": "Cốt matcha",
+      "theoretical": 8760,
+      "recorded": 4800,
+      "delta": 3960
+    },
+    {
+      "item": "BTP-002",
+      "item_name": "Cốt cacao",
+      "theoretical": 6240,
+      "recorded": 2560,
+      "delta": 3680
+    },
+    {
+      "item": "BTP-011",
+      "item_name": "Kem muối phô mai",
+      "theoretical": 3150,
+      "recorded": 590,
+      "delta": 2560
+    },
+    {
+      "item": "NNL-001",
+      "item_name": "Sữa tươi",
+      "theoretical": 54464.6666509802,
+      "recorded": 56786.62744000004,
+      "delta": -2321.9607890198386
+    },
+    {
+      "item": "ING-021",
+      "item_name": "Lá hồng trà",
+      "theoretical": -4100.535735333357,
+      "recorded": -2009.5833529999957,
+      "delta": -2090.952382333361
+    },
+    {
+      "item": "ING-005",
+      "item_name": "Bột matcha",
+      "theoretical": 1132,
+      "recorded": 2852,
+      "delta": -1720
+    },
+    {
+      "item": "ING-004",
+      "item_name": "Bột cacao",
+      "theoretical": 1468.7999999999993,
+      "recorded": 2730.4,
+      "delta": -1261.6000000000008
+    },
+    {
+      "item": "ING-003",
+      "item_name": "Sữa đặc",
+      "theoretical": -4711,
+      "recorded": -3551,
+      "delta": -1160
+    },
+    {
+      "item": "BTP-012",
+      "item_name": "Kem muối",
+      "theoretical": 2920,
+      "recorded": 1920,
+      "delta": 1000
+    },
+    {
+      "item": "ING-006",
+      "item_name": "Bột kem muối",
+      "theoretical": 3920.0000136666963,
+      "recorded": 4906.666681999999,
+      "delta": -986.6666683333028
+    },
+    {
+      "item": "ING-027",
+      "item_name": "Bột sữa",
+      "theoretical": 3808.75,
+      "recorded": 4648.75,
+      "delta": -840
+    },
+    {
+      "item": "ING-029",
+      "item_name": "Bột kem muối phô mai",
+      "theoretical": 7497.647048705876,
+      "recorded": 7909.411751000007,
+      "delta": -411.764702294131
+    },
+    {
+      "item": "ING-020",
+      "item_name": "Lá trà xanh",
+      "theoretical": 5432.142854000028,
+      "recorded": 5817.857140000022,
+      "delta": -385.714285999994
+    },
+    {
+      "item": "BTP-013",
+      "item_name": "Trứng luộc",
+      "theoretical": 359,
+      "recorded": -6,
+      "delta": 365
+    },
+    {
+      "item": "NNL-007",
+      "item_name": "Trứng gà",
+      "theoretical": -18,
+      "recorded": 341,
+      "delta": -359
+    },
+    {
+      "item": "ING-013",
+      "item_name": "Kem toffee caramel",
+      "theoretical": 800,
+      "recorded": 900,
+      "delta": -100
+    },
+    {
+      "item": "ING-014",
+      "item_name": "Muối hồng",
+      "theoretical": 5971.4124999999985,
+      "recorded": 5985.6125,
+      "delta": -14.200000000001637
+    },
+    {
+      "item": "ING-007",
+      "item_name": "Nước",
+      "theoretical": -26,
+      "recorded": -13,
+      "delta": -13
+    },
+    {
+      "item": "ING-010",
+      "item_name": "Bột frappe",
+      "theoretical": 988,
+      "recorded": 994,
+      "delta": -6
+    }
+  ],
+  "po_receipt_findings": [],
+  "production_findings": [],
+  "replay_errors": [],
+  "skipped_po_receipts": []
+}

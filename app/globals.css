@@ -5,28 +5,28 @@
 @tailwind utilities;
 
 :root {
-  --background: #fafafa;
-  --foreground: #09090b;
-  
-  /* Fresh Blue Admin Tokens */
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
-  --color-primary-active: #1E40AF;
-  --color-primary-soft: #EFF6FF;
-  --color-accent-cyan: #06B6D4;
-  --color-bg-page: #F6F8FC;
+  --background: #F6F5F0;
+  --foreground: #1D2A24;
+
+  /* Warm Ledger Tokens -- matches the 2026-07-23 inventory report palette */
+  --color-primary: #9C6418;
+  --color-primary-hover: #7D4F13;
+  --color-primary-active: #5F3C0F;
+  --color-primary-soft: #F1E3C8;
+  --color-accent-cyan: #2D6E77;
+  --color-bg-page: #F6F5F0;
   --color-surface-card: #FFFFFF;
-  --color-surface-secondary: #F1F5F9;
-  --color-sidebar: #172033;
-  --color-text-primary: #172033;
-  --color-text-secondary: #475569; /* WCAG AA 6.9:1 */
-  --color-text-muted: #64748B; /* WCAG AA 4.74:1 */
-  --color-border: #E2E8F0;
-  --color-success: #16A34A;
-  --color-warning: #D97706;
-  --color-danger: #DC2626;
-  --color-processing: #7C3AED;
-  --color-focus-ring: #2563EB;
+  --color-surface-secondary: #EDEAE0;
+  --color-sidebar: #1D2A24;
+  --color-text-primary: #1D2A24;
+  --color-text-secondary: #4A5A52; /* WCAG AA 7.3:1 */
+  --color-text-muted: #63716A; /* WCAG AA 5.1:1 */
+  --color-border: #DBD6C7;
+  --color-success: #3F7154;
+  --color-warning: #B5651D;
+  --color-danger: #9C4430;
+  --color-processing: #2D6E77;
+  --color-focus-ring: #9C6418;
 }
 
 body {
