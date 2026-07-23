@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-23T20:41:45.768Z",
+  "generated_at": "2026-07-23T21:35:29.921Z",
   "summary": {
     "lines_replayed": 2229,
     "replay_errors": 0,
@@ -7,7 +7,7 @@
     "cost_category_a_unlocked": 10,
     "cost_category_b_locked_current": 0,
     "cost_category_c_locked_stale": 0,
-    "quantity_items_with_diff": 5,
+    "quantity_items_with_diff": 0,
     "quantity_items_negative_theoretical": 0,
     "po_receipt_findings": 0,
     "production_ledger_findings": 0
@@ -104,43 +104,7 @@
       "category": "A_unlocked"
     }
   ],
-  "quantity_findings": [
-    {
-      "item": "BTP-008",
-      "item_name": "Hồng trà",
-      "theoretical": 19190,
-      "recorded": 20600,
-      "delta": -1410
-    },
-    {
-      "item": "BTP-003",
-      "item_name": "Cốt matcha",
-      "theoretical": 4280,
-      "recorded": 4720,
-      "delta": -440
-    },
-    {
-      "item": "BTP-002",
-      "item_name": "Cốt cacao",
-      "theoretical": 2000,
-      "recorded": 2400,
-      "delta": -400
-    },
-    {
-      "item": "BTP-010",
-      "item_name": "Trà sữa hồng trà",
-      "theoretical": 5800,
-      "recorded": 6100,
-      "delta": -300
-    },
-    {
-      "item": "BTP-011",
-      "item_name": "Kem muối phô mai",
-      "theoretical": 230,
-      "recorded": 470,
-      "delta": -240
-    }
-  ],
+  "quantity_findings": [],
   "po_receipt_findings": [],
   "production_findings": [],
   "replay_errors": [],
