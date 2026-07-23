@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/PageHeader";
-import { useState, useMemo, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { voidOrderV2 } from "./actions";
@@ -44,16 +44,25 @@ interface Category {
 }
 
 export default function OrderTable({
-  initialOrders, brands, products, variants, modifiers, categories
+  initialOrders, totalCount, itemsPerPage, brands, products, variants, modifiers, categories
 }: {
   initialOrders: Order[];
+  totalCount: number;
+  itemsPerPage: number;
   brands: Brand[];
   products: Product[];
   variants: Variant[];
   modifiers: Modifier[];
   categories: Category[];
 }) {
+  // Filtering and pagination now happen server-side (see app/admin/orders/actions.ts
+  // getOrdersV2 + page.tsx) -- `orders` is always exactly the current page's rows.
+  // Re-synced whenever the server sends a new page (initialOrders identity changes
+  // on navigation); local mutation (e.g. optimistic void) still works in between.
   const [orders, setOrders] = useState(initialOrders);
+  useEffect(() => {
+    setOrders(initialOrders);
+  }, [initialOrders]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -198,38 +207,9 @@ export default function OrderTable({
     });
   };
 
-  const ITEMS_PER_PAGE = 20;
-
-  const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const orderNo = (order.display_order_no || order.order_no || "").toLowerCase();
-        if (!orderNo.includes(query)) return false;
-      }
-      if (startDate) {
-        const orderDate = new Date(order.created_at);
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-        if (orderDate < start) return false;
-      }
-      if (endDate) {
-        const orderDate = new Date(order.created_at);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        if (orderDate > end) return false;
-      }
-      if (paymentFilter && order.method !== paymentFilter) return false;
-      if (brandFilter && order.brand_id !== brandFilter) return false;
-      return true;
-    });
-  }, [orders, searchQuery, startDate, endDate, paymentFilter, brandFilter]);
-
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const currentOrders = useMemo(() =>
-    filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
-    [filteredOrders, currentPage]
-  );
+  const ITEMS_PER_PAGE = itemsPerPage;
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+  const currentOrders = orders;
 
   const confirmVoid = async () => {
     setVoidError(null);
@@ -284,7 +264,7 @@ export default function OrderTable({
         </Button>
       )}
       <div className="text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
-        {filteredOrders.length} / {orders.length}
+        {orders.length} / {totalCount}
       </div>
     </>
   );
@@ -517,7 +497,7 @@ export default function OrderTable({
       {totalPages > 1 && (
         <div className="bg-page rounded-card shadow-sm border border-border px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-sm text-text-secondary text-center sm:text-left">
-            Hiển thị <span className="font-bold text-text-primary">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-bold text-text-primary">{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)}</span> trong tổng số <span className="font-bold text-text-primary">{filteredOrders.length}</span> đơn hàng
+            Hiển thị <span className="font-bold text-text-primary">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> đến <span className="font-bold text-text-primary">{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}</span> trong tổng số <span className="font-bold text-text-primary">{totalCount}</span> đơn hàng
           </div>
           <div className="flex gap-2">
             <Button

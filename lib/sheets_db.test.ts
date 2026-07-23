@@ -23,7 +23,7 @@ vi.mock("./supabase", () => ({
     from: (tableName: string) => ({
       select: () => {
         const query: any = {};
-        for (const method of ["gte", "lte", "eq", "in", "order", "limit", "gt", "lt"]) {
+        for (const method of ["gte", "lte", "eq", "in", "order", "limit", "gt", "lt", "or"]) {
           query[method] = (...args: any[]) => {
             mocks.queryCalls.push({ method, args });
             return query;
@@ -141,7 +141,57 @@ describe("findAllWhere", () => {
     ]);
   });
 
-  it("throws a clear error when filters.order uses a non-id column", async () => {
+  it("orders by created_at with an id tiebreaker and fetches one page at a time via a cursor", async () => {
+    const page = [
+      { id: "ord-b", created_at: "2026-07-02T00:00:00.000Z" },
+      { id: "ord-a", created_at: "2026-07-01T00:00:00.000Z" },
+    ];
+    mocks.supabaseSelect.mockResolvedValueOnce({ data: page, error: null });
+
+    const rows = await findAllWhere("Orders_V2", {
+      order: { column: "created_at", ascending: false },
+      limit: 2,
+      after: { value: "2026-07-03T00:00:00.000Z", id: "ord-c" },
+    });
+
+    expect(rows).toEqual(page);
+    expect(mocks.queryCalls.filter(call => call.method === "order")).toEqual([
+      { method: "order", args: ["created_at", { ascending: false }] },
+      { method: "order", args: ["id", { ascending: false }] },
+    ]);
+    expect(mocks.queryCalls.filter(call => call.method === "or")).toEqual([
+      { method: "or", args: ["created_at.lt.2026-07-03T00:00:00.000Z,and(created_at.eq.2026-07-03T00:00:00.000Z,id.lt.ord-c)"] },
+    ]);
+    // Exactly one page fetched (limit satisfied by the single mocked response).
+    expect(mocks.queryCalls.filter(call => call.method === "limit")).toEqual([
+      { method: "limit", args: [2] },
+    ]);
+  });
+
+  it("breaks a created_at tie deterministically across two pages using the id tiebreaker", async () => {
+    const firstPage = Array.from({ length: 1000 }, (_, index) => ({
+      id: `ord-${String(index).padStart(4, "0")}`,
+      created_at: "2026-07-01T00:00:00.000Z",
+    }));
+    const secondPage = [{ id: "ord-1000", created_at: "2026-07-01T00:00:00.000Z" }];
+    mocks.supabaseSelect
+      .mockResolvedValueOnce({ data: firstPage, error: null })
+      .mockResolvedValueOnce({ data: secondPage, error: null });
+
+    const rows = await findAllWhere("Orders_V2", {
+      order: { column: "created_at", ascending: true },
+    });
+
+    expect(rows).toHaveLength(1001);
+    expect(mocks.queryCalls.filter(call => call.method === "or")).toEqual([
+      {
+        method: "or",
+        args: ["created_at.gt.2026-07-01T00:00:00.000Z,and(created_at.eq.2026-07-01T00:00:00.000Z,id.gt.ord-0999)"],
+      },
+    ]);
+  });
+
+  it("throws a clear error when filters.order uses an unsupported column", async () => {
     const start = new Date("2026-07-01T00:00:00.000Z");
     const end = new Date("2026-07-02T00:00:00.000Z");
 
@@ -150,9 +200,9 @@ describe("findAllWhere", () => {
       lte: { created_at: end },
       eq: { status: "COMPLETED", version: 1 },
       in: { brand_id: ["BR-001", "BR-002"] },
-      order: { column: "created_at", ascending: false },
+      order: { column: "net_total", ascending: false },
     })).rejects.toThrow(
-      "findAllWhere only supports ordering by 'id', got: created_at",
+      "findAllWhere only supports ordering by 'id' or 'created_at', got: net_total",
     );
   });
 

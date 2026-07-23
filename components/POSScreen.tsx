@@ -41,7 +41,6 @@ export default function POSScreen({
   const [drafts, setDrafts] = useState<any[]>([]);
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
-  const [successOrderNo, setSuccessOrderNo] = useState<string | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const checkoutAttemptRef = useRef<PosCheckoutAttempt | null>(null);
 
@@ -752,7 +751,6 @@ export default function POSScreen({
 
       if (res.success) {
         checkoutAttemptRef.current = null;
-        setSuccessOrderNo(res.order_no || "");
         addToast("success", `Thanh toán thành công! Mã đơn: ${res.order_no || ""}`);
         
         if (draftIdBackup) {
@@ -1177,32 +1175,6 @@ export default function POSScreen({
       )}
 
 
-
-      {/* Success Modal */}
-      {successOrderNo && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-surface-card/95 backdrop-blur-2xl border border-border/40 w-full max-w-sm rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-success/10 text-success flex items-center justify-center text-3xl mx-auto mb-4">
-                &#10003;
-              </div>
-              <h3 className="text-xl font-bold text-text-primary mb-2">Thanh toan thanh cong!</h3>
-              <p className="text-sm text-text-secondary mb-3">Ma don hang</p>
-              <div className="bg-page border-2 border-dashed border-border rounded-xl p-4 mb-4">
-                <span className="text-3xl font-black text-warning tracking-wider">{successOrderNo}</span>
-              </div>
-            </div>
-            <div className="px-6 pb-6">
-              <button
-                onClick={() => setSuccessOrderNo(null)}
-                className="w-full bg-primary text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-hover active:scale-[0.98] transition-colors transition-transform"
-              >
-                Tao don moi
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Draft Modal */}
       {isDraftModalOpen && (

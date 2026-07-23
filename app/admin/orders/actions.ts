@@ -12,6 +12,7 @@ import {
 } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
+import { getSupabaseClient } from "@/lib/supabase";
 import crypto from "node:crypto";
 
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
@@ -71,8 +72,19 @@ export interface OrderListItem {
   }>;
 }
 
+export interface OrdersV2Filters {
+  page?: number;
+  q?: string;
+  from?: string;
+  to?: string;
+  payment?: string;
+  brand?: string;
+}
+
 export interface GetOrdersV2Result {
   orders: OrderListItem[];
+  totalCount: number;
+  itemsPerPage: number;
   brands: any[];
   products: any[];
   variants: any[];
@@ -115,14 +127,54 @@ export type EditOrderV2Result =
 // getOrdersV2 — list latest COMPLETED versions with details
 // ============================================================
 
-export async function getOrdersV2(): Promise<GetOrdersV2Result> {
+const ORDERS_ITEMS_PER_PAGE = 20;
+
+export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrdersV2Result> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const [orders, orderLines, products, variants, brands, modifiers, categories] = await Promise.all([
-      findAllNoCache("Orders_V2"),
-      findAllNoCache("Order_Lines_V2"),
+    const page = Math.max(1, filters.page || 1);
+    const offset = (page - 1) * ORDERS_ITEMS_PER_PAGE;
+
+    const supabase = getSupabaseClient();
+    // Latest versions only: status=COMPLETED AND superseded_by empty/null --
+    // filtered, counted, and paginated at the database level instead of
+    // fetching the whole (1600+ rows and growing) table on every load.
+    let ordersQuery = supabase
+      .from("orders_v2")
+      .select("*", { count: "exact" })
+      .eq("status", ORDER_STATUS.COMPLETED)
+      .or("superseded_by.is.null,superseded_by.eq.");
+
+    if (filters.q) {
+      ordersQuery = ordersQuery.ilike("order_no", `%${filters.q}%`);
+    }
+    if (filters.from) {
+      ordersQuery = ordersQuery.gte("created_at", filters.from);
+    }
+    if (filters.to) {
+      ordersQuery = ordersQuery.lte("created_at", filters.to);
+    }
+    if (filters.payment === "Chuyen khoan") {
+      ordersQuery = ordersQuery.eq("payment_method", "BANK_TRANSFER");
+    } else if (filters.payment === "Tien mat") {
+      ordersQuery = ordersQuery.neq("payment_method", "BANK_TRANSFER");
+    }
+    if (filters.brand) {
+      ordersQuery = ordersQuery.eq("brand_id", filters.brand);
+    }
+
+    ordersQuery = ordersQuery
+      .order("created_at", { ascending: false })
+      .range(offset, offset + ORDERS_ITEMS_PER_PAGE - 1);
+
+    const { data: pageOrders, count, error: ordersError } = await ordersQuery;
+    if (ordersError) throw new Error(ordersError.message);
+
+    const orderIds = (pageOrders || []).map((o: any) => o.id);
+    const [orderLines, products, variants, brands, modifiers, categories] = await Promise.all([
+      findAllWhereInBatches("Order_Lines_V2", "order_id", orderIds),
       findAll("Products"),
       findAll("Product_Variants"),
       findAll("Brands"),
@@ -130,16 +182,11 @@ export async function getOrdersV2(): Promise<GetOrdersV2Result> {
       findAll("Product_Categories"),
     ]);
 
-    // Latest versions only: status=COMPLETED AND superseded_by=""
-    const latestOrders = (orders as any[]).filter(o =>
-      o.status === ORDER_STATUS.COMPLETED && !o.superseded_by,
-    );
-
     // Claude code — CODE-13: build Maps once for O(1) lookup instead of O(n) find per line.
     const productById = new Map((products as any[]).map(p => [p.id, p]));
     const variantById = new Map((variants as any[]).map(v => [v.id, v]));
 
-    const mappedOrders: OrderListItem[] = latestOrders.map(order => {
+    const mappedOrders: OrderListItem[] = (pageOrders || []).map((order: any) => {
       const orderLinesV2 = (orderLines as any[]).filter(l => l.order_id === order.id);
       const mappedLines = orderLinesV2.map(line => {
         const product = productById.get(line.product_id);
@@ -195,10 +242,10 @@ export async function getOrdersV2(): Promise<GetOrdersV2Result> {
       };
     });
 
-    mappedOrders.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-
     return {
       orders: mappedOrders,
+      totalCount: count || 0,
+      itemsPerPage: ORDERS_ITEMS_PER_PAGE,
       brands: (brands as any[]).filter(b => b.status !== "DELETED"),
       products: (products as any[]).filter(p => p.status !== "DELETED"),
       variants: (variants as any[]).filter(v => v.status !== "DELETED"),
@@ -207,7 +254,7 @@ export async function getOrdersV2(): Promise<GetOrdersV2Result> {
     };
   } catch (err: any) {
     console.error("[getOrdersV2]", err);
-    return { orders: [], brands: [], products: [], variants: [], modifiers: [], categories: [] };
+    return { orders: [], totalCount: 0, itemsPerPage: ORDERS_ITEMS_PER_PAGE, brands: [], products: [], variants: [], modifiers: [], categories: [] };
   }
 }
 

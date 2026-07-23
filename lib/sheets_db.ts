@@ -164,10 +164,17 @@ export interface SheetFilter {
   lte?: Record<string, string | number | Date>;
   eq?: Record<string, string | number>;
   in?: Record<string, Array<string | number>>;
-  // Cursor pagination only supports ordering by the unique primary key.
-  // order.column must be "id"; other columns are rejected explicitly.
+  // order.column must be "id" (default, unique primary key) or
+  // "created_at" (ties broken by "id" internally); other columns are
+  // rejected explicitly.
   order?: { column: string; ascending?: boolean };
   limit?: number;
+  // Keyset cursor for fetching one page at a time: only rows strictly
+  // after (or before, if descending) this position on the order column are
+  // returned. For order.column "created_at", pass { value, id } (the last
+  // row's created_at and id from the previous page) to break timestamp
+  // ties deterministically. For "id", pass the last row's id as `value`.
+  after?: { value: string | number; id?: string };
 }
 
 export const findAll = (sheetName: string) => {
@@ -229,9 +236,10 @@ export async function findAllWhere<T = any>(
   filters: SheetFilter,
 ): Promise<T[]> {
   if (filters.limit !== undefined && filters.limit <= 0) return [];
-  if (filters.order && filters.order.column !== "id") {
+  const orderColumn = filters.order?.column ?? "id";
+  if (orderColumn !== "id" && orderColumn !== "created_at") {
     throw new Error(
-      `findAllWhere only supports ordering by 'id', got: ${filters.order.column}`,
+      `findAllWhere only supports ordering by 'id' or 'created_at', got: ${orderColumn}`,
     );
   }
 
@@ -242,7 +250,11 @@ export async function findAllWhere<T = any>(
   const needsSerialize = jsonCols.size > 0 || booleanCols.size > 0;
   const all: T[] = [];
   const ascending = filters.order?.ascending ?? true;
-  let lastId: string | null = null;
+  const cmp = ascending ? "gt" : "lt";
+  // Cursor position, refreshed after each internal page so a caller's
+  // `limit` can still span multiple underlying PAGE_SIZE fetches.
+  let cursorValue: string | null = filters.after !== undefined ? String(filters.after.value) : null;
+  let cursorId: string | null = filters.after?.id ?? null;
 
   while (filters.limit === undefined || all.length < filters.limit) {
     const remaining = filters.limit === undefined ? PAGE_SIZE : filters.limit - all.length;
@@ -261,11 +273,21 @@ export async function findAllWhere<T = any>(
     for (const [column, values] of Object.entries(filters.in || {})) {
       query = query.in(column, values);
     }
-    query = query.order("id", { ascending }).limit(pageSize);
-    if (lastId !== null) {
-      query = ascending
-        ? query.gt("id", lastId)
-        : query.lt("id", lastId);
+
+    if (orderColumn === "created_at") {
+      query = query.order("created_at", { ascending }).order("id", { ascending }).limit(pageSize);
+      if (cursorValue !== null) {
+        // Tuple comparison (created_at, id) via OR, so identical
+        // timestamps don't skip or duplicate rows across pages.
+        query = cursorId !== null
+          ? query.or(`created_at.${cmp}.${cursorValue},and(created_at.eq.${cursorValue},id.${cmp}.${cursorId})`)
+          : query[cmp]("created_at", cursorValue);
+      }
+    } else {
+      query = query.order("id", { ascending }).limit(pageSize);
+      if (cursorValue !== null) {
+        query = query[cmp]("id", cursorValue);
+      }
     }
 
     const { data, error } = await query;
@@ -280,7 +302,9 @@ export async function findAllWhere<T = any>(
       for (const row of data) all.push(row);
     }
     if (data.length < pageSize) break;
-    lastId = String(data[data.length - 1]?.id ?? "");
+    const lastRow = data[data.length - 1];
+    cursorValue = String(orderColumn === "created_at" ? lastRow?.created_at : lastRow?.id) ?? "";
+    cursorId = String(lastRow?.id ?? "");
   }
 
   return all;

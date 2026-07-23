@@ -1,4 +1,4 @@
-import { findAll, findAllNoCache } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, findAllWhere } from "@/lib/sheets_db";
 import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/order-types";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
@@ -35,12 +35,95 @@ export default async function AdminDashboard({
   ]);
   const anomalousBackdatedEventCount = (anomalousLedgerCount || 0) + (anomalousRecipeCount || 0);
 
+  const filterParam = searchParams.filter as string || 'this_month';
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentDate = now.getDate();
+
+  const todayStart = new Date(currentYear, currentMonth, currentDate);
+  const yesterdayStart = new Date(currentYear, currentMonth, currentDate - 1);
+  const sevenDayChartStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const diffDays = (d1: Date, d2: Date) => (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24);
+
+  let isCurrent = (d: Date) => true;
+  let isPrev = (d: Date) => false;
+  // Lower bound for the Orders_V2/Order_Lines_V2 fetch below -- must be <=
+  // the earliest date isCurrent/isPrev/the always-shown 7-day chart could
+  // possibly need, or revenue silently under-counts. null means "all" (no
+  // bound, fetch everything -- the only filter that genuinely needs it).
+  let queryStartDate: Date | null = sevenDayChartStart;
+
+  switch(filterParam) {
+    case 'today':
+      isCurrent = (d) => d >= todayStart;
+      isPrev = (d) => d >= yesterdayStart && d < todayStart;
+      queryStartDate = new Date(Math.min(yesterdayStart.getTime(), sevenDayChartStart.getTime()));
+      break;
+    case '7days':
+      isCurrent = (d) => diffDays(now, d) <= 7;
+      isPrev = (d) => { const diff = diffDays(now, d); return diff > 7 && diff <= 14; };
+      queryStartDate = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
+      break;
+    case '30days':
+      isCurrent = (d) => diffDays(now, d) <= 30;
+      isPrev = (d) => { const diff = diffDays(now, d); return diff > 30 && diff <= 60; };
+      queryStartDate = new Date(now.getTime() - 61 * 24 * 60 * 60 * 1000);
+      break;
+    case 'this_month':
+      isCurrent = (d) => d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+      isPrev = (d) => {
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+        const limitDate = new Date(lastMonthYear, lastMonth, currentDate + 1);
+        return d.getFullYear() === lastMonthYear && d.getMonth() === lastMonth && d < limitDate;
+      };
+      {
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+        queryStartDate = new Date(Math.min(new Date(lastMonthYear, lastMonth, 1).getTime(), sevenDayChartStart.getTime()));
+      }
+      break;
+    case 'last_month':
+      const lm = currentMonth === 0 ? 11 : currentMonth - 1;
+      const lmy = currentMonth === 0 ? currentYear - 1 : currentYear;
+      isCurrent = (d) => d.getFullYear() === lmy && d.getMonth() === lm;
+
+      const prevLm = lm === 0 ? 11 : lm - 1;
+      const prevLmy = lm === 0 ? lmy - 1 : lmy;
+      isPrev = (d) => d.getFullYear() === prevLmy && d.getMonth() === prevLm;
+      queryStartDate = new Date(Math.min(new Date(prevLmy, prevLm, 1).getTime(), sevenDayChartStart.getTime()));
+      break;
+    case 'this_year':
+      isCurrent = (d) => d.getFullYear() === currentYear;
+      isPrev = (d) => {
+        const limitDate = new Date(currentYear - 1, currentMonth, currentDate + 1);
+        return d.getFullYear() === currentYear - 1 && d < limitDate;
+      };
+      queryStartDate = new Date(Math.min(new Date(currentYear - 1, 0, 1).getTime(), sevenDayChartStart.getTime()));
+      break;
+    case 'last_year':
+      isCurrent = (d) => d.getFullYear() === currentYear - 1;
+      isPrev = (d) => d.getFullYear() === currentYear - 2;
+      queryStartDate = new Date(Math.min(new Date(currentYear - 2, 0, 1).getTime(), sevenDayChartStart.getTime()));
+      break;
+    case 'all':
+      isCurrent = (d) => true;
+      isPrev = (d) => false;
+      queryStartDate = null;
+      break;
+  }
+
+  const dateFilter = queryStartDate ? { gte: { created_at: queryStartDate.toISOString() } } : {};
+
   const [brands, users, suppliers, v2Orders, v2Lines, products, variants, categories] = await Promise.all([
     findAll("Brands"),
     findAll("Users"),
     findAll("Suppliers"),
-    findAllNoCache("Orders_V2"),
-    findAllNoCache("Order_Lines_V2"),
+    queryStartDate ? findAllWhere("Orders_V2", dateFilter) : findAllNoCache("Orders_V2"),
+    queryStartDate ? findAllWhere("Order_Lines_V2", dateFilter) : findAllNoCache("Order_Lines_V2"),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Product_Categories")
@@ -85,69 +168,6 @@ export default async function AdminDashboard({
     )
     .map(normalizeV2Order);
 
-  const filterParam = searchParams.filter as string || 'this_month';
-
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const currentDate = now.getDate();
-  
-  const todayStart = new Date(currentYear, currentMonth, currentDate);
-  const yesterdayStart = new Date(currentYear, currentMonth, currentDate - 1);
-  
-  const diffDays = (d1: Date, d2: Date) => (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24);
-  
-  let isCurrent = (d: Date) => true;
-  let isPrev = (d: Date) => false;
-  
-  switch(filterParam) {
-    case 'today':
-      isCurrent = (d) => d >= todayStart;
-      isPrev = (d) => d >= yesterdayStart && d < todayStart;
-      break;
-    case '7days':
-      isCurrent = (d) => diffDays(now, d) <= 7;
-      isPrev = (d) => { const diff = diffDays(now, d); return diff > 7 && diff <= 14; };
-      break;
-    case '30days':
-      isCurrent = (d) => diffDays(now, d) <= 30;
-      isPrev = (d) => { const diff = diffDays(now, d); return diff > 30 && diff <= 60; };
-      break;
-    case 'this_month':
-      isCurrent = (d) => d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-      isPrev = (d) => {
-        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-        const limitDate = new Date(lastMonthYear, lastMonth, currentDate + 1); 
-        return d.getFullYear() === lastMonthYear && d.getMonth() === lastMonth && d < limitDate;
-      };
-      break;
-    case 'last_month':
-      const lm = currentMonth === 0 ? 11 : currentMonth - 1;
-      const lmy = currentMonth === 0 ? currentYear - 1 : currentYear;
-      isCurrent = (d) => d.getFullYear() === lmy && d.getMonth() === lm;
-      
-      const prevLm = lm === 0 ? 11 : lm - 1;
-      const prevLmy = lm === 0 ? lmy - 1 : lmy;
-      isPrev = (d) => d.getFullYear() === prevLmy && d.getMonth() === prevLm;
-      break;
-    case 'this_year':
-      isCurrent = (d) => d.getFullYear() === currentYear;
-      isPrev = (d) => {
-        const limitDate = new Date(currentYear - 1, currentMonth, currentDate + 1);
-        return d.getFullYear() === currentYear - 1 && d < limitDate;
-      };
-      break;
-    case 'last_year':
-      isCurrent = (d) => d.getFullYear() === currentYear - 1;
-      isPrev = (d) => d.getFullYear() === currentYear - 2;
-      break;
-    case 'all':
-      isCurrent = (d) => true;
-      isPrev = (d) => false;
-      break;
-  }
-  
   const currOrders = validOrders.filter((o:any) => isCurrent(new Date(o.created_at)));
   const prevOrders = validOrders.filter((o:any) => isPrev(new Date(o.created_at)));
 

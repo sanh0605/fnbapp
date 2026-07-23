@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude) - Page-Load Speed Audit + POS Checkout "Reload" Fix
+
+**Trigger:** owner reported the POS screen felt like it "auto-reloaded" after completing an order and asked for (1) a full page-load speed audit, (2) priority fix on the POS checkout logic, and (3) a hands-on UX audit playing the role of an end user, with a proposed plan before any code changes.
+
+**Investigation:** logged into the live app with owner-provided credentials and used Playwright to actually run a checkout, browse admin pages, and try a form -- not just read code. Found the checkout "reload" had two distinct, unrelated causes, plus two other pages with the same underlying performance anti-pattern already fixed for POS last week.
+
+**1. POS checkout felt like an interruption -- two real causes, both fixed:**
+- `components/POSScreen.tsx` showed a full-screen blocking "Success Modal" after every single order with no auto-dismiss -- cashier had to click through it before ringing up the next sale. Removed entirely per owner's explicit choice (kept the existing toast notification, which already showed the order number). The modal's own button/heading text was also missing Vietnamese diacritics ("Thanh toan thanh cong!", "Tao don moi") -- moot now that it's removed.
+- `app/pos/actions.ts`'s `submitOrderV2` called `revalidatePath("/pos")` after every checkout, forcing Next.js to re-run 8 server queries (categories, products, variants, modifiers, promotions, recipes, bestsellers, stock) and push fresh data to the client immediately after every sale. The only consumer of that fresh data (out-of-stock badges) is currently hardcoded off (`app/pos/page.tsx`'s `outOfStockProductIds = []`), so the revalidation served no visible purpose. Removed; `revalidatePath("/admin")` kept since dashboard/reports do need fresh data.
+
+**2. Same "fetch the whole table, filter/paginate in the browser" anti-pattern found in 2 more places (same class of bug already fixed for `getPOSBestSellerProductIds` last week):**
+- `app/admin/page.tsx` (the dashboard -- landing page after every login) fetched the entire `Orders_V2`/`Order_Lines_V2` tables on every load despite already having date-filter buttons (Hôm nay/7 ngày/30 ngày/...). Now scopes the fetch to the selected filter's date range via `findAllWhere`, computing a conservative lower bound per filter case (verified to always cover both the comparison period and the always-shown 7-day chart). Verified against live data across every filter tab (today/this_month/all/last_year) -- revenue, order count, and the 7-day chart matched exactly (differences traced 1:1 to the 2 test orders placed during this session).
+- `app/admin/orders/actions.ts`'s `getOrdersV2` (the order list -- 1,664 rows and growing) fetched every order and every order line on every load, then paginated 20/page in the browser. Rebuilt as real database-level pagination: direct Supabase `.range()` + `{ count: "exact" }` query with all existing filters (search by order code, date range, payment method, brand) pushed into the query, `app/admin/orders/page.tsx` now reads `searchParams` and passes them through, `OrderTable.tsx`'s existing URL-sync/`router.push` machinery (previously cosmetic -- the old `getOrdersV2` ignored search params entirely) now actually drives real server-side data. Verified: search-by-code, payment-method filter, and Trước/Sau pagination all produce correct, non-overlapping results on live data.
+- `lib/sheets_db.ts`'s `findAllWhere` extended to support ordering by `created_at` (previously `id` only) with proper compound-cursor tie-breaking (`created_at`, then `id`) so identical timestamps can't skip or duplicate rows across pages -- 2 new regression tests. Not ultimately used by the orders list (which needed exact page-jump + total count, better served by offset pagination), but kept as a generically useful, tested capability.
+- `app/admin/reports/actions.ts`'s P&L report fetched the entire `Stock_Ledger` table for every report. Added an upper bound (`created_at <= report end date`) -- safe because MAC cost calculation needs full history *before* a sale but never anything after the report's own end date. Verified live: revenue/COGS/margin unchanged.
+
+**Deliberately not touched this round** (flagged to owner as separate follow-ups, not urgent): a real gap where the topping list shown at checkout is identical for every product (a boiled egg shows coffee toppings) -- no per-product/category topping association exists in the data model today, this needs a small feature design, not a quick fix; a handful of other `revalidatePath` calls that are broader than strictly necessary (promotion/topping toggles revalidating all of `/pos`) but fire rarely compared to checkout; a missing `icon.png` causing a harmless 404 in the browser console on every page load.
+
+**Verified:** `tsc --noEmit` clean, full suite 673/673 (up from 671 -- 2 new `findAllWhere` cursor tests), `next build` passed. Hands-on Playwright verification throughout (not just automated tests): checkout flow, dashboard across multiple date filters, orders list search/filter/pagination, P&L numbers, base-ingredient form (confirmed last week's modal focus-steal fix still holds).
+
+**Left behind:** 2 test orders (`PHD001128`, `PHD001129`, "Trứng luộc" 5.000 VND each) created during hands-on verification -- real rows in the live database, not synthetic script output. Flagged to owner; can be voided via the existing Hủy đơn flow (reverses inventory correctly, keeps audit trail) if they don't want test transactions in their order history.
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until explicitly approved each time).
+
+---
+
 ## 2026-07-24 (Claude) - Full-History Stock Ledger Rebuild: Fixed a Real Double-Counting Bug, Deleted and Recomputed 1,518 Orders' Derived Ledger
 
 **Trigger:** owner asked Claude to use the Trứng gà (raw) -> Trứng luộc (semi-product) -> Trứng luộc (sold product) chain as a concrete example to audit the inventory/cost calculation logic before applying it system-wide. Owner directly challenged the first attempt's numbers with a screenshot and correct manual math ("nếu đã bán 375 trứng luộc thì chỉ có 375 trứng gà đã nấu"), which led to finding a genuine structural bug rather than a data-entry mistake.

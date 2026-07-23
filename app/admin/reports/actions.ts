@@ -102,7 +102,15 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       findAll("Base_Ingredients"),
       findAll("Semi_Products"),
       findAll("Units"),
-      findAllNoCache("Stock_Ledger"),
+      // MAC (moving average cost) needs every ledger entry from the
+      // beginning of time up to each sale to compute the correct running
+      // weighted average -- no lower bound possible. But nothing after the
+      // report's own end date is ever read, so an upper bound is safe and
+      // avoids re-fetching the whole (growing) table for reports on past
+      // periods.
+      queryDateRange
+        ? findAllWhere("Stock_Ledger", { lte: { created_at: queryDateRange.endUtc } })
+        : findAllNoCache("Stock_Ledger"),
       findAll("Recipes"),
       findAll("Modifiers"),
       findAll("Products"),
