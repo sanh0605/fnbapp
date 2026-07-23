@@ -136,14 +136,21 @@ describe("POS action authentication", () => {
       ok: true,
       actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" },
     });
-    mocks.findAllWhere.mockResolvedValue([
-      { id: "ORD-1", status: "COMPLETED", superseded_by: "", created_at: "2026-07-10T01:00:00.000Z", brand_id: "BR-1", net_total: 100000 },
-    ]);
-    mocks.findAllNoCache.mockResolvedValue([
-      makeOrderLine("LINE-1", "PROD-1", 3),
-      makeOrderLine("LINE-2", "PROD-2", 1),
-      makeOrderLine("LINE-3", "TOPPING-1", 20),
-    ]);
+    mocks.findAllWhere.mockImplementation(async (sheet: string) => {
+      if (sheet === "Orders_V2") {
+        return [
+          { id: "ORD-1", status: "COMPLETED", superseded_by: "", created_at: "2026-07-10T01:00:00.000Z", brand_id: "BR-1", net_total: 100000 },
+        ];
+      }
+      if (sheet === "Order_Lines_V2") {
+        return [
+          makeOrderLine("LINE-1", "PROD-1", 3),
+          makeOrderLine("LINE-2", "PROD-2", 1),
+          makeOrderLine("LINE-3", "TOPPING-1", 20),
+        ];
+      }
+      return [];
+    });
     mocks.findAll.mockResolvedValue([
       { id: "TOPPING-1", category_id: "CAT-007", migration_notes: "topping-standalone::mod_id=MOD-001" },
     ]);

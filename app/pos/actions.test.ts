@@ -46,6 +46,26 @@ describe("POS order COGS calculation", () => {
     expect(screenSource).toContain("checkoutAttemptRef.current = null");
   });
 
+  it("scopes the best-seller order-lines fetch to the requested date range instead of the whole table", () => {
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const bestSellerSource = source.slice(
+      source.indexOf("export async function getPOSBestSellerProductIds"),
+      source.indexOf("const loadPOSStockStatus"),
+    );
+
+    // Regression: this used to call findAllNoCache("Order_Lines_V2")
+    // unconditionally -- an uncached full-table fetch (2,300+ rows and
+    // growing, measured at 1.5s+ alone) on every POS page load, made worse
+    // by revalidatePath("/pos") forcing this to run fresh after every
+    // checkout. Must be date-scoped via findAllWhere whenever a date range
+    // is available (the only real caller, app/pos/page.tsx, always passes
+    // one).
+    expect(bestSellerSource).toContain('findAllWhere("Order_Lines_V2"');
+    expect(bestSellerSource).toMatch(
+      /dateRange\s*\?\s*findAllWhere\("Order_Lines_V2"/,
+    );
+  });
+
   it("uses narrow POS reads instead of full admin reports", () => {
     const pageSource = readFileSync(resolve(__dirname, "page.tsx"), "utf8");
 

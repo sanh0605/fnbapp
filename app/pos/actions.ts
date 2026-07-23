@@ -249,9 +249,21 @@ export async function getPOSBestSellerProductIds(
     orderQuery.lte = { created_at: dateRange.endUtc };
   }
 
+  // Order_Lines_V2 grows unboundedly with order history (2,300+ rows and
+  // counting) -- fetching the whole table on every POS page load (this
+  // function is uncached, called fresh after every checkout via
+  // revalidatePath("/pos")) was measured at 1.5s+ alone. Scope the fetch to
+  // the same date window used for orders, matching the actual "best sellers
+  // this week" use case -- no caller needs full history here.
+  const lineQuery: SheetFilter = {};
+  if (dateRange) {
+    lineQuery.gte = { created_at: dateRange.startUtc };
+    lineQuery.lte = { created_at: dateRange.endUtc };
+  }
+
   const [orders, orderLines, products] = await Promise.all([
     findAllWhere("Orders_V2", orderQuery),
-    findAllNoCache("Order_Lines_V2"),
+    dateRange ? findAllWhere("Order_Lines_V2", lineQuery) : findAllNoCache("Order_Lines_V2"),
     findAll("Products"),
   ]);
   const eligibleOrders = (orders as any[]).filter((order) => {

@@ -21,15 +21,24 @@ export function Dialog({
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseDownTarget = useRef<EventTarget | null>(null);
+  // Ref-ified so the effect below doesn't need onClose/dismissible in its
+  // dependency array -- callers typically pass an inline arrow function
+  // that gets a new identity on every render (e.g. on every keystroke in a
+  // form field inside this dialog), which would otherwise re-run the
+  // effect and steal focus away from whatever input the user is typing in.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const dismissibleRef = useRef(dismissible);
+  dismissibleRef.current = dismissible;
 
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (dismissible) {
+        if (dismissibleRef.current) {
           e.stopImmediatePropagation();
-          onClose();
+          onCloseRef.current();
         }
         return;
       }
@@ -75,7 +84,7 @@ export function Dialog({
         previouslyFocused.focus();
       }
     };
-  }, [isOpen, onClose, dismissible]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

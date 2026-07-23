@@ -114,4 +114,48 @@ describe("components/ui/Dialog", () => {
     
     unmount();
   });
+
+  it("does not steal focus from an input when onClose gets a new identity on re-render", async () => {
+    // Regression test: callers commonly pass an inline arrow function as
+    // onClose (e.g. `onClose={() => setIsOpen(false)}`), which gets a new
+    // reference on every re-render of the parent -- such as every keystroke
+    // in a form field inside this dialog. Before the fix, the focus-trap
+    // effect depended on `onClose`, so it re-ran on every such re-render and
+    // moved focus to the dialog container, breaking continuous typing.
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    const renderWithFreshOnClose = async () => {
+      await act(async () => {
+        root.render(
+          <Dialog isOpen={true} onClose={() => {}}>
+            <input id="name-input" />
+          </Dialog>
+        );
+      });
+    };
+
+    await renderWithFreshOnClose();
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    const input = document.getElementById("name-input") as HTMLInputElement;
+    await act(async () => {
+      input.focus();
+    });
+    expect(document.activeElement).toBe(input);
+
+    // Re-render with a brand-new onClose reference, simulating a parent
+    // re-render triggered by typing in the input.
+    await renderWithFreshOnClose();
+
+    expect(document.activeElement).toBe(input);
+
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });

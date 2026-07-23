@@ -25,6 +25,13 @@ export function FormModal({
   const titleId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseDownTarget = useRef<EventTarget | null>(null);
+  // Ref-ified so the effect below doesn't need onClose in its dependency
+  // array -- callers typically pass an inline arrow function that gets a
+  // new identity on every render (e.g. on every keystroke in a form field
+  // inside this modal), which would otherwise re-run the effect and steal
+  // focus away from whatever input the user is typing in.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -32,7 +39,7 @@ export function FormModal({
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopImmediatePropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab") return;
@@ -77,7 +84,7 @@ export function FormModal({
         previouslyFocused.focus();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
