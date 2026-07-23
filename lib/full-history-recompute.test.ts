@@ -133,6 +133,45 @@ describe("replayFullHistory", () => {
     expect(result.lineResults[0].consumption_rows[0].quantity).toBe(7);
   });
 
+  it("computes both quantity AND cost_at_sale correctly together for a sale that triggers a semi-product shortfall (owner's Trứng gà -> Trứng luộc -> sold product chain)", () => {
+    // Closes a real coverage gap: existing tests assert either the
+    // shortfall-explosion quantity rows OR computed_cost_at_sale, but never
+    // both together for the same shortfall-triggering line. A raw ingredient
+    // (NNL-EGG) is purchased at a known cost, then a sale of the semi-product
+    // it feeds (BTP-EGG, 1:1 recipe) with zero starting BTP-EGG balance must
+    // both (a) explode fully to the raw ingredient and (b) price the sale at
+    // that raw ingredient's MAC cost, since the semi-product itself never
+    // carries a direct cost (PRODUCTION_YIELD unit_cost is always 0 in this
+    // system -- see lib/mac-cogs.ts's recipe-fallback costing).
+    const semiProducts: RawSemiProduct[] = [{ id: "BTP-EGG", batch_yield: 1 }];
+    const recipes: RawRecipe[] = [recipeRow("BTP-EGG", [{ id: "NNL-EGG", type: "BASE_INGREDIENT", qty: 1 }])];
+
+    const { rows: trustedPrimitives } = buildTrustedPrimitiveLedger({
+      purchaseOrders: [{
+        id: "PO-EGG", status: "COMPLETED", transaction_date: "2026-02-01T00:00:00Z",
+        subtotal_amount: 250000, shipping_fee: 0, tax_amount: 0, voucher_amount: 0, discount_amount: 0,
+      }],
+      purchaseOrderLines: [{ id: "pol-egg", purchase_order_id: "PO-EGG", purchased_item_id: "PI-EGG", quantity: 100, subtotal: 250000, conversion_id: "conv-egg" }],
+      purchasedItems: [{ id: "PI-EGG", base_ingredient_id: "NNL-EGG" }],
+      conversions: [{ id: "conv-egg", purchased_item_id: "PI-EGG", purchased_unit: "quả", conversion_rate: 1 }],
+      rawStockLedger: [],
+    });
+    // Sanity check the fixture: 100 eggs @ 2.500đ each (250.000 / 100).
+    expect(trustedPrimitives[0].unit_cost).toBe(2500);
+
+    const orders: RawOrder[] = [{ id: "ord-egg-2", order_no: "EGG002", status: "COMPLETED", created_at: "2026-02-02T00:00:00Z" }];
+    const lines: RawLine[] = [{ id: "line-egg-2", order_id: "ord-egg-2", qty: 1, cost_at_sale: 0, recipe_snapshot_json: lineRecipeJson("BTP-EGG", "SEMI_PRODUCT", 1) }];
+
+    const result = replayFullHistory({ orders, lines, recipes, semiProducts, trustedPrimitives });
+
+    // Quantity: full shortfall explosion to the raw ingredient.
+    const rows = result.lineResults[0].consumption_rows;
+    expect(rows).toEqual([{ item_reference: "NNL-EGG", quantity: 1, source: expect.any(String) }]);
+
+    // Cost: priced at the raw ingredient's MAC cost (2.500đ), not 0.
+    expect(result.lineResults[0].computed_cost_at_sale).toBe(2500);
+  });
+
   it("replays purchase receipts in chronological (created_at) order regardless of array insertion order", () => {
     const orders: RawOrder[] = [{ id: "ord-6", order_no: "A006", status: "COMPLETED", created_at: "2026-03-01T00:00:00Z" }];
     const lines: RawLine[] = [{ id: "line-6", order_id: "ord-6", qty: 1, cost_at_sale: 0, recipe_snapshot_json: lineRecipeJson("ING-006", "BASE_INGREDIENT", 10) }];
@@ -170,7 +209,16 @@ describe("buildTrustedPrimitiveLedger", () => {
     expect(rows[0].created_at).toBe("2026-01-15T00:00:00Z");
   });
 
-  it("trusts PRODUCTION_CONSUME/PRODUCTION_YIELD/STOCK_ADJUST from the raw ledger, never SALES_CONSUME-family rows", () => {
+  it("trusts only STOCK_ADJUST from the raw ledger -- never PRODUCTION_CONSUME/PRODUCTION_YIELD or SALES_CONSUME-family rows", () => {
+    // PRODUCTION_CONSUME/PRODUCTION_YIELD are deliberately excluded: this
+    // business has never logged a genuine, independent production order for
+    // a semi-product (CLAUDE.md section 9), so every historical row of
+    // those types either came from implicit production for a specific sale
+    // (which replayFullHistory reconstructs itself) or from an earlier
+    // correction pass's own compensating entries -- trusting them here as
+    // well as re-deriving them would double-count the same event. This is
+    // a regression test for exactly that bug (found 2026-07-23 verifying
+    // the Trứng gà -> Trứng luộc -> sold product chain against real data).
     const { rows } = buildTrustedPrimitiveLedger({
       purchaseOrders: [],
       purchaseOrderLines: [],
@@ -186,6 +234,43 @@ describe("buildTrustedPrimitiveLedger", () => {
     });
 
     const types = rows.map(r => r.transaction_type).sort();
-    expect(types).toEqual(["PRODUCTION_CONSUME", "PRODUCTION_YIELD", "STOCK_ADJUST"]);
+    expect(types).toEqual(["STOCK_ADJUST"]);
+  });
+
+  it("does not double-count a semi-product's implicit production when the same sale is replayed twice (regression: Trứng gà -> Trứng luộc chain)", () => {
+    // Mirrors the real bug exactly: BTP-013-style semi-product made 1:1 from
+    // a raw ingredient, with a prior correction pass having already written
+    // PRODUCTION_CONSUME/PRODUCTION_YIELD rows into the raw ledger for an
+    // old sale. If those rows were trusted as primitives, replaying that
+    // same old sale would ALSO produce its own implicit-production rows --
+    // double-counting. With the fix, only the fresh replay's own rows count.
+    const semiProducts: RawSemiProduct[] = [{ id: "BTP-EGG", batch_yield: 1 }];
+    const recipes: RawRecipe[] = [recipeRow("BTP-EGG", [{ id: "NNL-EGG", type: "BASE_INGREDIENT", qty: 1 }])];
+
+    const { rows: trustedPrimitives } = buildTrustedPrimitiveLedger({
+      purchaseOrders: [],
+      purchaseOrderLines: [],
+      purchasedItems: [],
+      conversions: [],
+      rawStockLedger: [
+        // A prior correction pass's own reconstructed implicit production
+        // for this exact old sale -- must NOT be trusted as a primitive.
+        { id: "old-consume", item_reference: "NNL-EGG", transaction_type: "PRODUCTION_CONSUME", quantity_change: -1, unit_cost: 0, created_at: "2026-02-02T00:00:00Z", reference_id: "ord-egg" },
+        { id: "old-yield", item_reference: "BTP-EGG", transaction_type: "PRODUCTION_YIELD", quantity_change: 1, unit_cost: 0, created_at: "2026-02-02T00:00:00Z", reference_id: "ord-egg" },
+      ],
+    });
+
+    const orders: RawOrder[] = [{ id: "ord-egg", order_no: "EGG001", status: "COMPLETED", created_at: "2026-02-02T00:00:00Z" }];
+    const lines: RawLine[] = [{ id: "line-egg", order_id: "ord-egg", qty: 1, cost_at_sale: 0, recipe_snapshot_json: lineRecipeJson("BTP-EGG", "SEMI_PRODUCT", 1) }];
+
+    const result = replayFullHistory({ orders, lines, recipes, semiProducts, trustedPrimitives });
+
+    const allRows = [...trustedPrimitives, ...result.computedLedger];
+    const eggBalance = allRows.filter(r => r.item_reference === "NNL-EGG").reduce((s, r) => s + r.quantity_change, 0);
+    const btpBalance = allRows.filter(r => r.item_reference === "BTP-EGG").reduce((s, r) => s + r.quantity_change, 0);
+
+    // Exactly 1 raw egg consumed for exactly 1 sale -- not 2.
+    expect(eggBalance).toBe(-1);
+    expect(btpBalance).toBe(0);
   });
 });
