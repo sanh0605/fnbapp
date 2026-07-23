@@ -5,6 +5,8 @@ import { getRealtimeStock, getReorderSuggestions } from "@/app/admin/inventory/a
 import { findAll } from "@/lib/sheets_db";
 import StockTable from "@/components/StockTable";
 import ReorderSuggestionTable from "@/components/ReorderSuggestionTable";
+import ShiftStockCheckPanel from "@/components/ShiftStockCheckPanel";
+import { getCheckedItems, getActiveShiftStockCheck } from "./shift-check-actions";
 
 export const dynamic = 'force-dynamic';
 
@@ -18,14 +20,17 @@ export default async function StockPage() {
   const role = (session.user as any)?.role || "STAFF";
   const username = session.user?.name || "Unknown";
 
-  const [stockItems, adjustments, reorderSuggestions] = await Promise.all([
+  const [stockItems, adjustments, reorderSuggestions, checkedItems, activeShiftStockCheck] = await Promise.all([
     getRealtimeStock(),
     findAll("Stock_Adjustments"),
-    getReorderSuggestions()
+    getReorderSuggestions(),
+    getCheckedItems(),
+    getActiveShiftStockCheck()
   ]);
 
   return (
     <div className="space-y-6">
+      <ShiftStockCheckPanel checkedItems={checkedItems} initialActiveShift={activeShiftStockCheck} />
       <ReorderSuggestionTable suggestions={reorderSuggestions} />
       <StockTable
         stockItems={stockItems}
