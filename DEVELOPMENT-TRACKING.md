@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-23 (Claude) - Two Urgent Live Bugs Fixed: Slow POS Reload, Modal Input Focus-Steal
+
+**Trigger:** owner reported live POS page reload was slow after completing an order, then (mid-investigation) sent a screen recording showing a form input in `/admin/inventory/base-ingredients` losing focus after every keystroke -- "không thể nhập một chuỗi liên tục" (can't type a continuous string) -- and asked for a full audit of other input forms.
+
+**Bug 1 -- POS reload slowness.** Root-caused via a throwaway diagnostic script (outside `scripts/`, deleted after use) measuring real Supabase query timing: `getPOSBestSellerProductIds` (`app/pos/actions.ts`) called `findAllNoCache("Order_Lines_V2")` -- an uncached full-table fetch -- on every `/pos` page load, made worse by checkout's `revalidatePath("/pos")` forcing this to run fresh after every single order. Measured: 2,382 rows, 1.5s+ for the full fetch. Fix: scope the fetch via `findAllWhere` to the same date range already used for the orders query (the only real caller always passes a 7-day window) -- measured 209 rows, ~0.7s for the same real data. Full-table fallback kept for the (currently unused) no-date-range case.
+
+**Bug 2 -- modal input focus-steal, affecting every form built on `FormModal`/`Dialog`.** Extracted frames from the owner's screen recording with `ffmpeg` to see the exact symptom (typed text preserved but input loses focus after each character). Root cause: both `components/ui/FormModal.tsx` and `components/ui/Dialog.tsx`'s focus-trap `useEffect` depended on `onClose` (and `Dialog` also on `dismissible`) -- callers universally pass these as inline arrow functions, which get a new reference on every re-render of the parent, including every keystroke in a controlled input inside the modal (`setState` in `onChange` re-renders the parent, which recreates the inline `onClose`). This re-ran the effect on every keystroke; its setup/cleanup pair moves focus to the modal container, breaking continuous typing. Confirmed via `grep` that no other component in the codebase has this exact pattern -- these two shared primitives were the sole root cause, and fixing them fixes all **13 forms** built on `FormModal` (base ingredients, suppliers, users, brands, conversions, purchased items, production, categories, modifiers, semi-products, backdated-ledger apply/reject) plus `Dialog`'s consumer (`DialogHost`, the app-wide alert/confirm). Fix: ref-ify `onClose`/`dismissible` so the effect only depends on `isOpen`. Added a regression test in `Dialog.test.tsx` proving focus survives an `onClose` identity change while open.
+
+**Verified**: `tsc --noEmit` clean, full suite 652/652 (up from 650 -- 1 new regression test for each fix, plus fixed 1 existing test that had been implicitly relying on the old unscoped `findAllNoCache` mock), `next build` passed.
+
+**Paused**: FC-3 (the last feature-completeness item) was mid-planning when these bugs interrupted -- had just gotten owner approval for a cash-reconciliation shift design, then the owner reconsidered and asked to defer cash tracking, refocusing shift open/close on physical stock counts of 2 specific items (Trứng gà, Khoai lang) instead, comparing against theoretical stock the same way "Cân bằng kho" already does. Not yet resumed; `lib/shift-config.ts` (an unused single-constant file from the cash-reconciliation design) is left on disk, untracked, pending that redesign.
+
+Commit: `870ac70` (local commit only, per owner's standing instruction to hold off on `git push` until explicitly approved each time).
+
+---
+
 ## 2026-07-22 (Claude) - FC-2 Closed End-to-End: Built the UI Directly Instead of Handing Off to Antigravity
 
 **Trigger:** after the backend was closed and a UI handoff written for Antigravity, owner asked which of Claude/Antigravity would do the UI piece better. Answered honestly: for a task this simple (extend an existing table with a low-stock section, functional only, no new component patterns) there's no real capability gap -- the Antigravity assignment was a workflow/independent-review convention from the 2026-07-20 role split, not a quality requirement. Owner decided the review-overhead tradeoff wasn't worth it for something this small and asked Claude to build it directly.
