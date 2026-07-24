@@ -4,6 +4,8 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
   findAllNoCache: vi.fn(),
+  findAllWhere: vi.fn(),
+  findById: vi.fn(),
   insert: vi.fn(),
   insertMany: vi.fn(),
   update: vi.fn(),
@@ -15,6 +17,8 @@ vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,
+  findAllWhere: mocks.findAllWhere,
+  findById: mocks.findById,
   insert: mocks.insert,
   insertMany: mocks.insertMany,
   update: mocks.update,
@@ -37,16 +41,18 @@ describe("voidOrderV2 atomic failure handling", () => {
       actor: { id: "admin-1", name: "Admin", role: "ADMIN" },
     });
     mocks.findAll.mockResolvedValue([]);
-    mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
-      if (sheet === "Orders_V2") {
-        return [{
-          id: "ord-void-1",
-          order_no: "UCK-VOID-1",
-          status: orderStatus,
-          version: 1,
-          net_total: 25_000,
-        }];
-      }
+    mocks.findAllNoCache.mockResolvedValue([]);
+    mocks.findById.mockImplementation(async (sheet: string, id: string) => {
+      if (sheet !== "Orders_V2" || id !== "ord-void-1") return null;
+      return {
+        id: "ord-void-1",
+        order_no: "UCK-VOID-1",
+        status: orderStatus,
+        version: 1,
+        net_total: 25_000,
+      };
+    });
+    mocks.findAllWhere.mockImplementation(async (sheet: string) => {
       if (sheet === "Stock_Ledger") {
         return [
           {

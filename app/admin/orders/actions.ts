@@ -2,7 +2,6 @@
 
 import {
   findAll,
-  findAllNoCache,
   findAllWhere,
   findAllWhereInBatches,
   findById,
@@ -35,6 +34,7 @@ import {
 import type { CartInput } from "@/lib/order-cart";
 import { voidOrderAtomic } from "@/lib/void-order-transaction";
 import { buildVoidReversalRows } from "@/lib/void-order-reversal";
+import { collectOrderConsumptionItemReferences } from "@/lib/order-ledger-read-scope";
 
 function parseObject(value: any): any {
   if (!value) return {};
@@ -394,8 +394,7 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
     if (!auth.ok) return { success: false, error: auth.error };
     const actor = { id: auth.actor.id, name: auth.actor.name };
 
-    const allOrders = await findAllNoCache("Orders_V2");
-    const order = (allOrders as any[]).find(o => o.id === orderId);
+    const order = await findById("Orders_V2", orderId);
     if (!order) return { success: false, error: `Order ${orderId} not found` };
     if (order.status !== ORDER_STATUS.COMPLETED && order.status !== ORDER_STATUS.VOIDED) {
       return { success: false, error: `Order status is ${order.status}, must be COMPLETED to void` };
@@ -418,7 +417,9 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
 
     // Reverse the complete checkout inventory effect, including any implicit
     // production rows created to cover a semi-product shortfall.
-    const ledger = await findAllNoCache("Stock_Ledger");
+    const ledger = await findAllWhere("Stock_Ledger", {
+      eq: { reference_id: orderId },
+    });
     const reversalEntries = buildVoidReversalRows({
       orderId,
       orderEventId: event.id,
@@ -456,14 +457,14 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     }
 
     // 1. Load old order + lines
-    const [allOrders, allLines] = await Promise.all([
-      findAllNoCache("Orders_V2"),
-      findAllNoCache("Order_Lines_V2"),
+    const [oldOrder, oldLines] = await Promise.all([
+      findById("Orders_V2", input.orderId),
+      findAllWhere("Order_Lines_V2", {
+        eq: { order_id: input.orderId },
+      }),
     ]);
-    const oldOrder = allOrders.find((o: any) => o.id === input.orderId);
     if (!oldOrder) return { success: false, error: `Order ${input.orderId} not found` };
 
-    const oldLines = allLines.filter((l: any) => l.order_id === input.orderId);
     const oldOrderV2 = normalizeOrderV2(oldOrder);
     const oldLinesV2 = oldLines.map(normalizeLineV2);
 
@@ -480,12 +481,26 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     });
 
     // 3. Load reference data
-    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients, semiProducts] = await Promise.all([
+    const originalSaleTime = oldOrderV2.created_at;
+    const [
+      brands,
+      products,
+      variants,
+      categories,
+      modifiers,
+      promotions,
+      recipes,
+      baseIngredients,
+      semiProducts,
+      oldOrderLedger,
+    ] = await Promise.all([
       findAll("Brands"), findAll("Products"), findAll("Product_Variants"),
       findAll("Product_Categories"), findAll("Modifiers"), findAll("Promotions"),
       findAll("Recipes"), findAll("Base_Ingredients"), findAll("Semi_Products"),
+      findAllWhere("Stock_Ledger", {
+        eq: { reference_id: oldOrderV2.id },
+      }),
     ]);
-    const ledger = await findAllNoCache("Stock_Ledger");
 
     // 4. Build edited order (preserves sale time, increments version)
     const built = buildEditedOrderFromCart(
@@ -521,14 +536,15 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     }));
 
     // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same MAC path as POS.
-    const originalSaleTime = oldOrderV2.created_at;
+    const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
+    const itemReferences = collectOrderConsumptionItemReferences(built.lines, consumptionMaps);
+    const ledgerThroughSale = await findLedgerHistoryForItems(itemReferences, originalSaleTime);
     const saleMs = new Date(originalSaleTime).getTime();
-    const pastLedger = (ledger as any[]).filter(e => {
+    const pastLedger = (ledgerThroughSale as any[]).filter(e => {
       const entryTime = new Date(e.created_at || 0).getTime();
       if (entryTime > saleMs) return false;
       return e.reference_id !== oldOrderV2.id;
     });
-    const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
     const consumptionBalances = buildInventoryBalances(pastLedger, originalSaleTime);
 
     for (const line of built.lines) {
@@ -561,7 +577,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     };
 
     // 7. Build reversal entries (mirror old SALES_CONSUME rows for this order)
-    const oldLedgerRows = ledger.filter((l: any) =>
+    const oldLedgerRows = oldOrderLedger.filter((l: any) =>
       l.reference_id === oldOrderV2.id && l.transaction_type === "SALES_CONSUME",
     );
     const reversalEntries = oldLedgerRows.map((l: any) => ({
@@ -614,6 +630,28 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
 // ============================================================
 // Helper functions for orders and order-edit
 // ============================================================
+
+const LEDGER_ITEM_QUERY_BATCH_SIZE = 100;
+
+async function findLedgerHistoryForItems(
+  itemReferences: string[],
+  originalSaleTime: string,
+): Promise<any[]> {
+  if (itemReferences.length === 0) return [];
+
+  const batches: string[][] = [];
+  for (let index = 0; index < itemReferences.length; index += LEDGER_ITEM_QUERY_BATCH_SIZE) {
+    batches.push(itemReferences.slice(index, index + LEDGER_ITEM_QUERY_BATCH_SIZE));
+  }
+
+  const rows = await Promise.all(
+    batches.map(batch => findAllWhere("Stock_Ledger", {
+      lte: { created_at: originalSaleTime },
+      in: { item_reference: batch },
+    })),
+  );
+  return rows.flat();
+}
 
 function buildStockLedgerEntries(
   built: ReturnType<typeof buildEditedOrderFromCart>,

@@ -31,4 +31,18 @@ describe("admin order edit COGS calculation", () => {
     expect(editOrderSource).toContain("planEditedOrderPayments(");
     expect(editOrderSource).toContain("payments: editedPayments");
   });
+
+  it("bounds edit reads to the target order and ledger history through its sale time", () => {
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
+
+    expect(editOrderSource).toContain('findById("Orders_V2", input.orderId)');
+    expect(editOrderSource).toContain('findAllWhere("Order_Lines_V2"');
+    expect(editOrderSource).toContain('lte: { created_at: originalSaleTime }');
+    expect(editOrderSource).toContain('in: { item_reference: batch }');
+    expect(editOrderSource).toContain('eq: { reference_id: oldOrderV2.id }');
+    expect(editOrderSource).not.toContain('findAllNoCache("Orders_V2")');
+    expect(editOrderSource).not.toContain('findAllNoCache("Order_Lines_V2")');
+    expect(editOrderSource).not.toContain('findAllNoCache("Stock_Ledger")');
+  });
 });

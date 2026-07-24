@@ -27,7 +27,7 @@ vi.mock("@/lib/void-order-transaction", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { getOrderDetailV2 } from "./actions";
+import { getOrderDetailV2, voidOrderV2 } from "./actions";
 
 describe("getOrderDetailV2 query scope", () => {
   const rootOrder = {
@@ -125,5 +125,37 @@ describe("getOrderDetailV2 query scope", () => {
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Orders_V2");
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Order_Lines_V2");
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Order_Events");
+  });
+
+  it("loads only the selected order and its ledger rows when voiding", async () => {
+    mocks.findById.mockResolvedValue({
+      id: "ord-void",
+      status: "COMPLETED",
+      version: 1,
+      net_total: 25_000,
+    });
+    mocks.findAllWhere.mockResolvedValue([{
+      id: "stk-sale",
+      transaction_type: "SALES_CONSUME",
+      reference_id: "ord-void",
+      item_reference: "BI-001",
+      quantity_change: -1,
+      unit_cost: 2_000,
+    }]);
+    mocks.voidOrderAtomic.mockResolvedValue({
+      orderId: "ord-void",
+      reversalCount: 1,
+      alreadyVoided: false,
+    });
+
+    const result = await voidOrderV2("ord-void", "Customer request");
+
+    expect(result).toEqual({ success: true });
+    expect(mocks.findById).toHaveBeenCalledWith("Orders_V2", "ord-void");
+    expect(mocks.findAllWhere).toHaveBeenCalledWith("Stock_Ledger", {
+      eq: { reference_id: "ord-void" },
+    });
+    expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Orders_V2");
+    expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Stock_Ledger");
   });
 });
