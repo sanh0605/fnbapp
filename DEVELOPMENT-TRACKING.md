@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Sonnet 5) - Closed WF-1 (Per-Item Purchase History + PO Search + Supplier Links)
+
+**Trigger:** owner picked WF-1 as the next priority after DEP-1 phase 1, from a 4-option check-in (WF-1 vs UI-CLEAN-1 vs RPT-DIGEST-1 vs INV-COUNT-1) — chose the item that directly answers 2 scenarios the owner personally verified as impossible (`docs/audits/2026-07-24-workflow-forms-popups-search-audit.md` section D).
+
+**Read the real schema before writing any query**, per the handoff's explicit warning about `SCRIPT-BUG-1` (a prior Codex bug from guessing a stale column name): confirmed `purchase_order_lines`'s real columns directly against `supabase/migrations/0001_init_schema.sql` and live usage in `app/admin/inventory/purchase-orders/[id]/page.tsx` (`purchased_item_id`, `unit`, `unit_price`, `subtotal`) — `types/db.ts`'s `DBPurchaseOrderLine` interface is stale, still naming pre-Supabase-migration fields (`item_id`/`unit_id`/`unit_cost`) that don't exist on the live table. Did not use that type for the new code. Also ran a throwaway read-only row-count check (outside `scripts/`, deleted after use) confirming `purchase_order_lines`/`purchased_items`/`purchase_orders` are all under 130 rows each — small enough that WF-1b's item-name search is implemented as an in-memory join extending the page's existing entirely-client-side filter, rather than the handoff's suggested per-keystroke `ilike` DB round trip, which would have been unnecessary complexity at this data size.
+
+**Built (commit `dd91596`):** (a) `getItemPurchaseHistory(itemId)` action + `lib/item-purchase-history.ts` pure function (mirrors the `lib/reorder-suggestion.ts` data-fetch/pure-fn split) powering a new "Lịch sử nhập" modal button on `/admin/inventory/items`, showing every COMPLETED purchase of that item newest-first plus a price-trend hint (latest vs previous unit cost); (b) PO list search on `/admin/inventory/purchase-orders` extended to also match item names inside each order's lines, plus a from/to transaction-date range filter; (c) supplier rows now link to `/admin/inventory/purchase-orders?supplier=<id>`, which the PO list reads to preset its existing supplier filter. Read-only throughout, no schema change, no new write path. 5 new unit tests, `tsc` clean, full suite 678/678 (up from 673), production build passed. Could not browser-verify with an actual login in this environment (no session available) — same limitation as prior sessions' UI work here, flagged rather than silently skipped.
+
+**ROADMAP updated:** `WF-1` marked `[x]`, handoff moved to the historical-reference list.
+
+Commit: `dd91596` (local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude Sonnet 5) - Reviewed Full P1/P2 Backlog, Started with DEP-1 Phase 1 (Non-Breaking Dependency Fix)
 
 **Trigger:** owner asked to review all pending and newly-added work, analyze priority, and act.
