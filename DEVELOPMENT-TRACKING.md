@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude) - Full System Re-Audit (Read-Only) + 5-Wave Improvement Plan
+
+**Trigger:** owner asked for a fresh whole-system audit: weaknesses, improvements, and an implementation plan with detailed tasks.
+
+**Method:** read-only throughout — no code, no data, no config touched. Fresh evidence gathered this session rather than trusting docs: `tsc --noEmit` (0 errors), full suite (673/673), live `audit-pnl-mac-consistency.ts` (1,677 orders, 23,746,558 VND COGS, 0 VND delta both breakdowns), live `audit-current-stock.ts` (3 negative items), `supabase migration list` (0001-0034 all applied local+remote, including 0033 shift checks), git state (clean, 0 unpushed — `origin/main` = `464bac9`). Cross-referenced ROADMAP P1/P2 backlog, FEATURE-CATALOG statuses, and the last week's tracking entries.
+
+**Output:** `docs/audits/2026-07-24-full-system-reaudit-and-improvement-plan.md` — 16-finding register (F-1..F-16, no P0 found), healthy-areas list, and a 5-wave proposed plan: Wave 1 owner-only actions (CRON_SECRET, void 2 test orders, physical count of the 3 negative ingredients, create Khoai lang ingredient); Wave 2 Codex return backlog (REV-2/3/4, COGS-5 mechanism root-cause, AUDIT-TOOL-1); Wave 3 remaining full-table-load performance debt (activity log, PERF-1 pages, void/edit ledger upper bound); Wave 4 operational reliability (backup **restore drill** — never done, flagged as the biggest gap in that group; shift-check live verify; scripted UAT for the 21 LIVE_UNVERIFIED capabilities; post-deploy smoke script); Wave 5 owner-decision features (per-product toppings, CSV export, alerting, FC-3 revisit trigger).
+
+**Notable finding:** the 3 negative-stock balances grew materially after the 07-24 ledger rebuild (Sữa đặc -4,221 g; Lá hồng trà -2,009.583 g; Siro việt quất -190 ml) — expected, since the rebuild removed compensating rows that had been masking true theoretical balances. Lá hồng trà's profile (2,209 g consumed vs 200 g ever received) points to unrecorded purchases, not an engine bug.
+
+**Status:** plan is PROPOSED — no task started, no ROADMAP rows added yet; waiting for owner to pick which waves proceed (business-priority call per Section I rule 4).
+
+Commit: pending (local commit only, per owner's standing instruction to hold off on `git push` until explicitly approved each time).
+
+---
+
 ## 2026-07-24 (Claude) - Page-Load Speed Audit + POS Checkout "Reload" Fix
 
 **Trigger:** owner reported the POS screen felt like it "auto-reloaded" after completing an order and asked for (1) a full page-load speed audit, (2) priority fix on the POS checkout logic, and (3) a hands-on UX audit playing the role of an end user, with a proposed plan before any code changes.
