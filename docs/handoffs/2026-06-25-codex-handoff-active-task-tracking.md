@@ -1,5 +1,28 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-24 - COGS-5 pipeline root-cause review
+
+- `[x]` Disproved the open second-event hypothesis with a new paginated,
+  read-only live audit: all 41 prior writes among the 112 COGS-5 target lines
+  came from `task-3.9-historical-gap-recovery-2026-07-21`; 0 came from a
+  durable backdated-ledger event.
+- `[x]` Confirmed the real COGS-5 incident was the naive correction crossing
+  an accepted baseline-lock boundary. The 96 locked writes were reverted and
+  migration 0030 now rejects locked lines in both recovery RPCs.
+- `[x]` Fixed a separate lifecycle defect found during the review: zero-change
+  ledger/recipe events are now marked RECOMPUTED instead of remaining PENDING
+  forever. The CLI apply path settles them too.
+- `[x]` Added the synthetic two-event regression: the first event applies the
+  full correction and the already-incorporated second event settles cleanly
+  with zero changes.
+- `[x]` Verification: live read-only audit clean, targeted 16/16 tests, full
+  suite 709/709, TypeScript 0 errors, and production build passed.
+- `[x]` No production data was written.
+
+Evidence: `docs/audits/2026-07-24-cogs5-pipeline-root-cause-review.md`.
+
+Commit: this commit.
+
 ## 2026-07-24 - REV-4 reorder-suggestion backend review
 
 - `[x]` Confirmed the UOM direction used throughout the purchase flow:

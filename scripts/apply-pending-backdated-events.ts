@@ -45,9 +45,9 @@ async function main() {
       console.log(`    line=${change.line_id} order=${change.order_id} old=${change.old_cost_at_sale} new=${change.new_cost_at_sale}`);
     }
 
-    if (apply && plan.changes.length > 0) {
+    if (apply) {
       const result = await recomputeEventApply(event.id, "Claude");
-      console.log(`  Applied: ${JSON.stringify(result.apply_result)} / ${JSON.stringify(result.mark_result)}`);
+      console.log(`  Settled: ${JSON.stringify(result.apply_result)} / ${JSON.stringify(result.mark_result)}`);
     }
   }
 

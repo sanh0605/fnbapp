@@ -134,6 +134,7 @@ async function settlePlan(
   const totalDeltaVnd = changes.reduce((sum, change) => sum + (change.new_cost_at_sale - change.old_cost_at_sale), 0);
 
   if (changes.length === 0) {
+    await markNoChange(supabase, kind, eventId);
     return { event_id: eventId, kind, outcome: "no_change", change_count: 0, total_delta_vnd: 0 };
   }
 
@@ -156,4 +157,24 @@ async function settlePlan(
 
   await apply();
   return { event_id: eventId, kind, outcome: "applied", change_count: changes.length, total_delta_vnd: totalDeltaVnd };
+}
+
+async function markNoChange(
+  supabase: ReturnType<typeof getSupabaseClient>,
+  kind: "ledger" | "recipe",
+  eventId: string,
+): Promise<void> {
+  const rpcName = kind === "ledger"
+    ? "mark_backdated_event_recomputed"
+    : "mark_backdated_recipe_event_recomputed";
+  const runId = kind === "ledger"
+    ? `backdated-${eventId}`
+    : `backdated-recipe-${eventId}`;
+  const { error } = await supabase.rpc(rpcName, {
+    p_event_id: eventId,
+    p_reviewer: REVIEWER,
+    p_run_id: runId,
+    p_change_count: 0,
+  });
+  if (error) throw new Error(error.message);
 }

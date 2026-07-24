@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   recomputeEventApply: vi.fn(),
   recomputeRecipeEventDryRun: vi.fn(),
   recomputeRecipeEventApply: vi.fn(),
+  rpc: vi.fn(),
   updateEq: vi.fn(),
   update: vi.fn(),
   selectEq: vi.fn(),
@@ -21,7 +22,7 @@ vi.mock("@/lib/backdated-recipe-events/recompute-event", () => ({
   recomputeRecipeEventApply: mocks.recomputeRecipeEventApply,
 }));
 vi.mock("@/lib/supabase", () => ({
-  getSupabaseClient: () => ({ from: mocks.from }),
+  getSupabaseClient: () => ({ from: mocks.from, rpc: mocks.rpc }),
 }));
 
 import { GET } from "./route";
@@ -108,7 +109,7 @@ describe("GET /api/cron/apply-backdated-corrections", () => {
     expect(body).toMatchObject({ total_events: 1, applied: 0, flagged: 1 });
   });
 
-  it("records a no_change outcome without applying or flagging when the plan has no changes", async () => {
+  it("settles a no-change event so it does not remain pending forever", async () => {
     mocks.selectEq.mockImplementation(() => {
       const table = mocks.from.mock.calls[mocks.from.mock.calls.length - 1][0];
       if (table === "backdated_ledger_events") {
@@ -117,12 +118,73 @@ describe("GET /api/cron/apply-backdated-corrections", () => {
       return Promise.resolve({ data: [], error: null });
     });
     mocks.recomputeEventDryRun.mockResolvedValue({ changes: [] });
+    mocks.rpc.mockResolvedValue({ data: { marked_recomputed: true }, error: null });
 
     const response = await GET(request("test-secret"));
     const body = await response.json();
 
     expect(mocks.recomputeEventApply).not.toHaveBeenCalled();
+    expect(mocks.rpc).toHaveBeenCalledWith("mark_backdated_event_recomputed", {
+      p_event_id: "event-3",
+      p_reviewer: "system-auto",
+      p_run_id: "backdated-event-3",
+      p_change_count: 0,
+    });
     expect(mocks.update).not.toHaveBeenCalled();
     expect(body).toMatchObject({ total_events: 1, applied: 0, flagged: 0, no_change: 1 });
+  });
+
+  it("applies the first event and settles a second event already incorporated by the first recompute", async () => {
+    mocks.selectEq.mockImplementation(() => {
+      const table = mocks.from.mock.calls[mocks.from.mock.calls.length - 1][0];
+      if (table === "backdated_ledger_events") {
+        return Promise.resolve({ data: [{ id: "event-1" }, { id: "event-2" }], error: null });
+      }
+      return Promise.resolve({ data: [], error: null });
+    });
+    mocks.recomputeEventDryRun
+      .mockResolvedValueOnce({
+        changes: [{ line_id: "line-1", old_cost_at_sale: 100, new_cost_at_sale: 120 }],
+      })
+      .mockResolvedValueOnce({ changes: [] });
+    mocks.recomputeEventApply.mockResolvedValue({});
+    mocks.rpc.mockResolvedValue({ data: { marked_recomputed: true }, error: null });
+
+    const response = await GET(request("test-secret"));
+    const body = await response.json();
+
+    expect(mocks.recomputeEventApply).toHaveBeenCalledTimes(1);
+    expect(mocks.recomputeEventApply).toHaveBeenCalledWith("event-1", "system-auto");
+    expect(mocks.rpc).toHaveBeenCalledWith("mark_backdated_event_recomputed", {
+      p_event_id: "event-2",
+      p_reviewer: "system-auto",
+      p_run_id: "backdated-event-2",
+      p_change_count: 0,
+    });
+    expect(body).toMatchObject({ total_events: 2, applied: 1, no_change: 1, errors: 0 });
+  });
+
+  it("settles a no-change recipe event with the recipe lifecycle RPC", async () => {
+    mocks.selectEq.mockImplementation(() => {
+      const table = mocks.from.mock.calls[mocks.from.mock.calls.length - 1][0];
+      if (table === "backdated_recipe_events") {
+        return Promise.resolve({ data: [{ id: "recipe-event-1" }], error: null });
+      }
+      return Promise.resolve({ data: [], error: null });
+    });
+    mocks.recomputeRecipeEventDryRun.mockResolvedValue({ changes: [] });
+    mocks.rpc.mockResolvedValue({ data: { marked_recomputed: true }, error: null });
+
+    const response = await GET(request("test-secret"));
+    const body = await response.json();
+
+    expect(mocks.recomputeRecipeEventApply).not.toHaveBeenCalled();
+    expect(mocks.rpc).toHaveBeenCalledWith("mark_backdated_recipe_event_recomputed", {
+      p_event_id: "recipe-event-1",
+      p_reviewer: "system-auto",
+      p_run_id: "backdated-recipe-recipe-event-1",
+      p_change_count: 0,
+    });
+    expect(body).toMatchObject({ total_events: 1, no_change: 1, errors: 0 });
   });
 });
