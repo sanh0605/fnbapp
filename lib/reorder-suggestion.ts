@@ -164,6 +164,7 @@ export function computeReorderSuggestions(
   const purchasedItemById = new Map<string, RawPurchasedItem>(purchasedItems.map((pi) => [pi.id, pi]));
 
   const leadTimeSamplesByItemRef = new Map<string, number[]>();
+  const seenLeadTimeSampleKeys = new Set<string>();
   for (const line of purchaseOrderLines) {
     const po = poById.get(line.purchase_order_id);
     if (!po || po.status !== "COMPLETED") continue;
@@ -177,6 +178,10 @@ export function computeReorderSuggestions(
     const poCreatedAtMs = new Date(po.created_at || 0).getTime();
     const deltaDays = (receiptTime - poCreatedAtMs) / DAY_MS;
     if (!Number.isFinite(deltaDays) || deltaDays < 0) continue;
+
+    const sampleKey = `${po.id}::${itemRef}`;
+    if (seenLeadTimeSampleKeys.has(sampleKey)) continue;
+    seenLeadTimeSampleKeys.add(sampleKey);
 
     const samples = leadTimeSamplesByItemRef.get(itemRef) ?? [];
     samples.push(deltaDays);
@@ -217,10 +222,15 @@ export function computeReorderSuggestions(
 
     const purchasedItem = purchasedItemByItemRef.get(item.id);
     const conversion = purchasedItem ? activeConversionByPurchasedItemId.get(purchasedItem.id) : undefined;
-    const conversionRate = conversion ? Number(conversion.conversion_rate) : null;
-    const purchaseUnitName = conversion ? unitNameById.get(conversion.purchased_unit) ?? conversion.purchased_unit : null;
-    const suggestedReorderQtyPurchaseUnit = suggestedReorderQtyBaseUnit !== null && conversionRate
-      ? suggestedReorderQtyBaseUnit / conversionRate
+    const rawConversionRate = conversion ? Number(conversion.conversion_rate) : Number.NaN;
+    const conversionRate = Number.isFinite(rawConversionRate) && rawConversionRate > 0
+      ? rawConversionRate
+      : null;
+    const purchaseUnitName = conversion && conversionRate !== null
+      ? unitNameById.get(conversion.purchased_unit) ?? conversion.purchased_unit
+      : null;
+    const suggestedReorderQtyPurchaseUnit = suggestedReorderQtyBaseUnit !== null && conversionRate !== null
+      ? Math.ceil(suggestedReorderQtyBaseUnit / conversionRate)
       : null;
 
     return {

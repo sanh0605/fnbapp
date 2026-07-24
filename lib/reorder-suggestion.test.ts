@@ -117,7 +117,7 @@ describe("computeReorderSuggestions", () => {
     expect(result.leadTimeIsDefault).toBe(true);
   });
 
-  it("computes suggested reorder quantity in base unit and converts to purchase unit", () => {
+  it("rounds the suggested quantity up to a whole purchase unit", () => {
     const input = baseInput({
       baseIngredients: [{ id: "ING-A", name: "Duong", base_unit: "U-KG" }],
       purchasedItems: [{ id: "PI-1", base_ingredient_id: "ING-A" }],
@@ -136,9 +136,61 @@ describe("computeReorderSuggestions", () => {
     expect(result.avgDailyConsumption).toBeCloseTo(1, 6);
     expect(result.currentStock).toBeCloseTo(4, 6);
     expect(result.suggestedReorderQtyBaseUnit).toBeCloseTo(6, 6);
-    // conversion_rate 5 base units per purchase unit -> 6/5 = 1.2
-    expect(result.suggestedReorderQtyPurchaseUnit).toBeCloseTo(1.2, 6);
+    // conversion_rate 5 base units per purchase unit -> 6/5 = 1.2, rounded up
+    // so the suggestion does not under-order the target stock coverage.
+    expect(result.suggestedReorderQtyPurchaseUnit).toBe(2);
     expect(result.purchaseUnitName).toBe("Goi");
+  });
+
+  it("ignores a non-positive UOM conversion instead of producing a negative order quantity", () => {
+    const input = baseInput({
+      baseIngredients: [{ id: "ING-A", name: "Duong", base_unit: "U-KG" }],
+      purchasedItems: [{ id: "PI-1", base_ingredient_id: "ING-A" }],
+      uomConversions: [{
+        purchased_item_id: "PI-1",
+        purchased_unit: "U-GOI",
+        conversion_rate: -5,
+        status: "ACTIVE",
+      }],
+      stockLedger: [
+        { item_reference: "ING-A", transaction_type: "PO_RECEIPT", quantity_change: 10, created_at: daysAgo(20) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -2, created_at: daysAgo(3) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -2, created_at: daysAgo(2) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -2, created_at: daysAgo(1) },
+      ],
+    });
+
+    const [result] = computeReorderSuggestions(input, { asOf, lookbackDays: 6 });
+
+    expect(result.conversionRate).toBeNull();
+    expect(result.suggestedReorderQtyPurchaseUnit).toBeNull();
+  });
+
+  it("counts each completed PO once per item when averaging lead time", () => {
+    const input = baseInput({
+      baseIngredients: [{ id: "ING-A", name: "Duong", base_unit: "U-KG" }],
+      purchasedItems: [{ id: "PI-1", base_ingredient_id: "ING-A" }],
+      purchaseOrders: [
+        { id: "PO-1", status: "COMPLETED", created_at: daysAgo(10) },
+        { id: "PO-2", status: "COMPLETED", created_at: daysAgo(10) },
+      ],
+      purchaseOrderLines: [
+        { purchase_order_id: "PO-1", purchased_item_id: "PI-1" },
+        { purchase_order_id: "PO-1", purchased_item_id: "PI-1" },
+        { purchase_order_id: "PO-2", purchased_item_id: "PI-1" },
+      ],
+      stockLedger: [
+        { item_reference: "ING-A", transaction_type: "PO_RECEIPT", reference_id: "PO-1", quantity_change: 10, created_at: daysAgo(8) },
+        { item_reference: "ING-A", transaction_type: "PO_RECEIPT", reference_id: "PO-2", quantity_change: 10, created_at: daysAgo(2) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -1, created_at: daysAgo(3) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -1, created_at: daysAgo(2) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -1, created_at: daysAgo(1) },
+      ],
+    });
+
+    const [result] = computeReorderSuggestions(input, { asOf });
+
+    expect(result.leadTimeDays).toBe(5);
   });
 
   it("never suggests a negative reorder quantity when current stock already covers the target window", () => {

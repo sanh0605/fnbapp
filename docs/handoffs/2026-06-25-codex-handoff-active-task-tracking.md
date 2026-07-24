@@ -1,5 +1,23 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-24 - REV-4 reorder-suggestion backend review
+
+- `[x]` Confirmed the UOM direction used throughout the purchase flow:
+  `conversion_rate` is base units per purchase unit, so the suggestion must
+  divide the base quantity by the conversion rate.
+- `[x]` Rounded purchase-unit suggestions up to a whole unit so target stock
+  coverage is not under-ordered.
+- `[x]` Rejected non-finite and non-positive active conversion rates instead
+  of returning invalid purchase quantities.
+- `[x]` Deduplicated lead-time samples by purchase order and inventory item;
+  repeated PO lines for the same item no longer bias the average.
+- `[x]` Added regression coverage for all three cases. Verification: targeted
+  11/11 tests, full suite 694/694, TypeScript 0 errors, production build passed,
+  and `git diff --check` passed.
+- `[x]` No UI files and no production data were changed.
+
+Commit: this commit.
+
 ## 2026-07-24 - REV-2 audit-script review and auth remediation
 
 - `[x]` Approved Claude's `purchase_order_id` correction in
