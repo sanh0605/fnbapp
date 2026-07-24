@@ -45,6 +45,7 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
+    "vite-node": "^6.0.0",
     "vitest": "^4.1.10"
   }
 }
