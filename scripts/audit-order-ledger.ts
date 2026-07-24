@@ -3,39 +3,66 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
-const BTP_SHORTFALL_CUTOVER_AT = "2026-06-25T07:31:08.402Z";
-
 function fmt(value: number): string {
   return Number(value.toFixed(6)).toString();
 }
 
 async function main() {
-  const { auditOrderLedger } = await import("../lib/order-ledger-audit");
+  const { auditFullHistoryOrderLedger } = await import("../lib/full-history-ledger-audit");
+  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
   const { findAllNoCache } = await import("../lib/sheets_db");
 
-  const [orders, lines, ledger, recipes, semiProducts] = await Promise.all([
+  const [
+    orders,
+    lines,
+    ledger,
+    recipes,
+    semiProducts,
+    purchaseOrders,
+    purchaseOrderLines,
+    purchasedItems,
+    conversions,
+  ] = await Promise.all([
     findAllNoCache("Orders_V2"),
     findAllNoCache("Order_Lines_V2"),
     findAllNoCache("Stock_Ledger"),
     findAllNoCache("Recipes"),
     findAllNoCache("Semi_Products"),
-  ]);
+    findAllNoCache("Purchase_Orders"),
+    findAllNoCache("Purchase_Order_Lines"),
+    findAllNoCache("Purchased_Items"),
+    findAllNoCache("UOM_Conversions"),
+  ]) as any[][];
 
-  const report = auditOrderLedger({
-    orders: orders as any[],
-    lines: lines as any[],
-    ledger: ledger as any[],
-    recipes: recipes as any[],
-    semiProducts: semiProducts as any[],
-    shortfallCutoverAt: BTP_SHORTFALL_CUTOVER_AT,
+  const { rows: trustedPrimitives, skippedPoReceipts } = buildTrustedPrimitiveLedger({
+    purchaseOrders,
+    purchaseOrderLines,
+    purchasedItems,
+    conversions,
+    rawStockLedger: ledger,
+  });
+  const replay = replayFullHistory({
+    orders,
+    lines,
+    recipes,
+    semiProducts,
+    trustedPrimitives,
+  });
+  const report = auditFullHistoryOrderLedger({
+    orders,
+    computedLedger: replay.computedLedger,
+    recordedLedger: ledger,
   });
 
-  console.log("=== ORDER LEDGER AUDIT (READ ONLY) ===");
-  console.log(`Orders:             ${report.orderCount}`);
-  console.log(`Lines:              ${report.lineCount}`);
-  console.log(`Ledger rows:        ${report.ledgerRowCount}`);
-  console.log(`Mismatches:         ${report.mismatches.length}`);
-  console.log(`Orphan ledger rows: ${report.orphanLedgerRows.length}`);
+  console.log("=== FULL-HISTORY ORDER LEDGER AUDIT (READ ONLY) ===");
+  console.log(`Orders:               ${report.orderCount}`);
+  console.log(`Lines replayed:        ${replay.lineResults.length}`);
+  console.log(`Computed ledger rows:  ${report.computedLedgerRowCount}`);
+  console.log(`Recorded ledger rows:  ${report.recordedLedgerRowCount}`);
+  console.log(`Replay errors:         ${replay.errors.length}`);
+  console.log(`Skipped PO receipts:   ${skippedPoReceipts.length}`);
+  console.log(`Quantity mismatches:   ${report.mismatches.length}`);
+  console.log(`Orphan derived rows:   ${report.orphanLedgerRows.length}`);
 
   for (const row of report.mismatches.slice(0, 50)) {
     console.log([
@@ -55,7 +82,25 @@ async function main() {
     }
   }
 
+  if (replay.errors.length > 0) {
+    console.log("\nReplay errors:");
+    for (const error of replay.errors.slice(0, 20)) console.log(error);
+  }
+
+  if (skippedPoReceipts.length > 0) {
+    console.log("\nSkipped PO receipts:");
+    for (const receipt of skippedPoReceipts.slice(0, 20)) console.log(receipt);
+  }
+
   console.log("\nNo data was written.");
+  if (
+    replay.errors.length > 0 ||
+    skippedPoReceipts.length > 0 ||
+    report.mismatches.length > 0 ||
+    report.orphanLedgerRows.length > 0
+  ) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error: unknown) => {

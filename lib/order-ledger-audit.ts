@@ -64,6 +64,11 @@ export type OrderLedgerAuditReport = {
   orphanLedgerRows: RawLedger[];
 };
 
+/**
+ * @deprecated Retained only for historical correction and verification
+ * scripts that must reproduce the old cutover-aware methodology. New ledger
+ * audits must use full-history-recompute plus full-history-ledger-audit.
+ */
 export function auditOrderLedger(input: {
   orders: RawOrder[];
   lines: RawLine[];
