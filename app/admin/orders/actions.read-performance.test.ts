@@ -127,6 +127,25 @@ describe("getOrderDetailV2 query scope", () => {
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Order_Events");
   });
 
+  it("uses Vietnamese fallbacks when an order line no longer has product metadata", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) => {
+      if (sheet === "Brands") return [{ id: "BR-001", code: "UCK" }];
+      return [];
+    });
+    mocks.findAllWhereInBatches.mockImplementation(async (sheet: string) => (
+      sheet === "Order_Lines_V2"
+        ? [{ ...currentLine, product_snapshot_json: "{}", variant_snapshot_json: "{}" }]
+        : sheet === "Order_Events" ? [rootEvent] : []
+    ));
+
+    const result = await getOrderDetailV2(currentOrder.id);
+
+    expect(result?.order.lines[0]).toMatchObject({
+      product_name: "Không rõ",
+      size_name: "Không rõ",
+    });
+  });
+
   it("loads only the selected order and its ledger rows when voiding", async () => {
     mocks.findById.mockResolvedValue({
       id: "ord-void",

@@ -212,8 +212,8 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
           manual_item_discount: Number(line.manual_item_discount) || 0,
           order_discount_allocation: Number(line.order_discount_allocation) || 0,
           net_line_total: Number(line.net_line_total) || 0,
-          product_name: productSnap.name || product?.name || "Unknown",
-          size_name: variantSnap.size_name || variant?.size_name || "Unknown",
+          product_name: productSnap.name || product?.name || "Không rõ",
+          size_name: variantSnap.size_name || variant?.size_name || "Không rõ",
           modifiers: mods,
         };
       });
@@ -327,8 +327,8 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
       manual_item_discount: Number(line.manual_item_discount) || 0,
       order_discount_allocation: Number(line.order_discount_allocation) || 0,
       net_line_total: Number(line.net_line_total) || 0,
-      product_name: productSnap.name || product?.name || "Unknown",
-      size_name: variantSnap.size_name || variant?.size_name || "Unknown",
+      product_name: productSnap.name || product?.name || "Không rõ",
+      size_name: variantSnap.size_name || variant?.size_name || "Không rõ",
       modifiers: mods,
     };
   });
