@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Sonnet 5) - Closed WF-2 (Per-Item Stock Movement History Drill-Down)
+
+**Trigger:** owner picked WF-2 over starting `INV-COUNT-1` directly, from a 3-option check-in (WF-2 vs INV-COUNT-1 vs stop for the day) after RPT-DIGEST-1 D1 closed.
+
+**Built:** a "Lịch sử" button per row on `/admin/reports/stock` (`components/StockTable.tsx`, both desktop and mobile) opening a modal with that item's `Stock_Ledger` history, newest first, Vietnamese-labeled transaction types. Unlike WF-1a's purchase-history modal (small table, loads everything at once), this is genuinely paginated — cursor-based via `lib/sheets_db.ts`'s existing `findAllWhere(after: {value, id})`, 30 rows/page with a "Xem thêm" load-more button — because `Stock_Ledger` has 11,700+ rows; per the handoff's own instruction, "server-side `.range()` pagination from day one." Verified the real column names (`item_reference`, `transaction_type`, `quantity_change`, `reference_id`, `notes`, `created_at`) directly against `supabase/migrations/0001_init_schema.sql` before writing the query, and confirmed the table is indexed on exactly `(item_reference, created_at)` — so each page is an indexed range scan, not a growing full-table cost. `lib/stock-ledger-history.ts` holds a small Vietnamese label map for the `transaction_type` check-constraint's 9 values (verified against the migration, not guessed), 2 new tests.
+
+**Verified:** `tsc` clean, full suite 721/721, `next build` passed. Could not browser-verify with a live login in this environment.
+
+**ROADMAP updated:** `WF-2` marked `[x]`.
+
+Commit: `51e5f92` (local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude Sonnet 5) - RPT-DIGEST-1 Phase D1 (On-Demand Daily Summary Page)
 
 **Trigger:** continued the priority order from the approved plan (`docs/superpowers/plans/2026-07-24-stocktake-and-daily-digest-plan.md`) after closing UI-CLEAN-1.
