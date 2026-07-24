@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Sonnet 5) - Owner Expanded Sonnet 5 to All UI Scope (Antigravity Backup-Only); Reviewed and Fixed FC-1's Split-Payment UI
+
+**Trigger:** mid-session, right after reporting Codex's rate-limit window had ended, the owner said "từ giờ tất cả scope đang phân quyền cho agy cũng sẽ do em xử lý", then clarified "agy chỉ là dự phòng" (Antigravity is backup-only now). Updated `docs/COLLABORATION.md` and `docs/ROADMAP.md` ownership accordingly (commit `1944f60`) and saved memory (`project_sonnet5-absorbs-antigravity-scope`).
+
+**Picked up FC-1's pending UI piece next** (flagged in the roadmap as the highest-value remaining UI item, ahead of `UI-CLEAN-1`). Investigating it turned up something the roadmap had wrong: the split-payment UI was **already built and committed by Antigravity on 2026-07-20** (`d631b10`, "implement POS split payment UI (functional)") — the roadmap's pending-prompts list was simply never updated after that commit, so it kept reading "ready for Antigravity pickup" for 4 days of tracking entries.
+
+**Reviewed it properly instead of assuming it was fine**, since UI review is now this session's job. Found 2 real bugs, neither previously caught (no review is recorded against `d631b10`, and `REV-3` only ever covered the backend): (1) all 3 checkout-retry paths (`POSScreen.tsx`'s toast action ×2, `CartPanel.tsx`'s inline error banner) called `handleConfirmCheckout(method)` without the `payments` array — retrying a failed split-payment checkout would silently fall back to a single full-amount CASH payment instead of resending the actual split, a real till/accounting-mismatch risk, not just a UX gap. (2) `CartPanel.tsx`'s local `totalAmount` wasn't rounded, while `lib/order-cart.ts`'s authoritative `net_total` rounds every discount step — a PERCENT order-level discount could leave a fractional VND total that no whole-number split-payment entry could ever match, silently making split payment impossible on any order with that kind of discount applied. Fixed both, commit `dd4cada`.
+
+**Discovered a live concurrent Codex session** while verifying: `git status` showed `lib/order-edit-*.ts`, `lib/sheets-db-v2-edit.ts`, `lib/drive-backup*.ts`, and a new `lib/order-edit-payment-migration.test.ts` actively changing mid-session — Codex working on migration `0035` (payment-aware order-edit RPC, bumping the backup table allowlist to 33 tables). Left all of it untouched per the "no edits in unknown dirty files" rule, staged and committed only the 2 files above. The shared pre-commit hook's project-wide `tsc` was red from Codex's expected mid-edit state (test files ahead of implementation) even though my own 2 files type-checked clean in isolation — committed with `--no-verify` per `docs/COLLABORATION.md`'s documented exception for another agent's WIP, with the reasoning spelled out in the commit body.
+
+**ROADMAP updated:** `FC-1`'s UI row marked `[x]`, its handoff moved to historical reference.
+
+Commit: `1944f60` (docs), `dd4cada` (fix). Both local, no push per standing instruction.
+
+---
+
 ## 2026-07-24 (Claude Sonnet 5) - Closed WF-1 (Per-Item Purchase History + PO Search + Supplier Links)
 
 **Trigger:** owner picked WF-1 as the next priority after DEP-1 phase 1, from a 4-option check-in (WF-1 vs UI-CLEAN-1 vs RPT-DIGEST-1 vs INV-COUNT-1) — chose the item that directly answers 2 scenarios the owner personally verified as impossible (`docs/audits/2026-07-24-workflow-forms-popups-search-audit.md` section D).
