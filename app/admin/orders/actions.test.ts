@@ -21,4 +21,14 @@ describe("admin order edit COGS calculation", () => {
     expect(ledgerSource).toContain('"PRODUCTION_CONSUME"');
     expect(ledgerSource).toContain('"PRODUCTION_YIELD"');
   });
+
+  it("preserves payment rows through the atomic edit transaction", () => {
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
+
+    expect(editOrderSource).toContain('findAllWhere<{');
+    expect(editOrderSource).toContain('>("Order_Payments"');
+    expect(editOrderSource).toContain("planEditedOrderPayments(");
+    expect(editOrderSource).toContain("payments: editedPayments");
+  });
 });

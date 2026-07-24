@@ -14,7 +14,12 @@
 
 import crypto from "node:crypto";
 import { buildOrderFromCart } from "@/lib/order-cart";
-import type { CartInput, ReferenceData, BuildOrderResult } from "@/lib/order-cart";
+import type {
+  BuildOrderResult,
+  CartInput,
+  CartPaymentInput,
+  ReferenceData,
+} from "@/lib/order-cart";
 import type { OrderV2, OrderLineV2 } from "@/lib/order-types";
 
 interface OriginalOrder {
@@ -23,6 +28,41 @@ interface OriginalOrder {
 }
 
 import { assertOrderInvariants } from "@/lib/order-math";
+
+export function planEditedOrderPayments(
+  existingPayments: CartPaymentInput[],
+  oldNetTotal: number,
+  newNetTotal: number,
+  selectedPaymentMethod: CartPaymentInput["method"],
+): CartPaymentInput[] {
+  if (existingPayments.length > 1) {
+    const existingTotal = existingPayments.reduce(
+      (sum, payment) => sum + Number(payment.amount),
+      0,
+    );
+    if (existingTotal !== oldNetTotal) {
+      throw new Error(
+        "Chi ti\u1ebft thanh to\u00e1n k\u1ebft h\u1ee3p kh\u00f4ng kh\u1edbp v\u1edbi t\u1ed5ng ti\u1ec1n c\u1ee7a \u0111\u01a1n g\u1ed1c",
+      );
+    }
+    if (newNetTotal !== oldNetTotal) {
+      throw new Error(
+        "\u0110\u01a1n thanh to\u00e1n k\u1ebft h\u1ee3p hi\u1ec7n kh\u00f4ng th\u1ec3 \u0111\u1ed5i t\u1ed5ng ti\u1ec1n khi s\u1eeda. Vui l\u00f2ng h\u1ee7y v\u00e0 t\u1ea1o l\u1ea1i \u0111\u01a1n.",
+      );
+    }
+    return existingPayments.map((payment) => ({
+      method: payment.method,
+      amount: Number(payment.amount),
+      reference: payment.reference || "",
+    }));
+  }
+
+  return [{
+    method: selectedPaymentMethod,
+    amount: newNetTotal,
+    reference: "",
+  }];
+}
 
 export function buildEditedOrderFromCart(
   input: CartInput,

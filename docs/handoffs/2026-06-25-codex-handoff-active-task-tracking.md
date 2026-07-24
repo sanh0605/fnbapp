@@ -1,5 +1,31 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-24 - REV-3 split-payment backend review
+
+- `[x]` Re-reviewed migration `0024`, checkout payment-sum handling, and
+  `RPT-SALES` per-payment attribution.
+- `[x]` Confirmed the sales report attributes each stored payment row and uses
+  the legacy order payment method only when no detail rows exist.
+- `[x]` Found and fixed a transaction gap: editing an order created a new order
+  version without `order_payments`, so an edited split payment was reported as
+  one full-amount payment.
+- `[x]` Unchanged split totals now preserve the exact payment allocation.
+  Split-payment edits that change the total are rejected instead of guessing a
+  new allocation; the current edit UI cannot enter a replacement split.
+- `[x]` Added migration `0035_preserve_order_payments_on_edit.sql`: payment rows
+  are inserted in the same edit transaction, direct checkout RPC callers must
+  provide integer VND amounts, and payment table constraints cover IDs,
+  methods, and non-negative stored amounts.
+- `[x]` Verification: 686/686 tests pass, TypeScript reports 0 errors,
+  production build passes, and `git diff --check` passes.
+- `[!]` Migration 0035 is prepared but not deployed. It needs the required
+  coordinator review before deployment and a live transaction probe afterward.
+- `[!]` Review also observed that `order_payments` is absent from the backup
+  table allowlist. No backup files were changed because the owner restricted
+  this session to the assigned REV-3 scope; track that separately.
+
+Commit: this commit.
+
 ## 2026-07-09 - Postgres role timezone migration Task 4
 
 - `[x]` Added `supabase/migrations/0013_set_postgres_role_timezone.sql`.

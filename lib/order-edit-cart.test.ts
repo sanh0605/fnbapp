@@ -1,5 +1,8 @@
 import { afterAll, beforeAll, describe, it, expect, vi } from "vitest";
-import { buildEditedOrderFromCart } from "@/lib/order-edit-cart";
+import {
+  buildEditedOrderFromCart,
+  planEditedOrderPayments,
+} from "@/lib/order-edit-cart";
 import { makeSuaDauStandaloneOrder } from "@/lib/__tests__/fixtures";
 import type { CartInput, ReferenceData } from "@/lib/order-cart";
 
@@ -222,5 +225,40 @@ describe("buildEditedOrderFromCart", () => {
     expect(result.lines[0].net_line_total).toBe(25000);
     expect(result.order.promo_discount_total).toBe(10000);
     expect(result.order.net_total).toBe(25000);
+  });
+});
+
+describe("planEditedOrderPayments", () => {
+  it("preserves an existing split when the edited total is unchanged", () => {
+    expect(planEditedOrderPayments(
+      [
+        { method: "CASH", amount: 15000, reference: "" },
+        { method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },
+      ],
+      25000,
+      25000,
+      "CASH",
+    )).toEqual([
+      { method: "CASH", amount: 15000, reference: "" },
+      { method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },
+    ]);
+  });
+
+  it("rejects changing the total of an existing split instead of guessing a new allocation", () => {
+    expect(() => planEditedOrderPayments(
+      [
+        { method: "CASH", amount: 15000, reference: "" },
+        { method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },
+      ],
+      25000,
+      30000,
+      "CASH",
+    )).toThrow(/\u0110\u01a1n thanh to\u00e1n k\u1ebft h\u1ee3p.*kh\u00f4ng th\u1ec3 \u0111\u1ed5i t\u1ed5ng ti\u1ec1n/i);
+  });
+
+  it("creates one current payment row for legacy or single-method edits", () => {
+    expect(planEditedOrderPayments([], 25000, 30000, "BANK_TRANSFER")).toEqual([
+      { method: "BANK_TRANSFER", amount: 30000, reference: "" },
+    ]);
   });
 });

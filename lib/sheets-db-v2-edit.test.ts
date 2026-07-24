@@ -17,6 +17,7 @@ describe("supersedeOrderV2", () => {
       newOrderId: "ord-new",
       lineCount: 1,
       ledgerCount: 2,
+      paymentCount: 2,
     });
     const input = makeInput();
 
@@ -28,6 +29,7 @@ describe("supersedeOrderV2", () => {
       newLines: input.newLines,
       event: input.event,
       ledgerRows: [...input.reversalEntries, ...input.consumeEntries],
+      payments: input.payments,
     });
   });
 
@@ -82,5 +84,9 @@ function makeInput(): SupersedeOrderV2Input {
       order_event_id: "event-edit",
       cost_at_sale: 1_200,
     }],
+    payments: [
+      { id: "pay-cash", order_id: "ord-new", method: "CASH", amount: 15000, reference: "" },
+      { id: "pay-bank", order_id: "ord-new", method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },
+    ],
   };
 }

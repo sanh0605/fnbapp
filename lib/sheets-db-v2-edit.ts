@@ -9,6 +9,7 @@
 "use server";
 
 import { supersedeOrderAtomic } from "@/lib/order-edit-transaction";
+import type { OrderEditPaymentInput } from "@/lib/order-edit-transaction";
 import type { OrderEvent, OrderLineV2, OrderV2 } from "@/lib/order-types";
 
 interface LedgerEntryInput {
@@ -32,6 +33,7 @@ export interface SupersedeOrderV2Input {
   event: OrderEvent;
   reversalEntries: LedgerEntryInput[];
   consumeEntries: LedgerEntryInput[];
+  payments: OrderEditPaymentInput[];
 }
 
 export type SupersedeOrderV2Result =
@@ -52,6 +54,7 @@ export async function supersedeOrderV2(
         ...input.reversalEntries,
         ...input.consumeEntries,
       ] as unknown as Array<Record<string, unknown>>,
+      payments: input.payments,
     });
     return { success: true };
   } catch (error: unknown) {

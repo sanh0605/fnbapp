@@ -17,7 +17,10 @@ import crypto from "node:crypto";
 
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
 import type { OrderV2, OrderLineV2, OrderEvent } from "@/lib/order-types";
-import { buildEditedOrderFromCart } from "@/lib/order-edit-cart";
+import {
+  buildEditedOrderFromCart,
+  planEditedOrderPayments,
+} from "@/lib/order-edit-cart";
 import { supersedeOrderV2 } from "@/lib/sheets-db-v2-edit";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
 import { computeMacCostForConsumptionRows } from "@/lib/mac-cogs";
@@ -474,6 +477,13 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
     const actor = { id: auth.actor.id, name: auth.actor.name };
+    const oldPayments = await findAllWhere<{
+      method: string;
+      amount: number | string;
+      reference?: string | null;
+    }>("Order_Payments", {
+      eq: { order_id: input.orderId },
+    });
 
     // 3. Load reference data
     const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients, semiProducts] = await Promise.all([
@@ -489,6 +499,32 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       { brands, products, variants, categories, modifiers, promotions, recipes, base_ingredients: baseIngredients },
       { order: oldOrderV2, lines: oldLinesV2 },
     );
+    const paymentPlan = planEditedOrderPayments(
+      oldPayments.map((payment) => {
+        if (payment.method !== "CASH" && payment.method !== "BANK_TRANSFER") {
+          throw new Error("Ph\u01b0\u01a1ng th\u1ee9c thanh to\u00e1n c\u1ee7a \u0111\u01a1n g\u1ed1c kh\u00f4ng h\u1ee3p l\u1ec7");
+        }
+        const amount = Number(payment.amount);
+        if (!Number.isInteger(amount) || amount < 0) {
+          throw new Error("S\u1ed1 ti\u1ec1n thanh to\u00e1n c\u1ee7a \u0111\u01a1n g\u1ed1c kh\u00f4ng h\u1ee3p l\u1ec7");
+        }
+        return {
+          method: payment.method,
+          amount,
+          reference: payment.reference || "",
+        };
+      }),
+      oldOrderV2.net_total,
+      built.order.net_total,
+      built.order.payment_method === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH",
+    );
+    const editedPayments = paymentPlan.map((payment) => ({
+      id: `pay-${crypto.randomUUID()}`,
+      order_id: built.order.id,
+      method: payment.method,
+      amount: payment.amount,
+      reference: payment.reference || "",
+    }));
 
     // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same MAC path as POS.
     const originalSaleTime = oldOrderV2.created_at;
@@ -559,6 +595,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       event,
       reversalEntries,
       consumeEntries,
+      payments: editedPayments,
     });
 
     if (!result.success) {

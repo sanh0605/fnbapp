@@ -80,5 +80,12 @@ function makeInput(): SupersedeOrderV2Input {
       order_event_id: "event-edit",
       cost_at_sale: 1_200,
     }],
+    payments: [{
+      id: "pay-new",
+      order_id: "ord-new",
+      method: "CASH",
+      amount: 30_000,
+      reference: "",
+    }],
   };
 }

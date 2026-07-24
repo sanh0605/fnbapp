@@ -13,7 +13,7 @@ describe("supersedeOrderAtomic", () => {
 
   it("sends the whole replacement batch to one RPC with parsed JSON columns", async () => {
     mocks.rpc.mockResolvedValue({
-      data: { new_order_id: "ord-new", line_count: 1, ledger_count: 2 },
+      data: { new_order_id: "ord-new", line_count: 1, ledger_count: 2, payment_count: 2 },
       error: null,
     });
     const input = makeInput();
@@ -22,6 +22,7 @@ describe("supersedeOrderAtomic", () => {
       newOrderId: "ord-new",
       lineCount: 1,
       ledgerCount: 2,
+      paymentCount: 2,
     });
     expect(mocks.rpc).toHaveBeenCalledWith("supersede_order_v2_atomic", {
       p_old_order_id: "ord-old",
@@ -30,6 +31,7 @@ describe("supersedeOrderAtomic", () => {
       p_new_lines: [expect.objectContaining({ recipe_snapshot_json: { ingredients: [] } })],
       p_event: expect.objectContaining({ delta_json: { changed: true } }),
       p_ledger: input.ledgerRows,
+      p_payments: input.payments,
     });
   });
 
@@ -63,5 +65,9 @@ function makeInput() {
     }],
     event: { id: "event-edit", delta_json: JSON.stringify({ changed: true }) },
     ledgerRows: [{ id: "rev" }, { id: "consume" }],
+    payments: [
+      { id: "pay-cash", order_id: "ord-new", method: "CASH", amount: 15000, reference: "" },
+      { id: "pay-bank", order_id: "ord-new", method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },
+    ],
   };
 }
