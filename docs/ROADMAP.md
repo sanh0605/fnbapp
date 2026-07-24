@@ -46,6 +46,7 @@ Detailed scope rules: `docs/COLLABORATION.md` section C (Risk-Boundary Ownership
 | Task | Owner | Scope | Notes |
 |---|---|---|---|
 | [ ] **PERF-2. Wave 3 performance remediation (owner-approved 2026-07-24)** | Codex | `app/pos/page.tsx`, `app/admin/activity-log/**`, PERF-1 pages, `app/admin/orders/actions.ts` ledger bounds | Owner approved Claude's recommendation from the 2026-07-24 re-audit, then directed that Claude plans and other agents implement. Handoff ready: `docs/handoffs/2026-07-24-codex-wave3-performance-remediation.md` — Phase A: strip dead out-of-stock work from POS load (full-`Stock_Ledger` fetch discarded against a hardcoded-off feature), activity-log server-side pagination (mirrors `getOrdersV2`), PERF-1 `history.replaceState` fix, icon/revalidate cleanup. Phase B: prove-and-bound the void/edit full-ledger fetches; design-only proposal for a materialized current-stock balance (Claude reviews before implementation). |
+| [ ] **UI-CLEAN-1. Design-free frontend cleanup sweep (owner-triggered frontend audit 2026-07-24)** | Antigravity | 22 files token swap, dead `components/ModifierForm.tsx` deletion, 7 "Unknown" strings | From `docs/audits/2026-07-24-frontend-ui-ux-audit.md` (FE-3/FE-5/FE-7). Handoff ready: `docs/handoffs/2026-07-24-antigravity-ui-clean-1.md`. No design decisions — safe before the redesign phase. FC-1 split-payment UI (`docs/handoffs/2026-07-20-antigravity-fc1-split-payment-pos-ui.md`) remains the higher-value Antigravity item and should go first. |
 | [ ] **FC-3. Shift and cash reconciliation** | Claude (logic, covering Codex), Antigravity (functional-only UI) | New `shifts`/`cash_movements` tables, POS mandatory open-shift gate | Feature-completeness pass, item 3 of 3, deliberately last — no current staff makes this a non-issue for now. Plan: section 3 of the same roadmap doc. Owner confirmed shift-open is mandatory before selling, whenever this item's turn comes. |
 
 ### P2 — Backlog (medium impact, functional bugs found during Pre-Audit C, not security exposures)
@@ -139,6 +140,7 @@ records intent and order, not authorization to start.
 
 These prompts are ready for agents to pick up. Prompts for completed tasks remain as historical record.
 
+- `2026-07-24-antigravity-ui-clean-1.md` → UI-CLEAN-1 — design-free cleanup sweep (token swap, dead-file deletion, English fallback strings) — ready for Antigravity pickup, after FC-1's pending UI handoff
 - `2026-07-24-codex-wave3-performance-remediation.md` → PERF-2 — POS dead-work strip, activity-log pagination, PERF-1 fix, void/edit ledger bounds + stock-balance design proposal — ready for Codex pickup after the Wave 2 review backlog (REV-2/3/4, COGS-5, AUDIT-TOOL-1)
 - `2026-07-22-antigravity-fc2-reorder-suggestion-ui.md` → FC-2 — low-stock/reorder-suggestion UI, historical reference — owner decided to skip the Antigravity handoff given the task's simplicity; Claude built it directly instead (see `docs/COMPLETED.md`)
 - `2026-07-20-antigravity-fc1-split-payment-pos-ui.md` → FC-1 — POS split/mixed payment UI (functional only), backend already done and live-probed — ready for Antigravity pickup
