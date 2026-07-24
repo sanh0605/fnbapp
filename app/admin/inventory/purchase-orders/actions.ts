@@ -3,29 +3,34 @@
 import { findAll, insert, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
-import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource } from "@/types/db";
+import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";
 import { savePurchaseOrderAtomic } from "@/lib/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth";
+import type { RawPurchaseOrderLine } from "@/lib/item-purchase-history";
 
 const PATH = "/admin/inventory/purchase-orders";
 
 export async function getPurchaseOrdersData(): Promise<{
   orders: DBPurchaseOrder[];
   suppliers: DBSupplier[];
+  lines: RawPurchaseOrderLine[];
+  items: DBPurchasedItem[];
 }> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const [orders, suppliers] = await Promise.all([
+    const [orders, suppliers, lines, items] = await Promise.all([
       findAll("Purchase_Orders") as Promise<DBPurchaseOrder[]>,
       findAll("Suppliers") as Promise<DBSupplier[]>,
+      findAll("Purchase_Order_Lines") as Promise<RawPurchaseOrderLine[]>,
+      findAll("Purchased_Items") as Promise<DBPurchasedItem[]>,
     ]);
-    return { orders, suppliers };
+    return { orders, suppliers, lines, items };
   } catch (error) {
     console.error("Loi getPurchaseOrdersData:", error);
-    return { orders: [], suppliers: [] };
+    return { orders: [], suppliers: [], lines: [], items: [] };
   }
 }
 

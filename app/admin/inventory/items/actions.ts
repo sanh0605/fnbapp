@@ -1,10 +1,17 @@
 "use server";
 
-import { findAll, insert, update, updateMany, remove, generateNewId } from "@/lib/sheets_db";
+import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
+import {
+  computeItemPurchaseHistory,
+  type ItemPurchaseHistoryRow,
+  type RawPurchaseOrder,
+  type RawPurchaseOrderLine,
+  type RawSupplier,
+} from "@/lib/item-purchase-history";
 
 const SHEET = "Purchased_Items";
 const PATH = "/admin/inventory/items";
@@ -33,6 +40,20 @@ export async function getItemsData(): Promise<{
     console.error("Loi getItemsData:", error);
     return { categories: [], baseIngredients: [], items: [], conversions: [], units: [] };
   }
+}
+
+export async function getItemPurchaseHistory(itemId: string): Promise<ItemPurchaseHistoryRow[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const [lines, orders, suppliers, units] = await Promise.all([
+    findAllWhere<RawPurchaseOrderLine>("Purchase_Order_Lines", { eq: { purchased_item_id: itemId } }),
+    findAll("Purchase_Orders") as Promise<RawPurchaseOrder[]>,
+    findAll("Suppliers") as Promise<RawSupplier[]>,
+    findAll("Units") as Promise<DBUnit[]>,
+  ]);
+
+  return computeItemPurchaseHistory(itemId, lines, orders, suppliers, units);
 }
 
 export async function addPurchasedItem(formData: FormData): Promise<ActionResponse> {

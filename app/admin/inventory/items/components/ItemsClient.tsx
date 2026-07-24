@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PurchasedItemForm } from "./PurchasedItemForm";
+import { PurchaseHistoryButton } from "./PurchaseHistoryButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deletePurchasedItemAction } from "../actions";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
@@ -153,7 +154,8 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end items-center gap-2">
-                          <PurchasedItemForm 
+                          <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
+                          <PurchasedItemForm
                             initialData={item}
                             initialConversions={itemConversions}
                             itemCategories={categories}
@@ -215,7 +217,10 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
 
                   <div className="flex justify-end items-center gap-2 pt-3 mt-2 border-t border-border/50">
                     <div className="flex items-center">
-                      <PurchasedItemForm 
+                      <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
+                    </div>
+                    <div className="flex items-center">
+                      <PurchasedItemForm
                         initialData={item}
                         initialConversions={itemConversions}
                         itemCategories={categories}

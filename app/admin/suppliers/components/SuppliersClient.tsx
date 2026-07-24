@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SupplierForm, DeleteSupplierButton } from "./SupplierForm";
@@ -108,7 +109,13 @@ export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
                       <div className="text-[11px] text-text-muted line-clamp-2 max-w-[200px]">{s.links || "---"}</div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end items-center">
+                      <div className="flex justify-end items-center gap-2">
+                        <Link
+                          href={`/admin/inventory/purchase-orders?supplier=${s.id}`}
+                          className="text-primary hover:text-primary-hover font-medium text-sm"
+                        >
+                          Xem đơn nhập
+                        </Link>
                         <SupplierForm initialData={s} />
                         <DeleteSupplierButton id={s.id} />
                       </div>
@@ -159,6 +166,14 @@ export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
                 </div>
 
                 <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
+                  <div className="flex items-center min-h-[44px]">
+                    <Link
+                      href={`/admin/inventory/purchase-orders?supplier=${s.id}`}
+                      className="text-primary hover:text-primary-hover font-medium text-sm"
+                    >
+                      Xem đơn nhập
+                    </Link>
+                  </div>
                   <div className="flex items-center min-h-[44px]">
                     <SupplierForm initialData={s} />
                   </div>

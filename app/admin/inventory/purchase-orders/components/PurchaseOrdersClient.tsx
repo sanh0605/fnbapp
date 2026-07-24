@@ -5,17 +5,23 @@ import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { formatNumber } from "@/lib/format";
-import type { DBPurchaseOrder, DBSupplier } from "@/types/db";
+import type { DBPurchaseOrder, DBSupplier, DBPurchasedItem } from "@/types/db";
+import type { RawPurchaseOrderLine } from "@/lib/item-purchase-history";
 
 interface PurchaseOrdersClientProps {
   orders: DBPurchaseOrder[];
   suppliers: DBSupplier[];
+  lines: RawPurchaseOrderLine[];
+  items: DBPurchasedItem[];
+  initialSupplierId?: string;
 }
 
-export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrdersClientProps) {
+export default function PurchaseOrdersClient({ orders, suppliers, lines, items, initialSupplierId }: PurchaseOrdersClientProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [supplierFilter, setSupplierFilter] = useState("ALL");
+  const [supplierFilter, setSupplierFilter] = useState(initialSupplierId || "ALL");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const supplierMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -23,17 +29,40 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
     return map;
   }, [suppliers]);
 
+  // WF-1b: PO -> item names it contains, so search also matches purchased items.
+  const itemNamesByPoId = useMemo(() => {
+    const itemNameMap: Record<string, string> = {};
+    items.forEach(i => itemNameMap[i.id] = i.name);
+    const map: Record<string, string> = {};
+    lines.forEach(line => {
+      if (!line.purchase_order_id || !line.purchased_item_id) return;
+      const name = itemNameMap[line.purchased_item_id];
+      if (!name) return;
+      map[line.purchase_order_id] = map[line.purchase_order_id]
+        ? `${map[line.purchase_order_id]} ${name}`
+        : name;
+    });
+    return map;
+  }, [lines, items]);
+
   const filteredOrders = useMemo(() => {
+    const term = search.toLowerCase();
     return orders.filter(po => {
       const sName = supplierMap[po.supplier_id] || "";
-      const matchSearch = po.id.toLowerCase().includes(search.toLowerCase()) ||
-                          sName.toLowerCase().includes(search.toLowerCase());
+      const itemNames = itemNamesByPoId[po.id] || "";
+      const matchSearch = !term ||
+        po.id.toLowerCase().includes(term) ||
+        sName.toLowerCase().includes(term) ||
+        itemNames.toLowerCase().includes(term);
       const matchStatus = statusFilter === "ALL" || po.status === statusFilter;
       const matchSupplier = supplierFilter === "ALL" || po.supplier_id === supplierFilter;
+      const poDateMs = new Date(po.transaction_date || po.created_at || "").getTime();
+      const matchFrom = !dateFrom || (!Number.isNaN(poDateMs) && poDateMs >= new Date(dateFrom).getTime());
+      const matchTo = !dateTo || (!Number.isNaN(poDateMs) && poDateMs <= new Date(`${dateTo}T23:59:59.999`).getTime());
 
-      return matchSearch && matchStatus && matchSupplier;
+      return matchSearch && matchStatus && matchSupplier && matchFrom && matchTo;
     });
-  }, [orders, search, statusFilter, supplierFilter, supplierMap]);
+  }, [orders, search, statusFilter, supplierFilter, supplierMap, itemNamesByPoId, dateFrom, dateTo]);
 
   // Sort descending by creation date
   const sortedOrders = [...filteredOrders].sort((a, b) =>
@@ -68,10 +97,28 @@ export default function PurchaseOrdersClient({ orders, suppliers }: PurchaseOrde
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
-            placeholder="Mã đơn, NCC..."
+            placeholder="Mã đơn, NCC, mặt hàng..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+          />
+        </div>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Từ ngày</label>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+          />
+        </div>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đến ngày</label>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="w-full md:w-40 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
