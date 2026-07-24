@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude) - Load-Speed/Logic Deep-Dive + Wave 3 Handoff Authored (Owner: Claude Plans, Agents Implement)
+
+**Trigger:** after the morning re-audit, owner asked specifically about load speed and processing logic ("có chỗ nào chưa phù hợp không?"), approved Claude's recommendation, then mid-implementation redirected: Claude plans only; implementation/execution goes to other agents.
+
+**New finding (the deep-dive's main result):** the POS page — the hottest page in the system — does its heaviest work for a feature that renders nothing. `app/pos/page.tsx` fetches `getPOSStockStatus()` (full `Stock_Ledger` read: 11,702 rows and growing, 60s cache whose tag invalidates on ledger writes) plus full `Recipes`, computes per-variant availability, then discards everything because `outOfStockProductIds` is hardcoded `[]` (owner-disabled out-of-stock feature). Also confirmed: the inline `pickVariantRecipe` in that dead block diverges from `lib/recipe-selection.ts` (latent wrong-availability risk if anyone re-enables the feature unaware), activity log loads full `Order_Events`+`Orders_V2` with no pagination (fastest-growing table), and the void/edit paths' full-`Stock_Ledger` fetches are boundable by the same argument as the 07-24 P&L fix but need per-site proof.
+
+**Course correction mid-session:** owner approved the fix bundle and Claude started implementing (rewrote `app/pos/page.tsx`, new `app/admin/activity-log/actions.ts`, rebuilt activity-log page/client on the `getOrdersV2` pagination pattern) — then the owner redirected to plan-only. **All 4 files fully reverted** (`git restore` + delete; worktree clean) so Codex implements from scratch and Claude keeps an untainted review position, same rationale as the scripts/ self-review rule.
+
+**Output:** `docs/handoffs/2026-07-24-codex-wave3-performance-remediation.md` — everything validated this session packaged as an implementable brief: Phase A (`gpt-5.5` Medium): A1 POS dead-work strip (keep the tested `getPOSStockStatus` API), A2 activity-log DB-level pagination mirroring `getOrdersV2`/`OrderTable` incl. the two-step order_no search and PostgREST `.or()` sanitization gotcha, A3 PERF-1 `history.replaceState` swap, A4 icon-404/revalidatePath cleanup. Phase B (`gpt-5.6-sol` High): B1 prove-and-bound void/edit ledger fetches per call site, B2 **design-only** proposal for a materialized current-stock balance (the long-term fix for "current stock = full ledger replay everywhere"; must survive rebuild-class operations; Claude reviews before any implementation). ROADMAP: added `PERF-2` (P1), folded PERF-1's remainder into it, listed the new handoff as pending pickup after the Wave 2 review backlog.
+
+**Verified this session:** POS/activity-log/orders code paths read directly (line-level evidence in the handoff); reverted worktree confirmed clean via `git status`. No production code or data changed.
+
+Commit: pending (docs only; local commit, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude) - Full System Re-Audit (Read-Only) + 5-Wave Improvement Plan
 
 **Trigger:** owner asked for a fresh whole-system audit: weaknesses, improvements, and an implementation plan with detailed tasks.
