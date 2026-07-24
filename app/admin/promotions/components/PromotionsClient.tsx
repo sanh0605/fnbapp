@@ -30,7 +30,7 @@ export default function PromotionsClient({
     status: "ALL",
     type: "ALL",
     q: "",
-  });
+  }, { sync: "history" });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState<DBPromotion | undefined>(undefined);
   const [deleteId, setDeleteConfirmId] = useState<string | null>(null);

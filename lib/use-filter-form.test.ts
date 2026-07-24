@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { buildFilterSearchParams, readFilterValuesFromParams } from "./use-filter-form";
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildFilterSearchParams,
+  readFilterValuesFromParams,
+  replaceFilterUrlInHistory,
+} from "./use-filter-form";
 
 describe("buildFilterSearchParams", () => {
   const defaults = { status: "PENDING", q: "" };
@@ -48,5 +52,39 @@ describe("readFilterValuesFromParams", () => {
   it("ignores unrelated params not in defaults", () => {
     const result = readFilterValuesFromParams(new URLSearchParams("page=2&status=RECOMPUTED"), defaults);
     expect(result).toEqual({ status: "RECOMPUTED", q: "" });
+  });
+});
+
+describe("replaceFilterUrlInHistory", () => {
+  it("updates a client-only filter URL without invoking Next navigation", () => {
+    const replaceState = vi.fn();
+
+    replaceFilterUrlInHistory(
+      { replaceState },
+      "/admin/promotions",
+      new URLSearchParams("status=ACTIVE&q=summer"),
+    );
+
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      "",
+      "/admin/promotions?status=ACTIVE&q=summer",
+    );
+  });
+
+  it("does not leave a trailing question mark for default filters", () => {
+    const replaceState = vi.fn();
+
+    replaceFilterUrlInHistory(
+      { replaceState },
+      "/admin/inventory/stock-adjustments",
+      new URLSearchParams(),
+    );
+
+    expect(replaceState).toHaveBeenCalledWith(
+      null,
+      "",
+      "/admin/inventory/stock-adjustments",
+    );
   });
 });

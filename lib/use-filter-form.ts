@@ -44,7 +44,25 @@ export function readFilterValuesFromParams<T extends Record<string, string>>(
   return result;
 }
 
-export function useFilterForm<T extends Record<string, string>>(defaults: T) {
+type FilterUrlHistory = Pick<History, "replaceState">;
+
+export function replaceFilterUrlInHistory(
+  history: FilterUrlHistory,
+  pathname: string,
+  params: URLSearchParams,
+): void {
+  const query = params.toString();
+  history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
+}
+
+interface UseFilterFormOptions {
+  sync?: "navigation" | "history";
+}
+
+export function useFilterForm<T extends Record<string, string>>(
+  defaults: T,
+  options: UseFilterFormOptions = {},
+) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -71,6 +89,11 @@ export function useFilterForm<T extends Record<string, string>>(defaults: T) {
   // closure would otherwise still hold the pre-click value.
   function applyFilters(overrides?: Partial<T>): void {
     const params = buildFilterSearchParams(searchParams, { ...draft, ...overrides }, defaults);
+    if (options.sync === "history") {
+      replaceFilterUrlInHistory(window.history, pathname, params);
+      return;
+    }
+
     startTransition(() => {
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     });

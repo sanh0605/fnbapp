@@ -34,7 +34,7 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
     status: "PENDING",
     q: "",
-  });
+  }, { sync: "history" });
   const [isPendingAction, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
