@@ -65,6 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       name: "Báo cáo",
       icon: <TrendingUp size={20} />,
       children: [
+        { name: "Tổng kết ngày", href: "/admin/reports/daily" },
         { name: "Báo cáo Bán hàng", href: "/admin/reports/sales" },
         { name: "Báo cáo Lãi lỗ", href: "/admin/reports/pnl" },
         { name: "Báo cáo Tồn kho", href: "/admin/reports/stock" },
