@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Sonnet 5) - INV-COUNT-1 Phase S1 (Guided Stocktake Counting Workflow)
+
+**Trigger:** owner picked phase S1 to start now, from a 2-option check-in (start S1 vs stop for the day) after WF-2 closed — explicitly flagged that S2 (the write phase) needs a separate top-tier review gate before use.
+
+**Built (commit `88774a0`):** new migration `0036_stocktake_sessions.sql` (2 new tables, `stocktake_sessions`/`stocktake_lines`, zero existing tables touched, zero `Stock_Ledger` writes) following `0033_shift_stock_checks.sql`'s house pattern exactly — RLS enabled with all access revoked except `service_role`, 3 security-definer RPCs (`open_stocktake_session_atomic`/`save_stocktake_line_atomic`/`cancel_stocktake_session_atomic`), advisory locks for the "one open session at a time" invariant and sequential id generation, a DB-level unique partial index backstop. **Not applied to production** — needs review before the owner runs `supabase db push`, same as every migration in this repo. New `/admin/inventory/stocktake` page: start a session (seeds every inventory-tracked item using the same `is_non_inventory` filter `getRealtimeStock` already uses), per-row counted-qty input with explicit save (matching the house preference for explicit actions over auto-save), live variance shown only after a row is saved (deliberately blind-count — nothing shown beforehand so the counter isn't tempted to write down the expected number), resume banner, cancel with a confirm dialog.
+
+**Two deliberate scope reductions flagged for review rather than silently applied:** (1) `theoretical_at_count` is computed fresh inside the RPC at the moment each item is individually counted, not captured once for all items at session-open — S2 will independently recompute again at confirm time regardless, so this phase's stored value is a counting-time display aid, not the authoritative figure. (2) Left out the plan's "variance value in VND" column — computing it needs a current-MAC-unit-cost lookup from `lib/mac-cogs.ts`, an engine-critical file under Codex's risk boundary that a routine-tier UI phase shouldn't need to touch; physical-quantity variance only for now, VND can be added later as its own small, separately-reviewed change.
+
+**Discovered mid-verification: Codex is mid-flight on the DEP-1 vitest upgrade** (`vitest` 1.6.1→4.1.10, closes the critical vitest-UI-arbitrary-file-read advisory flagged in this session's earlier `cc72f4c` commit) — `package.json`/`package-lock.json` dirty with the version bump, `node_modules` already has vitest 4 + `rolldown-vite` installed. This left 2 unrelated legacy component test files (`DialogHost.test.tsx`, `Dialog.test.tsx`) unable to transform under the new engine as observed; confirmed via targeted reruns this session's own new tests pass under both the old and new engine, and it's isolated to those 2 files (712 others still green). Left `package.json`/`package-lock.json` untouched — Codex's in-progress upgrade to finish. Also hit one transient `next build` worker failure during Codex's concurrent `npm install`, which resolved cleanly on immediate retry (confirmed stable with a third run).
+
+**Verified:** `tsc` clean, targeted tests pass, `next build` passed twice in a row. Could not browser-verify — and this feature can't be exercised against production at all yet since the migration is unapplied.
+
+**ROADMAP updated:** `INV-COUNT-1` marked `[~C]` (S1 done, S2 not started), `DEP-1`'s vitest line updated to reflect Codex's upgrade in progress.
+
+Commit: `88774a0` (local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude Sonnet 5) - Closed WF-2 (Per-Item Stock Movement History Drill-Down)
 
 **Trigger:** owner picked WF-2 over starting `INV-COUNT-1` directly, from a 3-option check-in (WF-2 vs INV-COUNT-1 vs stop for the day) after RPT-DIGEST-1 D1 closed.
