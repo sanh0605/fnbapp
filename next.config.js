@@ -10,11 +10,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
+    // Production builds must fail when TypeScript detects an error.
+    ignoreBuildErrors: false,
   },
 }
 
