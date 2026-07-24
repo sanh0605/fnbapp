@@ -90,10 +90,15 @@ executed page-by-page with parity checks, not a quick fix now.
 - Its lists are fully loaded server-side; fine at current scale (48
   ingredients, ~42 products, 55 POs). At ~10x catalog growth, move to a
   server-backed search endpoint — same family as the PERF-2/B2 scaling work.
-- 30 raw `<select>` in `app/` (grep this session): most are short filter enums
-  (fine). Verify-and-convert candidates that carry growing datasets:
-  `PromotionForm` (4 selects), `SemiProductForm` (3), `CogsCalculator` (1),
-  `ModifierForm` (2).
+- **Owner decision (2026-07-24): any select offering ≥10 options must be a
+  searchable combobox** — 10 is the owner's stated threshold where a plain
+  dropdown starts costing data-entry time. This is now the standing UI rule
+  for current work and the redesign phase alike.
+- 30 raw `<select>` in `app/` (grep this session): short filter enums (<10
+  static options) stay as-is per the rule. Verify-and-convert candidates that
+  carry data-driven lists: `PromotionForm` (4 selects), `SemiProductForm` (3),
+  `CogsCalculator` (1), `ModifierForm` (2) — conversion folded into
+  UI-CLEAN-1 as Item 4 (mechanical: `SearchableSelect` already exists).
 - Workflow enhancer for the redesign phase: option rows should carry context
   (unit, current stock, last purchase price) so the user doesn't open a second
   screen to decide.

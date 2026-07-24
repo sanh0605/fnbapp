@@ -10,8 +10,9 @@ decisions** — safe to do now without waiting for the redesign phase. The
 2026-07-24 warm-palette retheme (`66c963c`) makes the leftover raw colors
 visibly clash with token-based components, so FE-3 got more urgent this week.
 
-Three items, one commit each. No visual redesign, no layout changes, no new
-components.
+Four items, one commit each. No visual redesign, no layout changes, no new
+components. Order: Item 2 (deletions) → Item 1 (token swap) → Item 3
+(strings) → Item 4 (select conversions).
 
 > **AMENDED 2026-07-24 (same day, workflow audit
 > `docs/audits/2026-07-24-workflow-forms-popups-search-audit.md`):** the dead-file
@@ -105,6 +106,31 @@ User-visible English fallbacks (6 after Item 2 — the 7th was in the dead
 - `app/admin/products/page.tsx` (1)
 
 Replace the literal string only; no logic changes.
+
+## Item 4 — Convert data-driven raw `<select>`s to `SearchableSelect` (owner rule 2026-07-24)
+
+**Owner's standing rule: any select offering ≥10 options must be a searchable
+combobox.** `components/SearchableSelect.tsx` already exists and is used by all
+7 data-heavy live forms — this item extends it to the stragglers.
+
+Audit found 30 raw `<select>`s in `app/`. For each: if it renders a **static
+enum under 10 options** (status filters, payment method, event type), leave it.
+If it renders a **data-driven list** (products, variants, ingredients,
+semi-products, categories that can grow past 10), convert to `SearchableSelect`
+keeping the exact same value/onChange contract.
+
+Known convert candidates (verify each before converting):
+
+- `app/admin/promotions/components/PromotionForm.tsx` (4 selects — product/
+  variant/category scoping)
+- `app/admin/semi-products/components/SemiProductForm.tsx` (3 — recipe
+  ingredient rows)
+- `app/admin/products/cogs-estimate/CogsCalculator.tsx` (1 — product picker)
+- `app/admin/products/modifiers/components/ModifierForm.tsx` (2 — recipe
+  ingredient rows)
+
+List every select you deliberately left as a plain enum in the commit body so
+Claude's review can spot-check the classification.
 
 ## Merge gate (per `docs/COLLABORATION.md` E)
 
