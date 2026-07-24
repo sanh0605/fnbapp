@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude) - "What Else Needs Auditing?" — First-Ever Dependency Scan Finds Critical next-auth Vulnerabilities
+
+**Trigger:** owner asked what remains to audit beyond the day's two audits (full-system re-audit + frontend UI/UX).
+
+**Gap analysis across all audits to date** (8 gates + 2 today): the genuinely unaudited areas were (1) known vulnerabilities in third-party dependencies — never scanned in any gate; (2) operational continuity (account/credential recovery paths for the owner's Vercel/Supabase/Google/GitHub accounts) — never inventoried; (3) infrastructure capacity — checked quickly from existing evidence (full 32-table backup bundle is ~8.3 MB; years of headroom on current plans, semi-annual re-check is enough, no standalone audit needed). Restore drill and hands-on UAT were already in the 5-wave plan (W4.1/W4.3), and deep security (session lifecycle, brute-force protection, fine-grained roles) stays deliberately in roadmap phase 6.
+
+**Evidence run:** first `npm audit` in project history — **21 known vulnerabilities: 4 critical, 11 high, 6 moderate**. The 4 criticals are all in `next-auth <=4.24.14`, the live authentication layer (malformed-Bearer uncaught exception, email homoglyph bypass, OAuth cookie binding) — and a **non-breaking `npm audit fix` is available** for them. The `next` framework advisories require a breaking next@16 upgrade (separate decision; many are self-hosted-config-specific while production runs on Vercel). Several other chains (`uuid`/`googleapis`) hang off the deprecated legacy Sheets code path — removing `googleapis` may be the real fix there. Dev-tooling chains (vitest/esbuild/eslint deps) are DoS-class with low production exposure.
+
+**Logged:** `DEP-1` (P1, Codex — triage table + non-breaking fixes first, no `--force` without classification) and `OPS-CONT-1` (P2, Claude + owner session — continuity runbook) in `docs/ROADMAP.md`. No code changed; the scan was read-only.
+
+Commit: pending (docs only; local commit, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude) - Frontend UI/UX Audit (Code-Level, Read-Only) + UI-CLEAN-1 Handoff
 
 **Trigger:** owner asked to audit and review the frontend UI/UX next, under the same-day directive that Claude plans/reviews and other agents implement.
