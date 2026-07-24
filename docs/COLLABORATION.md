@@ -7,8 +7,8 @@ Agents:
 
 - Claude Code / GLM 5.1: coordination, specs, review, surgical fixes, tracking.
 - Codex / GPT 5.6 family (`gpt-5.6-sol` frontier, `gpt-5.6-terra` balanced, `gpt-5.6-luna` fast, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`): engine, data correctness, migrations, audits, multi-file refactors.
-- Antigravity / Gemini family (`Gemini 3.1 Pro` Low/High effort, `Gemini 3.5 Flash` Low/Medium/High, also Claude Sonnet/Opus 4.6 Thinking, GPT-OSS 120B): UI/frontend, responsive layouts, forms, visual QA.
-- Claude Sonnet 5 (owner decision 2026-07-24): day-to-day implementer and routine supervisor/reviewer. Executes existing handoff briefs and reviews routine diffs (UI cleanup, read-only query features, pagination, dependency patches with non-breaking fixes). Hard boundary preserved: engine-critical work — COGS/MAC, transaction/order-mutation paths, migrations, historical reprocessing, `--apply` production writes — still requires top-tier implementation or line-by-line review (Codex `gpt-5.6-sol` High or the Claude coordinator). Never implements and approves the same change (no self-review, same principle as the `scripts/` rule). Commit prefix `Claude-Sonnet <type>:` so review trails distinguish it from the coordinator.
+- Antigravity / Gemini family (`Gemini 3.1 Pro` Low/High effort, `Gemini 3.5 Flash` Low/Medium/High, also Claude Sonnet/Opus 4.6 Thinking, GPT-OSS 120B): backup/fallback only as of 2026-07-24 (owner decision, "agy chỉ là dự phòng") — not the default owner of UI work anymore. Available if Sonnet 5 is unavailable or for independent visual QA on Sonnet's UI work.
+- Claude Sonnet 5 (owner decision 2026-07-24, expanded same day): day-to-day implementer and routine supervisor/reviewer, and now the **primary owner of all UI/frontend work** previously assigned to Antigravity (owner: "tất cả scope đang phân quyền cho agy cũng sẽ do em xử lý"). Executes existing handoff briefs and reviews routine diffs (UI cleanup, read-only query features, pagination, dependency patches with non-breaking fixes, forms, responsive layouts, visual QA). Hard boundary preserved: engine-critical work — COGS/MAC, transaction/order-mutation paths, migrations, historical reprocessing, `--apply` production writes — still requires top-tier implementation or line-by-line review (Codex `gpt-5.6-sol` High or the Claude coordinator). Never implements and approves the same change (no self-review, same principle as the `scripts/` rule). Commit prefix `Claude-Sonnet <type>:` so review trails distinguish it from the coordinator.
 
 Do not treat ownership as identity-based permission. Ownership follows risk boundary.
 
@@ -97,7 +97,7 @@ Codex owns the backup architecture and its future maintenance (added 2026-07-16 
 
 ### UI Files
 
-Antigravity owns these. Claude review is required before commit when the change is user-facing.
+Claude Sonnet 5 owns these as of 2026-07-24 (Antigravity moved to backup-only, see agent lineup above). Coordinator (Fable) review is required before commit when the change is user-facing.
 
 - `app/**/page.tsx`
 - `app/**/components/*.tsx`
@@ -355,6 +355,7 @@ When forced to use a technical term, **always** define on first use in same resp
 
 ## Change Log
 
+- 2026-07-24 Claude Sonnet 5: owner expanded Sonnet 5's scope to cover all UI/frontend work previously owned by Antigravity ("tất cả scope đang phân quyền cho agy cũng sẽ do em xử lý", then "agy chỉ là dự phòng" — Antigravity is backup-only now). Updated the agent lineup and Section C "UI Files" ownership accordingly. Any handoff doc still phrased "ready for Antigravity pickup" should be treated as stale on this point.
 - 2026-07-24 Claude: added Claude Sonnet 5 to the agent lineup per owner decision — routine implementer/supervisor with commit prefix `Claude-Sonnet <type>:`, engine-critical work still gated to top tier, self-review prohibited. Same day, owner directed that the Claude coordinator plans/reviews only (no direct implementation) — see `DEVELOPMENT-TRACKING.md` 2026-07-24 entries.
 - 2026-07-19 Claude: reinforced Section I rule 4 with a concrete example after user feedback (going to sleep mid-session, named two specific over-asking patterns): merging a reviewed branch into local `main` and picking the next backlog item are technical execution, not business decisions — agents should proceed and report rather than asking first. Push to GitHub and genuine scope/investment tradeoffs remain hard gates.
 - 2026-07-19 Claude: added `docs/FILE-ORGANIZATION.md` and referenced it in Section A. User decision: after the 8-gate audit finishes, reorganizing the whole repo's files/folders becomes the top priority before any other work resumes — but the naming/placement *rule* itself takes effect immediately, so files created during the remaining audit gates don't add to the mess that reorganization pass will need to clean up. The rule doesn't move anything that already exists (D8 preservation still applies); a future explicit owner decision is needed before any existing file gets relocated.
