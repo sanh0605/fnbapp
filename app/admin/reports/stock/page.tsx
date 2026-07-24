@@ -18,7 +18,7 @@ export default async function StockPage() {
   }
 
   const role = (session.user as any)?.role || "STAFF";
-  const username = session.user?.name || "Unknown";
+  const username = session.user?.name || "Không rõ";
 
   const [stockItems, adjustments, reorderSuggestions, checkedItems, activeShiftStockCheck] = await Promise.all([
     getRealtimeStock(),

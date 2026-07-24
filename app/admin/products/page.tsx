@@ -121,7 +121,7 @@ export default async function ProductsPage() {
           try { ings = JSON.parse(r.ingredients_json); } catch(e){}
         }
         const enrichedIngs = ings.map((ing: RecipeIngredient) => {
-          let ingName = "Unknown";
+          let ingName = "Không rõ";
           let ingUnit = "";
           if (ing.ingredient_type === "BASE_INGREDIENT") {
             const found = baseIngredients.find(b => b.id === ing.ingredient_id);
