@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Sonnet 5) - Closed UI-CLEAN-1 (Design-Free Frontend Cleanup Sweep, All 4 Items)
+
+**Trigger:** continued the owner-approved backlog priority order after FC-1's review/fix — `docs/handoffs/2026-07-24-antigravity-ui-clean-1.md`, next in line per the roadmap.
+
+**Item 2 (deletions, done first per the handoff's own ordering) — commit `27b99aa`:** verified zero importers for all 9 candidate dead form files independently (both alias `@/components/X` and relative import forms) before deleting. Caught a second-order dangling reference the handoff didn't anticipate: `components/InventoryForms.tsx` re-exported 3 of the deleted files via a relative import (`./inventory/X`) invisible to a `components/X`-pattern grep since it doesn't contain that literal substring — confirmed only 2 of its 4 exports are actually used live, removed the 3 dead re-export lines. Special-cased `components/SupplierForm.tsx` per the handoff: kept the file but trimmed it to its one live export (`SupplierModal`), removing the dead `SupplierForm`/`DeleteSupplierButton` functions that were shadowed by a separate live `app/admin/suppliers/components/SupplierForm.tsx`.
+
+**Item 1 (token swap) — commit `198c035`:** re-ran the raw-color grep after Item 2's deletions to get the definitive 14-file list (not the handoff's original 13 — `InventoryForms.tsx` picked up an occurrence after cleanup). Mapped every raw Tailwind color to its semantic-token equivalent by reading the sibling classes already in the same `className` string rather than guessing (e.g. `bg-danger/10` + `border-red-200` → `border-danger/30`, matching `components/ui/Alert.tsx`'s own convention exactly). Found and fixed a real bug along the way, not just a token-purity issue: `HistoryModal.tsx` had `bg-success/10/50` — invalid double-opacity Tailwind syntax rendering no background at all, the same class of silent bug UI-REMED-1 caught previously (`bg-primary-soft0`).
+
+**Item 3 ("Unknown" → "Không rõ") — commit `22df610`:** fixed 2 of 3 sites (`app/admin/reports/stock/page.tsx`, `app/admin/products/page.tsx`). Left `app/admin/orders/actions.ts`'s 4 occurrences for Codex — it owns that file and was actively mid-edit on an unrelated task (order-edit payment migration) during this exact session; logged as `UI-CLEAN-1-FOLLOWUP` in P2 rather than editing a cross-boundary file mid-session.
+
+**Item 4 (select conversions) — commit `38b8d0f`:** checked each of the handoff's 4 "known convert candidates" file-by-file instead of trusting its per-file descriptions, since most turned out to already be static enums under 10 options (the classification rule's own exemption) rather than the data-driven pickers implied. Converted only the 3 that actually qualified: `PromotionForm.tsx`'s `brandId` select, `SemiProductForm.tsx`'s per-row ingredient picker, `CogsCalculator.tsx`'s system-ingredient picker. For `brandId`, added an explicit `{ id: "", label: "Tất cả thương hiệu..." }` option in the list — `SearchableSelect` has no built-in clear-selection affordance, and "all brands" is a real, commonly-used final state for a promotion, so dropping the ability to select back to it would have been a behavior regression, not a cosmetic swap. `ModifierForm.tsx` (listed as "2 selects") needed no change at all — its real ingredient picker was already using `SearchableSelect` before this audit ran; its 2 raw `<select>`s are both static enums.
+
+**Verified across all 4 items:** `tsc` clean, full suite 692→694/694 (grew with Codex's own concurrent commits landing in between), `next build` passed each time. Could not browser-verify with a live login in this environment.
+
+**Concurrent Codex activity noted throughout this session** (for context, not this session's work): `4ff17c6` order-edit payment migration, `cf4c336` audit/cron guard hardening, `68c7512` reorder-suggestion hardening — all isolated correctly, no file overlap with any of the 4 commits above.
+
+**ROADMAP updated:** `UI-CLEAN-1` marked `[x]`, its handoff moved to historical reference, `UI-CLEAN-1-FOLLOWUP` opened in P2 for the remaining Codex-owned strings.
+
+Commit: `27b99aa`, `198c035`, `22df610`, `38b8d0f` (local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude Sonnet 5) - Owner Expanded Sonnet 5 to All UI Scope (Antigravity Backup-Only); Reviewed and Fixed FC-1's Split-Payment UI
 
 **Trigger:** mid-session, right after reporting Codex's rate-limit window had ended, the owner said "từ giờ tất cả scope đang phân quyền cho agy cũng sẽ do em xử lý", then clarified "agy chỉ là dự phòng" (Antigravity is backup-only now). Updated `docs/COLLABORATION.md` and `docs/ROADMAP.md` ownership accordingly (commit `1944f60`) and saved memory (`project_sonnet5-absorbs-antigravity-scope`).
