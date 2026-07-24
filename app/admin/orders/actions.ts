@@ -34,6 +34,7 @@ import {
 } from "@/lib/inventory-consumption";
 import type { CartInput } from "@/lib/order-cart";
 import { voidOrderAtomic } from "@/lib/void-order-transaction";
+import { buildVoidReversalRows } from "@/lib/void-order-reversal";
 
 function parseObject(value: any): any {
   if (!value) return {};
@@ -415,23 +416,16 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       reason,
     };
 
-    // Build reversal entries for ALL SALES_CONSUME rows of this order
+    // Reverse the complete checkout inventory effect, including any implicit
+    // production rows created to cover a semi-product shortfall.
     const ledger = await findAllNoCache("Stock_Ledger");
-    const oldLedgerRows = (ledger as any[]).filter(l =>
-      l.reference_id === orderId && l.transaction_type === "SALES_CONSUME",
-    );
-    const reversalEntries = oldLedgerRows.map(l => ({
-      id: `stk-${crypto.randomUUID()}`,
-      transaction_type: "EDIT_REVERSAL",
-      reference_id: orderId,
-      item_reference: l.item_reference,
-      quantity_change: -Number(l.quantity_change),
-      unit_cost: Number(l.unit_cost) || 0,
-      created_at: eventTime,
-      order_event_id: event.id,
-      cost_at_sale: Number(l.cost_at_sale) || 0,
-      source: l.source || "VARIANT_RECIPE",
-    }));
+    const reversalEntries = buildVoidReversalRows({
+      orderId,
+      orderEventId: event.id,
+      eventTime,
+      ledgerRows: ledger as any[],
+      createRowId: () => `stk-${crypto.randomUUID()}`,
+    });
 
     await voidOrderAtomic({
       orderId,

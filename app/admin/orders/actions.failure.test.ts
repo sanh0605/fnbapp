@@ -48,16 +48,36 @@ describe("voidOrderV2 atomic failure handling", () => {
         }];
       }
       if (sheet === "Stock_Ledger") {
-        return [{
-          id: "stk-consume-1",
-          transaction_type: "SALES_CONSUME",
-          reference_id: "ord-void-1",
-          item_reference: "ING-001",
-          quantity_change: -10,
-          unit_cost: 100,
-          cost_at_sale: 1_000,
-          source: "VARIANT_RECIPE",
-        }];
+        return [
+          {
+            id: "stk-production-consume-1",
+            transaction_type: "PRODUCTION_CONSUME",
+            reference_id: "ord-void-1",
+            item_reference: "ING-001",
+            quantity_change: -10,
+            unit_cost: 100,
+            source: "IMPLICIT_PRODUCTION",
+          },
+          {
+            id: "stk-production-yield-1",
+            transaction_type: "PRODUCTION_YIELD",
+            reference_id: "ord-void-1",
+            item_reference: "BTP-001",
+            quantity_change: 10,
+            unit_cost: 100,
+            source: "IMPLICIT_PRODUCTION",
+          },
+          {
+            id: "stk-consume-1",
+            transaction_type: "SALES_CONSUME",
+            reference_id: "ord-void-1",
+            item_reference: "BTP-001",
+            quantity_change: -10,
+            unit_cost: 100,
+            cost_at_sale: 1_000,
+            source: "VARIANT_RECIPE",
+          },
+        ];
       }
       return [];
     });
@@ -95,6 +115,25 @@ describe("voidOrderV2 atomic failure handling", () => {
 
     expect(result).toEqual({ success: true });
     expect(mocks.voidOrderAtomic).toHaveBeenCalledOnce();
+  });
+
+  it("sends reversals for the sale and both implicit-production effects", async () => {
+    mocks.voidOrderAtomic.mockResolvedValue({
+      orderId: "ord-void-1",
+      reversalCount: 3,
+      alreadyVoided: false,
+    });
+
+    const result = await voidOrderV2("ord-void-1", "Customer request");
+
+    expect(result).toEqual({ success: true });
+    const reversalRows = mocks.voidOrderAtomic.mock.calls[0][0].reversalRows;
+    expect(reversalRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ item_reference: "ING-001", quantity_change: 10 }),
+      expect.objectContaining({ item_reference: "BTP-001", quantity_change: -10 }),
+      expect.objectContaining({ item_reference: "BTP-001", quantity_change: 10 }),
+    ]));
+    expect(reversalRows).toHaveLength(3);
   });
 
   it("rejects a non-voidable state before invoking the RPC", async () => {
