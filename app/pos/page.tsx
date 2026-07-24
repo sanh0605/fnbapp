@@ -3,7 +3,7 @@ import POSScreen from "@/components/POSScreen";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { getPOSBestSellerProductIds, getPOSStockStatus } from "./actions";
+import { getPOSBestSellerProductIds } from "./actions";
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +23,7 @@ export default async function POSPage({
   const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const brandIdStr = typeof searchParams?.brandId === 'string' ? searchParams.brandId : (Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : undefined);
 
-  const [categories, products, variants, modifiers, promotions, bestSellers, realtimeStock, recipes] = await Promise.all([
+  const [categories, products, variants, modifiers, promotions, bestSellers] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
@@ -33,9 +33,7 @@ export default async function POSPage({
       startDate: lastWeek.toISOString(),
       endDate: now.toISOString(),
       brandId: brandIdStr
-    }),
-    getPOSStockStatus(),
-    findAll("Recipes")
+    })
   ]);
 
   // Per docs/domain-dictionary.md: ACTIVE = available for new transactions,
@@ -49,52 +47,9 @@ export default async function POSPage({
   const activePromotions = promotions.filter(p => p.status === "ACTIVE");
   
   const brandId = Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : searchParams?.brandId;
-  // Compute Out Of Stock products
-  const stockMap = new Map<string, number>();
-  realtimeStock.forEach((s: any) => stockMap.set(s.id, s.current_stock));
 
-  const pickVariantRecipe = (vId: string) => {
-    const now = new Date();
-    const candidates = (recipes as any[]).filter(r =>
-      r.target_type === "PRODUCT_VARIANT" &&
-      r.target_id === vId &&
-      (!r.end_date || r.end_date === "" || new Date(r.end_date) >= now)
-    );
-    if (candidates.length === 0) return null;
-    candidates.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-    return candidates[0];
-  };
-
-  const variantAvailableMap = new Map<string, boolean>();
-  activeVariants.forEach((v: any) => {
-    const recipe = pickVariantRecipe(v.id);
-    let isAvailable = true;
-    if (recipe && recipe.ingredients_json) {
-      try {
-        const ingredients = JSON.parse(recipe.ingredients_json);
-        if (Array.isArray(ingredients)) {
-          for (const ing of ingredients) {
-            const currentStock = stockMap.get(ing.ingredient_id) || 0;
-            if (currentStock < Number(ing.quantity)) {
-              isAvailable = false;
-              break;
-            }
-          }
-        }
-      } catch (e) {}
-    }
-    variantAvailableMap.set(v.id, isAvailable);
-  });
-
-  // Temporarily disable out-of-stock feature as requested by owner (returns empty array)
-  const outOfStockProductIds: string[] = [];
-  /*
-  const outOfStockProductIds = activeProducts.filter((p: any) => {
-    const pVariants = activeVariants.filter((v: any) => v.product_id === p.id);
-    if (pVariants.length === 0) return false; // if no variants, assume it's available or not trackable
-    return pVariants.every((v: any) => variantAvailableMap.get(v.id) === false);
-  }).map((p: any) => p.id);
-  */
+  // Out-of-stock badges remain owner-disabled. If they return, derive them
+  // from a materialized per-item balance and the canonical recipe selector.
 
   return (
     <POSScreen 
@@ -105,7 +60,6 @@ export default async function POSPage({
       modifiers={activeModifiers}
       promotions={activePromotions}
       bestSellers={bestSellers}
-      outOfStockProductIds={outOfStockProductIds}
     />
   );
 }

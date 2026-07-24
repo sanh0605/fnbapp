@@ -66,11 +66,14 @@ describe("POS order COGS calculation", () => {
     );
   });
 
-  it("uses narrow POS reads instead of full admin reports", () => {
+  it("does not fetch stock or recipes for the disabled out-of-stock feature", () => {
     const pageSource = readFileSync(resolve(__dirname, "page.tsx"), "utf8");
 
     expect(pageSource).toContain("getPOSBestSellerProductIds");
-    expect(pageSource).toContain("getPOSStockStatus");
+    expect(pageSource).not.toContain("getPOSStockStatus");
+    expect(pageSource).not.toContain('findAll("Recipes")');
+    expect(pageSource).not.toContain("pickVariantRecipe");
+    expect(pageSource).not.toContain("outOfStockProductIds=");
     expect(pageSource).not.toContain("getSalesDataV2");
     expect(pageSource).not.toContain("getRealtimeStock");
   });

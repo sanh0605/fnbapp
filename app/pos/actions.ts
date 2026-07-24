@@ -153,7 +153,7 @@ export async function submitOrderV2(
     // 10. Refresh caches
     // Not revalidating "/pos" here: the only thing on that page fed by
     // fresh server data after a sale (out-of-stock badges) is currently
-    // disabled (see app/pos/page.tsx's hardcoded outOfStockProductIds = []),
+    // disabled, and POSPage deliberately does not fetch stock status,
     // so revalidating it just re-runs 8 queries for no visible effect. If
     // that feature comes back, prefer a narrower refresh over revalidating
     // the whole page again.
