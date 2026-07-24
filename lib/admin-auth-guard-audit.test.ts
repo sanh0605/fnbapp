@@ -105,6 +105,45 @@ describe("findUnguardedAdminMutations", () => {
     ]);
   });
 
+  it("recognizes an enforced Bearer CRON_SECRET route guard", () => {
+    const source = `
+      export async function GET(request: Request) {
+        const cronSecret = process.env.CRON_SECRET;
+        const authHeader = request.headers.get("authorization");
+        if (!cronSecret || authHeader !== \`Bearer \${cronSecret}\`) {
+          return NextResponse.json({}, { status: 401 });
+        }
+        return NextResponse.json({ ok: true });
+      }
+    `;
+
+    const auditRouteHandlers = (auditModule as Record<string, unknown>).auditRouteHandlers;
+    expect((auditRouteHandlers as (value: string) => any[])(source)[0]).toMatchObject({
+      method: "GET",
+      guardKind: "CRON_SECRET",
+      guardEnforced: true,
+    });
+  });
+
+  it("does not accept a cron guard that permits Bearer undefined", () => {
+    const source = `
+      export async function GET(request: Request) {
+        const authHeader = request.headers.get("authorization");
+        if (authHeader !== \`Bearer \${process.env.CRON_SECRET}\`) {
+          return NextResponse.json({}, { status: 401 });
+        }
+        return NextResponse.json({ ok: true });
+      }
+    `;
+
+    const auditRouteHandlers = (auditModule as Record<string, unknown>).auditRouteHandlers;
+    expect((auditRouteHandlers as (value: string) => any[])(source)[0]).toMatchObject({
+      method: "GET",
+      guardKind: "NONE",
+      guardEnforced: false,
+    });
+  });
+
   it("discovers conventional and explicitly declared server-action files", () => {
     const isServerActionSourceFile = (
       auditModule as Record<string, unknown>
@@ -171,5 +210,27 @@ describe("findUnguardedAdminMutations", () => {
       isMutation: true,
       mutationSignals: ["createEntity", "deleteEntity", "softDeleteEntity", "updateEntity"],
     });
+  });
+
+  it("recognizes shift stock-check transaction wrappers as mutations", () => {
+    const source = `
+      export async function openShift() {
+        const auth = await requireAdmin();
+        if (!auth.ok) return fail(auth.error);
+        await openShiftStockCheckAtomic({});
+      }
+
+      export async function closeShift() {
+        const auth = await requireAdmin();
+        if (!auth.ok) return fail(auth.error);
+        await closeShiftStockCheckAtomic({});
+      }
+    `;
+
+    const auditActionExports = (auditModule as Record<string, unknown>).auditActionExports;
+    expect((auditActionExports as (value: string) => any[])(source)).toEqual([
+      expect.objectContaining({ name: "openShift", isMutation: true }),
+      expect.objectContaining({ name: "closeShift", isMutation: true }),
+    ]);
   });
 });

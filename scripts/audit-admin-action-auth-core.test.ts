@@ -36,6 +36,14 @@ describe("admin action/route auth audit core", () => {
     expect(getRoutePolicy("app/api/client-errors/route.ts")).toBe("AUTHENTICATED");
   });
 
+  it("classifies the scheduled correction route as CRON_SECRET-protected", () => {
+    expect(getRoutePolicy("app/api/cron/apply-backdated-corrections/route.ts"))
+      .toBe("SCHEDULED_SECRET");
+    expect(classifyRouteStatus("SCHEDULED_SECRET", "CRON_SECRET", true)).toBe("GUARDED");
+    expect(classifyRouteStatus("SCHEDULED_SECRET", "ACTOR", true)).toBe("UNGUARDED_ROUTE");
+    expect(classifyRouteStatus("SCHEDULED_SECRET", "NONE", false)).toBe("UNGUARDED_ROUTE");
+  });
+
   it("defaults every other route to ADMIN (no policy regression)", () => {
     expect(getRoutePolicy("app/api/revalidate/route.ts")).toBe("ADMIN");
   });

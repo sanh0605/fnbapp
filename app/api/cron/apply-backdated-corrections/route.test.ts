@@ -55,6 +55,15 @@ describe("GET /api/cron/apply-backdated-corrections", () => {
     expect(response.status).toBe(401);
   });
 
+  it("rejects Bearer undefined when CRON_SECRET is not configured", async () => {
+    delete process.env.CRON_SECRET;
+
+    const response = await GET(request("undefined"));
+
+    expect(response.status).toBe(401);
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
   it("auto-applies a routine ledger event with no anomaly", async () => {
     mocks.selectEq.mockImplementation(() => {
       const table = mocks.from.mock.calls[mocks.from.mock.calls.length - 1][0];

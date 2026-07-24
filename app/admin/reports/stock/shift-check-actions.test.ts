@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  resolveActor: vi.fn(),
+  requireAdmin: vi.fn(),
   findAll: vi.fn(),
   findAllWhere: vi.fn(),
   openShiftStockCheckAtomic: vi.fn(),
@@ -9,7 +9,9 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ resolveActor: mocks.resolveActor }));
+vi.mock("@/lib/auth", () => ({
+  requireAdmin: mocks.requireAdmin,
+}));
 vi.mock("@/lib/sheets_db", () => ({
   findAll: mocks.findAll,
   findAllWhere: mocks.findAllWhere,
@@ -33,6 +35,14 @@ const authenticated = { ok: true as const, actor: { id: "u1", name: "Chủ quán
 describe("getCheckedItems", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue(authenticated);
+  });
+
+  it("rejects non-admin access before reading reference data", async () => {
+    mocks.requireAdmin.mockResolvedValue(unauthenticated);
+
+    await expect(getCheckedItems()).rejects.toThrow();
+    expect(mocks.findAll).not.toHaveBeenCalled();
   });
 
   it("resolves configured names to real items and skips names with no match yet", async () => {
@@ -66,11 +76,11 @@ describe("getCheckedItems", () => {
 describe("getActiveShiftStockCheck", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.resolveActor.mockResolvedValue(authenticated);
+    mocks.requireAdmin.mockResolvedValue(authenticated);
   });
 
   it("rejects unauthenticated reads before any storage access", async () => {
-    mocks.resolveActor.mockResolvedValue(unauthenticated);
+    mocks.requireAdmin.mockResolvedValue(unauthenticated);
 
     await expect(getActiveShiftStockCheck()).rejects.toThrow("Yêu cầu đăng nhập");
     expect(mocks.findAllWhere).not.toHaveBeenCalled();
@@ -107,11 +117,11 @@ describe("getActiveShiftStockCheck", () => {
 describe("openShiftStockCheck / closeShiftStockCheck", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.resolveActor.mockResolvedValue(authenticated);
+    mocks.requireAdmin.mockResolvedValue(authenticated);
   });
 
   it("rejects unauthenticated open before calling the RPC wrapper", async () => {
-    mocks.resolveActor.mockResolvedValue(unauthenticated);
+    mocks.requireAdmin.mockResolvedValue(unauthenticated);
 
     const result = await openShiftStockCheck({ "BTP-013": 10 });
 

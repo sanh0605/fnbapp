@@ -1,5 +1,24 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-24 - REV-2 audit-script review and auth remediation
+
+- `[x]` Approved Claude's `purchase_order_id` correction in
+  `audit-po-save-ledger`; live read-only verification found 0 missing and 0
+  count mismatches across 58 completed purchase orders.
+- `[x]` Approved the `AUTHENTICATED` policy for `/api/client-errors`, while
+  preserving the stricter ADMIN policy for admin routes and actions.
+- `[x]` Extended the auth audit to recognize only a fail-closed
+  `CRON_SECRET` Bearer guard. A missing secret plus `Bearer undefined` is now
+  rejected by the live route and by the static audit contract.
+- `[x]` Closed four newly exposed admin access gaps in shift stock checks:
+  both reads and both open/close mutations now require ADMIN.
+- `[x]` Auth audit result: 0 mutation findings, 0 read findings, 0 route
+  findings. Full verification: 692/692 tests, TypeScript 0 errors, production
+  build passed.
+- `[x]` No production data was written.
+
+Commit: this commit.
+
 ## 2026-07-24 - REV-3 split-payment backend review
 
 - `[x]` Re-reviewed migration `0024`, checkout payment-sum handling, and

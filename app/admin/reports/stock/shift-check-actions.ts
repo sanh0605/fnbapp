@@ -2,7 +2,7 @@
 
 import { findAll, findAllWhere } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
-import { resolveActor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { SHIFT_CHECKED_ITEM_NAMES } from "@/lib/shift-stock-check-config";
 import {
   openShiftStockCheckAtomic,
@@ -21,6 +21,9 @@ export type CheckedItem = {
 // Semi_Products and Base_Ingredients. A configured name with no matching
 // item yet is silently skipped -- see lib/shift-stock-check-config.ts.
 export async function getCheckedItems(): Promise<CheckedItem[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
   const [semiProducts, baseIngredients, units] = await Promise.all([
     findAll("Semi_Products"),
     findAll("Base_Ingredients"),
@@ -52,7 +55,7 @@ export type ActiveShiftStockCheck = {
 };
 
 export async function getActiveShiftStockCheck(): Promise<ActiveShiftStockCheck | null> {
-  const auth = await resolveActor();
+  const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
   const openShifts = await findAllWhere<any>("Shifts", { eq: { status: "OPEN" }, limit: 1 });
@@ -86,7 +89,7 @@ export async function openShiftStockCheck(
   notes?: string,
 ): Promise<{ success: true; shift: ShiftRow } | { success: false; error: string }> {
   try {
-    const auth = await resolveActor();
+    const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
 
     const checks = Object.entries(counts).map(([itemReference, countedQty]) => ({ itemReference, countedQty }));
@@ -113,7 +116,7 @@ export async function closeShiftStockCheck(
   notes?: string,
 ): Promise<{ success: true; shift: ShiftRow } | { success: false; error: string }> {
   try {
-    const auth = await resolveActor();
+    const auth = await requireAdmin();
     if (!auth.ok) return { success: false, error: auth.error };
 
     const checks = Object.entries(counts).map(([itemReference, countedQty]) => ({ itemReference, countedQty }));

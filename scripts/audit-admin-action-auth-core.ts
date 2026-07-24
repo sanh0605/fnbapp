@@ -1,6 +1,11 @@
 import type { GuardKind } from "../lib/admin-auth-guard-audit";
 
-export type IntendedAccess = "ADMIN" | "AUTHENTICATED" | "PUBLIC_AUTH" | "PUBLIC_RETIRED";
+export type IntendedAccess =
+  | "ADMIN"
+  | "AUTHENTICATED"
+  | "SCHEDULED_SECRET"
+  | "PUBLIC_AUTH"
+  | "PUBLIC_RETIRED";
 export type ActionStatus = "GUARDED" | "UNGUARDED_MUTATION" | "UNGUARDED_READ" | "WRONG_ROLE_GAP";
 export type RouteStatus = "GUARDED" | "INTENTIONAL_PUBLIC" | "RETIRED" | "UNGUARDED_ROUTE";
 
@@ -27,6 +32,9 @@ export function classifyActionStatus(
 export function getRoutePolicy(relativeFile: string): IntendedAccess {
   if (relativeFile === "app/api/auth/[...nextauth]/route.ts") return "PUBLIC_AUTH";
   if (relativeFile === "app/api/client-errors/route.ts") return "AUTHENTICATED";
+  if (relativeFile === "app/api/cron/apply-backdated-corrections/route.ts") {
+    return "SCHEDULED_SECRET";
+  }
   return "ADMIN";
 }
 
@@ -39,5 +47,12 @@ export function classifyRouteStatus(
   if (intendedAccess === "PUBLIC_RETIRED") return "RETIRED";
   if (!guardEnforced) return "UNGUARDED_ROUTE";
   if (intendedAccess === "ADMIN" && guardKind !== "ADMIN") return "UNGUARDED_ROUTE";
+  if (
+    intendedAccess === "AUTHENTICATED"
+    && !["ADMIN", "ACTOR", "SESSION"].includes(guardKind)
+  ) return "UNGUARDED_ROUTE";
+  if (intendedAccess === "SCHEDULED_SECRET" && guardKind !== "CRON_SECRET") {
+    return "UNGUARDED_ROUTE";
+  }
   return "GUARDED";
 }

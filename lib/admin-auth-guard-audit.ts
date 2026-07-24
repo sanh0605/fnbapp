@@ -1,6 +1,6 @@
 import ts from "typescript";
 
-export type GuardKind = "ADMIN" | "ACTOR" | "SESSION" | "NONE";
+export type GuardKind = "ADMIN" | "ACTOR" | "SESSION" | "CRON_SECRET" | "NONE";
 
 export type ActionExportAudit = {
   name: string;
@@ -42,6 +42,7 @@ export function isServerActionSourceFile(filePath: string, source: string): bool
 
 const DIRECT_MUTATION_CALLS = new Set([
   "createEntity",
+  "closeShiftStockCheckAtomic",
   "deleteEntity",
   "insert",
   "insertMany",
@@ -51,6 +52,7 @@ const DIRECT_MUTATION_CALLS = new Set([
   "updateMany",
   "savePosOrderAtomic",
   "savePurchaseOrderAtomic",
+  "openShiftStockCheckAtomic",
   "softDeleteEntity",
   "supersedeOrderV2",
   "updateEntity",
@@ -227,6 +229,39 @@ function isAdminRoleEnforced(
   return enforced;
 }
 
+function hasCronSecretGuard(body: ts.Block, sourceFile: ts.SourceFile): boolean {
+  const secretVariables = new Set<string>();
+  let enforced = false;
+
+  function visit(node: ts.Node): void {
+    if (enforced) return;
+    if (
+      ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.initializer?.getText(sourceFile).replace(/\s+/g, "") === "process.env.CRON_SECRET"
+    ) {
+      secretVariables.add(node.name.text);
+    }
+    if (ts.isIfStatement(node) && statementExits(node.thenStatement)) {
+      const text = node.expression.getText(sourceFile).replace(/\s+/g, "");
+      for (const variable of secretVariables) {
+        if (
+          text.includes(`!${variable}`)
+          && text.includes("Bearer${" + variable + "}")
+          && (text.includes("!==") || text.includes("!="))
+        ) {
+          enforced = true;
+          return;
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(body);
+  return enforced;
+}
+
 function isPostFetch(call: ts.CallExpression): boolean {
   if (!ts.isIdentifier(call.expression) || call.expression.text !== "fetch") return false;
   const options = call.arguments[1];
@@ -278,20 +313,23 @@ export function auditActionExports(source: string): ActionExportAudit[] {
       isGuardEnforced(exportedFunction.body, binding, sourceFile)
     ));
     const mutationSignals = collectMutationSignals(exportedFunction.body);
+    const cronSecretGuardEnforced = hasCronSecretGuard(exportedFunction.body, sourceFile);
+
+    const guardKind = enforcedBinding
+      ? (isAdminRoleEnforced(exportedFunction.body, enforcedBinding, sourceFile)
+          ? "ADMIN"
+          : enforcedBinding.kind)
+      : cronSecretGuardEnforced
+        ? "CRON_SECRET"
+        : bindings[0]?.kind ?? "NONE";
 
     return {
       name: exportedFunction.name,
       exportStyle: exportedFunction.exportStyle,
       isMutation: mutationSignals.length > 0,
       mutationSignals,
-      guardKind: enforcedBinding && isAdminRoleEnforced(
-        exportedFunction.body,
-        enforcedBinding,
-        sourceFile,
-      )
-        ? "ADMIN"
-        : enforcedBinding?.kind ?? bindings[0]?.kind ?? "NONE",
-      guardEnforced: Boolean(enforcedBinding),
+      guardKind,
+      guardEnforced: Boolean(enforcedBinding) || cronSecretGuardEnforced,
     };
   });
 }
