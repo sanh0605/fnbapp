@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude) - Workflow Audit (Forms/Popups/Selects/Search) + UI-CLEAN-1 Amended for 9 Dead Form Copies
+
+**Trigger:** owner asked four pointed UX-workflow questions: are forms unified, are popups optimal (owner prefers page navigation), are selects ready for growing data, and what should each page let you search — with two concrete scenarios (per-item purchase history; finding an item inside the purchase-orders page) that they couldn't figure out how to do.
+
+**Verified answers to the two scenarios: both are genuinely impossible today.** `ItemsClient` searches name/category only and `HistoryModal` covers product price/recipe history, not purchases — so per-item purchase history requires opening every PO one by one. `PurchaseOrdersClient`'s search matches only `po.id` + supplier name — item names inside PO lines are unsearchable.
+
+**Major new finding while checking form consistency: 9 dead legacy form copies in `components/`** (`ModifierForm`, `SemiProductForm`, `ProductionForm`, `UserForm`, `EditUserForm`, `ProductCategoryForm`, `inventory/{PurchasedItemForm,BaseIngredientForm,ConversionForm}`) with zero importers — pre-reorganization copies whose live versions are the `app/admin/*/components/` FormModal-based set. Plus one partial: `components/SupplierForm.tsx` where only the `SupplierModal` export is live (PO form quick-add). ~42 of UI-CLEAN-1's 65 raw-color occurrences sit in these dead files, and Gate 6 had already patched aria-labels in a dead copy once — concrete maintenance cost. **Amended `docs/handoffs/2026-07-24-antigravity-ui-clean-1.md` in place:** deletions become Item 2 done FIRST (expanded list, per-file re-verify required, SupplierModal special case), token swap shrinks to surviving files, "Unknown" count drops 7→6.
+
+**Other findings:** live form layer is actually consistent (12/14 on `FormModal`; exceptions: `components/ProductForm.tsx` custom modal, `PurchaseOrderForm` already a page — the only entity matching the owner's preferred pattern); popup→page conversion matrix proposed for the redesign phase (complex recipe/variant editors and order edit/detail become pages; confirmations and 1-4-field quick forms stay modals); `SearchableSelect` already adopted by all 7 data-heavy live forms (client-side filtering fine at current scale, server-backed combobox is the 10x-growth upgrade); 30 raw `<select>`s are mostly filter enums with 4 convert candidates (`PromotionForm`, `SemiProductForm`, `CogsCalculator`, `ModifierForm`).
+
+**Output:** `docs/audits/2026-07-24-workflow-forms-popups-search-audit.md` — includes a per-page search matrix (current vs proposed) and 3 proposed packages awaiting owner approval: `WF-1` (item purchase-history view + PO item-name search + supplier→PO link; read-only queries, no schema change — directly answers the owner's two scenarios), `WF-2` (per-item stock movement history), and redesign-phase charter additions (popup→page list, select context upgrade, workflow-first design rules + capturing latent needs during UAT). Not added to ROADMAP yet — feature scope is the owner's call.
+
+Commit: pending (docs only; local commit, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude) - "What Else Needs Auditing?" — First-Ever Dependency Scan Finds Critical next-auth Vulnerabilities
 
 **Trigger:** owner asked what remains to audit beyond the day's two audits (full-system re-audit + frontend UI/UX).
