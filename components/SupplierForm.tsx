@@ -56,7 +56,7 @@ export function SupplierModal({
       <div className="bg-surface-card rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold mb-4 text-text-primary">Thêm Nhà Cung Cấp Mới</h2>
         
-        {error && <div className="mb-4 bg-danger/10 text-danger p-3 rounded-lg text-sm border border-red-100">{error}</div>}
+        {error && <div className="mb-4 bg-danger/10 text-danger p-3 rounded-lg text-sm border border-danger/30">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -67,7 +67,7 @@ export function SupplierModal({
               required 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring transition-shadow" 
               placeholder="VD: Cty Cà phê Việt"
             />
           </div>
@@ -79,7 +79,7 @@ export function SupplierModal({
                 type="tel" 
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring transition-shadow" 
               />
             </div>
             <div>
@@ -89,7 +89,7 @@ export function SupplierModal({
                 type="text" 
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring transition-shadow" 
               />
             </div>
           </div>
@@ -100,7 +100,7 @@ export function SupplierModal({
               type="text" 
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring transition-shadow" 
             />
           </div>
           <div>
@@ -110,7 +110,7 @@ export function SupplierModal({
               value={links}
               onChange={(e) => setLinks(e.target.value)}
               rows={2}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-blue-100 transition-shadow" 
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring transition-shadow" 
               placeholder="Link đặt hàng, ghi chú..."
             />
           </div>
@@ -126,7 +126,7 @@ export function SupplierModal({
             <button 
               type="submit" 
               disabled={loading}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-blue-400 font-medium transition-colors shadow-sm"
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 font-medium transition-colors shadow-sm"
             >
               {loading ? "Đang lưu..." : "Lưu Thông Tin"}
             </button>

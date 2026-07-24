@@ -56,7 +56,7 @@ export function ActionGroup({
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
             <div className="bg-surface-card rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
               <div className="p-5 border-b border-border flex items-center gap-3 bg-danger/10/50">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-danger shrink-0">
+                <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center text-danger shrink-0">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"

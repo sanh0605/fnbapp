@@ -263,7 +263,7 @@ export function CartPanel({
                 <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                   {processingOrder.items.map((item: any, idx: number) => {
                     return (
-                      <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-gray-50 pb-2">
+                      <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-border pb-2">
                         <div className="min-w-0 flex-1">
                           <p className="font-bold text-text-primary truncate">{item.product_name}</p>
                           <p className="text-[10px] text-text-muted">
@@ -301,7 +301,7 @@ export function CartPanel({
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-text-muted">
-              <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-16 h-16 mb-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -332,7 +332,7 @@ export function CartPanel({
 
       <div className="bg-surface-card border-t border-border p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
         {lastCheckoutError && (
-          <div className="bg-danger/10 border border-rose-200 text-rose-800 p-3 rounded-xl text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
+          <div className="bg-danger/10 border border-danger/30 text-danger p-3 rounded-xl text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
             <div className="flex-1 min-w-0">
               <p className="font-bold">⚠️ Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"})</p>
               <p className="text-[11px] text-danger mt-0.5 truncate">{lastCheckoutError.error}</p>
@@ -507,7 +507,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Tien mat")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-emerald-700 active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
+                className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-success/90 active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>
@@ -676,7 +676,7 @@ export function CartPanel({
                 handleConfirmCheckout("SPLIT", splitPayments);
               }}
               disabled={totalSplitEntered !== totalAmount || cart.length === 0 || !!isCheckingOut}
-              className="w-full bg-success text-white font-bold py-3.5 rounded-xl disabled:opacity-50 hover:bg-emerald-700 transition-colors"
+              className="w-full bg-success text-white font-bold py-3.5 rounded-xl disabled:opacity-50 hover:bg-success/90 transition-colors"
             >
               Xác nhận Thanh toán
             </button>

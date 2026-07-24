@@ -132,7 +132,7 @@ export default async function BackdatedLedgerPage({
                         {event.is_anomalous && (
                           <span
                             title={event.anomaly_reason || "Điều chỉnh bất thường, chưa tự áp dụng"}
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-danger/10 text-danger border-red-200"
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-danger/10 text-danger border-danger/30"
                           >
                             Bất thường
                           </span>

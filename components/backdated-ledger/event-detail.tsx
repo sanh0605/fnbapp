@@ -62,7 +62,7 @@ export function EventDetail({ event, plan }: EventDetailProps) {
             <StatusBadge status={event.status} className="text-sm px-3 py-1" />
             {event.is_anomalous && (
               <span
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border bg-danger/10 text-danger border-red-200"
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border bg-danger/10 text-danger border-danger/30"
               >
                 Bất thường
               </span>
@@ -70,7 +70,7 @@ export function EventDetail({ event, plan }: EventDetailProps) {
           </div>
         </div>
         {event.is_anomalous && event.anomaly_reason && (
-          <div className="mb-4 -mt-2 text-sm text-danger bg-danger/5 border border-red-200 rounded-md px-3 py-2">
+          <div className="mb-4 -mt-2 text-sm text-danger bg-danger/5 border border-danger/30 rounded-md px-3 py-2">
             Lý do tạm dừng tự động áp dụng: {event.anomaly_reason}
           </div>
         )}

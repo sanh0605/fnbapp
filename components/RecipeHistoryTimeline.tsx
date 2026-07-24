@@ -107,23 +107,23 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                 <div key={evt.id} className="relative group">
                   {/* Circle Dot */}
                   <div
-                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-primary ring-4 ring-blue-50 transition-transform group-hover:scale-110 z-10`}
+                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-primary ring-4 ring-primary-soft transition-transform group-hover:scale-110 z-10`}
                   />
 
                   {/* Card content */}
                   <div className={`bg-surface-card rounded-xl border p-4 shadow-sm transition-colors transition-shadow duration-200 ${
-                    isActive ? "border-emerald-200 ring-2 ring-emerald-50/50" : "border-border hover:border-border"
+                    isActive ? "border-success/30 ring-2 ring-success/10" : "border-border hover:border-border"
                   }`}>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary-soft text-primary border border-blue-100">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary-soft text-primary border border-primary/20">
                           Công thức
                         </span>
                         <span className="text-[11px] font-mono text-text-muted">ID: {r.id}</span>
                       </div>
                       
                       {isActive && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success border border-emerald-200 animate-pulse">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-success/10 text-success border border-success/30 animate-pulse">
                           Đang áp dụng
                         </span>
                       )}
@@ -173,13 +173,13 @@ export default function RecipeHistoryTimeline({ recipes, priceHistory }: RecipeH
                 <div key={evt.id} className="relative group">
                   {/* Circle Dot */}
                   <div
-                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-warning ring-4 ring-amber-50 transition-transform group-hover:scale-110 z-10`}
+                    className={`absolute -left-[27px] md:-left-[35px] top-3.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-warning ring-4 ring-warning/20 transition-transform group-hover:scale-110 z-10`}
                   />
 
                   {/* Card content */}
                   <div className="bg-surface-card rounded-xl border border-border p-4 shadow-sm hover:border-border transition-colors duration-200">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-warning/10 text-warning border border-amber-100">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-warning/10 text-warning border border-warning/30">
                         Thay đổi giá
                       </span>
                     </div>

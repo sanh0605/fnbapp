@@ -247,7 +247,7 @@ export default function ProductsClient({
                               <div className="flex items-center gap-1.5">
                                 <span className="font-bold text-text-primary">{v.size_name}</span>
                                 {ingCount > 0 ? (
-                                  <span className="inline-flex items-center px-1 py-0.2 bg-green-100 text-success text-[9px] rounded font-bold">Định mức</span>
+                                  <span className="inline-flex items-center px-1 py-0.2 bg-success/10 text-success text-[9px] rounded font-bold">Định mức</span>
                                 ) : (
                                   <span className="inline-flex items-center px-1 py-0.2 bg-danger/20 text-danger text-[9px] rounded font-bold">Chưa có</span>
                                 )}

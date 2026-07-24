@@ -199,7 +199,7 @@ export default function PromotionsClient({
                     expired
                       ? "bg-danger/10 text-danger border border-danger/20"
                       : promo.status === "INACTIVE"
-                      ? "bg-warning/10 text-warning border border-yellow-100"
+                      ? "bg-warning/10 text-warning border border-warning/20"
                       : "bg-success/10 text-success border border-success/20"
                   }`}
                 >

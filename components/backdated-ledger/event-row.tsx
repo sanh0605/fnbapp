@@ -38,7 +38,7 @@ export function EventRow({ event }: { event: any }) {
           {event.is_anomalous && (
             <span
               title={event.anomaly_reason || "Điều chỉnh bất thường, chưa tự áp dụng"}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-danger/10 text-danger border-red-200"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-danger/10 text-danger border-danger/30"
             >
               Bất thường
             </span>
@@ -48,7 +48,7 @@ export function EventRow({ event }: { event: any }) {
       <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
         <Link 
           href={`/admin/audit/backdated-ledger/${event.id}`}
-          className="text-primary hover:text-blue-900 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="text-primary hover:text-primary-hover opacity-0 group-hover:opacity-100 transition-opacity"
         >
           Chi tiết →
         </Link>
