@@ -166,6 +166,29 @@ describe("computeReorderSuggestions", () => {
     expect(result.suggestedReorderQtyPurchaseUnit).toBeNull();
   });
 
+  it("does not guess a purchase-unit quantity when active conversions are ambiguous", () => {
+    const input = baseInput({
+      baseIngredients: [{ id: "ING-A", name: "Duong", base_unit: "U-KG" }],
+      purchasedItems: [{ id: "PI-1", base_ingredient_id: "ING-A" }],
+      uomConversions: [
+        { purchased_item_id: "PI-1", purchased_unit: "U-GOI", conversion_rate: 5, status: "ACTIVE" },
+        { purchased_item_id: "PI-1", purchased_unit: "U-THUNG", conversion_rate: 20, status: "ACTIVE" },
+      ],
+      stockLedger: [
+        { item_reference: "ING-A", transaction_type: "PO_RECEIPT", quantity_change: 10, created_at: daysAgo(20) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -2, created_at: daysAgo(3) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -2, created_at: daysAgo(2) },
+        { item_reference: "ING-A", transaction_type: "SALES_CONSUME", quantity_change: -2, created_at: daysAgo(1) },
+      ],
+    });
+
+    const [result] = computeReorderSuggestions(input, { asOf, lookbackDays: 6 });
+
+    expect(result.conversionRate).toBeNull();
+    expect(result.purchaseUnitName).toBeNull();
+    expect(result.suggestedReorderQtyPurchaseUnit).toBeNull();
+  });
+
   it("counts each completed PO once per item when averaging lead time", () => {
     const input = baseInput({
       baseIngredients: [{ id: "ING-A", name: "Duong", base_unit: "U-KG" }],

@@ -152,12 +152,17 @@ export function computeReorderSuggestions(
     if (pi.semi_product_id) purchasedItemByItemRef.set(pi.semi_product_id, pi);
   }
 
-  const activeConversionByPurchasedItemId = new Map<string, RawUomConversion>();
+  const activeConversionByPurchasedItemId = new Map<string, RawUomConversion | null>();
   for (const conv of uomConversions) {
     if (conv.status !== "ACTIVE") continue;
-    if (!activeConversionByPurchasedItemId.has(conv.purchased_item_id)) {
-      activeConversionByPurchasedItemId.set(conv.purchased_item_id, conv);
+    // A purchase item can have multiple legitimate units (for example, pack
+    // and carton). Without an explicit preferred unit, a reorder suggestion
+    // must not silently choose whichever row happens to arrive first.
+    if (activeConversionByPurchasedItemId.has(conv.purchased_item_id)) {
+      activeConversionByPurchasedItemId.set(conv.purchased_item_id, null);
+      continue;
     }
+    activeConversionByPurchasedItemId.set(conv.purchased_item_id, conv);
   }
 
   const poById = new Map<string, RawPurchaseOrder>(purchaseOrders.map((po) => [po.id, po]));
