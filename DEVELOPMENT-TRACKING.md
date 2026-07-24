@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude) - INV-COUNT-1 + RPT-DIGEST-1 Approved and Planned for Sonnet; UI Ownership Recommendation
+
+**Trigger:** owner approved the periodic-stocktake and daily-summary proposals ("Duyệt luôn kiểm kê định kỳ và tổng kết cuối ngày"), Claude to plan only with Sonnet 5 implementing; asked whether UI work should stay with Antigravity or move to a Claude model; stated Fable 5 sessions will be reserved for system improvement/upgrade work only.
+
+**Plan written:** `docs/superpowers/plans/2026-07-24-stocktake-and-daily-digest-plan.md`. INV-COUNT-1 in two phases: S1 counting workflow (new `stocktake_sessions`/`stocktake_lines` tables + `/admin/inventory/stocktake` page, persisted per-line counts, live variance vs theoretical) and S2 confirm-and-apply (atomic RPC modeled on `approve_stock_adjustment_atomic` + `0033` guards, recomputes theoretical inside the transaction, writes STOCK_ADJUST rows with session reference — engine-critical, explicitly flagged: STOCK_ADJUST is the trusted primitive in `lib/full-history-recompute.ts`, so top-tier line-by-line review is required before `db push` even though Sonnet implements; unit_cost must mirror the 0019 convention, not a new rule). RPT-DIGEST-1: D1 on-demand `/admin/reports/daily` page (read-only, reuses existing report actions/reorder suggestions, date-bounded queries only) now; D2 scheduled push deferred until the owner picks a delivery channel and sets `CRON_SECRET`. Both logged in ROADMAP P1 with Sonnet as implementer and the review gates named.
+
+**UI ownership recommendation given:** move UI implementation to Claude Sonnet 5 (starting with UI-CLEAN-1, which is mechanical), keep Antigravity as optional visual-QA/backup — rationale: consolidating to Codex (engine) + Sonnet (routine/UI) + Fable (architecture/review) cuts the owner's coordination overhead, Sonnet is fully capable of functional UI, and Antigravity's self-reports needed correction twice during Gate 6. FC-1 (split-payment POS UI, the critical flow) can go to either; whoever builds it gets a strict coordinator review. ROADMAP UI-CLEAN-1 owner field updated to "Claude Sonnet 5 (recommended) or Antigravity" pending the owner's final word.
+
+**Memory saved:** `project_fable-usage-pattern` — Fable sessions are for improvement/upgrade/architecture asks only; Sonnet handles daily work.
+
+Commit: pending (docs only; local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude) - Session Close: Multi-Outlet Gap Logged as ARCH-1 Design Task, Sonnet 5 Supervisor Role Recorded, WF-1/WF-2 Approved with Handoff
 
 **Trigger:** owner's closing message: (1) identified the brand-vs-outlet architecture gap themselves — a 3rd location under an existing brand cannot be represented today, so multi-point management would force repeated system rework; asked for a long-term viability check and complete plan; (2) decided Claude Sonnet 5 will act as supervisor/reviewer; (3) approved all of Claude's recommendations from this session wholesale ("Tất cả sẽ theo khuyến nghị của em") and asked for a final session summary.
