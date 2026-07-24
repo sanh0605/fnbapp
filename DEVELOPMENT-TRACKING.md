@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Fable) - Repository Structure Audit + Infrastructure Direction Plan
+
+**Trigger:** owner asked two questions in an improvement session: (1) audit the current directory structure and propose the best target structure, (2) plan the infrastructure direction — language, keep Vercel or switch, and similar platform questions.
+
+**Delivered:** `docs/audits/2026-07-24-repo-structure-audit-and-infrastructure-plan.md` — read-only survey, no files moved (D8 propose-then-approve stands for every proposal in it).
+
+**Part 1, structure findings:** RS-1 legacy root `migrations/` (6 pre-CLI files, 019–023 numbering, zero code references) shadows the canonical `supabase/migrations/0001–0036` chain — propose delete. RS-2 `lib/` is flat (~85 modules + 101 tests) and mixes permanent engine code with closed one-off operation modules — propose a phased `lib/history-ops/` extraction, grep-verified per module, with the explicit option to stop there and never touch live engine files. RS-3 `scripts/` regrew 133→186 in the 4 days since the 2026-07-20 cleanup — the classifier exists, the missing piece is a standing monthly disposition pass. RS-4 (the one real defect): `next.config.js` ships `ignoreBuildErrors: true` + `ignoreDuringBuilds: true`, so a Vercel deploy of a type-broken tree would succeed and the local Husky hook is the only, bypassable, gate — flip the tsc flag now (baseline is clean), measure lint backlog before flipping the other. RS-5 root hygiene (`check-ts.js` unreferenced). RS-6 `ts-morph` in dependencies with zero imports anywhere, `dotenv` misplaced (scripts-only). Explicit non-findings recorded too: flat `docs/audits`/`docs/handoffs` are intentional and stay; `app/` structure is healthy; `supabase/functions` disk bloat is an ignored local `node_modules`.
+
+**Part 2, infrastructure verdict:** TypeScript, Vercel, and Supabase all stay — a language or platform move would rewrite exactly the audited 721-test COGS/inventory engine for zero gain, and every performance problem this program ever found was query shape, not platform. One recommended spend: Supabase Pro (~$25/mo) before the multi-outlet phase, for point-in-time recovery (pairs with the F-4 restore drill). One real project: `INFRA-UPGRADE-1`, the Next 14→16 upgrade (absorbs DEP-1's remaining `next` advisories; engine-adjacent because `lib/sheets_db.ts` is built on `unstable_cache`, whose semantics change). Auth replacement decision deliberately deferred to the overhaul phase with both candidates (Auth.js v5 vs Supabase Auth) recorded so ARCH-1 keeps both doors open. Honest limitation recorded: no hosting choice gives the POS offline capability — that would be an application-level offline-first project, only worth revisiting if outages start costing sales.
+
+**ROADMAP updated:** new P2 rows `BUILD-GATE-1` (Codex, do first), `REPO-STRUCT-2` (Codex + Sonnet, after INV-COUNT-1 S2 and PERF-2 land), `INFRA-UPGRADE-1` (Codex, after the P1 queue clears); change-log entry added.
+
+**Not touched:** the in-flight worktree changes under `app/admin/activity-log/` (another agent's WIP, left exactly as found); no code, no moves, no deletes.
+
+---
+
 ## 2026-07-24 (Claude Sonnet 5) - INV-COUNT-1 Phase S1 (Guided Stocktake Counting Workflow)
 
 **Trigger:** owner picked phase S1 to start now, from a 2-option check-in (start S1 vs stop for the day) after WF-2 closed — explicitly flagged that S2 (the write phase) needs a separate top-tier review gate before use.
