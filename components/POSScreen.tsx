@@ -783,7 +783,7 @@ export default function POSScreen({
           {
             label: "Thử lại",
             onClick: () => {
-              handleConfirmCheckout(method);
+              handleConfirmCheckout(method, payments);
             }
           }
         );
@@ -815,7 +815,7 @@ export default function POSScreen({
         {
           label: "Thử lại",
           onClick: () => {
-            handleConfirmCheckout(method);
+            handleConfirmCheckout(method, payments);
           }
         }
       );

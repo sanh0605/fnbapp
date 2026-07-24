@@ -120,7 +120,10 @@ export function CartPanel({
     return Math.max(0, subtotal - orderLevelDiscount - productLevelDiscount);
   };
 
-  const totalAmount = calculateTotalAmount();
+  // Rounded to match lib/order-cart.ts's net_total (Math.round on every discount
+  // step) -- without this, a PERCENT order discount can leave a fractional VND
+  // amount here that no whole-number split-payment entry could ever equal exactly.
+  const totalAmount = Math.round(calculateTotalAmount());
   const totalSplitEntered = splitPayments.reduce((sum, p) => sum + p.amount, 0);
   const splitRemaining = Math.max(0, totalAmount - totalSplitEntered);
 
@@ -336,7 +339,7 @@ export function CartPanel({
             </div>
             <button
               onClick={() => {
-                handleConfirmCheckout(lastCheckoutError.method);
+                handleConfirmCheckout(lastCheckoutError.method, lastCheckoutError.processingOrder?.cartInput?.payments);
                 clearLastCheckoutError();
               }}
               className="bg-danger text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-danger active:scale-95 transition min-h-[44px] min-w-[80px] shrink-0 ml-2 shadow-sm flex items-center justify-center text-xs"
