@@ -1,67 +1,81 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/PageHeader";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatDateTime } from "@/lib/datetime";
 import { formatNumber } from "@/lib/format";
 import { EmptyState } from "@/components/ui/EmptyState";
-
-interface OrderEvent {
-  id: string;
-  order_id: string;
-  order_no: string;
-  event_type: "CREATED" | "EDITED" | "VOIDED" | "REOPENED" | "MIGRATED";
-  event_at: string;
-  actor_id: string;
-  actor_name: string;
-  from_version?: number | string;
-  to_version?: number | string;
-  reason?: string;
-  delta_json?: string;
-}
+import type { ActivityLogEvent as OrderEvent } from "../actions";
 
 interface ActivityLogClientProps {
   initialEvents: OrderEvent[];
   actors: string[];
+  totalCount: number;
+  itemsPerPage: number;
 }
 
-export default function ActivityLogClient({ initialEvents, actors }: ActivityLogClientProps) {
-  const [search, setSearch] = useState("");
-  const [eventType, setEventType] = useState<string>("ALL");
-  const [actorFilter, setActorFilter] = useState<string>("ALL");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+export default function ActivityLogClient({
+  initialEvents,
+  actors,
+  totalCount,
+  itemsPerPage,
+}: ActivityLogClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [search, setSearch] = useState(() => searchParams.get("q") || "");
+  const [eventType, setEventType] = useState(() => searchParams.get("type") || "ALL");
+  const [actorFilter, setActorFilter] = useState(() => searchParams.get("actor") || "ALL");
+  const [startDate, setStartDate] = useState(() => searchParams.get("from") || "");
+  const [endDate, setEndDate] = useState(() => searchParams.get("to") || "");
+  const [currentPage, setCurrentPage] = useState(() => {
+    const page = Number(searchParams.get("page"));
+    return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  });
 
-  const filteredEvents = useMemo(() => {
-    return initialEvents.filter((evt) => {
-      // Event type filter
-      const matchType = eventType === "ALL" || evt.event_type === eventType;
-      
-      // Actor filter
-      const matchActor = actorFilter === "ALL" || evt.actor_name === actorFilter;
-      
-      // Date range filter
-      let matchDate = true;
-      if (startDate) {
-        matchDate = matchDate && new Date(evt.event_at) >= new Date(startDate);
-      }
-      if (endDate) {
-        // Extend end date to include the whole day (23:59:59)
-        const endDateTime = new Date(endDate);
-        endDateTime.setHours(23, 59, 59, 999);
-        matchDate = matchDate && new Date(evt.event_at) <= endDateTime;
-      }
+  useEffect(() => {
+    setSearch(searchParams.get("q") || "");
+    setEventType(searchParams.get("type") || "ALL");
+    setActorFilter(searchParams.get("actor") || "ALL");
+    setStartDate(searchParams.get("from") || "");
+    setEndDate(searchParams.get("to") || "");
+    const page = Number(searchParams.get("page"));
+    setCurrentPage(Number.isFinite(page) && page > 0 ? Math.floor(page) : 1);
+  }, [searchParams]);
 
-      // Text search
-      const matchSearch =
-        evt.order_no.toLowerCase().includes(search.toLowerCase()) ||
-        evt.id.toLowerCase().includes(search.toLowerCase()) ||
-        (evt.reason || "").toLowerCase().includes(search.toLowerCase()) ||
-        evt.actor_name.toLowerCase().includes(search.toLowerCase());
+  const updateUrl = (updates: {
+    page?: number;
+    q?: string;
+    type?: string;
+    actor?: string;
+    from?: string;
+    to?: string;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const key of ["q", "type", "actor", "from", "to"] as const) {
+      const value = updates[key];
+      if (value === undefined) continue;
+      if (value && value !== "ALL") params.set(key, value);
+      else params.delete(key);
+    }
 
-      return matchType && matchActor && matchDate && matchSearch;
+    const isFilterChange = ["q", "type", "actor", "from", "to"]
+      .some(key => updates[key as keyof typeof updates] !== undefined);
+    const targetPage = updates.page ?? (isFilterChange ? 1 : currentPage);
+    if (targetPage > 1) params.set("page", String(targetPage));
+    else params.delete("page");
+    setCurrentPage(targetPage);
+
+    const href = params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
+    startTransition(() => {
+      if (updates.q !== undefined) router.replace(href, { scroll: false });
+      else router.push(href, { scroll: false });
     });
-  }, [initialEvents, eventType, actorFilter, startDate, endDate, search]);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
   const renderDelta = (deltaJson?: string) => {
     if (!deltaJson) return null;
@@ -165,16 +179,30 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
             placeholder="Tìm mã đơn, người tạo, lý do..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") updateUrl({ q: search });
+            }}
             className="w-full md:w-56 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
+        <button
+          type="button"
+          onClick={() => updateUrl({ q: search })}
+          disabled={isPending}
+          className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+        >
+          Lọc
+        </button>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
             Loại Sự Kiện
           </label>
           <select
             value={eventType}
-            onChange={(e) => setEventType(e.target.value)}
+            onChange={(e) => {
+              setEventType(e.target.value);
+              updateUrl({ type: e.target.value });
+            }}
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả</option>
@@ -191,7 +219,10 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
           </label>
           <select
             value={actorFilter}
-            onChange={(e) => setActorFilter(e.target.value)}
+            onChange={(e) => {
+              setActorFilter(e.target.value);
+              updateUrl({ actor: e.target.value });
+            }}
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả tài khoản</option>
@@ -209,7 +240,10 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
           <input
             type="date"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => {
+              setStartDate(e.target.value);
+              updateUrl({ from: e.target.value });
+            }}
             className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
@@ -220,26 +254,29 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
           <input
             type="date"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(e) => {
+              setEndDate(e.target.value);
+              updateUrl({ to: e.target.value });
+            }}
             className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
       
       </div>
 
-      <div className="relative pl-6 md:pl-10">
+      <div className={`relative pl-6 md:pl-10 ${isPending ? "opacity-60" : ""}`}>
         {/* Vertical Timeline Line */}
         <div className="absolute top-4 bottom-4 left-[34px] md:left-[50px] w-0.5 border-border" />
 
         <div className="space-y-6">
-          {filteredEvents.length === 0 ? (
+          {initialEvents.length === 0 ? (
             <EmptyState 
               icon="🕒" 
               title="Chưa có nhật ký hoạt động" 
               description="Hệ thống sẽ ghi nhận lịch sử các thao tác thay đổi ở đây."
             />
           ) : (
-            filteredEvents.map((evt) => {
+            initialEvents.map((evt) => {
               const badge = getEventBadge(evt.event_type);
               return (
                 <div key={evt.id} className="relative group">
@@ -309,6 +346,33 @@ export default function ActivityLogClient({ initialEvents, actors }: ActivityLog
               );
             })
           )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+        <span className="text-xs font-semibold text-text-muted">
+          {initialEvents.length} / {totalCount} sự kiện
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={currentPage <= 1 || isPending}
+            onClick={() => updateUrl({ page: currentPage - 1 })}
+            className="min-h-[40px] rounded-lg border border-border bg-surface-card px-4 text-sm font-bold text-text-secondary disabled:opacity-40"
+          >
+            Trước
+          </button>
+          <span className="min-w-20 text-center text-xs font-bold text-text-secondary">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={currentPage >= totalPages || isPending}
+            onClick={() => updateUrl({ page: currentPage + 1 })}
+            className="min-h-[40px] rounded-lg border border-border bg-surface-card px-4 text-sm font-bold text-text-secondary disabled:opacity-40"
+          >
+            Sau
+          </button>
         </div>
       </div>
     </div>

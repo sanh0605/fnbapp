@@ -1,37 +1,48 @@
-import { findAll } from "@/lib/sheets_db";
+import { Suspense } from "react";
+
+import { getActivityLogEvents } from "./actions";
 import ActivityLogClient from "./components/ActivityLogClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function ActivityLogPage() {
-  const [events, orders] = await Promise.all([
-    findAll("Order_Events"),
-    findAll("Orders_V2"),
-  ]);
+function toStartOfDayIso(dateOnly: string): string {
+  return new Date(`${dateOnly}T00:00:00`).toISOString();
+}
 
-  // Build a map of order_id -> order_no
-  const orderMap: Record<string, string> = {};
-  orders.forEach((o: any) => {
-    orderMap[o.id] = o.order_no;
+function toEndOfDayIso(dateOnly: string): string {
+  return new Date(`${dateOnly}T23:59:59.999`).toISOString();
+}
+
+export default async function ActivityLogPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const getParam = (key: string) => {
+    const value = searchParams?.[key];
+    return typeof value === "string" ? value : Array.isArray(value) ? value[0] : undefined;
+  };
+  const page = parseInt(getParam("page") || "1", 10) || 1;
+  const from = getParam("from");
+  const to = getParam("to");
+
+  const result = await getActivityLogEvents({
+    page,
+    q: getParam("q"),
+    type: getParam("type"),
+    actor: getParam("actor"),
+    from: from ? toStartOfDayIso(from) : undefined,
+    to: to ? toEndOfDayIso(to) : undefined,
   });
-
-  // Enrich events with order numbers
-  const enrichedEvents = events.map((evt: any) => ({
-    ...evt,
-    order_no: orderMap[evt.order_id] || "Không rõ",
-  }));
-
-  // Sort by event_at descending (newest first)
-  enrichedEvents.sort((a: any, b: any) => {
-    return new Date(b.event_at || 0).getTime() - new Date(a.event_at || 0).getTime();
-  });
-
-  // Extract unique actors for filtering dropdown
-  const uniqueActors: string[] = Array.from(
-    new Set(events.map((e: any) => e.actor_name).filter(Boolean))
-  );
 
   return (
-    <ActivityLogClient initialEvents={enrichedEvents} actors={uniqueActors} />
+    <Suspense fallback={<div className="py-8 text-center text-sm font-semibold text-text-muted">Đang tải nhật ký...</div>}>
+      <ActivityLogClient
+        initialEvents={result.events}
+        actors={result.actors}
+        totalCount={result.totalCount}
+        itemsPerPage={result.itemsPerPage}
+      />
+    </Suspense>
   );
 }
