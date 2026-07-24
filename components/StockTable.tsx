@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { AlertCircle, CheckCircle, Search, X } from "lucide-react";
 import { formatDateTime } from "@/lib/datetime";
+import { StockLedgerHistoryButton } from "@/components/StockLedgerHistoryButton";
 
 export default function StockTable({ 
   stockItems, 
@@ -173,13 +174,16 @@ export default function StockTable({
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Button 
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setIsAdjusting(item)}
-                    >
-                      Cân bằng
-                    </Button>
+                    <div className="flex justify-end items-center gap-2">
+                      <StockLedgerHistoryButton itemId={item.id} itemName={item.name} unitName={item.unitName} />
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setIsAdjusting(item)}
+                      >
+                        Cân bằng
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -210,8 +214,9 @@ export default function StockTable({
               </div>
             </div>
 
-            <div className="flex justify-end pt-2 border-t border-border/50">
-              <Button 
+            <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+              <StockLedgerHistoryButton itemId={item.id} itemName={item.name} unitName={item.unitName} />
+              <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsAdjusting(item)}
