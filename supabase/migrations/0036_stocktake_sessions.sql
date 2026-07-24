@@ -23,6 +23,8 @@ create table if not exists public.stocktake_sessions (
   created_by_id text not null,
   created_by_name text not null,
   created_at timestamptz not null default now(),
+  confirmed_by_id text,
+  confirmed_by_name text,
   confirmed_at timestamptz,
   notes text not null default '',
   updated_at timestamptz not null default now()
@@ -48,9 +50,25 @@ create table if not exists public.stocktake_lines (
   session_id text not null references public.stocktake_sessions(id) on delete cascade,
   item_reference text not null,
   item_type text not null check (item_type in ('BASE_INGREDIENT','SEMI_PRODUCT')),
-  counted_qty numeric(18,6),
+  counted_qty numeric(18,6) check (
+    counted_qty is null or (counted_qty >= 0 and counted_qty <> 'NaN'::numeric)
+  ),
   theoretical_at_count numeric(18,6),
-  counted_at timestamptz
+  counted_at timestamptz,
+  constraint stocktake_lines_count_snapshot_check check (
+    (
+      counted_qty is null
+      and theoretical_at_count is null
+      and counted_at is null
+    )
+    or
+    (
+      counted_qty is not null
+      and theoretical_at_count is not null
+      and theoretical_at_count <> 'NaN'::numeric
+      and counted_at is not null
+    )
+  )
 );
 create index if not exists idx_stocktake_lines_session on public.stocktake_lines(session_id);
 -- One line per item per session -- open_stocktake_session_atomic seeds every
@@ -172,8 +190,8 @@ declare
   v_counted_at timestamptz := now();
 begin
   if v_line_id is null then raise exception 'p_line_id is required'; end if;
-  if p_counted_qty is null or p_counted_qty < 0 then
-    raise exception 'p_counted_qty must be >= 0';
+  if p_counted_qty is null or p_counted_qty < 0 or p_counted_qty = 'NaN'::numeric then
+    raise exception 'p_counted_qty must be a finite number >= 0';
   end if;
 
   select session_id, item_reference into v_session_id, v_item_reference
