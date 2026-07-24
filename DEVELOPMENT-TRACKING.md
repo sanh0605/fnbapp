@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Sonnet 5) - Reviewed Full P1/P2 Backlog, Started with DEP-1 Phase 1 (Non-Breaking Dependency Fix)
+
+**Trigger:** owner asked to review all pending and newly-added work, analyze priority, and act.
+
+**Triage:** read `docs/COLLABORATION.md`, `docs/ROADMAP.md` (full P0-P3 + backlog + future-direction sections), and the tracking history above. P1 queue at session start: `DEP-1` (dependency vulns, Codex), `PERF-2` (Codex, handoff ready), `WF-1` (Codex or Sonnet, handoff ready), `INV-COUNT-1`/`RPT-DIGEST-1` (Sonnet, plan ready), `UI-CLEAN-1` (Sonnet recommended or Antigravity, handoff ready), `FC-3` (deliberately last, no current staff need). Picked `DEP-1` first: it is the only item touching a live security exposure (critical `next-auth` auth-layer vulnerabilities) with a verified non-breaking fix path already identified in the roadmap note, versus the rest being routine features/UI/perf work — a clear risk-based default, not a scope tradeoff worth pausing on.
+
+**Work done:** ran `npm audit fix` (no `--force`) — lockfile-only change, `package.json` range unchanged. Fixed the critical `next-auth <=4.24.14` chain (malformed-Bearer uncaught exception, email homoglyph bypass, unbound OAuth state/nonce/PKCE cookies). 21 → 18 known vulnerabilities (4 → 3 critical). Verified `tsc` clean, 673/673 tests, production build succeeds with `/api/auth/[...nextauth]` intact. Commit `1459e61` (`Claude-Sonnet fix:` prefix, this session's own tier). Updated `DEP-1`'s ROADMAP row to `[~C]` phase-1-done with the remaining breaking-change items still queued for Codex's classification table.
+
+**Not yet browser-verified:** an actual login, since no authenticated session is available in this environment — flagged in the roadmap row as still owed before considering `DEP-1` phase 1 fully closed.
+
+**Next in queue (not yet started this session):** `WF-1`/`INV-COUNT-1`/`RPT-DIGEST-1`/`UI-CLEAN-1` are all implementable by this Sonnet 5 session per the current role split; `PERF-2` and the rest of `DEP-1` stay with Codex per risk-boundary ownership (engine files / production-affecting perf changes).
+
+Commit: `1459e61` (local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude) - INV-COUNT-1 + RPT-DIGEST-1 Approved and Planned for Sonnet; UI Ownership Recommendation
 
 **Trigger:** owner approved the periodic-stocktake and daily-summary proposals ("Duyệt luôn kiểm kê định kỳ và tổng kết cuối ngày"), Claude to plan only with Sonnet 5 implementing; asked whether UI work should stay with Antigravity or move to a Claude model; stated Fable 5 sessions will be reserved for system improvement/upgrade work only.
