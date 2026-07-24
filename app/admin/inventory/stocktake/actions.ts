@@ -8,7 +8,9 @@ import {
   openStocktakeSessionAtomic,
   saveStocktakeLineAtomic,
   cancelStocktakeSessionAtomic,
+  applyStocktakeSessionAtomic,
   type StocktakeItemType,
+  type StocktakeApplyResult,
 } from "@/lib/stocktake-transaction";
 
 const PATH = "/admin/inventory/stocktake";
@@ -133,6 +135,58 @@ export async function cancelStocktakeSession(sessionId: string): Promise<ActionR
     await cancelStocktakeSessionAtomic(sessionId);
     revalidatePath(PATH);
     return ok();
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return fail(message);
+  }
+}
+
+export async function getStocktakeConfirmPreview(
+  sessionId: string,
+): Promise<ActionResponse & { preview?: StocktakeApplyResult }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  try {
+    const preview = await applyStocktakeSessionAtomic({
+      sessionId,
+      confirmedById: auth.actor.id,
+      confirmedByName: auth.actor.name,
+      dryRun: true,
+    });
+    if (!preview.dryRun || preview.status !== "OPEN") {
+      throw new Error("Stocktake preview did not return a dry run");
+    }
+    return ok({ preview });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return fail(message);
+  }
+}
+
+export async function confirmStocktakeSession(
+  sessionId: string,
+  expectedPlanHash: string,
+): Promise<ActionResponse & { result?: StocktakeApplyResult }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+  if (!expectedPlanHash.trim()) {
+    return fail("Stocktake preview is required before confirmation");
+  }
+
+  try {
+    const result = await applyStocktakeSessionAtomic({
+      sessionId,
+      confirmedById: auth.actor.id,
+      confirmedByName: auth.actor.name,
+      dryRun: false,
+      expectedPlanHash,
+    });
+    if (result.dryRun || result.status !== "CONFIRMED") {
+      throw new Error("Stocktake confirmation did not apply the session");
+    }
+    revalidatePath(PATH);
+    return ok({ result });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return fail(message);

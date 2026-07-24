@@ -7,10 +7,13 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/format";
 import { confirm } from "@/lib/dialog";
+import type { StocktakeApplyResult } from "@/lib/stocktake-transaction";
 import {
   startStocktakeSession,
   saveStocktakeLine,
   cancelStocktakeSession,
+  getStocktakeConfirmPreview,
+  confirmStocktakeSession,
   type StocktakeSessionView,
 } from "../actions";
 
@@ -60,8 +63,45 @@ function StartSessionView() {
 
 function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
   const [cancelling, setCancelling] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [preview, setPreview] = useState<StocktakeApplyResult | null>(null);
+  const [applied, setApplied] = useState<StocktakeApplyResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const countedCount = session.lines.filter(l => l.countedQty !== null).length;
+  const isPreviewing = preview !== null;
+
+  async function handlePreview() {
+    setPreviewLoading(true);
+    setError(null);
+    const res = await getStocktakeConfirmPreview(session.id);
+    setPreviewLoading(false);
+    if (res.error || !res.preview) {
+      setError(res.error || "Không thể tạo bản xem trước kiểm kê");
+      return;
+    }
+    setPreview(res.preview);
+  }
+
+  async function handleApply() {
+    const approved = await confirm({
+      title: "Xác nhận áp dụng kiểm kê",
+      message: `Hệ thống sẽ ghi ${preview?.ledgerCount || 0} điều chỉnh tồn kho. Thao tác này không thể hoàn tác tự động.`,
+      variant: "warning",
+    });
+    if (!approved) return;
+
+    setApplying(true);
+    setError(null);
+    const res = await confirmStocktakeSession(session.id, preview?.planHash || "");
+    setApplying(false);
+    if (res.error || !res.result) {
+      setError(res.error || "Không thể áp dụng kiểm kê");
+      return;
+    }
+    setApplied(res.result);
+  }
 
   async function handleCancel() {
     const confirmed = await confirm({
@@ -75,22 +115,80 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
     setCancelling(false);
   }
 
+  if (applied) {
+    return <AppliedSessionView sessionId={session.id} result={applied} />;
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Kiểm Kê Định Kỳ"
         subtitle="Đếm thực tế toàn bộ nguyên liệu và bán thành phẩm, so sánh với sổ sách hệ thống."
         actions={
-          <Button variant="danger" size="sm" onClick={handleCancel} loading={cancelling}>
-            Hủy phiên
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="primary" size="sm" onClick={handlePreview} loading={previewLoading}>
+              Xác nhận và áp dụng
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleCancel} loading={cancelling}>
+              Hủy phiên
+            </Button>
+          </div>
         }
       />
+      {error && <Alert variant="danger">{error}</Alert>}
       <Alert variant="warning" title={`Đang kiểm kê: ${session.id}`}>
         Bắt đầu bởi {session.createdByName} lúc {new Date(session.createdAt).toLocaleString("vi-VN")}.
         Đã đếm {countedCount}/{session.lines.length} mặt hàng.
         {session.notes && <div className="mt-1 italic">Ghi chú: {session.notes}</div>}
       </Alert>
+
+      {preview && (
+        <div className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4">
+          <Alert variant="warning" title="Dự kiến áp dụng">
+            {preview.ledgerCount === 0
+              ? "Không có chênh lệch cần điều chỉnh. Xác nhận để khóa phiên kiểm kê."
+              : `Sẽ ghi ${preview.ledgerCount} điều chỉnh. Chênh lệch được giữ theo thời điểm từng mặt hàng được đếm, nên các giao dịch phát sinh sau đó vẫn được bảo toàn.`}
+          </Alert>
+          {preview.rows.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-text-secondary text-xs">
+                    <th className="px-3 py-2">Mặt hàng</th>
+                    <th className="px-3 py-2 text-right">Tồn hiện tại</th>
+                    <th className="px-3 py-2 text-right">Điều chỉnh</th>
+                    <th className="px-3 py-2 text-right">Dự kiến sau áp dụng</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {preview.rows.map(row => {
+                    const line = session.lines.find(candidate => candidate.id === row.lineId);
+                    const unitName = line?.unitName || "";
+                    return (
+                      <tr key={row.lineId}>
+                        <td className="px-3 py-2 font-medium text-text-primary">{line?.itemName || row.itemReference}</td>
+                        <td className="px-3 py-2 text-right">{formatNumber(row.currentTheoreticalQty)} {unitName}</td>
+                        <td className={`px-3 py-2 text-right font-bold ${row.countVariance > 0 ? "text-success" : "text-danger"}`}>
+                          {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)} {unitName}
+                        </td>
+                        <td className="px-3 py-2 text-right font-semibold">{formatNumber(row.projectedQty)} {unitName}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setPreview(null)} disabled={applying}>
+              Quay lại chỉnh sửa
+            </Button>
+            <Button variant="warning" onClick={handleApply} loading={applying}>
+              Xác nhận áp dụng
+            </Button>
+          </div>
+        </div>
+      )}
 
       {session.lines.length === 0 ? (
         <EmptyState icon="📋" title="Không có mặt hàng nào" description="Không tìm thấy nguyên liệu/bán thành phẩm nào để kiểm kê." />
@@ -108,7 +206,7 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
             </thead>
             <tbody className="divide-y divide-border">
               {session.lines.map(line => (
-                <LineRow key={line.id} line={line} />
+                <LineRow key={line.id} line={line} disabled={isPreviewing} />
               ))}
             </tbody>
           </table>
@@ -118,7 +216,42 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
   );
 }
 
-function LineRow({ line }: { line: StocktakeSessionView["lines"][number] }) {
+function AppliedSessionView({ sessionId, result }: { sessionId: string; result: StocktakeApplyResult }) {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Kiểm Kê Định Kỳ"
+        subtitle="Phiên kiểm kê đã được xác nhận và khóa."
+      />
+      <Alert variant="success" title={`Đã áp dụng phiên ${sessionId}`}>
+        Đã ghi {result.ledgerCount} điều chỉnh tồn kho. Các mã ledger: {result.ledgerIds.length > 0 ? result.ledgerIds.join(", ") : "không có điều chỉnh"}.
+      </Alert>
+      {result.rows.length > 0 && (
+        <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">
+          <h2 className="font-bold text-text-primary mb-3">Các điều chỉnh đã áp dụng</h2>
+          <div className="space-y-2 text-sm">
+            {result.rows.map(row => (
+              <div key={row.lineId} className="flex justify-between gap-4 border-b border-border pb-2 last:border-0">
+                <span>{row.itemReference}</span>
+                <span className={row.countVariance > 0 ? "text-success font-bold" : "text-danger font-bold"}>
+                  {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LineRow({
+  line,
+  disabled = false,
+}: {
+  line: StocktakeSessionView["lines"][number];
+  disabled?: boolean;
+}) {
   const [inputValue, setInputValue] = useState(line.countedQty !== null ? String(line.countedQty) : "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -153,10 +286,11 @@ function LineRow({ line }: { line: StocktakeSessionView["lines"][number] }) {
             step="any"
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
+            disabled={disabled}
             className="w-24 border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring"
           />
           <span className="text-text-muted text-xs">{line.unitName}</span>
-          <Button variant="secondary" size="sm" onClick={handleSave} loading={saving}>
+          <Button variant="secondary" size="sm" onClick={handleSave} loading={saving} disabled={disabled}>
             Lưu
           </Button>
         </div>

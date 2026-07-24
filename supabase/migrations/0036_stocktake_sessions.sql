@@ -4,9 +4,9 @@
 -- (engine-critical, separate migration + top-tier review before db push).
 -- This phase only records what was physically counted, against a
 -- theoretical_at_count snapshot taken at the moment each item is counted
--- (not at session-open), for display purposes -- S2 will independently
--- recompute theoretical inside its own transaction at confirm time, since
--- sales continue to happen while a count is in progress.
+-- (not at session-open). S2 reads current stock again for its confirmation
+-- preview, but applies this server-calculated count-time delta so later sales
+-- and receipts remain intact.
 --
 -- Deliberately blind-count: theoretical_at_count/variance are only computed
 -- and shown once an item's own count is saved, never beforehand, so the
