@@ -2,6 +2,7 @@
 
 import { useState, useId } from "react";
 import { formatNumber } from "@/lib/format";
+import { SearchableSelect } from "@/components/SearchableSelect";
 
 interface IngredientOption {
   id: string;
@@ -76,19 +77,13 @@ export default function CogsCalculator({ ingredients }: { ingredients: Ingredien
                     className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-warning"
                   />
                 ) : (
-                  <select 
+                  <SearchableSelect
                     id={`${itemRowId}-ingredient`}
-                    value={item.ingredient_id} 
-                    onChange={e => updateItem(idx, "ingredient_id", e.target.value)}
-                    className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm focus:ring-warning"
-                  >
-                    <option value="">-- Chọn nguyên liệu --</option>
-                    {ingredients.map(ing => (
-                      <option key={ing.id} value={ing.id}>
-                        {ing.name} (Kho: {ing.unit})
-                      </option>
-                    ))}
-                  </select>
+                    value={item.ingredient_id}
+                    onChange={val => updateItem(idx, "ingredient_id", val)}
+                    options={ingredients.map(ing => ({ id: ing.id, label: `${ing.name} (Kho: ${ing.unit})` }))}
+                    placeholder="-- Chọn nguyên liệu --"
+                  />
                 )}
               </div>
 

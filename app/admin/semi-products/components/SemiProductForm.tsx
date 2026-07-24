@@ -262,17 +262,16 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
                   </select>
 
                   <div className="flex-1">
-                    <select
+                    <SearchableSelect
                       value={ing.ingredient_id}
-                      onChange={(e) => updateIngredient(idx, { ingredient_id: e.target.value })}
-                      className="w-full border border-border rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
-                    >
-                      <option value="">-- Chọn --</option>
-                      {ing.ingredient_type === "BASE_INGREDIENT" 
-                        ? baseIngredients.map(bi => <option key={bi.id} value={bi.id}>{bi.name}</option>)
-                        : availableSemiProducts.map(sp => <option key={sp.id} value={sp.id}>{sp.name}</option>)
+                      onChange={(val) => updateIngredient(idx, { ingredient_id: val })}
+                      options={
+                        ing.ingredient_type === "BASE_INGREDIENT"
+                          ? baseIngredients.map(bi => ({ id: bi.id, label: bi.name }))
+                          : availableSemiProducts.map(sp => ({ id: sp.id, label: sp.name }))
                       }
-                    </select>
+                      placeholder="-- Chọn --"
+                    />
                   </div>
 
                   <div className="w-32 relative">

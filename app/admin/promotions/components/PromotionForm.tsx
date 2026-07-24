@@ -6,6 +6,7 @@ import { LoadingButton } from "@/components/ui/LoadingButton";
 import { formatNumber } from "@/lib/format";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { SearchableSelect } from "@/components/SearchableSelect";
 
 interface PromotionFormProps {
   initialData?: DBPromotion;
@@ -263,19 +264,16 @@ export function PromotionForm({
 
             <div>
               <label htmlFor={`${formId}-brandId`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
-              <select
+              <SearchableSelect
                 id={`${formId}-brandId`}
                 value={brandId}
-                onChange={(e) => setBrandId(e.target.value)}
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              >
-                <option value="">Tất cả thương hiệu (Toàn hệ thống)</option>
-                {brands.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setBrandId}
+                options={[
+                  { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
+                  ...brands.map((b) => ({ id: b.id, label: b.name })),
+                ]}
+                placeholder="Tất cả thương hiệu (Toàn hệ thống)"
+              />
             </div>
 
             <div>
