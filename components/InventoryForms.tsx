@@ -6,9 +6,6 @@ import { alert, confirm } from "@/lib/dialog";
 
 // Re-export forms from sub-components
 export { ItemCategoryForm, CategoryForm } from "./inventory/CategoryForm";
-export { BaseIngredientForm } from "./inventory/BaseIngredientForm";
-export { PurchasedItemForm } from "./inventory/PurchasedItemForm";
-export { ConversionForm } from "./inventory/ConversionForm";
 
 // Reusable Action Group (Sửa / Xoá)
 export function ActionGroup({
