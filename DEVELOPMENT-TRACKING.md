@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude) - Session Close: Multi-Outlet Gap Logged as ARCH-1 Design Task, Sonnet 5 Supervisor Role Recorded, WF-1/WF-2 Approved with Handoff
+
+**Trigger:** owner's closing message: (1) identified the brand-vs-outlet architecture gap themselves — a 3rd location under an existing brand cannot be represented today, so multi-point management would force repeated system rework; asked for a long-term viability check and complete plan; (2) decided Claude Sonnet 5 will act as supervisor/reviewer; (3) approved all of Claude's recommendations from this session wholesale ("Tất cả sẽ theo khuyến nghị của em") and asked for a final session summary.
+
+**ARCH-1 logged (design-only, P2):** the owner's diagnosis is correct and matches the evidence — `/pos?brandId=...`, `orders_v2.brand_id`, no outlet entity anywhere, `Stock_Ledger` has no location dimension (`ORG-MULTI-OUTLET` has been `PLANNED` with exactly this gap named since Pre-Audit C). Recommendation recorded in the ROADMAP row: keep implementation at Future-direction item 5 (after UI/UX phase, per the standing owner-set sequence) but pull the **design** forward now, so the redesign phase builds outlet-switch-ready screens and interim features stop conflating brand with location. Design scope in the row: outlet entity vs brand, which records gain `outlet_id`, single-warehouse vs per-outlet stock (current owner-confirmed single-warehouse reality makes backfill trivial — all history belongs to outlet 1), POS outlet selection, report dimensions, migration/backfill/rollback. Assigned Codex `gpt-5.6-sol` High + Claude review + owner approval.
+
+**Sonnet 5 role recorded** in `docs/COLLABORATION.md` (agent lineup + change log) per owner decision, shaped by Claude's earlier-session recommendation the owner accepted: routine implementer/supervisor (handoff execution, routine diff review), commit prefix `Claude-Sonnet <type>:`, engine-critical work still top-tier, self-review prohibited. Memory saved (`project_sonnet5-supervisor-role`).
+
+**WF-1/WF-2 moved from proposed to approved** under the wholesale approval: ROADMAP rows added (routine tier — "Codex or Claude Sonnet 5"), compact implementable handoff written (`docs/handoffs/2026-07-24-wf1-purchase-history-and-search.md`) including the SCRIPT-BUG-1-style column-name warning for `purchase_order_lines`.
+
+**Session totals (6 commits, docs only, all local):** full-system re-audit (F-1..F-16, 5-wave plan) → load-speed/logic deep-dive → PERF-2 Codex handoff (after mid-implementation revert when the owner set the plans-only rule) → frontend UI/UX audit (FE-1..FE-10) + UI-CLEAN-1 Antigravity handoff (amended twice: 9 dead form copies discovered, then the owner's ≥10-option searchable-select rule as Item 4) → first-ever `npm audit` (DEP-1: 4 critical next-auth vulns, non-breaking fix available; OPS-CONT-1 continuity audit proposed) → workflow audit (both owner search scenarios verified impossible; WF-1/WF-2) → this close-out. Feature proposals presented and NOT yet logged (owner picked none explicitly despite wholesale approval — they are new feature scope, kept as chat-level proposals pending a specific go: periodic guided stocktake, daily digest, dynamic VietQR, receipt printing).
+
+Commit: pending (docs only; local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude) - Workflow Audit (Forms/Popups/Selects/Search) + UI-CLEAN-1 Amended for 9 Dead Form Copies
 
 **Trigger:** owner asked four pointed UX-workflow questions: are forms unified, are popups optimal (owner prefers page navigation), are selects ready for growing data, and what should each page let you search — with two concrete scenarios (per-item purchase history; finding an item inside the purchase-orders page) that they couldn't figure out how to do.
