@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-24 (Claude Sonnet 5) - RPT-DIGEST-1 Phase D1 (On-Demand Daily Summary Page)
+
+**Trigger:** continued the priority order from the approved plan (`docs/superpowers/plans/2026-07-24-stocktake-and-daily-digest-plan.md`) after closing UI-CLEAN-1.
+
+**Built:** `/admin/reports/daily`, own page (pages-over-popups), date picker via `?date=YYYY-MM-DD` defaulting to today. Reused existing report/inventory actions rather than duplicating their math: `getSalesDataV2` (called 3x — today, yesterday, same-weekday-last-week — for revenue/orders/avg/top-5-by-qty/payment split), `getReorderSuggestions` (low-stock list), `getRealtimeStock` (negative-stock attention flag). New `lib/daily-digest.ts` holds only the genuinely new pure logic: date-offset math (`shiftDateOnly`, `getDigestDateOffsets`) and period-comparison deltas (`comparePeriods`), matching `lib/reorder-suggestion.ts`'s data-fetch/pure-fn split. `comparePeriods` returns `null` rather than a misleading `0%` when the comparison period had zero revenue, since a percentage change against zero is mathematically undefined, not "no change" — 11 new unit tests cover this plus month/year date-boundary shifts. Pending-backdated-events count queries both `backdated_ledger_events`/`backdated_recipe_events` directly (PENDING status), matching the existing audit page's own 2-table pattern rather than inventing a new abstraction for a single count. Added a "Tổng kết ngày" nav entry above the other report links.
+
+**Concurrent Codex activity noted again** (`lib/order-ledger-audit.ts`, `scripts/audit-order-ledger.ts`, new `void-order-ledger-repair` files — looks like `AUDIT-TOOL-1`'s known-stale-tool rebuild or a related void-order fix) — isolated correctly, no overlap with this commit.
+
+**Verified:** `tsc` clean, full suite 719/719 (grew from 692 with Codex's concurrent commits landing in between), `next build` passed (route compiles, 141 kB first load). Could not browser-verify with a live login in this environment.
+
+**Not started:** Phase D2 (scheduled push) — still deferred pending the owner's delivery-channel choice and `CRON_SECRET` in Vercel, both outstanding since `COGS-1-FOLLOWUP`.
+
+Commit: `10af43c` (local, no push per standing instruction).
+
+---
+
 ## 2026-07-24 (Claude Sonnet 5) - Closed UI-CLEAN-1 (Design-Free Frontend Cleanup Sweep, All 4 Items)
 
 **Trigger:** continued the owner-approved backlog priority order after FC-1's review/fix — `docs/handoffs/2026-07-24-antigravity-ui-clean-1.md`, next in line per the roadmap.
