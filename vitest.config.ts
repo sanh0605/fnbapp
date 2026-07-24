@@ -2,6 +2,11 @@ import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 export default defineConfig({
+  // Next.js keeps JSX for its own compiler, while Vitest 4/Vite 8 needs the
+  // test transform to lower TSX before import analysis.
+  oxc: {
+    jsx: { runtime: "automatic" },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./"),
