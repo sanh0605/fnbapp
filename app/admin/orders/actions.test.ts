@@ -45,4 +45,24 @@ describe("admin order edit COGS calculation", () => {
     expect(editOrderSource).not.toContain('findAllNoCache("Order_Lines_V2")');
     expect(editOrderSource).not.toContain('findAllNoCache("Stock_Ledger")');
   });
+
+  it("reverses the complete original checkout effect on edit, including implicit production, same as void", () => {
+    // Same underlying gap voidOrderV2 had before commit 4f6ba40: reversing
+    // only SALES_CONSUME on edit would permanently lose the raw-ingredient
+    // PRODUCTION_CONSUME deduction and double-count the PRODUCTION_YIELD
+    // semi-product gain whenever the original sale triggered implicit
+    // production. editOrderV2 must reuse the same buildVoidReversalRows
+    // helper voidOrderV2 uses (already unit-tested in
+    // lib/void-order-reversal.test.ts for the PRODUCTION_CONSUME/YIELD case),
+    // not a bespoke SALES_CONSUME-only filter.
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const editOrderSource = source.slice(
+      source.indexOf("export async function editOrderV2"),
+      source.indexOf("// 8. Build new SALES_CONSUME entries"),
+    );
+
+    expect(editOrderSource).toContain("buildVoidReversalRows({");
+    expect(editOrderSource).toContain("ledgerRows: oldOrderLedger");
+    expect(editOrderSource).not.toContain('transaction_type === "SALES_CONSUME"');
+  });
 });

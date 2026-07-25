@@ -576,22 +576,20 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       reason: input.reason,
     };
 
-    // 7. Build reversal entries (mirror old SALES_CONSUME rows for this order)
-    const oldLedgerRows = oldOrderLedger.filter((l: any) =>
-      l.reference_id === oldOrderV2.id && l.transaction_type === "SALES_CONSUME",
-    );
-    const reversalEntries = oldLedgerRows.map((l: any) => ({
-      id: `stk-${crypto.randomUUID()}`,
-      transaction_type: "EDIT_REVERSAL",
-      reference_id: oldOrderV2.id,
-      item_reference: l.item_reference,
-      quantity_change: -Number(l.quantity_change), // negate (positive value)
-      unit_cost: Number(l.unit_cost) || 0,
-      created_at: eventTime,
-      order_event_id: event.id,
-      cost_at_sale: Number(l.cost_at_sale) || 0,
-      source: l.source || "VARIANT_RECIPE",
-    }));
+    // 7. Build reversal entries. Reverses the complete original checkout
+    // inventory effect, including any implicit-production rows created to
+    // cover a semi-product shortfall -- same fix as voidOrderV2 (commit
+    // 4f6ba40), applied here because editing an order that triggered
+    // implicit production had the identical gap: only SALES_CONSUME was
+    // reversed, permanently losing the PRODUCTION_CONSUME raw-ingredient
+    // deduction and double-counting the PRODUCTION_YIELD semi-product gain.
+    const reversalEntries = buildVoidReversalRows({
+      orderId: oldOrderV2.id,
+      orderEventId: event.id,
+      eventTime,
+      ledgerRows: oldOrderLedger as any[],
+      createRowId: () => `stk-${crypto.randomUUID()}`,
+    });
 
     // 8. Build new SALES_CONSUME entries for the new version
     const consumeEntries = buildStockLedgerEntries(built, event.id, originalSaleTime, pastLedger, consumptionMaps);
