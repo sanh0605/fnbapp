@@ -12,6 +12,7 @@ import {
   resolvePosCheckoutAttempt,
   type PosCheckoutAttempt,
 } from "@/lib/pos-checkout-idempotency";
+import { enqueuePendingOrder } from "@/lib/pos-offline-queue";
 
 export default function POSScreen({
   brandId,
@@ -655,7 +656,7 @@ export default function POSScreen({
 
 
   const handleConfirmCheckout = async (method: string, payments?: any[]) => {
-    if (cart.length === 0 || !isOnline) return;
+    if (cart.length === 0) return;
     setIsCheckingOut(method);
     setLastCheckoutError(null);
 
@@ -673,8 +674,11 @@ export default function POSScreen({
     const currentTotalAmount = calculateTotalAmount();
     const currentTotalItems = totalItems;
 
+    const clientCapturedAt = new Date().toISOString();
+
     const cartInput: CartInput = {
       brand_id: brandId || "",
+      client_captured_at: clientCapturedAt,
       items: cart.map(item => {
         let manualItemValue = Number(item.discount_amount || 0);
         let manualItemType: "VND" | "PERCENT" = item.discount_type === "PERCENT" ? "PERCENT" : "VND";
@@ -792,33 +796,51 @@ export default function POSScreen({
       setIsCheckingOut(null);
       setProcessingOrder(null);
 
-      // Rollback states
-      setCart(cartBackup);
-      setActiveDraftId(draftIdBackup);
-      setUserCustomDiscount(customDiscountBackup);
-      setUserCustomDiscountType(customDiscountTypeBackup);
-      setAppliedPromoCode(appliedPromoCodeBackup);
-      setPromoCodeInput(promoCodeInputBackup);
-      setManualPromoError(manualPromoErrorBackup);
-      setIsCartOpen(true);
-
-      const errorMsg = err?.message || String(err);
-      setLastCheckoutError({
-        method,
-        error: errorMsg,
-        processingOrder: newProcessingOrder,
-      });
-
-      addToast(
-        "error",
-        `Lỗi hệ thống: ${errorMsg}`,
-        {
-          label: "Thử lại",
-          onClick: () => {
-            handleConfirmCheckout(method, payments);
-          }
+      try {
+        await enqueuePendingOrder({
+          requestToken: checkoutAttempt.requestToken,
+          cartInput,
+          queuedAt: clientCapturedAt,
+          attemptCount: 1,
+        });
+        addToast("success", "Đã lưu đơn hàng, sẽ gửi khi có mạng trở lại.");
+        if (draftIdBackup) {
+          deletePOSDraft(draftIdBackup).then(delRes => {
+            if (delRes.success) refreshDrafts();
+          });
         }
-      );
+      } catch (queueErr) {
+        // IndexedDB itself failed (extremely rare -- private browsing mode
+        // with storage disabled, or storage quota exceeded). Only now fall
+        // back to the old interactive rollback+retry, since there is
+        // nowhere left to durably hold the order.
+        setCart(cartBackup);
+        setActiveDraftId(draftIdBackup);
+        setUserCustomDiscount(customDiscountBackup);
+        setUserCustomDiscountType(customDiscountTypeBackup);
+        setAppliedPromoCode(appliedPromoCodeBackup);
+        setPromoCodeInput(promoCodeInputBackup);
+        setManualPromoError(manualPromoErrorBackup);
+        setIsCartOpen(true);
+
+        const errorMsg = err?.message || String(err);
+        setLastCheckoutError({
+          method,
+          error: errorMsg,
+          processingOrder: newProcessingOrder,
+        });
+
+        addToast(
+          "error",
+          `Lỗi hệ thống: ${errorMsg}`,
+          {
+            label: "Thử lại",
+            onClick: () => {
+              handleConfirmCheckout(method, payments);
+            }
+          }
+        );
+      }
     }
   };
 
@@ -956,7 +978,7 @@ export default function POSScreen({
 
         {!isOnline && (
           <div className="bg-warning text-white font-extrabold text-center py-2.5 px-4 text-sm flex items-center justify-center gap-2 animate-fade-in shadow-md shrink-0 relative z-20">
-            <span>⚠️ Mất kết nối — đơn sẽ không gửi được</span>
+            <span>⚠️ Mất kết nối — đơn vẫn được lưu, sẽ tự gửi khi có mạng</span>
           </div>
         )}
 
