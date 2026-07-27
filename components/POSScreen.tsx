@@ -662,25 +662,30 @@ export default function POSScreen({
 
 
   const syncPendingOrders = async () => {
-    const pending = await listPendingOrders();
-    for (const record of pending) {
-      try {
-        const res = await submitOrderV2(record.cartInput, record.requestToken);
-        if (res.success) {
-          await removePendingOrder(record.requestToken);
-        } else {
-          // A real rejection, not a network failure -- retrying it forever
-          // would never succeed. No one is watching this device's screen
-          // for this specific order anymore, so surface it to the admin
-          // dashboard instead of the staff UI.
-          await reportPosSyncFailure(record.requestToken, record.cartInput, res.error);
-          await removePendingOrder(record.requestToken);
+    try {
+      const pending = await listPendingOrders();
+      for (const record of pending) {
+        try {
+          const res = await submitOrderV2(record.cartInput, record.requestToken);
+          if (res.success) {
+            await removePendingOrder(record.requestToken);
+          } else {
+            // A real rejection, not a network failure -- retrying it forever
+            // would never succeed. No one is watching this device's screen
+            // for this specific order anymore, so surface it to the admin
+            // dashboard instead of the staff UI.
+            await reportPosSyncFailure(record.requestToken, record.cartInput, res.error);
+            await removePendingOrder(record.requestToken);
+          }
+        } catch {
+          // Still no network (or it dropped again mid-retry). Leave it
+          // queued; the next online event or page mount will try again.
+          await incrementAttemptCount(record.requestToken);
         }
-      } catch {
-        // Still no network (or it dropped again mid-retry). Leave it
-        // queued; the next online event or page mount will try again.
-        await incrementAttemptCount(record.requestToken);
       }
+    } catch {
+      // listPendingOrders() itself failed (IndexedDB error, etc.)
+      // Self-heals on next mount or online event
     }
   };
 
