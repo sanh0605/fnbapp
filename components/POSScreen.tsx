@@ -871,7 +871,7 @@ export default function POSScreen({
         setIsDraftModalOpen(false);
         setSelectedProduct(null);
         setIsCartOpen(false);
-      } else if (e.key === "Enter" && !isCheckingOut && !processingOrder && isOnline && cart.length > 0) {
+      } else if (e.key === "Enter" && !isCheckingOut && !processingOrder && cart.length > 0) {
         e.preventDefault();
         if (await confirm({ title: "Xác nhận", message: "Xác nhận thanh toán TIỀN MẶT cho đơn hàng?", variant: "warning" })) {
           handleConfirmCheckoutRef.current("Tien mat");
@@ -880,7 +880,7 @@ export default function POSScreen({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isCheckingOut, processingOrder, isOnline, cart.length]);
+  }, [isCheckingOut, processingOrder, cart.length]);
 
   return (
     <div className="fixed inset-0 flex bg-page text-text-primary font-sans overflow-hidden">
