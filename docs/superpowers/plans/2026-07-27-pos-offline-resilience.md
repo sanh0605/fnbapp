@@ -777,7 +777,16 @@ describe("migration 0040: POS sync tracking", () => {
     expect(sql).toContain("grant select, insert, update on table public.pos_sync_failures to service_role");
   });
 
-  it("sets synced_at to now() at actual insert time in create_pos_order_atomic", () => {
+  it("sets synced_at to now() at actual insert time in create_pos_order_atomic_unvalidated_0024", () => {
+    // Migration 0035 renamed the function that actually inserts into
+    // orders_v2 to create_pos_order_atomic_unvalidated_0024, putting a
+    // payment-validating wrapper named create_pos_order_atomic in front of
+    // it. synced_at must be added to the renamed inner function, not the
+    // wrapper -- the wrapper only validates and delegates, it never touches
+    // orders_v2 directly.
+    expect(sql).toContain("create or replace function public.create_pos_order_atomic_unvalidated_0024");
+    expect(sql).not.toContain("create function public.create_pos_order_atomic(");
+    expect(sql).not.toContain("drop function if exists public.create_pos_order_atomic(");
     expect(sql).toContain("synced_at");
     expect(sql).toMatch(/insert into public\.orders_v2 \([\s\S]*synced_at[\s\S]*\)/);
   });
@@ -803,6 +812,15 @@ Expected: FAIL -- migration file does not exist.
 -- (non-network) reason on a background retry -- no one is watching that
 -- device's screen for it anymore, so it needs admin attention instead of
 -- an interactive staff-facing retry.
+--
+-- Migration 0035 renamed the original create_pos_order_atomic (0024's full
+-- transaction body, the function that actually inserts into orders_v2) to
+-- create_pos_order_atomic_unvalidated_0024, and put a thin validating
+-- wrapper named create_pos_order_atomic in front of it (checks payment
+-- id/method/amount, then delegates). synced_at is added to the renamed
+-- inner function below -- the wrapper is untouched, since it never inserts
+-- into orders_v2 itself and replacing it here would silently delete 0035's
+-- payment validation from production.
 
 alter table public.orders_v2 add column if not exists synced_at timestamptz;
 
@@ -821,11 +839,7 @@ alter table public.pos_sync_failures enable row level security;
 revoke all on table public.pos_sync_failures from public, anon, authenticated;
 grant select, insert, update on table public.pos_sync_failures to service_role;
 
-drop function if exists public.create_pos_order_atomic(
-  text, jsonb, jsonb, jsonb, jsonb, text, jsonb
-);
-
-create function public.create_pos_order_atomic(
+create or replace function public.create_pos_order_atomic_unvalidated_0024(
   p_brand_code text,
   p_order jsonb,
   p_lines jsonb default '[]'::jsonb,
@@ -1120,12 +1134,18 @@ begin
 end;
 $$;
 
-revoke all on function public.create_pos_order_atomic(
+-- Matches migration 0035's own ACL for this function exactly: it revokes
+-- execute from every role including service_role, since it is only ever
+-- invoked internally (by the create_pos_order_atomic wrapper's own
+-- security-definer execution, which does not require the caller to hold a
+-- direct grant on this inner function). create or replace does not reset
+-- an existing function's ACL when the signature is unchanged, so this
+-- statement is redundant with what 0035 already set -- restated here only
+-- for the same defensive clarity every other migration in this house style
+-- uses.
+revoke all on function public.create_pos_order_atomic_unvalidated_0024(
   text, jsonb, jsonb, jsonb, jsonb, text, jsonb
-) from public, anon, authenticated;
-grant execute on function public.create_pos_order_atomic(
-  text, jsonb, jsonb, jsonb, jsonb, text, jsonb
-) to service_role;
+) from public, anon, authenticated, service_role;
 ```
 
 - [ ] **Step 4: Run and observe GREEN**
