@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-27 (Claude Sonnet 5) - Closed Stale UI-CLEAN-1-FOLLOWUP Row; RS-2 Batch 2 (11 Remaining lib/ Modules Moved to lib/history-ops/)
+
+**Trigger:** owner asked what's next, with the instruction to commit locally only, no push, until asked. Reviewed `docs/ROADMAP.md`'s remaining P1/P2 rows for anything actionable now that Sonnet 5 covers `scripts/` directly (no longer blocked on Codex).
+
+**UI-CLEAN-1-FOLLOWUP (commit `6fe92e0`):** turned out to already be fixed — Codex closed all 4 "Unknown" -> "Không rõ" strings in `app/admin/orders/actions.ts` back in commit `8bb9d8a` (2026-07-24 evening, reviewed 2026-07-25). Confirmed zero "Unknown" strings remain anywhere in `app/` before marking the row closed; it had just never been updated.
+
+**RS-2 batch 2 (commits `6fe92e0`/`2eb6d70`):** moved the 11 remaining `lib/` modules (`hong-luc-migration` group x3, `btp-shortfall-reprocess`, `cogs5-pipeline-audit`, `mac-drift-baseline`, `recovery-snapshot`, `task-3-recovery`, `btp-drift-lock`, `backdated-historical-gap-lock`, `migrate-v1-to-v2`) plus their 11 test files into `lib/history-ops/` — the move batch 1 (2026-07-24) left queued because every one of these has a `scripts/` CLI wrapper importing it via a relative `../lib/` path, and editing `scripts/` in the same commit was Codex-exclusive territory at the time. Grep-verified each module's only outside dependents first (all in `scripts/`, one relative import each, no `app/`/`components/` importers), then updated every `@/lib/x` absolute and `../lib/x` scripts-relative import across 9 `scripts/` files and 7 `lib/` files.
+
+A second full-repo grep pass after the first round of path fixes caught two things a naive find-and-replace would have missed: (1) `hong-luc-migration.ts` and `btp-shortfall-reprocess.ts` use *relative* imports (`./inventory-consumption`, `./mac-cogs`, `./order-types`, `./recipe-selection`) to reach engine files that correctly stayed in `lib/` root — these needed `../` after the move, not the same-old-string treatment given to files moving together; (2) `hong-luc-migration-transaction.ts` and `task-3-recovery.test.ts` each had a second absolute-path import to their own sibling module that the first grep pass missed. `void-order-reversal.ts` and the 3 explicit Engine Files (`mac-cogs-audit.ts`/`cogs-drift-audit.ts`/`purchase-ledger-rebuild.ts`) were re-checked and confirmed still live imports, correctly not moved.
+
+The move landed as two commits rather than one because `git mv` auto-stages the rename before the follow-up `Edit` calls that fixed import paths — `6fe92e0` captured the pure renames (bundled in with the unrelated doc-only UI-CLEAN-1-FOLLOWUP fix, staged separately in the same commit by mistake) and `2eb6d70` captured the actual content fixes. Not an issue since both stayed local and unpushed, but the intermediate commit alone would not compile — noted so a future `git bisect` isn't surprised by it.
+
+`tsc` clean, full suite 759/759 (exact same count as before the move — nothing lost or silently skipped), `next build` passed. Updated `docs/ROADMAP.md`'s `REPO-STRUCT-2` row: RS-2 now fully closed; RS-1 (delete legacy root `migrations/`), `check-ts.js` deletion, and the `package.json` `ts-morph`/`dotenv` cleanup remain as the next candidates, no longer blocked by anything. All work this session stayed local per the owner's instruction — not pushed.
+
+---
+
 ## 2026-07-27 (Claude Sonnet 5) - Urgent Sales Report Topping-Classification Fix; Materialized Inventory Balance (PERF-2 Phase B) Implemented, Held for Migration Push
 
 **Trigger:** two separate events this session. (1) Owner interrupted in-progress work with a screenshot: the Sales report's "Top sale - Nước" table showed "Kem muối phô mai" and "Đào miếng" — standalone topping products, not drinks — and asked for an urgent fix with priority push. (2) Owner reported Codex hit its usage limit again mid-session (this time while planning `PERF-2` Phase B execution, right after re-confirming its design with the owner) and declared Sonnet 5 the project's **sole remaining agent** going forward — beyond the earlier time-boxed exceptions, now covering `lib/*.ts`, `supabase/migrations/*.sql`, and `scripts/*.ts` directly with no stated end condition. Updated `docs/ROADMAP.md`'s active-agents table accordingly.
