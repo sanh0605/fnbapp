@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { reconstructOrderV2, classifyV1Discounts } from "@/lib/migrate-v1-to-v2";
-import type { V1Order, V1Line, MigrationReferenceData } from "@/lib/migrate-v1-to-v2";
+import { reconstructOrderV2, classifyV1Discounts } from "@/lib/history-ops/migrate-v1-to-v2";
+import type { V1Order, V1Line, MigrationReferenceData } from "@/lib/history-ops/migrate-v1-to-v2";
 
 const REF: MigrationReferenceData = {
   products: [{ id: "PROD-024", name: "Sữa dâu sấy giòn", category_id: "CAT-001" }],

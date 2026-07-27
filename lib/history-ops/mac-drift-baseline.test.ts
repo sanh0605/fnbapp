@@ -6,7 +6,7 @@ import {
   buildMacDriftAuditOutputPath,
   classifyMacDriftMismatches,
   getMacDriftAuditExitCode,
-} from "@/lib/mac-drift-baseline";
+} from "@/lib/history-ops/mac-drift-baseline";
 
 describe("buildMacDriftBaselineReport", () => {
   it("correlates MAC drift lines with migrated orders and post-baseline dates", () => {

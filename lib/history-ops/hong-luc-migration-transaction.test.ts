@@ -22,7 +22,7 @@ import {
   classifyHongToLucRpcProbe,
   ensureHongToLucMigrationRpcReady,
   getHongToLucMigrationRun,
-} from "@/lib/hong-luc-migration-transaction";
+} from "@/lib/history-ops/hong-luc-migration-transaction";
 
 describe("applyHongToLucMigration", () => {
   beforeEach(() => {

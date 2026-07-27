@@ -15,14 +15,14 @@ import {
   parseHongToLucMigrationArgs,
   renderHongToLucDryRun,
   type RecoverySnapshotMetadata,
-} from "../lib/hong-luc-migration";
-import { verifySnapshotBundleFiles } from "../lib/recovery-snapshot";
+} from "../lib/history-ops/hong-luc-migration";
+import { verifySnapshotBundleFiles } from "../lib/history-ops/recovery-snapshot";
 import {
   applyHongToLucMigration,
   ensureHongToLucMigrationRpcReady,
   getHongToLucMigrationRun,
   type HongToLucMigrationRun,
-} from "../lib/hong-luc-migration-transaction";
+} from "../lib/history-ops/hong-luc-migration-transaction";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

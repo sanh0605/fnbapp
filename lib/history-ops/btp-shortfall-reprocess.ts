@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
-import { parseLineRecipeSnapshot } from "./order-types";
+import { parseLineRecipeSnapshot } from "../order-types";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
   buildSemiProductRecipeMaps,
-} from "./inventory-consumption";
+} from "../inventory-consumption";
 
 type RawOrder = {
   id: string;

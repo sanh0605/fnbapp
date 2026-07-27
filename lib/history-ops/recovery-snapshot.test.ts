@@ -4,7 +4,7 @@ import {
   buildRecoveryRunId,
   createSnapshotBundleFiles,
   verifySnapshotBundleFiles,
-} from "@/lib/recovery-snapshot";
+} from "@/lib/history-ops/recovery-snapshot";
 
 describe("createSnapshotBundleFiles", () => {
   it("preserves raw inputs and creates deterministic canonical files", () => {

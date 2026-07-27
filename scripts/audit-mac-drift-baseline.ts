@@ -22,7 +22,7 @@ import {
   getMacDriftAuditExitCode,
   type KnownMacDriftCohortArtifact,
   type MacDriftBaselineLock,
-} from "../lib/mac-drift-baseline";
+} from "../lib/history-ops/mac-drift-baseline";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

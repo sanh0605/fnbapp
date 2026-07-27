@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createSnapshotBundleFiles } from "@/lib/recovery-snapshot";
+import { createSnapshotBundleFiles } from "@/lib/history-ops/recovery-snapshot";
 import {
   assertAuditBaselineTriggerBlocked,
   assessTask3CohortDrift,
@@ -16,7 +16,7 @@ import {
   resolveSupabasePublicKey,
   verifyTask3SnapshotFiles,
   verifyTask3RecoveryState,
-} from "@/lib/task-3-recovery";
+} from "@/lib/history-ops/task-3-recovery";
 
 describe("buildTask3RecoveryPlan", () => {
   it("normalizes canonical snapshot JSON fields for the MAC audit", () => {

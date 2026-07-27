@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planBtpShortfallReprocess } from "@/lib/btp-shortfall-reprocess";
+import { planBtpShortfallReprocess } from "@/lib/history-ops/btp-shortfall-reprocess";
 
 describe("planBtpShortfallReprocess", () => {
   it("reverses old direct semi-product sales and adds split shortfall consumption", () => {

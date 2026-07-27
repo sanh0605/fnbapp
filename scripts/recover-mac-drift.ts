@@ -5,7 +5,7 @@ import { auditMacCogsDrift } from "../lib/mac-cogs-audit";
 import {
   buildMacDriftBaselineReport,
   buildMacDriftRecoveryPlan,
-} from "../lib/mac-drift-baseline";
+} from "../lib/history-ops/mac-drift-baseline";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

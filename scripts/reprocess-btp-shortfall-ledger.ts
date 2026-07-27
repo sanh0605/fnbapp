@@ -12,7 +12,7 @@ function fmtQty(value: number): string {
 async function main() {
   const apply = process.argv.includes("--apply");
   const { findAllNoCache, insertMany } = await import("../lib/sheets_db");
-  const { planBtpShortfallReprocess } = await import("../lib/btp-shortfall-reprocess");
+  const { planBtpShortfallReprocess } = await import("../lib/history-ops/btp-shortfall-reprocess");
 
   const [orders, lines, ledger, recipes, semiProducts] = await Promise.all([
     findAllNoCache("Orders_V2"),
