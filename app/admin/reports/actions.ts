@@ -882,7 +882,11 @@ function buildStandaloneToppingMap(products: any[]): Map<string, string> {
   for (const p of products) {
     if (String(p.category_id) !== "CAT-007") continue;
     const match = String(p.migration_notes || "").match(/topping-standalone::mod_id=(MOD-\d+)/);
-    if (match) map.set(String(p.id), match[1]);
+    // A CAT-007 product with no migration_notes link still belongs in
+    // bestToppings, not bestSellers -- fall back to bucketing under its own
+    // product ID rather than dropping it out of the map entirely. Matches
+    // docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md.
+    map.set(String(p.id), match ? match[1] : String(p.id));
   }
   return map;
 }

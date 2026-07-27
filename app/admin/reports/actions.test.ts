@@ -808,6 +808,91 @@ describe("getSalesDataV2", () => {
     });
   });
 
+  it("routes a standalone topping product (CAT-007) with no modifier link into bestToppings, not bestSellers", async () => {
+    // Production bug 2026-07-27: buildStandaloneToppingMap only added a CAT-007
+    // product to the map when its migration_notes carried a linked modifier id.
+    // Every CAT-007 product created without running that link step (which was
+    // all 7 of them in production) fell through into bestSellers/bestDrinks
+    // instead of bestToppings -- "Kem muối phô mai" and "Đào miếng" showed up
+    // in the "Top sale - Nước" table. Fix: fall back to the product's own id.
+    const createdAt = "2026-07-01T10:00:00.000Z";
+    const order = {
+      id: "ord-standalone-topping",
+      order_no: "TOP-STANDALONE-001",
+      brand_id: "BR-001",
+      status: "COMPLETED",
+      version: 1,
+      parent_order_id: "",
+      superseded_by: "",
+      created_at: createdAt,
+      created_by_id: "U",
+      created_by_name: "Test",
+      completed_at: createdAt,
+      voided_at: "",
+      voided_by_id: "",
+      void_reason: "",
+      currency: "VND",
+      gross_total: 10000,
+      promo_discount_total: 0,
+      manual_item_discount_total: 0,
+      manual_order_discount: 0,
+      net_total: 10000,
+      applied_promotion_id: "",
+      applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}",
+      payment_method: "CASH",
+      payment_ref: "",
+      migration_notes: "",
+    };
+    const line = {
+      order_id: order.id,
+      id: "ol-standalone-topping",
+      line_no: 1,
+      product_id: "PROD-033",
+      product_snapshot_json: JSON.stringify({
+        id: "PROD-033",
+        name: "Kem muối phô mai",
+        category_id: "CAT-007",
+        category_name: "Topping",
+      }),
+      variant_id: "VAR-033",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-033", size_name: "1 phần", price: 10000 }),
+      qty: 1,
+      unit_price: 10000,
+      gross_line_total: 10000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 10000,
+      cost_at_sale: 0,
+      recipe_snapshot_json: "{}",
+      promo_discount_reason: "",
+      manual_discount_reason: "",
+      modifiers_snapshot_json: "[]",
+    };
+    const products = [
+      { id: "PROD-033", name: "Kem muối phô mai", category_id: "CAT-007", migration_notes: "" },
+    ];
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [line];
+      return [];
+    });
+    (findAll as any).mockImplementation((sheet: string) => {
+      if (sheet === "Products") return products;
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+
+    expect(result.bestSellers.find(p => p.product_id === "PROD-033")).toBeUndefined();
+    const toppingRow = result.bestToppings.find(t => t.name === "Kem muối phô mai");
+    expect(toppingRow).toBeDefined();
+    expect(toppingRow?.qty).toBe(1);
+    expect(toppingRow?.revenue).toBe(10000);
+  });
+
   it("loads sales lines only for the server-filtered report orders", async () => {
     const fixture = makeSuaDauStandaloneOrder();
     (findAllWhere as any).mockResolvedValue([fixture.order]);
