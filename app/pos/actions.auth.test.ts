@@ -173,11 +173,15 @@ describe("POS action authentication", () => {
       ok: true,
       actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" },
     });
-    mocks.findAllNoCache.mockResolvedValue([
-      { item_reference: "BI-1", quantity_change: 10 },
-      { item_reference: "BI-1", quantity_change: -3 },
-      { item_reference: "BTP-1", quantity_change: 4 },
-    ]);
+    mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
+      if (sheet === "Inventory_Balances") {
+        return [
+          { item_reference: "BI-1", quantity: 7 },
+          { item_reference: "BTP-1", quantity: 4 },
+        ];
+      }
+      throw new Error(`unexpected uncached read: ${sheet}`);
+    });
     mocks.findAll.mockImplementation(async (sheet: string) => {
       if (sheet === "Base_Ingredients") {
         return [
@@ -197,6 +201,8 @@ describe("POS action authentication", () => {
     ]);
     expect(result[0]).not.toHaveProperty("name");
     expect(result[0]).not.toHaveProperty("unit_cost");
+    expect(mocks.findAllNoCache).toHaveBeenCalledWith("Inventory_Balances");
+    expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Stock_Ledger");
   });
 });
 

@@ -102,4 +102,32 @@ describe("stock adjustment authorization", () => {
     expect(mocks.findAll).not.toHaveBeenCalled();
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
+
+  it("reads current stock from the materialized balance table, not a full Stock_Ledger replay", async () => {
+    mocks.requireAdmin.mockResolvedValue({
+      ok: true,
+      actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
+    });
+    mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
+      if (sheet === "Inventory_Balances") return [{ item_reference: "BI-1", quantity: 7 }];
+      throw new Error(`unexpected uncached read: ${sheet}`);
+    });
+    mocks.findAll.mockImplementation(async (sheet: string) => {
+      if (sheet === "Base_Ingredients") return [{ id: "BI-1", name: "Sữa đặc", base_unit: "U-1" }];
+      if (sheet === "Semi_Products") return [{ id: "BTP-1", name: "Hồng trà đậm", base_unit: "U-1" }];
+      if (sheet === "Units") return [{ id: "U-1", name: "g" }];
+      return [];
+    });
+
+    const result = await getRealtimeStock();
+
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "BI-1", current_stock: 7 }),
+        expect.objectContaining({ id: "BTP-1", current_stock: 0 }),
+      ]),
+    );
+    expect(mocks.findAllNoCache).toHaveBeenCalledWith("Inventory_Balances");
+    expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Stock_Ledger");
+  });
 });

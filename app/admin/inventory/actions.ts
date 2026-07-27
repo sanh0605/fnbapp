@@ -418,8 +418,15 @@ export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
 // --- STOCK (Tồn kho) ---
 const loadRealtimeStock = unstable_cache(
   async () => {
-    const [stockLedger, baseIngredients, semiProducts, units] = await Promise.all([
-      findAllNoCache("Stock_Ledger"),
+    // PERF-2 Phase B: read the trigger-maintained balance instead of
+    // replaying the whole Stock_Ledger. Cache tag stays "sheets-Stock_Ledger"
+    // (not "sheets-Inventory_Balances") because every ledger write already
+    // calls revalidateTag with that name -- the balance table itself is only
+    // ever written by the database trigger, never through this app's own
+    // insert()/touchRevalidate() path, so tagging the new table name would
+    // never actually get invalidated.
+    const [balances, baseIngredients, semiProducts, units] = await Promise.all([
+      findAllNoCache("Inventory_Balances"),
       findAll("Base_Ingredients"),
       findAll("Semi_Products"),
       findAll("Units")
@@ -427,13 +434,8 @@ const loadRealtimeStock = unstable_cache(
 
     const stockMap: Record<string, number> = {};
 
-    stockLedger.forEach((entry: any) => {
-      const itemId = entry.item_reference;
-      const qty = Number(entry.quantity_change || 0);
-      if (!stockMap[itemId]) {
-        stockMap[itemId] = 0;
-      }
-      stockMap[itemId] += qty;
+    balances.forEach((row: any) => {
+      stockMap[row.item_reference] = Number(row.quantity) || 0;
     });
 
     const allItems = [

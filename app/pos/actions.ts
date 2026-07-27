@@ -314,16 +314,20 @@ export async function getPOSBestSellerProductIds(
 
 const loadPOSStockStatus = unstable_cache(
   async (): Promise<PosStockStatus[]> => {
-    const [stockLedger, baseIngredients, semiProducts] = await Promise.all([
-      findAllNoCache("Stock_Ledger"),
+    // PERF-2 Phase B: read the trigger-maintained balance instead of
+    // replaying the whole Stock_Ledger. Cache tag stays "sheets-Stock_Ledger"
+    // (not "sheets-Inventory_Balances") -- see the matching comment in
+    // app/admin/inventory/actions.ts's loadRealtimeStock.
+    const [balances, baseIngredients, semiProducts] = await Promise.all([
+      findAllNoCache("Inventory_Balances"),
       findAll("Base_Ingredients"),
       findAll("Semi_Products"),
     ]);
     const stockByItem = new Map<string, number>();
-    for (const entry of stockLedger as any[]) {
-      const itemId = String(entry.item_reference || "");
+    for (const row of balances as any[]) {
+      const itemId = String(row.item_reference || "");
       if (!itemId) continue;
-      stockByItem.set(itemId, (stockByItem.get(itemId) || 0) + Number(entry.quantity_change || 0));
+      stockByItem.set(itemId, Number(row.quantity) || 0);
     }
     const inventoryItems = [
       ...(baseIngredients as any[]).filter((item) => (
