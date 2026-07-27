@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, it, expect, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, it, expect, vi } from "vitest";
 import { buildOrderFromCart } from "@/lib/order-cart";
 import type { CartInput, ReferenceData } from "@/lib/order-cart";
 
@@ -471,5 +471,50 @@ describe("buildOrderFromCart", () => {
         }, REF),
       ).toThrow(/greater than 0/i);
     });
+  });
+});
+
+describe("buildOrderFromCart client_captured_at", () => {
+  const baseInput: CartInput = {
+    brand_id: "BR-002",
+    items: [
+      {
+        product_id: "PROD-024",
+        variant_id: "VAR-031",
+        qty: 1,
+        modifiers: [],
+        manual_item_discount: { value: 0, type: "VND" },
+      },
+    ],
+    payment_method: "CASH",
+    actor: { id: "U1", name: "Test" },
+  };
+
+  afterEach(() => {
+    vi.setSystemTime(new Date("2026-06-15T00:00:00.000Z"));
+  });
+
+  it("uses the client-captured timestamp when within bounds", () => {
+    const result = buildOrderFromCart(
+      { ...baseInput, client_captured_at: "2026-06-14T10:00:00.000Z" },
+      REF,
+    );
+    expect(result.order.created_at).toBe("2026-06-14T10:00:00.000Z");
+    expect(result.order.migration_notes).toBe("");
+  });
+
+  it("falls back to server time and annotates migration_notes when the client timestamp is out of bounds", () => {
+    const result = buildOrderFromCart(
+      { ...baseInput, client_captured_at: "2026-05-01T00:00:00.000Z" },
+      REF,
+    );
+    expect(result.order.created_at).toBe("2026-06-15T00:00:00.000Z");
+    expect(result.order.migration_notes).toBe("client_captured_at_rejected");
+  });
+
+  it("uses server time when client_captured_at is omitted", () => {
+    const result = buildOrderFromCart(baseInput, REF);
+    expect(result.order.created_at).toBe("2026-06-15T00:00:00.000Z");
+    expect(result.order.migration_notes).toBe("");
   });
 });

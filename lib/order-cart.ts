@@ -19,6 +19,7 @@ import {
 } from "@/lib/order-snapshot";
 import { allocateOrderDiscount, assertOrderInvariants } from "@/lib/order-math";
 import { InvariantError, ORDER_STATUS, PAYMENT_METHOD } from "@/lib/order-types";
+import { resolveCapturedAt } from "@/lib/pos-captured-at";
 import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 import type {
   OrderV2,
@@ -65,6 +66,12 @@ export interface CartInput {
   applied_promotion_id?: string | null; // explicit override; else auto-resolve
   suppress_auto_promotion?: boolean;
   actor: { id: string; name: string };
+  // Captured client-side (new Date()) at the moment "Thanh toán" is
+  // pressed, before any network call -- preserved across offline queueing
+  // and retries so the recorded sale time is always when the button was
+  // pressed, not when the request reached the server. Optional and
+  // defaults to server time for any caller that doesn't send it.
+  client_captured_at?: string;
 }
 
 export interface BuiltPayment {
@@ -106,7 +113,7 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   const brand = ref.brands.find(b => b.id === input.brand_id);
   if (!brand) throw new InvariantError(`Unknown brand: ${input.brand_id}`);
 
-  const createdAt = new Date().toISOString();
+  const { createdAt, rejected: capturedAtRejected } = resolveCapturedAt(input.client_captured_at);
   const orderId = `ord-${crypto.randomUUID()}`;
 
   // Resolve promotion (auto or explicit)
@@ -198,7 +205,7 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
     pos_snapshot_json: JSON.stringify({ items: input.items, payment_method: input.payment_method }),
     payment_method: primaryPaymentMethod === "BANK_TRANSFER" ? PAYMENT_METHOD.BANK_TRANSFER : PAYMENT_METHOD.CASH,
     payment_ref: "",
-    migration_notes: "",
+    migration_notes: capturedAtRejected ? "client_captured_at_rejected" : "",
   };
 
   // Guardian: assert all 7 invariants before returning
