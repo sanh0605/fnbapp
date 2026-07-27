@@ -12,7 +12,13 @@ import {
   resolvePosCheckoutAttempt,
   type PosCheckoutAttempt,
 } from "@/lib/pos-checkout-idempotency";
-import { enqueuePendingOrder } from "@/lib/pos-offline-queue";
+import {
+  enqueuePendingOrder,
+  incrementAttemptCount,
+  listPendingOrders,
+  removePendingOrder,
+} from "@/lib/pos-offline-queue";
+import { reportPosSyncFailure } from "@/app/pos/actions";
 
 export default function POSScreen({
   brandId,
@@ -654,6 +660,40 @@ export default function POSScreen({
   const totalAmount = calculateTotalAmount();
 
 
+
+  const syncPendingOrders = async () => {
+    const pending = await listPendingOrders();
+    for (const record of pending) {
+      try {
+        const res = await submitOrderV2(record.cartInput, record.requestToken);
+        if (res.success) {
+          await removePendingOrder(record.requestToken);
+        } else {
+          // A real rejection, not a network failure -- retrying it forever
+          // would never succeed. No one is watching this device's screen
+          // for this specific order anymore, so surface it to the admin
+          // dashboard instead of the staff UI.
+          await reportPosSyncFailure(record.requestToken, record.cartInput, res.error);
+          await removePendingOrder(record.requestToken);
+        }
+      } catch {
+        // Still no network (or it dropped again mid-retry). Leave it
+        // queued; the next online event or page mount will try again.
+        await incrementAttemptCount(record.requestToken);
+      }
+    }
+  };
+
+  useEffect(() => {
+    syncPendingOrders();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("online", syncPendingOrders);
+    return () => {
+      window.removeEventListener("online", syncPendingOrders);
+    };
+  }, []);
 
   const handleConfirmCheckout = async (method: string, payments?: any[]) => {
     if (cart.length === 0) return;

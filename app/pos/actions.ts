@@ -421,3 +421,10 @@ export async function deletePOSDraft(draftId: string) {
     return { success: false as const, error: err?.message || String(err) };
   }
 }
+
+// Temporary placeholder -- replaced with the real implementation in
+// pos-offline-resilience task 7. Exists now so syncPendingOrders (task 5)
+// has something to call and TypeScript compiles.
+export async function reportPosSyncFailure(_requestToken: string, _cartInput: unknown, _error?: string) {
+  return { success: false, error: "not implemented yet" };
+}

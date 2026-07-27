@@ -63,3 +63,33 @@ describe("POSScreen offline checkout handling", () => {
     expect(enterKeySection).toMatch(/cart\.length\s*>\s*0/);
   });
 });
+
+describe("POSScreen background sync", () => {
+  const source = readFileSync(resolve(__dirname, "POSScreen.tsx"), "utf8");
+
+  it("defines a syncPendingOrders function", () => {
+    expect(source).toContain("const syncPendingOrders");
+  });
+
+  it("triggers a sync sweep on mount and when the browser regains connectivity", () => {
+    expect(source).toMatch(/useEffect\(\(\) => \{\s*syncPendingOrders\(\);\s*\}, \[\]\);/);
+    expect(source).toContain('window.addEventListener("online", syncPendingOrders)');
+  });
+
+  it("reports a real (non-network) rejection to the server instead of retrying forever", () => {
+    const syncSource = source.slice(
+      source.indexOf("const syncPendingOrders"),
+      source.indexOf("const handleConfirmCheckout"),
+    );
+    expect(syncSource).toContain("reportPosSyncFailure");
+    expect(syncSource).toContain("removePendingOrder(record.requestToken)");
+  });
+
+  it("leaves a still-network-failing record in the queue for the next sweep", () => {
+    const syncSource = source.slice(
+      source.indexOf("const syncPendingOrders"),
+      source.indexOf("const handleConfirmCheckout"),
+    );
+    expect(syncSource).toContain("incrementAttemptCount");
+  });
+});
