@@ -92,4 +92,16 @@ describe("resolvePosSyncFailure", () => {
     expect(result).toEqual({ success: true });
     expect(mocks.update).toHaveBeenCalledWith("Pos_Sync_Failures", "F-1", { resolved: true });
   });
+
+  it("returns error when update fails for resolve sync failure", async () => {
+    mocks.requireAdmin.mockResolvedValue({
+      ok: true,
+      actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
+    });
+    mocks.update.mockRejectedValue(new Error("Database update failed"));
+
+    const result = await resolvePosSyncFailure("F-1");
+
+    expect(result).toEqual({ success: false, error: "Database update failed" });
+  });
 });

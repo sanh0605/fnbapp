@@ -63,6 +63,10 @@ export async function resolvePosSyncFailure(id: string): Promise<{ success: bool
   const auth = await requireAdmin();
   if (!auth.ok) return { success: false, error: auth.error };
 
-  await update("Pos_Sync_Failures", id, { resolved: true });
-  return { success: true };
+  try {
+    await update("Pos_Sync_Failures", id, { resolved: true });
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
 }

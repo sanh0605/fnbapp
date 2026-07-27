@@ -430,13 +430,17 @@ export async function reportPosSyncFailure(
   const auth = await resolveActor();
   if (!auth.ok) return { success: false, error: auth.error };
 
-  await insert("Pos_Sync_Failures", {
-    id: `psf-${crypto.randomUUID()}`,
-    request_token: requestToken,
-    cart_payload_json: JSON.stringify(cartInput),
-    error_message: error || "Unknown error",
-    resolved: false,
-  });
+  try {
+    await insert("Pos_Sync_Failures", {
+      id: `psf-${crypto.randomUUID()}`,
+      request_token: requestToken,
+      cart_payload_json: JSON.stringify(cartInput),
+      error_message: error || "Unknown error",
+      resolved: false,
+    });
 
-  return { success: true };
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || String(err) };
+  }
 }

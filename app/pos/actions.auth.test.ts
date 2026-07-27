@@ -236,6 +236,19 @@ describe("POS action authentication", () => {
       }),
     );
   });
+
+  it("returns error when insert fails for pos_sync_failures", async () => {
+    mocks.resolveActor.mockResolvedValue({
+      ok: true,
+      actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" },
+    });
+    mocks.insert.mockRejectedValue(new Error("Database write failed"));
+    const reportPosSyncFailure = (posActions as any).reportPosSyncFailure;
+
+    const result = await reportPosSyncFailure("tok-1", { brand_id: "BR-1" }, "Payment total mismatch");
+
+    expect(result).toEqual({ success: false, error: "Database write failed" });
+  });
 });
 
 function makeOrderLine(id: string, productId: string, qty: number) {
