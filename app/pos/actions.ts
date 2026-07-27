@@ -422,9 +422,21 @@ export async function deletePOSDraft(draftId: string) {
   }
 }
 
-// Temporary placeholder -- replaced with the real implementation in
-// pos-offline-resilience task 7. Exists now so syncPendingOrders (task 5)
-// has something to call and TypeScript compiles.
-export async function reportPosSyncFailure(_requestToken: string, _cartInput: unknown, _error?: string) {
-  return { success: false, error: "not implemented yet" };
+export async function reportPosSyncFailure(
+  requestToken: string,
+  cartInput: CartInput,
+  error?: string,
+): Promise<{ success: boolean; error?: string }> {
+  const auth = await resolveActor();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  await insert("Pos_Sync_Failures", {
+    id: `psf-${crypto.randomUUID()}`,
+    request_token: requestToken,
+    cart_payload_json: JSON.stringify(cartInput),
+    error_message: error || "Unknown error",
+    resolved: false,
+  });
+
+  return { success: true };
 }

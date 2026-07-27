@@ -204,6 +204,38 @@ describe("POS action authentication", () => {
     expect(mocks.findAllNoCache).toHaveBeenCalledWith("Inventory_Balances");
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Stock_Ledger");
   });
+
+  it("rejects an unauthenticated sync-failure report before writing", async () => {
+    mocks.resolveActor.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
+    const reportPosSyncFailure = (posActions as any).reportPosSyncFailure;
+    expect(reportPosSyncFailure).toBeTypeOf("function");
+
+    const result = await reportPosSyncFailure("tok-1", { brand_id: "BR-1" }, "Payment total mismatch");
+
+    expect(result).toEqual({ success: false, error: "Yêu cầu đăng nhập" });
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("writes an unresolved pos_sync_failures row for an authenticated caller", async () => {
+    mocks.resolveActor.mockResolvedValue({
+      ok: true,
+      actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" },
+    });
+    mocks.insert.mockResolvedValue(undefined);
+    const reportPosSyncFailure = (posActions as any).reportPosSyncFailure;
+
+    const result = await reportPosSyncFailure("tok-1", { brand_id: "BR-1" }, "Payment total mismatch");
+
+    expect(result).toEqual({ success: true });
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "Pos_Sync_Failures",
+      expect.objectContaining({
+        request_token: "tok-1",
+        error_message: "Payment total mismatch",
+        resolved: false,
+      }),
+    );
+  });
 });
 
 function makeOrderLine(id: string, productId: string, qty: number) {
