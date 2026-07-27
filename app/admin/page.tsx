@@ -29,9 +29,10 @@ export default async function AdminDashboard({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const supabase = getSupabaseClient();
-  const [{ count: anomalousLedgerCount }, { count: anomalousRecipeCount }] = await Promise.all([
+  const [{ count: anomalousLedgerCount }, { count: anomalousRecipeCount }, { count: posSyncFailureCount }] = await Promise.all([
     supabase.from("backdated_ledger_events").select("*", { count: "exact", head: true }).eq("status", "PENDING").eq("is_anomalous", true),
     supabase.from("backdated_recipe_events").select("*", { count: "exact", head: true }).eq("status", "PENDING").eq("is_anomalous", true),
+    supabase.from("pos_sync_failures").select("*", { count: "exact", head: true }).eq("resolved", false),
   ]);
   const anomalousBackdatedEventCount = (anomalousLedgerCount || 0) + (anomalousRecipeCount || 0);
 
@@ -264,6 +265,14 @@ export default async function AdminDashboard({
           <Alert variant="warning" title="Cần xem lại: điều chỉnh giá vốn bất thường">
             Có {anomalousBackdatedEventCount} giao dịch backdate với mức điều chỉnh lớn hơn bình thường,
             hệ thống đã tạm dừng không tự áp dụng. Bấm để xem chi tiết.
+          </Alert>
+        </Link>
+      )}
+      {(posSyncFailureCount || 0) > 0 && (
+        <Link href="/admin/pos-sync" className="block">
+          <Alert variant="warning" title="Cần xem lại: đơn POS gửi lại thất bại">
+            Có {posSyncFailureCount} đơn hàng offline gửi lại thất bại thật sự (không phải do mất mạng).
+            Bấm để xem chi tiết.
           </Alert>
         </Link>
       )}
