@@ -93,3 +93,11 @@ describe("POSScreen background sync", () => {
     expect(syncSource).toContain("incrementAttemptCount");
   });
 });
+
+describe("POSScreen service worker registration", () => {
+  const source = readFileSync(resolve(__dirname, "POSScreen.tsx"), "utf8");
+
+  it("registers the POS service worker on mount", () => {
+    expect(source).toContain('navigator.serviceWorker.register("/pos-sw.js")');
+  });
+});

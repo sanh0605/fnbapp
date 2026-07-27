@@ -4,6 +4,35 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-27 (Claude Sonnet 5) - POS Offline Resilience Feature Complete (9/9 Tasks)
+
+**Trigger:** surfaced mid-session while brainstorming `ARCH-1` (multi-outlet design) -- the owner noted the POS itself has no offline resilience today: a mid-sale network drop or a cold page load with zero connectivity both currently fail the sale outright. `ARCH-1` was paused to build this instead; it should resume next. Spec: `docs/superpowers/specs/2026-07-27-pos-offline-resilience-design.md`. Plan: `docs/superpowers/plans/2026-07-27-pos-offline-resilience.md`.
+
+**All 9 tasks done, local commits only (not pushed):**
+
+1. `de2fa25` -- sale-timestamp sanity bound
+2. `0b91133` -- `buildOrderFromCart` uses client-captured sale timestamp
+3. `d54d6e2` -- local IndexedDB order queue
+4. `a5a4f1e` -- queue orders instead of blocking/rolling back offline
+5. `45acc07` -- Enter-key checkout shortcut also works offline (follow-up fix)
+6. `51bf569` -- lock in Enter-key offline checkout fix (test)
+7. `be8f3e3` -- background sync sweep for queued orders
+8. `bf488d5` -- guard `syncPendingOrders` against `listPendingOrders()` rejecting (review fix)
+9. `5437a8c` -- migration for `synced_at` + `pos_sync_failures` (task 6)
+10. `85eac43` -- plan correction: Task 6's original SQL targeted `create_pos_order_atomic` directly, but migration 0035 (landed before this session, never re-checked while drafting Task 6) had already split that into a payment-validating wrapper (`create_pos_order_atomic`) in front of the real insert function, renamed `create_pos_order_atomic_unvalidated_0024`. The implementer subagent caught this and correctly escalated instead of guessing or dropping the wrapper -- re-dispatched against the corrected target so `synced_at` lands on the unvalidated inner function (matching its actual ACL) without touching the wrapper's payment validation.
+11. `2c00b21` -- report/resolve POS sync failures (server actions, task 7)
+12. `7f4c357` -- catch write failures in POS sync failure actions (review fix)
+13. `f019b0a` -- admin POS sync attention page (task 8)
+14. (this entry) -- service worker for offline `/pos` page load + full regression pass (task 9)
+
+**Task 9 (this entry):** `public/pos-sw.js` -- minimal hand-written service worker scoped only to `/pos`: cache-first for `/_next/static/*` (content-hashed, safe to serve stale-then-revalidate-never), network-first-with-cache-fallback for the `/pos` document itself (always prefer a fresh render when online so menu/price changes show immediately; fall back to the last cached render only when the network request fails outright). Registered from a new mount-time `useEffect` in `components/POSScreen.tsx`, guarded by `"serviceWorker" in navigator` with a swallowed registration-failure catch (unsupported browsers just keep working online exactly as today, no offline fallback). One new source-text test in `components/POSScreen.offline.test.tsx` confirming the registration call is present.
+
+**Final verification (numbers actually observed this session, not copied from the plan):** `tsc --noEmit` clean (0 errors). Full `vitest run`: **795/795 passing across 142 test files**. `next build`: exit 0, `/pos` route compiles and all 40 static/dynamic routes generate correctly (one transient re-run of the same build command failed collecting page data for an unrelated page, `/admin/inventory/stocktake`, almost certainly a network hiccup during that page's build-time data fetch against Supabase -- a second immediate re-run with no code changes succeeded cleanly and matched the first run's route table exactly; not attributable to this task's change, which touches only `/pos` and a new static file).
+
+**Outstanding, owner's call, same pattern as migrations 0038/0039:** migration `0040` (`synced_at` + `pos_sync_failures`, task 6) is written and type-checks/builds fine, but **not yet applied to production** -- `app/admin/pos-sync` will show empty/error state against production until `supabase db push` runs. Not run here per standing instruction.
+
+---
+
 ## 2026-07-27 (Claude Sonnet 5) - Closed REV-2/REV-3/REV-5 via Self-Review (Codex Confirmed Not Returning)
 
 **Trigger:** owner confirmed Codex is out indefinitely and explicitly said not to wait for it ("chưa biết khi nào quay lại nên em đừng đợi nó quay lại, em làm luôn phần nó") -- covering the independent-review role `REV-2`, `REV-3`, and `REV-5` had been queued for. Read-only review pass, no code changed (confirmed via `git status` after: only `docs/ROADMAP.md` touched).

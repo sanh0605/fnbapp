@@ -81,6 +81,16 @@ export default function POSScreen({
   }, []);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/pos-sw.js").catch(() => {
+        // Registration failure (unsupported browser, etc.) is not fatal --
+        // POS keeps working online exactly as it does today, it just won't
+        // have an offline-cached fallback.
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
       addToast("success", "Đã kết nối trực tuyến trở lại.");
