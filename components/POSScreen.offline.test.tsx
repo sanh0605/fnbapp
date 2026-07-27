@@ -44,4 +44,22 @@ describe("POSScreen offline checkout handling", () => {
     expect(source).toContain("vẫn được lưu");
     expect(source).not.toContain("đơn sẽ không gửi được");
   });
+
+  it("Enter-key handler no longer requires isOnline for offline checkout", () => {
+    // Extract the Enter key handler section by finding the e.key === "Enter" condition
+    const enterKeyIndex = source.indexOf('e.key === "Enter"');
+    expect(enterKeyIndex).toBeGreaterThan(-1);
+
+    // Get a bounded section around the Enter condition (the full if statement line)
+    const enterKeySection = source.slice(
+      Math.max(0, enterKeyIndex - 50),
+      enterKeyIndex + 150
+    );
+
+    // Verify isOnline is NOT in the Enter key condition
+    expect(enterKeySection).not.toMatch(/e\.key === ["']Enter["'].*isOnline/);
+
+    // Verify cart.length guard is still present
+    expect(enterKeySection).toMatch(/cart\.length\s*>\s*0/);
+  });
 });
