@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-27 (Claude Sonnet 5) - REPO-STRUCT-2 Fully Closed (RS-1/RS-6: Legacy migrations/, check-ts.js, ts-morph/dotenv Cleanup); Added a CLAUDE.md Reminder to Check Skills First
+
+**Trigger:** owner pointed out mid-session that Sonnet 5 hadn't been proactively invoking installed Claude Code skills despite the standing `superpowers:using-superpowers` instruction to check before any action. Owner asked for this to be understood before continuing, then asked for `CLAUDE.md` to explicitly remind Sonnet 5 to check skills first, reasoning that skills are Anthropic-authored and therefore more reliable than ad-hoc notes. Added a new "0. Check For a Matching Skill First" section to the top of the global `C:\Users\Admin\CLAUDE.md` (outside this repo, applies to all projects) stating that skill-checking ranks above the rest of that file's guidance and listing common trigger matches. Then resumed the queued cleanup work, this time explicitly reasoning through which skills applied before starting (none of `systematic-debugging`/`brainstorming`/`writing-plans` fit -- no bug, no ambiguity, requirements already fully specified from the 2026-07-24 audit -- but committed to `superpowers:verification-before-completion` before declaring done).
+
+**RS-1/RS-6 (commit `07ba68c`, local only):** the last open items in `REPO-STRUCT-2` from the 2026-07-24 structure audit, previously scoped to Codex and never picked up before Codex went idle. Deleted the legacy root `migrations/` folder (6 files, 019-023, pre-CLI chain that predates `supabase/migrations/`) after grep-verifying zero live code references (the only hit was a frozen historical audit manifest's descriptive text, not real code). Deleted `check-ts.js` after confirming no `package.json` script, git hook, or code referenced it. Removed `ts-morph` from `dependencies` (zero real imports anywhere in the codebase, only doc mentions and its own lockfile entry) and moved `dotenv` to `devDependencies` (confirmed used exclusively by `scripts/` CLI tooling via `vite-node`, never imported by `app/`/`lib/`/`components/` at Next.js runtime). Ran `npm install` to regenerate `package-lock.json` (7 packages removed).
+
+Actually invoked the `superpowers:verification-before-completion` skill via the `Skill` tool this time rather than just running the usual checklist from memory -- its gate function requires identifying the exact command that proves each claim, running it fresh, and reading the real output before saying anything is done. Ran `tsc`, the full suite, and `next build` fresh in the same pass (all clean: 0 errors, 759/759, exit 0), then went a step further per the skill's "agent delegation" pattern and independently confirmed on disk (`ls check-ts.js`, `ls migrations`, `ls node_modules/ts-morph`) that all three targets were actually gone before reporting completion, rather than trusting the `git rm`/`npm install` commands' own success output.
+
+Also closed a smaller stale-doc item along the way: `UI-CLEAN-1-FOLLOWUP` (4 "Unknown" -> "Không rõ" strings) turned out to already be fixed by Codex back in commit `8bb9d8a` -- the roadmap row had just never been updated.
+
+`REPO-STRUCT-2` is now fully closed (RS-1, RS-2 both batches, RS-6). RS-3 (`scripts/` disposition cadence) remains a standing monthly item. All work this session stayed local per the owner's instruction -- not pushed.
+
+---
+
 ## 2026-07-27 (Claude Sonnet 5) - Closed Stale UI-CLEAN-1-FOLLOWUP Row; RS-2 Batch 2 (11 Remaining lib/ Modules Moved to lib/history-ops/)
 
 **Trigger:** owner asked what's next, with the instruction to commit locally only, no push, until asked. Reviewed `docs/ROADMAP.md`'s remaining P1/P2 rows for anything actionable now that Sonnet 5 covers `scripts/` directly (no longer blocked on Codex).
