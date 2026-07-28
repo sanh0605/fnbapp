@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-28 (Claude Sonnet 5) - ARCH-1 Multi-Outlet Design Closed (Design-Only)
+
+**Trigger:** resumed the `ARCH-1` brainstorm paused 2026-07-27 for `POS-OFFLINE-1`. Went through several rounds of owner correction on the outlet/brand/staff relationship before converging.
+
+**Model (spec: `docs/superpowers/specs/2026-07-28-multi-outlet-design.md`):** Outlet is a physical location, independent of brand (unique name, no brand FK). An `Outlet_Brand_Slot` says which brand an outlet sells during which daily time window -- an outlet with one brand gets one all-day slot, an outlet sharing space between two brands (e.g. same address, "Phin Đi" AM / "Uchako" PM) gets two. Staff are assigned to individual slots via `Staff_Slot_Assignment` "tickets" (staff + slot + start date + optional end date), not to an outlet or brand directly -- confirmed necessary after the owner's own example of one staff member working two genuinely different physical locations on the same day (morning slot at Outlet 1, evening slot at Outlet 3).
+
+**Key decisions that took multiple corrections to land:** overlapping slots/tickets at the same outlet are allowed, not blocked (owner: real business case of two brands sharing a counter at the same hour, resolved at login by letting the person pick among matches rather than the system guessing); no overnight-spanning slots needed (confirmed no outlet sells across midnight); temporary shift coverage and permanent transfers use the exact same mechanism (a ticket's `end_date`, set at creation for planned coverage or added later to close out a stale assignment) -- there is no separate "cancel + restore" operation, correcting a mistake is just editing the ticket's fields directly, including clearing an `end_date` to reactivate a closed ticket. A manager overseeing multiple outlets gets a manual outlet+brand picker on POS instead of automatic slot resolution, since they may need to sell at any outlet they oversee on demand.
+
+**Explicit non-goals:** per-outlet inventory (stays shared per brand, unchanged), per-outlet reporting (stays brand-aggregated for now, though `outlet_id` is captured on every order for later use), full shift-scheduling/calendar system (only the flat ticket list).
+
+**Backfill:** one default outlet + one all-day slot per existing brand, all current staff get an open-ended ticket into it -- reproduces today's behavior exactly for any brand that never introduces a second slot.
+
+**Status:** design-only, committed (`16780d1`, local). Per the standing owner-set roadmap sequence, implementation stays deferred until after the UI/UX phase -- not started, no code, no migration.
+
+---
+
 ## 2026-07-28 (Claude Sonnet 5) - Pre-Existing Bug Found via Owner Question: Promotion Eligibility Used Sync-Time, Not Sale-Time
 
 **Trigger:** while explaining the offline-resilience feature's audit-ordering side effect to the owner, they asked a sharp follow-up about whether recipe drift between sale-time and sync-time was a risk, correctly reasoning it wasn't (recipes don't change abruptly intra-day in this business) and independently proposing the exact `created_at`/`synced_at` split already built in `POS-OFFLINE-1`. Verifying their reasoning against the actual code (rather than just agreeing) surfaced a real, different bug: `resolvePromotion` (`lib/order-cart.ts`) had no time parameter at all and called `new Date()` internally to check a promotion's `start_date`/`end_date` window, while the sibling `pickRecipe` already correctly took `createdAt` (the true, client-captured sale time) as its "asOf" argument.
