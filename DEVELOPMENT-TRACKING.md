@@ -4,6 +4,16 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-28 (Claude Sonnet 5) - Pre-Existing Bug Found via Owner Question: Promotion Eligibility Used Sync-Time, Not Sale-Time
+
+**Trigger:** while explaining the offline-resilience feature's audit-ordering side effect to the owner, they asked a sharp follow-up about whether recipe drift between sale-time and sync-time was a risk, correctly reasoning it wasn't (recipes don't change abruptly intra-day in this business) and independently proposing the exact `created_at`/`synced_at` split already built in `POS-OFFLINE-1`. Verifying their reasoning against the actual code (rather than just agreeing) surfaced a real, different bug: `resolvePromotion` (`lib/order-cart.ts`) had no time parameter at all and called `new Date()` internally to check a promotion's `start_date`/`end_date` window, while the sibling `pickRecipe` already correctly took `createdAt` (the true, client-captured sale time) as its "asOf" argument.
+
+**Impact:** this predates the offline-resilience feature entirely and was invisible online, where "now" and the sale time are only milliseconds apart. The offline queue exposes it for the first time: an order held in the local queue for hours can have its true sale time fall inside a time-limited promotion's active window, but by the time it actually reaches the server the promotion has already ended (or, symmetrically, a promotion that started after the sale but before sync could get wrongly applied) -- silently charging the wrong price relative to what the customer should have paid at the actual moment of sale. Unlike the audit-ordering side effect (a report-only artifact), this directly affects money charged.
+
+**Fix (commit `58f65fb`):** `resolvePromotion` now takes the already-resolved `createdAt` as a third argument and evaluates the promotion window against `new Date(asOf)` instead of `new Date()`, matching `pickRecipe`'s existing pattern exactly. Regression test reproduces the exact scenario: sale at `2026-06-15` (mid-window for the `PRM-003` fixture already used elsewhere in this test file), sync-time clock moved to `2026-07-01` (after the window closed) -- confirms the promotion still applies. `tsc` clean, full suite 804/804 (up from 803), build passed.
+
+---
+
 ## 2026-07-28 (Claude Sonnet 5) - POS Offline Resilience: Final Whole-Branch Review, 2 Fix Rounds
 
 **Trigger:** the last step of subagent-driven-development for the 9-task POS offline-resilience feature (see the entry immediately below for the feature itself) -- a broad final review across all 9 tasks together, dispatched on the most capable available model specifically because per-task review cannot see defects that only exist *between* tasks.
