@@ -30,7 +30,12 @@ self.addEventListener("fetch", (event) => {
         const cached = await cache.match(event.request);
         if (cached) return cached;
         const response = await fetch(event.request);
-        cache.put(event.request, response.clone());
+        // Only cache a genuine success, never a redirect/error response --
+        // e.g. an unauthenticated request that got redirected to a login
+        // page and had fetch() follow it, resolving with a 200 login page.
+        if (response.ok && !response.redirected) {
+          cache.put(event.request, response.clone());
+        }
         return response;
       }),
     );
@@ -44,8 +49,13 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          // Same guard as the static-asset branch above: never cache a
+          // redirect or error response under the /pos key, or an offline
+          // load would replay e.g. a login-page redirect instead of POS.
+          if (response.ok && !response.redirected) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
           return response;
         })
         .catch(async () => {

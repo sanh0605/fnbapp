@@ -43,6 +43,23 @@ describe("resolvePosCheckoutAttempt", () => {
     expect(createToken).not.toHaveBeenCalled();
   });
 
+  it("returns the exact same object reference (not just an equal one) across two identical calls", () => {
+    // components/POSScreen.tsx relies on reference equality (`!==`) to tell
+    // a genuinely new checkout attempt apart from a retry of the same one
+    // (see isNewAttempt in handleConfirmCheckout). This proves the
+    // underlying token-reuse mechanism itself still gives a stable
+    // reference for an identical payload, independent of anything POSScreen
+    // does or doesn't include in that payload.
+    const first = resolvePosCheckoutAttempt(null, baseCheckout, () => "request-1");
+    const second = resolvePosCheckoutAttempt(
+      first,
+      baseCheckout,
+      () => "request-2",
+    );
+
+    expect(second).toBe(first);
+  });
+
   it("creates a new token after a cart or payment change", () => {
     const first = resolvePosCheckoutAttempt(null, baseCheckout, () => "request-1");
     const changedCart = resolvePosCheckoutAttempt(

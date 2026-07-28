@@ -18,6 +18,20 @@ describe("POSScreen offline checkout handling", () => {
     expect(checkoutSource).toContain("client_captured_at");
   });
 
+  it("fingerprints the checkout attempt WITHOUT client_captured_at, so a retry's fresh timestamp never mints a new idempotency token", () => {
+    // resolvePosCheckoutAttempt (lib/pos-checkout-idempotency.ts) reuses the
+    // existing request token only when the serialized payload is identical
+    // across calls. If client_captured_at were part of that payload, every
+    // retry (which re-derives a fresh Date().toISOString() call site) would
+    // produce a different fingerprint and mint a brand-new token every time,
+    // defeating duplicate-order prevention entirely.
+    const callIndex = checkoutSource.indexOf("resolvePosCheckoutAttempt(");
+    expect(callIndex).toBeGreaterThan(-1);
+    const callSite = checkoutSource.slice(callIndex, checkoutSource.indexOf(");", callIndex) + 2);
+    expect(callSite).not.toContain("client_captured_at");
+    expect(callSite).toContain("cartInputWithoutTimestamp");
+  });
+
   it("attempts to queue before falling back to rollback+retry", () => {
     // The catch block still keeps a rollback fallback for the exceedingly
     // rare case where IndexedDB itself fails (private browsing mode with
@@ -83,6 +97,37 @@ describe("POSScreen background sync", () => {
     );
     expect(syncSource).toContain("reportPosSyncFailure");
     expect(syncSource).toContain("removePendingOrder(record.requestToken)");
+  });
+
+  it("only removes the queued order once reportPosSyncFailure actually succeeded", () => {
+    // If reporting the failure itself fails (e.g. the pos_sync_failures
+    // table doesn't exist yet before migration 0040 is applied),
+    // removePendingOrder must NOT run unconditionally right after it -- that
+    // would delete a real sale with no trace anywhere it was ever recorded.
+    const syncSource = source.slice(
+      source.indexOf("const syncPendingOrders"),
+      source.indexOf("const handleConfirmCheckout"),
+    );
+    const rejectionBranch = syncSource.slice(
+      syncSource.indexOf("const report = await reportPosSyncFailure"),
+      syncSource.indexOf("} catch {"),
+    );
+
+    expect(rejectionBranch).toMatch(/^const report = await reportPosSyncFailure\(/);
+
+    const ifIndex = rejectionBranch.indexOf("if (report.success)");
+    const elseIndex = rejectionBranch.indexOf("} else {");
+    const removeIndex = rejectionBranch.indexOf("await removePendingOrder(record.requestToken)");
+    const incrementIndex = rejectionBranch.indexOf("await incrementAttemptCount(record.requestToken)");
+
+    // removePendingOrder must sit inside the `if (report.success)` branch
+    // (before the `else`), and incrementAttemptCount inside the `else`
+    // branch -- never removePendingOrder called unconditionally.
+    expect(ifIndex).toBeGreaterThan(-1);
+    expect(elseIndex).toBeGreaterThan(ifIndex);
+    expect(removeIndex).toBeGreaterThan(ifIndex);
+    expect(removeIndex).toBeLessThan(elseIndex);
+    expect(incrementIndex).toBeGreaterThan(elseIndex);
   });
 
   it("leaves a still-network-failing record in the queue for the next sweep", () => {

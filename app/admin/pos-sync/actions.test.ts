@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAllNoCache: vi.fn(),
+  findAllWhere: vi.fn(),
   update: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", () => ({
   findAllNoCache: mocks.findAllNoCache,
+  findAllWhere: mocks.findAllWhere,
   update: mocks.update,
 }));
 
@@ -27,11 +29,26 @@ describe("getPosSyncAttentionItems", () => {
     mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Chỉ ADMIN mới có quyền thực hiện thao tác này" });
 
     await expect(getPosSyncAttentionItems()).rejects.toThrow("Chỉ ADMIN mới có quyền thực hiện thao tác này");
+    expect(mocks.findAllWhere).not.toHaveBeenCalled();
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 
+  it("scopes the Orders_V2 read with findAllWhere instead of a full-table findAllNoCache scan", async () => {
+    mocks.findAllWhere.mockResolvedValue([]);
+    mocks.findAllNoCache.mockResolvedValue([]);
+
+    await getPosSyncAttentionItems();
+
+    expect(mocks.findAllWhere).toHaveBeenCalledWith(
+      "Orders_V2",
+      expect.objectContaining({ gte: expect.objectContaining({ synced_at: expect.any(String) }) }),
+    );
+    expect(mocks.findAllNoCache).toHaveBeenCalledWith("Pos_Sync_Failures");
+    expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Orders_V2");
+  });
+
   it("flags orders synced more than 5 minutes after their sale time", async () => {
-    mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
+    mocks.findAllWhere.mockImplementation(async (sheet: string) => {
       if (sheet === "Orders_V2") {
         return [
           { id: "ORD-1", order_no: "PHD000001", created_at: "2026-07-27T07:00:00.000Z", synced_at: "2026-07-27T07:02:00.000Z" },
@@ -39,6 +56,9 @@ describe("getPosSyncAttentionItems", () => {
           { id: "ORD-3", order_no: "PHD000003", created_at: "2026-07-27T07:00:00.000Z", synced_at: null },
         ];
       }
+      return [];
+    });
+    mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
       if (sheet === "Pos_Sync_Failures") return [];
       return [];
     });
@@ -51,8 +71,8 @@ describe("getPosSyncAttentionItems", () => {
   });
 
   it("lists unresolved sync failures", async () => {
+    mocks.findAllWhere.mockResolvedValue([]);
     mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
-      if (sheet === "Orders_V2") return [];
       if (sheet === "Pos_Sync_Failures") {
         return [
           { id: "F-1", request_token: "tok-1", error_message: "Payment total mismatch", occurred_at: "2026-07-27T07:00:00.000Z", resolved: false },

@@ -50,6 +50,11 @@ export default function POSScreen({
   const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const checkoutAttemptRef = useRef<PosCheckoutAttempt | null>(null);
+  // Captured once per logical checkout attempt (i.e. once per distinct cart)
+  // and reused unchanged across retries of that same attempt -- otherwise a
+  // fresh timestamp on every retry would change the fingerprint fed into
+  // resolvePosCheckoutAttempt below and defeat its token-reuse guarantee.
+  const clientCapturedAtRef = useRef<string | null>(null);
 
   const [isOnline, setIsOnline] = useState(true);
   const [processingOrder, setProcessingOrder] = useState<any | null>(null);
@@ -684,8 +689,16 @@ export default function POSScreen({
             // would never succeed. No one is watching this device's screen
             // for this specific order anymore, so surface it to the admin
             // dashboard instead of the staff UI.
-            await reportPosSyncFailure(record.requestToken, record.cartInput, res.error);
-            await removePendingOrder(record.requestToken);
+            const report = await reportPosSyncFailure(record.requestToken, record.cartInput, res.error);
+            if (report.success) {
+              await removePendingOrder(record.requestToken);
+            } else {
+              // Reporting the failure itself failed (e.g. the pos_sync_failures
+              // table doesn't exist yet before migration 0040 is applied).
+              // Leave the order queued -- deleting it here with nowhere the
+              // failure was actually recorded would lose the sale silently.
+              await incrementAttemptCount(record.requestToken);
+            }
           }
         } catch {
           // Still no network (or it dropped again mid-retry). Leave it
@@ -729,11 +742,11 @@ export default function POSScreen({
     const currentTotalAmount = calculateTotalAmount();
     const currentTotalItems = totalItems;
 
-    const clientCapturedAt = new Date().toISOString();
-
-    const cartInput: CartInput = {
+    // Fingerprinted without client_captured_at: that field is decided below,
+    // once per logical attempt, so it must never influence whether a retry
+    // is recognized as "the same attempt" by resolvePosCheckoutAttempt.
+    const cartInputWithoutTimestamp: CartInput = {
       brand_id: brandId || "",
-      client_captured_at: clientCapturedAt,
       items: cart.map(item => {
         let manualItemValue = Number(item.discount_amount || 0);
         let manualItemType: "VND" | "PERCENT" = item.discount_type === "PERCENT" ? "PERCENT" : "VND";
@@ -765,9 +778,24 @@ export default function POSScreen({
     };
     const checkoutAttempt = resolvePosCheckoutAttempt(
       checkoutAttemptRef.current,
-      cartInput,
+      cartInputWithoutTimestamp,
     );
+    // resolvePosCheckoutAttempt returns the SAME object reference when it
+    // decides to reuse the existing attempt, and a new object for a new
+    // attempt -- checked before checkoutAttemptRef.current is reassigned.
+    const isNewAttempt = checkoutAttempt !== checkoutAttemptRef.current;
     checkoutAttemptRef.current = checkoutAttempt;
+
+    let clientCapturedAt = clientCapturedAtRef.current;
+    if (isNewAttempt || clientCapturedAt === null) {
+      clientCapturedAt = new Date().toISOString();
+      clientCapturedAtRef.current = clientCapturedAt;
+    }
+
+    const cartInput: CartInput = {
+      ...cartInputWithoutTimestamp,
+      client_captured_at: clientCapturedAt,
+    };
 
     // Construct optimistic processing order details
     const newProcessingOrder = {
@@ -810,6 +838,7 @@ export default function POSScreen({
 
       if (res.success) {
         checkoutAttemptRef.current = null;
+        clientCapturedAtRef.current = null;
         addToast("success", `Thanh toán thành công! Mã đơn: ${res.order_no || ""}`);
         
         if (draftIdBackup) {
