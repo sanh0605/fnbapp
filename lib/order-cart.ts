@@ -116,8 +116,10 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   const { createdAt, rejected: capturedAtRejected } = resolveCapturedAt(input.client_captured_at);
   const orderId = `ord-${crypto.randomUUID()}`;
 
-  // Resolve promotion (auto or explicit)
-  const resolvedPromo = resolvePromotion(input, ref);
+  // Resolve promotion (auto or explicit) against the true sale time, not
+  // the clock at whatever moment this function actually runs -- for an
+  // order queued offline and synced later, those can differ by hours.
+  const resolvedPromo = resolvePromotion(input, ref, createdAt);
   const promoSnapshot = resolvedPromo ? buildPromotionSnapshot(resolvedPromo) : null;
 
   // Build line specs WITHOUT order_discount_allocation (computed below)
@@ -224,10 +226,10 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
 // Internal helpers
 // ============================================================
 
-function resolvePromotion(input: CartInput, ref: ReferenceData): any | null {
+function resolvePromotion(input: CartInput, ref: ReferenceData, asOf: string): any | null {
   if (input.suppress_auto_promotion) return null;
 
-  const now = new Date();
+  const now = new Date(asOf);
   const eligible = ref.promotions.filter(p => {
     if (p.status !== "ACTIVE") return false;
     const start = new Date(p.start_date);

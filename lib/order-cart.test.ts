@@ -512,6 +512,23 @@ describe("buildOrderFromCart client_captured_at", () => {
     expect(result.order.migration_notes).toBe("client_captured_at_rejected");
   });
 
+  it("resolves promotion eligibility against the true sale time, not the sync-time clock", () => {
+    // PRM-003 (see REF above) is active 2026-05-31T17:00 through
+    // 2026-06-30T16:59. The customer paid at 2026-06-15 (mid-window) but the
+    // device only reached the server on 2026-07-01 (after the window
+    // closed). The promotion must still apply -- it was active at the
+    // moment of sale -- even though it is no longer active "now".
+    vi.setSystemTime(new Date("2026-07-01T00:00:00.000Z"));
+
+    const result = buildOrderFromCart(
+      { ...baseInput, client_captured_at: "2026-06-15T00:00:00.000Z" },
+      REF,
+    );
+
+    expect(result.order.promo_discount_total).toBe(10000);
+    expect(result.order.net_total).toBe(25000);
+  });
+
   it("uses server time when client_captured_at is omitted", () => {
     const result = buildOrderFromCart(baseInput, REF);
     expect(result.order.created_at).toBe("2026-06-15T00:00:00.000Z");
