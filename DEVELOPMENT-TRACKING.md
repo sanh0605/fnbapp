@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-28 (Claude Sonnet 5) - POS Offline Resilience: Final Whole-Branch Review, 2 Fix Rounds
+
+**Trigger:** the last step of subagent-driven-development for the 9-task POS offline-resilience feature (see the entry immediately below for the feature itself) -- a broad final review across all 9 tasks together, dispatched on the most capable available model specifically because per-task review cannot see defects that only exist *between* tasks.
+
+**Round 1 (commit `59a92a8`):** the broad review found 2 Critical and 2 Important issues invisible to any single task's own review:
+
+- **Critical:** `client_captured_at` (Tasks 1-2's client-captured sale timestamp) had been placed inside the payload fingerprinted by the pre-existing `resolvePosCheckoutAttempt` idempotency mechanism (Task 4). Since the timestamp is freshly generated on every checkout press including retries, the fingerprint never matched twice, so every retry silently minted a brand-new request token -- defeating the exact duplicate-order protection the offline queue was built to rely on. Fixed by fingerprinting the cart without the timestamp and capturing/reusing the timestamp in a separate ref tied to the token's own new-vs-retry lifecycle.
+- **Critical:** the background sync sweep (Task 5) deleted a queued order from the local IndexedDB queue immediately after calling `reportPosSyncFailure` (Task 7), regardless of whether that report call itself succeeded -- and it fails by construction until the owner applies migration 0040, since `pos_sync_failures` doesn't exist yet. This could silently delete a real, un-recorded sale. Fixed: only remove from the queue when the report succeeds; otherwise treat it like a network failure and keep retrying.
+- **Important:** the admin sync-attention page (Task 7-8) fetched the entire `Orders_V2` table (1,700+ rows, full JSON snapshot columns) just to find the handful of late-synced orders -- the exact anti-pattern `PERF-2` closed elsewhere in this codebase. Fixed with a `findAllWhere` `gte` filter on `synced_at` (verified against `lib/sheets_db.ts` that this genuinely excludes NULL at the Postgres level); full column projection isn't possible with the existing filter abstraction, documented as an acknowledged, in-scope limitation rather than fixed by inventing a new capability.
+- **Important:** the new service worker (Task 9) could cache a followed redirect (e.g. an expired-session redirect to the login page) or a non-200 response under the `/pos` cache key, replacing a working offline fallback with an unusable one. Fixed with an `response.ok && !response.redirected` guard at both cache-write sites.
+
+**Round 2 (commit `4b73ac4`):** re-reviewing round 1's fix caught one more Critical issue the fix itself introduced: removing the timestamp from the fingerprint (the round-1 fix) restored correct retry behavior, but exposed that the same tracking refs were never reset after a *successful offline enqueue* (only after a successful *online* submission). Two consecutive sales with an identical cart -- routine for a drinks shop, e.g. two customers ordering the same size/flavor with no modifiers -- would collide on the same request token if the first was queued offline, silently merging the second sale into the first once synced. Fixed with the same two-line reset already used at the online-success site, applied to the offline-enqueue success path too.
+
+**Both rounds independently verified**, not trusted from the fix reports: round 1's reviewer diffed migration 0040 against 0024's actual body rather than trusting the plan-correction claim, traced the redirect-caching risk against `middleware.ts`'s actual auth redirect, and read `lib/sheets_db.ts`'s `gte` implementation directly to confirm NULL-exclusion semantics. Round 2's reviewer confirmed the reset's exact placement (success path only, not the separate rollback fallback) via the diff's line-level control flow, not the report's characterization.
+
+**Final state:** `tsc --noEmit` clean, full suite **803/803 passing across 143 test files**, `next build` exit 0. All 16 commits for this feature (`de2fa25`..`4b73ac4`) are local only, not pushed. Migration `0040` remains unapplied to production, same standing pattern as `0038`/`0039` -- owner's call, not run automatically.
+
+---
+
 ## 2026-07-27 (Claude Sonnet 5) - POS Offline Resilience Feature Complete (9/9 Tasks)
 
 **Trigger:** surfaced mid-session while brainstorming `ARCH-1` (multi-outlet design) -- the owner noted the POS itself has no offline resilience today: a mid-sale network drop or a cold page load with zero connectivity both currently fail the sale outright. `ARCH-1` was paused to build this instead; it should resume next. Spec: `docs/superpowers/specs/2026-07-27-pos-offline-resilience-design.md`. Plan: `docs/superpowers/plans/2026-07-27-pos-offline-resilience.md`.
@@ -30,6 +49,34 @@ Auto-maintained log of completed work. Newest first.
 **Final verification (numbers actually observed this session, not copied from the plan):** `tsc --noEmit` clean (0 errors). Full `vitest run`: **795/795 passing across 142 test files**. `next build`: exit 0, `/pos` route compiles and all 40 static/dynamic routes generate correctly (one transient re-run of the same build command failed collecting page data for an unrelated page, `/admin/inventory/stocktake`, almost certainly a network hiccup during that page's build-time data fetch against Supabase -- a second immediate re-run with no code changes succeeded cleanly and matched the first run's route table exactly; not attributable to this task's change, which touches only `/pos` and a new static file).
 
 **Outstanding, owner's call, same pattern as migrations 0038/0039:** migration `0040` (`synced_at` + `pos_sync_failures`, task 6) is written and type-checks/builds fine, but **not yet applied to production** -- `app/admin/pos-sync` will show empty/error state against production until `supabase db push` runs. Not run here per standing instruction.
+
+---
+
+## 2026-07-27 (Claude Opus 5) - Root-Caused the Owner's Inventory Distrust; Spec + Phase 0 Plan Written
+
+**Trigger:** owner opened asking for a better long-term folder structure and to rebuild the old code-graph tool, then redirected: inventory management feels too complex, numbers do not match reality, and he cannot tell where any number comes from. Design session only -- no code written, nothing executed against production.
+
+**Two proposals investigated and recommended against, with evidence:**
+
+- **Rebuilding the knowledge-graph tool.** It already existed (`scripts/generate-knowledge-graph.ts`, 227 lines, ts-morph; commit `9fd0d9a`) and was deleted in `e975101` as a one-off with no objection -- evidence of disuse, not misclassification. Its main claimed benefit (catching missed import paths during file moves) is already covered by `tsc` plus the 759-test suite. It also would not have caught the `inventory_balances` id-column incident, which was a schema problem. Recommended not rebuilding.
+- **Reorganising the repo into domain modules.** `app/admin/*` is already domain-grouped, so most of the benefit is already banked, while the cost is import churn across a live selling system. Measured evidence that domain grouping does not deliver UI consistency: the 14 forms already sitting in `app/admin/<domain>/components/` are exactly where the styling has drifted, while the shared `components/ui/` is where consistency holds.
+
+**UI consistency measured (owner's explicit concern):** 17 form files, every one hand-writing its own `<input>`; at least 11 distinct className variants for a plain text input (`rounded-lg` vs `rounded-xl`, `px-3 py-2` vs `px-4 py-2.5`, inconsistent `text-sm`/`bg-surface-card`), including copy-paste artifacts (`focus:ring-2 ... focus:ring-1`, `transition transition`). Root cause: `components/ui/` has Button/Card/FormModal/Alert but **no Input, Select, Textarea, or FormField primitive**. `Button.tsx` exists yet 8 sites still hand-roll `bg-primary text-white px-4 py-2`. Two live `SupplierForm.tsx` files exist in parallel.
+
+**Inventory root-cause investigation (the session's main result):**
+
+- The app holds two stock numbers and shows the owner the weaker one. `lib/full-history-recompute.ts` -- the engine that trusts only purchases, sales, recipes and physical counts -- is imported by 10 `scripts/` tools plus 2 `lib/` modules and **no route, page, or server action**. The owner cannot independently verify any audit result an agent reports.
+- `components/StockLedgerHistoryButton.tsx` cannot explain a number: no running-balance column, machine transaction types instead of business language, no drill-through to the originating order, and it reads the derived ledger that `CLAUDE.md` section 9 says must not be trusted.
+- **Owner's own logic turned into a diagnostic:** he records every purchase and sale but deliberately never records waste. Unrecorded waste can only push computed stock *up*. Therefore every negative balance is provably a system or data-entry fault, never real-world leakage.
+- **Opening balance ruled out.** No `opening_balance`/`initial_stock` concept exists anywhere in 39 migrations, so recompute starts every ingredient at zero -- but the owner confirmed POs were entered from the very first purchase, before selling began, so a zero start is correct.
+- **Primary candidate identified: unvalidated `semi_products.batch_yield`.** Implicit production consumes `(cooking_recipe_quantity / batch_yield) * shortfall` (`lib/inventory-consumption.ts:122`,`:130`). `batch_yield` is `numeric not null default 1` (migration 0001:163) with a further `|| 1` fallback at `:205`, **carries no unit**, and nothing constrains it to agree with the `base_unit` its consumers use. Recipe ingredient entries carry only `ingredient_id`/`ingredient_type`/`quantity` -- also no unit. A yield entered as `2` (litres) where consumers work in ml over-consumes raw ingredients 1000x, silently. It compounds: `Math.max(0, ...)` at `:88` clamps negative semi-product stock to zero, so every later sale re-explodes the full cooking recipe. Fits both reported symptoms -- deep negatives despite complete purchase/sales data, and inflated COGS. Asymmetry worth noting: the purchase side (`lib/purchase-ledger-rebuild.ts:resolveConversion`) throws on missing/ambiguous/mismatched conversions; the production side validates nothing.
+
+**Deliverables (both uncommitted until owner approval, then committed local-only, not pushed):**
+
+- `docs/superpowers/specs/2026-07-27-inventory-transparency-design.md` -- two strictly read-only features: a per-ingredient "why is the balance this" view with a running balance and drill-through, and an owner-runnable reconciliation that classifies every negative against six causes. Explicitly excludes writes, corrections, opening balances, and stock cut-off.
+- `docs/superpowers/plans/2026-07-27-phase0-semi-product-yield-diagnostic.md` -- 4 tasks, TDD, for Claude Sonnet 5. Adds `lib/semi-product-yield-audit.ts` (pure) + tests + `scripts/audit-semi-product-yield.ts` (read-only). Sequencing was deliberately inverted after the batch-yield finding: **confirm or kill the hypothesis before building any UI**, because if it holds the real fix may be a few corrected yield values plus a validation rule.
+
+**Notes for the next agent:** Lodash is *not* installed despite the global `CLAUDE.md` preference -- do not add it for a diagnostic. Script runner is `npx vite-node`; `tsx` appears in old tracking entries but is not a dependency. If the hypothesis is confirmed, historical COGS has been overstated, meaning real margins are better than every report the owner has seen -- and past reports need re-reading.
 
 ---
 
