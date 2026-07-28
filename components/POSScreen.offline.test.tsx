@@ -45,6 +45,36 @@ describe("POSScreen offline checkout handling", () => {
     expect(rollbackIndex).toBeGreaterThan(queueIndex);
   });
 
+  it("resets the checkout attempt refs after a successful offline enqueue, so the next identical cart mints a fresh token", () => {
+    // Once an order is durably enqueued under a given request token, that
+    // token belongs to that specific completed sale. If the refs are not
+    // reset here, the very next "Thanh toan" press with an identical cart
+    // (common in a beverage shop) would fingerprint the same and reuse the
+    // same token, silently merging a second real sale into the first one's
+    // queued record.
+    const enqueueIndex = checkoutSource.indexOf("enqueuePendingOrder(");
+    expect(enqueueIndex).toBeGreaterThan(-1);
+    const queueErrIndex = checkoutSource.indexOf("} catch (queueErr)", enqueueIndex);
+    expect(queueErrIndex).toBeGreaterThan(enqueueIndex);
+    const enqueueSuccessBlock = checkoutSource.slice(enqueueIndex, queueErrIndex);
+
+    expect(enqueueSuccessBlock).toContain("checkoutAttemptRef.current = null;");
+    expect(enqueueSuccessBlock).toContain("clientCapturedAtRef.current = null;");
+  });
+
+  it("does NOT reset the checkout attempt refs in the queue-failure fallback branch", () => {
+    // The rare IndexedDB-failure fallback must keep behaving as an
+    // in-progress, retryable attempt -- resetting the refs here would let a
+    // still-pending attempt silently mint a new token on manual retry.
+    const queueErrIndex = checkoutSource.indexOf("} catch (queueErr)");
+    expect(queueErrIndex).toBeGreaterThan(-1);
+    const catchBlockEnd = checkoutSource.indexOf("\n    }\n  };", queueErrIndex);
+    const queueFailureBlock = checkoutSource.slice(queueErrIndex, catchBlockEnd);
+
+    expect(queueFailureBlock).not.toContain("checkoutAttemptRef.current = null;");
+    expect(queueFailureBlock).not.toContain("clientCapturedAtRef.current = null;");
+  });
+
   it("still rolls back and shows an interactive retry for a real rejection", () => {
     const rejectionBlock = checkoutSource.slice(
       checkoutSource.indexOf("if (res.success) {"),

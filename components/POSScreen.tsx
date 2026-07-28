@@ -887,6 +887,8 @@ export default function POSScreen({
           queuedAt: clientCapturedAt,
           attemptCount: 1,
         });
+        checkoutAttemptRef.current = null;
+        clientCapturedAtRef.current = null;
         addToast("success", "Đã lưu đơn hàng, sẽ gửi khi có mạng trở lại.");
         if (draftIdBackup) {
           deletePOSDraft(draftIdBackup).then(delRes => {
