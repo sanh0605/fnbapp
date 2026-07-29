@@ -1,5 +1,48 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-30 - OPEN, 0/4 tasks: clean rebuild program, Phase 5 (rebuild COGS)
+
+**Implementer: Claude Sonnet 5.** Plan:
+`docs/superpowers/plans/2026-07-30-phase5-cost-rebuild.md`. Owner chose to run
+this immediately rather than wait for a trading day; the risk he accepted is
+that the deployed build still has no real sales behind it, so an anomaly could
+be ambiguous between the deploy, Phase 4, and Phase 5.
+
+**Two things reverse what the spec assumed — read the plan's own section before
+starting.**
+
+1. **No baseline locks get released.** The spec called for releasing
+   `audit_baseline_locks` as a recorded decision. The post-Phase-4 audit shows
+   `cost_category_b_locked_current: 0` and `cost_category_c_locked_stale: 0` —
+   all 1,066 mismatched lines are unlocked, so no lock is in the way. Releasing
+   them would be a no-op carrying the exact risk that caused COGS-5. Do not call
+   `remove_audit_baseline_lock`; do not use
+   `scripts/remove-locks-and-recompute-cost.ts`.
+2. **No new migration.** `apply_full_history_recovery` (migration 0031) was
+   built for precisely this: Category A cost corrections, no stock rows, dry-run
+   flag, idempotent per run-id, and an explicit per-line `not exists` guard
+   against `audit_baseline_locks` so it cannot write a locked line even if the
+   caller is wrong.
+
+**Direction, and a retracted claim.** `delta = computed − stored`; net is
+**−942,514 VND** over 1,066 lines (1,034 down, 32 up), so costs fall and
+historical profit rises. An earlier note to the owner suggested this was the
+same 942,000 VND as PO-024's tea purchase; that was retracted — correcting the
+tea mapping *adds* cost and cannot produce a net reduction. Task 2 must
+establish the real driver from data.
+
+- `[ ]` Task 1: `lib/phase5-cost-scope.ts` + tests +
+  `scripts/apply-phase5-cost-rebuild.ts`, batched by Saigon calendar month.
+- `[ ]` Task 2: dry run, month-by-month owner summary, **owner gate**.
+- `[ ]` Task 3: apply, then confirm stock and locks did not move.
+- `[ ]` Task 4: verify `cost_mismatches: 0`, compare realised P&L against the
+  approved forecast, report, update tracking.
+
+**Carried over from Phase 4, still open:** the non-inventory real-sales proof
+(0 orders since the `9ae2ce5` deploy, so the zero-row query proves nothing) and
+Muối hồng −14.39 g (consumed by some recipe, never purchased under its own
+mapping).
+
 ## 2026-07-30 - CLOSED, 6/6 tasks: clean rebuild program, Phase 4 (rebuild stock)
 
 **Done 2026-07-30.** Applied: 1,743/1,743 orders, 0 failures. `rebuild_inventory_balances()` re-materialized 50 rows. Migration 0042 suppression confirmed (0 backdated events detected during the apply window). Verification: recorded equals recomputed for all 50 items, 0 mismatches. Only remaining negative: **Muối hồng, -14.39 g — not a rounding/measurement gap.** After the SPM-040 remap (below), Muối hồng's own receipt total is 0 g against 14.39 g of genuine recipe consumption: at least one recipe uses it, but it has never been purchased under its own correct mapping. **Named follow-up for the next phase**, not noise: find the consuming recipe(s) and confirm whether a purchase was simply never entered. Lá hồng trà resolved (+3,990.42 g) after the owner found and fixed the real root cause mid-review — purchased item SPM-040 was mapped to the wrong base ingredient (ING-014 Muối hồng instead of ING-021 Lá hồng trà), corrected at the source and re-saved through PO-024. Sữa đặc resolved (+41,269). Full writeup: `DEVELOPMENT-TRACKING.md` 2026-07-30 entry. Roadmap row: `REBUILD-PHASE4`. **Unblocks Phase 5 (cost rebuild)** per the plan's own gate — not started.
