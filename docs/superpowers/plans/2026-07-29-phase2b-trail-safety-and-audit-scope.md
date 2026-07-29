@@ -231,6 +231,80 @@ git commit -m "Claude-Sonnet fix: exclude non-inventory ingredients from the sto
 
 ---
 
+### Task 3b: The consumption engine must skip non-inventory ingredients
+
+**Files:**
+- Modify: `lib/inventory-consumption.ts`
+- Modify: `lib/inventory-consumption.test.ts`
+- Modify: `lib/full-history-recompute.ts` and its test
+- Modify: callers that build the engine input (POS checkout, order edit,
+  full-history replay) to pass the flag set
+
+**This is engine-critical code. Review it as such.**
+
+The owner ticked "Phi lưu kho" on Nước, Nước sôi and Đá viên some time ago. Five
+read paths honour the flag — `lib/reorder-suggestion.ts:198`,
+`app/admin/inventory/actions.ts:444`,
+`app/admin/inventory/stocktake/actions.ts:96`,
+`app/admin/production/actions.ts:84`, `app/pos/actions.ts:334`. **No write path
+does.** `lib/inventory-consumption.ts` and `lib/full-history-recompute.ts` do
+not reference it at all, so every sale still writes a `SALES_CONSUME` row for
+boiled water, which has accumulated to -112,230.24 ml. The screens hide the
+number; nothing stops it being produced.
+
+**Why this must land before Phase 4.** The rebuild replays every order through
+this same engine. Left as is, it will faithfully recreate every water row. Fixed
+first, the rebuild simply never emits them and the whole accumulated history of
+non-inventory consumption disappears as a side effect — no deletion script
+needed.
+
+- [ ] **Step 1: Write the failing test**
+
+In `lib/inventory-consumption.test.ts`, assert that an ingredient in the
+non-inventory set produces **no** consumption row and does not alter balances,
+while its siblings in the same recipe are consumed normally. Add a second test
+asserting that a non-inventory ingredient inside a semi-product's cooking recipe
+is likewise skipped during implicit production.
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run lib/inventory-consumption.test.ts`
+Expected: FAIL — the row is currently emitted.
+
+- [ ] **Step 3: Implement**
+
+Add an optional `nonInventoryItems?: Set<string>` to the engine input. In
+`allocateRecipeConsumption`, skip any ingredient whose id is in that set —
+before the balance mutation and before the row is pushed — on both the direct
+path and the implicit-production path. Default to an empty set so existing
+callers keep their current behaviour until they pass it.
+
+- [ ] **Step 4: Thread the flag through every caller**
+
+Build the set from `Base_Ingredients` rows whose `is_non_inventory` is `true` or
+`"TRUE"` (the column is written as a string — handle both) and pass it in POS
+checkout, order edit, and the full-history replay. Grep for
+`allocateRecipeConsumption` and `buildLineConsumptionRows` callers to be sure
+none is missed; a caller that forgets the set silently keeps the old behaviour,
+which is the failure mode to avoid.
+
+- [ ] **Step 5: Verify**
+
+Run `npx tsc --noEmit`, `npm test`, `next build`. Then run
+`npx vite-node scripts/audit-full-history-recompute.ts` and report: the
+**theoretical** balance for the three non-inventory ingredients should now be
+zero, while the **recorded** balance still carries the historical rows. That
+gap is expected and is exactly what Phase 4 clears.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add lib/inventory-consumption.ts lib/full-history-recompute.ts lib/*.test.ts app/
+git commit -m "Claude-Sonnet fix: stop writing stock consumption for non-inventory ingredients"
+```
+
+---
+
 ### Task 4: Re-run the audit and report the current picture
 
 Run **after** the owner confirms he has ticked the three ingredients.
