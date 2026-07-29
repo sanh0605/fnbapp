@@ -1,5 +1,60 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-29 - OPEN, 0/6 tasks: clean rebuild program, Phase 4 (rebuild stock)
+
+**Implementer: Claude Sonnet 5.** Plan:
+`docs/superpowers/plans/2026-07-29-phase4-stock-rebuild.md`. Spec: Phase 4 of
+`docs/superpowers/specs/2026-07-29-clean-rebuild-program-design.md`.
+
+**State going in.** The 63-commit deploy is live (`6ebe8a0..9ae2ce5`, pushed
+2026-07-29). The owner chose to skip the deploy plan's manual POS verification
+(step 3) and one-day soak (step 4); Task 0 substitutes a read-only production
+check that the non-inventory engine fix is actually running, which is the only
+part Phase 4 genuinely depends on. Phase 3's restore drill passed. PO-037 has
+been repaired by the owner.
+
+**The finding that made this plan necessary — read Task 1 before anything else.**
+`rebuild_stock_ledger_for_order` (migration 0034) does not set
+`app.mac_drift_recovery`, unlike every other recovery RPC (migration 0030,
+lines 129 and 294). The rebuild inserts `PRODUCTION_YIELD` rows with historical
+`created_at`, so `detect_backdated_ledger_entry` (migration 0014, `after insert
+... for each row`) will record a backdated event for each one. The
+`/api/cron/apply-backdated-corrections` cron runs `0 20 * * *` UTC — 03:00
+Vietnam time, hours after a night rebuild — and **auto-applies** any plan it
+does not judge anomalous (`route.ts:158`). Because Phase 4 deliberately leaves
+`cost_at_sale` for Phase 5, those events would each find a real delta (the
+2026-07-29 reading already shows 1,275 mismatched lines, net -790,395 VND) and
+write it overnight, unreviewed — bypassing both the owner's P&L gate and the
+recorded `audit_baseline_locks` release. Migration 0042 closes this with the
+one-line escape hatch migration 0014 already provides.
+
+**The second trap, in Task 2.** `replayFullHistory` skips a line that throws and
+still rebuilds its order from the remaining lines
+(`lib/full-history-recompute.ts:284-289`). Contained under the old narrow scope;
+at all-orders scope it deletes an order's full derived set and reinserts one
+missing that line's consumption, silently and permanently. Any order with a
+replay error is excluded outright and reported by name.
+
+**Scope boundaries.** Stock rows only — every RPC call passes
+`p_cost_changes: []`, `audit_baseline_locks` is not read, no money figure moves.
+A new script (`scripts/apply-phase4-stock-rebuild.ts`);
+`scripts/apply-full-history-stock-ledger-rebuild.ts` stays untouched because its
+header records a different operation already run on 2026-07-24.
+
+- `[ ]` Task 0: confirm the deployed engine (read-only, no commit).
+- `[ ]` Task 1: migration 0042 suppressing backdated detection inside the
+  rebuild RPC, plus the same fix folded into
+  `docs/runbooks/restore-from-backup.md` — closing the runbook item raised
+  2026-07-29 and never actioned.
+- `[ ]` Task 2: `lib/phase4-rebuild-scope.ts` + tests + the all-orders script.
+- `[ ]` Task 3: real backup, dry run, **owner review gate**.
+- `[ ]` Task 4: apply, then `rebuild_inventory_balances()`.
+- `[ ]` Task 5: verify with the corrected audit; answer Sữa đặc and
+  Lá hồng trà explicitly.
+
+**Two owner gates.** Task 3 Step 4 (approve the dry-run summary before `--apply`)
+and the Phase 5 gate at the end. Do not cross either unprompted.
+
 ## 2026-07-29 - CLOSED, 5/5 tasks: clean rebuild program, Phase 2b (edit-trail safety and audit scope)
 
 **Done 2026-07-29**, same day as Phase 1-2 above. Triggered by a real PO-037 edit the owner performed through the Phase 1-2 admin feature, which hit `Lỗi: findAll(purchase_order_edits): Could not find the table 'public.purchase_order_edits' in the schema cache` — the save had already committed, only the edit-trail insert failed against migration `0041` (written but not yet applied). Plan: `docs/superpowers/plans/2026-07-29-phase2b-trail-safety-and-audit-scope.md`. Full writeup: `DEVELOPMENT-TRACKING.md` same-date entry. Roadmap row: `REBUILD-PHASE2B` in `docs/ROADMAP.md`.
