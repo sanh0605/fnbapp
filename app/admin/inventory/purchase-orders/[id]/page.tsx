@@ -1,12 +1,28 @@
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { findById, findAll } from "@/lib/sheets_db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import { formatNumber } from "@/lib/format";
+import { resolvePurchaseOrderEditGate } from "@/lib/purchase-order-edit-gate";
 
 export const dynamic = "force-dynamic";
 
-export default async function PurchaseOrderDetail({ params }: { params: { id: string } }) {
+export default async function PurchaseOrderDetail({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams?: { edit?: string };
+}) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    redirect("/login");
+  }
+  const role = (session.user as any)?.role || "STAFF";
+
   const [po, lines, allItems, allBaseIngredients, allUnits, allSuppliers, allConversions, allSources] = await Promise.all([
     findById("Purchase_Orders", params.id),
     findAll("Purchase_Order_Lines"),
@@ -24,6 +40,9 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
 
   const poLines = lines.filter((l: any) => (l.po_id === params.id || l.purchase_order_id === params.id));
   const isDraft = po.status === "DRAFT";
+  const isAdmin = role === "ADMIN";
+  const editRequested = searchParams?.edit === "1";
+  const { showForm } = resolvePurchaseOrderEditGate({ role, editRequested, isDraft });
 
   return (
     <div className="space-y-6">
@@ -39,19 +58,34 @@ export default async function PurchaseOrderDetail({ params }: { params: { id: st
           <span className={`px-3 py-1 text-sm font-bold rounded-full ${po.status === 'COMPLETED' ? 'bg-success/20 text-success-active' : 'bg-warning/20 text-warning-active'}`}>
             {po.status === 'COMPLETED' ? 'Đã Hoàn Thành' : 'Nháp'}
           </span>
+          {po.status === 'COMPLETED' && isAdmin && !showForm && (
+            <Link
+              href={`/admin/inventory/purchase-orders/${po.id}?edit=1`}
+              className="px-3 py-1 text-sm font-bold rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+            >
+              Sửa phiếu
+            </Link>
+          )}
         </div>
       </div>
 
-      {isDraft ? (
-        <PurchaseOrderForm 
-          suppliers={allSuppliers}
-          sources={allSources}
-          items={allItems}
-          conversions={allConversions}
-          baseIngredients={allBaseIngredients}
-          units={allUnits}
-          initialData={{ po, lines: poLines }}
-        />
+      {showForm ? (
+        <>
+          {!isDraft && (
+            <div className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium">
+              Sửa phiếu đã hoàn thành sẽ ghi lại tồn kho và giá vốn của phiếu này. Kiểm tra kỹ trước khi lưu.
+            </div>
+          )}
+          <PurchaseOrderForm
+            suppliers={allSuppliers}
+            sources={allSources}
+            items={allItems}
+            conversions={allConversions}
+            baseIngredients={allBaseIngredients}
+            units={allUnits}
+            initialData={{ po, lines: poLines }}
+          />
+        </>
       ) : (
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
