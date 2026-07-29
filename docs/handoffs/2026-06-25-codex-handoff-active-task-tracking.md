@@ -1,5 +1,15 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-29 - CLOSED, 5/5 tasks: clean rebuild program, Phase 2b (edit-trail safety and audit scope)
+
+**Done 2026-07-29**, same day as Phase 1-2 above. Triggered by a real PO-037 edit the owner performed through the Phase 1-2 admin feature, which hit `Lỗi: findAll(purchase_order_edits): Could not find the table 'public.purchase_order_edits' in the schema cache` — the save had already committed, only the edit-trail insert failed against migration `0041` (written but not yet applied). Plan: `docs/superpowers/plans/2026-07-29-phase2b-trail-safety-and-audit-scope.md`. Full writeup: `DEVELOPMENT-TRACKING.md` same-date entry. Roadmap row: `REBUILD-PHASE2B` in `docs/ROADMAP.md`.
+
+**What shipped:** (1) the edit-trail insert is now wrapped in its own `try/catch` so a bookkeeping failure can never again be reported as a failed save; (2) migrations `0040`+`0041` applied to production (owner chose to push both together, since `supabase db push` has no per-migration selector); (3) the stock audit now excludes deliberately non-inventory ingredients; (3b, engine-critical, reviewed as such) the consumption engine itself (`lib/inventory-consumption.ts`, `lib/full-history-recompute.ts`) now skips non-inventory ingredients too, threaded through POS checkout, order edit, and the full-history replay — not just the audit's read side; (4) live re-run.
+
+**Live result, first reading reflecting both the PO-037 repair and the non-inventory exclusions:** the owner has ticked **6** ingredients non-inventory, not the 3 originally discussed (Đá viên, Nước, Nước sôi, Trái tắc, Trái chanh, plus Nước đường which was not previously flagged in this program). Only **Lá hồng trà (-2.009,58 g)** remains genuinely negative, down from 8 on 2026-07-29's first correct reading. Sữa đặc and Siro việt quất are no longer negative at all — consistent with the owner having entered the missing purchases `ING003-TRACE-1` recommended. Cost mismatches rose from 16 to 1,275 lines (net -790,395 VND); expected, not new damage — PO-037's edit and the newly-entered purchases wrote fresh backdated `PO_RECEIPT` rows, so the *stored* ledger is stale relative to this engine's own from-scratch replay until Phase 4 rebuilds it.
+
+**Verification:** all 5 tasks TDD, `tsc` clean and full suite green after every task (841→847, +6), `next build` passed. No data rebuilt or corrected; only the two schema migrations plus one clearly-labeled verification row in the now-real `purchase_order_edits` table.
+
 ## 2026-07-29 - CLOSED, 6/6 tasks: clean rebuild program, Phases 1-2
 
 **Done 2026-07-29.** All 6 tasks complete, TDD throughout (RED confirmed before each implementation), `tsc` clean and full suite green after every task (822→841, +19), `next build` passed, zero database writes, PO-037 untouched. Full writeup: `DEVELOPMENT-TRACKING.md` same-date entry "Clean Rebuild Program, Phases 1-2". Roadmap row: `REBUILD-PHASE1-2` in `docs/ROADMAP.md`.
