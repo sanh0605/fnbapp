@@ -39,6 +39,7 @@ async function main() {
   const { findAllNoCache } = await import("../lib/sheets_db");
   const { getSupabaseClient } = await import("../lib/supabase");
   const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
+  const { summariseItemBalances } = await import("../lib/item-balance-summary");
   const fs = await import("node:fs");
   const path = await import("node:path");
 
@@ -135,17 +136,9 @@ async function main() {
     recordedByItem.set(row.item_reference, (recordedByItem.get(row.item_reference) || 0) + qty);
   }
   const allItemIds = new Set([...theoreticalByItem.keys(), ...recordedByItem.keys()]);
-  type QtyFinding = { item: string; item_name: string; theoretical: number; recorded: number; delta: number };
-  const qtyFindings: QtyFinding[] = [];
-  for (const item of allItemIds) {
-    const theoretical = theoreticalByItem.get(item) || 0;
-    const recorded = recordedByItem.get(item) || 0;
-    const delta = theoretical - recorded;
-    if (Math.abs(delta) > 0.01) {
-      qtyFindings.push({ item, item_name: nameOf(item), theoretical, recorded, delta });
-    }
-  }
-  qtyFindings.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const { mismatches: qtyFindings, negatives: negativeTheoretical } = summariseItemBalances({
+    theoreticalByItem, recordedByItem, nameOf,
+  });
 
   console.log(`\n=== SECTION 2: QUANTITY (theoretical vs currently recorded, per item) ===`);
   console.log(`Items with a difference: ${qtyFindings.length} of ${allItemIds.size} total items touched`);
@@ -153,12 +146,9 @@ async function main() {
   for (const f of qtyFindings.slice(0, 15)) {
     console.log(`  ${f.item_name} (${f.item}): theoretical=${round(f.theoretical)} recorded=${round(f.recorded)} delta=${round(f.delta)}`);
   }
-  const negativeTheoretical = qtyFindings.filter(f => f.theoretical < -0.01);
-  if (negativeTheoretical.length > 0) {
-    console.log(`\n*** Items where the theoretical (ground-truth) balance is itself negative -- means more was sold than was ever purchased/produced, a real data gap, not a rounding issue: ${negativeTheoretical.length} ***`);
-    for (const f of negativeTheoretical) {
-      console.log(`  ${f.item_name} (${f.item}): theoretical=${round(f.theoretical)}`);
-    }
+  console.log(`\n*** Items where the theoretical (ground-truth) balance is itself negative -- means more was sold than was ever purchased/produced, a real data gap, not a rounding issue: ${negativeTheoretical.length} ***`);
+  for (const f of negativeTheoretical) {
+    console.log(`  ${f.item_name} (${f.item}): theoretical=${round(f.theoretical)}`);
   }
 
   // ---- Section 3: PO_RECEIPT, aggregated per PO+item ----
