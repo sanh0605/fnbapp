@@ -64,6 +64,23 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
 
   try {
     const lines = JSON.parse(linesJson);
+
+    // PO-037 guard: the client computes subtotal_amount by summing the same line
+    // rows it submits, so any disagreement means the payload is inconsistent and
+    // must not be persisted. A header total with no lines behind it is exactly how
+    // PO-037 came to show 3,571,000 against a single 102,000 line.
+    if (status === "COMPLETED") {
+      const lineSubtotalSum = lines.reduce(
+        (sum: number, line: { subtotal?: string | number }) => sum + (Number(line.subtotal) || 0),
+        0,
+      );
+      if (Math.abs(lineSubtotalSum - subtotal_amount) >= 1) {
+        return fail(
+          `Tổng tiền hàng (${subtotal_amount}) không khớp tổng các dòng hàng (${lineSubtotalSum}). Vui lòng kiểm tra lại danh sách mặt hàng.`,
+        );
+      }
+    }
+
     const total_amount = subtotal_amount + shipping_fee + tax_amount - voucher_amount - discount_amount;
     const [purchasedItems, conversions] = await Promise.all([
       findAll("Purchased_Items"),
