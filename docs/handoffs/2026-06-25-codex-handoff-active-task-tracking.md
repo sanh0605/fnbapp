@@ -1,6 +1,95 @@
 # Codex Handoff — 2026-06-25
 
-## 2026-07-29 - QUEUED for Claude Sonnet 5: Phase 0 semi-product batch-yield diagnostic
+## 2026-07-29 - QUEUED for Claude Sonnet 5: trace why Sữa đặc (ING-003) is 6.4kg negative
+
+Owner supplied screenshots of two live screens. This supersedes the batch-yield
+line of investigation, which is dead (see the section below).
+
+### Two measured facts, both verified in code
+
+**Fact 1 — the same page shows two different balances for the same ingredient.**
+On `/admin/reports/stock`:
+
+| Table | Data source | Sữa đặc |
+|---|---|---|
+| Gợi ý đặt hàng lại | `computeReorderSuggestions` → `buildInventoryBalances(stockLedger, asOf)`, i.e. summed `Stock_Ledger` (`lib/reorder-suggestion.ts:122`) | **-6,471 g** |
+| Quản lý & Cân bằng Tồn kho | `getRealtimeStock` → `loadRealtimeStock` → `findAllNoCache("Inventory_Balances")` (`app/admin/inventory/actions.ts:419-429`) | **-6,651 g** |
+
+180 g apart. `/admin/reports/daily` agrees with the reorder figure (-6,471 g).
+Both paths share the `sheets-Stock_Ledger` cache tag and the reorder path has
+`revalidate: 60`, so cache skew explains at most ~60 seconds of sales — check
+whether that is plausible before assuming genuine drift.
+
+Relevant risk already documented in the code by its own author
+(`app/admin/inventory/actions.ts:421-427`): `Inventory_Balances` is written
+**only by a database trigger**, never through the app's own
+`insert()`/`touchRevalidate()` path. Any `stock_ledger` write originating
+outside the app (a `scripts/` tool, an RPC, a migration, manual SQL) updates the
+balance table without invalidating the app cache.
+
+`scripts/audit-inventory-balances.ts` exists precisely to measure this drift.
+Its introducing commit (`cec3ab7`) states it was **not run against production**
+because migration 0038 had not been applied there yet. 0038 and the 0039 hotfix
+have since shipped. The owner has separately asked for this run; fold its result
+in here.
+
+**Fact 2 — the drift is NOT the owner's problem.** Both numbers are deeply
+negative. Correcting the 180 g gap moves -6,651 to -6,471 and changes nothing
+that matters. **The unexplained quantity is the ~6.4 kg itself.**
+
+### What makes this newly tractable
+
+`docs/audits/2026-07-23-full-history-recompute-report.json` (2,229 lines
+replayed) reports `quantity_items_with_diff: 0` and
+`quantity_items_negative_theoretical: 0`. As of 2026-07-23 **nothing was
+negative and recorded matched recomputed.** Either the negative appeared inside
+the last six days — a narrow, searchable window — or the engine's re-derived
+"theoretical" diverges from the raw `Stock_Ledger` sum that the screens
+actually display. Establish which of those two is true first; it splits the
+investigation cleanly and cheaply.
+
+### An untested pattern, offered as a lead and nothing more
+
+The two negative raw ingredients are bought in container units and stocked in
+measure units: Sữa đặc (reorder suggests "12 Lon", stocked in g) and Siro việt
+quất ("1 Chai", stocked in ml). The healthy ones on the same screen — Đường
+trắng 2,000 g, Bột cacao 5,730.4 g — are not container-bought. Purchase-side
+unit conversion is therefore worth checking early. Note the counter-evidence
+before spending time on it: `lib/purchase-ledger-rebuild.ts:resolveConversion`
+*throws* on a missing, mismatched, or ambiguous conversion, so a wrong **rate**
+is possible but a missing conversion is not. Treat this as a lead to test, not
+a conclusion to confirm.
+
+### The task
+
+- `[ ]` Run `npx vite-node scripts/audit-inventory-balances.ts` against
+  production, read-only. Report the drift count and whether Sữa đặc's 180 g is
+  among it.
+- `[ ]` Write a read-only, one-off trace for ING-003 (Sữa đặc): every
+  `Stock_Ledger` row in chronological order with a **running balance** after
+  each row, the transaction type, and the source reference. Find the first row
+  where the balance goes negative and report what that row is.
+- `[ ]` From that row, determine the cause. Report it with evidence, in
+  Vietnamese, using real ingredient names.
+- `[ ]` Re-run `scripts/audit-full-history-recompute.ts` so the 2026-07-23
+  baseline is refreshed, and state whether the engine now reports negatives too.
+- `[ ]` Update `DEVELOPMENT-TRACKING.md` and `docs/ROADMAP.md`.
+
+### Hard constraints
+
+Zero database writes. No corrections of anything found — a fix needs its own
+spec and the owner's approval, and any correction here rewrites financial
+history. Owner-facing output uses real names, never codes (`CLAUDE.md` §7).
+Runner is `npx vite-node`. Lodash is not installed; do not add it.
+
+**Do not form a conclusion before the ING-003 trace is in hand.** Three
+hypotheses have already been proposed and killed on this problem (missing
+opening balance, semi-product batch yield, and — pending Fact 1's resolution —
+possibly materialized-balance drift). All three came from reading code and
+reasoning forward. The trace reads the actual data backwards from the symptom,
+which is why it goes first.
+
+## 2026-07-29 - CLOSED, hypothesis dead: Phase 0 semi-product batch-yield diagnostic
 
 Owner-approved. Plan: `docs/superpowers/plans/2026-07-27-phase0-semi-product-yield-diagnostic.md`.
 Spec: `docs/superpowers/specs/2026-07-27-inventory-transparency-design.md`. Both
