@@ -136,19 +136,26 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     const po_id = saved.purchaseOrderId;
 
     if (id && previousPo) {
-      const editId = await generateNewId("purchase_order_edits", "POE");
-      await insert("purchase_order_edits", {
-        id: editId,
-        purchase_order_id: po_id,
-        edited_by_id: auth.actor.id,
-        edited_by_name: created_by,
-        edited_at: new Date().toISOString(),
-        previous_status: previousPo.status,
-        previous_subtotal_amount: Number(previousPo.subtotal_amount) || 0,
-        previous_line_count: previousLineCount,
-        new_subtotal_amount: subtotal_amount,
-        new_line_count: lines.length,
-      });
+      // The atomic save has already committed at this point. The edit trail is
+      // observability, not correctness -- a failure here must never be reported
+      // as a failed save, or the operator re-enters data that was in fact stored.
+      try {
+        const editId = await generateNewId("purchase_order_edits", "POE");
+        await insert("purchase_order_edits", {
+          id: editId,
+          purchase_order_id: po_id,
+          edited_by_id: auth.actor.id,
+          edited_by_name: created_by,
+          edited_at: new Date().toISOString(),
+          previous_status: previousPo.status,
+          previous_subtotal_amount: Number(previousPo.subtotal_amount) || 0,
+          previous_line_count: previousLineCount,
+          new_subtotal_amount: subtotal_amount,
+          new_line_count: lines.length,
+        });
+      } catch (trailError: unknown) {
+        console.error("purchase_order_edits trail write failed (save already committed):", trailError);
+      }
     }
 
     revalidateTag("sheets-Purchase_Orders");
