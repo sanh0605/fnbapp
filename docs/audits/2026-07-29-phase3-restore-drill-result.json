@@ -1,0 +1,298 @@
+{
+  "generated_at": "2026-07-29T14:04:32.811Z",
+  "verdict": "PASS",
+  "row_count_diffs": [
+    {
+      "table": "brands",
+      "baseline": 2,
+      "production_now": 2,
+      "restored": 2,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "product_categories",
+      "baseline": 7,
+      "production_now": 7,
+      "restored": 7,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "item_categories",
+      "baseline": 3,
+      "production_now": 3,
+      "restored": 3,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "units",
+      "baseline": 28,
+      "production_now": 28,
+      "restored": 28,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "suppliers",
+      "baseline": 33,
+      "production_now": 33,
+      "restored": 33,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "purchase_sources",
+      "baseline": 3,
+      "production_now": 3,
+      "restored": 3,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "products",
+      "baseline": 42,
+      "production_now": 42,
+      "restored": 42,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "product_variants",
+      "baseline": 52,
+      "production_now": 52,
+      "restored": 52,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "modifiers",
+      "baseline": 8,
+      "production_now": 8,
+      "restored": 8,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "recipes",
+      "baseline": 130,
+      "production_now": 130,
+      "restored": 130,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "promotions",
+      "baseline": 2,
+      "production_now": 2,
+      "restored": 2,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "base_ingredients",
+      "baseline": 45,
+      "production_now": 45,
+      "restored": 45,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "semi_products",
+      "baseline": 13,
+      "production_now": 13,
+      "restored": 13,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "purchased_items",
+      "baseline": 51,
+      "production_now": 51,
+      "restored": 51,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "uom_conversions",
+      "baseline": 56,
+      "production_now": 56,
+      "restored": 56,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "product_price_history",
+      "baseline": 43,
+      "production_now": 43,
+      "restored": 43,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "orders_v2",
+      "baseline": 1798,
+      "production_now": 1801,
+      "restored": 1801,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "order_lines_v2",
+      "baseline": 2553,
+      "production_now": 2556,
+      "restored": 2556,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "order_events",
+      "baseline": 1814,
+      "production_now": 1817,
+      "restored": 1817,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "stock_ledger",
+      "baseline": 12107,
+      "production_now": 12116,
+      "restored": 12116,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "purchase_orders",
+      "baseline": 61,
+      "production_now": 61,
+      "restored": 61,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "purchase_order_lines",
+      "baseline": 136,
+      "production_now": 136,
+      "restored": 136,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "stock_adjustments",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "production_orders",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "production_items",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "pos_drafts",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "users",
+      "baseline": 2,
+      "production_now": 2,
+      "restored": 2,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "sync_state",
+      "baseline": 1,
+      "production_now": 1,
+      "restored": 1,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "data_migration_runs",
+      "baseline": 1,
+      "production_now": 1,
+      "restored": 1,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "data_recovery_changes",
+      "baseline": 31132,
+      "production_now": 31132,
+      "restored": 31132,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "audit_baseline_locks",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "backdated_ledger_events",
+      "baseline": 1898,
+      "production_now": 1898,
+      "restored": 1953,
+      "delta_vs_production": 55
+    },
+    {
+      "table": "order_payments",
+      "baseline": 205,
+      "production_now": 208,
+      "restored": 208,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "shifts",
+      "baseline": 1,
+      "production_now": 1,
+      "restored": 1,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "shift_stock_checks",
+      "baseline": 2,
+      "production_now": 2,
+      "restored": 2,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "stocktake_sessions",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "stocktake_lines",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "backdated_recipe_events",
+      "baseline": 2,
+      "production_now": 2,
+      "restored": 130,
+      "delta_vs_production": 128
+    },
+    {
+      "table": "purchase_order_edits",
+      "baseline": 1,
+      "production_now": 1,
+      "restored": 1,
+      "delta_vs_production": 0
+    },
+    {
+      "table": "pos_sync_failures",
+      "baseline": 0,
+      "production_now": 0,
+      "restored": 0,
+      "delta_vs_production": 0
+    }
+  ],
+  "explained_delta_tables": [
+    "backdated_ledger_events",
+    "backdated_recipe_events"
+  ],
+  "unexplained_deltas": [],
+  "content_spot_checks": {
+    "po037_header_matches": true,
+    "po037_lines_match": true,
+    "split_payment_order_id": "ord-66939489-c870-4cd3-940d-4dd7ef64d9d4",
+    "sua_dac_stock_ledger_count_matches": true
+  },
+  "findings": []
+}
