@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-29 (Claude Sonnet 5) - PO-037 Header/Lines Mismatch Confirmed: 1 of 61 Purchase Orders Affected, Not Systemic
+
+**Trigger:** owner-reported, with a screenshot of `/admin/inventory/purchase-orders/PO-037` showing a header total (3,571,000 VND) with only 102,000 VND of line items behind it. Per `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md`'s 2026-07-29 URGENT entry, this was flagged as cheaper and more systemic to check than the ING-003 trace, and potentially the same root cause behind the owner's negative-balance reports (stock is credited per line, not from the header, so a header total unsupported by any line means goods paid for but never credited).
+
+**Built (TDD, read-only throughout):** `lib/po-header-lines-audit.ts` — a pure module comparing every purchase order's `subtotal_amount` against the summed `subtotal` of its own `Purchase_Order_Lines` (matched via either the `po_id` or `purchase_order_id` column, since both exist in the data). 6 unit tests written first and watched fail before implementation. `scripts/audit-po-header-lines.ts`, a thin read-only CLI wrapper modeled on `scripts/audit-inventory-balances.ts`.
+
+**Live result: exactly 1 mismatch out of 61 purchase orders — PO-037 itself, total delta 3,469,000 VND.** This rules out the "systemic" half of the hypothesis: it is not a widespread class of bug silently eating other purchase orders, it is a single invoice.
+
+**PO-037 detail, verified directly:** exactly 1 `Purchase_Order_Lines` row exists (`POL-090`, Trân châu trắng Bibi, 2 Túi, 102,000 VND) and exactly 1 `Stock_Ledger` `PO_RECEIPT` row references `PO-037` (crediting Trân châu trắng/ING-034, 4,000 g, matching the same 102,000 VND). Both agree with each other and with the header's line-item total — the 3,469,000 VND gap has zero supporting rows anywhere in the system, not a lost/orphaned one.
+
+**Cross-check requested by the handoff:** PO-037's only line is Trân châu trắng, not Sữa đặc (ING-003) or Siro việt quất — no overlap with the two ingredients the owner separately reported as negative. This purchase-order gap and the ING-003 negative-balance finding (previous entry) are two independent, unrelated data gaps, not the same root cause.
+
+**Conclusion:** the owner's open question — whether PO-037 genuinely contained ~3.5 million VND of goods on 24/6 or only the 102,000 VND of boba — cannot be answered from data alone and needs the owner's memory of that purchase. Nothing was corrected (hard constraint: zero database writes, no PO/line/ledger correction — any fix rewrites purchase and cost history and needs its own spec plus owner approval; note also that `lib/purchase-ledger-rebuild.ts:133` uses `subtotal_amount` as the shipping/tax/voucher allocation denominator, so any future correction moves landed cost and MAC too).
+
+**Verification:** 6/6 new tests (watched RED before GREEN), full suite 822/822 (up from 816), `tsc --noEmit` 0 errors, zero database writes (both new files are read-only; audit ran via `findAllNoCache` against production with no insert/update/upsert/delete/`.rpc(` calls). Artifact: `docs/audits/2026-07-29-po-header-lines-audit.json`.
+
+---
+
 ## 2026-07-29 (Claude Sonnet 5) - ING-003 (Sữa đặc) Negative Balance: Root Cause Found — Missing Purchases, Not a Bug
 
 **Trigger:** owner supplied screenshots showing two different balances for Sữa đặc on the same `/admin/reports/stock` page (-6,471 g reorder-suggestion vs -6,651 g inventory-balance, 180 g apart). This superseded the batch-yield line of investigation (already dead, see entry below) per `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md`'s 2026-07-29 entry. Explicit instruction: do not conclude anything before the raw ledger trace is in hand — three prior hypotheses (missing opening balance, batch-yield unit mismatch, materialized-balance drift) were all reasoned forward from code, none from data.

@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-07-29",
+  "script": "scripts/audit-po-header-lines.ts",
+  "read_only": true,
+  "orderCount": 61,
+  "mismatchCount": 1,
+  "totalDeltaVnd": 3469000,
+  "mismatches": [
+    {
+      "po_id": "PO-037",
+      "supplier_id": "NCC-018",
+      "supplier_name": "Nguyen lieu pha che Tra My",
+      "status": "COMPLETED",
+      "transaction_date": "2026-06-24T17:00:00+00:00",
+      "header_subtotal": 3571000,
+      "lines_subtotal": 102000,
+      "delta": 3469000,
+      "line_count": 1,
+      "lines_detail": [
+        {
+          "line_id": "POL-090",
+          "purchased_item_id": "SPM-039",
+          "item_name": "Tran chau trang Bibi",
+          "quantity": 2,
+          "unit_price": 51000,
+          "subtotal": 102000
+        }
+      ],
+      "stock_ledger_rows_referencing_po": 1,
+      "po_receipt_rows": 1,
+      "po_receipt_detail": [
+        {
+          "ledger_id": "STK-003",
+          "item_reference": "ING-034",
+          "item_name": "Tran chau trang",
+          "transaction_type": "PO_RECEIPT",
+          "quantity_change": 4000,
+          "unit_cost": 25.5,
+          "value_vnd": 102000
+        }
+      ],
+      "contains_ing003_sua_dac": false,
+      "contains_siro_viet_quat": false
+    }
+  ]
+}
