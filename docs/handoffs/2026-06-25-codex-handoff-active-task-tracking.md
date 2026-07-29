@@ -1,5 +1,94 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-29 - URGENT, QUEUED for Claude Sonnet 5: purchase-order header total does not match its lines
+
+Owner-reported, with a screenshot of `/admin/inventory/purchase-orders/PO-037`.
+**Do this before the ING-003 trace below** — it is cheaper, systemic, and if it
+hits it very likely explains the negative balances that trace is chasing.
+
+### The symptom
+
+PO-037 (transaction date 25/6/2026, status COMPLETED) displays:
+
+- Line items: a single row — Trân châu trắng Bibi, Túi, qty 2, 51,000 = **102,000**
+- Tổng tiền hàng (`po.subtotal_amount`): **3,571,000**
+- Tổng cộng (`po.total_amount`): **3,571,000**
+- Shipping, tax, voucher, discount: all 0
+
+3,469,000 of goods appear in the header total with no line to support them.
+
+### The mechanism, verified in code
+
+`app/admin/inventory/purchase-orders/actions.ts:53`:
+
+```typescript
+const subtotal_amount = Number(formData.get("subtotal_amount") || 0);
+```
+
+The header subtotal is **taken verbatim from the client form**. The server never
+recomputes it from the `Purchase_Order_Lines` it saves in the same request, and
+never validates one against the other. `total_amount` is then derived from that
+unvalidated subtotal at line 67. A PO whose lines were lost, truncated, or never
+submitted keeps a header total that no line supports, silently.
+
+The detail page renders `po.subtotal_amount` and `po.total_amount` directly
+(`app/admin/inventory/purchase-orders/[id]/page.tsx:106,122`), so the screen is
+faithfully reporting stored data. This is not a display bug.
+
+Ruled out while investigating: `findAllNoCache` keyset pagination
+(`lib/sheets_db.ts:204-226`) is correct — it pages on `id` with `.gt()` and
+terminates on a short page, so lines are not being lost to a row cap. The
+detail page's client-side filter accepts both `po_id` and `purchase_order_id`,
+so a column-name mismatch is not it either.
+
+### Why this may be the inventory root cause
+
+Stock is credited **per line**, not from the header total. If goods were
+received and paid for but their lines were never saved, the stock was never
+credited — which is exactly the shape of an unexplained negative balance that
+purchases-minus-sales cannot account for.
+
+This also explains why every audit so far reported clean.
+`scripts/audit-po-save-ledger.ts` checks that ledger rows match the PO's
+**lines** (last run: 0/58 mismatches). If lines went missing at save time, the
+ledger agrees with the surviving lines and the audit passes, while the header
+total silently disagrees. **No audit has ever compared a PO's header total
+against the sum of its own lines.** That is the blind spot.
+
+### The task
+
+- `[ ]` Write a read-only audit comparing, for **every** purchase order,
+  `subtotal_amount` against the summed `subtotal` of its `Purchase_Order_Lines`.
+  Report every PO where they differ, with both figures, the delta, the line
+  count, the status, and the transaction date. Model it on
+  `lib/*-audit.ts` + `scripts/audit-*.ts` (pure module + thin CLI wrapper, tests
+  for the pure part), same as `lib/inventory-balance-audit.ts`.
+- `[ ]` Run it against production, read-only. Report how many POs are affected
+  and the total value involved.
+- `[ ]` For PO-037 specifically, report how many `Purchase_Order_Lines` rows
+  actually exist and how many `Stock_Ledger` PO_RECEIPT rows reference it.
+- `[ ]` Cross-check whether any affected PO contains Sữa đặc (ING-003) or Siro
+  việt quất — the two ingredients the owner sees negative.
+- `[ ]` Report to the owner in Vietnamese with real names, then update
+  `DEVELOPMENT-TRACKING.md` and `docs/ROADMAP.md`.
+
+### Open question only the owner can answer
+
+Whether PO-037 genuinely contained ~3.5 million of goods on 25/6 or only the
+102,000 of boba. That decides whether this is missing stock (goods received and
+never credited) or a stale header number (cosmetic plus wrong cost allocation).
+The audit's breadth tells us how widespread it is either way, so it does not
+need to wait for the answer.
+
+### Hard constraints
+
+Zero database writes. Do not correct any PO, line, or ledger row — a fix
+rewrites purchase and cost history and needs its own spec plus owner approval.
+Note the cost coupling before designing any fix:
+`lib/purchase-ledger-rebuild.ts:133` uses `subtotal_amount` as the denominator
+when allocating shipping/tax/voucher across lines, so changing it moves landed
+cost and therefore MAC. Runner is `npx vite-node`. Lodash is not installed.
+
 ## 2026-07-29 - CLOSED, root cause found: trace why Sữa đặc (ING-003) is 6.4kg negative
 
 Owner supplied screenshots of two live screens. This supersedes the batch-yield
