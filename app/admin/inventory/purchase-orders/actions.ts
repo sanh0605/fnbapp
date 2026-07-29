@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, insert, generateNewId } from "@/lib/sheets_db";
+import { findAll, findById, insert, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem } from "@/types/db";
@@ -87,6 +87,22 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       findAll("UOM_Conversions"),
     ]);
 
+    // Purchase orders have no edit history (unlike sales orders' order_events).
+    // Read the pre-edit state now, before the atomic write replaces it, so the
+    // trail row inserted below can record what changed.
+    let previousPo: any = null;
+    let previousLineCount = 0;
+    if (id) {
+      const [existingPo, existingLines] = await Promise.all([
+        findById("Purchase_Orders", id),
+        findAll("Purchase_Order_Lines") as Promise<RawPurchaseOrderLine[]>,
+      ]);
+      previousPo = existingPo;
+      previousLineCount = existingLines.filter(
+        (l: any) => l.po_id === id || l.purchase_order_id === id,
+      ).length;
+    }
+
     const createdAt = new Date().toISOString();
     const writePlan = buildPurchaseOrderWritePlan({
       order: {
@@ -118,6 +134,22 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       replaceExisting: Boolean(id),
     });
     const po_id = saved.purchaseOrderId;
+
+    if (id && previousPo) {
+      const editId = await generateNewId("purchase_order_edits", "POE");
+      await insert("purchase_order_edits", {
+        id: editId,
+        purchase_order_id: po_id,
+        edited_by_id: auth.actor.id,
+        edited_by_name: created_by,
+        edited_at: new Date().toISOString(),
+        previous_status: previousPo.status,
+        previous_subtotal_amount: Number(previousPo.subtotal_amount) || 0,
+        previous_line_count: previousLineCount,
+        new_subtotal_amount: subtotal_amount,
+        new_line_count: lines.length,
+      });
+    }
 
     revalidateTag("sheets-Purchase_Orders");
     revalidateTag("sheets-Purchase_Order_Lines");
