@@ -67,4 +67,24 @@ describe("summariseItemBalances", () => {
     });
     expect(result.negatives.map(r => r.item)).toEqual(["B", "C", "A"]);
   });
+
+  it("excludes non-inventory ingredients from both lists", () => {
+    const result = summariseItemBalances({
+      theoreticalByItem: new Map([["ING-001", -112230], ["ING-003", -6651]]),
+      recordedByItem: new Map([["ING-001", -112230], ["ING-003", -6651]]),
+      nameOf: (id) => ({ "ING-001": "Nước sôi", "ING-003": "Sữa đặc" }[id] || id),
+      nonInventoryItems: new Set(["ING-001"]),
+    });
+    expect(result.negatives.map(r => r.item_name)).toEqual(["Sữa đặc"]);
+    expect(result.mismatches).toHaveLength(0);
+  });
+
+  it("treats an omitted nonInventoryItems set as excluding nothing", () => {
+    const result = summariseItemBalances({
+      theoreticalByItem: new Map([["ING-001", -5]]),
+      recordedByItem: new Map([["ING-001", -5]]),
+      nameOf: (id) => id,
+    });
+    expect(result.negatives).toHaveLength(1);
+  });
 });

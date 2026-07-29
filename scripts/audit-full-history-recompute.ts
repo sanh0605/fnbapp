@@ -136,11 +136,19 @@ async function main() {
     recordedByItem.set(row.item_reference, (recordedByItem.get(row.item_reference) || 0) + qty);
   }
   const allItemIds = new Set([...theoreticalByItem.keys(), ...recordedByItem.keys()]);
+  const nonInventoryItems = new Set(
+    (baseIngredients as any[])
+      .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
+      .map(b => b.id),
+  );
   const { mismatches: qtyFindings, negatives: negativeTheoretical } = summariseItemBalances({
-    theoreticalByItem, recordedByItem, nameOf,
+    theoreticalByItem, recordedByItem, nameOf, nonInventoryItems,
   });
 
   console.log(`\n=== SECTION 2: QUANTITY (theoretical vs currently recorded, per item) ===`);
+  if (nonInventoryItems.size > 0) {
+    console.log(`Bỏ qua ${nonInventoryItems.size} nguyên liệu phi lưu kho: ${[...nonInventoryItems].map(nameOf).join(", ")}`);
+  }
   console.log(`Items with a difference: ${qtyFindings.length} of ${allItemIds.size} total items touched`);
   console.log(`Top 15 by absolute difference:`);
   for (const f of qtyFindings.slice(0, 15)) {

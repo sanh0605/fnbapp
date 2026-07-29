@@ -26,8 +26,10 @@ export function summariseItemBalances(input: {
   recordedByItem: Map<string, number>;
   nameOf: (id: string) => string;
   tolerance?: number;
+  nonInventoryItems?: Set<string>;
 }): ItemBalanceSummary {
   const tolerance = input.tolerance ?? 0.01;
+  const nonInventoryItems = input.nonInventoryItems ?? new Set<string>();
   const allItemIds = new Set([
     ...input.theoreticalByItem.keys(),
     ...input.recordedByItem.keys(),
@@ -37,6 +39,7 @@ export function summariseItemBalances(input: {
   const negatives: ItemBalanceRow[] = [];
 
   for (const item of allItemIds) {
+    if (nonInventoryItems.has(item)) continue;
     const theoretical = input.theoreticalByItem.get(item) || 0;
     const recorded = input.recordedByItem.get(item) || 0;
     const row: ItemBalanceRow = {
