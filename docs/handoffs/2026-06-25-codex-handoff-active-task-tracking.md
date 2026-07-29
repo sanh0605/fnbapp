@@ -11,13 +11,14 @@ be ambiguous between the deploy, Phase 4, and Phase 5.
 **Two things reverse what the spec assumed — read the plan's own section before
 starting.**
 
-1. **No baseline locks get released.** The spec called for releasing
-   `audit_baseline_locks` as a recorded decision. The post-Phase-4 audit shows
-   `cost_category_b_locked_current: 0` and `cost_category_c_locked_stale: 0` —
-   all 1,066 mismatched lines are unlocked, so no lock is in the way. Releasing
-   them would be a no-op carrying the exact risk that caused COGS-5. Do not call
+1. **There are no baseline locks.** `audit_baseline_locks` was counted directly
+   against production on 2026-07-30: **0 rows**. The spec's lock-release step
+   and its matching risk bullet have both been withdrawn. The audit's
+   `cost_category_b/c: 0` meant "no locks exist", not "locks exist but miss the
+   change set" — this plan's first draft misread it, and the owner caught it by
+   asking why locks were being discussed at all. Do not call
    `remove_audit_baseline_lock`; do not use
-   `scripts/remove-locks-and-recompute-cost.ts`.
+   `scripts/remove-locks-and-recompute-cost.ts`. Neither has anything to do.
 2. **No new migration.** `apply_full_history_recovery` (migration 0031) was
    built for precisely this: Category A cost corrections, no stock rows, dry-run
    flag, idempotent per run-id, and an explicit per-line `not exists` guard

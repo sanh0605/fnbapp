@@ -81,11 +81,14 @@ touched; this program widens that to every order.
 
 - **Historical P&L will change.** Costs for every period after PO-037's
   transaction date move once the missing purchase enters the weighted average.
-- **Baseline locks will be released.** `audit_baseline_locks` records cost lines
-  previously reviewed and accepted after the COGS-5 incident. A full rebuild
-  overrides them. This is legitimate as a deliberate baseline reset, but it must
-  be an explicit, logged act — silent override is precisely what COGS-5 was.
-  Phase 5 records which locks were released and why.
+- ~~**Baseline locks will be released.**~~ **Withdrawn 2026-07-30 — this risk
+  does not exist.** `audit_baseline_locks` was counted directly against
+  production and contains **0 rows**. No cost line is locked, so no lock is
+  overridden and none needs releasing. This bullet was written from the COGS-5
+  history and the lock-hardening migrations (0012/0016/0030) without checking
+  whether the table had any contents; the owner questioned why locks were being
+  discussed in a program built on recomputing from source, and was right.
+  Phase 5 removes the lock-release step entirely.
 - **The rebuild cannot invent missing data.** If purchases are genuinely absent
   (the open Sữa đặc question — no purchase recorded since 2026-05-16), the
   rebuilt figures will reproduce the same negative. The rebuild corrects derived

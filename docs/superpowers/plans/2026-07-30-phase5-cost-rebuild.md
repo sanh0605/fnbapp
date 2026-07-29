@@ -27,8 +27,7 @@ Runner is `npx vite-node`.
   month-by-month summary.
 - **Stock rows are not touched.** Phase 4's result is final. This phase writes
   `order_lines_v2.cost_at_sale` and nothing else.
-- **No baseline lock is removed.** See the section below — this is a deliberate
-  reversal of what the spec anticipated, not an oversight.
+- **No baseline lock is removed** — there are none to remove. See below.
 - Owner-facing output in Vietnamese with **real ingredient and product names**,
   never codes (`CLAUDE.md` section 7). Code and comments in English.
 - No new dependencies. Lodash is not installed. No emojis.
@@ -41,22 +40,24 @@ Runner is `npx vite-node`.
 ## What changed since the spec was written
 
 **The spec expected this phase to release `audit_baseline_locks` as a recorded
-decision. That is no longer necessary, and must not be done.**
+decision. There is nothing to release: the table is empty. 0 rows.**
 
-The post-Phase-4 audit (`docs/audits/2026-07-29-full-history-recompute-report.json`)
-reports:
+Counted directly against production on 2026-07-30. The audit's
+`cost_category_b_locked_current: 0` / `cost_category_c_locked_stale: 0` was not
+telling us that the locks happen to miss the change set — it was telling us
+there are no locks at all, and this plan's first draft misread it as the former.
 
-```
-cost_mismatches:             1066
-cost_category_a_unlocked:    1066
-cost_category_b_locked_current: 0
-cost_category_c_locked_stale:   0
-```
+The spec's risk bullet ("Baseline locks will be released... Phase 5 records
+which locks were released and why") described a risk that does not exist. It has
+been corrected there too. The owner caught this by asking why locks were being
+discussed at all in a program whose whole premise is recomputing from source —
+a fair challenge, and he was right.
 
-Every line that needs correcting is unlocked. No locked line disagrees with the
-recomputation, so none of them appears in the change set at all. The lock
-release the spec called for would be a no-op that carries real risk — releasing
-locks is precisely the class of act that caused the COGS-5 incident.
+**Nothing in this plan's tooling changes as a result.**
+`apply_full_history_recovery` is still the correct RPC, for reasons that have
+nothing to do with locks: cost-only, no stock rows, dry-run flag, idempotent per
+run-id. Its per-line lock guard simply never fires. Keep it; it costs nothing
+and is the right shape if locks are ever introduced again.
 
 **Do not call `remove_audit_baseline_lock`. Do not use
 `scripts/remove-locks-and-recompute-cost.ts`,** which removes locks before
