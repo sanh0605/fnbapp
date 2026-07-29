@@ -61,6 +61,8 @@ Script này:
 
 **Thời gian chạy lần diễn tập 2026-07-29:** khoảng vài phút cho 52.232 dòng / 40 bảng, sau khi đã sửa một lỗi hiệu năng (xem bên dưới). Lần đầu (trước khi sửa) từng bị kẹt hàng giờ đồng hồ ở một bảng.
 
+**Về trigger phát hiện ghi muộn (`detect_backdated_ledger_entry`/`detect_backdated_recipe_entry`):** khôi phục ghi dữ liệu theo thứ tự trang (page order), không theo đúng thứ tự thời gian gốc, nên hai trigger này sẽ hiểu nhầm nhiều dòng là "đến muộn" và tự tạo thêm dòng vào `backdated_ledger_events`/`backdated_recipe_events` (xem mục 4 trong "Sự cố từng gặp" — đây là nhiễu đã biết, không phải mất dữ liệu). `restore-backup-to-target.ts` ghi qua REST API (Supabase JS client), mỗi lần ghi là một transaction riêng của PostgREST nên **không đặt được** `app.mac_drift_recovery='on'` như các hàm phục hồi khác (migration 0030) làm được trong một transaction SQL duy nhất. Vì script này chỉ nhắm vào database thử (không bao giờ là production, đã được `assertSafeRestoreTarget` chặn cứng), việc này an toàn — nhưng nếu về sau restore được chạy vào một project có cron `apply-backdated-corrections` trỏ tới, phải **xoá sạch (truncate) `backdated_ledger_events` và `backdated_recipe_events` ngay sau khi khôi phục xong**, trước khi cron chạy lúc 03:00 giờ Việt Nam, và xác nhận lần chạy cron đó không áp dụng gì.
+
 ## Bước 4: Kiểm tra khôi phục có đúng không
 
 ```bash
