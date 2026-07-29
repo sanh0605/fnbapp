@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T16:37:23.062Z",
+  "generated_at": "2026-07-29T18:01:29.181Z",
   "mode": "DRY_RUN",
   "orders_total": 1801,
   "orders_to_rebuild": 1743,
@@ -279,9 +279,9 @@
   ],
   "still_negative_after_rebuild": [
     {
-      "item_id": "ING-021",
-      "name": "Lá hồng trà",
-      "balance": -2009.5833333333521
+      "item_id": "ING-014",
+      "name": "Muối hồng",
+      "balance": -14.387500000000003
     }
   ],
   "dry_run_failures": [],
