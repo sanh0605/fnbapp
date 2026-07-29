@@ -29,12 +29,12 @@ After close, with no open shift and no order in progress. Not the same night as 
 
 ### Step 1: Pre-flight (Claude Sonnet 5, before the owner pushes)
 
-- [ ] `npx tsc --noEmit` — expect no output. Production builds now fail on type errors (`BUILD-GATE-1` flipped `ignoreBuildErrors` to `false`), so a type error here becomes a failed deploy rather than a broken site — still, catch it locally.
-- [ ] `npm test` — expect all green.
-- [ ] `next build` — expect success. This is the closest local proxy for what Vercel will do.
-- [ ] Confirm every migration in `supabase/migrations/` is applied to production. 0040 and 0041 were applied 2026-07-29; verify nothing newer is pending.
-- [ ] Take a fresh backup snapshot (`npx vite-node scripts/verify-drive-backup.ts`) and record the row counts. The restore path is now proven, so this is a real safety net rather than a formality.
-- [ ] Report to the owner in Vietnamese: all four checks passed, backup taken, ready to push.
+- [x] `npx tsc --noEmit` — no output, clean.
+- [x] `npm test` — 151 test files, 859 tests, all passed.
+- [x] `next build` — compiled successfully, all 40 routes generated.
+- [x] Confirm every migration in `supabase/migrations/` is applied to production. `npx supabase migration list` shows local 0001-0041 all matched by remote 0001-0041 — nothing pending.
+- [x] Fresh backup snapshot taken (dry run, no writes): 40/40 tables, 52,253 rows, 32.9 MB. Recorded in `docs/audits/2026-07-29-preflight-backup-snapshot.json`.
+- [x] Reported to the owner (see below).
 
 ---
 

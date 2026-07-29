@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-29 (Claude Sonnet 5) - Production Deploy Plan, Step 1: Pre-flight - PASS
+
+**Trigger:** owner-approved plan (`docs/superpowers/plans/2026-07-29-production-deploy-63-commits.md`) to get 63 local commits (2026-07-27 to 2026-07-29) onto production before Phase 4 rebuilds any data. Plan explicitly scopes Step 2 (`git push origin main`) as the owner's own action; Claude ran only Step 1 and stopped.
+
+**All four checks passed, no code changed:**
+- `npx tsc --noEmit` clean, no output.
+- `npm test`: 151 test files, 859 tests, all green.
+- `next build`: compiled successfully, all 40 routes generated (static + dynamic).
+- `npx supabase migration list`: local 0001-0041 all matched by remote 0001-0041 on production — nothing pending, confirms the plan's claim that migrations 0040/0041 are already applied.
+- Fresh backup snapshot (dry run, no writes to Drive or the database): 40/40 tables, 52,253 rows, 32.9 MB. Recorded in `docs/audits/2026-07-29-preflight-backup-snapshot.json`.
+
+**What this unblocks:** owner can now run Step 2 (`git push origin main`) at his discretion; Vercel builds and deploys from `main`. Step 3 (verification at the POS, in blast-radius order) and Step 4 (watch for a day) are not started.
+
+---
+
 ## 2026-07-29 (Claude Sonnet 5) - Phase 3: Backup Coverage and Restore Drill (6/6 tasks) - PASS
 
 **Trigger:** owner-approved plan (`docs/superpowers/plans/2026-07-29-phase3-backup-coverage-and-restore-drill.md`). No backup in this project had ever been restore-tested; Phase 4 (which deletes derived stock data and rewrites `cost_at_sale` history) may not proceed without a verified restore. Owner explicitly scoped Task 3 (creating the scratch Supabase project) as his own action; Claude stopped there and waited.
