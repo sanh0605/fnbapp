@@ -1,6 +1,10 @@
 # Codex Handoff — 2026-06-25
 
-## 2026-07-29 - OPEN, 0/6 tasks: clean rebuild program, Phase 4 (rebuild stock)
+## 2026-07-30 - CLOSED, 6/6 tasks: clean rebuild program, Phase 4 (rebuild stock)
+
+**Done 2026-07-30.** Applied: 1,743/1,743 orders, 0 failures. `rebuild_inventory_balances()` re-materialized 50 rows. Migration 0042 suppression confirmed (0 backdated events detected during the apply window). Verification: recorded equals recomputed for all 50 items, 0 mismatches. Only remaining negative: Muối hồng, -14.39 g. Lá hồng trà resolved (+3,990.42 g) after the owner found and fixed the real root cause mid-review — purchased item SPM-040 was mapped to the wrong base ingredient (ING-014 Muối hồng instead of ING-021 Lá hồng trà), corrected at the source and re-saved through PO-024. Sữa đặc resolved (+41,269). Full writeup: `DEVELOPMENT-TRACKING.md` 2026-07-30 entry. Roadmap row: `REBUILD-PHASE4`. **Unblocks Phase 5 (cost rebuild)** per the plan's own gate — not started.
+
+## 2026-07-29 (superseded by the entry above) - OPEN, 0/6 tasks: clean rebuild program, Phase 4 (rebuild stock)
 
 **Implementer: Claude Sonnet 5.** Plan:
 `docs/superpowers/plans/2026-07-29-phase4-stock-rebuild.md`. Spec: Phase 4 of
@@ -41,15 +45,16 @@ A new script (`scripts/apply-phase4-stock-rebuild.ts`);
 `scripts/apply-full-history-stock-ledger-rebuild.ts` stays untouched because its
 header records a different operation already run on 2026-07-24.
 
-- `[ ]` Task 0: confirm the deployed engine (read-only, no commit).
-- `[ ]` Task 1: migration 0042 suppressing backdated detection inside the
+- `[x]` Task 0: confirm the deployed engine (read-only, no commit).
+- `[x]` Task 1: migration 0042 suppressing backdated detection inside the
   rebuild RPC, plus the same fix folded into
   `docs/runbooks/restore-from-backup.md` — closing the runbook item raised
   2026-07-29 and never actioned.
-- `[ ]` Task 2: `lib/phase4-rebuild-scope.ts` + tests + the all-orders script.
-- `[ ]` Task 3: real backup, dry run, **owner review gate**.
-- `[ ]` Task 4: apply, then `rebuild_inventory_balances()`.
-- `[ ]` Task 5: verify with the corrected audit; answer Sữa đặc and
+- `[x]` Task 2: `lib/phase4-rebuild-scope.ts` + tests + the all-orders script.
+- `[x]` Task 3: real backup, dry run, **owner review gate** (re-run twice; see
+  the 2026-07-30 entry above for the SPM-040 mapping fix found mid-review).
+- `[x]` Task 4: apply, then `rebuild_inventory_balances()`.
+- `[x]` Task 5: verify with the corrected audit; answer Sữa đặc and
   Lá hồng trà explicitly.
 
 **Two owner gates.** Task 3 Step 4 (approve the dry-run summary before `--apply`)
