@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T07:07:38.634Z",
+  "generated_at": "2026-07-29T08:16:05.471Z",
   "summary": {
     "lines_replayed": 2358,
     "replay_errors": 0,
@@ -8,7 +8,7 @@
     "cost_category_b_locked_current": 0,
     "cost_category_c_locked_stale": 0,
     "quantity_items_with_diff": 0,
-    "quantity_items_negative_theoretical": 0,
+    "quantity_items_negative_theoretical": 8,
     "po_receipt_findings": 0,
     "production_ledger_findings": 0
   },
