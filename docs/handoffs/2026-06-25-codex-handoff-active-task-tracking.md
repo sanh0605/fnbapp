@@ -1,5 +1,41 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-29 - QUEUED for Claude Sonnet 5: clean rebuild program, Phases 1-2
+
+Owner approved the clean rebuild program on 2026-07-29 after reviewing the
+evidence. Program spec:
+`docs/superpowers/specs/2026-07-29-clean-rebuild-program-design.md`.
+Plan for these two phases:
+`docs/superpowers/plans/2026-07-29-phase1-2-guards-and-po-edit.md` (6 tasks, TDD).
+
+**Read the plan; it carries the full detail.** The essentials:
+
+- Task 1 fixes the reason every audit read clean while the owner's screen showed
+  a negative. `scripts/audit-full-history-recompute.ts:156` filters negatives
+  out of `qtyFindings`, which contains only *mismatched* items, so a negative
+  balance the system agrees with itself about is unreportable. Sữa đặc is
+  -6,651 g on both sides. After the fix, **re-run live and expect a non-zero
+  count** — say so plainly to the owner; it is the first correct reading.
+- Task 2 adds the guard that would have caught PO-037: reject a COMPLETED save
+  whose header total disagrees with the sum of its lines. COMPLETED only.
+- Tasks 3-4 add a PO edit trail and admin-only editing of completed POs behind
+  an explicit `?edit=1`. **No RPC or migration work is needed for the edit
+  itself** — `save_purchase_order_atomic` (migration 0006) already replaces
+  lines and `PO_RECEIPT` rows in one transaction. Note the detail page currently
+  has no session or role check at all; Task 4 adds it.
+- Task 5 tests the last alternative explanation for Sữa đặc before Phase 4, so a
+  rebuild reproducing the same negative is not mistaken for a failed rebuild.
+
+**Do not edit PO-037.** The owner will do it himself through the Task 4 feature;
+that is the whole reason the feature is being built.
+
+**Hard constraints.** No data rebuild, no corrections, no deletions anywhere in
+this plan — Task 5 is read-only. No Lodash (not installed). Runner is
+`npx vite-node`. Owner-facing output in Vietnamese with real names.
+
+Phase 3 (backup plus a **verified restore drill**) must complete before Phase 4
+touches data. It is not in this plan and is not optional.
+
 ## 2026-07-29 - URGENT, QUEUED for Claude Sonnet 5: purchase-order header total does not match its lines
 
 Owner-reported, with a screenshot of `/admin/inventory/purchase-orders/PO-037`.
