@@ -28,12 +28,22 @@ concept exists in any migration, but the owner confirmed POs were entered from
 the very first purchase, made to test recipes before any selling began, so
 recompute starting every ingredient at zero is correct.
 
-- `[ ]` Task 1: `lib/semi-product-yield-audit.ts` + tests — parsing and types.
-- `[ ]` Task 2: flag classification and implied-consumption arithmetic.
-- `[ ]` Task 3: `scripts/audit-semi-product-yield.ts`, read-only wrapper, run
-  live with `npx vite-node`.
-- `[ ]` Task 4: report to owner in Vietnamese using real ingredient names, then
-  update `DEVELOPMENT-TRACKING.md` and `docs/ROADMAP.md`.
+- `[x]` Task 1: `lib/semi-product-yield-audit.ts` + tests — parsing and types.
+  Done 2026-07-29, commit `439ea27`.
+- `[x]` Task 2: flag classification and implied-consumption arithmetic. Done
+  2026-07-29, commit `4ad8274`.
+- `[x]` Task 3: `scripts/audit-semi-product-yield.ts`, read-only wrapper, run
+  live with `npx vite-node`. Done 2026-07-29, commit `5fc1934`. Live result:
+  **hypothesis dead** — all 13 semi-products in active use flagged `OK`, 0
+  suspicious. See `docs/audits/2026-07-29-semi-product-yield-diagnostic.json`.
+- `[x]` Task 4: report to owner in Vietnamese using real ingredient names, then
+  update `DEVELOPMENT-TRACKING.md` and `docs/ROADMAP.md`. Done 2026-07-29.
+
+**Outcome:** the batch-yield unit-mismatch hypothesis is eliminated. Every
+semi-product's `batch_yield` is correctly scaled to its `base_unit` — ratios
+of largest cooking input to yield ranged 0.32-1.90, nowhere near the 100x
+scale-error threshold. Next step per the spec's own contingency: Feature 2
+(owner-run reconciliation with negative-cause classification).
 
 **Hard constraints.** Zero database writes; the only artifact is a dated JSON
 file under `docs/audits/`. No corrections of anything found — that needs its own

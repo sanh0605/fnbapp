@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-29 (Claude Sonnet 5) - Phase 0 Semi-Product Batch-Yield Diagnostic: Hypothesis Dead
+
+**Trigger:** owner-reported inventory fog (2026-07-27, `Claude Opus 5` session) -- the owner records every purchase and every sale but never records waste, so any negative balance is provably a system/data fault, never real leakage. The leading candidate (`docs/superpowers/specs/2026-07-27-inventory-transparency-design.md` section 1.3): `semi_products.batch_yield` carries no unit and nothing constrains it to agree with the `base_unit` its consumers use, so a yield entered in the wrong unit (e.g. litres instead of millilitres) could silently over-consume raw ingredients by a power of ten on every implicit production.
+
+**Built (plan: `docs/superpowers/plans/2026-07-27-phase0-semi-product-yield-diagnostic.md`, 4 tasks, TDD, read-only throughout):** `lib/semi-product-yield-audit.ts` -- a pure analysis module flagging `NO_COOKING_RECIPE`, `YIELD_DEFAULT_1` (yield left at the column default while the cooking recipe's largest input exceeds 1), and `YIELD_SCALE_SUSPECT` (largest cooking input / batch_yield >= 100x, a power-of-ten unit mismatch), plus the implied raw-ingredient consumption per serving using the median across consumers when they disagree. 12 unit tests. `scripts/audit-semi-product-yield.ts` loads `Semi_Products`/`Recipes`/`Base_Ingredients` read-only and prints a Vietnamese report using real ingredient/semi-product names, never internal codes (`CLAUDE.md` section 7).
+
+**Live result: hypothesis is dead.** All 13 semi-products actually used in recipes (Cốt cà phê, Cốt cacao, Cốt matcha, Nước đường, Trứng luộc, Hồng trà, Lục trà, Trà sữa hồng trà, and 4 Kem dẻo/Kem muối variants) came back `OK` -- 0 flagged. Every batch_yield is correctly scaled to its base_unit (ratios of largest cooking input to yield range 0.32-1.90, nowhere near the 100x suspect threshold) and every implied per-serving consumption is a realistic small quantity, not an inflated one. Full detail: `docs/audits/2026-07-29-semi-product-yield-diagnostic.json`.
+
+**What this means:** the batch-yield unit-mismatch theory is eliminated as the cause of the owner's negative-stock/inflated-COGS symptoms. Per the spec's own contingency, the next step is Feature 2 (owner-run reconciliation with negative-cause classification) -- not a fix here, since there is nothing to fix.
+
+**Verification:** `tsc --noEmit` clean, full suite grew 804 -> 816 (12 new tests, 0 regressions), zero database writes (confirmed by static grep for insert/update/upsert/delete/`.rpc(` before the live run, and the script's only I/O besides reads is the dated JSON artifact under `docs/audits/`). Commits: `439ea27`, `4ad8274`, `5fc1934` (local, not pushed).
+
+---
+
 ## 2026-07-28 (Claude Sonnet 5) - ARCH-1 Multi-Outlet Design Closed (Design-Only)
 
 **Trigger:** resumed the `ARCH-1` brainstorm paused 2026-07-27 for `POS-OFFLINE-1`. Went through several rounds of owner correction on the outlet/brand/staff relationship before converging.
