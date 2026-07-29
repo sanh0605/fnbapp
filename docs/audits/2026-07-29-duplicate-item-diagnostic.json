@@ -1,0 +1,158 @@
+{
+  "generated_at": "2026-07-29T08:28:24.590Z",
+  "consumedNeverPurchased": [
+    {
+      "item": "ING-001",
+      "item_name": "Đá viên",
+      "purchased_qty": 0,
+      "consumed_qty": 14729.320121000013
+    },
+    {
+      "item": "ING-007",
+      "item_name": "Nước",
+      "purchased_qty": 0,
+      "consumed_qty": 13
+    },
+    {
+      "item": "NNL-003",
+      "item_name": "Nước sôi",
+      "purchased_qty": 0,
+      "consumed_qty": 112230.23806200009
+    },
+    {
+      "item": "NNL-005",
+      "item_name": "Trái tắc",
+      "purchased_qty": 0,
+      "consumed_qty": 424
+    },
+    {
+      "item": "NNL-006",
+      "item_name": "Trái chanh",
+      "purchased_qty": 0,
+      "consumed_qty": 13
+    },
+    {
+      "item": "BTP-001",
+      "item_name": "Cốt cà phê",
+      "purchased_qty": 0,
+      "consumed_qty": 45580
+    },
+    {
+      "item": "BTP-002",
+      "item_name": "Cốt cacao",
+      "purchased_qty": 0,
+      "consumed_qty": 11160
+    },
+    {
+      "item": "BTP-003",
+      "item_name": "Cốt matcha",
+      "purchased_qty": 0,
+      "consumed_qty": 14640
+    },
+    {
+      "item": "BTP-007",
+      "item_name": "Kem dẻo CT3",
+      "purchased_qty": 0,
+      "consumed_qty": 160
+    },
+    {
+      "item": "BTP-008",
+      "item_name": "Hồng trà",
+      "purchased_qty": 0,
+      "consumed_qty": 57050
+    },
+    {
+      "item": "BTP-009",
+      "item_name": "Lục trà",
+      "purchased_qty": 0,
+      "consumed_qty": 12600
+    },
+    {
+      "item": "BTP-010",
+      "item_name": "Trà sữa hồng trà",
+      "purchased_qty": 0,
+      "consumed_qty": 18450
+    },
+    {
+      "item": "BTP-011",
+      "item_name": "Kem muối phô mai",
+      "purchased_qty": 0,
+      "consumed_qty": 8210
+    },
+    {
+      "item": "BTP-012",
+      "item_name": "Kem muối",
+      "purchased_qty": 0,
+      "consumed_qty": 4760
+    },
+    {
+      "item": "BTP-013",
+      "item_name": "Trứng luộc",
+      "purchased_qty": 0,
+      "consumed_qty": 425
+    }
+  ],
+  "purchasedNeverConsumed": [
+    {
+      "item": "ING-002",
+      "item_name": "Đường trắng",
+      "purchased_qty": 2000,
+      "consumed_qty": 0
+    },
+    {
+      "item": "ING-008",
+      "item_name": "Kem béo/thực vật",
+      "purchased_qty": 454,
+      "consumed_qty": 0
+    },
+    {
+      "item": "ING-009",
+      "item_name": "Kem whipping",
+      "purchased_qty": 1500,
+      "consumed_qty": 0
+    },
+    {
+      "item": "ING-011",
+      "item_name": "Tinh dầu vani",
+      "purchased_qty": 28,
+      "consumed_qty": 0
+    },
+    {
+      "item": "ING-018",
+      "item_name": "Mật ong",
+      "purchased_qty": 1400,
+      "consumed_qty": 0
+    },
+    {
+      "item": "ING-019",
+      "item_name": "Đường mạch nha",
+      "purchased_qty": 1000,
+      "consumed_qty": 0
+    },
+    {
+      "item": "NNL-008",
+      "item_name": "Bột whipping cream không đường",
+      "purchased_qty": 100,
+      "consumed_qty": 0
+    },
+    {
+      "item": "NNL-009",
+      "item_name": "Thạch dừa",
+      "purchased_qty": 500,
+      "consumed_qty": 0
+    },
+    {
+      "item": "NNL-010",
+      "item_name": "Siro quýt",
+      "purchased_qty": 1400,
+      "consumed_qty": 0
+    },
+    {
+      "item": "NNL-011",
+      "item_name": "Quýt ngâm",
+      "purchased_qty": 425,
+      "consumed_qty": 0
+    }
+  ],
+  "nameTwins": []
+}
