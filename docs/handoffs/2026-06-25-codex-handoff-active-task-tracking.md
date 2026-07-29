@@ -1,5 +1,55 @@
 # Codex Handoff — 2026-06-25
 
+## 2026-07-29 - QUEUED for Claude Sonnet 5: Phase 0 semi-product batch-yield diagnostic
+
+Owner-approved. Plan: `docs/superpowers/plans/2026-07-27-phase0-semi-product-yield-diagnostic.md`.
+Spec: `docs/superpowers/specs/2026-07-27-inventory-transparency-design.md`. Both
+committed in `0501714`.
+
+**Why this exists.** The owner reports inventory numbers that do not match
+reality and that he cannot trace, and his confidence is falling. His own
+reasoning narrowed the cause: he records every purchase and every sale but
+deliberately never records waste, and unrecorded waste can only push computed
+stock *up*. Every negative balance is therefore provably a system or data-entry
+fault, never real-world leakage.
+
+**Leading hypothesis.** `semi_products.batch_yield` carries no unit. Implicit
+production consumes `(cooking_recipe_quantity / batch_yield) * shortfall`
+(`lib/inventory-consumption.ts:122`, `:130`), the column is `numeric not null
+default 1` with a further `|| 1` fallback at `:205`, and nothing constrains it
+to agree with the `base_unit` its consumers use. A yield entered as `2` (litres)
+where drink recipes consume in ml over-consumes raw ingredients 1000x, silently,
+and compounds because `Math.max(0, ...)` at `:88` clamps negative semi-product
+stock to zero so every later sale re-explodes the full cooking recipe. Fits both
+symptoms: deep negatives despite complete purchase/sales data, and inflated COGS.
+
+**Ruled out already — do not re-investigate.** Missing opening balance. No such
+concept exists in any migration, but the owner confirmed POs were entered from
+the very first purchase, made to test recipes before any selling began, so
+recompute starting every ingredient at zero is correct.
+
+- `[ ]` Task 1: `lib/semi-product-yield-audit.ts` + tests — parsing and types.
+- `[ ]` Task 2: flag classification and implied-consumption arithmetic.
+- `[ ]` Task 3: `scripts/audit-semi-product-yield.ts`, read-only wrapper, run
+  live with `npx vite-node`.
+- `[ ]` Task 4: report to owner in Vietnamese using real ingredient names, then
+  update `DEVELOPMENT-TRACKING.md` and `docs/ROADMAP.md`.
+
+**Hard constraints.** Zero database writes; the only artifact is a dated JSON
+file under `docs/audits/`. No corrections of anything found — that needs its own
+spec and owner approval. Lodash is *not* installed despite the global
+`CLAUDE.md` preference; do not add it. Script runner is `npx vite-node`, not
+`tsx`. Owner-facing output must use real names, never codes (`CLAUDE.md` §7).
+
+**A negative result is a real result.** If no suspicious yield turns up, say so
+plainly; that kills the leading candidate and redirects to Feature 2 of the spec.
+
+Verified against the current tree on 2026-07-29: the pos-offline-resilience work
+did not touch `lib/inventory-consumption.ts` or `lib/purchase-ledger-rebuild.ts`,
+and offline orders keep their real sale timestamp
+(`lib/pos-captured-at.ts`, 30-day past window), so replay chronology is intact
+and the analysis above still holds.
+
 ## 2026-07-24 - COGS-5 pipeline root-cause review
 
 - `[x]` Disproved the open second-event hypothesis with a new paginated,
