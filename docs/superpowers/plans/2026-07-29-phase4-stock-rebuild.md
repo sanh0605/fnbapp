@@ -65,7 +65,10 @@ depends on the answer. What the rebuild actually needs is that old code is not
 live **at the moment of apply** — so the gate belongs in front of Task 4, and
 the proof-from-real-sales belongs in Task 5, after the shop has traded.
 
-- [ ] **Step 1: Confirm the live build is the new one — OWNER, blocks Task 4 only**
+- [x] **Step 1: Confirm the live build is the new one — OWNER, blocks Task 4 only**
+
+**Confirmed by the owner on 2026-07-29:** the deployment built from `9ae2ce5`
+succeeded and is the current production deployment. The Task 4 gate is open.
 
 In the Vercel dashboard, confirm the deployment built from `9ae2ce5` succeeded
 and is the current production deployment.
@@ -80,10 +83,12 @@ proceed regardless.
 
 Run: `npx supabase migration list`. Local and remote must match through 0041.
 
-- [ ] **Step 3: Record the deploy timestamp**
+- [x] **Step 3: Record the deploy timestamp**
 
-Note the exact push time. Task 5 uses it as the lower bound for the
-sales-row query that was originally attempted here.
+**`2026-07-29T21:39:36+07:00`** — established by Sonnet's first Task 0 attempt,
+which found zero orders after this instant. Task 5 Step 3 uses it as the lower
+bound for its sales-row query, and must confirm the window contains real orders
+before reading anything into a zero result.
 
 No commit for this task.
 
