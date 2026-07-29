@@ -1,6 +1,6 @@
 # Codex Handoff — 2026-06-25
 
-## 2026-07-29 - QUEUED for Claude Sonnet 5: trace why Sữa đặc (ING-003) is 6.4kg negative
+## 2026-07-29 - CLOSED, root cause found: trace why Sữa đặc (ING-003) is 6.4kg negative
 
 Owner supplied screenshots of two live screens. This supersedes the batch-yield
 line of investigation, which is dead (see the section below).
@@ -62,18 +62,58 @@ a conclusion to confirm.
 
 ### The task
 
-- `[ ]` Run `npx vite-node scripts/audit-inventory-balances.ts` against
+- `[x]` Run `npx vite-node scripts/audit-inventory-balances.ts` against
   production, read-only. Report the drift count and whether Sữa đặc's 180 g is
-  among it.
-- `[ ]` Write a read-only, one-off trace for ING-003 (Sữa đặc): every
+  among it. **Done 2026-07-29: 0/54 mismatches. The 180 g gap is NOT among
+  them** — `Inventory_Balances` agrees exactly with the full `Stock_Ledger`
+  sum for Sữa đặc (-6,651 g both ways), so it is not a materialized-balance
+  drift bug. The gap must come from the reorder-suggestion page's own
+  computation path or its 60s cache, not from the ledger/balance table
+  disagreeing.
+- `[x]` Write a read-only, one-off trace for ING-003 (Sữa đặc): every
   `Stock_Ledger` row in chronological order with a **running balance** after
   each row, the transaction type, and the source reference. Find the first row
-  where the balance goes negative and report what that row is.
-- `[ ]` From that row, determine the cause. Report it with evidence, in
-  Vietnamese, using real ingredient names.
-- `[ ]` Re-run `scripts/audit-full-history-recompute.ts` so the 2026-07-23
+  where the balance goes negative and report what that row is. **Done
+  2026-07-29** (`scripts/trace-ing003-sua-dac.ts`, 1,628 rows). First negative
+  crossing: row 1,444/1,628, `2026-07-17T06:00:09`, an ordinary `SALES_CONSUME`
+  of -40 g (balance +9 g → -31 g). The row itself is unremarkable.
+- `[x]` From that row, determine the cause. Report it with evidence, in
+  Vietnamese, using real ingredient names. **Done 2026-07-29.** Every one of
+  the 184 rows from that point to the end of the ledger is `SALES_CONSUME` —
+  zero `PO_RECEIPT` rows appear anywhere after it. Independently confirmed via
+  `scripts/check-ing003-purchase-orders.ts` (joins `Purchase_Order_Lines` →
+  `Purchased_Items` SPM-010/011/012 → `ING-003`): exactly 7 purchase-order
+  lines exist for Sữa đặc in the system's whole history, the last one
+  `PO-021`, transaction-dated 2026-05-16. **No purchase has been entered
+  since that date — not a missing/orphaned entry, there is nothing after it.**
+  Root cause: balance stood at +45,234 g right after `PO-021`; 2.5+ months of
+  continuous ordinary sales with zero replenishment mechanically drained it
+  past zero on 2026-07-17 and down to today's -6,651 g. This eliminates the
+  "untested pattern" lead above (container-vs-measure-unit conversion) as
+  moot — there is no purchase in the relevant window to have a wrong rate on.
+- `[x]` Re-run `scripts/audit-full-history-recompute.ts` so the 2026-07-23
   baseline is refreshed, and state whether the engine now reports negatives too.
-- `[ ]` Update `DEVELOPMENT-TRACKING.md` and `docs/ROADMAP.md`.
+  **Done 2026-07-29.** 0/54 items show any theoretical-vs-recorded quantity
+  difference, unchanged from 07-23, including Sữa đặc — ground truth
+  (recomputed from trusted purchases + sales + recipes only) agrees exactly
+  with what's recorded, both sides at -6,651 g. **Correction to Fact 2 above:**
+  `quantity_items_negative_theoretical: 0` never meant "nothing was negative
+  as of 07-23" — that field only flags items that are *both* negative *and*
+  mismatched against recorded. An item whose recomputed and recorded balances
+  agree exactly (Sữa đặc, 0 diff throughout) never appears there even while
+  negative. The 07-17 crossing predates the 07-23 report; the report's own
+  summary metric structurally cannot surface a negative that already matches
+  what's recorded, since there's no discrepancy to log as a "finding."
+- `[x]` Update `DEVELOPMENT-TRACKING.md` and `docs/ROADMAP.md`. Done
+  2026-07-29 (roadmap row `ING003-TRACE-1`).
+
+**Outcome:** the ~6.4 kg is fully explained and evidenced, not merely
+theorized. This is a real, plain data gap — Sữa đặc has not had a purchase
+entered in over two months while it kept being sold — not an engine bug, not
+a batch-yield or unit-conversion error, and not a materialized-balance drift
+issue. Nothing was corrected, per the hard constraints below; this is for the
+owner to act on operationally (enter the missing purchases or confirm the gap
+and decide next steps).
 
 ### Hard constraints
 
