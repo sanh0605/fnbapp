@@ -45,41 +45,47 @@ before the rebuild — otherwise old code would immediately re-write consumption
 rows for Nước, Nước sôi and Đá viên on the next sale and undo part of the work.
 
 **The owner chose to skip the plan's manual POS verification (step 3) and the
-one-day soak (step 4).** That is his call and this plan proceeds on it, but the
-one precondition Phase 4 genuinely depends on is cheap to check from a read-only
-query rather than by hand at the till. Task 0 does exactly that.
+one-day soak (step 4).** That is his call and this plan proceeds on it. What
+Phase 4 genuinely depends on is narrower than a full POS test: that the new
+build is the live one at the moment of apply. Task 0 Step 1 establishes that
+from the Vercel dashboard, and Task 5 Step 3 confirms it against real sales rows
+once there are some.
 
 ---
 
-### Task 0: Confirm the deployed engine before touching anything
+### Task 0: Confirm the deployed engine
 
 **Files:** none — read-only verification.
 
-- [ ] **Step 1: Confirm the live build is the new one**
+**Revised 2026-07-29 after the first attempt.** This task originally blocked the
+whole plan on proving the non-inventory fix live from real sales rows. That was
+the wrong place for the gate: no order had been taken since the push, so the
+query returned zero rows for the wrong reason, and nothing else in Tasks 1-3
+depends on the answer. What the rebuild actually needs is that old code is not
+live **at the moment of apply** — so the gate belongs in front of Task 4, and
+the proof-from-real-sales belongs in Task 5, after the shop has traded.
 
-Confirm in the Vercel dashboard that the deployment built from `9ae2ce5`
-succeeded and is the current production deployment. If the build failed,
-production is still serving `6ebe8a0` and **this plan stops here** — report and
-fix the build first.
+- [ ] **Step 1: Confirm the live build is the new one — OWNER, blocks Task 4 only**
 
-- [ ] **Step 2: Prove the non-inventory fix is actually live (read-only query)**
+In the Vercel dashboard, confirm the deployment built from `9ae2ce5` succeeded
+and is the current production deployment.
 
-Query `stock_ledger` for rows where `transaction_type = 'SALES_CONSUME'` and
-`item_reference` is one of the ingredients the owner flagged non-inventory
-(Nước, Nước sôi, Đá viên), created **after** the deploy timestamp.
+This is the sufficient check: the non-inventory engine fix is inside that
+commit, so if that build is live, the fix is live. It needs no sales data. If
+the build failed, production is still serving `6ebe8a0` — **Task 4 must not
+run** until that is resolved. Tasks 1-3 write nothing to the data and may
+proceed regardless.
 
-Expected: zero rows. A non-zero count means the deployed code is still writing
-them, and rebuilding now would be undone by the next day of trading. **Stop and
-report** if any are found.
-
-- [ ] **Step 3: Confirm no unapplied migrations**
+- [ ] **Step 2: Confirm no unapplied migrations**
 
 Run: `npx supabase migration list`. Local and remote must match through 0041.
 
-- [ ] **Step 4: Report to the owner in Vietnamese**
+- [ ] **Step 3: Record the deploy timestamp**
 
-Two sentences: whether the new code is live, and whether the water/ice fix is
-confirmed working on real production rows. No commit for this task.
+Note the exact push time. Task 5 uses it as the lower bound for the
+sales-row query that was originally attempted here.
+
+No commit for this task.
 
 ---
 
@@ -426,8 +432,8 @@ git commit -m "Claude-Sonnet audit: phase 4 stock rebuild dry run"
 
 ### Task 4: Apply
 
-**Run only after the Task 3 gate. Run when the shop is closed, with no open
-shift and no order in progress.**
+**Run only after the Task 3 gate and after Task 0 Step 1 is confirmed. Run when
+the shop is closed, with no open shift and no order in progress.**
 
 - [ ] **Step 1: Apply**
 
@@ -475,7 +481,22 @@ the instrument this phase is judged by.
    before continuing.
 2. Every remaining negative is listed by name with its magnitude.
 
-- [ ] **Step 3: Answer the two open questions explicitly**
+- [ ] **Step 3: Prove the non-inventory fix on real sales rows**
+
+This is the check moved out of Task 0, run here where it has data to work on.
+Query `stock_ledger` for `SALES_CONSUME` rows against the ingredients the owner
+flagged non-inventory (Nước, Nước sôi, Đá viên) created after the deploy
+timestamp from Task 0 Step 3.
+
+Confirm first that the window contains real orders — a zero-row answer over a
+zero-order window proves nothing, which is exactly how the first attempt at this
+check failed. If there are no orders yet, say so and re-run after a trading day
+rather than recording a pass.
+
+Expected once there are orders: zero rows. Any row means the deployed code is
+still writing them and the rebuild will be re-polluted; report immediately.
+
+- [ ] **Step 4: Answer the two open questions explicitly**
 
 - **Sữa đặc** — did PO-037's correction plus the rebuild clear it, or is it
   still negative? If still negative, the missing purchase is genuinely absent
@@ -484,12 +505,12 @@ the instrument this phase is judged by.
   hồng trà to lục trà product migration is the standing hypothesis and it
   becomes a named follow-up rather than a mystery.
 
-- [ ] **Step 4: Report to the owner in Vietnamese**
+- [ ] **Step 5: Report to the owner in Vietnamese**
 
 State plainly whether the rebuild is clean. Repeat that costs have not moved yet
 and that Phase 5 is what changes profit figures.
 
-- [ ] **Step 5: Update tracking and commit**
+- [ ] **Step 6: Update tracking and commit**
 
 Append to `DEVELOPMENT-TRACKING.md`, update status in
 `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md`, and update
