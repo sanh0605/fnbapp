@@ -1,6 +1,20 @@
 # Codex Handoff — 2026-06-25
 
-## 2026-07-29 - QUEUED for Claude Sonnet 5: clean rebuild program, Phases 1-2
+## 2026-07-29 - CLOSED, 6/6 tasks: clean rebuild program, Phases 1-2
+
+**Done 2026-07-29.** All 6 tasks complete, TDD throughout (RED confirmed before each implementation), `tsc` clean and full suite green after every task (822→841, +19), `next build` passed, zero database writes, PO-037 untouched. Full writeup: `DEVELOPMENT-TRACKING.md` same-date entry "Clean Rebuild Program, Phases 1-2". Roadmap row: `REBUILD-PHASE1-2` in `docs/ROADMAP.md`.
+
+**Two things the owner needs to know before using what this shipped:**
+- Task 1's fixed audit is the first correct reading ever: **8 items are genuinely negative** (not a data-quality artifact) — Nước sôi, Đá viên, Sữa đặc, Lá hồng trà, Trái tắc, Siro việt quất, Nước, Trái chanh. Nước/Nước sôi are plausibly non-inventory-tracked (never purchased by design); not concluded.
+- **Migration `0041` (purchase order edit trail) is written but not yet applied to production.** If the new admin-edit feature (Task 4) is used before `supabase db push` runs for `0041`, the PO edit itself will still succeed, but the edit-trail insert right after it will throw against a missing table — the UI will report failure even though the edit already committed. Apply `0041` first.
+
+Task 5's duplicate-item diagnostic closed the last alternative explanation for Sữa đặc's negative balance: 0 name-twin id pairs anywhere in the 58-item catalog, reconfirming `ING003-TRACE-1` — the purchases were simply never entered, not lost under a different item id.
+
+**What comes next:** Phase 3 (backup plus a verified restore drill) must complete before Phase 4 touches any data. Phase 4 waits on the owner's own PO-037 edit through the new admin feature. Neither is started.
+
+---
+
+## 2026-07-29 - (superseded above) clean rebuild program, Phases 1-2
 
 Owner approved the clean rebuild program on 2026-07-29 after reviewing the
 evidence. Program spec:
