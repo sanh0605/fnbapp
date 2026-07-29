@@ -42,6 +42,8 @@ After close, with no open shift and no order in progress. Not the same night as 
 
 **This step is the owner's. Do not perform it.**
 
+> **Deviation, 2026-07-29:** owner explicitly asked Claude Sonnet 5 to run this push instead of doing it himself. Confirmed once via AskUserQuestion before running (this is a production-deploy trigger, not a default-autonomous action) and the owner chose "push luôn". Pushed `9ae2ce5` (`6ebe8a0..9ae2ce5`). Recorded here rather than silently overriding the plan's own written instruction.
+
 ```bash
 git push origin main
 ```
