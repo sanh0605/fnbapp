@@ -398,7 +398,56 @@ git commit -m "Claude-Sonnet feat: all-orders stock ledger rebuild, stock rows o
 
 ### Task 3: Fresh backup, dry run, and the owner's review gate
 
-- [ ] **Step 1: Take a real backup, not a dry run**
+**The 2026-07-29 dry run (`1566968`) is superseded. Re-run it.**
+
+While reviewing that dry run's one remaining negative, the owner identified the
+cause: the purchased item **SPM-040 "Hồng trà Lộc Phát"** has
+`base_ingredient_id = ING-014` (**Muối hồng**, pink salt) instead of **ING-021
+(Lá hồng trà)**. Verified against production, read-only:
+
+- PO-024, 2026-05-27: 6 túi x 157,000 VND = 942,000 VND; 1 túi = 1,000 g, so
+  **6,000 g** was credited to Muối hồng.
+- Muối hồng today: received exactly 6,000 g, consumed 14.39 g, balance
+  +5,985.61 g — six kilos of a pinch-quantity ingredient that nothing uses.
+- Lá hồng trà today: 200 g received against 2,209.58 g consumed = −2,009.58 g.
+- After remapping: Lá hồng trà **+3,990.42 g**, Muối hồng **−14.39 g**.
+
+**Both a mapping fix and a receipt rewrite are required.** `buildTrustedPrimitiveLedger`
+derives its `PO_RECEIPT` rows from `purchase_orders` + `purchase_order_lines` +
+`purchased_items` + conversions rather than trusting stored rows
+(`lib/full-history-recompute.ts:159-185`), so the **replay** self-corrects the
+moment the mapping changes. But the stored `PO_RECEIPT` row saying
+`ING-014 +6000` survives, because `PO_RECEIPT` is source data this phase never
+rewrites — and `rebuild_inventory_balances()` sums the stored ledger. Fixing
+only the mapping therefore leaves the balances screen wrong and reintroduces the
+stored-vs-recomputed divergence the owner already hit once.
+
+Owner actions, both before the re-run:
+
+1. Repoint SPM-040 to Lá hồng trà.
+2. Re-save PO-024 through the admin PO edit — no content change needed. The
+   atomic replace path deletes and reinserts the PO's `PO_RECEIPT` rows, which
+   regenerates them against the corrected mapping. **Confirm this actually
+   rewrote the row** (query `stock_ledger` for PO-024's receipt and check
+   `item_reference` is now `ING-021`) rather than assuming it.
+
+Then re-run Steps 2-5 below. The owner approves the **new** summary, not the
+superseded one.
+
+- [x] **Step 1: Take a real backup, not a dry run**
+
+**Done.** `fnbapp-backup-2026-07-30.json`, `capturedAt`
+`2026-07-29T17:51:43.738Z` = 00:51 on 2026-07-30 Vietnam time, 32.9 MB. This is
+after the owner's PO-037 repair and his backfilled purchases on 2026-07-29, so
+it is a valid restore point for this phase. The earlier candidate
+(`fnbapp-backup-2026-07-29.json`, captured 02:23 on 2026-07-29) was rejected:
+it predates all of that day's data work, so restoring it would have destroyed
+the PO-037 repair the rebuild depends on.
+
+The SPM-040 fix above lands after this snapshot. It is a two-field correction
+the owner can redo by hand, so it does not require a new backup.
+
+Original instruction, retained for future runs:
 
 The pre-flight snapshot taken before the deploy was read-only and produced no
 stored bundle. Run the real backup path documented in
@@ -506,9 +555,16 @@ still writing them and the rebuild will be re-polluted; report immediately.
 - **Sữa đặc** — did PO-037's correction plus the rebuild clear it, or is it
   still negative? If still negative, the missing purchase is genuinely absent
   from the records and only data entry fixes it.
-- **Lá hồng trà (−2,009.58g)** — did the rebuild resolve it? If it survives, the
-  hồng trà to lục trà product migration is the standing hypothesis and it
-  becomes a named follow-up rather than a mystery.
+- **Lá hồng trà** — root cause found and fixed before the re-run (SPM-040
+  mis-mapped to Muối hồng; see Task 3). Expected after the rebuild:
+  **+3,990.42 g**, and Muối hồng at **−14.39 g**. If Lá hồng trà is still
+  negative, the mapping fix or the PO-024 re-save did not take — check the
+  stored `PO_RECEIPT` row's `item_reference` before looking anywhere else.
+
+  The owner's own first hypothesis — that Hồng trà chanh sales after
+  2026-06-15 should have been Lục trà chanh — was measured and ruled out: 6 cups
+  sold in that window, ~37.62 g of Lá hồng trà, against a 2,009.58 g deficit
+  that was already 1,121 g deep before that date. Recorded so nobody re-opens it.
 
 - [ ] **Step 5: Report to the owner in Vietnamese**
 
