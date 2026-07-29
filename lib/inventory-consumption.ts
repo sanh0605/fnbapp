@@ -26,6 +26,9 @@ export type ConsumptionAllocationInput = {
   // directly. Does not change the returned ConsumptionRow[] shape or any
   // existing caller's behavior.
   implicitYields?: Map<string, number>;
+  // Base ingredients flagged is_non_inventory (e.g. tap/boiled water): never
+  // consumed from stock, on either the direct or implicit-production path.
+  nonInventoryItems?: Set<string>;
 };
 
 export type SemiProductConsumptionMaps = {
@@ -46,6 +49,7 @@ export function buildLineConsumptionRows(
   balances: Map<string, number>,
   consumptionMaps: SemiProductConsumptionMaps,
   implicitYields?: Map<string, number>,
+  nonInventoryItems?: Set<string>,
 ): ConsumptionRow[] {
   const rows: ConsumptionRow[] = [];
   rows.push(...allocateRecipeConsumption({
@@ -55,6 +59,7 @@ export function buildLineConsumptionRows(
     ...consumptionMaps,
     source: "VARIANT_RECIPE",
     implicitYields,
+    nonInventoryItems,
   }));
 
   for (const modEntry of lineRecipe.modifiers) {
@@ -66,6 +71,7 @@ export function buildLineConsumptionRows(
       ...consumptionMaps,
       source: `MODIFIER_RECIPE:${modEntry.modifier_id}`,
       implicitYields,
+      nonInventoryItems,
     }));
   }
   return rows;
@@ -78,6 +84,7 @@ export function allocateRecipeConsumption(input: ConsumptionAllocationInput): Co
   for (const ingredient of input.ingredients) {
     const quantity = Number(ingredient.quantity || 0) * input.multiplier;
     if (!ingredient.ingredient_id || quantity <= 0) continue;
+    if (input.nonInventoryItems?.has(ingredient.ingredient_id)) continue;
 
     if (ingredient.ingredient_type !== "SEMI_PRODUCT") {
       consume(input.balances, ingredient.ingredient_id, quantity);
@@ -114,6 +121,7 @@ export function allocateRecipeConsumption(input: ConsumptionAllocationInput): Co
     }
 
     for (const recipeIngredient of recipe) {
+      if (input.nonInventoryItems?.has(recipeIngredient.ingredient_id)) continue;
       if (recipeIngredient.ingredient_type === "SEMI_PRODUCT") {
         rows.push(...allocateRecipeConsumption({
           ...input,

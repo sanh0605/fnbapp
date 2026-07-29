@@ -74,6 +74,11 @@ export async function submitOrderV2(
       findAll("Semi_Products"),
     ]);
     const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
+    const nonInventoryItems = new Set(
+      (baseIngredients as any[])
+        .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
+        .map(b => b.id),
+    );
 
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
     const built = buildOrderFromCart({ ...input, actor }, {
@@ -93,6 +98,7 @@ export async function submitOrderV2(
         inventoryState.balances,
         consumptionMaps,
         implicitYields,
+        nonInventoryItems,
       );
       lineConsumptions.push({ rows: consumptionRows, implicitYields });
       // COGS is computed from the original consumption rows, unaffected by

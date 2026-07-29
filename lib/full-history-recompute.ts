@@ -223,6 +223,7 @@ export function replayFullHistory(input: {
   recipes: RawRecipe[];
   semiProducts: RawSemiProduct[];
   trustedPrimitives: SimLedgerRow[];
+  nonInventoryItems?: Set<string>;
 }): ReplayResult {
   const targetOrders = input.orders
     .filter(order => order.status === "COMPLETED" && !order.superseded_by)
@@ -264,6 +265,7 @@ export function replayFullHistory(input: {
           balances,
           consumptionMaps,
           implicitYields,
+          input.nonInventoryItems,
         );
         if (rows.length === 0) continue;
 

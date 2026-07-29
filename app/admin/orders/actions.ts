@@ -537,6 +537,11 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
 
     // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same MAC path as POS.
     const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
+    const nonInventoryItems = new Set(
+      (baseIngredients as any[])
+        .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
+        .map(b => b.id),
+    );
     const itemReferences = collectOrderConsumptionItemReferences(built.lines, consumptionMaps);
     const ledgerThroughSale = await findLedgerHistoryForItems(itemReferences, originalSaleTime);
     const saleMs = new Date(originalSaleTime).getTime();
@@ -549,7 +554,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
 
     for (const line of built.lines) {
       const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-      const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, consumptionBalances, consumptionMaps);
+      const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, consumptionBalances, consumptionMaps, undefined, nonInventoryItems);
       line.cost_at_sale = computeMacCostForConsumptionRows(consumptionRows, pastLedger, originalSaleTime, consumptionMaps);
     }
 
@@ -592,7 +597,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     });
 
     // 8. Build new SALES_CONSUME entries for the new version
-    const consumeEntries = buildStockLedgerEntries(built, event.id, originalSaleTime, pastLedger, consumptionMaps);
+    const consumeEntries = buildStockLedgerEntries(built, event.id, originalSaleTime, pastLedger, consumptionMaps, nonInventoryItems);
 
     // 9. Execute supersede
     const result = await supersedeOrderV2({
@@ -657,13 +662,14 @@ function buildStockLedgerEntries(
   saleTime: string,
   pastLedger: any[],
   consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
+  nonInventoryItems?: Set<string>,
 ): any[] {
   const entries: any[] = [];
   const balances = buildInventoryBalances(pastLedger, saleTime);
   for (const line of built.lines) {
     const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
     const implicitYields = new Map<string, number>();
-    const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps, implicitYields);
+    const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps, implicitYields, nonInventoryItems);
     const { saleRows, productionConsumeRows, productionYieldRows } =
       splitImplicitProduction(consumptionRows, implicitYields);
 

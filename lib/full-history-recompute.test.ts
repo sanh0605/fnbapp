@@ -172,6 +172,31 @@ describe("replayFullHistory", () => {
     expect(result.lineResults[0].computed_cost_at_sale).toBe(2500);
   });
 
+  it("skips non-inventory ingredients entirely, never emitting a consumption row for them", () => {
+    const orders: RawOrder[] = [{ id: "ord-7", order_no: "A007", status: "COMPLETED", created_at: "2026-02-02T00:00:00Z" }];
+    const recipeJson = JSON.stringify({
+      variant: {
+        target_type: "PRODUCT_VARIANT",
+        target_id: "variant-1",
+        ingredients: [
+          { ingredient_id: "ING-WATER", ingredient_type: "BASE_INGREDIENT", quantity: 200, unit_id: "ml" },
+          { ingredient_id: "ING-COFFEE", ingredient_type: "BASE_INGREDIENT", quantity: 20, unit_id: "g" },
+        ],
+      },
+      modifiers: [],
+    });
+    const lines: RawLine[] = [{ id: "line-7", order_id: "ord-7", qty: 1, cost_at_sale: 0, recipe_snapshot_json: recipeJson }];
+
+    const result = replayFullHistory({
+      orders, lines, recipes: [], semiProducts: [], trustedPrimitives: [],
+      nonInventoryItems: new Set(["ING-WATER"]),
+    });
+
+    const rows = result.lineResults[0].consumption_rows;
+    expect(rows).toEqual([{ item_reference: "ING-COFFEE", quantity: 20, source: "VARIANT_RECIPE" }]);
+    expect(result.computedLedger.some(r => r.item_reference === "ING-WATER")).toBe(false);
+  });
+
   it("replays purchase receipts in chronological (created_at) order regardless of array insertion order", () => {
     const orders: RawOrder[] = [{ id: "ord-6", order_no: "A006", status: "COMPLETED", created_at: "2026-03-01T00:00:00Z" }];
     const lines: RawLine[] = [{ id: "line-6", order_id: "ord-6", qty: 1, cost_at_sale: 0, recipe_snapshot_json: lineRecipeJson("ING-006", "BASE_INGREDIENT", 10) }];

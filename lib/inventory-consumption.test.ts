@@ -76,6 +76,52 @@ describe("allocateRecipeConsumption", () => {
     expect(balances.get("ING-BEAN")).toBe(-20);
   });
 
+  it("skips a non-inventory ingredient entirely, leaving its siblings consumed normally", () => {
+    const balances = new Map<string, number>();
+    const rows = allocateRecipeConsumption({
+      ingredients: [
+        ingredient({ ingredient_id: "ING-WATER", quantity: 200 }),
+        ingredient({ ingredient_id: "ING-COFFEE", quantity: 20 }),
+      ],
+      multiplier: 2,
+      balances,
+      semiProductRecipes: new Map(),
+      semiProductYields: new Map(),
+      nonInventoryItems: new Set(["ING-WATER"]),
+    });
+
+    expect(rows).toEqual([{ item_reference: "ING-COFFEE", quantity: 40, source: "VARIANT_RECIPE" }]);
+    expect(balances.has("ING-WATER")).toBe(false);
+    expect(balances.get("ING-COFFEE")).toBe(-40);
+  });
+
+  it("skips a non-inventory ingredient inside a semi-product's cooking recipe during implicit production", () => {
+    const balances = new Map<string, number>([["BTP-COFFEE", 0]]);
+    const rows = allocateRecipeConsumption({
+      ingredients: [ingredient({
+        ingredient_id: "BTP-COFFEE",
+        ingredient_type: "SEMI_PRODUCT",
+        quantity: 20,
+      })],
+      multiplier: 1,
+      balances,
+      semiProductRecipes: new Map([
+        ["BTP-COFFEE", [
+          ingredient({ ingredient_id: "ING-BEAN", quantity: 100 }),
+          ingredient({ ingredient_id: "ING-WATER", quantity: 500 }),
+        ]],
+      ]),
+      semiProductYields: new Map([["BTP-COFFEE", 100]]),
+      nonInventoryItems: new Set(["ING-WATER"]),
+    });
+
+    expect(rows).toEqual([
+      { item_reference: "ING-BEAN", quantity: 20, source: "VARIANT_RECIPE:BTP_SHORTFALL:BTP-COFFEE" },
+    ]);
+    expect(balances.has("ING-WATER")).toBe(false);
+    expect(balances.get("ING-BEAN")).toBe(-20);
+  });
+
   it("tracks the shortfall quantity in implicitYields when provided, without changing the returned rows", () => {
     const balances = new Map<string, number>([["BTP-COFFEE", 10]]);
     const implicitYields = new Map<string, number>();

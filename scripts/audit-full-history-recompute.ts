@@ -76,12 +76,18 @@ async function main() {
   for (const s of semiProducts) nameById.set(s.id, s.name);
   const nameOf = (id: string) => nameById.get(id) || id;
 
+  const nonInventoryItems = new Set(
+    (baseIngredients as any[])
+      .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
+      .map(b => b.id),
+  );
+
   // ---- Run the recompute engine ----
   const { rows: trustedPrimitives, skippedPoReceipts } = buildTrustedPrimitiveLedger({
     purchaseOrders, purchaseOrderLines, purchasedItems, conversions, rawStockLedger: ledger,
   });
   const { lineResults, computedLedger, errors } = replayFullHistory({
-    orders, lines, recipes, semiProducts, trustedPrimitives,
+    orders, lines, recipes, semiProducts, trustedPrimitives, nonInventoryItems,
   });
 
   console.log(`Replay: ${lineResults.length} lines, ${errors.length} errors, ${trustedPrimitives.length} trusted primitive rows, ${computedLedger.length} computed rows.`);
@@ -136,11 +142,6 @@ async function main() {
     recordedByItem.set(row.item_reference, (recordedByItem.get(row.item_reference) || 0) + qty);
   }
   const allItemIds = new Set([...theoreticalByItem.keys(), ...recordedByItem.keys()]);
-  const nonInventoryItems = new Set(
-    (baseIngredients as any[])
-      .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
-      .map(b => b.id),
-  );
   const { mismatches: qtyFindings, negatives: negativeTheoretical } = summariseItemBalances({
     theoreticalByItem, recordedByItem, nameOf, nonInventoryItems,
   });
