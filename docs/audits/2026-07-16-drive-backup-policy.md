@@ -5,11 +5,11 @@ Architecture: owner-account Apps Script pull to Google Drive
 
 ## Contract
 
-- The Supabase Edge Function produces one full, schema-versioned snapshot of 32
+- The Supabase Edge Function produces one full, schema-versioned snapshot of 40
   allowlisted tables.
 - Requests require a dedicated `BACKUP_PULL_TOKEN` in `X-Backup-Token`. Google
   credentials and Supabase database credentials are never stored in Apps Script.
-- The owner-account Apps Script validates all 32 table keys and per-table counts
+- The owner-account Apps Script validates all 40 table keys and per-table counts
   before writing to Drive.
 - Same-day runs are idempotent: create the replacement first, then trash older
   files with the same name.
@@ -37,16 +37,24 @@ automation becomes operationally unreliable.
 
 The threshold preserves headroom below Apps Script's 50 MB URL Fetch response
 limit. The object-storage replacement should keep the same schema-versioned
-bundle and 32-table validation contract.
+bundle and 40-table validation contract.
 
 ## Table scope
 
-The 32-table allowlist includes all 27 application tables from the initial
-schema plus five migration-added operational tables: `sync_state`,
-`data_migration_runs`, `data_recovery_changes`, `audit_baseline_locks`, and
-`backdated_ledger_events`. Empty workflow tables remain included because they
-may receive data later. Supabase Auth, secrets, function deployments, and schema
-DDL are not part of the JSON bundle; schema DDL remains versioned in Git.
+The 40-table allowlist includes all 27 application tables from the initial
+schema, five migration-added operational tables from the original policy
+(`sync_state`, `data_migration_runs`, `data_recovery_changes`,
+`audit_baseline_locks`, `backdated_ledger_events`), and eight tables added
+2026-07-29 after a coverage gap was found ahead of the Phase 3 restore drill:
+`order_payments` (payment records -- cash vs transfer, split payments; no other
+source exists), `shifts`, `shift_stock_checks`, `stocktake_sessions`,
+`stocktake_lines`, `backdated_recipe_events`, `purchase_order_edits`,
+`pos_sync_failures`. Empty workflow tables remain included because they
+may receive data later. **`inventory_balances` is deliberately excluded**: it is
+derived from `stock_ledger` and rebuilt on demand by
+`rebuild_inventory_balances()`, never a primary source of truth. Supabase Auth,
+secrets, function deployments, and schema DDL are not part of the JSON bundle;
+schema DDL remains versioned in Git.
 
 ## Security and recovery
 

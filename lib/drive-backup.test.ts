@@ -8,9 +8,9 @@ import {
 } from "../supabase/functions/backup-to-drive/core";
 
 describe("Google Drive backup core", () => {
-  it("pins the complete 32-table snapshot policy", () => {
-    expect(BACKUP_TABLES).toHaveLength(32);
-    expect(new Set(BACKUP_TABLES).size).toBe(32);
+  it("pins the complete 40-table snapshot policy", () => {
+    expect(BACKUP_TABLES).toHaveLength(40);
+    expect(new Set(BACKUP_TABLES).size).toBe(40);
     expect(BACKUP_TABLES).toContain("orders_v2");
     expect(BACKUP_TABLES).toContain("stock_ledger");
     expect(BACKUP_TABLES).toContain("users");
@@ -24,6 +24,25 @@ describe("Google Drive backup core", () => {
     expect(BACKUP_TABLE_ORDER_COLUMNS.data_recovery_changes)
       .toBe("run_id.asc,table_name.asc,row_id.asc,column_name");
     expect(BACKUP_TABLE_ORDER_COLUMNS.audit_baseline_locks).toBe("order_line_id");
+  });
+
+  it("covers every persisted table except deliberately derived ones", () => {
+    for (const table of [
+      "order_payments",
+      "shifts",
+      "shift_stock_checks",
+      "stocktake_sessions",
+      "stocktake_lines",
+      "backdated_recipe_events",
+      "purchase_order_edits",
+      "pos_sync_failures",
+    ]) {
+      expect(BACKUP_TABLES).toContain(table);
+    }
+  });
+
+  it("excludes inventory_balances, which is derived and rebuilt from stock_ledger", () => {
+    expect(BACKUP_TABLES).not.toContain("inventory_balances");
   });
 
   it("builds the schema-versioned recovery bundle with counts", () => {
@@ -51,10 +70,10 @@ describe("Google Drive backup core", () => {
       .toBe("fnbapp-backup-2026-07-17.json");
   });
 
-  it("rejects a snapshot missing any of the 32 required table keys", () => {
+  it("rejects a snapshot missing any of the 40 required table keys", () => {
     const rows = new Map(BACKUP_TABLES.map(table => [table, []]));
     const complete = buildBackupBundle("2026-07-16T00:00:00.000Z", rows);
-    expect(validateBackupBundle(complete)).toEqual({ tableCount: 32, totalRowCount: 0 });
+    expect(validateBackupBundle(complete)).toEqual({ tableCount: 40, totalRowCount: 0 });
 
     delete complete.tables.users;
     expect(() => validateBackupBundle(complete)).toThrow(/missing.*users/i);

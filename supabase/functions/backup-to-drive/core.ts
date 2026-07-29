@@ -31,6 +31,21 @@ export const BACKUP_TABLES = [
   "data_recovery_changes",
   "audit_baseline_locks",
   "backdated_ledger_events",
+  "order_payments",
+  "shifts",
+  "shift_stock_checks",
+  "stocktake_sessions",
+  "stocktake_lines",
+  // backdated_recipe_events.id is uuid (every other backup table uses text).
+  // dumpTable pages by ORDER BY id ASC + offset/limit, not a gt() keyset, so
+  // the id's type does not matter -- Postgres can order any uuid column, and
+  // there is no "last seen value" comparison for a type mismatch to affect.
+  "backdated_recipe_events",
+  "purchase_order_edits",
+  "pos_sync_failures",
+  // inventory_balances is deliberately excluded: it is derived from
+  // stock_ledger and rebuilt on demand by rebuild_inventory_balances(),
+  // never a primary source of truth.
 ] as const;
 
 export const PAGE_SIZE = 1000;
