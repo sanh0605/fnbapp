@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-29 (Claude Sonnet 5) - Phase 3: Backup Coverage and Restore Drill (6/6 tasks) - PASS
+
+**Trigger:** owner-approved plan (`docs/superpowers/plans/2026-07-29-phase3-backup-coverage-and-restore-drill.md`). No backup in this project had ever been restore-tested; Phase 4 (which deletes derived stock data and rewrites `cost_at_sale` history) may not proceed without a verified restore. Owner explicitly scoped Task 3 (creating the scratch Supabase project) as his own action; Claude stopped there and waited.
+
+**Task 1 — backup coverage 32 to 40 tables.** Already committed same day under the earlier Phase 3 session (`Claude-Sonnet fix: back up payments, shifts, stocktakes and the new audit tables`).
+
+**Task 2 — baseline snapshot.** Already committed same day (`Claude-Sonnet audit: backup coverage baseline before the restore drill`), 52,232 rows across 40 tables, 32.9 MB bundle (flagged as past the 20/25 MB capacity-migration thresholds in the backup policy doc).
+
+**Task 3 — owner action.** Owner created a scratch Supabase project and declared `RESTORE_TARGET_SUPABASE_URL`/`RESTORE_TARGET_SERVICE_KEY`/`RESTORE_TARGET_DIRECT_URL`. Two setup snags worked through live: the direct-connection hostname doesn't resolve on IPv4-only networks for newer Supabase projects (fixed by using the connection-pooler string instead), and the copied password kept its literal `[...]` brackets from the dashboard placeholder (stripped and percent-encoded programmatically). Both are now documented in the runbook so the next attempt doesn't repeat them.
+
+**Task 4 — restore into the scratch target, safety test written first.** `lib/backup-restore.ts`: `assertSafeRestoreTarget` refuses to run when the target resolves to production or is unset (3 tests, confirmed RED before implementation) — this is the one check that must run before any client, production or target, is opened. `restoreBundleToTarget` inserts in `BACKUP_TABLES` order (FK-safe), batches 500 rows at a time, and never aborts the whole run on a bad row.
+
+**Live finding, found mid-drill: a real restore-fidelity gap.** 94% of production `data_recovery_changes` rows (29,349/31,132) have a `NULL` `old_value` or `new_value` — a `NOT NULL jsonb` column whose true value is the JSON `null` literal (e.g. a `FULLHISTORY_REBUILD` "inserted" row, where there genuinely was no prior value). PostgREST's insert endpoint cannot represent that distinction: a JSON `null` in the request body is always coerced to SQL `NULL`, which then violates the constraint — confirmed by direct experiment against the scratch DB (both a plain `null` and a `JSON.parse("null")` failed identically). At that hit rate, the initial row-by-row retry fallback was on pace to take hours; stopped mid-run rather than let it grind. Fixed by pre-substituting a documented sentinel (`NOT_NULL_JSONB_NULL_LITERAL_COLUMNS`, `JSONB_NULL_LITERAL_SENTINEL`) for the one known table+columns before the first insert attempt, so the batch succeeds immediately; the generic row-by-row fallback stays in place as a safety net for any other unexpected failure. 4 new tests added for the substitution behavior (RED confirmed first), 10/10 total in the file.
+
+**Task 5 — verification found production had moved on, not a restore bug.** First run compared the restored DB against the Task 2 baseline file and reported 7 tables mismatched. Root cause: the restore script re-fetches a *fresh* snapshot from production immediately before restoring, and production is a live system — real sales happened in the hours between the Task 2 baseline capture and the restore run. Fixed the verification to compare against production queried live, at verification time, instead of the stale baseline. **Result: 38/40 tables match live production exactly.** The 2 that don't (`backdated_ledger_events` +55, `backdated_recipe_events` +128) are an already-understood, separate finding: bulk-restoring `stock_ledger`/`recipes` fires their backdated-event detection triggers, because rows arrive in page order rather than original chronological order — synthetic extra audit rows, not data loss. **Content spot-checks (not just counts) all pass exactly**: PO-037's header and all 6 lines match production byte-for-byte; a real split-payment order's payment rows and amounts match; Sữa đặc's `stock_ledger` row count matches (1,631 = 1,631). **Verdict: PASS.** Full detail: `docs/audits/2026-07-29-phase3-restore-drill-result.json`.
+
+**Task 6 — runbook + this entry.** `docs/runbooks/restore-from-backup.md`, written for the owner assuming no memory of this session: where backups live, how to create and wire up a scratch project (including the two setup snags above), how to run the restore and verify it, and the known trigger-side-effect caveat. Owner can delete the scratch project himself now that the drill is recorded; Claude does not delete it.
+
+**Verification:** all applicable tasks TDD (RED confirmed before each implementation). `tsc --noEmit` clean and full suite green throughout (847→859, +12). Zero writes to production at any point — every write in this phase targeted the explicitly-declared scratch project only, structurally enforced by `assertSafeRestoreTarget`.
+
+**What this unblocks:** Phase 4 (full-history rebuild) may now proceed, per the plan's own gate ("Phase 4 proceeds only if Task 5 reports a complete, verified restore") — not started in this session.
+
+---
+
 ## 2026-07-29 (Claude Sonnet 5) - Phase 2b: Edit-Trail Safety and Audit Scope (5/5 tasks)
 
 **Trigger:** the owner edited PO-037 through the new admin edit feature and hit `Lỗi: findAll(purchase_order_edits): Could not find the table 'public.purchase_order_edits' in the schema cache`. The save had already committed via `savePurchaseOrderAtomic`; only the edit-trail insert (migration `0041`, not yet applied) failed, but the outer error handler reported the whole action as failed. Plan: `docs/superpowers/plans/2026-07-29-phase2b-trail-safety-and-audit-scope.md`. Spec: `docs/superpowers/specs/2026-07-29-clean-rebuild-program-design.md`.
