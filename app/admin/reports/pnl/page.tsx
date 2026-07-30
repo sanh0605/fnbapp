@@ -122,6 +122,10 @@ export default async function ReportsPage({
         </div>
       </div>
 
+      <p className="text-xs text-text-muted italic">
+        Mỗi số trên trang này được làm tròn riêng từ giá trị chính xác của nó, nên cộng các dòng chi tiết có thể lệch vài đồng so với dòng tổng — không phải lỗi.
+      </p>
+
       {/* PHÂN TÍCH TỶ TRỌNG GIÁ VỐN */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
         <div className="p-5 border-b border-border">

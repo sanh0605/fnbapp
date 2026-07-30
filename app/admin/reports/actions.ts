@@ -16,6 +16,7 @@ import {
   type IngredientCOGSRow,
 } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/report-time";
+import { displayMoney } from "@/lib/display-rounding";
 import {
   buildLineConsumptionRows,
   type SemiProductConsumptionMaps,
@@ -322,17 +323,30 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       };
     }
 
-    const grossProfit = totalRevenue - totalCOGS;
-    const margin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+    // Round at the render boundary only, owner rule 2026-07-30 (lib/display-
+    // rounding.ts): cost is rounded UP, from each figure's own exact value --
+    // never by summing already-rounded parts. Sorting above already happened
+    // on exact grossProfit, so display rounding here does not affect order.
+    const displayedTotalCOGS = displayMoney(totalCOGS);
+    const displayedGrossProfit = totalRevenue - displayedTotalCOGS;
+    const displayedMargin = totalRevenue > 0 ? (displayedGrossProfit / totalRevenue) * 100 : 0;
+
+    const displayedProductProfitAnalysis = [...productProfitAnalysis, ...toppingRows].map(row => {
+      const roundedCogs = displayMoney(row.cogs);
+      const roundedGrossProfit = row.revenue - roundedCogs;
+      const roundedMarginPct = row.revenue > 0 ? (roundedGrossProfit / row.revenue) * 100 : 0;
+      return { ...row, cogs: roundedCogs, grossProfit: roundedGrossProfit, marginPct: roundedMarginPct };
+    });
+    const displayedCogsDetails = cogsDetails.map(row => ({ ...row, cogs: displayMoney(row.cogs) }));
 
     return {
       totalRevenue,
-      totalCOGS,
-      grossProfit,
-      margin,
+      totalCOGS: displayedTotalCOGS,
+      grossProfit: displayedGrossProfit,
+      margin: displayedMargin,
       orderCount: reportOrderCount,
-      productProfitAnalysis: [...productProfitAnalysis, ...toppingRows],
-      cogsDetails,
+      productProfitAnalysis: displayedProductProfitAnalysis,
+      cogsDetails: displayedCogsDetails,
       v2OrderCount: typedOrders.length,
     };
   } catch (err: any) {
@@ -713,7 +727,7 @@ function splitLineCogsBySaleSource(
     const scale = targetTotal / rawTotal;
     let allocatedTotal = 0;
 
-    const scaledVariant = Math.round(allocations.variant * scale);
+    const scaledVariant = allocations.variant * scale;
     allocatedTotal += scaledVariant;
     addMoney(variantCogs, variantKey, scaledVariant);
 
@@ -721,7 +735,7 @@ function splitLineCogsBySaleSource(
       const isLast = index === allocations.modifiers.length - 1;
       const scaled = isLast
         ? targetTotal - allocatedTotal
-        : Math.round(modifier.cogs * scale);
+        : modifier.cogs * scale;
       allocatedTotal += scaled;
       addMoney(modifierCogs, modifier.modifierId, scaled);
     });

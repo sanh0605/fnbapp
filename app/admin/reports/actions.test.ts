@@ -140,6 +140,27 @@ describe("getPnLDataV2", () => {
     expect(result.totalCOGS).toBe(fixture.lines[0].cost_at_sale);
   });
 
+  it("rounds totalCOGS and per-row cogs UP at the display boundary, from cost_at_sale's own exact numeric(18,6) value (owner rule 2026-07-30)", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    const line = { ...fixture.lines[0], cost_at_sale: 4999.3 };
+    (findAllWhere as any).mockResolvedValue([fixture.order]);
+    (findAllWhereInBatches as any).mockResolvedValue([line]);
+    (findAllNoCache as any).mockImplementation((sheet: string) => (
+      sheet === "Stock_Ledger" ? [] : []
+    ));
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+    });
+
+    // Math.ceil(4999.3) = 5000, not Math.round's 4999.
+    expect(result.totalCOGS).toBe(5000);
+    expect(result.grossProfit).toBe(result.totalRevenue - 5000);
+    expect(result.productProfitAnalysis[0].cogs).toBe(5000);
+  });
+
   it("aggregates single Sữa Dâu order correctly", async () => {
     const suaDau = makeSuaDauStandaloneOrder();
     (findAllNoCache as any).mockImplementation((sheet: string) => {
