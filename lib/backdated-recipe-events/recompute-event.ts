@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { getSupabaseClient } from "../supabase";
 import { computeSaleTimeCogs } from "../backdated-ledger/compute-sale-time-cogs";
+import { buildRepairedSnapshot } from "../recipe-snapshot-repair";
 import type {
   BackdatedLedgerOrder,
   BackdatedLedgerOrderLine,
@@ -21,12 +22,20 @@ export type BackdatedRecipeEventRecoveryChange = {
   new_cost_at_sale: number;
 };
 
+export type BackdatedRecipeEventSnapshotRepair = {
+  line_id: string;
+  order_id: string;
+  old_recipe_snapshot_json: string;
+  new_recipe_snapshot_json: string;
+};
+
 export type BackdatedRecipeEventRecoveryPlan = {
   event_id: string;
   run_id: string;
   source_hash: string;
   affected_lines: AffectedRecipeOrderLine[];
   changes: BackdatedRecipeEventRecoveryChange[];
+  snapshot_repairs: BackdatedRecipeEventSnapshotRepair[];
 };
 
 export type BackdatedRecipeEventRecoveryApplyResult = BackdatedRecipeEventRecoveryPlan & {
@@ -57,6 +66,19 @@ export async function recomputeRecipeEventApply(
   }
 
   const plan = await recomputeRecipeEventDryRun(eventId);
+
+  // Write the corrected snapshot before the cost recompute -- cost is
+  // derived from the snapshot, so recording a new cost against a still-stale
+  // snapshot would just recreate Hole 3.
+  if (plan.snapshot_repairs.length > 0) {
+    const { update } = await import("../sheets_db");
+    for (const repair of plan.snapshot_repairs) {
+      await update("Order_Lines_V2", repair.line_id, {
+        recipe_snapshot_json: repair.new_recipe_snapshot_json,
+      });
+    }
+  }
+
   const supabase = getSupabaseClient();
   const { data: applyResult, error: applyError } = await supabase.rpc("apply_backdated_recipe_event_recovery", {
     p_event_id: eventId,
@@ -88,10 +110,41 @@ function buildRecoveryPlan(data: RecoveryData): BackdatedRecipeEventRecoveryPlan
   });
   const orderById = new Map(data.orders.map(order => [order.id, order]));
   const lineById = new Map(data.lines.map(line => [line.id, line]));
+
+  const snapshotRepairs: BackdatedRecipeEventSnapshotRepair[] = [];
+  const repairedLineById = new Map<string, BackdatedLedgerOrderLine>();
+
+  for (const affectedLine of affectedLines) {
+    const order = orderById.get(affectedLine.order_id);
+    const line = lineById.get(affectedLine.line_id);
+    if (!order || !line) {
+      throw new Error(`Affected line ${affectedLine.line_id} is missing source row`);
+    }
+    const originalSnapshotJson = line.recipe_snapshot_json || "{}";
+    // Re-resolve the whole snapshot (variant + every modifier) against what
+    // is effective at this line's own sale time -- same resolver Task 3's
+    // one-time repair used, reused here rather than re-implemented.
+    const repairedSnapshotJson = buildRepairedSnapshot({
+      recipeSnapshotJson: originalSnapshotJson,
+      variantId: line.variant_id || "",
+      saleTime: order.created_at || "",
+      recipes: data.recipes,
+    });
+    if (repairedSnapshotJson !== originalSnapshotJson) {
+      snapshotRepairs.push({
+        line_id: line.id,
+        order_id: line.order_id,
+        old_recipe_snapshot_json: originalSnapshotJson,
+        new_recipe_snapshot_json: repairedSnapshotJson,
+      });
+    }
+    repairedLineById.set(line.id, { ...line, recipe_snapshot_json: repairedSnapshotJson });
+  }
+
   const changes = affectedLines
     .map(affectedLine => {
       const order = orderById.get(affectedLine.order_id);
-      const line = lineById.get(affectedLine.line_id);
+      const line = repairedLineById.get(affectedLine.line_id);
       if (!order || !line) {
         throw new Error(`Affected line ${affectedLine.line_id} is missing source row`);
       }
@@ -112,6 +165,7 @@ function buildRecoveryPlan(data: RecoveryData): BackdatedRecipeEventRecoveryPlan
     source_hash: sha256(JSON.stringify(changes)),
     affected_lines: affectedLines,
     changes,
+    snapshot_repairs: snapshotRepairs,
   };
 }
 

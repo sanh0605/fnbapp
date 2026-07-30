@@ -17,7 +17,6 @@ async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
   const { findAllNoCache, update } = await import("../lib/sheets_db");
   const { findSnapshotMismatches } = await import("../lib/recipe-snapshot-repair");
-  const { parseLineRecipeSnapshot } = await import("../lib/order-types");
   const { toSaigonIsoString } = await import("../lib/datetime");
   const fs = await import("node:fs");
   const path = await import("node:path");
@@ -117,30 +116,19 @@ async function main(): Promise<void> {
       arr.push(f);
       findingsByLine.set(f.line_id, arr);
     }
-    for (const [lineId, lineFindings] of findingsByLine) {
+    const { buildRepairedSnapshot } = await import("../lib/recipe-snapshot-repair");
+    for (const [lineId] of findingsByLine) {
       const line = (lines as any[]).find(l => l.id === lineId);
       if (!line) { applyErrors.push(`${lineId}: line not found`); continue; }
-      const snapshot = parseLineRecipeSnapshot(line.recipe_snapshot_json || "{}");
-      // Rebuild the corrected snapshot directly from recipes, matching
-      // exactly what findSnapshotMismatches compared against.
-      const { selectEffectiveRecipe } = await import("../lib/recipe-selection");
-      const { buildRecipeSnapshot } = await import("../lib/order-snapshot");
       const saleTime = orderById.get(line.order_id)?.created_at;
-      const correctedVariant = lineFindings.some(f => f.target === "VARIANT")
-        ? (() => {
-            const eff = selectEffectiveRecipe(recipes, "PRODUCT_VARIANT", line.variant_id, saleTime);
-            return eff ? buildRecipeSnapshot(eff) : snapshot.variant;
-          })()
-        : snapshot.variant;
-      const correctedModifiers = snapshot.modifiers.map(modEntry => {
-        const finding = lineFindings.find(f => f.target === "MODIFIER" && f.target_id === modEntry.modifier_id);
-        if (!finding) return modEntry;
-        const eff = selectEffectiveRecipe(recipes, "MODIFIER", modEntry.modifier_id, saleTime);
-        return eff ? { ...modEntry, recipe: buildRecipeSnapshot(eff) } : modEntry;
-      });
       try {
         await update("Order_Lines_V2", lineId, {
-          recipe_snapshot_json: JSON.stringify({ variant: correctedVariant, modifiers: correctedModifiers }),
+          recipe_snapshot_json: buildRepairedSnapshot({
+            recipeSnapshotJson: line.recipe_snapshot_json || "{}",
+            variantId: line.variant_id,
+            saleTime,
+            recipes,
+          }),
         });
         appliedCount++;
       } catch (err) {

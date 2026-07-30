@@ -1,6 +1,6 @@
 import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 import { buildRecipeSnapshot } from "@/lib/order-snapshot";
-import { parseLineRecipeSnapshot } from "@/lib/order-types";
+import { parseLineRecipeSnapshot, type LineRecipeSnapshot } from "@/lib/order-types";
 
 /**
  * Finds order lines whose recorded recipe_snapshot_json disagrees with the
@@ -111,4 +111,44 @@ export function findSnapshotMismatches(input: {
   }
 
   return findings;
+}
+
+/**
+ * Rebuilds a line's full recipe_snapshot_json (variant + every modifier)
+ * against whatever is effective at saleTime, via selectEffectiveRecipe --
+ * the same resolver findSnapshotMismatches checks against. Used both by the
+ * one-time Task 3 repair script and by the backdated-recipe-event recovery
+ * path, so there is exactly one place that turns "recipe in force at time X"
+ * into a snapshot.
+ *
+ * A target with no effective recipe is left as-is (matches
+ * NO_EFFECTIVE_RECIPE / repairable: false in findSnapshotMismatches --
+ * nothing to rebuild against).
+ */
+export function buildRepairedSnapshot(input: {
+  recipeSnapshotJson: string;
+  variantId: string;
+  saleTime: string;
+  recipes: any[];
+}): string {
+  const snapshot = parseLineRecipeSnapshot(input.recipeSnapshotJson || "{}");
+
+  const effectiveVariantRecipe = selectEffectiveRecipe(
+    input.recipes, "PRODUCT_VARIANT", input.variantId, input.saleTime,
+  );
+  const repairedVariant = effectiveVariantRecipe
+    ? buildRecipeSnapshot(effectiveVariantRecipe)
+    : snapshot.variant;
+
+  const repairedModifiers = snapshot.modifiers.map(modEntry => {
+    const effectiveModRecipe = selectEffectiveRecipe(
+      input.recipes, "MODIFIER", modEntry.modifier_id, input.saleTime,
+    );
+    return effectiveModRecipe
+      ? { ...modEntry, recipe: buildRecipeSnapshot(effectiveModRecipe) }
+      : modEntry;
+  });
+
+  const repaired: LineRecipeSnapshot = { variant: repairedVariant, modifiers: repairedModifiers };
+  return JSON.stringify(repaired);
 }

@@ -122,6 +122,7 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
           target_type: "SEMI_PRODUCT",
           target_id: semi_product_id,
           ingredients_json: ingredientsJson,
+          start_date: nowIso,
           created_at: nowIso,
           end_date: ""
         });
@@ -134,6 +135,7 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
         target_type: "SEMI_PRODUCT",
         target_id: semi_product_id,
         ingredients_json: ingredientsJson,
+        start_date: nowIso,
         created_at: nowIso,
         end_date: ""
       });
