@@ -90,4 +90,9 @@ beverages-*.json
 skills-lock.json
 supabase/.temp/
 
+# Database backup bundles downloaded from Drive for inspection. These are full
+# production dumps (~45MB, every order and payment) and must never enter git.
+fnbapp-backup-*.json
+fnbapp-monthly-*.json
+
 .vercel
