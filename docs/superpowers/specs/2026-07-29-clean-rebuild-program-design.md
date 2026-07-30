@@ -152,15 +152,33 @@ using the existing cost-correction path. Release `audit_baseline_locks` as a
 recorded decision, listing what was released. Produce a before/after P&L
 comparison per month for the owner to review before it is considered final.
 
-### Phase 6 — Physical count
+### Phase 6 — Physical count — DEFERRED TO LAST (owner, 2026-07-30)
 
 The owner counts stock by hand and enters it. This becomes the system's first
 real anchor to physical reality and the baseline all future figures are measured
 against.
 
+**Owner moved this behind Phase 7 on 2026-07-30:** the stocktake is to be the
+final act before expansion begins, not an intermediate checkpoint. Phase 7 now
+runs first. Two consequences follow, recorded so they are not discovered later:
+
+1. **The `data_recovery_changes` purge loses its original gate.** The plan was to
+   keep the 52,884-row repair log (73% of all rows in the database; the reason
+   the daily backup jumped from 31.2 MB to 45 MB on 2026-07-30) until a
+   stocktake confirmed the rebuilt figures against physical reality, then purge.
+   With the stocktake moved to the end, that gate would hold the log for the
+   whole restructure period. It can be purged earlier on a weaker but sufficient
+   basis: **Phases 4 and 5 both recompute from source and are re-runnable, so
+   the repair log is not the real safety net** — the source data plus a verified
+   backup is. Purging costs the ability to reverse a specific run in place, not
+   the ability to reach the same state again.
+2. **Nothing else in Phase 7 depends on the stocktake.** The restructure touches
+   code and documentation, not figures, so the reorder is safe.
+
 ### Phase 7 — Repository restructure and documentation cleanup
 
-Deliberately last, because Phases 4 and 5 retire a large amount of code.
+**Now runs before Phase 6** (owner, 2026-07-30). Still after Phases 4 and 5,
+which retire a large amount of code.
 
 **Why the earlier recommendation changes.** On 2026-07-27 a full domain
 restructure was advised against: most of the benefit was already banked by
@@ -192,6 +210,20 @@ Scope:
 - No change to the consumption engine, recipe model, or the section 9 rules.
 - No attempt to reconstruct purchases that were never entered. If the Sữa đặc
   gap is real, it stays visible in the rebuilt numbers, by design.
+
+## 6b. Closed by the owner, 2026-07-30
+
+**Muối hồng, −14.39 g — closed, not a data defect.** The owner used his own
+personal pink salt; it was never purchased for the shop, so no purchase record is
+missing. No correction is needed and the negative can be ignored.
+
+**One mechanical consequence remains open.** A recipe still calls for Muối hồng,
+so every sale of that drink deducts a little more and the balance keeps drifting
+further negative. It will never self-correct. Three ways to settle it, all small,
+none urgent: remove it from the recipe if it is not really used; flag it
+non-inventory like Nước and Đá viên if it is used but will never be stocked; or
+enter a purchase when one actually happens. Worth deciding during Phase 7 rather
+than leaving a number that grows quietly wrong.
 
 ## 7. Open item
 
