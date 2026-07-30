@@ -212,6 +212,44 @@ async function main() {
       profit_delta: m.cogs_before - m.cogs_after,
     }));
 
+  // ---- Reconciliation: the P&L table's cogs_after uses every lineResults
+  // entry unconditionally (computedCostByLine), but the actual write set
+  // (candidates/batches) excludes lines with |delta| <= 1 dong. A handful of
+  // lines sit exactly at that boundary (delta === +-1) -- their computed
+  // value is reflected in the P&L table above but will NOT be written to
+  // order_lines_v2, since apply_full_history_recovery is never called for
+  // them. This is why sum(pnlTable.profit_delta) can differ slightly from
+  // sum(batches.net_delta): the gap is exactly the sum of these excluded
+  // +-1-dong deltas, never anything larger.
+  const subThresholdLines = lineResults
+    .filter(r => {
+      const delta = r.computed_cost_at_sale - r.stored_cost_at_sale;
+      return delta !== 0 && Math.abs(delta) <= 1;
+    })
+    .map(r => ({
+      order_no: r.order_no,
+      line_id: r.line_id,
+      old_cost_at_sale: r.stored_cost_at_sale,
+      new_cost_at_sale: r.computed_cost_at_sale,
+      delta: r.computed_cost_at_sale - r.stored_cost_at_sale,
+    }));
+  const subThresholdTotalDelta = subThresholdLines.reduce((s, l) => s + l.delta, 0);
+  const pnlTotalProfitDelta = pnlTable.reduce((s, m) => s + m.profit_delta, 0);
+  const batchesTotalProfitDelta = -totalDelta;
+  const reconciliation = {
+    pnl_table_total_profit_delta_vnd: pnlTotalProfitDelta,
+    batches_to_write_total_profit_delta_vnd: batchesTotalProfitDelta,
+    gap_vnd: pnlTotalProfitDelta - batchesTotalProfitDelta,
+    explained_by_sub_threshold_lines_excluded_from_write: subThresholdLines.length,
+    sub_threshold_lines_total_delta_vnd: subThresholdTotalDelta,
+    note: "The P&L table's cogs_after includes every recomputed line unconditionally. The actual write set (batches below) excludes lines with |delta| <= 1 dong, since apply_full_history_recovery is never called for them. gap_vnd must equal -sub_threshold_lines_total_delta_vnd exactly; if it does not, investigate before proceeding.",
+    sub_threshold_lines: subThresholdLines,
+  };
+  if (reconciliation.gap_vnd !== -subThresholdTotalDelta) {
+    console.error(`\nSTOP: reconciliation gap (${reconciliation.gap_vnd}) does not match the sub-threshold total (${-subThresholdTotalDelta}). Investigate before trusting this summary.`);
+    process.exit(1);
+  }
+
   console.log(`\nMode: ${apply ? "APPLY (writing to production)" : "DRY RUN (no writes)"}`);
   console.log(`Total cost delta (computed - stored), all changed lines: ${totalDelta.toLocaleString()} VND`);
   console.log(`  Of which explained by the non-inventory exclusion: ${deltaExplainedByNonInventoryExclusion.toLocaleString()} VND`);
@@ -225,6 +263,8 @@ async function main() {
   for (const m of pnlTable) {
     console.log(`  ${m.month}: revenue=${m.revenue.toLocaleString()} cogs_before=${m.cogs_before.toLocaleString()} cogs_after=${m.cogs_after.toLocaleString()} profit_delta=${m.profit_delta.toLocaleString()}`);
   }
+  console.log(`\nReconciliation: P&L table total profit delta = ${pnlTotalProfitDelta.toLocaleString()} VND, batches actually written total = ${batchesTotalProfitDelta.toLocaleString()} VND, gap = ${reconciliation.gap_vnd.toLocaleString()} VND.`);
+  console.log(`  Gap fully explained by ${subThresholdLines.length} line(s) sitting exactly at the +-1-dong threshold (excluded from the write set, still reflected in the P&L table's cogs_after).`);
 
   // ---- Verify the RPC accepts a probe call before running the real loop ----
   const dryRunFailures: string[] = [];
@@ -287,6 +327,7 @@ async function main() {
     product_ranking: productRanking,
     lines_moving_the_other_way: increasedLines,
     monthly_pnl: pnlTable,
+    pnl_vs_write_reconciliation: reconciliation,
     lock_recheck: { locked_in_batch: lockedInBatch.length },
     dry_run_failures: dryRunFailures,
     apply_results: apply ? applyResults : null,
