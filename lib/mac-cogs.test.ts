@@ -62,6 +62,50 @@ describe("MAC COGS", () => {
     expect(getMacUnitCost(ledger, "ING-A", "2026-06-02T12:00:00Z")).toBe(10);
   });
 
+  it("restores EDIT_REVERSAL/positive at the MAC in effect when the original consumption happened, not today's MAC (owner correction 2026-07-30)", () => {
+    // 01/06 nhap 100 @ 10   -> MAC = 10
+    // 02/06 ban 50 (ord-1)  -> tieu hao 50 @ MAC 10 (gia tri 500); ton 50, tri gia 500
+    // 03/06 nhap 100 @ 30   -> ton 150, tri gia 3500, MAC = 23.333...
+    // 04/06 EDIT_REVERSAL +50 (ord-1) huy don ban 02/06
+    //   Neu dung MAC HIEN TAI (23.333) hoac bo qua (bug cu): MAC van la 23.333
+    //   (them vao dung gia trung binh khong doi ty le -- day la vi sao con so
+    //   nay KHONG phan biet duoc bug cu voi ban va "phuc hoi bang MAC hien tai").
+    //   Dung: phuc hoi DUNG gia tri da tieu hao (500, tai MAC 10 luc do) ->
+    //   ton 200, tri gia 4000, MAC = 20 -- khac hai truong hop sai o tren.
+    const revLedger = [
+      { item_reference: "ING-X", transaction_type: "PO_RECEIPT", quantity_change: 100, unit_cost: 10, created_at: "2026-06-01T00:00:00Z", reference_id: "po-1" },
+      { item_reference: "ING-X", transaction_type: "SALES_CONSUME", quantity_change: -50, unit_cost: 0, created_at: "2026-06-02T00:00:00Z", reference_id: "ord-1" },
+      { item_reference: "ING-X", transaction_type: "PO_RECEIPT", quantity_change: 100, unit_cost: 30, created_at: "2026-06-03T00:00:00Z", reference_id: "po-2" },
+      { item_reference: "ING-X", transaction_type: "EDIT_REVERSAL", quantity_change: 50, unit_cost: 0, created_at: "2026-06-04T00:00:00Z", reference_id: "ord-1" },
+    ];
+    expect(getMacUnitCost(revLedger, "ING-X", "2026-06-05T00:00:00Z")).toBeCloseTo(20, 6);
+  });
+
+  it("removes EDIT_REVERSAL/negative at the value the original addition actually contributed, not today's MAC", () => {
+    // Mirror case: EDIT_REVERSAL with negative qty undoes an earlier
+    // positive-qty addition (e.g. a mistaken STOCK_ADJUST) for the same
+    // reference_id -- must remove exactly what that addition contributed.
+    const revLedger = [
+      { item_reference: "ING-Y", transaction_type: "PO_RECEIPT", quantity_change: 100, unit_cost: 10, created_at: "2026-06-01T00:00:00Z", reference_id: "po-1" },
+      { item_reference: "ING-Y", transaction_type: "STOCK_ADJUST", quantity_change: 50, unit_cost: 40, created_at: "2026-06-02T00:00:00Z", reference_id: "adj-1" },
+      // 150 units, value 1000 + 2000 = 3000, MAC = 20
+      { item_reference: "ING-Y", transaction_type: "PO_RECEIPT", quantity_change: 100, unit_cost: 5, created_at: "2026-06-03T00:00:00Z", reference_id: "po-2" },
+      // 250 units, value 3000 + 500 = 3500, MAC = 14
+      { item_reference: "ING-Y", transaction_type: "EDIT_REVERSAL", quantity_change: -50, unit_cost: 0, created_at: "2026-06-04T00:00:00Z", reference_id: "adj-1" },
+      // undo adj-1: remove 50 units / 2000 value -> 200 units, 1500 value, MAC = 7.5
+    ];
+    expect(getMacUnitCost(revLedger, "ING-Y", "2026-06-05T00:00:00Z")).toBeCloseTo(7.5, 6);
+  });
+
+  it("keeps PRODUCTION_YIELD/positive and STOCK_ADJUST/positive as a no-op when unit_cost is 0 (semi-products always use recipe fallback, never their own accumulated MAC)", () => {
+    const noCostLedger = [
+      { item_reference: "BTP-Z", transaction_type: "SALES_CONSUME", quantity_change: -10, unit_cost: 0, created_at: "2026-06-01T00:00:00Z", reference_id: "ord-1" },
+      { item_reference: "BTP-Z", transaction_type: "PRODUCTION_YIELD", quantity_change: 10, unit_cost: 0, created_at: "2026-06-01T00:00:00Z", reference_id: "ord-1" },
+      { item_reference: "BTP-Z", transaction_type: "STOCK_ADJUST", quantity_change: 5, unit_cost: 0, created_at: "2026-06-02T00:00:00Z", reference_id: "adj-1" },
+    ];
+    expect(getMacUnitCost(noCostLedger, "BTP-Z", "2026-06-05T00:00:00Z")).toBe(0);
+  });
+
   it("returns the exact cost, not a rounded one", () => {
     const preciseLedger = [
       { item_reference: "CAFE", transaction_type: "PO_RECEIPT", quantity_change: 100, unit_cost: 1, created_at: "2026-06-01T03:00:00Z" },
