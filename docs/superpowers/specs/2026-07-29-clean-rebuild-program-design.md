@@ -190,6 +190,26 @@ correction layer — `lib/history-ops/`, the `apply-btp-shortfall-*` rounds 1-3,
 moved simply gets deleted instead. Second, the owner has explicitly paused
 expansion to get this right, which is exactly the window such work needs.
 
+**Hard rule on master data, added 2026-07-30 at the owner's insistence.**
+
+Never delete a row from `Base_Ingredients`, `Semi_Products`, `Products`,
+`Product_Variants`, `Recipes`, or `Purchased_Items`, even when it appears
+orphaned. Every order line stores a `recipe_snapshot_json` naming the items it
+consumed, and the whole rebuild capability rests on being able to resolve those
+names years later. A master row that looks unused today becomes an unresolvable
+reference the moment any snapshot, backup, or restored database mentions it — and
+the failure surfaces during a recovery, which is the worst possible time.
+
+**Retire by marking inactive, never by deleting.** If a name collision is the
+problem, rename rather than remove. This rule applies to master data only; the
+one-off correction *code* below is a different matter, since git history keeps it.
+
+The owner raised this against a proposed deletion of `BTP-004` "Nước đường".
+Checked before acting: 0 order lines reference it in any recipe snapshot, 0
+`stock_ledger` rows, 0 received. April and May lines already reference `ING-022`
+(the purchased syrup). So that specific deletion would have been safe — but the
+rule stands regardless, because "safe this time" is not a method.
+
 Scope:
 
 - Delete the retired one-off correction modules and scripts.
