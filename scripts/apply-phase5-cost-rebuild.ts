@@ -16,6 +16,12 @@ process.env.CLI_MODE = "true";
  *
  * Dry-run by default; --apply writes for real, one apply_full_history_recovery
  * call per calendar month (Saigon time) of the affected lines' sale_time.
+ *
+ * run_id prefix carries a date suffix (phase5-cost-rebuild-v2-2026-07-30-)
+ * so a re-run after the Phase 6 recipe-snapshot repair (which changes what
+ * this script computes for many of the same months) does not collide with
+ * the source-hash guard against this same script's own earlier apply this
+ * session. Same reasoning as apply-phase4-stock-rebuild.ts's RUN_ID_PREFIX.
  */
 
 async function main() {
@@ -277,7 +283,7 @@ async function main() {
       old_cost_at_sale: c.old_cost_at_sale,
       new_cost_at_sale: c.new_cost_at_sale,
     }));
-    const runId = `phase5-cost-rebuild-${batch.month}`;
+    const runId = `phase5-cost-rebuild-v2-2026-07-30-${batch.month}`;
     const sourceHash = createHash("sha256").update(JSON.stringify(rpcChanges)).digest("hex");
 
     const dryRun = await supabase.rpc("apply_full_history_recovery", {

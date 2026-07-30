@@ -28,6 +28,14 @@ process.env.CLI_MODE = "true";
  * reusing the old prefix would trip the RPC's source-hash mismatch guard for
  * every previously-touched order.
  *
+ * RUN_ID_PREFIX changed again on 2026-07-30 (phase4-rebuild- ->
+ * phase6-repair-rebuild-), same reasoning, one level deeper: the Phase 6
+ * recipe-snapshot repair (docs/superpowers/plans/2026-07-30-phase6-recipe-snapshot-repair.md,
+ * Task 3) corrected recipe_snapshot_json for 237 lines, so a re-run of this
+ * script now computes different content for every order touched by the
+ * original Phase 4 apply -- reusing phase4-rebuild- would trip the same
+ * source-hash guard again, this time against Phase 4's own prior run.
+ *
  * Dry-run by default; --apply writes for real. Writes a full summary to
  * docs/audits/2026-07-29-phase4-rebuild-dryrun.json (or -apply.json).
  */
@@ -41,7 +49,7 @@ const DERIVED_TYPES = new Set([
   "EDIT_CONSUME",
 ]);
 
-const RUN_ID_PREFIX = "phase4-rebuild-";
+const RUN_ID_PREFIX = "phase6-repair-rebuild-";
 
 async function main() {
   const apply = process.argv.includes("--apply");
