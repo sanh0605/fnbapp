@@ -116,6 +116,40 @@ Claude owns these. Codex review is required for engine/data claims.
 - `docs/superpowers/specs/*`
 - `DEVELOPMENT-TRACKING.md` is append-only unless cleanup is explicitly requested.
 
+## C-bis. Worked Examples Are Mandatory (owner directive, 2026-07-30)
+
+Every plan step that acts on real data must carry a **worked example computed in
+advance from actual values** — a named item, a real order line, the number the
+step should produce. Not an illustration of the format: a case the implementer
+can check its own output against before running the full job.
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  dòng ol-004ca7d2, Cà phê đá 500ml, bán 20/04
+  bản chụp hiện tại : ING-022 (can mua sẵn) 20ml
+  phải ra sau khi sửa: BTP-004 (tự nấu) 20ml
+  vì REC-001 hiệu lực 26/03 -> 12/05
+Nếu kết quả không khớp dòng này, DỪNG — đừng chạy tiếp 2.379 dòng.
+```
+
+And before a plan is written at all, the owner's intent must be confirmed to at
+least 95% **using a concrete instance**, never an abstract restatement.
+
+**Why both.** Two distinct failure classes, each caught only by one of them:
+
+| Failure | Real case | Caught by |
+|---|---|---|
+| Agent misread how the shop actually operates | Proposed deleting `BTP-004` "Nước đường"; the owner knew April orders used it. Also: proposed a pre-squeezed lime-juice semi-product, which nobody does. | Example in the **confirmation to the owner** |
+| Plan omitted a step the implementer could not infer | Phase 4's plan template omitted threading `nonInventoryItems` into `replayFullHistory`; following it literally would have regenerated `SALES_CONSUME` rows for Nước / Nước sôi / Đá viên across all history | Example in the **plan** |
+
+An abstract statement passes review. A concrete one gets rejected in one line.
+That is the whole point: move the correction to before the work, not after.
+
+**Corollary, from the same incident.** Before concluding anything from a query,
+state what that query *cannot* show. The `BTP-004` error was a filter on
+currently-effective recipes (`status === "ACTIVE" && !end_date`) used to answer a
+question about history — which it was structurally incapable of answering.
+
 ## D. Seven Coordination Rules
 
 1. No silent data writes.
