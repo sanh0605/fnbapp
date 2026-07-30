@@ -212,6 +212,11 @@ rule stands regardless, because "safe this time" is not a method.
 
 Scope:
 
+- **Operating-expense entry screen** (added 2026-07-30, see section 6c): no
+  screen currently exists to record a cost like Khoai lang's raw sweet potato —
+  a real, recurring operating cost that is deliberately outside the recipe/COGS
+  system (non-inventory) but currently has nowhere to be recorded at all, so it
+  is invisible in every report.
 - Delete the retired one-off correction modules and scripts.
 - Add the missing form-field primitives to `components/ui/` (Input, Select,
   Textarea, FormField) and migrate the 17 forms in batches the owner reviews.
@@ -244,6 +249,24 @@ none urgent: remove it from the recipe if it is not really used; flag it
 non-inventory like Nước and Đá viên if it is used but will never be stocked; or
 enter a purchase when one actually happens. Worth deciding during Phase 7 rather
 than leaving a number that grows quietly wrong.
+
+## 6c. Closed by the owner, 2026-07-30
+
+**Khoai lang (VAR-036) — closed, deliberately non-inventory, not a data defect.**
+Its only recipe (`REC-069`, effective since 2026-04-30, still open) has an empty
+ingredient list, so none of its 161 sales (all of them, including ones sold
+today) have ever deducted stock. The owner's decision: **keep it flagged
+non-inventory, do not fill in `REC-069`, do not remove the flag.** The cost of
+the raw sweet potato is treated as a daily operating expense, not a
+recipe-tracked ingredient.
+
+**One mechanical consequence remains open, and it is bigger than this one
+product.** There is currently no screen anywhere in the app to record an
+operating expense (raw Khoai lang cost, or anything else in this category), so
+this real cost is invisible in every report — it does not appear in COGS, and
+it does not appear anywhere else either. It simply does not exist as far as the
+system is concerned. **An operating-expense entry screen is needed** — added to
+Phase 7's scope below, not urgent but should not be silently dropped either.
 
 ## 7. Open item
 
