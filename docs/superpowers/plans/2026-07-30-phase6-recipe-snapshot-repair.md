@@ -500,6 +500,77 @@ the **third** revision of historical profit (Phase 5 +942,492; this one roughly
 
 ---
 
+### Task 7: The backup pipeline never received Phase 3's coverage fix
+
+**Found 2026-07-30 while the owner was taking a pre-Task-4 backup. Run after
+Task 6. Do not attempt it before Task 4 — see the ordering trap below.**
+
+Phase 3 Task 1 (commit `8726633`) added eight tables to
+`supabase/functions/backup-to-drive/core.ts`, taking coverage from 32 to 40.
+That change never reached production. The Google Apps Script the owner runs still
+declares 32:
+
+```javascript
+const EXPECTED_TABLES = [ /* ...32 names, ending at "backdated_ledger_events" */ ];
+```
+
+Missing, and therefore never backed up: **`order_payments`** (cash vs transfer,
+split payments — money data with no other source), `shifts`,
+`shift_stock_checks`, `stocktake_sessions`, `stocktake_lines`,
+`backdated_recipe_events`, `purchase_order_edits`, `pos_sync_failures`.
+
+**Evidence this is the live state, not just an unmerged repo change:**
+`validateBundle_` throws when the bundle's table set differs from
+`EXPECTED_TABLES` in *either* direction — `missing.length || unexpected.length` —
+and on throw no file is written and `alertFailure_` emails. Yet
+`fnbapp-backup-2026-07-30.json` was created normally. So the deployed Edge
+Function is still returning 32 tables and the two sides currently agree.
+
+**Why Phase 3 did not catch it.** Both `scripts/verify-drive-backup.ts` and the
+restore drill build a snapshot **in-process from repo code**. Neither goes
+through the deployed Edge Function or the Apps Script. Phase 3 proved the code
+was right and never proved the pipeline was. That is a defect in the Phase 3
+plan, which Claude wrote.
+
+**The ordering trap.** Because `validateBundle_` is strict in both directions,
+changing one side alone takes backups from *incomplete* to *nonexistent*:
+
+| Change | Result until the other side follows |
+|---|---|
+| Edge Function → 40 only | Apps Script reports `unexpected=8`, throws, **no backup at all** |
+| Apps Script → 40 only | Bundle has 32, reports `missing=8`, throws, **no backup at all** |
+
+- [ ] **Step 1: Make the validator tolerant in one direction first**
+
+Change `validateBundle_` so a **missing** table still throws, but an
+**unexpected** one only logs a warning. The bundle is written wholesale, so an
+extra table is still captured — failing on it buys nothing and creates this
+lockstep. This single change removes the trap permanently, so make it before
+touching either table list.
+
+- [ ] **Step 2: Deploy the Edge Function**, then update `EXPECTED_TABLES` to the
+  same 40 names as `supabase/functions/backup-to-drive/core.ts`.
+
+- [ ] **Step 3: Prove it end to end, through the real path**
+
+Owner runs `runDailyDriveBackup` by hand. Then **read the produced Drive file**
+and assert it contains all 40 table keys and a non-zero `order_payments.count`.
+Reading the file is the point — a green local test is exactly what missed this.
+
+- [ ] **Step 4: Fix the verification script's blind spot**
+
+`scripts/verify-drive-backup.ts` must be able to check the **delivered artifact**,
+not only a locally built one. Otherwise this recurs the next time a table is added.
+
+- [ ] **Step 5: Commit and update tracking.**
+
+**Do not fold this into Task 4's backup.** The backup taken before Task 4 is
+incomplete but sufficient for it: Task 4 writes only `stock_ledger`,
+`inventory_balances` and `cost_at_sale`, none of which are among the eight
+missing tables.
+
+---
+
 ## Rollback
 
 Task 3 writes only `recipe_snapshot_json`. Task 4 recomputes from source and is
