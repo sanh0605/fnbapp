@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-07-29T18:01:29.181Z",
+  "generated_at": "2026-07-30T09:57:23.270Z",
   "mode": "DRY_RUN",
-  "orders_total": 1801,
-  "orders_to_rebuild": 1743,
+  "orders_total": 1819,
+  "orders_to_rebuild": 1761,
   "orders_excluded": 58,
   "excluded_orders": [
     {
@@ -238,52 +238,116 @@
       "reason": "replay produced no rows"
     }
   ],
-  "stock_ledger_rows_to_delete": 11835,
-  "stock_ledger_rows_to_insert": 9917,
+  "stock_ledger_rows_to_delete": 9961,
+  "stock_ledger_rows_to_insert": 9991,
   "item_deltas": [
     {
-      "item_id": "NNL-003",
-      "name": "Nước sôi",
-      "before": -112230.23806200009,
-      "after": 5.275069270282984e-11,
-      "delta": 112230.23806200015
+      "item_id": "BTP-008",
+      "name": "Hồng trà",
+      "before": 19100,
+      "after": 24870,
+      "delta": 5770
     },
     {
-      "item_id": "ING-001",
-      "name": "Đá viên",
-      "before": -14729.320121000013,
-      "after": 2.9416469260468148e-12,
-      "delta": 14729.320121000017
+      "item_id": "ING-022",
+      "name": "Nước đường",
+      "before": 29380,
+      "after": 30410,
+      "delta": 1030
     },
     {
-      "item_id": "NNL-005",
-      "name": "Trái tắc",
-      "before": -420,
-      "after": 0,
-      "delta": 420
+      "item_id": "ING-003",
+      "name": "Sữa đặc",
+      "before": 40919,
+      "after": 41518,
+      "delta": 599
     },
     {
-      "item_id": "NNL-006",
-      "name": "Trái chanh",
-      "before": -13,
-      "after": 0,
-      "delta": 13
+      "item_id": "ING-002",
+      "name": "Đường trắng",
+      "before": 2000,
+      "after": 1712,
+      "delta": -288
     },
     {
-      "item_id": "ING-007",
-      "name": "Nước",
-      "before": -13,
-      "after": 0,
-      "delta": 13
-    }
-  ],
-  "still_negative_after_rebuild": [
+      "item_id": "ING-025",
+      "name": "Sinh tố xoài",
+      "before": 4710,
+      "after": 4950,
+      "delta": 240
+    },
+    {
+      "item_id": "ING-020",
+      "name": "Lá trà xanh",
+      "before": 5757.14285,
+      "after": 5521.428571428572,
+      "delta": -235.71427857142862
+    },
+    {
+      "item_id": "ING-026",
+      "name": "Sinh tố việt quất",
+      "before": 4570,
+      "after": 4800,
+      "delta": 230
+    },
+    {
+      "item_id": "ING-030",
+      "name": "Sinh tố dâu",
+      "before": 6100,
+      "after": 6310,
+      "delta": 210
+    },
+    {
+      "item_id": "ING-021",
+      "name": "Lá hồng trà",
+      "before": 3990.4166180000025,
+      "after": 4142.976190476181,
+      "delta": 152.55957247617835
+    },
+    {
+      "item_id": "ING-015",
+      "name": "Siro đào",
+      "before": 2680,
+      "after": 2770,
+      "delta": 90
+    },
+    {
+      "item_id": "ING-027",
+      "name": "Bột sữa",
+      "before": 4648.75,
+      "after": 4730.5,
+      "delta": 81.75
+    },
+    {
+      "item_id": "NNL-001",
+      "name": "Sữa tươi",
+      "before": 51706.62743499996,
+      "after": 51639.92156862743,
+      "delta": -66.70586637252563
+    },
+    {
+      "item_id": "ING-029",
+      "name": "Bột kem muối phô mai",
+      "before": 7909.411750000001,
+      "after": 7859.999999999987,
+      "delta": -49.41175000001385
+    },
+    {
+      "item_id": "ING-016",
+      "name": "Sinh tố đào",
+      "before": 5750,
+      "after": 5770,
+      "delta": 20
+    },
     {
       "item_id": "ING-014",
       "name": "Muối hồng",
-      "balance": -14.387500000000003
+      "before": -14.387500000000003,
+      "after": -2.4841240175987878e-15,
+      "delta": 14.387500000000001
     }
   ],
+  "still_negative_after_rebuild": [],
   "dry_run_failures": [],
   "applied_orders": null,
   "apply_failures": null,
