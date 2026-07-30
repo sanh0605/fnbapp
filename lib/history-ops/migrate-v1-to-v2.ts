@@ -19,6 +19,7 @@ import type {
 import {
   buildProductSnapshot, buildVariantSnapshot, buildPromotionSnapshot, buildRecipeSnapshot,
 } from "@/lib/order-snapshot";
+import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 
 // ============================================================
 // Public types
@@ -304,20 +305,19 @@ function buildMigratedLine(
     qty: Number(m.qty || 1),
   }));
 
-  // Reconstruct recipe snapshot (variant recipe + per-modifier recipes)
-  const variantRecipe = ref.recipes.find(r =>
-    r.target_type === "PRODUCT_VARIANT" && r.target_id === v1Line.variant_id &&
-    (!r.end_date || r.end_date === ""),
-  );
+  // Reconstruct recipe snapshot (variant recipe + per-modifier recipes),
+  // resolved against the V1 order's own sale time (createdAt) -- not
+  // whichever recipe happens to be open-ended right now. selectEffectiveRecipe
+  // is the one resolver in this codebase that gets this right; never
+  // hand-roll a replacement filter (that mistake is what produced the wrong
+  // recipe for every migrated line sold before a later recipe version).
+  const variantRecipe = selectEffectiveRecipe(ref.recipes, "PRODUCT_VARIANT", v1Line.variant_id, createdAt);
   const variantRecipeSnap: RecipeSnapshot = variantRecipe
     ? buildRecipeSnapshot(variantRecipe)
     : { target_type: "PRODUCT_VARIANT", target_id: v1Line.variant_id, ingredients: [] };
 
   const modifierRecipes = modifierSnap.map(mod => {
-    const r = ref.recipes.find(rr =>
-      rr.target_type === "MODIFIER" && rr.target_id === mod.id &&
-      (!rr.end_date || rr.end_date === ""),
-    );
+    const r = selectEffectiveRecipe(ref.recipes, "MODIFIER", mod.id, createdAt);
     return {
       modifier_id: mod.id,
       modifier_name: mod.name,

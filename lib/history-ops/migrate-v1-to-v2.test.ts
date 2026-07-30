@@ -149,6 +149,51 @@ describe("reconstructOrderV2", () => {
     expect(result.lines[0].net_line_total).toBe(25000);
   });
 
+  it("resolves the migrated line's recipe against the V1 order's sale time, not whichever recipe is currently open-ended", () => {
+    // REC-001 for VAR-001 (Cà phê đá 500ml), consuming BTP-004 (Nước đường),
+    // in force 2026-03-26 -> 2026-05-12. Its successor, effective from that
+    // same instant, consumes ING-022 instead -- the real shape verified
+    // against production in docs/superpowers/plans/2026-07-30-phase6-recipe-snapshot-repair.md.
+    const refWithTwoRecipeVersions: MigrationReferenceData = {
+      ...REF,
+      products: [...REF.products, { id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001" }],
+      variants: [...REF.variants, { id: "VAR-001", product_id: "PROD-001", size_name: "500ml", price: "18000" }],
+      recipes: [
+        {
+          id: "REC-001", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
+          ingredients_json: JSON.stringify([{ ingredient_id: "BTP-004", ingredient_type: "SEMI_PRODUCT", quantity: 20, unit_id: "U-ML" }]),
+          status: "ACTIVE", start_date: null,
+          created_at: "2026-03-26T17:00:00.000Z", end_date: "2026-05-12T17:00:00.000Z",
+        },
+        {
+          id: "REC-002", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
+          ingredients_json: JSON.stringify([{ ingredient_id: "ING-022", ingredient_type: "BASE_INGREDIENT", quantity: 20, unit_id: "U-ML" }]),
+          status: "ACTIVE", start_date: null,
+          created_at: "2026-05-12T17:00:00.000Z", end_date: null,
+        },
+      ],
+    };
+    const v1: V1Order = {
+      id: "ORD-cafe", order_no: "TEST-CAFE", brand_id: "BR-002", status: "COMPLETED",
+      total_amount: "18000", discount_amount: "0", discount_type: "VND",
+      applied_promotion_id: "", applied_promotion_snapshot_json: "",
+      method: "Tien mat", staff_name: "Test",
+      created_at: "2026-04-20T03:00:00.000Z", // in force under REC-001, well before REC-002 exists
+    };
+    const lines: V1Line[] = [{
+      id: "OL-cafe", order_id: "ORD-cafe", product_id: "PROD-001", variant_id: "VAR-001",
+      qty: "1", unit_price: "18000", line_discount: "0", discount_type: "VND",
+      modifiers_json: "[]", created_at: "2026-04-20T03:00:00.000Z",
+    }];
+
+    const result = reconstructOrderV2(v1, lines, [], refWithTwoRecipeVersions);
+
+    const snapshot = JSON.parse(result.lines[0].recipe_snapshot_json);
+    const ingredientIds = snapshot.variant.ingredients.map((i: any) => i.ingredient_id);
+    expect(ingredientIds).toContain("BTP-004");
+    expect(ingredientIds).not.toContain("ING-022");
+  });
+
   it("VOIDED order: status preserved", () => {
     const v1: V1Order = {
       id: "ORD-void", order_no: "VOID001", brand_id: "BR-002", status: "VOIDED",
