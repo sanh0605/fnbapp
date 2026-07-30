@@ -13,11 +13,20 @@ describe("groupCostChangesByMonth", () => {
     expect(batches[0].net_delta).toBe(-851);
   });
 
-  it("drops no-op changes below the one-dong threshold", () => {
+  it("drops only true no-op changes (delta at or under 1e-6 dong)", () => {
     const batches = groupCostChangesByMonth([
       { line_id: "L1", sale_time: "2026-06-03T09:45:44.554+00:00", old_cost_at_sale: 1000, new_cost_at_sale: 1000 },
     ]);
     expect(batches).toEqual([]);
+  });
+
+  it("keeps a sub-1-dong change (owner correction 2026-07-30: cost_at_sale is numeric(18,6) now, the exact-cost-precision residual this threshold must not silently discard is always < 0.5 dong)", () => {
+    const batches = groupCostChangesByMonth([
+      { line_id: "L1", sale_time: "2026-06-03T09:45:44.554+00:00", old_cost_at_sale: 1000, new_cost_at_sale: 1000.3 },
+    ]);
+    expect(batches).toHaveLength(1);
+    expect(batches[0].changes).toHaveLength(1);
+    expect(batches[0].net_delta).toBeCloseTo(0.3, 9);
   });
 
   it("never emits an empty batch, which the RPC rejects", () => {

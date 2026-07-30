@@ -100,10 +100,20 @@ async function main() {
     category: "A_unlocked" | "B_locked_current" | "C_locked_stale";
     lock_reason?: string; lock_stored?: number; lock_expected?: number;
   };
+  // Owner correction 2026-07-30: was 1 dong, set when cost_at_sale was a
+  // whole-VND bigint. Now numeric(18,6) with Math.round removed from the
+  // engine (docs/superpowers/plans/2026-07-30-exact-cost-precision.md), the
+  // residual that plan corrects is always < 0.5 dong -- a 1-dong threshold
+  // here would report cost_mismatches: 0 while thousands of lines stayed
+  // stale, the audit failing to detect the exact thing it claims to check.
+  // Must track the column's own precision (numeric(18,6) => 1e-6), not an
+  // assumption about what "meaningful" money is. Matches
+  // scripts/apply-phase5-cost-rebuild.ts's CHANGE_THRESHOLD_VND.
+  const COST_MISMATCH_THRESHOLD_VND = 1e-6;
   const costFindings: CostFinding[] = [];
   for (const r of lineResults) {
     const delta = r.computed_cost_at_sale - r.stored_cost_at_sale;
-    if (Math.abs(delta) <= 1) continue;
+    if (Math.abs(delta) <= COST_MISMATCH_THRESHOLD_VND) continue;
     const lock = lockByLineId.get(r.line_id);
     let category: CostFinding["category"] = "A_unlocked";
     if (lock) {

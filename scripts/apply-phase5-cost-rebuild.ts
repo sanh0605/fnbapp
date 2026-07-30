@@ -22,6 +22,12 @@ process.env.CLI_MODE = "true";
  * this script computes for many of the same months) does not collide with
  * the source-hash guard against this same script's own earlier apply this
  * session. Same reasoning as apply-phase4-stock-rebuild.ts's RUN_ID_PREFIX.
+ *
+ * Prefix changed again (-> phase5-exact-cost-2026-07-31-) for the exact-cost-
+ * precision rebuild (docs/superpowers/plans/2026-07-30-exact-cost-precision.md,
+ * Task 4): removing Math.round from the cost engine (Task 3) changes what
+ * this script computes for the same months again, one level deeper than the
+ * prior rename.
  */
 
 async function main() {
@@ -102,10 +108,22 @@ async function main() {
     old_cost_at_sale: number;
     new_cost_at_sale: number;
   };
+  // Owner correction 2026-07-30: this threshold was 1 dong, set when
+  // cost_at_sale was a whole-VND bigint (a delta of exactly +-1 was
+  // plausible rounding noise not worth writing). Now that cost_at_sale is
+  // numeric(18,6) and Task 3 removed Math.round from the engine (this same
+  // plan), the residual this task exists to correct is always < 0.5 dong --
+  // a 1-dong threshold silently excluded almost every line it was supposed
+  // to fix, and audit-full-history-recompute.ts's own cost_mismatches count
+  // used the same stale threshold, so it would have reported 0 mismatches
+  // while thousands of lines stayed stale. CHANGE_THRESHOLD_VND must track
+  // the column's own precision (numeric(18,6) => smallest representable
+  // unit is 1e-6), not an assumption about what "meaningful" money is.
+  const CHANGE_THRESHOLD_VND = 1e-6;
   const candidates: ChangeCandidate[] = [];
   for (const r of lineResults) {
     const delta = r.computed_cost_at_sale - r.stored_cost_at_sale;
-    if (Math.abs(delta) <= 1) continue;
+    if (Math.abs(delta) <= CHANGE_THRESHOLD_VND) continue;
     candidates.push({
       line_id: r.line_id,
       order_id: r.order_id,
@@ -115,7 +133,7 @@ async function main() {
       new_cost_at_sale: r.computed_cost_at_sale,
     });
   }
-  console.log(`Change candidates (|delta| > 1 dong): ${candidates.length}`);
+  console.log(`Change candidates (|delta| > ${CHANGE_THRESHOLD_VND} dong): ${candidates.length}`);
 
   // Re-verify the lock condition at run time -- do not trust the spec/plan's
   // recorded B=0/C=0 snapshot. If a locked line appears here, stop: this is
@@ -220,17 +238,17 @@ async function main() {
 
   // ---- Reconciliation: the P&L table's cogs_after uses every lineResults
   // entry unconditionally (computedCostByLine), but the actual write set
-  // (candidates/batches) excludes lines with |delta| <= 1 dong. A handful of
-  // lines sit exactly at that boundary (delta === +-1) -- their computed
-  // value is reflected in the P&L table above but will NOT be written to
+  // (candidates/batches) excludes lines with |delta| <= CHANGE_THRESHOLD_VND.
+  // A handful of lines sit exactly at that boundary -- their computed value
+  // is reflected in the P&L table above but will NOT be written to
   // order_lines_v2, since apply_full_history_recovery is never called for
   // them. This is why sum(pnlTable.profit_delta) can differ slightly from
   // sum(batches.net_delta): the gap is exactly the sum of these excluded
-  // +-1-dong deltas, never anything larger.
+  // sub-threshold deltas, never anything larger.
   const subThresholdLines = lineResults
     .filter(r => {
       const delta = r.computed_cost_at_sale - r.stored_cost_at_sale;
-      return delta !== 0 && Math.abs(delta) <= 1;
+      return delta !== 0 && Math.abs(delta) <= CHANGE_THRESHOLD_VND;
     })
     .map(r => ({
       order_no: r.order_no,
@@ -248,10 +266,17 @@ async function main() {
     gap_vnd: pnlTotalProfitDelta - batchesTotalProfitDelta,
     explained_by_sub_threshold_lines_excluded_from_write: subThresholdLines.length,
     sub_threshold_lines_total_delta_vnd: subThresholdTotalDelta,
-    note: "The P&L table's cogs_after includes every recomputed line unconditionally. The actual write set (batches below) excludes lines with |delta| <= 1 dong, since apply_full_history_recovery is never called for them. gap_vnd must equal -sub_threshold_lines_total_delta_vnd exactly; if it does not, investigate before proceeding.",
+    note: `The P&L table's cogs_after includes every recomputed line unconditionally. The actual write set (batches below) excludes lines with |delta| <= ${CHANGE_THRESHOLD_VND} dong, since apply_full_history_recovery is never called for them. gap_vnd must equal -sub_threshold_lines_total_delta_vnd exactly; if it does not, investigate before proceeding.`,
     sub_threshold_lines: subThresholdLines,
   };
-  if (reconciliation.gap_vnd !== -subThresholdTotalDelta) {
+  // Exact equality (=== ) was safe when every value was a whole VND integer.
+  // With cost_at_sale carrying full decimal precision (2026-07-30 exact-cost-
+  // precision plan), pnlTotalProfitDelta and subThresholdTotalDelta sum the
+  // same underlying values in different orders/groupings, so floating-point
+  // non-associativity alone can separate them by ~1e-8 VND with no real
+  // discrepancy. A VND-scale tolerance many orders of magnitude above that
+  // noise floor still catches any genuine mismatch.
+  if (Math.abs(reconciliation.gap_vnd - (-subThresholdTotalDelta)) > 1e-6) {
     console.error(`\nSTOP: reconciliation gap (${reconciliation.gap_vnd}) does not match the sub-threshold total (${-subThresholdTotalDelta}). Investigate before trusting this summary.`);
     process.exit(1);
   }
@@ -270,7 +295,7 @@ async function main() {
     console.log(`  ${m.month}: revenue=${m.revenue.toLocaleString()} cogs_before=${m.cogs_before.toLocaleString()} cogs_after=${m.cogs_after.toLocaleString()} profit_delta=${m.profit_delta.toLocaleString()}`);
   }
   console.log(`\nReconciliation: P&L table total profit delta = ${pnlTotalProfitDelta.toLocaleString()} VND, batches actually written total = ${batchesTotalProfitDelta.toLocaleString()} VND, gap = ${reconciliation.gap_vnd.toLocaleString()} VND.`);
-  console.log(`  Gap fully explained by ${subThresholdLines.length} line(s) sitting exactly at the +-1-dong threshold (excluded from the write set, still reflected in the P&L table's cogs_after).`);
+  console.log(`  Gap fully explained by ${subThresholdLines.length} line(s) sitting at or under the ${CHANGE_THRESHOLD_VND}-dong threshold (excluded from the write set, still reflected in the P&L table's cogs_after).`);
 
   // ---- Verify the RPC accepts a probe call before running the real loop ----
   const dryRunFailures: string[] = [];
@@ -283,7 +308,7 @@ async function main() {
       old_cost_at_sale: c.old_cost_at_sale,
       new_cost_at_sale: c.new_cost_at_sale,
     }));
-    const runId = `phase5-cost-rebuild-v2-2026-07-30-${batch.month}`;
+    const runId = `phase5-exact-cost-2026-07-31-${batch.month}`;
     const sourceHash = createHash("sha256").update(JSON.stringify(rpcChanges)).digest("hex");
 
     const dryRun = await supabase.rpc("apply_full_history_recovery", {
