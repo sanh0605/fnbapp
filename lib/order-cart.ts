@@ -72,6 +72,15 @@ export interface CartInput {
   // pressed, not when the request reached the server. Optional and
   // defaults to server time for any caller that doesn't send it.
   client_captured_at?: string;
+  // Explicit, trusted resolution time for recipe selection, bypassing the
+  // POS-clock sanity guard in resolveCapturedAt entirely (not weakening it --
+  // that guard exists to defend against a device with a bad clock, and does
+  // not apply to a timestamp read back out of the database). Used by order
+  // edits to resolve recipes against the order's original sale time instead
+  // of the moment the edit happens. Falls back to the resolved createdAt
+  // (POS checkout's own client_captured_at, guard-checked as before) when
+  // absent, so the checkout path is unaffected.
+  recipe_as_of?: string;
 }
 
 export interface BuiltPayment {
@@ -114,6 +123,9 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   if (!brand) throw new InvariantError(`Unknown brand: ${input.brand_id}`);
 
   const { createdAt, rejected: capturedAtRejected } = resolveCapturedAt(input.client_captured_at);
+  // Bypasses resolveCapturedAt entirely -- see the CartInput.recipe_as_of doc
+  // comment for why the 30-day guard must not apply here.
+  const recipeAsOf = input.recipe_as_of || createdAt;
   const orderId = `ord-${crypto.randomUUID()}`;
 
   // Resolve promotion (auto or explicit) against the true sale time, not
@@ -126,7 +138,7 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   const builtLines: BuiltLine[] = [];
   for (let i = 0; i < input.items.length; i++) {
     const item = input.items[i];
-    const line = buildLine(item, ref, orderId, i + 1, createdAt, resolvedPromo);
+    const line = buildLine(item, ref, orderId, i + 1, recipeAsOf, resolvedPromo);
     builtLines.push(line);
   }
 
@@ -317,7 +329,7 @@ function buildLine(
   ref: ReferenceData,
   orderId: string,
   lineNo: number,
-  createdAt: string,
+  recipeAsOf: string,
   resolvedPromo: any | null,
 ): BuiltLine {
   const product = ref.products.find(p => p.id === item.product_id);
@@ -340,7 +352,7 @@ function buildLine(
     ref.recipes,
     "PRODUCT_VARIANT",
     item.variant_id,
-    createdAt,
+    recipeAsOf,
   );
   const variantRecipeSnap = variantRecipe ? buildRecipeSnapshot(variantRecipe) : {
     target_type: "PRODUCT_VARIANT" as const,
@@ -355,7 +367,7 @@ function buildLine(
       ref.recipes,
       "MODIFIER",
       mod.id,
-      createdAt,
+      recipeAsOf,
     );
     if (modRecipe) {
       modifierRecipeEntries.push({
