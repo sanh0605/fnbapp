@@ -54,6 +54,33 @@ describe("savePosOrderAtomic", () => {
     });
   });
 
+  it("sends a fractional cost_at_sale through unchanged, not rounded or truncated (2026-07-31 exact-cost deploy: migration 0047 widens the RPC parameter to numeric(18,6), but that only helps if the client already sends the full value)", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        order_id: "ord-exact",
+        order_no: "PHD001100",
+        line_count: 1,
+        ledger_count: 0,
+      },
+      error: null,
+    });
+
+    await savePosOrderAtomic({
+      brandCode: "PHD",
+      order: { id: "ord-exact" },
+      lines: [{ id: "line-1", cost_at_sale: 3980.4237 }],
+      event: { id: "event-1" },
+      ledgerRows: [],
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "create_pos_order_atomic",
+      expect.objectContaining({
+        p_lines: [expect.objectContaining({ cost_at_sale: 3980.4237 })],
+      }),
+    );
+  });
+
   it("sends split payments and validates the persisted payment count", async () => {
     mocks.rpc.mockResolvedValue({
       data: {
