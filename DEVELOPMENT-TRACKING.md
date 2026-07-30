@@ -4,6 +4,64 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-31 (Claude Opus 5) - Coordination work, four days, logged late
+
+**Written 2026-07-31 after the owner pointed out it was missing.** This entry
+covers 2026-07-27 through 07-31 and should have been four entries written as the
+work happened. `CLAUDE.md` section 0 says "mọi thay đổi cuối phiên: append entry
+vào DEVELOPMENT-TRACKING.md" — over twenty commits went in without one. The cause
+was not a judgment call about an upcoming restructure; it was treating tracking
+as an end-of-session chore in a session that never reached an end, and optimising
+each turn for the owner's immediate question instead.
+
+**Specs and plans written** (all committed, none pushed by this agent): the clean
+rebuild program design; Phase 1-2 guards and admin PO edit; Phase 2b trail safety;
+Phase 3 backup and restore drill; Phase 4 stock rebuild; Phase 5 cost rebuild;
+Phase 6 recipe snapshot repair; exact cost precision; the 2026-07-29 and
+2026-07-31 deploy plans; splitting the recovery log out of the backup.
+
+**Findings raised from review, not from implementing:**
+- `scripts/audit-full-history-recompute.ts:156` computed "is anything negative"
+  from the mismatched-items list only, so a balance the system agreed with itself
+  about could never be reported. This is why every audit read clean while the
+  screen showed −6,651 g.
+- PO-037's loss was traced to the pre-atomic era (created 2026-06-26; atomic
+  writes shipped 2026-07-02), not to agent data loss as first assumed.
+- The Phase 3 restore drill verified repo code, never the deployed pipeline —
+  which is how `order_payments` sat unbacked for weeks while a local script
+  reported 40/40 tables healthy.
+- `rebuild_stock_ledger_for_order` (0034) never set `app.mac_drift_recovery`,
+  unlike every other recovery RPC, so a rebuild would have flooded
+  `backdated_ledger_events` and let the 03:00 cron auto-apply cost changes that
+  Phase 4 deliberately deferred. Closed by migration 0042.
+- Logging measurement: `data_recovery_changes` is 60.4% of all stored data;
+  `order_events` is 3.8%, of which 28 of 1,844 rows are not derivable from the
+  order row itself.
+
+**Errors made and retracted, recorded because they cost the owner time:**
+- Advocated rebuilding a code-graph tool without checking it had already been
+  built and deleted for disuse.
+- Wrote a whole risk section about releasing `audit_baseline_locks` without
+  checking the table had any rows. It has none.
+- Filtered recipes to `status = ACTIVE && !end_date` and used the empty result to
+  answer a question about the past, concluding `BTP-004` was safe to delete. The
+  owner caught it. Same failure mode as the audit bug above, diagnosed in someone
+  else's code hours earlier.
+- Stated the deploy order as "push first, migration second". The reverse is
+  correct: `create_pos_order_atomic` receives `cost_at_sale` as a parameter, so a
+  new app against an old `bigint` RPC breaks checkout.
+- Claimed recipe effective dates carried no time-of-day. 32 of 59 carry one.
+- Told the owner Trà sữa truyền thống might be near-zero margin from a line whose
+  cost covered 4 cups. It is 78%.
+
+**Also this session:** added `docs/COLLABORATION.md` C-bis (worked examples
+mandatory, in both the owner confirmation and the plan); gitignored downloaded
+backup bundles after a 45 MB production dump sat untracked in the repo root; and
+created `docs/OPEN-ITEMS.md` because the owner had to ask twice what remained and
+the answer had to be recounted both times.
+
+---
+
 ## 2026-07-30 (Claude Sonnet 5) - Clean Rebuild Program, Phase 6: Recipe Snapshot Repair (6/6 tasks, applied)
 
 **Trigger:** owner-directed investigation into why `recipe_snapshot_json` on sold order lines sometimes disagreed with the recipe actually in force at sale time. Plan: `docs/superpowers/plans/2026-07-30-phase6-recipe-snapshot-repair.md`.
