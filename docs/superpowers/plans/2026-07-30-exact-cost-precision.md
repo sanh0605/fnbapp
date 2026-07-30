@@ -128,13 +128,13 @@ anything, establish whether quantities are already exact.
 
 ### Task 2: Widen the column
 
-**Files:** `supabase/migrations/0044_exact_cost_at_sale.sql`,
+**Files:** `supabase/migrations/0046_exact_cost_at_sale.sql`,
 `lib/exact-cost-migration.test.ts`
 
 - [ ] **Step 1: Write the failing migration test**
 
 ```typescript
-const sql = readFileSync("supabase/migrations/0044_exact_cost_at_sale.sql", "utf8");
+const sql = readFileSync("supabase/migrations/0046_exact_cost_at_sale.sql", "utf8");
 
 it("widens order_lines_v2.cost_at_sale to six decimals", () => {
   expect(sql).toMatch(/alter table\s+(public\.)?order_lines_v2/i);
@@ -165,7 +165,7 @@ is worse than today because it would be invisible.
 
 Redefine each affected function with `numeric(18,6)`. Do not alter their logic.
 
-- [ ] **Step 5:** `npx supabase db push`, confirm 0044 on both sides of
+- [ ] **Step 5:** `npx supabase db push`, confirm 0046 on both sides of
   `npx supabase migration list`.
 
 - [ ] **Step 6: Commit.**
