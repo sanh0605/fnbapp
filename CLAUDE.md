@@ -7,8 +7,9 @@ Multi-agent repo (Claude Code + Codex). Trước mỗi phiên, đọc theo thứ
 1. `docs/COLLABORATION.md` — protocol, file map, status markers, commit conventions
 2. `DEVELOPMENT-TRACKING.md` — 3 entries mới nhất (chronicle log)
 3. `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md` — active task tracking với status
-4. `docs/ROADMAP.md` — pending work and phase status; full audit program at `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`
-5. `docs/domain-dictionary.md` — terminology (chỉ khi cần)
+4. `docs/OPEN-ITEMS.md` — **what is not finished**, one line each. Read this before asking "còn việc gì". Update it in the same commit that changes an item's state.
+5. `docs/ROADMAP.md` — pending work and phase status; full audit program at `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`
+6. `docs/domain-dictionary.md` — terminology (chỉ khi cần)
 
 Mọi thay đổi cuối phiên: append entry vào `DEVELOPMENT-TRACKING.md`, update status markers trong handoff, không push.
 
