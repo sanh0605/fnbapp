@@ -1,0 +1,791 @@
+{
+  "generated_at": "2026-07-30T03:44:07.494Z",
+  "mode": "APPLY",
+  "total_lines_changed": 1077,
+  "total_delta_vnd": -942492,
+  "delta_explained_by_non_inventory_exclusion_vnd": 0,
+  "delta_other_causes_vnd": -942492,
+  "monthly_batches": [
+    {
+      "month": "2026-06",
+      "line_count": 483,
+      "net_delta_vnd": -563730
+    },
+    {
+      "month": "2026-07",
+      "line_count": 594,
+      "net_delta_vnd": -378762
+    }
+  ],
+  "product_ranking": [
+    {
+      "product_id": "PROD-025",
+      "product_name": "Trà sữa truyền thống",
+      "total_delta_vnd": -134852,
+      "line_count": 96
+    },
+    {
+      "product_id": "PROD-012",
+      "product_name": "Hồng trà tắc",
+      "total_delta_vnd": -74754,
+      "line_count": 51
+    },
+    {
+      "product_id": "PROD-017",
+      "product_name": "Trà dâu",
+      "total_delta_vnd": -68349,
+      "line_count": 62
+    },
+    {
+      "product_id": "PROD-015",
+      "product_name": "Trà đào dầm",
+      "total_delta_vnd": -66216,
+      "line_count": 58
+    },
+    {
+      "product_id": "PROD-005",
+      "product_name": "Matcha latte",
+      "total_delta_vnd": -65468,
+      "line_count": 88
+    },
+    {
+      "product_id": "PROD-013",
+      "product_name": "Trà việt quất",
+      "total_delta_vnd": -65349,
+      "line_count": 47
+    },
+    {
+      "product_id": "PROD-003",
+      "product_name": "Cà phê sữa tươi",
+      "total_delta_vnd": -62292,
+      "line_count": 104
+    },
+    {
+      "product_id": "PROD-002",
+      "product_name": "Cà phê sữa đá",
+      "total_delta_vnd": -56560,
+      "line_count": 123
+    },
+    {
+      "product_id": "PROD-026",
+      "product_name": "Hồng trà sủi bọt",
+      "total_delta_vnd": -46959,
+      "line_count": 27
+    },
+    {
+      "product_id": "PROD-016",
+      "product_name": "Trà đào miếng",
+      "total_delta_vnd": -46853,
+      "line_count": 34
+    },
+    {
+      "product_id": "PROD-006",
+      "product_name": "Cacao latte",
+      "total_delta_vnd": -40711,
+      "line_count": 59
+    },
+    {
+      "product_id": "PROD-014",
+      "product_name": "Trà xoài",
+      "total_delta_vnd": -39820,
+      "line_count": 28
+    },
+    {
+      "product_id": "PROD-023",
+      "product_name": "Cacao Oatside",
+      "total_delta_vnd": -34713,
+      "line_count": 38
+    },
+    {
+      "product_id": "PROD-024",
+      "product_name": "Sữa dâu sấy giòn",
+      "total_delta_vnd": -28720,
+      "line_count": 61
+    },
+    {
+      "product_id": "PROD-022",
+      "product_name": "Matcha oatside",
+      "total_delta_vnd": -24601,
+      "line_count": 31
+    },
+    {
+      "product_id": "PROD-018",
+      "product_name": "Yogurt việt quất",
+      "total_delta_vnd": -20351,
+      "line_count": 55
+    },
+    {
+      "product_id": "PROD-004",
+      "product_name": "Cà phê kem muối",
+      "total_delta_vnd": -19326,
+      "line_count": 37
+    },
+    {
+      "product_id": "PROD-011",
+      "product_name": "Hồng trà chanh",
+      "total_delta_vnd": -19308,
+      "line_count": 11
+    },
+    {
+      "product_id": "PROD-019",
+      "product_name": "Yogurt dâu",
+      "total_delta_vnd": -15711,
+      "line_count": 35
+    },
+    {
+      "product_id": "PROD-021",
+      "product_name": "Yogurt xoài",
+      "total_delta_vnd": -6589,
+      "line_count": 14
+    },
+    {
+      "product_id": "PROD-020",
+      "product_name": "Yogurt đào",
+      "total_delta_vnd": -3591,
+      "line_count": 10
+    },
+    {
+      "product_id": "PROD-041",
+      "product_name": "Cacao caramel kem muối",
+      "total_delta_vnd": -599,
+      "line_count": 1
+    },
+    {
+      "product_id": "PROD-040",
+      "product_name": "Cacao kem muối",
+      "total_delta_vnd": -599,
+      "line_count": 1
+    },
+    {
+      "product_id": "PROD-036",
+      "product_name": "Cà phê caramel kem muối",
+      "total_delta_vnd": -449,
+      "line_count": 1
+    },
+    {
+      "product_id": "PROD-028",
+      "product_name": "Trứng luộc",
+      "total_delta_vnd": 248,
+      "line_count": 5
+    }
+  ],
+  "lines_moving_the_other_way": [
+    {
+      "order_no": "UCK000395",
+      "line_id": "ol-ea146d48-0fd6-44fc-9775-5f319566e5e1",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000397",
+      "line_id": "ol-d3b28f0c-056c-42b5-bd10-52e70e19eae6",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000399",
+      "line_id": "ol-c68bc285-d128-4c23-b0ef-6ae4ab838be8",
+      "product_name": "Trà đào miếng",
+      "old_cost_at_sale": 11205,
+      "new_cost_at_sale": 11212,
+      "delta": 7
+    },
+    {
+      "order_no": "UCK000400",
+      "line_id": "ol-40133380-b26a-4a2d-bae6-74ba10f977d2",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000409",
+      "line_id": "ol-432f16e7-5ae6-4179-a7d4-169a0becb5af",
+      "product_name": "Trà đào miếng",
+      "old_cost_at_sale": 11205,
+      "new_cost_at_sale": 11212,
+      "delta": 7
+    },
+    {
+      "order_no": "UCK000411",
+      "line_id": "ol-26260b21-a2e1-4982-ad45-41418215306f",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000414",
+      "line_id": "ol-39677fb7-4340-4a81-b947-cef25ec15745",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 20749,
+      "new_cost_at_sale": 20763,
+      "delta": 14
+    },
+    {
+      "order_no": "UCK000415",
+      "line_id": "ol-1e29d3a8-e782-4126-82a0-6a1db8ba1f2c",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000421",
+      "line_id": "ol-a7bbc9e2-3549-464b-aec5-60380cc6fdcb",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000422",
+      "line_id": "ol-1ea56ab5-cb90-40ef-b32b-26f8fe38dd62",
+      "product_name": "Trà đào miếng",
+      "old_cost_at_sale": 11205,
+      "new_cost_at_sale": 11212,
+      "delta": 7
+    },
+    {
+      "order_no": "UCK000422",
+      "line_id": "ol-4422ad8a-5bc1-4087-bef8-77490b57d49b",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000427",
+      "line_id": "ol-a9956af6-4965-4c57-97ad-c839a8e85e4d",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000440",
+      "line_id": "ol-f8996e36-dbc0-41e8-ada7-cf70d04d8e24",
+      "product_name": "Trà đào miếng",
+      "old_cost_at_sale": 11205,
+      "new_cost_at_sale": 11212,
+      "delta": 7
+    },
+    {
+      "order_no": "UCK000441",
+      "line_id": "ol-81887954-3620-4a6d-a099-ac283e3bcfef",
+      "product_name": "Trà đào miếng",
+      "old_cost_at_sale": 11205,
+      "new_cost_at_sale": 11212,
+      "delta": 7
+    },
+    {
+      "order_no": "UCK000442",
+      "line_id": "ol-56977544-89ff-4a46-ac00-228d4cf5bebc",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000443",
+      "line_id": "ol-b0d5b4e8-eedc-42aa-be90-75b4adba8646",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000453",
+      "line_id": "ol-f20a4211-a082-4f8a-afdc-52421f57add7",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 10374,
+      "new_cost_at_sale": 10382,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000466",
+      "line_id": "ol-ab2feb5c-318f-4e46-9aad-5ebc5e17379d",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 9757,
+      "new_cost_at_sale": 9764,
+      "delta": 7
+    },
+    {
+      "order_no": "UCK000468",
+      "line_id": "ol-85ca1e7c-7134-4b50-bf22-01df22fd923c",
+      "product_name": "Trà đào miếng",
+      "old_cost_at_sale": 10587,
+      "new_cost_at_sale": 10595,
+      "delta": 8
+    },
+    {
+      "order_no": "UCK000490",
+      "line_id": "ol-3705f750-3042-409f-9fd7-78628d2a895c",
+      "product_name": "Trà đào dầm",
+      "old_cost_at_sale": 11032,
+      "new_cost_at_sale": 11039,
+      "delta": 7
+    },
+    {
+      "order_no": "UCK000506",
+      "line_id": "ol-c930bf7e-c1e4-43c6-af15-0904079c0b27",
+      "product_name": "Trà dâu",
+      "old_cost_at_sale": 8798,
+      "new_cost_at_sale": 8811,
+      "delta": 13
+    },
+    {
+      "order_no": "UCK000511",
+      "line_id": "ol-88a85567-d6eb-4289-be7e-cf2ed95906c4",
+      "product_name": "Trà dâu",
+      "old_cost_at_sale": 8798,
+      "new_cost_at_sale": 8811,
+      "delta": 13
+    },
+    {
+      "order_no": "UCK000520",
+      "line_id": "ol-ce1887cf-96fc-49b1-b09c-487bf2379681",
+      "product_name": "Trà dâu",
+      "old_cost_at_sale": 8798,
+      "new_cost_at_sale": 8811,
+      "delta": 13
+    },
+    {
+      "order_no": "PHD001109",
+      "line_id": "ol-0a5f78c2-7280-427d-a91c-51c40723f87a",
+      "product_name": "Trứng luộc",
+      "old_cost_at_sale": 2418,
+      "new_cost_at_sale": 2437,
+      "delta": 19
+    },
+    {
+      "order_no": "PHD001114",
+      "line_id": "ol-907eb199-e4ef-43ee-8c67-d1144ced4254",
+      "product_name": "Trứng luộc",
+      "old_cost_at_sale": 9671,
+      "new_cost_at_sale": 9747,
+      "delta": 76
+    },
+    {
+      "order_no": "PHD001118",
+      "line_id": "ol-b305b526-73c0-4313-9a96-385af7f22b3b",
+      "product_name": "Trứng luộc",
+      "old_cost_at_sale": 2418,
+      "new_cost_at_sale": 2437,
+      "delta": 19
+    },
+    {
+      "order_no": "PHD001121",
+      "line_id": "ol-c3c62d78-de11-4e21-a409-32a9ddfb6986",
+      "product_name": "Trứng luộc",
+      "old_cost_at_sale": 12088,
+      "new_cost_at_sale": 12184,
+      "delta": 96
+    },
+    {
+      "order_no": "PHD001126",
+      "line_id": "ol-aedda833-1886-42a8-a7f3-94530a9ee08d",
+      "product_name": "Trứng luộc",
+      "old_cost_at_sale": 4835,
+      "new_cost_at_sale": 4873,
+      "delta": 38
+    },
+    {
+      "order_no": "UCK000550",
+      "line_id": "ol-401b9943-ac80-4376-a74c-cb22763c7388",
+      "product_name": "Trà dâu",
+      "old_cost_at_sale": 10073,
+      "new_cost_at_sale": 10086,
+      "delta": 13
+    },
+    {
+      "order_no": "UCK000589",
+      "line_id": "ol-0cf7c874-23b6-4fc8-9f39-54c86e53aa3f",
+      "product_name": "Trà dâu",
+      "old_cost_at_sale": 8798,
+      "new_cost_at_sale": 8811,
+      "delta": 13
+    },
+    {
+      "order_no": "UCK000592",
+      "line_id": "ol-d9d689e8-1a06-457a-a61c-b93856ffa06d",
+      "product_name": "Matcha latte",
+      "old_cost_at_sale": 8161,
+      "new_cost_at_sale": 8163,
+      "delta": 2
+    },
+    {
+      "order_no": "UCK000593",
+      "line_id": "ol-dc0f929d-aa5d-44c8-9edb-7acf0bbd92e8",
+      "product_name": "Cacao latte",
+      "old_cost_at_sale": 8131,
+      "new_cost_at_sale": 8133,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001208",
+      "line_id": "ol-d3686fa5-bba8-4198-83e6-995984d3eb8f",
+      "product_name": "Cà phê sữa đá",
+      "old_cost_at_sale": 6348,
+      "new_cost_at_sale": 6350,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001209",
+      "line_id": "ol-8a52a1cf-0167-479a-a05b-68ed739aec0f",
+      "product_name": "Cà phê sữa đá",
+      "old_cost_at_sale": 6348,
+      "new_cost_at_sale": 6350,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001210",
+      "line_id": "ol-be089b36-14fd-4e93-b2d0-a5ad84c926bf",
+      "product_name": "Cà phê sữa đá",
+      "old_cost_at_sale": 6348,
+      "new_cost_at_sale": 6350,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001211",
+      "line_id": "ol-19ffc940-4c02-449e-9887-8edd8d7fe52e",
+      "product_name": "Cà phê sữa đá",
+      "old_cost_at_sale": 6348,
+      "new_cost_at_sale": 6350,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001215",
+      "line_id": "ol-ab4c6c7e-81b9-407d-9dd6-7696fb4bd0c7",
+      "product_name": "Cà phê sữa đá",
+      "old_cost_at_sale": 6348,
+      "new_cost_at_sale": 6350,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001217",
+      "line_id": "ol-6aed53f9-fc79-48e5-aa08-16991b1b51da",
+      "product_name": "Cà phê sữa tươi",
+      "old_cost_at_sale": 6714,
+      "new_cost_at_sale": 6716,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001219",
+      "line_id": "ol-87c47f17-4b5c-4b69-8c1b-0261b8ac02d1",
+      "product_name": "Cà phê sữa đá",
+      "old_cost_at_sale": 6348,
+      "new_cost_at_sale": 6350,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001220",
+      "line_id": "ol-fb46e78c-2de7-4c7e-a2cf-8737c6d473ca",
+      "product_name": "Cà phê kem muối",
+      "old_cost_at_sale": 9295,
+      "new_cost_at_sale": 9297,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001223",
+      "line_id": "ol-9354ce60-a5ee-4a88-93a0-d42c097556c3",
+      "product_name": "Cà phê sữa đá",
+      "old_cost_at_sale": 6348,
+      "new_cost_at_sale": 6350,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001224",
+      "line_id": "ol-a6d06324-dbad-44e0-8015-862066c83b76",
+      "product_name": "Cà phê sữa tươi",
+      "old_cost_at_sale": 6714,
+      "new_cost_at_sale": 6716,
+      "delta": 2
+    },
+    {
+      "order_no": "PHD001225",
+      "line_id": "ol-6f8c0a22-9d94-4084-bb47-da555aa52445",
+      "product_name": "Cà phê kem muối",
+      "old_cost_at_sale": 9295,
+      "new_cost_at_sale": 9297,
+      "delta": 2
+    }
+  ],
+  "monthly_pnl": [
+    {
+      "month": "2026-04",
+      "revenue": 2190000,
+      "cogs_before": 753653,
+      "cogs_after": 753653,
+      "profit_before": 1436347,
+      "profit_after": 1436347,
+      "profit_delta": 0
+    },
+    {
+      "month": "2026-05",
+      "revenue": 7675000,
+      "cogs_before": 2850796,
+      "cogs_after": 2850796,
+      "profit_before": 4824204,
+      "profit_after": 4824204,
+      "profit_delta": 0
+    },
+    {
+      "month": "2026-06",
+      "revenue": 22157000,
+      "cogs_before": 13633550,
+      "cogs_after": 13069805,
+      "profit_before": 8523450,
+      "profit_after": 9087195,
+      "profit_delta": 563745
+    },
+    {
+      "month": "2026-07",
+      "revenue": 18252000,
+      "cogs_before": 7721579,
+      "cogs_after": 7342815,
+      "profit_before": 10530421,
+      "profit_after": 10909185,
+      "profit_delta": 378764
+    }
+  ],
+  "pnl_vs_write_reconciliation": {
+    "pnl_table_total_profit_delta_vnd": 942509,
+    "batches_to_write_total_profit_delta_vnd": 942492,
+    "gap_vnd": 17,
+    "explained_by_sub_threshold_lines_excluded_from_write": 29,
+    "sub_threshold_lines_total_delta_vnd": -17,
+    "note": "The P&L table's cogs_after includes every recomputed line unconditionally. The actual write set (batches below) excludes lines with |delta| <= 1 dong, since apply_full_history_recovery is never called for them. gap_vnd must equal -sub_threshold_lines_total_delta_vnd exactly; if it does not, investigate before proceeding.",
+    "sub_threshold_lines": [
+      {
+        "order_no": "UCK000091",
+        "line_id": "ol-migrated-39ee2045-f151-4d6d-bab6-778c10067e9b",
+        "old_cost_at_sale": 53141,
+        "new_cost_at_sale": 53140,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000118",
+        "line_id": "ol-migrated-98ff5255-5e1f-4d98-a03d-770900469a04",
+        "old_cost_at_sale": 15211,
+        "new_cost_at_sale": 15210,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000137",
+        "line_id": "ol-migrated-e8164f3e-1d58-47a7-a28a-5d1d331821e9",
+        "old_cost_at_sale": 14889,
+        "new_cost_at_sale": 14888,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000150",
+        "line_id": "ol-migrated-9e611945-d582-47c7-bab0-f18176e70adc",
+        "old_cost_at_sale": 14889,
+        "new_cost_at_sale": 14888,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000155",
+        "line_id": "ol-migrated-68f278f7-7bd6-4092-bd74-7629ec37f5ec",
+        "old_cost_at_sale": 17191,
+        "new_cost_at_sale": 17190,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000166",
+        "line_id": "ol-migrated-e690b4ca-e41e-47b4-a598-ab6d3916ecab",
+        "old_cost_at_sale": 14889,
+        "new_cost_at_sale": 14888,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000175",
+        "line_id": "ol-migrated-aad4af7d-afb6-4868-99ba-d3e01e10c18f",
+        "old_cost_at_sale": 14889,
+        "new_cost_at_sale": 14888,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000176",
+        "line_id": "ol-migrated-76cbd05d-0731-4611-a306-2dd282752465",
+        "old_cost_at_sale": 29778,
+        "new_cost_at_sale": 29777,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000177",
+        "line_id": "ol-migrated-50bf1b4a-e03f-4b70-9982-b0885888dccd",
+        "old_cost_at_sale": 14847,
+        "new_cost_at_sale": 14846,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000179",
+        "line_id": "ol-migrated-6761ed5f-550e-4054-9b28-f3180b8050e1",
+        "old_cost_at_sale": 14847,
+        "new_cost_at_sale": 14846,
+        "delta": -1
+      },
+      {
+        "order_no": "PHD000747",
+        "line_id": "ol-c88ace30-baa5-4e48-89c4-84a1a42fec63",
+        "old_cost_at_sale": 4198,
+        "new_cost_at_sale": 4197,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000186",
+        "line_id": "ol-0901c1a8-2792-4672-85a7-05886b0e471e",
+        "old_cost_at_sale": 14847,
+        "new_cost_at_sale": 14846,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000187",
+        "line_id": "ol-1daa84f2-3e29-4beb-83e5-625231671a98",
+        "old_cost_at_sale": 14847,
+        "new_cost_at_sale": 14846,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000196",
+        "line_id": "ol-d7bd4626-2ed1-4f95-84bc-dac1c08ce741",
+        "old_cost_at_sale": 14847,
+        "new_cost_at_sale": 14846,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000201",
+        "line_id": "ol-94e4e621-3f77-43d8-97ed-eb30086c57dd",
+        "old_cost_at_sale": 14847,
+        "new_cost_at_sale": 14846,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000219",
+        "line_id": "ol-870f5027-9111-47a9-9144-1792c56a5948",
+        "old_cost_at_sale": 14847,
+        "new_cost_at_sale": 14846,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000239",
+        "line_id": "ol-002a922a-e67c-48a3-b6a2-ecb7e92db372",
+        "old_cost_at_sale": 8473,
+        "new_cost_at_sale": 8472,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000244",
+        "line_id": "ol-abdfc7c5-d766-44b9-965a-81e390e77a50",
+        "old_cost_at_sale": 15160,
+        "new_cost_at_sale": 15161,
+        "delta": 1
+      },
+      {
+        "order_no": "UCK000245",
+        "line_id": "ol-99181c5c-e54b-414b-ae09-c62a3c4fe893",
+        "old_cost_at_sale": 30320,
+        "new_cost_at_sale": 30321,
+        "delta": 1
+      },
+      {
+        "order_no": "UCK000247",
+        "line_id": "ol-07243704-fe9e-463e-805a-7c50662557bd",
+        "old_cost_at_sale": 15160,
+        "new_cost_at_sale": 15161,
+        "delta": 1
+      },
+      {
+        "order_no": "UCK000248",
+        "line_id": "ol-1e9fb13e-c2cd-47b4-ba74-01835bcae890",
+        "old_cost_at_sale": 16945,
+        "new_cost_at_sale": 16944,
+        "delta": -1
+      },
+      {
+        "order_no": "PHD000853",
+        "line_id": "ol-23fe4f78-10a1-410c-aac4-15812d07442c",
+        "old_cost_at_sale": 6768,
+        "new_cost_at_sale": 6769,
+        "delta": 1
+      },
+      {
+        "order_no": "PHD000857",
+        "line_id": "ol-67826450-744c-41d6-b006-80f4c9867355",
+        "old_cost_at_sale": 6768,
+        "new_cost_at_sale": 6769,
+        "delta": 1
+      },
+      {
+        "order_no": "UCK000490",
+        "line_id": "ol-0ba88da7-5e4f-40fb-8068-a62c60cb4050",
+        "old_cost_at_sale": 2293,
+        "new_cost_at_sale": 2292,
+        "delta": -1
+      },
+      {
+        "order_no": "PHD001029",
+        "line_id": "ol-c214825d-d70f-45fd-991d-41ccc0da9a14",
+        "old_cost_at_sale": 2418,
+        "new_cost_at_sale": 2417,
+        "delta": -1
+      },
+      {
+        "order_no": "PHD001034",
+        "line_id": "ol-b66b8edc-1a8a-48ac-825e-713fb6fa2af5",
+        "old_cost_at_sale": 2418,
+        "new_cost_at_sale": 2417,
+        "delta": -1
+      },
+      {
+        "order_no": "PHD001067",
+        "line_id": "ol-1077f4f6-09c6-4fd3-802e-130211cd9707",
+        "old_cost_at_sale": 2438,
+        "new_cost_at_sale": 2437,
+        "delta": -1
+      },
+      {
+        "order_no": "PHD001070",
+        "line_id": "ol-75e0ead1-0b4f-43dc-9960-a37ca6335e07",
+        "old_cost_at_sale": 2438,
+        "new_cost_at_sale": 2437,
+        "delta": -1
+      },
+      {
+        "order_no": "UCK000576",
+        "line_id": "ol-7c7f1369-8272-4661-a8c1-7ef58e6a7063",
+        "old_cost_at_sale": 9000,
+        "new_cost_at_sale": 9001,
+        "delta": 1
+      }
+    ]
+  },
+  "lock_recheck": {
+    "locked_in_batch": 0
+  },
+  "dry_run_failures": [],
+  "apply_results": [
+    {
+      "month": "2026-06",
+      "run_id": "phase5-cost-rebuild-2026-06",
+      "change_count": 483,
+      "total_delta_vnd": -563730,
+      "applied": true
+    },
+    {
+      "month": "2026-07",
+      "run_id": "phase5-cost-rebuild-2026-07",
+      "change_count": 594,
+      "total_delta_vnd": -378762,
+      "applied": true
+    }
+  ],
+  "no_stock_rows_touched": true,
+  "no_baseline_lock_removed": true
+}
