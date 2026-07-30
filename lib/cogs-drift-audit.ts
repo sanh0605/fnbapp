@@ -238,7 +238,7 @@ export function auditCogsDrift(input: {
 }
 
 function costConsumptionRowsFIFO(rows: ConsumptionRow[], tracker: FIFOTracker): number {
-  return Math.round(rows.reduce((sum, row) => sum + tracker.consume(row.item_reference, row.quantity), 0));
+  return rows.reduce((sum, row) => sum + tracker.consume(row.item_reference, row.quantity), 0);
 }
 
 function modifierQtyByIdFromLine(line: RawLine): Map<string, number> {

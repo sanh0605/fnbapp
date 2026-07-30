@@ -95,7 +95,7 @@ export function computeMacCostForConsumptionRows(
     const unitCost = getMacUnitCostWithRecipeFallback(row.item_reference, ledger, saleTime, semiProductContext);
     return sum + unitCost * row.quantity;
   }, 0);
-  return Math.round(total);
+  return total;
 }
 
 export function computeMacCostFromUnitCosts(
@@ -112,7 +112,7 @@ export function computeMacCostFromUnitCosts(
     );
     return sum + unitCost * row.quantity;
   }, 0);
-  return Math.round(total);
+  return total;
 }
 
 export function getMacUnitCostWithRecipeFallback(

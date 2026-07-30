@@ -95,7 +95,7 @@ export function computeLineCostAtSale(
 
   // Backward compat: if caller passes raw RecipeSnapshot (old shape), treat as variant-only
   if ("target_type" in lineRecipe && !("variant" in lineRecipe)) {
-    return Math.round(costForRecipe(lineRecipe as RecipeSnapshot, ledger, lineQty, saleMs, spContext));
+    return costForRecipe(lineRecipe as RecipeSnapshot, ledger, lineQty, saleMs, spContext);
   }
 
   const snap = lineRecipe as LineRecipeSnapshot;
@@ -104,5 +104,5 @@ export function computeLineCostAtSale(
     const modifierQty = Number(modEntry.modifier_qty || 1);
     total += costForRecipe(modEntry.recipe, ledger, lineQty * modifierQty, saleMs, spContext);
   }
-  return Math.round(total);
+  return total;
 }

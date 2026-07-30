@@ -380,7 +380,10 @@ describe("buildHongToLucMigrationPlan", () => {
 
     const plan = buildHongToLucMigrationPlan(input);
 
-    expect(plan.lines[0].projectedCogs).toBe(30);
+    // Owner decision 2026-07-30: exact computation, no rounding until
+    // display -- toBeCloseTo absorbs the floating-point epsilon from
+    // (20/100)*3*50 that Math.round used to mask.
+    expect(plan.lines[0].projectedCogs).toBeCloseTo(30, 9);
   });
 
   it("rejects a target recipe outside the reviewed recipe ID", () => {

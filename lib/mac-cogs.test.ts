@@ -62,6 +62,18 @@ describe("MAC COGS", () => {
     expect(getMacUnitCost(ledger, "ING-A", "2026-06-02T12:00:00Z")).toBe(10);
   });
 
+  it("returns the exact cost, not a rounded one", () => {
+    const preciseLedger = [
+      { item_reference: "CAFE", transaction_type: "PO_RECEIPT", quantity_change: 100, unit_cost: 1, created_at: "2026-06-01T03:00:00Z" },
+      { item_reference: "CAFE", transaction_type: "SALES_CONSUME", quantity_change: -10, unit_cost: 0, created_at: "2026-06-02T03:00:00Z" },
+      { item_reference: "CAFE", transaction_type: "SALES_CONSUME", quantity_change: -20, unit_cost: 0, created_at: "2026-06-03T03:00:00Z" },
+      { item_reference: "CAFE", transaction_type: "PO_RECEIPT", quantity_change: 100, unit_cost: 2, created_at: "2026-06-04T03:00:00Z" },
+    ];
+    const cost = computeMacCostForConsumptionRows(
+      [{ item_reference: "CAFE", quantity: 10, source: "VARIANT_RECIPE" }], preciseLedger, "2026-06-05T03:00:00Z");
+    expect(cost).toBeCloseTo(15.882353, 5);   // today this returns exactly 16
+  });
+
   it("keeps latest known MAC available when stock is zero or negative", () => {
     const rows: ConsumptionRow[] = [
       { item_reference: "ING-A", quantity: 10, source: "VARIANT_RECIPE" },

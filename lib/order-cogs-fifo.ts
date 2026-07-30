@@ -54,7 +54,7 @@ export function computeLineCostFIFO(
 ): number {
   // Backward compat: raw RecipeSnapshot (no "variant" key)
   if ("target_type" in lineRecipe && !("variant" in lineRecipe)) {
-    return Math.round(costForRecipeFIFO(lineRecipe as RecipeSnapshot, tracker, lineQty, spContext));
+    return costForRecipeFIFO(lineRecipe as RecipeSnapshot, tracker, lineQty, spContext);
   }
 
   const snap = lineRecipe as LineRecipeSnapshot;
@@ -63,5 +63,5 @@ export function computeLineCostFIFO(
     const modifierQty = Number(modEntry.modifier_qty || 1);
     total += costForRecipeFIFO(modEntry.recipe, tracker, lineQty * modifierQty, spContext);
   }
-  return Math.round(total);
+  return total;
 }

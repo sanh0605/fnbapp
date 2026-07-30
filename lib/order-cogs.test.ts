@@ -21,21 +21,22 @@ describe("computeLineCostAtSale", () => {
     expect(computeLineCostAtSale(recipe, [], 1)).toBe(0);
   });
 
-  it("computes MAC = total_cost / total_qty across all PO_RECEIPT entries per ingredient", () => {
+  it("computes MAC = total_cost / total_qty across all PO_RECEIPT entries per ingredient, exact, not rounded", () => {
     // 2 PO_RECEIPTs for BI-MILK: 10L @ 20k/L, 5L @ 30k/L
-    //   MAC = (10*20 + 5*30) / (10+5) = 350/15 = 23.333k/L
-    //   Consume 0.05 L × qty 1 → 1167đ
+    //   MAC = (10*20 + 5*30) / (10+5) = 350/15 = 23.333...k/L
+    //   Consume 0.05 L × qty 1 → 1166.666...đ
     // 1 PO_RECEIPT for BI-STRAWBERRY: 2kg @ 100k/kg
     //   MAC = 100k/kg
     //   Consume 0.03 kg × qty 1 → 3000đ
-    //   Total: 1167 + 3000 = 4167đ
+    //   Total: 1166.666... + 3000 = 4166.666...đ (owner decision 2026-07-30:
+    //   exact computation, no rounding until display)
     const ledger = [
       { item_reference: "BI-MILK", transaction_type: "PO_RECEIPT", unit_cost: "20000", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
       { item_reference: "BI-MILK", transaction_type: "PO_RECEIPT", unit_cost: "30000", quantity_change: "5", created_at: "2026-06-05T00:00:00Z" },
       { item_reference: "BI-STRAWBERRY", transaction_type: "PO_RECEIPT", unit_cost: "100000", quantity_change: "2", created_at: "2026-06-01T00:00:00Z" },
     ];
     const cost = computeLineCostAtSale(recipe, ledger, 1);
-    expect(cost).toBe(4167);
+    expect(cost).toBeCloseTo(4166.666667, 5);
   });
 
   it("scales linearly with line qty", () => {
