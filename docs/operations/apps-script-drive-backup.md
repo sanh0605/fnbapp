@@ -36,14 +36,18 @@ Open **Project Settings → Script Properties** and add:
 4. Confirm the configured root folder contains `daily/` and `monthly/` child
    folders.
 5. Confirm `daily/` contains `fnbapp-backup-YYYY-MM-DD.json`.
-6. Open the file and confirm `schemaVersion` is `2` and `tables` has exactly 32 keys.
+6. Open the file and confirm `schemaVersion` is `2` and `tables` has exactly 40 keys.
 7. Confirm `monthly/` contains `fnbapp-monthly-YYYY-MM.json`.
 8. Run it again. Confirm only one non-trashed daily and monthly file exists for
    the current periods.
 
 Failure alerts are sent with `MailApp` to
 `Session.getActiveUser().getEmail()`, which is the account that owns the
-installable trigger.
+installable trigger. A backup table present in the snapshot but not in this
+script's `EXPECTED_TABLES` is non-fatal (still backed up, an email warning is
+sent) -- only a table `EXPECTED_TABLES` requires that the snapshot is missing
+throws and blocks the run. This lets the Edge Function's table list grow
+ahead of this script without breaking the nightly backup.
 
 ## 4. Install the daily trigger
 
@@ -64,7 +68,7 @@ appropriate child folder. Unrelated files are never touched.
 Download a backup JSON and verify:
 
 - `schemaVersion === 2`;
-- all 32 table keys are present;
+- all 40 table keys are present;
 - every table `count` equals `rows.length`;
 - the file size is plausible compared with the latest local dry-run.
 

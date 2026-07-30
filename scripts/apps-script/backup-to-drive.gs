@@ -87,8 +87,17 @@ function validateBundle_(bundle) {
   const expected = EXPECTED_TABLES.slice().sort();
   const missing = expected.filter(table => actual.indexOf(table) === -1);
   const unexpected = actual.filter(table => expected.indexOf(table) === -1);
-  if (missing.length || unexpected.length) {
-    throw new Error(`Snapshot schema mismatch; missing=${missing.join(",")}; unexpected=${unexpected.join(",")}`);
+  // A missing table is silent data loss risk -- always fatal. An unexpected
+  // table is forward-compatible schema growth on the Edge Function side
+  // (e.g. it was deployed with a wider table list before this script's own
+  // EXPECTED_TABLES caught up) -- non-fatal, but surfaced so the owner
+  // knows to update EXPECTED_TABLES. This asymmetry is what let the
+  // 2026-07-30 8-table rollout ship without a mid-transition backup outage.
+  if (missing.length) {
+    throw new Error(`Snapshot schema mismatch; missing=${missing.join(",")}`);
+  }
+  if (unexpected.length) {
+    alertSchemaDrift_(unexpected);
   }
   EXPECTED_TABLES.forEach(table => {
     const entry = bundle.tables[table];
@@ -159,6 +168,13 @@ function alertCapacity_(sizeBytes) {
   const message = `Backup bundle ${sizeBytes} bytes reached the ${threshold} threshold. Review R2/B2 migration policy.`;
   console.warn(message);
   if (email) MailApp.sendEmail(email, `[fnbapp] Backup capacity ${threshold}`, message);
+}
+
+function alertSchemaDrift_(unexpectedTables) {
+  const message = `Backup bundle contains ${unexpectedTables.length} table(s) not in EXPECTED_TABLES: ${unexpectedTables.join(",")}. Still being backed up (not dropped) -- update EXPECTED_TABLES in this script to match core.ts and clear the warning.`;
+  console.warn(message);
+  const email = Session.getActiveUser().getEmail();
+  if (email) MailApp.sendEmail(email, "[fnbapp] Backup schema drift (non-fatal)", message);
 }
 
 function alertFailure_(error) {
