@@ -68,9 +68,21 @@ step 2 changes checkout behaviour the instant it lands.
 ### Step 3: Migration 0047 (Sonnet)
 
 - [ ] `npx supabase db push`. Confirm 0047 on both sides.
-- [ ] **Immediately confirm the shop can still sell** — the old app is still live
-  and must keep working against the new RPC. If it cannot, stop here: nothing
-  else has changed yet and the RPC widening is the only suspect.
+
+- [ ] **Call the RPC for real with a fractional cost.** Pre-flight could only
+  assert that the SQL *text* declares `numeric(18,6)`, because calling the live
+  checkout RPC while the shop was trading was not safe. A text assertion is not
+  a behaviour test — that distinction is exactly what let the backup pipeline sit
+  broken for weeks while a local script reported it healthy.
+
+  Now that the shop is closed, place one real order through the RPC with a cost
+  like `3980.4237`, read the stored row back, and confirm it is intact rather
+  than `3980`. Then remove the test order. **If it truncates, stop — the deploy's
+  whole purpose fails here and nothing else has changed yet.**
+
+- [ ] **Confirm the shop can still sell on the OLD app** — it is still live and
+  must keep working against the new RPC. If it cannot, stop: only the RPC
+  changed, so it is the only suspect.
 
 ### Step 4: OWNER — push
 
