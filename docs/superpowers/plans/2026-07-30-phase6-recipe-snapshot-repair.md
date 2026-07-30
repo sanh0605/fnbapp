@@ -351,7 +351,130 @@ Owner approves the month-by-month table before `--apply`, same gate as before.
 
 ---
 
-### Task 5: Verify
+### Task 5: Stop this from recurring (owner-approved 2026-07-30)
+
+**Run after Task 4 applies, before declaring the repair done.** Without this, the
+repair has a shelf life: the next time the owner back-dates a recipe, the
+snapshots desynchronise again and nothing notices.
+
+**Files:**
+- Create: `supabase/migrations/0043_backdated_recipe_detection_on_update.sql`
+- Create: `lib/backdated-recipe-detection-migration.test.ts`
+- Modify: `lib/backdated-recipe-events/recompute-event.ts`
+- Modify: `app/admin/semi-products/actions.ts:120,132`,
+  `app/admin/products/actions.ts`, `app/admin/products/modifiers/actions.ts`
+
+**Three holes, all verified against the current code.**
+
+**Hole 1 — the trigger only fires on INSERT.**
+`detect_backdated_recipe_entry` is `after insert on public.recipes`
+(`0027_backdated_recipe_detection.sql:86-90`). The owner back-dates by editing an
+existing recipe's `end_date`, which is an UPDATE. The trigger never runs.
+
+> **Ví dụ:** REC-017 (Hồng trà chanh 700ml) currently ends `2026-06-04 14:15:45`.
+> Change that to `2026-06-01` to reflect a change entered late. That is an UPDATE.
+> Today: no `backdated_recipe_events` row, no cost recompute, no snapshot repair,
+> and every sale between 01/06 and 04/06 keeps a snapshot nobody knows is stale.
+
+**Hole 2 — the wrong column is watched.**
+The trigger tests `new.created_at < now() - interval '5 minutes'`. Effectiveness
+is decided by `start_date` (falling back to `created_at`,
+`lib/recipe-selection.ts:43`), not `created_at`.
+
+> **Ví dụ, and this is why ordering matters:** on 30/07 a recipe is saved with
+> `start_date = 2026-06-14` and `created_at = 2026-07-30`. The trigger reads
+> `created_at`, sees today, and stays silent — while the recipe just moved 46
+> days into the past. **Populating `start_date` before fixing this trigger makes
+> detection strictly worse than it is now.** Do the migration first.
+
+**Hole 3 — detection repairs cost but not the snapshot.**
+`lib/backdated-recipe-events/recompute-event.ts` references only
+`old_cost_at_sale` / `new_cost_at_sale`. There is no mention of
+`recipe_snapshot_json` anywhere in it. So even a correctly detected back-date
+leaves the stale snapshot in place — which is exactly the state Task 3 is
+cleaning up by hand.
+
+- [ ] **Step 1: Write the failing migration test**
+
+```typescript
+const sql = readFileSync("supabase/migrations/0043_backdated_recipe_detection_on_update.sql", "utf8");
+
+it("fires on update as well as insert", () => {
+  expect(sql).toMatch(/after insert or update on public\.recipes/i);
+});
+
+it("evaluates the effective start, not the row's creation time", () => {
+  expect(sql).toContain("coalesce(new.start_date, new.created_at)");
+});
+
+it("keeps the recovery escape hatch so replays do not trip it", () => {
+  expect(sql).toContain("current_setting('app.mac_drift_recovery', true)");
+});
+
+it("still restricts the function", () => {
+  expect(sql).toContain("revoke all on function");
+});
+```
+
+- [ ] **Step 2: Run it, confirm it fails** (file does not exist).
+
+- [ ] **Step 3: Write the migration**
+
+Copy `flag_backdated_recipe_entry()` from `0027` and change exactly three things:
+the threshold test uses `coalesce(new.start_date, new.created_at)`; the trigger
+becomes `after insert or update on public.recipes`; and on UPDATE the event is
+also raised when `end_date` moved, since that is how a predecessor's window is
+shortened. **Keep the `app.mac_drift_recovery` skip and the 5-minute threshold
+exactly as they are** — migration 0042 depends on that skip, and removing it
+would make every rebuild flood the events table again.
+
+- [ ] **Step 4: Teach recovery to repair the snapshot, not only the cost**
+
+When an event is settled, re-resolve `recipe_snapshot_json` for every order line
+in the affected window using `selectEffectiveRecipe(recipes, target_type,
+target_id, saleTime)` — the same call Task 3 uses — and write it before the cost
+recompute, because cost is derived from the snapshot.
+
+Reuse `lib/recipe-snapshot-repair.ts` from Task 3 rather than writing a second
+resolver. Two implementations of this will drift.
+
+- [ ] **Step 5: Always write `start_date` on save**
+
+`app/admin/semi-products/actions.ts:120` and `:132` insert with
+`created_at: nowIso, end_date: ""` and no `start_date` — this is the origin of
+the 129 null rows. Add `start_date: nowIso` there and in the product and
+modifier save paths.
+
+There is currently no UI for entering a back-dated recipe; back-dating has only
+ever happened through scripts. So this step writes `start_date === created_at`
+today, and simply makes the column honest. If a back-date input is added later,
+it feeds `start_date` and the trigger from Step 3 will see it.
+
+- [ ] **Step 6: Verify and apply**
+
+Full suite green, `tsc` clean, then `npx supabase db push`. Confirm 0043 appears
+on both sides of `npx supabase migration list`.
+
+**Then prove the trigger actually works**, rather than trusting the migration
+text: in a transaction, update one recipe's `end_date` backwards, confirm a
+`backdated_recipe_events` row appears, then roll back. Report what you observed.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add supabase/migrations/0043_backdated_recipe_detection_on_update.sql lib/ app/admin/
+git commit -m "Claude-Sonnet fix: detect recipe back-dating on update and repair snapshots, not just cost"
+```
+
+**Deferred to Phase 7, deliberately:** backfilling `start_date` on the 129
+existing null rows. It is safe only under one condition — after the backfill,
+`selectEffectiveRecipe` must return the **identical** recipe for all 2,538 order
+lines. A backfill that changes no resolution is documentation; one that changes
+any resolution is a data change wearing a backfill's clothes, and must stop.
+
+---
+
+### Task 6: Verify
 
 - [ ] **Step 1: Re-run the snapshot check.** `findSnapshotMismatches` over all
   lines must return only the non-repairable ones — the single Hồng trà chanh line,
