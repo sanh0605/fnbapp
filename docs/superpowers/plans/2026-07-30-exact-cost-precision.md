@@ -5,10 +5,17 @@
 **Goal:** Stop rounding computed cost. Stock deduction and COGS carry full
 precision end to end; rounding happens only where a figure is displayed.
 
-**Architecture:** `order_lines_v2.cost_at_sale` becomes `numeric(18,6)`, matching
-what `stock_ledger.cost_at_sale` has been since migration 0004. The `Math.round`
-calls in the cost engine are removed. Reports sum exact values and round once,
-at render.
+**Architecture:** `order_lines_v2.cost_at_sale` stops being a whole-number column
+and the `Math.round` calls in the cost engine are removed, so calculation and
+storage carry the exact value. Rounding moves to the display layer and follows
+the owner's own two-way rule below.
+
+`numeric(18,6)` is the chosen column type — it matches what
+`stock_ledger.cost_at_sale` has used since migration 0004, so both sides of the
+money path finally agree. **Six decimals is an implementation choice, not a rule
+to defend.** The owner explicitly declined to make decimal count a requirement:
+what matters is that stored precision is far finer than any figure a decision is
+made on. Nobody reads this column directly; they read reports.
 
 **Tech Stack:** TypeScript, Vitest, PostgreSQL (Supabase). Runner is `npx vite-node`.
 
@@ -37,6 +44,36 @@ this makes the two sides consistent rather than adding something new.
 - Commit locally with the `Claude-Sonnet ` prefix. Do not push.
 
 ---
+
+## Display rounding: two directions, not one (owner rule, confirmed 2026-07-30)
+
+Rounding at the edge is **not** `Math.round`. The owner specified direction by
+quantity type, and both directions follow one principle: **never flatter the
+business.**
+
+| Kind | Direction | Owner's own example | Function |
+|---|---|---|---|
+| **Stock quantity** | **DOWN** (floor) | `123.123456213 + 123 + 10.5 = 256.623456213` → displays **256** | `Math.floor` |
+| **Cost / money** | **UP** (ceiling) | `100 + 100.1 + 100.2 = 300.3` → displays **301** | `Math.ceil` |
+
+Standard rounding would give 257 and 300 — the opposite of both. Getting this
+backwards inverts the whole intent, so treat the two examples above as test
+fixtures, not illustrations.
+
+Why each direction: stock rounded down never claims more goods than are really
+there; cost rounded up never understates what something cost. Together, reported
+profit is always **at or below** true profit, never above.
+
+**Round from the exact value, then sum for display — never sum rounded parts.**
+The exact total is what feeds the rounding; each displayed figure is rounded from
+its own exact value.
+
+**Consequence the owner accepted explicitly:** displayed parts will not always add
+to the displayed total. With costs of 100.1 and 100.2, both display 101, so the
+eye sums 202 while the total line correctly shows 301 from an exact 300.3. He
+chose this over forcing the columns to tie, because it keeps every per-product
+figure honest for pricing decisions. **The report must carry a one-line note
+saying so**, or it reads as a bug.
 
 ## What is in scope, and what deliberately is not
 
@@ -204,21 +241,52 @@ means something other than precision changed — stop and report rather than app
 
 ---
 
-### Task 5: Round at the edge, not in the middle
+### Task 5: Round at the edge, in the right direction
 
-- [ ] **Step 1:** In `app/admin/reports/actions.ts`, sum exact `cost_at_sale`
-  values and round only the figure rendered. Remove the per-part rounding at
-  `:716` and `:724`; if the parts must still add up to the displayed total,
-  allocate the rounding remainder to the last part rather than rounding each.
+- [ ] **Step 1: Write the failing tests, using the owner's examples verbatim**
 
-- [ ] **Step 2:** Confirm the P&L still shows whole VND to the owner. He asked
-  for exact storage, not for decimals on screen.
+```typescript
+it("rounds a displayed stock quantity DOWN", () => {
+  expect(displayStock(123.123456213 + 123 + 10.5)).toBe(256);  // not 257
+});
 
-- [ ] **Step 3: Worked check** — one product's per-variant COGS figures must sum
-  to that product's displayed total, exactly. That identity is the point of this
-  task; today it can fail by a few VND.
+it("rounds a displayed cost UP", () => {
+  expect(displayMoney(100 + 100.1 + 100.2)).toBe(301);          // not 300
+});
 
-- [ ] **Step 4: Commit and update tracking.**
+it("leaves an exact whole number alone in both directions", () => {
+  expect(displayStock(256)).toBe(256);
+  expect(displayMoney(300)).toBe(300);
+});
+
+it("rounds each figure from its own exact value, not from rounded parts", () => {
+  const parts = [100.1, 100.2];
+  expect(parts.map(displayMoney)).toEqual([101, 101]);
+  expect(displayMoney(parts.reduce((a, b) => a + b, 0))).toBe(301);
+  // 101 + 101 = 202 != 301 -- accepted by the owner, must be noted on the report
+});
+```
+
+Put `displayStock` / `displayMoney` in one shared module so no screen invents its
+own rule. Two implementations of this will drift, exactly as two recipe resolvers
+did.
+
+- [ ] **Step 2: Run them, confirm they fail.**
+
+- [ ] **Step 3: Implement**, then apply at the render boundary in
+  `app/admin/reports/actions.ts`. Remove the per-part rounding at `:716` and
+  `:724` — those round each allocated part before summing, which is precisely the
+  pattern this task exists to end.
+
+- [ ] **Step 4:** Confirm the P&L still shows whole VND. The owner asked for exact
+  storage and calculation, **not** for decimals on screen.
+
+- [ ] **Step 5: Add the reconciliation note to the report UI** — one line, in
+  Vietnamese, saying figures are rounded individually so columns may differ from
+  the total by a few dong. Without it the first person to add up a column files a
+  bug.
+
+- [ ] **Step 6: Commit and update tracking.**
 
 ---
 
