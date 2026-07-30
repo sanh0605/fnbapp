@@ -268,7 +268,35 @@ it does not appear anywhere else either. It simply does not exist as far as the
 system is concerned. **An operating-expense entry screen is needed** — added to
 Phase 7's scope below, not urgent but should not be silently dropped either.
 
-## 7. Open item
+## 7. Open items
+
+### 7a. Khoai lang is wired half-way — deliberately parked (owner, 2026-07-30)
+
+The owner created semi-product **Khoai luộc** (`BTP-014`, recipe `RC-032`,
+1 raw Khoai lang → 1 Khoai luộc, effective 2026-06-01) on 2026-07-30 at 14:33.
+That is **step 1 of 3**, and the chain is not connected:
+
+| | Needed | State |
+|---|---|---|
+| 1 | Semi-product Khoai luộc has a cooking recipe | **done** — `RC-032` |
+| 2 | The sold product Khoai lang consumes it | **missing** — `REC-069` `ingredients_json` is `""` |
+| 3 | Raw ingredient Khoai lang is not flagged non-inventory | **still flagged** — `NNL-012.is_non_inventory = TRUE` |
+
+Nothing references `BTP-014`, so **306 servings sold still deduct nothing and cost
+nothing** — identical to before the semi-product existed. Step 3 also blocks cost
+even if step 2 is completed, because the non-inventory flag suppresses both
+deduction and costing.
+
+Asked which way to go, the owner chose **park it and decide later**. Recorded
+here because the half-built state is the dangerous one: it *looks* configured. Do
+not read `RC-032`'s existence as evidence that Khoai lang is being costed.
+
+Earlier the same day he chose to keep Khoai lang non-inventory and treat the
+purchase as a daily operating expense — which needs the operating-expense screen
+that does not exist yet (Phase 7). The two decisions point opposite ways; the
+next person to touch this should ask rather than infer.
+
+### 7b. Sữa đặc
 
 The Sữa đặc question is unresolved and independent of PO-037: no condensed-milk
 purchase has been recorded since 2026-05-16, while sales continued at roughly
