@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-07-30T03:46:03.949Z",
+  "summary": {
+    "lines_replayed": 2379,
+    "replay_errors": 0,
+    "cost_mismatches": 0,
+    "cost_category_a_unlocked": 0,
+    "cost_category_b_locked_current": 0,
+    "cost_category_c_locked_stale": 0,
+    "quantity_items_with_diff": 0,
+    "quantity_items_negative_theoretical": 1,
+    "po_receipt_findings": 0,
+    "production_ledger_findings": 0
+  },
+  "cost_findings": [],
+  "quantity_findings": [],
+  "po_receipt_findings": [],
+  "production_findings": [],
+  "replay_errors": [],
+  "skipped_po_receipts": []
+}

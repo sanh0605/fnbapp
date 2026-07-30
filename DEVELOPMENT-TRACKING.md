@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-30 (Claude Sonnet 5) - Phase 5: Rebuild COGS from the Phase 4 Stock Basis (4/4 tasks, applied)
+
+**Trigger:** owner-approved. Plan: `docs/superpowers/plans/2026-07-30-phase5-cost-rebuild.md`. Phase 4 (stock rebuild) closed 2026-07-30 with recorded = recomputed for all 50 ingredients except Muối hồng. This phase recomputes `cost_at_sale` for every order line against that corrected stock basis.
+
+**Correction to an earlier note:** the spec expected `audit_baseline_locks` to need releasing. It does not — the table is empty (0 rows), counted directly. `apply_full_history_recovery` (migration 0031) is still the right RPC regardless (cost-only, no stock rows, idempotent per run-id), its per-line lock guard simply never fires.
+
+**Task 1 — `lib/phase5-cost-scope.ts`**: pure `groupCostChangesByMonth`, chunks the change set by calendar month (Saigon time) so the owner reviews one number per month instead of one undifferentiated total, and each month is its own transaction/run-id. `scripts/apply-phase5-cost-rebuild.ts` re-verifies the lock condition at run time (stop-and-report if any changed line is locked, never filter silently) and threads `nonInventoryItems` into `replayFullHistory` (Phase 4's plan omitted this and had to be caught mid-implementation; not repeated here). Commit `b167e2f`.
+
+**Task 1 follow-up — P&L/write-set reconciliation** (commit `14a1fa5`): the dry-run's P&L table included every recomputed line unconditionally, but the actual write set excludes lines with `|delta| <= 1` dong (matching the audit's own no-op threshold) — a silent 17 VND gap between "what the table shows" and "what gets written." Added an explicit reconciliation that lists the excluded sub-threshold lines and asserts the gap equals their exact sum, stopping with an error otherwise.
+
+**Task 2 — dry run** (commit `3c39f55`, `docs/audits/2026-07-30-phase5-cost-dryrun.json`): 1,077 changed lines (1,034 down, 43 up), net **-942,492 VND** (historical profit rises by that much). Monthly: 2026-06 (483 lines, -563,730), 2026-07 (594 lines, -378,762).
+
+**The driver, established from data, not asserted:** the standing hypothesis (Phase 4 no longer charging Trái tắc/Trái chanh into drinks that don't consume them) explains **0 VND** — those 5 non-inventory ingredients never had a `PO_RECEIPT` row, so their cost was always 0 whether consumed or not; already-closed, reconfirmed here quantitatively. A second, owner-proposed hypothesis (Sữa đặc's negative balance freezing the weighted-average cost abnormally high) was tested against a real line and found **chronologically impossible for that line** — the example's sale (2026-06-03) predates both PO-037's Sữa đặc addition (2026-06-24) and Sữa đặc's first negative crossing (2026-07-17).
+
+**The real mechanism, isolated by replaying with and without this session's 17 newly-entered purchase-order lines (PO-024, PO-037; identified by `purchase_order_lines.created_at`, not the backdated `transaction_date`):** ordinary weighted-average dilution. PO-024 added 6 kg of Lá hồng trà at 157 VND/g, well below the 320 VND/g the running average had been anchored to from a single small early purchase; PO-037 added 48 kg of Sữa đặc at 39.9 VND/g, below the 63-80 VND/g of the two most recent purchases before it. Blending in a larger, cheaper batch pulls the average down for every sale after it. Worked example (Trà sữa truyền thống, order UCK000578, 2026-07-27): cup cost 20,879 → 15,920 VND; within it, Trà sữa hồng trà's own cost fell 24.87 → 16.73 VND/g, of which 81% is Lá hồng trà (320 → 162.26 VND/g, ≈320,000 → ≈162,258 VND/kg) and 18% is Sữa đặc (60.35 → 45.39 VND/g, ≈22,935 → ≈17,246 VND per 380 g can) -- the "after" figures land much closer to real market prices than "before." In aggregate across all 1,077 lines: **96% of the -942,492 VND (-903,468) is explained by these two purchase entries; the remaining 4% (-39,024) is a handful of `ol-migrated-*` historical-backfill lines whose original ad-hoc cost computation simply disagreed with a correct chronological replay, even using only the purchase data that existed at the time.** Not every line moved the same direction: Trân châu trắng went from a wrongly-zero cost to a real one (0 → 25.5 VND/g) once PO-024 gave it purchase history, accounting for some of the 43 lines that increased.
+
+**Task 3 — applied** (commit `6ebe47b`, `docs/audits/2026-07-30-phase5-cost-apply.json`): owner approved the dry-run summary. Both monthly batches applied: 2026-06 (483 lines, -563,730 VND) and 2026-07 (594 lines, -378,762 VND) -- 2/2. Confirmed nothing else moved: `stock_ledger` row count unchanged (10,242 before and after), `audit_baseline_locks` unchanged (0), `backdated_ledger_events`/`backdated_recipe_events` unchanged (1,909 / 2) -- this RPC touches only `order_lines_v2.cost_at_sale`.
+
+**Task 4 — verified.** Re-ran `scripts/audit-full-history-recompute.ts`: **`cost_mismatches: 0`** (down from 1,077/1,066 across the last two audits). `quantity_items_with_diff: 0` and `quantity_items_negative_theoretical: 1` (Muối hồng, -14.39 g) unchanged from before this phase -- confirms no stock was touched. Compared the live `getPnLDataV2` report against the Task 2 prediction for both months: revenue matched exactly (0 VND delta both months); COGS/profit differed by 15 VND (June) and 2 VND (July) -- exactly the already-disclosed 17 VND sub-threshold gap, nothing unexplained.
+
+**Verification:** `tsc` clean and full suite green throughout (868/868 at close). No stock rows touched, no baseline lock removed or created, no push.
+
+---
+
 ## 2026-07-30 (Claude Sonnet 5) - Clean Rebuild Program, Phase 4: Full Stock Rebuild (6/6 tasks) - Applied
 
 **Trigger:** owner-approved plan (`docs/superpowers/plans/2026-07-29-phase4-stock-rebuild.md`), unblocked by Phase 3's verified restore drill and the 63-commit production deploy (`9ae2ce5`). Goal: delete every derived `stock_ledger` row and recompute it from source (recipes + sales + purchases) for all orders, stock only -- `cost_at_sale` stays untouched for Phase 5.

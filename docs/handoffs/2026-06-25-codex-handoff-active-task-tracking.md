@@ -1,6 +1,16 @@
 # Codex Handoff — 2026-06-25
 
-## 2026-07-30 - OPEN, 0/4 tasks: clean rebuild program, Phase 5 (rebuild COGS)
+## 2026-07-30 - CLOSED, 4/4 tasks, applied: clean rebuild program, Phase 5 (rebuild COGS)
+
+**Done 2026-07-30.** All 4 tasks complete, owner approved the dry-run summary before `--apply`. Applied: 2/2 monthly batches (2026-06: 483 lines, -563,730 VND; 2026-07: 594 lines, -378,762 VND). Confirmed nothing else moved: `stock_ledger` row count unchanged, `audit_baseline_locks` unchanged (0), `backdated_ledger_events`/`backdated_recipe_events` unchanged. **Verification: `audit-full-history-recompute.ts` now reports `cost_mismatches: 0`** — the gate this whole program has been building toward. Quantity side unchanged (Muối hồng still the sole -14.39 g negative). Live P&L matched the approved forecast to within the already-disclosed 17 VND reconciliation gap, nothing unexplained.
+
+**The driver, established from data:** neither of the two standing hypotheses held as stated. Non-inventory exclusion explains 0 VND (already closed, reconfirmed quantitatively). The Sữa đặc negative-balance-freeze hypothesis was chronologically impossible for the tested line. The real mechanism: ordinary weighted-average dilution from this session's 17 newly-entered purchase-order lines (PO-024's 6 kg Lá hồng trà at 157 VND/g, PO-037's 48 kg Sữa đặc at 39.9 VND/g — both cheaper than the recent purchases already in the average), explaining 96% of the total -942,492 VND; the remaining 4% is historical-backfill lines whose original ad-hoc cost computation simply disagreed with a correct replay even using contemporaneous data. Full worked example (one Trà sữa truyền thống cup, ingredient-by-ingredient, market-price-comparable units) and the full-aggregate decomposition are in `DEVELOPMENT-TRACKING.md`'s 2026-07-30 Phase 5 entry. Roadmap row: `REBUILD-PHASE5`.
+
+**Gate before Phase 6** (owner's first physical stocktake) is now met — `cost_mismatches: 0`.
+
+---
+
+## 2026-07-30 - (superseded above) clean rebuild program, Phase 5 (rebuild COGS)
 
 **Implementer: Claude Sonnet 5.** Plan:
 `docs/superpowers/plans/2026-07-30-phase5-cost-rebuild.md`. Owner chose to run
