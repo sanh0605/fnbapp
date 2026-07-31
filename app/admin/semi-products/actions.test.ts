@@ -183,4 +183,66 @@ describe("saveSemiProduct: start_date never overwrites created_at", () => {
     expect(createdMs).toBeLessThanOrEqual(after.getTime());
     expect(payload.start_date).not.toBe(payload.created_at);
   });
+
+  it("refuses an effective date earlier than the current recipe's start", async () => {
+    const { saveSemiProduct } = await import("./actions");
+    findAllMock.mockResolvedValue([
+      { id: "RC-036", target_type: "SEMI_PRODUCT", target_id: "BTP-016",
+        status: "ACTIVE", ingredients_json: JSON.stringify([
+          { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 10 },
+        ]),
+        start_date: "2026-07-31T10:45:19.000Z", end_date: null,
+        created_at: "2026-07-31T10:45:19.000Z" },
+    ]);
+
+    const formData = new FormData();
+    formData.set("is_edit", "true");
+    formData.set("id", "BTP-016");
+    formData.set("name", "Test lần 2");
+    formData.set("base_unit", "UNT-001");
+    formData.set("batch_yield", "100");
+    // 04:00 UTC = 11:00 Asia/Ho_Chi_Minh, safely mid-day 31/05 local time
+    // (17:00 UTC would roll to 01/06 local -- see formatDateVN).
+    formData.set("effective_date", "2026-05-31T04:00:00.000Z");
+    formData.set("ingredients_json", JSON.stringify([
+      { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 25 },
+    ]));
+
+    const result = await saveSemiProduct(formData);
+
+    expect(result.success).toBeFalsy();
+    expect(result.error).toContain("31/07/2026");
+    expect(result.error).toContain("31/05/2026");
+    // Nothing may be written when the save is refused.
+    expect(insertMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+    expect(updateMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+  });
+
+  it("allows a save that changes no ingredients, even with a stale past effective date", async () => {
+    const { saveSemiProduct } = await import("./actions");
+    const sameIngredients = JSON.stringify([
+      { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 10 },
+    ]);
+    findAllMock.mockResolvedValue([
+      { id: "RC-036", target_type: "SEMI_PRODUCT", target_id: "BTP-016",
+        status: "ACTIVE", ingredients_json: sameIngredients,
+        start_date: "2026-07-31T10:45:19.000Z", end_date: null,
+        created_at: "2026-07-31T10:45:19.000Z" },
+    ]);
+
+    const formData = new FormData();
+    formData.set("is_edit", "true");
+    formData.set("id", "BTP-016");
+    formData.set("name", "Ten moi");           // only the name changed
+    formData.set("base_unit", "UNT-001");
+    formData.set("batch_yield", "100");
+    formData.set("effective_date", "2026-05-31T04:00:00.000Z");  // stale, in the past
+    formData.set("ingredients_json", sameIngredients);
+
+    const result = await saveSemiProduct(formData);
+
+    expect(result.success).toBe(true);
+    expect(insertMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+    expect(updateMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+  });
 });

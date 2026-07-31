@@ -10,6 +10,15 @@ const SP_SHEET = "Semi_Products";
 const RECIPE_SHEET = "Recipes";
 const PATH = "/admin/semi-products";
 
+// dd/MM/yyyy HH:mm in the shop's timezone, for operator-facing messages.
+function formatDateVN(iso: string): string {
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(new Date(iso));
+}
+
 export async function getSemiProductsData(): Promise<{
   semiProducts: Array<DBSemiProduct & { activeRecipe?: DBRecipe; recipeHistory: any[] }>;
   baseIngredients: DBBaseIngredient[];
@@ -112,6 +121,23 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
     if (existingActiveRecipe) {
       // Chỉ tạo version mới nếu công thức thực sự thay đổi
       if (existingActiveRecipe.ingredients_json !== ingredientsJson) {
+        // A recipe cannot stop applying before it started. Reaching here means
+        // a date was mistyped -- either the existing recipe's start or the
+        // new effective date. Refusing asks which; adjusting silently would
+        // hide it. Scoped to this branch: a save that only changes the name
+        // creates no new recipe row, so a stale effective date must not block it.
+        if (existingActiveRecipe.start_date) {
+          const existingStartMs = new Date(existingActiveRecipe.start_date).getTime();
+          if (new Date(effectiveIso).getTime() < existingStartMs) {
+            return fail(
+              `Công thức hiện tại đang áp dụng từ ${formatDateVN(existingActiveRecipe.start_date)}. `
+              + `Không thể đặt công thức mới có hiệu lực từ ${formatDateVN(effectiveIso)}, `
+              + `vì thời điểm đó công thức hiện tại chưa tồn tại. `
+              + `Nếu ngày của công thức hiện tại bị sai, hãy sửa lại công thức đó thay vì tạo bản mới.`,
+            );
+          }
+        }
+
         // Đóng công thức cũ
         await update("Recipes", existingActiveRecipe.id, {
           end_date: effectiveIso
