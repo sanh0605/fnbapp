@@ -852,7 +852,29 @@ date, since closing an interval is an effectiveness fact:
 Apply the identical change to `app/admin/products/modifiers/actions.ts` at
 lines 146-147 and 158-159.
 
-- [ ] **Step 5: Verify all three cases by hand in the running app — STILL OPEN**
+- [x] **Step 5: Verify all three cases by hand in the running app — PASSED 2026-07-31**
+
+Performed by the owner against the local dev server running the merged fix,
+semi-product `BTP-016` "Test lần 2". Read back from the database by the
+coordinator:
+
+| Recipe | Entered | `start_date` | `created_at` | Verdict |
+|---|---|---|---|---|
+| `RC-036` | blank | 31/07 10:45:19 | 31/07 10:45:19 | equal — case 1 correct |
+| `RC-037` | past, 01/06 | 31/05 17:00 | **31/07 10:45:37** | differ — case 2 correct |
+| `RC-038` | future, 01/09 | 31/08 17:00 | **31/07 10:45:55** | differ — case 3 correct |
+
+An earlier attempt on `BTP-015` failed all of cases 2 and 3 — it was run
+against the **deployed** site, which is 11 commits behind and does not contain
+the fix. That is a gap in how this step was written, not a defect: it said "the
+real UI" without naming the environment. Corrected in the text below.
+
+The same run surfaced a defect the Task 4 fix does **not** address —
+`end_date` written before `start_date`. See Task 6.
+
+---
+
+**Original step text, retained:**
 
 **This step is not optional and the unit tests do not replace it.** The tests
 in `actions.test.ts` mock `insert()`, so they prove the *payload the action
@@ -986,6 +1008,249 @@ allows it. selectEffectiveRecipe handles it correctly. findLatestActiveRecipe
 and the end_date close-out may not; recorded rather than changed.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+---
+
+---
+
+### Task 6: Reject an effective date earlier than the current recipe's start
+
+**Files:**
+- Modify: `app/admin/semi-products/actions.ts` (before the close-out `update`)
+- Create: `supabase/migrations/0050_save_product_atomic_reject_backwards_effective.sql`
+- Create: `scripts/fix-backwards-recipe-intervals.ts`
+- Create: `supabase/migrations/0051_recipes_end_after_start.sql`
+- Test: `app/admin/semi-products/actions.test.ts`
+
+**Interfaces:**
+- Consumes: `fail(error: string): ActionResponse` from `lib/shared-actions.ts`,
+  already imported at `app/admin/semi-products/actions.ts:5`.
+- Produces: no exported symbol changes. `saveSemiProduct` keeps its signature
+  `(formData: FormData) => Promise<ActionResponse>`; it gains one early
+  `fail(...)` return.
+
+**Owner decision, 2026-07-31: cách 1 — refuse the save with a clear message.**
+Rationale in the owner's own framing: this situation nearly always means a date
+was typed wrong somewhere. Either the existing recipe's start is wrong or the
+new effective date is wrong — they cannot both be right, because a recipe
+cannot stop applying before it starts. Silently adjusting hides that; refusing
+asks which one is correct.
+
+**Reproduced live, twice, on both code versions.** This is not theoretical and
+the Task 4 fix does not touch it:
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN, từ thao tác thật của chủ quán 2026-07-31:
+
+  RC-036 (BTP-016 "Test lần 2")
+    bắt đầu   31/07 17:45      (lưu lần đầu, để trống ô ngày)
+    kết thúc  01/06 00:00      (lưu lần hai, điền ngày hiệu lực 01/06)
+    -> kết thúc TRƯỚC khi bắt đầu, không có ngày nào nó thật sự hiệu lực
+
+  RC-033 (BTP-015 "Test") có cùng lỗi, từ lần thử trước đó.
+
+Sau Task 6, thao tác y hệt phải bị TỪ CHỐI với thông báo tiếng Việt, và
+KHÔNG dòng nào được ghi. Nếu nó vẫn lưu được -> DỪNG.
+```
+
+Both save paths have the flaw — verified, not assumed:
+
+- `app/admin/semi-products/actions.ts:114-116` — `update(... { end_date: effectiveIso })`
+- `supabase/migrations/0044_save_product_atomic_start_date.sql:225` —
+  `set end_date = coalesce(p_effective_at, now())`
+
+(`app/admin/products/modifiers/actions.ts` is again **not** affected: it has no
+effective-date field, so its close-out always uses the current time.)
+
+- [ ] **Step 1: Write the failing test**
+
+Add to `app/admin/semi-products/actions.test.ts`:
+
+```ts
+it("refuses an effective date earlier than the current recipe's start", async () => {
+  const { saveSemiProduct } = await import("./actions");
+  findAllMock.mockResolvedValue([
+    { id: "RC-036", target_type: "SEMI_PRODUCT", target_id: "BTP-016",
+      status: "ACTIVE", ingredients_json: JSON.stringify([
+        { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 10 },
+      ]),
+      start_date: "2026-07-31T10:45:19.000Z", end_date: null,
+      created_at: "2026-07-31T10:45:19.000Z" },
+  ]);
+
+  const formData = new FormData();
+  formData.set("is_edit", "true");
+  formData.set("id", "BTP-016");
+  formData.set("name", "Test lần 2");
+  formData.set("base_unit", "UNT-001");
+  formData.set("batch_yield", "100");
+  formData.set("effective_date", "2026-05-31T17:00:00.000Z");
+  formData.set("ingredients_json", JSON.stringify([
+    { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 25 },
+  ]));
+
+  const result = await saveSemiProduct(formData);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toContain("31/07/2026");
+  expect(result.error).toContain("31/05/2026");
+  // Nothing may be written when the save is refused.
+  expect(insertMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+  expect(updateMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+});
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `npx vitest run app/admin/semi-products/actions.test.ts -t "refuses an effective date"`
+Expected: FAIL — currently the save succeeds and writes both rows.
+
+- [ ] **Step 3: Add the guard to the action**
+
+In `app/admin/semi-products/actions.ts`, immediately after `effectiveIso` is
+computed and before the `if (existingActiveRecipe)` block, insert:
+
+```ts
+    // A recipe cannot stop applying before it started. Reaching here means a
+    // date was mistyped -- either the existing recipe's start or the new
+    // effective date. Refusing asks which; adjusting silently would hide it.
+    if (existingActiveRecipe?.start_date) {
+      const existingStartMs = new Date(existingActiveRecipe.start_date).getTime();
+      if (new Date(effectiveIso).getTime() < existingStartMs) {
+        return fail(
+          `Công thức hiện tại đang áp dụng từ ${formatDateVN(existingActiveRecipe.start_date)}. `
+          + `Không thể đặt công thức mới có hiệu lực từ ${formatDateVN(effectiveIso)}, `
+          + `vì thời điểm đó công thức hiện tại chưa tồn tại. `
+          + `Nếu ngày của công thức hiện tại bị sai, hãy sửa lại công thức đó thay vì tạo bản mới.`,
+        );
+      }
+    }
+```
+
+Add this helper near the top of the same file, below the imports:
+
+```ts
+// dd/MM/yyyy HH:mm in the shop's timezone, for operator-facing messages.
+function formatDateVN(iso: string): string {
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(new Date(iso));
+}
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run: `npx vitest run app/admin/semi-products/actions.test.ts`
+Expected: PASS, and every pre-existing test in the file still green.
+
+- [ ] **Step 5: Add the same guard to the product-variant RPC**
+
+Create `supabase/migrations/0050_save_product_atomic_reject_backwards_effective.sql`.
+Copy `save_product_atomic` unchanged from `0044` except: immediately before the
+`update public.recipes set end_date = coalesce(p_effective_at, now())` at
+`0044:224-230`, add
+
+```sql
+      if (select start_date from public.recipes where id = v_active_recipe_id)
+           > coalesce(p_effective_at, now()) then
+        raise exception
+          'Recipe % starts at %, cannot be superseded by one effective at %',
+          v_active_recipe_id,
+          (select start_date from public.recipes where id = v_active_recipe_id),
+          coalesce(p_effective_at, now());
+      end if;
+```
+
+- [ ] **Step 6: Clean the two broken rows and the test data**
+
+Create `scripts/fix-backwards-recipe-intervals.ts`, dry-run by default,
+`--apply` to write. It must:
+
+1. Select every `recipes` row where `end_date is not null and end_date < start_date`.
+   Expected today: exactly **`RC-033`** and **`RC-036`**. If the count differs,
+   print them and exit non-zero without writing.
+2. For each, set `status = 'INACTIVE'` — **not** delete, and do not rewrite the
+   dates. `docs/COLLABORATION.md` forbids deleting master data; an impossible
+   interval is evidence of the defect and stays readable.
+3. Also set `status = 'INACTIVE'` on every recipe whose `target_id` is a
+   `semi_products` row with `status = 'DELETED'`. Expected today: `RC-033`,
+   `RC-034`, `RC-035` (all belong to `BTP-015`, deleted 2026-07-31 10:41).
+   Deleting a semi-product currently leaves its recipes `ACTIVE`; this cleans
+   the instance, and the underlying gap is listed under "Out of scope" below.
+4. Print the before/after status of every affected row.
+
+Leave `BTP-016` "Test lần 2" alone — the owner may still want it for the Step 8
+re-test. Ask before touching it.
+
+- [ ] **Step 7: Add the database constraint**
+
+Only after Step 6 reports zero remaining backwards intervals. Create
+`supabase/migrations/0051_recipes_end_after_start.sql`:
+
+```sql
+-- A recipe cannot stop applying before it starts. Enforced in the database so
+-- no path -- action, RPC, or service-role script -- can produce the row.
+-- Two rows violated this before 0051 (RC-033, RC-036), both from an effective
+-- date typed earlier than the superseded recipe's start_date.
+
+do $$
+declare
+  bad_count integer;
+begin
+  select count(*) into bad_count
+    from public.recipes
+   where end_date is not null and start_date is not null and end_date < start_date;
+  if bad_count > 0 then
+    raise exception
+      'Cannot add recipes_end_after_start: % rows still violate it. Run scripts/fix-backwards-recipe-intervals.ts --apply first.',
+      bad_count;
+  end if;
+end $$;
+
+alter table public.recipes
+  add constraint recipes_end_after_start
+  check (end_date is null or start_date is null or end_date >= start_date);
+```
+
+- [ ] **Step 8: Re-run the owner's live sequence and confirm the refusal**
+
+Against the local dev server running this code, repeat exactly what produced
+`RC-036`: create a semi-product, save with the date field blank, then save an
+ingredient change with an effective date one month in the past.
+
+Expected: the second save is refused with the Vietnamese message naming both
+dates, and
+
+```sql
+select count(*) from public.recipes
+ where end_date is not null and start_date is not null and end_date < start_date;
+```
+
+returns `0`.
+
+- [ ] **Step 9: Run the full suite, type check, and commit**
+
+```bash
+npx vitest run && npx tsc --noEmit
+git add app/admin/semi-products/actions.ts app/admin/semi-products/actions.test.ts \
+        supabase/migrations/0050_save_product_atomic_reject_backwards_effective.sql \
+        supabase/migrations/0051_recipes_end_after_start.sql \
+        scripts/fix-backwards-recipe-intervals.ts
+git commit -m "Claude-Sonnet fix: refuse an effective date before the current recipe's start
+
+Both save paths closed the superseded recipe with the new effective date,
+so entering a past date produced end_date < start_date -- a recipe that
+stops applying before it starts. Reproduced live twice by the owner
+(RC-033, RC-036), on both the pre- and post-Task-4 code.
+
+Owner chose to refuse rather than auto-adjust: the situation always means a
+date was mistyped, and only the operator knows which one. 0051 enforces it
+in the database so no path can create the row.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
 
 ---
