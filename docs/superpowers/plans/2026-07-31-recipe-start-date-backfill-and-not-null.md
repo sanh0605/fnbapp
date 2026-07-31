@@ -16,6 +16,26 @@ becomes dead code once nulls cannot exist.
 The order matters: removing the fallback before the backfill would change
 behaviour for 129 recipes; removing it after the constraint changes nothing.
 
+**The rule this plan implements, in the owner's words (2026-07-31):**
+
+> "Nếu anh không điền start_date thì start_date sẽ được ghi giá trị giống với
+> ngày tạo, cho nên user được quyền để trống. Nếu start_date là một ngày khác
+> ngày tạo thì mới cần điền."
+
+Read that as four layers with different rules, and do not collapse them:
+
+| Layer | Rule | Status |
+|---|---|---|
+| The form field | **Optional. Blank is the normal case.** | Already correct — `SemiProductForm.tsx:223` labels it "Ngày áp dụng công thức (Nếu đổi)" and defaults to `null` |
+| The save path | Blank → write the creation timestamp. Filled → write that. | Already correct — `app/admin/semi-products/actions.ts:105-107` |
+| The stored column | Never null | Task 2 |
+| Every reader | Read the column. No inference. | Task 3 |
+
+`NOT NULL` in Task 2 constrains **the column, not the operator**. Task 2 Step 5
+exists specifically to prove the form stays optional afterwards. If anyone
+"fixes" the form to require a date because the database says NOT NULL, they have
+broken the requirement, not satisfied it.
+
 **Tech Stack:** TypeScript, Supabase Postgres migrations, Vitest,
 `vite-node` for scripts.
 
@@ -418,12 +438,35 @@ select is_nullable from information_schema.columns
 
 Expected: `NO`
 
-- [ ] **Step 5: Run the full test suite and type check**
+- [ ] **Step 5: Prove the form is still optional — do not skip**
+
+`NOT NULL` constrains the column. It must not reach the operator. Verify all
+three by hand, in the running app:
+
+1. Open `/admin/semi-products`, edit any semi-product, change one ingredient
+   quantity, and save **without touching** "Ngày áp dụng công thức (Nếu đổi)".
+   Expected: saves cleanly, no validation error. New recipe row has
+   `start_date` equal to its `created_at`.
+2. Repeat, this time entering a date 30 days in the past.
+   Expected: saves cleanly, new row's `start_date` is that date.
+3. Confirm the input carries no `required` attribute:
+
+```bash
+grep -n "required" app/admin/semi-products/components/SemiProductForm.tsx
+```
+
+Expected: no match on the `effectiveDate` DatePicker (id `${formId}-effectiveDate`).
+
+If case 1 fails, **revert `0048` immediately**. A database constraint that
+forces the owner to type a date on every recipe edit is a regression, not a
+fix — the whole point is that blank stays legal for the operator.
+
+- [ ] **Step 6: Run the full test suite and type check**
 
 Run: `npx vitest run && npx tsc --noEmit`
 Expected: all green, 0 type errors.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add supabase/migrations/0048_recipes_start_date_not_null.sql
@@ -634,6 +677,87 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ---
 
+---
+
+### Task 4: Determine whether backdating also falsifies `created_at`
+
+**Files:**
+- Read only: `app/admin/semi-products/actions.ts:105-141`, `lib/sheets_db.ts:463-480`
+- Create: `docs/audits/2026-07-31-recipe-created-at-provenance.md`
+
+**Interfaces:**
+- Consumes: nothing from earlier tasks. Can run before or after them.
+- Produces: a finding document only. If it finds a defect, that defect gets its
+  own plan — do not fix it inside this one.
+
+**Why this is a task and not a claim.** `app/admin/semi-products/actions.ts:125-126`
+writes the same `nowIso` into **both** `start_date` and `created_at`, and
+`lib/sheets_db.ts:463-480`'s `insert()` passes the payload through without
+overriding `created_at`. Read literally, backdating a recipe therefore rewrites
+its creation timestamp too — collapsing the exact two dates this plan exists to
+keep apart.
+
+But the only two backdated rows in production contradict that reading:
+
+```
+RC-029   start_date 2026-05-31   created_at 2026-06-26   (26 days apart)
+RC-032   start_date 2026-05-31   created_at 2026-07-30   (60 days apart)
+```
+
+If they had gone through the code above, the two columns would be identical.
+They are not. Either those rows arrived by another path, or the code changed
+after they were written. **This is unresolved. Do not assume either way.**
+
+- [ ] **Step 1: Establish which path wrote `RC-029` and `RC-032`**
+
+```bash
+git log --oneline -S "created_at: nowIso" -- app/admin/semi-products/actions.ts
+git log --oneline --follow -- app/admin/semi-products/actions.ts | head -20
+```
+
+Compare the dates of any commit that introduced or changed line 126 against
+`RC-029`'s `created_at` (2026-06-26) and `RC-032`'s (2026-07-30). Record which
+commits were in effect on each of those dates.
+
+- [ ] **Step 2: Reproduce against a scratch database, never production**
+
+Save a semi-product recipe change with an effective date 30 days in the past,
+then read the row back:
+
+```sql
+select id, start_date, created_at,
+       (start_date = created_at) as collapsed
+  from public.recipes
+ order by created_at desc
+ limit 1;
+```
+
+- [ ] **Step 3: Record the finding**
+
+Write `docs/audits/2026-07-31-recipe-created-at-provenance.md` stating, with
+evidence, exactly one of:
+
+- **`collapsed = true`** — backdating falsifies `created_at`. This is a defect:
+  the audit trail of when the owner actually entered a recipe is destroyed, and
+  `docs/OPEN-ITEMS.md` item 1's diagnosis needs revisiting. Raise it as its own
+  item; do not fix it here.
+- **`collapsed = false`** — something between the action and the row overrides
+  `created_at`. Name what, with the file and line. The code at line 126 is then
+  misleading dead intent and should be deleted in a separate change.
+
+- [ ] **Step 4: Commit the finding**
+
+```bash
+git add docs/audits/2026-07-31-recipe-created-at-provenance.md
+git commit -m "docs: audit whether recipe backdating overwrites created_at
+
+Investigation only, no behaviour change.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+---
+
 ## Out of scope
 
 Each is a separate tracked item; folding them in here would repeat the
@@ -669,17 +793,17 @@ MAC/COGS drift audits are **not** required: nothing in this plan changes stock
 deduction or cost. If any of them moves, something is wrong — treat a non-zero
 delta as a stop condition, not a new baseline.
 
-## Ownership — unresolved, blocks execution
+## Ownership
 
-`docs/COLLABORATION.md` section C assigns `scripts/**` and
-`supabase/migrations/**` to Codex and forbids an agent implementing and
-approving the same change. Codex has been fully stopped since 2026-07-27 with
-no expected return (owner, 2026-07-31).
+**Claude Sonnet 5 implements. Opus 5 coordinator reviews each commit before the
+next task starts.**
 
-This plan is lower risk than the ledger rebuild — it is behaviour-neutral by
-construction and every step has an abort condition — but it still writes 129
-production rows and two migrations.
+Settled by standing owner decision: Sonnet 5 replaces Codex across
+`app/**`, `components/**`, `lib/*.ts`, `supabase/migrations/*.sql` and
+`scripts/*.ts` (`docs/ROADMAP.md` "Active agents & scope", 2026-07-27;
+re-confirmed by the owner 2026-07-31). `docs/COLLABORATION.md` section C still
+names Codex for these paths and is stale on this point — it is on the list as
+problem B, not a blocker here.
 
-Coordinator recommendation: **Claude Sonnet 5 implements, Opus 5 coordinator
-reviews each commit before the next task starts.** Awaiting the owner's
-confirmation before any step runs.
+The no-self-review rule still holds and is satisfied by the coordinator review
+above, not waived.
