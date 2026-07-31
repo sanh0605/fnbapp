@@ -346,7 +346,7 @@ Expected: all green, no new failures.
 
 ```bash
 git add scripts/backfill-recipe-start-date.ts lib/recipe-selection.test.ts
-git commit -m "fix: backfill recipes.start_date from created_at (129 rows)
+git commit -m "Claude-Sonnet fix: backfill recipes.start_date from created_at (129 rows)
 
 Behaviour-neutral: selectEffectiveRecipe already read start_date ||
 created_at. The script proves neutrality by replaying selection over every
@@ -470,7 +470,7 @@ Expected: all green, 0 type errors.
 
 ```bash
 git add supabase/migrations/0048_recipes_start_date_not_null.sql
-git commit -m "feat: migration 0048, recipes.start_date NOT NULL
+git commit -m "Claude-Sonnet feat: migration 0048, recipes.start_date NOT NULL
 
 A null start_date made 'equals created_at' and 'nobody filled it in'
 indistinguishable in the data, and forced every reader to reimplement the
@@ -662,7 +662,7 @@ Expected: migration applied, all green, 0 type errors.
 
 ```bash
 git add lib/recipe-selection.ts lib/recipe-selection.test.ts supabase/migrations/0049_backdated_recipe_detection_drop_coalesce.sql
-git commit -m "refactor: recipe effectiveness reads start_date only
+git commit -m "Claude-Sonnet refactor: recipe effectiveness reads start_date only
 
 With 0048 making start_date NOT NULL, the read-time fallback
 (start_date || created_at) is unreachable. Removing it means the stored
@@ -681,9 +681,18 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ### Task 4: `created_at` always records the real save moment
 
+**Status: code merged in `30b5fa8` (Sonnet 5), reviewed and accepted by the
+coordinator 2026-07-31 — 936/936 tests pass, `tsc` clean. Step 5 is still
+outstanding; see the note on it below. Do not re-run Steps 1-4.**
+
 **Files:**
 - Modify: `app/admin/semi-products/actions.ts:126,139`
-- Modify: `app/admin/products/modifiers/actions.ts:147,159`
+- ~~Modify: `app/admin/products/modifiers/actions.ts:147,159`~~ — **the plan was
+  wrong here.** `modifiers/actions.ts:107` declares `const nowIso = new Date().toISOString()`
+  and there is no effective-date form field anywhere in the modifiers flow, so
+  the variable is never reassigned and `start_date` already always equals
+  `created_at`. Nothing to fix. Caught by Sonnet 5 during implementation and
+  verified independently by the coordinator.
 - Test: `app/admin/semi-products/actions.test.ts`
 
 **Interfaces:**
@@ -843,10 +852,23 @@ date, since closing an interval is an effectiveness fact:
 Apply the identical change to `app/admin/products/modifiers/actions.ts` at
 lines 146-147 and 158-159.
 
-- [ ] **Step 5: Verify all three cases by hand in the running app**
+- [ ] **Step 5: Verify all three cases by hand in the running app — STILL OPEN**
 
-For each of the owner's three cases, save a semi-product recipe change and read
-the row back:
+**This step is not optional and the unit tests do not replace it.** The tests
+in `actions.test.ts` mock `insert()`, so they prove the *payload the action
+builds* is correct. They cannot prove the *row that lands in the database* is
+correct — and that gap is the entire original mystery: `RC-029` and `RC-032`
+show `start_date` and `created_at` 26 and 60 days apart, which the pre-fix code
+could not produce, meaning something between the action and the stored row was
+already behaving differently than the code reads.
+
+The same failure shape is on record in `DEVELOPMENT-TRACKING.md` (2026-07-31):
+the Phase 3 restore drill verified repo code and never the deployed pipeline,
+which is how `order_payments` sat unbacked for weeks while a local script
+reported 40/40 tables healthy.
+
+For each of the owner's three cases, save a semi-product recipe change through
+the real UI and read the row back:
 
 ```sql
 select id, start_date, created_at, (start_date = created_at) as same
@@ -856,12 +878,16 @@ select id, start_date, created_at, (start_date = created_at) as same
 Expected: case 1 → `same = true`. Cases 2 and 3 → `same = false`, and
 `created_at` within a few seconds of the actual save.
 
+If case 2 or 3 comes back with `same = true` despite the merged code, then a
+database default, trigger, or wrapper is overriding `created_at` — stop and
+report before starting Task 1.
+
 - [ ] **Step 6: Run the full suite, type check, and commit**
 
 ```bash
 npx vitest run && npx tsc --noEmit
 git add app/admin/semi-products/actions.ts app/admin/products/modifiers/actions.ts app/admin/semi-products/actions.test.ts
-git commit -m "fix: recipe created_at records the save moment, not the effective date
+git commit -m "Claude-Sonnet fix: recipe created_at records the save moment, not the effective date
 
 Both recipe save paths computed one variable from the effective-date field
 and wrote it to start_date and created_at alike, so backdating or
@@ -953,7 +979,7 @@ symptom would be for the owner in plain Vietnamese. Do not fix anything here.
 
 ```bash
 git add lib/recipe-selection.test.ts docs/audits/2026-07-31-future-dated-recipe-behaviour.md
-git commit -m "test: pin future-dated recipe behaviour, audit the two risky paths
+git commit -m "Claude-Sonnet test: pin future-dated recipe behaviour, audit the two risky paths
 
 Owner case 3 (2026-07-31) makes a future start_date legal and the UI already
 allows it. selectEffectiveRecipe handles it correctly. findLatestActiveRecipe
