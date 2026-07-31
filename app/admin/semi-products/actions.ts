@@ -101,18 +101,20 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
       (!r.end_date || r.end_date === "")
     );
 
-    // Xử lý ngày áp dụng
-    let nowIso = new Date().toISOString();
-    if (effectiveDateStr) {
-      nowIso = new Date(effectiveDateStr).toISOString();
-    }
+    // Hai biến khác nhau, không bao giờ dùng chung: savedAtIso là lúc bấm lưu,
+    // effectiveIso là lúc công thức có hiệu lực. Để trống nghĩa là "có hiệu
+    // lực ngay", điền vào có thể là quá khứ hoặc tương lai.
+    const savedAtIso = new Date().toISOString();
+    const effectiveIso = effectiveDateStr
+      ? new Date(effectiveDateStr).toISOString()
+      : savedAtIso;
 
     if (existingActiveRecipe) {
       // Chỉ tạo version mới nếu công thức thực sự thay đổi
       if (existingActiveRecipe.ingredients_json !== ingredientsJson) {
         // Đóng công thức cũ
         await update("Recipes", existingActiveRecipe.id, {
-          end_date: nowIso
+          end_date: effectiveIso
         });
 
         // Tạo công thức mới
@@ -122,8 +124,8 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
           target_type: "SEMI_PRODUCT",
           target_id: semi_product_id,
           ingredients_json: ingredientsJson,
-          start_date: nowIso,
-          created_at: nowIso,
+          start_date: effectiveIso,
+          created_at: savedAtIso,
           end_date: ""
         });
       }
@@ -135,8 +137,8 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
         target_type: "SEMI_PRODUCT",
         target_id: semi_product_id,
         ingredients_json: ingredientsJson,
-        start_date: nowIso,
-        created_at: nowIso,
+        start_date: effectiveIso,
+        created_at: savedAtIso,
         end_date: ""
       });
     }
