@@ -112,6 +112,7 @@ function setupRows(storedCost = 100): void {
       target_type: "SEMI_PRODUCT",
       target_id: "BTP-001",
       status: "ACTIVE",
+      start_date: "2026-06-01T00:00:00.000Z",
       ingredients_json: JSON.stringify([{
         ingredient_id: "ING-001",
         ingredient_type: "BASE_INGREDIENT",
@@ -249,11 +250,12 @@ function setupRowsWithStaleVariantSnapshot(): void {
     Recipes: [
       {
         target_type: "SEMI_PRODUCT", target_id: "BTP-001", status: "ACTIVE",
+        start_date: "2026-06-01T00:00:00.000Z",
         ingredients_json: JSON.stringify([{ ingredient_id: "ING-001", ingredient_type: "BASE_INGREDIENT", quantity: 30, unit_id: "UNT-001" }]),
       },
       {
         target_type: "PRODUCT_VARIANT", target_id: "VAR-BTP", status: "ACTIVE",
-        start_date: null, created_at: "2026-06-15T00:00:00.000Z", end_date: null,
+        start_date: "2026-06-15T00:00:00.000Z", created_at: "2026-06-15T00:00:00.000Z", end_date: null,
         ingredients_json: JSON.stringify([{ ingredient_id: "BTP-001", ingredient_type: "SEMI_PRODUCT", quantity: 25, unit_id: "UNT-001" }]),
       },
     ],

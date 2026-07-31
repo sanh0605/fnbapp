@@ -39,6 +39,7 @@ type RawRecipe = {
   target_id?: string;
   target_type?: string;
   ingredients_json?: string;
+  start_date?: string | null;
 };
 
 type RawSemiProduct = {

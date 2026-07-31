@@ -14,6 +14,7 @@ describe("selectEffectiveRecipe", () => {
       target_type: "SEMI_PRODUCT",
       target_id: "BTP-001",
       status: "ACTIVE",
+      start_date: "2026-04-01T00:00:00.000Z",
       created_at: "2026-04-01T00:00:00.000Z",
       end_date: "2026-06-01T00:00:00.000Z",
     };
@@ -22,6 +23,7 @@ describe("selectEffectiveRecipe", () => {
       target_type: "SEMI_PRODUCT",
       target_id: "BTP-001",
       status: "ACTIVE",
+      start_date: "2026-06-01T00:00:00.000Z",
       created_at: "2026-06-01T00:00:00.000Z",
       end_date: null,
     };
@@ -95,6 +97,7 @@ describe("selectEffectiveRecipe", () => {
       id: "RC-LEGACY",
       target_type: "MODIFIER",
       target_id: "MOD-001",
+      start_date: "2026-06-01T00:00:00.000Z",
       created_at: "2026-06-01T00:00:00.000Z",
       end_date: "",
     };
@@ -105,32 +108,32 @@ describe("selectEffectiveRecipe", () => {
   });
 });
 
-describe("start_date backfill equivalence", () => {
-  // Setting start_date := created_at must not change which recipe is
-  // selected, because the fallback already used created_at. This test
-  // pins that invariant so the backfill cannot silently alter history.
-  it("selects the same recipe whether start_date is null or equals created_at", () => {
-    const withNull = [
-      { id: "RC-A", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+describe("selectEffectiveRecipe without the created_at fallback", () => {
+  // After 0048, start_date is never null. A recipe whose start_date is in
+  // the future must not be selected even when its created_at is in the past
+  // -- under the old fallback this distinction could not be expressed.
+  it("ignores created_at entirely and honours start_date alone", () => {
+    const recipes = [
+      { id: "RC-OLD", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
         status: "ACTIVE", ingredients_json: "[]",
-        start_date: null, created_at: "2026-05-19T00:00:00.000Z" },
-      { id: "RC-B", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        start_date: "2026-04-01T00:00:00.000Z", created_at: "2026-04-01T00:00:00.000Z" },
+      { id: "RC-FUTURE", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
         status: "ACTIVE", ingredients_json: "[]",
-        start_date: null, created_at: "2026-06-14T00:00:00.000Z" },
+        start_date: "2026-09-01T00:00:00.000Z", created_at: "2026-04-02T00:00:00.000Z" },
     ];
-    const backfilled = withNull.map(r => ({ ...r, start_date: r.created_at }));
+    const picked = selectEffectiveRecipe(recipes, "SEMI_PRODUCT", "BTP-001", "2026-05-01T00:00:00.000Z");
+    expect(picked?.id).toBe("RC-OLD");
+  });
 
-    for (const asOf of [
-      "2026-05-18T23:59:59.000Z",
-      "2026-05-19T00:00:00.000Z",
-      "2026-06-01T00:00:00.000Z",
-      "2026-06-14T00:00:00.000Z",
-      "2026-07-31T00:00:00.000Z",
-    ]) {
-      const before = selectEffectiveRecipe(withNull, "SEMI_PRODUCT", "BTP-001", asOf);
-      const after = selectEffectiveRecipe(backfilled, "SEMI_PRODUCT", "BTP-001", asOf);
-      expect(after?.id, `asOf=${asOf}`).toBe(before?.id);
-    }
+  it("throws when start_date is missing instead of silently guessing", () => {
+    const recipes = [
+      { id: "RC-BAD", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: null as unknown as string, created_at: "2026-04-01T00:00:00.000Z" },
+    ];
+    expect(() =>
+      selectEffectiveRecipe(recipes, "SEMI_PRODUCT", "BTP-001", "2026-05-01T00:00:00.000Z"),
+    ).toThrow(/RC-BAD/);
   });
 });
 

@@ -9,25 +9,25 @@ const recipeFixture = [
   {
     id: "REC-001", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
     ingredients_json: JSON.stringify([{ ingredient_id: "BTP-004", ingredient_type: "SEMI_PRODUCT", quantity: 20, unit_id: "U-ML" }]),
-    status: "ACTIVE", start_date: null,
+    status: "ACTIVE", start_date: "2026-03-26T17:00:00.000Z",
     created_at: "2026-03-26T17:00:00.000Z", end_date: "2026-05-12T17:00:00.000Z",
   },
   {
     id: "REC-002", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
     ingredients_json: JSON.stringify([{ ingredient_id: "ING-022", ingredient_type: "BASE_INGREDIENT", quantity: 20, unit_id: "U-ML" }]),
-    status: "ACTIVE", start_date: null,
+    status: "ACTIVE", start_date: "2026-05-12T17:00:00.000Z",
     created_at: "2026-05-12T17:00:00.000Z", end_date: null,
   },
   {
     id: "RCP-MOD-001-OLD", target_type: "MODIFIER", target_id: "MOD-001",
     ingredients_json: JSON.stringify([{ ingredient_id: "ING-050", ingredient_type: "BASE_INGREDIENT", quantity: 30, unit_id: "U-G" }]),
-    status: "ACTIVE", start_date: null,
+    status: "ACTIVE", start_date: "2026-04-01T00:00:00.000Z",
     created_at: "2026-04-01T00:00:00.000Z", end_date: "2026-06-01T00:00:00.000Z",
   },
   {
     id: "RCP-MOD-001-NEW", target_type: "MODIFIER", target_id: "MOD-001",
     ingredients_json: JSON.stringify([{ ingredient_id: "ING-051", ingredient_type: "BASE_INGREDIENT", quantity: 25, unit_id: "U-G" }]),
-    status: "ACTIVE", start_date: null,
+    status: "ACTIVE", start_date: "2026-06-01T00:00:00.000Z",
     created_at: "2026-06-01T00:00:00.000Z", end_date: null,
   },
 ];

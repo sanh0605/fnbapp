@@ -162,13 +162,13 @@ describe("reconstructOrderV2", () => {
         {
           id: "REC-001", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
           ingredients_json: JSON.stringify([{ ingredient_id: "BTP-004", ingredient_type: "SEMI_PRODUCT", quantity: 20, unit_id: "U-ML" }]),
-          status: "ACTIVE", start_date: null,
+          status: "ACTIVE", start_date: "2026-03-26T17:00:00.000Z",
           created_at: "2026-03-26T17:00:00.000Z", end_date: "2026-05-12T17:00:00.000Z",
         },
         {
           id: "REC-002", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
           ingredients_json: JSON.stringify([{ ingredient_id: "ING-022", ingredient_type: "BASE_INGREDIENT", quantity: 20, unit_id: "U-ML" }]),
-          status: "ACTIVE", start_date: null,
+          status: "ACTIVE", start_date: "2026-05-12T17:00:00.000Z",
           created_at: "2026-05-12T17:00:00.000Z", end_date: null,
         },
       ],

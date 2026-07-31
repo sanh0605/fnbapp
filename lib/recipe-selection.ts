@@ -40,8 +40,12 @@ export function selectEffectiveRecipe(
       return false;
     }
 
-    const startValue = recipe.start_date || recipe.created_at;
-    const startMs = startValue ? new Date(startValue).getTime() : 0;
+    // start_date is NOT NULL as of migration 0048. A missing value means the
+    // row bypassed the constraint, which must surface rather than be guessed.
+    if (!recipe.start_date) {
+      throw new Error(`Recipe ${recipe.id ?? "(no id)"} has no start_date`);
+    }
+    const startMs = new Date(recipe.start_date).getTime();
     if (Number.isFinite(startMs) && startMs > asOfMs) {
       return false;
     }
@@ -56,12 +60,9 @@ export function selectEffectiveRecipe(
   });
 
   candidates.sort((left, right) => {
-    const leftEffective = new Date(
-      left.start_date || left.created_at || 0,
-    ).getTime();
-    const rightEffective = new Date(
-      right.start_date || right.created_at || 0,
-    ).getTime();
+    // Both are guaranteed non-null: the filter above threw otherwise.
+    const leftEffective = new Date(left.start_date!).getTime();
+    const rightEffective = new Date(right.start_date!).getTime();
     if (leftEffective !== rightEffective) {
       return rightEffective - leftEffective;
     }

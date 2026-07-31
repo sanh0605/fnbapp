@@ -56,6 +56,7 @@ describe("buildHongToLucMigrationPlan", () => {
           ingredient("ING-HONG", 10),
         ]),
         status: "ACTIVE",
+        start_date: "2026-06-01T00:00:00Z",
         created_at: "2026-06-01T00:00:00Z",
       },
       {
@@ -66,6 +67,7 @@ describe("buildHongToLucMigrationPlan", () => {
           ingredient("ING-LUC", 20),
         ]),
         status: "ACTIVE",
+        start_date: "2026-06-01T00:00:00Z",
         created_at: "2026-06-01T00:00:00Z",
       },
       {
@@ -78,6 +80,7 @@ describe("buildHongToLucMigrationPlan", () => {
           ingredient("ING-LEMON", 1),
         ]),
         status: "ACTIVE",
+        start_date: "2026-06-28T17:00:00Z",
         created_at: "2026-06-28T17:00:00Z",
       },
       {
@@ -89,6 +92,7 @@ describe("buildHongToLucMigrationPlan", () => {
           ingredient("ING-SUGAR", 10),
         ]),
         status: "ACTIVE",
+        start_date: "2026-06-20T00:00:00Z",
         created_at: "2026-06-20T00:00:00Z",
       },
     ];
@@ -291,6 +295,7 @@ describe("buildHongToLucMigrationPlan", () => {
         target_id: "VAR-LUC",
         ingredients_json: "[]",
         status: "ACTIVE",
+        start_date: "2026-06-28T17:00:00Z",
         created_at: "2026-06-28T17:00:00Z",
       }, {
         id: "REC-068",
@@ -298,6 +303,7 @@ describe("buildHongToLucMigrationPlan", () => {
         target_id: "VAR-HONG",
         ingredients_json: "[]",
         status: "ACTIVE",
+        start_date: "2026-06-20T00:00:00Z",
         created_at: "2026-06-20T00:00:00Z",
       }],
       semiProducts: [],
@@ -358,6 +364,7 @@ describe("buildHongToLucMigrationPlan", () => {
       target_id: "BTP-LUC",
       ingredients_json: JSON.stringify([ingredient("ING-LUC", 20)]),
       status: "ACTIVE",
+      start_date: "2026-06-01T00:00:00Z",
       created_at: "2026-06-01T00:00:00Z",
     });
     input.recipes[1].ingredients_json = JSON.stringify([
@@ -392,15 +399,6 @@ describe("buildHongToLucMigrationPlan", () => {
 
     expect(() => buildHongToLucMigrationPlan(input)).toThrow(
       "Expected target recipe REC-098",
-    );
-  });
-
-  it("rejects a target recipe without an explicit effective timestamp", () => {
-    const input = minimalPlanInput();
-    delete input.recipes[0].created_at;
-
-    expect(() => buildHongToLucMigrationPlan(input)).toThrow(
-      "has no valid effective timestamp",
     );
   });
 
@@ -640,6 +638,7 @@ function minimalPlanInput(): any {
         target_id: "VAR-LUC",
         ingredients_json: "[]",
         status: "ACTIVE",
+        start_date: "2026-06-28T17:00:00Z",
         created_at: "2026-06-28T17:00:00Z",
       },
       {
@@ -648,6 +647,7 @@ function minimalPlanInput(): any {
         target_id: "VAR-HONG",
         ingredients_json: "[]",
         status: "ACTIVE",
+        start_date: "2026-06-20T00:00:00Z",
         created_at: "2026-06-20T00:00:00Z",
       },
     ],

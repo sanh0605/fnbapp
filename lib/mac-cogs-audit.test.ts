@@ -79,6 +79,7 @@ describe("auditMacCogsDrift", () => {
         {
           target_id: "BTP-1",
           target_type: "SEMI_PRODUCT",
+          start_date: "2026-06-01T00:00:00Z",
           ingredients_json: JSON.stringify([
             { ingredient_id: "ING-A", ingredient_type: "BASE_INGREDIENT", quantity: 100, unit_id: "g" },
           ]),

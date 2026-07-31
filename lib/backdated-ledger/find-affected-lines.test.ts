@@ -103,6 +103,7 @@ describe("findAffectedLines", () => {
         target_type: "SEMI_PRODUCT",
         target_id: "BTP-001",
         status: "ACTIVE",
+        start_date: "2026-07-01T00:00:00.000Z",
         ingredients_json: JSON.stringify([{
           ingredient_id: "ING-RAW",
           ingredient_type: "BASE_INGREDIENT",

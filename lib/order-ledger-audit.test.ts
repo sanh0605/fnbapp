@@ -101,6 +101,7 @@ describe("auditOrderLedger", () => {
       recipes: [{
         target_id: "BTP-COFFEE",
         target_type: "SEMI_PRODUCT",
+        start_date: "2026-01-01T00:00:00Z",
         ingredients_json: JSON.stringify([{ ingredient_id: "ING-BEAN", ingredient_type: "BASE_INGREDIENT", quantity: 100 }]),
       }],
       semiProducts: [{ id: "BTP-COFFEE", batch_yield: 100 }],
@@ -175,6 +176,7 @@ describe("auditOrderLedger", () => {
       recipes: [{
         target_id: "BTP-COFFEE",
         target_type: "SEMI_PRODUCT",
+        start_date: "2026-01-01T00:00:00Z",
         ingredients_json: JSON.stringify([{ ingredient_id: "ING-BEAN", ingredient_type: "BASE_INGREDIENT", quantity: 100 }]),
       }],
       semiProducts: [{ id: "BTP-COFFEE", batch_yield: 100 }],
@@ -215,6 +217,7 @@ describe("auditOrderLedger", () => {
       recipes: [{
         target_id: "BTP-COFFEE",
         target_type: "SEMI_PRODUCT",
+        start_date: "2026-01-01T00:00:00Z",
         ingredients_json: JSON.stringify([{ ingredient_id: "ING-BEAN", ingredient_type: "BASE_INGREDIENT", quantity: 100 }]),
       }],
       semiProducts: [{ id: "BTP-COFFEE", batch_yield: 100 }],
