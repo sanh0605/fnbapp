@@ -712,13 +712,31 @@ Bất biến: created_at LUÔN là lúc bấm lưu thật, không bao giờ bị
 ghi đè. Nếu case 2 hoặc 3 cho created_at khác 10:00:00 -> DỪNG, code sai.
 ```
 
-**Why this needs changing.** `app/admin/semi-products/actions.ts:105-107`
-computes one variable, `nowIso`, from the form's effective date, then writes it
-to **both** columns at lines 125-126 and 138-139. `lib/sheets_db.ts:463-480`'s
-`insert()` passes the payload through without overriding `created_at`. So on
-the literal reading, cases 2 and 3 both write the *effective* date into
-`created_at`, violating the invariant. `app/admin/products/modifiers/actions.ts:146-147,158-159`
-has the same shape.
+**Why this needs changing.** One variable carries two different meanings.
+`app/admin/semi-products/actions.ts:105-107` initialises `nowIso` to the current
+time, then **overwrites it** with the form's effective date when one is given —
+and lines 125-126 and 138-139 write that same variable to both `start_date` and
+`created_at`. `lib/sheets_db.ts:463-480`'s `insert()` passes the payload through
+without overriding `created_at`.
+
+Traced through the owner's case 2 — save pressed 31/07 10:00, effective date
+entered as 30/07 12:00:
+
+| | Required | What the code produces |
+|---|---|---|
+| `start_date` | 30/07 12:00 | 30/07 12:00 — correct |
+| `created_at` | **31/07 10:00** | **30/07 12:00** — wrong |
+
+The two columns cannot differ while one variable feeds both, so cases 2 and 3
+are unreachable by construction. `app/admin/products/modifiers/actions.ts:146-147,158-159`
+has the identical shape.
+
+**What it costs.** The record of *when a recipe was actually entered* is
+destroyed, so late entry becomes indistinguishable from timely entry — which is
+exactly the evidence needed to judge whether historical orders were costed
+against the right recipe. `RC-032` ("Khoai luộc", entered 2026-07-30, effective
+2026-05-31, 60 days late) is the case that matters: if its `created_at` had been
+overwritten to 2026-05-31, nothing would show it was entered late at all.
 
 Production currently contradicts that reading — `RC-029` (`start_date`
 2026-05-31, `created_at` 2026-06-26) and `RC-032` (2026-05-31 / 2026-07-30) are
