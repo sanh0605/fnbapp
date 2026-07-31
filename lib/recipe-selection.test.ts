@@ -105,6 +105,35 @@ describe("selectEffectiveRecipe", () => {
   });
 });
 
+describe("start_date backfill equivalence", () => {
+  // Setting start_date := created_at must not change which recipe is
+  // selected, because the fallback already used created_at. This test
+  // pins that invariant so the backfill cannot silently alter history.
+  it("selects the same recipe whether start_date is null or equals created_at", () => {
+    const withNull = [
+      { id: "RC-A", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: null, created_at: "2026-05-19T00:00:00.000Z" },
+      { id: "RC-B", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: null, created_at: "2026-06-14T00:00:00.000Z" },
+    ];
+    const backfilled = withNull.map(r => ({ ...r, start_date: r.created_at }));
+
+    for (const asOf of [
+      "2026-05-18T23:59:59.000Z",
+      "2026-05-19T00:00:00.000Z",
+      "2026-06-01T00:00:00.000Z",
+      "2026-06-14T00:00:00.000Z",
+      "2026-07-31T00:00:00.000Z",
+    ]) {
+      const before = selectEffectiveRecipe(withNull, "SEMI_PRODUCT", "BTP-001", asOf);
+      const after = selectEffectiveRecipe(backfilled, "SEMI_PRODUCT", "BTP-001", asOf);
+      expect(after?.id, `asOf=${asOf}`).toBe(before?.id);
+    }
+  });
+});
+
 describe("findLatestActiveRecipe", () => {
   it("selects the newest open recipe regardless of input order", () => {
     const oldest = {
