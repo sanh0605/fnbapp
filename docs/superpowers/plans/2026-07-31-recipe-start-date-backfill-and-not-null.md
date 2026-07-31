@@ -1,0 +1,685 @@
+# Recipe `start_date` Backfill and NOT NULL Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Make `recipes.start_date` always present and authoritative, so recipe
+effectiveness is decided by a stored value rather than by a read-time fallback
+that every reader must remember to apply.
+
+**Architecture:** Three ordered changes, each independently verifiable.
+(1) Backfill the 129 `NULL` rows with `created_at` — provably behaviour-neutral,
+because `selectEffectiveRecipe` already falls back to `created_at`.
+(2) Add `NOT NULL`, making a null structurally impossible.
+(3) Only then delete the read-time fallback in `lib/recipe-selection.ts`, which
+becomes dead code once nulls cannot exist.
+
+The order matters: removing the fallback before the backfill would change
+behaviour for 129 recipes; removing it after the constraint changes nothing.
+
+**Tech Stack:** TypeScript, Supabase Postgres migrations, Vitest,
+`vite-node` for scripts.
+
+## Global Constraints
+
+- Code and comments in English. User-facing strings Vietnamese.
+  (`AGENTS.md` "Repo Coding Rules")
+- Any script that writes data is **dry-run by default**; `--apply` is required
+  for writes, and it must print exact counts and targets before writing.
+  (`docs/COLLABORATION.md` section D rule 1)
+- `npx tsc --noEmit` must report 0 errors. Enforced by the Husky pre-commit hook.
+- Full test suite green before each commit.
+- Commit per phase: one commit equals one outcome plus its verification.
+  (`docs/COLLABORATION.md` section D rule 2)
+- Do not push. (`docs/COLLABORATION.md` section E)
+- New migration numbers continue from `0047`; this plan uses `0048` and `0049`.
+- `scripts/**` and `supabase/migrations/**` are engine-owned. See "Ownership"
+  below — this plan is not authorized to run until that is settled.
+
+## Baseline facts (verified against production 2026-07-31, read-only)
+
+| Fact | Value |
+|---|---|
+| `recipes` rows, all `status = ACTIVE` | 131 |
+| ...with `start_date IS NULL` | **129** |
+| ...with `start_date` set | 2 — `RC-029` (`BTP-013`), `RC-032` (`BTP-014`) |
+| `order_lines_v2` rows | 2,604 |
+| ...with a parseable `variant.target_id` snapshot | 2,563 |
+| Order lines sold before their variant's earliest effective recipe | **0** |
+| Order lines sold before their semi-product's earliest cooking recipe | **0** |
+
+The last two rows are why this is a safety and clarity change, **not** a bug
+fix: the current fallback produces correct results for today's data. It is
+correct by luck — every recipe happens to have been created before the sales
+that use it. The two recipes that *do* carry an explicit `start_date` are both
+backdated by weeks (`RC-029` by 26 days, `RC-032` by 60 days), which is the
+owner's actual working pattern and the case the fallback cannot serve.
+
+## Already done — do not redo
+
+Verified present in the repo; these implement the write-time default and need
+no further work:
+
+- `supabase/migrations/0044_save_product_atomic_start_date.sql` — `save_product_atomic`
+  sets `start_date` on every `PRODUCT_VARIANT` recipe row it creates.
+- `supabase/migrations/0043_backdated_recipe_detection_on_update.sql:42` — the
+  backdating trigger tests `coalesce(new.start_date, new.created_at)`, fires on
+  INSERT and UPDATE.
+- `app/admin/semi-products/actions.ts:125,138` — sets `start_date: nowIso`.
+- `app/admin/products/modifiers/actions.ts:146,158` — sets `start_date: nowIso`.
+
+## File Structure
+
+| File | Responsibility | Task |
+|---|---|---|
+| `scripts/backfill-recipe-start-date.ts` (create) | Dry-run/apply backfill of the 129 rows, plus the before/after equivalence proof | 1 |
+| `lib/recipe-selection.test.ts` (modify) | Tests locking the equivalence and, later, the fallback removal | 1, 3 |
+| `supabase/migrations/0048_recipes_start_date_not_null.sql` (create) | `NOT NULL` constraint | 2 |
+| `lib/recipe-selection.ts` (modify, lines 43, 58-64) | Remove the read-time fallback | 3 |
+| `supabase/migrations/0049_backdated_recipe_detection_drop_coalesce.sql` (create) | Remove the trigger's `coalesce` fallback | 3 |
+
+---
+
+### Task 1: Backfill the 129 null `start_date` values
+
+**Files:**
+- Create: `scripts/backfill-recipe-start-date.ts`
+- Test: `lib/recipe-selection.test.ts` (add one test)
+
+**Interfaces:**
+- Consumes: `selectEffectiveRecipe(recipes, targetType, targetId, asOf)` from
+  `lib/recipe-selection.ts` — unchanged in this task.
+- Produces: nothing importable. The script is a one-off operation; later tasks
+  depend only on the database state it leaves behind (zero `NULL` rows).
+
+- [ ] **Step 1: Write the failing test**
+
+Add to `lib/recipe-selection.test.ts`:
+
+```ts
+import { describe, it, expect } from "vitest";
+import { selectEffectiveRecipe } from "@/lib/recipe-selection";
+
+describe("start_date backfill equivalence", () => {
+  // Setting start_date := created_at must not change which recipe is
+  // selected, because the fallback already used created_at. This test
+  // pins that invariant so the backfill cannot silently alter history.
+  it("selects the same recipe whether start_date is null or equals created_at", () => {
+    const withNull = [
+      { id: "RC-A", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: null, created_at: "2026-05-19T00:00:00.000Z" },
+      { id: "RC-B", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: null, created_at: "2026-06-14T00:00:00.000Z" },
+    ];
+    const backfilled = withNull.map(r => ({ ...r, start_date: r.created_at }));
+
+    for (const asOf of [
+      "2026-05-18T23:59:59.000Z",
+      "2026-05-19T00:00:00.000Z",
+      "2026-06-01T00:00:00.000Z",
+      "2026-06-14T00:00:00.000Z",
+      "2026-07-31T00:00:00.000Z",
+    ]) {
+      const before = selectEffectiveRecipe(withNull, "SEMI_PRODUCT", "BTP-001", asOf);
+      const after = selectEffectiveRecipe(backfilled, "SEMI_PRODUCT", "BTP-001", asOf);
+      expect(after?.id, `asOf=${asOf}`).toBe(before?.id);
+    }
+  });
+});
+```
+
+- [ ] **Step 2: Run the test to verify it passes already**
+
+Run: `npx vitest run lib/recipe-selection.test.ts -t "start_date backfill equivalence"`
+
+Expected: **PASS**. This test documents an invariant of existing code rather
+than driving new code; it must be green before the backfill runs, because a
+failure here would mean the backfill is not neutral and the plan is wrong.
+If it fails, STOP and report — do not proceed to Step 3.
+
+- [ ] **Step 3: Write the backfill script**
+
+Create `scripts/backfill-recipe-start-date.ts`:
+
+```ts
+/**
+ * Backfills recipes.start_date := created_at for rows where it is null.
+ *
+ * Behaviour-neutral by construction: lib/recipe-selection.ts's
+ * selectEffectiveRecipe already reads `start_date || created_at`, so writing
+ * created_at into start_date cannot change any selection result. This script
+ * proves that per-row rather than asserting it -- it replays
+ * selectEffectiveRecipe over every order line before and after the proposed
+ * change and refuses to apply if any line's selected recipe id differs.
+ *
+ * Dry-run by default. --apply required to write.
+ */
+import { createClient } from "@supabase/supabase-js";
+import { config } from "dotenv";
+import { selectEffectiveRecipe } from "../lib/recipe-selection";
+
+config({ path: ".env.local" });
+
+const apply = process.argv.includes("--apply");
+const db = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
+
+type Recipe = {
+  id: string;
+  target_type: string;
+  target_id: string;
+  status: string;
+  ingredients_json: string;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+};
+
+async function pageAll<T>(table: string, columns: string): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await db.from(table).select(columns).range(from, from + 999);
+    if (error) throw new Error(`${table}: ${error.message}`);
+    if (!data || data.length === 0) break;
+    out.push(...(data as T[]));
+    if (data.length < 1000) break;
+  }
+  return out;
+}
+
+async function main(): Promise<void> {
+  const recipes = await pageAll<Recipe>("recipes", "*");
+  const nulls = recipes.filter(r => !r.start_date);
+  console.log(`Recipes total: ${recipes.length}`);
+  console.log(`With null start_date: ${nulls.length}`);
+
+  const missingCreatedAt = nulls.filter(r => !r.created_at);
+  if (missingCreatedAt.length > 0) {
+    console.error(`ABORT: ${missingCreatedAt.length} rows have neither start_date nor created_at:`);
+    missingCreatedAt.forEach(r => console.error(`  ${r.id}`));
+    process.exit(1);
+  }
+
+  const backfilled = recipes.map(r => (r.start_date ? r : { ...r, start_date: r.created_at }));
+
+  const orders = await pageAll<{ id: string; created_at: string; status: string; superseded_by: string | null }>(
+    "orders_v2", "id,created_at,status,superseded_by",
+  );
+  const orderTime = new Map<string, string>();
+  for (const o of orders) {
+    if (o.status === "COMPLETED" && !o.superseded_by) orderTime.set(o.id, o.created_at);
+  }
+
+  const lines = await pageAll<{ id: string; order_id: string; recipe_snapshot_json: unknown }>(
+    "order_lines_v2", "id,order_id,recipe_snapshot_json",
+  );
+
+  // Every (target_type, target_id) that any order line touches, checked at
+  // that line's own sale time. Covers variants and their semi-products.
+  let checked = 0;
+  const diffs: string[] = [];
+  for (const line of lines) {
+    const at = orderTime.get(line.order_id);
+    if (!at) continue;
+    const snap = line.recipe_snapshot_json as
+      | { variant?: { target_id?: string; ingredients?: Array<{ ingredient_type?: string; ingredient_id?: string }> } }
+      | null;
+    if (!snap?.variant?.target_id) continue;
+
+    const targets: Array<[string, string]> = [["PRODUCT_VARIANT", snap.variant.target_id]];
+    for (const ing of snap.variant.ingredients ?? []) {
+      if (ing.ingredient_type === "SEMI_PRODUCT" && ing.ingredient_id) {
+        targets.push(["SEMI_PRODUCT", ing.ingredient_id]);
+      }
+    }
+
+    for (const [type, id] of targets) {
+      checked += 1;
+      const before = selectEffectiveRecipe(recipes, type, id, at);
+      const after = selectEffectiveRecipe(backfilled, type, id, at);
+      if ((before?.id ?? null) !== (after?.id ?? null)) {
+        diffs.push(`${line.id} ${type}/${id} @${at}: ${before?.id ?? "none"} -> ${after?.id ?? "none"}`);
+      }
+    }
+  }
+
+  console.log(`\nEquivalence check: ${checked} (line, target) selections replayed`);
+  console.log(`Differences: ${diffs.length}`);
+  diffs.slice(0, 20).forEach(d => console.log(`  ${d}`));
+
+  if (diffs.length > 0) {
+    console.error("\nABORT: backfill is not behaviour-neutral. Nothing written.");
+    process.exit(1);
+  }
+
+  console.log(`\nMode: ${apply ? "APPLY (writing to production)" : "DRY RUN (no writes)"}`);
+  console.log(`Rows to update: ${nulls.length}`);
+  nulls.slice(0, 10).forEach(r => console.log(`  ${r.id} ${r.target_type}/${r.target_id} start_date := ${r.created_at}`));
+  if (nulls.length > 10) console.log(`  ... and ${nulls.length - 10} more`);
+
+  if (!apply) {
+    console.log("\nDry run only -- no data written. Re-run with --apply to write.");
+    return;
+  }
+
+  let written = 0;
+  for (const r of nulls) {
+    const { error } = await db.from("recipes").update({ start_date: r.created_at }).eq("id", r.id).is("start_date", null);
+    if (error) {
+      console.error(`FAILED ${r.id}: ${error.message}`);
+      process.exit(1);
+    }
+    written += 1;
+  }
+  console.log(`\nUpdated ${written} rows.`);
+
+  const after = await pageAll<{ id: string; start_date: string | null }>("recipes", "id,start_date");
+  const remaining = after.filter(r => !r.start_date).length;
+  console.log(`Rows still null after apply: ${remaining}`);
+  if (remaining !== 0) {
+    console.error("ABORT: nulls remain. Investigate before adding the NOT NULL constraint.");
+    process.exit(1);
+  }
+}
+
+main().catch(e => {
+  console.error("FAILED:", e instanceof Error ? e.message : String(e));
+  process.exit(1);
+});
+```
+
+- [ ] **Step 4: Run the dry run and read the output**
+
+Run: `npx vite-node scripts/backfill-recipe-start-date.ts`
+
+Expected exactly:
+```
+Recipes total: 131
+With null start_date: 129
+Differences: 0
+Mode: DRY RUN (no writes)
+Rows to update: 129
+```
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  Nếu "With null start_date" khác 129, hoặc "Differences" khác 0 -> DỪNG.
+  Differences khác 0 nghĩa là giả định "start_date := created_at là trung tính"
+  sai, và toàn bộ plan này phải viết lại. Đừng chạy --apply.
+```
+
+- [ ] **Step 5: Apply**
+
+Run: `npx vite-node scripts/backfill-recipe-start-date.ts --apply`
+
+Expected: `Updated 129 rows.` then `Rows still null after apply: 0`
+
+- [ ] **Step 6: Run the full test suite**
+
+Run: `npx vitest run`
+Expected: all green, no new failures.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add scripts/backfill-recipe-start-date.ts lib/recipe-selection.test.ts
+git commit -m "fix: backfill recipes.start_date from created_at (129 rows)
+
+Behaviour-neutral: selectEffectiveRecipe already read start_date ||
+created_at. The script proves neutrality by replaying selection over every
+order line before and after, and aborts if any selection changes. Dry run
+reported 0 differences across all replayed selections.
+
+Prepares the NOT NULL constraint in 0048.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 2: Make `start_date` NOT NULL
+
+**Files:**
+- Create: `supabase/migrations/0048_recipes_start_date_not_null.sql`
+
+**Interfaces:**
+- Consumes: the database state left by Task 1 (zero null `start_date` rows).
+- Produces: the guarantee `lib/recipe-selection.ts` relies on in Task 3 —
+  `recipes.start_date` is never null, so the `|| created_at` fallback is
+  unreachable.
+
+- [ ] **Step 1: Write the migration**
+
+Create `supabase/migrations/0048_recipes_start_date_not_null.sql`:
+
+```sql
+-- recipes.start_date becomes mandatory.
+--
+-- Until now effectiveness was decided by a read-time fallback
+-- (start_date || created_at, lib/recipe-selection.ts). That made two
+-- different situations indistinguishable in the data: "start_date is null
+-- because it equals created_at" and "start_date is null because nobody set
+-- it". Every reader had to remember the fallback, and any reader that forgot
+-- it disagreed with the others about when a recipe took effect.
+--
+-- The write paths already set start_date (0044 save_product_atomic,
+-- app/admin/semi-products/actions.ts, app/admin/products/modifiers/actions.ts).
+-- The 129 historical nulls were backfilled with created_at by
+-- scripts/backfill-recipe-start-date.ts, which proved the change neutral by
+-- replaying recipe selection over every order line.
+--
+-- Guard: this migration fails loudly rather than silently skipping if any
+-- null survives, so a partial backfill cannot be mistaken for success.
+
+do $$
+declare
+  null_count integer;
+begin
+  select count(*) into null_count from public.recipes where start_date is null;
+  if null_count > 0 then
+    raise exception
+      'Cannot set recipes.start_date NOT NULL: % rows still null. Run scripts/backfill-recipe-start-date.ts --apply first.',
+      null_count;
+  end if;
+end $$;
+
+alter table public.recipes
+  alter column start_date set not null;
+```
+
+- [ ] **Step 2: Verify the guard fires on a null**
+
+Run in a scratch transaction against a local or branch database, never production:
+
+```sql
+begin;
+insert into public.recipes (id, target_type, target_id, ingredients_json, status, created_at)
+  values ('RC-GUARD-TEST', 'SEMI_PRODUCT', 'BTP-001', '[]', 'ACTIVE', now());
+-- then run the migration's do-block; it must raise.
+rollback;
+```
+
+Expected: `Cannot set recipes.start_date NOT NULL: 1 rows still null`
+
+- [ ] **Step 3: Apply the migration**
+
+Run: `npx supabase db push`
+Expected: migration `0048` applied, no error.
+
+- [ ] **Step 4: Verify the constraint is live**
+
+```sql
+select is_nullable from information_schema.columns
+ where table_name = 'recipes' and column_name = 'start_date';
+```
+
+Expected: `NO`
+
+- [ ] **Step 5: Run the full test suite and type check**
+
+Run: `npx vitest run && npx tsc --noEmit`
+Expected: all green, 0 type errors.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add supabase/migrations/0048_recipes_start_date_not_null.sql
+git commit -m "feat: migration 0048, recipes.start_date NOT NULL
+
+A null start_date made 'equals created_at' and 'nobody filled it in'
+indistinguishable in the data, and forced every reader to reimplement the
+same fallback. Write paths already populate it (0044, semi-products and
+modifiers actions); 0048 closes the remaining hole.
+
+Includes a guard that raises if any null survives, so a partial backfill
+cannot pass as success.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 3: Remove the read-time fallback
+
+**Files:**
+- Modify: `lib/recipe-selection.ts:43`, `lib/recipe-selection.ts:58-64`
+- Create: `supabase/migrations/0049_backdated_recipe_detection_drop_coalesce.sql`
+- Test: `lib/recipe-selection.test.ts`
+
+**Interfaces:**
+- Consumes: the `NOT NULL` guarantee from Task 2.
+- Produces: `selectEffectiveRecipe` with an unchanged signature —
+  `selectEffectiveRecipe(recipes: EffectiveRecipe[], targetType: string,
+  targetId: string, asOf: string): EffectiveRecipe | null`. Only the internal
+  date resolution changes. No caller needs editing.
+
+- [ ] **Step 1: Write the failing test**
+
+Add to `lib/recipe-selection.test.ts`:
+
+```ts
+describe("selectEffectiveRecipe without the created_at fallback", () => {
+  // After 0048, start_date is never null. A recipe whose start_date is in
+  // the future must not be selected even when its created_at is in the past
+  // -- under the old fallback this distinction could not be expressed.
+  it("ignores created_at entirely and honours start_date alone", () => {
+    const recipes = [
+      { id: "RC-OLD", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: "2026-04-01T00:00:00.000Z", created_at: "2026-04-01T00:00:00.000Z" },
+      { id: "RC-FUTURE", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: "2026-09-01T00:00:00.000Z", created_at: "2026-04-02T00:00:00.000Z" },
+    ];
+    const picked = selectEffectiveRecipe(recipes, "SEMI_PRODUCT", "BTP-001", "2026-05-01T00:00:00.000Z");
+    expect(picked?.id).toBe("RC-OLD");
+  });
+
+  it("throws when start_date is missing instead of silently guessing", () => {
+    const recipes = [
+      { id: "RC-BAD", target_type: "SEMI_PRODUCT", target_id: "BTP-001",
+        status: "ACTIVE", ingredients_json: "[]",
+        start_date: null as unknown as string, created_at: "2026-04-01T00:00:00.000Z" },
+    ];
+    expect(() =>
+      selectEffectiveRecipe(recipes, "SEMI_PRODUCT", "BTP-001", "2026-05-01T00:00:00.000Z"),
+    ).toThrow(/RC-BAD/);
+  });
+});
+```
+
+- [ ] **Step 2: Run the tests to verify the second one fails**
+
+Run: `npx vitest run lib/recipe-selection.test.ts -t "without the created_at fallback"`
+
+Expected: first test PASSES (current code already honours an explicit
+start_date), second test FAILS — current code silently falls back instead of
+throwing.
+
+- [ ] **Step 3: Remove the fallback**
+
+In `lib/recipe-selection.ts`, replace lines 43-44:
+
+```ts
+    const startValue = recipe.start_date || recipe.created_at;
+    const startMs = startValue ? new Date(startValue).getTime() : 0;
+```
+
+with:
+
+```ts
+    // start_date is NOT NULL as of migration 0048. A missing value means the
+    // row bypassed the constraint, which must surface rather than be guessed.
+    if (!recipe.start_date) {
+      throw new Error(`Recipe ${recipe.id ?? "(no id)"} has no start_date`);
+    }
+    const startMs = new Date(recipe.start_date).getTime();
+```
+
+In the same file, replace the sort comparator's date resolution at lines 58-64:
+
+```ts
+  candidates.sort((left, right) => {
+    const leftEffective = new Date(
+      left.start_date || left.created_at || 0,
+    ).getTime();
+    const rightEffective = new Date(
+      right.start_date || right.created_at || 0,
+    ).getTime();
+```
+
+with:
+
+```ts
+  candidates.sort((left, right) => {
+    // Both are guaranteed non-null: the filter above threw otherwise.
+    const leftEffective = new Date(left.start_date!).getTime();
+    const rightEffective = new Date(right.start_date!).getTime();
+```
+
+- [ ] **Step 4: Run the tests to verify they pass**
+
+Run: `npx vitest run lib/recipe-selection.test.ts`
+Expected: PASS, including the equivalence test added in Task 1.
+
+- [ ] **Step 5: Run the full suite and type check**
+
+Run: `npx vitest run && npx tsc --noEmit`
+
+Expected: all green, 0 type errors. `lib/history-ops/hong-luc-migration.ts:785`
+also reads `recipe.start_date || recipe.created_at`; it is a closed one-off
+module and is **not** in scope — leave it, its fallback is now simply
+redundant rather than wrong.
+
+- [ ] **Step 6: Write the trigger migration**
+
+Create `supabase/migrations/0049_backdated_recipe_detection_drop_coalesce.sql`:
+
+```sql
+-- 0043 tests coalesce(new.start_date, new.created_at) because start_date
+-- could be null. 0048 made it NOT NULL, so the coalesce is dead code that
+-- keeps the old ambiguity readable in the schema. Drop it so the trigger
+-- states the same rule the application now states.
+--
+-- Behaviour is identical for every row that can exist after 0048.
+
+create or replace function public.detect_backdated_recipe_entry()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if current_setting('app.mac_drift_recovery', true) = 'on' then
+    return new;
+  end if;
+
+  if new.start_date < now() - interval '5 minutes' then
+    insert into public.backdated_recipe_events (
+      recipe_id, target_type, target_id, effective_timestamp, visibility_timestamp
+    ) values (
+      new.id, new.target_type, new.target_id, new.start_date, now()
+    )
+    on conflict (recipe_id) do nothing;
+  end if;
+
+  return new;
+end $$;
+```
+
+- [ ] **Step 7: Verify the trigger still fires on a backdated insert**
+
+```sql
+begin;
+insert into public.recipes (id, target_type, target_id, ingredients_json, status, start_date, created_at)
+  values ('RC-BACKDATE-TEST', 'SEMI_PRODUCT', 'BTP-001', '[]', 'ACTIVE',
+          now() - interval '30 days', now());
+select count(*) from public.backdated_recipe_events where recipe_id = 'RC-BACKDATE-TEST';
+rollback;
+```
+
+Expected: `1`
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  Đây chính là trường hợp RC-032 "Khoai luộc" -- nhập ngày 30/07 nhưng
+  hiệu lực 31/05, lùi 60 ngày. Trước 0043 nó KHÔNG sinh dòng cảnh báo nào.
+  Nếu câu lệnh trên trả về 0, trigger vẫn hỏng -- DỪNG, đừng commit.
+```
+
+- [ ] **Step 8: Apply and verify**
+
+Run: `npx supabase db push && npx vitest run && npx tsc --noEmit`
+Expected: migration applied, all green, 0 type errors.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add lib/recipe-selection.ts lib/recipe-selection.test.ts supabase/migrations/0049_backdated_recipe_detection_drop_coalesce.sql
+git commit -m "refactor: recipe effectiveness reads start_date only
+
+With 0048 making start_date NOT NULL, the read-time fallback
+(start_date || created_at) is unreachable. Removing it means the stored
+value is the single answer to 'when did this recipe take effect', instead
+of a rule every reader had to reimplement. selectEffectiveRecipe now throws
+on a missing start_date rather than guessing.
+
+0049 drops the matching coalesce from the backdating trigger.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+```
+
+---
+
+## Out of scope
+
+Each is a separate tracked item; folding them in here would repeat the
+bundling mistake this sequence exists to avoid.
+
+- **Setting *true* effective dates.** This plan writes `created_at` into
+  `start_date`. Where the owner knows a recipe actually took effect earlier,
+  that is a per-recipe business decision he must make, and it changes stock
+  deduction and cost. `RC-029` and `RC-032` show the pattern (26 and 60 days
+  of backdating). Do not guess these.
+- **The 13 phantom `STOCK_ADJUST` rows and the full-history rebuild.** See
+  `docs/superpowers/specs/2026-07-31-inventory-ledger-clean-rebuild-design.md`.
+  Blocked on the 50 MB backup work.
+- **`OPEN-ITEMS.md` item 1** — whether `RC-032` produced no
+  `backdated_recipe_events` row because `0043` landed after it. Task 3 Step 7
+  tests the trigger's current behaviour but does **not** confirm the history.
+- **`lib/history-ops/hong-luc-migration.ts:785`** — closed one-off module,
+  redundant fallback left in place deliberately.
+
+## Verification bar
+
+Per `docs/COLLABORATION.md` section E:
+
+- `npx tsc --noEmit` — 0 errors.
+- Full suite green.
+- 0 rows with `start_date IS NULL` after Task 1.
+- `information_schema` reports `is_nullable = NO` after Task 2.
+- Recipe selection identical for all replayed order lines (Task 1 Step 4
+  reports `Differences: 0`).
+- No push.
+
+MAC/COGS drift audits are **not** required: nothing in this plan changes stock
+deduction or cost. If any of them moves, something is wrong — treat a non-zero
+delta as a stop condition, not a new baseline.
+
+## Ownership — unresolved, blocks execution
+
+`docs/COLLABORATION.md` section C assigns `scripts/**` and
+`supabase/migrations/**` to Codex and forbids an agent implementing and
+approving the same change. Codex has been fully stopped since 2026-07-27 with
+no expected return (owner, 2026-07-31).
+
+This plan is lower risk than the ledger rebuild — it is behaviour-neutral by
+construction and every step has an abort condition — but it still writes 129
+production rows and two migrations.
+
+Coordinator recommendation: **Claude Sonnet 5 implements, Opus 5 coordinator
+reviews each commit before the next task starts.** Awaiting the owner's
+confirmation before any step runs.
