@@ -153,6 +153,9 @@ Consequences to expect from the rebuild, both correct:
 | D3 | No historical stock-deduction data is trusted. All deleted and rebuilt. | `TRUSTED_PRIMITIVE_TYPES` becomes empty for this run; all 13 rows deleted, not migrated. |
 | D4 | Semi-product inventory tracking is **kept** (decided earlier same day) | No model change. BTP balances will simply be 0 until real production orders or a real stocktake exist. |
 | D5 | This must never need doing a fourth time | Section 4 is a required part of the work, not a follow-up. |
+| D6 | "Chỉ anh hoặc user được phân quyền" may override a balance | Trust is keyed on an approved `stock_adjustments` row with a non-null `created_by_id`, not on the owner's identity specifically. A permission, not a person. |
+| D7 | **Block scripts absolutely**, not merely visibly | Section 4.2 revised — the weaker "visible and attributable" option was offered and rejected. Feasibility verified, see 4.2. |
+| D8 | **This work runs before the backup rescope**, not after | The owner's ordering, and it is the correct one. See 6.1 — the coordinator initially recommended the reverse and was wrong. |
 
 ---
 
@@ -274,11 +277,51 @@ Effect: an adjustment row cannot exist without a real, user-attributed
 `stock_adjustments` row carrying a `created_by_id` — which is visible, auditable,
 and appears in the admin UI rather than being invisible ledger noise.
 
-**Honest limit of this guarantee.** A service-role script can still insert both
-rows. The constraint makes forgery *visible and attributable* rather than
-*impossible*. Full impossibility would require revoking service-role write access
-to `stock_ledger` entirely and routing every write through RPCs — a larger change
-that should be considered separately, not folded in here.
+### 4.2b Revoking direct write access (owner decision D7)
+
+The constraint above stops a *malformed* adjustment. It does not stop a script
+from writing a well-formed one. The owner asked for absolute blocking rather
+than the weaker "visible and attributable" option. **It is achievable, and the
+cost is near zero** — verified 2026-07-31, not assumed:
+
+- Exactly one path in application code writes `stock_ledger` directly:
+  `lib/sheets-db-v2.ts:60`, `insertMany("Stock_Ledger", ...)` inside
+  `insertOrderV2Records`.
+- That function has **no production caller**. Its only importer is its own test
+  file, and `app/pos/actions.test.ts:19` asserts that the checkout path must
+  *not* contain it — it was deliberately retired in favour of the atomic RPC.
+- Every other write goes through a `security definer` function
+  (`0006`, `0008`, `0017`–`0020`, `0023`, `0024`, `0034`, `0037`, `0040`,
+  `0046`, `0047`, and `0019` for adjustments).
+
+`security definer` functions execute as their owner, not as the caller, so they
+keep working after the grant is removed. Therefore:
+
+```sql
+revoke insert, update, delete on table public.stock_ledger from service_role;
+```
+
+After this, no holder of the service key — no script, no agent, no future
+one-off fix — can write an arbitrary ledger row. Writes exist only as the output
+of a reviewed RPC, each carrying its own rules.
+
+**What this does and does not guarantee, stated plainly.** A script can still
+*call* the RPCs. It could call `submit_stock_adjustment_atomic` followed by
+`approve_stock_adjustment_atomic` and produce a real adjustment. But that
+adjustment then exists as a `stock_adjustments` row with a `created_by_id`,
+visible on the admin screen, indistinguishable from one the owner made — and
+that is the point: the only way to move stock becomes a route the owner can
+see. What is now impossible is the June 2026 pattern: 13 rows appearing in the
+ledger with a `reference_id` of `NEGATIVE-STOCK-AUDIT-...` and no parent record
+anywhere.
+
+**Expected breakage, and it is the feature.** Any existing script that writes
+`stock_ledger` directly will start failing. That is the intended outcome, not a
+regression. Enumerate them before the revoke and convert each to an RPC call or
+retire it; do not grant an exception to make one work.
+
+`lib/sheets-db-v2.ts` becomes dead code once the grant is gone. Removing it is
+out of scope here — flag it, do not delete it in this work.
 
 ### 4.3 Provenance-keyed trust in the engine
 
@@ -328,22 +371,64 @@ list, and mixing them repeats the mistake this document exists to fix):
 
 ---
 
-## 6. Hard dependency: backup first
+## 6. Sequencing and the safety net
 
-A full-history rebuild adds approximately **14 MB** to the daily backup bundle.
-The bundle is currently **39.6 MB** against a **50 MB** Apps Script limit —
-**10.4 MB of headroom**. Migration `0045`'s 30-day retention deletes nothing
-until approximately 2026-08-23.
+### 6.1 This work comes before the backup rescope — the owner is right
 
-**Running this work before problem A is resolved breaks the daily backup at the
-exact moment the data is being rewritten.** Problem A
-(`docs/superpowers/plans/2026-07-31-split-recovery-log-from-backup.md`) is a
-blocking prerequisite, already agreed by the owner.
+The coordinator initially recommended the reverse, on the grounds that a full
+rebuild adds ~14 MB to a bundle with only 10.4 MB of headroom. **That
+recommendation was wrong and is withdrawn.** The owner's ordering is correct for
+a reason the coordinator missed:
 
-Additionally, a verified restore-capable snapshot must exist **before** the
-delete step, not merely a successful backup run. `DEVELOPMENT-TRACKING.md`
-records that the Phase 3 restore drill verified repo code and never the deployed
-pipeline, which is how `order_payments` sat unbacked for weeks.
+The backup rescope removes `stock_ledger` from the bundle. That is only safe if
+the thing that regenerates `stock_ledger` can be trusted — and today it cannot,
+because it trusts 13 script-written `STOCK_ADJUST` rows as primitive facts
+(section 1.1). Dropping the ledger from the backup while its only regenerator is
+broken would leave nothing able to reproduce it.
+
+This work is therefore a **precondition** for the backup rescope, not a
+consumer of it. Once the engine is fixed and proven idempotent (section 4.4),
+`stock_ledger` becomes genuinely derived data and safe to stop backing up.
+
+### 6.2 The mechanical risk remains, and is handled here rather than by reordering
+
+The bundle is still **39.6 MB / 50 MB** during this work, and a rebuild adds
+~14 MB. That is a real constraint; it just does not require doing the backup
+first.
+
+**Mandatory first step of the implementation plan, before anything is deleted:**
+download a local snapshot of the three primitive sources — sales orders and
+lines, purchase orders and lines, recipes, plus the master data they reference —
+and **prove it restores** into a scratch database, not merely that the file
+exists. Measured 2026-07-31: those tables total approximately **4.4 MB**, a few
+seconds to fetch.
+
+With that snapshot verified, the daily backup is not the safety net for this
+work and its size ceases to matter to it. If the rebuild goes wrong in any way,
+the three sources are on disk and the whole computation can be run again from
+scratch — which is precisely the claim this work exists to establish.
+
+`DEVELOPMENT-TRACKING.md` (2026-07-31) records why "prove it restores" is
+written as a hard step: the Phase 3 restore drill verified repo code and never
+the deployed pipeline, which is how `order_payments` sat unbacked for weeks
+while a local script reported 40/40 tables healthy.
+
+### 6.3 Agreed backup scope, for the work that follows this one
+
+Recorded here so it is not re-litigated: the owner settled on dropping exactly
+two tables, having considered and rejected a deeper cut.
+
+| Table | Size | Decision |
+|---|---|---|
+| `data_recovery_changes` | 16.3 MB | Drop |
+| `stock_ledger` | 3.7 MB | Drop — derived, regenerable after this work |
+| `backdated_ledger_events` | 1.4 MB | **Keep** |
+| `order_events` | 1.0 MB | **Keep** |
+
+Bundle falls from ~39.6 MB to roughly **9.5 MB**. A further requirement from the
+same discussion: the CSV export must render timestamps in `Asia/Ho_Chi_Minh`.
+Raw UTC in a spreadsheet would show a 6 a.m. sale as 11 p.m. the previous day,
+which is exactly the kind of error that produces confident wrong conclusions.
 
 ---
 
@@ -377,7 +462,23 @@ Per `docs/COLLABORATION.md` section E, plus the additions in 4.4:
 
 ---
 
-## 9. Unresolved — needs an owner decision
+## 9. Ownership — settled
+
+**Claude Sonnet 5 implements. Opus 5 coordinator reviews every commit before the
+next step starts.** Codex has stopped completely with no expected return (owner,
+2026-07-31), and Sonnet 5 replaces it across `lib/`, `supabase/migrations/` and
+`scripts/` per the standing 2026-07-27 decision.
+
+The no-self-review rule is not waived — it is satisfied by the per-commit
+coordinator review, and reinforced by section 4.4's verification asserting
+absolute expected values rather than agreement between two computations of the
+same thing. Both agents being Claude models is a real shared-blind-spot risk;
+the absolute-value assertions are what limit it.
+
+`docs/COLLABORATION.md` section C still names Codex for these paths and is stale.
+Tracked separately.
+
+## 9b. Superseded — retained for the record
 
 `docs/COLLABORATION.md` section C assigns `lib/full-history-recompute.ts`,
 `lib/mac-cogs.ts`, `lib/inventory-consumption.ts`, `supabase/migrations/**` and
@@ -407,18 +508,18 @@ self-agreement, which limits the damage a shared blind spot could do.
 
 ---
 
-## 10. Review gate
+## 10. Review gate — cleared 2026-07-31
 
-Owner review requested on:
+All four questions answered by the owner:
 
-1. The trust model in 3.1 — specifically that a stocktake adjustment must be
-   created **and approved** by the owner in the UI before it overrides anything.
-2. The negative-stock response rule in 3.3 — this is the rule that prevents a
-   fourth round, and it constrains the owner as much as the agents.
-3. The honest limit stated in 4.2 — the constraint makes forgery visible and
-   attributable, not impossible. Confirm that is acceptable, or ask for the
-   larger change.
-4. The ownership question in section 9.
+| Question | Answer |
+|---|---|
+| Trust model (3.1) | Physical count is absolute truth, but only when performed and approved through the UI by the owner **or a user holding that permission**. No script, ever. |
+| Negative-stock rule (3.3) | Agreed. Fix the source — enter the missing purchase, correct the recipe, or mark the item non-inventory — and re-run. Never inject a quantity. |
+| Strength of the guarantee (4.2) | The weaker "visible and attributable" option was **rejected**. Absolute blocking required; feasibility verified in 4.2b. |
+| Ownership (9) | Sonnet 5 implements, coordinator reviews per commit. |
 
-No implementation plan is written and no code is touched until these are
-answered.
+Sequencing settled in 6.1: this work runs first, before the backup rescope.
+
+**Spec approved. The implementation plan may now be written.** No code is
+touched until that plan is itself reviewed and approved.
