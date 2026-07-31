@@ -425,10 +425,21 @@ two tables, having considered and rejected a deeper cut.
 | `backdated_ledger_events` | 1.4 MB | **Keep** |
 | `order_events` | 1.0 MB | **Keep** |
 
-Bundle falls from ~39.6 MB to roughly **9.5 MB**. A further requirement from the
-same discussion: the CSV export must render timestamps in `Asia/Ho_Chi_Minh`.
-Raw UTC in a spreadsheet would show a 6 a.m. sale as 11 p.m. the previous day,
-which is exactly the kind of error that produces confident wrong conclusions.
+Bundle falls from ~39.6 MB to roughly **9.5 MB**.
+
+Three further requirements from the same discussion, recorded here because they
+belong to the backup work and would otherwise exist only in chat:
+
+1. **The drop list is exactly those two tables.** Everything else is backed up.
+   The owner considered a deeper cut — keeping only sales, purchases and recipes
+   — and rejected it. Do not re-propose it.
+2. **The CSV mirrors the backup exactly** — same tables, same rows, same scope.
+   It is a second rendering of the one bundle, not a reduced or curated export.
+   If a table is in the backup it has a CSV; if it is not, it does not.
+3. **The CSV renders timestamps in `Asia/Ho_Chi_Minh`.** Raw UTC in a
+   spreadsheet shows a 6 a.m. sale as 11 p.m. the previous day — exactly the
+   kind of error that produces confident wrong conclusions about the business.
+   The JSON keeps UTC, because a restore must reload the original values.
 
 ---
 
