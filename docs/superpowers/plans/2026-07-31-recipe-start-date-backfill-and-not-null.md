@@ -1175,12 +1175,34 @@ Create `scripts/fix-backwards-recipe-intervals.ts`, dry-run by default,
 2. For each, set `status = 'INACTIVE'` — **not** delete, and do not rewrite the
    dates. `docs/COLLABORATION.md` forbids deleting master data; an impossible
    interval is evidence of the defect and stays readable.
-3. Also set `status = 'INACTIVE'` on every recipe whose `target_id` is a
-   `semi_products` row with `status = 'DELETED'`. Expected today: `RC-033`,
-   `RC-034`, `RC-035` (all belong to `BTP-015`, deleted 2026-07-31 10:41).
-   Deleting a semi-product currently leaves its recipes `ACTIVE`; this cleans
-   the instance, and the underlying gap is listed under "Out of scope" below.
+3. **Do NOT deactivate recipes belonging to deleted semi-products as a rule.**
+   An earlier revision of this plan said to. That was wrong and would have been
+   actively harmful — see "The deleted-semi-product trap" below. `RC-033`,
+   `RC-034` and `RC-035` (all `BTP-015`) are handled by rule 1 and 2 above where
+   they qualify, and otherwise left alone.
 4. Print the before/after status of every affected row.
+
+**The deleted-semi-product trap — read before touching any orphaned recipe.**
+
+`app/pos/actions.ts:74` loads `findAll("Semi_Products")` with **no status
+filter**, and `buildSemiProductRecipeMaps` (`lib/inventory-consumption.ts:189-208`)
+iterates every semi-product it is given, resolving each one's recipe through
+`selectEffectiveRecipe`, which filters on **recipe** status only — never on the
+semi-product's own status.
+
+So a `DELETED` semi-product whose recipes are still `ACTIVE` continues to
+explode into raw ingredients correctly. The orphaned-`ACTIVE` recipes are what
+keeps consumption right.
+
+Deactivate them and `allocateRecipeConsumption` falls to its no-recipe branch
+(`lib/inventory-consumption.ts:106-112`): it consumes the semi-product itself,
+drives its balance negative, and **debits no raw ingredients at all**. That is
+precisely the mechanism behind the June 2026 negative balances, the two
+injection passes that followed, and the 102,200 units of phantom stock this
+program exists to remove.
+
+Today `BTP-015` is referenced by no active recipe and holds no stock, so
+cleaning it would be harmless. The rule would not be. Do not generalise it.
 
 Leave `BTP-016` "Test lần 2" alone — the owner may still want it for the Step 8
 re-test. Ask before touching it.
@@ -1273,6 +1295,23 @@ bundling mistake this sequence exists to avoid.
   tests the trigger's current behaviour but does **not** confirm the history.
 - **`lib/history-ops/hong-luc-migration.ts:785`** — closed one-off module,
   redundant fallback left in place deliberately.
+- **`deleteSemiProductAction` performs no safety checks** —
+  `app/admin/semi-products/actions.ts:154-168` sets `status = 'DELETED'` and
+  nothing else. It does not check whether an active recipe still consumes the
+  semi-product, nor whether stock remains. The result is not an immediate
+  breakage — consumption keeps working, for the reason in "The
+  deleted-semi-product trap" above — but the item vanishes from the admin UI
+  while continuing to be consumed on every sale, invisibly.
+
+  The right fix is at delete time, not cleanup time: refuse the delete when an
+  `ACTIVE`, unexpired recipe still lists the semi-product as an ingredient, or
+  when its balance is non-zero, and say which in Vietnamese. Deleting is the
+  wrong verb for an item still in use.
+
+  Current exposure, verified 2026-07-31: 1 deleted semi-product (`BTP-015`,
+  the owner's test), 0 active recipes referencing it, 0 stock stuck. **Nothing
+  is broken right now.** Raised by the owner 2026-07-31 and deliberately left
+  out of this plan, which is about `start_date`. Needs its own plan.
 
 ## Verification bar
 
