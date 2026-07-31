@@ -67,4 +67,3 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 | # | Item | Why open |
 |---|---|---|
 | 17 | **285 unticked checkboxes across 12 plan files**, most describing finished work | The plans cannot be read to find what is left — the one job they had between sessions. Fix forward: tick as you go, and add a status banner to closed plans. Do not retroactively tick boxes nobody verified. |
-| 18 | **2026-07-31's work is unrecorded** | Exact-cost precision, the `getMacUnitCost` `EDIT_REVERSAL` fix, the `data_recovery_changes` purge and retention rule, the 50 MB backup incident, and today's deploy have no `DEVELOPMENT-TRACKING.md` entry or roadmap row. |

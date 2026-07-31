@@ -195,6 +195,42 @@ describe("breakdownCOGSByIngredient", () => {
     expect(result.find(r => r.ingredient_id === "BI-HIGH")?.cogs).toBe(4500);
   });
 
+  it("2026-07-31 exact-cost follow-up: splits a non-exact ratio to full precision, not rounded to the nearest dong", () => {
+    // rawCost ratio is 1:2 (BI-A 100, BI-B 200), so BI-A's share of a
+    // cost_at_sale of 100 is 100/300 * 100 = 33.333... -- not an integer.
+    // The old Math.round(...) on the non-last ingredient would have produced
+    // 33, silently losing the fraction before it ever reached display
+    // rounding.
+    const { lines } = makeSuaDauStandaloneOrder();
+    const testLines: OrderLineV2[] = lines.map(l => ({
+      ...l,
+      qty: 1,
+      cost_at_sale: 100,
+      recipe_snapshot_json: JSON.stringify({
+        variant: {
+          target_type: "PRODUCT_VARIANT",
+          target_id: "VAR-031",
+          ingredients: [
+            { ingredient_id: "BI-A", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+            { ingredient_id: "BI-B", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
+          ],
+        },
+        modifiers: [],
+      }),
+    }));
+
+    const ledger = [
+      { item_reference: "BI-A", transaction_type: "PO_RECEIPT", unit_cost: "100", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+      { item_reference: "BI-B", transaction_type: "PO_RECEIPT", unit_cost: "200", quantity_change: "10", created_at: "2026-06-01T00:00:00Z" },
+    ];
+
+    const result = breakdownCOGSByIngredient(testLines, [], ledger);
+
+    expect(result.find(r => r.ingredient_id === "BI-A")?.cogs).toBeCloseTo(33.333333, 5);
+    expect(result.find(r => r.ingredient_id === "BI-B")?.cogs).toBeCloseTo(66.666667, 5);
+    expect(result.reduce((s, r) => s + r.cogs, 0)).toBeCloseTo(100, 9);
+  });
+
   it("uses the provided grouped ledger for repeated MAC lookups", () => {
     const fixture = makeSuaDauStandaloneOrder();
     const order = {

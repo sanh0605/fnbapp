@@ -4,6 +4,106 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-31 (Claude Sonnet 5) - Exact cost precision, EDIT_REVERSAL fix, live deploy
+
+**Trigger:** owner-directed follow-on from Phase 5/6 -- `cost_at_sale` and every
+cost computation upstream of it were rounding to whole VND at each step, not just
+at final display, silently losing fractions of a dong on every sale and
+compounding through MAC. Plan: `docs/superpowers/plans/2026-07-30-exact-cost-precision.md`,
+deploy plan: `docs/superpowers/plans/2026-07-31-deploy-exact-cost.md`.
+
+**Schema and engine (commits `8d27fc3`, `abc4840`).** Widened
+`order_lines_v2.cost_at_sale` from `bigint` to `numeric(18,6)` (migration `0046`),
+matching `stock_ledger`'s precision since migration `0004`. Swept every RPC
+casting cost to `::bigint` -- 7 functions redefined
+(`apply_hong_to_luc_migration`, `supersede_order_v2_atomic` 6-arg,
+`apply_mac_drift_recovery`, `apply_backdated_event_recovery`,
+`apply_backdated_recipe_event_recovery`, `apply_full_history_recovery`,
+`rebuild_stock_ledger_for_order`), each reproduced verbatim from its live
+definition with only the cost type changed. Removed `Math.round` from
+`lib/mac-cogs.ts`, `lib/order-cogs.ts`, `lib/order-cogs-fifo.ts`,
+`lib/cogs-drift-audit.ts`.
+
+**The stale "1 dong" threshold (commit `9fdfc1e`).** Once cost stopped being a
+whole number, the pre-existing `|delta| <= 1` no-op/change-detection guard --
+correct when cost was always an integer -- started silently excluding 98.5% of
+the real changes the fix was supposed to apply. The owner caught this mid-Task-4
+after noticing the write count looked too low, having named 2 of the 3 sites;
+the third (`lib/phase5-cost-scope.ts`'s `groupCostChangesByMonth`, called by the
+write script with already-filtered candidates but re-filtering with its own
+stale threshold) was found unprompted. All three fixed to `1e-6`.
+
+**Display rounding (commit `669db19`).** New `lib/display-rounding.ts`:
+`displayStock` floors, `displayMoney` ceils -- owner's rule, "never flatter the
+business," applied only at the report-rendering boundary
+(`app/admin/reports/actions.ts`), never mid-computation. Each figure rounds from
+its own exact value, not by summing already-rounded parts; a one-line Vietnamese
+note was added to the P&L page explaining detail rows may not sum to the
+displayed total for this reason.
+
+**`getMacUnitCost` EDIT_REVERSAL bug (commit `eb02b0b`).** Found while reviewing
+the rounding removal, then escalated by the owner from "separate follow-up" to
+"fix immediately" because it is a live leak in the real checkout path
+(`app/pos/actions.ts:110`), not a historical artifact. Of the 7 real
+transaction_type x sign combinations in the ledger, positive-quantity
+`EDIT_REVERSAL` rows (64 of them) matched neither of the function's two original
+branches and silently no-op'd instead of restoring stock value when an order was
+voided or edited. Rewritten with one explicit branch per combination, tracking
+per-`reference_id` the exact `(qty, value)` added/consumed so a reversal restores
+or removes the *original* transaction's value, not today's drifted MAC. Tests
+constructed to fail against both the old bug and the most plausible wrong fix
+(restore at current MAC).
+
+**Deploy (commits `99bcb73`, `1e32afa`, `4ad7be1`).** Migration `0047` widened
+the two POS checkout RPCs' `cost_at_sale` parameter. Deploy ordering was
+deliberately migration-before-push -- an old app sending whole numbers into a
+`numeric` parameter still works, whereas a new app sending decimals into the old
+`bigint` parameter would truncate or error. Pushed while the shop was closed;
+verified with a real RPC call storing `3980.4237` intact, then confirmed the
+still-live old app worked unchanged against the new RPC. Owner then pushed the
+web app (`git push origin main`, with explicit confirmation via AskUserQuestion
+since the deploy plan reserved that step for him) and independently completed
+Step 5 at the POS: real sale succeeded, `cost_at_sale` showed decimals, P&L
+report still showed whole VND, editing an old order saved cleanly. All four
+checks passed.
+
+**Follow-up fix, same day: `breakdownCOGSByIngredient` rounded mid-computation.**
+The review's Important finding (below) was fixed immediately rather than
+deferred. `lib/report-v2-allocators.ts:228` used `Math.round` when splitting a
+sold line's `cost_at_sale` across its ingredients for the P&L detail view --
+out of the original plan's scope, so it kept the old nearest-rounding behavior
+while every other cost site in the codebase moved to exact-then-round-at-display.
+Fixed to match its already-correct sibling `splitLineCogsBySaleSource`: keep the
+proportional split exact, let the last ingredient absorb the remainder so the
+line total still ties out exactly, and let `displayMoney` (already applied to
+`cogsDetails` in `getPnLDataV2`) do the one-time ceiling at render. New test
+(`lib/report-v2-allocators.test.ts`) uses a 1:2 rawCost ratio against a
+`cost_at_sale` of 100 to force a repeating decimal (33.333.../66.666...) --
+a value the old `Math.round` would have silently collapsed to 33/67. `tsc`
+clean, full suite 933/933 passing (the 3 tests that failed during the review
+due to Windows line-ending artifacts pass now too).
+
+**Independent code review (`requesting-code-review` skill, range `9f0cbf4..e1cc294`).**
+`tsc` clean, 929/932 tests passing (3 pre-existing failures in unrelated files,
+Windows line-ending artifacts, not a regression). No Critical issues; nothing to
+roll back. One Important finding not caught during implementation:
+`lib/report-v2-allocators.ts`'s `breakdownCOGSByIngredient` (~line 228) still
+rounds mid-computation when splitting a line's cost across ingredients for the
+P&L detail view -- out of the original plan's scope (the file was never listed),
+so the total still ties out exactly via a compensating remainder, but individual
+ingredient rows don't get the "round up at display" treatment yet. Tracked as
+open item (see `docs/OPEN-ITEMS.md`). Also noted: `displayStock` is exported but
+not yet called from any screen -- built per plan but no current display needed it.
+
+**Meta-finding:** the owner asked directly whether skills had been used this
+session; the honest answer was no, despite `CLAUDE.md` section 0 and the
+`using-superpowers` skill's mandate to check before every action, and despite
+this exact gap having been flagged once already on 2026-07-27. The review above
+was run specifically in response to that question, using `requesting-code-review`
+after the (correctly) agent-restricted `code-review` skill was rejected.
+
+---
+
 ## 2026-07-31 (Claude Opus 5) - Coordination work, four days, logged late
 
 **Written 2026-07-31 after the owner pointed out it was missing.** This entry

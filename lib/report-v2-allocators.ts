@@ -225,7 +225,7 @@ export function breakdownCOGSByIngredient(
       const isLast = index === weightedRows.length - 1;
       const cogs = isLast
         ? line.cost_at_sale - allocatedTotal
-        : Math.round((row.rawCost / rawTotal) * line.cost_at_sale);
+        : (row.rawCost / rawTotal) * line.cost_at_sale;
       allocatedTotal += cogs;
       addIngredientCogs(map, row.item_reference, row.quantity, cogs);
     });
