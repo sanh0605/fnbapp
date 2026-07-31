@@ -1141,10 +1141,80 @@ function formatDateVN(iso: string): string {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes** — done, 937/937 green,
+`tsc` clean. Verified independently by the coordinator.
+
+Implementer's correction to this plan, accepted: the plan's Step 1 test set
+`effective_date` to `2026-05-31T17:00:00.000Z` and expected `"31/05/2026"` in
+the message, but that instant is `01/06/2026 00:00` in `Asia/Ho_Chi_Minh`, so
+the assertion could never pass. `formatDateVN` is correct — showing local time
+is what makes the message readable to the owner — and the test input was
+changed to `2026-05-31T04:00:00.000Z` instead. Right call: fix the fixture, not
+the formatter.
+
+- [ ] **Step 4b: Move the guard inside the "ingredients changed" branch**
+
+**Coordinator review finding, 2026-07-31. This is a defect in the plan's Step 3,
+not in the implementation — the code matches what the plan specified.**
+
+The guard currently sits before `if (existingActiveRecipe)`, so it runs on
+**every** save. But a new recipe version is only written inside
+`if (existingActiveRecipe.ingredients_json !== ingredientsJson)`. A save that
+changes only the name, while a stale effective date sits in the form, is
+therefore refused even though no recipe row would have been created — and the
+message talks about recipes the operator never touched.
+
+This is reachable: `SemiProductForm.tsx:102-110` resets `effectiveDate` to
+`null` only when `!isEdit`. On the edit path the value persists.
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN:
+  1. Sửa BTP-016, điền ngày hiệu lực 01/06, đổi nguyên liệu -> lưu OK
+  2. Mở lại BTP-016, ô ngày vẫn còn 01/06, chỉ đổi TÊN, không đụng nguyên liệu
+  -> hiện tại: BỊ CHẶN, báo lỗi về công thức
+  -> phải ra:  LƯU BÌNH THƯỜNG, vì không có công thức mới nào được tạo
+```
+
+Move the whole `if (existingActiveRecipe?.start_date) { ... }` block so it is
+the first statement inside the `if (existingActiveRecipe.ingredients_json !== ingredientsJson)`
+branch. Nothing else changes — the condition, the message, and the early
+`return fail(...)` stay exactly as written.
+
+Add the regression test:
+
+```ts
+it("allows a save that changes no ingredients, even with a stale past effective date", async () => {
+  const { saveSemiProduct } = await import("./actions");
+  const sameIngredients = JSON.stringify([
+    { ingredient_type: "BASE_INGREDIENT", ingredient_id: "ING-001", quantity: 10 },
+  ]);
+  findAllMock.mockResolvedValue([
+    { id: "RC-036", target_type: "SEMI_PRODUCT", target_id: "BTP-016",
+      status: "ACTIVE", ingredients_json: sameIngredients,
+      start_date: "2026-07-31T10:45:19.000Z", end_date: null,
+      created_at: "2026-07-31T10:45:19.000Z" },
+  ]);
+
+  const formData = new FormData();
+  formData.set("is_edit", "true");
+  formData.set("id", "BTP-016");
+  formData.set("name", "Ten moi");           // only the name changed
+  formData.set("base_unit", "UNT-001");
+  formData.set("batch_yield", "100");
+  formData.set("effective_date", "2026-05-31T04:00:00.000Z");  // stale, in the past
+  formData.set("ingredients_json", sameIngredients);
+
+  const result = await saveSemiProduct(formData);
+
+  expect(result.success).toBe(true);
+  expect(insertMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+  expect(updateMock.mock.calls.filter(c => c[0] === "Recipes")).toHaveLength(0);
+});
+```
 
 Run: `npx vitest run app/admin/semi-products/actions.test.ts`
-Expected: PASS, and every pre-existing test in the file still green.
+Expected: PASS, including the Step 1 refusal test — the guard must still fire
+when ingredients *do* change.
 
 - [ ] **Step 5: Add the same guard to the product-variant RPC**
 
