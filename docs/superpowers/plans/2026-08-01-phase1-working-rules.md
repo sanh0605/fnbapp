@@ -42,7 +42,11 @@ sweep in Task 3 (is the list of 11 living documents actually complete?).
   modified, renamed, or deleted by this plan.** This phase touches documentation,
   `.claude/`, `.husky/`, `scripts/`, and `docs/` only. A diff touching those
   directories means the plan went off the rails — stop and report.
-- `CLAUDE.md` must end at or under 120 lines.
+- `CLAUDE.md` must end at or under **130 lines**. The spec said 120; that number
+  was chosen before the file was drafted, and the finished draft is exactly 120
+  with nothing left to cut but rules. Raised to 130 by the coordinator
+  2026-08-01 so the ceiling constrains bloat rather than forcing prose to be
+  shaved to hit a guess. It is still a hard gate — exceeding it stops the task.
 
 ## File Structure
 
@@ -146,6 +150,14 @@ describe("check 2: no retired agent is named as current", () => {
     expect(result.ok).toBe(false);
     expect(result.problems.join(" ")).toContain("Codex");
   });
+
+  // OPEN-ITEMS.md must be able to say a task was stranded when Codex left.
+  // Policing history out of the backlog would destroy the very record that
+  // makes stranded work findable.
+  it("polices only the rulebook, not the backlog", () => {
+    write("docs/OPEN-ITEMS.md", "Việc này từng giao cho Codex, agent đã ngừng.");
+    expect(resultFor("no-retired-agents", ["docs/OPEN-ITEMS.md"]).ok).toBe(true);
+  });
 });
 
 describe("check 3: a declared test link points at a test that exists", () => {
@@ -241,9 +253,16 @@ function checkPathsExist(docs: string[], repoRoot: string): CheckResult {
   return { check: "paths-exist", ok: problems.length === 0, problems };
 }
 
+// Scoped to the rulebook alone. A pending-work list legitimately records
+// history -- "this was assigned to Codex, who no longer exists" is a true and
+// necessary sentence that must not fail a commit. This check exists to stop
+// the rules describing a retired agent as current, nothing more.
+const AGENT_CURRENT_DOCS = ["CLAUDE.md"];
+
 function checkNoRetiredAgents(docs: string[], repoRoot: string): CheckResult {
   const problems: string[] = [];
   for (const doc of docs) {
+    if (!AGENT_CURRENT_DOCS.includes(doc)) continue;
     const docPath = join(repoRoot, doc);
     if (!existsSync(docPath)) continue;
     const lines = readFileSync(docPath, "utf8").split("\n");
@@ -319,12 +338,12 @@ if (process.argv[1] && process.argv[1].includes("check-rules-current")) {
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run scripts/check-rules-current.test.ts`
-Expected: PASS, 10 tests (4 for check 1, 2 for check 2, 4 for check 3).
+Expected: PASS, 11 tests (4 for check 1, 3 for check 2, 4 for check 3).
 
 - [ ] **Step 5: Run the full suite and type check**
 
 Run: `npx vitest run && npx tsc --noEmit`
-Expected: 949 tests green (939 baseline + 10 new), 0 type errors.
+Expected: 950 tests green (939 baseline + 11 new), 0 type errors.
 
 - [ ] **Step 6: Commit**
 
@@ -355,7 +374,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Produces: the document Task 3 repoints references toward and Task 5 verifies.
 
 The content below is final. Write it exactly; do not improvise additions. Every
-line earns its place against a 120-line ceiling, and the ceiling is the point —
+line earns its place against a 130-line ceiling, and the ceiling is the point —
 this file is loaded on every session, so length is a recurring cost.
 
 Two things deliberately stay in this file rather than moving to
@@ -399,13 +418,12 @@ Không tra theo đường dẫn file — file sẽ đổi chỗ. Tra theo loại
 
 ## 3. Sửa dữ liệu hàng loạt
 
-Backfill, cập nhật cấu trúc dữ liệu, tính lại lịch sử — dùng skill
-`fnbapp-bulk-data-change`. Nó tự nổi lên khi nhận loại việc này.
+Backfill, migration, tính lại lịch sử — dùng skill `fnbapp-bulk-data-change`.
 
-Điều dễ quên nhất, đã gây sự cố 2026-07-31: **liệt kê trigger của bảng sắp sửa,
-và nói rõ mỗi cái sẽ làm gì với những dòng bị đụng.** Một lệnh sửa được coi là
-"không đổi hành vi" vẫn có thể kích hoạt trigger và hẹn giờ cho một tiến trình
-tự động ghi đè dữ liệu lịch sử.
+Điều dễ quên nhất, đã gây sự cố 2026-07-31: **liệt kê trigger của bảng sắp sửa
+và nói rõ mỗi cái làm gì với những dòng bị đụng.** Một lệnh được coi là "không
+đổi hành vi" vẫn có thể kích hoạt trigger rồi hẹn giờ cho một tiến trình tự
+động ghi đè dữ liệu lịch sử.
 
 ## 4. Ví dụ tính sẵn là bắt buộc
 
@@ -422,7 +440,7 @@ Trước khi kết luận từ một truy vấn, nói rõ truy vấn đó **khô
 
 Chủ quán là người kinh doanh, không phải người viết phần mềm.
 
-- Tiếng Việt, không thuật ngữ. Bắt buộc dùng thì phải giải nghĩa ngay lần đầu.
+- Tiếng Việt, không thuật ngữ. Dùng thì phải giải nghĩa ngay lần đầu.
 - **Gọi tên thật** của nguyên liệu và món ("Trứng gà"), không đọc mã ("NNL-007").
 - Chỉ hỏi chủ quán **quyết định kinh doanh**: ưu tiên, phạm vi, đánh đổi, bất cứ
   thứ gì đụng tiền thật hoặc không thể quay đầu. Việc kỹ thuật thì tự quyết, làm
@@ -482,15 +500,12 @@ Chủ quán xác nhận 2026-07-22. Không suy diễn khác đi.
 | Cách chạy máy, công nghệ dùng gì | `README.md` |
 | File mới đặt ở đâu | `docs/FILE-ORGANIZATION.md` |
 | Vì sao có một luật | git log |
-
-Code nằm đâu — tạm thời, tới khi chia lại theo mảng nghiệp vụ:
-
-| Loại | Ở đâu |
-|---|---|
-| Màn hình và hành động phía máy chủ | `app/` |
+| Màn hình, hành động phía máy chủ | `app/` |
 | Bộ máy tính: giá vốn, tồn kho, báo cáo | `lib/` |
 | Giao diện dùng chung | `components/` |
 | Cập nhật cấu trúc dữ liệu | `supabase/migrations/` |
+
+Bốn dòng cuối là thư mục code, tạm tới khi chia lại theo mảng nghiệp vụ.
 ````
 
 This "where the code lives" block is deliberately four lines about *directories*,
@@ -505,9 +520,10 @@ blocked until this block is updated.
 
 Run: `wc -l < CLAUDE.md`
 
-Expected: a number at or under 120. If it exceeds 120, do not trim rules to
-fit — stop and report, because the ceiling is a design constraint the
-coordinator owns.
+Expected: **120**, which is the drafted file's exact length, against a ceiling
+of 130. Anything above 130 means text was added that the plan did not specify —
+stop and report rather than trimming rules to fit, because the ceiling is a
+design constraint the coordinator owns.
 
 - [ ] **Step 3: Verify the checker is satisfied by the new file**
 
@@ -702,7 +718,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: Task 3's repointing pass, which deliberately skipped `ROADMAP.md`.
-- Produces: a single pending-work list, which Task 6's checker reads (it is in
+- Produces: a single pending-work list, which Task 5's checker reads (it is in
   `RULE_DOCS`).
 
 `docs/ROADMAP.md` line 3 says "Single source of truth for pending tasks."
@@ -1231,7 +1247,7 @@ Per the spec, and checked at the end of Task 5:
 - `npx vitest run` — green, 950 tests (939 baseline + 11 new).
 - `npx vite-node scripts/check-rules-current.ts` — all three checks pass, and
   demonstrably fails on a stale path (proven in Task 5 Step 2).
-- `CLAUDE.md` at or under 120 lines.
+- `CLAUDE.md` at 120 lines as drafted, ceiling 130.
 - `git diff --stat` for the whole phase touches **no file** under `app/`,
   `lib/`, or `components/`. The one permitted `supabase/` touch is a comment in
   `0051`, and leaving it alone is preferred.

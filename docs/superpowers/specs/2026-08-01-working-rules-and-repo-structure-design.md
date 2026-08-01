@@ -109,10 +109,15 @@ instruction is not followed.
 Therefore the always-true rules are written **into** `CLAUDE.md`. No
 `WORKING-RULES.md` is created. Everything else is referenced, not required.
 
-**Hard constraint: `CLAUDE.md` stays at or under 120 lines.** It is loaded on
+**Hard constraint: `CLAUDE.md` stays at or under 130 lines.** It is loaded on
 every session, so length is a recurring cost. Anything that does not need to be
-in working memory every session belongs in Tier B or C. The current file is 95
-lines, so this is a ceiling, not a licence to grow.
+in working memory every session belongs in Tier B or C.
+
+Revised from 120 on 2026-08-01, after drafting. 120 was picked before any of the
+content existed — the finished draft lands at exactly 120 with nothing left to
+remove but rules, which would have meant shaving prose to satisfy a guess. The
+ceiling exists to stop the file drifting back toward 400 lines; 130 does that
+just as well, and leaves the drafted file ten lines of honest headroom.
 
 ### 3.3 Rules are indexed by risk, never by file path
 
@@ -320,7 +325,7 @@ Phases 1 and 2 are small. Phase 3 is the large one and gets its own spec.
 - `npx vitest run` — full suite green, no test removed without a stated reason.
 - `scripts/check-rules-current.ts` — passes, and demonstrably fails when fed a
   stale path, a retired agent name, or a rule with no test.
-- `CLAUDE.md` at or under 120 lines, and the only rule document a session must
+- `CLAUDE.md` at or under 130 lines, and the only rule document a session must
   read.
 - No living document or code comment still points at `docs/COLLABORATION.md` or
   `AGENTS.md`. Dead links inside `docs/handoffs/**` are accepted and expected.
