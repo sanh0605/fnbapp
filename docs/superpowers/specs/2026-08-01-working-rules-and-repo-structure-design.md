@@ -84,7 +84,19 @@ the perishable ones.
 |---|---|---|---|
 | **A — durable** | Process, risk boundaries, communication rules | `CLAUDE.md` (auto-loaded), `docs/BUSINESS-RULES.md` | Rarely changes; short enough to re-read |
 | **B — perishable** | Counts, agent roster, paths, migration numbers | Nowhere as prose | `scripts/check-rules-current.ts` compares docs against reality and fails when they disagree |
-| **C — historical** | Change log, superseded rules, why a rule exists | `docs/rules-history.md` | Append-only; never read at session start |
+| **C — historical** | Change log, superseded rules, why a rule changed | **git** | Immutable by construction; nothing to maintain |
+
+**Tier C is git, not a document.** An earlier revision of this design proposed
+`docs/rules-history.md`. The owner rejected it (2026-08-01): git already stores
+every version of every rule document and every commit message explaining why a
+rule changed. Writing a file to hold what git already holds repeats the exact
+defect this design exists to remove — `AGENTS.md` was a hand-maintained copy of
+`COLLABORATION.md`, and the copy drifted.
+
+The only history that belongs in a live document is the **approval stamp on a
+rule still in force**: the date, and that the owner approved it. One line, inline
+with the rule it authorises. `CLAUDE.md` section 9's "owner xác nhận 2026-07-22"
+is the model — that stamp is what makes it a rule rather than an opinion.
 
 ### 3.2 Tier A goes in `CLAUDE.md` itself, not in a file it points to
 
@@ -203,20 +215,51 @@ verbally on 2026-07-22 was captured at the time.
 
 | File | Tier | Change |
 |---|---|---|
-| `CLAUDE.md` | A | Rewritten as the working rulebook. Under one page. |
+| `CLAUDE.md` | A | Rewritten as the working rulebook, and the only rule document read every session |
 | `docs/BUSINESS-RULES.md` | A | Exists; gains calculation and display sections, each linked to a test |
-| `docs/rules-history.md` | C | New. Receives `COLLABORATION.md`'s change log and rationale |
 | `scripts/check-rules-current.ts` | B | New. Three checks |
 | `.claude/settings.json` | B | Gains the hook |
 | `.claude/skills/fnbapp-bulk-data-change/SKILL.md` | B | New. The bulk-data-change procedure |
-| `AGENTS.md` | — | Reduced to a three-line pointer |
-| `docs/COLLABORATION.md` | — | Retired: living content to `CLAUDE.md`, history to `rules-history.md`, dead content (model tables, three-agent ownership, Codex handoff template) deleted |
+| `docs/COLLABORATION.md` | — | **Deleted.** Living content moves to `CLAUDE.md`; history stays in git |
+| `AGENTS.md` | — | **Deleted** |
 | `docs/FILE-ORGANIZATION.md` | — | **Left untouched in phases 1-2.** It governs where new files go and is still correct for `docs/` and `scripts/`. Phase 3 supersedes it, and retires it then — not before. |
 
-Retiring `COLLABORATION.md` means its content is redistributed and the file is
-replaced by a short tombstone pointing at `CLAUDE.md` and `rules-history.md`.
-It is referenced from many historical documents; deleting it outright would
-break those references for no gain.
+### Why both coordination files are deleted rather than kept
+
+Owner question, 2026-08-01: is `COLLABORATION.md` needed at all, or was it only
+needed with two or more AI vendors?
+
+Only with two or more. Its own opening line states its purpose — a single source
+of truth that *all agents* read at session start. It existed because each vendor
+loads a different instruction file: Claude Code reads `CLAUDE.md`, Codex reads
+`AGENTS.md`, Antigravity its own. No file was read by all three, so a neutral
+shared document had to sit between them.
+
+With only Opus 5 and Sonnet 5 — **both Claude Code, both auto-loading the same
+`CLAUDE.md`** — there is no gap left to bridge. The same reasoning deletes
+`AGENTS.md`, which is the Codex convention specifically. If a non-Claude tool
+ever joins, recreating a three-line pointer takes a minute; carrying two dead
+files until then costs every session.
+
+**Reference impact, measured:** 68 files mention `COLLABORATION.md`. About 30 are
+`docs/handoffs/` briefs addressed to Codex or Antigravity — immutable
+point-in-time records whose dead links harm nothing. Roughly 11 living documents
+(`README.md`, `ARCHITECTURE.md`, `docs/ROADMAP.md`, `docs/TESTING.md`,
+`docs/FILE-ORGANIZATION.md`, `docs/ACCESS-MODEL.md`, `docs/FEATURE-CATALOG.md`,
+`docs/COMPLETED.md`, `docs/OPEN-ITEMS.md`, `DEVELOPMENT-TRACKING.md`,
+`CLAUDE.md`) plus three code comments must be repointed **in the same commit as
+the deletion**. A tombstone file would not have avoided that work — it would only
+have left a dead end behind. `check-rules-current.ts` check 1 catches any that
+are missed, which is the checker earning its keep on its first day.
+
+**This does not violate the repository's preservation rule.** That rule protects
+business master data and audit evidence. A superseded process document is
+neither, and git retains every version of it.
+
+**Same cleanup, same cause:** `CLAUDE.md` currently instructs every session to
+read `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md` — a task
+brief for an agent that no longer exists. The instruction goes; the file stays
+where it is as a historical record.
 
 ## 4. Repository structure (phase 3 — direction only)
 
@@ -277,7 +320,10 @@ Phases 1 and 2 are small. Phase 3 is the large one and gets its own spec.
 - `npx vitest run` — full suite green, no test removed without a stated reason.
 - `scripts/check-rules-current.ts` — passes, and demonstrably fails when fed a
   stale path, a retired agent name, or a rule with no test.
-- `CLAUDE.md` at or under 120 lines.
+- `CLAUDE.md` at or under 120 lines, and the only rule document a session must
+  read.
+- No living document or code comment still points at `docs/COLLABORATION.md` or
+  `AGENTS.md`. Dead links inside `docs/handoffs/**` are accepted and expected.
 - No file under `app/`, `lib/`, `components/`, or `supabase/` moved, renamed, or
   edited in phases 1-2. Those phases touch documentation, `.claude/`,
   `.husky/`, and one new script only.
