@@ -52,7 +52,8 @@ sweep in Task 3 (is the list of 11 living documents actually complete?).
 | `scripts/check-rules-current.test.ts` (create) | Fixture-based tests for all three checks, both passing and failing | 1 |
 | `CLAUDE.md` (rewrite) | The single session-loaded rulebook | 2 |
 | `docs/COLLABORATION.md` (delete), `AGENTS.md` (delete) | — | 3 |
-| 11 living docs + 3 code comments (modify) | Repoint references away from the deleted files | 3 |
+| 10 living docs + 3 code comments (modify) | Repoint references away from the deleted files | 3 |
+| `docs/OPEN-ITEMS.md` (modify), `docs/ROADMAP.md` (delete) | Collapse two competing pending-work lists into one | 3b |
 | `.claude/skills/fnbapp-bulk-data-change/SKILL.md` (create) | The bulk-data-change procedure, surfaced by description match | 4 |
 | `.claude/settings.json` (modify) | Hook that fires on `--apply` commands and migration edits | 4 |
 | `.husky/pre-commit` (modify) | Run the checker alongside `tsc` | 5 |
@@ -288,7 +289,7 @@ export function checkRulesCurrent(docs: string[], repoRoot: string): CheckResult
   ];
 }
 
-const RULE_DOCS = ["CLAUDE.md", "docs/BUSINESS-RULES.md"];
+const RULE_DOCS = ["CLAUDE.md", "docs/BUSINESS-RULES.md", "docs/OPEN-ITEMS.md"];
 
 function main(): void {
   const results = checkRulesCurrent(RULE_DOCS, process.cwd());
@@ -567,7 +568,6 @@ README.md
 ARCHITECTURE.md
 CLAUDE.md
 DEVELOPMENT-TRACKING.md
-docs/ROADMAP.md
 docs/TESTING.md
 docs/COMPLETED.md
 docs/OPEN-ITEMS.md
@@ -575,6 +575,9 @@ docs/ACCESS-MODEL.md
 docs/FEATURE-CATALOG.md
 docs/FILE-ORGANIZATION.md
 ```
+
+**`docs/ROADMAP.md` is deliberately absent from that list.** Task 3b deletes it,
+so repointing its references would be wasted work. Leave it alone in this task.
 
 Code and config:
 
@@ -635,9 +638,10 @@ grep -rn "COLLABORATION\.md\|AGENTS\.md" --include=*.md --include=*.ts --include
   | grep -v node_modules | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/"
 ```
 
-Expected: no matches. If a match appears in a file not on the list in Step 1,
-the list was incomplete — repoint it and note the omission when reporting, since
-that is exactly the weakness this plan flagged for challenge.
+Expected: **exactly one match, in `docs/ROADMAP.md`**, which Task 3b deletes.
+Anything else means the list in Step 1 was incomplete — repoint it and note the
+omission when reporting, since that is exactly the weakness this plan flagged
+for challenge.
 
 - [ ] **Step 6: Run the checker, the full suite, and the type check**
 
@@ -663,6 +667,155 @@ template) had its referencing sentences deleted rather than rehomed.
 
 History is preserved by git, which is the whole reason no replacement history
 file was created.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 3b: One pending-work list, not two
+
+**Files:**
+- Modify: `docs/OPEN-ITEMS.md`
+- Delete: `docs/ROADMAP.md`
+- Modify: any living document that references `docs/ROADMAP.md`
+
+**Interfaces:**
+- Consumes: Task 3's repointing pass, which deliberately skipped `ROADMAP.md`.
+- Produces: a single pending-work list, which Task 6's checker reads (it is in
+  `RULE_DOCS`).
+
+`docs/ROADMAP.md` line 3 says "Single source of truth for pending tasks."
+`docs/OPEN-ITEMS.md` line 2 says "The single list of what is not finished." Two
+files, the same claim. `OPEN-ITEMS.md` was created 2026-07-30 *because*
+`ROADMAP.md` had stopped being maintained — a second list to fix an unmaintained
+first list, which leaves two to maintain.
+
+`OPEN-ITEMS.md` survives because it is the one that survived contact with
+reality: 70 lines, one line per item, and it is actually being updated.
+`ROADMAP.md` is 320 lines whose own stated process ("move the entry to
+`COMPLETED.md` when done") nobody follows — which is why its P1 and P2 queues are
+now almost entirely closed rows.
+
+**`ROADMAP.md` also carries a third copy of the agent ownership table**, naming
+"Claude (GLM 5.1)", "Codex (GPT 5.5)" and "Antigravity (Gemini 3.1)". The same
+table lives in the two files Task 3 deletes. Three copies of one fact was the
+whole disease.
+
+- [ ] **Step 1: Migrate the genuinely-open items**
+
+Read `docs/ROADMAP.md` in full. Every row in P1, P2 and P3 is either `[x]`
+closed — in which case it stays closed and is **not** migrated — or genuinely
+open, in which case it becomes a one-line entry in `docs/OPEN-ITEMS.md` in that
+file's existing format (what it is, why it is still open).
+
+The open set, classified 2026-08-01. Migrate exactly these:
+
+| From `ROADMAP.md` | Becomes |
+|---|---|
+| `INV-COUNT-1` — marked `[~X]`, "in progress by Codex" | **Stranded work.** Phase S1 shipped (commit `88774a0`); migration `0036_stocktake_sessions.sql` written but never applied to production; phase S2 never started. It was assigned to an agent that no longer exists, so nobody is holding it. |
+| `COGS-1-FOLLOWUP` — `CRON_SECRET` | Owner action in Vercel settings; the nightly correction sweep cannot run without it |
+| `H1. Push local commits` | Note the real current count rather than copying the stale "41+" |
+| `OPS-CONT-1` — operational continuity audit | Single-owner dependency on the Vercel/Supabase/Google/GitHub accounts; never audited in any gate |
+| `INFRA-UPGRADE-1` — Next.js 14→16 | Carries `DEP-1`'s remaining advisories, which are only fixed in next@16 |
+| `V1` — first real operator backdate verify | Waiting on the operator to backdate a purchase order in the real UI |
+
+Do **not** migrate the unticked duplicate `PERF-1` row: an identical row three
+lines above is marked `[x]`, closed by being folded into `PERF-2`. The unticked
+copy is stale, not open. Note the duplicate in the commit message.
+
+**One reconciliation needs judgment — flag it, do not silently resolve it.**
+`OPEN-ITEMS.md` item 15 already says "Physical stocktake — owner moved it behind
+Phase 7", while `INV-COUNT-1` is the half-built feature that supports exactly
+that. They may be the same item at two different altitudes, or a deferred
+business activity plus its stranded tooling. Write both, mark the relationship
+explicitly, and raise it to the coordinator rather than merging them on a guess.
+
+- [ ] **Step 2: Carry over the two sections that are not open items**
+
+`ROADMAP.md` holds two sections that are neither pending work nor closed work,
+and both must survive:
+
+1. **"Future direction"** (lines 105-156) — the owner's seven-phase order, set
+   2026-07-18/19. Copy it into `docs/OPEN-ITEMS.md` as its own section. Update
+   only what is now known to be false: item 1's eight-gate audit is finished, and
+   item 2's repository reorganization refers to the 2026-07-20 docs-and-scripts
+   pass, **not** the application-code restructure planned as phase 3 of the
+   current program — say so, or the next reader will conclude the restructure is
+   already done.
+2. **"Out of scope (do not start without explicit approval)"** (lines 157-165) —
+   copy across verbatim except the negative-stock entry, whose live figures are
+   from 2026-07-19 and have been superseded several times since. Replace those
+   figures with a pointer to the most recent audit rather than carrying numbers
+   that are now wrong.
+
+- [ ] **Step 3: Prove nothing was lost**
+
+For every `ROADMAP.md` row in P0/P1/P2/P3/Blocked, confirm it is in exactly one
+of three states, and list the counts in the commit message:
+
+```
+closed   ([x], stays closed, not migrated)      : N
+migrated (now a line in OPEN-ITEMS.md)          : 6
+dropped  (stale duplicate, with a reason)       : 1
+```
+
+Any row that fits none of the three is a row you do not understand yet — stop
+and ask rather than dropping it.
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  P0 rỗng (ghi "none"). Blocked rỗng (ghi "none"). P3 có đúng 1 dòng (V1).
+  Nếu đếm ra khác, đọc lại — đừng tự ý bỏ dòng nào.
+```
+
+- [ ] **Step 4: Delete `ROADMAP.md` and repoint what pointed at it**
+
+```bash
+grep -rln "ROADMAP\.md" --include=*.md --include=*.ts . | grep -v node_modules | sort
+git rm docs/ROADMAP.md
+```
+
+Repoint living documents to `docs/OPEN-ITEMS.md`. Leave references inside
+`docs/handoffs/`, `docs/audits/` and `docs/superpowers/` dangling, for the same
+reason as Task 3: they are point-in-time records.
+
+`CLAUDE.md` section 10 as written in Task 2 already points at
+`docs/OPEN-ITEMS.md` and never mentions `ROADMAP.md`, so it needs no change —
+confirm this rather than assuming it.
+
+- [ ] **Step 5: Verify**
+
+```bash
+npx vite-node scripts/check-rules-current.ts && npx vitest run && npx tsc --noEmit
+```
+
+Expected: checker clean — note that `docs/OPEN-ITEMS.md` is now one of the files
+it reads, so any path you introduced there must exist. Suite green, 0 type
+errors.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add -A
+git commit -m "Claude-Sonnet refactor: one pending-work list, not two
+
+ROADMAP.md called itself the single source of truth for pending tasks;
+OPEN-ITEMS.md called itself the single list of what is not finished. The
+second was created 2026-07-30 because the first had stopped being maintained
+-- a second list to fix an unmaintained first list, leaving two to maintain.
+
+Kept the one that survived contact with reality. ROADMAP.md's own process,
+move the row to COMPLETED.md when done, was never followed, which is why its
+queues had become almost entirely closed rows.
+
+It also held a third copy of the agent ownership table, still naming GLM 5.1,
+Codex and Antigravity. The other two copies went in the previous commit.
+
+Migrating the open set surfaced stranded work: INV-COUNT-1 (periodic stocktake)
+was marked in-progress by Codex, an agent that no longer exists. Phase S1
+shipped, migration 0036 was written but never applied, phase S2 never started,
+and no list was reporting it as anyone's.
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
@@ -919,8 +1072,10 @@ Per the spec, and checked at the end of Task 5:
 - `git diff --stat` for the whole phase touches **no file** under `app/`,
   `lib/`, or `components/`. The one permitted `supabase/` touch is a comment in
   `0051`, and leaving it alone is preferred.
-- `docs/COLLABORATION.md` and `AGENTS.md` are gone; no living document or code
-  comment points at either.
+- `docs/COLLABORATION.md`, `AGENTS.md` and `docs/ROADMAP.md` are gone; no living
+  document or code comment points at any of them.
+- `docs/OPEN-ITEMS.md` is the only pending-work list, and every `ROADMAP.md` row
+  is accounted for as closed, migrated, or dropped-with-a-reason.
 - No push.
 
 ## Out of scope
