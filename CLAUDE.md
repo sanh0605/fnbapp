@@ -1,95 +1,120 @@
 # CLAUDE.md — FNB App
 
-## 0. Collaboration files (READ FIRST)
+Bộ quy tắc duy nhất phải đọc mỗi phiên. Mọi thứ khác chỉ tra khi cần.
 
-Multi-agent repo (Claude Code + Codex). Trước mỗi phiên, đọc theo thứ tự:
+## 1. Ai làm gì
 
-1. `docs/COLLABORATION.md` — protocol, file map, status markers, commit conventions
-2. `DEVELOPMENT-TRACKING.md` — 3 entries mới nhất (chronicle log)
-3. `docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md` — active task tracking với status
-4. `docs/OPEN-ITEMS.md` — **what is not finished**, one line each. Read this before asking "còn việc gì". Update it in the same commit that changes an item's state.
-5. `docs/ROADMAP.md` — pending work and phase status; full audit program at `docs/superpowers/specs/2026-07-17-full-system-audit-program.md`
-6. `docs/domain-dictionary.md` — terminology (chỉ khi cần)
+Hai agent, cả hai đều là Claude Code:
 
-Mọi thay đổi cuối phiên: append entry vào `DEVELOPMENT-TRACKING.md`, update status markers trong handoff, không push.
+- **Opus 5** — điều phối: viết spec, viết plan, review. Không tự viết code.
+- **Sonnet 5** — thực thi toàn bộ code, script, và cập nhật cấu trúc dữ liệu.
 
-## 1. Think Before Coding
+**Sonnet phản biện plan trước khi code** (chủ quán chốt 2026-07-31). Đọc plan,
+chỉ ra chỗ sai, chỗ thiếu, chỗ không kiểm chứng được — báo lại rồi mới làm.
+Nếu soát mà không thấy gì thì phải nói rõ là đã soát và sạch: im lặng không
+phân biệt được với bỏ qua.
 
-- Nêu rõ assumptions trước khi code — nếu không chắc, hỏi thay vì đoán
-- Khi có nhiều cách hiểu, trình bày các lựa chọn — không tự chọn im lặng
-- Nếu có cách đơn giản hơn, nói ra
-- Nếu bị confused, dừng lại và hỏi rõ thay vì tiến hành sai hướng
+Không ai vừa làm vừa tự duyệt việc của mình.
 
-## 2. Simplicity First
+## 2. Mức rủi ro quyết định mọi thứ
 
-- Chỉ code đúng những gì được yêu cầu — không thêm tính năng ngoài scope
-- Không tạo abstraction cho code chỉ dùng một chỗ
-- Không thêm "flexibility" hay "configurability" nếu không được yêu cầu
-- Không xử lý error cho tình huống không thể xảy ra
-- Nếu 200 dòng có thể viết lại thành 50, viết lại
+Không tra theo đường dẫn file — file sẽ đổi chỗ. Tra theo loại việc:
 
-## 3. Surgical Changes
-
-- Chỉ chạm vào code liên quan trực tiếp đến yêu cầu
-- Không "cải thiện" code lân cận, comment, hay formatting
-- Không refactor những thứ không bị broken
-- Giữ nguyên style hiện có, kể cả khi có cách khác
-- Nếu phát hiện dead code không liên quan — mention, không tự xóa
-- Khi thay đổi tạo ra orphan (import/variable/function thừa do chính mình tạo): xóa chúng
-
-## 4. Goal-Driven Execution
-
-Với mọi task, xác định tiêu chí thành công trước:
-
-| Thay vì... | Chuyển thành... |
+| Loại việc | Bắt buộc |
 |---|---|
-| "Thêm validation" | "Viết test cho input lỗi, rồi làm cho pass" |
-| "Fix bug" | "Tái hiện bug bằng test, rồi làm cho pass" |
-| "Refactor X" | "Đảm bảo test pass trước và sau refactor" |
+| Đụng giá vốn hoặc tồn kho | Có plan; Sonnet phản biện; kèm script kiểm tra chạy lại được |
+| Ghi vào dữ liệu thật | Mặc định chạy thử; `--apply` mới ghi; in số lượng và đối tượng chính xác trước khi ghi; chủ quán duyệt lần ghi |
+| Lộ ra ngoài repo (push, deploy) | Chủ quán duyệt từng lần. Không có uỷ quyền sẵn |
+| Đổi một quy tắc kinh doanh | Sửa luật và sửa test của nó trong cùng một lần lưu |
+| Còn lại | Agent tự quyết, làm xong báo lại bằng tiếng Việt dễ hiểu |
 
-Với task nhiều bước, nêu plan ngắn trước khi làm:
-```
-1. [Bước] → verify: [kiểm tra]
-2. [Bước] → verify: [kiểm tra]
-```
+## 3. Sửa dữ liệu hàng loạt
 
-## 5. Token Efficiency
+Backfill, migration, tính lại lịch sử — dùng skill `fnbapp-bulk-data-change`.
 
-- Không đọc file nếu nội dung đã có trong context
-- Không re-read file vừa edit — Edit tool đã track state
-- Batch nhiều Edit trong cùng 1 lượt thay vì từng cái một
-- Dùng Grep/Glob thay vì Read toàn bộ file khi chỉ cần tìm 1 đoạn
-- Không đọc file không liên quan đến task
+Điều dễ quên nhất, đã gây sự cố 2026-07-31: **liệt kê trigger của bảng sắp sửa
+và nói rõ mỗi cái làm gì với những dòng bị đụng.** Một lệnh được coi là "không
+đổi hành vi" vẫn có thể kích hoạt trigger rồi hẹn giờ cho một tiến trình tự
+động ghi đè dữ liệu lịch sử.
 
-## 6. Confirm Before Code
+## 4. Ví dụ tính sẵn là bắt buộc
 
-- **Nếu yêu cầu chưa rõ ràng, PHẢI hỏi lại — không được code cho đến khi có câu trả lời rõ ràng**
-- Với task mơ hồ hoặc có nhiều cách hiểu: nêu cách hiểu, chờ xác nhận trước khi code
-- Với task lớn (>3 file thay đổi): trình bày plan ngắn, chờ anh duyệt
-- Không tự suy diễn ý định — hỏi thẳng nếu không chắc
-- Ví dụ câu hỏi cần hỏi lại: "thêm ảnh vào X" → hỏi X là chỗ nào cụ thể nếu có nhiều chỗ
+Mọi bước plan đụng dữ liệu thật phải kèm một ví dụ **tính trước bằng số thật**:
+một món có tên, một dòng đơn hàng có mã, con số phải ra. Không phải minh hoạ
+định dạng — một trường hợp người thực thi đối chiếu được trước khi chạy cả lô.
 
-## 7. Giao tiếp bằng tên thật, không dùng mã
+Và trước khi viết plan, phải xác nhận ý chủ quán tới ~95% **bằng một ví dụ cụ
+thể**, không phải bằng cách diễn đạt lại trừu tượng.
 
-- Khi trao đổi với chủ quán, luôn dùng **tên thật** của sản phẩm/bán thành phẩm/nguyên liệu (VD: "Trứng gà", "Hồng trà", "Sữa đặc"), **không** dùng mã nội bộ (VD: `NNL-007`, `BTP-008`, `ING-003`)
-- Lý do: mã không có ý nghĩa gì với chủ quán, buộc họ phải dừng lại tra cứu mới hiểu — mất thời gian, ngược với mục đích báo cáo
-- Nếu chỉ có mã trong tay, tra tên trước (`Base_Ingredients`/`Semi_Products`/`Products`) rồi mới báo cáo
-- Mã vẫn dùng bình thường trong code/script/commit message/tài liệu kỹ thuật — quy tắc này chỉ áp dụng cho phần giao tiếp trực tiếp với chủ quán
+Trước khi kết luận từ một truy vấn, nói rõ truy vấn đó **không** cho thấy điều gì.
 
-## 8. Chủ động cảnh báo ảnh hưởng chéo
+## 5. Nói chuyện với chủ quán
 
-- Khi làm nhiều việc sửa dữ liệu liên quan trong cùng phiên (VD: nhiều đợt sửa giá vốn khác nhau), **phải chủ động dừng lại và nói rõ** nếu việc này có thể ảnh hưởng/phụ thuộc việc kia — **không đợi chủ quán hỏi mới nói**
-- Ví dụ cụ thể đã xảy ra: giá vốn MAC được tính bằng cách duyệt lại toàn bộ lịch sử nhập/xuất kho theo thứ tự — nếu số lượng xuất kho lịch sử bị ghi thiếu, nó âm thầm làm sai giá bình quân tính ra ở lần nhập tiếp theo, ảnh hưởng đến mọi đơn bán sau đó. Đã sửa giá vốn nhiều đợt trong cùng đêm mà không kiểm tra xem tồn kho các nguyên liệu đó đã đúng chưa, tới khi chủ quán hỏi thẳng mới phát hiện
-- Trước khi bắt đầu một đợt sửa/audit, kiểm tra xem có vấn đề đã biết nào (từ ROADMAP, audit trước đó) đụng vào cùng dữ liệu không, và nói ra ngay — dù ảnh hưởng nhỏ. Im lặng bị hiểu là "đã kiểm tra và ổn", tệ hơn là nói rõ còn điều chưa chắc chắn
+Chủ quán là người kinh doanh, không phải người viết phần mềm.
 
-## 9. Nguyên tắc nền tảng: tính tồn kho và giá vốn (owner xác nhận 2026-07-22)
+- Tiếng Việt, không thuật ngữ. Dùng thì phải giải nghĩa ngay lần đầu.
+- **Gọi tên thật** của nguyên liệu và món ("Trứng gà"), không đọc mã ("NNL-007").
+- Chỉ hỏi chủ quán **quyết định kinh doanh**: ưu tiên, phạm vi, đánh đổi, bất cứ
+  thứ gì đụng tiền thật hoặc không thể quay đầu. Việc kỹ thuật thì tự quyết, làm
+  xong báo lại.
+- Mỗi lần chỉ hỏi **một** vấn đề. Liệt kê lựa chọn, nêu khuyến nghị, chờ chọn.
+- **Chủ động cảnh báo ảnh hưởng chéo.** Nếu việc đang làm có thể ảnh hưởng hoặc
+  phụ thuộc việc khác trong cùng phiên, nói ngay — đừng đợi được hỏi. Im lặng bị
+  hiểu là "đã kiểm tra và ổn".
 
-Quy tắc này là sự thật nền tảng về cách vận hành thực tế của quán — mọi agent (Claude/Codex/Antigravity) đều phải tuân theo khi đụng đến tồn kho hoặc giá vốn, không suy diễn khác đi.
+## 6. Quy tắc kinh doanh mới sinh ra thế nào
 
-1. **Team chưa từng lập lệnh nấu bán thành phẩm chính thức trong lịch sử.** Không có dữ liệu lệnh sản xuất đáng tin cho quá khứ — đừng giả định lệnh sản xuất từng được ghi đầy đủ khi audit/tính lại dữ liệu cũ.
-2. **Chỉ có 3 nguồn dữ liệu đáng tin để tính toán:** (a) công thức — cả công thức nấu bán thành phẩm lẫn công thức pha chế sản phẩm bán, (b) đơn bán hàng, (c) đơn nhập hàng. Dùng **công thức + đơn bán hàng** để tính trừ tồn kho; dùng **đơn nhập hàng** để tính giá vốn (bình quân gia quyền). Mọi dữ liệu khác trong `Stock_Ledger` (SALES_CONSUME, PRODUCTION_CONSUME/YIELD, RECLASSIFICATION_REVERSAL ghi từ trước) là **suy ra**, không phải nguồn gốc — không được tin làm chuẩn khi tính lại từ đầu.
-3. **Quy tắc trừ tồn khi bán hàng:**
-   - Sản phẩm dùng **nguyên liệu thô** trực tiếp để pha chế → trừ thẳng tồn nguyên liệu.
-   - Sản phẩm dùng **bán thành phẩm** để pha chế: nếu tồn bán thành phẩm không đủ, hệ thống tự sinh "lệnh nấu ngầm" (implicit production) — trừ tồn nguyên liệu thô theo đúng công thức nấu bán thành phẩm đó, cộng tồn bán thành phẩm tương ứng, rồi mới trừ tồn bán thành phẩm để pha chế sản phẩm bán ra.
-   - Tóm gọn: mỗi lần phát sinh lệnh nấu (kể cả ngầm) → trừ tồn nguyên liệu thô, cộng tồn bán thành phẩm.
-   - Đây chính xác là cơ chế `allocateRecipeConsumption`/`splitImplicitProduction` (`lib/inventory-consumption.ts`) và `lib/full-history-recompute.ts` đã cài đặt — không cần thiết kế lại, chỉ cần nhớ đây là quy tắc chuẩn khi audit hoặc giải thích số liệu cho chủ quán.
+Khi chủ quán chốt điều gì thay đổi **cách tính**, **cách hiển thị số**, hoặc
+**cách vận hành**, ghi ngay vào `docs/BUSINESS-RULES.md` trong cùng phiên đó,
+kèm ngày. Thứ làm mất một quy tắc không phải là thiếu chỗ ghi — mà là nó được
+chốt trong lúc trao đổi rồi trôi đi.
+
+## 7. Tồn kho và giá vốn: nền tảng để suy luận
+
+Chủ quán xác nhận 2026-07-22. Không suy diễn khác đi.
+
+1. **Chưa từng có lệnh nấu bán thành phẩm chính thức trong lịch sử.** Đừng giả
+   định dữ liệu sản xuất quá khứ là đáng tin.
+2. **Chỉ ba nguồn đáng tin:** công thức, đơn bán hàng, đơn nhập hàng. Dùng công
+   thức + đơn bán để trừ tồn; dùng đơn nhập để tính giá vốn bình quân gia quyền.
+   Mọi dòng khác trong sổ kho là **suy ra**, không phải gốc.
+3. **Trừ tồn khi bán:** món dùng nguyên liệu thô thì trừ thẳng. Món dùng bán
+   thành phẩm mà tồn không đủ thì hệ thống tự sinh lệnh nấu ngầm — trừ nguyên
+   liệu thô theo công thức nấu, cộng tồn bán thành phẩm, rồi mới trừ để pha chế.
+
+## 8. Viết code
+
+- Code và chú thích bằng tiếng Anh. Chữ hiển thị cho người dùng bằng tiếng Việt.
+- Đơn giản trước. Không thêm tính năng, trừu tượng, hay tuỳ biến ngoài yêu cầu.
+- Chỉ chạm đúng chỗ cần. Không "cải thiện" code lân cận, không refactor thứ
+  không hỏng. Thấy code chết không liên quan thì nói, đừng tự xoá.
+- Không rõ thì hỏi, đừng đoán.
+
+## 9. Xong việc nghĩa là gì
+
+- `npx tsc --noEmit` — 0 lỗi.
+- `npx vitest run` — toàn bộ xanh. Không xoá test mà không nêu lý do.
+- `npx vite-node scripts/check-rules-current.ts` — sạch.
+- Việc đụng giá vốn hoặc tồn kho: chạy script kiểm tra tương ứng, 0 sai lệch.
+- Ghi một mục vào `DEVELOPMENT-TRACKING.md`, cập nhật `docs/OPEN-ITEMS.md` nếu
+  có mục nào đổi trạng thái.
+- Không push.
+
+## 10. Tra ở đâu
+
+| Cần gì | Ở đâu |
+|---|---|
+| Việc chưa xong | `docs/OPEN-ITEMS.md` |
+| Cách tính, nguyên tắc hiển thị số | `docs/BUSINESS-RULES.md` |
+| Quán là gì, phạm vi tới đâu | `CONTEXT.md` |
+| Đã làm gì, khi nào | `DEVELOPMENT-TRACKING.md` |
+| Thuật ngữ | `docs/domain-dictionary.md` |
+| Cách chạy máy, công nghệ dùng gì | `README.md` |
+| File mới đặt ở đâu | `docs/FILE-ORGANIZATION.md` |
+| Vì sao có một luật | git log |
+| Màn hình, hành động phía máy chủ | `app/` |
+| Bộ máy tính: giá vốn, tồn kho, báo cáo | `lib/` |
+| Giao diện dùng chung | `components/` |
+| Cập nhật cấu trúc dữ liệu | `supabase/migrations/` |
+
+Bốn dòng cuối là thư mục code, tạm tới khi chia lại theo mảng nghiệp vụ.
