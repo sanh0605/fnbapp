@@ -720,7 +720,7 @@ inside a dated entry. A dated entry is a record of what was true then.
 other living document still does:
 
 ```bash
-grep -rn "2026-06-25-codex-handoff" --include=*.md . | grep -v node_modules | grep -v docs/handoffs/
+grep -rn "2026-06-25-codex-handoff" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v docs/handoffs/
 ```
 
 Expected: no matches outside `docs/handoffs/` itself and this plan. The handoff
@@ -877,7 +877,7 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 - [ ] **Step 4: Delete `ROADMAP.md` and repoint what pointed at it**
 
 ```bash
-grep -rln "ROADMAP\.md" --include=*.md --include=*.ts . | grep -v node_modules | sort
+grep -rln "ROADMAP\.md" . | grep -v node_modules | grep -v "^\./\.git/" | sort
 git rm docs/ROADMAP.md
 ```
 
