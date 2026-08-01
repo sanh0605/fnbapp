@@ -355,12 +355,11 @@ export function checkRulesCurrent(docs: string[], repoRoot: string): CheckResult
   ];
 }
 
-// Documents that make claims about the present. Chronicles are deliberately
-// absent: DEVELOPMENT-TRACKING.md cites hundreds of paths inside dated entries,
-// many pointing at files correctly deleted since, and a chronicle entry is a
-// record of what was true then -- not a claim about now. Measured 2026-08-01:
-// checking it would fire on ~230 paths, essentially none of them defects.
 ```
+
+The list of checked documents does **not** live here. It belongs to the CLI,
+because choosing what to check is a policy decision and this file is the
+mechanism. Step 3b carries it.
 
 - [ ] **Step 3b: Write the CLI as a separate file**
 
@@ -412,24 +411,35 @@ if (failed) {
 
 - [ ] **Step 3c: Prove the CLI actually runs**
 
-Run: `npx vite-node scripts/check-rules-current.ts`
+Run: `npx vite-node scripts/check-rules-current.ts; echo "EXIT=$?"`
 
-Expected, on stdout:
+**This step runs before Task 2, so a clean result is not what proves success.**
+The `CLAUDE.md` still on disk is the old one, which names Codex and Antigravity,
+so the correct outcome here is a *loud failure*:
 
 ```
 [rules] PASS paths-exist
-[rules] PASS no-retired-agents
+[rules] FAIL no-retired-agents
+  CLAUDE.md:5 names retired agent 'Codex'
+  CLAUDE.md:87 names retired agent 'Codex'
+  CLAUDE.md:87 names retired agent 'Antigravity'
 [rules] PASS business-rule-tests
+
+[rules] A rule document disagrees with the repository.
+EXIT=1
 ```
+
+That is the checker working: three checks reported, a real defect found in a
+real file, and a non-zero exit code. Task 2 turns those three lines into PASS by
+rewriting `CLAUDE.md`; Task 2 Step 3 is where an all-PASS run is expected.
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
-  Nếu lệnh này KHÔNG in ra gì mà vẫn thoát mã 0 -> main không chạy. Đó chính
-  là lỗi bản trước, và nó nguy hiểm vì Task 5 gắn đúng lệnh này vào cổng
-  chặn commit: cổng sẽ luôn báo qua mà không kiểm gì. DỪNG, đừng đi tiếp.
+  Nếu lệnh này KHÔNG in gì và EXIT=0 -> main không chạy, checker chết. Đó là
+  lỗi bản trước, nguy hiểm vì Task 5 gắn đúng lệnh này vào cổng chặn commit:
+  cổng sẽ luôn báo qua mà không kiểm gì. DỪNG.
+  Báo lỗi to = ĐẠT. Im lặng = HỎNG. Đừng đọc ngược.
 ```
-
-Silence is the failure mode to watch for here, not an error message.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
