@@ -640,14 +640,26 @@ gap left to bridge.
 - [ ] **Step 1: Produce the current reference list**
 
 ```bash
-grep -rl "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | sort
+git grep -ln "COLLABORATION\.md\|AGENTS\.md" | sort
 ```
 
-**Do not add `--include` filters here.** An earlier revision used
-`--include=*.md --include=*.ts --include=*.sql`, which cannot match
-`.husky/pre-commit` — a file with no extension whose line 2 reads
-`# Pre-commit gate per docs/COLLABORATION.md section E`. The filtered form
-reports it clean while it is not.
+Expected: **69 files**, verified 2026-08-01.
+
+**Every search in Tasks 3, 3b and 3c uses `git grep`, never `grep -r`.** Three
+independent reasons, each of which broke an earlier revision of this plan:
+
+1. **Exclusions are by path, not by substring.** `grep -rn` prints
+   `path:line:content`, so a downstream `grep -v "docs/handoffs/"` also matches
+   when that text appears in the *content* of a line. It silently discarded real
+   findings in files that merely mentioned a handoff. `git grep`'s pathspec
+   (`':!docs/handoffs'`) filters the path and nothing else.
+2. **Binary files.** `grep -r` emits `Binary file ./.git/index matches`, which
+   no `^\./\.git/` filter catches because the line begins with `Binary file`.
+   `git grep` skips binaries by default.
+3. **Ignored directories.** `git grep` searches tracked files only, so
+   `node_modules/`, `.next/`, `.git/` and `.superpowers/` disappear without a
+   single filter — including the two `.next/cache/**/*.pack` build artifacts an
+   earlier count picked up and could not classify.
 
 Expected: roughly 68 files. Classify each into exactly one bucket:
 
@@ -720,21 +732,30 @@ inside a dated entry. A dated entry is a record of what was true then.
 other living document still does:
 
 ```bash
-grep -rn "2026-06-25-codex-handoff" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | grep -v docs/handoffs/
+git grep -n "2026-06-25-codex-handoff" -- . \
+  ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers'
 ```
 
-Expected, verified 2026-08-01 — **not** an empty result:
+Expected, measured 2026-08-01 — **not** an empty result:
 
 ```
-DEVELOPMENT-TRACKING.md                              chronicle, dated entries, leave
-docs/superpowers/plans/2026-07-29-phase4-stock-rebuild.md   closed plan, leave
-docs/superpowers/plans/2026-08-01-phase1-working-rules.md   this plan
-docs/superpowers/specs/2026-08-01-...-design.md             this spec
-scripts/trace-ing003-sua-dac.ts:7                    header comment, leave
+AGENTS.md                       1 line   deleted in Step 4
+CLAUDE.md                       1 line   see below
+DEVELOPMENT-TRACKING.md         2 lines  chronicle, dated entries, leave
+docs/COLLABORATION.md           1 line   deleted in Step 4
+scripts/trace-ing003-sua-dac.ts 1 line   header comment, leave
 ```
 
-`AGENTS.md` and `docs/COLLABORATION.md` also match before Step 4 deletes them,
-and the rewritten `CLAUDE.md` from Task 2 no longer mentions the handoff at all.
+The previous revision of this step filtered with `grep -v docs/handoffs/`, and
+**every real citation writes the full path**
+`docs/handoffs/2026-06-25-codex-handoff-active-task-tracking.md` — so the filter
+discarded 100% of them and the step returned nothing but binary noise. It could
+not have failed for any state of the repository. That is worse than a wrong
+expectation: a check that always passes.
+
+`CLAUDE.md` appears here only if Task 2 has not run yet. The rewritten file
+does not mention the handoff, so after Task 2 this line should be gone —
+if it is still present, Task 2 was not applied as written.
 
 `scripts/trace-ing003-sua-dac.ts` is a closed one-off investigation script whose
 header comment cites the handoff as the source of its task. That citation is a
@@ -753,18 +774,29 @@ git rm docs/COLLABORATION.md AGENTS.md
 - [ ] **Step 5: Verify no living reference survives**
 
 ```bash
-grep -rn "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" \
-  | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/"
+git grep -n "COLLABORATION\.md\|AGENTS\.md" -- . \
+  ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers' ':!DEVELOPMENT-TRACKING.md'
 ```
 
-Again no `--include`, for the reason given in Step 1 — the filtered form is
-blind to `.husky/pre-commit` and would report clean while that file still
-carried the reference.
+Expected, measured 2026-08-01 — exactly two files remain, both deleted by later
+tasks:
 
-Expected: **exactly one match, in `docs/ROADMAP.md`**, which Task 3b deletes.
-Anything else means the list in Step 1 was incomplete — repoint it and note the
-omission when reporting, since that is exactly the weakness this plan flagged
-for challenge.
+```
+docs/ROADMAP.md    6 lines   deleted in Task 3b
+docs/COMPLETED.md  2 lines   deleted in Task 3c
+```
+
+`DEVELOPMENT-TRACKING.md` is excluded by pathspec, not repointed: it carries
+**29** matching lines, all inside dated entries, which Step 2's own rule says to
+leave alone. An earlier revision of this step expected "exactly one match in
+`docs/ROADMAP.md`" — wrong three times over. `ROADMAP.md` has six lines, not
+one; `COMPLETED.md` still exists at this point; and the chronicle's 29 lines
+were neither excluded nor expected, so the implementer would have met dozens of
+unexpected results and, following this step's old instruction to go fix them,
+would have rewritten history that Step 2 forbids touching.
+
+Anything outside those two files means a living document was missed in Step 1 —
+repoint it and say so when reporting.
 
 - [ ] **Step 6: Run the checker, the full suite, and the type check**
 
@@ -895,13 +927,33 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 - [ ] **Step 4: Delete `ROADMAP.md` and repoint what pointed at it**
 
 ```bash
-grep -rln "ROADMAP\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | sort
+git grep -ln "ROADMAP\.md" -- . ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers'
 git rm docs/ROADMAP.md
 ```
 
-Repoint living documents to `docs/OPEN-ITEMS.md`. Leave references inside
-`docs/handoffs/`, `docs/audits/` and `docs/superpowers/` dangling, for the same
-reason as Task 3: they are point-in-time records.
+Expected before deletion, measured 2026-08-01:
+
+```
+CLAUDE.md                    rewritten in Task 2, should already be clean
+CONTEXT.md                   repoint
+README.md                    repoint
+docs/ACCESS-MODEL.md         repoint
+docs/FEATURE-CATALOG.md      repoint
+docs/FILE-ORGANIZATION.md    repoint
+docs/COMPLETED.md            leave — Task 3c deletes it
+docs/COLLABORATION.md        already deleted in Task 3
+docs/ROADMAP.md              itself
+DEVELOPMENT-TRACKING.md      leave — dated entries
+docs/operations/implicit-production-quantity-correction-playbook.md   repoint
+```
+
+That last one is a **living runbook**, not a historical record, and it appears
+in no living-document list in Tasks 3 or 3c because neither of those searched
+for `ROADMAP.md`. It cites `COGS-4` in the roadmap's queue; repoint it to
+`docs/OPEN-ITEMS.md` and carry that item across in Step 1 if it is still open.
+
+Leave references inside `docs/handoffs/`, `docs/audits/` and
+`docs/superpowers/` dangling, for the same reason as Task 3.
 
 `CLAUDE.md` section 10 as written in Task 2 already points at
 `docs/OPEN-ITEMS.md` and never mentions `ROADMAP.md`, so it needs no change —
@@ -987,7 +1039,7 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 - [ ] **Step 2: Delete it and repoint what pointed at it**
 
 ```bash
-grep -rln "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | sort
+git grep -ln "COMPLETED\.md" -- . ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers'
 git rm docs/COMPLETED.md
 ```
 
@@ -1072,13 +1124,12 @@ Expected: checker clean, suite green, 0 type errors. Then confirm no living
 document still points at the deleted archive:
 
 ```bash
-grep -rn "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" \
-  | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/" \
-  | grep -v "^\./DEVELOPMENT-TRACKING.md"
+git grep -n "COMPLETED\.md" -- . \
+  ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers' ':!DEVELOPMENT-TRACKING.md'
 ```
 
-Expected: no matches. `DEVELOPMENT-TRACKING.md` is excluded deliberately — its
-five mentions live inside dated entries and stay.
+Expected: no matches. `DEVELOPMENT-TRACKING.md` is excluded by pathspec —
+its mentions live inside dated entries and stay.
 
 - [ ] **Step 6: Commit**
 
