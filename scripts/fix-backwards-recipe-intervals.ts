@@ -8,9 +8,9 @@ process.env.CLI_MODE = "true";
  * Deactivates recipes rows whose interval is impossible (end_date before
  * start_date) -- evidence of the defect Task 6 fixes going forward: an
  * effective date typed earlier than the recipe it superseded. Sets
- * status = 'INACTIVE' only; dates are never rewritten
- * (docs/COLLABORATION.md forbids deleting master data, and an impossible
- * interval is the evidence, not noise to clean up).
+ * status = 'INACTIVE' only; dates are never rewritten -- master data is
+ * never deleted, and an impossible interval is the evidence, not noise to
+ * clean up.
  *
  * Does NOT touch recipes belonging to deleted semi-products as a general
  * rule -- an orphaned ACTIVE recipe on a DELETED semi-product is what keeps

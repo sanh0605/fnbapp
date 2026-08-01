@@ -60,7 +60,7 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 | 12 | ~~Backfill `start_date` on 129 recipes~~ **DONE 31/07** | 124 rows backfilled (`7364ffe`), `NOT NULL` added (`0048`), read-time fallback removed (`0049`, `acf2a68`). Equivalence proven across 4,820 replayed selections. Side effect is item 2b. |
 | 12b | **Task 5 never ran, and the path it audits now has live data** | Task 5 measures whether `findLatestActiveRecipe` (sorts by `created_at`, ignores effectiveness) and the `end_date` close-out handle future-dated recipes. `RC-035` and `RC-038` now carry `start_date` 2026-08-31. Plan: same file, Task 5. |
 | 13 | **Load speed has never been measured** | One of the owner's four original priorities. No baseline exists, so no target can be set. Measure before planning any fix. |
-| 14 | Retire `data_migration_runs`, dead config rows (`BTP-004`) | Retire by marking inactive — never delete master data (`docs/COLLABORATION.md`). |
+| 14 | Retire `data_migration_runs`, dead config rows (`BTP-004`) | Retire by marking inactive — never delete master data. |
 | 14b | Test semi-products sitting in the live catalogue | "Test lần 2" (`BTP-016`) and "Test Task6 Step8" (`BTP-017`) are `ACTIVE` in real master data, from the 31/07 live verification steps, along with recipes `RC-033`-`RC-040`. "Test" (`BTP-015`) is `DELETED` but its recipe `RC-035` is still `ACTIVE` — the deleted-semi-product shape the start_date plan warns about. Nothing broken (no stock, no orders); retire by marking inactive, ask the owner first. |
 | 15 | Physical stocktake | Owner moved it behind Phase 7, to be the last act before expansion. |
 | 16 | Shift and cash reconciliation (`FC-3`) | Owner deferred: no staff yet. |

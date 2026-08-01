@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Pre-commit gate per docs/COLLABORATION.md section E (Merge Gate).
+# Pre-commit gate per CLAUDE.md section 9 (Xong việc nghĩa là gì).
 # Claude code — enforce TS check that Next.js SWC may mask.
 
 echo "[pre-commit] Running tsc --noEmit..."

@@ -3,7 +3,7 @@
 Status: canonical convention for where files live and how they're named.
 
 Owner: Claude (protocol/docs), enforced by all agents. Referenced from
-[`COLLABORATION.md`](COLLABORATION.md) Section A.
+[`../CLAUDE.md`](../CLAUDE.md) section 10.
 
 ## Tóm tắt cho chủ doanh nghiệp
 
@@ -29,8 +29,8 @@ over time, not the raw count.
 
 | Directory | What goes here | Lifecycle |
 |---|---|---|
-| Root (`README.md`, `CONTEXT.md`, `ARCHITECTURE.md`, `CLAUDE.md`, `AGENTS.md`) | The canonical entry-point set only — see `COLLABORATION.md` Section A. No new root `.md` files without Claude approval. | Living — edited in place, no date prefix. |
-| `docs/` top level (`ROADMAP.md`, `COMPLETED.md`, `TESTING.md`, `COLLABORATION.md`, `FEATURE-CATALOG.md`, `BUSINESS-RULES.md`, `ACCESS-MODEL.md`, `FILE-ORGANIZATION.md`) | The canonical entry-point set only. No new top-level `docs/*.md` files without Claude approval — everything else goes in a subdirectory below. | Living — edited in place, no date prefix. |
+| Root (`README.md`, `CONTEXT.md`, `ARCHITECTURE.md`, `CLAUDE.md`) | The canonical entry-point set only — see `CLAUDE.md` section 10. No new root `.md` files without Claude approval. | Living — edited in place, no date prefix. |
+| `docs/` top level (`ROADMAP.md`, `COMPLETED.md`, `TESTING.md`, `FEATURE-CATALOG.md`, `BUSINESS-RULES.md`, `ACCESS-MODEL.md`, `FILE-ORGANIZATION.md`) | The canonical entry-point set only. No new top-level `docs/*.md` files without Claude approval — everything else goes in a subdirectory below. | Living — edited in place, no date prefix. |
 | `docs/audits/` | Evidence/investigation output: audit reports, findings, verification artifacts (`.md` and paired `.json` where applicable). | Immutable once written. Never edited after the fact except to add a superseding note; never deleted. Date-prefixed. |
 | `docs/handoffs/` | Task briefs authored for Codex/Antigravity to pick up. | Immutable once written — even after the task completes, the file stays as historical record (`ROADMAP.md`'s "Pending prompts" list marks it historical, doesn't delete it). Date-prefixed. |
 | `docs/reports/` | One-off narrative reports that aren't audits or handoffs (e.g., an overnight-run summary). | Immutable once written. Date-prefixed. |

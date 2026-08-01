@@ -147,7 +147,7 @@ Only rows with reproducible failure-path evidence should become `VERIFIED`. Gate
 - [`ROADMAP.md`](ROADMAP.md) — pending access remediation and future security work
 - [`audits/2026-07-18-gate2-access-map.md`](audits/2026-07-18-gate2-access-map.md) — per-action, API-route, Edge Function, and SYSTEM evidence
 - [`audits/2026-07-19-gate3-database-rls-audit.md`](audits/2026-07-19-gate3-database-rls-audit.md) — live RLS, table grants, RPC execution grants, and browser-key evidence
-- [`COLLABORATION.md`](COLLABORATION.md) — risk-boundary ownership and production-write protocol
+- [`../CLAUDE.md`](../CLAUDE.md) — risk-boundary rules and production-write protocol
 - [`audits/2026-07-17-pre-audit-b-owner-decisions.md`](audits/2026-07-17-pre-audit-b-owner-decisions.md) — D1–D8 approval record
 
 Update this document when business roles, technical roles, data scope, authentication, protected surfaces, secrets, or Phase 3 verification results change.

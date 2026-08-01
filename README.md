@@ -73,7 +73,7 @@ Use the current secret manager or approved local `.env.local`. Do not place secr
 - Backup success does not authorize a restore. Restore operations require a separate reviewed plan and verification.
 - Do not push local commits unless the owner explicitly asks.
 
-Operational rules are defined in [`docs/BUSINESS-RULES.md`](docs/BUSINESS-RULES.md). Team protocol is defined in [`docs/COLLABORATION.md`](docs/COLLABORATION.md).
+Operational rules are defined in [`docs/BUSINESS-RULES.md`](docs/BUSINESS-RULES.md). Team protocol is defined in [`CLAUDE.md`](CLAUDE.md).
 
 ## Canonical documentation
 
@@ -88,6 +88,6 @@ Operational rules are defined in [`docs/BUSINESS-RULES.md`](docs/BUSINESS-RULES.
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Pending work and priorities |
 | [`docs/COMPLETED.md`](docs/COMPLETED.md) | Completed-outcome index |
 | [`docs/TESTING.md`](docs/TESTING.md) | Test strategy, commands, and evidence gates |
-| [`docs/COLLABORATION.md`](docs/COLLABORATION.md) | Ownership and coordination protocol |
+| [`CLAUDE.md`](CLAUDE.md) | Working rules, risk boundaries, and where to look |
 
 Detailed policy documents and historical audit evidence remain available under `docs/`; the ten files above are stable entry points, not replacements for immutable evidence.

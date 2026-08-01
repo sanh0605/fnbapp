@@ -155,7 +155,7 @@ Do not paste secrets, password hashes, access tokens, full credentials, or priva
 - [`FEATURE-CATALOG.md`](FEATURE-CATALOG.md) — feature status and evidence
 - [`BUSINESS-RULES.md`](BUSINESS-RULES.md) — business invariants
 - [`ACCESS-MODEL.md`](ACCESS-MODEL.md) — intended versus verified access
-- [`COLLABORATION.md`](COLLABORATION.md) — merge gates and ownership
+- [`../CLAUDE.md`](../CLAUDE.md) — merge gate and working rules
 - [`audits/2026-07-16-drive-backup-policy.md`](audits/2026-07-16-drive-backup-policy.md) — backup verification contract
 
 Update this document when test tools, commands, coverage boundaries, merge gates, CI, or critical manual flows change.

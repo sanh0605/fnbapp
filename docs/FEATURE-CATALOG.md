@@ -61,7 +61,7 @@ Pre-Audit C should create one record per independently understandable capability
 | Known limitations | Material gaps, scope boundaries, or unsafe assumptions |
 | Data affected | Main business records or external destination |
 | Last verified | Date and environment |
-| Owner/maintainer | Risk-boundary owner from [`COLLABORATION.md`](COLLABORATION.md) |
+| Owner/maintainer | Person or agent responsible, per [`../CLAUDE.md`](../CLAUDE.md) section 1 |
 
 ## Pre-Audit C module scope
 

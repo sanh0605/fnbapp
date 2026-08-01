@@ -161,6 +161,6 @@ There is no tracked GitHub Actions workflow at this baseline. The Husky hook run
 - Test strategy: [`docs/TESTING.md`](docs/TESTING.md)
 - MAC/COGS design: [`docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md`](docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md)
 - Backup policy: [`docs/audits/2026-07-16-drive-backup-policy.md`](docs/audits/2026-07-16-drive-backup-policy.md)
-- Collaboration protocol: [`docs/COLLABORATION.md`](docs/COLLABORATION.md)
+- Working rules: [`CLAUDE.md`](CLAUDE.md)
 
 Update this document when runtime components, trust boundaries, authentication, critical transaction paths, deployment integrations, or backup architecture change.
