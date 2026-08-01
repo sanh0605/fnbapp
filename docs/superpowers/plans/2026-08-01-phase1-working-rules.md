@@ -640,7 +640,7 @@ gap left to bridge.
 - [ ] **Step 1: Produce the current reference list**
 
 ```bash
-grep -rl "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" | sort
+grep -rl "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | sort
 ```
 
 **Do not add `--include` filters here.** An earlier revision used
@@ -720,11 +720,29 @@ inside a dated entry. A dated entry is a record of what was true then.
 other living document still does:
 
 ```bash
-grep -rn "2026-06-25-codex-handoff" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v docs/handoffs/
+grep -rn "2026-06-25-codex-handoff" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | grep -v docs/handoffs/
 ```
 
-Expected: no matches outside `docs/handoffs/` itself and this plan. The handoff
-file itself stays where it is as a historical record.
+Expected, verified 2026-08-01 — **not** an empty result:
+
+```
+DEVELOPMENT-TRACKING.md                              chronicle, dated entries, leave
+docs/superpowers/plans/2026-07-29-phase4-stock-rebuild.md   closed plan, leave
+docs/superpowers/plans/2026-08-01-phase1-working-rules.md   this plan
+docs/superpowers/specs/2026-08-01-...-design.md             this spec
+scripts/trace-ing003-sua-dac.ts:7                    header comment, leave
+```
+
+`AGENTS.md` and `docs/COLLABORATION.md` also match before Step 4 deletes them,
+and the rewritten `CLAUDE.md` from Task 2 no longer mentions the handoff at all.
+
+`scripts/trace-ing003-sua-dac.ts` is a closed one-off investigation script whose
+header comment cites the handoff as the source of its task. That citation is a
+historical fact and stays — same rule as the chronicle. The handoff file itself
+also stays where it is.
+
+Anything **outside** this list means a living document still routes sessions to
+a task brief for an agent that no longer exists. Repoint that one.
 
 - [ ] **Step 4: Delete the two files**
 
@@ -735,7 +753,7 @@ git rm docs/COLLABORATION.md AGENTS.md
 - [ ] **Step 5: Verify no living reference survives**
 
 ```bash
-grep -rn "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" \
+grep -rn "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" \
   | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/"
 ```
 
@@ -877,7 +895,7 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 - [ ] **Step 4: Delete `ROADMAP.md` and repoint what pointed at it**
 
 ```bash
-grep -rln "ROADMAP\.md" . | grep -v node_modules | grep -v "^\./\.git/" | sort
+grep -rln "ROADMAP\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | sort
 git rm docs/ROADMAP.md
 ```
 
@@ -969,7 +987,7 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 - [ ] **Step 2: Delete it and repoint what pointed at it**
 
 ```bash
-grep -rln "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" | sort
+grep -rln "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" | sort
 git rm docs/COMPLETED.md
 ```
 
@@ -1054,7 +1072,7 @@ Expected: checker clean, suite green, 0 type errors. Then confirm no living
 document still points at the deleted archive:
 
 ```bash
-grep -rn "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" \
+grep -rn "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" | grep -v "^\./\.superpowers/" \
   | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/" \
   | grep -v "^\./DEVELOPMENT-TRACKING.md"
 ```
