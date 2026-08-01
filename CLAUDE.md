@@ -24,6 +24,7 @@ Không tra theo đường dẫn file — file sẽ đổi chỗ. Tra theo loại
 |---|---|
 | Đụng giá vốn hoặc tồn kho | Có plan; Sonnet phản biện; kèm script kiểm tra chạy lại được |
 | Ghi vào dữ liệu thật | Mặc định chạy thử; `--apply` mới ghi; in số lượng và đối tượng chính xác trước khi ghi; chủ quán duyệt lần ghi |
+| Xoá dữ liệu gốc (nguyên liệu, món, công thức, đơn, nhà cung cấp) | **Không xoá. Đánh dấu ngừng dùng.** Đơn hàng cũ vẫn cần chúng để giải thích được số của chính nó |
 | Lộ ra ngoài repo (push, deploy) | Chủ quán duyệt từng lần. Không có uỷ quyền sẵn |
 | Đổi một quy tắc kinh doanh | Sửa luật và sửa test của nó trong cùng một lần lưu |
 | Còn lại | Agent tự quyết, làm xong báo lại bằng tiếng Việt dễ hiểu |
