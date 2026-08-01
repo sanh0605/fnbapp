@@ -136,6 +136,29 @@ describe("check 1: every path named in a rule doc exists", () => {
     write("CLAUDE.md", "Run `npx tsc --noEmit` and `--apply` carefully.");
     expect(resultFor("paths-exist", ["CLAUDE.md"]).ok).toBe(true);
   });
+
+  // Prefix matching alone skipped every root-level file, so CLAUDE.md could
+  // point at a deleted README.md forever without the checker noticing.
+  it("checks root-level documents that carry no directory prefix", () => {
+    write("CLAUDE.md", "Bối cảnh nằm ở `CONTEXT.md`.");
+    const result = resultFor("paths-exist", ["CLAUDE.md"]);
+    expect(result.ok).toBe(false);
+    expect(result.problems.join(" ")).toContain("CONTEXT.md");
+  });
+
+  it("passes a root-level document that exists", () => {
+    write("CONTEXT.md", "bối cảnh");
+    write("CLAUDE.md", "Bối cảnh nằm ở `CONTEXT.md`.");
+    expect(resultFor("paths-exist", ["CLAUDE.md"]).ok).toBe(true);
+  });
+
+  // Documents under docs/ cite their siblings relatively. Resolving only from
+  // the repo root would fail every one of them.
+  it("resolves a sibling reference relative to the citing document", () => {
+    write("docs/ACCESS-MODEL.md", "roles");
+    write("docs/BUSINESS-RULES.md", "Xem `ACCESS-MODEL.md`.");
+    expect(resultFor("paths-exist", ["docs/BUSINESS-RULES.md"]).ok).toBe(true);
+  });
 });
 
 describe("check 2: no retired agent is named as current", () => {
@@ -214,7 +237,7 @@ Create `scripts/check-rules-current.ts`:
  * Takes its file list as an argument so tests can run against fixtures.
  */
 import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 export type CheckResult = {
   check: string;
@@ -222,12 +245,23 @@ export type CheckResult = {
   problems: string[];
 };
 
-// Only backticked tokens beginning with one of these are treated as paths.
-// Anything else in backticks is a command, a flag, or a code identifier.
 const PATH_PREFIXES = [
   "app/", "lib/", "components/", "scripts/", "docs/",
   "supabase/", "types/", ".claude/", ".husky/",
 ];
+
+// A backticked token is a path when it names a known top-level directory or is
+// a bare document filename. Prefix matching alone silently skipped every
+// root-level file -- README.md, CONTEXT.md, DEVELOPMENT-TRACKING.md -- so the
+// three of them that CLAUDE.md section 10 depends on were never verified at
+// all. A token containing a space is prose or a shell command, never a path.
+function looksLikePath(token: string): boolean {
+  if (token.includes("*") || token.includes(" ") || token.includes("{")) {
+    return false;
+  }
+  if (PATH_PREFIXES.some(prefix => token.startsWith(prefix))) return true;
+  return /^[A-Za-z][A-Za-z0-9._-]*\.md$/.test(token);
+}
 
 const RETIRED_AGENTS = ["Codex", "Antigravity", "GLM", "Gemini"];
 
@@ -240,14 +274,18 @@ function checkPathsExist(docs: string[], repoRoot: string): CheckResult {
   for (const doc of docs) {
     const docPath = join(repoRoot, doc);
     if (!existsSync(docPath)) continue;
+    const docDir = dirname(docPath);
     for (const token of backtickedTokens(readFileSync(docPath, "utf8"))) {
-      if (token.includes("*")) continue;
-      if (!PATH_PREFIXES.some(prefix => token.startsWith(prefix))) continue;
+      if (!looksLikePath(token)) continue;
       // Strip a trailing line-number reference such as file.ts:123-145.
       const path = token.replace(/:\d+(-\d+)?$/, "");
-      if (!existsSync(join(repoRoot, path))) {
-        problems.push(`${doc} names '${path}', which does not exist`);
+      // Root files are cited from the root (`README.md` in CLAUDE.md) and
+      // siblings are cited relatively (`ACCESS-MODEL.md` inside docs/).
+      // Accept either, or the sibling form fails against the repo root.
+      if (existsSync(join(repoRoot, path)) || existsSync(join(docDir, path))) {
+        continue;
       }
+      problems.push(`${doc} names '${path}', which does not exist`);
     }
   }
   return { check: "paths-exist", ok: problems.length === 0, problems };
@@ -309,6 +347,11 @@ export function checkRulesCurrent(docs: string[], repoRoot: string): CheckResult
   ];
 }
 
+// Documents that make claims about the present. Chronicles are deliberately
+// absent: DEVELOPMENT-TRACKING.md cites hundreds of paths inside dated entries,
+// many pointing at files correctly deleted since, and a chronicle entry is a
+// record of what was true then -- not a claim about now. Measured 2026-08-01:
+// checking it would fire on ~230 paths, essentially none of them defects.
 const RULE_DOCS = ["CLAUDE.md", "docs/BUSINESS-RULES.md", "docs/OPEN-ITEMS.md"];
 
 function main(): void {
@@ -338,12 +381,12 @@ if (process.argv[1] && process.argv[1].includes("check-rules-current")) {
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run scripts/check-rules-current.test.ts`
-Expected: PASS, 11 tests (4 for check 1, 3 for check 2, 4 for check 3).
+Expected: PASS, 14 tests (7 for check 1, 3 for check 2, 4 for check 3).
 
 - [ ] **Step 5: Run the full suite and type check**
 
 Run: `npx vitest run && npx tsc --noEmit`
-Expected: 950 tests green (939 baseline + 11 new), 0 type errors.
+Expected: 953 tests green (939 baseline + 14 new), 0 type errors.
 
 - [ ] **Step 6: Commit**
 
@@ -382,6 +425,16 @@ Two things deliberately stay in this file rather than moving to
 communication rules (section 5). `BUSINESS-RULES.md` holds calculations and their
 tests; `CLAUDE.md` holds how to *reason* about the domain and how to talk to the
 owner. Both are needed in working memory every session.
+
+**One section of the old file is dropped, deliberately.** The previous
+`CLAUDE.md` carried a "Token Efficiency" section — do not re-read a file you
+just edited, batch edits, prefer Grep over Read. It is gone from the rewrite,
+and that is a decision rather than an oversight: the harness itself now
+instructs the agent not to re-read files it just edited, and the remainder is
+generic agent hygiene rather than a rule about this shop. Nothing in it is
+project-specific enough to spend session context on every single time. Recorded
+here because it was dropped silently in the first draft, which is exactly the
+kind of quiet loss this whole phase exists to prevent.
 
 - [ ] **Step 1: Replace the entire contents of `CLAUDE.md`**
 
@@ -533,11 +586,13 @@ Expected: `PASS paths-exist`, `PASS no-retired-agents`, `PASS business-rule-test
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
-  Nếu paths-exist báo lỗi, đọc kỹ đường dẫn nó in ra. Mục 10 nhắc 5 file:
-  docs/OPEN-ITEMS.md, docs/BUSINESS-RULES.md, DEVELOPMENT-TRACKING.md,
-  docs/domain-dictionary.md, docs/FILE-ORGANIZATION.md — cả 5 đều đang tồn
-  tại hôm nay. Nếu một trong số đó báo thiếu thì checker sai, không phải
-  CLAUDE.md sai. DỪNG và báo lại.
+  Mục 10 nhắc 11 đường dẫn, cả 11 đều tồn tại hôm nay:
+    docs/OPEN-ITEMS.md, docs/BUSINESS-RULES.md, docs/domain-dictionary.md,
+    docs/FILE-ORGANIZATION.md, CONTEXT.md, DEVELOPMENT-TRACKING.md,
+    README.md, app/, lib/, components/, supabase/migrations/
+  Bốn cái đầu khớp theo tiền tố thư mục; ba cái giữa là file gốc không có
+  thư mục — CHỈ được kiểm sau khi Task 1 sửa looksLikePath. Nếu checker báo
+  sạch mà không hề nhắc ba file gốc đó, nghĩa là bản sửa chưa vào. DỪNG.
 ```
 
 - [ ] **Step 4: Run the full suite and type check**
@@ -585,8 +640,14 @@ gap left to bridge.
 - [ ] **Step 1: Produce the current reference list**
 
 ```bash
-grep -rl "COLLABORATION\.md\|AGENTS\.md" --include=*.md --include=*.ts --include=*.sql . | grep -v node_modules | sort
+grep -rl "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" | sort
 ```
+
+**Do not add `--include` filters here.** An earlier revision used
+`--include=*.md --include=*.ts --include=*.sql`, which cannot match
+`.husky/pre-commit` — a file with no extension whose line 2 reads
+`# Pre-commit gate per docs/COLLABORATION.md section E`. The filtered form
+reports it clean while it is not.
 
 Expected: roughly 68 files. Classify each into exactly one bucket:
 
@@ -618,10 +679,14 @@ so repointing its references would be wasted work. Leave it alone in this task.
 Code and config:
 
 ```
-.husky/pre-commit
+.husky/pre-commit                  (line 2, header comment)
 scripts/fix-backwards-recipe-intervals.ts
 supabase/migrations/0051_recipes_end_after_start.sql
 ```
+
+`.husky/pre-commit`'s header comment is repointed **here, in Task 3**, not in
+Task 5. Task 5 only adds the checker invocation to the same file. Splitting one
+line of text across two tasks was an earlier drafting error.
 
 **`supabase/migrations/0051_...sql` is the one exception to this plan's
 "no `supabase/` edits" constraint** — it is a comment line in an
@@ -670,9 +735,13 @@ git rm docs/COLLABORATION.md AGENTS.md
 - [ ] **Step 5: Verify no living reference survives**
 
 ```bash
-grep -rn "COLLABORATION\.md\|AGENTS\.md" --include=*.md --include=*.ts --include=*.sql . \
-  | grep -v node_modules | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/"
+grep -rn "COLLABORATION\.md\|AGENTS\.md" . | grep -v node_modules | grep -v "^\./\.git/" \
+  | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/"
 ```
+
+Again no `--include`, for the reason given in Step 1 — the filtered form is
+blind to `.husky/pre-commit` and would report clean while that file still
+carried the reference.
 
 Expected: **exactly one match, in `docs/ROADMAP.md`**, which Task 3b deletes.
 Anything else means the list in Step 1 was incomplete — repoint it and note the
@@ -900,14 +969,31 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 - [ ] **Step 2: Delete it and repoint what pointed at it**
 
 ```bash
-grep -rln "COMPLETED\.md" --include=*.md --include=*.ts . | grep -v node_modules | sort
+grep -rln "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" | sort
 git rm docs/COMPLETED.md
 ```
 
-Repoint living documents to `DEVELOPMENT-TRACKING.md`. Known references at the
-time of writing: `README.md`, `CONTEXT.md` (line 68), and `docs/OPEN-ITEMS.md`.
-Leave `docs/handoffs/`, `docs/audits/` and `docs/superpowers/` dangling, same
-rule as Tasks 3 and 3b.
+Repoint living documents to `DEVELOPMENT-TRACKING.md`. The reference set,
+re-verified 2026-08-01:
+
+```
+README.md
+CONTEXT.md                  (line 68)
+docs/FEATURE-CATALOG.md
+docs/FILE-ORGANIZATION.md
+```
+
+An earlier revision of this task listed `docs/OPEN-ITEMS.md` here; it does not
+mention `COMPLETED.md` at all, and it omitted `docs/FEATURE-CATALOG.md` and
+`docs/FILE-ORGANIZATION.md`, which do.
+
+`DEVELOPMENT-TRACKING.md` also names it, at lines 942, 970, 1541, 1563 and 1674
+— all **inside dated entries**, describing what was done on those days. Leave
+every one of them. A chronicle entry recording "moved the row to
+`docs/COMPLETED.md`" stays true after the file is deleted; rewriting it would
+falsify the record. Same rule as Task 3.
+
+Leave `docs/handoffs/`, `docs/audits/` and `docs/superpowers/` dangling.
 
 - [ ] **Step 3: Give scope one home**
 
@@ -968,11 +1054,13 @@ Expected: checker clean, suite green, 0 type errors. Then confirm no living
 document still points at the deleted archive:
 
 ```bash
-grep -rn "COMPLETED\.md" --include=*.md --include=*.ts . | grep -v node_modules \
-  | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/"
+grep -rn "COMPLETED\.md" . | grep -v node_modules | grep -v "^\./\.git/" \
+  | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/" \
+  | grep -v "^\./DEVELOPMENT-TRACKING.md"
 ```
 
-Expected: no matches.
+Expected: no matches. `DEVELOPMENT-TRACKING.md` is excluded deliberately — its
+five mentions live inside dated entries and stay.
 
 - [ ] **Step 6: Commit**
 
@@ -1177,9 +1265,9 @@ fi
 echo "[pre-commit] PASS: rules current."
 ```
 
-Also update the file's header comment, which currently cites
-`docs/COLLABORATION.md section E` — a file Task 3 deleted. Replace with
-`CLAUDE.md section 9`.
+The header comment citing `docs/COLLABORATION.md section E` was already
+repointed in Task 3. Confirm it reads `CLAUDE.md section 9` rather than
+repointing it a second time.
 
 - [ ] **Step 2: Prove the gate blocks a real drift**
 
@@ -1217,8 +1305,21 @@ Expected: checker clean, suite green, 0 type errors.
 
 - [ ] **Step 4: Update tracking**
 
-Append an entry to `DEVELOPMENT-TRACKING.md` covering all five tasks, and update
-`docs/OPEN-ITEMS.md` if any item changed state. Follow `CLAUDE.md` section 9.
+Append an entry to `DEVELOPMENT-TRACKING.md` covering all seven tasks, and
+update `docs/OPEN-ITEMS.md`. Follow `CLAUDE.md` section 9.
+
+Add one new open item, which this phase creates knowingly:
+
+> **Only three documents are checked for dead references.** `CLAUDE.md`,
+> `docs/BUSINESS-RULES.md` and `docs/OPEN-ITEMS.md` are covered by
+> `scripts/check-rules-current.ts`. The other current-claim documents —
+> `README.md`, `CONTEXT.md`, `ARCHITECTURE.md`, `docs/TESTING.md`,
+> `docs/FEATURE-CATALOG.md`, `docs/ACCESS-MODEL.md`,
+> `docs/FILE-ORGANIZATION.md`, `docs/domain-dictionary.md` — are not, so a
+> reference in them can die unnoticed. Widening the checker to cover them needs
+> a cleanup pass first: measured 2026-08-01, several already carry dead links,
+> and the gate would fail on day one. Chronicles (`DEVELOPMENT-TRACKING.md`)
+> stay out permanently by design.
 
 - [ ] **Step 5: Commit**
 
@@ -1244,7 +1345,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 Per the spec, and checked at the end of Task 5:
 
 - `npx tsc --noEmit` — 0 errors.
-- `npx vitest run` — green, 950 tests (939 baseline + 11 new).
+- `npx vitest run` — green, 953 tests (939 baseline + 14 new).
 - `npx vite-node scripts/check-rules-current.ts` — all three checks pass, and
   demonstrably fails on a stale path (proven in Task 5 Step 2).
 - `CLAUDE.md` at 120 lines as drafted, ceiling 130.
