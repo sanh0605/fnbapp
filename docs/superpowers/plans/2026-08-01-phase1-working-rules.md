@@ -52,8 +52,9 @@ sweep in Task 3 (is the list of 11 living documents actually complete?).
 
 | File | Responsibility | Task |
 |---|---|---|
-| `scripts/check-rules-current.ts` (create) | The three drift checks, callable with an explicit file list so it is testable against fixtures | 1 |
-| `scripts/check-rules-current.test.ts` (create) | Fixture-based tests for all three checks, both passing and failing | 1 |
+| `scripts/check-rules-current-core.ts` (create) | The three drift checks, callable with an explicit file list so it is testable against fixtures | 1 |
+| `scripts/check-rules-current.ts` (create) | CLI entry point — names the checked documents, prints, sets the exit code | 1 |
+| `scripts/check-rules-current-core.test.ts` (create) | Fixture-based tests for all three checks, both passing and failing | 1 |
 | `CLAUDE.md` (rewrite) | The single session-loaded rulebook | 2 |
 | `docs/COLLABORATION.md` (delete), `AGENTS.md` (delete) | — | 3 |
 | 10 living docs + 3 code comments (modify) | Repoint references away from the deleted files | 3 |
@@ -68,8 +69,15 @@ sweep in Task 3 (is the list of 11 living documents actually complete?).
 ### Task 1: The drift checker
 
 **Files:**
-- Create: `scripts/check-rules-current.ts`
-- Test: `scripts/check-rules-current.test.ts`
+- Create: `scripts/check-rules-current-core.ts` (pure logic, exported)
+- Create: `scripts/check-rules-current.ts` (CLI entry point)
+- Test: `scripts/check-rules-current-core.test.ts`
+
+The `-core.ts` split is this repository's existing convention for a script that
+is both runnable and unit-tested — see `audit-admin-action-auth-core.ts`,
+`audit-po-save-ledger-core.ts`, `audit-gate3-database-security-core.ts`,
+`generate-script-cleanup-plan-core.ts`. Following it removes any need to guess
+at runtime whether the module was imported or executed.
 
 **Interfaces:**
 - Produces: `checkRulesCurrent(ruleDocs: string[], repoRoot: string): CheckResult[]`
@@ -84,14 +92,14 @@ repository's current state.
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `scripts/check-rules-current.test.ts`:
+Create `scripts/check-rules-current-core.test.ts`:
 
 ```ts
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkRulesCurrent } from "./check-rules-current";
+import { checkRulesCurrent } from "./check-rules-current-core";
 
 let root: string;
 
@@ -218,12 +226,12 @@ describe("check 3: a declared test link points at a test that exists", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `npx vitest run scripts/check-rules-current.test.ts`
+Run: `npx vitest run scripts/check-rules-current-core.test.ts`
 Expected: FAIL — `check-rules-current` does not exist yet.
 
 - [ ] **Step 3: Write the checker**
 
-Create `scripts/check-rules-current.ts`:
+Create `scripts/check-rules-current-core.ts`:
 
 ```ts
 /**
@@ -352,35 +360,80 @@ export function checkRulesCurrent(docs: string[], repoRoot: string): CheckResult
 // many pointing at files correctly deleted since, and a chronicle entry is a
 // record of what was true then -- not a claim about now. Measured 2026-08-01:
 // checking it would fire on ~230 paths, essentially none of them defects.
+```
+
+- [ ] **Step 3b: Write the CLI as a separate file**
+
+The pure logic above lives in `-core.ts` and the runnable entry point is its own
+file, following the convention this repository already uses for
+`audit-admin-action-auth`, `audit-po-save-ledger`,
+`audit-gate3-database-security` and `generate-script-cleanup-plan`.
+
+**Do not guard the entry point on `process.argv[1]`.** An earlier revision did,
+and under `vite-node` `process.argv[1]` is
+`node_modules/vite-node/dist/cli.mjs`, never the script path — so the guard was
+always false, `main()` never ran, and the command printed nothing while exiting
+0. A checker that silently passes is worse than no checker, because Task 5 wires
+that exact command into the commit gate.
+
+Create `scripts/check-rules-current.ts`:
+
+```ts
+/**
+ * CLI for the rule drift checks. Logic and tests live in
+ * check-rules-current-core.ts; this file only runs it and reports.
+ */
+import { checkRulesCurrent } from "./check-rules-current-core";
+
+// Documents that make claims about the present. Chronicles are deliberately
+// absent: DEVELOPMENT-TRACKING.md cites hundreds of paths inside dated entries,
+// many pointing at files correctly deleted since, and a chronicle entry is a
+// record of what was true then -- not a claim about now. Measured 2026-08-01:
+// checking it would fire on ~230 paths, essentially none of them defects.
 const RULE_DOCS = ["CLAUDE.md", "docs/BUSINESS-RULES.md", "docs/OPEN-ITEMS.md"];
 
-function main(): void {
-  const results = checkRulesCurrent(RULE_DOCS, process.cwd());
-  let failed = false;
-  for (const result of results) {
-    if (result.ok) {
-      console.log(`[rules] PASS ${result.check}`);
-      continue;
-    }
-    failed = true;
-    console.error(`[rules] FAIL ${result.check}`);
-    result.problems.forEach(problem => console.error(`  ${problem}`));
+const results = checkRulesCurrent(RULE_DOCS, process.cwd());
+let failed = false;
+for (const result of results) {
+  if (result.ok) {
+    console.log(`[rules] PASS ${result.check}`);
+    continue;
   }
-  if (failed) {
-    console.error("\n[rules] A rule document disagrees with the repository.");
-    process.exit(1);
-  }
+  failed = true;
+  console.error(`[rules] FAIL ${result.check}`);
+  result.problems.forEach(problem => console.error(`  ${problem}`));
 }
-
-// Only run the CLI when invoked directly, never on import from tests.
-if (process.argv[1] && process.argv[1].includes("check-rules-current")) {
-  main();
+if (failed) {
+  console.error("\n[rules] A rule document disagrees with the repository.");
+  // exitCode, not exit(): lets stdout flush before the process ends.
+  process.exitCode = 1;
 }
 ```
 
+- [ ] **Step 3c: Prove the CLI actually runs**
+
+Run: `npx vite-node scripts/check-rules-current.ts`
+
+Expected, on stdout:
+
+```
+[rules] PASS paths-exist
+[rules] PASS no-retired-agents
+[rules] PASS business-rule-tests
+```
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  Nếu lệnh này KHÔNG in ra gì mà vẫn thoát mã 0 -> main không chạy. Đó chính
+  là lỗi bản trước, và nó nguy hiểm vì Task 5 gắn đúng lệnh này vào cổng
+  chặn commit: cổng sẽ luôn báo qua mà không kiểm gì. DỪNG, đừng đi tiếp.
+```
+
+Silence is the failure mode to watch for here, not an error message.
+
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `npx vitest run scripts/check-rules-current.test.ts`
+Run: `npx vitest run scripts/check-rules-current-core.test.ts`
 Expected: PASS, 14 tests (7 for check 1, 3 for check 2, 4 for check 3).
 
 - [ ] **Step 5: Run the full suite and type check**
@@ -391,7 +444,8 @@ Expected: 953 tests green (939 baseline + 14 new), 0 type errors.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add scripts/check-rules-current.ts scripts/check-rules-current.test.ts
+git add scripts/check-rules-current-core.ts scripts/check-rules-current.ts \
+        scripts/check-rules-current-core.test.ts
 git commit -m "Claude-Sonnet feat: a checker that reports when a rule has drifted from reality
 
 Three checks, each matching a drift already observed here: a rule document
