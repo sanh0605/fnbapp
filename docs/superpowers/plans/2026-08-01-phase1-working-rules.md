@@ -54,6 +54,7 @@ sweep in Task 3 (is the list of 11 living documents actually complete?).
 | `docs/COLLABORATION.md` (delete), `AGENTS.md` (delete) | — | 3 |
 | 10 living docs + 3 code comments (modify) | Repoint references away from the deleted files | 3 |
 | `docs/OPEN-ITEMS.md` (modify), `docs/ROADMAP.md` (delete) | Collapse two competing pending-work lists into one | 3b |
+| `docs/COMPLETED.md` (delete), `README.md` (modify) | One completed-work log, one scope statement, one signpost | 3c |
 | `.claude/skills/fnbapp-bulk-data-change/SKILL.md` (create) | The bulk-data-change procedure, surfaced by description match | 4 |
 | `.claude/settings.json` (modify) | Hook that fires on `--apply` commands and migration edits | 4 |
 | `.husky/pre-commit` (modify) | Run the checker alongside `tsc` | 5 |
@@ -475,11 +476,30 @@ Chủ quán xác nhận 2026-07-22. Không suy diễn khác đi.
 |---|---|
 | Việc chưa xong | `docs/OPEN-ITEMS.md` |
 | Cách tính, nguyên tắc hiển thị số | `docs/BUSINESS-RULES.md` |
+| Quán là gì, phạm vi tới đâu | `CONTEXT.md` |
 | Đã làm gì, khi nào | `DEVELOPMENT-TRACKING.md` |
 | Thuật ngữ | `docs/domain-dictionary.md` |
+| Cách chạy máy, công nghệ dùng gì | `README.md` |
 | File mới đặt ở đâu | `docs/FILE-ORGANIZATION.md` |
 | Vì sao có một luật | git log |
+
+Code nằm đâu — tạm thời, tới khi chia lại theo mảng nghiệp vụ:
+
+| Loại | Ở đâu |
+|---|---|
+| Màn hình và hành động phía máy chủ | `app/` |
+| Bộ máy tính: giá vốn, tồn kho, báo cáo | `lib/` |
+| Giao diện dùng chung | `components/` |
+| Cập nhật cấu trúc dữ liệu | `supabase/migrations/` |
 ````
+
+This "where the code lives" block is deliberately four lines about *directories*,
+not a file-by-file map. A hand-written file map rots within a week; four
+directory names do not. It sits in `CLAUDE.md` rather than `ARCHITECTURE.md`
+because this is the file a session actually loads, and — the part that makes it
+self-defending — the checker's `paths-exist` check validates every path in it, so
+the phase 3 restructure cannot move a directory without the next commit being
+blocked until this block is updated.
 
 - [ ] **Step 2: Verify the line ceiling**
 
@@ -822,6 +842,149 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
+### Task 3c: One completed-work log, one scope statement, one signpost
+
+**Files:**
+- Delete: `docs/COMPLETED.md`
+- Modify: `README.md`
+- Modify: any living document referencing `docs/COMPLETED.md`
+
+**Interfaces:**
+- Consumes: `CLAUDE.md` section 10 from Task 2, which `README.md` now points at.
+- Produces: nothing other tasks consume.
+
+Three overlaps found 2026-08-01 while answering "what files will remain".
+
+- [ ] **Step 1: Prove `COMPLETED.md` holds nothing unique before deleting it**
+
+`docs/COMPLETED.md`'s own first line says it is a "compact 1-line-per-task
+archive" whose "detailed entries remain in `DEVELOPMENT-TRACKING.md`". Two
+things say it has stopped working: its entries are now 500-700 words each, not
+one line, and its newest entry is dated **2026-07-22** while
+`DEVELOPMENT-TRACKING.md` has run continuously since. It was fed by
+`ROADMAP.md`'s "move the row here when done" step, which nobody performed.
+
+**Do not delete on the strength of that self-description.** Sample at least six
+entries spread across its date range — one each from 2026-07-22, 07-20, 07-17,
+07-11, 07-04, and the "Earlier (pre-2026-07)" section — and confirm each names
+work that also appears in `DEVELOPMENT-TRACKING.md`.
+
+If any entry describes work found nowhere else, **stop and report**. Do not
+copy it across on your own judgement: an orphaned record means the premise of
+this step is wrong, and the coordinator needs to know that before anything is
+deleted.
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  Mục 22/07 "REBUILD-1 — Full-history inventory quantity + COGS ground-truth
+  rebuild" phải tìm thấy tương ứng trong DEVELOPMENT-TRACKING.md cùng ngày,
+  chi tiết hơn. Nếu KHÔNG có -> DỪNG, đừng xoá file.
+```
+
+- [ ] **Step 2: Delete it and repoint what pointed at it**
+
+```bash
+grep -rln "COMPLETED\.md" --include=*.md --include=*.ts . | grep -v node_modules | sort
+git rm docs/COMPLETED.md
+```
+
+Repoint living documents to `DEVELOPMENT-TRACKING.md`. Known references at the
+time of writing: `README.md`, `CONTEXT.md` (line 68), and `docs/OPEN-ITEMS.md`.
+Leave `docs/handoffs/`, `docs/audits/` and `docs/superpowers/` dangling, same
+rule as Tasks 3 and 3b.
+
+- [ ] **Step 3: Give scope one home**
+
+`README.md` sections "Tổng quan" and "Phạm vi vận hành hiện tại" (lines 3-19)
+restate what `CONTEXT.md` already says in "Mục đích", "Mô hình đang vận hành"
+and "Phạm vi hiện tại". These are **not** full duplicates of each other's files —
+`CONTEXT.md` additionally carries the six desired business outcomes, the
+decision-authority list, and the out-of-scope list; `README.md` additionally
+carries the technical stack, local setup, and production-safety rules. Only the
+scope prose is doubled.
+
+`CONTEXT.md` keeps it: it is the owner-facing document, written in Vietnamese
+for exactly this purpose, and its own closing section already defines when it
+must be updated.
+
+In `README.md`, replace those two sections with a short paragraph plus a link:
+
+```markdown
+## Tổng quan
+
+FNB App là hệ thống bán hàng và quản lý vận hành cho một quán đồ uống bán mang
+đi. Bối cảnh kinh doanh, mô hình đang vận hành và phạm vi hiện tại — kể cả
+những gì **chưa** thuộc phạm vi — nằm ở [`CONTEXT.md`](CONTEXT.md), là tài liệu
+chính thống cho phần đó.
+
+Tài liệu này chỉ nói cách chạy và vận hành hệ thống.
+```
+
+Do not edit `CONTEXT.md`'s scope sections in this task. Its stale
+"Xác minh gần nhất: 2026-07-17" line and its two `docs/ROADMAP.md` references are
+handled by Task 3b's grep-driven repointing pass — confirm they were caught, and
+report if they were not, since `CONTEXT.md` was missing from Task 3's list.
+
+- [ ] **Step 4: Remove the second signpost**
+
+`README.md`'s "Canonical documentation" table lists ten documents, three of
+which this phase deletes. Rebuilding it would recreate the exact defect this
+whole phase exists to remove: `CLAUDE.md` section 10 is already a "where to
+look" table, and two such tables must be kept in agreement by hand.
+
+Replace the whole `## Canonical documentation` section with:
+
+```markdown
+## Canonical documentation
+
+`CLAUDE.md` section 10 is the map — it lists every living document and what each
+one is for. It is kept honest by `scripts/check-rules-current.ts`, which fails
+the commit if it names a path that no longer exists.
+```
+
+- [ ] **Step 5: Verify**
+
+```bash
+npx vite-node scripts/check-rules-current.ts && npx vitest run && npx tsc --noEmit
+```
+
+Expected: checker clean, suite green, 0 type errors. Then confirm no living
+document still points at the deleted archive:
+
+```bash
+grep -rn "COMPLETED\.md" --include=*.md --include=*.ts . | grep -v node_modules \
+  | grep -v "docs/handoffs/" | grep -v "docs/audits/" | grep -v "docs/superpowers/"
+```
+
+Expected: no matches.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add -A
+git commit -m "Claude-Sonnet refactor: one completed-work log, one scope statement, one signpost
+
+COMPLETED.md declared itself a compact one-line-per-task archive whose detail
+lived in DEVELOPMENT-TRACKING.md. Its entries had grown to 500-700 words, and
+its newest was dated 2026-07-22 while its sibling ran continuously -- it was
+fed by ROADMAP.md's 'move the row here when done' step, which nobody performed.
+Sampled entries across its whole date range and confirmed each appears in
+DEVELOPMENT-TRACKING.md before deleting; git retains it either way.
+
+README.md and CONTEXT.md are not duplicates -- only their scope prose was
+doubled. CONTEXT.md keeps it, being the owner-facing Vietnamese document
+written for that purpose; README.md now covers only how to run the system.
+
+README.md's canonical-documentation table is gone rather than rebuilt. Keeping
+it would have meant two hand-synchronised 'where to look' maps, which is the
+defect this phase exists to remove -- and CLAUDE.md section 10 is the one the
+harness actually loads, and the one the drift checker validates.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+```
+
+---
+
 ### Task 4: The hook and the bulk-data-change skill
 
 **Files:**
@@ -1072,10 +1235,16 @@ Per the spec, and checked at the end of Task 5:
 - `git diff --stat` for the whole phase touches **no file** under `app/`,
   `lib/`, or `components/`. The one permitted `supabase/` touch is a comment in
   `0051`, and leaving it alone is preferred.
-- `docs/COLLABORATION.md`, `AGENTS.md` and `docs/ROADMAP.md` are gone; no living
-  document or code comment points at any of them.
+- `docs/COLLABORATION.md`, `AGENTS.md`, `docs/ROADMAP.md` and `docs/COMPLETED.md`
+  are gone; no living document or code comment points at any of them.
 - `docs/OPEN-ITEMS.md` is the only pending-work list, and every `ROADMAP.md` row
   is accounted for as closed, migrated, or dropped-with-a-reason.
+- Exactly one "where to look" map exists, in `CLAUDE.md` section 10.
+- Governance documents: **16 before, 12 after**. Root keeps `CLAUDE.md`,
+  `README.md`, `ARCHITECTURE.md`, `CONTEXT.md`, `DEVELOPMENT-TRACKING.md`;
+  `docs/` keeps `OPEN-ITEMS.md`, `BUSINESS-RULES.md`, `TESTING.md`,
+  `FEATURE-CATALOG.md`, `ACCESS-MODEL.md`, `domain-dictionary.md`,
+  `FILE-ORGANIZATION.md`.
 - No push.
 
 ## Out of scope
