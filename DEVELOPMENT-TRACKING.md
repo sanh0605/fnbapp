@@ -4,6 +4,61 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-07-31 (Claude Sonnet 5 implementing, Opus 5 coordinating) - `recipes.start_date` made mandatory, and the trigger nobody accounted for
+
+**Trigger:** owner's rule, stated 2026-07-31 — "if I leave the date blank it
+should record the creation date, so blank must stay legal; I only fill it in when
+the effective date differs from the creation date." Plan:
+`docs/superpowers/plans/2026-07-31-recipe-start-date-backfill-and-not-null.md`.
+
+**Tasks 1-3 (commits `7364ffe`, `c000c96`, `acf2a68`).** Backfilled 124 recipes'
+`start_date` from `created_at`, proving neutrality by replaying
+`selectEffectiveRecipe` across all 4,820 (line, target) selections before and
+after — 0 differences. Migration `0048` then made the column `NOT NULL` behind a
+guard that raises rather than silently skipping if any null survives. `0049`
+dropped the matching `coalesce` from the backdating trigger, and
+`lib/recipe-selection.ts` lost its read-time `start_date || created_at` fallback:
+it now throws instead of guessing. 939/939 tests, `tsc` clean, migrations
+`0001`-`0051` confirmed applied.
+
+**Two plan defects the implementer caught.** (1) The plan's `0049` snippet
+targeted `detect_backdated_recipe_entry`, which is the *trigger's* name — the
+function is `flag_backdated_recipe_entry()`. Applied verbatim it would have
+created an unused function and left the real one untouched: a migration that
+succeeds and does nothing. (2) The plan's blast radius was wrong — it named one
+production caller and missed that test fixtures across 11 files relied on the
+fallback implicitly. Fixed the fixtures, not the production paths.
+
+**The defect the plan and the first review both missed.** `0043`'s trigger fires `after insert **or update** on public.recipes`.
+The backfill's 124 `UPDATE`s each looked like operator backdating, producing
+**132 `PENDING` rows in `backdated_recipe_events`** — which
+`/api/cron/apply-backdated-corrections` sweeps nightly at 03:00 with authority to
+rewrite `recipe_snapshot_json` and `cost_at_sale` on historical order lines
+without human approval. A read-only dry run of all 132 predicts 115 self-clearing
+as no-change, 15 stuck `PENDING` as false anomaly alerts, and **2 — Nước đường
+(18 lines) and Kem dẻo CT3 (4 lines) — falling under the 20-line threshold and
+auto-applying.** Deltas are ~1e-6 VND — floating-point
+residue from the 30/07 exact-cost work, not real cost movement. The exposure is
+procedural, not financial: work certified "behaviour-neutral" scheduled an
+unreviewed write to historical sales data.
+
+This repeats `docs/OPEN-ITEMS.md` item 2 — 1,389 identical stale rows from the
+24/07 rebuild triggering detection on itself — one file away from where the plan
+was written.
+
+**Owner decision (31/07):** let the 03:00 cron run and diff the result rather than
+clearing the events tonight. Predicted outcome for every pending event, including
+the exact before/after cost of each line the cron will rewrite, captured
+beforehand in `docs/audits/2026-07-31-backdated-recipe-events-before-cron.json`.
+Analysis: `docs/audits/2026-07-31-start-date-backfill-trigger-fallout.md`.
+Open items 2b and 12b track what remains.
+
+**Lesson recorded:** before any bulk `UPDATE`, enumerate the target table's
+triggers and ask what each does with the rows being touched. The plan reasoned
+about the column; the danger lived in the table.
+
+---
+
 ## 2026-07-31 (Claude Sonnet 5) - Exact cost precision, EDIT_REVERSAL fix, live deploy
 
 **Trigger:** owner-directed follow-on from Phase 5/6 -- `cost_at_sale` and every

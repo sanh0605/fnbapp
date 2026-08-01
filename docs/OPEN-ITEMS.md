@@ -19,6 +19,7 @@ at the bottom.
 |---|---|---|
 | 1 | **Late-entered recipe: the INSERT path has never fired** | Editing an existing recipe's dates is proven live. Creating a *new* recipe with a back-dated `start_date` is not: `RC-032` ("Khoai luộc", created 2026-07-30 14:33, `start_date` 2026-06-01, 59 days back) produced no `backdated_recipe_events` row. Probably because migration `0043` landed after it — never confirmed. This is the path the owner uses most. |
 | 2 | **1,389 stale detection rows mask the queue** | `backdated_ledger_events` holds 1,389 `PENDING` rows whose `source_table` is `FULLHISTORY_REBUILD_2026-07-24` — spurious detections the 24/07 rebuild triggered on itself, before migration `0042` suppressed that. Harmless, but while they sit there nobody can see whether a *real* event is stuck. |
+| 2b | **132 more, same cause, now on the recipe table** | The 31/07 `start_date` backfill issued 124 `UPDATE`s on `recipes`, and `0043`'s trigger fires on update — so it flagged each one as operator backdating. Owner chose (31/07) to let the 03:00 cron run and compare rather than clear them first. Full dry run of all 132 predicts 115 self-clear, 15 stay `PENDING` as false alerts, 2 auto-rewrite 22 order lines. Capture: `docs/audits/2026-07-31-backdated-recipe-events-before-cron.json`; analysis: `docs/audits/2026-07-31-start-date-backfill-trigger-fallout.md`. **Open until the cron result is diffed against that capture and the 15 false alerts are cleared.** |
 
 ## Backup
 
@@ -56,9 +57,11 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 | # | Item | Why open |
 |---|---|---|
 | 11 | 17 forms, 11 competing input styles | The owner's own stated priority; nothing built yet. |
-| 12 | Backfill `start_date` on 129 recipes | Safe only if `selectEffectiveRecipe` returns an identical result for all order lines afterwards. |
+| 12 | ~~Backfill `start_date` on 129 recipes~~ **DONE 31/07** | 124 rows backfilled (`7364ffe`), `NOT NULL` added (`0048`), read-time fallback removed (`0049`, `acf2a68`). Equivalence proven across 4,820 replayed selections. Side effect is item 2b. |
+| 12b | **Task 5 never ran, and the path it audits now has live data** | Task 5 measures whether `findLatestActiveRecipe` (sorts by `created_at`, ignores effectiveness) and the `end_date` close-out handle future-dated recipes. `RC-035` and `RC-038` now carry `start_date` 2026-08-31. Plan: same file, Task 5. |
 | 13 | **Load speed has never been measured** | One of the owner's four original priorities. No baseline exists, so no target can be set. Measure before planning any fix. |
 | 14 | Retire `data_migration_runs`, dead config rows (`BTP-004`) | Retire by marking inactive — never delete master data (`docs/COLLABORATION.md`). |
+| 14b | Test semi-products sitting in the live catalogue | "Test lần 2" (`BTP-016`) and "Test Task6 Step8" (`BTP-017`) are `ACTIVE` in real master data, from the 31/07 live verification steps, along with recipes `RC-033`-`RC-040`. "Test" (`BTP-015`) is `DELETED` but its recipe `RC-035` is still `ACTIVE` — the deleted-semi-product shape the start_date plan warns about. Nothing broken (no stock, no orders); retire by marking inactive, ask the owner first. |
 | 15 | Physical stocktake | Owner moved it behind Phase 7, to be the last act before expansion. |
 | 16 | Shift and cash reconciliation (`FC-3`) | Owner deferred: no staff yet. |
 
