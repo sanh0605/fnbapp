@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkRulesCurrent } from "./check-rules-current";
+import { checkRulesCurrent } from "./check-rules-current-core";
 
 let root: string;
 
