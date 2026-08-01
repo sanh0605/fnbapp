@@ -500,6 +500,27 @@ project-specific enough to spend session context on every single time. Recorded
 here because it was dropped silently in the first draft, which is exactly the
 kind of quiet loss this whole phase exists to prevent.
 
+**Correction added 2026-08-01, after Task 2 had already run.** The risk table
+below gained one row: *"Xoá dữ liệu gốc … Không xoá. Đánh dấu ngừng dùng."*
+
+Deleting `docs/COLLABORATION.md` in Task 3 removed the only statement of the
+never-delete-master-data rule. Two places cite it — `docs/OPEN-ITEMS.md` item 14
+and `scripts/fix-backwards-recipe-intervals.ts` — and after the deletion the
+rule survived only as a fragment inside one item's justification, with no
+document stating it. The code still obeys it everywhere (soft-delete via a
+status column), so this was silent loss of a real, live rule, caught by the
+implementer rather than by any check.
+
+It belongs in this table rather than `docs/BUSINESS-RULES.md`: that file holds
+calculations paired with tests, while this is a prohibition on a destructive
+action, and an agent about to delete a row must already have it in mind rather
+than know to go looking. The stated reason matters as much as the rule — an old
+order cannot explain its own numbers if the ingredient or recipe it names has
+been erased.
+
+If Task 2 is already committed, apply this as a follow-up commit; `CLAUDE.md`
+goes from 120 to 121 lines, still under the 130 ceiling.
+
 - [ ] **Step 1: Replace the entire contents of `CLAUDE.md`**
 
 ````markdown
@@ -529,6 +550,7 @@ Không tra theo đường dẫn file — file sẽ đổi chỗ. Tra theo loại
 |---|---|
 | Đụng giá vốn hoặc tồn kho | Có plan; Sonnet phản biện; kèm script kiểm tra chạy lại được |
 | Ghi vào dữ liệu thật | Mặc định chạy thử; `--apply` mới ghi; in số lượng và đối tượng chính xác trước khi ghi; chủ quán duyệt lần ghi |
+| Xoá dữ liệu gốc (nguyên liệu, món, công thức, đơn, nhà cung cấp) | **Không xoá. Đánh dấu ngừng dùng.** Đơn hàng cũ vẫn cần chúng để giải thích được số của chính nó |
 | Lộ ra ngoài repo (push, deploy) | Chủ quán duyệt từng lần. Không có uỷ quyền sẵn |
 | Đổi một quy tắc kinh doanh | Sửa luật và sửa test của nó trong cùng một lần lưu |
 | Còn lại | Agent tự quyết, làm xong báo lại bằng tiếng Việt dễ hiểu |
@@ -842,13 +864,18 @@ git grep -n "COLLABORATION\.md\|AGENTS\.md" -- . \
   ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers' ':!DEVELOPMENT-TRACKING.md'
 ```
 
-Expected, measured 2026-08-01 — exactly two files remain, both deleted by later
-tasks:
+Expected, measured 2026-08-01 — exactly three files remain:
 
 ```
-docs/ROADMAP.md    6 lines   deleted in Task 3b
-docs/COMPLETED.md  2 lines   deleted in Task 3c
+docs/ROADMAP.md                              6 lines   deleted in Task 3b
+docs/COMPLETED.md                            2 lines   deleted in Task 3c
+supabase/migrations/0051_recipes_end_...sql  1 line    left alone, on purpose
 ```
+
+The migration is the one Step 1 says to prefer leaving: a comment inside an
+already-applied migration, which no reader consults and which the checker never
+opens. An earlier revision of this step expected only two files and would have
+contradicted Step 1 for the same file.
 
 `DEVELOPMENT-TRACKING.md` is excluded by pathspec, not repointed: it carries
 **29** matching lines, all inside dated entries, which Step 2's own rule says to
