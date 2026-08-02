@@ -328,6 +328,19 @@ Run: `npx vite-node scripts/backfill-purchase-base-quantity.ts`
 Report the four figures to the coordinator before applying. Do not apply on
 your own judgement — this writes to production.
 
+- [ ] **Step 6b: Capture the three audit readings BEFORE applying**
+
+```bash
+npx vite-node scripts/audit-full-history-recompute.ts
+npx vite-node scripts/audit-pnl-mac-consistency.ts
+npx vite-node scripts/audit-current-stock.ts
+```
+
+Save the output verbatim. **Step 8 compares against these**, and an earlier
+revision of this plan placed that comparison after the write without ever
+taking the reading first — which would have left the plan's central claim, that
+no reported number changes, impossible to demonstrate.
+
 - [ ] **Step 7: Apply, after the coordinator confirms**
 
 Run: `npx vite-node scripts/backfill-purchase-base-quantity.ts --apply`
