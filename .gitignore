@@ -76,7 +76,9 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # Claude Code internal
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/skills/
 
 # WS-1 cleanup: scratch files, generated output, test caches
 scratch/

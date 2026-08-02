@@ -1485,6 +1485,17 @@ scheduled. A report that lists only the intended writes is incomplete.
 Modify `.claude/settings.json` — add a `hooks` key as a sibling of the existing
 `permissions` key. Leave `permissions` exactly as it is.
 
+**Corrected 2026-08-02 after validating against the settings schema.** An earlier
+revision ended each command with a bare `echo`. Per the documented hook
+contract, a command hook's stdout is not shown to the user and is not given to
+the model — *"the UI only shows 'Ran N hooks' if a hook errors or is slow;
+silent success is invisible by design."* A reminder printed that way reaches
+nobody. The audience here is the agent, so the hook must return JSON carrying
+`hookSpecificOutput.additionalContext`, which is injected into model context.
+
+`jq` is **not installed on this machine** — verified — so neither command may
+use it. The reminder text is static, so it is printed directly as JSON.
+
 ```json
   "hooks": {
     "PreToolUse": [
@@ -1493,7 +1504,7 @@ Modify `.claude/settings.json` — add a `hooks` key as a sibling of the existin
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'if grep -q -- \"--apply\" /dev/stdin; then echo \"[rule] Ghi vao du lieu that. Bat buoc: (1) liet ke trigger cua bang dich va noi ro moi cai lam gi voi cac dong bi dung, (2) noi ro tien trinh tu dong nao doc nhung dong trigger sinh ra, (3) chung minh trung tinh tren tung dong va bao ca so luong da so sanh, (4) chu quan duyet lan ghi. Skill: fnbapp-bulk-data-change\"; fi'"
+            "command": "sh -c 'if grep -q -- \"--apply\" /dev/stdin; then printf \"%s\" \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"additionalContext\\\":\\\"[rule] Ghi vao du lieu that. Bat buoc truoc khi chay: (1) liet ke trigger cua bang dich va noi ro moi cai lam gi voi cac dong bi dung, (2) noi ro tien trinh tu dong nao doc nhung dong trigger sinh ra, (3) chung minh trung tinh tren tung dong va bao ca so luong da so sanh, (4) chu quan duyet lan ghi. Skill: fnbapp-bulk-data-change\\\"}}\"; fi'"
           }
         ]
       },
@@ -1502,7 +1513,7 @@ Modify `.claude/settings.json` — add a `hooks` key as a sibling of the existin
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'if grep -q \"supabase/migrations/\" /dev/stdin; then echo \"[rule] Sua cau truc du lieu. Bat buoc: liet ke trigger cua bang dich, va kiem tra migration co nham ten trigger voi ten ham khong (loi da xay ra 2026-07-31). Skill: fnbapp-bulk-data-change\"; fi'"
+            "command": "sh -c 'if grep -q \"supabase/migrations/\" /dev/stdin; then printf \"%s\" \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"additionalContext\\\":\\\"[rule] Sua cau truc du lieu. Bat buoc: liet ke trigger cua bang dich, va kiem tra migration co nham ten trigger voi ten ham khong (loi da xay ra 2026-07-31). Skill: fnbapp-bulk-data-change\\\"}}\"; fi'"
           }
         ]
       }
@@ -1510,29 +1521,79 @@ Modify `.claude/settings.json` — add a `hooks` key as a sibling of the existin
   }
 ```
 
-- [ ] **Step 3: Verify the JSON parses and the hook fires**
+Both commands match on the whole stdin payload rather than one JSON field, so a
+`Bash` command that merely *mentions* `--apply` in a string also fires. That
+over-firing is deliberate: the cost is one redundant reminder, and extracting
+the field precisely would need `jq`.
+
+- [ ] **Step 3: Verify the JSON parses**
 
 Run: `node -e "JSON.parse(require('node:fs').readFileSync('.claude/settings.json','utf8')); console.log('settings.json parses')"`
 Expected: `settings.json parses`
 
-Then, in a fresh session, run any Bash command containing `--apply` (a harmless
-one such as `echo --apply`) and confirm the reminder text appears.
+- [ ] **Step 3b: Pipe-test both commands without waiting for a fresh session**
 
-**If the hook does not fire**, do not fight the hook syntax alone — invoke the
-`update-config` skill, which is the maintained reference for this file's schema,
-and report what it says. The hook shape above is written from the documented
-schema but has not been executed in this repository before.
+A hook's firing needs a session restart, but its *command* does not. Feed each
+one the payload it would receive and check the output is parseable JSON carrying
+the reminder:
 
-- [ ] **Step 4: Verify the skill is discoverable**
+```bash
+echo '{"tool_name":"Bash","tool_input":{"command":"scripts/x.ts --apply"}}' \
+  | sh -c '<the Bash hook command>' \
+  | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).hookSpecificOutput.additionalContext))"
+```
 
-In a fresh session, confirm `fnbapp-bulk-data-change` appears in the available
-skills listing. If it does not, report it — a skill nobody can invoke is worse
-than a document, because it looks like coverage.
+Expected: the reminder text prints. Then confirm the negative case is silent:
+
+```bash
+echo '{"tool_name":"Bash","tool_input":{"command":"git status"}}' | sh -c '<the Bash hook command>'
+```
+
+Expected: no output at all.
+
+Repeat both for the `Edit|Write` hook, substituting
+`{"tool_name":"Edit","tool_input":{"file_path":"supabase/migrations/0052_x.sql"}}`
+and a non-migration path.
+
+- [ ] **Step 3c: Un-ignore what has to be shared**
+
+`.gitignore` blanket-ignored `.claude/`, so neither the hook nor the skill would
+have been visible to git — Task 4 would have committed nothing and been
+completely inert on every machine but one. **This was already narrowed and
+verified by the coordinator 2026-08-02**; confirm rather than repeat it:
+
+```bash
+sed -n '77,84p' .gitignore
+git check-ignore -q .claude/settings.local.json && echo "local still ignored — correct"
+git check-ignore -q .claude/settings.json || echo "settings.json visible — correct"
+```
+
+The rule is `.claude/*` plus `!.claude/settings.json` and `!.claude/skills/`,
+which keeps `settings.local.json` and `worktrees/` ignored. That split matches
+Claude Code's own convention: `settings.json` is shared, `settings.local.json`
+is personal.
+
+- [ ] **Step 4: Report what cannot be verified from inside this session**
+
+Two things need a session that started *after* these files existed:
+
+1. whether the hook actually fires, and
+2. whether `fnbapp-bulk-data-change` appears in the skills listing.
+
+Neither can be established from the session that wrote them. **Say so plainly;
+do not infer working from correct syntax.** Step 3b proves the command is right,
+which is a different claim from the hook being wired up. The coordinator
+verifies both in the next session.
+
+If a later session finds the hook silent while Step 3b passed, the cause is
+documented: the settings watcher only watches directories that already had a
+settings file at session start. The fix is for the owner to open `/hooks` once,
+or restart — no agent can do it for them.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add .claude/skills/fnbapp-bulk-data-change/SKILL.md .claude/settings.json
+git add .gitignore .claude/settings.json .claude/skills/fnbapp-bulk-data-change/SKILL.md
 git commit -m "Claude-Sonnet feat: hook and skill that fire without being remembered
 
 A plan template shares the defect of a rules document -- it only works if
