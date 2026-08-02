@@ -71,6 +71,14 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 |---|---|---|
 | 25 | **The bulk-data hook has never been seen to fire** | `.claude/settings.json` gained a `PreToolUse` hook on 2026-08-02 (Task 4). Its command is proven correct by pipe-test, its JSON parses, and both files are tracked by git. What is *not* established is that the harness runs it: a live test from the coordinator's session produced no injected reminder, which does not distinguish a misconfigured hook from a session that cached settings at start. **Owner action:** `/hooks` is unavailable over Remote Control (tried 2026-08-02), so the remaining route is simply a session started after 2026-08-02 — settings load at session start regardless of how the session is opened. In that session, run any command containing `--apply` and say whether the reminder appears. Same for whether `fnbapp-bulk-data-change` shows in the skills listing. |
 
+## Chuong trinh quy tac va cau truc
+
+| # | Item | Why open |
+|---|---|---|
+| 26 | **Phase 2 — business rules as tests** | Deferred 2026-08-02. It would encode a COGS calculation the owner is about to replace. The display-rounding half does not depend on the calculation and could be written earlier if wanted. Spec: `docs/superpowers/specs/2026-08-01-working-rules-and-repo-structure-design.md`. |
+| 27 | **Phase 3 — repository restructure by business domain** | Deferred 2026-08-02, owner sequenced the COGS calculation change first because it lands on `mac-cogs` and `inventory-consumption`, two of the three domain hubs. Dependency map already measured and kept: `docs/audits/2026-08-02-lib-dependency-map.md` — 78 modules, only 3 unreferenced, and the tangle is infrastructure rather than cross-domain, so the split is feasible. Resume after the calculation change lands. |
+| 28 | **Phase 4 — UI/UX rules** | Deferred by owner decision until after the restructure. 28 pages, 15+ inconsistent empty-state patterns measured 2026-07-06. |
+
 ## Tracking debt
 
 | # | Item | Why open |
