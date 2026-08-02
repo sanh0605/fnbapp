@@ -65,7 +65,7 @@ Hỗ trợ nhiều thương hiệu, nhiều chi nhánh hoặc nhượng quyền 
 - Chủ doanh nghiệp phê duyệt phạm vi kinh doanh, quy tắc vận hành và mọi thay đổi dữ liệu sản xuất có rủi ro.
 - [`docs/BUSINESS-RULES.md`](docs/BUSINESS-RULES.md) là cửa vào cho các quy tắc đã duyệt.
 - [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md) là nguồn duy nhất cho việc còn chờ làm.
-- [`docs/COMPLETED.md`](docs/COMPLETED.md) là mục lục kết quả đã hoàn tất.
+- [`DEVELOPMENT-TRACKING.md`](DEVELOPMENT-TRACKING.md) là biên niên kết quả đã hoàn tất.
 - [`DEVELOPMENT-TRACKING.md`](DEVELOPMENT-TRACKING.md) lưu nhật ký kỹ thuật chi tiết.
 - Tài liệu audit, kế hoạch phục hồi và biên bản cũ được giữ làm bằng chứng; chúng không tự động trở thành hướng dẫn hiện hành.
 

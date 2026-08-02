@@ -1,6 +1,13 @@
-# Completed Work Archive
+# Completed Work Archive (CLOSED)
 
-Compact 1-line-per-task archive of finished work. Detailed entries remain in `DEVELOPMENT-TRACKING.md` (chronicle log, newest first).
+**Closed 2026-08-02. Nothing is added here any more.**
+`DEVELOPMENT-TRACKING.md` is the live chronicle and the only place completed
+work is recorded from now on.
+
+This file is kept rather than deleted because it is the sole record of some
+work — the 2026-07-20 repository reorganization and the 2026-07-11 `U2` UI
+sweep appear nowhere else. It was fed by a "move the row here when done" step
+in the old roadmap, which nobody performed after 2026-07-22.
 
 ## 2026-07-22
 

@@ -15,7 +15,7 @@ Hệ thống có nền tảng bán hàng, nhập hàng, tồn kho, giá vốn, b
 This catalog will become the evidence-backed inventory of business capabilities. It is separate from:
 
 - [`OPEN-ITEMS.md`](OPEN-ITEMS.md), which tracks pending work;
-- [`COMPLETED.md`](COMPLETED.md), which indexes completed outcomes;
+- [`../DEVELOPMENT-TRACKING.md`](../DEVELOPMENT-TRACKING.md), which chronicles completed outcomes;
 - [`../ARCHITECTURE.md`](../ARCHITECTURE.md), which describes system boundaries;
 - audit evidence, which proves a specific check at a specific time.
 
