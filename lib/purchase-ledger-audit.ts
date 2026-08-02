@@ -10,7 +10,7 @@ type RawPurchaseOrder = {
   created_at?: string;
 };
 
-type RawPurchaseOrderLine = {
+export type RawPurchaseOrderLine = {
   id: string;
   po_id?: string;
   purchase_order_id?: string;
@@ -29,7 +29,7 @@ type RawPurchasedItem = {
   base_ingredient_id?: string;
 };
 
-type RawConversion = {
+export type RawConversion = {
   id: string;
   purchased_item_id?: string;
   purchased_unit?: string;
@@ -190,7 +190,7 @@ export function auditPurchaseLedger(input: {
   };
 }
 
-function resolveConversion(
+export function resolveConversion(
   line: RawPurchaseOrderLine,
   conversions: RawConversion[],
   conversionMap: Map<string, RawConversion>,
@@ -310,7 +310,7 @@ function getPoId(line: RawPurchaseOrderLine): string {
   return line.po_id || line.purchase_order_id || "";
 }
 
-function getPurchasedItemId(line: RawPurchaseOrderLine): string {
+export function getPurchasedItemId(line: RawPurchaseOrderLine): string {
   return line.purchased_item_id || line.item_id || "";
 }
 
