@@ -257,11 +257,40 @@ export function computeBaseQuantity(
 Run: `npx vitest run lib/purchase-line-base-quantity.test.ts && npx vitest run && npx tsc --noEmit`
 Expected: 5 new tests pass, 958 total, 0 type errors.
 
+**Two findings from the challenge round, both verified, both binding.**
+
+**Write the column directly. Never through `savePurchaseOrderAtomic`.** Migration
+`0006` has that RPC `delete from public.stock_ledger ... where transaction_type
+= 'PO_RECEIPT'` and re-insert. Routing the backfill through the ordinary save
+path would replace every receipt row of every touched order with new ids —
+identical amounts, different rows — which is a change, and this task claims to
+make none. Raised by the implementer during the challenge; confirmed in the
+migration.
+
+**The source of the zeros is still in the code, and this task does not close
+it.** `lib/purchase-order-write-plan.ts:92-94` computes
+`quantity * (Number(draftConversion?.conversion_rate) || 0)`. When a conversion
+fails to resolve it multiplies by zero rather than refusing, which is exactly
+how a purchase line ends up recording money with no quantity.
+
+Measured 2026-08-02: 94 of the 95 zero lines were created in June, one on
+2026-07-01 (Trứng gà, 60 units, 132.000đ, conversion `QD-052` present, not a
+non-inventory item — so a real instance, not a legitimate exception). All 42
+July lines carry correct values. The writer therefore appears to have been fixed
+around the June-July boundary, but **the `|| 0` fallback survives**, so a
+resolution failure would silently produce a 96th zero.
+
+Closing that hole means making a save fail where it currently succeeds quietly —
+a behaviour change, which Plan A forbids. It is recorded here and as an open
+item so that fixing 95 rows is not mistaken for fixing the cause.
+
 - [ ] **Step 5: Write the backfill script**
 
 Create `scripts/backfill-purchase-base-quantity.ts`. Dry-run by default,
 `--apply` to write. It must, in this order:
 
+0. Write with a direct `update` on `purchase_order_lines`. Do not call
+   `savePurchaseOrderAtomic` or anything that reaches it.
 1. Load every `purchase_order_lines` row with `base_quantity` falsy, plus
    `uom_conversions` and `purchased_items`.
 2. Resolve each line's conversion using the same rules as
