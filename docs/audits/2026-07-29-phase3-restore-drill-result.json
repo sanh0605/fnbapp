@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T14:04:32.811Z",
+  "generated_at": "2026-08-02T08:25:17.664Z",
   "verdict": "PASS",
   "row_count_diffs": [
     {
@@ -68,8 +68,8 @@
     {
       "table": "recipes",
       "baseline": 130,
-      "production_now": 130,
-      "restored": 130,
+      "production_now": 139,
+      "restored": 139,
       "delta_vs_production": 0
     },
     {
@@ -82,29 +82,29 @@
     {
       "table": "base_ingredients",
       "baseline": 45,
-      "production_now": 45,
-      "restored": 45,
+      "production_now": 46,
+      "restored": 46,
       "delta_vs_production": 0
     },
     {
       "table": "semi_products",
       "baseline": 13,
-      "production_now": 13,
-      "restored": 13,
+      "production_now": 17,
+      "restored": 17,
       "delta_vs_production": 0
     },
     {
       "table": "purchased_items",
       "baseline": 51,
-      "production_now": 51,
-      "restored": 51,
+      "production_now": 52,
+      "restored": 52,
       "delta_vs_production": 0
     },
     {
       "table": "uom_conversions",
       "baseline": 56,
-      "production_now": 56,
-      "restored": 56,
+      "production_now": 57,
+      "restored": 57,
       "delta_vs_production": 0
     },
     {
@@ -117,43 +117,43 @@
     {
       "table": "orders_v2",
       "baseline": 1798,
-      "production_now": 1801,
-      "restored": 1801,
+      "production_now": 1854,
+      "restored": 1854,
       "delta_vs_production": 0
     },
     {
       "table": "order_lines_v2",
       "baseline": 2553,
-      "production_now": 2556,
-      "restored": 2556,
+      "production_now": 2627,
+      "restored": 2627,
       "delta_vs_production": 0
     },
     {
       "table": "order_events",
       "baseline": 1814,
-      "production_now": 1817,
-      "restored": 1817,
+      "production_now": 1871,
+      "restored": 1871,
       "delta_vs_production": 0
     },
     {
       "table": "stock_ledger",
       "baseline": 12107,
-      "production_now": 12116,
-      "restored": 12116,
+      "production_now": 10395,
+      "restored": 10395,
       "delta_vs_production": 0
     },
     {
       "table": "purchase_orders",
       "baseline": 61,
-      "production_now": 61,
-      "restored": 61,
+      "production_now": 62,
+      "restored": 62,
       "delta_vs_production": 0
     },
     {
       "table": "purchase_order_lines",
       "baseline": 136,
-      "production_now": 136,
-      "restored": 136,
+      "production_now": 137,
+      "restored": 137,
       "delta_vs_production": 0
     },
     {
@@ -208,8 +208,8 @@
     {
       "table": "data_recovery_changes",
       "baseline": 31132,
-      "production_now": 31132,
-      "restored": 31132,
+      "production_now": 46094,
+      "restored": 46094,
       "delta_vs_production": 0
     },
     {
@@ -222,15 +222,15 @@
     {
       "table": "backdated_ledger_events",
       "baseline": 1898,
-      "production_now": 1898,
-      "restored": 1953,
-      "delta_vs_production": 55
+      "production_now": 1910,
+      "restored": 3175,
+      "delta_vs_production": 1265
     },
     {
       "table": "order_payments",
       "baseline": 205,
-      "production_now": 208,
-      "restored": 208,
+      "production_now": 261,
+      "restored": 261,
       "delta_vs_production": 0
     },
     {
@@ -264,15 +264,15 @@
     {
       "table": "backdated_recipe_events",
       "baseline": 2,
-      "production_now": 2,
-      "restored": 130,
-      "delta_vs_production": 128
+      "production_now": 134,
+      "restored": 137,
+      "delta_vs_production": 3
     },
     {
       "table": "purchase_order_edits",
       "baseline": 1,
-      "production_now": 1,
-      "restored": 1,
+      "production_now": 2,
+      "restored": 2,
       "delta_vs_production": 0
     },
     {
