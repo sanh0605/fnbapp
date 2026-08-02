@@ -65,6 +65,12 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 | 15 | Physical stocktake | Owner moved it behind Phase 7, to be the last act before expansion. |
 | 16 | Shift and cash reconciliation (`FC-3`) | Owner deferred: no staff yet. |
 
+## Chua xac minh duoc tu ben trong
+
+| # | Item | Why open |
+|---|---|---|
+| 20 | **The bulk-data hook has never been seen to fire** | `.claude/settings.json` gained a `PreToolUse` hook on 2026-08-02 (Task 4). Its command is proven correct by pipe-test, its JSON parses, and both files are tracked by git. What is *not* established is that the harness runs it: a live test from the coordinator's session produced no injected reminder, which does not distinguish a misconfigured hook from a session that cached settings at start. **Owner action:** open `/hooks` once, or start a new session, then run any command containing `--apply` and say whether the reminder appears. Same for whether `fnbapp-bulk-data-change` shows in the skills listing. |
+
 ## Tracking debt
 
 | # | Item | Why open |
