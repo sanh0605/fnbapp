@@ -26,7 +26,7 @@ No route, action, RPC, or Edge Function should be called secure solely because t
 
 - One business brand at one operating shop.
 - Brand/outlet-specific isolation is not a verified current control.
-- Multi-brand, multi-outlet, and franchise access are future scope in [`ROADMAP.md`](ROADMAP.md).
+- Multi-brand, multi-outlet, and franchise access are future scope in [`OPEN-ITEMS.md`](OPEN-ITEMS.md).
 - Cross-shop permissions must be designed before the operating scope expands.
 
 ## Business roles
@@ -130,7 +130,7 @@ These observations do not prove every Server Action, RPC, API route, or Edge Fun
 | 2 | Direct invocation without a session | `GAP`: 3 POS mutations and 21 reads lack a rejecting local guard; guarded rows have source-level early-exit evidence |
 | 3 | Wrong-role invocation | `PARTIAL/GAP`: 56 mutations have matching local gates; `submitStockAdjustment` accepts any authenticated technical role; unguarded admin reads have no local role gate |
 | 4 | Brand/shop/outlet data scope | Open; one-shop operation does not prove future multi-branch isolation |
-| 5 | RPC execution and privileged server-client use | `EVIDENCE_BACKED` for current live state: 16 live repository RPCs (10 at Gate 3 Phase A, +6 from Gate 4 Phase B's atomic-write conversions, 2026-07-19) are service-role-only; `exec_sql` is absent; the server client intentionally bypasses RLS. G3-A7 (Gate 3 Phase A, Low severity): every service-role-only RPC body has no internal caller/role check of its own — the database EXECUTE grant is the sole backstop, not defense-in-depth. Claude judgment (2026-07-19, technical call, not escalated): acceptable as-is since the grant boundary is the intentional design (server-only architecture), revisit adding an internal check only if an RPC's grant is ever widened beyond `service_role`. Phase B grant/RLS hardening (G3-A4/A5/A6) remains separately scoped, see `docs/ROADMAP.md`. |
+| 5 | RPC execution and privileged server-client use | `EVIDENCE_BACKED` for current live state: 16 live repository RPCs (10 at Gate 3 Phase A, +6 from Gate 4 Phase B's atomic-write conversions, 2026-07-19) are service-role-only; `exec_sql` is absent; the server client intentionally bypasses RLS. G3-A7 (Gate 3 Phase A, Low severity): every service-role-only RPC body has no internal caller/role check of its own — the database EXECUTE grant is the sole backstop, not defense-in-depth. Claude judgment (2026-07-19, technical call, not escalated): acceptable as-is since the grant boundary is the intentional design (server-only architecture), revisit adding an internal check only if an RPC's grant is ever widened beyond `service_role`. Phase B grant/RLS hardening (G3-A4/A5/A6/A8) was closed and moved to `docs/COMPLETED.md`, per `DEVELOPMENT-TRACKING.md`. |
 | 6 | API route and Edge Function authentication | API inventory evidence-backed with 0 undocumented gaps; Edge Functions remain partial as recorded in the Gate 2 report |
 | 7 | Sensitive-field serialization/logging | Gate 1 closed the named credential leak; broad review remains open |
 | 8 | SYSTEM/CLI-only paths | `GAP`: unauthenticated POS fallback can currently obtain SYSTEM attribution |
@@ -144,7 +144,7 @@ Only rows with reproducible failure-path evidence should become `VERIFIED`. Gate
 - [`../ARCHITECTURE.md`](../ARCHITECTURE.md) — runtime/trust boundaries
 - [`BUSINESS-RULES.md`](BUSINESS-RULES.md) — approved access and write-safety rules
 - [`FEATURE-CATALOG.md`](FEATURE-CATALOG.md) — capability evidence
-- [`ROADMAP.md`](ROADMAP.md) — pending access remediation and future security work
+- [`OPEN-ITEMS.md`](OPEN-ITEMS.md) — pending access remediation and future security work
 - [`audits/2026-07-18-gate2-access-map.md`](audits/2026-07-18-gate2-access-map.md) — per-action, API-route, Edge Function, and SYSTEM evidence
 - [`audits/2026-07-19-gate3-database-rls-audit.md`](audits/2026-07-19-gate3-database-rls-audit.md) — live RLS, table grants, RPC execution grants, and browser-key evidence
 - [`../CLAUDE.md`](../CLAUDE.md) — risk-boundary rules and production-write protocol

@@ -105,6 +105,12 @@ its own direct MAC is 0, which `PRODUCTION_YIELD` always writes as). Final
 state reverified clean: 209 mismatches (same stable baseline), 0 VND P&L/MAC
 delta, 22,904,406 VND total COGS unchanged.
 
-**Still open**: the 66 unexplained orders and the 119 mismatches from the
-separate low-cost-ingredient root cause (see `COGS-4` in `docs/ROADMAP.md`)
--- neither was touched, both are low financial risk but not yet root-caused.
+**Still open at the time of this entry**: the 66 unexplained orders and the
+119 mismatches from the separate low-cost-ingredient root cause, logged as
+`COGS-4` in `DEVELOPMENT-TRACKING.md` (never its own tracked row in
+`docs/ROADMAP.md`) -- neither was touched here. The later Clean Rebuild
+Program (`REBUILD-PHASE4`/`REBUILD-PHASE5`, `docs/ROADMAP.md` P1, now in
+`docs/COMPLETED.md`) replayed full history with a different engine and
+reported 0 remaining mismatches; whether that supersedes this specific
+COGS-4 population was not independently re-verified while repointing this
+reference.

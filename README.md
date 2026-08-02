@@ -16,7 +16,7 @@ Danh sách tính năng và mức độ xác minh được quản lý tại [`doc
 - Giá vốn đơn hàng được chốt tại thời điểm bán và báo cáo theo phương pháp MAC.
 - Sao lưu toàn bộ dữ liệu chạy hằng ngày sang Google Drive theo chính sách đã duyệt.
 
-Các kế hoạch mở rộng nhiều chi nhánh, nhượng quyền và bán hàng offline được theo dõi trong [`docs/ROADMAP.md`](docs/ROADMAP.md), không được mô tả là đã hoàn thành.
+Các kế hoạch mở rộng nhiều chi nhánh, nhượng quyền và bán hàng offline được theo dõi trong [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md), không được mô tả là đã hoàn thành.
 
 ## Technical stack
 
@@ -85,7 +85,7 @@ Operational rules are defined in [`docs/BUSINESS-RULES.md`](docs/BUSINESS-RULES.
 | [`docs/FEATURE-CATALOG.md`](docs/FEATURE-CATALOG.md) | Feature inventory and evidence status |
 | [`docs/BUSINESS-RULES.md`](docs/BUSINESS-RULES.md) | Approved operating rules and unresolved decisions |
 | [`docs/ACCESS-MODEL.md`](docs/ACCESS-MODEL.md) | Intended roles versus observed/verified enforcement |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Pending work and priorities |
+| [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md) | Pending work and priorities |
 | [`docs/COMPLETED.md`](docs/COMPLETED.md) | Completed-outcome index |
 | [`docs/TESTING.md`](docs/TESTING.md) | Test strategy, commands, and evidence gates |
 | [`CLAUDE.md`](CLAUDE.md) | Working rules, risk boundaries, and where to look |

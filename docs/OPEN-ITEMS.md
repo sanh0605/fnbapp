@@ -70,3 +70,78 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 | # | Item | Why open |
 |---|---|---|
 | 17 | **285 unticked checkboxes across 12 plan files**, most describing finished work | The plans cannot be read to find what is left — the one job they had between sessions. Fix forward: tick as you go, and add a status banner to closed plans. Do not retroactively tick boxes nobody verified. |
+
+## Migrated from ROADMAP.md, now deleted (Task 3b, 2026-08-01)
+
+The old roadmap file is gone as of this task — see `DEVELOPMENT-TRACKING.md`
+for the closed-row count. These 6 rows were its only genuinely open items (`[ ]`
+or `[~X]`, not folded into a later closed task).
+
+| # | Item | Why open |
+|---|---|---|
+| 18 | **`INV-COUNT-1` — periodic guided stocktake, stranded** | Phase S1 shipped (commit `88774a0`); migration `0036_stocktake_sessions.sql` written but never applied to production; phase S2 never started. Assigned to Codex, who no longer exists — nobody is holding it. **Relationship to item 15 needs a decision, not a merge**: item 15 is the business decision to defer stocktake behind Phase 7; this is the half-built *tooling* for it. They may be the same thing at two altitudes, or a business deferral plus abandoned code that needs its own call (finish it, discard it, or leave it stranded). Raised for the coordinator, not resolved here. |
+| 19 | **`COGS-1-FOLLOWUP` — `CRON_SECRET` missing in Vercel** | `app/api/cron/apply-backdated-corrections/route.ts:38` returns 401 and does nothing without it — owner action in Vercel settings, cannot be set from here. **Tension with item 2b, found while migrating this row**: item 2b assumes "the false alerts still sitting `PENDING` are re-dry-run by the cron every night." Read the route directly — without `CRON_SECRET` set, every invocation 401s before touching any event, so if it was never set, the cron has never actually run and item 2b's 115-of-132-predicted-to-self-clear estimate may not be happening at all. Not verified either way here — flagging the contradiction, not resolving it. |
+| 20 | **`H1` — 40 local commits not pushed** | Push when the owner asks. Earlier tracking said "41+"; real count as of 2026-08-01 is **40** commits ahead of `origin/main`. |
+| 21 | **`OPS-CONT-1` — operational continuity audit never run** | Single-owner dependency on the Vercel/Supabase/Google/GitHub accounts: recovery paths, 2FA, what happens if one is lost — never audited in any gate. Needs one session with the owner; output is a plain-Vietnamese runbook kept outside the repo, no secrets stored in it. |
+| 22 | **`INFRA-UPGRADE-1` — Next.js 14→16, not started** | Carries `DEP-1`'s remaining `next` advisories, only fixed in `next@16`. Needs owner go-ahead. Full regression bar before merge: `tsc`, full suite, `next build`, P&L/MAC 0-delta audit, live smoke test. |
+| 23 | **`V1` — first real operator backdate verify** | Waiting on the operator to backdate a purchase order in the real UI (weekly frequency, per the original user interview). Walk through: list → detail → approve → confirm drift = 0. |
+
+## Future direction (owner priority, set 2026-07-18/19 — sequencing only)
+
+Owner-stated long-term direction, in order. Nothing below starts until the
+phase before it is done; do not begin implementation on any of these without
+a fresh, explicit go-ahead even after the prior phase closes — this records
+intent and order, not authorization to start.
+
+1. **Finish current work** — the eight-gate audit. **Done**: all 8 gates closed
+   (see `DEVELOPMENT-TRACKING.md`).
+2. **Repository file/folder reorganization** — done 2026-07-20, but that pass
+   was docs-and-scripts cleanup only (56 scripts deleted, docs consolidated).
+   It is **not** the application-code restructure planned as phase 3 of the
+   current working-rules program — that restructure has not started.
+3. **Feature-completeness pass** — plan and close gaps so the single-shop
+   system fully covers: inventory control, cash in/out control, sales
+   reports, order reports, financial reports, and stock reports. Likely
+   overlaps with `docs/FEATURE-CATALOG.md` findings and the deferred
+   17-section F&B checklist (item 11 above) — reconcile rather than
+   duplicate when this phase starts.
+4. **UI/UX upgrade and frontend unification** — after feature completeness,
+   not before; a consistent UI on top of incomplete features would need
+   rework.
+5. **Multi-branch management** — first of the two expansion features. Needs
+   outlet entity, data isolation, outlet-scoped roles, consolidated
+   reporting design (see `docs/FEATURE-CATALOG.md` `ORG-MULTI-OUTLET`).
+6. **Full permissions and security hardening** — done once the system's
+   shape through multi-branch is known, to avoid designing the permission
+   model twice. Distinct from the eight closed security gates, which stay
+   scoped to the current single-shop system; this phase is the full
+   `docs/ACCESS-MODEL.md` Phase 3 verification plus whatever multi-branch
+   roles add.
+7. **Franchise management** — moved to last (owner decision 2026-07-19): not
+   yet certain this gets built at all, so nothing before it should be
+   designed around it, including the security-hardening phase. If approved
+   later, its tenant-isolation needs get their own follow-up security
+   review at that time.
+
+## Out of scope (do not start without explicit approval)
+
+- **Negative stock recovery** — needs a physical count decision from the
+  owner. Figures here go stale fast; the current state is whatever the most
+  recent rebuild audit says, not a number copied into this file. Most recent:
+  `docs/audits/2026-07-29-phase4-rebuild-dryrun.json` /
+  `-apply.json` (Phase 4 full-history rebuild) — as of that pass, the only
+  remaining negative was Muối hồng, -14.39 g, root-caused to a purchase never
+  entered under its correct item mapping.
+- **Franchise system** — see "Future direction" above; comes after
+  multi-branch, needs design + business rules (multi-tenant RLS, franchisee
+  role, outlet management).
+- **Multi-branch system** — see "Future direction" above; comes after the
+  feature-completeness pass and UI/UX unification, needs design + business
+  rules (outlet entity, data isolation, outlet-scoped roles).
+- **Historical data rewrite** — any rewrite of pre-2026-07 data requires
+  explicit owner approval, dry-run, atomic transaction, and verification.
+- **Auth system overhaul** — the placeholder "admin" reviewer in the backdate
+  UI is a known gap, but full auth is separate scope; see "Future direction"
+  item 6, deliberately last.
+- **17-section F&B capability checklist** — deferred from the pre-audit
+  phase; needs owner per-item priority classification when scheduled.
