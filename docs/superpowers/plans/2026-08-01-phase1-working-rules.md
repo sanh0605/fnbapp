@@ -1250,15 +1250,17 @@ npx vite-node scripts/check-rules-current.ts && npx vitest run && npx tsc --noEm
 ```
 
 Expected: checker clean, suite green, 0 type errors. Then confirm no living
-document still points at the deleted archive:
+document still routes a reader to the closed archive:
 
 ```bash
 git grep -n "COMPLETED\.md" -- . \
-  ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers' ':!DEVELOPMENT-TRACKING.md'
+  ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers' \
+  ':!DEVELOPMENT-TRACKING.md' ':!docs/COMPLETED.md'
 ```
 
-Expected: no matches. `DEVELOPMENT-TRACKING.md` is excluded by pathspec —
-its mentions live inside dated entries and stay.
+Expected: no matches. Two pathspecs exclude what must stay:
+`DEVELOPMENT-TRACKING.md`, whose mentions sit inside dated entries, and
+`docs/COMPLETED.md` itself, which now names itself in its own closing banner.
 
 - [ ] **Step 6: Commit**
 
