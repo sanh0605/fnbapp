@@ -69,7 +69,7 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 
 | # | Item | Why open |
 |---|---|---|
-| 25 | **The bulk-data hook has never been seen to fire** | `.claude/settings.json` gained a `PreToolUse` hook on 2026-08-02 (Task 4). Its command is proven correct by pipe-test, its JSON parses, and both files are tracked by git. What is *not* established is that the harness runs it: a live test from the coordinator's session produced no injected reminder, which does not distinguish a misconfigured hook from a session that cached settings at start. **Owner action:** open `/hooks` once, or start a new session, then run any command containing `--apply` and say whether the reminder appears. Same for whether `fnbapp-bulk-data-change` shows in the skills listing. |
+| 25 | **The bulk-data hook has never been seen to fire** | `.claude/settings.json` gained a `PreToolUse` hook on 2026-08-02 (Task 4). Its command is proven correct by pipe-test, its JSON parses, and both files are tracked by git. What is *not* established is that the harness runs it: a live test from the coordinator's session produced no injected reminder, which does not distinguish a misconfigured hook from a session that cached settings at start. **Owner action:** `/hooks` is unavailable over Remote Control (tried 2026-08-02), so the remaining route is simply a session started after 2026-08-02 — settings load at session start regardless of how the session is opened. In that session, run any command containing `--apply` and say whether the reminder appears. Same for whether `fnbapp-bulk-data-change` shows in the skills listing. |
 
 ## Tracking debt
 
