@@ -59,7 +59,7 @@ sweep in Task 3 (is the list of 11 living documents actually complete?).
 | `docs/COLLABORATION.md` (delete), `AGENTS.md` (delete) | — | 3 |
 | 10 living docs + 3 code comments (modify) | Repoint references away from the deleted files | 3 |
 | `docs/OPEN-ITEMS.md` (modify), `docs/ROADMAP.md` (delete) | Collapse two competing pending-work lists into one | 3b |
-| `docs/COMPLETED.md` (delete), `README.md` (modify) | One completed-work log, one scope statement, one signpost | 3c |
+| `docs/COMPLETED.md` (close, not delete), `README.md` (modify) | One live log, one scope statement, one signpost | 3c |
 | `.claude/skills/fnbapp-bulk-data-change/SKILL.md` (create) | The bulk-data-change procedure, surfaced by description match | 4 |
 | `.claude/settings.json` (modify) | Hook that fires on `--apply` commands and migration edits | 4 |
 | `.husky/pre-commit` (modify) | Run the checker alongside `tsc` | 5 |
@@ -1101,7 +1101,33 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 Three overlaps found 2026-08-01 while answering "what files will remain".
 
-- [ ] **Step 1: Prove `COMPLETED.md` holds nothing unique before deleting it**
+**REVISED 2026-08-02, after Step 1 ran. The file is no longer deleted.**
+
+Step 1 did its job and stopped the task. Sampling found entries that exist
+**only** in `docs/COMPLETED.md`: the 2026-07-20 post-audit repository
+reorganization (all five commit hashes absent from `DEVELOPMENT-TRACKING.md`)
+and the 2026-07-11 `U2` UI consistency sweep (its only trace elsewhere is a
+"next session candidates" line, which is a plan, not a record).
+
+One reported miss was not one: `REBUILD-1` **is** recorded, at
+`DEVELOPMENT-TRACKING.md:976`, under the label `COGS-6` with matching figures
+(5,491 entries, 1,352 orders, 703 cost lines, 173,526 VND). It was searched for
+by label rather than by substance. Two of six orphaned, not three.
+
+The premise this task rested on — that the file is a pure summary of a fuller
+record — is false regardless. So:
+
+**Do not delete `docs/COMPLETED.md`. Close it instead.** Its content is not
+copied into `DEVELOPMENT-TRACKING.md`: transcribing several 500-700 word entries
+by hand risks losing exactly the detail that makes them worth keeping, for a
+cosmetic gain. Declaring the file closed solves the actual problem — two logs
+competing to be the live one — because a closed archive competes with nothing.
+
+The governance file count therefore ends at **13, not the 12 stated earlier**.
+`docs/COMPLETED.md` is deliberately **not** added to `CLAUDE.md` section 10:
+listing it would invite people to use it, and it is inert.
+
+- [ ] **Step 1 (done): the sampling that stopped the deletion**
 
 `docs/COMPLETED.md`'s own first line says it is a "compact 1-line-per-task
 archive" whose "detailed entries remain in `DEVELOPMENT-TRACKING.md`". Two
@@ -1127,14 +1153,26 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
   chi tiết hơn. Nếu KHÔNG có -> DỪNG, đừng xoá file.
 ```
 
-- [ ] **Step 2: Delete it and repoint what pointed at it**
+- [ ] **Step 2: Close the archive and repoint what pointed at it**
 
-```bash
-git grep -ln "COMPLETED\.md" -- . ':!docs/handoffs' ':!docs/audits' ':!docs/superpowers'
-git rm docs/COMPLETED.md
+Replace the header of `docs/COMPLETED.md` — the first three lines, up to and
+including its current one-line description — with:
+
+```markdown
+# Completed Work Archive (CLOSED)
+
+**Closed 2026-08-02. Nothing is added here any more.**
+`DEVELOPMENT-TRACKING.md` is the live chronicle and the only place completed
+work is recorded from now on.
+
+This file is kept rather than deleted because it is the sole record of some
+work — the 2026-07-20 repository reorganization and the 2026-07-11 `U2` UI
+sweep appear nowhere else. It was fed by a "move the row here when done" step
+in the old roadmap, which nobody performed after 2026-07-22.
 ```
 
-Repoint living documents to `DEVELOPMENT-TRACKING.md`. The reference set,
+Then repoint every living document that still points here **as a place to
+look**, so nothing routes a reader to a closed archive. The reference set,
 re-verified 2026-08-01:
 
 ```
