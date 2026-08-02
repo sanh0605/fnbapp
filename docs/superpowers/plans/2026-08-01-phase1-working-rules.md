@@ -60,6 +60,7 @@ sweep in Task 3 (is the list of 11 living documents actually complete?).
 | 10 living docs + 3 code comments (modify) | Repoint references away from the deleted files | 3 |
 | `docs/OPEN-ITEMS.md` (modify), `docs/ROADMAP.md` (delete) | Collapse two competing pending-work lists into one | 3b |
 | `docs/COMPLETED.md` (close, not delete), `README.md` (modify) | One live log, one scope statement, one signpost | 3c |
+| `docs/operations/**` (modify), `scripts/check-rules-current.ts` (modify) | Living runbooks join the checker; four stale paths fixed | 3d |
 | `.claude/skills/fnbapp-bulk-data-change/SKILL.md` (create) | The bulk-data-change procedure, surfaced by description match | 4 |
 | `.claude/settings.json` (modify) | Hook that fires on `--apply` commands and migration edits | 4 |
 | `.husky/pre-commit` (modify) | Run the checker alongside `tsc` | 5 |
@@ -1289,6 +1290,121 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
+### Task 3d: Bring `docs/operations/` under the checker
+
+**Files:**
+- Modify: `docs/operations/implicit-production-quantity-correction-playbook.md`
+- Modify: `docs/operations/backdated-cost-events-playbook.md`
+- Modify: `docs/operations/orders-v2-cutover.md`
+- Modify: `scripts/check-rules-current.ts`
+
+**Interfaces:**
+- Consumes: the checker from Task 1.
+- Produces: nothing other tasks consume.
+
+`docs/operations/` holds living runbooks and has been missed **three times in
+two days**: absent from Task 3's living-document list, absent from Task 3c's,
+and — after Task 3b deleted `docs/ROADMAP.md` — left holding two references to a
+file that no longer exists, one of which Task 3b's own repointing edit
+introduced. Task 3b has no equivalent of Task 3's Step 5 verification, which is
+why nothing caught it.
+
+Four dead paths exist across its four files, measured 2026-08-02. That is the
+whole cleanup, which is what makes covering the directory cheap now. This is not
+a reversal of the earlier decision to keep the checker narrow: that objection
+was measured at ~230 false hits inside `DEVELOPMENT-TRACKING.md`, a chronicle.
+These are living runbooks with four real staleness bugs.
+
+- [ ] **Step 1: Fix the two references we broke**
+
+In `docs/operations/implicit-production-quantity-correction-playbook.md`, lines
+111-112 cite `docs/ROADMAP.md` twice — once as "never its own tracked row in
+`docs/ROADMAP.md`", once as "`docs/ROADMAP.md` P1". Task 3b deleted that file.
+
+Rewrite both so they state the same facts without pointing at a deleted
+location: `COGS-4` never had a tracked row of its own, and the Clean Rebuild
+Program's `REBUILD-PHASE4`/`REBUILD-PHASE5` are recorded in
+`docs/COMPLETED.md`. Do not assert that the rebuild supersedes the COGS-4
+population — the existing text deliberately declines to claim that, and nothing
+has verified it since.
+
+- [ ] **Step 2: Fix the three pre-existing dead paths**
+
+| File | Dead path | Fix |
+|---|---|---|
+| `backdated-cost-events-playbook.md` | `supabase/migrations/0014` | Use the full filename; the migration exists under a longer name |
+| `backdated-cost-events-playbook.md` | `supabase/migrations/0027` | Same |
+| `orders-v2-cutover.md` | `lib/report-utils.ts` | The file no longer exists. Find what replaced it and cite that; if nothing did, say so in prose without a backticked path |
+
+Confirm each replacement resolves before moving on. Do not invent a path.
+
+- [ ] **Step 3: Add the directory to the checker**
+
+In `scripts/check-rules-current.ts`, replace the fixed `RULE_DOCS` array with
+the same three documents plus every `.md` under `docs/operations/`, read at
+runtime so a new runbook is covered the day it is added:
+
+```ts
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
+
+// Living runbooks join the fixed set. Read from disk rather than listed, so a
+// new one is covered the day it appears -- this directory was missed three
+// times in two days precisely because it lived in nobody's list.
+const OPERATIONS_DIR = "docs/operations";
+const operationsDocs = readdirSync(join(process.cwd(), OPERATIONS_DIR))
+  .filter(name => name.endsWith(".md"))
+  .map(name => `${OPERATIONS_DIR}/${name}`);
+
+const RULE_DOCS = [
+  "CLAUDE.md",
+  "docs/BUSINESS-RULES.md",
+  "docs/OPEN-ITEMS.md",
+  ...operationsDocs,
+];
+```
+
+The `no-retired-agents` check stays scoped to `CLAUDE.md` and is unaffected.
+
+- [ ] **Step 4: Verify**
+
+```bash
+npx vite-node scripts/check-rules-current.ts; echo "EXIT=$?"
+npx vitest run && npx tsc --noEmit
+```
+
+Expected: three PASS lines and `EXIT=0`. If `paths-exist` still fails, a
+replacement in Steps 1-2 does not resolve — fix the reference, never the
+checker.
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  Trước khi sửa, checker phải báo ĐÚNG 4 đường dẫn chết:
+    supabase/migrations/0014, supabase/migrations/0027,
+    docs/ROADMAP.md, lib/report-utils.ts
+  Nếu nó báo ÍT hơn 4 -> danh sách file chưa được đọc đúng. DỪNG.
+```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add docs/operations scripts/check-rules-current.ts
+git commit -m "Claude-Sonnet fix: docs/operations joins the checker, four stale paths fixed
+
+This directory was missed three times in two days -- by Task 3's living-document
+list, by Task 3c's, and by Task 3b, which deleted docs/ROADMAP.md and left two
+references to it here, one of them introduced by its own repointing edit. Task
+3b has no equivalent of Task 3's Step 5, which is why nothing caught it.
+
+Four dead paths across four runbooks, all fixed. The directory is now read from
+disk at runtime rather than listed, so the next runbook is covered the day it
+is written.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+```
+
+---
+
 ### Task 4: The hook and the bulk-data-change skill
 
 **Files:**
@@ -1557,6 +1673,9 @@ Per the spec, and checked at the end of Task 5:
 - `docs/OPEN-ITEMS.md` is the only pending-work list, and every `ROADMAP.md` row
   is accounted for as closed, migrated, or dropped-with-a-reason.
 - Exactly one "where to look" map exists, in `CLAUDE.md` section 10.
+- No living document points at `docs/ROADMAP.md`, `docs/COLLABORATION.md` or
+  `AGENTS.md`. `docs/COMPLETED.md` may still be cited as evidence, since it is
+  closed rather than deleted, but never as a place to look.
 - Governance documents: **16 before, 12 after**. Root keeps `CLAUDE.md`,
   `README.md`, `ARCHITECTURE.md`, `CONTEXT.md`, `DEVELOPMENT-TRACKING.md`;
   `docs/` keeps `OPEN-ITEMS.md`, `BUSINESS-RULES.md`, `TESTING.md`,
