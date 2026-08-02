@@ -1,0 +1,89 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)",
+      "Bash(git worktree *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vitest *)",
+      "Bash(npx next build *)",
+      "Bash(npx next dev *)",
+      "Bash(npx tsx scripts/audit-*)",
+      "Bash(npx tsx scripts/verify-*)",
+      "Bash(npx tsx scripts/check-*)",
+      "Bash(npx tsx scripts/inspect-*)",
+      "Bash(npx tsx scripts/investigate-*)",
+      "Bash(npx tsx scripts/diagnose-*)",
+      "Bash(npx vite-node scripts/audit-*)",
+      "Bash(npx vite-node scripts/verify-*)",
+      "Bash(npx supabase migration list *)",
+      "Bash(npx supabase --version)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(npx supabase db push *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -f *)",
+      "Bash(git branch -D *)",
+      "Bash(git rebase -i *)",
+      "Bash(npx vercel --prod *)",
+      "Bash(npx vercel deploy --prod *)",
+      "Bash(npx vercel env add *)",
+      "Bash(npx vercel env rm *)",
+      "Bash(npx supabase db reset *)",
+      "Bash(npx supabase functions deploy *)",
+      "Bash(npx supabase migration up *)",
+      "Bash(npx tsx scripts/recover-*)",
+      "Bash(npx tsx scripts/apply-*)",
+      "Bash(npx tsx scripts/truncate-*)",
+      "Bash(npx tsx scripts/cleanup-*)",
+      "Bash(npx tsx scripts/delete-*)",
+      "Bash(npx tsx scripts/migrate-*)",
+      "Bash(npx tsx scripts/init-*)",
+      "Bash(npx tsx scripts/create-*)",
+      "Bash(npx tsx scripts/hash-*)",
+      "Bash(npx tsx scripts/fix-*)",
+      "Bash(npx tsx scripts/add-*)",
+      "Bash(npx tsx scripts/lock-*)",
+      "Bash(npx tsx scripts/probe-*)",
+      "Bash(npx tsx scripts/capture-*)",
+      "Bash(npx tsx scripts/benchmark-*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'if grep -q -- \"--apply\" /dev/stdin; then printf \"%s\" \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"additionalContext\\\":\\\"[rule] Ghi vao du lieu that. Bat buoc truoc khi chay: (1) liet ke trigger cua bang dich va noi ro moi cai lam gi voi cac dong bi dung, (2) noi ro tien trinh tu dong nao doc nhung dong trigger sinh ra, (3) chung minh trung tinh tren tung dong va bao ca so luong da so sanh, (4) chu quan duyet lan ghi. Skill: fnbapp-bulk-data-change\\\"}}\"; fi'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'if grep -q \"supabase/migrations/\" /dev/stdin; then printf \"%s\" \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"additionalContext\\\":\\\"[rule] Sua cau truc du lieu. Bat buoc: liet ke trigger cua bang dich, va kiem tra migration co nham ten trigger voi ten ham khong (loi da xay ra 2026-07-31). Skill: fnbapp-bulk-data-change\\\"}}\"; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}
