@@ -12,11 +12,11 @@ the approach from scratch.
 Two DB triggers auto-detect backdating going forward and create a `PENDING`
 event for review/auto-apply:
 
-- `flag_backdated_ledger_entry()` (`supabase/migrations/0014`) -- fires on
+- `flag_backdated_ledger_entry()` (`supabase/migrations/0014_backdated_ledger_detection.sql`) -- fires on
   `stock_ledger` inserts of type `PO_RECEIPT`/`STOCK_ADJUST`/
   `PRODUCTION_YIELD`/`INITIAL_BALANCE` whose `created_at` is more than 5
   minutes before the real insert time.
-- `flag_backdated_recipe_entry()` (`supabase/migrations/0027`) -- same idea
+- `flag_backdated_recipe_entry()` (`supabase/migrations/0027_backdated_recipe_detection.sql`) -- same idea
   for `recipes` inserts (semi-product recipe version changes).
 
 A daily cron (`app/api/cron/apply-backdated-corrections`, needs `CRON_SECRET`

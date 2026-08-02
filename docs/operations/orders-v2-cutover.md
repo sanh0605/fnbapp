@@ -135,7 +135,7 @@ System is back to "V2 empty + V1 active" state. Legacy code paths still work (if
 - [ ] Admin edits work (supersede chain functioning)
 - [ ] No user complaints about report numbers
 
-If all clean → proceed with WS-6 (rename V1 sheets to `_LEGACY`, archive `lib/report-utils.ts`, migrate dashboard).
+If all clean → proceed with WS-6 (rename V1 sheets to `_LEGACY`, archive the legacy report-utils module, migrate dashboard). **Done**: that module is gone, replaced by `lib/report-v2-allocators.ts`.
 
 ---
 
