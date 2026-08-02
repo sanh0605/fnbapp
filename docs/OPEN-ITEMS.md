@@ -76,6 +76,7 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 | # | Item | Why open |
 |---|---|---|
 | 17 | **285 unticked checkboxes across 12 plan files**, most describing finished work | The plans cannot be read to find what is left — the one job they had between sessions. Fix forward: tick as you go, and add a status banner to closed plans. Do not retroactively tick boxes nobody verified. |
+| 24 | **`scripts/check-rules-current.ts` covers 3 fixed documents plus `docs/operations/*.md`, not every living document** | Covered as of 2026-08-02: `CLAUDE.md`, `docs/BUSINESS-RULES.md`, `docs/OPEN-ITEMS.md`, and every `.md` under `docs/operations/` (read from disk, so new runbooks are automatic). **Not covered**, so a dead reference in any of these can go unnoticed: `README.md`, `CONTEXT.md`, `ARCHITECTURE.md`, `docs/TESTING.md`, `docs/FEATURE-CATALOG.md`, `docs/ACCESS-MODEL.md`, `docs/FILE-ORGANIZATION.md`, `docs/domain-dictionary.md`. Widening needs a cleanup pass first — several already carry dead links, and the gate would fail on day one. `DEVELOPMENT-TRACKING.md` and the closed `docs/COMPLETED.md` stay out permanently by design; both are chronicles, not living claims about the present. |
 
 ## Migrated from ROADMAP.md, now deleted (Task 3b, 2026-08-01)
 

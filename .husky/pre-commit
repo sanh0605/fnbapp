@@ -11,3 +11,13 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "[pre-commit] PASS: tsc clean."
+
+echo "[pre-commit] Running rule drift check..."
+npx vite-node scripts/check-rules-current.ts
+if [ $? -ne 0 ]; then
+  echo "[pre-commit] FAIL: a rule document disagrees with the repository."
+  echo "[pre-commit] Sua quy tac cho dung thuc te, dung sua checker cho im lang."
+  exit 1
+fi
+
+echo "[pre-commit] PASS: rules current."
