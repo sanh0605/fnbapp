@@ -54,6 +54,28 @@ describe("buildPurchaseReceipt", () => {
       }),
     ).toThrow(/không thuộc mặt hàng/);
   });
+
+  it("refuses a stored conversion rate of zero instead of costing nothing", () => {
+    expect(() =>
+      buildPurchaseReceipt({
+        po: po(),
+        line: line({ conversion_id: "QD-1000" }),
+        item: item(),
+        conversions: [conversion({ id: "QD-1000", conversion_rate: "0" })],
+      }),
+    ).toThrow(/SPM-001/);
+  });
+
+  it("refuses a completed line with zero quantity but real money", () => {
+    expect(() =>
+      buildPurchaseReceipt({
+        po: po(),
+        line: line({ conversion_id: "QD-1000", quantity: "0", subtotal: "100000" }),
+        item: item(),
+        conversions: [conversion({ id: "QD-1000", conversion_rate: "1000" })],
+      }),
+    ).toThrow(/SPM-001/);
+  });
 });
 
 describe("buildPurchaseReceiptLedgerEntry", () => {

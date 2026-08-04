@@ -1,3 +1,5 @@
+import { computeBaseQuantity } from "@/lib/purchase-line-base-quantity";
+
 type PurchaseOrderInput = {
   id: string;
   subtotal_amount?: string | number;
@@ -60,9 +62,21 @@ export function buildPurchaseReceipt(input: {
   const conversion = isRaw
     ? resolveConversion(input.line, purchasedItemId, input.conversions)
     : null;
-  const conversionRate = conversion ? Number(conversion.conversion_rate) || 0 : 1;
-  const quantity = Number(input.line.quantity) || 0;
-  const quantityChange = quantity * conversionRate;
+
+  let conversionRate: number;
+  let quantityChange: number;
+  if (conversion) {
+    try {
+      quantityChange = computeBaseQuantity(input.line, conversion);
+    } catch (err) {
+      throw new Error(`${purchasedItemId}: ${(err as Error).message}`);
+    }
+    conversionRate = Number(conversion.conversion_rate);
+  } else {
+    conversionRate = 1;
+    quantityChange = (Number(input.line.quantity) || 0) * conversionRate;
+  }
+
   const landedCostTotal = calculateLineLandedCost(input.po, input.line);
 
   return {
