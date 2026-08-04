@@ -80,6 +80,8 @@ argument.
 |---|---|---|
 | `lib/issue-costing.ts` (create) | Pure: purchases + issues → running average, issue values, closing balance | 1 |
 | `lib/issue-costing.test.ts` (create) | The owner's worked example, to the dong | 1 |
+| `lib/issue-costing.ts` (modify) | Two more refusals: unusable timestamp, money with no quantity | 1b |
+| `lib/purchase-order-write-plan.ts` (modify) | Stop writing a purchase line that records money with no quantity | 1c |
 | `supabase/migrations/0052_stock_issues.sql` (create) | `stock_issues` table; widen `stocktake_lines.item_type`; widen the allow-list inside `open_stocktake_session_atomic` | 2 |
 | `supabase/migrations/0053_stocktake_purchased_items.sql` (create) | Rewrite `save_stocktake_line_atomic` and `apply_stocktake_session_atomic` to branch on `item_type` | 3 |
 | `app/admin/inventory/stocktake/**` (modify) | Count purchased items; emit issue events | 3 |
@@ -131,7 +133,7 @@ This function is pure and takes `at` as given, so no test inside Task 1 can
 catch a caller that fills it wrongly. The obligation therefore sits on every
 caller, and Task 4 checks it against real data.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `lib/issue-costing.test.ts`. The first case is the owner's own example,
 extended in the spec to expose the averaging rule:
@@ -205,12 +207,12 @@ describe("computeIssueCosting", () => {
 The last case exists because rounding mid-computation was a real defect here on
 2026-07-30 (`65c3e9a`). Do not reintroduce it.
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `npx vitest run lib/issue-costing.test.ts`
 Expected: FAIL — module missing.
 
-- [ ] **Step 3: Write the engine**
+- [x] **Step 3: Write the engine**
 
 Sort purchases and issues together by timestamp, per item. Maintain `quantity`
 and `value`; on issue, take `value / quantity × issued` and subtract both.
@@ -218,12 +220,12 @@ Throw — never return zero — when an issue precedes any purchase or exceeds t
 quantity on hand: a silent zero is indistinguishable from correct costing, and
 that failure shape has cost this project six separate defects.
 
-- [ ] **Step 4: Tests and suite**
+- [x] **Step 4: Tests and suite**
 
 Run: `npx vitest run lib/issue-costing.test.ts && npx vitest run && npx tsc --noEmit`
 Expected: 5 new tests pass, 962 total, 0 type errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/issue-costing.ts lib/issue-costing.test.ts
@@ -240,6 +242,117 @@ Not wired to anything yet.
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
+
+---
+
+### Task 1b: Two more refusals in the engine
+
+**Files:**
+- Modify: `lib/issue-costing.ts`
+- Modify: `lib/issue-costing.test.ts`
+
+**Interfaces:**
+- Consumes: nothing new.
+- Produces: the same signature. Two more inputs throw instead of returning a
+  number.
+
+Task 1 shipped correct and is committed (`356f0fb`). Review of the committed
+code found two inputs it accepts and silently misprices. Both are the shape this
+engine already refuses twice; these are the third and fourth of the same kind.
+
+**(a) An unusable timestamp sorts unpredictably.** The replay is
+`events.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())`.
+An empty or malformed `at` yields `NaN`, the comparator returns `NaN`, and the
+resulting order is undefined — the function still returns a number, computed
+from events in arbitrary order. Task 1 pinned `at` to
+`purchase_orders.transaction_date`, a **nullable** column, so this is a live
+path, not a hypothetical. Throw naming the item and the offending value.
+
+**(b) A purchase can carry money with no quantity.**
+`lib/purchase-order-write-plan.ts:92-94` still computes
+`quantity * (Number(draftConversion?.conversion_rate) || 0)` — a failed
+conversion multiplies by zero rather than refusing. `docs/OPEN-ITEMS.md` item 29
+records this and predicted exactly this moment: *"issue-based costing makes
+purchases the sole source of cost, so a silent zero there stops being
+cosmetic."*
+
+Such a line adds its `subtotal` to running value while adding nothing to running
+quantity, inflating the average for every later issue of that item:
+
+```
+Nhập 10 kg, 100.000đ, quy đổi hỏng -> base_quantity 0,  subtotal 100.000
+Nhập 10 kg, 120.000đ, quy đổi tốt  -> base_quantity 10, subtotal 120.000
+  máy cộng dồn: 10 kg / 220.000đ -> bình quân 22.000đ/kg
+  đúng ra là:   10 kg / 120.000đ -> bình quân 12.000đ/kg
+```
+
+Refuse a purchase whose `base_quantity <= 0` while `subtotal > 0`. A line with
+both at zero is inert and may pass.
+
+- [ ] **Step 1: Write the two failing tests**
+
+Assert the message names the purchased item, so the person reading the failure
+knows which one to go and look at.
+
+- [ ] **Step 2: Run them and watch them fail**
+
+Expected: both return a number today rather than throwing. If either already
+throws, the defect is elsewhere — stop and re-read before changing anything.
+
+- [ ] **Step 3: Add the two guards**
+
+- [ ] **Step 4: Suite, type check, commit**
+
+Run: `npx vitest run && npx tsc --noEmit`
+Expected: 964 tests, 0 type errors.
+
+---
+
+### Task 1c: Stop creating the bad line in the first place
+
+**Files:**
+- Modify: `lib/purchase-order-write-plan.ts`
+- Modify: its existing test file
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: a purchase write that refuses rather than storing money against no
+  quantity.
+
+Task 1b stops the engine mispricing such a line. This stops the line existing.
+Both are wanted: the guard protects the 137 rows already on record, this
+protects every future one.
+
+`docs/OPEN-ITEMS.md` item 29 deliberately left this open because refusing a save
+is a behaviour change and Plan A was not allowed to make one. This plan is.
+
+Replace the `|| 0` fallback with a refusal that names the item and the
+unresolved conversion. Do not invent a default rate.
+
+- [ ] **Step 1: Write the failing test — an unresolvable conversion refuses the write**
+
+- [ ] **Step 2: Run it and watch it fail**
+
+- [ ] **Step 3: Remove the fallback, refuse instead**
+
+- [ ] **Step 4: Confirm the existing purchase tests still pass unchanged**
+
+If a test breaks because it relied on the zero fallback, that test was
+documenting the defect. Rewrite it to assert the refusal and say so in the
+commit — do not delete it silently.
+
+- [ ] **Step 5: Verify no completed purchase order is now unsaveable**
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-02:
+  Cả 137 dòng nhập hàng hiện có ĐỀU đã có conversion_id trỏ tới một dòng quy đổi
+  có thật. Không dòng nào thiếu. Nên thay đổi này KHÔNG được làm hỏng dòng nào
+  đang có.
+  Nếu chạy thử mà thấy dòng cũ bị từ chối -> điều kiện từ chối viết quá rộng.
+  DỪNG.
+```
+
+- [ ] **Step 6: Close item 29 in `docs/OPEN-ITEMS.md`, suite, type check, commit**
 
 ---
 
