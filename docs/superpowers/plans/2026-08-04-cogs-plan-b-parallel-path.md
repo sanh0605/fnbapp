@@ -2,15 +2,20 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Compute COGS from goods issued, show it beside the existing figure,
-and change nothing the old path reports.
+**Goal:** Make it possible to record what left stock and to cost it, changing
+nothing the reports currently show.
 
 **Architecture:** Stock and issues move to the purchased-item level, where the
 owner actually buys and hands out goods. A period count is one **source** of
 issue events rather than the answer itself, so the quick-issue button deferred
-to a later plan slots in without touching valuation. The new figure appears
-beside the old one in the P&L; the old one keeps driving everything until
-Plan C.
+to a later plan slots in without touching valuation. Nothing reaches the screen
+in this plan — the report is switched over, once, in Plan C.
+
+**Scope change 2026-08-04.** This plan originally ended by showing the new
+figure beside the old one in the P&L. The owner declined a parallel display
+(`BR-COGS-005`): the report carries one cost figure, never two. That task is
+deleted rather than moved — Plan C replaces the figure outright. The new number
+is checked once, from a script, before it is trusted with anything.
 
 **Tech Stack:** TypeScript, Vitest, Supabase Postgres migrations, `vite-node`.
 
@@ -78,8 +83,7 @@ argument.
 | `supabase/migrations/0052_stock_issues.sql` (create) | `stock_issues` table; widen `stocktake_lines.item_type`; widen the allow-list inside `open_stocktake_session_atomic` | 2 |
 | `supabase/migrations/0053_stocktake_purchased_items.sql` (create) | Rewrite `save_stocktake_line_atomic` and `apply_stocktake_session_atomic` to branch on `item_type` | 3 |
 | `app/admin/inventory/stocktake/**` (modify) | Count purchased items; emit issue events | 3 |
-| `app/admin/reports/actions.ts` (modify) | Second COGS figure alongside the first | 4 |
-| `app/admin/reports/pnl/page.tsx` (modify) | Show both, labelled in Vietnamese | 4 |
+| `scripts/compare-cogs-methods.ts` (create) | One-off: print old vs new cost per month, for the owner to read once | 4 |
 
 ---
 
@@ -396,8 +400,7 @@ them is a guess entering the cost figure permanently.
 
 With no manual issues yet, the middle term is zero and this reduces to the
 simple form. When the counter button arrives it becomes non-zero and **nothing
-in Task 1 or Task 4 changes** — which is the whole reason for building it this
-way today.
+in Task 1 changes** — which is the whole reason for building it this way today.
 
 - [ ] **Step 1: Write the failing test for the shortfall arithmetic**
 
@@ -455,61 +458,52 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 
 ---
 
-### Task 4: Show both figures side by side
+### Task 4: Put the new number in front of the owner, once
 
 **Files:**
-- Modify: `app/admin/reports/actions.ts`
-- Modify: `app/admin/reports/pnl/page.tsx`
+- Create: `scripts/compare-cogs-methods.ts`
 
 **Interfaces:**
 - Consumes: `computeIssueCosting` (Task 1), `stock_issues` (Task 2, 3).
-- Produces: an additional field on the P&L payload. **No existing field
-  changes.**
+- Produces: printed output only. **Reads nothing into the application, writes
+  nothing anywhere.**
 
-`app/admin/reports/actions.ts:181` is the one place total COGS is summed
-(`typedLines.reduce((s, l) => s + l.cost_at_sale, 0)`). Leave that line exactly
-as it is. Add a second figure beside it.
+The owner declined a permanent side-by-side display, and he is right that it is
+clutter. But the new figure still has to be looked at by a person before the old
+one is destroyed, and this is the last moment that comparison is possible —
+after Plan C the old figure no longer exists to compare against.
 
-**One block downstream does re-derive from it** — `actions.ts:318-324` forces
-the rounding remainder onto the first row of `cogsDetails` so the detail table
-sums to `totalCOGS` exactly:
+So the comparison is a script he reads once, not a screen he lives with.
 
-```ts
-const cogsDetailDelta = totalCOGS - cogsDetails.reduce((sum, row) => sum + row.cogs, 0);
-```
+Read-only. It touches `app/admin/reports/actions.ts` not at all; the P&L keeps
+showing exactly what it shows today until Plan C.
 
-The new figure must stay entirely outside this: it does not enter `cogsDetails`,
-is not included in that sum, and does not alter `cogsDetailDelta`. It is a
-separate field on the payload with no arithmetic relationship to the old one.
-`pnl/page.tsx:156` computes a percentage from `data.totalCOGS` client-side —
-same rule, leave the existing field alone and it is unaffected.
+- [ ] **Step 1: Write the script**
 
-- [ ] **Step 1: Add the second computation**
+For each month: revenue, cost the old way (sum of `cost_at_sale`), cost the new
+way (`computeIssueCosting` over that period's purchases and issues), and both
+cost-to-revenue ratios. Vietnamese headings, real item names anywhere an item is
+named.
 
-Load purchases and issues for the period, call `computeIssueCosting`, sum
-`issued_value`. Add it to the payload as a new field. **Do not touch
-`totalCOGS`.**
-
-- [ ] **Step 2: Show both, labelled so the owner can tell them apart**
-
-Vietnamese labels, plain, no jargon:
+- [ ] **Step 2: Run it and read the output with the owner**
 
 ```
-Giá vốn (cách cũ — theo công thức từng ly)     X đ
-Giá vốn (cách mới — theo hàng đã xuất kho)     Y đ
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
+  Cách cũ, tháng 6: 16.688.133đ trên doanh thu 32.416.000đ = 51,5%
+  Cách cũ, tháng 7:  7.711.264đ trên doanh thu 19.124.000đ = 40,3%
+  Cách cũ, tháng 8:    605.743đ trên doanh thu  1.763.000đ = 34,4%
+  Cột "cách cũ" của script PHẢI khớp đúng ba con số này tới từng đồng.
+  Lệch -> script đọc sai dữ liệu, DỪNG. Đừng đi tiếp sang cột mới.
 ```
 
-Below them, one line stating why they differ, in the owner's terms: the old
-figure counts ingredients inferred from drinks sold; the new one counts goods
-recorded as leaving the store.
+The new column will be far smaller, because it only covers the period the count
+covers. That is expected, not a defect — say so out loud rather than letting it
+look like a bug.
 
-- [ ] **Step 3: Prove the old figure did not move**
+- [ ] **Step 3: Type check, commit**
 
-Read the P&L for a closed month before and after. **The old figure must be
-identical to the dong.** If it moved, the parallel display is not parallel —
-stop and report.
-
-- [ ] **Step 4: Suite, type check, commit**
+This is the gate into Plan C. Plan C does not start until the owner has read
+this output.
 
 ---
 
@@ -518,8 +512,10 @@ stop and report.
 - `npx tsc --noEmit` — 0 errors.
 - `npx vitest run` — green, 962+ tests.
 - The old COGS figure identical to the dong for every month checked, before and
-  after every task.
-- Revenue untouched throughout.
+  after every task — 16.688.133đ / 7.711.264đ / 605.743đ for June, July, August
+  2026, measured 2026-08-04.
+- Revenue untouched throughout: 32.416.000đ / 19.124.000đ / 1.763.000đ.
+- The P&L screen renders identically to today. This plan changes no report.
 - One real stocktake session completed end to end, with its `stock_issues` rows
   read back and checked against the worked example.
 - `stocktake_lines` accepts `PURCHASED_ITEM` and still refuses an invalid value —
@@ -535,7 +531,8 @@ stop and report.
 
 - The quick-issue button at the counter — deferred by the owner 2026-08-04,
   designed for but not built. Its own plan.
-- Retiring the old path, deleting derived rows, rewriting `CLAUDE.md` section 7
-  — Plan C.
+- Switching the report to the new figure, retiring the old path, deleting
+  derived rows and stored `cost_at_sale`, rewriting `CLAUDE.md` section 7 —
+  Plan C (`docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`).
 - Historical restatement — needs the owner's past issue records first, and
   those need this path to exist.

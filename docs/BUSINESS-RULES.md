@@ -42,6 +42,8 @@ If a summary here conflicts with a reviewed Tier 2 policy, stop and resolve the 
 
 Order lines store the cost used at sale time in `cost_at_sale`. Historical reporting must use the pinned value rather than silently replacing it with a later recipe or purchase-cost replay.
 
+Superseded by `BR-COGS-005` (owner decision 2026-08-04); in force until that cutover applies.
+
 ### BR-SALE-002 — Transaction snapshots preserve write-time inputs
 
 **Status:** `APPROVED`
@@ -73,6 +75,20 @@ Moving Average Cost (MAC) is the COGS standard for order valuation and P&L repor
 **Status:** `APPROVED`
 
 P&L and order COGS use the stored `cost_at_sale` for the affected sale. A replay difference can be informational without meaning that stored money is wrong.
+
+Superseded by `BR-COGS-005` (owner decision 2026-08-04); in force until that cutover applies.
+
+### BR-COGS-005 — Cost is measured when goods leave stock, and there is only one cost figure
+
+**Status:** `APPROVED` — owner decision 2026-08-04
+
+COGS for a period is the value of goods recorded as issued from stock in that period, each issue valued at the weighted average cost of that purchased item at the moment of issue. Sales do not move stock and recipes do not drive cost.
+
+The report carries **one** cost figure, not an old and a new one side by side. The owner declined a parallel display on 2026-08-04.
+
+The owner was shown, before deciding, that June 2026 (16.688.133đ) and July 2026 (7.711.264đ) are closed with no stock count taken, that the new method can never produce a figure for them — a single count yields one figure for the whole elapsed period, and month-level restatement needs month-end counts that were never taken — and that those months will therefore report gross profit equal to full revenue. The owner accepted this and chose deletion.
+
+Supersedes `BR-SALE-001` and `BR-COGS-002`, effective on the cutover described in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`. Those two remain in force until it applies.
 
 ### BR-COGS-003 — Rounding and allocation must reconcile
 
