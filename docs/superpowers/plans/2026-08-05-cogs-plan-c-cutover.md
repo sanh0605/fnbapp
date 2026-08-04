@@ -136,6 +136,12 @@ const totalCOGS = typedLines.reduce((s, l) => s + l.cost_at_sale, 0);
 It becomes the sum of `issued_value` over the period's issues. Keep the name and
 the type; only the source changes.
 
+Load purchases the way Plan B Task 1 pins: join `purchase_order_lines` to
+`purchase_orders`, filter `status = 'COMPLETED'`, and order by
+`transaction_date` (fallback `created_at`). `purchase_order_lines` has no status
+column, and 57 of 62 completed orders were entered on a different day from the
+one they happened. Reuse Plan B's loader rather than writing a second one.
+
 **Two consequences that are not optional to think about:**
 
 `actions.ts:318-324` forces the rounding remainder onto the first row of

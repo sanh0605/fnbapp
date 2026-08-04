@@ -109,6 +109,28 @@ Replay purchases and issues in time order per item. A purchase raises quantity
 and value; an issue removes quantity at the current average and accrues that
 value as cost. Sales are not an input — that is the entire point.
 
+**Which timestamp fills `Purchase.at`, pinned here because sorting is the whole
+mechanism.** It is `purchase_orders.transaction_date`, falling back to
+`purchase_orders.created_at` when that is null. Never
+`purchase_order_lines.created_at`, and never `purchase_orders.created_at` on its
+own.
+
+Measured 2026-08-04: of 62 completed purchase orders, **57 have a
+`transaction_date` more than 12 hours from their `created_at`**, the widest gap
+being 66,8 days (`PO-008`). Goods bought in one month are routinely entered in
+another. `transaction_date` is currently never null — the fallback is
+precaution, not load-bearing — but the column is nullable, so keep it.
+
+Sorting by the wrong column reorders purchases for **1 of the 30 items that have
+two or more purchases**, which is exactly the shape that survives review: one
+item's average is wrong, the total still looks plausible. Worse, a purchase
+entered 66 days late can sort after an issue that actually consumed it, and the
+engine then throws "issue precedes any purchase" for a perfectly normal item.
+
+This function is pure and takes `at` as given, so no test inside Task 1 can
+catch a caller that fills it wrongly. The obligation therefore sits on every
+caller, and Task 4 checks it against real data.
+
 - [ ] **Step 1: Write the failing test**
 
 Create `lib/issue-costing.test.ts`. The first case is the owner's own example,
@@ -339,13 +361,32 @@ therefore matches zero ledger rows and `theoretical_at_count` lands at **0**
 without error, for essentially every item counted. That is the silent-zero
 shape, again.
 
-Branch on `item_type`. For `PURCHASED_ITEM`, theoretical stock at the moment of
-counting is:
+Branch on `item_type`. For `PURCHASED_ITEM`, theoretical stock is:
 
 ```
-sum(base_quantity of that item's completed purchase lines, up to now)
-  − sum(base_quantity of that item's stock_issues rows, up to now)
+sum(base_quantity of that item's purchase lines whose ORDER is COMPLETED)
+  − sum(base_quantity of that item's stock_issues rows)
 ```
+
+**There is no such thing as a completed purchase line.** `purchase_order_lines`
+has no status column at all (`0001_init_schema.sql:331-343`); `status` lives on
+`purchase_orders` and is checked against `('DRAFT','COMPLETED','CANCELLED')`.
+The filter is therefore only reachable by joining to the header — the same rule
+`lib/purchase-ledger-audit.ts:119`, `lib/purchase-order-write-plan.ts` and
+`scripts/reprocess-all-po-ledger.ts` already apply. Join
+`purchase_order_lines pol` to `purchase_orders po` and filter
+`po.status = 'COMPLETED'`.
+
+**No time filter. Deliberately.** The two existing item types compute theoretical
+stock by summing *every* `stock_ledger` row for the item with no time bound —
+"as of the moment of counting" is already what an unbounded sum of everything
+recorded means, since `theoretical_at_count` is frozen at count time. The
+purchased-item branch does the same: sum everything, bound nothing.
+
+Adding a time bound here would buy nothing and would open the
+`transaction_date` / `created_at` trap described in Task 1 — 57 of 62 completed
+orders diverge by more than 12 hours. If a future change ever does need a bound,
+it must use `purchase_orders.transaction_date`, never either `created_at`.
 
 Leave the two existing types reading `stock_ledger` exactly as they do today.
 
@@ -484,6 +525,26 @@ For each month: revenue, cost the old way (sum of `cost_at_sale`), cost the new
 way (`computeIssueCosting` over that period's purchases and issues), and both
 cost-to-revenue ratios. Vietnamese headings, real item names anywhere an item is
 named.
+
+This is the first caller of `computeIssueCosting` against real data, so it is
+where the `at` obligation from Task 1 is checked. Load purchases by joining
+`purchase_order_lines` to `purchase_orders`, filtering `status = 'COMPLETED'`,
+and taking `at` from `transaction_date` with `created_at` as fallback.
+
+- [ ] **Step 1b: Prove the sort column is the right one**
+
+Sort the same purchases both ways and compare the resulting `issued_value` per
+item.
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
+  62 đơn nhập đã hoàn tất, 57 đơn có ngày giao dịch lệch ngày ghi sổ quá 12 giờ,
+  lệch xa nhất 66,8 ngày (PO-008).
+  Sắp theo hai cột khác nhau phải cho ra kết quả KHÁC NHAU ở ĐÚNG 1 mặt hàng
+  (trong số 30 mặt hàng có từ 2 lần nhập trở lên).
+  Nếu ra giống hệt nhau -> script đang lấy cùng một cột cho cả hai lần sắp,
+  phép kiểm không chứng minh được gì. DỪNG và sửa phép kiểm trước.
+```
 
 - [ ] **Step 2: Run it and read the output with the owner**
 
