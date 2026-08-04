@@ -93,6 +93,14 @@ export function buildPurchaseOrderWritePlan(input: {
       ? receipt.quantity_change
       : quantity * (Number(draftConversion?.conversion_rate) || 0);
 
+    if (!receipt && baseQuantity <= 0 && subtotal > 0) {
+      throw new Error(
+        line.conversion_id
+          ? `Không giải được quy đổi ${line.conversion_id} cho hàng mua vào ${line.purchased_item_id}`
+          : `Chưa chọn quy đổi cho hàng mua vào ${line.purchased_item_id}`,
+      );
+    }
+
     lineRows.push({
       id: `POL-${idFactory()}`,
       purchase_order_id: input.order.id,

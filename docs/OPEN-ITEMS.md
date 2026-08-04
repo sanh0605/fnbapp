@@ -79,12 +79,6 @@ PO edit, stocktake adjustment → yes. Create, view, search, login → no.
 | 27 | **Phase 3 — repository restructure by business domain** | Deferred 2026-08-02, owner sequenced the COGS calculation change first because it lands on `mac-cogs` and `inventory-consumption`, two of the three domain hubs. Dependency map already measured and kept: `docs/audits/2026-08-02-lib-dependency-map.md` — 78 modules, only 3 unreferenced, and the tangle is infrastructure rather than cross-domain, so the split is feasible. Resume after the calculation change lands. |
 | 28 | **Phase 4 — UI/UX rules** | Deferred by owner decision until after the restructure. 28 pages, 15+ inconsistent empty-state patterns measured 2026-07-06. |
 
-## Nguon loi con mo
-
-| # | Item | Why open |
-|---|---|---|
-| 29 | **A purchase line can still record money with no quantity** | `lib/purchase-order-write-plan.ts:92-94` computes `quantity * (conversion_rate || 0)`. When a conversion fails to resolve it multiplies by zero instead of refusing, which is how 95 lines came to carry 32.751.182đ against `base_quantity = 0`. Measured 2026-08-02: 94 of those were created in June and one on 2026-07-01; all 42 July lines are correct, so the path appears fixed in practice — but the `|| 0` fallback survives, so a resolution failure would silently produce the next one. Plan A backfills the 95 and deliberately does not close this, because refusing the save is a behaviour change. Fix it when a plan is allowed to change behaviour — issue-based costing makes purchases the sole source of cost, so a silent zero there stops being cosmetic. |
-
 ## Tracking debt
 
 | # | Item | Why open |

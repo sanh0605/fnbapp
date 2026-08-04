@@ -143,4 +143,59 @@ describe("buildPurchaseOrderWritePlan", () => {
       }),
     ).toThrow("SPM-001");
   });
+
+  it("refuses a draft line that has money but an unresolvable conversion", () => {
+    expect(() =>
+      buildPurchaseOrderWritePlan({
+        order: { ...order, status: "DRAFT" },
+        lines: [
+          {
+            purchased_item_id: "SPM-001",
+            unit: "box",
+            quantity: 2,
+            subtotal: 196,
+            conversion_id: "QD-DOES-NOT-EXIST",
+            base_unit: "U-ML",
+          },
+        ],
+        purchasedItems: [
+          { id: "SPM-001", base_ingredient_id: "ING-001" },
+        ],
+        conversions: [
+          {
+            id: "QD-001",
+            purchased_item_id: "SPM-001",
+            purchased_unit: "box",
+            conversion_rate: 5,
+          },
+        ],
+        createdAt: "2026-07-01T04:00:00.000Z",
+        idFactory: () => "uuid",
+      }),
+    ).toThrow("SPM-001");
+  });
+
+  it("refuses a draft line that has money but no conversion selected at all", () => {
+    expect(() =>
+      buildPurchaseOrderWritePlan({
+        order: { ...order, status: "DRAFT" },
+        lines: [
+          {
+            purchased_item_id: "SPM-001",
+            unit: "box",
+            quantity: 2,
+            subtotal: 196,
+            conversion_id: "",
+            base_unit: "U-ML",
+          },
+        ],
+        purchasedItems: [
+          { id: "SPM-001", base_ingredient_id: "ING-001" },
+        ],
+        conversions: [],
+        createdAt: "2026-07-01T04:00:00.000Z",
+        idFactory: () => "uuid",
+      }),
+    ).toThrow("SPM-001");
+  });
 });
