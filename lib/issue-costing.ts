@@ -21,27 +21,40 @@ export type ItemCost = {
 };
 
 type Event =
-  | { kind: "purchase"; at: string; base_quantity: number; subtotal: number }
-  | { kind: "issue"; at: string; base_quantity: number };
+  | { kind: "purchase"; atMs: number; base_quantity: number; subtotal: number }
+  | { kind: "issue"; atMs: number; base_quantity: number };
+
+function parseAt(purchasedItemId: string, at: string): number {
+  const ms = new Date(at).getTime();
+  if (Number.isNaN(ms)) {
+    throw new Error(`${purchasedItemId}: unusable timestamp (${JSON.stringify(at)})`);
+  }
+  return ms;
+}
 
 export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): ItemCost[] {
   const eventsByItem = new Map<string, Event[]>();
 
   for (const p of purchases) {
+    if (p.base_quantity <= 0 && p.subtotal > 0) {
+      throw new Error(`${p.purchased_item_id}: purchase has money but no quantity (subtotal ${p.subtotal})`);
+    }
+    const atMs = parseAt(p.purchased_item_id, p.at);
     const list = eventsByItem.get(p.purchased_item_id) ?? [];
-    list.push({ kind: "purchase", at: p.at, base_quantity: p.base_quantity, subtotal: p.subtotal });
+    list.push({ kind: "purchase", atMs, base_quantity: p.base_quantity, subtotal: p.subtotal });
     eventsByItem.set(p.purchased_item_id, list);
   }
   for (const i of issues) {
+    const atMs = parseAt(i.purchased_item_id, i.at);
     const list = eventsByItem.get(i.purchased_item_id) ?? [];
-    list.push({ kind: "issue", at: i.at, base_quantity: i.base_quantity });
+    list.push({ kind: "issue", atMs, base_quantity: i.base_quantity });
     eventsByItem.set(i.purchased_item_id, list);
   }
 
   const results: ItemCost[] = [];
 
   for (const [purchasedItemId, events] of eventsByItem) {
-    events.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+    events.sort((a, b) => a.atMs - b.atMs);
 
     let quantity = 0;
     let value = 0;

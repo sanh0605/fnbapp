@@ -60,4 +60,33 @@ describe("computeIssueCosting", () => {
     );
     expect(row.issued_value).toBeCloseTo(3.333333, 6);
   });
+
+  it("mốc thời gian không dùng được thì báo lỗi, không sắp xếp mù", () => {
+    expect(() => computeIssueCosting(
+      [{ purchased_item_id: "SPM-X", at: "", base_quantity: 10, subtotal: 100 }],
+      [{ purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 1, source: "STOCKTAKE" }],
+    )).toThrow(/SPM-X/);
+  });
+
+  it("nhập tiền mà không có số lượng thì báo lỗi, không thổi bình quân", () => {
+    expect(() => computeIssueCosting(
+      [
+        { purchased_item_id: "SPM-X", at: "2026-08-01T00:00:00Z", base_quantity: 0, subtotal: 100000 },
+        { purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 10, subtotal: 120000 },
+      ],
+      [],
+    )).toThrow(/SPM-X/);
+  });
+
+  it("dòng nhập cả số lượng lẫn tiền đều 0 thì cho qua, không báo lỗi", () => {
+    const [row] = computeIssueCosting(
+      [
+        { purchased_item_id: "SPM-X", at: "2026-08-01T00:00:00Z", base_quantity: 0, subtotal: 0 },
+        { purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 10, subtotal: 100 },
+      ],
+      [],
+    );
+    expect(row.closing_quantity).toBe(10);
+    expect(row.closing_value).toBe(100);
+  });
 });
