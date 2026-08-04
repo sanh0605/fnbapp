@@ -106,6 +106,25 @@ immediately. Needs a light "issue" action that does not exist yet.
 **Mode B — count what is left at period end.** Issued = opening + purchases −
 count. This is a stocktake.
 
+**Owner decision 2026-08-04: build for both, ship Mode B first.** Mode A is
+wanted, but deferred — not dropped. This is a design constraint now rather than
+a later addition, because the two modes imply different arithmetic:
+
+```
+Chi co dem cuoi ky : dau ky + nhap - dem duoc            = da xuat
+Co ca hai          : dau ky + nhap - xuat le - dem duoc  = hao hut chua ghi
+```
+
+Building the first and retrofitting the second means rewriting the costing path.
+So the model is **a list of issue events, each carrying its source** —
+`STOCKTAKE` or `MANUAL` — from the start. A period count produces one
+`STOCKTAKE` issue per item; the counter button later produces `MANUAL` issues
+and changes nothing in the valuation code.
+
+This also makes the count self-correcting rather than authoritative: whatever a
+period count cannot explain becomes a recorded shortfall, instead of silently
+becoming the whole issue figure.
+
 **Mode B is already built and deployed, and has never been used.** Migrations
 `0036` and `0037` are applied to production, `apply_stocktake_session_atomic`
 exists and writes `STOCK_ADJUST` rows, and the UI is complete under
