@@ -68,8 +68,16 @@ export function buildPurchaseReceipt(input: {
   if (conversion) {
     try {
       quantityChange = computeBaseQuantity(input.line, conversion);
-    } catch (err) {
-      throw new Error(`${purchasedItemId}: ${(err as Error).message}`);
+    } catch {
+      const quantity = Number(input.line.quantity);
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        throw new Error(
+          `Dòng ${input.line.id || ""} (${purchasedItemId}) không có số lượng hợp lệ: ${input.line.quantity}`,
+        );
+      }
+      throw new Error(
+        `Dòng ${input.line.id || ""} (${purchasedItemId}) có tỷ lệ quy đổi không dùng được: ${conversion.conversion_rate}`,
+      );
     }
     conversionRate = Number(conversion.conversion_rate);
   } else {

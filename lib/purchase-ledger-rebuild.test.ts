@@ -55,7 +55,7 @@ describe("buildPurchaseReceipt", () => {
     ).toThrow(/không thuộc mặt hàng/);
   });
 
-  it("refuses a stored conversion rate of zero instead of costing nothing", () => {
+  it("refuses a stored conversion rate of zero instead of costing nothing, in Vietnamese", () => {
     expect(() =>
       buildPurchaseReceipt({
         po: po(),
@@ -63,10 +63,10 @@ describe("buildPurchaseReceipt", () => {
         item: item(),
         conversions: [conversion({ id: "QD-1000", conversion_rate: "0" })],
       }),
-    ).toThrow(/SPM-001/);
+    ).toThrow(/SPM-001.*tỷ lệ quy đổi không dùng được/);
   });
 
-  it("refuses a completed line with zero quantity but real money", () => {
+  it("refuses a completed line with zero quantity but real money, in Vietnamese", () => {
     expect(() =>
       buildPurchaseReceipt({
         po: po(),
@@ -74,7 +74,7 @@ describe("buildPurchaseReceipt", () => {
         item: item(),
         conversions: [conversion({ id: "QD-1000", conversion_rate: "1000" })],
       }),
-    ).toThrow(/SPM-001/);
+    ).toThrow(/SPM-001.*không có số lượng hợp lệ/);
   });
 });
 
