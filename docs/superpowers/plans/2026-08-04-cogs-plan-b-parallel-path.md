@@ -289,22 +289,27 @@ Nhập 10 kg, 120.000đ, quy đổi tốt  -> base_quantity 10, subtotal 120.000
 Refuse a purchase whose `base_quantity <= 0` while `subtotal > 0`. A line with
 both at zero is inert and may pass.
 
-- [ ] **Step 1: Write the two failing tests**
+- [x] **Step 1: Write the two failing tests**
 
 Assert the message names the purchased item, so the person reading the failure
 knows which one to go and look at.
 
-- [ ] **Step 2: Run them and watch them fail**
+Actually three tests: added a third asserting quantity-and-subtotal-both-zero
+passes through unrefused, so the new guard's boundary is proven, not assumed.
+
+- [x] **Step 2: Run them and watch them fail**
 
 Expected: both return a number today rather than throwing. If either already
 throws, the defect is elsewhere — stop and re-read before changing anything.
 
-- [ ] **Step 3: Add the two guards**
+- [x] **Step 3: Add the two guards**
 
-- [ ] **Step 4: Suite, type check, commit**
+- [x] **Step 4: Suite, type check, commit**
 
 Run: `npx vitest run && npx tsc --noEmit`
 Expected: 964 tests, 0 type errors.
+
+Actual: 965 (one extra boundary test, see Step 1). 0 type errors. Commit `48001bc`.
 
 ---
 
@@ -329,19 +334,26 @@ is a behaviour change and Plan A was not allowed to make one. This plan is.
 Replace the `|| 0` fallback with a refusal that names the item and the
 unresolved conversion. Do not invent a default rate.
 
-- [ ] **Step 1: Write the failing test — an unresolvable conversion refuses the write**
+- [x] **Step 1: Write the failing test — an unresolvable conversion refuses the write**
 
-- [ ] **Step 2: Run it and watch it fail**
+Two tests: unresolvable `conversion_id` (typo/dangling reference), and no
+`conversion_id` at all while `subtotal > 0`.
 
-- [ ] **Step 3: Remove the fallback, refuse instead**
+- [x] **Step 2: Run it and watch it fail**
 
-- [ ] **Step 4: Confirm the existing purchase tests still pass unchanged**
+- [x] **Step 3: Remove the fallback, refuse instead**
+
+- [x] **Step 4: Confirm the existing purchase tests still pass unchanged**
 
 If a test breaks because it relied on the zero fallback, that test was
 documenting the defect. Rewrite it to assert the refusal and say so in the
 commit — do not delete it silently.
 
-- [ ] **Step 5: Verify no completed purchase order is now unsaveable**
+All 4 pre-existing tests passed unchanged, including "allows an incomplete
+draft line without creating stock" (quantity set, subtotal 0) — the guard is
+scoped to `subtotal > 0`, so a genuinely blank in-progress line still saves.
+
+- [x] **Step 5: Verify no completed purchase order is now unsaveable**
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-02:
@@ -352,7 +364,13 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-02:
   DỪNG.
 ```
 
-- [ ] **Step 6: Close item 29 in `docs/OPEN-ITEMS.md`, suite, type check, commit**
+By construction, not just by testing: the new guard only runs in the
+`!receipt` branch, and `receipt` is always truthy when the order is
+COMPLETED. A completed order cannot reach this guard at all. Measured
+separately: 0 draft orders currently exist in production, so no live order is
+affected either way. Commit `fd811c9`.
+
+- [x] **Step 6: Close item 29 in `docs/OPEN-ITEMS.md`, suite, type check, commit**
 
 ---
 
