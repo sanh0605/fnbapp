@@ -416,19 +416,23 @@ rather than writing a third.
 Keep the non-raw case as it is: an item with no `base_ingredient_id` has no
 conversion and legitimately uses rate 1.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 A completed line whose conversion rate is 0, and a completed line with quantity
 0 and a subtotal above 0. Both must throw and name the purchased item.
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 Expected: both return 0 today. If either already throws, stop — the defect is
 somewhere other than where this task says it is.
 
-- [ ] **Step 3: Route the raw-item branch through `computeBaseQuantity`**
+- [x] **Step 3: Route the raw-item branch through `computeBaseQuantity`**
 
-- [ ] **Step 4: Prove no existing purchase order breaks**
+`buildPurchaseReceipt` catches `computeBaseQuantity`'s error and rewraps it
+with the purchased item id prefixed, so the failure names the item as required
+even though the pure function itself only knows the line and the conversion.
+
+- [x] **Step 4: Prove no existing purchase order breaks**
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
@@ -438,7 +442,9 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
   Có dòng bị từ chối -> điều kiện quá rộng. DỪNG.
 ```
 
-- [ ] **Step 5: Close item 30 in `docs/OPEN-ITEMS.md`, suite, type check, commit**
+Actual: 137/137 checked, 0 rejected, 0 mismatched. Commit `e930cc8`.
+
+- [x] **Step 5: Close item 30 in `docs/OPEN-ITEMS.md`, suite, type check, commit**
 
 ---
 
