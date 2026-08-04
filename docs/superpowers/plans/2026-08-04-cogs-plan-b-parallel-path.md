@@ -374,6 +374,74 @@ affected either way. Commit `fd811c9`.
 
 ---
 
+### Task 1d: Guard the path that actually writes purchases
+
+**Files:**
+- Modify: `lib/purchase-ledger-rebuild.ts`
+- Modify: its existing test file
+
+**Interfaces:**
+- Consumes: `computeBaseQuantity` from `lib/purchase-line-base-quantity.ts`.
+- Produces: `buildPurchaseReceipt` refusing what it currently converts to zero.
+
+Task 1c is correct and its guard is correctly placed — but it is on the
+`!receipt` branch, which is the **draft** branch, and there are **0 draft
+purchase orders**. It protects a path with no rows.
+
+Every real purchase takes the completed branch, and that branch computes
+(`lib/purchase-ledger-rebuild.ts:63-65`):
+
+```ts
+const conversionRate = conversion ? Number(conversion.conversion_rate) || 0 : 1;
+const quantity = Number(input.line.quantity) || 0;
+const quantityChange = quantity * conversionRate;
+```
+
+The same `|| 0`, one file over, unguarded.
+
+**How live is it?** `resolveConversion` throws when a conversion cannot be
+found, so a missing conversion is already safe. What remains is a stored rate of
+zero, or a line quantity of zero against a real subtotal.
+`uom_conversions.conversion_rate` is `numeric(18,6) not null` with **no
+positivity check** (`0001_init_schema.sql:187`), so a zero rate is storable.
+Measured 2026-08-04: **0 of 57 conversion rows are unusable.** Latent, not
+firing. Worth closing anyway, because purchases are now the only source of cost.
+
+**There is already a hardened version of this arithmetic.**
+`lib/purchase-line-base-quantity.ts` was written for Plan A and refuses both
+cases with named errors. It is called by one backfill script and not by the
+write path. Two implementations of one rule, one of them safe — use the safe one
+rather than writing a third.
+
+Keep the non-raw case as it is: an item with no `base_ingredient_id` has no
+conversion and legitimately uses rate 1.
+
+- [ ] **Step 1: Write the failing tests**
+
+A completed line whose conversion rate is 0, and a completed line with quantity
+0 and a subtotal above 0. Both must throw and name the purchased item.
+
+- [ ] **Step 2: Run them and watch them fail**
+
+Expected: both return 0 today. If either already throws, stop — the defect is
+somewhere other than where this task says it is.
+
+- [ ] **Step 3: Route the raw-item branch through `computeBaseQuantity`**
+
+- [ ] **Step 4: Prove no existing purchase order breaks**
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
+  57 dòng quy đổi, 0 dòng có tỷ lệ <= 0. 62 đơn nhập đã hoàn tất.
+  Chạy lại toàn bộ 137 dòng nhập qua hàm mới -> phải KHÔNG có dòng nào bị từ
+  chối, và base_quantity từng dòng phải ra ĐÚNG bằng giá trị đang lưu.
+  Có dòng bị từ chối -> điều kiện quá rộng. DỪNG.
+```
+
+- [ ] **Step 5: Close item 30 in `docs/OPEN-ITEMS.md`, suite, type check, commit**
+
+---
+
 ### Task 2: Somewhere to record an issue
 
 **Files:**
