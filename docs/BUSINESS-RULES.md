@@ -112,6 +112,18 @@ Semi-product production and consumption must retain the recipe/yield evidence ne
 
 Negative-stock findings require physical/business evidence and an approved correction path. Unresolved negative stock remains visible in audit/roadmap records.
 
+### BR-INV-005 — A count above everything ever purchased is refused, never valued
+
+**Status:** `APPROVED` — owner decision 2026-08-04
+
+Counting happens per purchased item. A count below expectation needs no rule: goods taken by mistake, or taken in excess, leave that item short and are valued correctly without anyone declaring intent.
+
+A count that exceeds the item's total ever purchased is different in kind. No handling error creates physical goods; either the purchase was recorded against another item code, or the stock predates the system. That line is refused and the surplus is left unvalued — a price assigned to goods with no purchase behind them is a guess that enters the cost figure permanently.
+
+The refusal presents every other purchased item sharing the same base ingredient, with each one's purchased total and counted quantity, because a mis-recorded purchase almost always lands on a sibling brand. The refusal is scoped to the single line; the rest of the session saves.
+
+Applies from the issue-based COGS path (`docs/superpowers/plans/2026-08-04-cogs-plan-b-parallel-path.md`).
+
 ## Backdated transaction rules
 
 ### BR-BACKDATE-001 — Creation time and effective time are distinct
