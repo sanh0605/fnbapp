@@ -830,72 +830,41 @@ owner runs an actual physical count.
 
 ---
 
-### Task 4: Put the new number in front of the owner, once
+### Task 4: CANCELLED by the owner, 2026-08-05
 
-**Files:**
-- Create: `scripts/compare-cogs-methods.ts`
+Task 4 was a one-off script printing old and new cost side by side, for the
+owner to read once before the old figure was destroyed.
 
-**Interfaces:**
-- Consumes: `computeIssueCosting` (Task 1), `stock_issues` (Task 2, 3).
-- Produces: printed output only. **Reads nothing into the application, writes
-  nothing anywhere.**
+The owner cancelled it: *"Anh không cần so sánh, nếu cần giá vốn theo cách tính
+cũ thì sẽ suy ra từ số thực bán."*
 
-The owner declined a permanent side-by-side display, and he is right that it is
-clutter. But the new figure still has to be looked at by a person before the old
-one is destroyed, and this is the last moment that comparison is possible —
-after Plan C the old figure no longer exists to compare against.
+The premise holds, and Plan C already preserves what it depends on. Reproducing
+the old figure needs the recipe snapshot pinned on each order line, the purchase
+orders, and the two reconstruction engines — and Plan C Task 6 keeps
+`lib/full-history-recompute.ts` and `lib/inventory-consumption.ts` in the
+repository deliberately, retiring them from execution rather than deleting them.
+Stated precisely: it is a re-run of the whole engine, not a figure to look up.
 
-So the comparison is a script he reads once, not a screen he lives with.
+**Plan B ends at Task 3, complete.**
 
-Read-only. It touches `app/admin/reports/actions.ts` not at all; the P&L keeps
-showing exactly what it shows today until Plan C.
+#### The one step that had to survive this cancellation
 
-- [ ] **Step 1: Write the script**
+Task 4 was to be the first caller of `computeIssueCosting` against real data, so
+it carried the check that the purchase sort column is the right one. That check
+now belongs to **Plan C Task 2**, which becomes the first real caller. Moved
+there rather than dropped — Task 1 is pure and takes `at` as given, so no test
+in this plan can catch a caller that fills it wrongly.
 
-For each month: revenue, cost the old way (sum of `cost_at_sale`), cost the new
-way (`computeIssueCosting` over that period's purchases and issues), and both
-cost-to-revenue ratios. Vietnamese headings, real item names anywhere an item is
-named.
+#### What the cancellation means for the report, recorded rather than argued
 
-This is the first caller of `computeIssueCosting` against real data, so it is
-where the `at` obligation from Task 1 is checked. Load purchases by joining
-`purchase_order_lines` to `purchase_orders`, filtering `status = 'COMPLETED'`,
-and taking `at` from `transaction_date` with `created_at` as fallback.
+No stocktake session has ever been committed. Measured 2026-08-05, after all of
+Task 3's proofs rolled back: `stocktake_sessions` 0, `stocktake_lines` 0,
+`stock_issues` 0.
 
-- [ ] **Step 1b: Prove the sort column is the right one**
-
-Sort the same purchases both ways and compare the resulting `issued_value` per
-item.
-
-```
-VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
-  62 đơn nhập đã hoàn tất, 57 đơn có ngày giao dịch lệch ngày ghi sổ quá 12 giờ,
-  lệch xa nhất 66,8 ngày (PO-008).
-  Sắp theo hai cột khác nhau phải cho ra kết quả KHÁC NHAU ở ĐÚNG 1 mặt hàng
-  (trong số 30 mặt hàng có từ 2 lần nhập trở lên).
-  Nếu ra giống hệt nhau -> script đang lấy cùng một cột cho cả hai lần sắp,
-  phép kiểm không chứng minh được gì. DỪNG và sửa phép kiểm trước.
-```
-
-- [ ] **Step 2: Run it and read the output with the owner**
-
-```
-VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
-  Cách cũ, tháng 6: 16.688.133đ trên doanh thu 32.416.000đ = 51,5%
-  Cách cũ, tháng 7:  7.711.264đ trên doanh thu 19.124.000đ = 40,3%
-  Cách cũ, tháng 8:    605.743đ trên doanh thu  1.763.000đ = 34,4%
-  Cột "cách cũ" của script PHẢI khớp đúng ba con số này tới từng đồng.
-  Lệch -> script đọc sai dữ liệu, DỪNG. Đừng đi tiếp sang cột mới.
-```
-
-The new column will be far smaller, because it only covers the period the count
-covers. That is expected, not a defect — say so out loud rather than letting it
-look like a bug.
-
-- [ ] **Step 3: Type check, commit**
-
-This is the gate into Plan C. Plan C does not start until the owner has read
-this output.
+So on the day Plan C switches the report over, the new figure is computed from
+**zero** issue records, and COGS reads 0đ for every month — not only June and
+July, which the owner accepted on 2026-08-04, but the current month too, until a
+first count happens. Plan C carries this as a stated consequence.
 
 ---
 

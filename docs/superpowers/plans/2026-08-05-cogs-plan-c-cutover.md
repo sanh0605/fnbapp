@@ -142,6 +142,32 @@ Load purchases the way Plan B Task 1 pins: join `purchase_order_lines` to
 column, and 57 of 62 completed orders were entered on a different day from the
 one they happened. Reuse Plan B's loader rather than writing a second one.
 
+**This task inherits Plan B Task 4's sort-column check**, because cancelling
+that task made this the first real caller of `computeIssueCosting`.
+`computeIssueCosting` is pure and takes `at` as given, so nothing upstream can
+catch a caller that fills it from the wrong column.
+
+- [ ] **Step 1b: Prove the sort column is the right one**
+
+Sort the same purchases both ways and compare `issued_value` per item.
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
+  62 đơn nhập đã hoàn tất, 57 đơn có ngày giao dịch lệch ngày ghi sổ quá 12 giờ,
+  lệch xa nhất 66,8 ngày (PO-008).
+  Sắp theo hai cột khác nhau phải cho ra kết quả KHÁC NHAU ở ĐÚNG 1 mặt hàng
+  (trong số 30 mặt hàng có từ 2 lần nhập trở lên).
+  Nếu ra giống hệt nhau -> đang lấy cùng một cột cho cả hai lần sắp, phép kiểm
+  không chứng minh được gì. DỪNG và sửa phép kiểm trước.
+```
+
+**The figure this task switches to will be 0đ, and that is expected.** Measured
+2026-08-05: `stock_issues` holds 0 rows and no stocktake session has ever been
+committed. Until a first count happens, the new COGS is zero for every month —
+including the current one, not only the closed months the owner accepted on
+2026-08-04. Do not treat a zero here as a defect and do not patch around it;
+report it and let the count fix it.
+
 **Two consequences that are not optional to think about:**
 
 `actions.ts:318-324` forces the rounding remainder onto the first row of
