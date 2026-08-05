@@ -101,7 +101,7 @@ abandoned. Treat the numbers as gone.
 | `app/pos/actions.ts` (modify) | Checkout stops computing a sale cost | 3 |
 | `scripts/reset-cost-at-sale.ts` (create) | Dry-run/`--apply` reset of 2.699 stored values | 4 |
 | `scripts/delete-derived-stock-rows.ts` (create) | Dry-run/`--apply` deletion of the derived ledger and the recovery log | 5 |
-| `supabase/migrations/0054_retire_cost_machinery.sql` (create) | Drop the triggers and jobs that maintained the old figure | 6 |
+| `supabase/migrations/0054_retire_cost_machinery.sql` (create) | Drop the triggers and jobs that maintained the old figure | 6 — **runs before 4** |
 | `CLAUDE.md` (modify) | Section 7 rewritten | 7 |
 | `docs/BUSINESS-RULES.md` (modify) | `BR-SALE-001`, `BR-COGS-002` retired | 7 |
 
@@ -713,6 +713,38 @@ calculation reads `cost_at_sale` any more, and
 all. So this task changes nothing the owner can see; its only remaining effect
 is destroying the record. Told exactly that, he chose deletion again. Proceed.
 
+**Task 6 runs before this task. Reordered 2026-08-05, and the reason matters
+more than the reorder.**
+
+`lib/backdated-ledger/anomaly-threshold.ts:47` reads
+`if (change.old_cost_at_sale === 0) continue;` — the ratio check that decides
+whether a correction is anomalous is **skipped entirely when the old value is
+zero**. So the moment this task sets 2.500 lines to 0, every one of the 1.523
+queued correction events becomes un-anomalous by definition, and eligible for
+automatic application. The nightly cron would then write costs back into the
+column this task just cleared.
+
+Dormant today: the route requires `CRON_SECRET`
+(`app/api/cron/apply-backdated-corrections/route.ts:36-39`) and item 19 records
+that it was never set, which is why 1.523 events have sat untouched. That is the
+danger rather than the reassurance — the trap springs later, when somebody fixes
+the "broken cron" and silently undoes this task months after anyone remembers
+why the column was zeroed.
+
+**Rejecting the 1.523 events was proposed and declined.** It treats the symptom,
+costs a write to 1.523 production rows, and leaves the machinery standing. Task 6
+already exists to remove that machinery, has to happen regardless, and depends on
+nothing in Tasks 4 or 5. Running it first makes the queue unprocessable because
+nothing remains to process it — no new script, no extra production write, cause
+removed rather than guarded against.
+
+**One boundary for Task 6 when it moves ahead:** it retires the *correction*
+machinery — the backdated events, the cron, the drift audits. It must **not**
+touch `trg_stock_ledger_inventory_balances`
+(`0038_materialize_inventory_balances.sql:64-68`), which fires on delete and is
+what keeps `inventory_balances` correct while Task 5 removes ledger rows.
+Dropping that one early would leave every balance stale.
+
 **Take a fresh backup immediately before the apply — Task 1's does not cover
 this.** Task 1 proved the *mechanism* restores, on 2026-08-05. The shop has sold
 since. Restoring that snapshot now would roll back real sales to fix a cost
@@ -950,6 +982,16 @@ the script dies with what it audits rather than needing separate handling.
 field carrying a wrong value is worse than an absent one: it survives being
 re-added to a screen. Remove them from the payload in this task, once both
 consumers are gone.
+
+**Execution order: this task runs before Task 4, not after it.** Reordered
+2026-08-05 — the full reasoning sits in Task 4, but in short, once `cost_at_sale`
+reads zero the anomaly check stops rejecting anything
+(`lib/backdated-ledger/anomaly-threshold.ts:47`), so leaving this machinery
+standing across Task 4 arms it to rewrite exactly what Task 4 clears.
+
+**Do not touch `trg_stock_ledger_inventory_balances`.** It is not correction
+machinery; it fires on delete and keeps `inventory_balances` correct while Task 5
+removes ledger rows. Retiring it here would leave every balance stale.
 
 - [ ] **Step 1: Confirm the cron has not run and record that fact**
 
