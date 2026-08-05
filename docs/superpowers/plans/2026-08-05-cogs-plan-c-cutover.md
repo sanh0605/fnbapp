@@ -307,7 +307,7 @@ purchases is safe regardless of period: the replay is chronological, so a
 purchase dated after the last issue cannot change any issue's value, it only
 lands in `closing_value`.
 
-- [ ] **Step 1c: Prove the months add up to the whole**
+- [x] **Step 1c: Prove the months add up to the whole**
 
 The invariant that catches an error in the differencing:
 
@@ -322,12 +322,20 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
   xuất thật. Ghi rõ điều đó trong test, đừng để nó xanh giả.
 ```
 
+Proven as a unit test (`computePeriodIssuedValue` describe block,
+`app/admin/reports/actions.test.ts`), not a live script — production
+currently holds 0 real issues, so a live run would be exactly the false-green
+case this step warns against. Synthetic fixture: three months of real,
+distinct, non-zero issues; asserts `june + july + august === wholePeriod`
+**and** `wholePeriod > 0`, so the invariant cannot pass by both sides being
+empty.
+
 **This task inherits Plan B Task 4's sort-column check**, because cancelling
 that task made this the first real caller of `computeIssueCosting`.
 `computeIssueCosting` is pure and takes `at` as given, so nothing upstream can
 catch a caller that fills it from the wrong column.
 
-- [ ] **Step 1b: Prove the sort column is the right one**
+- [x] **Step 1b: Prove the sort column is the right one**
 
 Sort the same purchases both ways and compare `issued_value` per item.
 
@@ -340,6 +348,16 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
   Nếu ra giống hệt nhau -> đang lấy cùng một cột cho cả hai lần sắp, phép kiểm
   không chứng minh được gì. DỪNG và sửa phép kiểm trước.
 ```
+
+Proven live against production, 2026-08-05. Direct replay (matches the
+example's exact method — no synthetic issue, purchase order only): **63**
+completed purchase orders now (58 skewed >12h, still max 66,8 days), **1 of
+30** multi-purchase items reorders relative to itself — `SPM-043`, matching
+this figure exactly. Broader check (one synthetic issue per item, to measure
+actual downstream impact on `issued_value` rather than just reordering):
+**20 of 30** items' computed value changes under the wrong column, several by
+the engine throwing "issue precedes any purchase" outright — a stronger,
+not contradictory, result answering the same question this step asks.
 
 **The figure this task switches to will be 0đ, and that is expected.** Measured
 2026-08-05: `stock_issues` holds 0 rows and no stocktake session has ever been
@@ -384,19 +402,43 @@ every product shows 100% margin. Either remove that breakdown or label it
 plainly in Vietnamese as no longer available — do not ship a screen showing
 every drink at 100% margin with no explanation.
 
-- [ ] **Step 1: Write the failing test for the new `totalCOGS` source**
+- [x] **Step 1: Write the failing test for the new `totalCOGS` source**
 
-- [ ] **Step 2: Switch the source**
+`computePeriodIssuedValue` unit tests in `app/admin/reports/actions.test.ts`,
+written and confirmed failing (`is not a function`) before the function
+existed.
 
-- [ ] **Step 3: Decide and implement what happens to the two breakdowns above**
+- [x] **Step 2: Switch the source**
 
-- [ ] **Step 4: Confirm revenue did not move**
+Wrote the loader (`buildIssueCostingPurchases`, `buildIssueCostingIssues`)
+and the two-run-subtraction (`computePeriodIssuedValue`) fresh, per the
+corrected Files note above — there was no Plan B Task 4 loader to reuse.
+
+- [x] **Step 3: Decide and implement what happens to the two breakdowns above**
+
+`cogsDetails` deleted entirely — data, the rounding-remainder block, the type
+field, and its whole UI section. Per-product/topping `cogs`/`grossProfit`/
+`marginPct` kept in the type (two pre-existing scripts still read them) but
+always `0` / `revenue` / `100`; the P&L page drops those columns from both
+breakdown tables (product and topping) and explains why in Vietnamese rather
+than showing a false 100% margin. Also deleted `scripts/audit-pnl-mac-consistency.ts`
+and `scripts/check-cogs-table.ts` — both audited a three-way MAC consistency
+that no longer exists, neither had a live caller, and two operations
+playbooks' dangling references to the first one are fixed.
+
+- [x] **Step 4: Confirm revenue did not move**
 
 Read the P&L for June and July, the two closed months. Revenue must read
 22.157.000đ and 18.661.000đ. If either moved, the change reached beyond cost —
 stop. Do not gate on August; it is open and rises with every sale.
 
-- [ ] **Step 5: Suite, type check, commit**
+Actual, via a live `getPnLDataV2` call: June 22.157.000đ, July 18.661.000đ —
+identical. `totalCOGS` reads 0đ for both, as this task's own note above
+predicts (`stock_issues` still holds 0 rows).
+
+- [x] **Step 5: Suite, type check, commit**
+
+971/971 tests, `tsc --noEmit` clean, rule checker clean. Commit `f5ba76e`.
 
 ---
 
