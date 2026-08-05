@@ -130,6 +130,24 @@ Purchase orders, reviewed recoveries, and other critical flows that change multi
 
 Semi-product production and consumption must retain the recipe/yield evidence needed to explain sale-time COGS. Later recipe replay can differ from the pinned transaction without authorizing historical mutation.
 
+Superseded by `BR-INV-006` (owner decision 2026-08-05); in force until that cutover applies.
+
+### BR-INV-006 — Semi-products carry no stock and no value
+
+**Status:** `APPROVED` — owner decision 2026-08-05
+
+Semi-products are things the shop makes rather than buys — syrups, brewed tea, boiled sweet potato. They are no longer tracked as stock, hold no value, and no screen records making a batch. Their recipes stay, as the record of how something is made.
+
+**Why the cost does not vanish with the tracking.** The ingredients were already expensed the moment they left stock. A pot of brewed tea is not a new asset; it is goods already paid for, in a different shape. Recording it as stock with a value of its own would count the same money twice.
+
+**Why this reverses the 2026-07-31 decision to keep semi-product stock.** That decision served the inference chain this design removes, and the arithmetic ends it regardless. Measured 2026-08-05: 16 active semi-products hold 3.919 `stock_ledger` rows, and **every one of them is a transaction type the cutover deletes** — `PRODUCTION_YIELD` in, `SALES_CONSUME` out. None is a purchase receipt, because a semi-product is never purchased.
+
+Raw ingredients survive deletion because purchases remain underneath them: stock reads as everything ever bought, inflated but real, and the first count corrects it. Semi-products have no such floor. They fall to zero with nothing able to add to them, and a count could not value them either, since they have no purchase price to draw on.
+
+The owner was shown both directions before deciding — Sữa tươi rising from 50.750 g to 134.450 g against semi-products falling from 40.550 to 0 — and chose to drop the tracking rather than rebuild a mechanism for it.
+
+Supersedes `BR-INV-003`, effective on the cutover in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`.
+
 ### BR-INV-004 — Negative stock is investigated, not silently fabricated away
 
 **Status:** `APPROVED`

@@ -550,6 +550,32 @@ editing an old order asks the system to reverse movement that no longer exists.
 Retire both paths here, before anything is deleted, rather than discovering the
 interaction afterwards.
 
+**The production path refuses the operation outright — owner decision
+2026-08-05, `BR-INV-006`.** `save_production_order_atomic` hard-validates that
+`p_ledger` carries exactly `items.length + 1` rows, so unlike the other two
+paths it cannot simply stop writing without a migration to relax it.
+
+It does not get one. Making a batch is refused entirely — no `production_orders`
+row, no `production_items`, no ledger row — with a Vietnamese message saying the
+ledger now records purchases and periodic counts only.
+
+This is not merely the cheap option. Semi-products stop having stock at all:
+measured 2026-08-05, 16 active semi-products hold 3.919 ledger rows and **every
+one is a type Task 5 deletes**, none a purchase receipt. Raw ingredients survive
+deletion because purchases sit underneath them; semi-products have no floor and
+fall to zero with nothing able to add to them. Recording a batch would be
+recording an asset whose ingredients were already expensed when they left stock
+— the same money twice.
+
+Because that ends semi-product tracking rather than merely disabling a screen,
+it was put to the owner rather than decided here. He chose to drop it.
+
+Consequences to carry through this plan: `BR-INV-003` retires with
+`BR-SALE-001` and `BR-COGS-002` in Task 7; `CLAUDE.md` section 7's implicit-
+production rule goes with them; and the `SEMI_PRODUCT` count type left legal by
+Plan B's migration `0052` becomes vestigial — leave the constraint alone, but
+the count list must not offer it.
+
 **And a third path, found in the challenge round.**
 `app/admin/production/actions.ts:104-117` writes `PRODUCTION_CONSUME` and
 `PRODUCTION_YIELD` directly. This is the real "Sản xuất / Nấu Bếp" screen,
