@@ -182,9 +182,10 @@ describe("getPnLDataV2", () => {
     // 14998 / 3 = 4999.333...; issuing 1 -> Math.ceil(4999.333...) = 5000, not Math.round's 4999.
     expect(result.totalCOGS).toBe(5000);
     expect(result.grossProfit).toBe(result.totalRevenue - 5000);
-    // Per-product cogs is retired by design (spec section 9) -- always 0,
-    // never a share of totalCOGS.
-    expect(result.productProfitAnalysis[0].cogs).toBe(0);
+    // Per-product cost is retired by design (spec section 9) -- issue-based
+    // costing cannot attribute a purchased item's cost to one drink, so the
+    // row carries revenue and quantity only, never a share of totalCOGS.
+    expect(result.productProfitAnalysis[0]).not.toHaveProperty("cogs");
   });
 
   it("aggregates single Sữa Dâu order correctly", async () => {
@@ -455,18 +456,17 @@ describe("getPnLDataV2", () => {
     const rowA = multiRows.find(r => r.variant_id === "VAR-A");
     const rowB = multiRows.find(r => r.variant_id === "VAR-B");
 
-    // Per-product cost/margin retired by design (spec section 9) -- always
-    // 0 / revenue / 100%, never a MAC-derived split. The double-counting
-    // bug this test used to guard (both variants sharing one ledger-index
-    // MAC weight) is now structurally impossible: there is no split left to
-    // double-count. What still matters, and is still asserted above, is
-    // that the two variants stay two separate rows rather than merging.
-    expect(rowA?.cogs).toBe(0);
-    expect(rowB?.cogs).toBe(0);
-    expect(rowA?.grossProfit).toBe(15000);
-    expect(rowB?.grossProfit).toBe(15000);
-    expect(rowA?.marginPct).toBe(100);
-    expect(rowB?.marginPct).toBe(100);
+    // Per-product cost/margin retired by design (spec section 9) -- the row
+    // carries revenue and quantity only, never a MAC-derived split. The
+    // double-counting bug this test used to guard (both variants sharing one
+    // ledger-index MAC weight) is now structurally impossible: there is no
+    // split left to double-count. What still matters, and is still asserted
+    // above, is that the two variants stay two separate rows rather than
+    // merging.
+    expect(rowA).not.toHaveProperty("cogs");
+    expect(rowB).not.toHaveProperty("cogs");
+    expect(rowA?.revenue).toBe(15000);
+    expect(rowB?.revenue).toBe(15000);
   });
 
   it("splits COGS between product and topping rows without double-counting", async () => {
@@ -561,8 +561,8 @@ describe("getPnLDataV2", () => {
     // rather than merging into the product's.
     expect(productRow).toBeDefined();
     expect(toppingRow).toBeDefined();
-    expect(productRow?.cogs).toBe(0);
-    expect(toppingRow?.cogs).toBe(0);
+    expect(productRow).not.toHaveProperty("cogs");
+    expect(toppingRow).not.toHaveProperty("cogs");
   });
 
   // "splits product and topping COGS by MAC weights instead of FIFO order"
@@ -678,15 +678,16 @@ describe("getPnLDataV2", () => {
     const dauSayRows = result.productProfitAnalysis.filter(row => row.product_name === "Dâu sấy");
 
     expect(dauSayRows).toHaveLength(1);
+    // Per-topping cost retired by design (spec section 9) -- the row carries
+    // revenue and quantity only. The fact still worth protecting here is
+    // modifier-id canonicalization (both lines merge into one row), unrelated
+    // to cost.
     expect(dauSayRows[0]).toMatchObject({
       product_id: "MOD:MOD-NEW-DAU",
       qty: 2,
       revenue: 20000,
-      // Per-topping cost retired by design (spec section 9) -- always 0.
-      // The fact still worth protecting here is modifier-id canonicalization
-      // (both lines merge into one row), unrelated to cost.
-      cogs: 0,
     });
+    expect(dauSayRows[0]).not.toHaveProperty("cogs");
   });
 });
 

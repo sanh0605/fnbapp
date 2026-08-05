@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-06 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 3/3b/6: checkout stops costing a sale, its live-verification script gets a safety catch, and the machinery that could have silently undone both retires first
+
+**Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`, continuing the Plan C cutover after Plan B's issue-based engine and Task 2's report switch.
+
+**Task 3** (commit `967b157`): POS checkout, order edit, and production all stop computing a cost or moving stock. `cost_at_sale` stays at its column default (0); `stock_ledger` gets an empty write from POS/edit, none at all from production (refused outright, `BR-INV-006`, owner decision 2026-08-05 — ending semi-product stock tracking is a larger consequence than disabling one screen, so it was escalated rather than decided here). Order edit keeps reversing an OLD version's real ledger rows unchanged (`buildVoidReversalRows`) — only the NEW version's computation is gone. Verified live against production, not inferred from code: one real sale, one real edit of that same order, one refused production attempt, `stock_ledger` at 10.684 rows before and after all three.
+
+**Task 3b** (commit `306b7bb`): the live-verification script (`scripts/verify-task3-live.ts`) had shipped with no gate — running it wrote a real sale/edit/void immediately. Now defaults to a dry run (prints the real product names and expected counts, writes nothing); `--apply` performs the writes and reads back the final order statuses from the database instead of trusting the void call's return value.
+
+**Task 6** (this commit), reordered ahead of Task 4 mid-session: found that `lib/backdated-ledger/anomaly-threshold.ts:47` skips its per-line anomaly check whenever the old cost is 0 — exactly what Task 4 was about to set on 2.500+ rows — which would have let the nightly `apply-backdated-corrections` cron (never CRON_SECRET-configured, confirmed never once applied a change) silently rewrite some of Task 4's resets the next time someone enabled it. Retired the whole machinery first instead: migration `0054` drops the two detection triggers, the MAC-drift baseline-lock trigger (same "policed per-line cost" reasoning), six recompute/reject/recovery RPCs, and the three tables (1.523 queued events included) — confirmed by querying afterward, not by reading the migration. Left `trg_stock_ledger_inventory_balances` untouched (not correction machinery, keeps `inventory_balances` correct through Task 5's coming deletes). Deleted the cron route, its two review screens, and their components; removed the now-dangling dashboard banner and daily-digest references; removed the frozen `cogs`/`grossProfit`/`marginPct` per-row fields from `getPnLDataV2` now that both remaining readers are gone. Two deviations from the task's literal text, both forced by `tsc --noEmit` rather than chosen in advance: kept `compute-sale-time-cogs.ts`/`find-affected-lines.ts`/`recompute-event.ts` in both `lib/backdated-ledger/**` and `lib/backdated-recipe-events/**` (six already-executed historical `apply-*.ts` scripts still import them — this repo never deletes those); deleted `scripts/audit-lock-bypass-history.ts` instead of leaving it as directed (its `r.cogs` access is strongly typed against the real return shape, so field removal broke it regardless, and its own check was already comparing a frozen 0 against a real total).
+
+`npx tsc --noEmit`: 0 errors. `npx vitest run`: 947/947 (161 files). `check-rules-current.ts`: found and fixed two stale-path drifts (`docs/OPEN-ITEMS.md` items 1/2/2b/19 removed as resolved; `docs/operations/backdated-cost-events-playbook.md` deleted, it documented the machinery just retired), then clean.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-05 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 1: the restore path re-proven against the schema it is about to change, and the plan's own revenue baseline caught wrong
 
 **Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 1 — before Plan C deletes ~24,9 million dong of cost history and ~10.000 derived ledger rows, the backup must be shown to restore, not assumed to.

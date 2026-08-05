@@ -993,23 +993,74 @@ standing across Task 4 arms it to rewrite exactly what Task 4 clears.
 machinery; it fires on delete and keeps `inventory_balances` correct while Task 5
 removes ledger rows. Retiring it here would leave every balance stale.
 
-- [ ] **Step 1: Confirm the cron has not run and record that fact**
+- [x] **Step 1: Confirm the cron has not run and record that fact**
 
-`docs/OPEN-ITEMS.md` items 2b and 19 record that it never started in
-production: 132 PENDING events, `is_anomalous = 0` after two nights. Confirm
-this still holds — a job that started running between then and now changes what
-retiring it means.
+Re-confirmed 2026-08-06, stronger than the 02/08 record: zero rows in either
+queue table have ever carried `reviewed_by = 'system-auto'` (the literal actor
+string the cron code uses) — every one of the 522 non-`PENDING` rows was
+reviewed by "Claude" (a human-invoked script), none by the sweep. Queue measured
+1.391 + 132 = 1.523 PENDING, up from the 02/08 figure of 1.522 by exactly one
+new organic detection (a late purchase entry), consistent with zero drainage.
+Recorded in migration `0054`'s header comment.
 
-- [ ] **Step 2: Remove the scheduled job and the triggers that fed it**
+- [x] **Step 2: Remove the scheduled job and the triggers that fed it**
 
-Name the trigger's **function**, not only the trigger. A migration on 2026-07-31
-targeted the name instead and applied cleanly while doing nothing.
+Named the trigger **functions**, not only the triggers: `flag_backdated_ledger_entry()`,
+`flag_backdated_recipe_entry()`, `prevent_audit_locked_order_line_mutation()`,
+`apply_mac_drift_recovery()`, plus the six recompute/reject/recovery RPCs
+(`mark_backdated_event_recomputed`, `mark_backdated_recipe_event_recomputed`,
+`apply_backdated_event_recovery`, `apply_backdated_recipe_event_recovery`,
+`reject_backdated_event`, `reject_backdated_recipe_event`) — confirmed each had
+no caller outside the machinery retiring here before dropping it.
+`trg_stock_ledger_inventory_balances` confirmed untouched, before and after.
 
-- [ ] **Step 3: Prove it is gone by querying, not by reading the migration**
+- [x] **Step 3: Prove it is gone by querying, not by reading the migration**
 
-- [ ] **Step 4: Confirm the two reconstruction files still exist and still compile**
+`pg_trigger`: 0 rows for the three trigger names. `information_schema.tables`:
+0 rows for `backdated_ledger_events`/`backdated_recipe_events`/`audit_baseline_locks`.
+`trg_stock_ledger_inventory_balances`: still 1 row, confirmed alive.
 
-- [ ] **Step 5: Suite, type check, commit**
+- [x] **Step 4: Confirm the two reconstruction files still exist and still compile**
+
+`lib/full-history-recompute.ts` and `lib/inventory-consumption.ts` both present;
+`npx tsc --noEmit` clean across the whole repo.
+
+- [x] **Step 5: Suite, type check, commit**
+
+`npx tsc --noEmit`: 0 errors. `npx vitest run`: 947/947 (161 files — down from
+970/165 by the tests belonging to deleted files). `check-rules-current.ts`: two
+stale-path failures found and fixed (`docs/OPEN-ITEMS.md` items 1/2/2b/19
+removed, resolved by this task; `docs/operations/backdated-cost-events-playbook.md`
+deleted, it documented operating the machinery just retired), then clean.
+
+**Two deviations from this task's literal text, both driven by discoveries
+made while implementing, not decided in advance:**
+
+1. **`lib/backdated-ledger/**`/`lib/backdated-recipe-events/**` were not fully
+   retired.** `compute-sale-time-cogs.ts`, both `find-affected-lines.ts`, and
+   both `recompute-event.ts` are still imported by six already-executed
+   historical `apply-*.ts` scripts this repo's convention keeps forever
+   (`scripts/apply-backfill-nnl007-ledger-event.ts` and five others) — deleting
+   them would have broken `tsc --noEmit` on dead-but-kept history, the same
+   shape of contradiction the challenge round already caught for
+   `lib/reorder-suggestion.ts`. Deleted only what nothing else needs:
+   `anomaly-threshold.ts` (sole caller was the cron route) and
+   `task-3.8-gap-report.ts` (zero callers found), plus their tests. The kept
+   files are now unreached by any live path, same status as
+   `lib/inventory-consumption.ts`.
+2. **`scripts/audit-lock-bypass-history.ts` was deleted, not left alone.** The
+   task text said leave it ("dies with what it audits, rather than needing
+   separate handling"), but its line 95 (`r.cogs`) is strongly typed against
+   `getPnLDataV2`'s real return shape, not `any` — removing the frozen
+   `cogs`/`grossProfit`/`marginPct` fields (this task's own next paragraph)
+   breaks `tsc --noEmit` there regardless. Its own P&L-consistency check was
+   already comparing a frozen 0 against the real issue-based total, which can
+   only ever show a false mismatch now, and its first query
+   (`audit_baseline_locks`) fails at runtime after this task's migration
+   regardless of the type fix. Kept `scripts/verify-pnl-patterns.ts` instead of
+   deleting it — its topping-COGS check (now permanently false) was removed,
+   but its revenue-per-cup and suspicious-discount checks are unrelated to COGS
+   and still work.
 
 ---
 

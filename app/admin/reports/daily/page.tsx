@@ -30,7 +30,7 @@ export default async function DailyDigestPage({
     year: "numeric",
   });
 
-  const hasAttention = digest.negativeStockItems.length > 0 || digest.pendingBackdatedEventsCount > 0;
+  const hasAttention = digest.negativeStockItems.length > 0;
 
   return (
     <div className="space-y-6">
@@ -42,9 +42,6 @@ export default async function DailyDigestPage({
           <ul className="list-disc list-inside space-y-1">
             {digest.negativeStockItems.length > 0 && (
               <li>{digest.negativeStockItems.length} nguyên liệu/bán thành phẩm đang âm tồn kho.</li>
-            )}
-            {digest.pendingBackdatedEventsCount > 0 && (
-              <li>{digest.pendingBackdatedEventsCount} thay đổi giá/công thức trễ hạn đang chờ duyệt.</li>
             )}
           </ul>
         </Alert>
@@ -144,34 +141,12 @@ export default async function DailyDigestPage({
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
         <div className="p-5 border-b border-border bg-page">
           <h3 className="font-bold text-text-primary">Cần Đặt Hàng Sớm</h3>
-          <p className="text-xs text-text-secondary mt-0.5">Nguyên liệu/bán thành phẩm đang dưới điểm đặt hàng lại, tính theo tốc độ tiêu thụ gần đây.</p>
         </div>
-        {digest.lowStockItems.length === 0 ? (
-          <EmptyState icon="✅" title="Chưa có mặt hàng nào cần đặt gấp" description="Tồn kho các nguyên liệu đang ở mức an toàn." />
-        ) : (
-          <table className="w-full text-left text-sm">
-            <thead className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-              <tr>
-                <th className="px-6 py-3 font-bold">Mặt hàng</th>
-                <th className="px-6 py-3 font-bold text-right">Tồn hiện tại</th>
-                <th className="px-6 py-3 font-bold text-right">Gợi ý đặt thêm</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {digest.lowStockItems.map(item => (
-                <tr key={item.itemId} className="hover:bg-page transition-colors">
-                  <td className="px-6 py-3 font-medium text-text-primary">{item.itemName}</td>
-                  <td className="px-6 py-3 text-right text-warning font-medium">{formatNumber(item.currentStock)} {item.baseUnitName}</td>
-                  <td className="px-6 py-3 text-right text-text-secondary">
-                    {item.suggestedReorderQtyPurchaseUnit !== null
-                      ? `${formatNumber(item.suggestedReorderQtyPurchaseUnit)} ${item.purchaseUnitName || ""}`
-                      : "---"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <div className="p-5 text-sm text-text-secondary">
+          Tính năng này cần dữ liệu kiểm kê định kỳ để biết tốc độ tiêu thụ thật —
+          hiện quán chưa có đợt kiểm kê nào, nên gợi ý đặt hàng đang tạm tắt. Sẽ
+          hoạt động lại sau khi có đợt kiểm kê đầu tiên.
+        </div>
       </div>
     </div>
   );

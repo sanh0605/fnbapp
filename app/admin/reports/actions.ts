@@ -32,6 +32,9 @@ export interface PnLReportResult {
   grossProfit: number;
   margin: number;
   orderCount: number;
+  // Plan C: per-product cost and margin retired by design (spec section 9)
+  // -- issue-based costing cannot attribute a purchased item's cost to one
+  // drink, so this row carries revenue and quantity only.
   productProfitAnalysis: Array<{
     product_id: string;
     product_name: string;
@@ -39,13 +42,6 @@ export interface PnLReportResult {
     size_name: string;
     qty: number;
     revenue: number;
-    // Plan C: per-product cost and margin retired by design (spec section
-    // 9) -- issue-based costing cannot attribute a purchased item's cost to
-    // one drink. Always 0 / revenue / 100; kept in the shape only because
-    // two pre-existing scripts still read these fields.
-    cogs: number;
-    grossProfit: number;
-    marginPct: number;
   }>;
   // Reconciliation indicator
   v2OrderCount: number;
@@ -254,10 +250,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // 5. Product profit analysis: revenue and quantity only. Per-product
     // cost and margin retired by design (spec section 9) -- issue-based
     // costing knows what left stock, not which drink used it, so there is
-    // no way to attribute a purchased item's cost to one product. The
-    // cogs/grossProfit/marginPct fields stay in the shape (two pre-existing
-    // scripts read them) but are always 0/revenue/100; the UI labels this
-    // as unavailable rather than showing a false 100% margin.
+    // no way to attribute a purchased item's cost to one product.
     const productProfitAnalysis = productRows
       .filter(r => !r.product_id.startsWith("MOD:") && !standaloneToppingToModId.has(r.product_id))
       .map(r => ({
@@ -267,11 +260,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
         size_name: r.size_name,
         qty: r.qty,
         revenue: r.revenue,
-        cogs: 0,
-        grossProfit: r.revenue,
-        marginPct: r.revenue > 0 ? 100 : 0,
       }))
-      .sort((a, b) => b.qty - a.qty || b.grossProfit - a.grossProfit);
+      .sort((a, b) => b.qty - a.qty || b.revenue - a.revenue);
 
     // Add topping rows (modifiers as pseudo-products + standalone toppings merged via modId)
     const canonicalModifiers = buildCanonicalModifierLookup(modifiers as any[]);
@@ -329,9 +319,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       size_name: "",
       qty: r.qty,
       revenue: r.revenue,
-      cogs: 0,
-      grossProfit: r.revenue,
-      marginPct: r.revenue > 0 ? 100 : 0,
     }));
 
     // Round at the render boundary only, owner rule 2026-07-30 (lib/display-

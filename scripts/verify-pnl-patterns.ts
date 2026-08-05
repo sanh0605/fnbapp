@@ -7,8 +7,12 @@
  *   1. Cà phê đá revenue per cup ends in 5k or 0k (15k or 18k price)
  *   2. Trà sữa truyền thống revenue per cup ends in 5k or 0k
  *   3. Yogurt việt quất revenue per cup ends in 5k or 0k
- *   4. Topping COGS > 0 for at least some toppings
- *   5. No order has manual_order_discount > 30% of gross (suspicious)
+ *   4. No order has manual_order_discount > 30% of gross (suspicious)
+ *
+ * The former check 4 (topping COGS > 0) was removed in Plan C Task 6:
+ * per-product/topping cogs is frozen at 0 by design (spec section 9,
+ * app/admin/reports/actions.ts) -- issue-based costing knows what left
+ * stock, not which drink used it. That check could only ever fail now.
  */
 
 import * as dotenv from "dotenv";
@@ -41,16 +45,6 @@ async function main() {
     const status = endsIn5kOr0k ? "✓" : "✗";
     if (!endsIn5kOr0k) allPassed = false;
     console.log(`  ${status} ${row.product_name}: ${Math.round(perCup)}đ/cup (qty ${row.qty})`);
-  }
-
-  // Check 2: Topping COGS > 0
-  console.log("\n--- Topping COGS check ---");
-  const toppingRows = pnl.productProfitAnalysis.filter((p: any) => p.product_id.startsWith("MOD:"));
-  for (const row of toppingRows) {
-    const hasCogs = row.cogs > 0;
-    const status = hasCogs ? "✓" : "✗";
-    if (!hasCogs) allPassed = false;
-    console.log(`  ${status} ${row.product_name}: revenue ${row.revenue}, cogs ${row.cogs}, margin ${row.marginPct.toFixed(1)}%`);
   }
 
   // Check 3: No order has suspiciously large manual_order_discount

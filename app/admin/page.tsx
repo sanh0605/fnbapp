@@ -29,12 +29,9 @@ export default async function AdminDashboard({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const supabase = getSupabaseClient();
-  const [{ count: anomalousLedgerCount }, { count: anomalousRecipeCount }, { count: posSyncFailureCount }] = await Promise.all([
-    supabase.from("backdated_ledger_events").select("*", { count: "exact", head: true }).eq("status", "PENDING").eq("is_anomalous", true),
-    supabase.from("backdated_recipe_events").select("*", { count: "exact", head: true }).eq("status", "PENDING").eq("is_anomalous", true),
+  const [{ count: posSyncFailureCount }] = await Promise.all([
     supabase.from("pos_sync_failures").select("*", { count: "exact", head: true }).eq("resolved", false),
   ]);
-  const anomalousBackdatedEventCount = (anomalousLedgerCount || 0) + (anomalousRecipeCount || 0);
 
   const filterParam = searchParams.filter as string || 'this_month';
 
@@ -260,14 +257,6 @@ export default async function AdminDashboard({
 
   return (
     <div className="space-y-6">
-      {anomalousBackdatedEventCount > 0 && (
-        <Link href="/admin/audit/backdated-ledger?status=PENDING" className="block">
-          <Alert variant="warning" title="Cần xem lại: điều chỉnh giá vốn bất thường">
-            Có {anomalousBackdatedEventCount} giao dịch backdate với mức điều chỉnh lớn hơn bình thường,
-            hệ thống đã tạm dừng không tự áp dụng. Bấm để xem chi tiết.
-          </Alert>
-        </Link>
-      )}
       {(posSyncFailureCount || 0) > 0 && (
         <Link href="/admin/pos-sync" className="block">
           <Alert variant="warning" title="Cần xem lại: đơn POS gửi lại thất bại">

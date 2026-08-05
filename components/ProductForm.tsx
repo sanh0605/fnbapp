@@ -206,7 +206,7 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                               <input id={`${variantRowId}-price`} type="number" required min="0" value={variant.price} onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)} className="w-full border border-border rounded-md px-3 py-2 text-sm font-bold text-primary focus:ring-focus-ring bg-surface-card" />
                             </div>
                             <div className="flex-1">
-                              <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Giá vốn dự kiến (VNĐ)</label>
+                              <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Giá vốn ước tính, giá mua bình quân (VNĐ)</label>
                               <div className="w-full border border-transparent px-3 py-2 text-sm font-bold text-text-secondary bg-surface-card rounded-md shadow-sm">
                                {formatNumber(Math.round(calculateVariantCost(variant)))}
                               </div>
