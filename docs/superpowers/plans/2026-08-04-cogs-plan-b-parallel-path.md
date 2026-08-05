@@ -730,19 +730,30 @@ With no manual issues yet, the middle term is zero and this reduces to the
 simple form. When the counter button arrives it becomes non-zero and **nothing
 in Task 1 changes** — which is the whole reason for building it this way today.
 
-- [ ] **Step 1: Write the failing test for the shortfall arithmetic**
+- [x] **Step 1: Write the failing test for the shortfall arithmetic**
 
 Include a case with a non-zero manual issue, even though nothing produces one
 yet. That case is the proof the deferred button will not require a rewrite.
 
-- [ ] **Step 2: Extend the count list to purchased items, carrying the filter**
+No dedicated pure function exists for this arithmetic (it lives directly in
+the SQL, unlike Task 1's `computeIssueCosting`), so this was proven live
+instead of via vitest: inserted a real `MANUAL`-source `stock_issues` row
+(200 units) for `SPM-001` (total purchased 1000) inside a rolled-back
+transaction, then called `save_stocktake_line_atomic` — returned
+`theoretical_at_count = 800.000000`, proving the unconditional sum already
+covers `MANUAL` with zero code change.
+
+- [x] **Step 2: Extend the count list to purchased items, carrying the filter**
 
 Point (a) above. Verify by count, not by eye: the list must exclude every
 purchased item whose base ingredient is flagged `is_non_inventory`, and Đá viên
 and Khoai lang must be absent from it. If either appears, the join dropped the
 filter.
 
-- [ ] **Step 3: Write migration `0053` — the two RPCs**
+Measured: 52 total purchased items, 50 included, 2 excluded — `SPM-005` (Đá
+viên) and `SPM-052` (Khoai lang), confirmed absent from the included list.
+
+- [x] **Step 3: Write migration `0053` — the two RPCs**
 
 Points (b) and (c). Re-declare `save_stocktake_line_atomic` with the branch on
 `item_type`, and `apply_stocktake_session_atomic` with the split write path.
@@ -751,7 +762,11 @@ Prove the branch on the existing types first: open a session on a base
 ingredient, save a line, and confirm `theoretical_at_count` reads exactly what
 it read before the migration. The two old types must be untouched.
 
-- [ ] **Step 4: Prove the ledger and the balance table did not move**
+Proven live, rolled back: `NNL-001`'s independently-computed
+`sum(quantity_change) from stock_ledger` and the RPC's returned
+`theoretical_at_count` were identical (48918.627443 both).
+
+- [x] **Step 4: Prove the ledger and the balance table did not move**
 
 Before applying a purchased-item count, record:
 
@@ -764,7 +779,23 @@ Apply the count. Re-read both. **All three numbers must be identical.** If a
 ledger row appeared or a balance row was minted, the split write path leaked and
 the old figure is no longer safe — stop and report.
 
-- [ ] **Step 5: Run one real count end to end**
+Proven live, rolled back: `SPM-001` counted 1 short of its total purchased
+(1000) produced exactly one `stock_issues` row (`base_quantity = 1`).
+`stock_ledger` read 10667 rows before and after; `inventory_balances` read 50
+rows / 302453.439193 total quantity before and after. Identical in both
+cases.
+
+Also proven, both refusal paths: `SPM-010` (2 siblings) counted 1 over its
+total produced `BR-INV-005` naming both real sibling names, their totals
+purchased, and "chưa đếm"; `SPM-018` (0 siblings) produced the same refusal
+worded as a complete sentence with no dangling colon. And the item-32 case
+(`SPM-001` with a 950-unit `MANUAL` issue already recorded, counted 500 —
+above the resulting theoretical of 50 but under the 1000 total purchased)
+produced the distinct "lần kiểm kê trước đã ghi nhận xuất kho nhiều hơn thực
+tế" refusal, not `BR-INV-005`. All six checks confirmed 0 rows left behind
+in `stocktake_sessions`, `stocktake_lines`, or `stock_issues` afterward.
+
+- [x] **Step 5: Run one real count end to end** — deferred, owner decision
 
 The feature has never been exercised. Open a session, count a handful of items,
 apply it, and read back the `stock_issues` rows.
@@ -782,7 +813,20 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
   Nếu dòng đó lưu êm -> DỪNG, đây đúng là kiểu số 0 im lặng.
 ```
 
-- [ ] **Step 6: Suite, type check, commit**
+Both worked examples above proven live in Step 4 (the shortfall case under
+`SPM-001`, the overcount case under `SPM-010`/`SPM-018`) — but as rolled-back
+transactions, not a real committed session. `open_stocktake_session_atomic`
+seeds **all** ~140 inventory-tracked items at once, not "a handful"; a real
+apply with most items left uncounted would permanently confirm a
+mostly-empty stocktake into production history — no undo, only a
+mark-retired path for master data. Presented to the owner as a choice before
+doing it. **Owner decision: defer.** The six rolled-back checks in Step 4
+stand as this task's verification; the first real count happens whenever the
+owner runs an actual physical count.
+
+- [x] **Step 6: Suite, type check, commit**
+
+969/969 tests, `tsc --noEmit` clean. Commit `47afb67`.
 
 ---
 
