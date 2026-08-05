@@ -71,11 +71,13 @@ recompute expects:
 
 Always dry-run against the **full candidate set** first (not a small
 sample) and re-run the standard verification audits
-(`scripts/audit-order-ledger.ts` / `scripts/verify-all-479-clean.ts`,
-`scripts/audit-pnl-mac-consistency.ts`) immediately after any `--apply` --
-comparing the mismatch count before and after, not just checking "no
-errors thrown." A silently-wrong correction looks identical to a correct
-one unless you check the aggregate number moved in the right direction.
+(`scripts/audit-order-ledger.ts` / `scripts/verify-all-479-clean.ts`)
+immediately after any `--apply` -- comparing the mismatch count before and
+after, not just checking "no errors thrown." A silently-wrong correction
+looks identical to a correct one unless you check the aggregate number moved
+in the right direction. (scripts/audit-pnl-mac-consistency.ts retired,
+Plan C Task 2, 2026-08-05 -- it checked a three-way MAC breakdown consistency
+that no longer exists once cost is issue-based.)
 
 ## Resolved (2026-07-21, same night): the corrected retry
 

@@ -2,7 +2,6 @@ import { getPnLDataV2, getPromotionPerformanceV2 } from "../actions";
 import { findAll } from "@/lib/sheets_db";
 import SalesFilter from "@/components/SalesFilter";
 import { formatNumber } from "@/lib/format";
-import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AlertCircle, Banknote, TrendingDown, TrendingUp } from "lucide-react";
 
@@ -55,9 +54,9 @@ export default async function ReportsPage({
         subtitle="Tổng hợp Doanh thu và Giá vốn (COGS, chuẩn MAC — weighted average cost) dựa trên dữ liệu V2."
       />
 
-      {/* Claude code — spec compliance: note MAC clarification */}
+      {/* Plan C Task 2: cost is issue-based now, not per-sale MAC. */}
       <div className="bg-primary-soft text-primary p-3 rounded-xl border border-primary/20 text-xs">
-        <strong>Lưu ý COGS:</strong> Giá vốn dùng chuẩn MAC (Moving Average Cost) được lưu tại thời điểm tạo/sửa đơn. Chi tiết theo nguyên liệu chỉ mang tính tham khảo (FIFO informational). Xem <code>docs/superpowers/specs/2026-06-25-mac-cogs-inventory-design.md</code>.
+        <strong>Lưu ý COGS:</strong> Giá vốn tính theo hàng thực sự xuất khỏi kho (ghi nhận qua kiểm kê định kỳ), theo giá bình quân gia quyền tại lúc xuất — không còn tính riêng theo từng đơn bán. Tháng nào chưa có lần kiểm kê nào thì giá vốn tháng đó đọc 0đ. Xem <code>docs/superpowers/specs/2026-08-02-issue-based-cogs-design.md</code>.
       </div>
 
       {data.v2OrderCount === 0 && (
@@ -126,73 +125,18 @@ export default async function ReportsPage({
         Mỗi số trên trang này được làm tròn riêng từ giá trị chính xác của nó, nên cộng các dòng chi tiết có thể lệch vài đồng so với dòng tổng — không phải lỗi.
       </p>
 
-      {/* PHÂN TÍCH TỶ TRỌNG GIÁ VỐN */}
-      <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
-        <div className="p-5 border-b border-border">
-          <h3 className="text-lg font-bold text-text-primary">Phân Tích Tỷ Trọng Giá Vốn Hàng Bán</h3>
-          <p className="text-sm text-text-secondary">Chi tiết chi phí tiêu hao của từng loại nguyên liệu gốc.</p>
-        </div>
-        
-        {data.cogsDetails.length === 0 ? (
-          <EmptyState 
-            icon={<AlertCircle className="w-8 h-8 text-text-muted" />}
-            title="Chưa có dữ liệu tiêu hao"
-            description="Chưa có dữ liệu tiêu hao nguyên liệu từ bán hàng."
-          />
-        ) : (
-          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
-            <table className="w-full text-left text-sm text-text-secondary">
-              <thead className="bg-page text-text-muted font-medium sticky top-0 border-b border-border shadow-sm z-10">
-                <tr>
-                  <th className="px-6 py-4">Tên Nguyên Liệu</th>
-                  <th className="px-6 py-4 text-right">Khối Lượng Tiêu Hao</th>
-                  <th className="px-6 py-4 text-right">Giá Nhập Bình Quân (MAC)</th>
-                  <th className="px-6 py-4 text-right font-bold text-text-primary">Tổng Giá Vốn</th>
-                  <th className="px-6 py-4 text-right">% Tỷ Trọng</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {data.cogsDetails.map((item, idx) => {
-                  const percentage = data.totalCOGS > 0 ? (item.cogs / data.totalCOGS) * 100 : 0;
-                  const mac = item.qty > 0 ? item.cogs / item.qty : 0;
-                  return (
-                    <tr key={idx} className="hover:bg-page transition">
-                      <td className="px-6 py-4 font-bold text-text-primary">{item.name}</td>
-                      <td className="px-6 py-4 text-right text-warning font-medium">
-                        {item.qty.toLocaleString('vi-VN')} {item.unitName}
-                      </td>
-                      <td className="px-6 py-4 text-right text-text-secondary">
-                        {formatNumber(mac)} / {item.unitName}
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-danger">
-                        {formatNumber(item.cogs)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="font-medium text-text-primary">{percentage.toFixed(1)}%</span>
-                          <div className="w-16 h-2 bg-page rounded-full overflow-hidden border border-border/50">
-                            <div className="h-full bg-danger rounded-full" style={{ width: `${percentage}%` }}></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
       {/* HIỆU QUẢ KINH DOANH TỪNG MÓN */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
         <div className="p-5 border-b border-border">
-          <h3 className="text-lg font-bold text-text-primary">Phân Tích Hiệu Quả Kinh Doanh Từng Món</h3>
-          <p className="text-sm text-text-secondary">Chi tiết doanh thu, giá vốn và biên lợi nhuận của từng món bán ra.</p>
+          <h3 className="text-lg font-bold text-text-primary">Doanh Thu Và Số Lượng Bán Từng Món</h3>
+          <p className="text-sm text-text-secondary">
+            Giá vốn và biên lợi nhuận theo từng món không còn tính được — giá vốn giờ chỉ tính được
+            cho toàn bộ kho, dựa trên kiểm kê định kỳ, không tách được theo từng món bán ra.
+          </p>
         </div>
-        
+
         {productProfitAnalysis.length === 0 ? (
-          <EmptyState 
+          <EmptyState
             title="Chưa có dữ liệu"
             description="Chưa có dữ liệu bán hàng."
           />
@@ -204,10 +148,7 @@ export default async function ReportsPage({
                 <tr>
                   <th className="px-6 py-4">Tên Món</th>
                   <th className="px-6 py-4 text-center">Số Lượng Bán</th>
-                  <th className="px-6 py-4 text-right">Doanh Thu</th>
-                  <th className="px-6 py-4 text-right">Tổng Giá Vốn</th>
-                  <th className="px-6 py-4 text-right font-bold text-text-primary">Lợi Nhuận Gộp</th>
-                  <th className="px-6 py-4 text-right">% Margin</th>
+                  <th className="px-6 py-4 text-right font-bold text-text-primary">Doanh Thu</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -218,23 +159,8 @@ export default async function ReportsPage({
                       <td className="px-6 py-4 text-center text-primary font-medium">
                         {item.qty.toLocaleString('vi-VN')}
                       </td>
-                      <td className="px-6 py-4 text-right text-text-secondary">
+                      <td className="px-6 py-4 text-right font-bold text-text-primary">
                         {formatNumber(item.revenue)}
-                      </td>
-                      <td className="px-6 py-4 text-right text-danger">
-                        {formatNumber(item.cogs)}
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-success">
-                        {formatNumber(item.grossProfit)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Badge variant={
-                          item.marginPct >= 50 ? 'success' :
-                          item.marginPct >= 30 ? 'warning' :
-                          'danger'
-                        }>
-                          {item.marginPct.toFixed(1)}%
-                        </Badge>
                       </td>
                     </tr>
                   );
@@ -248,17 +174,8 @@ export default async function ReportsPage({
               <div key={idx} className="bg-surface-card rounded-xl p-4 shadow-sm border border-border flex flex-col gap-3">
                 <div className="flex justify-between items-start gap-2">
                   <div className="font-bold text-text-primary">{item.product_name}</div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={
-                      item.marginPct >= 50 ? 'success' :
-                      item.marginPct >= 30 ? 'warning' :
-                      'danger'
-                    }>
-                      {item.marginPct.toFixed(1)}%
-                    </Badge>
-                  </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-y-2 text-sm">
                   <div className="flex flex-col">
                     <span className="text-xs text-text-muted">Số Lượng</span>
@@ -267,14 +184,6 @@ export default async function ReportsPage({
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-text-muted">Doanh Thu</span>
                     <span className="font-semibold text-text-primary">{formatNumber(item.revenue)}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-text-muted">Giá Vốn</span>
-                    <span className="font-semibold text-danger">{formatNumber(item.cogs)}</span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs text-text-muted">LN Gộp</span>
-                    <span className="font-bold text-success">{formatNumber(item.grossProfit)}</span>
                   </div>
                 </div>
               </div>
@@ -287,12 +196,14 @@ export default async function ReportsPage({
       {/* HIỆU QUẢ KINH DOANH TOPPING */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
         <div className="p-5 border-b border-border">
-          <h3 className="text-lg font-bold text-text-primary">Phân Tích Hiệu Quả Kinh Doanh Topping</h3>
-          <p className="text-sm text-text-secondary">Chi tiết doanh thu, giá vốn và biên lợi nhuận của từng topping bán ra.</p>
+          <h3 className="text-lg font-bold text-text-primary">Doanh Thu Và Số Lượng Bán Từng Topping</h3>
+          <p className="text-sm text-text-secondary">
+            Giá vốn và biên lợi nhuận theo từng topping không còn tính được — xem ghi chú ở bảng món phía trên.
+          </p>
         </div>
-        
+
         {toppingProfitAnalysis.length === 0 ? (
-          <EmptyState 
+          <EmptyState
             title="Chưa có dữ liệu"
             description="Chưa có dữ liệu bán hàng topping."
           />
@@ -304,10 +215,7 @@ export default async function ReportsPage({
                 <tr>
                   <th className="px-6 py-4">Tên Topping</th>
                   <th className="px-6 py-4 text-center">Số Lượng Bán</th>
-                  <th className="px-6 py-4 text-right">Doanh Thu</th>
-                  <th className="px-6 py-4 text-right">Tổng Giá Vốn</th>
-                  <th className="px-6 py-4 text-right font-bold text-text-primary">Lợi Nhuận Gộp</th>
-                  <th className="px-6 py-4 text-right">% Margin</th>
+                  <th className="px-6 py-4 text-right font-bold text-text-primary">Doanh Thu</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -318,23 +226,8 @@ export default async function ReportsPage({
                       <td className="px-6 py-4 text-center text-primary font-medium">
                         {item.qty.toLocaleString('vi-VN')}
                       </td>
-                      <td className="px-6 py-4 text-right text-text-secondary">
+                      <td className="px-6 py-4 text-right font-bold text-text-primary">
                         {formatNumber(item.revenue)}
-                      </td>
-                      <td className="px-6 py-4 text-right text-danger">
-                        {formatNumber(item.cogs)}
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-success">
-                        {formatNumber(item.grossProfit)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Badge variant={
-                          item.marginPct >= 50 ? 'success' :
-                          item.marginPct >= 30 ? 'warning' :
-                          'danger'
-                        }>
-                          {item.marginPct.toFixed(1)}%
-                        </Badge>
                       </td>
                     </tr>
                   );
@@ -348,17 +241,8 @@ export default async function ReportsPage({
               <div key={idx} className="bg-surface-card rounded-xl p-4 shadow-sm border border-border flex flex-col gap-3">
                 <div className="flex justify-between items-start gap-2">
                   <div className="font-bold text-text-primary">{item.product_name}</div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={
-                      item.marginPct >= 50 ? 'success' :
-                      item.marginPct >= 30 ? 'warning' :
-                      'danger'
-                    }>
-                      {item.marginPct.toFixed(1)}%
-                    </Badge>
-                  </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-y-2 text-sm">
                   <div className="flex flex-col">
                     <span className="text-xs text-text-muted">Số Lượng</span>
@@ -367,14 +251,6 @@ export default async function ReportsPage({
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-text-muted">Doanh Thu</span>
                     <span className="font-semibold text-text-primary">{formatNumber(item.revenue)}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-text-muted">Giá Vốn</span>
-                    <span className="font-semibold text-danger">{formatNumber(item.cogs)}</span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs text-text-muted">LN Gộp</span>
-                    <span className="font-bold text-success">{formatNumber(item.grossProfit)}</span>
                   </div>
                 </div>
               </div>

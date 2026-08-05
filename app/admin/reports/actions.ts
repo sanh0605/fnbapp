@@ -7,27 +7,15 @@ import {
   findAllWhereInBatches,
 } from "@/lib/sheets_db";
 import type { SheetFilter } from "@/lib/sheets_db";
-import { ORDER_STATUS, parseLineRecipeSnapshot, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
-import type { LineRecipeSnapshot, OrderV2, OrderLineV2 } from "@/lib/order-types";
+import { ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
+import type { OrderV2, OrderLineV2 } from "@/lib/order-types";
 import {
   breakdownRevenueByProduct,
-  breakdownCOGSByIngredient,
   type ProductRevenueRow,
-  type IngredientCOGSRow,
 } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/report-time";
 import { displayMoney } from "@/lib/display-rounding";
-import {
-  buildLineConsumptionRows,
-  type SemiProductConsumptionMaps,
-} from "@/lib/inventory-consumption";
-import {
-  createMacLedgerIndex,
-  getMacUnitCostWithRecipeFallback,
-  type MacLedgerEntry,
-  type MacLedgerIndex,
-  type MacLedgerSource,
-} from "@/lib/mac-cogs";
+import { computeIssueCosting, type Purchase, type Issue } from "@/lib/issue-costing";
 import { requireAdmin } from "@/lib/auth";
 
 export interface PnLReportFilters {
@@ -51,16 +39,13 @@ export interface PnLReportResult {
     size_name: string;
     qty: number;
     revenue: number;
+    // Plan C: per-product cost and margin retired by design (spec section
+    // 9) -- issue-based costing cannot attribute a purchased item's cost to
+    // one drink. Always 0 / revenue / 100; kept in the shape only because
+    // two pre-existing scripts still read these fields.
     cogs: number;
     grossProfit: number;
     marginPct: number;
-  }>;
-  cogsDetails: Array<{
-    ingredient_id: string;
-    name: string;
-    qty: number;
-    unitName: string;
-    cogs: number;
   }>;
   // Reconciliation indicator
   v2OrderCount: number;
@@ -87,6 +72,81 @@ function findCompletedOrders(
   return findAllWhere("Orders_V2", filters);
 }
 
+// Plan C Task 2. There is nothing to reuse here -- the loader this plan
+// originally pointed at would have been written by Plan B Task 4, and the
+// owner cancelled that task, so computeIssueCosting has had no real caller
+// until this one. Follows the convention Plan B Task 1 pinned: join
+// purchase_order_lines to purchase_orders (the line table carries no status
+// column of its own), filter status = 'COMPLETED', and take `at` from
+// transaction_date with created_at as fallback -- 57 of 62 completed orders
+// were entered on a different day from the one they happened.
+function buildIssueCostingPurchases(purchaseOrders: any[], purchaseOrderLines: any[]): Purchase[] {
+  const completedById = new Map(
+    purchaseOrders.filter(po => po.status === "COMPLETED").map(po => [po.id, po]),
+  );
+  const purchases: Purchase[] = [];
+  for (const line of purchaseOrderLines) {
+    const po = completedById.get(line.purchase_order_id);
+    if (!po) continue;
+    purchases.push({
+      purchased_item_id: line.purchased_item_id,
+      at: po.transaction_date || po.created_at,
+      base_quantity: Number(line.base_quantity) || 0,
+      subtotal: Number(line.subtotal) || 0,
+    });
+  }
+  return purchases;
+}
+
+function buildIssueCostingIssues(stockIssues: any[]): Issue[] {
+  return stockIssues.map(row => ({
+    purchased_item_id: row.purchased_item_id,
+    at: row.issued_at,
+    base_quantity: Number(row.base_quantity) || 0,
+    source: row.source,
+  }));
+}
+
+// computeIssueCosting returns a cumulative total per item, not a value per
+// issue event -- an issue's cost depends on the weighted average at the
+// moment it happened, which depends on every event before it, so there is
+// no way to price one month's issues without replaying everything that
+// preceded them. A period's figure is therefore two full replays and a
+// subtraction: everything issued up to the period's end, minus everything
+// issued before the period started.
+//
+// Both replays are given the SAME complete purchase set. The subtraction is
+// only valid because the two replays share an identical prefix; narrowing
+// the purchase set for either one would silently invalidate it while still
+// returning a plausible-looking number. Passing every completed purchase
+// regardless of period is safe: the replay is chronological, so a purchase
+// dated after the last issue in a run cannot change any issue's value, it
+// only lands in that run's (discarded) closing_value.
+export function computePeriodIssuedValue(
+  purchases: Purchase[],
+  allIssues: Issue[],
+  startUtc: Date | null,
+  endUtc: Date | null,
+): number {
+  const issuesThroughEnd = endUtc
+    ? allIssues.filter(i => new Date(i.at).getTime() <= endUtc.getTime())
+    : allIssues;
+  const throughEnd = computeIssueCosting(purchases, issuesThroughEnd);
+
+  if (!startUtc) {
+    return throughEnd.reduce((sum, item) => sum + item.issued_value, 0);
+  }
+
+  const issuesBeforeStart = allIssues.filter(i => new Date(i.at).getTime() < startUtc.getTime());
+  const beforeStart = computeIssueCosting(purchases, issuesBeforeStart);
+  const beforeValueByItem = new Map(beforeStart.map(item => [item.purchased_item_id, item.issued_value]));
+
+  return throughEnd.reduce(
+    (sum, item) => sum + (item.issued_value - (beforeValueByItem.get(item.purchased_item_id) || 0)),
+    0,
+  );
+}
+
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
@@ -94,40 +154,23 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const orders = await findCompletedOrders(queryDateRange, filters);
-    const [orderLines, baseIngredients, semiProducts, units, ledger, recipes, modifiers, products] = await Promise.all([
+    const [orderLines, recipes, modifiers, products, purchaseOrderLines, purchaseOrders, stockIssues] = await Promise.all([
       findAllWhereInBatches(
         "Order_Lines_V2",
         "order_id",
         orders.map(order => order.id),
       ),
-      findAll("Base_Ingredients"),
-      findAll("Semi_Products"),
-      findAll("Units"),
-      // MAC (moving average cost) needs every ledger entry from the
-      // beginning of time up to each sale to compute the correct running
-      // weighted average -- no lower bound possible. But nothing after the
-      // report's own end date is ever read, so an upper bound is safe and
-      // avoids re-fetching the whole (growing) table for reports on past
-      // periods.
-      queryDateRange
-        ? findAllWhere("Stock_Ledger", { lte: { created_at: queryDateRange.endUtc } })
-        : findAllNoCache("Stock_Ledger"),
       findAll("Recipes"),
       findAll("Modifiers"),
       findAll("Products"),
+      findAllNoCache("Purchase_Order_Lines"),
+      findAllNoCache("Purchase_Orders"),
+      findAllNoCache("Stock_Issues"),
     ]);
 
     // Standalone topping → linked modifier map (CAT-007 products with migration_notes link).
     // See spec 2026-06-27-standalone-topping-report-classification-design.md.
     const standaloneToppingToModId = buildStandaloneToppingMap(products as any[]);
-
-    // Build SemiProductContext for SP-aware COGS computation (WS-10)
-    const spRecipes = (recipes as any[]).filter(r => r.target_type === "SEMI_PRODUCT");
-    const spYields = new Map<string, number>();
-    for (const sp of semiProducts as any[]) {
-      spYields.set(sp.id, Number(sp.batch_yield) || 1);
-    }
-    const spContext = { recipes: spRecipes, yields: spYields };
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
     // Claude code — Phase 5.3: interpret date params as Asia/Saigon to UTC bounds.
@@ -177,72 +220,59 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       ? typedLines.reduce((s, line) => s + line.net_line_total, 0)
       : typedOrders.reduce((s, o) => s + o.net_total, 0);
 
-    // 3. Total COGS = sum of line.cost_at_sale
-    const totalCOGS = typedLines.reduce((s, l) => s + l.cost_at_sale, 0);
-    const macLedgerIndex = createMacLedgerIndex(ledger as MacLedgerEntry[]);
+    // 3. Total COGS = sum of issued_value over the period's issues (Plan C
+    // Task 2). Sales no longer determine cost -- purchases and recorded
+    // stock_issues do. See computePeriodIssuedValue below for why this is
+    // two full replays and a subtraction, not a single pass.
+    const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
+    const allIssues = buildIssueCostingIssues(stockIssues as any[]);
+    const totalCOGS = computePeriodIssuedValue(
+      purchases,
+      allIssues,
+      dateRange?.startUtc ?? null,
+      dateRange?.endUtc ?? null,
+    );
 
     // 4. Per-product revenue breakdown
     const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
 
-    // 5. Per-ingredient COGS breakdown
-    const ingredientRows = breakdownCOGSByIngredient(
-      typedLines,
-      typedOrders,
-      ledger as any[],
-      macLedgerIndex,
-      spContext,
-    );
-
-    // 6. Build product profit analysis.
-    // COGS is split by source so product rows do not also carry topping COGS.
-    const cogsBySourceKey = splitLineCogsBySaleSource(
-      typedLines,
-      typedOrders,
-      ledger as any[],
-      macLedgerIndex,
-      spContext,
-    );
-    const canonicalModifiers = buildCanonicalModifierLookup(modifiers as any[]);
-    const canonicalModifierCogs = canonicalizeModifierCogs(cogsBySourceKey.modifierCogs, canonicalModifiers);
-
+    // 5. Product profit analysis: revenue and quantity only. Per-product
+    // cost and margin retired by design (spec section 9) -- issue-based
+    // costing knows what left stock, not which drink used it, so there is
+    // no way to attribute a purchased item's cost to one product. The
+    // cogs/grossProfit/marginPct fields stay in the shape (two pre-existing
+    // scripts read them) but are always 0/revenue/100; the UI labels this
+    // as unavailable rather than showing a false 100% margin.
     const productProfitAnalysis = productRows
       .filter(r => !r.product_id.startsWith("MOD:") && !standaloneToppingToModId.has(r.product_id))
-      .map(r => {
-        const key = `${r.product_id}__${r.variant_id}`;
-        const cogs = cogsBySourceKey.variantCogs.get(key) || 0;
-        const grossProfit = r.revenue - cogs;
-        const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
-        return {
-          product_id: r.product_id,
-          product_name: r.product_name,
-          variant_id: r.variant_id,
-          size_name: r.size_name,
-          qty: r.qty,
-          revenue: r.revenue,
-          cogs,
-          grossProfit,
-          marginPct,
-        };
-      })
+      .map(r => ({
+        product_id: r.product_id,
+        product_name: r.product_name,
+        variant_id: r.variant_id,
+        size_name: r.size_name,
+        qty: r.qty,
+        revenue: r.revenue,
+        cogs: 0,
+        grossProfit: r.revenue,
+        marginPct: r.revenue > 0 ? 100 : 0,
+      }))
       .sort((a, b) => b.qty - a.qty || b.grossProfit - a.grossProfit);
 
     // Add topping rows (modifiers as pseudo-products + standalone toppings merged via modId)
+    const canonicalModifiers = buildCanonicalModifierLookup(modifiers as any[]);
     const toppingRevenueRows = mergeModifierRevenueRows(productRows, canonicalModifiers);
 
-    // Aggregate standalone topping revenue + COGS by linked modifier ID
-    const standaloneByModId = new Map<string, { qty: number; revenue: number; cogs: number; name: string }>();
+    // Aggregate standalone topping revenue by linked modifier ID (cost retired, see above)
+    const standaloneByModId = new Map<string, { qty: number; revenue: number; name: string }>();
     for (const r of productRows) {
       const modId = standaloneToppingToModId.get(r.product_id);
       if (!modId) continue;
-      const key = `${r.product_id}__${r.variant_id}`;
-      const cogs = cogsBySourceKey.variantCogs.get(key) || 0;
       const existing = standaloneByModId.get(modId);
       if (existing) {
         existing.qty += r.qty;
         existing.revenue += r.revenue;
-        existing.cogs += cogs;
       } else {
-        standaloneByModId.set(modId, { qty: r.qty, revenue: r.revenue, cogs, name: r.product_name });
+        standaloneByModId.set(modId, { qty: r.qty, revenue: r.revenue, name: r.product_name });
       }
     }
 
@@ -252,7 +282,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       product_name: string;
       qty: number;
       revenue: number;
-      cogs: number;
     }>();
     for (const r of toppingRevenueRows) {
       toppingRowMap.set(r.product_id, {
@@ -260,7 +289,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
         product_name: r.product_name,
         qty: r.qty,
         revenue: r.revenue,
-        cogs: canonicalModifierCogs.get(r.product_id.replace("MOD:", "")) || 0,
       });
     }
     for (const [modId, agg] of standaloneByModId) {
@@ -269,59 +297,27 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       if (existing) {
         existing.qty += agg.qty;
         existing.revenue += agg.revenue;
-        existing.cogs += agg.cogs;
       } else {
         toppingRowMap.set(key, {
           product_id: key,
           product_name: agg.name,
           qty: agg.qty,
           revenue: agg.revenue,
-          cogs: agg.cogs,
         });
       }
     }
 
-    const toppingRows = Array.from(toppingRowMap.values()).map(r => {
-      const grossProfit = r.revenue - r.cogs;
-      const marginPct = r.revenue > 0 ? (grossProfit / r.revenue) * 100 : 0;
-      return {
-        product_id: r.product_id,
-        product_name: r.product_name,
-        variant_id: "",
-        size_name: "",
-        qty: r.qty,
-        revenue: r.revenue,
-        cogs: r.cogs,
-        grossProfit,
-        marginPct,
-      };
-    });
-
-    // 7. COGS details with names + units
-    const cogsDetails = ingredientRows
-      .filter(r => r.cogs > 0)
-      .map(r => {
-        const bi = (baseIngredients as any[]).find(b => b.id === r.ingredient_id);
-        const sp = (semiProducts as any[]).find(s => s.id === r.ingredient_id);
-        const item = bi || sp;
-        const unitId = item?.base_unit || "";
-        const unitName = (units as any[]).find(u => u.id === unitId)?.name || unitId;
-        return {
-          ingredient_id: r.ingredient_id,
-          name: item?.name || r.ingredient_id,
-          qty: r.qty_consumed,
-          unitName,
-          cogs: r.cogs,
-        };
-      })
-      .sort((a, b) => b.cogs - a.cogs);
-    const cogsDetailDelta = totalCOGS - cogsDetails.reduce((sum, row) => sum + row.cogs, 0);
-    if (cogsDetails.length > 0 && Math.abs(cogsDetailDelta) > 0.000001) {
-      cogsDetails[0] = {
-        ...cogsDetails[0],
-        cogs: cogsDetails[0].cogs + cogsDetailDelta,
-      };
-    }
+    const toppingRows = Array.from(toppingRowMap.values()).map(r => ({
+      product_id: r.product_id,
+      product_name: r.product_name,
+      variant_id: "",
+      size_name: "",
+      qty: r.qty,
+      revenue: r.revenue,
+      cogs: 0,
+      grossProfit: r.revenue,
+      marginPct: r.revenue > 0 ? 100 : 0,
+    }));
 
     // Round at the render boundary only, owner rule 2026-07-30 (lib/display-
     // rounding.ts): cost is rounded UP, from each figure's own exact value --
@@ -331,13 +327,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     const displayedGrossProfit = totalRevenue - displayedTotalCOGS;
     const displayedMargin = totalRevenue > 0 ? (displayedGrossProfit / totalRevenue) * 100 : 0;
 
-    const displayedProductProfitAnalysis = [...productProfitAnalysis, ...toppingRows].map(row => {
-      const roundedCogs = displayMoney(row.cogs);
-      const roundedGrossProfit = row.revenue - roundedCogs;
-      const roundedMarginPct = row.revenue > 0 ? (roundedGrossProfit / row.revenue) * 100 : 0;
-      return { ...row, cogs: roundedCogs, grossProfit: roundedGrossProfit, marginPct: roundedMarginPct };
-    });
-    const displayedCogsDetails = cogsDetails.map(row => ({ ...row, cogs: displayMoney(row.cogs) }));
+    const displayedProductProfitAnalysis = [...productProfitAnalysis, ...toppingRows];
 
     return {
       totalRevenue,
@@ -346,7 +336,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       margin: displayedMargin,
       orderCount: reportOrderCount,
       productProfitAnalysis: displayedProductProfitAnalysis,
-      cogsDetails: displayedCogsDetails,
       v2OrderCount: typedOrders.length,
     };
   } catch (err: any) {
@@ -358,7 +347,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       margin: 0,
       orderCount: 0,
       productProfitAnalysis: [],
-      cogsDetails: [],
       v2OrderCount: 0,
     };
   }
@@ -663,139 +651,6 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
   }
 }
 
-function splitLineCogsBySaleSource(
-  lines: OrderLineV2[],
-  orders: OrderV2[],
-  ledger: any[],
-  macLedgerIndex: MacLedgerIndex,
-  spContext?: any,
-): { variantCogs: Map<string, number>; modifierCogs: Map<string, number> } {
-  const variantCogs = new Map<string, number>();
-  const modifierCogs = new Map<string, number>();
-  const orderById = new Map(orders.map(order => [order.id, order]));
-
-  // Claude code — perf Tier 3: pre-sort ledger by created_at once.
-  // Then for each line (also sorted by sale_time), use sliding window
-  // to find ledger slice. O(n+m) instead of O(n*m).
-  const ledgerSorted = [...(ledger as MacLedgerEntry[])].sort(
-    (a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime(),
-  );
-  const ledgerTimes = ledgerSorted.map(row => new Date(row.created_at || 0).getTime());
-
-  const sortedLines = [...lines].sort((a, b) => {
-    const aTime = orderById.get(a.order_id)?.created_at || "";
-    const bTime = orderById.get(b.order_id)?.created_at || "";
-    return new Date(aTime || 0).getTime() - new Date(bTime || 0).getTime();
-  });
-
-  let ledgerCursor = 0;
-  const runningBalances = new Map<string, number>();
-  for (const line of sortedLines) {
-    const recipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-    const variantKey = `${line.product_id}__${line.variant_id}`;
-    const saleTime = orderById.get(line.order_id)?.created_at || "";
-    const saleMs = new Date(saleTime || 0).getTime();
-
-    // Sliding window: advance cursor while ledger time < saleMs.
-    while (ledgerCursor < ledgerTimes.length && ledgerTimes[ledgerCursor] < saleMs) {
-      const row = ledgerSorted[ledgerCursor];
-      const itemReference = row.item_reference;
-      const quantity = Number(row.quantity_change || 0);
-      if (itemReference && Number.isFinite(quantity) && quantity !== 0) {
-        runningBalances.set(itemReference, (runningBalances.get(itemReference) || 0) + quantity);
-      }
-      ledgerCursor += 1;
-    }
-
-    const allocations = computeSourceCogsForLine(
-      recipe,
-      macLedgerIndex,
-      runningBalances,
-      saleTime,
-      line.qty,
-      toConsumptionMaps(spContext),
-      toMacSemiProductContext(spContext),
-    );
-    const rawTotal = allocations.variant + allocations.modifiers.reduce((sum, modifier) => sum + modifier.cogs, 0);
-
-    if (rawTotal <= 0) {
-      addMoney(variantCogs, variantKey, line.cost_at_sale);
-      continue;
-    }
-
-    const targetTotal = line.cost_at_sale || rawTotal;
-    const scale = targetTotal / rawTotal;
-    let allocatedTotal = 0;
-
-    const scaledVariant = allocations.variant * scale;
-    allocatedTotal += scaledVariant;
-    addMoney(variantCogs, variantKey, scaledVariant);
-
-    allocations.modifiers.forEach((modifier, index) => {
-      const isLast = index === allocations.modifiers.length - 1;
-      const scaled = isLast
-        ? targetTotal - allocatedTotal
-        : modifier.cogs * scale;
-      allocatedTotal += scaled;
-      addMoney(modifierCogs, modifier.modifierId, scaled);
-    });
-
-    if (allocations.modifiers.length === 0 && allocatedTotal !== targetTotal) {
-      addMoney(variantCogs, variantKey, targetTotal - allocatedTotal);
-    }
-  }
-
-  return { variantCogs, modifierCogs };
-}
-
-function computeSourceCogsForLine(
-  recipe: LineRecipeSnapshot,
-  ledger: MacLedgerSource,
-  inventoryBalances: Map<string, number>,
-  saleTime: string,
-  lineQty: number,
-  consumptionMaps: SemiProductConsumptionMaps,
-  macContext: ReturnType<typeof toMacSemiProductContext>,
-): { variant: number; modifiers: Array<{ modifierId: string; cogs: number }> } {
-  const variantOnly = { variant: recipe.variant, modifiers: [] };
-  const variant = computeRawMacWeight(variantOnly, ledger, inventoryBalances, saleTime, lineQty, consumptionMaps, macContext);
-
-  const modifiers = recipe.modifiers.map(modifier => {
-    const modifierOnly = {
-      variant: { target_type: "PRODUCT_VARIANT" as const, target_id: "", ingredients: [] as any[] },
-      modifiers: [modifier],
-    };
-    return {
-      modifierId: modifier.modifier_id,
-      cogs: computeRawMacWeight(modifierOnly, ledger, inventoryBalances, saleTime, lineQty, consumptionMaps, macContext),
-    };
-  });
-
-  return { variant, modifiers };
-}
-
-function computeRawMacWeight(
-  recipe: LineRecipeSnapshot,
-  ledger: MacLedgerSource,
-  inventoryBalances: Map<string, number>,
-  saleTime: string,
-  lineQty: number,
-  consumptionMaps: SemiProductConsumptionMaps,
-  macContext: ReturnType<typeof toMacSemiProductContext>,
-): number {
-  const balances = new Map(inventoryBalances);
-  const rows = buildLineConsumptionRows(recipe, lineQty, balances, consumptionMaps);
-  return rows.reduce((sum, row) => {
-    const unitCost = getMacUnitCostWithRecipeFallback(row.item_reference, ledger, saleTime, macContext);
-    return sum + row.quantity * unitCost;
-  }, 0);
-}
-
-function addMoney(map: Map<string, number>, key: string, value: number): void {
-  if (!key || !Number.isFinite(value) || value === 0) return;
-  map.set(key, (map.get(key) || 0) + value);
-}
-
 function mergeModifierRevenueRows(
   productRows: ProductRevenueRow[],
   canonicalModifiers: ReturnType<typeof buildCanonicalModifierLookup>,
@@ -824,59 +679,6 @@ function mergeModifierRevenueRows(
   }
 
   return Array.from(map.values());
-}
-
-function canonicalizeModifierCogs(
-  modifierCogs: Map<string, number>,
-  canonicalModifiers: ReturnType<typeof buildCanonicalModifierLookup>,
-): Map<string, number> {
-  const result = new Map<string, number>();
-  for (const [modifierId, cogs] of modifierCogs.entries()) {
-    const canonical = canonicalModifiers.byId.get(modifierId) || { id: modifierId, name: modifierId };
-    addMoney(result, canonical.id, cogs);
-  }
-  return result;
-}
-
-function toConsumptionMaps(spContext?: any): SemiProductConsumptionMaps {
-  const semiProductRecipes = new Map();
-  const semiProductYields = new Map();
-
-  if (spContext?.semiProductRecipes instanceof Map) {
-    for (const [id, recipe] of spContext.semiProductRecipes.entries()) semiProductRecipes.set(id, recipe);
-  }
-  if (spContext?.semiProductYields instanceof Map) {
-    for (const [id, yieldQty] of spContext.semiProductYields.entries()) semiProductYields.set(id, yieldQty);
-  }
-  if (Array.isArray(spContext?.recipes)) {
-    for (const recipe of spContext.recipes) {
-      if (!recipe.target_id || !recipe.ingredients_json) continue;
-      semiProductRecipes.set(recipe.target_id, parseSemiProductIngredients(recipe.ingredients_json, recipe.target_id));
-    }
-  }
-  if (spContext?.yields instanceof Map) {
-    for (const [id, yieldQty] of spContext.yields.entries()) semiProductYields.set(id, yieldQty);
-  }
-
-  return { semiProductRecipes, semiProductYields };
-}
-
-function toMacSemiProductContext(spContext?: any) {
-  const maps = toConsumptionMaps(spContext);
-  return {
-    semiProductRecipes: maps.semiProductRecipes,
-    semiProductYields: maps.semiProductYields,
-  };
-}
-
-function parseSemiProductIngredients(ingredientsJson: string, semiProductId: string): any[] {
-  try {
-    const parsed = JSON.parse(ingredientsJson || "[]");
-    if (Array.isArray(parsed)) return parsed;
-  } catch (err) {
-    throw new Error(`SEMI_PRODUCT ${semiProductId} has malformed ingredients_json: ${(err as Error).message}`);
-  }
-  throw new Error(`SEMI_PRODUCT ${semiProductId} ingredients_json is not an array`);
 }
 
 type CanonicalModifier = { id: string; name: string };

@@ -77,9 +77,11 @@ was expected), stop and do not apply.
 
 Either way: dry-run, confirm the numbers match what Step 1 found, only then
 `--apply`. Reverify afterward with `scripts/investigate-18-unflagged-cost-mismatches.ts`
-(expect 0), `scripts/audit-pnl-mac-consistency.ts` (expect 0 VND delta), and
-`scripts/verify-all-479-clean.ts` or `scripts/audit-order-ledger.ts` (expect
-the same known baseline mismatch count, not a new one).
+(expect 0) and `scripts/verify-all-479-clean.ts` or `scripts/audit-order-ledger.ts`
+(expect the same known baseline mismatch count, not a new one).
+scripts/audit-pnl-mac-consistency.ts retired (Plan C Task 2, 2026-08-05) --
+it checked consistency across three per-product/per-ingredient MAC
+breakdowns that no longer exist once cost is issue-based.
 
 ## Resolved: migrated-order MAC accuracy (2026-07-21)
 

@@ -17,13 +17,82 @@ import {
   findAllWhere,
   findAllWhereInBatches,
 } from "@/lib/sheets_db";
-import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2 } from "./actions";
+import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2, computePeriodIssuedValue } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
+import type { Purchase, Issue } from "@/lib/issue-costing";
 
 beforeEach(() => {
   requireAdminMock.mockResolvedValue({
     ok: true,
     actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
+  });
+});
+
+describe("computePeriodIssuedValue", () => {
+  // Plan C Task 2: computeIssueCosting returns a cumulative total, not a
+  // per-period one. A month's figure is the difference of two full replays
+  // (through-end minus before-start), both fed the SAME complete purchase
+  // set -- passing a narrower purchase set to either run would silently
+  // invalidate the subtraction while still returning a plausible number.
+  const purchases: Purchase[] = [
+    { purchased_item_id: "SPM-X", at: "2026-06-01T00:00:00Z", base_quantity: 10, subtotal: 100 },
+    { purchased_item_id: "SPM-X", at: "2026-07-10T00:00:00Z", base_quantity: 10, subtotal: 140 },
+  ];
+
+  it("returns only the period's own contribution, not the running total", () => {
+    const issues: Issue[] = [
+      { purchased_item_id: "SPM-X", at: "2026-06-15T00:00:00Z", base_quantity: 2, source: "STOCKTAKE" },
+      { purchased_item_id: "SPM-X", at: "2026-07-20T00:00:00Z", base_quantity: 3, source: "STOCKTAKE" },
+    ];
+
+    // June alone: 2 units at 10.00/unit (only the first purchase exists yet) = 20.
+    const june = computePeriodIssuedValue(
+      purchases,
+      issues,
+      new Date("2026-06-01T00:00:00Z"),
+      new Date("2026-06-30T23:59:59.999Z"),
+    );
+    expect(june).toBeCloseTo(20, 6);
+
+    // July alone: stock going in is 8 (=80) + 10 (=140) = 18 units / 220 ->
+    // avg 12.2222..., issuing 3 = 36.6666... This is NOT the cumulative
+    // total through July (20 + 36.6666... = 56.6666...) -- proving the
+    // subtraction isolates July rather than accumulating June into it.
+    const july = computePeriodIssuedValue(
+      purchases,
+      issues,
+      new Date("2026-07-01T00:00:00Z"),
+      new Date("2026-07-31T23:59:59.999Z"),
+    );
+    expect(july).toBeCloseTo(36.666667, 4);
+  });
+
+  it("months sum to exactly one whole-period run -- only meaningful with real non-zero issues", () => {
+    // Before the first stocktake, every period is 0đ and 0 === 0 proves
+    // nothing about the subtraction being correct. This fixture uses three
+    // months of real, distinct, non-zero issues so the invariant actually
+    // gets exercised.
+    const issues: Issue[] = [
+      { purchased_item_id: "SPM-X", at: "2026-06-10T00:00:00Z", base_quantity: 1, source: "STOCKTAKE" },
+      { purchased_item_id: "SPM-X", at: "2026-07-15T00:00:00Z", base_quantity: 4, source: "STOCKTAKE" },
+      { purchased_item_id: "SPM-X", at: "2026-08-05T00:00:00Z", base_quantity: 2, source: "STOCKTAKE" },
+    ];
+    expect(issues.every(i => i.base_quantity > 0)).toBe(true);
+
+    const june = computePeriodIssuedValue(purchases, issues, new Date("2026-06-01T00:00:00Z"), new Date("2026-06-30T23:59:59.999Z"));
+    const july = computePeriodIssuedValue(purchases, issues, new Date("2026-07-01T00:00:00Z"), new Date("2026-07-31T23:59:59.999Z"));
+    const august = computePeriodIssuedValue(purchases, issues, new Date("2026-08-01T00:00:00Z"), new Date("2026-08-31T23:59:59.999Z"));
+    const wholePeriod = computePeriodIssuedValue(purchases, issues, null, new Date("2026-08-31T23:59:59.999Z"));
+
+    expect(june + july + august).toBeCloseTo(wholePeriod, 9);
+    // Guard against the false-green shape: if this were 0, the assertion
+    // above would pass trivially without proving anything.
+    expect(wholePeriod).toBeGreaterThan(0);
+  });
+
+  it("returns 0 when no issues exist yet, and says so honestly rather than throwing", () => {
+    const result = computePeriodIssuedValue(purchases, [], new Date("2026-06-01T00:00:00Z"), new Date("2026-06-30T23:59:59.999Z"));
+    expect(result).toBe(0);
   });
 });
 
@@ -45,59 +114,6 @@ describe("getPnLDataV2", () => {
     expect(findAllWhere).not.toHaveBeenCalled();
     expect(findAllNoCache).not.toHaveBeenCalled();
     expect(findAll).not.toHaveBeenCalled();
-  });
-
-  it("reuses one request-scoped stock-ledger index across both P&L MAC breakdowns", async () => {
-    const fixture = makeSuaDauStandaloneOrder();
-    const order = {
-      ...fixture.order,
-      id: "order-index",
-      created_at: "2026-07-01T00:00:00Z",
-    };
-    const baseLine = {
-      ...fixture.lines[0],
-      order_id: order.id,
-      cost_at_sale: 5000,
-      recipe_snapshot_json: JSON.stringify({
-        variant: {
-          target_type: "PRODUCT_VARIANT",
-          target_id: "VAR-INDEX",
-          ingredients: [
-            { ingredient_id: "BI-A", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
-            { ingredient_id: "BI-B", ingredient_type: "BASE_INGREDIENT", quantity: 1, unit_id: "U" },
-          ],
-        },
-        modifiers: [],
-      }),
-    };
-    const lines = [
-      { ...baseLine, id: "line-index-1" },
-      { ...baseLine, id: "line-index-2" },
-    ];
-
-    let itemReferenceReads = 0;
-    const ledger = ["BI-A", "BI-B"].map(itemReference => ({
-      get item_reference() {
-        itemReferenceReads += 1;
-        return itemReference;
-      },
-      transaction_type: "PO_RECEIPT",
-      unit_cost: "100",
-      quantity_change: "10",
-      created_at: "2026-06-01T00:00:00Z",
-    }));
-
-    (findAllNoCache as any).mockImplementation((sheet: string) => {
-      if (sheet === "Orders_V2") return [order];
-      if (sheet === "Order_Lines_V2") return lines;
-      if (sheet === "Stock_Ledger") return ledger;
-      return [];
-    });
-    (findAll as any).mockResolvedValue([]);
-
-    await getPnLDataV2({});
-
-    expect(itemReferenceReads).toBe(ledger.length * 3);
   });
 
   it("returns empty result when no orders match filters", async () => {
@@ -140,14 +156,22 @@ describe("getPnLDataV2", () => {
     expect(result.totalCOGS).toBe(fixture.lines[0].cost_at_sale);
   });
 
-  it("rounds totalCOGS and per-row cogs UP at the display boundary, from cost_at_sale's own exact numeric(18,6) value (owner rule 2026-07-30)", async () => {
+  it("rounds totalCOGS UP at the display boundary, from the issue-costing engine's exact value (owner rule 2026-07-30)", async () => {
     const fixture = makeSuaDauStandaloneOrder();
-    const line = { ...fixture.lines[0], cost_at_sale: 4999.3 };
     (findAllWhere as any).mockResolvedValue([fixture.order]);
-    (findAllWhereInBatches as any).mockResolvedValue([line]);
-    (findAllNoCache as any).mockImplementation((sheet: string) => (
-      sheet === "Stock_Ledger" ? [] : []
-    ));
+    (findAllWhereInBatches as any).mockResolvedValue(fixture.lines);
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Purchase_Orders") {
+        return [{ id: "PO-001", status: "COMPLETED", transaction_date: "2026-06-01T00:00:00Z" }];
+      }
+      if (sheet === "Purchase_Order_Lines") {
+        return [{ purchase_order_id: "PO-001", purchased_item_id: "SPM-X", base_quantity: 3, subtotal: 14998 }];
+      }
+      if (sheet === "Stock_Issues") {
+        return [{ purchased_item_id: "SPM-X", issued_at: "2026-06-15T00:00:00Z", base_quantity: 1, source: "STOCKTAKE" }];
+      }
+      return [];
+    });
     (findAll as any).mockResolvedValue([]);
 
     const result = await getPnLDataV2({
@@ -155,10 +179,12 @@ describe("getPnLDataV2", () => {
       endDate: "2026-06-30",
     });
 
-    // Math.ceil(4999.3) = 5000, not Math.round's 4999.
+    // 14998 / 3 = 4999.333...; issuing 1 -> Math.ceil(4999.333...) = 5000, not Math.round's 4999.
     expect(result.totalCOGS).toBe(5000);
     expect(result.grossProfit).toBe(result.totalRevenue - 5000);
-    expect(result.productProfitAnalysis[0].cogs).toBe(5000);
+    // Per-product cogs is retired by design (spec section 9) -- always 0,
+    // never a share of totalCOGS.
+    expect(result.productProfitAnalysis[0].cogs).toBe(0);
   });
 
   it("aggregates single Sữa Dâu order correctly", async () => {
@@ -299,8 +325,13 @@ describe("getPnLDataV2", () => {
 
     expect(result.orderCount).toBe(1);
     expect(result.totalRevenue).toBe(30000);
-    expect(result.totalCOGS).toBe(12000);
-    expect(result.grossProfit).toBe(18000);
+    // categoryId scopes revenue (only matching lines belong in the report)
+    // but not cost: issue-based COGS is a whole-period figure with no path
+    // to attribute a purchased item to one product category. No purchase/
+    // issue fixtures exist in this test, so it reads 0, not a category
+    // share of cost_at_sale.
+    expect(result.totalCOGS).toBe(0);
+    expect(result.grossProfit).toBe(30000);
     expect(result.productProfitAnalysis.map(row => row.product_id)).toEqual(["PROD-DRINK"]);
   });
 
@@ -424,14 +455,18 @@ describe("getPnLDataV2", () => {
     const rowA = multiRows.find(r => r.variant_id === "VAR-A");
     const rowB = multiRows.find(r => r.variant_id === "VAR-B");
 
-    expect(rowA?.cogs).toBe(5000);
-    expect(rowB?.cogs).toBe(7000);
-
-    const totalMultiCogs = multiRows.reduce((s, r) => s + r.cogs, 0);
-    expect(totalMultiCogs).toBe(12000);
-
-    expect(rowA?.marginPct).toBeCloseTo(66.67, 1);
-    expect(rowB?.marginPct).toBeCloseTo(53.33, 1);
+    // Per-product cost/margin retired by design (spec section 9) -- always
+    // 0 / revenue / 100%, never a MAC-derived split. The double-counting
+    // bug this test used to guard (both variants sharing one ledger-index
+    // MAC weight) is now structurally impossible: there is no split left to
+    // double-count. What still matters, and is still asserted above, is
+    // that the two variants stay two separate rows rather than merging.
+    expect(rowA?.cogs).toBe(0);
+    expect(rowB?.cogs).toBe(0);
+    expect(rowA?.grossProfit).toBe(15000);
+    expect(rowB?.grossProfit).toBe(15000);
+    expect(rowA?.marginPct).toBe(100);
+    expect(rowB?.marginPct).toBe(100);
   });
 
   it("splits COGS between product and topping rows without double-counting", async () => {
@@ -518,102 +553,25 @@ describe("getPnLDataV2", () => {
     const productRow = result.productProfitAnalysis.find(p => p.product_id === "PROD-COFFEE");
     const toppingRow = result.productProfitAnalysis.find(p => p.product_id === "MOD:MOD-PEARL");
 
-    expect(result.totalCOGS).toBe(5000);
-    expect(productRow?.cogs).toBe(3000);
-    expect(toppingRow?.cogs).toBe(2000);
-    expect(result.productProfitAnalysis.reduce((sum, row) => sum + row.cogs, 0)).toBe(5000);
+    // No purchase/issue fixtures in this test -> totalCOGS reads 0.
+    expect(result.totalCOGS).toBe(0);
+    // Per-product/topping cost retired by design (spec section 9) -- there
+    // is no MAC split left to prove correct. What still matters, and is
+    // still asserted here, is that the topping renders as its own row
+    // rather than merging into the product's.
+    expect(productRow).toBeDefined();
+    expect(toppingRow).toBeDefined();
+    expect(productRow?.cogs).toBe(0);
+    expect(toppingRow?.cogs).toBe(0);
   });
 
-  it("splits product and topping COGS by MAC weights instead of FIFO order", async () => {
-    const orderId = "ord-mac-split";
-    const createdAt = "2026-06-15T10:00:00.000Z";
-    const order = {
-      id: orderId,
-      order_no: "MAC-001",
-      brand_id: "BR-002",
-      status: "COMPLETED",
-      version: 1,
-      parent_order_id: "",
-      superseded_by: "",
-      created_at: createdAt,
-      created_by_id: "U",
-      created_by_name: "Test",
-      completed_at: createdAt,
-      voided_at: "",
-      voided_by_id: "",
-      void_reason: "",
-      currency: "VND",
-      gross_total: 25000,
-      promo_discount_total: 0,
-      manual_item_discount_total: 0,
-      manual_order_discount: 0,
-      net_total: 25000,
-      applied_promotion_id: "",
-      applied_promotion_snapshot_json: "",
-      pos_snapshot_json: "{}",
-      payment_method: "CASH",
-      payment_ref: "",
-      migration_notes: "",
-    };
-    const line = {
-      id: "ol-mac-split",
-      order_id: orderId,
-      line_no: 1,
-      product_id: "PROD-COFFEE",
-      product_snapshot_json: JSON.stringify({ id: "PROD-COFFEE", name: "Coffee", category_id: "CAT-X", category_name: "X" }),
-      variant_id: "VAR-COFFEE",
-      variant_snapshot_json: JSON.stringify({ id: "VAR-COFFEE", size_name: "500ml", price: 20000 }),
-      qty: 1,
-      unit_price: 20000,
-      modifiers_snapshot_json: JSON.stringify([{ id: "MOD-PEARL", name: "Pearl", price: 5000, qty: 1 }]),
-      gross_line_total: 25000,
-      promo_discount: 0,
-      manual_item_discount: 0,
-      order_discount_allocation: 0,
-      net_line_total: 25000,
-      cost_at_sale: 130,
-      recipe_snapshot_json: JSON.stringify({
-        variant: {
-          target_type: "PRODUCT_VARIANT",
-          target_id: "VAR-COFFEE",
-          ingredients: [{ ingredient_id: "ING-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 1 }],
-        },
-        modifiers: [{
-          modifier_id: "MOD-PEARL",
-          modifier_name: "Pearl",
-          recipe: {
-            target_type: "MODIFIER",
-            target_id: "MOD-PEARL",
-            ingredients: [{ ingredient_id: "ING-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 1 }],
-          },
-        }],
-      }),
-      promo_discount_reason: "",
-      manual_discount_reason: "",
-    };
-    const ledger = [
-      { id: "po-milk-1", transaction_type: "PO_RECEIPT", item_reference: "ING-MILK", quantity_change: 1, unit_cost: 10, created_at: "2026-06-01T00:00:00.000Z" },
-      { id: "po-milk-2", transaction_type: "PO_RECEIPT", item_reference: "ING-MILK", quantity_change: 1, unit_cost: 50, created_at: "2026-06-02T00:00:00.000Z" },
-      { id: "po-pearl", transaction_type: "PO_RECEIPT", item_reference: "ING-PEARL", quantity_change: 10, unit_cost: 100, created_at: "2026-06-01T00:00:00.000Z" },
-    ];
-
-    (findAllNoCache as any).mockImplementation((sheet: string) => {
-      if (sheet === "Orders_V2") return [order];
-      if (sheet === "Order_Lines_V2") return [line];
-      if (sheet === "Stock_Ledger") return ledger;
-      return [];
-    });
-    (findAll as any).mockResolvedValue([]);
-
-    const result = await getPnLDataV2({});
-    const productRow = result.productProfitAnalysis.find(p => p.product_id === "PROD-COFFEE");
-    const toppingRow = result.productProfitAnalysis.find(p => p.product_id === "MOD:MOD-PEARL");
-
-    expect(result.totalCOGS).toBe(130);
-    expect(productRow?.cogs).toBe(30);
-    expect(toppingRow?.cogs).toBe(100);
-    expect(result.productProfitAnalysis.reduce((sum, row) => sum + row.cogs, 0)).toBe(130);
-  });
+  // "splits product and topping COGS by MAC weights instead of FIFO order"
+  // deleted (Plan C Task 2): its sole purpose was proving the per-product
+  // split used weighted-average batches rather than FIFO consumption order.
+  // There is no split left to get right either way -- the previous test
+  // ("splits COGS between product and topping rows...") already covers the
+  // one structural fact that still applies, that a topping stays its own
+  // row rather than merging into the product's.
 
   it("merges duplicate P&L topping rows into the latest active modifier id", async () => {
     const createdAt = "2026-06-15T10:00:00.000Z";
@@ -724,7 +682,10 @@ describe("getPnLDataV2", () => {
       product_id: "MOD:MOD-NEW-DAU",
       qty: 2,
       revenue: 20000,
-      cogs: 9508,
+      // Per-topping cost retired by design (spec section 9) -- always 0.
+      // The fact still worth protecting here is modifier-id canonicalization
+      // (both lines merge into one row), unrelated to cost.
+      cogs: 0,
     });
   });
 });
