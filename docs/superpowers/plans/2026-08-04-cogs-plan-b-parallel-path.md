@@ -549,6 +549,26 @@ Commit `8261c0b`.
 **Files:**
 - Create: `supabase/migrations/0053_stocktake_purchased_items.sql`
 - Modify: `app/admin/inventory/stocktake/actions.ts`
+
+**Carry one correction from Task 2 into this migration.**
+`stock_issues.purchased_item_id` was created as bare `text not null`, with no
+reference to `purchased_items`. Both other tables holding that column reference
+it (`0001_init_schema.sql:184` and `:334`), so this breaks the schema's own
+convention — add `references public.purchased_items(id) on delete restrict`,
+matching them, and matching the rule that master data is never deleted.
+
+Severity, stated accurately rather than dramatically: because the id spaces use
+distinct prefixes (`SPM-` against `NNL-`/`ING-`/`BTP-`), a cross-space write
+produces an item with no purchases, and `computeIssueCosting` throws rather than
+returning a wrong figure. So this fails loudly — but only after the row is
+already written, and with a message that describes the symptom rather than the
+cause. The constraint moves that refusal to write time.
+
+Checked and deliberately **not** added: a uniqueness guard against applying a
+session twice. `apply_stocktake_session_atomic`
+(`0037_apply_stocktake_session.sql:39-46`) already selects the session status
+`for update` and raises unless it is `OPEN`, so a second apply cannot reach the
+insert. A unique index would be a second lock on a door already bolted.
 - Modify: `app/admin/inventory/stocktake/components/StocktakeClient.tsx`
 - Modify: `lib/stocktake-transaction.ts`
 
