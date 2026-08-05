@@ -655,24 +655,36 @@ That run was authorised — the coordinator asked for it explicitly. Leaving it
 unguarded is the problem: the next person re-verifying Task 3, agent or human,
 creates another order in real sales data without meaning to.
 
-- [ ] **Step 1: Default to dry run**
+- [x] **Step 1: Default to dry run**
 
 Without `--apply`, print exactly what it *would* do — which product, which
 order, which counts it would take — and write nothing.
 
-- [ ] **Step 2: Under `--apply`, print the objects before writing**
+Confirmed by running without `--apply` on 2026-08-05: printed "1x Cà phê đá
+(500ml, VAR-001)" and "Lục trà (BTP-009)" by real name, printed the current
+count (10.684) three times as the expected unchanged value, wrote nothing.
+
+- [x] **Step 2: Under `--apply`, print the objects before writing**
 
 Name the product and the order id as they are created, so the audit trail exists
 in the console output as well as the database.
 
-- [ ] **Step 3: State the cleanup in the output, not only in the code**
+- [x] **Step 3: State the cleanup in the output, not only in the code**
 
 The script already voids the order it creates. Say so on screen, and print the
 resulting statuses — `SUPERSEDED` for the original, `VOIDED` for the edited
 version — so the reader can see the test left nothing countable behind rather
 than trusting that it did.
 
-- [ ] **Step 4: Commit**
+Both statuses are read back from the database after voiding, not assumed from
+the call's return value.
+
+- [x] **Step 4: Commit**
+
+`npx tsc --noEmit`: 0 lỗi. `npx vitest run`: 970/970 xanh. `check-rules-current.ts`:
+sạch. Not re-run with `--apply` here — Task 3's live proof already stands
+(commit `967b157`); running it again would create another real order for no
+new information.
 
 ---
 
