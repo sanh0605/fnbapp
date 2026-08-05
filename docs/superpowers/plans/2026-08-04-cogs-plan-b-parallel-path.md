@@ -488,7 +488,7 @@ Widening the constraint without widening this leaves every count of a purchased
 item rejected at the moment the session opens. Re-declare the function with
 `PURCHASED_ITEM` added; keep the exception for a genuinely invalid fourth value.
 
-- [ ] **Step 1: List the target tables' triggers before writing**
+- [x] **Step 1: List the target tables' triggers before writing**
 
 ```sql
 select tgname, pg_get_triggerdef(oid)
@@ -500,27 +500,47 @@ select tgname, pg_get_triggerdef(oid)
 State, for each, what it does with the rows this migration touches. The
 `start_date` incident happened because this step did not exist.
 
-- [ ] **Step 2: Write the migration**
+Ran live via `supabase db query --linked` (direct pg connection from this
+shell hit a DNS dead end — Node's resolver couldn't reach the direct host;
+the CLI's management-API path worked). `stock_ledger`: `detect_backdated_ledger_entry`
+(AFTER INSERT) and `trg_stock_ledger_inventory_balances` (AFTER INSERT OR
+DELETE OR UPDATE OF item_reference, quantity_change — not every UPDATE, only
+those two columns). `stocktake_lines`: none. This migration inserts nothing
+into `stock_ledger`, so neither fires.
+
+- [x] **Step 2: Write the migration**
 
 Widening a `check` constraint requires dropping and re-adding it. Name the new
 constraint the same as the old one so a future reader finds one constraint, not
 two generations of it.
 
-- [ ] **Step 3: Verify the constraint accepts three values and still refuses a fourth**
+Exact constraint name confirmed live before writing the drop:
+`stocktake_lines_item_type_check`.
+
+- [x] **Step 3: Verify the constraint accepts three values and still refuses a fourth**
 
 Prove both directions, at **both** gates — the table constraint and the
 function's allow-list. A widened constraint that accepts anything is not a
 constraint, and a widened constraint sitting behind an un-widened function
 accepts nothing at all.
 
-- [ ] **Step 4: Apply and confirm**
+All four proven live, each inside a transaction rolled back afterward: table
+refuses `TOTALLY_INVALID` (23514) and accepts `PURCHASED_ITEM`; function
+refuses `BOGUS_TYPE` (P0001, its own `RAISE`, not the table's error) and
+accepts `PURCHASED_ITEM` through a real `open_stocktake_session_atomic` call.
+Confirmed 0 rows left in `stocktake_sessions`/`stocktake_lines`/`stock_issues`
+afterward.
+
+- [x] **Step 4: Apply and confirm**
 
 Run: `npx supabase db push`, then confirm `stock_issues` exists,
 `stocktake_lines` accepts `PURCHASED_ITEM`, and
 `open_stocktake_session_atomic` opens a session containing a `PURCHASED_ITEM`
 line without raising.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
+
+Commit `8261c0b`.
 
 ---
 
