@@ -456,10 +456,31 @@ it is **the input drying up permanently**. The warning would not fail; it would
 report "not enough data" forever, which is the quiet kind of broken this project
 keeps finding.
 
-**Resolve it deliberately, and it is the owner's call, not this plan's.**
-Consumption speed is still derivable — from `stock_issues` — but only as coarsely
-as counts are taken. A weekly count gives weekly resolution, not daily. Recorded
-as item 33; the low-stock warning does not silently rot in the meantime.
+**Owner decision 2026-08-05: switch the warning off and say so on the screen.**
+Not rebuilt now, not deleted — the section in `app/admin/reports/daily/page.tsx`
+renders a plain Vietnamese line explaining that a stock count is needed before
+this warning can work again, and `lowStockItems` stops being computed.
+
+What settled it was a number rather than a preference.
+`MIN_CONSUMPTION_EVENTS = 3` over a `DEFAULT_LOOKBACK_DAYS = 14` window
+(`lib/reorder-suggestion.ts:95-106`). Rebuilt on `stock_issues`, a weekly count
+produces two events in fourteen days — below the threshold, so every item would
+report "not enough data" anyway. Rebuilding it today would ship a feature that
+cannot fire until counting is frequent enough, and nobody yet knows how often
+the owner will count.
+
+Remove the call to `buildInventoryBalances` here too, which is what lets
+`lib/inventory-consumption.ts` actually leave the running path as this task
+claims.
+
+Item 33 stays open for the rebuild decision, now with the threshold arithmetic
+attached to it.
+
+**On `getMacUnitCostWithRecipeFallback`, decided rather than left open:**
+relabel it, do not repoint it. Repointing changes a number the owner reads when
+setting prices, and he has not asked for that. Relabelling in Vietnamese makes
+it honest about being an average purchase price without moving anything he
+prices against.
 
 **Also changing meaning without changing code:**
 `getMacUnitCostWithRecipeFallback` (`lib/mac-cogs.ts`) feeds the "current cost"
