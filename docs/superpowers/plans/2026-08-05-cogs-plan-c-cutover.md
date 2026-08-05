@@ -508,6 +508,29 @@ the better answer once counts exist**: `closing_value / closing_quantity` from
 today's figure rather than less. Recorded here so the option is not lost —
 it belongs with item 33, after counting frequency is known.
 
+**And when it is repointed, it must stay at the ingredient level.** Owner
+decision 2026-08-05, in answer to his own question, and the screen already
+behaves this way: it prices `base_ingredients` ids, and raw purchase receipts
+write `item_reference = base_ingredient_id`, so estimation is already per
+ingredient group rather than per brand.
+
+That must survive the repoint, because **recipes speak in generic
+ingredients**. A recipe says "20g bột cà phê" and names no brand. Costing the
+estimate per purchased item would force an arbitrary brand choice, and the
+brands are not close: measured 2026-08-02, Bột cà phê spans roughly 358đ per
+unit for Phin Đậm against 1.030đ for MR.PHIN Robusta Dak Mil — a near-threefold
+swing on the same recipe line.
+
+So `computeIssueCosting` output, which is per purchased item, must be rolled up
+into its `base_ingredient_id` and averaged by quantity on hand before the
+estimate uses it.
+
+**The limitation to state rather than hide:** that roll-up weights by what is
+held, not by what is actually poured. Holding mostly cheap Phin Đậm while
+brewing with Robusta understates the estimate. The only cure is recipes naming
+brands, which is not proposed — it would mean rewriting every recipe and binding
+each to one supplier.
+
 **Also changing meaning without changing code:**
 `getMacUnitCostWithRecipeFallback` (`lib/mac-cogs.ts`) feeds the "current cost"
 shown for pricing decisions on `app/admin/products/page.tsx` and
