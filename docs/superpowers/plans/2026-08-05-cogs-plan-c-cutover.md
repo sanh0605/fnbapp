@@ -480,28 +480,46 @@ removal. It is retained deliberately, for the gate and for the rebuild. Say so
 in a comment on the function itself, not only here — a plan is not where someone
 tidying dead code will look.
 
-- [ ] **Step 1: Confirm nothing else renders the page's data**
+- [x] **Step 1: Confirm nothing else renders the page's data**
 
 `getPnLDataV2` is imported by `app/admin/reports/pnl/page.tsx` and the test file,
 and nothing else. Re-verify rather than trusting this line.
 
-- [ ] **Step 2: Delete the page and its navigation entry**
+**This line was wrong.** Re-verified by grep, not trusted: three more files
+call `getPnLDataV2` directly through `actions.ts`, never through the page —
+`scripts/audit-admin-read-guards.test.ts` (asserts it requires admin auth),
+`scripts/audit-lock-bypass-history.ts`, `scripts/verify-pnl-patterns.ts`.
+None import the page component, so deleting the page breaks none of them.
+
+- [x] **Step 2: Delete the page and its navigation entry**
 
 A link to a deleted route is worse than no link.
 
-- [ ] **Step 3: Add the retention comment to `getPnLDataV2`**
+Deleted `app/admin/reports/pnl/page.tsx` and its sibling `loading.tsx`.
+Navigation entry removed from `app/admin/layout.tsx` — no other reference to
+`reports/pnl` remained anywhere in the repo.
+
+- [x] **Step 3: Add the retention comment to `getPnLDataV2`**
 
 State that it has no caller by design, names the plan and item 31, and is the
 revenue gate.
 
-- [ ] **Step 4: Prove the gate still works without the page**
+- [x] **Step 4: Prove the gate still works without the page**
 
 Read June and July through the function. Both figures unchanged.
 
-- [ ] **Step 5: Suite, type check, commit**
+Actual: June 22.157.000đ, July 18.661.000đ — both identical, read live
+through `getPnLDataV2` after the page and its `loading.tsx` were gone.
+
+- [x] **Step 5: Suite, type check, commit**
 
 Tests referencing the deleted page are rewritten or removed with a stated
 reason. Tests for `getPnLDataV2` itself stay — they now guard the gate.
+
+No dedicated test file existed for the page component, so nothing needed
+rewriting. `app/admin/reports/actions.test.ts` untouched. 971/971 tests,
+`tsc --noEmit` clean, rule checker clean (fixed one dangling reference to the
+deleted page in `docs/OPEN-ITEMS.md` item 31 along the way). Commit `a1c0ad0`.
 
 ---
 
