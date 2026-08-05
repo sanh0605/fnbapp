@@ -872,10 +872,18 @@ first count happens. Plan C carries this as a stated consequence.
 
 - `npx tsc --noEmit` — 0 errors.
 - `npx vitest run` — green, 962+ tests.
-- The old COGS figure identical to the dong for every month checked, before and
-  after every task — 16.688.133đ / 7.711.264đ / 605.743đ for June, July, August
-  2026, measured 2026-08-04.
-- Revenue untouched throughout: 32.416.000đ / 19.124.000đ / 1.763.000đ.
+- The old COGS figure identical to the dong for every closed month checked,
+  before and after every task.
+- Revenue untouched throughout: June 2026 **22.157.000đ**, July 2026
+  **18.661.000đ**, from `getPnLDataV2` on 2026-08-05.
+
+  **Corrected 2026-08-05.** This bar previously carried 32.416.000đ /
+  19.124.000đ / 1.763.000đ revenue and 16.688.133đ / 7.711.264đ / 605.743đ cost,
+  summed from `order_lines_v2` by hand. That skipped the three filters
+  `getPnLDataV2` applies — COMPLETED only, latest order version only, order date
+  not line date — and overstated June by about ten million dong. A snapshot from
+  the 2026-08-02 drill matches production today, so the data never moved; the
+  measurement was wrong. Take every gate figure from `getPnLDataV2`.
 - The P&L screen renders identically to today. This plan changes no report.
 - One real stocktake session completed end to end, with its `stock_issues` rows
   read back and checked against the worked example.

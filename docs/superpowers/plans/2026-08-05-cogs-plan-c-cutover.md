@@ -27,9 +27,28 @@ Before deciding, the owner was shown these measured figures and the consequence:
 
 | Month | Revenue | COGS today | After this plan |
 |---|---|---|---|
-| 2026-06 | 32.416.000đ | 16.688.133đ | **0đ** |
-| 2026-07 | 19.124.000đ | 7.711.264đ | **0đ** |
-| 2026-08 | 1.763.000đ | 605.743đ | **0đ until a first count exists** |
+| 2026-06 | 22.157.000đ | re-measure | **0đ** |
+| 2026-07 | 18.661.000đ | re-measure | **0đ** |
+| 2026-08 | 2.564.000đ (open month) | re-measure | **0đ until a first count exists** |
+
+**These replace wrong figures, and how they were wrong is the durable lesson.**
+The first version of this plan carried 32.416.000đ / 19.124.000đ / 1.763.000đ,
+produced by summing `order_lines_v2` by hand. That skipped every filter
+`getPnLDataV2` applies: COMPLETED orders only
+(`app/admin/reports/actions.ts:75,138`), the latest version of each order only
+(`:136` — an edited order leaves an earlier version behind, and both were
+counted), and the order's date rather than the line's. June was overstated by
+about ten million dong.
+
+The data did not move: a snapshot restored from the 2026-08-02 drill returns the
+same 793 completed June orders and the same total as production today. The
+measurement was wrong from the start.
+
+**Rule for every figure in this plan: call `getPnLDataV2`. Never sum the
+tables.** The per-month cost figures are marked "re-measure" rather than
+carried forward, because they came from the same discredited method and no
+substitute has been produced by the authoritative path yet. Task 1 produces
+them, and no later task may quote a number this plan has not re-measured.
 
 June and July are closed with no stock count taken. The new method derives cost
 from what a count shows is missing, so it can produce **one** figure for the
@@ -56,9 +75,12 @@ abandoned. Treat the numbers as gone.
 - Every deleting or updating script: dry-run by default, `--apply` to write,
   exact counts and the affected objects printed before writing, owner approves
   each apply. (`CLAUDE.md` section 2.)
-- **Revenue must not move.** 32.416.000đ / 19.124.000đ / 1.763.000đ for June,
-  July, August 2026, measured 2026-08-04. This plan touches cost only. Any
-  revenue movement is a defect — stop.
+- **Revenue must not move**, and only a closed month can say so. June 2026
+  **22.157.000đ** and July 2026 **18.661.000đ**, from `getPnLDataV2` on
+  2026-08-05. August is an open month — it rises with every sale, so it is not a
+  gate and never was one; the earlier version of this plan wrongly listed it as
+  a fixed figure. This plan touches cost only. Any movement in June or July is a
+  defect — stop.
 - Sales orders, purchase orders, and recipes are not deleted, not edited, and
   not reordered. Only `cost_at_sale` is reset, in place, to the column's own
   default.
@@ -97,9 +119,23 @@ abandoned. Treat the numbers as gone.
 
 `docs/BUSINESS-RULES.md` `BR-BACKUP-005` and `BR-U-004` both say the same thing
 in different words: a backup is a recovery input, not proof of recoverability.
-This plan destroys 25.005.141đ of cost history. The proof happens first.
+This plan destroys roughly 24,9 million dong of cost history — measured
+2026-08-05 as **24.877.232đ across 2.507 completed order lines**. Task 1 Step 3
+re-measures it rather than trusting that figure. The proof happens first.
 
 - [ ] **Step 1: Take a full backup and record its identifier and size**
+
+- [ ] **Step 1b: Bring the restore target's schema up to date first**
+
+Confirmed reachable in the challenge round, and the mechanism has genuinely run
+once — the 2026-08-02 drill, `VERDICT PASS` in
+`docs/audits/2026-08-02-restore-drill.md`. So this step is real work, not
+theory.
+
+But the target is **two migrations behind**: `0052` and `0053`, the two Plan B
+added. Run `supabase db push` against it before restoring, or the restore lands
+in a schema with no `stock_issues` table and the old `item_type` constraint, and
+proves nothing about the database this plan is about to change.
 
 - [ ] **Step 2: Restore it somewhere that is not production**
 
@@ -107,9 +143,12 @@ This plan destroys 25.005.141đ of cost history. The proof happens first.
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
-  Bản phục hồi phải có ĐÚNG 2.699 dòng đơn bán có giá vốn đã chốt,
-  và tổng giá vốn ba tháng phải ra ĐÚNG 25.005.141đ.
-  Lệch một đồng -> bản sao lưu không dùng được. DỪNG. Không xoá gì cả.
+  Đo trên production NGAY TRƯỚC khi sao lưu, rồi đo lại y hệt trên bản phục
+  hồi. Hai con số phải khớp tới từng đồng.
+  Mốc đo 2026-08-05 để nhận ra sai lệch bất thường: 2.507 dòng, 24.877.232đ.
+  Lệch nhỏ so với mốc này là bình thường (quán vẫn đang bán).
+  Production và bản phục hồi lệch nhau -> bản sao lưu không dùng được.
+  DỪNG. Không xoá gì cả.
 ```
 
 - [ ] **Step 4: Record the result in `DEVELOPMENT-TRACKING.md` before proceeding**
@@ -175,11 +214,30 @@ report it and let the count fix it.
 `actions.ts:318-324` forces the rounding remainder onto the first row of
 `cogsDetails` so the detail table sums to `totalCOGS`. `cogsDetails` is a
 breakdown **by ingredient consumed**, which the new method does not produce — it
-knows what left stock, not which drink used it. That table cannot survive as a
-per-ingredient cost breakdown. Replace it with a breakdown by purchased item
-issued, or remove it. Do not leave it summing recipe-derived numbers against an
-issue-derived total; that block would then quietly force the entire discrepancy
-onto one ingredient row.
+knows what left stock, not which drink used it.
+
+**Decided 2026-08-05: delete it. Do not build a replacement.** The earlier
+"replace or remove" wording broke this plan's own no-placeholders rule by
+leaving the choice to whoever executes it.
+
+Two findings settle it. First, `cogsDetails` is built by
+`breakdownCOGSByIngredient` (`lib/report-v2-allocators.ts:156`), which runs
+`FIFOTracker` / `computeLineCostFIFO` (`lib/fifo-tracker.ts`,
+`lib/order-cogs-fifo.ts`) directly over `SALES_CONSUME`, `PRODUCTION_CONSUME`
+and `EDIT_REVERSAL` — the exact rows Task 5 deletes. There is no light edit that
+keeps it alive.
+
+Second, a purchased-item replacement is buildable but not truthful.
+`issued_value` is already per `purchased_item_id`, so the table would render —
+but `stock_issues` rows are not attributable to a month. One count covers
+everything since the previous count, possibly spanning months. Splitting that
+into a June column needs an allocation rule with nothing behind it, which is the
+same problem this design already refused to solve for the total. Building it
+would mean solving at line level what the plan declared unsolvable at total
+level.
+
+Leaving the block untouched is the one thing that must not happen: it would then
+force the whole recipe-versus-issue discrepancy onto a single ingredient row.
 
 Per-product margin is gone by design (spec section 9). `actions.ts:722-726`
 allocates cost to product variants from `cost_at_sale`. With that value at 0,
@@ -195,8 +253,9 @@ every drink at 100% margin with no explanation.
 
 - [ ] **Step 4: Confirm revenue did not move**
 
-Read the P&L for June, July and August. Revenue must read 32.416.000đ,
-19.124.000đ, 1.763.000đ. If any moved, the change reached beyond cost — stop.
+Read the P&L for June and July, the two closed months. Revenue must read
+22.157.000đ and 18.661.000đ. If either moved, the change reached beyond cost —
+stop. Do not gate on August; it is open and rises with every sale.
 
 - [ ] **Step 5: Suite, type check, commit**
 
@@ -207,6 +266,7 @@ Read the P&L for June, July and August. Revenue must read 32.416.000đ,
 **Files:**
 - Modify: `app/pos/actions.ts`
 - Modify: `app/admin/orders/actions.ts`
+- Modify: `app/admin/production/actions.ts`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -227,6 +287,22 @@ consumption after Task 5 has deleted every `SALES_CONSUME` row, an operator
 editing an old order asks the system to reverse movement that no longer exists.
 Retire both paths here, before anything is deleted, rather than discovering the
 interaction afterwards.
+
+**And a third path, found in the challenge round.**
+`app/admin/production/actions.ts:104-117` writes `PRODUCTION_CONSUME` and
+`PRODUCTION_YIELD` directly. This is the real "Sản xuất / Nấu Bếp" screen,
+reachable from the live navigation (`app/admin/layout.tsx:44`) — not the
+implicit production the spec describes.
+
+The measurement that makes it urgent: `production_orders` holds **0** rows,
+matching `CLAUDE.md` section 7's statement that no production order was ever
+issued — yet **3.337** `PRODUCTION_CONSUME` / `PRODUCTION_YIELD` rows exist in
+`stock_ledger`. The screen is live and reachable whether or not it has been used
+deliberately.
+
+Leave it and this plan's own verification bar breaks the first time somebody
+opens that screen: `stock_ledger` would no longer hold purchase receipts only.
+All three write paths retire in this task.
 
 - [ ] **Step 1: Write the failing test — a checkout writes cost 0 and no ledger row**
 
@@ -273,7 +349,7 @@ select tgname, pg_get_triggerdef(oid)
 
 `0011_hong_to_luc_idempotency_precision_fix.sql` compares `cost_at_sale` against
 recorded before/after values in several places. Establish whether any of that is
-still live before updating 2.699 rows underneath it.
+still live before updating roughly 2.500 rows underneath it.
 
 - [ ] **Step 2: Write the script, dry-run by default**
 
@@ -284,9 +360,11 @@ approves the apply.
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
-  Chạy thử phải in ra ĐÚNG: 2.699 dòng, tổng hiện tại 25.005.141đ, sau khi
-  ghi 0đ.
-  Ra số khác -> script đang nhắm sai tập dữ liệu. DỪNG, đừng chạy --apply.
+  Chạy thử phải in ra: số dòng, tổng giá vốn hiện tại, và tổng sau khi ghi (0đ).
+  Mốc đo 2026-08-05: 2.507 dòng, 24.877.232đ. Lệch nhỏ là bình thường vì quán
+  vẫn đang bán; lệch lớn thì script đang nhắm sai tập dữ liệu.
+  Con số in ra PHẢI khớp với chính con số Task 1 đã đo lúc sao lưu.
+  Không khớp -> DỪNG, đừng chạy --apply.
 ```
 
 - [ ] **Step 4: Owner approves, then `--apply`**
@@ -365,6 +443,38 @@ cost.
 the data and the means of regenerating it removes the only way back, and saves
 nothing. Spec section 5.
 
+**That sentence contradicted this plan until the challenge round caught it.**
+`lib/reorder-suggestion.ts` calls `buildInventoryBalances` from
+`lib/inventory-consumption.ts`, and feeds the low-stock warnings on the daily
+dashboard (`app/admin/reports/daily/actions.ts:80`, `lowStockItems`). A file
+cannot be both removed from the running path and called by the daily dashboard.
+
+The deeper problem is not the import. `lib/reorder-suggestion.ts` derives
+consumption speed from `SALES_CONSUME` and `PRODUCTION_CONSUME`. After Plan B
+Task 3 nothing ever writes those again, so this is not history being deleted —
+it is **the input drying up permanently**. The warning would not fail; it would
+report "not enough data" forever, which is the quiet kind of broken this project
+keeps finding.
+
+**Resolve it deliberately, and it is the owner's call, not this plan's.**
+Consumption speed is still derivable — from `stock_issues` — but only as coarsely
+as counts are taken. A weekly count gives weekly resolution, not daily. Recorded
+as item 33; the low-stock warning does not silently rot in the meantime.
+
+**Also changing meaning without changing code:**
+`getMacUnitCostWithRecipeFallback` (`lib/mac-cogs.ts`) feeds the "current cost"
+shown for pricing decisions on `app/admin/products/page.tsx` and
+`app/admin/products/cogs-estimate/page.tsx`. With consumption rows deleted it
+stops netting off what was used and quietly becomes "average purchase price over
+all history" while still returning a plausible number. It is outside Task 3
+because it touches neither `cost_at_sale` nor checkout, which is exactly why it
+would have been missed. Either relabel it in Vietnamese or point it at the new
+average — decide in this task, do not leave it mislabelled.
+
+**Checked and cleared, not a hole:** `lib/cogs-drift-audit.ts` reads those row
+types but is reached only from `scripts/audit-cogs-drift.ts`, run by hand. No
+live import in `app/` or `lib/`.
+
 - [ ] **Step 1: Confirm the cron has not run and record that fact**
 
 `docs/OPEN-ITEMS.md` items 2b and 19 record that it never started in
@@ -439,8 +549,9 @@ reopened by someone later.
   legitimately; rewrite them to assert the new rule, and say in the commit which
   ones and why. Do not delete a test without stating the reason.
 - `npx vite-node scripts/check-rules-current.ts` — 3 PASS.
-- Revenue reads 32.416.000đ / 19.124.000đ / 1.763.000đ for June, July, August
-  2026 — before and after every task.
+- Revenue reads 22.157.000đ for June and 18.661.000đ for July — before and after
+  every task, from `getPnLDataV2`, never from a hand-rolled sum. August is open
+  and is not a gate.
 - Purchase orders, sales orders, and recipes byte-identical to their pre-plan
   state.
 - `stock_ledger` holds `PO_RECEIPT` rows only.

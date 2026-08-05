@@ -86,7 +86,15 @@ COGS for a period is the value of goods recorded as issued from stock in that pe
 
 The report carries **one** cost figure, not an old and a new one side by side. The owner declined a parallel display on 2026-08-04.
 
-The owner was shown, before deciding, that June 2026 (16.688.133đ) and July 2026 (7.711.264đ) are closed with no stock count taken, that the new method can never produce a figure for them — a single count yields one figure for the whole elapsed period, and month-level restatement needs month-end counts that were never taken — and that those months will therefore report gross profit equal to full revenue. The owner accepted this and chose deletion.
+The owner was shown, before deciding, that June 2026 and July 2026 are closed with no stock count taken, that the new method can never produce a figure for them — a single count yields one figure for the whole elapsed period, and month-level restatement needs month-end counts that were never taken — and that those months will therefore report gross profit equal to full revenue. The owner accepted this and chose deletion.
+
+**Correction 2026-08-05: the figures quoted to the owner on 2026-08-04 were wrong, and are corrected here rather than rewritten above.** They were 32.416.000đ / 19.124.000đ / 1.763.000đ revenue and 16.688.133đ / 7.711.264đ / 605.743đ cost. They came from summing `order_lines_v2` by hand, which skipped all three filters `getPnLDataV2` applies: COMPLETED orders only (`app/admin/reports/actions.ts:138`), the latest version of each order only (same file, line 136 — an edited order leaves an earlier version behind, and both were counted), and the order's date rather than the line's. June was overstated by roughly ten million dong.
+
+Measured by calling `getPnLDataV2` directly: June revenue **22.157.000đ**, July **18.661.000đ**. Cost across all completed order lines is **24.877.232đ over 2.507 lines**, against the 25.005.141đ over 2.699 lines quoted before.
+
+Data did not move. A snapshot restored from the 2026-08-02 drill returns the same 793 completed June orders and the same 22.157.000đ as production does today.
+
+The decision stands: it turned on those months having no count and no way to acquire one, which the corrected figures do not change. **Any figure used as a verification gate must come from calling `getPnLDataV2`, never from summing the tables.**
 
 Supersedes `BR-SALE-001` and `BR-COGS-002`, effective on the cutover described in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`. Those two remain in force until it applies.
 
