@@ -96,6 +96,8 @@ Data did not move. A snapshot restored from the 2026-08-02 drill returns the sam
 
 The decision stands: it turned on those months having no count and no way to acquire one, which the corrected figures do not change. **Any figure used as a verification gate must come from calling `getPnLDataV2`, never from summing the tables.**
 
+**Reaffirmed 2026-08-05 on changed grounds.** Once the report was switched to the issue-based figure, no screen or calculation read the stored `cost_at_sale` any longer, so erasing it no longer changed anything visible — its only remaining effect was destroying the record, irreversibly once the ledger goes. The owner was told this and chose deletion again.
+
 Supersedes `BR-SALE-001` and `BR-COGS-002`, effective on the cutover described in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`. Those two remain in force until it applies.
 
 ### BR-COGS-003 — Rounding and allocation must reconcile

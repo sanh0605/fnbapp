@@ -705,6 +705,21 @@ The column is `cost_at_sale bigint not null default 0`
 (`0001_init_schema.sql:262`). The column stays; its values return to the
 default. Nothing is dropped, so nothing referencing it breaks.
 
+**Reaffirmed by the owner 2026-08-05, after being told the reason had changed.**
+When he chose deletion on 2026-08-04, zeroing was the only way to stop the
+report showing the old figure. Tasks 2 and 3 removed that need: no screen and no
+calculation reads `cost_at_sale` any more, and
+`breakdownCOGSByIngredient` — the last function that did — now has no caller at
+all. So this task changes nothing the owner can see; its only remaining effect
+is destroying the record. Told exactly that, he chose deletion again. Proceed.
+
+**Take a fresh backup immediately before the apply — Task 1's does not cover
+this.** Task 1 proved the *mechanism* restores, on 2026-08-05. The shop has sold
+since. Restoring that snapshot now would roll back real sales to fix a cost
+column, which trades a bigger loss for a smaller one. The snapshot that protects
+this apply is one taken minutes before it, not the one that proved restorability
+last week.
+
 - [ ] **Step 1: List every trigger on `order_lines_v2` and state what each does with these rows**
 
 ```sql
