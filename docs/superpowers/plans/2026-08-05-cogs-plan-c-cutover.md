@@ -716,6 +716,22 @@ reopened by someone later.
 - Purchase orders, sales orders, and recipes byte-identical to their pre-plan
   state.
 - `stock_ledger` holds `PO_RECEIPT` rows only.
+- **No rounded or derived money value is persisted anywhere on the new path.**
+  Owner directive 2026-08-05, restating the 2026-07-30 rule for the path that
+  replaces the old one: rounding belongs to the screen, storage keeps exact
+  inputs.
+
+  The design already satisfies this and should stay that way: `stock_issues`
+  carries **no money column at all** — only `base_quantity numeric(18,6)` — so
+  the running average is never written down, only recomputed from
+  `purchase_order_lines.subtotal` (`bigint`, whole dong) and the quantities.
+  Nothing derived is stored, so nothing derived can be stored rounded.
+
+  Assert it rather than assume it: after the cutover, no table gains a unit-cost
+  or line-value column, and `Math.ceil`/`Math.round` appear on the cost path only
+  inside `lib/display-rounding.ts` at the render boundary. `displayMoney` rounds
+  cost **up** by owner rule 2026-07-30 — never flatter the business — and that
+  direction must survive the cutover.
 - **After a count is applied, `closing_quantity` from `computeIssueCosting`
   equals the counted quantity exactly, for every item counted.** This holds by
   construction — the issue written is `theoretical − counted`, so closing is
