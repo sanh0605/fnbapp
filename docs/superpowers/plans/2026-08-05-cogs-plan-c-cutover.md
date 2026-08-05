@@ -482,6 +482,32 @@ setting prices, and he has not asked for that. Relabelling in Vietnamese makes
 it honest about being an average purchase price without moving anything he
 prices against.
 
+**The cost-estimate screen keeps working, and by how much it drifts is
+determined, not guessed.** `app/admin/products/cogs-estimate/page.tsx` estimates
+a product's cost as recipe times ingredient unit cost. Recipes survive, purchase
+orders survive, and semi-products explode their recipe fresh
+(`computeSemiProductUnitCost`), so both inputs remain.
+
+Deleting consumption rows barely moves the number, for an exact reason.
+`lib/mac-cogs.ts:118-127` removes consumed quantity at `latestKnownMac`, the
+running average itself. Removing q units at m from (Q, V) where m = V/Q leaves
+(V − qm)/(Q − q) = V/Q = m. Consumption never moves the average; only receipts
+do. With `stock_ledger` reduced to `PO_RECEIPT` rows, the figure becomes the
+weighted average of every purchase ever made.
+
+**The one case where it does move** is an item that fully depleted and was then
+repurchased at a different price. With consumption rows, quantity reached zero
+and the next receipt set the average alone; without them, the older cheaper
+stock never leaves and keeps dragging the average down. So the estimate stops
+forgetting old stock and leans toward a lifetime average — understating items
+that ran out and came back dearer.
+
+Relabelling is therefore the honest minimum, not a fudge. **Repointing becomes
+the better answer once counts exist**: `closing_value / closing_quantity` from
+`computeIssueCosting` knows what actually left, which is more accurate than
+today's figure rather than less. Recorded here so the option is not lost —
+it belongs with item 33, after counting frequency is known.
+
 **Also changing meaning without changing code:**
 `getMacUnitCostWithRecipeFallback` (`lib/mac-cogs.ts`) feeds the "current cost"
 shown for pricing decisions on `app/admin/products/page.tsx` and
