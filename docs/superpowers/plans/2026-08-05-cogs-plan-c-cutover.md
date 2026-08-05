@@ -631,6 +631,51 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
 
 ---
 
+### Task 3b: Put a safety catch on the live verification script
+
+**Files:**
+- Modify: `scripts/verify-task3-live.ts`
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: the same proof, reachable only on purpose.
+
+Task 3's verification was the right method — three real counts around a real
+sale, a real edit and a refused batch, 10.684 rows unchanged each time, nothing
+inferred from reading code. Keep the script; it is the only proof that selling
+does not touch the ledger *against the real database*, and Task 5 will want it
+again after the deletions.
+
+But it was committed with **no guard**. Running it writes a real sale, a real
+edit and a real void into the shop's books immediately, with no dry run and no
+confirmation. `CLAUDE.md` section 2 requires the opposite: dry-run by default,
+`--apply` to write, exact objects printed first, owner approval per apply.
+
+That run was authorised — the coordinator asked for it explicitly. Leaving it
+unguarded is the problem: the next person re-verifying Task 3, agent or human,
+creates another order in real sales data without meaning to.
+
+- [ ] **Step 1: Default to dry run**
+
+Without `--apply`, print exactly what it *would* do — which product, which
+order, which counts it would take — and write nothing.
+
+- [ ] **Step 2: Under `--apply`, print the objects before writing**
+
+Name the product and the order id as they are created, so the audit trail exists
+in the console output as well as the database.
+
+- [ ] **Step 3: State the cleanup in the output, not only in the code**
+
+The script already voids the order it creates. Say so on screen, and print the
+resulting statuses — `SUPERSEDED` for the original, `VOIDED` for the edited
+version — so the reader can see the test left nothing countable behind rather
+than trusting that it did.
+
+- [ ] **Step 4: Commit**
+
+---
+
 ### Task 4: Reset the stored cost values
 
 **Files:**
