@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { BACKUP_TABLES } from "@/supabase/functions/backup-to-drive/core";
 
 const indexSource = readFileSync("supabase/functions/backup-to-drive/index.ts", "utf8");
 const coreSource = readFileSync("supabase/functions/backup-to-drive/core.ts", "utf8");
@@ -9,6 +10,22 @@ const guide = readFileSync("docs/operations/apps-script-drive-backup.md", "utf8"
 const policy = readFileSync("docs/audits/2026-07-16-drive-backup-policy.md", "utf8");
 
 describe("Drive backup deployment contract", () => {
+  it("captures stock_issues, the sole cost input once Plan C lands", () => {
+    // OPEN-ITEMS.md item 34 / Plan C Task 1c: BACKUP_TABLES predated
+    // migration 0052 and never gained stock_issues. An issue cannot be
+    // re-derived like a ledger row -- the goods are gone and the count that
+    // measured them cannot be retaken -- so this asserts the list length,
+    // not just membership, to catch a future silent drop.
+    expect(BACKUP_TABLES.length).toBe(41);
+    expect(BACKUP_TABLES).toContain("stock_issues");
+    // Must follow both purchased_items and stocktake_sessions so
+    // lib/backup-restore.ts's parent-first restore order resolves the FKs.
+    expect(BACKUP_TABLES.indexOf("stock_issues")).toBeGreaterThan(BACKUP_TABLES.indexOf("purchased_items"));
+    expect(BACKUP_TABLES.indexOf("stock_issues")).toBeGreaterThan(BACKUP_TABLES.indexOf("stocktake_sessions"));
+
+    expect(appsScriptSource).toContain('"stock_issues"');
+  });
+
   it("uses token auth and paginated full dumps without Google credentials", () => {
     expect(coreSource).toContain("PAGE_SIZE = 1000");
     expect(indexSource).toContain("BACKUP_PULL_TOKEN");

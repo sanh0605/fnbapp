@@ -36,6 +36,9 @@ export const BACKUP_TABLES = [
   "shift_stock_checks",
   "stocktake_sessions",
   "stocktake_lines",
+  // References purchased_items and stocktake_sessions, so it must come after
+  // both for lib/backup-restore.ts's parent-first restore order to resolve.
+  "stock_issues",
   // backdated_recipe_events.id is uuid (every other backup table uses text).
   // dumpTable pages by ORDER BY id ASC + offset/limit, not a gt() keyset, so
   // the id's type does not matter -- Postgres can order any uuid column, and

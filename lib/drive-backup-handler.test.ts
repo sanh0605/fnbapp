@@ -35,7 +35,7 @@ describe("backup snapshot HTTP handler", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(response.headers.get("X-Backup-Table-Count")).toBe("40");
+    expect(response.headers.get("X-Backup-Table-Count")).toBe(String(BACKUP_TABLES.length));
     expect(await response.json()).toEqual(bundle);
   });
 });
