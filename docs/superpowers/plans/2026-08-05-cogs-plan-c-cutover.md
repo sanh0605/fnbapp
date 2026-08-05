@@ -97,7 +97,7 @@ abandoned. Treat the numbers as gone.
 |---|---|---|
 | `scripts/backup-verify-restore.ts` (create or reuse) | Prove the backup restores before anything is deleted | 1 |
 | `app/admin/reports/actions.ts` (modify) | `totalCOGS` comes from issues, not `cost_at_sale` | 2 |
-| `app/admin/orders/actions.ts` (modify) | Order-level cost stops claiming a per-order figure | 2 |
+| `app/admin/orders/actions.ts` (modify) | Stops computing a cost when an order is edited | 3 |
 | `app/pos/actions.ts` (modify) | Checkout stops computing a sale cost | 3 |
 | `scripts/reset-cost-at-sale.ts` (create) | Dry-run/`--apply` reset of 2.699 stored values | 4 |
 | `scripts/delete-derived-stock-rows.ts` (create) | Dry-run/`--apply` deletion of the derived ledger and the recovery log | 5 |
@@ -252,7 +252,14 @@ production.
 
 **Files:**
 - Modify: `app/admin/reports/actions.ts`
-- Modify: `app/admin/orders/actions.ts`
+
+`app/admin/orders/actions.ts` was listed here and does not belong. Checked
+2026-08-05: its only cost site is line 558, which *computes* a cost when an
+order is edited — Task 3's business, not this task's. Nothing under
+`app/admin/orders/**` renders `cost_at_sale`; line 753 is row coercion, and the
+only components that display cost live under `components/backdated-ledger/**`,
+which Task 6 retires. The original entry assumed the order screen showed a cost
+figure. It does not.
 
 **Interfaces:**
 - Consumes: `computeIssueCosting` (Plan B Task 1), `stock_issues` (Plan B).
@@ -268,11 +275,52 @@ const totalCOGS = typedLines.reduce((s, l) => s + l.cost_at_sale, 0);
 It becomes the sum of `issued_value` over the period's issues. Keep the name and
 the type; only the source changes.
 
-Load purchases the way Plan B Task 1 pins: join `purchase_order_lines` to
-`purchase_orders`, filter `status = 'COMPLETED'`, and order by
-`transaction_date` (fallback `created_at`). `purchase_order_lines` has no status
-column, and 57 of 62 completed orders were entered on a different day from the
-one they happened. Reuse Plan B's loader rather than writing a second one.
+**Write the loader here; there is nothing to reuse.** This plan said "reuse Plan
+B's loader", which was stale — the loader would have been written by Plan B Task
+4, and the owner cancelled that task. `computeIssueCosting` has had no real
+caller since. Write it once, in this task, following the convention Plan B Task
+1 pinned: join `purchase_order_lines` to `purchase_orders`, filter
+`status = 'COMPLETED'`, take `at` from `transaction_date` with `created_at` as
+fallback. `purchase_order_lines` has no status column, and 57 of 62 completed
+orders were entered on a different day from the one they happened.
+
+#### Getting one month's cost out of a cumulative engine
+
+`computeIssueCosting` returns cumulative totals per item, not per issue event.
+A month's figure therefore comes from **two runs and a subtraction**:
+
+```
+truoc thang 6 = computeIssueCosting(mua: TAT CA, xuat: truoc 01/06)
+den het th. 6 = computeIssueCosting(mua: TAT CA, xuat: den het 30/06)
+gia von thang 6 = (den het th.6) - (truoc thang 6), cong theo tung mat hang
+```
+
+This is the only correct method, and the reason is the design itself: an issue's
+value depends on the weighted average at the moment it happened, which depends
+on every event before it. There is no way to price June's issues without
+replaying everything that preceded them.
+
+**Both runs must use an identical purchase set — pass every completed purchase
+to both.** The subtraction is only valid because the two replays share an
+identical prefix; varying the purchase set between them breaks that. Passing all
+purchases is safe regardless of period: the replay is chronological, so a
+purchase dated after the last issue cannot change any issue's value, it only
+lands in `closing_value`.
+
+- [ ] **Step 1c: Prove the months add up to the whole**
+
+The invariant that catches an error in the differencing:
+
+```
+VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
+  Cộng giá vốn từng tháng (tháng 6 + tháng 7 + tháng 8) PHẢI bằng đúng
+  một lần chạy duy nhất lấy toàn bộ phiếu xuất từ đầu tới hết tháng 8.
+  Lệch -> phép trừ sai, hoặc hai lần chạy không dùng cùng tập đơn nhập. DỪNG.
+
+  Trước lần đếm đầu tiên, cả hai vế đều bằng 0đ. Bằng nhau vì cùng rỗng
+  KHÔNG chứng minh được gì — phép kiểm này chỉ có nghĩa sau khi có phiếu
+  xuất thật. Ghi rõ điều đó trong test, đừng để nó xanh giả.
+```
 
 **This task inherits Plan B Task 4's sort-column check**, because cancelling
 that task made this the first real caller of `computeIssueCosting`.
