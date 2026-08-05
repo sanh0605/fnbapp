@@ -13,8 +13,10 @@ way round — there is nothing to gain from a window where neither method works.
 **Tech Stack:** TypeScript, Vitest, Supabase Postgres migrations, `vite-node`.
 
 **Spec:** `docs/superpowers/specs/2026-08-02-issue-based-cogs-design.md`
-**Depends on:** `docs/superpowers/plans/2026-08-04-cogs-plan-b-parallel-path.md`
-complete, including its Task 4 output read by the owner.
+**Depends on:** `docs/superpowers/plans/2026-08-04-cogs-plan-b-parallel-path.md`,
+complete through Task 3. Its Task 4 — the one-off old-versus-new comparison —
+was cancelled by the owner on 2026-08-05, so no comparison gates this plan.
+Task 4's sort-column check moved into Task 2 here.
 
 ## The decision this plan carries out, and what the owner was told first
 
@@ -27,7 +29,7 @@ Before deciding, the owner was shown these measured figures and the consequence:
 |---|---|---|---|
 | 2026-06 | 32.416.000đ | 16.688.133đ | **0đ** |
 | 2026-07 | 19.124.000đ | 7.711.264đ | **0đ** |
-| 2026-08 | 1.763.000đ | 605.743đ | new figure, from counts |
+| 2026-08 | 1.763.000đ | 605.743đ | **0đ until a first count exists** |
 
 June and July are closed with no stock count taken. The new method derives cost
 from what a count shows is missing, so it can produce **one** figure for the
@@ -204,14 +206,27 @@ Read the P&L for June, July and August. Revenue must read 32.416.000đ,
 
 **Files:**
 - Modify: `app/pos/actions.ts`
+- Modify: `app/admin/orders/actions.ts`
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: order lines written with `cost_at_sale` at its column default, 0.
+- Produces: order lines written with `cost_at_sale` at its column default, 0,
+  and no sales-driven stock movement from any path.
 
 Selling no longer moves stock and no longer determines cost. Checkout should
 stop doing the work, not merely have its result ignored — the recipe lookup at
 checkout is also latency on the till.
+
+**Checkout is not the only path that moves stock at sale time.** This plan
+originally named `app/pos/actions.ts` alone, which was wrong:
+`app/admin/orders/actions.ts` also writes sales-driven ledger rows, including
+the `EDIT_REVERSAL` rows Task 5 deletes.
+
+That ordering matters. If the edit and void paths keep reversing sales
+consumption after Task 5 has deleted every `SALES_CONSUME` row, an operator
+editing an old order asks the system to reverse movement that no longer exists.
+Retire both paths here, before anything is deleted, rather than discovering the
+interaction afterwards.
 
 - [ ] **Step 1: Write the failing test — a checkout writes cost 0 and no ledger row**
 
