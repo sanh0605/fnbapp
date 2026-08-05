@@ -662,6 +662,29 @@ reopened by someone later.
     Tổng phải bảo toàn: 132.000 + 88.000 = 220.000đ
     Ra 96.000đ cho phần tồn -> đang tính FIFO, SAI phương pháp. DỪNG.
   ```
+
+  Extended by the owner 2026-08-05 to cover **a purchase arriving after an
+  issue** — a path the two-step example never touches, since it is where closing
+  value has to carry forward as opening value:
+
+  ```
+  Buoc 4  Nhap them 10 kg × 12.000d
+          -> 18 kg | 208.000d | 11.555,56d/kg
+          (8 kg cu 88.000d cong 10 kg moi 120.000d, chia 18)
+          Binh quan TANG vi gia mua 12.000 cao hon binh quan cu 11.000.
+  Buoc 5  Xuat 9 kg -> gia von 104.000d
+          -> con 9 kg | 104.000d | van 11.555,56d/kg
+
+  Hai bat bien phai dung o CA HAI buoc:
+    - nhap hang LAM DOI binh quan
+    - xuat hang KHONG lam doi binh quan
+  Binh quan doi sau buoc 5 -> dang tru theo gia khac, SAI. DUNG.
+  Buoc 4 ra 11.000d/kg -> ton dau ky khong duoc mang sang, SAI. DUNG.
+  ```
+
+  Keep full precision through the chain. 208.000/18 does not terminate, and
+  rounding it mid-computation is the defect this project already fixed once on
+  2026-07-30.
 - The reconstruction files still exist and still compile.
 - A verified restore was performed and recorded before any deletion ran.
 - No screen shows a cost breakdown that silently reads 0 without saying so.
