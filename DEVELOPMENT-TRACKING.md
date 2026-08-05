@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-05 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 1: the restore path re-proven against the schema it is about to change, and the plan's own revenue baseline caught wrong
+
+**Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 1 — before Plan C deletes ~24,9 million dong of cost history and ~10.000 derived ledger rows, the backup must be shown to restore, not assumed to.
+
+**Challenge round found the plan's own baseline was wrong before any code ran.** The plan's first draft carried revenue figures (32.416.000đ / 19.124.000đ / 1.763.000đ for June/July/August) computed by hand-summing `order_lines_v2`, skipping all three filters `getPnLDataV2` applies: COMPLETED orders only, latest version of an edited order only, and the order's date rather than the line's. Proven wrong by comparing the 2026-08-02 restore-drill snapshot against production today: identical 793 completed June orders, identical total — the data never moved, the original measurement was wrong from the start. Corrected figures, from `getPnLDataV2` directly: June 22.157.000đ, July 18.661.000đ. August dropped as a gate entirely — it is an open month and rises with every sale, so it cannot be a fixed target. Rule adopted for the rest of this plan: call `getPnLDataV2`, never sum the tables by hand.
+
+Same challenge round found three more gaps: `app/admin/production/actions.ts` writes `PRODUCTION_CONSUME`/`PRODUCTION_YIELD` directly (0 production orders ever completed, but 3.337 ledger rows already exist from the live, navigable "Sản xuất / Nấu Bếp" screen) — added as a third retirement path in Task 3. `cogsDetails`'s "replace or remove" wording left an open choice that broke the plan's own no-placeholder rule — settled as delete-only, since a per-purchased-item replacement would need to solve the same unattributable-by-month problem the design already declared unsolvable for the total. `lib/reorder-suggestion.ts` calls `buildInventoryBalances` from `lib/inventory-consumption.ts`, contradicting Task 6's claim that file leaves the running path — and separately, its `MIN_CONSUMPTION_EVENTS = 3` over 14 days can never fire on `stock_issues` at realistic count frequency, so owner decision: switch the low-stock warning off with an explanatory Vietnamese line rather than rebuild something that cannot work yet.
+
+**Task 1 itself:** restore target was 2 migrations behind (`0052`/`0053`, both Plan B); brought current via `supabase db push --db-url` before restoring, per the plan's own added Step 1b — restoring into a stale schema would have proven nothing. Target cleared of the 2026-08-02 drill's leftover data (reverse `BACKUP_TABLES` order) before the fresh restore. Measured on production immediately before backup and again on the restored target: **2.507 completed order lines with `cost_at_sale > 0`, 24.877.232đ total — identical, to the dong, in both places.** Full drill (`scripts/verify-restore-drill.ts`): 38/40 tables match production exactly; the two that differ (`backdated_ledger_events`, `backdated_recipe_events`) are the same documented restore-order trigger noise as the 2026-08-02 run, not data loss. Content spot-checks (PO-037, one split-payment order, Sữa đặc's 1.729 `stock_ledger` rows) all match exactly. **VERDICT: PASS.**
+
+**Not yet done:** `stock_issues` (new in Plan B) is absent from `BACKUP_TABLES` — currently harmless (0 rows), but the backup will not capture it once real counts start. Flagged, not fixed — out of scope for Task 1.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Phase 1 working rules: four rule documents become one, plus three mechanisms that report when a rule goes stale
 
 **Trigger:** `docs/superpowers/specs/2026-08-01-working-rules-and-repo-structure-design.md`. `docs/COLLABORATION.md` (404 lines) and `AGENTS.md` (110 lines) still described a three-vendor protocol (Claude/Codex/Antigravity) for a project that has had only two agents, both Claude Code, since 2026-07-31. Root cause the spec names: rules scattered across four documents nobody could keep in sync, so they went stale, and staleness is exactly what let the 2026-07-31 `start_date` backfill trigger fallout through undetected. Plan: `docs/superpowers/plans/2026-08-01-phase1-working-rules.md`.

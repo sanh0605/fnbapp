@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-02T08:25:17.664Z",
+  "generated_at": "2026-08-05T06:56:11.332Z",
   "verdict": "PASS",
   "row_count_diffs": [
     {
@@ -117,43 +117,43 @@
     {
       "table": "orders_v2",
       "baseline": 1798,
-      "production_now": 1854,
-      "restored": 1854,
+      "production_now": 1930,
+      "restored": 1930,
       "delta_vs_production": 0
     },
     {
       "table": "order_lines_v2",
       "baseline": 2553,
-      "production_now": 2627,
-      "restored": 2627,
+      "production_now": 2724,
+      "restored": 2724,
       "delta_vs_production": 0
     },
     {
       "table": "order_events",
       "baseline": 1814,
-      "production_now": 1871,
-      "restored": 1871,
+      "production_now": 1947,
+      "restored": 1947,
       "delta_vs_production": 0
     },
     {
       "table": "stock_ledger",
       "baseline": 12107,
-      "production_now": 10395,
-      "restored": 10395,
+      "production_now": 10672,
+      "restored": 10672,
       "delta_vs_production": 0
     },
     {
       "table": "purchase_orders",
       "baseline": 61,
-      "production_now": 62,
-      "restored": 62,
+      "production_now": 63,
+      "restored": 63,
       "delta_vs_production": 0
     },
     {
       "table": "purchase_order_lines",
       "baseline": 136,
-      "production_now": 137,
-      "restored": 137,
+      "production_now": 138,
+      "restored": 138,
       "delta_vs_production": 0
     },
     {
@@ -180,8 +180,8 @@
     {
       "table": "pos_drafts",
       "baseline": 0,
-      "production_now": 0,
-      "restored": 0,
+      "production_now": 1,
+      "restored": 1,
       "delta_vs_production": 0
     },
     {
@@ -222,15 +222,15 @@
     {
       "table": "backdated_ledger_events",
       "baseline": 1898,
-      "production_now": 1910,
-      "restored": 3175,
-      "delta_vs_production": 1265
+      "production_now": 1911,
+      "restored": 3193,
+      "delta_vs_production": 1282
     },
     {
       "table": "order_payments",
       "baseline": 205,
-      "production_now": 261,
-      "restored": 261,
+      "production_now": 337,
+      "restored": 337,
       "delta_vs_production": 0
     },
     {

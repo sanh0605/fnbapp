@@ -625,6 +625,21 @@ reopened by someone later.
 - Purchase orders, sales orders, and recipes byte-identical to their pre-plan
   state.
 - `stock_ledger` holds `PO_RECEIPT` rows only.
+- **After a count is applied, `closing_quantity` from `computeIssueCosting`
+  equals the counted quantity exactly, for every item counted.** This holds by
+  construction — the issue written is `theoretical − counted`, so closing is
+  `theoretical − (theoretical − counted)`. Assert it anyway: it is the one
+  invariant that proves the count, not an estimate, defines what remains, and a
+  drift here means an issue was written from something other than the count.
+
+  ```
+  VÍ DỤ ĐÃ TÍNH SẴN — con số chủ quán tự đưa ra 2026-08-05:
+    Nhập 10 kg × 10.000đ, rồi 10 kg × 12.000đ -> 20 kg / 220.000đ, bq 11.000đ
+    Đếm ra 8 kg -> xuất 12 kg, giá vốn 12 × 11.000 = 132.000đ
+    Tồn còn lại PHẢI ra: 8 kg / 88.000đ / vẫn 11.000đ mỗi kg
+    Tổng phải bảo toàn: 132.000 + 88.000 = 220.000đ
+    Ra 96.000đ cho phần tồn -> đang tính FIFO, SAI phương pháp. DỪNG.
+  ```
 - The reconstruction files still exist and still compile.
 - A verified restore was performed and recorded before any deletion ran.
 - No screen shows a cost breakdown that silently reads 0 without saying so.
