@@ -18,13 +18,14 @@ describe("stocktake atomic adapters", () => {
     expect(stocktakeTransaction).toHaveProperty("applyStocktakeSessionAtomic");
   });
 
-  it("rejects an RPC result whose planned rows and ledger count disagree", async () => {
+  it("rejects an RPC result whose planned rows and ledger+issue count disagree", async () => {
     mocks.rpc.mockResolvedValue({
       data: {
         session_id: "STK-001",
         status: "CONFIRMED",
         dry_run: false,
         ledger_count: 2,
+        issue_count: 0,
         rows: [{
           line_id: "SKL-00001",
           item_reference: "ING-001",
@@ -36,6 +37,7 @@ describe("stocktake atomic adapters", () => {
           projected_qty: 7,
         }],
         ledger_ids: ["STK-001"],
+        issue_ids: [],
         plan_hash: "mismatch-hash",
       },
       error: null,
@@ -46,7 +48,7 @@ describe("stocktake atomic adapters", () => {
       confirmedById: "admin-1",
       confirmedByName: "Admin",
       dryRun: false,
-    })).rejects.toThrow("ledger count mismatch");
+    })).rejects.toThrow("row count mismatch");
   });
 
   it("rejects a result whose dry-run flag differs from the requested operation", async () => {

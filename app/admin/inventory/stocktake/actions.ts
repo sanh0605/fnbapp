@@ -36,9 +36,10 @@ export interface StocktakeSessionView {
 }
 
 async function loadItemNameMaps() {
-  const [baseIngredients, semiProducts, units] = await Promise.all([
+  const [baseIngredients, semiProducts, purchasedItems, units] = await Promise.all([
     findAll("Base_Ingredients"),
     findAll("Semi_Products"),
+    findAll("Purchased_Items"),
     findAll("Units"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
@@ -48,7 +49,17 @@ async function loadItemNameMaps() {
     nameById.set(item.id, item.name);
     unitNameByItemId.set(item.id, unitNameById.get(item.base_unit) ?? item.base_unit ?? "");
   }
-  return { nameById, unitNameByItemId, baseIngredients: baseIngredients as any[], semiProducts: semiProducts as any[] };
+  for (const item of purchasedItems as any[]) {
+    nameById.set(item.id, item.name);
+    unitNameByItemId.set(item.id, unitNameById.get(item.default_unit_id) ?? item.default_unit_id ?? "");
+  }
+  return {
+    nameById,
+    unitNameByItemId,
+    baseIngredients: baseIngredients as any[],
+    semiProducts: semiProducts as any[],
+    purchasedItems: purchasedItems as any[],
+  };
 }
 
 export async function getStocktakeSessionData(): Promise<StocktakeSessionView | null> {
@@ -90,12 +101,20 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
   if (!auth.ok) return fail(auth.error);
 
   try {
-    const { baseIngredients, semiProducts } = await loadItemNameMaps();
+    const { baseIngredients, semiProducts, purchasedItems } = await loadItemNameMaps();
+    const nonInventoryBaseIngredientIds = new Set(
+      baseIngredients
+        .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
+        .map(b => b.id as string),
+    );
     const items = [
       ...baseIngredients
         .filter(b => b.is_non_inventory !== true && b.is_non_inventory !== "TRUE")
         .map(b => ({ itemReference: b.id as string, itemType: "BASE_INGREDIENT" as StocktakeItemType })),
       ...semiProducts.map(s => ({ itemReference: s.id as string, itemType: "SEMI_PRODUCT" as StocktakeItemType })),
+      ...purchasedItems
+        .filter(p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id))
+        .map(p => ({ itemReference: p.id as string, itemType: "PURCHASED_ITEM" as StocktakeItemType })),
     ];
     if (items.length === 0) return fail("Không có mặt hàng nào để kiểm kê");
 

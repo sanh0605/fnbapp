@@ -1,6 +1,6 @@
 import { getSupabaseClient } from "@/lib/supabase";
 
-export type StocktakeItemType = "BASE_INGREDIENT" | "SEMI_PRODUCT";
+export type StocktakeItemType = "BASE_INGREDIENT" | "SEMI_PRODUCT" | "PURCHASED_ITEM";
 
 export type StocktakeSessionRow = {
   id: string;
@@ -36,9 +36,11 @@ export type StocktakeApplyResult = {
   status: "OPEN" | "CONFIRMED";
   dryRun: boolean;
   ledgerCount: number;
+  issueCount: number;
   rows: StocktakeApplyRow[];
   planHash: string;
   ledgerIds: string[];
+  issueIds: string[];
 };
 
 export async function openStocktakeSessionAtomic(input: {
@@ -116,6 +118,7 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     status?: string;
     dry_run?: boolean;
     ledger_count?: number;
+    issue_count?: number;
     rows?: Array<{
       line_id?: string;
       item_reference?: string;
@@ -127,6 +130,7 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
       projected_qty?: number;
     }>;
     ledger_ids?: string[];
+    issue_ids?: string[];
     plan_hash?: string;
   } | null;
   if (!result?.session_id || (result.status !== "OPEN" && result.status !== "CONFIRMED")) {
@@ -147,11 +151,15 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     projectedQty: Number(row.projected_qty) || 0,
   }));
   const ledgerCount = Number(result.ledger_count) || 0;
-  if (ledgerCount !== rows.length) {
-    throw new Error("apply_stocktake_session_atomic returned a ledger count mismatch");
+  const issueCount = Number(result.issue_count) || 0;
+  if (ledgerCount + issueCount !== rows.length) {
+    throw new Error("apply_stocktake_session_atomic returned a row count mismatch");
   }
   if (!result.dry_run && (result.ledger_ids || []).length !== ledgerCount) {
     throw new Error("apply_stocktake_session_atomic returned ledger IDs mismatch");
+  }
+  if (!result.dry_run && (result.issue_ids || []).length !== issueCount) {
+    throw new Error("apply_stocktake_session_atomic returned issue IDs mismatch");
   }
 
   return {
@@ -159,8 +167,10 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     status: result.status,
     dryRun: Boolean(result.dry_run),
     ledgerCount,
+    issueCount,
     rows,
     planHash: result.plan_hash,
     ledgerIds: result.ledger_ids || [],
+    issueIds: result.issue_ids || [],
   };
 }

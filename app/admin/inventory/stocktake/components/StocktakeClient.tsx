@@ -87,7 +87,7 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
   async function handleApply() {
     const approved = await confirm({
       title: "Xác nhận áp dụng kiểm kê",
-      message: `Hệ thống sẽ ghi ${preview?.ledgerCount || 0} điều chỉnh tồn kho. Thao tác này không thể hoàn tác tự động.`,
+      message: `Hệ thống sẽ ghi ${preview?.ledgerCount || 0} điều chỉnh sổ kho và ${preview?.issueCount || 0} dòng xuất kho. Thao tác này không thể hoàn tác tự động.`,
       variant: "warning",
     });
     if (!approved) return;
@@ -145,9 +145,9 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
       {preview && (
         <div className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4">
           <Alert variant="warning" title="Dự kiến áp dụng">
-            {preview.ledgerCount === 0
+            {preview.ledgerCount === 0 && preview.issueCount === 0
               ? "Không có chênh lệch cần điều chỉnh. Xác nhận để khóa phiên kiểm kê."
-              : `Sẽ ghi ${preview.ledgerCount} điều chỉnh. Chênh lệch được giữ theo thời điểm từng mặt hàng được đếm, nên các giao dịch phát sinh sau đó vẫn được bảo toàn.`}
+              : `Sẽ ghi ${preview.ledgerCount} điều chỉnh sổ kho và ${preview.issueCount} dòng xuất kho (kiểm kê). Chênh lệch được giữ theo thời điểm từng mặt hàng được đếm, nên các giao dịch phát sinh sau đó vẫn được bảo toàn.`}
           </Alert>
           {preview.rows.length > 0 && (
             <div className="overflow-x-auto">
@@ -224,7 +224,13 @@ function AppliedSessionView({ sessionId, result }: { sessionId: string; result: 
         subtitle="Phiên kiểm kê đã được xác nhận và khóa."
       />
       <Alert variant="success" title={`Đã áp dụng phiên ${sessionId}`}>
-        Đã ghi {result.ledgerCount} điều chỉnh tồn kho. Các mã ledger: {result.ledgerIds.length > 0 ? result.ledgerIds.join(", ") : "không có điều chỉnh"}.
+        <div>
+          Đã ghi {result.ledgerCount} điều chỉnh sổ kho
+          {result.issueCount > 0 ? ` và ${result.issueCount} dòng xuất kho (kiểm kê)` : ""}.
+        </div>
+        {result.ledgerIds.length > 0 && <div>Các mã ledger: {result.ledgerIds.join(", ")}.</div>}
+        {result.issueIds.length > 0 && <div>Các mã xuất kho: {result.issueIds.join(", ")}.</div>}
+        {result.ledgerIds.length === 0 && result.issueIds.length === 0 && <div>Không có điều chỉnh nào.</div>}
       </Alert>
       {result.rows.length > 0 && (
         <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">
@@ -275,7 +281,11 @@ function LineRow({
     <tr className="hover:bg-page transition-colors">
       <td className="px-4 py-3 font-medium text-text-primary">{line.itemName}</td>
       <td className="px-4 py-3 text-text-secondary text-xs">
-        {line.itemType === "SEMI_PRODUCT" ? "Bán thành phẩm" : "Nguyên liệu"}
+        {line.itemType === "SEMI_PRODUCT"
+        ? "Bán thành phẩm"
+        : line.itemType === "PURCHASED_ITEM"
+          ? "Hàng mua vào"
+          : "Nguyên liệu"}
       </td>
       <td className="px-4 py-3 text-right">
         <div className="flex items-center justify-end gap-2">
