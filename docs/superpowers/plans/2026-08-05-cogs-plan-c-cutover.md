@@ -726,6 +726,30 @@ average — decide in this task, do not leave it mislabelled.
 types but is reached only from `scripts/audit-cogs-drift.ts`, run by hand. No
 live import in `app/` or `lib/`.
 
+**Two scripts left reporting the frozen figures, found reviewing Task 2.** The
+P&L screen was fixed with Vietnamese notes; the scripts that read the same
+payload were not.
+
+`scripts/verify-pnl-patterns.ts:53` prints
+`margin ${row.marginPct.toFixed(1)}%` per product. Every row now reads
+**100,0%** — a full page of results that looks like a finding rather than an
+absence. Same class as `audit-pnl-mac-consistency.ts` and `check-cogs-table.ts`,
+both already deleted in Task 2 for verifying a consistency that no longer
+exists. Give it the same treatment: delete it, or make it refuse to print a
+margin it can no longer compute. Do not leave it printing 100%.
+
+`scripts/audit-lock-bypass-history.ts:95` sums `r.cogs` across product rows,
+now always 0 — a check comparing zero against zero, which can never fail. Left
+deliberately: its subject is `audit_baseline_locks`, which this task retires, so
+the script dies with what it audits rather than needing separate handling.
+
+**And once no script reads them, the frozen fields should go too.** Task 2 kept
+`cogs`, `grossProfit` and `marginPct` on the product and topping rows — always
+`0` / `revenue` / `100` — solely because these two scripts consumed them. A
+field carrying a wrong value is worse than an absent one: it survives being
+re-added to a screen. Remove them from the payload in this task, once both
+consumers are gone.
+
 - [ ] **Step 1: Confirm the cron has not run and record that fact**
 
 `docs/OPEN-ITEMS.md` items 2b and 19 record that it never started in
