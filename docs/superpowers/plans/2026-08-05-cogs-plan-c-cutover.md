@@ -123,9 +123,14 @@ This plan destroys roughly 24,9 million dong of cost history — measured
 2026-08-05 as **24.877.232đ across 2.507 completed order lines**. Task 1 Step 3
 re-measures it rather than trusting that figure. The proof happens first.
 
-- [ ] **Step 1: Take a full backup and record its identifier and size**
+- [x] **Step 1: Take a full backup and record its identifier and size**
 
-- [ ] **Step 1b: Bring the restore target's schema up to date first**
+Per the 2026-08-02 drill's own documented deviation: the actual mechanism is
+`buildDatabaseSnapshot`, a fresh read-only snapshot taken at run time, not a
+named Drive file. Same artefact this time: 38 tables (`BACKUP_TABLES`),
+captured immediately before restoring.
+
+- [x] **Step 1b: Bring the restore target's schema up to date first**
 
 Confirmed reachable in the challenge round, and the mechanism has genuinely run
 once — the 2026-08-02 drill, `VERDICT PASS` in
@@ -137,9 +142,13 @@ added. Run `supabase db push` against it before restoring, or the restore lands
 in a schema with no `stock_issues` table and the old `item_type` constraint, and
 proves nothing about the database this plan is about to change.
 
-- [ ] **Step 2: Restore it somewhere that is not production**
+Applied both via `supabase db push --db-url` against the target directly.
+Target's stale 2026-08-02-drill data cleared first (reverse `BACKUP_TABLES`
+order) so the fresh restore did not collide with leftover rows.
 
-- [ ] **Step 3: Verify the restore by counting the things this plan destroys**
+- [x] **Step 2: Restore it somewhere that is not production**
+
+- [x] **Step 3: Verify the restore by counting the things this plan destroys**
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
@@ -151,7 +160,20 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
   DỪNG. Không xoá gì cả.
 ```
 
-- [ ] **Step 4: Record the result in `DEVELOPMENT-TRACKING.md` before proceeding**
+Actual: 2.507 dòng, 24.877.232đ trên production ngay trước khi sao lưu, và
+**y hệt** trên bản phục hồi — khớp tới từng đồng. Chạy thêm
+`scripts/verify-restore-drill.ts`: 38/40 bảng khớp tuyệt đối; 2 bảng lệch
+(`backdated_ledger_events`, `backdated_recipe_events`) là nhiễu trigger đã
+biết từ đợt 02/08, không phải mất dữ liệu. Ba phép đối chiếu nội dung
+(PO-037, một đơn thanh toán chia đôi, 1.729 dòng `stock_ledger` của Sữa đặc)
+đều khớp. **VERDICT: PASS.**
+
+- [x] **Step 4: Record the result in `DEVELOPMENT-TRACKING.md` before proceeding**
+
+Recorded. Commit `ebf2e08` (bundled with a concurrent, unrelated commit from
+another session editing this same plan file at nearly the same moment — git's
+shared staging area merged both; content of both is intact, verified by
+reading the file back, not just trusting the diff stat).
 
 A restore that was performed but not written down cannot be relied on later.
 
