@@ -147,6 +147,19 @@ export function computePeriodIssuedValue(
   );
 }
 
+// No page renders this anymore -- app/admin/reports/pnl/page.tsx was deleted
+// 2026-08-05 (Plan C Task 2b, owner decision, docs/OPEN-ITEMS.md item 31).
+// The report is being redesigned as a real financial statement; this function
+// is kept on purpose, not orphaned:
+//   1. It is Plan C's own revenue gate -- June (22.157.000d) and July
+//      (18.661.000d) are read through it before and after every remaining
+//      task, including the deletions.
+//   2. It is the one figure this plan still trusts, after a hand-summed
+//      total proved wrong by about ten million dong on 2026-08-05.
+//   3. It is what the item-31 rebuild starts from.
+// Do not remove as dead code. scripts/audit-lock-bypass-history.ts and
+// scripts/verify-pnl-patterns.ts also call it directly, independent of any
+// page.
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
