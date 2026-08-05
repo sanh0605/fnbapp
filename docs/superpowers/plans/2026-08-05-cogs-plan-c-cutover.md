@@ -212,23 +212,39 @@ The mitigation is partial, not sufficient: `stocktake_sessions` and
 in principle be regenerated. That is re-running the apply logic against
 historical state, not restoring.
 
-- [ ] **Step 1: Add it in an order the restore can follow**
+- [x] **Step 1: Add it in an order the restore can follow**
 
 `lib/backup-restore.ts:72` restores in `BACKUP_TABLES` order so foreign keys
 resolve parent-first. `stock_issues` references `purchased_items` and
 `stocktake_sessions`, so it must appear after both — placing it immediately
 after `stocktake_lines` satisfies this.
 
-- [ ] **Step 2: Prove the list is actually longer**
+Also updated `EXPECTED_TABLES` in `scripts/apps-script/backup-to-drive.gs` —
+a second, independent copy of this list. Not fixing it would not have broken
+the daily backup (`validateBundle_` treats an unrecognized table as
+non-fatal drift by design), but it would have alerted every day until
+someone noticed.
+
+- [x] **Step 2: Prove the list is actually longer**
 
 `BACKUP_TABLES` holds 40 entries today. Assert 41, and assert `stock_issues` is
 present rather than trusting the diff.
 
-- [ ] **Step 3: Run the backup and confirm the table appears in the bundle**
+Added to `lib/drive-backup-contract.test.ts`: length 41, membership, and FK
+order (after both `purchased_items` and `stocktake_sessions`) — plus fixed
+three pre-existing tests that hardcoded the old count of 40.
+
+- [x] **Step 3: Run the backup and confirm the table appears in the bundle**
 
 An entry in a list is not proof the dump ran. Read the bundle.
 
-- [ ] **Step 4: Close item 34, suite, type check, commit**
+Called `buildDatabaseSnapshot` against production directly: 41 tables came
+back, `stock_issues` among them, `{ rows: [], count: 0 }` — matching
+production.
+
+- [x] **Step 4: Close item 34, suite, type check, commit**
+
+970/970 tests, `tsc --noEmit` clean. Commit `5290f30`.
 
 ---
 
