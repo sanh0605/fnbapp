@@ -101,17 +101,20 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
   if (!auth.ok) return fail(auth.error);
 
   try {
-    const { baseIngredients, semiProducts, purchasedItems } = await loadItemNameMaps();
+    const { baseIngredients, purchasedItems } = await loadItemNameMaps();
     const nonInventoryBaseIngredientIds = new Set(
       baseIngredients
         .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
         .map(b => b.id as string),
     );
+    // Semi-products carry no stock and no value (BR-INV-006, owner decision
+    // 2026-08-05) -- SEMI_PRODUCT stays a legal item_type at the database
+    // level (Plan B migration 0052), touching that constraint is unrelated
+    // risk, but the count list must not offer them.
     const items = [
       ...baseIngredients
         .filter(b => b.is_non_inventory !== true && b.is_non_inventory !== "TRUE")
         .map(b => ({ itemReference: b.id as string, itemType: "BASE_INGREDIENT" as StocktakeItemType })),
-      ...semiProducts.map(s => ({ itemReference: s.id as string, itemType: "SEMI_PRODUCT" as StocktakeItemType })),
       ...purchasedItems
         .filter(p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id))
         .map(p => ({ itemReference: p.id as string, itemType: "PURCHASED_ITEM" as StocktakeItemType })),

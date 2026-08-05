@@ -1,8 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth";
-import { saveProductionOrderAtomic } from "@/lib/production-order-transaction";
-import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
+import { fail, type ActionResponse } from "@/lib/shared-actions";
 import { findAll } from "@/lib/sheets_db";
 import type {
   DBBaseIngredient,
@@ -12,9 +11,6 @@ import type {
   DBSemiProduct,
   DBUnit,
 } from "@/types/db";
-import { revalidatePath } from "next/cache";
-
-const PATH = "/admin/production";
 
 export async function getProductionData(): Promise<{
   orders: DBProductionOrder[];
@@ -45,94 +41,23 @@ export async function getProductionData(): Promise<{
   }
 }
 
-type ConsumedIngredient = {
-  ingredient_id?: unknown;
-  ingredient_type?: unknown;
-  unit_id?: unknown;
-  qtyNeeded?: unknown;
-  is_non_inventory?: unknown;
-};
-
-export async function saveProductionOrder(formData: FormData): Promise<ActionResponse> {
+// Owner decision 2026-08-05, BR-INV-006 (docs/BUSINESS-RULES.md, replaces
+// BR-INV-003): semi-product stock tracking is dropped, not merely this
+// screen. Measured the same day: 16 active semi-products hold 3.919
+// stock_ledger rows and every one is a type Plan C Task 5 deletes -- none a
+// purchase receipt, because a semi-product is never bought. Recording a
+// batch here would book an asset whose ingredients were already expensed
+// the moment they left stock -- the same money counted twice. Refuses
+// outright: no production_orders row, no production_items, no ledger row.
+// save_production_order_atomic (0018_atomic_production_order.sql) also
+// hard-requires p_ledger to carry exactly items.length + 1 rows, so this
+// could not be quietly reduced to "record the batch, skip the ledger"
+// without a migration this plan does not add.
+export async function saveProductionOrder(_formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
-  const semiProductId = String(formData.get("semi_product_id") || "");
-  const targetYield = Number(formData.get("target_yield") || 0);
-  const consumedIngredientsJson = String(formData.get("consumed_ingredients") || "");
-  if (!semiProductId || targetYield <= 0 || !consumedIngredientsJson) {
-    return fail("Dữ liệu không hợp lệ.");
-  }
-
-  try {
-    const semiProducts = await findAll("Semi_Products");
-    if (!semiProducts.some((row: Record<string, unknown>) => row.id === semiProductId)) {
-      return fail("Không tìm thấy Bán Thành Phẩm.");
-    }
-
-    let consumedIngredients: ConsumedIngredient[];
-    try {
-      const parsed: unknown = JSON.parse(consumedIngredientsJson);
-      if (!Array.isArray(parsed)) throw new Error("Expected an array");
-      consumedIngredients = parsed;
-    } catch {
-      return fail("Dữ liệu nguyên liệu tiêu hao bị lỗi.");
-    }
-
-    const inventoryItems = consumedIngredients.flatMap((ingredient) => {
-      const quantity = Number(ingredient.qtyNeeded);
-      if (!(quantity > 0) || ingredient.is_non_inventory) return [];
-      if (
-        typeof ingredient.ingredient_id !== "string" ||
-        !ingredient.ingredient_id ||
-        (ingredient.ingredient_type !== "BASE_INGREDIENT" &&
-          ingredient.ingredient_type !== "SEMI_PRODUCT")
-      ) {
-        throw new Error("Dữ liệu nguyên liệu tiêu hao không hợp lệ.");
-      }
-      return [{
-        ingredient_id: ingredient.ingredient_id,
-        ingredient_type: ingredient.ingredient_type,
-        quantity,
-        unit_id: typeof ingredient.unit_id === "string" && ingredient.unit_id
-          ? ingredient.unit_id
-          : null,
-      }];
-    });
-
-    const appliedAt = new Date().toISOString();
-    const ledgerRows = inventoryItems.map((item) => ({
-      transaction_type: "PRODUCTION_CONSUME",
-      item_reference: item.ingredient_id,
-      quantity_change: -item.quantity,
-      unit_cost: 0,
-      created_at: appliedAt,
-    }));
-    ledgerRows.push({
-      transaction_type: "PRODUCTION_YIELD",
-      item_reference: semiProductId,
-      quantity_change: targetYield,
-      unit_cost: 0,
-      created_at: appliedAt,
-    });
-
-    const result = await saveProductionOrderAtomic({
-      order: {
-        semi_product_id: semiProductId,
-        batch_yield: targetYield,
-        status: "COMPLETED",
-        created_by_id: auth.actor.id,
-        created_by_name: auth.actor.name,
-        created_at: appliedAt,
-        completed_at: appliedAt,
-      },
-      items: inventoryItems,
-      ledgerRows,
-    });
-
-    revalidatePath(PATH);
-    return ok({ order_id: result.productionOrderId });
-  } catch (error: unknown) {
-    return fail(error instanceof Error ? error.message : "Unknown error");
-  }
+  return fail(
+    "Sổ kho giờ chỉ ghi nhận hàng nhập và kết quả kiểm kê định kỳ — không còn ghi nhận lệnh sản xuất bán thành phẩm.",
+  );
 }

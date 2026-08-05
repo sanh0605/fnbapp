@@ -63,3 +63,59 @@ describe("stocktake confirmation actions", () => {
     expect(mocks.applyStocktakeSessionAtomic).not.toHaveBeenCalled();
   });
 });
+
+describe("startStocktakeSession item list", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({
+      ok: true,
+      actor: { id: "admin-1", name: "Admin", role: "ADMIN" },
+    });
+  });
+
+  // Plan C Task 3, BR-INV-006 (docs/BUSINESS-RULES.md): semi-products carry
+  // no stock and no value, so the count list must not offer them, even
+  // though SEMI_PRODUCT stays a legal item_type at the database level
+  // (Plan B migration 0052) -- checked by count here, not by eye.
+  it("never includes SEMI_PRODUCT, even when semi-products exist", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Base_Ingredients") {
+        return Promise.resolve([
+          { id: "NNL-001", name: "Sữa tươi", base_unit: "U-ML", is_non_inventory: false },
+        ]);
+      }
+      if (sheet === "Semi_Products") {
+        return Promise.resolve([
+          { id: "BTP-001", name: "Cốt cà phê", base_unit: "U-ML" },
+        ]);
+      }
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-001", name: "Sữa tươi TH", base_ingredient_id: "NNL-001", default_unit_id: "U-ML" },
+        ]);
+      }
+      if (sheet === "Units") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.openStocktakeSessionAtomic.mockResolvedValue({
+      id: "STK-001",
+      status: "OPEN",
+      created_by_id: "admin-1",
+      created_by_name: "Admin",
+      created_at: "2026-08-05T00:00:00Z",
+      notes: "",
+    });
+
+    const result = await stocktakeActions.startStocktakeSession();
+
+    expect(result).toEqual({ success: true });
+    expect(mocks.openStocktakeSessionAtomic).toHaveBeenCalledTimes(1);
+    const { items } = mocks.openStocktakeSessionAtomic.mock.calls[0][0];
+    const itemTypes = items.map((item: { itemType: string }) => item.itemType);
+
+    expect(itemTypes).not.toContain("SEMI_PRODUCT");
+    expect(itemTypes).toContain("BASE_INGREDIENT");
+    expect(itemTypes).toContain("PURCHASED_ITEM");
+    expect(items).toHaveLength(2);
+  });
+});

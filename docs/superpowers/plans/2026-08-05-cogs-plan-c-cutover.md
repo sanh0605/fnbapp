@@ -592,11 +592,19 @@ Leave it and this plan's own verification bar breaks the first time somebody
 opens that screen: `stock_ledger` would no longer hold purchase receipts only.
 All three write paths retire in this task.
 
-- [ ] **Step 1: Write the failing test — a checkout writes cost 0 and no ledger row**
+- [x] **Step 1: Write the failing test — a checkout writes cost 0 and no ledger row**
 
-- [ ] **Step 2: Remove the cost computation and the sale-time stock deduction**
+- [x] **Step 2: Remove the cost computation and the sale-time stock deduction**
 
-- [ ] **Step 3: Ring up one real test sale and read back the row**
+  All three paths retired: `app/pos/actions.ts` (`submitOrderV2`),
+  `app/admin/orders/actions.ts` (`editOrderV2` — the OLD version's reversal via
+  `buildVoidReversalRows`/`voidOrderV2` is unchanged, only the NEW version's
+  cost/consumption computation was removed), `app/admin/production/actions.ts`
+  (`saveProductionOrder` refuses outright per `BR-INV-006`). Stocktake's count
+  list also stops offering `SEMI_PRODUCT` (`app/admin/inventory/stocktake/actions.ts`),
+  the third consequence of the same owner decision.
+
+- [x] **Step 3: Ring up one real test sale and read back the row**
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
@@ -605,7 +613,21 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu:
   Nếu sổ kho có thêm dòng -> còn đường trừ tồn cũ chưa gỡ, DỪNG.
 ```
 
-- [ ] **Step 4: Suite, type check, commit**
+  Đo thật 2026-08-05, `scripts/verify-task3-live.ts`, ba lần đếm liên tiếp
+  trên dữ liệu thật, tất cả `stock_ledger` = 10.684 dòng trước và sau:
+  - Bán một ly (Trà đào dầm, PROD-001/VAR-001, đơn PHD001310): giá vốn dòng
+    đơn ghi ra = 0, sổ kho không thêm dòng nào.
+  - Sửa chính đơn vừa bán (v1 -> v2): sổ kho không thêm dòng nào (đơn mới sau
+    khi bán không có dòng sổ kho cũ nào để đảo).
+  - Thử nấu một mẻ (BTP-009): bị từ chối đúng thông điệp tiếng Việt của
+    `BR-INV-006`, sổ kho không thêm dòng nào.
+  Dọn sạch sau khi đo: huỷ đơn thử (`voidOrderV2`), sổ kho vẫn không đổi.
+  Không suy luận từ code — cả ba đếm trên dữ liệu thật.
+
+- [x] **Step 4: Suite, type check, commit**
+
+  `npx tsc --noEmit`: 0 lỗi. `npx vitest run`: 970/970 xanh (165 file test).
+  `npx vite-node scripts/check-rules-current.ts`: sạch cả ba rule.
 
 ---
 

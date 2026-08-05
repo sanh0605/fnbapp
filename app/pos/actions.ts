@@ -8,15 +8,6 @@ import crypto from "node:crypto";
 
 import { buildOrderFromCart } from "@/lib/order-cart";
 import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
-import { parseLineRecipeSnapshot } from "@/lib/order-types";
-import { computeMacCostFromUnitCosts } from "@/lib/mac-cogs";
-import {
-  buildLineConsumptionRows,
-  buildSemiProductRecipeMaps,
-  splitImplicitProduction,
-  type ConsumptionRow,
-} from "@/lib/inventory-consumption";
-import { getPosInventoryState } from "@/lib/pos-inventory-state";
 import { savePosOrderAtomic } from "@/lib/pos-order-transaction";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/report-time";
@@ -62,7 +53,7 @@ export async function submitOrderV2(
     const actor = auth.actor;
 
     // 3. Load reference data (cached where possible)
-    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients, semiProducts] = await Promise.all([
+    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients] = await Promise.all([
       findAll("Brands"),
       findAll("Products"),
       findAll("Product_Variants"),
@@ -71,54 +62,25 @@ export async function submitOrderV2(
       findAll("Promotions"),
       findAll("Recipes"),
       findAll("Base_Ingredients"),
-      findAll("Semi_Products"),
     ]);
-    const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
-    const nonInventoryItems = new Set(
-      (baseIngredients as any[])
-        .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
-        .map(b => b.id),
-    );
 
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
     const built = buildOrderFromCart({ ...input, actor }, {
       brands, products, variants, categories, modifiers, promotions, recipes, base_ingredients: baseIngredients,
     });
-
-    // 5. Load compact inventory state and compute COGS per line.
     const saleTime = built.order.created_at;
-    const inventoryState = await getPosInventoryState(saleTime);
-    const lineConsumptions: LineConsumption[] = [];
-    for (const line of built.lines) {
-      const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-      const implicitYields = new Map<string, number>();
-      const consumptionRows = buildLineConsumptionRows(
-        lineRecipe,
-        line.qty,
-        inventoryState.balances,
-        consumptionMaps,
-        implicitYields,
-        nonInventoryItems,
-      );
-      lineConsumptions.push({ rows: consumptionRows, implicitYields });
-      // COGS is computed from the original consumption rows, unaffected by
-      // how the shortfall portion later gets split into an implicit
-      // production step below -- a semi-product's MAC cost already falls
-      // back to its recipe's raw-ingredient cost, so costing "50 of BTP" is
-      // mathematically identical to costing "30 of BTP + 20 of its raw
-      // equivalent" (see docs/superpowers/plans/2026-07-20-implicit-production-shortfall-design.md).
-      line.cost_at_sale = computeMacCostFromUnitCosts(
-        consumptionRows,
-        inventoryState.macUnitCosts,
-        consumptionMaps,
-      );
-    }
 
-    // 6. The database allocates order_no under a transaction lock.
+    // Selling no longer moves stock or determines cost (Plan C Task 3) --
+    // cost_at_sale stays at its column default (0), and no stock_ledger row
+    // is written here. Recipes and inventory-consumption lookups are gone
+    // from checkout entirely, not merely ignored: that lookup was latency on
+    // the till for a result nothing reads anymore.
+
+    // 5. The database allocates order_no under a transaction lock.
     const brand = brands.find(b => b.id === input.brand_id);
     const brandCode = brand?.code || "ORD";
 
-    // 7. Build Order_Events audit record
+    // 6. Build Order_Events audit record
     const event = {
       id: `evt-${crypto.randomUUID()}`,
       order_id: built.order.id,
@@ -137,26 +99,18 @@ export async function submitOrderV2(
       reason: "POS checkout",
     };
 
-    // 8. Build Stock_Ledger entries (one per ingredient per line)
-    const ledgerEntries = buildStockLedgerEntries(
-      built.order.id,
-      event.id,
-      saleTime,
-      lineConsumptions,
-    );
-
-    // 9. Persist the complete bill in one database transaction.
+    // 7. Persist the complete bill in one database transaction.
     const saved = await savePosOrderAtomic({
       brandCode,
       order: built.order,
       lines: built.lines,
       event,
-      ledgerRows: ledgerEntries,
+      ledgerRows: [],
       clientRequestId: requestToken,
       payments: built.payments,
     });
 
-    // 10. Refresh caches
+    // 8. Refresh caches
     // Not revalidating "/pos" here: the only thing on that page fed by
     // fresh server data after a sale (out-of-stock badges) is currently
     // disabled, and POSPage deliberately does not fetch stock status,
@@ -176,76 +130,6 @@ export async function submitOrderV2(
     return { success: false, error: err?.message || String(err) };
   }
 }
-
-type LineConsumption = {
-  rows: ConsumptionRow[];
-  implicitYields: Map<string, number>;
-};
-
-function buildStockLedgerEntries(
-  orderId: string,
-  eventId: string,
-  saleTime: string,
-  lineConsumptions: LineConsumption[],
-) {
-  const entries: any[] = [];
-  for (const { rows, implicitYields } of lineConsumptions) {
-    const { saleRows, productionConsumeRows, productionYieldRows } =
-      splitImplicitProduction(rows, implicitYields);
-
-    // A semi-product shortfall means raw ingredients had to be implicitly
-    // "brewed" into the semi-product before the sale could consume it --
-    // record that production step explicitly instead of debiting raw
-    // ingredients as if they were served to the customer directly. See
-    // docs/superpowers/plans/2026-07-20-implicit-production-shortfall-design.md.
-    for (const row of productionConsumeRows) {
-      entries.push({
-        id: `stk-${crypto.randomUUID()}`,
-        transaction_type: "PRODUCTION_CONSUME",
-        reference_id: orderId,
-        item_reference: row.item_reference,
-        quantity_change: -row.quantity,
-        unit_cost: 0,
-        created_at: saleTime,
-        order_event_id: eventId,
-        cost_at_sale: 0,
-        source: row.source,
-      });
-    }
-    for (const yieldRow of productionYieldRows) {
-      entries.push({
-        id: `stk-${crypto.randomUUID()}`,
-        transaction_type: "PRODUCTION_YIELD",
-        reference_id: orderId,
-        item_reference: yieldRow.item_reference,
-        quantity_change: yieldRow.quantity,
-        unit_cost: 0,
-        created_at: saleTime,
-        order_event_id: eventId,
-        cost_at_sale: 0,
-        source: "AUTO_SHORTFALL_PRODUCTION",
-      });
-    }
-
-    for (const row of saleRows) {
-      entries.push({
-        id: `stk-${crypto.randomUUID()}`,
-        transaction_type: "SALES_CONSUME",
-        reference_id: orderId,
-        item_reference: row.item_reference,
-        quantity_change: -row.quantity,
-        unit_cost: 0,
-        created_at: saleTime,
-        order_event_id: eventId,
-        cost_at_sale: 0, // simplified: per-ingredient MAC refinement deferred
-        source: row.source,
-      });
-    }
-  }
-  return entries;
-}
-
-// Claude code — R12: buildLineConsumptionRows extracted to lib/inventory-consumption.ts (shared).
 
 export async function getPOSBestSellerProductIds(
   filters: PosBestSellerFilters = {},

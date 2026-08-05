@@ -3,16 +3,25 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("POS order COGS calculation", () => {
-  it("uses compact inventory state and one atomic database write", () => {
+  // Plan C Task 3: checkout no longer computes a cost or moves stock. The
+  // two tests that used to live here asserted the removed machinery was
+  // present (getPosInventoryState, computeMacCostFromUnitCosts,
+  // buildStockLedgerEntries, the implicit-production split) -- replaced with
+  // the opposite assertion rather than deleted silently, since "checkout
+  // stops doing the work" is exactly the regression worth locking in now.
+  it("computes no cost and writes no ledger row -- one atomic write with an empty ledger", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const submitOrderSource = source.slice(
       source.indexOf("export async function submitOrderV2"),
-      source.indexOf("function buildStockLedgerEntries"),
+      source.indexOf("export async function getPOSBestSellerProductIds"),
     );
 
-    expect(source).toContain("getPosInventoryState");
-    expect(source).toContain("computeMacCostFromUnitCosts");
+    expect(source).not.toContain("getPosInventoryState");
+    expect(source).not.toContain("computeMacCostFromUnitCosts");
+    expect(source).not.toContain("buildStockLedgerEntries");
+    expect(source).not.toContain("splitImplicitProduction");
     expect(source).toContain("savePosOrderAtomic");
+    expect(submitOrderSource).toContain("ledgerRows: []");
     expect(submitOrderSource).not.toContain('findAllNoCache("Stock_Ledger")');
     expect(submitOrderSource).not.toContain("assignOrderNo");
     expect(submitOrderSource).not.toContain("ensureUniqueOrderNo");
@@ -20,16 +29,6 @@ describe("POS order COGS calculation", () => {
     expect(submitOrderSource).not.toContain("FIFOTracker");
     expect(submitOrderSource).toContain("requestToken?: string");
     expect(submitOrderSource).toContain("clientRequestId: requestToken");
-  });
-
-  it("splits a semi-product shortfall into an implicit production step instead of debiting raw ingredients as a sale", () => {
-    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
-    const ledgerSource = source.slice(source.indexOf("function buildStockLedgerEntries"));
-
-    expect(source).toContain("splitImplicitProduction");
-    expect(source).toContain("implicitYields");
-    expect(ledgerSource).toContain('"PRODUCTION_CONSUME"');
-    expect(ledgerSource).toContain('"PRODUCTION_YIELD"');
   });
 
   it("reuses a checkout token until the same payload succeeds", () => {

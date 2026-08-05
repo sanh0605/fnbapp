@@ -159,7 +159,9 @@ export function computePeriodIssuedValue(
 //   3. It is what the item-31 rebuild starts from.
 // Do not remove as dead code. scripts/audit-lock-bypass-history.ts and
 // scripts/verify-pnl-patterns.ts also call it directly, independent of any
-// page.
+// page -- both fail silently until someone runs them by hand.
+// scripts/audit-admin-read-guards.test.ts also asserts this function
+// requires admin auth; that one fails loudly, in the suite, on removal.
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);

@@ -3,23 +3,24 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("admin order edit COGS calculation", () => {
-  it("uses MAC COGS through inventory consumption allocation instead of FIFO", () => {
+  // Plan C Task 3: editing an order no longer computes a cost for the
+  // replacement lines. The two tests that used to live here asserted the
+  // removed machinery was present (MAC-vs-FIFO cost algorithm, the implicit-
+  // production split for the new version's consumeEntries) -- replaced with
+  // the opposite assertion, since "editing stops computing a new cost" is
+  // exactly the regression worth locking in now. The reversal of the OLD
+  // version's real ledger rows is unchanged -- see "reverses the complete
+  // original checkout effect on edit" below, which still passes untouched.
+  it("computes no cost for the edited lines and writes no new consumption", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
 
-    expect(source).toContain("allocateRecipeConsumption");
-    expect(source).toContain("computeMacCostForConsumptionRows");
+    expect(source).not.toContain("computeMacCostForConsumptionRows");
+    expect(source).not.toContain("allocateRecipeConsumption");
+    expect(source).not.toContain("splitImplicitProduction");
+    expect(source).not.toContain("buildLineConsumptionRows");
     expect(editOrderSource).not.toContain("FIFOTracker");
-  });
-
-  it("splits a semi-product shortfall into an implicit production step in the edit/supersede ledger write, same as POS checkout", () => {
-    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
-    const ledgerSource = source.slice(source.indexOf("function buildStockLedgerEntries"));
-
-    expect(source).toContain("splitImplicitProduction");
-    expect(ledgerSource).toContain("implicitYields");
-    expect(ledgerSource).toContain('"PRODUCTION_CONSUME"');
-    expect(ledgerSource).toContain('"PRODUCTION_YIELD"');
+    expect(editOrderSource).toContain("consumeEntries: []");
   });
 
   it("preserves payment rows through the atomic edit transaction", () => {
@@ -32,18 +33,22 @@ describe("admin order edit COGS calculation", () => {
     expect(editOrderSource).toContain("payments: editedPayments");
   });
 
-  it("bounds edit reads to the target order and ledger history through its sale time", () => {
+  it("bounds edit reads to the target order, and no longer reads ledger history for cost", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
 
     expect(editOrderSource).toContain('findById("Orders_V2", input.orderId)');
     expect(editOrderSource).toContain('findAllWhere("Order_Lines_V2"');
-    expect(editOrderSource).toContain('lte: { created_at: originalSaleTime }');
-    expect(editOrderSource).toContain('in: { item_reference: batch }');
+    // Still reads the old version's own ledger rows, to reverse them.
     expect(editOrderSource).toContain('eq: { reference_id: oldOrderV2.id }');
     expect(editOrderSource).not.toContain('findAllNoCache("Orders_V2")');
     expect(editOrderSource).not.toContain('findAllNoCache("Order_Lines_V2")');
     expect(editOrderSource).not.toContain('findAllNoCache("Stock_Ledger")');
+    // The cost-time ledger-history read (findLedgerHistoryForItems, bounded
+    // by lte: created_at / in: item_reference) is gone entirely, not merely
+    // narrowed -- there is no cost left to compute it for.
+    expect(source).not.toContain("findLedgerHistoryForItems");
+    expect(source).not.toContain("in: { item_reference: batch }");
   });
 
   it("reverses the complete original checkout effect on edit, including implicit production, same as void", () => {

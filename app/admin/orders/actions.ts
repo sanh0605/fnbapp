@@ -21,20 +21,9 @@ import {
   planEditedOrderPayments,
 } from "@/lib/order-edit-cart";
 import { supersedeOrderV2 } from "@/lib/sheets-db-v2-edit";
-import { parseLineRecipeSnapshot } from "@/lib/order-types";
-import { computeMacCostForConsumptionRows } from "@/lib/mac-cogs";
-import {
-  allocateRecipeConsumption,
-  buildInventoryBalances,
-  buildLineConsumptionRows,
-  buildSemiProductRecipeMaps,
-  splitImplicitProduction,
-  type ConsumptionRow,
-} from "@/lib/inventory-consumption";
 import type { CartInput } from "@/lib/order-cart";
 import { voidOrderAtomic } from "@/lib/void-order-transaction";
 import { buildVoidReversalRows } from "@/lib/void-order-reversal";
-import { collectOrderConsumptionItemReferences } from "@/lib/order-ledger-read-scope";
 
 function parseObject(value: any): any {
   if (!value) return {};
@@ -491,12 +480,11 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       promotions,
       recipes,
       baseIngredients,
-      semiProducts,
       oldOrderLedger,
     ] = await Promise.all([
       findAll("Brands"), findAll("Products"), findAll("Product_Variants"),
       findAll("Product_Categories"), findAll("Modifiers"), findAll("Promotions"),
-      findAll("Recipes"), findAll("Base_Ingredients"), findAll("Semi_Products"),
+      findAll("Recipes"), findAll("Base_Ingredients"),
       findAllWhere("Stock_Ledger", {
         eq: { reference_id: oldOrderV2.id },
       }),
@@ -535,28 +523,11 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       reference: payment.reference || "",
     }));
 
-    // 5. Compute COGS at ORIGINAL sale time (not edit time), using the same MAC path as POS.
-    const consumptionMaps = buildSemiProductRecipeMaps(recipes as any[], semiProducts as any[]);
-    const nonInventoryItems = new Set(
-      (baseIngredients as any[])
-        .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
-        .map(b => b.id),
-    );
-    const itemReferences = collectOrderConsumptionItemReferences(built.lines, consumptionMaps);
-    const ledgerThroughSale = await findLedgerHistoryForItems(itemReferences, originalSaleTime);
-    const saleMs = new Date(originalSaleTime).getTime();
-    const pastLedger = (ledgerThroughSale as any[]).filter(e => {
-      const entryTime = new Date(e.created_at || 0).getTime();
-      if (entryTime > saleMs) return false;
-      return e.reference_id !== oldOrderV2.id;
-    });
-    const consumptionBalances = buildInventoryBalances(pastLedger, originalSaleTime);
-
-    for (const line of built.lines) {
-      const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-      const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, consumptionBalances, consumptionMaps, undefined, nonInventoryItems);
-      line.cost_at_sale = computeMacCostForConsumptionRows(consumptionRows, pastLedger, originalSaleTime, consumptionMaps);
-    }
+    // Editing no longer computes a new cost or a new sale-time consumption
+    // (Plan C Task 3) -- cost_at_sale for the edited lines stays at its
+    // column default (0). The old version's real ledger rows, if any, are
+    // still reversed below: that undoes what already happened, which is a
+    // different thing from computing a new consumption for the replacement.
 
     // 6. Build EDITED event
     const eventTime = new Date().toISOString();
@@ -596,10 +567,8 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       createRowId: () => `stk-${crypto.randomUUID()}`,
     });
 
-    // 8. Build new SALES_CONSUME entries for the new version
-    const consumeEntries = buildStockLedgerEntries(built, event.id, originalSaleTime, pastLedger, consumptionMaps, nonInventoryItems);
-
-    // 9. Execute supersede
+    // 9. Execute supersede. No consumeEntries for the new version -- editing
+    // no longer moves stock, only the reversal (if any) above does.
     const result = await supersedeOrderV2({
       oldOrderId: oldOrderV2.id,
       expectedOldVersion: input.expectedVersion,
@@ -607,7 +576,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       newLines: built.lines,
       event,
       reversalEntries,
-      consumeEntries,
+      consumeEntries: [],
       payments: editedPayments,
     });
 
@@ -633,98 +602,6 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
 // ============================================================
 // Helper functions for orders and order-edit
 // ============================================================
-
-const LEDGER_ITEM_QUERY_BATCH_SIZE = 100;
-
-async function findLedgerHistoryForItems(
-  itemReferences: string[],
-  originalSaleTime: string,
-): Promise<any[]> {
-  if (itemReferences.length === 0) return [];
-
-  const batches: string[][] = [];
-  for (let index = 0; index < itemReferences.length; index += LEDGER_ITEM_QUERY_BATCH_SIZE) {
-    batches.push(itemReferences.slice(index, index + LEDGER_ITEM_QUERY_BATCH_SIZE));
-  }
-
-  const rows = await Promise.all(
-    batches.map(batch => findAllWhere("Stock_Ledger", {
-      lte: { created_at: originalSaleTime },
-      in: { item_reference: batch },
-    })),
-  );
-  return rows.flat();
-}
-
-function buildStockLedgerEntries(
-  built: ReturnType<typeof buildEditedOrderFromCart>,
-  eventId: string,
-  saleTime: string,
-  pastLedger: any[],
-  consumptionMaps: ReturnType<typeof buildSemiProductRecipeMaps>,
-  nonInventoryItems?: Set<string>,
-): any[] {
-  const entries: any[] = [];
-  const balances = buildInventoryBalances(pastLedger, saleTime);
-  for (const line of built.lines) {
-    const lineRecipe = parseLineRecipeSnapshot(line.recipe_snapshot_json);
-    const implicitYields = new Map<string, number>();
-    const consumptionRows = buildLineConsumptionRows(lineRecipe, line.qty, balances, consumptionMaps, implicitYields, nonInventoryItems);
-    const { saleRows, productionConsumeRows, productionYieldRows } =
-      splitImplicitProduction(consumptionRows, implicitYields);
-
-    // Same reasoning as the POS checkout path: a semi-product shortfall
-    // means raw ingredients had to be implicitly "brewed" first -- record
-    // that production step explicitly instead of debiting raw ingredients
-    // as if sold directly. See
-    // docs/superpowers/plans/2026-07-20-implicit-production-shortfall-design.md.
-    for (const row of productionConsumeRows) {
-      entries.push({
-        id: `stk-${crypto.randomUUID()}`,
-        transaction_type: "PRODUCTION_CONSUME",
-        reference_id: built.order.id,
-        item_reference: row.item_reference,
-        quantity_change: -row.quantity,
-        unit_cost: 0,
-        created_at: saleTime,
-        order_event_id: eventId,
-        cost_at_sale: 0,
-        source: row.source,
-      });
-    }
-    for (const yieldRow of productionYieldRows) {
-      entries.push({
-        id: `stk-${crypto.randomUUID()}`,
-        transaction_type: "PRODUCTION_YIELD",
-        reference_id: built.order.id,
-        item_reference: yieldRow.item_reference,
-        quantity_change: yieldRow.quantity,
-        unit_cost: 0,
-        created_at: saleTime,
-        order_event_id: eventId,
-        cost_at_sale: 0,
-        source: "AUTO_SHORTFALL_PRODUCTION",
-      });
-    }
-    for (const row of saleRows) {
-      entries.push({
-        id: `stk-${crypto.randomUUID()}`,
-        transaction_type: "SALES_CONSUME",
-        reference_id: built.order.id,
-        item_reference: row.item_reference,
-        quantity_change: -row.quantity,
-        unit_cost: 0,
-        created_at: saleTime,
-        order_event_id: eventId,
-        cost_at_sale: 0,
-        source: row.source,
-      });
-    }
-  }
-  return entries;
-}
-
-// Claude code — R12: buildLineConsumptionRows extracted to lib/inventory-consumption.ts (shared).
 
 // Coerce raw sheet row (strings) into typed OrderV2/OrderLineV2 with numeric fields
 function normalizeOrderV2(row: any): any {
