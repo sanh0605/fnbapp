@@ -651,6 +651,25 @@ Split the write path by `item_type`:
 
 Both writes stay inside the one existing transaction.
 
+**The returned counts must stay honest, because the owner reads them.**
+`apply_stocktake_session_atomic` returns `ledger_count` and `ledger_ids`, and
+`StocktakeClient.tsx:227` renders them directly:
+
+```
+Đã ghi {ledgerCount} điều chỉnh tồn kho. Các mã ledger: {ledgerIds.join(", ")}
+```
+
+Lines 90, 148 and 150 show the same count before applying. Folding
+`stock_issues` rows into `ledger_count` would therefore tell the owner that five
+stock adjustments were written when the ledger gained none, and list "mã ledger"
+that are not ledger ids. That is wrong text on screen, not an internal naming
+question.
+
+Keep `ledger_count` and `ledger_ids` meaning exactly `stock_ledger`. Add
+`issue_count` and `issue_ids` alongside. Existing consumers keep working
+unchanged, and the screen's Vietnamese is updated to report both — it is being
+edited in this task anyway for the `PURCHASED_ITEM` label at line 278.
+
 **(d) A count above everything ever purchased blocks its own line and shows its
 siblings.** Owner decision 2026-08-04, recorded in `docs/BUSINESS-RULES.md`.
 
@@ -674,6 +693,29 @@ not.
 
 The refusal is scoped to the line. Other items in the session save normally —
 the owner does not restart a count because one item disagrees.
+
+**One condition, two messages — decided 2026-08-05 while reviewing the intended
+structure.** Theoretical stock is `purchased − issued`, and issued is never
+negative, so `theoretical <= purchased` always. That makes
+`counted > theoretical` the weaker test, and it subsumes `counted > purchased`
+entirely. Write one check, not two:
+
+| Condition | Meaning | Message |
+|---|---|---|
+| `counted > purchased` | goods present that no purchase explains | `BR-INV-005`: refuse, list the sibling brands |
+| `counted > theoretical` but `<= purchased` | an earlier count recorded more as issued than actually left | refuse, and say that plainly |
+
+The second case **cannot occur on a first count**: with no issues yet,
+`theoretical = purchased`, so the two conditions coincide. It becomes reachable
+only from the second count onward, which is beyond this plan.
+
+Refuse it rather than ignoring it. Recording nothing would leave the shelf
+permanently above the books, reappearing at every future count and never
+resolving, while the earlier period's cost stays overstated with no trace. There
+is no owner rule for reversing an over-recorded issue yet, and `stock_issues`
+forbids a negative `base_quantity` by construction, so inventing one here would
+be inventing policy. Refusing costs nothing inside this plan and forces the
+question to be asked properly before the second count. Recorded as item 32.
 
 Do not value the surplus. Any price assigned to goods with no purchase behind
 them is a guess entering the cost figure permanently.
