@@ -127,8 +127,15 @@ re-measures it rather than trusting that figure. The proof happens first.
 
 Per the 2026-08-02 drill's own documented deviation: the actual mechanism is
 `buildDatabaseSnapshot`, a fresh read-only snapshot taken at run time, not a
-named Drive file. Same artefact this time: 38 tables (`BACKUP_TABLES`),
-captured immediately before restoring.
+named Drive file. Same artefact this time: **40 tables** (`BACKUP_TABLES`,
+counted in `supabase/functions/backup-to-drive/core.ts`), captured immediately
+before restoring. **38 of those 40 matched exactly**; the earlier wording here
+said "38 tables" and conflated the total with the number that matched.
+
+The two that diverged are `backdated_ledger_events` and
+`backdated_recipe_events` — known trigger noise, and both belong to the
+correction machinery Task 6 retires, so the divergence sits entirely inside what
+this plan is removing.
 
 - [x] **Step 1b: Bring the restore target's schema up to date first**
 
@@ -176,6 +183,52 @@ shared staging area merged both; content of both is intact, verified by
 reading the file back, not just trusting the diff stat).
 
 A restore that was performed but not written down cannot be relied on later.
+
+---
+
+### Task 1c: Put `stock_issues` inside the backup before it holds anything
+
+**Files:**
+- Modify: `supabase/functions/backup-to-drive/core.ts`
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: `BACKUP_TABLES` covering the table this plan is about to make the
+  sole source of cost.
+
+Found during Task 1 and recorded as item 34. `BACKUP_TABLES` predates migration
+`0052` and never gained `stock_issues`. Harmless today at 0 rows, which is
+exactly why it must be fixed today.
+
+**Why it outranks its own row count.** After Task 5, `stock_ledger` holds
+purchase receipts only, and `stock_issues` becomes the single input that turns
+purchases into a cost figure. A table in that position sitting outside the
+backup means losing it loses every cost figure — and unlike a ledger row, an
+issue cannot be recovered by re-deriving, because the goods are already gone and
+the count that measured them cannot be retaken.
+
+The mitigation is partial, not sufficient: `stocktake_sessions` and
+`stocktake_lines` **are** backed up, so the raw counts survive and issues could
+in principle be regenerated. That is re-running the apply logic against
+historical state, not restoring.
+
+- [ ] **Step 1: Add it in an order the restore can follow**
+
+`lib/backup-restore.ts:72` restores in `BACKUP_TABLES` order so foreign keys
+resolve parent-first. `stock_issues` references `purchased_items` and
+`stocktake_sessions`, so it must appear after both — placing it immediately
+after `stocktake_lines` satisfies this.
+
+- [ ] **Step 2: Prove the list is actually longer**
+
+`BACKUP_TABLES` holds 40 entries today. Assert 41, and assert `stock_issues` is
+present rather than trusting the diff.
+
+- [ ] **Step 3: Run the backup and confirm the table appears in the bundle**
+
+An entry in a list is not proof the dump ran. Read the bundle.
+
+- [ ] **Step 4: Close item 34, suite, type check, commit**
 
 ---
 
