@@ -442,6 +442,69 @@ predicts (`stock_issues` still holds 0 rows).
 
 ---
 
+### Task 2b: Remove the P&L screen, keep the engine behind it
+
+**Files:**
+- Delete: `app/admin/reports/pnl/page.tsx`
+- Modify: the navigation entry that links to it
+- **Do not touch:** `getPnLDataV2` in `app/admin/reports/actions.ts`
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: one fewer screen. No function is removed.
+
+Owner decision 2026-08-05: the report is being redesigned as a real financial
+statement (item 31), so rather than maintain a version whose cost column reads
+zero, remove it and rebuild from nothing when that discussion happens.
+
+**Checked before agreeing, because deleting a report screen is not obviously
+free.** It is free here:
+
+- Revenue does not live on this page. `app/admin/reports/sales/page.tsx`
+  ("Báo cáo Bán hàng") computes revenue independently through `getSalesDataV2` —
+  order-level gross revenue, discounts, payment split, best sellers, time
+  analysis. Removing the P&L costs the owner no revenue reporting.
+- The only thing the P&L still contributes is gross profit, which currently
+  equals revenue exactly, because cost is zero. It adds no information.
+- Task 2 fitted this page with honest Vietnamese notes. That work is not wasted —
+  it is what made the page safe to leave standing until now.
+
+**`getPnLDataV2` must survive the deletion of its only screen.** It is this
+plan's revenue gate: June 22.157.000đ and July 18.661.000đ are read through it
+before and after every remaining task, including the deletions. It is also the
+one function this plan trusts, after hand-summed figures proved wrong on
+2026-08-05.
+
+That leaves a server action with no page calling it, which normally invites
+removal. It is retained deliberately, for the gate and for the rebuild. Say so
+in a comment on the function itself, not only here — a plan is not where someone
+tidying dead code will look.
+
+- [ ] **Step 1: Confirm nothing else renders the page's data**
+
+`getPnLDataV2` is imported by `app/admin/reports/pnl/page.tsx` and the test file,
+and nothing else. Re-verify rather than trusting this line.
+
+- [ ] **Step 2: Delete the page and its navigation entry**
+
+A link to a deleted route is worse than no link.
+
+- [ ] **Step 3: Add the retention comment to `getPnLDataV2`**
+
+State that it has no caller by design, names the plan and item 31, and is the
+revenue gate.
+
+- [ ] **Step 4: Prove the gate still works without the page**
+
+Read June and July through the function. Both figures unchanged.
+
+- [ ] **Step 5: Suite, type check, commit**
+
+Tests referencing the deleted page are rewritten or removed with a stated
+reason. Tests for `getPnLDataV2` itself stay — they now guard the gate.
+
+---
+
 ### Task 3: Checkout stops computing a sale cost
 
 **Files:**
