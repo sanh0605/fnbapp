@@ -688,6 +688,56 @@ new information.
 
 ---
 
+### Task 6b: Repair the backup that Task 6 broke — blocks Task 4
+
+**Files:**
+- Modify: `supabase/functions/backup-to-drive/core.ts` (`BACKUP_TABLES`)
+- Modify: `scripts/apps-script/backup-to-drive.gs` (`EXPECTED_TABLES`)
+- Modify: whichever tests name the three tables (`lib/drive-backup.test.ts`,
+  `lib/backup-restore.test.ts`)
+- Redeploy: the `backup-to-drive` Edge Function; repaste the Apps Script
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: a Drive backup bundle that completes again.
+
+**Found during review of Task 6 on 2026-08-05, verified against production.**
+Migration 0054 dropped three tables that both copies of the backup table list
+still name. `dumpTable` throws on any non-2xx
+(`supabase/functions/backup-to-drive/core.ts:145-147`), and PostgREST answers a
+dropped table with **HTTP 404** — measured directly:
+`audit_baseline_locks -> 404`, `stock_issues -> 200`. So the nightly backup
+now aborts at the first dropped table it reaches and produces no bundle at all.
+
+It fails loudly rather than silently — `runDailyDriveBackup` re-throws through
+`alertFailure_` — so this is an outage, not silent data loss. But Task 4 and
+Task 5 both require a fresh backup taken immediately before the apply, and
+there is currently no way to take one.
+
+**Both copies must be fixed; fixing one is not enough, and the asymmetry
+decides nothing here.** `validateBundle_`
+(`scripts/apps-script/backup-to-drive.gs:82-101`) treats a *missing* table as
+fatal and an *unexpected* table as a warning. That asymmetry was designed to let
+the Edge Function's list grow ahead of the script's. It gives no cover when the
+list **shrinks**: fix `core.ts` alone and the bundle arrives without the three
+tables, which `validateBundle_` calls missing and rejects; fix the `.gs` alone
+and `core.ts` still 404s so no bundle is produced. Edit both, then redeploy and
+repaste.
+
+`lib/backup-restore.ts:2` imports `BACKUP_TABLES` from `core.ts`, so the restore
+side follows the same edit — no third list. The parent-first restore order note
+at `core.ts:39-41` concerns `stock_issues`, which is unaffected.
+
+**Verify by running a real backup and reading its manifest — not by reading the
+code.** The table this exact defect class hides behind is the one nobody dumped.
+
+**Also fix while here:** `app/admin/layout.tsx:36` still offers the sidebar
+entry "Nhập hàng chờ duyệt" pointing at `/admin/audit/backdated-ledger`, a route
+Task 6 deleted. `app/admin/audit/` is now an empty directory. The owner clicking
+it gets a 404.
+
+---
+
 ### Task 4: Reset the stored cost values
 
 **Files:**
