@@ -17,9 +17,8 @@ at the bottom.
 
 | # | Item | Why open |
 |---|---|---|
-| 3 | **The daily bundle will exceed 50 MB again** | 39.6 MB now, 10.4 MB of headroom, and one full rebuild costs ~14 MB. Migration `0045`'s 30-day retention deletes nothing until ~2026-08-23. Plan: `docs/superpowers/plans/2026-07-31-split-recovery-log-from-backup.md`. |
+| 3 | **The daily bundle will exceed 50 MB again** | **40.8 MB** measured on the 2026-08-07 bundle in Drive, so 9.2 MB of headroom — down from the 39.6 MB / 10.4 MB recorded on 2026-07-31, and that is *after* Task 6 removed three tables (the 2026-08-05 bundle was 41.9 MB). One full rebuild costs ~14 MB. Migration `0045`'s 30-day retention deletes nothing until ~2026-08-23. Plan: `docs/superpowers/plans/2026-07-31-split-recovery-log-from-backup.md`. |
 | 4 | gzip the bundle | Deferred. Rests on an unverified assumption that Apps Script's 50 MB limit applies to compressed bytes. Test before relying on it. |
-| 35 | **Paste the updated Apps Script into the live project** | Plan C Task 6b (2026-08-07) fixed `scripts/apps-script/backup-to-drive.gs` (dropped 3 retired tables) and regenerated `scratchpad/backup-to-drive-STEP2-paste-this-final.gs`, but there is no CLI deploy path for Apps Script — the owner must paste it into the Apps Script editor by hand for the nightly 03:00 run to pick it up. The Edge Function side is already redeployed and verified against production. |
 
 ## Logging hygiene (analysis done 2026-07-31, nothing implemented)
 
