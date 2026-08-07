@@ -38,11 +38,11 @@ If a summary here conflicts with a reviewed Tier 2 policy, stop and resolve the 
 
 ### BR-SALE-001 — Historical sale economics are pinned
 
-**Status:** `APPROVED`
+**Status:** `RETIRED`, effective 2026-08-07 — successor `BR-COGS-005`
 
 Order lines store the cost used at sale time in `cost_at_sale`. Historical reporting must use the pinned value rather than silently replacing it with a later recipe or purchase-cost replay.
 
-Superseded by `BR-COGS-005` (owner decision 2026-08-04); in force until that cutover applies.
+Superseded by `BR-COGS-005` (owner decision 2026-08-04). Plan C Task 4 applied the cutover on 2026-08-07 (`docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`): `order_lines_v2.cost_at_sale` reset to `0` for every row, 2.590 lines. There is no longer a pinned value for this rule to protect.
 
 ### BR-SALE-002 — Transaction snapshots preserve write-time inputs
 
@@ -72,11 +72,11 @@ Moving Average Cost (MAC) is the COGS standard for order valuation and P&L repor
 
 ### BR-COGS-002 — Reports use pinned sale cost
 
-**Status:** `APPROVED`
+**Status:** `RETIRED`, effective 2026-08-07 — successor `BR-COGS-005`
 
 P&L and order COGS use the stored `cost_at_sale` for the affected sale. A replay difference can be informational without meaning that stored money is wrong.
 
-Superseded by `BR-COGS-005` (owner decision 2026-08-04); in force until that cutover applies.
+Superseded by `BR-COGS-005` (owner decision 2026-08-04). Plan C Task 4 applied the cutover on 2026-08-07: `order_lines_v2.cost_at_sale` reset to `0` for every row. No report has read this column since Tasks 2/3; there is nothing left for this rule to describe.
 
 ### BR-COGS-005 — Cost is measured when goods leave stock, and there is only one cost figure
 
@@ -98,7 +98,7 @@ The decision stands: it turned on those months having no count and no way to acq
 
 **Reaffirmed 2026-08-05 on changed grounds.** Once the report was switched to the issue-based figure, no screen or calculation read the stored `cost_at_sale` any longer, so erasing it no longer changed anything visible — its only remaining effect was destroying the record, irreversibly once the ledger goes. The owner was told this and chose deletion again.
 
-Supersedes `BR-SALE-001` and `BR-COGS-002`, effective on the cutover described in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`. Those two remain in force until it applies.
+Supersedes `BR-SALE-001` and `BR-COGS-002`, both `RETIRED` effective 2026-08-07 — the cutover described in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` (Task 4) applied that day.
 
 ### BR-COGS-003 — Rounding and allocation must reconcile
 

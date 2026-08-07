@@ -9,7 +9,7 @@ process.env.CLI_MODE = "true";
  * order's status. The column stays -- numeric(18,6) not null default 0 --
  * only the value returns to default. Nothing is dropped.
  *
- * Scope decided by the owner 2026-08-08, correcting an earlier COMPLETED-only
+ * Scope decided by the owner 2026-08-07, correcting an earlier COMPLETED-only
  * draft of this script: "no report reads it" does not pick out
  * status = 'COMPLETED'. Splitting COMPLETED further by superseded_by showed
  * 911 COMPLETED-but-superseded lines that no report reads either, and they
@@ -28,6 +28,21 @@ process.env.CLI_MODE = "true";
 
 const KNOWN_BASELINE_LINES = 2590;
 const KNOWN_BASELINE_TOTAL = 25588859.619575;
+
+// Widened 2026-08-07 on the owner's question: why did the revenue gate only
+// cover June/July when April and May also have sales? It did not track the
+// data, just earlier work. April/May/June/July are known-good, verified
+// against getPnLDataV2 (never a hand-rolled sum), and used as a hard gate
+// here. August is open and rises with every sale -- measured and reported,
+// never compared against a constant.
+type MonthCheck = { label: string; startDate: string; endDate: string; knownRevenue: number | null };
+const MONTH_CHECKS: MonthCheck[] = [
+  { label: "2026-04", startDate: "2026-04-01", endDate: "2026-04-30", knownRevenue: 2190000 },
+  { label: "2026-05", startDate: "2026-05-01", endDate: "2026-05-31", knownRevenue: 7675000 },
+  { label: "2026-06", startDate: "2026-06-01", endDate: "2026-06-30", knownRevenue: 22157000 },
+  { label: "2026-07", startDate: "2026-07-01", endDate: "2026-07-31", knownRevenue: 18661000 },
+  { label: "2026-08", startDate: "2026-08-01", endDate: "2026-08-31", knownRevenue: null },
+];
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
@@ -61,7 +76,7 @@ async function main(): Promise<void> {
   const deltaLines = lineCount - KNOWN_BASELINE_LINES;
   const deltaTotal = currentTotal - KNOWN_BASELINE_TOTAL;
   console.log(
-    `\nKnown baseline (owner-verified 2026-08-07/08 measurement, whole-table scope): ` +
+    `\nKnown baseline (owner-verified 2026-08-07 measurement, whole-table scope): ` +
       `${KNOWN_BASELINE_LINES} dong / ${formatNumber(KNOWN_BASELINE_TOTAL)}d.`,
   );
   console.log(
@@ -69,30 +84,41 @@ async function main(): Promise<void> {
       `${deltaTotal >= 0 ? "+" : ""}${formatNumber(deltaTotal)}d.`,
   );
 
-  console.log("\nCurrent PnL (unaffected by this task -- issue-based costing, not cost_at_sale):");
-  const juneBefore = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
-  const julyBefore = await getPnLDataV2({ startDate: "2026-07-01", endDate: "2026-07-31" });
-  console.log(`  June revenue: ${formatNumber(juneBefore.totalRevenue)}d`);
-  console.log(`  July revenue: ${formatNumber(julyBefore.totalRevenue)}d`);
+  console.log("\nCurrent PnL, every month with sales (unaffected by this task -- issue-based costing, not cost_at_sale):");
+  const revenueBefore = new Map<string, number>();
+  for (const m of MONTH_CHECKS) {
+    const r = await getPnLDataV2({ startDate: m.startDate, endDate: m.endDate });
+    revenueBefore.set(m.label, r.totalRevenue);
+    if (m.knownRevenue === null) {
+      console.log(`  ${m.label} revenue: ${formatNumber(r.totalRevenue)}d (open month, not gated)`);
+    } else {
+      const matches = r.totalRevenue === m.knownRevenue;
+      console.log(
+        `  ${m.label} revenue: ${formatNumber(r.totalRevenue)}d ` +
+          `(known: ${formatNumber(m.knownRevenue)}d${matches ? ", matches" : ", GATE MISMATCH"})`,
+      );
+    }
+  }
 
   if (!apply) {
     console.log("\nDry run only -- no data written. Re-run with --apply to write these changes.");
     return;
   }
 
+  const { batchIds } = await import("./reset-cost-at-sale-core");
+
   const failures: string[] = [];
   const supabase = getSupabaseClient();
   const ids: string[] = targets.map(l => l.id);
   const BATCH_SIZE = 100;
   let updated = 0;
-  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-    const batch = ids.slice(i, i + BATCH_SIZE);
+  for (const batch of batchIds(ids, BATCH_SIZE)) {
     const { data, error } = await supabase
       .from("order_lines_v2")
       .update({ cost_at_sale: 0 })
       .in("id", batch)
       .select("id");
-    if (error) throw new Error(`Batch update failed at offset ${i}: ${error.message}`);
+    if (error) throw new Error(`Batch update failed: ${error.message}`);
     updated += data?.length ?? 0;
   }
   console.log(`\nUpdated ${updated} rows (expected ${ids.length}).`);
@@ -101,14 +127,25 @@ async function main(): Promise<void> {
   }
 
   console.log("\nRe-reading end state...");
-  const { count: stillNonzeroInTargetSet, error: verifyTargetsError } = await supabase
-    .from("order_lines_v2")
-    .select("id", { count: "exact", head: true })
-    .in("id", ids)
-    .gt("cost_at_sale", 0);
-  if (verifyTargetsError) throw new Error(`Verify (targeted set) failed: ${verifyTargetsError.message}`);
-  console.log(`  Targeted rows still nonzero: ${stillNonzeroInTargetSet ?? "?"} (expected 0)`);
-  if ((stillNonzeroInTargetSet ?? 0) !== 0) {
+  // Same .in() URL-length limit applies to reads as to writes -- batch this
+  // the same way and at the same size as the write loop above. The original
+  // version of this script batched the write but sent all 2.590 targeted
+  // ids in a single unbatched .in() here; at production volume the request
+  // broke at the transport layer before a structured response existed to
+  // read an error message from, and the write itself (already committed)
+  // was reported as an unexplained failure.
+  let stillNonzeroInTargetSet = 0;
+  for (const batch of batchIds(ids, BATCH_SIZE)) {
+    const { count, error: verifyTargetsError } = await supabase
+      .from("order_lines_v2")
+      .select("id", { count: "exact", head: true })
+      .in("id", batch)
+      .gt("cost_at_sale", 0);
+    if (verifyTargetsError) throw new Error(`Verify (targeted set) failed: ${verifyTargetsError.message}`);
+    stillNonzeroInTargetSet += count ?? 0;
+  }
+  console.log(`  Targeted rows still nonzero: ${stillNonzeroInTargetSet} (expected 0)`);
+  if (stillNonzeroInTargetSet !== 0) {
     failures.push(`${stillNonzeroInTargetSet} targeted rows are still nonzero after the write.`);
   }
 
@@ -125,18 +162,30 @@ async function main(): Promise<void> {
     failures.push(`${remainingNonzero.length} rows in the whole table are still nonzero after the write.`);
   }
 
-  console.log("\nStep 5: re-reading June/July PnL to confirm revenue unchanged.");
-  const juneAfter = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
-  const julyAfter = await getPnLDataV2({ startDate: "2026-07-01", endDate: "2026-07-31" });
-  console.log(`  June revenue: ${formatNumber(juneAfter.totalRevenue)}d (before: ${formatNumber(juneBefore.totalRevenue)}d)`);
-  console.log(`  July revenue: ${formatNumber(julyAfter.totalRevenue)}d (before: ${formatNumber(julyBefore.totalRevenue)}d)`);
-  if (juneAfter.totalRevenue !== juneBefore.totalRevenue || julyAfter.totalRevenue !== julyBefore.totalRevenue) {
-    failures.push(
-      `Revenue moved during this run: June ${juneBefore.totalRevenue} -> ${juneAfter.totalRevenue}, ` +
-        `July ${julyBefore.totalRevenue} -> ${julyAfter.totalRevenue}.`,
-    );
-  } else {
-    console.log("  Revenue unchanged, to the dong, both months.");
+  console.log("\nStep 5: re-reading PnL for every gated month to confirm revenue unchanged.");
+  for (const m of MONTH_CHECKS) {
+    const r = await getPnLDataV2({ startDate: m.startDate, endDate: m.endDate });
+    const before = revenueBefore.get(m.label)!;
+    const movedThisRun = r.totalRevenue !== before;
+    console.log(`  ${m.label} revenue: ${formatNumber(r.totalRevenue)}d (before this run: ${formatNumber(before)}d)`);
+
+    if (m.knownRevenue === null) {
+      // Open month: a mid-run sale is expected, not a failure -- noted, not gated.
+      if (movedThisRun) {
+        console.log(`    (moved during this run -- expected for an open month, not treated as a failure)`);
+      }
+      continue;
+    }
+
+    if (movedThisRun) {
+      failures.push(`${m.label} revenue moved during this run: ${before} -> ${r.totalRevenue}.`);
+    }
+    if (r.totalRevenue !== m.knownRevenue) {
+      failures.push(`${m.label} revenue does not match the known-good figure: got ${r.totalRevenue}, expected ${m.knownRevenue}.`);
+    }
+  }
+  if (!failures.some(f => f.includes("revenue"))) {
+    console.log("  Revenue unchanged, to the dong, on every gated month.");
   }
 
   if (failures.length > 0) {

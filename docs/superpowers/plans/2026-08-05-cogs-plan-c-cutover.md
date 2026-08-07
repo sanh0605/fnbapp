@@ -973,23 +973,24 @@ dòng, 25.588.859,619575đ**, exact match, exit code 0 in dry-run mode. Ten
 sample rows (order id, line id, exact value) now printed in this dry run
 itself, not only under `--apply`.
 
-- [ ] **Step 4: Owner approves, then `--apply`**
+- [x] **Step 4: Owner approves, then `--apply`**
 
-**Stopped here, as instructed. Waiting for the owner's explicit approval
-before running `--apply`.** The pre-apply backup this step depends on
-already exists: the 2026-08-07 03:36Z Drive bundle (`fnbapp-backup-2026-08-07.json`,
-40.811.568 bytes), taken after Task 6b's fix and confirmed landed by the
-owner via the artifact itself. No further backup needed before `--apply` —
-that bundle is this apply's fresh, pre-write snapshot, and after this task
-runs it becomes the last backup anywhere holding the old `cost_at_sale`
-values.
+Approved 2026-08-07, scoped to the exact commit (`34cba75`) the owner had
+just re-read — explicit condition: any script edit before running voids the
+approval. Pre-apply backup: the 2026-08-07 03:36Z Drive bundle
+(`fnbapp-backup-2026-08-07.json`, 40.811.568 bytes), taken after Task 6b's
+fix and owner-confirmed landed via the artifact itself. Ran unmodified at
+that commit.
 
-- [ ] **Step 5: Confirm and commit**
+- [x] **Step 5: Confirm and commit**
 
-Re-read June/July. Cost 0, revenue unchanged. (August dropped as a fixed
-gate per Task 1 — an open month, not a target.) Script already performs
-this re-read automatically inside its own `--apply` path; this step is
-reporting that result and committing, not a separate manual check.
+Write succeeded (2.590/2.590 rows), the run's own verification did not (see
+outcome note below) — fixed, and re-run clean end to end: `Rows to reset: 0`,
+all four gated months (April/May/June/July, widened per the owner's question
+below) match their known-good figures exactly, whole-table and targeted-set
+checks both 0, `All post-write checks passed`, exit code 0. `BR-SALE-001` and
+`BR-COGS-002` retired in `docs/BUSINESS-RULES.md`, effective 2026-08-07,
+successor `BR-COGS-005`.
 
 ---
 
@@ -1024,6 +1025,25 @@ just whether its logic is right.
 write loop chunks, and prove it against the real 2.590 ids rather than against
 the now-empty set — a check that passes because there is nothing left to check
 is exactly what this note is about.
+
+#### Fix applied, 2026-08-07
+
+Extracted `batchIds` into `scripts/reset-cost-at-sale-core.ts` (this repo's
+`-core.ts` convention — testable without a live client), used for both the
+write loop and the now-batched verification query. 6 unit tests
+(`reset-cost-at-sale-core.test.ts`), including the exact 2.590-into-100s
+split this bug was found at (26 batches, last one 90).
+
+**Proved against real volume, not the now-empty target set — the trap this
+note warned about.** A throwaway script ran the fixed batched path over all
+2.770 `order_lines_v2` ids: 28 batches, succeeded, 0 nonzero. The same query
+unbatched over the same 2.770 ids, in one request: failed with an empty
+error message — reproducing the original bug on demand. That is the
+evidence the fix matters, not just reads more carefully.
+
+Also fixed while here: the script's own header comment said "decided by the
+owner 2026-08-08" — a date that had not arrived yet. Corrected to
+2026-08-07.
 
 ---
 
