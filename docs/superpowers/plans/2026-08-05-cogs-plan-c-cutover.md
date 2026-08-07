@@ -993,6 +993,40 @@ reporting that result and committing, not a separate manual check.
 
 ---
 
+#### Task 4 outcome, 2026-08-07: the write succeeded, its self-check did not
+
+The `--apply` run wrote all 2.590 rows and then threw on its own first
+verification query with an **empty** error message, so it never reached the
+whole-table re-query or the revenue gate. Three of the four checks did not run —
+they did not fail, they never executed.
+
+**The data is correct.** Confirmed independently, not through the broken script:
+whole-table `cost_at_sale <> 0` is **0 rows**, sum exactly `0.000000`, all 2.770
+order lines and 1.971 orders still present, and June/July revenue still
+22.157.000đ / 18.661.000đ read back through `getPnLDataV2`. Re-running the script
+in dry-run mode now reports `Rows to reset: 0` and a baseline delta of
+−2.590 / −25.588.860đ.
+
+**Root cause: the verification was too large to execute.** The write loop
+batches ids 100 at a time; the check at `scripts/reset-cost-at-sale.ts:100-105`
+passes all 2.590 ids to a single `.in("id", ids)`, which PostgREST receives as a
+GET URL of roughly 110 KB — past the URL length limit, so the request fails in
+transport and `supabase-js` surfaces an error with no message. The author
+batched the dangerous half and left the safe-looking half unbatched.
+
+**Third instance in this plan of a check that cannot do its job** — after the
+guard placed on the draft branch that no real purchase takes, and the audit
+comparing a frozen zero against a real total. This one at least failed loudly.
+Before adding any future check, ask what happens to it at production volume, not
+just whether its logic is right.
+
+**Fix required before Task 4 is closed:** chunk the `.in()` the same way the
+write loop chunks, and prove it against the real 2.590 ids rather than against
+the now-empty set — a check that passes because there is nothing left to check
+is exactly what this note is about.
+
+---
+
 ### Task 5: Delete the derived stock rows and the recovery log
 
 **Files:**
