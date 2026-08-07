@@ -61,7 +61,9 @@ variance with no explanation attached.
 The blocking one. Quantity and cost live at different levels:
 
 - **Quantity**: ingredient level. All **138** surviving `PO_RECEIPT` rows and all
-  **39** `inventory_balances` rows are keyed on base ingredients (measured).
+  **39 of the 50** `inventory_balances` rows are keyed on base ingredients
+  (measured). The other 11 are semi-products, all at 0 since Task 5; **no**
+  balance row is keyed on a purchased item.
 - **Cost**: purchased-item level. `stock_issues.purchased_item_id`.
 
 And the purchased-item branch of `apply_stocktake_session_atomic` writes
@@ -213,6 +215,7 @@ Each row is a test to write, not just a note.
 | C14 | A purchased item added while a session is open | Not added to the open session; appears in the next one |
 | C15 | Two sessions open at once | Already guarded by `open_stocktake_session_atomic`; keep the guard and test it |
 | C16 | Session opened, then abandoned | Must not alter any balance; re-opening starts clean |
+| C17 | **Purchased item** (not conversion) set `status <> 'ACTIVE'` while stock is still physically on the shelf | **Undecided — decide before D3.** If it drops out of the count list, S1 can never be satisfied for its ingredient again, so that ingredient's quantity freezes for ever and the leftover hides inside the ingredient total. Proposed: keep offering it while its computed on-hand is above zero, and stop only once a count brings it to zero. Verified 2026-08-07 that all 52 purchased items and all 57 conversions are `ACTIVE`, so nothing is wrong today — this is a landmine, not a bug, and the column can change at any time |
 
 #### C6 in full — the one place where "blank means zero" can cost real money
 
@@ -237,6 +240,23 @@ product at a time at the shelf, so the confirmation belongs at that grain:
 - Closing the session lists the unconfirmed items by name, so a missed shelf is
   visible rather than silent.
 
+**"Item" here means the purchased item — `Sữa đặc Vinamilk`, not `Sữa đặc`.**
+The two grains are easy to blur and they are not the same: confirmation happens
+per purchased item (C6), while the quantity correction happens per ingredient
+(S1), which for condensed milk means all **three** purchased items must be
+confirmed before `Sữa đặc` moves at all.
+
+**Two behaviours to settle before D3, both currently unstated:**
+
+- **Editing a line after its item was confirmed.** Proposed: the edit clears the
+  confirmation and he re-confirms. A badge reading "counted" over a figure that
+  changed underneath it is the kind of quiet disagreement this plan exists to
+  remove.
+- **Closing a session with items still unconfirmed.** Proposed: allow it. The
+  behaviour is already exactly S2 — unconfirmed is the same as partly counted, so
+  those ingredients are left alone. But say so in the plan rather than leaving a
+  reader to derive it, and show the list at close so the choice is deliberate.
+
 This is a design decision, not an owner decision — it delivers the rule he gave
 while removing the one way that rule could invent cost out of a forgotten shelf.
 Flagged to him because the failure it prevents is measured in money.
@@ -245,8 +265,9 @@ Flagged to him because the failure it prevents is measured in money.
 
 | # | Case | Required behaviour |
 |---|---|---|
-| S1 | Every conversion line of every purchased item of an ingredient was counted | Correct that ingredient's quantity to the summed base quantity |
-| S2 | **Only some** of an ingredient's lines were counted | **Do not touch that ingredient's quantity.** A partial sum is not a count. Report which ingredients were skipped and why |
+| S1 | Every **`ACTIVE`** conversion line (see C8) of every **`ACTIVE`** purchased item of an ingredient was confirmed counted (see C6) | Correct that ingredient's quantity to the summed base quantity |
+| S2 | **Only some** of an ingredient's lines were confirmed | **Do not touch that ingredient's quantity.** A partial sum is not a count. Report which ingredients were skipped and why |
+| S2b | An ingredient's purchased item is **not** `ACTIVE` but still has stock | See C17 — this decides whether S1 can ever be satisfied for that ingredient again |
 | S3 | Ingredient whose purchased items were all counted at 0 | Quantity goes to 0 — legitimate, not a special case |
 | S4 | Correction writes a ledger row | One `stock_ledger` row per corrected ingredient, so `trg_stock_ledger_inventory_balances` keeps `inventory_balances` right. This is the only new writer to that table |
 | S5 | Correction and issue must agree | For a counted item, `issue base_quantity` and the ingredient correction must derive from the **same** counted figure, computed once |
@@ -273,6 +294,23 @@ Flagged to him because the failure it prevents is measured in money.
 | K2 | Period cost needs two runs and a subtraction | `computePeriodIssuedValue`, now in `lib/issue-costing.ts` |
 | K3 | No money column is ever persisted | `stock_issues` carries quantity only. Must stay that way |
 | K4 | Rounding | Display only. `displayMoney` rounds cost **up** (2026-07-30) |
+| K5 | **Two events on the same timestamp** | Write an **explicit** tiebreak inside `computeIssueCosting`, with tests that force a purchase/issue tie and an issue/issue tie |
+
+**K5 in full — there is no tiebreak today, only luck.** `computeIssueCosting`
+sorts on `at` alone. It behaves correctly for two accidental reasons, neither
+written down nor tested: purchases are pushed into the array before issues, and
+JS sort has been stable since ES2019, so a purchase happens to win a tie; and
+two issues at the same instant fall back to whatever order `findAllNoCache`
+returned, which is `id` order.
+
+This is not theoretical. `apply_stocktake_session_atomic` takes **one**
+`v_confirmed_at := now()` and stamps every issue in the session with it, so exact
+ties happen on every count — harmless only because the replay groups by
+purchased item, so those ties never meet. **D7 removes that protection**: two
+manual issue slips for the same purchased item on the same day will tie for real,
+and will tie *hard* if I6's date picker offers a date without a time. Decide the
+order deliberately — purchase before issue, then by id — rather than inheriting
+it from an array.
 
 ---
 
@@ -342,11 +380,41 @@ one it is simply a negative issue.
 But `stock_issues.base_quantity` carries `check (base_quantity > 0)`
 (`0052_stock_issues.sql`), so a negative issue **cannot be stored**.
 
-**Proposed rule, for the owner to confirm:** accept the count, correct the
-ingredient quantity upward, and record **no issue row** for that item — there is
-nothing to cost, because nothing left. Note it on the session so the discrepancy
-is visible rather than silent. Do **not** relax the `> 0` constraint; a
-"negative issue" is a different event wearing the wrong name.
+**First proposal, now withdrawn.** It was: accept the count, correct the
+ingredient quantity upward, record **no issue row**, and note the discrepancy on
+the session so it is visible rather than silent.
+
+**Sonnet's challenge killed it, and the reasoning is worth keeping.** For a
+purchased item, "theoretical" is recomputed from scratch every time as
+`purchase_order_lines − stock_issues` (`0053_stocktake_purchased_items.sql:
+244-256`) — it never reads `stock_ledger`. Correcting the *ingredient* quantity
+therefore changes nothing the purchased-item calculation looks at. So the same
+discrepancy reappears **at every future count, for ever**. What was described to
+the owner as "a note so it is visible" would in fact be a prompt that never
+stops asking, about a difference already resolved. The costing itself stays
+correct — no event reaches `computeIssueCosting`, so the average does not move —
+but the experience is wrong, and describing it as a one-off note would have been
+misleading.
+
+**What the case actually is.** Under the sealed-only rule, counting more than
+theoretical almost always means **a sealed package was missed at an earlier
+count** and so was expensed then. Now it turns up. Goods thought consumed have
+reappeared.
+
+**Revised proposal, for the owner:** record it as **hàng tìm lại được** — a
+return that puts the quantity back at the average it left at, which closes the
+discrepancy permanently and leaves the average unchanged. That requires
+`stock_issues.base_quantity` to accept a negative value, so the `> 0` check
+(`0052_stock_issues.sql`) has to be reconsidered rather than defended: the
+earlier "a negative issue is a different event wearing the wrong name" reads
+well but leaves the loop open.
+
+**Alternative worth putting to him:** refuse the count and ask him to check for a
+purchase that was never entered — the other common cause. Safer, but it blocks
+him on a screen when the goods are physically in front of him.
+
+**Undecided. This is D2, and it goes to the owner as a business question with
+both options and the permanent-prompt consequence stated plainly.**
 
 ---
 
@@ -382,8 +450,19 @@ khi hoàn tất rồi mới bắt đầu code."*
 Everything in `CLAUDE.md` section 9, plus:
 
 - Every case in §5 has a test, named after its id (C1, S2, I4 …).
-- The `Dâu sấy` worked example reproduces **596 đ/g**, **1.600 g**, **953.600đ**,
-  **1.490.000đ** — from the real engine, not a fixture.
+- The `Dâu sấy` worked example reproduces **596 đ/g**, **3.100 g**,
+  **1.847.600đ**, **596.000đ** — from the real engine, not a fixture, and
+  matching §6 exactly.
+
+  > These figures were **wrong here until 2026-08-07**, and the way they were
+  > wrong is worth keeping. §6 was rewritten for the sealed-only rule (`e260d44`)
+  > and this line was not, so the plan carried a verification bar that
+  > contradicted its own worked example — 1.600 g / 953.600đ / 1.490.000đ, the
+  > pre-rule scenario where 2.500 g was counted. Anyone coding to §9 would have
+  > built to the wrong target and had it confirmed by the checklist. Sonnet found
+  > it by dividing the stale figures back out (953.600 ÷ 596 = 1.600) rather than
+  > by reading them. **The same number written in two places is the defect; the
+  > review is not the fix, it is the last line of defence.**
 - Revenue gate unchanged, all four months plus August measured:
   04 2.190.000đ · 05 7.675.000đ · 06 22.157.000đ · 07 18.661.000đ.
 - `orders_v2` integrity: rows with `updated_at >= 2026-08-04` and `created_at <
