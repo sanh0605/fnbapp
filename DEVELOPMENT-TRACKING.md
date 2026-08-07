@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-07 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 6b: the Drive backup Task 6 broke, repaired and proven with a real backup before Task 4 could need one
+
+**Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 6b. Found in Opus's review of Task 6 on production: migration `0054` dropped `audit_baseline_locks`, `backdated_ledger_events`, `backdated_recipe_events`, but both copies of the Drive backup's table list (`BACKUP_TABLES` in `core.ts`, `EXPECTED_TABLES` in the Apps Script) still named all three. `dumpTable` throws on any non-2xx and PostgREST answers a dropped table with HTTP 404 — measured directly (`audit_baseline_locks -> 404`). The nightly backup had been aborting at the first dropped table since Task 6 landed, producing no bundle at all — an outage, not silent data loss (it fails loudly through `alertFailure_`), but Task 4 and Task 5 both require a fresh backup taken immediately before their `--apply`, and there was no way to take one.
+
+**Fix, both copies (fixing one is not enough — the schema-drift asymmetry in `validateBundle_` covers growth, not shrinkage):** removed the three tables from `BACKUP_TABLES`/`EXPECTED_TABLES`, the now-orphaned `audit_baseline_locks` order-column entry, and a comment that only made sense with `backdated_recipe_events` present. `lib/backup-restore.ts` needed no separate edit — it imports `BACKUP_TABLES` directly, no third list. Fixed three test files that hardcoded the old count/tables: `lib/drive-backup.test.ts` (41 → 38, dropped two `toContain` assertions for retired tables), `lib/backup-restore.test.ts` (swapped the `audit_baseline_locks` example row for `shifts`), and `lib/drive-backup-contract.test.ts:19` — a third pin at 41 the plan hadn't named, caught by running the suite rather than trusting the two files the plan listed. Removed the dead sidebar entry `app/admin/layout.tsx:36` ("Nhập hàng chờ duyệt" → `/admin/audit/backdated-ledger`, a route Task 6 deleted; the owner clicking it got a 404). Marked `docs/runbooks/restore-from-backup.md` stale in three places (40-table count, the backdated-trigger restore-noise section, the PASS-despite-delta note) rather than rewriting it, so it stays an accurate record of the 2026-07-29 drill while not misleading a future one.
+
+**Redeployed and verified against production, not against the code:** `supabase functions deploy backup-to-drive --project-ref zicuawpwyhmtqmzawvau`; regenerated `scratchpad/backup-to-drive-STEP2-paste-this-final.gs` for the owner to paste into Apps Script (still needs that manual paste — no CLI deploy path for Apps Script here). Ran `buildDatabaseSnapshot` — the exact function the Edge Function calls — against production directly from a throwaway, uncommitted script: 38 tables, zero HTTP errors, `validateBackupBundle` reported `tableCount: 38, totalRowCount: 64756`.
+
+`npx tsc --noEmit`: 0 errors. `npx vitest run`: 947/947 (161 files). `check-rules-current.ts`: clean.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-06 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 3/3b/6: checkout stops costing a sale, its live-verification script gets a safety catch, and the machinery that could have silently undone both retires first
 
 **Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`, continuing the Plan C cutover after Plan B's issue-based engine and Task 2's report switch.

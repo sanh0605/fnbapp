@@ -736,6 +736,43 @@ entry "Nhập hàng chờ duyệt" pointing at `/admin/audit/backdated-ledger`, 
 Task 6 deleted. `app/admin/audit/` is now an empty directory. The owner clicking
 it gets a 404.
 
+**Done 2026-08-07.** Removed `audit_baseline_locks`, `backdated_ledger_events`,
+`backdated_recipe_events` from both `BACKUP_TABLES` (`core.ts`) and
+`EXPECTED_TABLES` (`backup-to-drive.gs`), including the order-column entry and
+comment that only made sense with `backdated_recipe_events` present. Fixed the
+two test files that hardcoded the old counts/tables
+(`lib/drive-backup.test.ts`: 41 → 38, dropped the two `toContain` assertions
+for retired tables; `lib/backup-restore.test.ts`: swapped the
+`audit_baseline_locks` example row for `shifts`, a live table) plus a third
+contract test the plan did not name (`lib/drive-backup-contract.test.ts:19`
+also pinned `.length` at 41). Removed the dead sidebar entry
+(`app/admin/layout.tsx:36`).
+
+Redeployed the Edge Function: `supabase functions deploy backup-to-drive
+--project-ref zicuawpwyhmtqmzawvau`. Regenerated
+`scratchpad/backup-to-drive-STEP2-paste-this-final.gs` for the owner to paste
+into Apps Script (no CLI deploy path for Apps Script here) — still needs that
+manual paste to take effect on the nightly run.
+
+**Verified by running the real backup, not by reading the code or tests**, per
+this task's own instruction. Ran `buildDatabaseSnapshot` (the exact function
+the Edge Function calls) against production directly from a throwaway script:
+`BACKUP_TABLES.length` = 38, all three retired tables confirmed absent from
+the list, and the returned bundle's manifest (`validateBackupBundle`) reported
+`tableCount: 38`, `totalRowCount: 64756`, with every one of the 38 tables
+returning real row counts and zero HTTP errors — no repeat of the 404 that
+broke the nightly run. Script was not committed (throwaway verification, no
+production writes).
+
+Marked stale, not deleted: `docs/runbooks/restore-from-backup.md` described
+the now-retired `detect_backdated_ledger_entry`/`detect_backdated_recipe_entry`
+noise and the 40-table count from the 2026-07-29 drill. Annotated as historical
+record of that drill rather than rewritten, so a future restore drill does not
+follow guidance that no longer applies.
+
+`npx tsc --noEmit`: 0 errors. `npx vitest run`: 947/947 (161 files).
+`npx vite-node scripts/check-rules-current.ts`: clean.
+
 ---
 
 ### Task 4: Reset the stored cost values

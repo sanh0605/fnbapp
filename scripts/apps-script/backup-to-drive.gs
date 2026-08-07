@@ -6,9 +6,8 @@ const EXPECTED_TABLES = [
   "order_events", "stock_ledger", "purchase_orders", "purchase_order_lines",
   "stock_adjustments", "production_orders", "production_items", "pos_drafts", "users",
   "sync_state", "data_migration_runs", "data_recovery_changes",
-  "audit_baseline_locks", "backdated_ledger_events",
   "order_payments", "shifts", "shift_stock_checks", "stocktake_sessions",
-  "stocktake_lines", "stock_issues", "backdated_recipe_events", "purchase_order_edits",
+  "stocktake_lines", "stock_issues", "purchase_order_edits",
   "pos_sync_failures",
 ];
 const DAILY_RETENTION_COUNT = 180;

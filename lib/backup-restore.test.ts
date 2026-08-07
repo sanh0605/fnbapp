@@ -126,14 +126,14 @@ describe("restoreBundleToTarget", () => {
     });
     const bundle = fakeBundle({
       data_recovery_changes: [{ id: "BAD" }],
-      audit_baseline_locks: [{ id: "OK-1" }],
+      shifts: [{ id: "OK-1" }],
     });
 
-    const results = await restoreBundleToTarget(bundle, client, ["data_recovery_changes", "audit_baseline_locks"]);
+    const results = await restoreBundleToTarget(bundle, client, ["data_recovery_changes", "shifts"]);
 
     expect(results).toEqual([
       { table: "data_recovery_changes", inserted: 0, skipped: [{ row: { id: "BAD" }, error: "bad row" }], substituted: 0 },
-      { table: "audit_baseline_locks", inserted: 1, skipped: [], substituted: 0 },
+      { table: "shifts", inserted: 1, skipped: [], substituted: 0 },
     ]);
   });
 

@@ -61,7 +61,9 @@ Script này:
 
 **Thời gian chạy lần diễn tập 2026-07-29:** khoảng vài phút cho 52.232 dòng / 40 bảng, sau khi đã sửa một lỗi hiệu năng (xem bên dưới). Lần đầu (trước khi sửa) từng bị kẹt hàng giờ đồng hồ ở một bảng.
 
-**Về trigger phát hiện ghi muộn (`detect_backdated_ledger_entry`/`detect_backdated_recipe_entry`):** khôi phục ghi dữ liệu theo thứ tự trang (page order), không theo đúng thứ tự thời gian gốc, nên hai trigger này sẽ hiểu nhầm nhiều dòng là "đến muộn" và tự tạo thêm dòng vào `backdated_ledger_events`/`backdated_recipe_events` (xem mục 4 trong "Sự cố từng gặp" — đây là nhiễu đã biết, không phải mất dữ liệu). `restore-backup-to-target.ts` ghi qua REST API (Supabase JS client), mỗi lần ghi là một transaction riêng của PostgREST nên **không đặt được** `app.mac_drift_recovery='on'` như các hàm phục hồi khác (migration 0030) làm được trong một transaction SQL duy nhất. Vì script này chỉ nhắm vào database thử (không bao giờ là production, đã được `assertSafeRestoreTarget` chặn cứng), việc này an toàn — nhưng nếu về sau restore được chạy vào một project có cron `apply-backdated-corrections` trỏ tới, phải **xoá sạch (truncate) `backdated_ledger_events` và `backdated_recipe_events` ngay sau khi khôi phục xong**, trước khi cron chạy lúc 03:00 giờ Việt Nam, và xác nhận lần chạy cron đó không áp dụng gì.
+**[Đã lỗi thời từ 2026-08-06]** Đoạn dưới đây mô tả trigger phát hiện ghi muộn (`detect_backdated_ledger_entry`/`detect_backdated_recipe_entry`), bảng `backdated_ledger_events`/`backdated_recipe_events`, và cron `apply-backdated-corrections`. Plan C Task 6 đã tháo toàn bộ ba thứ này (migration `0054_retire_cost_machinery.sql`) — không còn trigger nào tạo nhiễu khi khôi phục, không còn bảng nào để truncate, không còn cron nào chạy. Giữ nguyên văn dưới đây làm hồ sơ diễn tập 2026-07-29; đừng làm theo nếu chạy diễn tập mới.
+
+~~Khôi phục ghi dữ liệu theo thứ tự trang (page order), không theo đúng thứ tự thời gian gốc, nên hai trigger này sẽ hiểu nhầm nhiều dòng là "đến muộn" và tự tạo thêm dòng vào `backdated_ledger_events`/`backdated_recipe_events` (xem mục 4 trong "Sự cố từng gặp" — đây là nhiễu đã biết, không phải mất dữ liệu). `restore-backup-to-target.ts` ghi qua REST API (Supabase JS client), mỗi lần ghi là một transaction riêng của PostgREST nên **không đặt được** `app.mac_drift_recovery='on'` như các hàm phục hồi khác (migration 0030) làm được trong một transaction SQL duy nhất. Vì script này chỉ nhắm vào database thử (không bao giờ là production, đã được `assertSafeRestoreTarget` chặn cứng), việc này an toàn — nhưng nếu về sau restore được chạy vào một project có cron `apply-backdated-corrections` trỏ tới, phải **xoá sạch (truncate) `backdated_ledger_events` và `backdated_recipe_events` ngay sau khi khôi phục xong**, trước khi cron chạy lúc 03:00 giờ Việt Nam, và xác nhận lần chạy cron đó không áp dụng gì.~~
 
 ## Bước 4: Kiểm tra khôi phục có đúng không
 
@@ -71,12 +73,12 @@ npx vite-node scripts/verify-restore-drill.ts
 
 Script này so sánh database thử với **production ngay tại thời điểm kiểm tra** (không so với bản backup cũ, vì production là hệ thống sống, có thể đã bán thêm hàng trong lúc chờ khôi phục) — kiểm tra hai lớp:
 
-1. **Đếm số dòng** cho cả 40 bảng.
+1. **Đếm số dòng** cho cả 38 bảng (40 tại thời điểm diễn tập 2026-07-29; Task 6 ngày 2026-08-06 đã bớt đi 3 bảng của cỗ máy tự sửa giá vốn: `audit_baseline_locks`, `backdated_ledger_events`, `backdated_recipe_events`).
 2. **Mở dữ liệu ra so sánh nội dung thật**, không chỉ đếm số dòng: phiếu nhập hàng PO-037 (đầu phiếu + toàn bộ dòng hàng), một đơn hàng thanh toán chia nhiều lần (payment rows), và số dòng sổ kho của Sữa đặc.
 
 Kết quả in ra `VERDICT: PASS` hoặc `FAIL`. Nếu `FAIL`, đọc phần `FINDING` để biết chính xác cái gì sai — **không được tiếp tục làm bất cứ thao tác dựng lại dữ liệu nào trên production cho tới khi verdict là PASS**.
 
-Hai bảng `backdated_ledger_events` và `backdated_recipe_events` gần như luôn lệch số dòng (nhiều hơn) sau khi khôi phục — đây là bình thường, không phải lỗi (xem phần dưới), verdict vẫn tính là PASS nếu chỉ hai bảng này lệch.
+**[Đã lỗi thời từ 2026-08-06]** Câu dưới đây không còn áp dụng — hai bảng đó đã bị xoá cùng cỗ máy ở Task 6, không còn nằm trong danh sách backup nên không thể lệch nữa: ~~Hai bảng `backdated_ledger_events` và `backdated_recipe_events` gần như luôn lệch số dòng (nhiều hơn) sau khi khôi phục — đây là bình thường, không phải lỗi (xem phần dưới), verdict vẫn tính là PASS nếu chỉ hai bảng này lệch.~~
 
 ## Bước 5: Báo cáo và dọn dẹp
 
@@ -91,7 +93,7 @@ Hai bảng `backdated_ledger_events` và `backdated_recipe_events` gần như lu
 
 **3. Bảng `data_recovery_changes` khiến khôi phục cực kỳ chậm (từng bị kẹt hàng giờ).** 94% số dòng của bảng này (29.349/31.132, số liệu 2026-07-29) có cột `old_value` hoặc `new_value` mang giá trị "rỗng" theo một cách đặc biệt (jsonb null) mà công cụ ghi dữ liệu qua API không xử lý được theo lô, phải thử từng dòng một — rất chậm ở quy mô này. Đã sửa: `lib/backup-restore.ts` giờ tự nhận diện và thay thế trước bằng một giá trị đánh dấu rõ ràng, nên bảng này khôi phục nhanh như các bảng khác. Nếu lần sau vẫn thấy chậm bất thường ở một bảng cụ thể, khả năng cao là một cột NOT NULL kiểu jsonb khác có cùng vấn đề — thêm tên bảng/cột vào `NOT_NULL_JSONB_NULL_LITERAL_COLUMNS` trong `lib/backup-restore.ts`.
 
-**4. `backdated_ledger_events`/`backdated_recipe_events` luôn có nhiều dòng hơn sau khi khôi phục.** Hai bảng này được một trigger tự động tạo ra mỗi khi có dòng `stock_ledger`/`recipes` "đến muộn" so với các dòng đã có. Khi khôi phục hàng loạt, dữ liệu không đến theo đúng thứ tự thời gian gốc, nên trigger hiểu nhầm là "muộn" và tự tạo thêm dòng — không phải mất dữ liệu, chỉ là nhiễu do thứ tự khôi phục khác thứ tự ghi gốc. Không cần sửa, chỉ cần biết đây là bình thường.
+**4. [Đã lỗi thời từ 2026-08-06 — Task 6 đã tháo cỗ máy này] `backdated_ledger_events`/`backdated_recipe_events` luôn có nhiều dòng hơn sau khi khôi phục.** Hai bảng này được một trigger tự động tạo ra mỗi khi có dòng `stock_ledger`/`recipes` "đến muộn" so với các dòng đã có. Khi khôi phục hàng loạt, dữ liệu không đến theo đúng thứ tự thời gian gốc, nên trigger hiểu nhầm là "muộn" và tự tạo thêm dòng — không phải mất dữ liệu, chỉ là nhiễu do thứ tự khôi phục khác thứ tự ghi gốc. Không cần sửa, chỉ cần biết đây là bình thường. Cả hai bảng và trigger đã bị xoá ở Task 6 (migration `0054_retire_cost_machinery.sql`); giữ mục này làm hồ sơ diễn tập 2026-07-29, không còn xảy ra ở lần diễn tập sau.
 
 **5. Nếu phải chạy lại khôi phục sau một lần chạy dở dang**, database thử sẽ còn dữ liệu cũ, gây lỗi trùng khoá chính khi chạy lại. Phải xoá sạch dữ liệu (không xoá bảng, chỉ xoá dữ liệu) trước khi chạy lại — hỏi Claude/Codex xử lý việc này, đừng tự xoá bằng tay vì thứ tự xoá phải ngược với thứ tự khôi phục để không vướng khoá ngoại.
 

@@ -16,7 +16,7 @@ describe("Drive backup deployment contract", () => {
     // re-derived like a ledger row -- the goods are gone and the count that
     // measured them cannot be retaken -- so this asserts the list length,
     // not just membership, to catch a future silent drop.
-    expect(BACKUP_TABLES.length).toBe(41);
+    expect(BACKUP_TABLES.length).toBe(38);
     expect(BACKUP_TABLES).toContain("stock_issues");
     // Must follow both purchased_items and stocktake_sessions so
     // lib/backup-restore.ts's parent-first restore order resolves the FKs.

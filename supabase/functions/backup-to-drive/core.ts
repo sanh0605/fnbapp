@@ -29,8 +29,6 @@ export const BACKUP_TABLES = [
   "sync_state",
   "data_migration_runs",
   "data_recovery_changes",
-  "audit_baseline_locks",
-  "backdated_ledger_events",
   "order_payments",
   "shifts",
   "shift_stock_checks",
@@ -39,11 +37,6 @@ export const BACKUP_TABLES = [
   // References purchased_items and stocktake_sessions, so it must come after
   // both for lib/backup-restore.ts's parent-first restore order to resolve.
   "stock_issues",
-  // backdated_recipe_events.id is uuid (every other backup table uses text).
-  // dumpTable pages by ORDER BY id ASC + offset/limit, not a gt() keyset, so
-  // the id's type does not matter -- Postgres can order any uuid column, and
-  // there is no "last seen value" comparison for a type mismatch to affect.
-  "backdated_recipe_events",
   "purchase_order_edits",
   "pos_sync_failures",
   // inventory_balances is deliberately excluded: it is derived from
@@ -56,7 +49,6 @@ export const BACKUP_TABLE_ORDER_COLUMNS: Partial<Record<typeof BACKUP_TABLES[num
   sync_state: "sync_key",
   data_migration_runs: "migration_key",
   data_recovery_changes: "run_id.asc,table_name.asc,row_id.asc,column_name",
-  audit_baseline_locks: "order_line_id",
 };
 
 export type JsonRow = Record<string, unknown>;
