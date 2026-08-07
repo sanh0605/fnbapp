@@ -109,7 +109,8 @@ nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
 - Việc đụng giá vốn hoặc tồn kho: chạy script kiểm tra tương ứng, 0 sai lệch.
 - Ghi một mục vào `DEVELOPMENT-TRACKING.md`, cập nhật `docs/OPEN-ITEMS.md` nếu
   có mục nào đổi trạng thái.
-- Không push.
+- **Không tự push.** Xong việc là xong ở máy. Đẩy ra ngoài repo là việc riêng,
+  chủ quán duyệt từng lần (mục 2) — không phải bước cuối của "xong việc".
 
 ## 10. Tra ở đâu
 
