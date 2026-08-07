@@ -117,6 +117,32 @@ All 57 conversions exist and are `ACTIVE` — nothing to declare first.
    the 2026-07-30 rule that rounding belongs to the screen and storage keeps
    exact values.
 3. **Never delete master data** — `NNL-004` is marked inactive, not removed.
+4. **Count sealed packages only** (2026-08-07). An opened package is not counted
+   and not estimated. The owner's own example: *"túi dâu 100g đã dùng hết, túi
+   dâu 500g đang dùng, túi dâu 1000g chưa dùng thì anh sẽ chỉ nhập … Túi 1.000 g
+   [1]."*
+
+   **What this rule actually is: cost is recognised when a package is opened,
+   not as it is consumed.** Say that plainly rather than treating it as a data-
+   entry convenience, because it decides what the numbers mean:
+
+   - The stock figure means **sealed stock**. It understates what is physically
+     on the shelf by whatever sits in the open packages.
+   - Cost runs slightly ahead of true consumption, by at most one open package
+     per item.
+   - **The error is bounded and does not accumulate.** Each package is expensed
+     exactly once, at the first count where it is no longer sealed. Nothing is
+     counted twice and nothing is missed.
+
+   It also removes the need to weigh or estimate anything, which is what makes
+   it defensible: a rule the owner can actually follow beats a more precise one
+   he cannot. Supersedes the decimal-entry idea drafted in C4 below.
+
+   **Checked for goods with no package to seal.** Only two purchased items are
+   bought loose (`conversion_rate = 1`): `Khoai lang`, already excluded because
+   `NNL-012.is_non_inventory = true`; and `Trứng gà`, whose base unit is `trái`,
+   so every unit is whole and countable and the rule applies unchanged. No
+   exception is needed.
 
 ---
 
@@ -174,9 +200,9 @@ Each row is a test to write, not just a note.
 | C1 | Item with one conversion (48 items) | One line, as today |
 | C2 | Two conversions, different unit names | Two lines, distinguished by name |
 | C3 | Two or three conversions, **same** unit name (`Dâu sấy`, `Kem whipping Anchor`) | One line each, distinguished by the size label |
-| C4 | Opened package, partly used | Decimal entry (`0,5` × 500 g = 250 g); do not force whole numbers |
-| C5 | Nothing left on the shelf | Entering **0** must be possible and must mean "counted, none left" — distinct from "not counted" |
-| C6 | Line left blank | "Not counted". Must **not** be read as zero, and must not correct that item's stock |
+| C4 | Opened package, partly used | **Not counted, not estimated** (owner rule, §3.4). Whole packages only — reject decimals rather than silently rounding them |
+| C5 | Nothing left in a size | Entering **0** and leaving the line blank mean the same thing, by owner rule. See C6 for how that is made safe |
+| C6 | Line left blank | Blank = 0, **but only inside an item the owner marked as counted.** See below — this is the one place where the owner's rule and safety pull apart |
 | C7 | Conversion exists but was never purchased (`Đá viên`) | Line still shown; theoretical is 0; counting a positive number triggers C9 |
 | C8 | Conversion set `status <> 'ACTIVE'` | Excluded from new sessions; existing sessions keep their line so an open count is not silently altered |
 | C9 | Counted more than ever purchased | Refuse, name the sibling brands (`BR-INV-005`, already built) |
@@ -187,6 +213,33 @@ Each row is a test to write, not just a note.
 | C14 | A purchased item added while a session is open | Not added to the open session; appears in the next one |
 | C15 | Two sessions open at once | Already guarded by `open_stocktake_session_atomic`; keep the guard and test it |
 | C16 | Session opened, then abandoned | Must not alter any balance; re-opening starts clean |
+
+#### C6 in full — the one place where "blank means zero" can cost real money
+
+The owner will routinely leave lines blank: under §3.4 he only types a number
+where a sealed package exists, and for `Dâu sấy` that is one line out of three.
+So blank has to mean zero, or nothing would ever be corrected.
+
+But blank must **not** mean zero for an item he never reached. If `Dâu sấy` is
+forgotten entirely and every line reads blank-as-zero, the system records an
+issue of the full 4.100 g and books **2.443.600đ** of cost that never happened.
+A forgotten shelf and an empty shelf would look identical.
+
+**Resolution — confirm per item, not per line.** The owner works through one
+product at a time at the shelf, so the confirmation belongs at that grain:
+
+- He types `1` on `Dâu sấy — Túi 1.000 g`, leaves the other two blank, and marks
+  **`Dâu sấy` counted**.
+- Inside a confirmed item, every blank line is **0**. That is exactly the
+  workflow he described, with no extra typing.
+- An item never confirmed is **not counted**: no issue, no correction, stock
+  untouched.
+- Closing the session lists the unconfirmed items by name, so a missed shelf is
+  visible rather than silent.
+
+This is a design decision, not an owner decision — it delivers the rule he gave
+while removing the one way that rule could invent cost out of a forgotten shelf.
+Flagged to him because the failure it prevents is measured in money.
 
 ### Correcting the stock quantity (Gap 3)
 
@@ -244,23 +297,32 @@ Weighted average = 2.443.600 ÷ 4.100 = **596 đ/g exactly**.
 Current balance is **4.100 g** — everything bought, nothing taken out, the
 expected post-cutover state.
 
-**The owner counts** and finds 1 bag of 500 g and 2 bags of 1 kg, nothing in the
-100 g size:
+**The owner counts.** This is his own worked example, verbatim: the 100 g bag is
+finished, the 500 g bag is **open and in use**, the 1 kg bag is still sealed.
+Under §3.4 only the sealed one is counted.
 
-| Line | Counted | Base |
+| Line | Entered | Base |
 |---|---|---|
-| Dâu sấy — Túi 100 g | 0 | 0 g |
-| Dâu sấy — Túi 500 g | 1 | 500 g |
-| Dâu sấy — Túi 1.000 g | 2 | 2.000 g |
-| **Counted total** | | **2.500 g** |
+| Dâu sấy — Túi 100 g | blank (or 0) | 0 g |
+| Dâu sấy — Túi 500 g | blank (or 0) — **open, not counted** | 0 g |
+| Dâu sấy — Túi 1.000 g | **1** | 1.000 g |
+| **Counted total** | | **1.000 g** |
+
+…and he marks `Dâu sấy` as counted (C6), which is what makes the two blanks
+mean zero rather than "not reached".
 
 **What must happen:**
 
-- Issue recorded: 4.100 − 2.500 = **1.600 g**
-- Cost of that issue: 1.600 × 596 = **953.600đ**
-- `Sữa đặc`-style ingredient correction: `Dâu sấy` quantity 4.100 g → **2.500 g**
-- Remaining stock value: 2.500 × 596 = **1.490.000đ**
-- Cross-check: 2.443.600 − 953.600 = **1.490.000đ** ✓
+- Issue recorded: 4.100 − 1.000 = **3.100 g**
+- Cost of that issue: 3.100 × 596 = **1.847.600đ**
+- Ingredient correction: `Dâu sấy` quantity 4.100 g → **1.000 g**
+- Remaining stock value: 1.000 × 596 = **596.000đ**
+- Cross-check: 2.443.600 − 1.847.600 = **596.000đ** ✓
+
+Note what the 3.100 g contains: the finished 100 g bag, plus the whole 500 g bag
+even though some of it is still on the shelf. That is §3.4 working as intended —
+the open bag was expensed the moment it stopped being sealed, and it will not be
+counted or charged again at any later count.
 
 Every figure above is a number the implementer can compare against before
 running anything on the shop's data.
