@@ -489,6 +489,61 @@ khi hoàn tất rồi mới bắt đầu code."*
   on-hand > 0, dropped once it reaches 0).
 - **D5** Make the purchased-item branch also correct the ingredient quantity
   (Gap 3), obeying S1–S5. Migration; list the triggers on `stock_ledger` first.
+
+  **Done 2026-08-07** — `supabase/migrations/0055_stocktake_ingredient_correction.sql`.
+  Triggers re-verified fresh, immediately before writing the migration:
+  `stock_ledger` still carries only `trg_stock_ledger_inventory_balances`,
+  unchanged — the mechanism this correction relies on to update
+  `inventory_balances`, not touched.
+
+  `apply_stocktake_session_atomic` gained a second pass, after the existing
+  per-line one: for every base ingredient owning at least one counted
+  `PURCHASED_ITEM` line this session, correct it only if **every** purchased-
+  item line for that ingredient in this session (confirmed or not) has
+  `counted_qty` set (S1/S2) — completeness checked against this session's
+  own lines, not a freshly re-queried set, since C14 already puts a
+  purchased item added mid-session out of scope and D4/C17 already decided
+  which purchased items a session offers (S2b closed by construction, no
+  extra code needed here). The correction and the per-line issue read the
+  exact same `stocktake_lines.counted_qty` values (S5) — one `SUM` for the
+  ingredient, the line's own value for the issue, never two independent
+  computations of the same figure.
+
+  Ingredient corrections are folded into the *existing* `ledger_count`/
+  `ledger_ids`/`rows`, tagged `item_type = 'BASE_INGREDIENT'`
+  (`item_reference` = the ingredient id) — D4 already removed real
+  `BASE_INGREDIENT` lines from every new session, so the tag was free to
+  reuse for this without touching `StocktakeItemType` or the row shape
+  `lib/stocktake-transaction.ts` already validates
+  (`ledgerCount + issueCount === rows.length`). A skipped ingredient (S2)
+  is **not** added to `rows` — it writes nothing, and that would have
+  broken the same invariant — it goes in a new, separate
+  `skipped_ingredients` field instead, parsed into `skippedIngredients` on
+  the TypeScript side.
+
+  **Verified against the real `Dâu sấy` example, not a fixture** — a real
+  stocktake session (`STK-003`), one line (`SPM-033`), counted `1000`,
+  `apply_stocktake_session_atomic` called with `p_dry_run = true`, then the
+  session cancelled: `issueCount 1`, `ledgerCount 1`, `SPM-033` issue
+  variance **-3.100**, `ING-028` ingredient-correction variance **-3.100**,
+  projected quantity **1.000** — implied cost `3.100 × 596 =`
+  **1.847.600đ**. All three of the plan's own target figures reproduced
+  exactly. Confirmed after, independently: the cancelled session left no
+  trace — `ING-028` still exactly `4.100 g`, `stock_ledger` still 138 rows,
+  `stock_issues` still 0 rows.
+
+  6 new/updated tests: 2 in `lib/stocktake-transaction.test.ts`
+  (`skippedIngredients` parses separately from `rows`; an ingredient-
+  correction row parses like any other row and the count invariant still
+  holds with one issue + one ingredient correction present).
+
+  **Deliberately out of scope for this migration, not silently rolled in:**
+  `stock_issues.base_quantity`'s `check (base_quantity > 0)` and
+  `save_stocktake_line_atomic`'s unconditional refusal of
+  `counted_qty > theoretical` — both still block `BR-INV-008`
+  ("hàng tìm lại được") end to end. K6 (`lib/issue-costing.ts`) proved the
+  *engine* is ready; wiring it into this RPC and the constraint is separate
+  work, not requested as part of D5.
 - **D6** Convert the count screen to purchase units (Gap 5), display only —
   storage stays exact base units.
 - **D7** Build the issue slip screen (Gap 2), covering I1–I9.

@@ -31,6 +31,11 @@ export type StocktakeApplyRow = {
   projectedQty: number;
 };
 
+export type StocktakeSkippedIngredient = {
+  ingredientId: string;
+  reason: string;
+};
+
 export type StocktakeApplyResult = {
   sessionId: string;
   status: "OPEN" | "CONFIRMED";
@@ -38,6 +43,13 @@ export type StocktakeApplyResult = {
   ledgerCount: number;
   issueCount: number;
   rows: StocktakeApplyRow[];
+  // Plan D D5 / S2: an ingredient with at least one counted purchased-item
+  // line this session, but not every one of them counted -- a partial sum
+  // is not a count, so its quantity is left untouched. Not part of `rows`:
+  // a skipped ingredient writes nothing, and rows' contract is one entry
+  // per row this apply actually writes (ledgerCount + issueCount ===
+  // rows.length, enforced below).
+  skippedIngredients: StocktakeSkippedIngredient[];
   planHash: string;
   ledgerIds: string[];
   issueIds: string[];
@@ -131,6 +143,7 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     }>;
     ledger_ids?: string[];
     issue_ids?: string[];
+    skipped_ingredients?: Array<{ ingredient_id?: string; reason?: string }>;
     plan_hash?: string;
   } | null;
   if (!result?.session_id || (result.status !== "OPEN" && result.status !== "CONFIRMED")) {
@@ -162,6 +175,11 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     throw new Error("apply_stocktake_session_atomic returned issue IDs mismatch");
   }
 
+  const skippedIngredients = (result.skipped_ingredients || []).map(s => ({
+    ingredientId: s.ingredient_id || "",
+    reason: s.reason || "",
+  }));
+
   return {
     sessionId: result.session_id,
     status: result.status,
@@ -169,6 +187,7 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     ledgerCount,
     issueCount,
     rows,
+    skippedIngredients,
     planHash: result.plan_hash,
     ledgerIds: result.ledger_ids || [],
     issueIds: result.issue_ids || [],

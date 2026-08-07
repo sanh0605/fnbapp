@@ -103,4 +103,88 @@ describe("stocktake atomic adapters", () => {
       p_expected_plan_hash: null,
     });
   });
+
+  // Plan D D5 (S2): an ingredient with a partial count is reported
+  // separately from rows, since it writes nothing -- rows' own contract
+  // (ledgerCount + issueCount === rows.length) would break if a skipped
+  // ingredient were folded in there instead.
+  it("parses skippedIngredients separately from rows, and defaults to empty when absent", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        session_id: "STK-001",
+        status: "OPEN",
+        dry_run: true,
+        ledger_count: 0,
+        issue_count: 0,
+        rows: [],
+        ledger_ids: [],
+        issue_ids: [],
+        skipped_ingredients: [{ ingredient_id: "ING-003", reason: "not_every_purchased_item_counted" }],
+        plan_hash: "skip-hash",
+      },
+      error: null,
+    });
+
+    const result = await stocktakeTransaction.applyStocktakeSessionAtomic({
+      sessionId: "STK-001",
+      confirmedById: "admin-1",
+      confirmedByName: "Admin",
+      dryRun: true,
+    });
+
+    expect(result.skippedIngredients).toEqual([
+      { ingredientId: "ING-003", reason: "not_every_purchased_item_counted" },
+    ]);
+  });
+
+  it("parses an ingredient-correction row (item_type BASE_INGREDIENT, from an aggregated purchased-item count) like any other row", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        session_id: "STK-001",
+        status: "OPEN",
+        dry_run: true,
+        ledger_count: 1,
+        issue_count: 1,
+        rows: [
+          {
+            line_id: "SKL-00001",
+            item_reference: "SPM-033",
+            item_type: "PURCHASED_ITEM",
+            counted_qty: 1000,
+            theoretical_at_count: 4100,
+            current_theoretical_qty: 4100,
+            count_variance: -3100,
+            projected_qty: 1000,
+          },
+          {
+            line_id: null,
+            item_reference: "ING-028",
+            item_type: "BASE_INGREDIENT",
+            counted_qty: 1000,
+            theoretical_at_count: 4100,
+            current_theoretical_qty: 4100,
+            count_variance: -3100,
+            projected_qty: 1000,
+          },
+        ],
+        ledger_ids: ["STK-004"],
+        issue_ids: ["ISS-00001"],
+        skipped_ingredients: [],
+        plan_hash: "dau-say-hash",
+      },
+      error: null,
+    });
+
+    const result = await stocktakeTransaction.applyStocktakeSessionAtomic({
+      sessionId: "STK-001",
+      confirmedById: "admin-1",
+      confirmedByName: "Admin",
+      dryRun: true,
+    });
+
+    expect(result.ledgerCount + result.issueCount).toBe(result.rows.length);
+    const ingredientRow = result.rows.find(r => r.itemType === "BASE_INGREDIENT" && r.itemReference === "ING-028");
+    expect(ingredientRow?.countVariance).toBe(-3100);
+    expect(ingredientRow?.projectedQty).toBe(1000);
+  });
 });
