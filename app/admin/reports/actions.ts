@@ -15,7 +15,7 @@ import {
 } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/report-time";
 import { displayMoney } from "@/lib/display-rounding";
-import { computeIssueCosting, type Purchase, type Issue } from "@/lib/issue-costing";
+import { computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/issue-costing";
 import { requireAdmin } from "@/lib/auth";
 
 export interface PnLReportFilters {
@@ -101,46 +101,6 @@ function buildIssueCostingIssues(stockIssues: any[]): Issue[] {
     base_quantity: Number(row.base_quantity) || 0,
     source: row.source,
   }));
-}
-
-// computeIssueCosting returns a cumulative total per item, not a value per
-// issue event -- an issue's cost depends on the weighted average at the
-// moment it happened, which depends on every event before it, so there is
-// no way to price one month's issues without replaying everything that
-// preceded them. A period's figure is therefore two full replays and a
-// subtraction: everything issued up to the period's end, minus everything
-// issued before the period started.
-//
-// Both replays are given the SAME complete purchase set. The subtraction is
-// only valid because the two replays share an identical prefix; narrowing
-// the purchase set for either one would silently invalidate it while still
-// returning a plausible-looking number. Passing every completed purchase
-// regardless of period is safe: the replay is chronological, so a purchase
-// dated after the last issue in a run cannot change any issue's value, it
-// only lands in that run's (discarded) closing_value.
-export function computePeriodIssuedValue(
-  purchases: Purchase[],
-  allIssues: Issue[],
-  startUtc: Date | null,
-  endUtc: Date | null,
-): number {
-  const issuesThroughEnd = endUtc
-    ? allIssues.filter(i => new Date(i.at).getTime() <= endUtc.getTime())
-    : allIssues;
-  const throughEnd = computeIssueCosting(purchases, issuesThroughEnd);
-
-  if (!startUtc) {
-    return throughEnd.reduce((sum, item) => sum + item.issued_value, 0);
-  }
-
-  const issuesBeforeStart = allIssues.filter(i => new Date(i.at).getTime() < startUtc.getTime());
-  const beforeStart = computeIssueCosting(purchases, issuesBeforeStart);
-  const beforeValueByItem = new Map(beforeStart.map(item => [item.purchased_item_id, item.issued_value]));
-
-  return throughEnd.reduce(
-    (sum, item) => sum + (item.issued_value - (beforeValueByItem.get(item.purchased_item_id) || 0)),
-    0,
-  );
 }
 
 // No page renders this anymore -- app/admin/reports/pnl/page.tsx was deleted
@@ -233,8 +193,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
 
     // 3. Total COGS = sum of issued_value over the period's issues (Plan C
     // Task 2). Sales no longer determine cost -- purchases and recorded
-    // stock_issues do. See computePeriodIssuedValue below for why this is
-    // two full replays and a subtraction, not a single pass.
+    // stock_issues do. See computePeriodIssuedValue in lib/issue-costing.ts
+    // for why this is two full replays and a subtraction, not a single pass.
     const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
     const allIssues = buildIssueCostingIssues(stockIssues as any[]);
     const totalCOGS = computePeriodIssuedValue(

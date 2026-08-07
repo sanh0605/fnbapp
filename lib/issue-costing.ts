@@ -94,3 +94,43 @@ export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): Ite
 
   return results;
 }
+
+// computeIssueCosting returns a cumulative total per item, not a value per
+// issue event -- an issue's cost depends on the weighted average at the
+// moment it happened, which depends on every event before it, so there is
+// no way to price one month's issues without replaying everything that
+// preceded them. A period's figure is therefore two full replays and a
+// subtraction: everything issued up to the period's end, minus everything
+// issued before the period started.
+//
+// Both replays are given the SAME complete purchase set. The subtraction is
+// only valid because the two replays share an identical prefix; narrowing
+// the purchase set for either one would silently invalidate it while still
+// returning a plausible-looking number. Passing every completed purchase
+// regardless of period is safe: the replay is chronological, so a purchase
+// dated after the last issue in a run cannot change any issue's value, it
+// only lands in that run's (discarded) closing_value.
+export function computePeriodIssuedValue(
+  purchases: Purchase[],
+  allIssues: Issue[],
+  startUtc: Date | null,
+  endUtc: Date | null,
+): number {
+  const issuesThroughEnd = endUtc
+    ? allIssues.filter(i => new Date(i.at).getTime() <= endUtc.getTime())
+    : allIssues;
+  const throughEnd = computeIssueCosting(purchases, issuesThroughEnd);
+
+  if (!startUtc) {
+    return throughEnd.reduce((sum, item) => sum + item.issued_value, 0);
+  }
+
+  const issuesBeforeStart = allIssues.filter(i => new Date(i.at).getTime() < startUtc.getTime());
+  const beforeStart = computeIssueCosting(purchases, issuesBeforeStart);
+  const beforeValueByItem = new Map(beforeStart.map(item => [item.purchased_item_id, item.issued_value]));
+
+  return throughEnd.reduce(
+    (sum, item) => sum + (item.issued_value - (beforeValueByItem.get(item.purchased_item_id) || 0)),
+    0,
+  );
+}
