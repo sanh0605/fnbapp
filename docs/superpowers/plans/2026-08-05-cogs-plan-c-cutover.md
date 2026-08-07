@@ -873,14 +873,35 @@ it. A one-time 2026-07-09 migration RPC, already run, not wired to anything.
 - [x] **Step 2: Write the script, dry-run by default**
 
 `scripts/reset-cost-at-sale.ts`. Dry run prints: rows affected, current
-total, total after (0), the delta against the Task 1 baseline, and current
-June/July revenue via `getPnLDataV2` for later comparison. `--apply` prints
-the first 10 targets before writing, batches the update at 100 ids per
-request (PostgREST `.in()` filter goes in the URL — a few thousand chars is
-safe, a few hundred ids' worth is not, at ~40 chars per `ol-<uuid>` id),
-then re-reads: the targeted id set for any still-nonzero row, a fresh full
-requery of the same scope for any nonzero row outside the targeted set (a
-sale landing mid-run would surface here), and June/July revenue again.
+total, total after (0), **the first 10 target rows (order id, line id, the
+exact value being reset) — printed in both modes**, the delta against the
+known baseline, and current June/July revenue via `getPnLDataV2` for later
+comparison. `--apply` batches the update at 100 ids per request (PostgREST
+`.in()` filter goes in the URL — a few thousand chars is safe, a few
+hundred ids' worth is not, at ~40 chars per `ol-<uuid>` id), then re-reads:
+the targeted id set for any still-nonzero row, a fresh full requery of the
+same scope for any nonzero row outside the targeted set (a sale landing
+mid-run would surface here), and June/July revenue again.
+
+**Two corrections found on re-read 2026-08-08, before asking for `--apply`
+approval:**
+
+1. The sample-row printout sat *after* the dry-run return, so it never
+   actually printed in dry-run mode — only under `--apply`, once the write
+   had already happened and it was too late to look. `CLAUDE.md` section 2
+   requires the exact objects, not only the count, before a production
+   write. Moved above the dry-run branch so both modes print it.
+2. The four post-write checks (write-count shortfall, targeted rows still
+   nonzero, whole-table rows still nonzero, revenue moved) only
+   `console.log`ged a `MISMATCH` line and kept running to a clean exit —
+   a check that cannot fail the run is not a check, the same failure shape
+   this whole plan has been hunting. Now collected into a `failures[]`
+   array; any non-empty failure list prints `TASK 4 FAILED VERIFICATION --
+   do not treat as done` and sets `process.exitCode = 1`. Deliberately not
+   thrown mid-way: throwing after the write has already happened would
+   skip the remaining checks and hide part of the picture, so every check
+   still runs regardless of earlier failures, and only the exit code at
+   the end reflects whether any of them failed.
 
 **Scope narrowed to COMPLETED-only during first review, then corrected back
 to every row by the owner 2026-08-08.** First pass scoped this to COMPLETED
@@ -944,6 +965,13 @@ retired one:** actual **2.590 dòng, 25.588.859,619575đ — exact match, 0
 lệch.** No sale landed between the owner's independent measurement and this
 run. June/July revenue read via `getPnLDataV2` before any write:
 22.157.000đ / 18.661.000đ — unchanged.
+
+**Re-run again 2026-08-08 after the two fixes above (sample printout moved,
+checks made failure-capable)** — numbers are proof of nothing once the code
+has changed, so this was not skipped as "already proven": same **2.590
+dòng, 25.588.859,619575đ**, exact match, exit code 0 in dry-run mode. Ten
+sample rows (order id, line id, exact value) now printed in this dry run
+itself, not only under `--apply`.
 
 - [ ] **Step 4: Owner approves, then `--apply`**
 

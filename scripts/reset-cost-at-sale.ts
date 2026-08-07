@@ -50,6 +50,14 @@ async function main(): Promise<void> {
   console.log(`Current total cost_at_sale: ${formatNumber(currentTotal)}d (exact: ${currentTotal})`);
   console.log("Total after reset: 0d");
 
+  // Printed in both modes -- CLAUDE.md section 2 requires the exact objects,
+  // not just the count, before a production write, and a dry run is the
+  // owner's only chance to look before approving --apply.
+  console.log(`\nFirst ${Math.min(10, targets.length)} targets:`);
+  for (const l of targets.slice(0, 10)) {
+    console.log(`  order ${l.order_id} line ${l.id}: cost_at_sale ${l.cost_at_sale} -> 0`);
+  }
+
   const deltaLines = lineCount - KNOWN_BASELINE_LINES;
   const deltaTotal = currentTotal - KNOWN_BASELINE_TOTAL;
   console.log(
@@ -72,11 +80,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.log(`\nFirst ${Math.min(10, targets.length)} targets:`);
-  for (const l of targets.slice(0, 10)) {
-    console.log(`  order ${l.order_id} line ${l.id}: cost_at_sale ${l.cost_at_sale} -> 0`);
-  }
-
+  const failures: string[] = [];
   const supabase = getSupabaseClient();
   const ids: string[] = targets.map(l => l.id);
   const BATCH_SIZE = 100;
@@ -93,7 +97,7 @@ async function main(): Promise<void> {
   }
   console.log(`\nUpdated ${updated} rows (expected ${ids.length}).`);
   if (updated !== ids.length) {
-    console.log("MISMATCH -- fewer rows updated than targeted. Investigate before trusting the reset.");
+    failures.push(`Write shortfall: updated ${updated} rows, expected ${ids.length}.`);
   }
 
   console.log("\nRe-reading end state...");
@@ -104,6 +108,9 @@ async function main(): Promise<void> {
     .gt("cost_at_sale", 0);
   if (verifyTargetsError) throw new Error(`Verify (targeted set) failed: ${verifyTargetsError.message}`);
   console.log(`  Targeted rows still nonzero: ${stillNonzeroInTargetSet ?? "?"} (expected 0)`);
+  if ((stillNonzeroInTargetSet ?? 0) !== 0) {
+    failures.push(`${stillNonzeroInTargetSet} targeted rows are still nonzero after the write.`);
+  }
 
   // Whole-table re-query, not scoped to any order status -- the check must
   // cover exactly what was written, or a narrower check can report success
@@ -114,6 +121,9 @@ async function main(): Promise<void> {
     `  Full re-query (whole order_lines_v2, cost_at_sale > 0): ${remainingNonzero.length} rows ` +
       "(expected 0; a nonzero count here that was not in the targeted set means a sale landed mid-run).",
   );
+  if (remainingNonzero.length !== 0) {
+    failures.push(`${remainingNonzero.length} rows in the whole table are still nonzero after the write.`);
+  }
 
   console.log("\nStep 5: re-reading June/July PnL to confirm revenue unchanged.");
   const juneAfter = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
@@ -121,9 +131,20 @@ async function main(): Promise<void> {
   console.log(`  June revenue: ${formatNumber(juneAfter.totalRevenue)}d (before: ${formatNumber(juneBefore.totalRevenue)}d)`);
   console.log(`  July revenue: ${formatNumber(julyAfter.totalRevenue)}d (before: ${formatNumber(julyBefore.totalRevenue)}d)`);
   if (juneAfter.totalRevenue !== juneBefore.totalRevenue || julyAfter.totalRevenue !== julyBefore.totalRevenue) {
-    console.log("MISMATCH -- revenue moved during this run. Investigate before treating Task 4 as done.");
+    failures.push(
+      `Revenue moved during this run: June ${juneBefore.totalRevenue} -> ${juneAfter.totalRevenue}, ` +
+        `July ${julyBefore.totalRevenue} -> ${julyAfter.totalRevenue}.`,
+    );
   } else {
     console.log("  Revenue unchanged, to the dong, both months.");
+  }
+
+  if (failures.length > 0) {
+    console.log(`\nTASK 4 FAILED VERIFICATION -- do not treat as done. ${failures.length} check(s) failed:`);
+    for (const f of failures) console.log(`  - ${f}`);
+    process.exitCode = 1;
+  } else {
+    console.log("\nAll post-write checks passed.");
   }
 }
 
