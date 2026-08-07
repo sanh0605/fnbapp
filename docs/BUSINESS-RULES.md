@@ -260,6 +260,38 @@ Business roles and intended permissions are documented in [`ACCESS-MODEL.md`](AC
 
 Credentials, service keys, backup tokens, and password hashes must not be serialized to the browser or recorded in documentation/logs. SEC-1 tracks the known admin user-payload gap.
 
+### BR-INV-007 — Count sealed packages only; cost is recognised when a package is opened
+
+**Status:** `APPROVED` — owner decision 2026-08-07. **Not yet implemented** — Plan D (`docs/superpowers/plans/2026-08-07-stocktake-and-issue-slips.md`) builds it. Recorded here on decision, per `CLAUDE.md` section 6, not on delivery.
+
+A stocktake counts only packages that are still sealed. An opened package is not counted and not estimated. The owner's own example: the 100 g bag of `Dâu sấy` is finished, the 500 g bag is open and in use, the 1 kg bag is sealed — only the 1 kg line gets a number.
+
+**This is an accounting policy, not a data-entry convenience.** Cost is recognised at the moment a package is opened rather than as its contents are consumed. Consequences, all intended:
+
+- The stock figure means **sealed stock**, and understates what is physically present by whatever sits in open packages.
+- Cost runs ahead of true consumption by at most one open package per item.
+- The error is **bounded and does not accumulate**: each package is expensed exactly once, at the first count where it is no longer sealed.
+
+**Why this beats a more precise rule.** It removes all weighing and estimating. A rule the owner can follow at the shelf is worth more than a more accurate one he cannot.
+
+**Counting is by package, not by unit name.** Measured 2026-08-07: 48 purchased items have one purchase unit, 3 have two, 1 has three — and two items carry the dangerous shape where the same unit name means different sizes. `Dâu sấy` has three `ACTIVE` conversions all named **Túi** (100 g, 500 g, 1.000 g), all used in real purchases, so "how many Túi?" has three answers differing by ten times. Each package size is therefore its own count line, labelled with the size derived from `conversion_rate` — no master data is renamed.
+
+**Worked example, real figures.** `Dâu sấy` (`ING-028`): 4.100 g bought for 2.443.600đ, a weighted average of exactly **596 đ/g**. Counting one sealed 1 kg bag gives 1.000 g on hand, an issue of **3.100 g** costing **1.847.600đ**, and remaining stock worth **596.000đ** — which reconciles against the 2.443.600đ paid.
+
+### BR-INV-008 — Counting more than expected is recorded as goods found, not refused
+
+**Status:** `APPROVED` — owner decision 2026-08-07. **Not yet implemented** — Plan D §7.
+
+When a count exceeds the theoretical quantity but stays within everything ever purchased, the system accepts it and records **hàng tìm lại được**: the quantity returns to stock at the weighted average it left at, which leaves the average unchanged and closes the discrepancy permanently.
+
+**What the case really is.** Under `BR-INV-007` the usual cause is a sealed package missed at an earlier count, expensed then, and found now. Goods thought consumed have reappeared. Concretely: a 1 kg bag of `Dâu sấy` worth 596.000đ.
+
+**Why the first proposal was withdrawn.** It was to correct the ingredient quantity and record no issue at all. Sonnet's challenge showed that a purchased item's theoretical quantity is recomputed every time as `purchase_order_lines − stock_issues` and never reads `stock_ledger`, so correcting the ingredient closes nothing: the same discrepancy would reappear **at every future count, for ever**. It had been described to the owner as a one-off note; it would have been a prompt that never stopped. The costing stayed correct throughout — no event reached the replay — but the description was wrong, and the owner was told so before deciding.
+
+**Implementation consequence to face rather than defend.** `stock_issues.base_quantity` carries `check (base_quantity > 0)` (`0052_stock_issues.sql`). This rule requires that to accept a negative value. The earlier position — "a negative issue is a different event wearing the wrong name" — reads well but leaves the loop open, and was set aside for that reason.
+
+**Open edge, to settle during implementation:** a found event when the on-hand quantity is zero has no average to draw on. Deriving one from purchases to date is the proposed answer; it is not yet decided.
+
 ## Unresolved items
 
 | ID | Status | Decision needed | Current safe statement |
