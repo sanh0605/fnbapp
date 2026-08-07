@@ -1151,16 +1151,48 @@ Counts measured 2026-08-02 — **re-measure before deleting**, they have moved:
 `stock_ledger` is left holding the `PO_RECEIPT` rows — what was actually
 purchased. That is the literal form of *nhập gì xuất đó*.
 
-- [ ] **Step 1: List the triggers on both tables and state what each does**
+- [x] **Step 1: List the triggers on both tables and state what each does**
 
-`0038_materialize_inventory_balances.sql:64-68` fires on **delete** as well as
-insert, subtracting each removed row from `inventory_balances`. Deleting the
-derived rows therefore rewrites every balance — which is intended here, but it
-must be named before it happens, not discovered after.
+Ran directly against production, both tables, fresh (not reused from the
+earlier block that found this task's premise false):
 
-- [ ] **Step 2: Write the script, dry-run by default**
+```sql
+select tgname, pg_get_triggerdef(oid) from pg_trigger
+ where tgrelid = 'public.stock_ledger'::regclass and not tgisinternal;
+select tgname, pg_get_triggerdef(oid) from pg_trigger
+ where tgrelid = 'public.data_recovery_changes'::regclass and not tgisinternal;
+```
 
-- [ ] **Step 3: Dry run and check the arithmetic on one named ingredient**
+`stock_ledger`: **`trg_stock_ledger_inventory_balances`** only, `AFTER INSERT
+OR DELETE OR UPDATE OF item_reference, quantity_change`. Read the function
+body (`stock_ledger_apply_inventory_balance_delta`), not just the trigger
+definition: on `DELETE` it runs `inventory_balances.quantity += -old.
+quantity_change` for the deleted row's `item_reference`. This is the
+mechanism this task relies on, not a side effect to guard against — deleting
+a `SALES_CONSUME`/`PRODUCTION_CONSUME` row (negative `quantity_change`) adds
+its magnitude back to the balance; deleting a `PRODUCTION_YIELD` row
+(positive) subtracts it. It must stay installed through the entire run and
+this script does not touch it.
+
+`data_recovery_changes`: **`prune_data_recovery_changes_trigger`** only,
+`AFTER INSERT` (statement-level), deletes rows older than 30 days from the
+same table. It fires on `INSERT`, not `DELETE` — it does nothing during this
+task's run. Confirmed via `pg_get_functiondef`, not inferred from the name.
+
+- [x] **Step 2: Write the script, dry-run by default**
+
+`scripts/delete-derived-stock-rows.ts`. Reuses `batchIds` from
+`scripts/reset-cost-at-sale-core.ts` for `stock_ledger` (the `.in()`
+URL-length lesson from Task 4 applies here too — 10.670 ids, well past the
+threshold that broke at 2.590). `data_recovery_changes` needs no batching:
+it has no single `id` column (primary key is
+`run_id, table_name, row_id, column_name`), and since every row is being
+deleted, the delete is one unfiltered-by-id statement
+(`.not("run_id", "is", null)`) rather than an `.in()` list — the URL stays
+small regardless of row count. Both counts re-measured fresh, not reused
+from the 2026-08-02 table above.
+
+- [x] **Step 3: Dry run and check the arithmetic on one named ingredient**
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — đo trước đó:
@@ -1170,7 +1202,28 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — đo trước đó:
   Nếu tồn GIẢM -> script xoá nhầm dòng nhập hàng. DỪNG NGAY.
 ```
 
+**Re-measured 2026-08-07, not reused — the ledger moved since the example
+above was written.** `stock_ledger` now holds 10.808 rows total: 10.670 to
+delete (`EDIT_REVERSAL` 72, `PRODUCTION_CONSUME` 1.872, `PRODUCTION_YIELD`
+1.476, `SALES_CONSUME` 7.237, `STOCK_ADJUST` 13), 138 `PO_RECEIPT` kept.
+`data_recovery_changes`: 46.094 rows, all deleted.
+
+Actual, dry run: **Sữa tươi (NNL-001) 47.775,92 g → 134.000,00 g. Sữa đặc
+(ING-003) 37.038,00 g → 103.424,00 g.** Both computed as current balance
+minus the sum of `quantity_change` across this run's own targeted rows for
+that item (exactly what the trigger will do, row by row) — both land on an
+exact whole number, which is corroborating rather than assumed. Both rise,
+matching the STOP condition's direction. Revenue gate: all four gated
+months matched their known-good figures exactly; August (open) measured at
+3.628.000đ, not gated. `orders_v2` touch-trigger integrity check
+(`updated_at >= 2026-08-04 and created_at < 2026-08-04`): **0**, repeating
+the check from the unblocking note above as this task's own pre-write
+baseline.
+
 - [ ] **Step 4: Owner approves, then `--apply`**
+
+**Stopped here, as instructed.** Waiting for the owner's explicit approval,
+scoped to the exact commit about to be committed, before running `--apply`.
 
 - [ ] **Step 5: Confirm `stock_ledger` holds only `PO_RECEIPT`, and commit**
 
