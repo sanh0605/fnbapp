@@ -215,7 +215,7 @@ Each row is a test to write, not just a note.
 | C14 | A purchased item added while a session is open | Not added to the open session; appears in the next one |
 | C15 | Two sessions open at once | Already guarded by `open_stocktake_session_atomic`; keep the guard and test it |
 | C16 | Session opened, then abandoned | Must not alter any balance; re-opening starts clean |
-| C17 | **Purchased item** (not conversion) set `status <> 'ACTIVE'` while stock is still physically on the shelf | **Undecided — decide before D3.** If it drops out of the count list, S1 can never be satisfied for its ingredient again, so that ingredient's quantity freezes for ever and the leftover hides inside the ingredient total. Proposed: keep offering it while its computed on-hand is above zero, and stop only once a count brings it to zero. Verified 2026-08-07 that all 52 purchased items and all 57 conversions are `ACTIVE`, so nothing is wrong today — this is a landmine, not a bug, and the column can change at any time |
+| C17 | **Purchased item** (not conversion) set `status <> 'ACTIVE'` while stock is still physically on the shelf | **Settled 2026-08-07, before D3, by Sonnet's review.** Keep offering it while its computed on-hand is above zero, and stop only once a count brings it to zero — same shape as C8, applied one level up. Verified again independently: all 52 purchased items and all 57 conversions are `ACTIVE` today, so nothing is wrong right now — this is a landmine, not a bug, and the column can change at any time. Implemented in D4's session-building query, not D3's pure function (which only knows about conversions already handed to it) |
 
 #### C6 in full — the one place where "blank means zero" can cost real money
 
@@ -246,16 +246,16 @@ per purchased item (C6), while the quantity correction happens per ingredient
 (S1), which for condensed milk means all **three** purchased items must be
 confirmed before `Sữa đặc` moves at all.
 
-**Two behaviours to settle before D3, both currently unstated:**
+**Two behaviours, settled 2026-08-07 before D3 by Sonnet's review — both were unstated, neither found to have a flaw:**
 
-- **Editing a line after its item was confirmed.** Proposed: the edit clears the
+- **Editing a line after its item was confirmed.** The edit clears the
   confirmation and he re-confirms. A badge reading "counted" over a figure that
   changed underneath it is the kind of quiet disagreement this plan exists to
   remove.
-- **Closing a session with items still unconfirmed.** Proposed: allow it. The
+- **Closing a session with items still unconfirmed.** Allowed. The
   behaviour is already exactly S2 — unconfirmed is the same as partly counted, so
-  those ingredients are left alone. But say so in the plan rather than leaving a
-  reader to derive it, and show the list at close so the choice is deliberate.
+  those ingredients are left alone. Said so here rather than leaving a
+  reader to derive it, and the screen shows the list at close so the choice is deliberate.
 
 This is a design decision, not an owner decision — it delivers the rule he gave
 while removing the one way that rule could invent cost out of a forgotten shelf.
@@ -426,11 +426,43 @@ khi hoàn tất rồi mới bắt đầu code."*
 
 - **D1** Resolve `NNL-004` (Gap 4). Mark inactive, never delete. Confirm no
   recipe, purchase, or ledger row references it first.
+
+  **Dry run done 2026-08-07** (`scripts/deactivate-nnl-004.ts`): 0 recipe
+  references (scanned all 139, `ingredients_json` is jsonb so filtered in
+  JS rather than trusting an `ilike` that silently mismatches the column
+  type), 0 purchased items, 0 `stock_ledger` rows, no `inventory_balances`
+  row. Clean. Stopped for owner `--apply` approval, as every data write in
+  this plan does.
+
+  **Found on the way, unrelated to this task, reported rather than
+  fixed:** `deleteBaseIngredientAction`
+  (`app/admin/inventory/base-ingredients/actions.ts`, wired to a live
+  button in `BaseIngredientsClient.tsx`) issues a real `DELETE` on
+  `base_ingredients` via `lib/sheets_db.ts`'s `remove()` — a standing
+  violation of `CLAUDE.md` section 2's never-delete rule, live today,
+  unrelated to Plan D. Not touched here; D1's own script does not use it.
 - **D2** Decide C10 with the owner (§7), and write it into
   `docs/BUSINESS-RULES.md` before any code depends on it.
+
+  **Done as `BR-INV-007`/`BR-INV-008`** (`7b1446f`), except one edge:
+  valuing a "found" event when the purchased item's on-hand is currently
+  zero (no `V/Q` to draw on). Owner routed this to Opus rather than
+  choosing an option now — pending, does not block D1/D3.
 - **D3** Build the package-line model (§4): one line per active conversion, size
   label derived from `conversion_rate`. Pure function, unit-tested against
   `Dâu sấy` and `Kem whipping Anchor` before any screen uses it.
+
+  **Done 2026-08-07** — `lib/stocktake-package-lines.ts` (`buildPackageLines`),
+  6 tests in `lib/stocktake-package-lines.test.ts` against both items' real
+  conversion shapes (measured live, not invented): `Dâu sấy` → `["Túi 100 g",
+  "Túi 500 g", "Túi 1.000 g"]`, `Kem whipping Anchor` → `["Hộp 250 ml",
+  "Hộp 1.000 ml"]`, plus the single-conversion common case, C8 (inactive
+  conversion dropped), multi-item grouping, and the empty-input case.
+  Size label is always base-unit + thousand-separator (no auto-scaling to
+  kg/l) — §4's own mockup used the scaled form for one item and not the
+  other, so it was never an actual rule, and the schema defines no scaling
+  table to implement it against. C17 and both C6 behaviours settled per
+  their own rows above; the pure function itself only needed C8's filter.
 - **D4** Drop `BASE_INGREDIENT` lines from new sessions (Gap 1). Existing open
   sessions keep theirs (C8/C16).
 - **D5** Make the purchased-item branch also correct the ingredient quantity
