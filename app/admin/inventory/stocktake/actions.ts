@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllWhere } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, findAllWhere } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
@@ -62,6 +62,53 @@ async function loadItemNameMaps() {
   };
 }
 
+// Plan D C17: an inactive purchased item stays offered for counting while
+// its computed on-hand (purchased minus issued so far, the same formula
+// apply_stocktake_session_atomic itself uses at
+// 0053_stocktake_purchased_items.sql:244-256) is still above zero. Dropping
+// it the moment it goes inactive would freeze its ingredient's quantity
+// forever -- S1 can never be satisfied again -- and the leftover would hide
+// inside the ingredient total with no way to correct it. Only queries
+// purchases/issues when an inactive item actually exists; today (2026-08-07)
+// all 52 purchased items are ACTIVE, so this is a landmine guard, not a live
+// path.
+async function filterByC17(purchasedItems: any[]): Promise<any[]> {
+  const active = purchasedItems.filter(p => p.status === "ACTIVE");
+  const inactive = purchasedItems.filter(p => p.status !== "ACTIVE");
+  if (inactive.length === 0) return active;
+
+  const [purchaseLines, purchaseOrders, issues] = await Promise.all([
+    findAllNoCache("Purchase_Order_Lines"),
+    findAllNoCache("Purchase_Orders"),
+    findAllNoCache("Stock_Issues"),
+  ]);
+  const completedOrderIds = new Set(
+    (purchaseOrders as any[]).filter(o => o.status === "COMPLETED").map(o => o.id),
+  );
+  const purchasedById = new Map<string, number>();
+  for (const line of purchaseLines as any[]) {
+    if (!completedOrderIds.has(line.purchase_order_id)) continue;
+    purchasedById.set(
+      line.purchased_item_id,
+      (purchasedById.get(line.purchased_item_id) ?? 0) + Number(line.base_quantity),
+    );
+  }
+  const issuedById = new Map<string, number>();
+  for (const issue of issues as any[]) {
+    issuedById.set(
+      issue.purchased_item_id,
+      (issuedById.get(issue.purchased_item_id) ?? 0) + Number(issue.base_quantity),
+    );
+  }
+
+  const stillOnHand = inactive.filter(p => {
+    const onHand = (purchasedById.get(p.id) ?? 0) - (issuedById.get(p.id) ?? 0);
+    return onHand > 0;
+  });
+
+  return [...active, ...stillOnHand];
+}
+
 export async function getStocktakeSessionData(): Promise<StocktakeSessionView | null> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
@@ -107,18 +154,20 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
         .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
         .map(b => b.id as string),
     );
-    // Semi-products carry no stock and no value (BR-INV-006, owner decision
-    // 2026-08-05) -- SEMI_PRODUCT stays a legal item_type at the database
-    // level (Plan B migration 0052), touching that constraint is unrelated
-    // risk, but the count list must not offer them.
-    const items = [
-      ...baseIngredients
-        .filter(b => b.is_non_inventory !== true && b.is_non_inventory !== "TRUE")
-        .map(b => ({ itemReference: b.id as string, itemType: "BASE_INGREDIENT" as StocktakeItemType })),
-      ...purchasedItems
-        .filter(p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id))
-        .map(p => ({ itemReference: p.id as string, itemType: "PURCHASED_ITEM" as StocktakeItemType })),
-    ];
+    // Plan D Gap 1: a new session no longer offers BASE_INGREDIENT lines at
+    // all. Counting by generic ingredient and counting by purchased item fed
+    // different systems (stock_ledger vs stock_issues) with nothing on
+    // screen telling them apart -- the owner chose purchased item (Plan D
+    // section 3, decision 1). Semi-products carry no stock and no value
+    // (BR-INV-006) and were never offered here.
+    const eligiblePurchasedItems = purchasedItems.filter(
+      p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id),
+    );
+    const includedPurchasedItems = await filterByC17(eligiblePurchasedItems);
+    const items = includedPurchasedItems.map(p => ({
+      itemReference: p.id as string,
+      itemType: "PURCHASED_ITEM" as StocktakeItemType,
+    }));
     if (items.length === 0) return fail("Không có mặt hàng nào để kiểm kê");
 
     await openStocktakeSessionAtomic({

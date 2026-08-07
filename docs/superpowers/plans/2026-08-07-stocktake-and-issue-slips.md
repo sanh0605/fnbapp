@@ -466,6 +466,21 @@ khi hoàn tất rồi mới bắt đầu code."*
   their own rows above; the pure function itself only needed C8's filter.
 - **D4** Drop `BASE_INGREDIENT` lines from new sessions (Gap 1). Existing open
   sessions keep theirs (C8/C16).
+
+  **Done 2026-08-07** (`app/admin/inventory/stocktake/actions.ts`,
+  `startStocktakeSession`). `BASE_INGREDIENT` lines removed from the items
+  array entirely; new sessions offer `PURCHASED_ITEM` lines only.
+  `getStocktakeSessionData` untouched, so an already-open session still
+  displays whatever lines it was created with, satisfying C8/C16 by
+  construction rather than a special case. C17 implemented alongside: a new
+  `filterByC17` helper only queries purchases/issues when an inactive
+  purchased item actually exists (today: never, verified again), keeping an
+  inactive item's line while its computed on-hand (purchased minus issued,
+  same formula as `apply_stocktake_session_atomic`) is still positive.
+  Updated the one existing test that asserted the now-retired
+  `BASE_INGREDIENT`-included shape, with the reason stated in its own
+  comment rather than deleted quietly; added 2 tests for C17 (kept while
+  on-hand > 0, dropped once it reaches 0).
 - **D5** Make the purchased-item branch also correct the ingredient quantity
   (Gap 3), obeying S1–S5. Migration; list the triggers on `stock_ledger` first.
 - **D6** Convert the count screen to purchase units (Gap 5), display only —
