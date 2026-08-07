@@ -58,6 +58,10 @@ export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): Ite
 
     let quantity = 0;
     let value = 0;
+    // BR-INV-008 ("hàng tìm lại được"): the rate the last unit left at,
+    // remembered separately from value/quantity because that ratio is 0/0
+    // (NaN) once the pool is empty. Only ever read when quantity is 0.
+    let lastUnitCost: number | null = null;
     let issuedQuantity = 0;
     let issuedValue = 0;
 
@@ -68,19 +72,47 @@ export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): Ite
         continue;
       }
 
-      if (quantity <= 0) {
-        throw new Error(`${purchasedItemId}: issue precedes any purchase`);
-      }
-      if (event.base_quantity > quantity) {
-        throw new Error(`${purchasedItemId}: issue exceeds quantity on hand`);
-      }
+      // Issue event. base_quantity > 0 is a real outflow. base_quantity < 0
+      // is BR-INV-008's "found stock" -- a count that came back higher than
+      // theoretical, stored as a negative stock_issues row so it replays
+      // through the same event stream rather than a parallel mechanism.
+      if (event.base_quantity > 0) {
+        if (quantity <= 0) {
+          throw new Error(`${purchasedItemId}: issue precedes any purchase`);
+        }
+        if (event.base_quantity > quantity) {
+          throw new Error(`${purchasedItemId}: issue exceeds quantity on hand`);
+        }
 
-      const unitCost = value / quantity;
-      const thisIssueValue = unitCost * event.base_quantity;
-      quantity -= event.base_quantity;
-      value -= thisIssueValue;
-      issuedQuantity += event.base_quantity;
-      issuedValue += thisIssueValue;
+        const unitCost = value / quantity;
+        lastUnitCost = unitCost;
+        const thisIssueValue = unitCost * event.base_quantity;
+        quantity -= event.base_quantity;
+        value -= thisIssueValue;
+        // Floating-point subtraction can leave a residue like 1e-10 instead
+        // of exactly 0 once the pool is truly empty -- clear it rather than
+        // let it accumulate through however many events follow. The rate is
+        // preserved separately in lastUnitCost, not lost by this reset.
+        if (quantity === 0) value = 0;
+        issuedQuantity += event.base_quantity;
+        issuedValue += thisIssueValue;
+      } else if (event.base_quantity < 0) {
+        // Found stock never happened without some purchase establishing a
+        // rate at some point in this item's history -- if quantity is 0 AND
+        // no rate was ever recorded, nothing to value it against.
+        if (quantity <= 0 && lastUnitCost === null) {
+          throw new Error(`${purchasedItemId}: found stock has no purchase to value it against`);
+        }
+        const foundQuantity = -event.base_quantity;
+        const foundUnitCost = quantity > 0 ? value / quantity : lastUnitCost!;
+        quantity += foundQuantity;
+        value += foundQuantity * foundUnitCost;
+        // A found event reverses a prior issue's effect on the period
+        // totals, not a new kind of outflow -- net issued_quantity/value is
+        // what a period's cost is built from (computePeriodIssuedValue).
+        issuedQuantity -= foundQuantity;
+        issuedValue -= foundQuantity * foundUnitCost;
+      }
     }
 
     results.push({
