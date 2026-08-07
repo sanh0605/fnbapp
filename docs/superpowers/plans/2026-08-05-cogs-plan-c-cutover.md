@@ -1389,6 +1389,20 @@ reopened by someone later.
   and May figures above.
 - Purchase orders, sales orders, and recipes byte-identical to their pre-plan
   state.
+
+  **Measured for sales orders 2026-08-07, through Task 4.** `orders_v2` carries
+  `trg_orders_v2_touch`, which bumps `updated_at` on every UPDATE, so the table
+  keeps its own record of being written to. Rows with `updated_at >= 2026-08-04`
+  (Plan C's start) and `created_at < 2026-08-04`: **0**. The 76 rows created
+  inside the window are genuine sales. April and May orders still carry
+  `updated_at` of 2026-06-28 16:31 — a batch from long before this plan — and
+  nothing since.
+
+  This is the check to repeat after Task 5 rather than reasoning about which
+  tables a script named. A trigger the table maintains for itself cannot be
+  talked out of what it recorded. Note the asymmetry: `order_lines_v2` has **no**
+  touch trigger, so the same evidence does not exist there — for lines, the gate
+  is the value itself.
 - `stock_ledger` holds `PO_RECEIPT` rows only.
 - **No rounded or derived money value is persisted anywhere on the new path.**
   Owner directive 2026-08-05, restating the 2026-07-30 rule for the path that
