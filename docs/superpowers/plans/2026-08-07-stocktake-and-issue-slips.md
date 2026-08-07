@@ -1,0 +1,344 @@
+# Plan D — Make counting and issuing work under the new costing
+
+**Written 2026-08-07 by Opus 5, after the Plan C cutover went live.**
+Owner review: the cutover replaced how cost is measured, but left the two
+screens that feed it half-built. The owner found this himself, in the plainest
+possible terms: *"Anh chưa thấy chỗ để tạo phiếu xuất và vẫn chưa thấy chỗ kiểm
+kê được làm đúng, hiện vẫn đang dùng code cũ."* He was right on both, and the
+audit found three more.
+
+---
+
+## 1. Why this plan exists
+
+Plan C moved cost measurement from "guess at sale time via the recipe" to
+"measure when goods leave stock". Goods now leave stock by exactly two routes:
+**a stocktake** and **a manual issue slip**. The first is half-converted. The
+second does not exist.
+
+Until this plan lands, `stock_issues` stays empty and every cost figure reads
+0đ — recorded in `CLAUDE.md` section 7 point 4 as a true state, not a fault.
+
+---
+
+## 2. The five gaps, each measured
+
+### Gap 1 — the count list offers every item twice
+
+`app/admin/inventory/stocktake/actions.ts:114-121` builds the session from
+**both** base ingredients **and** purchased items. Measured 2026-08-07: **39
+ingredient lines + 50 purchased-item lines = 89 lines**, where the shop has
+about 50 real things to count.
+
+Condensed milk alone appears four times: `Sữa đặc` (generic) plus `Sữa đặc
+Vinamilk`, `Sữa đặc Ngôi Sao Phương Nam`, `Sữa đặc La rosee`. Coffee powder the
+same.
+
+The two kinds are not cosmetic duplicates — **they feed different systems**
+(`0053_stocktake_purchased_items.sql:289-320`):
+
+| Line type | Writes | Produces cost? | Corrects stock quantity? |
+|---|---|---|---|
+| `PURCHASED_ITEM` | `stock_issues` only | **yes** | **no** |
+| `BASE_INGREDIENT` | `stock_ledger` only | no | yes |
+
+Nothing on screen tells them apart. The owner is being asked to pick, without
+being told he is picking.
+
+### Gap 2 — there is no issue slip screen at all
+
+Searched the whole of `app/`: no route, no directory, no action. `stock_issues`
+allows `source in ('STOCKTAKE','MANUAL')` (`0052_stock_issues.sql`) and **no
+TypeScript anywhere writes it** — the only writer is the stocktake RPC.
+
+Practical consequence: a can of milk thrown away, or stock used for something
+other than a sale, **cannot be recorded**. Between counts, that loss is
+invisible, and at the next count it silently becomes part of the counted
+variance with no explanation attached.
+
+### Gap 3 — counting by brand fixes cost but never fixes the stock number
+
+The blocking one. Quantity and cost live at different levels:
+
+- **Quantity**: ingredient level. All **138** surviving `PO_RECEIPT` rows and all
+  **39** `inventory_balances` rows are keyed on base ingredients (measured).
+- **Cost**: purchased-item level. `stock_issues.purchased_item_id`.
+
+And the purchased-item branch of `apply_stocktake_session_atomic` writes
+`stock_issues` **only, never `stock_ledger`** — stated in its own comment at line
+152 and confirmed in the body at 289-320.
+
+So under the owner's chosen scheme, counting `Sữa đặc Vinamilk` produces a
+correct cost and leaves `Sữa đặc`'s quantity at its inflated post-cutover value
+**for ever**. `Sữa tươi` would sit at 134.000 g no matter how carefully he
+counts.
+
+### Gap 4 — one duplicated ingredient
+
+Two `base_ingredients` share the name `Sữa yến mạch`:
+
+- `ING-033` — real, carries the purchased item `Sữa yến mạch Oatside` (SPM-038)
+- `NNL-004` — orphan: 0 purchased items, 0 ledger rows, 0 stock
+
+**The owner caught this.** The audit had reported "one ingredient with no
+purchased item" as a curiosity; he replied *"Sữa yến mạch đã có rồi mà nhỉ?"* and
+he was right — the ingredient exists and is bought, under a different id.
+Checked across the whole table: this is the **only** duplicated name, and the
+`NNL-`/`ING-` prefixes are not an abandoned migration (8 `NNL-` ingredients carry
+brands, 7 carry ledger rows). One orphan, not a pattern.
+
+### Gap 5 — the screen asks for base units, which invites arithmetic errors
+
+`StocktakeClient.tsx` renders every quantity in the ingredient's base unit
+(g, ml). The owner's instruction: *"Anh thì muốn xuất theo đơn vị mua vào cho
+chính xác."*
+
+The data agrees with him, decisively:
+
+| Purchased item | Bought as | Stored as |
+|---|---|---|
+| Sữa đặc Vinamilk | 1 **Hộp** | 1.284 g |
+| Sữa đặc Ngôi Sao Phương Nam | 1 **Hộp** | 380 g |
+| Sữa đặc La rosee | 1 **Lon** | 1.000 g |
+
+Two items both called "Hộp", one 3,4× the other. Asking for grams makes the
+owner hold those numbers in his head and multiply while counting. That error
+lands directly in cost.
+
+All 57 conversions exist and are `ACTIVE` — nothing to declare first.
+
+---
+
+## 3. Owner decisions carried by this plan
+
+1. **Count by purchased item, not by generic ingredient** (2026-08-07). *"Trên kệ
+   có 3 hộp Vinamilk và 2 hộp La rosee thì anh ghi riêng."*
+2. **Enter in purchase units, store exact base units** (2026-08-07), restating
+   the 2026-07-30 rule that rounding belongs to the screen and storage keeps
+   exact values.
+3. **Never delete master data** — `NNL-004` is marked inactive, not removed.
+
+---
+
+## 4. The unit problem, and the shape that solves all of it
+
+The owner asked the sharpest question of the session: *"Đối với sản phẩm có 2
+đơn vị khác nhau khi nhập thì sẽ xuất thế nào?"*
+
+It is not hypothetical. Measured: **48 purchased items have one purchase unit, 3
+have two, 1 has three.** Two distinct shapes:
+
+**Shape A — different unit names.** Safe, self-describing.
+- `Bột cà phê MR.PHIN Robusta Dak Mil`: **Túi** 500 g, **Combo 2** 1.000 g
+- `Đá viên`: **Túi** 5.000 g, **Bao** 20.000 g
+
+**Shape B — same unit name, different size.** The dangerous one.
+- `Dâu sấy`: **three** conversions all named **Túi** — 100 g, 500 g, 1.000 g, all
+  three used in real purchases
+- `Kem whipping Anchor`: **two** named **Hộp** — 250 ml and 1.000 ml, both used
+
+Asking "how many Túi of Dâu sấy?" has three answers that differ by **ten times**.
+
+**Purchases are not affected** — `purchase_order_lines.conversion_id` records
+exactly which conversion each line used, so history is unambiguous. The hole is
+only on the issue side, which is the side that does not exist yet.
+
+### The solution: count by package, not by unit name
+
+One line per **conversion**, labelled with the size derived from
+`conversion_rate` — no master-data rename required:
+
+```
+Dâu sấy — Túi 100 g              [   ]
+Dâu sấy — Túi 500 g              [   ]
+Dâu sấy — Túi 1.000 g            [   ]
+Kem whipping Anchor — Hộp 250 ml [   ]
+Kem whipping Anchor — Hộp 1 l    [   ]
+```
+
+The count list becomes **57 lines** (one per active conversion) rather than 52
+items or today's 89 — five lines longer than the item count, and **no line with
+two meanings**.
+
+---
+
+## 5. Every case this must handle
+
+The owner asked for completeness: *"bao gồm cả tất cả trường hợp có thể xảy ra."*
+Each row is a test to write, not just a note.
+
+### Counting
+
+| # | Case | Required behaviour |
+|---|---|---|
+| C1 | Item with one conversion (48 items) | One line, as today |
+| C2 | Two conversions, different unit names | Two lines, distinguished by name |
+| C3 | Two or three conversions, **same** unit name (`Dâu sấy`, `Kem whipping Anchor`) | One line each, distinguished by the size label |
+| C4 | Opened package, partly used | Decimal entry (`0,5` × 500 g = 250 g); do not force whole numbers |
+| C5 | Nothing left on the shelf | Entering **0** must be possible and must mean "counted, none left" — distinct from "not counted" |
+| C6 | Line left blank | "Not counted". Must **not** be read as zero, and must not correct that item's stock |
+| C7 | Conversion exists but was never purchased (`Đá viên`) | Line still shown; theoretical is 0; counting a positive number triggers C9 |
+| C8 | Conversion set `status <> 'ACTIVE'` | Excluded from new sessions; existing sessions keep their line so an open count is not silently altered |
+| C9 | Counted more than ever purchased | Refuse, name the sibling brands (`BR-INV-005`, already built) |
+| C10 | Counted more than theoretical but ≤ purchased | **No rule exists** (`docs/OPEN-ITEMS.md` item 32). Decide it in this plan — see §7 |
+| C11 | Semi-products | Never offered (`BR-INV-006`) |
+| C12 | `is_non_inventory` ingredients | Never offered, as today |
+| C13 | Ingredient with no purchased item (`NNL-004`) | Cannot be counted; resolved by marking it inactive, not by a special case |
+| C14 | A purchased item added while a session is open | Not added to the open session; appears in the next one |
+| C15 | Two sessions open at once | Already guarded by `open_stocktake_session_atomic`; keep the guard and test it |
+| C16 | Session opened, then abandoned | Must not alter any balance; re-opening starts clean |
+
+### Correcting the stock quantity (Gap 3)
+
+| # | Case | Required behaviour |
+|---|---|---|
+| S1 | Every conversion line of every purchased item of an ingredient was counted | Correct that ingredient's quantity to the summed base quantity |
+| S2 | **Only some** of an ingredient's lines were counted | **Do not touch that ingredient's quantity.** A partial sum is not a count. Report which ingredients were skipped and why |
+| S3 | Ingredient whose purchased items were all counted at 0 | Quantity goes to 0 — legitimate, not a special case |
+| S4 | Correction writes a ledger row | One `stock_ledger` row per corrected ingredient, so `trg_stock_ledger_inventory_balances` keeps `inventory_balances` right. This is the only new writer to that table |
+| S5 | Correction and issue must agree | For a counted item, `issue base_quantity` and the ingredient correction must derive from the **same** counted figure, computed once |
+
+### Issue slips
+
+| # | Case | Required behaviour |
+|---|---|---|
+| I1 | Spoilage / waste | `source = 'MANUAL'`, reason recorded in `note` |
+| I2 | Internal use (staff drinks, recipe testing) | Same path, different reason |
+| I3 | Entry unit | Same package-size shape as counting (§4) |
+| I4 | Issuing more than on hand | Refuse. `lib/issue-costing.ts` already throws `issue exceeds quantity on hand`; the screen must refuse **before** writing, with the shortfall named |
+| I5 | Issue dated before any purchase | Refuse — `lib/issue-costing.ts` throws `issue precedes any purchase` |
+| I6 | Back-dated issue slip | Allowed, but it changes past periods. Warn on screen and state which months move |
+| I7 | Mistaken slip | **Never delete.** Mark it reversed and write a compensating entry, so both remain visible |
+| I8 | Issue slip and stocktake on the same day | Ordering by timestamp must be deterministic; the replay in `lib/issue-costing.ts` sorts by `at`, so equal timestamps need a stable tiebreak |
+| I9 | Issue slip must also correct the ingredient quantity | Same rule as S1/S4 — an issue reduces both the issue book and the ingredient balance |
+
+### Costing
+
+| # | Case | Required behaviour |
+|---|---|---|
+| K1 | A purchase moves the running average; an issue does not | Already proven in `lib/issue-costing.ts`; re-assert after the change |
+| K2 | Period cost needs two runs and a subtraction | `computePeriodIssuedValue`, now in `lib/issue-costing.ts` |
+| K3 | No money column is ever persisted | `stock_issues` carries quantity only. Must stay that way |
+| K4 | Rounding | Display only. `displayMoney` rounds cost **up** (2026-07-30) |
+
+---
+
+## 6. Worked example — `Dâu sấy`, the hardest case, real numbers
+
+Chosen deliberately: three conversions all called "Túi". If this works, the
+48 single-unit items are easier by construction.
+
+**Purchases on record** (`ING-028`, base unit g, all `COMPLETED`):
+
+| Bought | Base qty | Paid |
+|---|---|---|
+| 1 Túi × 100 g | 100 g | 57.000đ |
+| 2 Túi × 500 g | 1.000 g | 696.600đ |
+| 1 Túi × 1.000 g | 1.000 g | 510.000đ |
+| 1 Túi × 1.000 g | 1.000 g | 550.000đ |
+| 1 Túi × 1.000 g | 1.000 g | 630.000đ |
+| **Total** | **4.100 g** | **2.443.600đ** |
+
+Weighted average = 2.443.600 ÷ 4.100 = **596 đ/g exactly**.
+
+Current balance is **4.100 g** — everything bought, nothing taken out, the
+expected post-cutover state.
+
+**The owner counts** and finds 1 bag of 500 g and 2 bags of 1 kg, nothing in the
+100 g size:
+
+| Line | Counted | Base |
+|---|---|---|
+| Dâu sấy — Túi 100 g | 0 | 0 g |
+| Dâu sấy — Túi 500 g | 1 | 500 g |
+| Dâu sấy — Túi 1.000 g | 2 | 2.000 g |
+| **Counted total** | | **2.500 g** |
+
+**What must happen:**
+
+- Issue recorded: 4.100 − 2.500 = **1.600 g**
+- Cost of that issue: 1.600 × 596 = **953.600đ**
+- `Sữa đặc`-style ingredient correction: `Dâu sấy` quantity 4.100 g → **2.500 g**
+- Remaining stock value: 2.500 × 596 = **1.490.000đ**
+- Cross-check: 2.443.600 − 953.600 = **1.490.000đ** ✓
+
+Every figure above is a number the implementer can compare against before
+running anything on the shop's data.
+
+---
+
+## 7. The one rule this plan must decide (C10)
+
+`docs/OPEN-ITEMS.md` item 32: what happens when the count is **above** the
+theoretical figure but **below** everything ever purchased?
+
+It is not an error. It means the theoretical figure drifted low — the usual
+cause is stock used and never recorded, then the next count finding more than
+expected. Under the old engine this was impossible to interpret; under the new
+one it is simply a negative issue.
+
+But `stock_issues.base_quantity` carries `check (base_quantity > 0)`
+(`0052_stock_issues.sql`), so a negative issue **cannot be stored**.
+
+**Proposed rule, for the owner to confirm:** accept the count, correct the
+ingredient quantity upward, and record **no issue row** for that item — there is
+nothing to cost, because nothing left. Note it on the session so the discrepancy
+is visible rather than silent. Do **not** relax the `> 0` constraint; a
+"negative issue" is a different event wearing the wrong name.
+
+---
+
+## 8. Tasks
+
+Ordered so each is verifiable before the next. **Fix and verify every listed gap
+before writing screen code** — the owner's instruction: *"Xử lý từng lỗi cho đến
+khi hoàn tất rồi mới bắt đầu code."*
+
+- **D1** Resolve `NNL-004` (Gap 4). Mark inactive, never delete. Confirm no
+  recipe, purchase, or ledger row references it first.
+- **D2** Decide C10 with the owner (§7), and write it into
+  `docs/BUSINESS-RULES.md` before any code depends on it.
+- **D3** Build the package-line model (§4): one line per active conversion, size
+  label derived from `conversion_rate`. Pure function, unit-tested against
+  `Dâu sấy` and `Kem whipping Anchor` before any screen uses it.
+- **D4** Drop `BASE_INGREDIENT` lines from new sessions (Gap 1). Existing open
+  sessions keep theirs (C8/C16).
+- **D5** Make the purchased-item branch also correct the ingredient quantity
+  (Gap 3), obeying S1–S5. Migration; list the triggers on `stock_ledger` first.
+- **D6** Convert the count screen to purchase units (Gap 5), display only —
+  storage stays exact base units.
+- **D7** Build the issue slip screen (Gap 2), covering I1–I9.
+- **D8** Re-run the whole of §5 against the finished code, and record what was
+  found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
+  thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
+  fixing them silently.
+
+---
+
+## 9. Verification bar
+
+Everything in `CLAUDE.md` section 9, plus:
+
+- Every case in §5 has a test, named after its id (C1, S2, I4 …).
+- The `Dâu sấy` worked example reproduces **596 đ/g**, **1.600 g**, **953.600đ**,
+  **1.490.000đ** — from the real engine, not a fixture.
+- Revenue gate unchanged, all four months plus August measured:
+  04 2.190.000đ · 05 7.675.000đ · 06 22.157.000đ · 07 18.661.000đ.
+- `orders_v2` integrity: rows with `updated_at >= 2026-08-04` and `created_at <
+  2026-08-04` = **0**.
+- `stock_ledger` holds `PO_RECEIPT` rows plus, once counts begin, the ingredient
+  corrections from S4 — nothing else.
+- No money column added to `stock_issues` (K3).
+- Every balance reconciles against its ledger — the full check, not two named
+  ingredients (the lesson from Plan C Task 5).
+
+---
+
+## 10. Out of scope, flagged
+
+- **`Đá viên` is in the count list but was never purchased.** `docs/OPEN-ITEMS.md`
+  item 8 records the owner's decision to treat ice, limes and kumquats as daily
+  expenses rather than stock. If that still holds, it should not be countable at
+  all. Ask before changing — it is master data and a business decision.
+- The financial report rebuild (item 31) and the low-stock warning (item 33)
+  stay parked.
