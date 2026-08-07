@@ -1220,12 +1220,38 @@ months matched their known-good figures exactly; August (open) measured at
 the check from the unblocking note above as this task's own pre-write
 baseline.
 
-- [ ] **Step 4: Owner approves, then `--apply`**
+- [x] **Step 4: Owner approves, then `--apply`**
 
-**Stopped here, as instructed.** Waiting for the owner's explicit approval,
-scoped to the exact commit about to be committed, before running `--apply`.
+Approved 2026-08-07, scoped to `027c5d2` — confirmed unmodified before
+running. Owner independently re-derived every count and both trigger
+readings first; matched exactly. Backup coverage checked before approving,
+not assumed: `stock_ledger`'s newest deleted row was 2026-08-07 01:57:31
+UTC, `data_recovery_changes`'s newest `applied_at` was 2026-07-30 18:11:56
+UTC — both before the 03:36Z pre-Task-4 Drive bundle, so it already
+contains all 56.764 rows this task removes. No new backup taken.
 
-- [ ] **Step 5: Confirm `stock_ledger` holds only `PO_RECEIPT`, and commit**
+- [x] **Step 5: Confirm `stock_ledger` holds only `PO_RECEIPT`, and commit**
+
+`--apply` run, 2026-08-07: deleted 10.670/10.670 `stock_ledger` rows,
+issued the `data_recovery_changes` delete. All six checks green:
+
+1. `stock_ledger`: 138 rows total, all `PO_RECEIPT` — counted on the whole
+   table, not filtered-then-concluded.
+2. `data_recovery_changes`: 0 rows.
+3. `inventory_balances`, read directly (not recomputed from `stock_ledger`
+   — that would check this script's own arithmetic, not the trigger's):
+   Sữa tươi (NNL-001) **134.000,00**, Sữa đặc (ING-003) **103.424,00** —
+   both exactly as predicted before the write.
+4. Revenue gate: April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July
+   18.661.000đ — all unchanged. August measured at 3.628.000đ, not gated.
+5. `orders_v2` integrity: 0 old rows touched.
+6. `order_lines_v2.cost_at_sale`: checked separately, read-only, without
+   editing the approved script — 0 rows nonzero across the whole table.
+
+Script exited 0, `All post-write checks passed`. `npx tsc --noEmit`: 0
+errors. `npm run build`: succeeds. `npx vitest run`: 953/953 (162 files).
+`check-rules-current.ts`: clean. Not pushed — the owner approved the write,
+not a deploy; this task changes no application code.
 
 ---
 

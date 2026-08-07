@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-07 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 5: stock_ledger cut down to purchase receipts only, the correction-machinery log deleted
+
+**Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 5, unblocked earlier the same day by deploying the till and proving Task 3 against a real sale.
+
+**`scripts/delete-derived-stock-rows.ts --apply`, owner-approved scoped to commit `027c5d2`, confirmed unmodified before running.** Deleted 10.670 `stock_ledger` rows (`SALES_CONSUME` 7.237, `PRODUCTION_CONSUME` 1.872, `PRODUCTION_YIELD` 1.476, `EDIT_REVERSAL` 72, `STOCK_ADJUST` 13) and all 46.094 `data_recovery_changes` rows — both counts re-measured fresh that morning, not reused from the plan's 2026-08-02 table. `stock_ledger` now holds exactly 138 rows, all `PO_RECEIPT`.
+
+**Backup coverage checked before approving, not assumed — a new discipline from this task, not just this run.** The owner measured `stock_ledger`'s newest deleted row (2026-08-07 01:57:31 UTC) and `data_recovery_changes`'s newest `applied_at` (2026-07-30 18:11:56 UTC) against the 03:36Z pre-Task-4 Drive bundle's timestamp: both predate it, so the existing backup already covers all 56.764 rows this task removed. No new backup was taken. Stated as the rule going forward: "has a backup" is not enough, it has to be "the backup contains exactly what is about to be lost."
+
+**Six post-write checks, all green** (five from the script, one done separately by design): `stock_ledger` 138/138 `PO_RECEIPT` on the whole table, not a filtered count; `data_recovery_changes` 0; `inventory_balances` read directly (not recomputed from `stock_ledger`, which would only check this script's own arithmetic) — Sữa tươi (NNL-001) 134.000,00 g, Sữa đặc (ING-003) 103.424,00 g, both exact matches to the pre-write prediction; revenue gate April/May/June/July unchanged, August measured only; `orders_v2` touch-trigger integrity 0 old rows touched; `order_lines_v2.cost_at_sale` still 0 across the whole table, checked via a separate read-only query rather than editing the owner-approved script for a sixth in-script check.
+
+Reused `batchIds` (Task 4's `reset-cost-at-sale-core.ts`) for every `.in()`-based read and write against `stock_ledger`'s 10.670 ids — the lesson from Task 4's own verification break. `data_recovery_changes` needed no batching: no single `id` column, whole table removed via one unfiltered-by-id match.
+
+`npx tsc --noEmit`: 0 errors. `npm run build`: succeeds. `npx vitest run`: 953/953 (162 files). `check-rules-current.ts`: clean. Not pushed — the owner approved the write, not a deploy; this task changes no application code.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-07 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C: the code finally deployed, a build-breaking bug from two days earlier surfaced and fixed, and Task 5 written to dry-run after its premise was proven true against a real sale
 
 **Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`. Task 5's own trigger-listing step (`fnbapp-bulk-data-change`) caught that its premise was false: `SALES_CONSUME`/`PRODUCTION_*` rows were not frozen history, 363 had landed in five days because the live site was still running 2026-07-31 code -- `origin/main` was 122 commits behind `main`, nothing from Plan C (including Task 3's checkout change) had ever been deployed. Migrations reach production the instant they run; application code does not until deployed. Task 5 blocked pending deploy.
