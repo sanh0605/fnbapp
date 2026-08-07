@@ -5,16 +5,18 @@ process.env.CLI_MODE = "true";
 /**
  * Plan C Task 4 (docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md).
  * Resets order_lines_v2.cost_at_sale back to its column default (0) for
- * every COMPLETED order's line that still carries a nonzero value. The
- * column stays -- numeric(18,6) not null default 0 -- only the value
- * returns to default. Nothing is dropped.
+ * every row that still carries a nonzero value, regardless of the owning
+ * order's status. The column stays -- numeric(18,6) not null default 0 --
+ * only the value returns to default. Nothing is dropped.
  *
- * Scope is COMPLETED orders only, matching exactly what Task 1's
- * backup-verification baseline measured (2.507 lines / 24.877.232d on
- * 2026-08-05, immediately before the pre-Task-4 backup) and what the report
- * ever showed a wrong figure for. VOIDED/SUPERSEDED order lines'
- * cost_at_sale was never read by any report before or after Task 2/3 --
- * out of scope of "the report showed the old figure," left untouched.
+ * Scope decided by the owner 2026-08-08, correcting an earlier COMPLETED-only
+ * draft of this script: "no report reads it" does not pick out
+ * status = 'COMPLETED'. Splitting COMPLETED further by superseded_by showed
+ * 911 COMPLETED-but-superseded lines that no report reads either, and they
+ * were still inside the COMPLETED-only scope -- so the reason given did not
+ * match the line actually drawn, and would have left 327.047d of old cost
+ * scattered with no consistent justification. Owner chose to delete
+ * everything rather than draw a boundary the stated reason cannot defend.
  *
  * Owner reaffirmed deletion 2026-08-05 after being told the original reason
  * (stop the report showing the old figure) no longer applies -- Tasks 2/3
@@ -24,8 +26,8 @@ process.env.CLI_MODE = "true";
  * Dry-run by default; --apply writes for real.
  */
 
-const KNOWN_BASELINE_LINES = 2507;
-const KNOWN_BASELINE_TOTAL = 24877232;
+const KNOWN_BASELINE_LINES = 2590;
+const KNOWN_BASELINE_TOTAL = 25588859.619575;
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
@@ -35,23 +37,15 @@ async function main(): Promise<void> {
   const { getPnLDataV2 } = await import("../app/admin/reports/actions");
 
   console.log("Loading data...");
-  const [orders, lines] = (await Promise.all([
-    findAllNoCache("Orders_V2"),
-    findAllNoCache("Order_Lines_V2"),
-  ])) as any[][];
+  const lines = (await findAllNoCache("Order_Lines_V2")) as any[];
 
-  const completedOrderIds = new Set(
-    orders.filter(o => o.status === "COMPLETED").map(o => o.id),
-  );
-  const targets = lines.filter(
-    l => completedOrderIds.has(l.order_id) && Number(l.cost_at_sale) > 0,
-  );
+  const targets = lines.filter(l => Number(l.cost_at_sale) > 0);
 
   const lineCount = targets.length;
   const currentTotal = targets.reduce((sum, l) => sum + Number(l.cost_at_sale), 0);
 
   console.log(`\nMode: ${apply ? "APPLY (writing to production)" : "DRY RUN (no writes)"}`);
-  console.log("Scope: COMPLETED orders only, order_lines_v2.cost_at_sale > 0.");
+  console.log("Scope: every order_lines_v2 row with cost_at_sale > 0, regardless of order status.");
   console.log(`Rows to reset: ${lineCount}`);
   console.log(`Current total cost_at_sale: ${formatNumber(currentTotal)}d (exact: ${currentTotal})`);
   console.log("Total after reset: 0d");
@@ -59,7 +53,7 @@ async function main(): Promise<void> {
   const deltaLines = lineCount - KNOWN_BASELINE_LINES;
   const deltaTotal = currentTotal - KNOWN_BASELINE_TOTAL;
   console.log(
-    `\nKnown baseline (Task 1, measured 2026-08-05 immediately before the backup): ` +
+    `\nKnown baseline (owner-verified 2026-08-07/08 measurement, whole-table scope): ` +
       `${KNOWN_BASELINE_LINES} dong / ${formatNumber(KNOWN_BASELINE_TOTAL)}d.`,
   );
   console.log(
@@ -111,14 +105,13 @@ async function main(): Promise<void> {
   if (verifyTargetsError) throw new Error(`Verify (targeted set) failed: ${verifyTargetsError.message}`);
   console.log(`  Targeted rows still nonzero: ${stillNonzeroInTargetSet ?? "?"} (expected 0)`);
 
-  const freshOrders = (await findAllNoCache("Orders_V2")) as any[];
-  const freshCompletedIds = new Set(freshOrders.filter(o => o.status === "COMPLETED").map(o => o.id));
+  // Whole-table re-query, not scoped to any order status -- the check must
+  // cover exactly what was written, or a narrower check can report success
+  // while rows outside its own filter sit untouched.
   const freshLines = (await findAllNoCache("Order_Lines_V2")) as any[];
-  const remainingCompletedNonzero = freshLines.filter(
-    l => freshCompletedIds.has(l.order_id) && Number(l.cost_at_sale) > 0,
-  );
+  const remainingNonzero = freshLines.filter(l => Number(l.cost_at_sale) > 0);
   console.log(
-    `  Full re-query (COMPLETED orders, cost_at_sale > 0): ${remainingCompletedNonzero.length} rows ` +
+    `  Full re-query (whole order_lines_v2, cost_at_sale > 0): ${remainingNonzero.length} rows ` +
       "(expected 0; a nonzero count here that was not in the targeted set means a sale landed mid-run).",
   );
 

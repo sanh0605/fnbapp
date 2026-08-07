@@ -99,7 +99,7 @@ abandoned. Treat the numbers as gone.
 | `app/admin/reports/actions.ts` (modify) | `totalCOGS` comes from issues, not `cost_at_sale` | 2 |
 | `app/admin/orders/actions.ts` (modify) | Stops computing a cost when an order is edited | 3 |
 | `app/pos/actions.ts` (modify) | Checkout stops computing a sale cost | 3 |
-| `scripts/reset-cost-at-sale.ts` (create) | Dry-run/`--apply` reset of ~2.551 stored values (COMPLETED orders, measured 2026-08-07 — this row's original 2.699 did not match any query this plan's own baseline defines; see Task 4 findings) | 4 |
+| `scripts/reset-cost-at-sale.ts` (create) | Dry-run/`--apply` reset of 2.590 stored values, every order status, measured 2026-08-08 — this row's original 2.699 did not match any query this plan's own baseline defines; see Task 4 findings | 4 |
 | `scripts/delete-derived-stock-rows.ts` (create) | Dry-run/`--apply` deletion of the derived ledger and the recovery log | 5 |
 | `supabase/migrations/0054_retire_cost_machinery.sql` (create) | Drop the triggers and jobs that maintained the old figure | 6 — **runs before 4** |
 | `CLAUDE.md` (modify) | Section 7 rewritten | 7 |
@@ -882,27 +882,47 @@ then re-reads: the targeted id set for any still-nonzero row, a fresh full
 requery of the same scope for any nonzero row outside the targeted set (a
 sale landing mid-run would surface here), and June/July revenue again.
 
-**Scope decided during review, not assumed: COMPLETED orders only**, same
-as Task 1's baseline query, not literally "every row in the table"
-regardless of order status. Measured 2026-08-07: COMPLETED-only is 2.551
-lines / 25.261.811,93đ; every row regardless of status (including
-VOIDED/SUPERSEDED) is 2.590 lines / 25.588.859,62đ — 39 more lines, all from
-19 SUPERSEDED + 20 VOIDED order lines whose `cost_at_sale` no report has
-ever read, before or after Tasks 2/3. Task 4's own stated reason to exist
-("stop the report showing the old figure," now moot per the owner's
-2026-08-05 reaffirmation) was never about those rows, so touching them
-would be a second, undiscussed act of deletion riding on this task's
-approval — left alone. This also matches Step 3's own STOP-condition text
-below, which is anchored to the COMPLETED-only figure.
+**Scope narrowed to COMPLETED-only during first review, then corrected back
+to every row by the owner 2026-08-08.** First pass scoped this to COMPLETED
+orders only (same as Task 1's baseline query), reasoning that VOIDED/SUPERSEDED
+lines' `cost_at_sale` had never been read by any report. **That reasoning did
+not justify that boundary.** Owner re-derived the same numbers independently
+and split COMPLETED further by `superseded_by`:
 
-**Also found: the `2.699` figure in this plan's File Structure table
-(top of file) does not match.** Neither COMPLETED-only (2.551 now, would
-have been 2.507 on 2026-08-05) nor every-row (2.590 now) reconciles to
-2.699 at any plausible past date — order lines are not deleted elsewhere in
-this plan, so the every-row count should only have grown since whenever
-2.699 was written, not shrunk to 2.590 today. Treated as a stale draft
-figure, corrected in that table to point at this task's real scope and
-measurement instead of carrying it forward unexplained.
+```
+COMPLETED, superseded_by IS NULL   -> 1.640 lines  (report reads these)
+COMPLETED, superseded_by NOT NULL  ->   911 lines  (report reads none of these)
+SUPERSEDED / VOIDED                ->    39 lines  (report reads none of these)
+```
+
+911 "never read by any report" lines were sitting *inside* the COMPLETED-only
+scope this task had already decided to write to. The line actually drawn was
+`status = 'COMPLETED'`, not "read by a report" — two different things — and
+the stated reason did not defend the boundary chosen. It would have left
+327.047đ of old cost scattered across 39 rows with no consistent
+justification for why those specifically survived. **Corrected: no status
+filter at all.** `scripts/reset-cost-at-sale.ts` now loads only
+`order_lines_v2` and resets every row with `cost_at_sale > 0`, regardless of
+the owning order's status. Simpler, too — one table load instead of two, one
+filter instead of a join against `orders_v2.status`.
+
+**The self-check after the write was widened to match, not left narrow.**
+The original draft's post-write requery filtered to COMPLETED orders only,
+same mistake in the other direction: widen the write and forget to widen the
+check, and the script would report "0 rows remaining" while 39 untouched
+rows sat outside its own filter. Now requeries the whole table with no
+status filter.
+
+Confirmed before widening: no row has `cost_at_sale < 0` (`> 0` and `<> 0`
+give the same 2.590-row count), so there is no sign-related gap in the
+filter either.
+
+**Also found and corrected: the `2.699` figure in this plan's File
+Structure table (top of file) did not match any query this plan defines**
+at any plausible past date — order lines are not deleted elsewhere in this
+plan, so the every-row count should only have grown since whenever 2.699
+was written, not shrunk to 2.590 today. Corrected to point at this task's
+real, measured scope.
 
 - [x] **Step 3: Dry run, and check the printed total against the known figure**
 
@@ -915,13 +935,15 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
   Không khớp -> DỪNG, đừng chạy --apply.
 ```
 
-Actual, dry run 2026-08-07: **2.551 dòng, 25.261.811,93đ.** Difference from
-the 2026-08-05 baseline: +44 dòng, +384.580đ (~1,5%) — two more days of
-selling (06/08, 07/08) at a scale consistent with the shop's measured
-monthly revenue (22.157.000đ June, 18.661.000đ July). Small deviation, not
-large — **PASS, proceed**, per this step's own stated tolerance. June/July
-revenue read via `getPnLDataV2` before any write: 22.157.000đ / 18.661.000đ
-— unchanged from the last time either was measured.
+First dry run (2026-08-07, COMPLETED-only scope, since retired): 2.551
+dòng, 25.261.811,93đ.
+
+**Re-run 2026-08-08 on the widened, no-status-filter scope, against a fresh
+owner-verified baseline (2.590 dòng, 25.588.859,619575đ) rather than the
+retired one:** actual **2.590 dòng, 25.588.859,619575đ — exact match, 0
+lệch.** No sale landed between the owner's independent measurement and this
+run. June/July revenue read via `getPnLDataV2` before any write:
+22.157.000đ / 18.661.000đ — unchanged.
 
 - [ ] **Step 4: Owner approves, then `--apply`**
 
