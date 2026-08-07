@@ -128,11 +128,11 @@ Purchase orders, reviewed recoveries, and other critical flows that change multi
 
 ### BR-INV-003 — BTP consumption follows reviewed recipe/yield evidence
 
-**Status:** `APPROVED`
+**Status:** `RETIRED`, effective 2026-08-07 — successor `BR-INV-006`
 
 Semi-product production and consumption must retain the recipe/yield evidence needed to explain sale-time COGS. Later recipe replay can differ from the pinned transaction without authorizing historical mutation.
 
-Superseded by `BR-INV-006` (owner decision 2026-08-05); in force until that cutover applies.
+Superseded by `BR-INV-006` (owner decision 2026-08-05). Plan C Task 5 applied the cutover on 2026-08-07 (`docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`): every `PRODUCTION_CONSUME`/`PRODUCTION_YIELD` `stock_ledger` row deleted, semi-product balances fell to `0`. Measured: of 16 active semi-products, 11 carry an `inventory_balances` row and every one reads exactly `0.000000`; the other 5 never had `stock_ledger` activity, so no row exists for them either — also zero by absence. There is no recipe/yield evidence left for this rule to protect — semi-products carry no stock to explain.
 
 ### BR-INV-006 — Semi-products carry no stock and no value
 

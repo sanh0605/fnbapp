@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-07 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 7: the written rules made true again, and the day's push confirmed as a no-op deploy
+
+**Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 7, the last step of Plan C — every prior task (1-6b) is done; this one makes the documentation describe the system that now exists rather than the one it replaced.
+
+**Push confirmed no-op before running it.** The owner checked `git diff --name-only origin/main..main -- app/ lib/ components/ supabase/ package.json next.config.* vercel.json` was empty before approving — only docs and scripts were unpushed, so the resulting Vercel build would behave identically to the one already live. `git push origin main` (4 commits: `9231d30`, `027c5d2`, `b2363f2`, `ff3c90a`), Vercel's Git integration built fresh (`4uov57pvu`, Ready, Production) in under a minute, and all 4 pages still read 307 to sign-in on `fnbapp.vercel.app` — no behavior change, as predicted.
+
+**`CLAUDE.md` section 7 rewritten.** The old foundation (owner-confirmed 2026-07-22: recipes + sales orders drive stock deduction, implicit production exists) is fully false now. New foundation, in force since the 2026-08-07 cutover: sales neither deduct stock nor compute a cost; `stock_ledger` holds only purchase receipts and stocktake results; cost is priced per stocktake period via `stock_issues` and weighted-average purchase cost (`lib/issue-costing.ts`), not per sale. Recorded explicitly, since it reads as broken otherwise: `stock_issues` is empty right now, so every COGS report currently reads 0đ for every period — raw-ingredient stock reads as everything ever purchased with nothing deducted, semi-product stock reads exactly 0 with no purchase floor beneath it. The owner's first physical stocktake is what turns the cost engine on, not a cleanup step.
+
+**Retired in `docs/BUSINESS-RULES.md`:** `BR-INV-003` (BTP consumption follows recipe/yield evidence), effective 2026-08-07, successor `BR-INV-006`. (`BR-SALE-001`/`BR-COGS-002` were already retired in Task 4's commit.) Measured before writing the retirement note, not assumed: of 16 active semi-products, 11 carry an `inventory_balances` row and every one reads exactly `0.000000`; the other 5 never had `stock_ledger` activity, so no row exists for them either — also zero by absence. Matches `BR-INV-006`'s own prediction exactly.
+
+**`docs/OPEN-ITEMS.md` updated, not just Plan C's own items.** Item 15 (physical stocktake) was framed as "the last act before expansion" — now materially wrong: it is the switch that turns cost reporting on, not a low-priority Phase 7 item. Corrected the framing without deciding the sequencing itself, which stays the owner's call. Item 18 (stocktake never exercised) cross-referenced to the same fact.
+
+**Found, not fixed — flagged for the owner rather than silently changed:** `CLAUDE.md` section 9 still reads "Không push" (never push), contradicted by this same day's two owner-approved pushes. Out of this task's stated scope (section 7 + the three business rules); left for a separate decision on the right wording (e.g. "push only with the owner's per-instance approval," matching section 2's existing rule, rather than a blanket prohibition the day's own work already violated with permission).
+
+`npx tsc --noEmit`: 0 errors. `npm run build`: succeeds. `npx vitest run`: 953/953 (162 files). `check-rules-current.ts`: clean.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-07 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan C Task 5: stock_ledger cut down to purchase receipts only, the correction-machinery log deleted
 
 **Trigger:** `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 5, unblocked earlier the same day by deploying the till and proving Task 3 against a real sale.

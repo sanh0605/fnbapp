@@ -72,16 +72,22 @@ chốt trong lúc trao đổi rồi trôi đi.
 
 ## 7. Tồn kho và giá vốn: nền tảng để suy luận
 
-Chủ quán xác nhận 2026-07-22. Không suy diễn khác đi.
+Cutover xong 2026-08-07 (Plan C), chứng minh trên một đơn bán thật. Thay hẳn
+nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
 
-1. **Chưa từng có lệnh nấu bán thành phẩm chính thức trong lịch sử.** Đừng giả
-   định dữ liệu sản xuất quá khứ là đáng tin.
-2. **Chỉ ba nguồn đáng tin:** công thức, đơn bán hàng, đơn nhập hàng. Dùng công
-   thức + đơn bán để trừ tồn; dùng đơn nhập để tính giá vốn bình quân gia quyền.
-   Mọi dòng khác trong sổ kho là **suy ra**, không phải gốc.
-3. **Trừ tồn khi bán:** món dùng nguyên liệu thô thì trừ thẳng. Món dùng bán
-   thành phẩm mà tồn không đủ thì hệ thống tự sinh lệnh nấu ngầm — trừ nguyên
-   liệu thô theo công thức nấu, cộng tồn bán thành phẩm, rồi mới trừ để pha chế.
+1. **Bán hàng không trừ tồn, không tính giá vốn tại lúc bán, không còn lệnh
+   nấu ngầm.** `cost_at_sale` vẫn còn cột nhưng luôn 0 — không màn hình nào
+   đọc.
+2. **`stock_ledger` chỉ còn ghi hàng nhập và kết quả kiểm kê định kỳ.** Mọi
+   dòng suy ra kiểu cũ (bán hàng, sản xuất ngầm, điều chỉnh) đã xoá hẳn
+   2026-08-07 (Task 5) — chủ đích, không phải lỗi.
+3. **Giá vốn tính theo đợt kiểm kê, không theo lần bán.** Đóng kiểm kê ghi
+   chênh lệch đếm-thật trừ lý-thuyết vào `stock_issues`, định giá theo bình
+   quân gia quyền nguyên liệu mua vào (`lib/issue-costing.ts`).
+4. **`stock_issues` hiện RỖNG — trạng thái thật, không phải lỗi.** Mọi báo
+   cáo giá vốn hiện 0đ. Nguyên liệu thô: tồn = toàn bộ đã nhập, chưa trừ gì.
+   Bán thành phẩm: tồn về 0, không còn nền để tính (`BR-INV-006`). **Lần
+   kiểm kê đầu tiên là thứ bật máy tính giá vốn lên**, không phải dọn dẹp.
 
 ## 8. Viết code
 
