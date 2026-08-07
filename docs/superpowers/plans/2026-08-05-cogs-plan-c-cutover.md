@@ -1356,9 +1356,37 @@ reopened by someone later.
   legitimately; rewrite them to assert the new rule, and say in the commit which
   ones and why. Do not delete a test without stating the reason.
 - `npx vite-node scripts/check-rules-current.ts` — 3 PASS.
-- Revenue reads 22.157.000đ for June and 18.661.000đ for July — before and after
-  every task, from `getPnLDataV2`, never from a hand-rolled sum. August is open
-  and is not a gate.
+- Revenue reads, before and after every task, from `getPnLDataV2`, never from a
+  hand-rolled sum:
+
+  | Saigon month | Countable orders | Revenue |
+  |---|---|---|
+  | 2026-04 | 53 | **2.190.000đ** |
+  | 2026-05 | 302 | **7.675.000đ** |
+  | 2026-06 | 793 | **22.157.000đ** |
+  | 2026-07 | 664 | **18.661.000đ** |
+
+  August is open and rises with every sale, so it is measured and reported but
+  never compared against a constant. It stood at 130 orders / 3.628.000đ on
+  2026-08-07.
+
+  **Widened 2026-08-07, on the owner's question.** Through Task 4 this gate was
+  June and July only — the two months carried over from earlier work, chosen for
+  no reason connected to the data. April and May carry 355 orders and
+  9.865.000đ, and none of it sat inside the gate; with August, roughly a quarter
+  of all revenue was outside the net while irreversible deletions ran against it.
+  Nothing was harmed — Task 4 touched `order_lines_v2.cost_at_sale` only, and
+  revenue reads `orders_v2.status`, `created_at`, and `net_total` — but that is
+  an argument from what the code does, and the whole point of a gate is not
+  having to rely on one. Task 5 deletes rows; it gets the wider gate.
+
+  A gate query is only trustworthy once it reproduces a figure already known by
+  another route. Mirror `findCompletedOrders` exactly (`app/admin/reports/
+  actions.ts:51-69`): `status = 'COMPLETED'` and `created_at` inside the Saigon
+  range converted to UTC, and **no** `superseded_by` filter — the real loader
+  applies none. Adding one looks more correct and is not: it drops July to
+  1.521.000đ. Reproducing June and July to the dong is what qualified the April
+  and May figures above.
 - Purchase orders, sales orders, and recipes byte-identical to their pre-plan
   state.
 - `stock_ledger` holds `PO_RECEIPT` rows only.
