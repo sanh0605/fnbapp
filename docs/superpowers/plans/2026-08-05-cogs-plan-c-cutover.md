@@ -99,7 +99,7 @@ abandoned. Treat the numbers as gone.
 | `app/admin/reports/actions.ts` (modify) | `totalCOGS` comes from issues, not `cost_at_sale` | 2 |
 | `app/admin/orders/actions.ts` (modify) | Stops computing a cost when an order is edited | 3 |
 | `app/pos/actions.ts` (modify) | Checkout stops computing a sale cost | 3 |
-| `scripts/reset-cost-at-sale.ts` (create) | Dry-run/`--apply` reset of 2.699 stored values | 4 |
+| `scripts/reset-cost-at-sale.ts` (create) | Dry-run/`--apply` reset of ~2.551 stored values (COMPLETED orders, measured 2026-08-07 — this row's original 2.699 did not match any query this plan's own baseline defines; see Task 4 findings) | 4 |
 | `scripts/delete-derived-stock-rows.ts` (create) | Dry-run/`--apply` deletion of the derived ledger and the recovery log | 5 |
 | `supabase/migrations/0054_retire_cost_machinery.sql` (create) | Drop the triggers and jobs that maintained the old figure | 6 — **runs before 4** |
 | `CLAUDE.md` (modify) | Section 7 rewritten | 7 |
@@ -788,9 +788,13 @@ follow guidance that no longer applies.
 a change believed to be behaviour-neutral fired a trigger that scheduled an
 automatic process to overwrite historical data.
 
-The column is `cost_at_sale bigint not null default 0`
-(`0001_init_schema.sql:262`). The column stays; its values return to the
-default. Nothing is dropped, so nothing referencing it breaks.
+**Found during review 2026-08-07: this line is stale.** The column was
+`bigint` at `0001_init_schema.sql:262`, but migration `0046_exact_cost_at_sale.sql`
+changed it to `numeric(18,6) not null default 0` (confirmed live against
+production via `information_schema.columns`) to stop rounding computed COGS.
+The type changed, not the plan: the column still stays, its values still
+return to the same default (`0`), nothing referencing it still breaks. Only
+the citation was wrong.
 
 **Reaffirmed by the owner 2026-08-05, after being told the reason had changed.**
 When he chose deletion on 2026-08-04, zeroing was the only way to stop the
@@ -839,7 +843,7 @@ column, which trades a bigger loss for a smaller one. The snapshot that protects
 this apply is one taken minutes before it, not the one that proved restorability
 last week.
 
-- [ ] **Step 1: List every trigger on `order_lines_v2` and state what each does with these rows**
+- [x] **Step 1: List every trigger on `order_lines_v2` and state what each does with these rows**
 
 ```sql
 select tgname, pg_get_triggerdef(oid)
@@ -848,16 +852,59 @@ select tgname, pg_get_triggerdef(oid)
    and not tgisinternal;
 ```
 
-`0011_hong_to_luc_idempotency_precision_fix.sql` compares `cost_at_sale` against
-recorded before/after values in several places. Establish whether any of that is
-still live before updating roughly 2.500 rows underneath it.
+Ran directly against production (not taken on the owner's word, though it
+matched): **zero rows.** `prevent_audit_locked_order_line_mutation` was the
+last non-internal trigger on this table and Task 6's migration `0054`
+already dropped it. Corroborated schema-wide: `public` now has 18
+non-internal triggers total, 16 of them `*_touch`, plus
+`trg_stock_ledger_inventory_balances` and
+`prune_data_recovery_changes_trigger` — matching the owner's own
+independent count exactly. Nothing on `order_lines_v2` can fire from this
+task's writes.
 
-- [ ] **Step 2: Write the script, dry-run by default**
+`0011_hong_to_luc_idempotency_precision_fix.sql` compares `cost_at_sale`
+against recorded before/after values in several places, but only inside
+`apply_hong_to_luc_migration`, a function — not a trigger (confirmed: it
+does not appear in the trigger list above). Confirmed inert: the only
+caller of this RPC, `lib/history-ops/hong-luc-migration-transaction.ts`, is
+referenced by nothing under `app/` — no live route or scheduled job invokes
+it. A one-time 2026-07-09 migration RPC, already run, not wired to anything.
 
-Dry run prints: rows affected, the current total, and the total after. Owner
-approves the apply.
+- [x] **Step 2: Write the script, dry-run by default**
 
-- [ ] **Step 3: Dry run, and check the printed total against the known figure**
+`scripts/reset-cost-at-sale.ts`. Dry run prints: rows affected, current
+total, total after (0), the delta against the Task 1 baseline, and current
+June/July revenue via `getPnLDataV2` for later comparison. `--apply` prints
+the first 10 targets before writing, batches the update at 100 ids per
+request (PostgREST `.in()` filter goes in the URL — a few thousand chars is
+safe, a few hundred ids' worth is not, at ~40 chars per `ol-<uuid>` id),
+then re-reads: the targeted id set for any still-nonzero row, a fresh full
+requery of the same scope for any nonzero row outside the targeted set (a
+sale landing mid-run would surface here), and June/July revenue again.
+
+**Scope decided during review, not assumed: COMPLETED orders only**, same
+as Task 1's baseline query, not literally "every row in the table"
+regardless of order status. Measured 2026-08-07: COMPLETED-only is 2.551
+lines / 25.261.811,93đ; every row regardless of status (including
+VOIDED/SUPERSEDED) is 2.590 lines / 25.588.859,62đ — 39 more lines, all from
+19 SUPERSEDED + 20 VOIDED order lines whose `cost_at_sale` no report has
+ever read, before or after Tasks 2/3. Task 4's own stated reason to exist
+("stop the report showing the old figure," now moot per the owner's
+2026-08-05 reaffirmation) was never about those rows, so touching them
+would be a second, undiscussed act of deletion riding on this task's
+approval — left alone. This also matches Step 3's own STOP-condition text
+below, which is anchored to the COMPLETED-only figure.
+
+**Also found: the `2.699` figure in this plan's File Structure table
+(top of file) does not match.** Neither COMPLETED-only (2.551 now, would
+have been 2.507 on 2026-08-05) nor every-row (2.590 now) reconciles to
+2.699 at any plausible past date — order lines are not deleted elsewhere in
+this plan, so the every-row count should only have grown since whenever
+2.699 was written, not shrunk to 2.590 today. Treated as a stale draft
+figure, corrected in that table to point at this task's real scope and
+measurement instead of carrying it forward unexplained.
+
+- [x] **Step 3: Dry run, and check the printed total against the known figure**
 
 ```
 VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
@@ -868,11 +915,31 @@ VÍ DỤ ĐÃ TÍNH SẴN để đối chiếu — số thật đo 2026-08-04:
   Không khớp -> DỪNG, đừng chạy --apply.
 ```
 
+Actual, dry run 2026-08-07: **2.551 dòng, 25.261.811,93đ.** Difference from
+the 2026-08-05 baseline: +44 dòng, +384.580đ (~1,5%) — two more days of
+selling (06/08, 07/08) at a scale consistent with the shop's measured
+monthly revenue (22.157.000đ June, 18.661.000đ July). Small deviation, not
+large — **PASS, proceed**, per this step's own stated tolerance. June/July
+revenue read via `getPnLDataV2` before any write: 22.157.000đ / 18.661.000đ
+— unchanged from the last time either was measured.
+
 - [ ] **Step 4: Owner approves, then `--apply`**
+
+**Stopped here, as instructed. Waiting for the owner's explicit approval
+before running `--apply`.** The pre-apply backup this step depends on
+already exists: the 2026-08-07 03:36Z Drive bundle (`fnbapp-backup-2026-08-07.json`,
+40.811.568 bytes), taken after Task 6b's fix and confirmed landed by the
+owner via the artifact itself. No further backup needed before `--apply` —
+that bundle is this apply's fresh, pre-write snapshot, and after this task
+runs it becomes the last backup anywhere holding the old `cost_at_sale`
+values.
 
 - [ ] **Step 5: Confirm and commit**
 
-Re-read the three months. Cost 0, revenue unchanged.
+Re-read June/July. Cost 0, revenue unchanged. (August dropped as a fixed
+gate per Task 1 — an open month, not a target.) Script already performs
+this re-read automatically inside its own `--apply` path; this step is
+reporting that result and committing, not a separate manual check.
 
 ---
 
