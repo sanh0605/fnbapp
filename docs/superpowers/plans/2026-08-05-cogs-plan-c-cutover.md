@@ -1049,6 +1049,47 @@ owner 2026-08-08" — a date that had not arrived yet. Corrected to
 
 ### Task 5: Delete the derived stock rows and the recovery log
 
+> **BLOCKED until the Plan C code is deployed. Found 2026-08-07 while listing
+> triggers for this task — the check the `fnbapp-bulk-data-change` skill exists
+> to force, catching the thing the skill exists to catch.**
+>
+> **This task's premise is false right now.** It deletes `SALES_CONSUME` and
+> `PRODUCTION_*` rows as frozen history. They are not frozen: 363 `SALES_CONSUME`
+> rows landed in the last five days, the newest at 2026-08-07 01:57 UTC — the
+> shop's last sale that morning, deducting 30 `ING-003` and 50 `BTP-001` through
+> the old recipe path. `PRODUCTION_CONSUME`/`PRODUCTION_YIELD` are still arriving
+> too. Deleting them today deletes a live ledger, not a dead one.
+>
+> **Cause: the live site runs code from 2026-07-31.** `origin/main` is at
+> `4ad7be1`; `main` is **122 commits** ahead, all of Plan C among them, never
+> pushed — correctly, since deploying needs the owner's per-instance approval and
+> it was never sought. Migrations reach production the moment they are applied,
+> so the database is **7 migrations ahead of the code** (0048–0054). Task 3
+> changed the till's *code*, so it has no effect until a deploy.
+>
+> **There is no second, partial deploy — do not go looking for one.** The 37
+> orders since Task 3 was committed all show `cost_at_sale = 0`, which invites the
+> theory that half of Task 3 is live. It is not: the last of those sales was
+> 2026-08-07 01:57 UTC and **Task 4 zeroed the whole column later that morning**
+> (the pre-apply Drive bundle is timestamped 03:36 UTC, and the apply followed
+> it). Task 3's two halves are equally undeployed. The zero is our own write.
+>
+> **The gap runs both ways, and one side is already broken in production:**
+> `app/admin/reports/daily/actions.ts` calls
+> `findAllWhere("backdated_ledger_events")`, and `findAllWhere` throws on a
+> missing table (`lib/sheets_db.ts`, the error branch after the query) — so the
+> daily digest raises on a table dropped yesterday. The admin dashboard queries
+> the same table and survives only because it ignores the error and falls back to
+> `|| 0`. The pattern this plan spent days removing is what is keeping the home
+> page up.
+>
+> **Owner decision 2026-08-07: deploy after the shop closes, not mid-service.**
+> A till failure during service costs sales; another session on the old code
+> costs cleanup, which is recoverable. Note the cleanup it costs: every sale until
+> the deploy writes a nonzero `cost_at_sale` and fresh `SALES_CONSUME` rows, so
+> **Task 4's reset must be re-run after the deploy**, and this task's counts must
+> be re-measured rather than reused.
+
 **Files:**
 - Create: `scripts/delete-derived-stock-rows.ts`
 
