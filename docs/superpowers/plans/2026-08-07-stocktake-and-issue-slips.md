@@ -544,6 +544,20 @@ khi hoàn tất rồi mới bắt đầu code."*
   ("hàng tìm lại được") end to end. K6 (`lib/issue-costing.ts`) proved the
   *engine* is ready; wiring it into this RPC and the constraint is separate
   work, not requested as part of D5.
+- **D5b** Wire up `BR-INV-008` (goods found). **Added 2026-08-07 — the plan
+  approved the rule and gave no task that builds it.** Sonnet found the hole
+  after D5: two things still refuse it, `stock_issues.base_quantity > 0`
+  (`0052_stock_issues.sql`) and `save_stocktake_line_atomic`'s rejection of a
+  count above theoretical. K6 has already made `computeIssueCosting` ready; the
+  RPC and the constraint have not caught up.
+
+  **This must land before the owner's first real count, not after.** The
+  post-cutover state makes an over-count likely rather than exotic: theoretical
+  is inflated for every ingredient, and the first count is the one most likely to
+  find a sealed package the system does not expect. Reaching that refusal with
+  goods in hand and no way through is the worst possible introduction to the new
+  screen.
+
 - **D6** Convert the count screen to purchase units (Gap 5), display only —
   storage stays exact base units.
 - **D7** Build the issue slip screen (Gap 2), covering I1–I9.
