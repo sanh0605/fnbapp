@@ -73,7 +73,7 @@ npx vite-node scripts/verify-restore-drill.ts
 
 Script này so sánh database thử với **production ngay tại thời điểm kiểm tra** (không so với bản backup cũ, vì production là hệ thống sống, có thể đã bán thêm hàng trong lúc chờ khôi phục) — kiểm tra hai lớp:
 
-1. **Đếm số dòng** cho cả 38 bảng (40 tại thời điểm diễn tập 2026-07-29; Task 6 ngày 2026-08-06 đã bớt đi 3 bảng của cỗ máy tự sửa giá vốn: `audit_baseline_locks`, `backdated_ledger_events`, `backdated_recipe_events`).
+1. **Đếm số dòng** cho cả 38 bảng. Con số này đã đổi hai lần kể từ diễn tập 2026-07-29, khi đó là 40: Plan B Task 1c thêm `stock_issues` (thành 41), rồi Task 6 ngày 2026-08-06 bớt 3 bảng của cỗ máy tự sửa giá vốn — `audit_baseline_locks`, `backdated_ledger_events`, `backdated_recipe_events` — còn 38.
 2. **Mở dữ liệu ra so sánh nội dung thật**, không chỉ đếm số dòng: phiếu nhập hàng PO-037 (đầu phiếu + toàn bộ dòng hàng), một đơn hàng thanh toán chia nhiều lần (payment rows), và số dòng sổ kho của Sữa đặc.
 
 Kết quả in ra `VERDICT: PASS` hoặc `FAIL`. Nếu `FAIL`, đọc phần `FINDING` để biết chính xác cái gì sai — **không được tiếp tục làm bất cứ thao tác dựng lại dữ liệu nào trên production cho tới khi verdict là PASS**.
