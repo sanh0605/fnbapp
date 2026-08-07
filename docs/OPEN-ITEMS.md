@@ -13,13 +13,6 @@ at the bottom.
 
 ---
 
-## Deploy gap (found 2026-08-07, blocks Plan C Task 5)
-
-| # | Item | Why open |
-|---|---|---|
-| 36 | **The live site runs code from 2026-07-31; the database is 7 migrations ahead** | `origin/main` is `4ad7be1`, `main` is 122 commits ahead — all of Plan C, never pushed, correctly so (deploying needs per-instance owner approval). Migrations take effect on apply, code does not, so every sale still deducts stock the old way (363 `SALES_CONSUME` rows in five days, newest 2026-08-07 01:57 UTC) and will keep rewriting `cost_at_sale` that Task 4 cleared. **Owner decided 2026-08-07: deploy after the shop closes, not mid-service.** After deploying: re-run `scripts/reset-cost-at-sale.ts`, then re-measure Task 5's counts. There is no partial earlier deploy — the zeroed cost on recent orders is Task 4's own write, not evidence that half of Task 3 is live. |
-| 37 | **The daily report is broken in production right now** | Consequence of item 36, in the other direction. `app/admin/reports/daily/actions.ts` calls `findAllWhere("backdated_ledger_events")`, a table migration `0054` dropped, and `findAllWhere` throws rather than returning empty — so the daily digest raises. The admin dashboard queries the same table and survives only because it ignores the error and falls back to `\|\| 0`. Fixed by the same deploy; listed separately because it is the user-visible half and needs confirming after the deploy, not assuming. |
-
 ## Backup
 
 | # | Item | Why open |

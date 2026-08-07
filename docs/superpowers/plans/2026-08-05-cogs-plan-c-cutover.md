@@ -1085,10 +1085,50 @@ owner 2026-08-08" — a date that had not arrived yet. Corrected to
 >
 > **Owner decision 2026-08-07: deploy after the shop closes, not mid-service.**
 > A till failure during service costs sales; another session on the old code
-> costs cleanup, which is recoverable. Note the cleanup it costs: every sale until
-> the deploy writes a nonzero `cost_at_sale` and fresh `SALES_CONSUME` rows, so
-> **Task 4's reset must be re-run after the deploy**, and this task's counts must
-> be re-measured rather than reused.
+> costs cleanup, which is recoverable.
+>
+> #### UNBLOCKED 2026-08-07 — deployed and proven against a real sale
+>
+> `git push` (the project's own mechanism, which the owner remembered when the
+> CLI route stalled) put `1ec8091` live as `fnbapp-cp6o0cglx`, now aliased to
+> `fnbapp.vercel.app`. The owner confirmed the daily report loads — the two-day
+> production outage is over.
+>
+> **The premise this task needs is now true, and it was measured, not assumed.**
+> The owner rang a real sale through the deployed till (`PHD001336`, 18.000đ,
+> 12:57) and it wrote **zero `stock_ledger` rows**. That morning's last sale had
+> still deducted 30 `ING-003` and 50 `BTP-001`. `SALES_CONSUME` is frozen history
+> from this deploy onward, so deleting it is now what this task always claimed to
+> be. Voiding the test order wrote no reversal rows either — worth checking,
+> because `void_order_atomic` still contains a `stock_ledger` insert.
+>
+> **No re-run of Task 4 is needed.** The warning above assumed sales between the
+> reset and the deploy; there were none — the shop was on a break for the whole
+> window, and `cost_at_sale` never left 0. The test sale's line was written at 0
+> by the new code, which is the second proof that Task 3 is live. Counts for this
+> task must still be re-measured, since the ledger has grown since the last
+> reading.
+>
+> **The books are clean.** August returned to exactly 130 orders / 3.628.000đ
+> after the void, and all four gate months held to the dong.
+>
+> **A landmine surfaced on the way and is worth keeping.** The first preview build
+> failed: `computePeriodIssuedValue`, added by this plan's own Task 2, was a
+> synchronous export from a `"use server"` file — invalid in Next.js, invisible to
+> `tsc`, `vitest`, and the rule checker, and therefore sitting in the tree for two
+> days across 123 commits. Fixed by moving it to `lib/issue-costing.ts` (where the
+> calculation engine belongs) rather than adding `async`, which would have left a
+> pure function exported as a browser-callable server action. `npm run build` is
+> now the fourth gate in `CLAUDE.md` section 9.
+>
+> **One near miss to remember.** `vercel env ls` shows `SUPABASE_URL`,
+> `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` scoped to **Production
+> only**. The proposal to `vercel alias set` the tested preview build onto the
+> production domain would have put a deployment with no database credentials in
+> front of customers — the till would not have opened. "Promote exactly the bytes
+> you tested" is right only when the tested artifact is configured like the one
+> that will serve; here it was not, and rebuilding under production env was
+> mandatory rather than a compromise.
 
 **Files:**
 - Create: `scripts/delete-derived-stock-rows.ts`
