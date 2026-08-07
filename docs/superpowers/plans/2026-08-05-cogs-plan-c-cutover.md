@@ -1047,6 +1047,42 @@ owner 2026-08-08" — a date that had not arrived yet. Corrected to
 
 ---
 
+#### Task 5 outcome, 2026-08-07: done, and verified wider than the script checked
+
+Applied on the owner's approval. 10.670 `stock_ledger` rows deleted (7.237
+`SALES_CONSUME`, 1.872 `PRODUCTION_CONSUME`, 1.476 `PRODUCTION_YIELD`, 72
+`EDIT_REVERSAL`, 13 `STOCK_ADJUST`) and all 46.094 `data_recovery_changes` rows.
+138 `PO_RECEIPT` rows remain and are now the only thing in the ledger.
+
+**The script checked two named ingredients; the balances were checked in full.**
+Reconciling every `inventory_balances` row against the sum of its surviving
+ledger rows found **zero disagreements across 50 rows, 38 of them nonzero** — and
+the count is reported alongside so the result cannot be a pass on an empty set.
+That is the check that proves `trg_stock_ledger_inventory_balances` handled
+10.670 deletes correctly, rather than proving it for `NNL-001` and `ING-003` and
+assuming the rest. A named-example check is for the owner to follow; it is not
+the verification.
+
+Nothing else moved: 1.972 orders, 2.771 order lines, 63 purchase orders, 138
+purchase lines, 139 recipes, `cost_at_sale` still 0 everywhere, and the four gate
+months to the dong. `purchase_order_lines` at 138 matching the 138 surviving
+`PO_RECEIPT` rows is a free cross-check that the survivors are exactly the
+receipts and nothing else.
+
+**Backup coverage was confirmed before the write, not after.** The 03:36Z bundle
+holds every deleted row: the newest `stock_ledger` row was 01:57 UTC and the
+newest `data_recovery_changes.applied_at` was 2026-07-30, with zero rows after
+the bundle in either table. "There is a backup" is not the question; "the backup
+contains the rows about to disappear" is.
+
+**Consequence the owner needs, and it is not a defect.** `stock_issues` is 0, so
+the new engine has nothing to cost yet and reports no cost for any period. Stock
+now reads as everything ever purchased with nothing taken out — `NNL-001` at
+134.000 g against 47.775,92 g before. **The first stocktake is not housekeeping;
+it is what switches the cost engine on.**
+
+---
+
 ### Task 5: Delete the derived stock rows and the recovery log
 
 > **BLOCKED until the Plan C code is deployed. Found 2026-08-07 while listing
