@@ -96,6 +96,10 @@ Chủ quán xác nhận 2026-07-22. Không suy diễn khác đi.
 - `npx tsc --noEmit` — 0 lỗi.
 - `npx vitest run` — toàn bộ xanh. Không xoá test mà không nêu lý do.
 - `npx vite-node scripts/check-rules-current.ts` — sạch.
+- `npm run build` — dựng được. **Ba cửa trên không thay được cửa này.** Next.js
+  có ràng buộc riêng mà chúng không biết: ngày 2026-08-05 một hàm đồng bộ được
+  export từ file `"use server"` làm web không dựng nổi, trong khi cả ba cửa kia
+  vẫn xanh suốt 123 lần lưu. Không ai biết cho tới lúc thử đưa lên máy chủ.
 - Việc đụng giá vốn hoặc tồn kho: chạy script kiểm tra tương ứng, 0 sai lệch.
 - Ghi một mục vào `DEVELOPMENT-TRACKING.md`, cập nhật `docs/OPEN-ITEMS.md` nếu
   có mục nào đổi trạng thái.
