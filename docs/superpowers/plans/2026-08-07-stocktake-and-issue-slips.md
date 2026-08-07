@@ -428,12 +428,18 @@ khi hoàn tất rồi mới bắt đầu code."*
 - **D1** Resolve `NNL-004` (Gap 4). Mark inactive, never delete. Confirm no
   recipe, purchase, or ledger row references it first.
 
-  **Dry run done 2026-08-07** (`scripts/deactivate-nnl-004.ts`): 0 recipe
+  **Done 2026-08-07** (`scripts/deactivate-nnl-004.ts`). Dry run: 0 recipe
   references (scanned all 139, `ingredients_json` is jsonb so filtered in
   JS rather than trusting an `ilike` that silently mismatches the column
   type), 0 purchased items, 0 `stock_ledger` rows, no `inventory_balances`
-  row. Clean. Stopped for owner `--apply` approval, as every data write in
-  this plan does.
+  row. Owner approved `--apply` scoped to the exact commit; re-verified all
+  four zeros fresh at run time rather than reusing the dry run (the plan
+  itself was still under review in between, though nothing this specific
+  check depends on had changed). Applied: `NNL-004` status `INACTIVE`, row
+  intact. Confirmed after: `ING-033` (the real "Sữa yến mạch") untouched —
+  still `ACTIVE`, still holds `SPM-038` "Sữa yến mạch Oatside" — and the
+  purchased-item count-list size unchanged at 50 (`NNL-004` never had a
+  purchased item to remove).
 
   **Found on the way, unrelated to this task, reported rather than
   fixed:** `deleteBaseIngredientAction`
