@@ -978,6 +978,37 @@ khi hoàn tất rồi mới bắt đầu code."*
     Migration self-applied live (schema/RPC only, no business data
     touched). Not deployed.
 
+- **D9** Rebuild the issue slip as a multi-line document with a searchable
+  picker. **Added 2026-08-08, from the owner's review of the finished screen —
+  he declined to deploy and asked two questions instead**, both of which land on
+  my design rather than the build:
+
+  > *"Tại sao phiếu xuất kho 1 lần chỉ cho xuất đúng 1 sản phẩm vậy? Đồng thời,
+  > mặt hàng cũng có rất nhiều, nếu chỉ được select thì phải tìm chính xác và
+  > rất mất thời gian."*
+
+  **Both are my omissions, and of the same kind.** §5 specified I1–I9 in terms of
+  what a single `stock_issues` row must do, and the screen followed the data
+  model one row to one form. Nobody asked what the act looks like: throwing away
+  five spoiled things is *one* event to the owner, and he should not file five
+  slips for it. Nothing in the schema forced one row per slip — `stock_issues`
+  rows are independent, so a slip can write many.
+
+  The picker is the same failure viewed from the other side. 52 purchased items
+  in a bare `<select>`, three of them beginning "Bột cà phê MR.PHIN", is a
+  scrolling exercise. I checked the screenshot he sent rather than reasoning
+  about it.
+
+  **Neither needs inventing — the shop's own purchase order screen already does
+  both.** `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx`
+  uses `components/SearchableSelect` and manages an add/remove line list. Reuse
+  both. The issue slip should read as the mirror of the purchase order it
+  reverses, which is also the layout the owner already has in his hands.
+
+  **Sequencing: this lands before the deploy, not after.** Shipping a screen
+  known to be tedious, then replacing it days later, spends the owner's patience
+  to save nothing.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
