@@ -1076,6 +1076,33 @@ khi hoàn tất rồi mới bắt đầu code."*
   touched). **Still not deployed** — this is the second review cycle the
   owner has asked for before that approval.
 
+- **D10** Lay the issue slip page out for the screen it is used on. **Added
+  2026-08-08 after the owner used the deployed page.** He confirmed the three
+  things asked (search, multi-line, package-level count list) all work, then
+  asked: *"sau khi xuất thì anh sẽ xem danh sách các phiếu xuất kho ở đâu? Bố
+  trí trang như vậy có phù hợp chưa?"* Owner chose to fix this before his first
+  count.
+
+  **The first question is the finding.** `RecentSlipsSection` renders
+  unconditionally below the submit button — the list is there. He asked where it
+  was anyway, which means it is not where a person looks. And with
+  `stock_issues` empty there is nothing to draw, so the section collapses to a
+  bare heading over blank space. **No empty state was written**: the one moment
+  the screen most needs to explain itself is the moment it says nothing.
+
+  1. **Empty state** — "Chưa có phiếu xuất nào" in the section, so it announces
+     what it is before it has anything to show.
+  2. **Two columns on a wide screen** — form left, recent slips right. The list
+     stops being something to scroll for, and the empty right-hand half of the
+     page stops being empty. Single column on narrow screens.
+  3. **Size the controls to their content.** "Số lượng" is a three-digit field
+     rendered half a screen wide; the optional detail box is larger than any
+     required field on the page.
+
+  **Out of scope, deliberately:** there is still no way to see slips older than
+  the recent list. Real, but it is a second feature, not a layout fix — note it
+  in `docs/OPEN-ITEMS.md` rather than building it here.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
