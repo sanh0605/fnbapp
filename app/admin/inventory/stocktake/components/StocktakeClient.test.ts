@@ -58,3 +58,34 @@ describe("StocktakeClient Plan D D6 -- purchase-unit counting", () => {
     expect(source).toContain("packageLines.length > 0");
   });
 });
+
+describe("StocktakeClient Plan D D10 -- mobile (M1-M4), counting happens on a phone at the shelf", () => {
+  it("M1: the confirm-preview table has a stacked-card alternative for phones, not just overflow-x-auto", () => {
+    expect(source).toContain('hidden md:block');
+    expect(source).toContain('md:hidden space-y-2');
+    // The package-size inputs stack one per row on a phone too.
+    expect(source).toContain("grid-cols-1 sm:grid-cols-3");
+  });
+
+  it("M2: every quantity input opens a numeric phone keypad -- numeric for whole-package counts, decimal where fractions are allowed", () => {
+    expect(source).toContain('inputMode="numeric"');
+    expect(source).toContain('inputMode="decimal"');
+  });
+
+  it("M3: the per-item confirm button and Luu use the default 44px tap target, not the 32px sm size", () => {
+    const confirmButton = source.match(/<Button variant=\{confirmed[^}]*\}[^>]*>/)?.[0] ?? "";
+    expect(confirmButton).not.toContain('size="sm"');
+    const legacySaveButton = source.match(/<Button variant="secondary" onClick=\{handleSave\}[^>]*>/)?.[0] ?? "";
+    expect(legacySaveButton).not.toContain('size="sm"');
+  });
+
+  it("M4: progress stays visible without scrolling back to the top", () => {
+    expect(source).toContain("Đã đếm {countedCount}/{session.lines.length}");
+    expect(source).toContain("fixed right-4 bottom-");
+  });
+
+  it("does not collapse per-line saving into a submit-at-the-end form -- saveStocktakeLine still fires per line, per confirm", () => {
+    expect(source).toContain("await saveStocktakeLine(line.id, sumBaseQty)");
+    expect(source).toContain("await saveStocktakeLine(line.id, qty)");
+  });
+});

@@ -91,3 +91,36 @@ describe("IssueSlipClient -- Plan D D7b/D9, BR-INV-009 reversal UI", () => {
     expect(source).not.toMatch(/reverse.*[Ss]lip.*all|reverseWholeSlip/);
   });
 });
+
+describe("IssueSlipClient -- Plan D D10, layout (empty state, two columns, sized controls) and mobile (M1-M4)", () => {
+  it("D10 base: RecentSlipsSection always renders, with an explicit empty state -- never a bare heading over blank space", () => {
+    expect(source).not.toContain("if (recentSlips.length === 0) return null;");
+    expect(source).toContain("Chưa có phiếu xuất nào");
+  });
+
+  it("D10 base: form and recent slips sit in two columns on a wide screen, one column otherwise", () => {
+    expect(source).toContain("function TwoColumnLayout(");
+    expect(source).toContain("lg:grid-cols-2");
+  });
+
+  it("D10 base: Số lượng is a compact field sized to a few digits, not stretched full width; Chi tiết is a single line, not the biggest input on the page", () => {
+    expect(source).toContain('<div className="w-24 shrink-0">');
+    expect(source).not.toContain("<textarea");
+  });
+
+  it("M2: the quantity input opens a numeric phone keypad", () => {
+    expect(source).toContain('inputMode="numeric"');
+  });
+
+  it("M3: tap targets are sized for a thumb -- add-line and remove-line controls, and the reverse button no longer forced to sm", () => {
+    expect(source).toContain("min-h-[44px]");
+    expect(source).toContain('className="absolute top-2 right-2 text-text-muted hover:text-danger p-2"');
+    const reverseButton = source.match(/<Button\s+variant="danger"[^>]*>/)?.[0] ?? "";
+    expect(reverseButton).not.toContain('size="sm"');
+  });
+
+  it("M4: a live count of how many lines are actually ready to submit, matching handleSubmit's own validation", () => {
+    expect(source).toContain("const filledLineCount = lines.filter(");
+    expect(source).toContain("Đã điền đủ: {filledLineCount}/{lines.length} dòng");
+  });
+});

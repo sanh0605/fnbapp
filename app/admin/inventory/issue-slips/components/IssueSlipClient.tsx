@@ -39,6 +39,19 @@ function emptyLine(): DraftLine {
   return { purchasedItemId: "", conversionId: "", packageQty: "" };
 }
 
+// D10: form left, recent slips right on a wide screen -- the owner asked
+// where the list was, and the answer was "below the fold, easy to miss."
+// A single column on narrow screens (this is also the phone layout, D10
+// widened) -- side by side would squeeze both halves too narrow to use.
+function TwoColumnLayout({ main, side }: { main: React.ReactNode; side: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div className="space-y-6">{main}</div>
+      <div className="space-y-6">{side}</div>
+    </div>
+  );
+}
+
 export function IssueSlipClient({
   items,
   recentSlips,
@@ -92,6 +105,17 @@ function FormView({
     if (Number.isNaN(d.getTime())) return [];
     return computeAffectedMonths(d);
   }, [issuedAtLocal]);
+
+  // D10/M4: standing at the shelf filling in several lines, the owner
+  // needs to see how many are actually ready without re-checking each one.
+  // "Ready" mirrors handleSubmit's own per-line validation exactly, so this
+  // count and the actual submit outcome never disagree.
+  const filledLineCount = lines.filter(line => {
+    const item = items.find(i => i.id === line.purchasedItemId);
+    const pkg = item?.packageLines.find(p => p.conversionId === line.conversionId);
+    const parsedQty = Number(line.packageQty);
+    return item && pkg && Number.isFinite(parsedQty) && parsedQty > 0;
+  }).length;
 
   function addLine() {
     setLines(prev => [...prev, emptyLine()]);
@@ -175,8 +199,8 @@ function FormView({
     onSubmitted(res.result);
   }
 
-  return (
-    <div className="space-y-6">
+  const form = (
+    <>
       <PageHeader title="Phiếu Xuất Kho" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
       {error && <Alert variant="danger">{error}</Alert>}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6 space-y-5">
@@ -186,29 +210,37 @@ function FormView({
             return (
               <div key={index} className="p-4 border border-border rounded-xl relative bg-surface-secondary/50">
                 {lines.length > 1 && (
+                  // D10/M3: a bare "x" with no padding is a hard tap on a
+                  // phone -- p-2 gives it a real hit area without changing
+                  // how it looks.
                   <button
                     type="button"
                     onClick={() => removeLine(index)}
-                    className="absolute top-4 right-4 text-text-muted hover:text-danger"
+                    className="absolute top-2 right-2 text-text-muted hover:text-danger p-2"
                     aria-label="Xoá dòng"
                   >
                     ✕
                   </button>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  <div className="md:col-span-5">
-                    <label className="block text-xs font-medium text-text-muted mb-1">Mặt hàng</label>
-                    <SearchableSelect
-                      value={line.purchasedItemId}
-                      onChange={val => handleItemChange(index, val)}
-                      options={itemOptions}
-                      placeholder="-- Chọn hàng --"
-                    />
-                    {item && (
-                      <p className="mt-1 text-xs text-text-muted">Tồn hiện tại: {formatNumber(item.onHand)} {item.unitName}</p>
-                    )}
-                  </div>
-                  <div className="md:col-span-4">
+                <div className="pr-8">
+                  <label className="block text-xs font-medium text-text-muted mb-1">Mặt hàng</label>
+                  <SearchableSelect
+                    value={line.purchasedItemId}
+                    onChange={val => handleItemChange(index, val)}
+                    options={itemOptions}
+                    placeholder="-- Chọn hàng --"
+                  />
+                  {item && (
+                    <p className="mt-1 text-xs text-text-muted">Tồn hiện tại: {formatNumber(item.onHand)} {item.unitName}</p>
+                  )}
+                </div>
+                {/* D10: "Quy cách" and "Số lượng" side by side even on a
+                    phone -- both are short (a size label, a small number),
+                    so a full-width stacked layout only wasted space and
+                    made "Số lượng" look like a much bigger field than a
+                    3-digit number needs (the owner's own complaint). */}
+                <div className="flex gap-3 mt-3">
+                  <div className="flex-1 min-w-0">
                     <label className="block text-xs font-medium text-text-muted mb-1">Quy cách</label>
                     <select
                       value={line.conversionId}
@@ -222,12 +254,13 @@ function FormView({
                       ))}
                     </select>
                   </div>
-                  <div className="md:col-span-3">
+                  <div className="w-24 shrink-0">
                     <label className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
                     <input
                       type="number"
                       min="0"
                       step="any"
+                      inputMode="numeric"
                       value={line.packageQty}
                       onChange={e => updateLine(index, { packageQty: e.target.value })}
                       placeholder="0"
@@ -242,10 +275,16 @@ function FormView({
           <button
             type="button"
             onClick={addLine}
-            className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition"
+            className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px]"
           >
             + Thêm mặt hàng
           </button>
+          {/* D10/M4: how many lines are actually ready to submit, updated
+              live -- standing at the shelf with several lines half-filled,
+              this is the "where did I stop" the owner asked for. */}
+          <p className="text-xs text-text-muted text-center">
+            Đã điền đủ: {filledLineCount}/{lines.length} dòng
+          </p>
         </div>
 
         <div>
@@ -263,10 +302,13 @@ function FormView({
 
         <div>
           <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Chi tiết (không bắt buộc)</label>
-          <textarea
+          {/* D10: a single line, not a 2-row textarea -- the placeholder
+              itself is one short phrase, and an optional field should not
+              be the visually biggest input on the page. */}
+          <input
+            type="text"
             value={detail}
             onChange={e => setDetail(e.target.value)}
-            rows={2}
             placeholder="Ví dụ: rơi vỡ khi vận chuyển..."
             className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
           />
@@ -287,14 +329,14 @@ function FormView({
           )}
         </div>
 
-        <Button variant="primary" onClick={handleSubmit} loading={submitting}>
+        <Button variant="primary" onClick={handleSubmit} loading={submitting} className="w-full">
           Ghi phiếu xuất ({lines.length} dòng)
         </Button>
       </div>
-
-      <RecentSlipsSection recentSlips={recentSlips} />
-    </div>
+    </>
   );
+
+  return <TwoColumnLayout main={form} side={<RecentSlipsSection recentSlips={recentSlips} />} />;
 }
 
 function SubmittedView({
@@ -308,8 +350,8 @@ function SubmittedView({
   recentSlips: IssueSlipRow[];
   onNew: () => void;
 }) {
-  return (
-    <div className="space-y-6">
+  const main = (
+    <>
       <PageHeader title="Phiếu Xuất Kho" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
       <Alert variant="success" title={`Đã ghi phiếu ${result.slipId} (${result.lines.length} dòng)`}>
         <div className="space-y-1">
@@ -324,10 +366,9 @@ function SubmittedView({
         </div>
       </Alert>
       <Button variant="secondary" onClick={onNew}>Lập phiếu khác</Button>
-
-      <RecentSlipsSection recentSlips={recentSlips} />
-    </div>
+    </>
   );
+  return <TwoColumnLayout main={main} side={<RecentSlipsSection recentSlips={recentSlips} />} />;
 }
 
 /**
@@ -337,6 +378,10 @@ function SubmittedView({
  * its own single-row group via `row.slipId ?? row.id`. Reversal stays
  * per-line (I11): each row that is not itself a reversal, and has not
  * already been reversed, gets its own "Đảo phiếu" button.
+ *
+ * D10: this used to render nothing at all when recentSlips was empty --
+ * the one moment the section most needed to explain itself, it said
+ * nothing. Now it always renders, with an explicit empty state.
  */
 function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
   const [isPending, startTransition] = useTransition();
@@ -375,61 +420,62 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
     });
   }
 
-  if (recentSlips.length === 0) return null;
-
   return (
     <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">
       <h2 className="font-bold text-text-primary mb-3">Phiếu xuất gần đây</h2>
       {error && <Alert variant="danger">{error}</Alert>}
-      <div className="space-y-4 text-sm">
-        {groups.map(([groupKey, rows]) => (
-          <div key={groupKey} className="border-b border-border pb-3 last:border-0">
-            <div className="text-xs text-text-muted mb-1.5">
-              {rows[0].slipId ?? "(phiếu cũ)"} &middot; {formatDateTime(rows[0].issuedAt)}
-              {rows[0].note && ` · ${rows[0].note}`}
-            </div>
-            <div className="space-y-2">
-              {rows.map(row => {
-                const isReversal = row.reversesIssueId !== null;
-                const alreadyReversed = row.reversedByIssueId !== null;
-                return (
-                  <div key={row.id} className="pl-3 border-l-2 border-border/60">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <span className="font-medium text-text-primary">{row.itemName}</span>{" "}
-                        <span className={row.baseQuantity < 0 ? "text-success" : "text-text-secondary"}>
-                          {row.baseQuantity > 0 ? "-" : "+"}{formatNumber(Math.abs(row.baseQuantity))}
-                        </span>
-                        {isReversal && <span className="ml-2 text-xs text-warning">Đảo dòng {row.reversesIssueId}</span>}
-                        {alreadyReversed && <span className="ml-2 text-xs text-success">Đã đảo bởi {row.reversedByIssueId}</span>}
+      {recentSlips.length === 0 ? (
+        <EmptyState icon="🧾" title="Chưa có phiếu xuất nào" description="Phiếu xuất kho ghi ở đây sẽ hiện ngay tại mục này." />
+      ) : (
+        <div className="space-y-4 text-sm">
+          {groups.map(([groupKey, rows]) => (
+            <div key={groupKey} className="border-b border-border pb-3 last:border-0">
+              <div className="text-xs text-text-muted mb-1.5">
+                {rows[0].slipId ?? "(phiếu cũ)"} &middot; {formatDateTime(rows[0].issuedAt)}
+                {rows[0].note && ` · ${rows[0].note}`}
+              </div>
+              <div className="space-y-2">
+                {rows.map(row => {
+                  const isReversal = row.reversesIssueId !== null;
+                  const alreadyReversed = row.reversedByIssueId !== null;
+                  return (
+                    <div key={row.id} className="pl-3 border-l-2 border-border/60">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <span className="font-medium text-text-primary">{row.itemName}</span>{" "}
+                          <span className={row.baseQuantity < 0 ? "text-success" : "text-text-secondary"}>
+                            {row.baseQuantity > 0 ? "-" : "+"}{formatNumber(Math.abs(row.baseQuantity))}
+                          </span>
+                          {isReversal && <span className="ml-2 text-xs text-warning">Đảo dòng {row.reversesIssueId}</span>}
+                          {alreadyReversed && <span className="ml-2 text-xs text-success">Đã đảo bởi {row.reversedByIssueId}</span>}
+                        </div>
+                        {!isReversal && !alreadyReversed && (
+                          <Button
+                            variant="danger"
+                            onClick={() => handleReverse(row)}
+                            loading={isPending && reversingId === row.id}
+                          >
+                            Đảo dòng
+                          </Button>
+                        )}
                       </div>
                       {!isReversal && !alreadyReversed && (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleReverse(row)}
-                          loading={isPending && reversingId === row.id}
-                        >
-                          Đảo dòng
-                        </Button>
+                        <input
+                          type="text"
+                          placeholder="Lý do đảo (không bắt buộc)"
+                          value={reasonById[row.id] ?? ""}
+                          onChange={e => setReasonById(prev => ({ ...prev, [row.id]: e.target.value }))}
+                          className="mt-1 w-full border border-border rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
+                        />
                       )}
                     </div>
-                    {!isReversal && !alreadyReversed && (
-                      <input
-                        type="text"
-                        placeholder="Lý do đảo (không bắt buộc)"
-                        value={reasonById[row.id] ?? ""}
-                        onChange={e => setReasonById(prev => ({ ...prev, [row.id]: e.target.value }))}
-                        className="mt-1 w-full border border-border rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
-                      />
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

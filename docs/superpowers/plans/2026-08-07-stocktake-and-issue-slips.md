@@ -1170,6 +1170,72 @@ khi hoàn tất rồi mới bắt đầu code."*
   This is the single property that makes counting on a phone viable at all — do
   not refactor it into a submit-at-the-end form.
 
+  **Done 2026-08-09 — base D10 and the M1-M4 widening together, one pass.**
+
+  Base D10 (`IssueSlipClient.tsx`): `RecentSlipsSection` now always renders,
+  with an explicit empty state ("Chưa có phiếu xuất nào") instead of
+  collapsing to a bare heading over blank space. A new `TwoColumnLayout`
+  puts the form and the recent-slips list side by side from `lg:` up (form
+  left, list right — answers the owner's own question about where the list
+  is) and stacks to one column below it, which is also the phone layout
+  M1-M4 need. "Quy cách" and "Số lượng" moved out of the 12-column grid
+  into their own flex row (a short select next to a `w-24` number input)
+  so the quantity field stopped being a 3-digit input stretched full
+  screen width; "Chi tiết" changed from a 2-row `<textarea>` to a single-
+  line input, since an optional field should not be the visually largest
+  one on the page.
+
+  M1-M4, both screens:
+  - **M1**: `StocktakeClient`'s confirm-preview `<table>` gained the same
+    `hidden md:block` / `md:hidden` card-list split `PurchaseOrdersClient`
+    already uses in production — a phone gets one card per row, no
+    sideways scroll. `PackageLineCard`'s own conversion inputs changed
+    from `grid-cols-2 sm:grid-cols-3` to `grid-cols-1 sm:grid-cols-3` —
+    one package size per row on a phone, not two crammed side by side.
+  - **M2**: `IssueSlipClient`'s quantity input gained `inputMode="numeric"`
+    (previously absent). `StocktakeClient`'s `LegacyLineCard` input got
+    `inputMode="decimal"`, not `"numeric"` — deliberately different from
+    `PackageLineCard`'s whole-package-only inputs, because this field
+    still allows fractional quantities (`step="any"`) and `"numeric"`
+    hides the decimal point on most phone keypads.
+  - **M3**: every `size="sm"` (32px) button in either screen's counting/
+    issuing flow bumped to the default `md` (44px) — the per-item confirm
+    button (C6), the legacy save button, the session header actions, the
+    reverse button. The remove-line "✕" in `IssueSlipClient` gained real
+    padding (`p-2`) instead of a bare glyph with no hit area.
+  - **M4**: `StocktakeClient` gained a `position: fixed` progress badge
+    ("Đã đếm X/Y"), bottom-right, respecting the phone's safe area
+    (`bottom-[calc(1rem+env(safe-area-inset-bottom))]`, the same
+    convention `app/admin/layout.tsx` already uses) — stays legible while
+    scrolling a long list, unlike the existing top-banner count.
+    `IssueSlipClient` gained a live "Đã điền đủ: X/Y dòng" count, computed
+    with the exact same per-line validity check `handleSubmit` itself
+    uses, so it never disagrees with what actually submits.
+
+  **What did not change, checked explicitly:** `saveStocktakeLine` is still
+  called from `handleConfirm`/`handleSave` per line, per confirm — no
+  batching, no submit-at-the-end. Confirmed by grepping the two call sites
+  still exist, and by a test asserting it (`StocktakeClient.test.ts`).
+
+  **Self-checked at phone width, by looking, not by an automated test —
+  this repo's Vitest config has no jsdom for these files.** A temporary
+  page rendered both client components directly with mock props (bypassing
+  auth and the server actions entirely — a `"use client"` component takes
+  props, so no login was needed), viewed with Playwright at 375×812 and
+  1280×900. Confirmed visually: package-size inputs stack one per row on
+  the narrow width; "Quy cách"/"Số lượng" sit compactly side by side, no
+  longer a stretched full-width number field; the empty state renders;
+  the two-column layout activates at the wide width and collapses to one
+  column at phone width; the floating "Đã đếm" badge and the live "Đã
+  điền đủ" count both render and update. The temporary page, and every
+  screenshot taken while checking it, were deleted before this task was
+  reported done — nothing in the diff is scaffolding.
+
+  `npx tsc --noEmit`: 0 errors. `npm run build`: succeeds. `npx vitest
+  run`: 1038/1038 (+11 from D9's 1027). `check-rules-current.ts`: clean.
+  No migration — display only, no schema or business-data change. Not
+  deployed.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than

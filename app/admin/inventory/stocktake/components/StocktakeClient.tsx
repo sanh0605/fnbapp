@@ -130,10 +130,10 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
         subtitle="Đếm thực tế toàn bộ nguyên liệu và bán thành phẩm, so sánh với sổ sách hệ thống."
         actions={
           <div className="flex gap-2">
-            <Button variant="primary" size="sm" onClick={handlePreview} loading={previewLoading}>
+            <Button variant="primary" onClick={handlePreview} loading={previewLoading}>
               Xác nhận và áp dụng
             </Button>
-            <Button variant="danger" size="sm" onClick={handleCancel} loading={cancelling}>
+            <Button variant="danger" onClick={handleCancel} loading={cancelling}>
               Hủy phiên
             </Button>
           </div>
@@ -145,6 +145,22 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
         Đã đếm {countedCount}/{session.lines.length} mặt hàng.
         {session.notes && <div className="mt-1 italic">Ghi chú: {session.notes}</div>}
       </Alert>
+
+      {/* M4: standing at a shelf partway through a 50+ item list, the top
+          banner scrolls out of view -- this stays pinned so "where did I
+          stop" never requires scrolling back up. position: fixed is safe
+          here: no ancestor between this and the viewport applies a
+          transform, so it anchors to the real viewport, not a scroll
+          container. Bottom offset respects the phone's own safe area
+          (gesture bar), same convention app/admin/layout.tsx already uses. */}
+      {!isPreviewing && session.lines.length > 0 && (
+        <div
+          className="fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 bg-surface-card border border-border rounded-full shadow-lg px-4 py-2 text-sm font-bold text-text-primary"
+          aria-live="polite"
+        >
+          Đã đếm {countedCount}/{session.lines.length}
+        </div>
+      )}
 
       {preview && (
         <div className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4">
@@ -160,38 +176,66 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
             </Alert>
           )}
           {preview.rows.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-text-secondary text-xs">
-                    <th className="px-3 py-2">Mặt hàng</th>
-                    <th className="px-3 py-2 text-right">Tồn hiện tại</th>
-                    <th className="px-3 py-2 text-right">Điều chỉnh</th>
-                    <th className="px-3 py-2 text-right">Dự kiến sau áp dụng</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {preview.rows.map(row => {
-                    const line = session.lines.find(candidate => candidate.id === row.lineId);
-                    const unitName = line?.unitName || "";
-                    // D5's ingredient-correction rows (item_type BASE_INGREDIENT,
-                    // synthesized from an aggregate, not a real session line)
-                    // carry no lineId -- fall back to the ingredient reference.
-                    const displayName = line?.itemName || row.itemReference;
-                    return (
-                      <tr key={row.lineId || row.itemReference}>
-                        <td className="px-3 py-2 font-medium text-text-primary">{displayName}</td>
-                        <td className="px-3 py-2 text-right">{formatNumber(row.currentTheoreticalQty)} {unitName}</td>
-                        <td className={`px-3 py-2 text-right font-bold ${row.countVariance > 0 ? "text-success" : "text-danger"}`}>
+            <>
+              {/* M1: a table needs a sideways scroll on a phone even with
+                  overflow-x-auto -- that is not readable one-handed at a
+                  shelf. Desktop keeps the table; a phone gets one card per
+                  row instead, same data, no horizontal scroll. */}
+              <div className="overflow-x-auto hidden md:block">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left text-text-secondary text-xs">
+                      <th className="px-3 py-2">Mặt hàng</th>
+                      <th className="px-3 py-2 text-right">Tồn hiện tại</th>
+                      <th className="px-3 py-2 text-right">Điều chỉnh</th>
+                      <th className="px-3 py-2 text-right">Dự kiến sau áp dụng</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {preview.rows.map(row => {
+                      const line = session.lines.find(candidate => candidate.id === row.lineId);
+                      const unitName = line?.unitName || "";
+                      // D5's ingredient-correction rows (item_type BASE_INGREDIENT,
+                      // synthesized from an aggregate, not a real session line)
+                      // carry no lineId -- fall back to the ingredient reference.
+                      const displayName = line?.itemName || row.itemReference;
+                      return (
+                        <tr key={row.lineId || row.itemReference}>
+                          <td className="px-3 py-2 font-medium text-text-primary">{displayName}</td>
+                          <td className="px-3 py-2 text-right">{formatNumber(row.currentTheoreticalQty)} {unitName}</td>
+                          <td className={`px-3 py-2 text-right font-bold ${row.countVariance > 0 ? "text-success" : "text-danger"}`}>
+                            {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)} {unitName}
+                          </td>
+                          <td className="px-3 py-2 text-right font-semibold">{formatNumber(row.projectedQty)} {unitName}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="md:hidden space-y-2">
+                {preview.rows.map(row => {
+                  const line = session.lines.find(candidate => candidate.id === row.lineId);
+                  const unitName = line?.unitName || "";
+                  const displayName = line?.itemName || row.itemReference;
+                  return (
+                    <div key={row.lineId || row.itemReference} className="border border-border rounded-lg p-3">
+                      <div className="font-medium text-text-primary mb-1.5">{displayName}</div>
+                      <div className="flex justify-between text-xs text-text-secondary">
+                        <span>Tồn hiện tại: {formatNumber(row.currentTheoreticalQty)} {unitName}</span>
+                        <span className={`font-bold ${row.countVariance > 0 ? "text-success" : "text-danger"}`}>
                           {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)} {unitName}
-                        </td>
-                        <td className="px-3 py-2 text-right font-semibold">{formatNumber(row.projectedQty)} {unitName}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        </span>
+                      </div>
+                      <div className="text-xs text-text-secondary mt-0.5">
+                        Dự kiến sau áp dụng: <span className="font-semibold text-text-primary">{formatNumber(row.projectedQty)} {unitName}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setPreview(null)} disabled={applying}>
@@ -333,7 +377,10 @@ function PackageLineCard({
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+      {/* M1: one package size per row on a phone, not two crammed side by
+          side -- "mỗi dòng quy cách một thẻ, xếp dọc". Expands from sm:
+          up, where there is room to spare. */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
         {line.packageLines.map(pkg => (
           <label key={pkg.conversionId} className="flex flex-col gap-1">
             <span className="text-xs text-text-secondary">{pkg.sizeLabel}</span>
@@ -367,7 +414,10 @@ function PackageLineCard({
             </>
           )}
         </div>
-        <Button variant={confirmed ? "secondary" : "primary"} size="sm" onClick={handleConfirm} loading={saving} disabled={disabled}>
+        {/* M3: this is the button tapped most often in the whole screen --
+            one per purchased item, standing at the shelf -- so it gets a
+            full 44px thumb target (Button's default md size), not sm's 32px. */}
+        <Button variant={confirmed ? "secondary" : "primary"} onClick={handleConfirm} loading={saving} disabled={disabled}>
           Xác nhận
         </Button>
       </div>
@@ -422,13 +472,19 @@ function LegacyLineCard({
             type="number"
             min="0"
             step="any"
+            // M2: decimal, not numeric -- this field allows fractional
+            // quantities (step="any", unlike PackageLineCard's whole-
+            // package-only inputs), and inputMode="numeric" hides the
+            // decimal point on most phone keypads. "decimal" opens a
+            // number pad that still has one.
+            inputMode="decimal"
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
             disabled={disabled}
             className="w-24 border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring"
           />
           <span className="text-text-muted text-xs">{line.unitName}</span>
-          <Button variant="secondary" size="sm" onClick={handleSave} loading={saving} disabled={disabled}>
+          <Button variant="secondary" onClick={handleSave} loading={saving} disabled={disabled}>
             Lưu
           </Button>
         </div>
