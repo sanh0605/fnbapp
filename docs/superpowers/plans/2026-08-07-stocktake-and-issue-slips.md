@@ -654,6 +654,56 @@ khi hoàn tất rồi mới bắt đầu code."*
 
 - **D6** Convert the count screen to purchase units (Gap 5), display only —
   storage stays exact base units.
+
+  **Done 2026-08-08.** `app/admin/inventory/stocktake/actions.ts`:
+  `getStocktakeSessionData` now attaches one `packageLine` per `ACTIVE`
+  conversion to every `PURCHASED_ITEM` line, built by
+  `buildPackageLines` (D3) against `UOM_Conversions` — **the same
+  function, not a second label generator.** The pre-existing size-label
+  test (`lib/stocktake-package-lines.test.ts`) already proves
+  `sizeLabel` is right; this task only had to reuse it. A legacy
+  `BASE_INGREDIENT` line surviving from a session opened before D4/D6
+  (C8/C16) gets an empty `packageLines` array and falls back to the old
+  base-unit input, unchanged — not a crash, not a special case in the
+  new code path.
+
+  `StocktakeClient.tsx`: `PackageLineCard` renders one integer input per
+  conversion under a single purchased item, one "Xác nhận" button
+  (**C6 — confirmation is per purchased item, not per conversion line and
+  not per ingredient**, stated explicitly in the component's own
+  comment). Blank inputs sum as `0` inside a confirmed item, matching
+  the owner's described workflow exactly. A non-integer entry is
+  refused with the reason (`BR-INV-007` named in the message) rather
+  than rounded — checked with `Number.isInteger`, not `step="1"` alone,
+  since a number input still lets a decimal be typed. Editing any
+  conversion's value after the item was confirmed clears the confirmed
+  state immediately (`setConfirmed(false)` on every keystroke) — the
+  next visible state is "đã sửa, chưa xác nhận lại", not a stale ✓
+  sitting over a changed number. Closing/previewing a session with
+  purchased items still unconfirmed is allowed (already exactly `S2` —
+  server-side, nothing changed there) and now lists them by real name in
+  the preview panel, not just a count.
+
+  `AppliedSessionView`/preview table keyed by `row.lineId || row.itemReference`
+  rather than `row.lineId` alone — D5's ingredient-correction rows (`item_type
+  BASE_INGREDIENT`, synthesized from an aggregate) carry `lineId: null` and
+  would have collided as React keys or shown a blank name otherwise.
+
+  14 new tests: 2 in `actions.test.ts` (package lines attach correctly
+  for the real `Dâu sấy` conversion shape, C8's inactive conversion
+  stays excluded; a legacy line gets an empty array, not a crash), 6 in
+  `StocktakeClient.test.ts` (source-level, matching this repo's existing
+  convention for this file — no jsdom/testing-library in this project's
+  Vitest config, confirmed before writing them rather than assumed):
+  label reuse, integer-only rejection, per-purchased-item confirmation,
+  confirmation clearing on edit, unconfirmed listing, the legacy path
+  staying intact.
+
+  `npx tsc --noEmit`: 0 errors. `npm run build`: succeeds. `npx vitest
+  run`: 976/976 (163 files, +8). `check-rules-current.ts`: clean. Code
+  only — not deployed; push/deploy needs its own separate approval, same
+  as every prior code task in this plan.
+
 - **D7** Build the issue slip screen (Gap 2), covering I1–I9.
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
@@ -666,6 +716,25 @@ khi hoàn tất rồi mới bắt đầu code."*
 
 Everything in `CLAUDE.md` section 9, plus:
 
+- **A case that cannot be reached with today's real data still needs a
+  live proof, not a fixture — this is how D5b did it, and D8 will need it
+  again.** No purchased item has ever had a real issue recorded, so the
+  entire `theoretical < counted ≤ total_purchased` range (`BR-INV-008`)
+  could not be reached against real production data without first writing
+  real consumption history — and writing that permanently would have
+  needed its own approval, for a state that only exists to prove a test.
+  The technique: build the whole scenario — setup *and* the case under
+  test — as real RPC calls (`open_stocktake_session_atomic`,
+  `save_stocktake_line_atomic`, `apply_stocktake_session_atomic`, …)
+  inside **one SQL transaction, `BEGIN ... ROLLBACK`**
+  (`supabase db query --linked --file <script>.sql`, results collected into
+  a temporary table and `SELECT`ed before the `ROLLBACK`, since `RAISE
+  NOTICE` does not surface through that query path). Real code, real
+  tables, real production data — and confirmed independently afterward,
+  by reading the actual rows, that nothing persisted. Reach for this
+  whenever a case needs a real *prior* state (an existing issue, an
+  existing session, a purchased item mid-count) that nothing in
+  production has produced yet.
 - Every case in §5 has a test, named after its id (C1, S2, I4 …).
 - The `Dâu sấy` worked example reproduces **596 đ/g**, **3.100 g**,
   **1.847.600đ**, **596.000đ** — from the real engine, not a fixture, and

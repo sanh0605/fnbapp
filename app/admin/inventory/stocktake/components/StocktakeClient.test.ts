@@ -16,3 +16,45 @@ describe("StocktakeClient confirmation step", () => {
     expect(source).toContain("Quay lại chỉnh sửa");
   });
 });
+
+describe("StocktakeClient Plan D D6 -- purchase-unit counting", () => {
+  it("reuses buildPackageLines' labels, does not regenerate a second one", () => {
+    // The exact defect that broke section 9's own worked example was the
+    // same string produced two different ways -- this screen must render
+    // line.packageLines (built server-side by lib/stocktake-package-lines.ts)
+    // rather than deriving its own sizeLabel string.
+    expect(source).toContain("packageLines.map(pkg =>");
+    expect(source).toContain("pkg.sizeLabel");
+    expect(source).not.toMatch(/sizeLabel\s*=\s*`/); // no local re-derivation
+  });
+
+  it("only accepts whole packages, rejects decimals with the BR-INV-007 reason instead of rounding", () => {
+    expect(source).toContain("Number.isInteger(parsed)");
+    expect(source).toContain("BR-INV-007");
+    expect(source).not.toMatch(/Math\.round\(parsed\)|Math\.floor\(parsed\)/);
+  });
+
+  it("confirms per purchased item (one card, one button), not per conversion or per ingredient", () => {
+    expect(source).toContain("function PackageLineCard(");
+    // One handleConfirm per card, summing every conversion's value into a
+    // single saveStocktakeLine call -- not one save per conversion.
+    expect(source).toContain("async function handleConfirm()");
+    expect(source).toContain("sumBaseQty += parsed * pkg.conversionRate");
+  });
+
+  it("clears the confirmed state when a line is edited after being confirmed (C6)", () => {
+    expect(source).toContain("setConfirmed(false)");
+    expect(source).toContain("function handleInputChange(");
+  });
+
+  it("lists unconfirmed purchased items by name when previewing, rather than blocking the close", () => {
+    expect(source).toContain("unconfirmedLines");
+    expect(source).toContain("l.countedQty === null");
+    expect(source).toContain("mặt hàng chưa xác nhận");
+  });
+
+  it("keeps the legacy base-unit input path for pre-D6 sessions (C8/C16), unchanged", () => {
+    expect(source).toContain("function LegacyLineCard(");
+    expect(source).toContain("packageLines.length > 0");
+  });
+});

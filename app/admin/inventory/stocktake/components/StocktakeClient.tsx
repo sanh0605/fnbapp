@@ -71,6 +71,10 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
 
   const countedCount = session.lines.filter(l => l.countedQty !== null).length;
   const isPreviewing = preview !== null;
+  // Plan D C6: closing with unconfirmed purchased items is allowed -- it is
+  // exactly S2, that ingredient is left untouched -- but the owner must see
+  // which ones by name, not discover it silently.
+  const unconfirmedLines = session.lines.filter(l => l.countedQty === null);
 
   async function handlePreview() {
     setPreviewLoading(true);
@@ -149,6 +153,12 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
               ? "Không có chênh lệch cần điều chỉnh. Xác nhận để khóa phiên kiểm kê."
               : `Sẽ ghi ${preview.ledgerCount} điều chỉnh sổ kho và ${preview.issueCount} dòng xuất kho (kiểm kê). Chênh lệch được giữ theo thời điểm từng mặt hàng được đếm, nên các giao dịch phát sinh sau đó vẫn được bảo toàn.`}
           </Alert>
+          {unconfirmedLines.length > 0 && (
+            <Alert variant="danger" title={`${unconfirmedLines.length} mặt hàng chưa xác nhận`}>
+              Những mặt hàng sau sẽ giữ nguyên tồn kho hiện tại, không bị đụng tới:{" "}
+              {unconfirmedLines.map(l => l.itemName).join(", ")}.
+            </Alert>
+          )}
           {preview.rows.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -164,9 +174,13 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
                   {preview.rows.map(row => {
                     const line = session.lines.find(candidate => candidate.id === row.lineId);
                     const unitName = line?.unitName || "";
+                    // D5's ingredient-correction rows (item_type BASE_INGREDIENT,
+                    // synthesized from an aggregate, not a real session line)
+                    // carry no lineId -- fall back to the ingredient reference.
+                    const displayName = line?.itemName || row.itemReference;
                     return (
-                      <tr key={row.lineId}>
-                        <td className="px-3 py-2 font-medium text-text-primary">{line?.itemName || row.itemReference}</td>
+                      <tr key={row.lineId || row.itemReference}>
+                        <td className="px-3 py-2 font-medium text-text-primary">{displayName}</td>
                         <td className="px-3 py-2 text-right">{formatNumber(row.currentTheoreticalQty)} {unitName}</td>
                         <td className={`px-3 py-2 text-right font-bold ${row.countVariance > 0 ? "text-success" : "text-danger"}`}>
                           {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)} {unitName}
@@ -193,23 +207,12 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
       {session.lines.length === 0 ? (
         <EmptyState icon="📋" title="Không có mặt hàng nào" description="Không tìm thấy nguyên liệu/bán thành phẩm nào để kiểm kê." />
       ) : (
-        <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                <th className="px-4 py-3 font-bold">Mặt hàng</th>
-                <th className="px-4 py-3 font-bold">Loại</th>
-                <th className="px-4 py-3 font-bold text-right">Số đếm thực tế</th>
-                <th className="px-4 py-3 font-bold text-right">Sổ sách</th>
-                <th className="px-4 py-3 font-bold text-right">Chênh lệch</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {session.lines.map(line => (
-                <LineRow key={line.id} line={line} disabled={isPreviewing} />
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {session.lines.map(line =>
+            line.packageLines.length > 0
+              ? <PackageLineCard key={line.id} line={line} disabled={isPreviewing} />
+              : <LegacyLineCard key={line.id} line={line} disabled={isPreviewing} />,
+          )}
         </div>
       )}
     </div>
@@ -237,7 +240,7 @@ function AppliedSessionView({ sessionId, result }: { sessionId: string; result: 
           <h2 className="font-bold text-text-primary mb-3">Các điều chỉnh đã áp dụng</h2>
           <div className="space-y-2 text-sm">
             {result.rows.map(row => (
-              <div key={row.lineId} className="flex justify-between gap-4 border-b border-border pb-2 last:border-0">
+              <div key={row.lineId || row.itemReference} className="flex justify-between gap-4 border-b border-border pb-2 last:border-0">
                 <span>{row.itemReference}</span>
                 <span className={row.countVariance > 0 ? "text-success font-bold" : "text-danger font-bold"}>
                   {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)}
@@ -251,7 +254,134 @@ function AppliedSessionView({ sessionId, result }: { sessionId: string; result: 
   );
 }
 
-function LineRow({
+/**
+ * Plan D D6 -- one purchased item, one integer input per ACTIVE package
+ * size (lib/stocktake-package-lines.ts, reused from D3, not regenerated
+ * here). C6: confirmation happens once per purchased item, not per
+ * conversion line and not per ingredient -- a single "Xác nhận" commits
+ * every conversion's value as one summed base-unit count.
+ */
+function PackageLineCard({
+  line,
+  disabled = false,
+}: {
+  line: StocktakeSessionView["lines"][number];
+  disabled?: boolean;
+}) {
+  const [values, setValues] = useState<Record<string, string>>({});
+  // Confirmed reflects the SERVER's last saved count, not local input state
+  // -- true only immediately after a successful save, and cleared the
+  // moment any input changes afterward (C6: editing clears confirmation).
+  const [confirmed, setConfirmed] = useState(line.countedQty !== null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isCounted = line.countedQty !== null;
+  const variance = isCounted && line.theoreticalAtCount !== null ? line.countedQty! - line.theoreticalAtCount : null;
+
+  function handleInputChange(conversionId: string, raw: string) {
+    setValues(prev => ({ ...prev, [conversionId]: raw }));
+    setConfirmed(false);
+    setError(null);
+  }
+
+  async function handleConfirm() {
+    // BR-INV-007: only whole sealed packages are counted -- reject a
+    // decimal with the reason, rather than rounding it silently.
+    let sumBaseQty = 0;
+    for (const pkg of line.packageLines) {
+      const raw = values[pkg.conversionId];
+      if (raw === undefined || raw.trim() === "") continue;
+      const parsed = Number(raw);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        setError(`Số lượng "${pkg.sizeLabel}" không hợp lệ.`);
+        return;
+      }
+      if (!Number.isInteger(parsed)) {
+        setError(
+          `"${pkg.sizeLabel}": chỉ nhập số nguyên gói còn nguyên seal (quy tắc BR-INV-007) -- không ước lượng phần lẻ.`,
+        );
+        return;
+      }
+      sumBaseQty += parsed * pkg.conversionRate;
+    }
+
+    setSaving(true);
+    setError(null);
+    const res = await saveStocktakeLine(line.id, sumBaseQty);
+    setSaving(false);
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    setConfirmed(true);
+  }
+
+  return (
+    <div className={`bg-surface-card rounded-card shadow-sm border p-4 ${confirmed ? "border-success" : "border-border"}`}>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <span className="font-medium text-text-primary">{line.itemName}</span>
+          <span className="ml-2 text-text-secondary text-xs">Hàng mua vào</span>
+        </div>
+        {confirmed ? (
+          <span className="text-success text-xs font-bold flex items-center gap-1">✓ Đã xác nhận</span>
+        ) : isCounted ? (
+          <span className="text-warning text-xs font-bold">Đã sửa, chưa xác nhận lại</span>
+        ) : (
+          <span className="text-text-muted text-xs">Chưa xác nhận</span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+        {line.packageLines.map(pkg => (
+          <label key={pkg.conversionId} className="flex flex-col gap-1">
+            <span className="text-xs text-text-secondary">{pkg.sizeLabel}</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              placeholder="0"
+              value={values[pkg.conversionId] ?? ""}
+              onChange={e => handleInputChange(pkg.conversionId, e.target.value)}
+              disabled={disabled}
+              className="border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring"
+            />
+          </label>
+        ))}
+      </div>
+
+      {error && <div className="text-danger text-xs mb-2">{error}</div>}
+
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-text-secondary">
+          {isCounted && line.theoreticalAtCount !== null && (
+            <>
+              Sổ sách: {formatNumber(line.theoreticalAtCount)} {line.unitName}
+              {variance !== null && (
+                <span className={`ml-2 font-bold ${variance === 0 ? "text-text-secondary" : variance > 0 ? "text-success" : "text-danger"}`}>
+                  {variance > 0 ? "+" : ""}{formatNumber(variance)} {line.unitName}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+        <Button variant={confirmed ? "secondary" : "primary"} size="sm" onClick={handleConfirm} loading={saving} disabled={disabled}>
+          Xác nhận
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Legacy path, unchanged behaviour: a BASE_INGREDIENT line that survives
+ * from a session opened before D4/D6 (C8/C16 -- an already-open session
+ * keeps its lines regardless of what a new session would offer). Has no
+ * package lines to render, so it keeps the old single base-unit input.
+ */
+function LegacyLineCard({
   line,
   disabled = false,
 }: {
@@ -278,17 +408,15 @@ function LineRow({
   }
 
   return (
-    <tr className="hover:bg-page transition-colors">
-      <td className="px-4 py-3 font-medium text-text-primary">{line.itemName}</td>
-      <td className="px-4 py-3 text-text-secondary text-xs">
-        {line.itemType === "SEMI_PRODUCT"
-        ? "Bán thành phẩm"
-        : line.itemType === "PURCHASED_ITEM"
-          ? "Hàng mua vào"
-          : "Nguyên liệu"}
-      </td>
-      <td className="px-4 py-3 text-right">
-        <div className="flex items-center justify-end gap-2">
+    <div className="bg-surface-card rounded-card shadow-sm border border-border p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <span className="font-medium text-text-primary">{line.itemName}</span>
+          <span className="ml-2 text-text-secondary text-xs">
+            {line.itemType === "SEMI_PRODUCT" ? "Bán thành phẩm" : "Nguyên liệu"}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
           {error && <span className="text-danger text-xs">{error}</span>}
           <input
             type="number"
@@ -304,13 +432,19 @@ function LineRow({
             Lưu
           </Button>
         </div>
-      </td>
-      <td className="px-4 py-3 text-right text-text-secondary">
-        {isCounted ? `${formatNumber(line.theoreticalAtCount)} ${line.unitName}` : "---"}
-      </td>
-      <td className={`px-4 py-3 text-right font-bold ${variance === null ? "text-text-muted" : variance === 0 ? "text-text-secondary" : variance > 0 ? "text-success" : "text-danger"}`}>
-        {variance === null ? "---" : `${variance > 0 ? "+" : ""}${formatNumber(variance)} ${line.unitName}`}
-      </td>
-    </tr>
+      </div>
+      <div className="mt-2 text-xs text-text-secondary">
+        {isCounted ? (
+          <>
+            Sổ sách: {formatNumber(line.theoreticalAtCount)} {line.unitName}
+            {variance !== null && (
+              <span className={`ml-2 font-bold ${variance === 0 ? "text-text-secondary" : variance > 0 ? "text-success" : "text-danger"}`}>
+                {variance > 0 ? "+" : ""}{formatNumber(variance)} {line.unitName}
+              </span>
+            )}
+          </>
+        ) : "---"}
+      </div>
+    </div>
   );
 }

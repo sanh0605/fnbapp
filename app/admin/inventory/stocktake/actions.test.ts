@@ -199,3 +199,78 @@ describe("startStocktakeSession item list", () => {
     expect(mocks.openStocktakeSessionAtomic).not.toHaveBeenCalled();
   });
 });
+
+describe("getStocktakeSessionData package lines", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({
+      ok: true,
+      actor: { id: "admin-1", name: "Admin", role: "ADMIN" },
+    });
+  });
+
+  // Plan D D6: a PURCHASED_ITEM line must carry one packageLine per ACTIVE
+  // conversion, built by the same lib/stocktake-package-lines.ts (D3) the
+  // screen renders from -- not a second label generator. Real Dau say
+  // conversion shape (three, all named "Tui"), the case the whole
+  // package-line model exists for.
+  it("attaches one package line per ACTIVE conversion, reusing buildPackageLines", async () => {
+    mocks.findAllWhere.mockImplementation((table: string) => {
+      if (table === "stocktake_sessions") {
+        return Promise.resolve([{ id: "STK-001", status: "OPEN", created_by_name: "Admin", created_at: "2026-08-08T00:00:00Z", notes: "" }]);
+      }
+      if (table === "stocktake_lines") {
+        return Promise.resolve([
+          { id: "SKL-00001", session_id: "STK-001", item_reference: "SPM-033", item_type: "PURCHASED_ITEM", counted_qty: null, theoretical_at_count: null, counted_at: null },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Base_Ingredients") return Promise.resolve([{ id: "ING-028", name: "Dâu sấy", base_unit: "UNT-017", is_non_inventory: false }]);
+      if (sheet === "Semi_Products") return Promise.resolve([]);
+      if (sheet === "Purchased_Items") return Promise.resolve([{ id: "SPM-033", name: "Dâu sấy", base_ingredient_id: "ING-028", default_unit_id: "U-008", status: "ACTIVE" }]);
+      if (sheet === "Units") return Promise.resolve([{ id: "UNT-017", name: "g" }, { id: "U-008", name: "Túi" }]);
+      if (sheet === "UOM_Conversions") {
+        return Promise.resolve([
+          { id: "QD-038", purchased_item_id: "SPM-033", purchased_unit: "U-008", base_unit: "UNT-017", conversion_rate: 100, status: "ACTIVE" },
+          { id: "QD-051", purchased_item_id: "SPM-033", purchased_unit: "U-008", base_unit: "UNT-017", conversion_rate: 500, status: "ACTIVE" },
+          { id: "QD-043", purchased_item_id: "SPM-033", purchased_unit: "U-008", base_unit: "UNT-017", conversion_rate: 1000, status: "ACTIVE" },
+          { id: "QD-999", purchased_item_id: "SPM-033", purchased_unit: "U-008", base_unit: "UNT-017", conversion_rate: 5000, status: "INACTIVE" },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const result = await stocktakeActions.getStocktakeSessionData();
+
+    expect(result?.lines).toHaveLength(1);
+    const line = result!.lines[0];
+    expect(line.packageLines.map(p => p.sizeLabel)).toEqual(["Túi 100 g", "Túi 500 g", "Túi 1.000 g"]);
+    // Inactive conversion (C8) never shows up as a line to count.
+    expect(line.packageLines.some(p => p.conversionId === "QD-999")).toBe(false);
+  });
+
+  it("gives a legacy BASE_INGREDIENT line an empty packageLines, not a crash", async () => {
+    mocks.findAllWhere.mockImplementation((table: string) => {
+      if (table === "stocktake_sessions") {
+        return Promise.resolve([{ id: "STK-001", status: "OPEN", created_by_name: "Admin", created_at: "2026-08-08T00:00:00Z", notes: "" }]);
+      }
+      if (table === "stocktake_lines") {
+        return Promise.resolve([
+          { id: "SKL-legacy", session_id: "STK-001", item_reference: "ING-028", item_type: "BASE_INGREDIENT", counted_qty: null, theoretical_at_count: null, counted_at: null },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Base_Ingredients") return Promise.resolve([{ id: "ING-028", name: "Dâu sấy", base_unit: "UNT-017", is_non_inventory: false }]);
+      if (sheet === "Units") return Promise.resolve([{ id: "UNT-017", name: "g" }]);
+      return Promise.resolve([]);
+    });
+
+    const result = await stocktakeActions.getStocktakeSessionData();
+
+    expect(result?.lines[0].packageLines).toEqual([]);
+  });
+});

@@ -12,6 +12,7 @@ import {
   type StocktakeItemType,
   type StocktakeApplyResult,
 } from "@/lib/stocktake-transaction";
+import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
 
 const PATH = "/admin/inventory/stocktake";
 
@@ -24,6 +25,11 @@ export interface StocktakeLineView {
   countedQty: number | null;
   theoreticalAtCount: number | null;
   countedAt: string | null;
+  // Plan D D6: only set for PURCHASED_ITEM lines in a session opened after
+  // D4/D6 landed. A legacy BASE_INGREDIENT line from a session opened
+  // before D6 (kept alive per C8/C16) has no conversions to show and falls
+  // back to the old single base-unit input.
+  packageLines: PackageLine[];
 }
 
 export interface StocktakeSessionView {
@@ -55,11 +61,43 @@ async function loadItemNameMaps() {
   }
   return {
     nameById,
+    unitNameById,
     unitNameByItemId,
     baseIngredients: baseIngredients as any[],
     semiProducts: semiProducts as any[],
     purchasedItems: purchasedItems as any[],
   };
+}
+
+// Plan D D6: one input per ACTIVE conversion (lib/stocktake-package-lines.ts,
+// D3), grouped under the purchased item that owns them. Built here, once,
+// from the same UOM_Conversions table -- the screen must reuse this
+// function's labels rather than growing a second label-generator: the same
+// string produced two different ways is exactly the defect that broke
+// section 9's own worked example earlier in this plan.
+async function loadPackageLinesByPurchasedItem(
+  nameById: Map<string, string>,
+  unitNameById: Map<string, string>,
+): Promise<Map<string, PackageLine[]>> {
+  const conversions = (await findAll("UOM_Conversions")) as any[];
+
+  const input: PurchasedItemConversion[] = conversions.map(c => ({
+    conversionId: c.id,
+    purchasedItemId: c.purchased_item_id,
+    purchasedItemName: nameById.get(c.purchased_item_id) ?? c.purchased_item_id,
+    purchasedUnitName: unitNameById.get(c.purchased_unit) ?? c.purchased_unit ?? "",
+    baseUnitName: unitNameById.get(c.base_unit) ?? c.base_unit ?? "",
+    conversionRate: Number(c.conversion_rate),
+    status: c.status,
+  }));
+
+  const byPurchasedItem = new Map<string, PackageLine[]>();
+  for (const line of buildPackageLines(input)) {
+    const list = byPurchasedItem.get(line.purchasedItemId) ?? [];
+    list.push(line);
+    byPurchasedItem.set(line.purchasedItemId, list);
+  }
+  return byPurchasedItem;
 }
 
 // Plan D C17: an inactive purchased item stays offered for counting while
@@ -117,10 +155,11 @@ export async function getStocktakeSessionData(): Promise<StocktakeSessionView | 
   const session = openSessions[0];
   if (!session) return null;
 
-  const [lines, { nameById, unitNameByItemId }] = await Promise.all([
+  const [lines, { nameById, unitNameById, unitNameByItemId }] = await Promise.all([
     findAllWhere<any>("stocktake_lines", { eq: { session_id: session.id } }),
     loadItemNameMaps(),
   ]);
+  const packageLinesByPurchasedItem = await loadPackageLinesByPurchasedItem(nameById, unitNameById);
 
   return {
     id: session.id,
@@ -138,6 +177,9 @@ export async function getStocktakeSessionData(): Promise<StocktakeSessionView | 
         countedQty: line.counted_qty !== null ? Number(line.counted_qty) : null,
         theoreticalAtCount: line.theoretical_at_count !== null ? Number(line.theoretical_at_count) : null,
         countedAt: line.counted_at,
+        packageLines: line.item_type === "PURCHASED_ITEM"
+          ? (packageLinesByPurchasedItem.get(line.item_reference) ?? [])
+          : [],
       }))
       .sort((a, b) => a.itemName.localeCompare(b.itemName, "vi")),
   };
