@@ -296,6 +296,20 @@ Flagged to him because the failure it prevents is measured in money.
 | S3 | Ingredient whose purchased items were all counted at 0 | Quantity goes to 0 — legitimate, not a special case |
 | S4 | Correction writes a ledger row | One `stock_ledger` row per corrected ingredient, so `trg_stock_ledger_inventory_balances` keeps `inventory_balances` right. This is the only new writer to that table |
 | S5 | Correction and issue must agree | For a counted item, `issue base_quantity` and the ingredient correction must derive from the **same** counted figure, computed once |
+| S6 | **A manual issue (or a reversal) for one of an ingredient's purchased items lands between when its line was counted and when the session is applied** | **Bug, found 2026-08-08 by D8, fixed in the same task — see below** |
+
+**S6 in full — the two levels disagreed by exactly the interleaved amount, confirmed live, not argued.** D5's second pass (§8, `apply_stocktake_session_atomic`) computed the ingredient's correction as `summed_counted − a FRESH re-read of the ingredient's stock_ledger sum at apply time`. The purchased-item level, by contrast, uses the **frozen** `theoretical_at_count` snapshot taken when the line was saved. Those are two different baselines, and by construction the ingredient formula collapses to `new_ledger_sum = summed_counted` **no matter what the fresh baseline was** — silently discarding any event (a manual issue, a reversal) that touched the ledger between count-time and apply-time.
+
+Live proof, `Dâu sấy` (`SPM-033`/`ING-028`), inside `BEGIN...ROLLBACK`: opened a session, counted `SPM-033 = 1.000` (snapshot `theoretical_at_count = 4.100`), then — **mid-session, before applying** — issued a real manual slip of `500` for the same item. Applied the session:
+
+| Level | Formula used | Result |
+|---|---|---|
+| Purchased item (`stock_issues`, cost-correct) | `total_purchased − total_issued` (fresh, automatically layers the manual issue) | **500** — matches physical truth (1.000 counted, minus 500 issued afterward) |
+| Ingredient (`stock_ledger`, old formula) | `summed_counted − fresh_ledger_read` | **1.000** — the manual issue's `-500` vanished entirely |
+
+The two numbers for the *same physical stock* disagreed by exactly 500đ worth of Dâu sấy — the interleaved manual issue's own amount. Gap 3's whole purpose was making these two levels agree; under this scenario they did not.
+
+**Fix.** The ingredient correction must be built the same way the purchased-item level already is: the sum of each of this session's purchased-item lines' own **frozen** `count_variance` (`counted_qty − theoretical_at_count`), applied as a delta on top of the fresh ledger baseline — not an independently recomputed `summed_counted − fresh`. This makes the ingredient-level write **structurally** the mirror image of the issues just written for the same lines (`ingredient_variance = −Σ issued_amount` for this session's lines under that ingredient), so the two levels cannot drift apart by construction, regardless of what else touches the ledger in between. Re-verified live after the fix: same scenario, both levels now read **500**.
 
 ### Issue slips
 
