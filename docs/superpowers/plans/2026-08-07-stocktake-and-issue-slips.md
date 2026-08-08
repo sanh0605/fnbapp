@@ -1304,6 +1304,74 @@ khi hoàn tất rồi mới bắt đầu code."*
   into one cost figure. Getting this wrong bakes a 7,4% error into a number that
   cannot be corrected without counting again.
 
+  **Multi-line worked example — `PO-059`, 2026-07-28.** The owner asked for the
+  calculation spelled out for the case that actually matters: *"đơn nhập đó có
+  nhiều dòng, ghi rõ cụ thể cách tính để anh biết em hiểu anh muốn làm gì."* The
+  single-line `PO-031` above hides the only hard part.
+
+  Lines: Robusta Dak Mil 10.000 g / 3.140.000đ · Pha Phin Truyền Thống 500 g /
+  183.000đ · Phin Đậm 500 g / 92.000đ. Sum **3.415.000đ**, shipping **+64.400đ**,
+  voucher **−610.800đ**, paid **2.868.600đ**.
+
+  Net to spread: 64.400 − 610.800 = **−546.400đ**.
+
+  | Line | Running-remainder step | Share |
+  |---|---|---|
+  | 1 | 546.400 × 3.140.000 ÷ 3.415.000 | **502.400đ** |
+  | 2 | 44.000 × 183.000 ÷ 275.000 | **29.280đ** |
+  | 3 | 14.720 remaining, last line takes it | **14.720đ** |
+  | | **Total** | **546.400đ** ✓ |
+
+  | Item | Engine today | Correct |
+  |---|---|---|
+  | Robusta Dak Mil | 314 đ/g | **263,76 đ/g** |
+  | Pha Phin Truyền Thống | 366 đ/g | **307,44 đ/g** |
+  | Phin Đậm | 184 đ/g | **154,56 đ/g** |
+
+  Reconciles: 2.637.600 + 153.720 + 77.280 = **2.868.600đ**, exactly what was
+  paid. All three are 16% high today.
+
+  **This example is the reason for the running-remainder rule, not decoration.**
+  Multiplying each line by a rounded ratio independently lands on 546.399đ or
+  546.401đ often enough to matter, and that residue accumulates across 63 orders.
+  Re-dividing what is left over what remains forces the last line to absorb the
+  remainder, so the parts always sum to the whole.
+
+- **D12** Stop a blank cancelled stocktake from consuming a session number.
+  **Added 2026-08-09. The owner rejected my reasoning, and his is better.**
+
+  I had defended the current behaviour by analogy to a cancelled invoice keeping
+  its number. He drew the distinction the analogy misses: *"đơn này thì còn có
+  thể dùng để đo, nhưng phiếu kiểm kho thì chỉ có thể tính như vậy sau khi đã
+  hoàn thành tất cả khâu. Tức có nghĩa đơn đó đã thực sự tồn tại. Còn đây anh
+  chưa đếm."*
+
+  A cancelled invoice consumes its number because the transaction happened.
+  Opening a count screen and closing it is a blank form thrown away — no line
+  counted, no stock touched, no money moved. He also named two consequences I had
+  waved off: the table grows without bound under repetition, and anyone who
+  notices can inflate it deliberately.
+
+  `open_stocktake_session_atomic` derives the id as
+  `max(existing STK-nnn) + 1` (`0052_stock_issues.sql:90-92`), so nothing needs a
+  sequence reset — **deleting the row frees the number by itself.**
+
+  - Cancel a session where **at least one line was counted** → keep it,
+    `CANCELLED`. Someone really counted and then abandoned it; that is a fact
+    worth keeping.
+  - Cancel a session where **no line was counted** → **delete the row.** Its
+    `stocktake_lines` go with it via the existing `CASCADE` foreign key.
+
+  This is not a breach of "never delete master data" (`CLAUDE.md` section 2) — an
+  empty draft is not a business record, and the protected list is ingredients,
+  products, recipes, orders and suppliers. Say so in the migration, so nobody
+  later reads the delete as a precedent.
+
+  **Note while here, do not fix:** stocktake session ids and `stock_ledger` ids
+  both use the `STK-` prefix, each numbered from its own table's maximum. Not a
+  collision, but two different things wearing the same name — record it in
+  `docs/OPEN-ITEMS.md`.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
