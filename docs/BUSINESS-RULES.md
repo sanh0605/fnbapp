@@ -308,6 +308,22 @@ A manual issue slip entered by mistake is never deleted and never edited. It is 
 
 **What the owner gives up, stated plainly, the same price already accepted for found goods:** the month the mistake happened in keeps its wrong figure forever. The correction shows up in the month it is caught, not the month the mistake was made.
 
+### BR-COGS-006 — A purchase is valued at what was paid, shipping and discounts included
+
+**Status:** `APPROVED` — owner decision 2026-08-09. **Not yet implemented** — Plan D task D11.
+
+The cost of a purchased item is the line amount **plus its share of shipping and tax, minus its share of vouchers and discounts**, allocated across the order's lines in proportion to line value. An item worth 20% of an order absorbs 20% of its shipping and 20% of its discount.
+
+**Found by the owner refusing a figure.** Told the first stocktake would book 52.773.374đ of purchases, he replied that it could not possibly be that much. It could not: that is the sum of line subtotals, while **49.149.880đ** is what was paid. The difference is +648.200đ shipping, −4.049.790đ vouchers, −221.904đ discounts.
+
+**The gap was not a reporting slip, it was in the engine.** `buildIssueCostingPurchases` feeds `purchase_order_lines.subtotal` into the costing replay, and shipping, vouchers and discounts are recorded only on the order header, so they reached no unit cost. Every figure the issue-based engine would have produced was overstated by **3.623.494đ, about 7,4%**. **18 of 63** completed orders carry a voucher, 19 carry shipping, 10 carry a discount — not an edge case.
+
+**Worked example, `PO-031` (2026-06-12), a single-line order:** 10.000 g of `Bột cà phê MR.PHIN Robusta Dak Mil` recorded at 3.140.000đ, paid at 2.417.800đ after shipping, voucher and discount. The engine valued it at **314 đ/g**; the correct figure is **241,78 đ/g** — 23% high on an item used daily.
+
+**Allocation must reconcile exactly** (`BR-COGS-003`): use the running-remainder method already proven in `allocateOrderDiscount`, not `round(total × share)` per line. **The adjusted value is derived and is never stored** — it is computed where the engine reads, consistent with the rule that no rounded or derived money is persisted.
+
+**Timing mattered.** This was caught before the first stocktake. That count converts five months of purchases into a single cost figure, and the error would have been baked into a number no later correction could reach without counting again.
+
 ## Unresolved items
 
 | ID | Status | Decision needed | Current safe statement |

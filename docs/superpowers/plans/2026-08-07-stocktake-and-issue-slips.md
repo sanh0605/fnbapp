@@ -1250,6 +1250,60 @@ khi hoàn tất rồi mới bắt đầu code."*
   No migration — display only, no schema or business-data change. Not
   deployed.
 
+- **D11** Value purchases at what was actually paid. **Added 2026-08-09.
+  Blocks the first count.**
+
+  **The owner found this by refusing a number.** Told the first count would book
+  52.773.374đ of purchases, he said: *"Còn số mua vào (52.773.374đ) của em có
+  thể tính sai, không thể nào đến mức đó được."* He was right, and the reason
+  is worse than my arithmetic:
+
+  | | |
+  |---|---|
+  | Sum of line subtotals | 52.773.374đ |
+  | Shipping | +648.200đ |
+  | Voucher | −4.049.790đ |
+  | Discount | −221.904đ |
+  | **Actually paid** | **49.149.880đ** |
+
+  `buildIssueCostingPurchases` (`app/admin/reports/actions.ts:91`) feeds
+  `line.subtotal` into the engine. Shipping, vouchers and discounts live on the
+  **order header** and reach no line, so **every unit cost the new engine
+  produces is overstated — 3.623.494đ, about 7,4%, across the whole history.**
+
+  Not an edge case: **18 of 63 completed orders carry a voucher**, 19 carry
+  shipping, 10 carry a discount.
+
+  **Owner decision 2026-08-09: allocate proportionally by line value** — an item
+  worth 20% of the order absorbs 20% of the shipping and 20% of the discount, so
+  each item's cost is what was really paid for it.
+
+  **Worked example — `PO-031`, 2026-06-12, deliberately a single-line order so
+  the arithmetic is visible:**
+
+  | | |
+  |---|---|
+  | Bột cà phê MR.PHIN Robusta Dak Mil, 10.000 g | 3.140.000đ |
+  | + shipping 57.200 − voucher 722.200 − discount 57.200 | |
+  | **Paid** | **2.417.800đ** |
+
+  Engine today: **314 đ/g**. Correct: **241,78 đ/g**. A 23% overstatement on a
+  daily-use item.
+
+  **Reuse `allocateOrderDiscount` (`lib/order-math.ts:30`), do not write a second
+  allocator.** The POS already solves this exact shape for order-level discounts,
+  and it uses the running-remainder form
+  (`remainingTarget * capacity / remainingCapacity`), so the parts sum to the
+  target exactly — which `BR-COGS-003` requires and a naive
+  `Math.round(total * share)` does not deliver.
+
+  **Do not persist the adjusted figure.** It is derived; compute it where the
+  engine reads, so nothing rounded is ever stored.
+
+  **Why it blocks the count:** the first count converts five months of purchases
+  into one cost figure. Getting this wrong bakes a 7,4% error into a number that
+  cannot be corrected without counting again.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
