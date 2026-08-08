@@ -983,6 +983,87 @@ khi hoàn tất rồi mới bắt đầu code."*
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
   fixing them silently.
 
+  **Done 2026-08-08 — see §8b for the full case-by-case table.** The owner's
+  own three named concerns all traced to one real bug (S6), found live,
+  documented in §5 before being fixed, then fixed and re-verified live
+  three separate ways (the original scenario, plus concerns 2 and 3
+  specifically). `getPnLDataV2` (K7) proven to report a real, non-zero
+  COGS for the first time since Plan C's cutover — both by a permanent
+  test and a live RPC-to-engine proof. Two cases that had never been
+  tested before (C15, C16) now are. One case's own example went stale
+  (C7) and its plan note corrected. `npx tsc --noEmit`: 0 errors. `npm
+  run build`: succeeds. `npx vitest run`: 1015/1015. `check-rules-
+  current.ts`: clean. Two migrations landed (`0059`, schema/RPC only, no
+  business data touched); D6/D7a/D7b/D8's code changes remain undeployed —
+  push/deploy is its own separate approval, not requested yet.
+
+---
+
+## 8b. D8 — every case in §5, re-run against the finished code
+
+Per the owner's own standing instruction: every case gets a recorded result, not a silent assumption. `PASS (live)` = re-verified in this pass with a real RPC/`BEGIN...ROLLBACK` proof. `PASS (test)` = covered by an existing automated test, cited. `PASS (by construction)` = no distinct code branch exists for this case, so there is nothing separate to test — the general mechanism already covers it. `GAP` = a real hole, closed in this same pass. `STALE` = the case's own premise no longer holds against today's data.
+
+**Counting**
+
+| # | Result | Evidence |
+|---|---|---|
+| C1 | PASS (test) | `stocktake-package-lines.test.ts`, single-conversion case |
+| C2 | PASS (by construction) | Same label-formatting code path as C1/C3 — a different unit NAME never triggered any special-casing to begin with, so there is no separate branch a dedicated test would exercise |
+| C3 | PASS (test) | `stocktake-package-lines.test.ts`, `Dâu sấy` (3) and `Kem whipping Anchor` (2) |
+| C4 | PASS (test) | `StocktakeClient.test.ts`, `Number.isInteger` rejection citing `BR-INV-007` |
+| C5 | PASS (source-level only) | `handleConfirm`'s blank-skip (`if (raw === undefined \|\| raw.trim() === "") continue`) is real code, but this repo's Vitest config has no jsdom for this file (established convention, checked before D6) — so "blank sums as 0" is confirmed by reading the code, not by a running assertion. Flagged as an honest test-infra limit, not a functional gap |
+| C6 | PASS (test + design review) | `StocktakeClient.test.ts` (confirmation clearing, unconfirmed listing); both unstated behaviours (edit clears confirmation, closing with unconfirmed allowed) settled by design review before D3, no flaw found |
+| C7 | **STALE** | Đá viên's `is_non_inventory = true`, checked live 2026-08-08 — it is excluded from both the stocktake and issue-slip screens outright, so the scenario this row describes ("shown with theoretical 0") does not currently arise for it. No other item today has an active conversion with zero purchase history. The underlying mechanism (theoretical 0, a positive count triggers C9) is still exercised by C9's own test — only the named example is out of date. Cross-referenced from §10's own note, which is now also stale |
+| C8 | PASS (test) | `stocktake-package-lines.test.ts` (inactive conversion dropped from new package lines), `actions.test.ts` (inactive conversion excluded from a real `Dâu sấy` shape) |
+| C9 | PASS (pre-existing, `BR-INV-005`) | Unmodified by Plan D; still enforced in `save_stocktake_line_atomic` |
+| C10 | PASS (decided) | Superseded by `BR-INV-008`/D5b — see §7 |
+| C11 | PASS (pre-existing, `BR-INV-006`) | Unmodified by Plan D |
+| C12 | PASS (test) | `actions.test.ts`, non-inventory exclusion (shared now with the issue-slip screen too) |
+| C13 | PASS (D1) | `NNL-004` marked `INACTIVE`, verified 2026-08-07 |
+| C14 | PASS (by construction) | A session's item list is written once, at open time, into `stocktake_lines` rows — nothing re-derives it later, so a purchased item added afterward has no code path that could pull it in |
+| C15 | **PASS (live, new 2026-08-08)** | Never tested before. `BEGIN...ROLLBACK`: opening a second session while one is open throws `A stocktake session is already open (session_id=...)`, naming the real open session |
+| C16 | **PASS (live, new 2026-08-08)** | Never tested before. `BEGIN...ROLLBACK`: cancel a session with a saved count, ledger unchanged (`ING-028` still exactly `4.100`), a fresh session opens cleanly afterward |
+| C17 | PASS (test) | `actions.test.ts`, kept while on-hand > 0, dropped at 0 |
+
+**Correcting the stock quantity**
+
+| # | Result | Evidence |
+|---|---|---|
+| S1 | PASS (live) | D5's own verification, real `Dâu sấy` session |
+| S2 | PASS (test) | `stocktake-transaction.test.ts`, `skippedIngredients` parses separately |
+| S2b | PASS (by construction) | Resolved via C17 — an inactive item with stock keeps its line, so S1 stays reachable |
+| S3 | PASS (by construction) | No distinct branch for "counted to 0" — the same variance formula handles it; a dedicated test would exercise identical code to S1's |
+| S4 | PASS (live) | D5's verification confirmed the trigger fires and `inventory_balances` updates |
+| S5 | PASS (by construction) | The issue and the correction both read `stocktake_lines.counted_qty`/`theoretical_at_count` directly — one query per figure, never two independent computations |
+| S6 | **FIXED (D8, live)** | See §5's own S6 entry — the bug D8 was built to find. Confirmed broken, then confirmed fixed, live, twice (manual issue mid-session; reversal then count) |
+
+**Issue slips**
+
+| # | Result | Evidence |
+|---|---|---|
+| I1 / I2 | PASS (test) | `IssueSlipClient.test.ts`, reason select; `note` carries the distinction |
+| I3 | PASS (test) | `IssueSlipClient.test.ts`, package-size picker reusing `buildPackageLines` |
+| I4 | PASS (live) | D7a's `BEGIN...ROLLBACK` — refused before write, real shortfall named |
+| I5 | PASS (live) | D7a's `BEGIN...ROLLBACK` — refused, real message |
+| I6 | PASS (test) | `issue-slip-warnings.test.ts` (4 cases: current month, cross-month, year boundary, future-dated) |
+| I7 | PASS (live) | D7b's `BEGIN...ROLLBACK` — create+reverse, double-reversal refused, non-`MANUAL` refused |
+| I8 | PASS (live) | D8's own S6 concern-1 scenario is exactly this case (a manual issue and a stocktake-derived issue on the same real day) — correctly ordered and combined, confirmed live |
+| I9 | PASS (live) | D7a's `BEGIN...ROLLBACK` — ledger row shape confirmed correct |
+
+**Costing**
+
+| # | Result | Evidence |
+|---|---|---|
+| K1 | PASS (test) | `lib/issue-costing.test.ts`, original suite, re-run clean |
+| K2 | PASS (test) | `computePeriodIssuedValue` tests, original suite |
+| K3 | PASS (schema) | `stock_issues` still carries no money column — checked at every migration since |
+| K4 | PASS (pre-existing) | `displayMoney`, unmodified |
+| K5 | PASS (test, D7a) | Explicit tiebreak added, 2 forced-tie tests |
+| K6 | PASS (test, D5b) | 5 tests, `BR-INV-008` |
+| K7 | **PASS (D8, new)** | See §5's own K7 entry — `getPnLDataV2` proven non-zero for the first time |
+
+**Net for D8's own pass**: one real bug found and fixed (S6, which is also the root cause behind I8 and K7's need for care), two cases that had genuinely never been tested before and now are (C15, C16), one case whose real-world example went stale (C7), one honest test-infrastructure limit stated rather than hidden (C5). Nothing else broke.
+
 ---
 
 ## 9. Verification bar
@@ -1036,9 +1117,13 @@ Everything in `CLAUDE.md` section 9, plus:
 
 ## 10. Out of scope, flagged
 
-- **`Đá viên` is in the count list but was never purchased.** `docs/OPEN-ITEMS.md`
-  item 8 records the owner's decision to treat ice, limes and kumquats as daily
-  expenses rather than stock. If that still holds, it should not be countable at
-  all. Ask before changing — it is master data and a business decision.
+- **`Đá viên` in the count list — resolved, not just flagged.** Checked live
+  2026-08-08 (D8, C7): `is_non_inventory = true` on its ingredient already
+  excludes it from both the stocktake and the issue-slip screen. This note
+  was written before D4/D7a existed; it described the old screen, which
+  offered every base ingredient with nothing filtering non-inventory items
+  out of a purchased-item-keyed list the way today's screens do. Nothing to
+  ask — already the state the owner's original decision (`docs/OPEN-ITEMS.md`
+  item 8) called for.
 - The financial report rebuild (item 31) and the low-stock warning (item 33)
   stay parked.
