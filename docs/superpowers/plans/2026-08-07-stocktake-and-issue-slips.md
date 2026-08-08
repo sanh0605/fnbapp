@@ -362,6 +362,38 @@ keeps its wrong figure for ever. That is the price of never rewriting a closed
 book, and it is the same price he already accepted for found goods.
 | I8 | Issue slip and stocktake on the same day | Ordering by timestamp must be deterministic; the replay in `lib/issue-costing.ts` sorts by `at`, so equal timestamps need a stable tiebreak |
 | I9 | Issue slip must also correct the ingredient quantity | Same rule as S1/S4 — an issue reduces both the issue book and the ingredient balance |
+| I10 | **The same purchased item appears on two lines of one slip** | **Decided 2026-08-08 (D9).** Allowed, not merged and not refused — see below |
+| I11 | **Reversing a slip that has more than one line** | **Decided 2026-08-08 (D9).** Stays per-line — see below |
+
+**I10 in full.** Checked the mirrored screen first rather than deciding from
+nothing: `PurchaseOrderForm.tsx` does not merge or refuse two lines naming
+the same purchased item either — it just lets both stand. Following the
+same rule keeps the two screens genuinely symmetric, not symmetric except
+for one hidden difference the owner would discover the hard way.
+
+The real risk is not the duplicate line itself, it is validating it wrong.
+Two lines for the same item must be checked **against each other**, not
+independently against the same stale on-hand figure — a slip for `100` and
+another for `100` of an item with `150` on hand must refuse the second
+line, even though each alone would pass a naive per-line check against a
+snapshot taken before either was written. `create_issue_slip_atomic`
+tracks a running remaining-balance per purchased item **as it processes
+the slip's lines in order**, seeded once per item from the on-hand-as-of-
+`issued_at` figure (I4's own formula) and decremented after each line that
+passes — so a later line sees what earlier lines in the *same slip* already
+committed to, before anything is written. Each line still produces its own
+`stock_issues` row; nothing is merged.
+
+**I11 in full.** A slip can now be wrong on one line out of many. Forcing
+a whole-slip reversal to fix one line means re-entering every correct line
+by hand — extra typing that itself risks a new mistake, to correct a
+mistake that was never there. `reverse_manual_issue_atomic` (D7b) already
+operates on one `stock_issues.id`; a line written by a multi-line slip is
+still exactly one `stock_issues` row, so the existing mechanism needs **no
+change at all** to reverse a single wrong line out of five. No whole-slip
+"undo everything" convenience button is added — reversing five correct
+lines to fix one wrong one is not a shortcut, it is five new corrections
+to get right.
 
 ### Costing
 
