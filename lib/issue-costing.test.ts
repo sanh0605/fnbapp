@@ -357,3 +357,56 @@ describe("computeIssueCosting -- Plan D D7 worked example (owner's 7-step sequen
     expect(row.closing_value / row.closing_quantity).toBeCloseTo(1200, 6);
   });
 });
+
+// Plan D D7b, BR-INV-009 -- reversing a mistaken issue slip. Mechanically a
+// reversal is the same negative-base_quantity event BR-INV-008 already
+// built (no new engine code); these tests exist to confirm, with the
+// owner's own numbers, the two properties his decision names explicitly.
+describe("computeIssueCosting -- BR-INV-009, reversing a mistaken issue slip", () => {
+  // The owner's own example put to him when this was still an open
+  // question: 01/01 mua 1.000đv @1.000đ. 03/01 xuất NHẦM 500đv. 06/01 mua
+  // thêm 500đv @1.500đ (bình quân đổi thành 1.250đ). 10/01 phát hiện và đảo.
+  const purchases: Purchase[] = [
+    { purchased_item_id: "SPM-X", at: "2026-01-01T09:00:00+07:00", base_quantity: 1000, subtotal: 1_000_000 },
+    { purchased_item_id: "SPM-X", at: "2026-01-06T09:00:00+07:00", base_quantity: 500, subtotal: 750_000 },
+  ];
+  const mistakenIssue: Issue = {
+    purchased_item_id: "SPM-X", at: "2026-01-03T09:00:00+07:00", base_quantity: 500, source: "MANUAL",
+  };
+  // The reversal itself: BR-INV-009 stamps it "now" (10/01, after the
+  // mistake and after the intervening 06/01 purchase), never backdated.
+  const reversal: Issue = {
+    purchased_item_id: "SPM-X", at: "2026-01-10T09:00:00+07:00", base_quantity: -500, source: "MANUAL",
+  };
+
+  it("money conserves at any valuation rate -- total paid stays split between what's issued and what's on hand", () => {
+    const totalPaid = purchases.reduce((sum, p) => sum + p.subtotal, 0); // 1.750.000đ
+    const [row] = computeIssueCosting(purchases, [mistakenIssue, reversal]);
+    expect(row.issued_value + row.closing_value).toBeCloseTo(totalPaid, 6);
+  });
+
+  it("the running average is exactly unchanged by the reversal -- 1.250đ/đv before and after, because it is valued live, not at the original 1.000đ rate", () => {
+    const beforeReversal = computeIssueCosting(purchases, [mistakenIssue]);
+    const rateBefore = beforeReversal[0].closing_value / beforeReversal[0].closing_quantity;
+    expect(rateBefore).toBeCloseTo(1250, 6); // 1.250.000 / 1.000, after the 06/01 purchase
+
+    const [afterReversal] = computeIssueCosting(purchases, [mistakenIssue, reversal]);
+    const rateAfter = afterReversal.closing_value / afterReversal.closing_quantity;
+    expect(rateAfter).toBeCloseTo(1250, 6);
+
+    // Had the reversal instead been valued at the ORIGINAL 1.000đ rate
+    // (Option B, rejected) rather than today's live 1.250đ, the average
+    // would have moved: (1.250.000 + 500*1.000) / (1.000 + 500) =
+    // 1.750.000 / 1.500 = 1.166,67đ -- not 1.250đ. This is why BR-INV-009
+    // requires the live rate, not the original one: only the live rate
+    // reproduces the identity `computeIssueCosting` already proves for
+    // BR-INV-008 (K6).
+    const wrongRateAverage = (1_250_000 + 500 * 1000) / (1000 + 500);
+    expect(wrongRateAverage).not.toBeCloseTo(1250, 1);
+  });
+
+  it("the reversed slip's own quantity nets to zero -- the pair together is invisible to net issued_quantity", () => {
+    const [row] = computeIssueCosting(purchases, [mistakenIssue, reversal]);
+    expect(row.issued_quantity).toBe(0); // +500 (mistake) then -500 (reversal, counted as a return)
+  });
+});

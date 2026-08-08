@@ -927,6 +927,40 @@ khi hoàn tất rồi mới bắt đầu code."*
     average specifically does not move, which is why the rate must be
     live), and a way on screen to find a past slip and reverse it (D7a's
     screen was create-only).
+
+    **Done 2026-08-08.** `supabase/migrations/0058_reverse_manual_issue.sql`
+    (`reverse_manual_issue_atomic`): locks the original row, refuses a
+    non-`MANUAL` source and a second reversal of the same slip by name,
+    inserts the compensating entry (negative `base_quantity`, dated `now()`,
+    `reverses_issue_id` set) and the ingredient's positive `stock_ledger`
+    correction in the same transaction. The original row is never updated —
+    "giữ nguyên" is literal, not just "unchanged in effect." `lib/manual-
+    issue-transaction.ts` gained `reverseManualIssueAtomic`. The owner's own
+    worked example (1.000đv @1.000đ, mistaken issue of 500, a second
+    purchase moving the average to 1.250đ, then a reversal) reproduced
+    exactly by `computeIssueCosting` — money conserves at any rate
+    (structural identity), and the average stays at 1.250đ specifically
+    because the reversal is valued live, not at the original 1.000đ (shown
+    by contrast: valuing it at the original rate works out to 1.166,67đ,
+    which would have moved the average). 3 tests. The screen (D7a's was
+    create-only) gained a "Phiếu xuất gần đây" list — every `MANUAL` row,
+    reversed pairs shown linked both directions without mutating either
+    row, a "Đảo phiếu" button only where neither side of that pair already
+    exists.
+
+    Verified live inside a `BEGIN...ROLLBACK` against real `Dâu sấy` data:
+    a real issue created and reversed within the transaction, the
+    reversal's sign/link/note all correct, a second reversal attempt
+    refused by name, reversing a (synthetically inserted, rolled back)
+    `STOCKTAKE`-sourced row refused, the ingredient ledger's *net* effect of
+    the pair is exactly 0 (full restoration — confirmed, not just argued),
+    nothing persisted after rollback.
+
+    `npx tsc --noEmit`: 0 errors. `npm run build`: succeeds. `npx vitest
+    run`: 1014/1014 (+13 from D7a's 1001). `check-rules-current.ts`: clean.
+    Migration self-applied live (schema/RPC only, no business data
+    touched). Not deployed.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than

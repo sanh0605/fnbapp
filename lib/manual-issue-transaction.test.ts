@@ -6,7 +6,7 @@ vi.mock("@/lib/supabase", () => ({
   getSupabaseClient: mocks.getSupabaseClient,
 }));
 
-import { createManualIssueAtomic } from "./manual-issue-transaction";
+import { createManualIssueAtomic, reverseManualIssueAtomic } from "./manual-issue-transaction";
 
 describe("createManualIssueAtomic", () => {
   beforeEach(() => {
@@ -83,6 +83,80 @@ describe("createManualIssueAtomic", () => {
       purchasedItemId: "SPM-033",
       baseQuantity: 1,
       issuedAt: new Date("2026-08-08T09:00:00+07:00"),
+      note: "",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    })).rejects.toThrow("invalid result");
+  });
+});
+
+describe("reverseManualIssueAtomic", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
+  });
+
+  it("calls the RPC with the exact fields the migration expects, and parses its result", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        reversal_issue_id: "ISS-00002",
+        ledger_id: "STK-022",
+        reverses_issue_id: "ISS-00001",
+        purchased_item_id: "SPM-033",
+        base_ingredient_id: "ING-028",
+        base_quantity: -500,
+        issued_at: "2026-08-08T11:21:17+07:00",
+        created_by_id: "admin-1",
+        created_by_name: "Admin",
+      },
+      error: null,
+    });
+
+    const result = await reverseManualIssueAtomic({
+      issueId: "ISS-00001",
+      note: "Ghi nhầm",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith("reverse_manual_issue_atomic", {
+      p_issue_id: "ISS-00001",
+      p_note: "Ghi nhầm",
+      p_created_by_id: "admin-1",
+      p_created_by_name: "Admin",
+    });
+    expect(result).toEqual({
+      reversalIssueId: "ISS-00002",
+      ledgerId: "STK-022",
+      reversesIssueId: "ISS-00001",
+      purchasedItemId: "SPM-033",
+      baseIngredientId: "ING-028",
+      baseQuantity: -500,
+      issuedAt: "2026-08-08T11:21:17+07:00",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+  });
+
+  it("relays the RPC's own refusal (already reversed, or not a MANUAL slip) verbatim", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { message: "Phiếu ISS-00001 đã được đảo bởi ISS-00002 trước đó, không đảo hai lần" },
+    });
+
+    await expect(reverseManualIssueAtomic({
+      issueId: "ISS-00001",
+      note: "",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    })).rejects.toThrow("không đảo hai lần");
+  });
+
+  it("rejects a malformed result rather than returning a half-built object", async () => {
+    mocks.rpc.mockResolvedValue({ data: { purchased_item_id: "SPM-033" }, error: null });
+
+    await expect(reverseManualIssueAtomic({
+      issueId: "ISS-00001",
       note: "",
       createdById: "admin-1",
       createdByName: "Admin",

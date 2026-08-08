@@ -1,14 +1,20 @@
 "use server";
 
-import { findAll } from "@/lib/sheets_db";
+import { findAll, findAllWhere } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
-import { createManualIssueAtomic, type ManualIssueResult } from "@/lib/manual-issue-transaction";
+import {
+  createManualIssueAtomic,
+  reverseManualIssueAtomic,
+  type ManualIssueResult,
+  type ReversalResult,
+} from "@/lib/manual-issue-transaction";
 import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
 import { computeOnHandByPurchasedItem, filterByC17 } from "@/lib/purchased-item-onhand";
 
 const PATH = "/admin/inventory/issue-slips";
+const RECENT_SLIPS_LIMIT = 50;
 
 export interface IssueSlipItemView {
   id: string;
@@ -98,6 +104,72 @@ export async function createIssueSlip(input: {
       purchasedItemId: input.purchasedItemId,
       baseQuantity: input.baseQuantity,
       issuedAt,
+      note: input.note,
+      createdById: auth.actor.id,
+      createdByName: auth.actor.name,
+    });
+    revalidatePath(PATH);
+    return ok({ result });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return fail(message);
+  }
+}
+
+export interface IssueSlipRow {
+  id: string;
+  itemName: string;
+  baseQuantity: number;
+  issuedAt: string;
+  note: string;
+  // Plan D D7b, BR-INV-009: a row is either an ordinary MANUAL issue, or
+  // itself a compensating entry for an earlier one (reversesIssueId set).
+  // reversedByIssueId is the reverse direction, derived from this same
+  // fetched window -- "hai chiều" (both directions visible), the original
+  // row itself never mutated.
+  reversesIssueId: string | null;
+  reversedByIssueId: string | null;
+}
+
+export async function getRecentIssueSlips(): Promise<IssueSlipRow[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const [rows, purchasedItems] = await Promise.all([
+    findAllWhere<any>("Stock_Issues", {
+      eq: { source: "MANUAL" },
+      order: { column: "created_at", ascending: false },
+      limit: RECENT_SLIPS_LIMIT,
+    }),
+    findAll("Purchased_Items"),
+  ]);
+  const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
+  const reversedByIdByOriginal = new Map<string, string>();
+  for (const row of rows) {
+    if (row.reverses_issue_id) reversedByIdByOriginal.set(row.reverses_issue_id, row.id);
+  }
+
+  return rows.map(row => ({
+    id: row.id,
+    itemName: nameById.get(row.purchased_item_id) ?? row.purchased_item_id,
+    baseQuantity: Number(row.base_quantity),
+    issuedAt: row.issued_at,
+    note: row.note ?? "",
+    reversesIssueId: row.reverses_issue_id ?? null,
+    reversedByIssueId: reversedByIdByOriginal.get(row.id) ?? null,
+  }));
+}
+
+export async function reverseIssueSlip(input: {
+  issueId: string;
+  note: string;
+}): Promise<ActionResponse & { result?: ReversalResult }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  try {
+    const result = await reverseManualIssueAtomic({
+      issueId: input.issueId,
       note: input.note,
       createdById: auth.actor.id,
       createdByName: auth.actor.name,

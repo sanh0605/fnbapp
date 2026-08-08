@@ -4,18 +4,22 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
   findAllNoCache: vi.fn(),
+  findAllWhere: vi.fn(),
   revalidatePath: vi.fn(),
   createManualIssueAtomic: vi.fn(),
+  reverseManualIssueAtomic: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,
+  findAllWhere: mocks.findAllWhere,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/manual-issue-transaction", () => ({
   createManualIssueAtomic: mocks.createManualIssueAtomic,
+  reverseManualIssueAtomic: mocks.reverseManualIssueAtomic,
 }));
 
 import * as issueSlipActions from "./actions";
@@ -170,6 +174,85 @@ describe("createIssueSlip", () => {
     });
 
     expect(res.error).toContain("vượt tồn kho");
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe("getRecentIssueSlips", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    mocks.findAll.mockResolvedValue([{ id: "SPM-033", name: "Dâu sấy" }]);
+  });
+
+  it("derives both directions of the reversal link from the same fetched window, without mutating either row", async () => {
+    mocks.findAllWhere.mockResolvedValue([
+      { id: "ISS-00002", purchased_item_id: "SPM-033", base_quantity: -500, issued_at: "2026-01-10T09:00:00Z", note: "Đảo phiếu ISS-00001", reverses_issue_id: "ISS-00001" },
+      { id: "ISS-00001", purchased_item_id: "SPM-033", base_quantity: 500, issued_at: "2026-01-03T09:00:00Z", note: "Hao hụt", reverses_issue_id: null },
+    ]);
+
+    const rows = await issueSlipActions.getRecentIssueSlips();
+
+    expect(mocks.findAllWhere).toHaveBeenCalledWith("Stock_Issues", expect.objectContaining({
+      eq: { source: "MANUAL" },
+    }));
+    const original = rows.find(r => r.id === "ISS-00001")!;
+    const reversal = rows.find(r => r.id === "ISS-00002")!;
+    expect(original.reversedByIssueId).toBe("ISS-00002");
+    expect(original.reversesIssueId).toBeNull();
+    expect(reversal.reversesIssueId).toBe("ISS-00001");
+    expect(reversal.reversedByIssueId).toBeNull();
+  });
+
+  it("a slip with no reversal in either direction shows neither link", async () => {
+    mocks.findAllWhere.mockResolvedValue([
+      { id: "ISS-00003", purchased_item_id: "SPM-033", base_quantity: 200, issued_at: "2026-01-11T09:00:00Z", note: "", reverses_issue_id: null },
+    ]);
+
+    const [row] = await issueSlipActions.getRecentIssueSlips();
+    expect(row.reversesIssueId).toBeNull();
+    expect(row.reversedByIssueId).toBeNull();
+  });
+});
+
+describe("reverseIssueSlip", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("forwards to reverseManualIssueAtomic and revalidates on success", async () => {
+    mocks.reverseManualIssueAtomic.mockResolvedValue({
+      reversalIssueId: "ISS-00002",
+      ledgerId: "STK-022",
+      reversesIssueId: "ISS-00001",
+      purchasedItemId: "SPM-033",
+      baseIngredientId: "ING-028",
+      baseQuantity: -500,
+      issuedAt: "2026-01-10T09:00:00Z",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+
+    const res = await issueSlipActions.reverseIssueSlip({ issueId: "ISS-00001", note: "Ghi nhầm" });
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.reverseManualIssueAtomic).toHaveBeenCalledWith({
+      issueId: "ISS-00001",
+      note: "Ghi nhầm",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips");
+  });
+
+  it("relays the RPC's own refusal (already reversed, or not MANUAL) verbatim", async () => {
+    mocks.reverseManualIssueAtomic.mockRejectedValue(
+      new Error("reverse_manual_issue_atomic: Phiếu ISS-00001 đã được đảo bởi ISS-00002 trước đó, không đảo hai lần"),
+    );
+
+    const res = await issueSlipActions.reverseIssueSlip({ issueId: "ISS-00001", note: "" });
+    expect(res.error).toContain("không đảo hai lần");
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });

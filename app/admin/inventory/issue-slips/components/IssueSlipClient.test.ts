@@ -29,3 +29,22 @@ describe("IssueSlipClient -- Plan D D7a", () => {
     expect(source).toContain("issuedAt.toISOString()");
   });
 });
+
+describe("IssueSlipClient -- Plan D D7b, BR-INV-009 reversal UI", () => {
+  it("only offers to reverse a MANUAL row that is not itself a reversal and has not already been reversed", () => {
+    expect(source).toContain("!isReversal && !alreadyReversed &&");
+    expect(source).toContain("row.reversesIssueId !== null");
+    expect(source).toContain("row.reversedByIssueId !== null");
+  });
+
+  it("requires an explicit confirm before reversing, naming BR-INV-009 and that the original is never edited", () => {
+    expect(source).toContain("handleReverse(row)");
+    expect(source).toContain("Phiếu gốc được giữ nguyên, không xoá");
+    expect(source).toContain("BR-INV-009");
+  });
+
+  it("shows a reversed pair linked both ways, neither row hidden", () => {
+    expect(source).toContain("Đảo phiếu {row.reversesIssueId}");
+    expect(source).toContain("Đã đảo bởi {row.reversedByIssueId}");
+  });
+});

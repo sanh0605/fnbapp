@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/format";
+import { formatDateTime } from "@/lib/datetime";
 import { confirm } from "@/lib/dialog";
 import { computeAffectedMonths } from "@/lib/issue-slip-warnings";
-import { createIssueSlip, type IssueSlipItemView } from "../actions";
+import { createIssueSlip, reverseIssueSlip, type IssueSlipItemView, type IssueSlipRow } from "../actions";
 import type { ManualIssueResult } from "@/lib/manual-issue-transaction";
 
 // I1/I2: the two reasons the plan names explicitly, plus a free-form escape
@@ -25,28 +26,39 @@ function toLocalInputValue(d: Date): string {
   return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
-export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
+export function IssueSlipClient({
+  items,
+  recentSlips,
+}: {
+  items: IssueSlipItemView[];
+  recentSlips: IssueSlipRow[];
+}) {
   const [result, setResult] = useState<ManualIssueResult | null>(null);
 
   if (result) {
-    return <SubmittedView result={result} items={items} onNew={() => setResult(null)} />;
+    return (
+      <SubmittedView result={result} items={items} recentSlips={recentSlips} onNew={() => setResult(null)} />
+    );
   }
   if (items.length === 0) {
     return (
       <div className="space-y-6">
         <PageHeader title="Phiếu Xuất Kho" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
         <EmptyState icon="📦" title="Không có mặt hàng nào" description="Không tìm thấy hàng mua vào nào để lập phiếu xuất." />
+        <RecentSlipsSection recentSlips={recentSlips} />
       </div>
     );
   }
-  return <FormView items={items} onSubmitted={setResult} />;
+  return <FormView items={items} recentSlips={recentSlips} onSubmitted={setResult} />;
 }
 
 function FormView({
   items,
+  recentSlips,
   onSubmitted,
 }: {
   items: IssueSlipItemView[];
+  recentSlips: IssueSlipRow[];
   onSubmitted: (result: ManualIssueResult) => void;
 }) {
   const [itemId, setItemId] = useState(items[0]?.id ?? "");
@@ -217,6 +229,8 @@ function FormView({
           Ghi phiếu xuất
         </Button>
       </div>
+
+      <RecentSlipsSection recentSlips={recentSlips} />
     </div>
   );
 }
@@ -224,10 +238,12 @@ function FormView({
 function SubmittedView({
   result,
   items,
+  recentSlips,
   onNew,
 }: {
   result: ManualIssueResult;
   items: IssueSlipItemView[];
+  recentSlips: IssueSlipRow[];
   onNew: () => void;
 }) {
   const itemName = items.find(i => i.id === result.purchasedItemId)?.name ?? result.purchasedItemId;
@@ -241,6 +257,91 @@ function SubmittedView({
         </div>
       </Alert>
       <Button variant="secondary" onClick={onNew}>Lập phiếu khác</Button>
+
+      <RecentSlipsSection recentSlips={recentSlips} />
+    </div>
+  );
+}
+
+/**
+ * Plan D D7b, BR-INV-009 -- D7a's screen was create-only, with no way to
+ * find a past slip to reverse. Each MANUAL row that is not itself a
+ * reversal, and has not already been reversed, gets a "Đảo phiếu" button.
+ * A reversed pair shows both rows linked, neither ever deleted or edited.
+ */
+function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
+  const [isPending, startTransition] = useTransition();
+  const [reversingId, setReversingId] = useState<string | null>(null);
+  const [reasonById, setReasonById] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleReverse(row: IssueSlipRow) {
+    const note = (reasonById[row.id] ?? "").trim();
+    const approved = await confirm({
+      title: `Đảo phiếu ${row.id}?`,
+      message:
+        "Phiếu gốc được giữ nguyên, không xoá. Một dòng bù sẽ được ghi hôm nay, theo giá bình quân hiện tại " +
+        "(BR-INV-009) -- không phải giá của phiếu gốc.",
+      variant: "warning",
+    });
+    if (!approved) return;
+
+    setError(null);
+    setReversingId(row.id);
+    startTransition(async () => {
+      const res = await reverseIssueSlip({ issueId: row.id, note });
+      setReversingId(null);
+      if (res.error) setError(res.error);
+    });
+  }
+
+  if (recentSlips.length === 0) return null;
+
+  return (
+    <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">
+      <h2 className="font-bold text-text-primary mb-3">Phiếu xuất gần đây</h2>
+      {error && <Alert variant="danger">{error}</Alert>}
+      <div className="space-y-2 text-sm">
+        {recentSlips.map(row => {
+          const isReversal = row.reversesIssueId !== null;
+          const alreadyReversed = row.reversedByIssueId !== null;
+          return (
+            <div key={row.id} className="border-b border-border pb-2 last:border-0">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <span className="font-medium text-text-primary">{row.itemName}</span>{" "}
+                  <span className={row.baseQuantity < 0 ? "text-success" : "text-text-secondary"}>
+                    {row.baseQuantity > 0 ? "-" : "+"}{formatNumber(Math.abs(row.baseQuantity))}
+                  </span>
+                  <span className="ml-2 text-text-muted text-xs">{formatDateTime(row.issuedAt)}</span>
+                  {isReversal && <span className="ml-2 text-xs text-warning">Đảo phiếu {row.reversesIssueId}</span>}
+                  {alreadyReversed && <span className="ml-2 text-xs text-success">Đã đảo bởi {row.reversedByIssueId}</span>}
+                </div>
+                {!isReversal && !alreadyReversed && (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleReverse(row)}
+                    loading={isPending && reversingId === row.id}
+                  >
+                    Đảo phiếu
+                  </Button>
+                )}
+              </div>
+              {row.note && <div className="text-xs text-text-secondary mt-0.5">{row.note}</div>}
+              {!isReversal && !alreadyReversed && (
+                <input
+                  type="text"
+                  placeholder="Lý do đảo phiếu (không bắt buộc)"
+                  value={reasonById[row.id] ?? ""}
+                  onChange={e => setReasonById(prev => ({ ...prev, [row.id]: e.target.value }))}
+                  className="mt-1.5 w-full border border-border rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
