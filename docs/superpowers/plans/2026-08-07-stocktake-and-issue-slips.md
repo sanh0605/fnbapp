@@ -307,7 +307,43 @@ Flagged to him because the failure it prevents is measured in money.
 | I4 | Issuing more than on hand | Refuse. `lib/issue-costing.ts` already throws `issue exceeds quantity on hand`; the screen must refuse **before** writing, with the shortfall named |
 | I5 | Issue dated before any purchase | Refuse — `lib/issue-costing.ts` throws `issue precedes any purchase` |
 | I6 | Back-dated issue slip | Allowed, but it changes past periods. Warn on screen and state which months move |
-| I7 | Mistaken slip | **Never delete.** Mark it reversed and write a compensating entry, so both remain visible |
+| I7 | Mistaken slip | **Never delete.** Mark it reversed and write a compensating entry **stamped now, valued at the running average now** — see below. Both rows stay visible, linked |
+
+#### I7 in full — decided 2026-08-08, and it was already decided
+
+The open question was whether a reversal should compensate **at the original
+moment** (so the books read as if the slip never happened) or **at today's
+price** (so the correction lands in the current period).
+
+**Today's price, in the current period.** Three reasons, in order of weight:
+
+1. **The owner already chose this shape.** `BR-INV-008` puts found goods back in
+   the period they are found, not the period they were wrongly issued, and he was
+   told that plainly before agreeing. A mistaken slip is the same event — goods
+   recorded as leaving that never left. Deciding it the other way would leave two
+   near-identical corrections behaving differently.
+2. **Plan C spent a week removing the machinery that rewrote closed periods**,
+   and retired it because a nightly job silently restating history is dangerous
+   in a way nobody notices until it is far too late. Reversing at the original
+   moment rebuilds exactly that, by hand.
+3. **It cascades.** The replay is chronological, so an event inserted in the past
+   changes the running average for every issue after it. One corrected slip
+   would silently revalue months of later ones.
+
+**A reversal is mechanically a "goods found" event** — same path, same sign, same
+valuation at the live running average — carrying a note that names the slip it
+reverses. `BR-INV-008` is already built, so this needs a link and a label, not a
+second mechanism.
+
+**Money still conserves, and the average still does not move.** The identity is
+structural: a reversal adds *v* to stock value and removes the same *v* from
+recognised cost, so `total paid = stock value + net cost recognised` holds for
+any valuation rate. Using the **live** average additionally leaves the average
+itself unchanged, which is the invariant `BR-INV-008` was chosen to protect.
+
+**What the owner gives up, stated plainly:** the month containing the mistake
+keeps its wrong figure for ever. That is the price of never rewriting a closed
+book, and it is the same price he already accepted for found goods.
 | I8 | Issue slip and stocktake on the same day | Ordering by timestamp must be deterministic; the replay in `lib/issue-costing.ts` sorts by `at`, so equal timestamps need a stable tiebreak |
 | I9 | Issue slip must also correct the ingredient quantity | Same rule as S1/S4 — an issue reduces both the issue book and the ingredient balance |
 
