@@ -294,6 +294,20 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 **Edge settled 2026-08-07:** a found event when the on-hand quantity is zero has no live average to draw on (`value/quantity` is `0/0`). Resolved as the **last unit cost the item left at** (the rate of the issue that emptied the pool), not a lifetime average of all purchases — that is the exact inverse of the depleting issue and the only choice that leaves the weighted average unchanged. A found event with no purchase ever recorded still refuses; a lot that never existed cannot be found. Implemented in `lib/issue-costing.ts` (`computeIssueCosting`), Plan D K6, 5 tests.
 
+### BR-INV-009 — Reversing a mistaken issue slip lands today, at today's average, using BR-INV-008's mechanism
+
+**Status:** `APPROVED` — owner decision 2026-08-08 (`259103e`, Plan D §5 I7 in full). **Not yet implemented** — Plan D D7b builds it. Recorded here on decision, per `CLAUDE.md` section 6, not on delivery.
+
+A manual issue slip entered by mistake is never deleted and never edited. It is marked reversed and answered with a compensating entry: quantity `-`original, dated **today**, valued at **today's running average** — not the rate that was in effect at the moment of the mistake, and not backdated to that moment. Both rows stay visible and linked.
+
+**Why today, not the original moment — this was the open question, and it was already decided once.** `BR-INV-008` puts goods found during a count back in the period they are *found*, not the period the shortfall happened in, and the owner accepted that shape knowingly. A mistaken slip is the same kind of event — quantity recorded as having left that never actually left — so it is corrected the same way. Two more reasons: Plan C spent a week removing the machinery that silently rewrote closed periods (`docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 6), and reversing at the original moment would rebuild that by hand; and the replay in `lib/issue-costing.ts` is chronological, so an event inserted into the past would revalue the running average for every issue after it, not just the one being corrected.
+
+**Mechanically, a reversal *is* a `BR-INV-008` found-stock event** — same code path, same sign (negative `base_quantity`), same live-average valuation — carrying a link to the slip it reverses and a note naming it. No second mechanism is built for this.
+
+**What is conserved, and what is not.** Money is structurally conserved at any valuation rate: a reversal adds *v* to stock value and removes the same *v* from recognised cost, so `total paid = stock value + net cost recognised` holds regardless of which rate is used. Using **today's live average** additionally leaves the average itself unchanged — the specific invariant `BR-INV-008` exists to protect — which the original moment's rate would not have (it would restore the money correctly but move the average).
+
+**What the owner gives up, stated plainly, the same price already accepted for found goods:** the month the mistake happened in keeps its wrong figure forever. The correction shows up in the month it is caught, not the month the mistake was made.
+
 ## Unresolved items
 
 | ID | Status | Decision needed | Current safe statement |

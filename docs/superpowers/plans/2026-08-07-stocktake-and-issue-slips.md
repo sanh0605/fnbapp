@@ -529,12 +529,16 @@ both options and the permanent-prompt consequence stated plainly.**
 
 ## 7b. I7's open question — routed by the owner to Opus, 2026-08-08
 
+**Decided 2026-08-08 — see "I7 in full" under §5 and `BR-INV-009`.** Today's
+average, in the current period, reusing `BR-INV-008`'s mechanism exactly.
+D7b is unblocked. The rest of this section is kept for the record of how the
+question was put, not as a live open item.
+
 I7 says a mistaken issue slip must be marked reversed and answered with a
 compensating entry, never deleted. That leaves one thing undecided: **what
 rate values the compensating entry?** Sonnet found the question is not
 cosmetic — it changes how much money the reversal returns — and asked the
-owner with a concrete pair of numbers. The owner's answer: *"Hỏi Opus."* Not
-decided yet; blocks only the reversal half of D7 (see §8).
+owner with a concrete pair of numbers. The owner's answer: *"Hỏi Opus."*
 
 **The example put to him, kept here so Opus has it verbatim:**
 
@@ -564,9 +568,8 @@ là hàng thật phát hiện hôm nay; đây là sửa một phiếu sai ngay t
 view is the two are not the same case even though the code path could be
 made to look identical.
 
-**Not yet acted on.** D7's other parts (§8, D7a) do not depend on this answer
-and proceed; only the reversal RPC (D7b) is blocked until Opus decides and
-this section is updated with the decision.
+**No longer blocking.** D7a landed without this answer, as planned. D7b
+(the reversal RPC) proceeds now that `BR-INV-009` is written.
 
 ---
 
@@ -914,10 +917,16 @@ khi hoàn tất rồi mới bắt đầu code."*
     today, so no such later event exists yet to endanger. Flagged for D8
     to revisit if real usage ever makes it a live risk.
 
-  - **D7b — the reversal RPC (I7).** Blocked on §7b. Everything else about
-    I7 (never delete, mark reversed, compensating entry, self-referencing
-    `reverses_issue_id`) is settled; only the compensating entry's rate is
-    not.
+  - **D7b — the reversal RPC (I7).** Unblocked 2026-08-08 — `BR-INV-009`
+    decided the compensating entry's rate (today's live average, same
+    mechanism as `BR-INV-008`). `reverses_issue_id` (self-referencing,
+    nullable), a dedicated RPC (not a generic negative-quantity path on
+    `create_manual_issue_atomic` — a reversal needs no on-hand check at all,
+    since it only ever returns an exact, already-issued quantity), the two
+    invariant tests the owner named (money conserves at any rate; the
+    average specifically does not move, which is why the rate must be
+    live), and a way on screen to find a past slip and reverse it (D7a's
+    screen was create-only).
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
