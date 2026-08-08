@@ -1143,6 +1143,20 @@ khi hoàn tất rồi mới bắt đầu code."*
   | `IssueSlipClient` (new) | **4** |
   | `StocktakeClient` (new) | **1** |
 
+  > **Retracted 2026-08-08, the same day, and the count must not be used again.**
+  > Counting `sm:`/`md:`/`lg:` prefixes measures the wrong thing. After the
+  > rework `IssueSlipClient` dropped from 4 to **1** — and got *better*, because
+  > the whole layout is now `grid grid-cols-1 lg:grid-cols-2`: the phone is the
+  > base case and a single rule expands it. Done properly, mobile-first needs
+  > **fewer** prefixes, not more; a high count often means a desktop layout being
+  > undone at every breakpoint, which may well be what the 22 represents.
+  >
+  > The suspicion the number raised was correct — those two screens genuinely
+  > were not designed for a phone. The number was not the evidence for it; the
+  > 57-row table was. Left visible rather than deleted, because a plausible
+  > metric pointed the right way for the wrong reason, and the next person could
+  > "improve" a good component by adding breakpoints to raise its score.
+
   **This is my omission, and a precise one.** §5 lists 35 cases and not one names
   a device. I specified what must happen and never asked where the person is
   standing — for the two screens in the plan that are *only* used away from a
