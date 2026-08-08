@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-08 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D5b: BR-INV-008 wired end to end, closing the gap between an approved rule and a machine that still refused it
+
+**Trigger:** owner found, re-reading D5's report, that `BR-INV-008` ("hàng tìm lại được") had been approved and written into `BUSINESS-RULES.md` the same day, but no task was ever assigned to build it — the rule existed on paper while `save_stocktake_line_atomic` still unconditionally refused any count above theoretical. Reordered ahead of `D6`: post-cutover, every ingredient's theoretical is inflated, so the owner's first real count is the one most likely to hit this refusal with goods physically in hand.
+
+**Worked example required and approved before any code** (`CLAUDE.md` section 4), real `Dâu sấy` data, three steps chained off the already-verified §6 figures (4.100 g / 2.443.600đ / 596đ/g): step 1 (ordinary, D5's territory) counts 1.000 g, step 2 (the actual D5b case) counts 1.200 g — more than the new theoretical (1.000) but within total purchased (4.100) — found 200 g valued at the live average, `ING-028` → 1.200 g / 715.200đ, average unchanged at 596đ/g; step 3 illustrates K6's `lastUnitCost` branch (already covered by K6's own tests, not re-verified live here).
+
+**Two changes, exactly as scoped** (`supabase/migrations/0056_found_stock.sql`) — `apply_stocktake_session_atomic`'s counting math (0055) and `computeIssueCosting` (K6) untouched, both already computed the correct signed result:
+
+1. `stock_issues.base_quantity`'s check constraint relaxed from `> 0` to `<> 0`, **keeping the `NaN` clause** — caught before writing the migration: dropping it while relaxing the sign check would have silently reopened a `NaN` hole, since Postgres numeric ordering makes `'NaN' > 0` and `'NaN' <> 0` both `true` (verified live) — the sign check alone has never excluded `NaN`; only the explicit second clause does.
+2. `save_stocktake_line_atomic`'s refusal for `theoretical < counted ≤ total_purchased` removed; the `counted > total_purchased` refusal (`BR-INV-005`) is byte-identical, unchanged.
+3. `apply_stocktake_session_atomic`: only the note text for a negative issue changed, to a Vietnamese explanation naming `BR-INV-008` rather than the generic stocktake note — the one place a plain schema/constraint fix touched a function already modified in D5.
+
+**Verified live against real production data, inside one transaction rolled back at the end.** No purchased item currently has any consumption recorded (`stock_issues` was empty), so the found-stock range could not be reached against today's real data without first creating genuine consumption — doing that permanently would have needed its own write approval, so both the setup (a real, in-transaction apply establishing `theoretical = 1.000` for `Dâu sấy`) and the D5b test itself ran and were undone inside a single `BEGIN...ROLLBACK`. Five checks, all passed: `BR-INV-005` still refuses `5.100 > 4.100`; `BR-INV-008` now accepts `1.200` (theoretical `1.000`) with no exception; the stored issue row reads `base_quantity = -200`, note *"Hàng tìm lại được (BR-INV-008) -- kiểm kê định kỳ 2026-08-08"*; `inventory_balances` for `ING-028` moved `1.000 → 1.200`, exactly `+200` — the first proof `trg_stock_ledger_inventory_balances` adds correctly for a *positive* delta, since D5's own verification had only exercised negative deltas; a direct `NaN` insert attempt still failed the constraint. Confirmed after rollback, independently: `ING-028` back to `4.100 g`, `stock_ledger` back to 138 rows, `stock_issues` back to 0, no `STK-004`/`STK-005` rows exist.
+
+**"Theoretical never exceeds total_purchased" proven, not just argued**, and the proof is what the live boundary test actually enforces: a found event is bounded by `counted ≤ total_purchased` (`BR-INV-005`), so `found ≤ total_issued_before` for any single event, so cumulative `total_issued` after it is always `≥ 0`, so `theoretical = total_purchased − total_issued` can never exceed `total_purchased`.
+
+**Reporting impact recorded in `BR-INV-008` and the plan, not left for the owner to discover**: a found event reduces the *current* period's cost, not the past period where the over-issue happened — correct accounting, but a month with a large found event will show unusually low COGS, and that should read as this rule working rather than a bug to chase.
+
+`npx tsc --noEmit`: 0 errors (no TypeScript touched). `npm run build`: succeeds. `npx vitest run`: 968/968 unchanged (verification was pure SQL against the live database, not new JS/TS behavior). `check-rules-current.ts`: clean.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-07 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D1-D4: NNL-004 retired, the found-stock engine built, base-ingredient duplicate lines dropped from stocktake
 
 **Trigger:** `docs/superpowers/plans/2026-08-07-stocktake-and-issue-slips.md`, the plan the owner asked for after finding Plan C's cutover left counting and issuing half-built. Full review round first (5 findings, all fixed by Opus before any code): a stale verification-bar figure contradicting the worked example, `S1`/`S2` not closed against inactive purchased items/conversions, a "note it once" framing for `C10` that was actually "ask forever" (the biggest catch — the purchased-item theoretical is recomputed fresh from `purchase_order_lines - stock_issues` every time, never reads `stock_ledger`, so correcting only the ingredient closes nothing), an independently re-derived worked example, and no tiebreak at all for same-timestamp events in `computeIssueCosting`.

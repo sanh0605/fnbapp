@@ -280,7 +280,7 @@ A stocktake counts only packages that are still sealed. An opened package is not
 
 ### BR-INV-008 — Counting more than expected is recorded as goods found, not refused
 
-**Status:** `APPROVED` — owner decision 2026-08-07. **Partly implemented**: the costing engine (K6, below) is done and tested; the `stock_issues.base_quantity > 0` constraint still blocks storing a negative value, and no screen writes this yet — both are Plan D D5/D7.
+**Status:** `APPROVED` — owner decision 2026-08-07. **Implemented 2026-08-08** (Plan D D5b, `0056_found_stock.sql`): the `stock_issues.base_quantity` constraint now accepts a negative value (the `NaN` guard kept alongside it), `save_stocktake_line_atomic` no longer refuses the found-stock range, and the negative issue row carries a Vietnamese note explaining itself. Verified live against real `Dâu sấy` data inside a rolled-back transaction — nothing persisted; see the plan's D5b entry for the five checks. No screen writes this yet — that is Plan D D7.
 
 When a count exceeds the theoretical quantity but stays within everything ever purchased, the system accepts it and records **hàng tìm lại được**: the quantity returns to stock at the weighted average it left at, which leaves the average unchanged and closes the discrepancy permanently.
 
@@ -289,6 +289,8 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 **Why the first proposal was withdrawn.** It was to correct the ingredient quantity and record no issue at all. Sonnet's challenge showed that a purchased item's theoretical quantity is recomputed every time as `purchase_order_lines − stock_issues` and never reads `stock_ledger`, so correcting the ingredient closes nothing: the same discrepancy would reappear **at every future count, for ever**. It had been described to the owner as a one-off note; it would have been a prompt that never stopped. The costing stayed correct throughout — no event reached the replay — but the description was wrong, and the owner was told so before deciding.
 
 **Implementation consequence to face rather than defend.** `stock_issues.base_quantity` carries `check (base_quantity > 0)` (`0052_stock_issues.sql`). This rule requires that to accept a negative value. The earlier position — "a negative issue is a different event wearing the wrong name" — reads well but leaves the loop open, and was set aside for that reason.
+
+**Reporting impact — say this before the owner finds it himself.** A found event reduces the *current* period's cost, not the past period where the over-issue originally happened. That is correct accounting (a prior-period correction lands in the period it is discovered), but it means a month with a large found event will show unusually low COGS. Flagged here in advance so a low figure reads as this rule working, not as a data error to investigate.
 
 **Edge settled 2026-08-07:** a found event when the on-hand quantity is zero has no live average to draw on (`value/quantity` is `0/0`). Resolved as the **last unit cost the item left at** (the rate of the issue that emptied the pool), not a lifetime average of all purchases — that is the exact inverse of the depleting issue and the only choice that leaves the weighted average unchanged. A found event with no purchase ever recorded still refuses; a lot that never existed cannot be found. Implemented in `lib/issue-costing.ts` (`computeIssueCosting`), Plan D K6, 5 tests.
 

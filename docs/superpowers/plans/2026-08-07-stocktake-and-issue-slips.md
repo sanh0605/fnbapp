@@ -558,6 +558,100 @@ khi hoàn tất rồi mới bắt đầu code."*
   goods in hand and no way through is the worst possible introduction to the new
   screen.
 
+  **Worked example, owner-approved before any code, real `Dâu sấy` data
+  (§6):** total purchased 4.100 g / 2.443.600đ, 596đ/g exact.
+
+  | Step | Counted | Result |
+  |---|---|---|
+  | 1 (ordinary, D5 already handles it) | 1.000 g | Issue 3.100 g, cost 1.847.600đ, `ING-028` → 1.000 g, 596.000đ left |
+  | 2 (D5b — the actual case) | 1.200 g (> theoretical 1.000, ≤ purchased 4.100) | Found 200 g at the **live** average (quantity was still > 0): 200 × 596 = 119.200đ. `ING-028` → 1.200 g, 715.200đ. Average 715.200 ÷ 1.200 = **596đ/g, unchanged** |
+  | 3 (illustrates K6's `lastUnitCost` branch, not re-tested live — already covered by K6's own tests) | Pool later drawn to exactly 0, then 50 g found | Live average is `0/0`; uses the remembered rate (596) instead: 50 × 596 = 29.800đ, average still 596đ/g |
+
+  BR-INV-005's boundary is untouched: counted above 4.100 g (everything ever
+  purchased) is still refused, unconditionally — that cannot be "found"
+  stock by construction (see the invariant proof below).
+
+  **Done 2026-08-08** —
+  `supabase/migrations/0056_found_stock.sql`. Two changes only, exactly as
+  scoped; `apply_stocktake_session_atomic`'s counting math (0055) and
+  `computeIssueCosting` (K6) were **not** touched — both already computed
+  the correct signed result once these two refusals lifted:
+
+  1. **`stock_issues.base_quantity` constraint.** Live definition confirmed
+     before writing the migration, not assumed:
+     `CHECK ((base_quantity > (0)::numeric) AND (base_quantity <> 'NaN'::numeric))`.
+     Replaced with `check (base_quantity <> 0 and base_quantity <> 'NaN'::numeric)`
+     — **the `NaN` clause is kept, not dropped.** Confirmed live why it has
+     to be: in Postgres numeric ordering `NaN` sorts above every value, so
+     `'NaN'::numeric > 0` is `true` and `'NaN'::numeric <> 0` is also `true`
+     — neither sign check has ever excluded `NaN` on its own; only the
+     explicit second clause does. Losing it while relaxing the sign check
+     would have opened the exact column the whole costing engine is built
+     on to a `NaN` write.
+  2. **`save_stocktake_line_atomic`.** The refusal for
+     `theoretical < counted ≤ total_purchased` is gone — that range is
+     `BR-INV-008`, accepted with no exception. The refusal for
+     `counted > total_purchased` (`BR-INV-005`) is byte-identical,
+     unchanged.
+  3. **`apply_stocktake_session_atomic`, note text only.** A negative issue
+     (`count_variance > 0`) gets *"Hàng tìm lại được (BR-INV-008) -- kiểm kê
+     định kỳ \<ngày\>"* instead of the generic stocktake note — a negative
+     row found six months later must explain itself in the owner's own
+     language, not read as a data error.
+
+  **Reporting impact, recorded here and in `BR-INV-008` because the owner
+  will see it, not just the implementer:** a found event reduces the
+  **current** period's cost, not the past period where the over-issue
+  originally happened — correct accounting (a prior-period correction lands
+  in the period it is discovered), but it means a month with a large found
+  event will show unusually low COGS. Said here in advance rather than
+  waiting for the owner to notice a low figure and suspect a bug.
+
+  **Verified live, real Dâu sấy data, inside one transaction rolled back at
+  the end — nothing persisted.** Session A: counted 1.000 g (matches §6),
+  applied for real *within the same transaction* to establish a genuine
+  `theoretical = 1.000` (no way to reach the D5b range against today's data
+  without first creating real consumption — doing that permanently would
+  have needed its own approval, so it was done and undone inside one
+  transaction instead). Session B: counted 1.200 g.
+
+  Five checks, all passed:
+  1. **`BR-INV-005` still refuses** counted `5.100 > 4.100` (unchanged) —
+     confirmed by the actual exception text.
+  2. **`BR-INV-008` now accepts** counted `1.200` (theoretical `1.000`,
+     purchased `4.100`) — no exception, where the old code would have
+     refused.
+  3. **The stored issue row**: `base_quantity = -200`, note = *"Hàng tìm
+     lại được (BR-INV-008) -- kiểm kê định kỳ 2026-08-08"* — exact text,
+     read back from the table, not the code that wrote it.
+  4. **`inventory_balances` moved the right direction and amount**:
+     `ING-028` `1.000 → 1.200` g, delta exactly `+200` — proves
+     `trg_stock_ledger_inventory_balances` adds correctly for a *positive*
+     `stock_ledger` insert, which D5 had so far only exercised with
+     negative deltas.
+  5. **`NaN` still rejected** by the replaced constraint — a direct insert
+     attempt failed with the expected constraint violation.
+
+  **"Theoretical never exceeds total_purchased," proven, not just argued.**
+  A found event's magnitude is bounded by `counted ≤ total_purchased`
+  (`BR-INV-005`, test 1 above), and `found = counted − theoretical_before ≤
+  total_purchased − theoretical_before = total_issued_before` — a single
+  found event can never return more than has already been issued for that
+  purchased item, so cumulative `total_issued` after including it is always
+  `≥ 0`, and `theoretical = total_purchased − total_issued` can therefore
+  never exceed `total_purchased`. The live boundary test (1) is what
+  actually enforces this at the only place it can be violated — the count
+  entry point — rather than leaving it as an argument nothing checks.
+
+  Confirmed after the rollback, independently: `ING-028` back to exactly
+  `4.100 g`, `stock_ledger` back to 138 rows, `stock_issues` back to 0
+  rows, no `STK-004`/`STK-005` session rows exist.
+
+  `npx tsc --noEmit`: 0 errors (no TypeScript touched). `npm run build`:
+  succeeds. `npx vitest run`: 968/968 unchanged (no JS/TS behavior
+  changed — verification was pure SQL against the live database).
+  `check-rules-current.ts`: clean.
+
 - **D6** Convert the count screen to purchase units (Gap 5), display only —
   storage stays exact base units.
 - **D7** Build the issue slip screen (Gap 2), covering I1–I9.
