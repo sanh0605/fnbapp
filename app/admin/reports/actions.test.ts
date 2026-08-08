@@ -119,6 +119,50 @@ describe("getPnLDataV2", () => {
     expect(result.productProfitAnalysis[0]).not.toHaveProperty("cogs");
   });
 
+  // Plan D D8, owner's own priority case (2026-08-08): stock_issues has
+  // been empty ever since Plan C's cutover -- getPnLDataV2 has never once
+  // reported a non-zero COGS. This is the first test to exercise the full
+  // chain the entire point of Plan C/D was to make work: a purchase, a
+  // manual issue slip (D7a), and a stocktake-derived issue (D5), replayed
+  // together through the REAL getPnLDataV2 -- not a fixture standing in
+  // for it.
+  it("nhập -> xuất tay -> kiểm kê: the full chain reports the correct COGS, not 0", async () => {
+    const suaDau = makeSuaDauStandaloneOrder(); // real fixture, created_at 2026-06-12, revenue 25.000đ
+    (findAllWhere as any).mockResolvedValue([suaDau.order]);
+    (findAllWhereInBatches as any).mockResolvedValue(suaDau.lines);
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Purchase_Orders") {
+        return [{ id: "PO-100", status: "COMPLETED", transaction_date: "2026-06-01T00:00:00Z" }];
+      }
+      if (sheet === "Purchase_Order_Lines") {
+        // 1.000 units for 500.000đ -- 500đ/unit exact, chosen so every
+        // downstream figure is exact with no rounding to worry about.
+        return [{ purchase_order_id: "PO-100", purchased_item_id: "SPM-X", base_quantity: 1000, subtotal: 500_000 }];
+      }
+      if (sheet === "Stock_Issues") {
+        return [
+          // I1: a real manual issue slip (D7a), source MANUAL.
+          { purchased_item_id: "SPM-X", issued_at: "2026-06-10T00:00:00Z", base_quantity: 200, source: "MANUAL" },
+          // A stocktake-derived issue (D5), source STOCKTAKE -- the two
+          // writers this session's own concern 1/2 asked about, both
+          // landing in the same table, both replayed by the same engine.
+          { purchased_item_id: "SPM-X", issued_at: "2026-06-20T00:00:00Z", base_quantity: 100, source: "STOCKTAKE" },
+        ];
+      }
+      return [];
+    });
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+
+    // By hand: 200 issued @500đ/unit = 100.000đ, then 100 issued @500đ/unit
+    // (rate unchanged, no purchase in between) = 50.000đ. Total 150.000đ --
+    // not 0, the figure this exact path has never produced before.
+    expect(result.totalCOGS).toBe(150_000);
+    expect(result.totalRevenue).toBe(25_000);
+    expect(result.grossProfit).toBe(25_000 - 150_000);
+  });
+
   it("aggregates single Sữa Dâu order correctly", async () => {
     const suaDau = makeSuaDauStandaloneOrder();
     (findAllNoCache as any).mockImplementation((sheet: string) => {
