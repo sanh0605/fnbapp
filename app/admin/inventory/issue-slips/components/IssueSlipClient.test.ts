@@ -20,7 +20,7 @@ describe("IssueSlipClient -- Plan D D7a", () => {
 
   it("does not compute or check on-hand itself -- I4's refusal comes from the RPC, surfaced verbatim", () => {
     expect(source).not.toMatch(/parsedQty\s*>\s*item/);
-    expect(source).toContain("I4/I5 refusals from the RPC surface here verbatim");
+    expect(source).toContain("I4/I5/I10 refusals from the RPC surface here verbatim");
   });
 
   it("defaults the time field to now and lets it be edited, storing a real instant not a bare date", () => {
@@ -30,21 +30,64 @@ describe("IssueSlipClient -- Plan D D7a", () => {
   });
 });
 
-describe("IssueSlipClient -- Plan D D7b, BR-INV-009 reversal UI", () => {
+describe("IssueSlipClient -- Plan D D9, multi-line slip mirroring PurchaseOrderForm", () => {
+  it("uses SearchableSelect per line, the same picker PurchaseOrderForm uses", () => {
+    expect(source).toContain('import { SearchableSelect } from "@/components/SearchableSelect"');
+    expect(source).toContain("<SearchableSelect");
+  });
+
+  it("manages an add/remove line list, not a single fixed form", () => {
+    expect(source).toContain("function addLine()");
+    expect(source).toContain("function removeLine(index");
+    expect(source).toContain("lines.map((line, index)");
+  });
+
+  it("sends every line to the RPC in one call, not one request per item", () => {
+    expect(source).toContain("payloadLines.push(");
+    expect(source).toContain("lines: payloadLines");
+    // Exactly one createIssueSlip call in handleSubmit -- not looped.
+    expect(source.match(/createIssueSlip\(/g)?.length).toBe(1);
+  });
+
+  it("shares one time field and one reason across the whole slip, not one per line", () => {
+    expect(source).toContain("áp dụng cho cả phiếu");
+    expect(source).toContain("const [issuedAtLocal, setIssuedAtLocal]");
+    expect(source).toContain("const [reason, setReason]");
+    // Only one datetime-local input in the form -- not one inside the line loop.
+    expect(source.match(/type="datetime-local"/g)?.length).toBe(1);
+  });
+
+  it("validates each line and names which one is wrong, before ever calling the RPC", () => {
+    expect(source).toContain("`Dòng ${i + 1}: chưa chọn mặt hàng`");
+    expect(source).toContain("`Dòng ${i + 1}: chưa chọn quy cách`");
+    expect(source).toContain("`Dòng ${i + 1}: số lượng phải lớn hơn 0`");
+  });
+});
+
+describe("IssueSlipClient -- Plan D D7b/D9, BR-INV-009 reversal UI", () => {
   it("only offers to reverse a MANUAL row that is not itself a reversal and has not already been reversed", () => {
     expect(source).toContain("!isReversal && !alreadyReversed &&");
     expect(source).toContain("row.reversesIssueId !== null");
     expect(source).toContain("row.reversedByIssueId !== null");
   });
 
-  it("requires an explicit confirm before reversing, naming BR-INV-009 and that the original is never edited", () => {
+  it("requires an explicit confirm before reversing, naming BR-INV-009 and that the original line is never edited", () => {
     expect(source).toContain("handleReverse(row)");
-    expect(source).toContain("Phiếu gốc được giữ nguyên, không xoá");
+    expect(source).toContain("Dòng gốc được giữ nguyên, không xoá");
     expect(source).toContain("BR-INV-009");
   });
 
   it("shows a reversed pair linked both ways, neither row hidden", () => {
-    expect(source).toContain("Đảo phiếu {row.reversesIssueId}");
+    expect(source).toContain("Đảo dòng {row.reversesIssueId}");
     expect(source).toContain("Đã đảo bởi {row.reversedByIssueId}");
+  });
+
+  it("D9: groups a slip's rows together by slipId, falling back to the row's own id for legacy/reversal rows", () => {
+    expect(source).toContain("row.slipId ?? row.id");
+  });
+
+  it("D9: reversal stays per-line -- one button per row, not one per slip", () => {
+    expect(source).toContain('reverseIssueSlip({ issueId: row.id, note })');
+    expect(source).not.toMatch(/reverse.*[Ss]lip.*all|reverseWholeSlip/);
   });
 });

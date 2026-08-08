@@ -1041,6 +1041,41 @@ khi hoàn tất rồi mới bắt đầu code."*
   known to be tedious, then replacing it days later, spends the owner's patience
   to save nothing.
 
+  **Done 2026-08-08.** I10/I11 decided and written into §5 before any code
+  (`create_manual_issue_atomic` (0057) superseded, not paralleled —
+  `supabase/migrations/0060_issue_slip_multiline.sql` adds an `issue_slips`
+  header table (mirrors `purchase_orders`) and `create_issue_slip_atomic`,
+  taking a JSON array of lines, atomic (any line failing anywhere aborts
+  the whole slip, nothing written), I10's cumulative running-balance check
+  named per line (`array_position`/two parallel arrays, since a slip
+  realistically has a handful of lines). `reverse_manual_issue_atomic`
+  (D7b) untouched — I11 needed zero engine changes, each line is still
+  exactly one `stock_issues` row.
+
+  `IssueSlipClient.tsx` rebuilt to mirror `PurchaseOrderForm.tsx`
+  genuinely, not just in spirit: `SearchableSelect` per line, add/remove
+  line list, one shared time field and reason for the whole slip (D9's own
+  framing — throwing away five things is one event, not five). Recent-
+  slips list groups rows by `slipId` so a multi-line slip reads as one
+  card; reversal stays a button per line inside that card.
+
+  Verified live inside a `BEGIN...ROLLBACK` against real `Dâu sấy`/`Kem
+  whipping Anchor` data: a 3-line slip with the same item on two lines
+  (I10) succeeds, both lines' effects land correctly; a second slip's
+  cumulative check correctly refuses its second line, naming the exact
+  remaining balance *after* the first line's effect (not a stale
+  snapshot); a slip with one valid and one invalid line writes nothing at
+  all (atomicity); the old RPC is confirmed gone
+  (`function ... does not exist`). Nothing persisted after rollback,
+  confirmed independently.
+
+  `npx tsc --noEmit`: 0 errors. `npm run build`: succeeds
+  (`/admin/inventory/issue-slips` in the route list). `npx vitest run`:
+  1027/1027 (+12 from D8's 1015). `check-rules-current.ts`: clean. Two
+  migrations landed since D8 (`0060`, schema/RPC only, no business data
+  touched). **Still not deployed** — this is the second review cycle the
+  owner has asked for before that approval.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than

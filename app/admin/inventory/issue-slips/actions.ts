@@ -5,16 +5,16 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import {
-  createManualIssueAtomic,
+  createIssueSlipAtomic,
   reverseManualIssueAtomic,
-  type ManualIssueResult,
+  type IssueSlipResult,
   type ReversalResult,
 } from "@/lib/manual-issue-transaction";
 import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
 import { computeOnHandByPurchasedItem, filterByC17 } from "@/lib/purchased-item-onhand";
 
 const PATH = "/admin/inventory/issue-slips";
-const RECENT_SLIPS_LIMIT = 50;
+const RECENT_SLIPS_LIMIT = 100;
 
 export interface IssueSlipItemView {
   id: string;
@@ -82,12 +82,15 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
     .sort((a, b) => a.name.localeCompare(b.name, "vi"));
 }
 
+// Plan D D9: one slip, one time, many lines -- the owner's own review of
+// the D7a screen ("tại sao chỉ cho xuất đúng 1 sản phẩm"). Whole slip is
+// validated and written in one RPC call; I4/I10 are enforced there, not
+// re-derived here.
 export async function createIssueSlip(input: {
-  purchasedItemId: string;
-  baseQuantity: number;
   issuedAtIso: string;
   note: string;
-}): Promise<ActionResponse & { result?: ManualIssueResult }> {
+  lines: Array<{ purchasedItemId: string; baseQuantity: number }>;
+}): Promise<ActionResponse & { result?: IssueSlipResult }> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
@@ -95,18 +98,24 @@ export async function createIssueSlip(input: {
   if (Number.isNaN(issuedAt.getTime())) {
     return fail("Thời điểm xuất không hợp lệ");
   }
-  if (!Number.isFinite(input.baseQuantity) || input.baseQuantity <= 0) {
-    return fail("Số lượng xuất phải lớn hơn 0");
+  if (input.lines.length === 0) {
+    return fail("Phiếu cần ít nhất một dòng");
+  }
+  for (let i = 0; i < input.lines.length; i++) {
+    const line = input.lines[i];
+    if (!line.purchasedItemId) return fail(`Dòng ${i + 1}: chưa chọn mặt hàng`);
+    if (!Number.isFinite(line.baseQuantity) || line.baseQuantity <= 0) {
+      return fail(`Dòng ${i + 1}: số lượng phải lớn hơn 0`);
+    }
   }
 
   try {
-    const result = await createManualIssueAtomic({
-      purchasedItemId: input.purchasedItemId,
-      baseQuantity: input.baseQuantity,
+    const result = await createIssueSlipAtomic({
       issuedAt,
       note: input.note,
       createdById: auth.actor.id,
       createdByName: auth.actor.name,
+      lines: input.lines,
     });
     revalidatePath(PATH);
     return ok({ result });
@@ -118,6 +127,7 @@ export async function createIssueSlip(input: {
 
 export interface IssueSlipRow {
   id: string;
+  slipId: string | null;
   itemName: string;
   baseQuantity: number;
   issuedAt: string;
@@ -151,6 +161,10 @@ export async function getRecentIssueSlips(): Promise<IssueSlipRow[]> {
 
   return rows.map(row => ({
     id: row.id,
+    // Plan D D9: rows written before this migration (or, in principle, any
+    // row written outside a slip) carry no issue_slip_id -- shown
+    // individually rather than grouped, not an error.
+    slipId: row.issue_slip_id ?? null,
     itemName: nameById.get(row.purchased_item_id) ?? row.purchased_item_id,
     baseQuantity: Number(row.base_quantity),
     issuedAt: row.issued_at,
@@ -160,6 +174,10 @@ export async function getRecentIssueSlips(): Promise<IssueSlipRow[]> {
   }));
 }
 
+// Plan D D9 / I11: reversal stays per-line, unchanged from D7b -- a
+// multi-line slip still writes one stock_issues row per line, so
+// correcting one wrong line does not require touching the rest of the
+// slip.
 export async function reverseIssueSlip(input: {
   issueId: string;
   note: string;

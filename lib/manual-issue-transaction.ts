@@ -1,38 +1,90 @@
 import { getSupabaseClient } from "@/lib/supabase";
 
-export type ManualIssueResult = {
+export type IssueSlipLineResult = {
   issueId: string;
   ledgerId: string;
   purchasedItemId: string;
   baseIngredientId: string;
   baseQuantity: number;
-  issuedAt: string;
-  onHandBefore: number;
   onHandAfter: number;
-  createdById: string;
-  createdByName: string;
 };
 
-export async function createManualIssueAtomic(input: {
-  purchasedItemId: string;
-  baseQuantity: number;
+export type IssueSlipResult = {
+  slipId: string;
+  issuedAt: string;
+  note: string;
+  createdById: string;
+  createdByName: string;
+  lines: IssueSlipLineResult[];
+};
+
+// Plan D D9: one slip, one time, many lines -- mirrors PurchaseOrderForm's
+// own shape (one purchase order, many purchase_order_lines). Superseded
+// createManualIssueAtomic (0057), which forced one item per slip; a
+// single-line slip is just the degenerate case of this. I10: two lines
+// naming the same purchased item are allowed and checked cumulatively by
+// the RPC itself, not merged here. Atomic: any line failing anywhere
+// aborts the whole slip, nothing written.
+export async function createIssueSlipAtomic(input: {
   issuedAt: Date;
   note: string;
   createdById: string;
   createdByName: string;
-}): Promise<ManualIssueResult> {
-  const { data, error } = await getSupabaseClient().rpc("create_manual_issue_atomic", {
-    p_purchased_item_id: input.purchasedItemId,
-    p_base_quantity: input.baseQuantity,
+  lines: Array<{ purchasedItemId: string; baseQuantity: number }>;
+}): Promise<IssueSlipResult> {
+  const { data, error } = await getSupabaseClient().rpc("create_issue_slip_atomic", {
     p_issued_at: input.issuedAt.toISOString(),
     p_note: input.note,
     p_created_by_id: input.createdById,
     p_created_by_name: input.createdByName,
+    p_lines: input.lines.map(l => ({ purchased_item_id: l.purchasedItemId, base_quantity: l.baseQuantity })),
   });
   if (error) {
-    throw new Error(`create_manual_issue_atomic: ${error.message}`);
+    throw new Error(`create_issue_slip_atomic: ${error.message}`);
   }
-  return parseManualIssueResult(data);
+  return parseIssueSlipResult(data);
+}
+
+function parseIssueSlipResult(data: unknown): IssueSlipResult {
+  const result = data as {
+    slip_id?: string;
+    issued_at?: string;
+    note?: string;
+    created_by_id?: string;
+    created_by_name?: string;
+    lines?: Array<{
+      issue_id?: string;
+      ledger_id?: string;
+      purchased_item_id?: string;
+      base_ingredient_id?: string;
+      base_quantity?: number;
+      on_hand_after?: number;
+    }>;
+  } | null;
+  if (!result?.slip_id || !result.lines || result.lines.length === 0) {
+    throw new Error("create_issue_slip_atomic returned an invalid result");
+  }
+  const lines = result.lines.map(line => {
+    if (!line.issue_id || !line.ledger_id) {
+      throw new Error("create_issue_slip_atomic returned an invalid line result");
+    }
+    return {
+      issueId: line.issue_id,
+      ledgerId: line.ledger_id,
+      purchasedItemId: line.purchased_item_id || "",
+      baseIngredientId: line.base_ingredient_id || "",
+      baseQuantity: Number(line.base_quantity) || 0,
+      onHandAfter: Number(line.on_hand_after) || 0,
+    };
+  });
+  return {
+    slipId: result.slip_id,
+    issuedAt: result.issued_at || "",
+    note: result.note || "",
+    createdById: result.created_by_id || "",
+    createdByName: result.created_by_name || "",
+    lines,
+  };
 }
 
 export type ReversalResult = {
@@ -47,11 +99,15 @@ export type ReversalResult = {
   createdByName: string;
 };
 
-// Plan D D7b / BR-INV-009: reverse a mistaken manual issue slip. Lands
+// Plan D D7b / BR-INV-009: reverse a mistaken manual issue slip LINE. Lands
 // today, at today's live average -- see BR-INV-009 for why. No on-hand
-// check on this path (unlike createManualIssueAtomic): a reversal only
-// ever returns an exact, already-issued quantity, so it can never exceed
-// what is on hand.
+// check on this path: a reversal only ever returns an exact, already-
+// issued quantity, so it can never exceed what is on hand.
+//
+// D9 / I11: stays per-line, unchanged. A multi-line slip still writes one
+// stock_issues row per line, so this reverses exactly one of them --
+// correcting one wrong line out of five does not require touching the
+// other four.
 export async function reverseManualIssueAtomic(input: {
   issueId: string;
   note: string;
@@ -93,36 +149,6 @@ function parseReversalResult(data: unknown): ReversalResult {
     baseIngredientId: result.base_ingredient_id || "",
     baseQuantity: Number(result.base_quantity) || 0,
     issuedAt: result.issued_at || "",
-    createdById: result.created_by_id || "",
-    createdByName: result.created_by_name || "",
-  };
-}
-
-function parseManualIssueResult(data: unknown): ManualIssueResult {
-  const result = data as {
-    issue_id?: string;
-    ledger_id?: string;
-    purchased_item_id?: string;
-    base_ingredient_id?: string;
-    base_quantity?: number;
-    issued_at?: string;
-    on_hand_before?: number;
-    on_hand_after?: number;
-    created_by_id?: string;
-    created_by_name?: string;
-  } | null;
-  if (!result?.issue_id || !result.ledger_id) {
-    throw new Error("create_manual_issue_atomic returned an invalid result");
-  }
-  return {
-    issueId: result.issue_id,
-    ledgerId: result.ledger_id,
-    purchasedItemId: result.purchased_item_id || "",
-    baseIngredientId: result.base_ingredient_id || "",
-    baseQuantity: Number(result.base_quantity) || 0,
-    issuedAt: result.issued_at || "",
-    onHandBefore: Number(result.on_hand_before) || 0,
-    onHandAfter: Number(result.on_hand_after) || 0,
     createdById: result.created_by_id || "",
     createdByName: result.created_by_name || "",
   };

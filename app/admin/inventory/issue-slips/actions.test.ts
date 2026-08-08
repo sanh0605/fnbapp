@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   findAllNoCache: vi.fn(),
   findAllWhere: vi.fn(),
   revalidatePath: vi.fn(),
-  createManualIssueAtomic: vi.fn(),
+  createIssueSlipAtomic: vi.fn(),
   reverseManualIssueAtomic: vi.fn(),
 }));
 
@@ -18,7 +18,7 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/manual-issue-transaction", () => ({
-  createManualIssueAtomic: mocks.createManualIssueAtomic,
+  createIssueSlipAtomic: mocks.createIssueSlipAtomic,
   reverseManualIssueAtomic: mocks.reverseManualIssueAtomic,
 }));
 
@@ -106,74 +106,101 @@ describe("createIssueSlip", () => {
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
   });
 
-  it("refuses a non-positive quantity before ever calling the RPC", async () => {
+  it("refuses an empty line list before ever calling the RPC", async () => {
     const res = await issueSlipActions.createIssueSlip({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 0,
       issuedAtIso: "2026-08-08T09:00:00.000Z",
-      note: "Hao hụt",
+      note: "",
+      lines: [],
     });
-    expect(res).toEqual({ error: "Số lượng xuất phải lớn hơn 0" });
-    expect(mocks.createManualIssueAtomic).not.toHaveBeenCalled();
+    expect(res).toEqual({ error: "Phiếu cần ít nhất một dòng" });
+    expect(mocks.createIssueSlipAtomic).not.toHaveBeenCalled();
+  });
+
+  it("refuses a non-positive quantity on any line, naming which one, before ever calling the RPC", async () => {
+    const res = await issueSlipActions.createIssueSlip({
+      issuedAtIso: "2026-08-08T09:00:00.000Z",
+      note: "",
+      lines: [
+        { purchasedItemId: "SPM-033", baseQuantity: 500 },
+        { purchasedItemId: "SPM-014", baseQuantity: 0 },
+      ],
+    });
+    expect(res).toEqual({ error: "Dòng 2: số lượng phải lớn hơn 0" });
+    expect(mocks.createIssueSlipAtomic).not.toHaveBeenCalled();
+  });
+
+  it("refuses a line with no item chosen, before ever calling the RPC", async () => {
+    const res = await issueSlipActions.createIssueSlip({
+      issuedAtIso: "2026-08-08T09:00:00.000Z",
+      note: "",
+      lines: [{ purchasedItemId: "", baseQuantity: 500 }],
+    });
+    expect(res).toEqual({ error: "Dòng 1: chưa chọn mặt hàng" });
+    expect(mocks.createIssueSlipAtomic).not.toHaveBeenCalled();
   });
 
   it("refuses an unparseable timestamp before ever calling the RPC", async () => {
     const res = await issueSlipActions.createIssueSlip({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 500,
       issuedAtIso: "not-a-date",
       note: "Hao hụt",
+      lines: [{ purchasedItemId: "SPM-033", baseQuantity: 500 }],
     });
     expect(res).toEqual({ error: "Thời điểm xuất không hợp lệ" });
-    expect(mocks.createManualIssueAtomic).not.toHaveBeenCalled();
+    expect(mocks.createIssueSlipAtomic).not.toHaveBeenCalled();
   });
 
-  it("forwards a valid slip to the RPC and revalidates on success", async () => {
-    mocks.createManualIssueAtomic.mockResolvedValue({
-      issueId: "ISS-00001",
-      ledgerId: "STK-021",
-      purchasedItemId: "SPM-033",
-      baseIngredientId: "ING-028",
-      baseQuantity: 500,
+  it("forwards a valid multi-line slip to the RPC and revalidates on success", async () => {
+    mocks.createIssueSlipAtomic.mockResolvedValue({
+      slipId: "ISL-00001",
       issuedAt: "2026-08-08T09:00:00+07:00",
-      onHandBefore: 4100,
-      onHandAfter: 3600,
+      note: "Hao hụt",
       createdById: "admin-1",
       createdByName: "Admin",
+      lines: [
+        { issueId: "ISS-00001", ledgerId: "STK-021", purchasedItemId: "SPM-033", baseIngredientId: "ING-028", baseQuantity: 500, onHandAfter: 3600 },
+        { issueId: "ISS-00002", ledgerId: "STK-022", purchasedItemId: "SPM-014", baseIngredientId: "ING-009", baseQuantity: 200, onHandAfter: 1300 },
+      ],
     });
 
     const res = await issueSlipActions.createIssueSlip({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 500,
       issuedAtIso: "2026-08-08T09:00:00.000Z",
       note: "Hao hụt",
+      lines: [
+        { purchasedItemId: "SPM-033", baseQuantity: 500 },
+        { purchasedItemId: "SPM-014", baseQuantity: 200 },
+      ],
     });
 
     expect(res.error).toBeUndefined();
-    expect(res.result?.issueId).toBe("ISS-00001");
-    expect(mocks.createManualIssueAtomic).toHaveBeenCalledWith(expect.objectContaining({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 500,
+    expect(res.result?.slipId).toBe("ISL-00001");
+    expect(res.result?.lines).toHaveLength(2);
+    expect(mocks.createIssueSlipAtomic).toHaveBeenCalledWith(expect.objectContaining({
       note: "Hao hụt",
       createdById: "admin-1",
       createdByName: "Admin",
+      lines: [
+        { purchasedItemId: "SPM-033", baseQuantity: 500 },
+        { purchasedItemId: "SPM-014", baseQuantity: 200 },
+      ],
     }));
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips");
   });
 
-  it("relays the RPC's own refusal (I4/I5) verbatim, in Vietnamese, naming the shop's own numbers", async () => {
-    mocks.createManualIssueAtomic.mockRejectedValue(
-      new Error("create_manual_issue_atomic: Xuất 5000 g vượt tồn kho 3600 g của Dâu sấy (SPM-033)"),
+  it("relays the RPC's own refusal (I4/I5/I10) verbatim, in Vietnamese, naming the line and the shop's own numbers", async () => {
+    mocks.createIssueSlipAtomic.mockRejectedValue(
+      new Error("create_issue_slip_atomic: Dòng 2 (Dâu sấy): yêu cầu xuất 5000 g, chỉ còn 3600 g tính tới thời điểm ..."),
     );
 
     const res = await issueSlipActions.createIssueSlip({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 5000,
       issuedAtIso: "2026-08-08T09:00:00.000Z",
       note: "",
+      lines: [
+        { purchasedItemId: "SPM-033", baseQuantity: 500 },
+        { purchasedItemId: "SPM-033", baseQuantity: 5000 },
+      ],
     });
 
-    expect(res.error).toContain("vượt tồn kho");
+    expect(res.error).toContain("Dòng 2");
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });
@@ -187,8 +214,8 @@ describe("getRecentIssueSlips", () => {
 
   it("derives both directions of the reversal link from the same fetched window, without mutating either row", async () => {
     mocks.findAllWhere.mockResolvedValue([
-      { id: "ISS-00002", purchased_item_id: "SPM-033", base_quantity: -500, issued_at: "2026-01-10T09:00:00Z", note: "Đảo phiếu ISS-00001", reverses_issue_id: "ISS-00001" },
-      { id: "ISS-00001", purchased_item_id: "SPM-033", base_quantity: 500, issued_at: "2026-01-03T09:00:00Z", note: "Hao hụt", reverses_issue_id: null },
+      { id: "ISS-00002", purchased_item_id: "SPM-033", base_quantity: -500, issued_at: "2026-01-10T09:00:00Z", note: "Đảo phiếu ISS-00001", reverses_issue_id: "ISS-00001", issue_slip_id: null },
+      { id: "ISS-00001", purchased_item_id: "SPM-033", base_quantity: 500, issued_at: "2026-01-03T09:00:00Z", note: "Hao hụt", reverses_issue_id: null, issue_slip_id: "ISL-00001" },
     ]);
 
     const rows = await issueSlipActions.getRecentIssueSlips();
@@ -206,12 +233,31 @@ describe("getRecentIssueSlips", () => {
 
   it("a slip with no reversal in either direction shows neither link", async () => {
     mocks.findAllWhere.mockResolvedValue([
-      { id: "ISS-00003", purchased_item_id: "SPM-033", base_quantity: 200, issued_at: "2026-01-11T09:00:00Z", note: "", reverses_issue_id: null },
+      { id: "ISS-00003", purchased_item_id: "SPM-033", base_quantity: 200, issued_at: "2026-01-11T09:00:00Z", note: "", reverses_issue_id: null, issue_slip_id: "ISL-00002" },
     ]);
 
     const [row] = await issueSlipActions.getRecentIssueSlips();
     expect(row.reversesIssueId).toBeNull();
     expect(row.reversedByIssueId).toBeNull();
+  });
+
+  it("D9: carries slipId so the screen can group a multi-line slip's rows together", async () => {
+    mocks.findAllWhere.mockResolvedValue([
+      { id: "ISS-00001", purchased_item_id: "SPM-033", base_quantity: 500, issued_at: "2026-08-08T09:00:00Z", note: "Hao hụt", reverses_issue_id: null, issue_slip_id: "ISL-00001" },
+      { id: "ISS-00002", purchased_item_id: "SPM-014", base_quantity: 200, issued_at: "2026-08-08T09:00:00Z", note: "Hao hụt", reverses_issue_id: null, issue_slip_id: "ISL-00001" },
+    ]);
+
+    const rows = await issueSlipActions.getRecentIssueSlips();
+    expect(rows.every(r => r.slipId === "ISL-00001")).toBe(true);
+  });
+
+  it("D9: a legacy row with no issue_slip_id (written before this migration) still parses, slipId null", async () => {
+    mocks.findAllWhere.mockResolvedValue([
+      { id: "ISS-00000", purchased_item_id: "SPM-033", base_quantity: 100, issued_at: "2026-08-01T09:00:00Z", note: "", reverses_issue_id: null, issue_slip_id: null },
+    ]);
+
+    const [row] = await issueSlipActions.getRecentIssueSlips();
+    expect(row.slipId).toBeNull();
   });
 });
 

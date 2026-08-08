@@ -6,87 +6,112 @@ vi.mock("@/lib/supabase", () => ({
   getSupabaseClient: mocks.getSupabaseClient,
 }));
 
-import { createManualIssueAtomic, reverseManualIssueAtomic } from "./manual-issue-transaction";
+import { createIssueSlipAtomic, reverseManualIssueAtomic } from "./manual-issue-transaction";
 
-describe("createManualIssueAtomic", () => {
+describe("createIssueSlipAtomic", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
   });
 
-  it("calls the RPC with the exact fields the migration expects, and parses its result", async () => {
+  it("calls the RPC with every line, and parses a multi-line result", async () => {
     mocks.rpc.mockResolvedValue({
       data: {
-        issue_id: "ISS-00001",
-        ledger_id: "STK-021",
-        purchased_item_id: "SPM-033",
-        base_ingredient_id: "ING-028",
-        base_quantity: 500,
-        issued_at: "2026-08-08T09:00:00+07:00",
-        on_hand_before: 4100,
-        on_hand_after: 3600,
+        slip_id: "ISL-00001",
+        issued_at: "2026-08-08T12:34:38+07:00",
+        note: "Don dep cuoi ngay",
         created_by_id: "admin-1",
         created_by_name: "Admin",
+        lines: [
+          {
+            issue_id: "ISS-00001", ledger_id: "STK-021",
+            purchased_item_id: "SPM-033", base_ingredient_id: "ING-028",
+            base_quantity: 1000, on_hand_after: 3100,
+          },
+          {
+            issue_id: "ISS-00002", ledger_id: "STK-022",
+            purchased_item_id: "SPM-014", base_ingredient_id: "ING-009",
+            base_quantity: 200, on_hand_after: 1300,
+          },
+        ],
       },
       error: null,
     });
 
-    const issuedAt = new Date("2026-08-08T09:00:00+07:00");
-    const result = await createManualIssueAtomic({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 500,
+    const issuedAt = new Date("2026-08-08T12:34:38+07:00");
+    const result = await createIssueSlipAtomic({
       issuedAt,
-      note: "Hao hụt",
+      note: "Don dep cuoi ngay",
       createdById: "admin-1",
       createdByName: "Admin",
+      lines: [
+        { purchasedItemId: "SPM-033", baseQuantity: 1000 },
+        { purchasedItemId: "SPM-014", baseQuantity: 200 },
+      ],
     });
 
-    expect(mocks.rpc).toHaveBeenCalledWith("create_manual_issue_atomic", {
-      p_purchased_item_id: "SPM-033",
-      p_base_quantity: 500,
+    expect(mocks.rpc).toHaveBeenCalledWith("create_issue_slip_atomic", {
       p_issued_at: issuedAt.toISOString(),
-      p_note: "Hao hụt",
+      p_note: "Don dep cuoi ngay",
       p_created_by_id: "admin-1",
       p_created_by_name: "Admin",
+      p_lines: [
+        { purchased_item_id: "SPM-033", base_quantity: 1000 },
+        { purchased_item_id: "SPM-014", base_quantity: 200 },
+      ],
     });
-    expect(result).toEqual({
-      issueId: "ISS-00001",
-      ledgerId: "STK-021",
-      purchasedItemId: "SPM-033",
-      baseIngredientId: "ING-028",
-      baseQuantity: 500,
-      issuedAt: "2026-08-08T09:00:00+07:00",
-      onHandBefore: 4100,
-      onHandAfter: 3600,
-      createdById: "admin-1",
-      createdByName: "Admin",
+    expect(result.slipId).toBe("ISL-00001");
+    expect(result.lines).toHaveLength(2);
+    expect(result.lines[0]).toEqual({
+      issueId: "ISS-00001", ledgerId: "STK-021",
+      purchasedItemId: "SPM-033", baseIngredientId: "ING-028",
+      baseQuantity: 1000, onHandAfter: 3100,
     });
   });
 
-  it("throws when the RPC reports an error, carrying the RPC's own message", async () => {
-    mocks.rpc.mockResolvedValue({ data: null, error: { message: "Xuất 5000 g vượt tồn kho 3600 g" } });
+  it("relays the RPC's own refusal (I10's cumulative check, I4, I5) verbatim, naming the line", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { message: "Dòng 2 (Dâu sấy): yêu cầu xuất 1500 g, chỉ còn 1100 g tính tới thời điểm ..." },
+    });
 
-    await expect(createManualIssueAtomic({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 5000,
-      issuedAt: new Date("2026-08-08T09:30:00+07:00"),
+    await expect(createIssueSlipAtomic({
+      issuedAt: new Date("2026-08-08T12:34:38+07:00"),
       note: "",
       createdById: "admin-1",
       createdByName: "Admin",
-    })).rejects.toThrow("vượt tồn kho");
+      lines: [
+        { purchasedItemId: "SPM-033", baseQuantity: 1500 },
+        { purchasedItemId: "SPM-033", baseQuantity: 1500 },
+      ],
+    })).rejects.toThrow("Dòng 2");
   });
 
-  it("rejects a malformed result rather than returning a half-built object", async () => {
-    mocks.rpc.mockResolvedValue({ data: { purchased_item_id: "SPM-033" }, error: null });
+  it("rejects a result with no lines rather than returning a half-built slip", async () => {
+    mocks.rpc.mockResolvedValue({ data: { slip_id: "ISL-00001", lines: [] }, error: null });
 
-    await expect(createManualIssueAtomic({
-      purchasedItemId: "SPM-033",
-      baseQuantity: 1,
-      issuedAt: new Date("2026-08-08T09:00:00+07:00"),
+    await expect(createIssueSlipAtomic({
+      issuedAt: new Date("2026-08-08T12:34:38+07:00"),
       note: "",
       createdById: "admin-1",
       createdByName: "Admin",
+      lines: [{ purchasedItemId: "SPM-033", baseQuantity: 1 }],
     })).rejects.toThrow("invalid result");
+  });
+
+  it("rejects a malformed line rather than returning a half-built result", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: { slip_id: "ISL-00001", lines: [{ purchased_item_id: "SPM-033" }] },
+      error: null,
+    });
+
+    await expect(createIssueSlipAtomic({
+      issuedAt: new Date("2026-08-08T12:34:38+07:00"),
+      note: "",
+      createdById: "admin-1",
+      createdByName: "Admin",
+      lines: [{ purchasedItemId: "SPM-033", baseQuantity: 1 }],
+    })).rejects.toThrow("invalid line result");
   });
 });
 
