@@ -328,7 +328,9 @@ The cost of a purchased item is the line amount **plus its share of shipping and
 
 **The adjusted value is derived and is never stored** — it is computed where the engine reads (`buildIssueCostingPurchases`), consistent with the rule that no rounded or derived money is persisted.
 
-**Timing mattered.** This was caught before the first stocktake. That count converts five months of purchases into a single cost figure, and the error would have been baked into a number no later correction could reach without counting again.
+**Correction 2026-08-09: the urgency stated when this rule was written was wrong, and is corrected here rather than rewritten above.** It said the error would be "baked into a number no later correction could reach without counting again". It would not. **No cost is ever persisted** — `stock_issues` carries `base_quantity` and no money column, and every figure is recomputed from `purchase_order_lines` and the issue replay each time a report is read. Fixing the valuation therefore corrects every past period retroactively, including any count taken before the fix.
+
+What is true is narrower: a count taken first would have been *reviewed* against wrong figures, and the owner would have been asked to accept a first-ever cost number that was 7,4% high. That is a good reason to land the fix first, and not the same as irreversibility. The overstatement is recorded because a rule that overstates its own stakes is harder to trust on the points where it is right.
 
 ## Unresolved items
 
