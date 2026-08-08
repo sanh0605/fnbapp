@@ -854,6 +854,30 @@ khi hoàn tất rồi mới bắt đầu code."*
       §5 already asks for (K5 row), so nothing still depends on insertion
       order by accident.
 
+    **Done 2026-08-08.** `supabase/migrations/0057_manual_issue_slip.sql`
+    (`create_manual_issue_atomic`), `lib/manual-issue-transaction.ts`,
+    `lib/issue-slip-warnings.ts` (`computeAffectedMonths`),
+    `lib/purchased-item-onhand.ts` (extracted from the stocktake screen's
+    `filterByC17`, now shared by both screens), and
+    `/admin/inventory/issue-slips` (route + nav link). §6b's worked example
+    reproduced exactly by `computeIssueCosting` and turned into 5 permanent
+    tests, including the wrong-order-throws proof. K5's tiebreak added with
+    2 forced-tie tests. RPC verified live inside a `BEGIN...ROLLBACK`
+    against real `Dâu sấy` data (§9's technique): normal issue, I4 refusal
+    (caught and fixed a bug this way — the first draft's error message
+    leaked a raw unit id instead of its display name), I5 refusal, nothing
+    persisted after rollback. `npx tsc --noEmit`: 0 errors. `npm run
+    build`: succeeds. `npx vitest run`: 1001/1001 (167 files, +25).
+    `check-rules-current.ts`: clean. Not deployed.
+
+    **Known, accepted scope limit, stated rather than silently omitted:**
+    I4's on-hand check is point-in-time correct for the insert itself
+    (purchased minus issued as of the chosen `issued_at`), but does not
+    prove a backdated insert cannot retroactively push some *later*
+    already-existing issue negative. `stock_issues` holds zero real rows
+    today, so no such later event exists yet to endanger. Flagged for D8
+    to revisit if real usage ever makes it a live risk.
+
   - **D7b — the reversal RPC (I7).** Blocked on §7b. Everything else about
     I7 (never delete, mark reversed, compensating entry, self-referencing
     `reverses_issue_id`) is settled; only the compensating entry's rate is

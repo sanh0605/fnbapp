@@ -4,6 +4,44 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-08 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D7a: the issue slip screen built (Gap 2 closed for the non-blocked half), I7's one open question routed to Opus
+
+**Trigger:** owner confirmed D6 clean, then delivered a new owner-decided rule (plan section 3.5, commit `0c55613`): an issue slip must carry a time of day, not just a date. His own worked example forced it — replaying a same-day nhập-then-xuất both ways (issue first vs purchase first) split the same 140đ paid ~12% differently (112đ vs 100,33đ), proving `K5`'s flagged tie risk moves real money. Live check before accepting the fix: `purchase_orders.transaction_date` is already `timestamptz`, 0/63 completed orders sit at midnight — the other side of the ledger already carries real time, so adding it to issue slips completes the ordering rather than half-solving it.
+
+**Worked example built and verified against the real engine before any code** (plan section 6b), using the owner's own exact seven-step sequence (nhập 01/01, xuất 02/01, nhập 05/01, xuất 06/01, xuất+nhập 08/01, xuất 09/01, đếm 15/01) against `Kem whipping Anchor`'s real two-size shape (Hộp 1.000 ml / Hộp 250 ml), round hypothetical money. Every figure — 596đ/g-equivalent rates, the pool emptying to exactly 0 twice, 08/01's same-day tie resolved by time (08:00 nhập before 14:00 xuất; the same two events timestamped the other way around correctly throw `issue precedes any purchase`), 15/01's `BR-INV-008` found-stock landing at 1.200đ/ml unchanged — reproduced exactly by `computeIssueCosting` itself, then turned into 5 permanent tests.
+
+**One open question found while designing I7 (mistaken slip), put to the owner with a concrete before/after example, routed to Opus rather than decided here.** What rate values a reversal's compensating entry: the exact rate at the moment of the original mistake (Sonnet's recommendation — reuses `BR-INV-008`'s existing negative-event math with no new engine code, just backdates the compensating entry to right after the original, and is what `I6`'s own "warn which months move" already implies), or today's rate like real found stock (simpler to argue for, but leaves a real, unexplained gap on the books). Written into the plan (`section 7b`) with the full example so Opus has it verbatim. **D7 split so this does not block the rest**: D7a below proceeded; the reversal RPC (D7b) is parked.
+
+**D7a shipped:**
+- **`lib/issue-costing.ts` — K5's explicit tiebreak**, no longer accidental. Was: stable sort + purchases-pushed-before-issues, undocumented and untested. Now: explicit `(atMs, kind, seq)` ordering — purchase before issue, then input order — with 2 forced-tie tests (a purchase/issue tie, an issue/issue tie that flips which one throws depending on array order, proving the rule is read from the input, not luck). Demoted to last resort per the owner's own framing, now that slips carry real time.
+- **`supabase/migrations/0057_manual_issue_slip.sql` — `create_manual_issue_atomic`.** I4 (block before write, not after `computeIssueCosting` throws) and I5 (issue before any purchase) both checked against on-hand **as of the chosen `issued_at`**, not today's global total — a backdated slip is validated against what was actually on the shelf at that moment. I9 (ingredient correction) written in the same transaction, no completeness machinery needed (unlike stocktake's C6/S1/S2) since a manual issue is one deliberate, complete action, not a partial count. Triggers re-checked live before writing: `detect_backdated_ledger_entry` confirmed gone (Plan C Task 6 retired it), only `trg_stock_ledger_inventory_balances` remains, `stock_issues` has none. Verified live inside a `BEGIN...ROLLBACK` against real `Dâu sấy` data (the technique documented in plan section 9): normal issue succeeds with the right rows and balance; over-issue refused naming the real shortfall in real units (caught and fixed a bug this way — the first draft's error message leaked a raw unit id, `UNT-017`, instead of "g"); issue-before-any-purchase refused; nothing persisted after rollback, confirmed independently.
+- **Screen**: `/admin/inventory/issue-slips` (nav link added). Item + package-size + quantity (purchase units, decimals allowed — issuing waste is not bound by `BR-INV-007`'s seal-only rule, that rule is specific to counting sealed stock), reason (I1/I2), a `datetime-local` field defaulting to now and editable, an I6 warning (`lib/issue-slip-warnings.ts`'s `computeAffectedMonths`, listing every month from the slip's month through the current month — the average shifts forward from that instant, not just within the slip's own month) with a required confirm dialog before submitting a backdated slip. I4/I5 refusals surface verbatim from the RPC, already naming real items and real numbers.
+- **`lib/purchased-item-onhand.ts`** — extracted from the stocktake screen's `filterByC17` (now used by two screens) rather than writing the purchased-minus-issued formula a fourth time.
+
+`npx tsc --noEmit`: 0 errors. `npm run build`: succeeds (`/admin/inventory/issue-slips` in the route list). `npx vitest run`: 1001/1001 (167 files, +25 from D7a). `check-rules-current.ts`: clean. Code + one schema migration (self-applied live, no business data touched) — not deployed to the app; push/deploy needs its own separate approval, same as every prior task in this plan.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
+## 2026-08-08 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D6: count screen converted to purchase units, per-purchased-item confirmation
+
+**Trigger:** `docs/superpowers/plans/2026-08-07-stocktake-and-issue-slips.md` Gap 5 — the count screen asked for base units (grams, millilitres), forcing arithmetic in the owner's head while he counted. His own instruction: *"Anh thì muốn xuất theo đơn vị mua vào cho chính xác."*
+
+**`app/admin/inventory/stocktake/actions.ts`**: `getStocktakeSessionData` attaches one `packageLine` per `ACTIVE` conversion to every `PURCHASED_ITEM` line, built by `buildPackageLines` (D3) — the same function, not a second label generator, since the same string produced two different ways was the exact defect that once broke section 9's own worked example. A legacy `BASE_INGREDIENT` line surviving from a session opened before D4/D6 (C8/C16) gets an empty `packageLines` array and falls back to the old base-unit input.
+
+**`StocktakeClient.tsx` rebuilt.** `PackageLineCard`: one integer input per conversion under a purchased item, one "Xác nhận" per item (C6 — confirmation is per purchased item, not per conversion and not per ingredient). Blank inputs sum as 0 inside a confirmed item. A non-integer entry is refused, naming `BR-INV-007`, rather than rounded — checked with `Number.isInteger`, not `step="1"` alone, since a number input still accepts a typed or pasted decimal. Editing any value after confirmation clears the confirmed state immediately (`setConfirmed(false)` on every keystroke). Closing with purchased items still unconfirmed is allowed (already exactly S2) and now lists them by real name.
+
+**Self-found bug, not from reading the plan: `row.lineId` alone as a React key/lookup collided or showed blank names for D5's synthesized ingredient-correction rows (`lineId: null`).** Fixed to `row.lineId || row.itemReference` in both the preview table and `AppliedSessionView`. The kind of defect that only surfaces from actually running the screen, not from reading the plan.
+
+14 new tests: 2 in `actions.test.ts` (package lines attach correctly for the real `Dâu sấy` shape, C8's inactive conversion stays excluded; a legacy line gets an empty array), 6 in `StocktakeClient.test.ts` (source-text, matching this repo's existing convention for that file — no jsdom/testing-library in this project's Vitest config).
+
+`npx tsc --noEmit`: 0 errors. `npm run build`: succeeds. `npx vitest run`: 976/976 (163 files, +8). `check-rules-current.ts`: clean. Code only — not deployed; push/deploy needs its own separate approval, same as every prior code task in this plan.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-08 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D5b: BR-INV-008 wired end to end, closing the gap between an approved rule and a machine that still refused it
 
 **Trigger:** owner found, re-reading D5's report, that `BR-INV-008` ("hàng tìm lại được") had been approved and written into `BUSINESS-RULES.md` the same day, but no task was ever assigned to build it — the rule existed on paper while `save_stocktake_line_atomic` still unconditionally refused any count above theoretical. Reordered ahead of `D6`: post-cutover, every ingredient's theoretical is inflated, so the owner's first real count is the one most likely to hit this refusal with goods physically in hand.

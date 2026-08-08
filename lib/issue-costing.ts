@@ -21,8 +21,20 @@ export type ItemCost = {
 };
 
 type Event =
-  | { kind: "purchase"; atMs: number; base_quantity: number; subtotal: number }
-  | { kind: "issue"; atMs: number; base_quantity: number };
+  | { kind: "purchase"; atMs: number; seq: number; base_quantity: number; subtotal: number }
+  | { kind: "issue"; atMs: number; seq: number; base_quantity: number };
+
+// K5: two events at the exact same instant need a deterministic order, not
+// whatever a sort happens to preserve. Purchase before issue -- goods must
+// land before they can be measured leaving -- then by seq, the order the
+// caller's arrays were given in (all purchases in their input order, then
+// all issues in their input order, matching how this function has always
+// built its per-item event lists). This is a last resort: D7 gives issue
+// slips a time of day precisely so real same-instant ties become rare, not
+// the normal way order is decided.
+function eventOrder(event: Event): number {
+  return event.kind === "purchase" ? 0 : 1;
+}
 
 function parseAt(purchasedItemId: string, at: string): number {
   const ms = new Date(at).getTime();
@@ -34,6 +46,7 @@ function parseAt(purchasedItemId: string, at: string): number {
 
 export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): ItemCost[] {
   const eventsByItem = new Map<string, Event[]>();
+  let seq = 0;
 
   for (const p of purchases) {
     if (p.base_quantity <= 0 && p.subtotal > 0) {
@@ -41,20 +54,20 @@ export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): Ite
     }
     const atMs = parseAt(p.purchased_item_id, p.at);
     const list = eventsByItem.get(p.purchased_item_id) ?? [];
-    list.push({ kind: "purchase", atMs, base_quantity: p.base_quantity, subtotal: p.subtotal });
+    list.push({ kind: "purchase", atMs, seq: seq++, base_quantity: p.base_quantity, subtotal: p.subtotal });
     eventsByItem.set(p.purchased_item_id, list);
   }
   for (const i of issues) {
     const atMs = parseAt(i.purchased_item_id, i.at);
     const list = eventsByItem.get(i.purchased_item_id) ?? [];
-    list.push({ kind: "issue", atMs, base_quantity: i.base_quantity });
+    list.push({ kind: "issue", atMs, seq: seq++, base_quantity: i.base_quantity });
     eventsByItem.set(i.purchased_item_id, list);
   }
 
   const results: ItemCost[] = [];
 
   for (const [purchasedItemId, events] of eventsByItem) {
-    events.sort((a, b) => a.atMs - b.atMs);
+    events.sort((a, b) => a.atMs - b.atMs || eventOrder(a) - eventOrder(b) || a.seq - b.seq);
 
     let quantity = 0;
     let value = 0;
