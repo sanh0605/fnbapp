@@ -1432,6 +1432,60 @@ khi hoàn tất rồi mới bắt đầu code."*
   collision, but two different things wearing the same name — record it in
   `docs/OPEN-ITEMS.md`.
 
+  **Done 2026-08-09.** `supabase/migrations/0061_cancel_blank_stocktake_session.sql`
+  implements exactly the rule above: `cancel_stocktake_session_atomic` now
+  checks whether any of the session's lines have `counted_qty is not null`;
+  if none do, the session row is deleted (its lines cascade); if at least
+  one does, the existing mark-`CANCELLED` behaviour is unchanged. Applying
+  this migration was offered and denied once (a real `DELETE`, correctly
+  gated even though it targets a blank draft, not a business record) —
+  applied on a later explicit go-ahead.
+
+  Verified live in `BEGIN...ROLLBACK`: a session opened and cancelled with
+  nothing counted is deleted; a session opened, one line counted, then
+  cancelled is kept as `CANCELLED`; cancelling it a second time still
+  refuses; and — direct proof the freed number actually gets reused, not
+  just vacated — the second session in the same test picked up the exact
+  same id the first one had just freed. **A first attempt at this
+  verification produced a false alarm** (an apparent real open session,
+  `STK-006`, 0 lines, that turned out to be this same test's own
+  uncommitted write, visible only from inside its own transaction) —
+  resolved by the owner, who re-ran the check from a query untouched by
+  any open transaction and found production clean. Lesson applied for the
+  rest of this task and going forward: after any `BEGIN...ROLLBACK`
+  verification, confirm the real state from a fresh, separate query
+  before drawing any conclusion from what was seen inside the
+  transaction — D5b already did this; this task skipped it once. Final
+  independent check, fresh connection, confirms exactly the five real
+  sessions below and nothing else.
+
+  **Real evidence for D4/D8, surfaced by the owner while investigating the
+  false alarm above — recorded here, not just in chat:**
+
+  | Session | Status | Lines | Counted |
+  |---|---|---|---|
+  | `STK-001` (2026-08-07 14:07) | CANCELLED | 89 | 0 |
+  | `STK-002` (2026-08-07 14:12) | CANCELLED | 89 | 0 |
+  | `STK-003` (2026-08-07 22:12) | CANCELLED | 1 | 1 |
+  | `STK-004` (2026-08-08 12:36) | CANCELLED | 89 | 0 |
+  | `STK-005` (2026-08-09 01:12) | CANCELLED | 50 | 0 |
+
+  `STK-001`/`STK-002`/`STK-004` at exactly **89 lines** are real,
+  independent confirmation of Gap 1's own measurement (39 ingredient +
+  50 purchased-item lines) from *live sessions opened before D4 landed*,
+  not just the static count taken while writing the plan. `STK-005` at
+  exactly **50 lines**, opened after D4's deploy, is the same kind of
+  confirmation for the fix: `BASE_INGREDIENT` lines gone, `PURCHASED_ITEM`
+  lines only. `STK-003` (1 line, 1 counted) is D5's own live verification
+  session from earlier this plan, already reported there.
+
+  `npx tsc --noEmit`: 0 errors (no TypeScript touched). `npm run build`:
+  succeeds. `npx vitest run`: unchanged (pure SQL change, no JS/TS
+  behavior touched). `check-rules-current.ts`: clean. Migration applied
+  live (schema/RPC only; the only real-data effect is on *future* cancel
+  calls, and every session that exists today was independently confirmed
+  untouched).
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than

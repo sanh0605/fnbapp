@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D12: a blank cancelled stocktake stops consuming its session number, and a false alarm along the way
+
+**Trigger:** the owner rejected an earlier defense of the current behavior (analogy to a cancelled invoice keeping its number) with a distinction the analogy missed: *"đơn này thì còn có thể dùng để đo, nhưng phiếu kiểm kho thì chỉ có thể tính như vậy sau khi đã hoàn thành tất cả khâu... Còn đây anh chưa đếm."* A cancelled invoice consumes its number because the transaction happened; opening a stocktake screen and closing it with nothing counted is a blank form thrown away.
+
+**`supabase/migrations/0061_cancel_blank_stocktake_session.sql`**: `cancel_stocktake_session_atomic` now checks whether any of the session's lines have `counted_qty is not null`. None counted → the session row is deleted (`stocktake_lines` cascades). At least one counted → unchanged existing behavior, marked `CANCELLED`. Not a breach of "never delete master data" — an empty draft is not a business record, and `open_stocktake_session_atomic`'s id derivation (`max(existing) + 1`) means deleting the row frees the number by itself, no sequence to reset.
+
+**Applying this migration was offered and denied once**, correctly — a real `DELETE`, even one this well-reasoned, is still a real `DELETE`, and it was gated exactly as it should have been. Applied later on an explicit go-ahead.
+
+**A false alarm along the way, and the lesson from it matters more than the bug it wasn't.** Verifying live inside `BEGIN...ROLLBACK`, a query for open stocktake sessions found what looked like a real one -- `STK-006`, opened by the real ADMIN account, 0 lines, no explanation in any code path for how a session could exist with zero lines. Reported to the owner as a live anomaly rather than acted on. **It was not real.** The owner re-ran the same check from a connection untouched by any open transaction and found production clean: 5 real sessions, all `CANCELLED`, none open, none named `STK-006`. The apparent session was the verification script's own uncommitted write, visible only to its own transaction before rollback -- a query run *inside* a transaction cannot distinguish what it just created from what was already there. D5b's own verification had already established the fix for this (an independent fresh-connection check after every rollback); this task's first pass skipped that step. Re-verified with it restored: same live checks, then an independent fresh query confirming exactly the real five sessions and nothing else.
+
+**Real evidence surfaced while chasing the false alarm, requested for the D4/D8 record rather than left in chat:** `STK-001`/`STK-002`/`STK-004` (opened 2026-08-07/08, before D4's fix) carry exactly **89 lines** each -- live, independent confirmation of Gap 1's own static count (39 ingredient + 50 purchased-item lines) from real sessions, not just the measurement taken while writing the plan. `STK-005` (opened 2026-08-09, after D4's deploy) carries exactly **50 lines** -- the same kind of confirmation that the fix (`BASE_INGREDIENT` lines dropped) is real in production, not only in code. `STK-003` is D5's own earlier live-verification session, already reported there.
+
+`npx tsc --noEmit`: 0 errors (no TypeScript touched). `npm run build`: succeeds. `npx vitest run`: unchanged (pure SQL, no JS/TS behavior touched). `check-rules-current.ts`: clean. Migration applied live -- schema/RPC only; every session that exists today independently confirmed untouched, before and after.
+
+**Plan D's task list is now D1 through D12, all done.** Remaining open work for this plan is D8's own re-run discipline if anything new surfaces, and D12's own out-of-scope note (`STK-` prefix naming two different id spaces, `docs/OPEN-ITEMS.md` item 35).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D11: purchases were valued before shipping/vouchers/discounts, BR-COGS-006, method corrected same day
 
 **Trigger:** told the first stocktake would book 52.773.374đ of purchases, the owner refused the number: *"không thể nào đến mức đó được."* He was right — 49.149.880đ is what was actually paid. `buildIssueCostingPurchases` (`app/admin/reports/actions.ts`) fed `purchase_order_lines.subtotal` straight into the costing replay; shipping, tax, vouchers and discounts live only on the order header and reached no line, overstating every purchase-derived cost figure by **3.623.494đ, about 7,4%**, across all 63 completed orders. **18 of 63 carry a voucher, 19 carry shipping, 10 carry a discount** — not an edge case. `PO-031`, a single-line order, makes it concrete: 10.000 g of coffee recorded at 3.140.000đ, paid at 2.417.800đ — the engine said 314đ/g, the truth is 241,78đ/g, 23% high on a daily-use item. Owner decision: allocate the header charges across an order's lines proportional to line value. Blocks the first stocktake, which converts five months of purchases into one cost figure that no later correction could reach without counting again.
