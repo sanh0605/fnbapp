@@ -406,6 +406,7 @@ to get right.
 | K5 | **Two events on the same timestamp** | Write an **explicit** tiebreak inside `computeIssueCosting`, with tests that force a purchase/issue tie and an issue/issue tie |
 | K6 | **Found stock (`BR-INV-008`) when on-hand is exactly zero** | **Settled and implemented 2026-08-07.** `computeIssueCosting` tracks `lastUnitCost` separately from `value/quantity` (which is `0/0` once the pool is empty), set whenever a real issue computes a rate. A found event (`base_quantity < 0`) values itself at `value/quantity` when `quantity > 0`, or `lastUnitCost` when `quantity === 0` -- either way the weighted average is provably unchanged (`(V + f·A)/(Q + f) = A` when `A = V/Q`). `quantity === 0` also forces `value = 0`, clearing float residue without losing the remembered rate. A found event with no purchase ever recorded (`quantity <= 0 && lastUnitCost === null`) still throws -- no lot ever existed to find. 5 tests in `lib/issue-costing.test.ts`: empty-then-found with the average unchanged, found at a different rate than the lifetime average (proves `lastUnitCost` is read, not recomputed), found while quantity is still positive, found-with-no-purchase throws, and an explicit before/after rate comparison |
 | K7 | **`getPnLDataV2` must actually report a non-zero COGS** | **Verified 2026-08-08, D8's own first priority.** `stock_issues` had been empty since Plan C's cutover, so this exact function had never once produced a non-zero figure -- the whole point of Plan C/D, unexercised. Two proofs, not one: (a) a permanent test in `app/admin/reports/actions.test.ts` calling the real `getPnLDataV2` with a mocked nhập→xuất tay→kiểm kê chain, hand-verified to 150.000đ; (b) a live `BEGIN...ROLLBACK` building the same three-step chain through the real RPCs against real `Dâu sấy` data, with the captured rows fed through the real `computeIssueCosting` -- money conserved exactly (`issued_value + closing_value` = the exact total ever paid, to the cent), proving the real engine handles a real, partly-backdated RPC-produced chain correctly, not just clean fixture numbers |
+| K8 | **A purchase must be valued at what was paid, not the bare line subtotal (`BR-COGS-006`)** | **Found 2026-08-09 by the owner refusing a number, fixed the same day, D11.** `buildIssueCostingPurchases` fed `purchase_order_lines.subtotal` straight into the replay; shipping, tax, vouchers and discounts live only on the order header and reached no line, overstating every purchase-derived cost figure by 3.623.494đ (7,4%) across all 63 completed orders. `lib/purchase-order-cost-allocation.ts` (`allocatePurchaseOrderCost`) reuses `allocateOrderDiscount` twice per order -- once distributing (shipping + tax) as an addition, once distributing (voucher + discount) as a subtraction -- rather than writing a second allocator; both calls individually reconcile to their own total exactly (`BR-COGS-003`), so their sum reconciles to the order's real difference exactly. Verified live against real production data, not just unit fixtures: `PO-031` (the plan's own worked example) reproduces exactly 241,78đ/g; `PO-059` (a real 3-line order carrying both shipping and a voucher) reconciles its adjusted total to `total_amount` to the dong; a direct query confirmed no completed order's shipping+tax or voucher+discount ever exceeds its own subtotal, closing the one theoretical gap in reusing a discount-shaped (capacity-capped) allocator for an addition; the aggregate (63 orders, 52.773.374đ raw / 49.149.880đ paid / 18 orders with a voucher, 19 with shipping, 10 with a discount) matches the owner's own figures exactly, independently re-derived, not copied. 5 tests in `lib/purchase-order-cost-allocation.test.ts`, 1 integration test in `app/admin/reports/actions.test.ts` proving the fix through the real `getPnLDataV2`, using `PO-031`'s exact real numbers -- the raw-subtotal figure it explicitly rejects (1.570.000đ) is the exact bug the owner caught. **Re-ran the whole of §5's K section afterward, per the owner's own instruction: zero existing tests needed their expected numbers changed** -- none of them had ever set `shipping_fee`/`voucher_amount`/`discount_amount` in their fixtures, which is exactly how this bug went unnoticed until real data forced it into view. The adjusted figure is derived at read time only, per `BR-COGS-006`'s own text -- never persisted |
 
 **K5 in full — there is no tiebreak today, only luck.** `computeIssueCosting`
 sorts on `at` alone. It behaves correctly for two accidental reasons, neither
@@ -1290,12 +1291,35 @@ khi hoàn tất rồi mới bắt đầu code."*
   Engine today: **314 đ/g**. Correct: **241,78 đ/g**. A 23% overstatement on a
   daily-use item.
 
-  **Reuse `allocateOrderDiscount` (`lib/order-math.ts:30`), do not write a second
-  allocator.** The POS already solves this exact shape for order-level discounts,
-  and it uses the running-remainder form
-  (`remainingTarget * capacity / remainingCapacity`), so the parts sum to the
-  target exactly — which `BR-COGS-003` requires and a naive
-  `Math.round(total * share)` does not deliver.
+  **Method — corrected 2026-08-09. The owner proposed the simpler form and he is
+  right; my instruction to reuse `allocateOrderDiscount` was the wrong tool.**
+
+  He asked why not compute each line directly against the order total:
+
+  ```
+  share(line) = round( adjustment × line_subtotal ÷ sum_of_line_subtotals )
+  ```
+
+  Two measurements settle it, both against the shop's real data:
+
+  1. **On all 20 completed orders carrying shipping, voucher or discount, the
+     direct form and the running-remainder form produce identical numbers, and
+     the direct form reconciles exactly every time** — 0 differences, 0 residues.
+     The theoretical advantage I claimed for the running-remainder does not exist
+     in this data.
+  2. **The adjustment is not always a discount.** One order carries **+40.000đ**
+     (shipping with no voucher); the other 19 are negative, largest −722.200đ.
+     `allocateOrderDiscount` is built for a *discount*: a positive amount to
+     subtract, capped per line so nothing goes below zero. A cost-*increasing*
+     adjustment does not fit its shape, and forcing it through would mean
+     misusing a function whose guarantees are about something else.
+
+  **So: use the direct form, with one guard.** Sum the rounded shares; if they do
+  not equal the adjustment — possible with numbers that do not divide evenly,
+  even though none of today's do — put the residue on the **largest line**. That
+  keeps `BR-COGS-003` satisfied without inventing an allocator, works for either
+  sign, and is the form the owner can check on a calculator, which matters in a
+  system where he checks.
 
   **Do not persist the adjusted figure.** It is derived; compute it where the
   engine reads, so nothing rounded is ever stored.
