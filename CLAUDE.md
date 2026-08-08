@@ -91,6 +91,23 @@ nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
 
 ## 8. Viết code
 
+- **Điện thoại trước, máy tính sau — mọi trang, kể cả bố cục.** Chủ quán chốt
+  2026-08-08. Không phải "làm cho chạy được trên màn hẹp", mà là: **thiết kế cho
+  điện thoại là bản chính**, máy tính là bản mở rộng ra từ đó. Bố cục cũng vậy,
+  không riêng cỡ chữ với khoảng cách.
+
+  Lý do ông ấy nêu bằng việc thật: đếm hàng là đứng trước kệ, hàng vỡ thì ghi tại
+  chỗ. Không ai chạy về bàn mở máy tính để ghi một hộp sữa đổ.
+
+  Cụ thể: không bảng ngang trên điện thoại (mỗi dòng một thẻ xếp dọc);
+  `inputMode="numeric"` cho mọi ô số; vùng bấm vừa ngón cái; việc dài phải hiện
+  tiến độ và **lưu từng bước lên máy chủ** — khoá màn hình giữa chừng không được
+  mất việc đã làm.
+
+  Áp dụng cho **trang mới và trang đang sửa**. 28 trang cũ là việc riêng, đã nằm
+  ở `docs/OPEN-ITEMS.md` mục 28 — đừng biến quy tắc này thành cái cớ viết lại cả
+  admin trong một lượt.
+
 - Code và chú thích bằng tiếng Anh. Chữ hiển thị cho người dùng bằng tiếng Việt.
 - Đơn giản trước. Không thêm tính năng, trừu tượng, hay tuỳ biến ngoài yêu cầu.
 - Chỉ chạm đúng chỗ cần. Không "cải thiện" code lân cận, không refactor thứ

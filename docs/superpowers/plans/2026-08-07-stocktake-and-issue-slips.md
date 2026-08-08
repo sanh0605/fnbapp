@@ -423,6 +423,28 @@ and will tie *hard* if I6's date picker offers a date without a time. Decide the
 order deliberately — purchase before issue, then by id — rather than inheriting
 it from an array.
 
+### Mobile (D10, added 2026-08-08)
+
+Not in the original 35 — no case in this table named a device before the owner
+asked *"Em có thiết kế ưu tiên theo kiểu mobile first không?"* and answered his
+own question: he counts **on a phone, standing at the shelf**. Both screens in
+this plan are the only two used away from a desk; both need every row below.
+
+| # | Case | Required behaviour |
+|---|---|---|
+| M1 | A table wider than a phone screen | **No horizontal table on a phone.** One card per package line, stacked — not `overflow-x-auto` on a `<table>`, which still requires a sideways scroll one-handed |
+| M2 | Entering a quantity on a phone | `inputMode="numeric"` on **every** quantity field, both screens, so the phone opens the number pad instead of the full keyboard |
+| M3 | Tapping a control on a phone | Every actionable control sized for a thumb (44px minimum, this app's own existing `Button` `md`/`lg` sizes), including the per-purchased-item confirm button (C6) — not just the primary submit |
+| M4 | Standing at a shelf partway through | **Visible progress**: how many confirmed out of how many, kept legible without scrolling back to the top |
+
+**What must survive this unchanged, on pain of making the phone unusable for
+the one thing it exists to do here:** `saveStocktakeLine` persists each
+package line to the server the moment it is confirmed
+(`StocktakeClient.tsx`). A phone that locks, sleeps, or drops signal
+mid-count loses nothing already confirmed. Rebuilding the layout must not
+collapse this into a submit-at-the-end form — that would trade the one
+property that makes counting on a phone viable for a cleaner-looking diff.
+
 ---
 
 ## 6. Worked example — `Dâu sấy`, the hardest case, real numbers
