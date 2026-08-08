@@ -1103,6 +1103,51 @@ khi hoàn tất rồi mới bắt đầu code."*
   the recent list. Real, but it is a second feature, not a layout fix — note it
   in `docs/OPEN-ITEMS.md` rather than building it here.
 
+  #### D10 widened 2026-08-08: the phone is the primary target, for both screens
+
+  The owner asked *"Em có thiết kế ưu tiên theo kiểu mobile first không?"* and
+  then answered the question underneath it: he will count **on a phone, standing
+  at the shelf**.
+
+  **The app is mobile-first; these two screens are the exception.** The admin
+  shell has a slide-out sidebar, a phone-only top bar, and
+  `env(safe-area-inset-top)` — nobody adds notch handling without holding a real
+  phone. Counted responsive rules:
+
+  | Screen | Rules |
+  |---|---|
+  | `PurchaseOrdersClient` | 22 |
+  | `PurchaseOrderForm` | 12 |
+  | `IssueSlipClient` (new) | **4** |
+  | `StocktakeClient` (new) | **1** |
+
+  **This is my omission, and a precise one.** §5 lists 35 cases and not one names
+  a device. I specified what must happen and never asked where the person is
+  standing — for the two screens in the plan that are *only* used away from a
+  desk. The stocktake is a 57-row `<table>`: it has `overflow-x-auto` so it will
+  not break the page, but sideways-scrolling a table one-handed while holding a
+  bag of dried strawberries is not counting.
+
+  **The owner said the stocktake screen was fine. He said it looking at a
+  desktop.** Reopening it is a consequence of the device answer, not a reversal.
+
+  Required, both screens:
+
+  1. **No horizontal table on a phone.** One card per package line, stacked.
+  2. **`inputMode="numeric"` on every quantity field** so the phone opens the
+     number pad. Present once in `StocktakeClient`, absent from
+     `IssueSlipClient`.
+  3. **Tap targets sized for a thumb**, including the per-purchased-item confirm
+     button from C6.
+  4. **Visible progress** — how many items confirmed out of how many — because at
+     a shelf he needs to know where he stopped.
+
+  **What is already right, and must stay right:** `saveStocktakeLine` persists
+  each line to the server as it is entered (`StocktakeClient.tsx:311,405`). A
+  phone that locks, sleeps, or loses signal mid-count does not lose the count.
+  This is the single property that makes counting on a phone viable at all — do
+  not refactor it into a submit-at-the-end form.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
