@@ -146,6 +146,31 @@ All 57 conversions exist and are `ACTIVE` — nothing to declare first.
    so every unit is whole and countable and the rule applies unchanged. No
    exception is needed.
 
+5. **An issue slip records the time of day, not just the date** (2026-08-08).
+   Settles K5/I6, and the owner's own worked example is what forced it.
+
+   He posed a sequence where a purchase and an issue land on **the same day**
+   (08/01: issue 2.500 g, then receive 5.000 g). Replayed both ways:
+
+   | Same-day order | Cost recognised | Value left in stock |
+   |---|---|---|
+   | Issue first (as he wrote it) | **112đ** | **28đ** |
+   | Purchase first | **100,33đ** | **39,67đ** |
+
+   Both **conserve** — each sums to the 140đ actually paid. But they split it
+   differently, by about 12% on his figures, so the same day's transactions
+   produce a different profit depending on an order the data never recorded. The
+   tie was flagged in K5 as a risk; his example proved it moves real money.
+
+   **The other side already carries a time.** Measured 2026-08-08:
+   `purchase_orders.transaction_date` is `timestamptz` and **0 of 63** completed
+   purchases sit at midnight — real times, entered as they happened. So adding a
+   time to the issue slip completes the ordering rather than half-solving it.
+
+   The default is now, editable when writing a slip after the fact. The explicit
+   tiebreak from K5 stays for genuine equality — it is the last resort, no longer
+   the mechanism.
+
 ---
 
 ## 4. The unit problem, and the shape that solves all of it
