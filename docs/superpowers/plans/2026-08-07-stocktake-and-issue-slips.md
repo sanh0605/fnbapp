@@ -393,6 +393,53 @@ running anything on the shop's data.
 
 ---
 
+## 6b. Worked example — D7, the owner's own seven-step sequence
+
+Chosen by the owner deliberately (2026-08-08): *"nhập 01/01, xuất 02/01, nhập
+05/01, xuất 06/01, xuất+nhập 08/01, xuất 09/01, đếm 15/01"* — a sequence built
+to hit four hard paths at once: two package sizes in one warehouse, the pool
+emptying and refilling twice, a same-day tie, and an over-count. This is
+hypothetical data (nothing like it has happened yet — `stock_issues` is still
+empty), so it uses a real item with a real two-size shape (`Kem whipping
+Anchor`, `Hộp 250 ml` / `Hộp 1.000 ml`, §4) and round illustrative money, the
+same way the owner's own same-day example in §3 decision 5 did.
+
+Every figure below was produced by `computeIssueCosting` itself (a throwaway
+script, not hand arithmetic, then cross-checked by hand) — this is what the
+implementer compares D7's code against, and what the test in D7's task
+below is built from.
+
+| When | Event | Base qty | Money | Running quantity | Running value | Rate |
+|---|---|---|---|---|---|---|
+| 01/01 09:00 | Nhập, Hộp 1.000 ml × 5 | +5.000 ml | 5.000.000đ | 5.000 ml | 5.000.000đ | 1.000đ/ml |
+| 02/01 09:00 | Xuất (toàn bộ) | −5.000 ml | cost 5.000.000đ | **0 ml — cạn lần 1** | 0đ | — |
+| 05/01 09:00 | Nhập, Hộp 250 ml × 10 | +2.500 ml | 3.750.000đ | 2.500 ml | 3.750.000đ | 1.500đ/ml |
+| 06/01 09:00 | Xuất (toàn bộ) | −2.500 ml | cost 3.750.000đ | **0 ml — cạn lần 2** | 0đ | — |
+| 08/01 **08:00** | Nhập, Hộp 1.000 ml × 4 | +4.000 ml | 4.800.000đ | 4.000 ml | 4.800.000đ | 1.200đ/ml |
+| 08/01 **14:00** | Xuất (cùng ngày, giờ sau) | −1.000 ml | cost 1.200.000đ | 3.000 ml | 3.600.000đ | 1.200đ/ml |
+| 09/01 09:00 | Xuất | −1.500 ml | cost 1.800.000đ | 1.500 ml | 1.800.000đ | 1.200đ/ml |
+| 15/01 10:00 | Đếm được 1.800 ml (lý thuyết 1.500, ≤ tổng mua 11.500) | **found +300 ml** (`BR-INV-008`) | +360.000đ (tại giá hiện hành 1.200đ/ml) | 1.800 ml | 2.160.000đ | **1.200đ/ml — không đổi** |
+
+Cross-check: total money in = 5.000.000 + 3.750.000 + 4.800.000 = **13.550.000đ**.
+`issued_value` (net of the found event) = **11.390.000đ**, `closing_value` =
+**2.160.000đ**. 11.390.000 + 2.160.000 = 13.550.000 ✓.
+
+**What the 08/01 line proves.** Timestamped only to the day, this is a real
+tie — exactly the case §3 decision 5 exists to close. Timestamped to the hour,
+it resolves itself with no tiebreak needed: nhập 08:00 lands first, so the
+14:00 xuất draws from 4.000 ml on hand and succeeds. Run the same two events
+with the xuất timestamped *before* the nhập (proving the danger, not just the
+fix): `computeIssueCosting` throws `issue precedes any purchase` — I4/I5
+firing exactly as they should on a pool that is genuinely empty at that
+instant. Confirmed live against the real function, not asserted.
+
+**What 15/01 is not.** It is not I7 — nothing here was entered by mistake.
+It is `BR-INV-008` on a purchased item that empties and refills, showing the
+rule already proven in §6 for `Dâu sấy` holds the same way after a pool has
+gone to zero more than once.
+
+---
+
 ## 7. The one rule this plan must decide (C10)
 
 `docs/OPEN-ITEMS.md` item 32: what happens when the count is **above** the
@@ -441,6 +488,49 @@ him on a screen when the goods are physically in front of him.
 
 **Undecided. This is D2, and it goes to the owner as a business question with
 both options and the permanent-prompt consequence stated plainly.**
+
+---
+
+## 7b. I7's open question — routed by the owner to Opus, 2026-08-08
+
+I7 says a mistaken issue slip must be marked reversed and answered with a
+compensating entry, never deleted. That leaves one thing undecided: **what
+rate values the compensating entry?** Sonnet found the question is not
+cosmetic — it changes how much money the reversal returns — and asked the
+owner with a concrete pair of numbers. The owner's answer: *"Hỏi Opus."* Not
+decided yet; blocks only the reversal half of D7 (see §8).
+
+**The example put to him, kept here so Opus has it verbatim:**
+
+01/01 nhập 1.000 đơn vị, 1.000.000đ (1.000đ/đv). 03/01 xuất **nhầm** 500 đơn vị
+(đáng lẽ không xuất) → trừ 500.000đ, còn 500 đv / 500.000đ. 06/01 nhập thêm 500
+đơn vị, 750.000đ (1.500đ/đv) → đơn giá bình quân đổi thành 1.250đ/đv. 10/01
+phát hiện phiếu ngày 3/1 sai và đảo nó.
+
+**Option A — bù đúng thời điểm gốc (Sonnet's recommendation).** Ghi bù ngay
+sau thời điểm phiếu sai (3/1), dùng đúng đơn giá lúc đó (1.000đ/đv): trả lại
+đúng 500.000đ đã trừ nhầm. Mọi sự kiện sau đó phát lại đúng như phiếu sai
+chưa từng tồn tại — đơn giá bình quân sau khi nhập thêm ngày 6/1 tự động ra
+lại đúng 1.250đ/đv. Đây cũng là điều I6 đã dự liệu khi yêu cầu cảnh báo
+"tháng nào sẽ đổi số": một phiếu sai từ đầu thì sửa nó phải đổi số các tháng
+đã đóng, không né được.
+
+Kỹ thuật: dùng lại đúng cơ chế số âm đã xây cho `BR-INV-008`
+(`computeIssueCosting`'s found-stock branch) — không cần thêm phép tính mới
+trong engine, chỉ cần ghi dòng bù đúng vào thời điểm ngay sau phiếu gốc
+(mốc giờ, không phải "bây giờ").
+
+**Option B — bù theo đơn giá hiện hành lúc phát hiện (như hàng tìm lại
+được).** Ghi bù vào 10/1 theo giá đang có lúc đó (1.250đ/đv): trả lại 625.000đ,
+không phải 500.000đ đã trừ nhầm — sinh lệch 125.000đ, và các ngày 3–9/1 (đã
+đóng) vẫn giữ số sai. Cùng cơ chế `BR-INV-008` đang dùng, nhưng `BR-INV-008`
+là hàng thật phát hiện hôm nay; đây là sửa một phiếu sai ngay từ đầu — Sonnet's
+view is the two are not the same case even though the code path could be
+made to look identical.
+
+**Not yet acted on.** D7's other parts (§8, D7a) do not depend on this answer
+and proceed; only the reversal RPC (D7b) is blocked until Opus decides and
+this section is updated with the decision.
 
 ---
 
@@ -729,7 +819,45 @@ khi hoàn tất rồi mới bắt đầu code."*
   only — not deployed; push/deploy needs its own separate approval, same
   as every prior code task in this plan.
 
-- **D7** Build the issue slip screen (Gap 2), covering I1–I9.
+- **D7** Build the issue slip screen (Gap 2), covering I1–I9. Split so the
+  blocked half (§7b) does not hold up the rest.
+
+  - **D7a — everything not blocked by §7b.** Route, screen, `create_manual_
+    issue_atomic` (I1–I6, I9), K5's explicit tiebreak, the §6b worked example
+    as a real test.
+
+    Design decisions settled while building this, reported rather than asked
+    (none is a business tradeoff — each just states what I1–I9 already implied):
+
+    - **I4 in the RPC, not the screen.** `save_stocktake_line_atomic`'s
+      pattern reused: lock, compute on-hand fresh
+      (`total_purchased − total_issued`, same formula as §7's C10 section and
+      `filterByC17`), refuse before any insert if the requested quantity
+      exceeds it. A client-side check alone would race two slips issued at
+      once; the RPC is the only place both slips cannot both win.
+    - **I6's warning covers every month from the slip's date through today,
+      not just the slip's own month.** The replay is cumulative — a
+      backdated event shifts the weighted average from that instant forward,
+      so every period after it, not only the one it lands in, reads a
+      different cost. Understating this to "only this month changes" would
+      be wrong, not just incomplete.
+    - **I9 needs no completeness check.** Stocktake's confirm-per-item
+      machinery (C6/S1/S2) exists because a count can be partial and blank
+      must not silently mean zero. A manual issue slip is one deliberate,
+      complete action on one item — write its `stock_issues` row and its
+      ingredient `stock_ledger` row together, same amount, no S1/S2 case to
+      apply.
+    - **K5's tiebreak, implemented as the plan says: last resort.**
+      §6b's 08/01 line is real proof it is rarely needed once slips carry a
+      time. The explicit tiebreak (purchase before issue, then by id) is
+      still added to `computeIssueCosting`, with the two forced-tie tests
+      §5 already asks for (K5 row), so nothing still depends on insertion
+      order by accident.
+
+  - **D7b — the reversal RPC (I7).** Blocked on §7b. Everything else about
+    I7 (never delete, mark reversed, compensating entry, self-referencing
+    `reverses_issue_id`) is settled; only the compensating entry's rate is
+    not.
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
