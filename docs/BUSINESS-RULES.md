@@ -310,7 +310,7 @@ A manual issue slip entered by mistake is never deleted and never edited. It is 
 
 ### BR-COGS-006 — A purchase is valued at what was paid, shipping and discounts included
 
-**Status:** `APPROVED` — owner decision 2026-08-09. **Not yet implemented** — Plan D task D11.
+**Status:** `APPROVED` — owner decision 2026-08-09. **Implemented 2026-08-09** (Plan D D11, `lib/purchase-order-cost-allocation.ts`).
 
 The cost of a purchased item is the line amount **plus its share of shipping and tax, minus its share of vouchers and discounts**, allocated across the order's lines in proportion to line value. An item worth 20% of an order absorbs 20% of its shipping and 20% of its discount.
 
@@ -320,7 +320,13 @@ The cost of a purchased item is the line amount **plus its share of shipping and
 
 **Worked example, `PO-031` (2026-06-12), a single-line order:** 10.000 g of `Bột cà phê MR.PHIN Robusta Dak Mil` recorded at 3.140.000đ, paid at 2.417.800đ after shipping, voucher and discount. The engine valued it at **314 đ/g**; the correct figure is **241,78 đ/g** — 23% high on an item used daily.
 
-**Allocation must reconcile exactly** (`BR-COGS-003`): use the running-remainder method already proven in `allocateOrderDiscount`, not `round(total × share)` per line. **The adjusted value is derived and is never stored** — it is computed where the engine reads, consistent with the rule that no rounded or derived money is persisted.
+**Multi-line worked example, `PO-059` (2026-07-28):** three coffee lines totalling 3.415.000đ, +64.400đ shipping, −610.800đ voucher, paid 2.868.600đ. The −546.400đ splits 502.400 / 29.280 / 14.720 across the three lines, reconciling to the dong; unit costs move from 314 / 366 / 184 đ/g to 263,76 / 307,44 / 154,56 đ/g — all 16% high today.
+
+**Method — corrected same day, 2026-08-09.** First implementation reused `allocateOrderDiscount` (`lib/order-math.ts`); the owner asked why not divide each line directly against the order total instead, and was right on both counts he checked: on all 20 real orders carrying a header charge, the direct form and the running-remainder form give identical numbers with 0 residue either way, so the running-remainder's theoretical advantage does not exist in this data; and the adjustment is not always a discount — `PO-056` carries **+40.000đ** (shipping, no voucher), the other 19 are negative — while `allocateOrderDiscount` is shaped for a positive amount to *subtract*, capped per line so nothing goes below zero. A cost-*increasing* adjustment does not fit that shape.
+
+**Current method: direct proportional division, one rounding guard.** `share(line) = round(adjustment × line.subtotal ÷ sum_of_line_subtotals)`, computed independently per line; if the rounded shares do not sum to the adjustment, the residue goes on the line with the largest subtotal. Satisfies `BR-COGS-003` (the parts must sum to the whole) for either sign, without a capacity-capped allocator built for a different problem — and is checkable on a calculator, which matters in a system the owner checks by hand.
+
+**The adjusted value is derived and is never stored** — it is computed where the engine reads (`buildIssueCostingPurchases`), consistent with the rule that no rounded or derived money is persisted.
 
 **Timing mattered.** This was caught before the first stocktake. That count converts five months of purchases into a single cost figure, and the error would have been baked into a number no later correction could reach without counting again.
 

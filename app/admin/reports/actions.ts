@@ -16,6 +16,7 @@ import {
 import { toSaigonUtcRange } from "@/lib/report-time";
 import { displayMoney } from "@/lib/display-rounding";
 import { computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/issue-costing";
+import { allocatePurchaseOrderCost } from "@/lib/purchase-order-cost-allocation";
 import { requireAdmin } from "@/lib/auth";
 
 export interface PnLReportFilters {
@@ -76,20 +77,46 @@ function findCompletedOrders(
 // column of its own), filter status = 'COMPLETED', and take `at` from
 // transaction_date with created_at as fallback -- 57 of 62 completed orders
 // were entered on a different day from the one they happened.
+//
+// BR-COGS-006 (Plan D D11): a line's raw subtotal is not what was paid for
+// it. Shipping, tax, vouchers, and discounts live only on the order header
+// and reach no line unless allocated explicitly -- found when the owner
+// refused a stocktake-projected purchase total that was 3.623.494đ (7,4%)
+// too high, across the board. Grouped by order here (not per-line) so
+// allocatePurchaseOrderCost runs once per order, the shape it expects. The
+// adjusted figure is derived at read time, same as every other issue-
+// costing input -- never persisted.
 function buildIssueCostingPurchases(purchaseOrders: any[], purchaseOrderLines: any[]): Purchase[] {
   const completedById = new Map(
     purchaseOrders.filter(po => po.status === "COMPLETED").map(po => [po.id, po]),
   );
-  const purchases: Purchase[] = [];
+
+  const linesByOrder = new Map<string, any[]>();
   for (const line of purchaseOrderLines) {
-    const po = completedById.get(line.purchase_order_id);
-    if (!po) continue;
-    purchases.push({
-      purchased_item_id: line.purchased_item_id,
-      at: po.transaction_date || po.created_at,
-      base_quantity: Number(line.base_quantity) || 0,
-      subtotal: Number(line.subtotal) || 0,
-    });
+    if (!completedById.has(line.purchase_order_id)) continue;
+    const list = linesByOrder.get(line.purchase_order_id) ?? [];
+    list.push(line);
+    linesByOrder.set(line.purchase_order_id, list);
+  }
+
+  const purchases: Purchase[] = [];
+  for (const [orderId, lines] of linesByOrder) {
+    const po = completedById.get(orderId)!;
+    const additions = (Number(po.shipping_fee) || 0) + (Number(po.tax_amount) || 0);
+    const subtractions = (Number(po.voucher_amount) || 0) + (Number(po.discount_amount) || 0);
+    const adjustedSubtotalByLineId = allocatePurchaseOrderCost(
+      lines.map(l => ({ lineId: l.id, subtotal: Number(l.subtotal) || 0 })),
+      additions,
+      subtractions,
+    );
+    for (const line of lines) {
+      purchases.push({
+        purchased_item_id: line.purchased_item_id,
+        at: po.transaction_date || po.created_at,
+        base_quantity: Number(line.base_quantity) || 0,
+        subtotal: adjustedSubtotalByLineId.get(line.id) ?? (Number(line.subtotal) || 0),
+      });
+    }
   }
   return purchases;
 }

@@ -119,6 +119,46 @@ describe("getPnLDataV2", () => {
     expect(result.productProfitAnalysis[0]).not.toHaveProperty("cogs");
   });
 
+  // Plan D D11, BR-COGS-006 (2026-08-09): the owner refused a stocktake-
+  // projected purchase total (52.773.374đ) as impossibly high, and was
+  // right -- 49.149.880đ is what was actually paid. buildIssueCostingPurchases
+  // was feeding the bare line subtotal into the replay; shipping, vouchers
+  // and discounts live only on the order header and reached no line. This
+  // is PO-031's own real shape (single line, 2026-06-12): a single line so
+  // the arithmetic is checkable by hand, not just by the allocator's own
+  // unit tests.
+  it("BR-COGS-006: a purchase's cost includes shipping and excludes vouchers/discounts, not the bare line subtotal (PO-031's real numbers)", async () => {
+    (findAllWhere as any).mockResolvedValue([]);
+    (findAllWhereInBatches as any).mockResolvedValue([]);
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Purchase_Orders") {
+        return [{
+          id: "PO-031", status: "COMPLETED", transaction_date: "2026-06-12T00:00:00Z",
+          subtotal_amount: 3_140_000, shipping_fee: 57_200, tax_amount: 0,
+          voucher_amount: 722_200, discount_amount: 57_200, total_amount: 2_417_800,
+        }];
+      }
+      if (sheet === "Purchase_Order_Lines") {
+        return [{ id: "POL-082", purchase_order_id: "PO-031", purchased_item_id: "SPM-COFFEE", base_quantity: 10_000, subtotal: 3_140_000 }];
+      }
+      if (sheet === "Stock_Issues") {
+        // Issue half the lot -- picked so the expected COGS is a clean
+        // number (241,78đ/g x 5.000g), not to match any real slip.
+        return [{ purchased_item_id: "SPM-COFFEE", issued_at: "2026-06-20T00:00:00Z", base_quantity: 5_000, source: "MANUAL" }];
+      }
+      return [];
+    });
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+
+    // Raw subtotal would price this at 3.140.000/10.000 = 314đ/g, issuing
+    // 5.000g for 1.570.000đ -- the exact bug the owner caught. Correct:
+    // 2.417.800/10.000 = 241,78đ/g, issuing 5.000g for 1.208.900đ.
+    expect(result.totalCOGS).toBe(1_208_900);
+    expect(result.totalCOGS).not.toBe(1_570_000);
+  });
+
   // Plan D D8, owner's own priority case (2026-08-08): stock_issues has
   // been empty ever since Plan C's cutover -- getPnLDataV2 has never once
   // reported a non-zero COGS. This is the first test to exercise the full

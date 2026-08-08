@@ -406,7 +406,7 @@ to get right.
 | K5 | **Two events on the same timestamp** | Write an **explicit** tiebreak inside `computeIssueCosting`, with tests that force a purchase/issue tie and an issue/issue tie |
 | K6 | **Found stock (`BR-INV-008`) when on-hand is exactly zero** | **Settled and implemented 2026-08-07.** `computeIssueCosting` tracks `lastUnitCost` separately from `value/quantity` (which is `0/0` once the pool is empty), set whenever a real issue computes a rate. A found event (`base_quantity < 0`) values itself at `value/quantity` when `quantity > 0`, or `lastUnitCost` when `quantity === 0` -- either way the weighted average is provably unchanged (`(V + f·A)/(Q + f) = A` when `A = V/Q`). `quantity === 0` also forces `value = 0`, clearing float residue without losing the remembered rate. A found event with no purchase ever recorded (`quantity <= 0 && lastUnitCost === null`) still throws -- no lot ever existed to find. 5 tests in `lib/issue-costing.test.ts`: empty-then-found with the average unchanged, found at a different rate than the lifetime average (proves `lastUnitCost` is read, not recomputed), found while quantity is still positive, found-with-no-purchase throws, and an explicit before/after rate comparison |
 | K7 | **`getPnLDataV2` must actually report a non-zero COGS** | **Verified 2026-08-08, D8's own first priority.** `stock_issues` had been empty since Plan C's cutover, so this exact function had never once produced a non-zero figure -- the whole point of Plan C/D, unexercised. Two proofs, not one: (a) a permanent test in `app/admin/reports/actions.test.ts` calling the real `getPnLDataV2` with a mocked nhập→xuất tay→kiểm kê chain, hand-verified to 150.000đ; (b) a live `BEGIN...ROLLBACK` building the same three-step chain through the real RPCs against real `Dâu sấy` data, with the captured rows fed through the real `computeIssueCosting` -- money conserved exactly (`issued_value + closing_value` = the exact total ever paid, to the cent), proving the real engine handles a real, partly-backdated RPC-produced chain correctly, not just clean fixture numbers |
-| K8 | **A purchase must be valued at what was paid, not the bare line subtotal (`BR-COGS-006`)** | **Found 2026-08-09 by the owner refusing a number, fixed the same day, D11.** `buildIssueCostingPurchases` fed `purchase_order_lines.subtotal` straight into the replay; shipping, tax, vouchers and discounts live only on the order header and reached no line, overstating every purchase-derived cost figure by 3.623.494đ (7,4%) across all 63 completed orders. `lib/purchase-order-cost-allocation.ts` (`allocatePurchaseOrderCost`) reuses `allocateOrderDiscount` twice per order -- once distributing (shipping + tax) as an addition, once distributing (voucher + discount) as a subtraction -- rather than writing a second allocator; both calls individually reconcile to their own total exactly (`BR-COGS-003`), so their sum reconciles to the order's real difference exactly. Verified live against real production data, not just unit fixtures: `PO-031` (the plan's own worked example) reproduces exactly 241,78đ/g; `PO-059` (a real 3-line order carrying both shipping and a voucher) reconciles its adjusted total to `total_amount` to the dong; a direct query confirmed no completed order's shipping+tax or voucher+discount ever exceeds its own subtotal, closing the one theoretical gap in reusing a discount-shaped (capacity-capped) allocator for an addition; the aggregate (63 orders, 52.773.374đ raw / 49.149.880đ paid / 18 orders with a voucher, 19 with shipping, 10 with a discount) matches the owner's own figures exactly, independently re-derived, not copied. 5 tests in `lib/purchase-order-cost-allocation.test.ts`, 1 integration test in `app/admin/reports/actions.test.ts` proving the fix through the real `getPnLDataV2`, using `PO-031`'s exact real numbers -- the raw-subtotal figure it explicitly rejects (1.570.000đ) is the exact bug the owner caught. **Re-ran the whole of §5's K section afterward, per the owner's own instruction: zero existing tests needed their expected numbers changed** -- none of them had ever set `shipping_fee`/`voucher_amount`/`discount_amount` in their fixtures, which is exactly how this bug went unnoticed until real data forced it into view. The adjusted figure is derived at read time only, per `BR-COGS-006`'s own text -- never persisted |
+| K8 | **A purchase must be valued at what was paid, not the bare line subtotal (`BR-COGS-006`)** | **Found 2026-08-09 by the owner refusing a number, fixed the same day, D11 -- method corrected the same day again after a second owner question.** `buildIssueCostingPurchases` fed `purchase_order_lines.subtotal` straight into the replay; shipping, tax, vouchers and discounts live only on the order header and reached no line, overstating every purchase-derived cost figure by 3.623.494đ (7,4%) across all 63 completed orders. First implementation reused `allocateOrderDiscount` -- the owner asked why not divide each line directly against the order total, and was right: on all 20 real orders carrying a header charge, the direct form and the running-remainder form give identical numbers with 0 residue either way, and the adjustment is not always a discount (`PO-056` carries +40.000đ, shipping with no voucher, the other 19 negative) -- a shape `allocateOrderDiscount` does not fit, since it is built for a positive amount to subtract, capped so a line cannot go below zero. `lib/purchase-order-cost-allocation.ts` (`allocatePurchaseOrderCost`) now divides directly (`round(adjustment × line.subtotal ÷ sum_of_line_subtotals)` per line, independently), with one guard: a rounding residue goes to the largest line, satisfying `BR-COGS-003` for either sign without a capacity-capped allocator built for a different problem. Verified live against real production data, not just unit fixtures: `PO-031` (single line) reproduces exactly 241,78đ/g; `PO-059` (3 real lines, both shipping and a voucher) reconciles to `total_amount` to the dong, 0 residue; `PO-056` (the one real order with a positive adjustment) correctly *increases* every line's cost rather than decreasing it; a hand-built case (adj=100 across 3 equal lines, where independent rounding undershoots by 1) proves the residue guard actually fires and still reconciles exactly. 5 tests in `lib/purchase-order-cost-allocation.test.ts`, 1 integration test in `app/admin/reports/actions.test.ts` proving the fix through the real `getPnLDataV2` with `PO-031`'s exact numbers -- the raw-subtotal figure it explicitly rejects (1.570.000đ) is the exact bug the owner caught. **Re-ran the whole of §5's K section afterward, per the owner's own instruction: zero existing tests needed their expected numbers changed** -- none of them had ever set `shipping_fee`/`voucher_amount`/`discount_amount` in their fixtures, which is exactly how this bug went unnoticed until real data forced it into view. The adjusted figure is derived at read time only -- never persisted |
 
 **K5 in full — there is no tiebreak today, only luck.** `computeIssueCosting`
 sorts on `at` alone. It behaves correctly for two accidental reasons, neither
@@ -1339,12 +1339,17 @@ khi hoàn tất rồi mới bắt đầu code."*
 
   Net to spread: 64.400 − 610.800 = **−546.400đ**.
 
-  | Line | Running-remainder step | Share |
+  **Recomputed here with the corrected direct method** (the table below the
+  method correction, further down, is the one actually implemented — this
+  table's own numbers are unchanged because on this real order the two
+  methods agree exactly, 0 residue either way):
+
+  | Line | `round(adjustment × line.subtotal ÷ 3.415.000)` | Share |
   |---|---|---|
-  | 1 | 546.400 × 3.140.000 ÷ 3.415.000 | **502.400đ** |
-  | 2 | 44.000 × 183.000 ÷ 275.000 | **29.280đ** |
-  | 3 | 14.720 remaining, last line takes it | **14.720đ** |
-  | | **Total** | **546.400đ** ✓ |
+  | 1 | round(−546.400 × 3.140.000 ÷ 3.415.000) | **−502.400đ** |
+  | 2 | round(−546.400 × 183.000 ÷ 3.415.000) | **−29.280đ** |
+  | 3 | round(−546.400 × 92.000 ÷ 3.415.000) | **−14.720đ** |
+  | | **Sum, matches the adjustment exactly, no residue guard needed** | **−546.400đ** ✓ |
 
   | Item | Engine today | Correct |
   |---|---|---|
@@ -1355,11 +1360,42 @@ khi hoàn tất rồi mới bắt đầu code."*
   Reconciles: 2.637.600 + 153.720 + 77.280 = **2.868.600đ**, exactly what was
   paid. All three are 16% high today.
 
-  **This example is the reason for the running-remainder rule, not decoration.**
-  Multiplying each line by a rounded ratio independently lands on 546.399đ or
-  546.401đ often enough to matter, and that residue accumulates across 63 orders.
-  Re-dividing what is left over what remains forces the last line to absorb the
-  remainder, so the parts always sum to the whole.
+  **Superseded by the method correction below — kept for the record, not
+  because it turned out true.** This paragraph originally argued the
+  running-remainder form was necessary because independent rounding would
+  land on 546.399đ or 546.401đ "often enough to matter." Measured against
+  this order and the other 19 real ones, it never actually happens — the
+  direct form reconciles exactly every time in this data. The corrected
+  method still keeps a guard for when it doesn't (see below), but the
+  specific claim here — that residue accumulates across real orders — was
+  not shown, only assumed.
+
+  **Done 2026-08-09 — implemented, corrected same day, verified live.**
+  `lib/purchase-order-cost-allocation.ts` implements the corrected direct
+  method exactly as decided above. Verified against real production data,
+  not fixtures: `PO-031` reproduces 241,78đ/g; `PO-059` reproduces all
+  three figures in this section exactly, 0 residue; `PO-056` (the one real
+  order among the 20 with a positive adjustment, +40.000đ shipping, no
+  voucher) correctly *increases* every line's cost, proving the method
+  works for either sign against real data, not an invented case; a direct
+  query confirmed all 20 real orders' figures independently (63 completed
+  orders, 52.773.374đ raw / 49.149.880đ paid / 18 with a voucher, 19 with
+  shipping, 10 with a discount — matches the owner's own numbers exactly).
+  A hand-built case (adj=100 across 3 equal lines) proves the residue
+  guard itself fires and still reconciles, since no real order today needs
+  it. Wired into `buildIssueCostingPurchases`
+  (`app/admin/reports/actions.ts`) grouped by order, one allocation call
+  per order; the adjusted figure is computed at read time only, never
+  persisted. 5 tests in `lib/purchase-order-cost-allocation.test.ts`, 1
+  integration test in `app/admin/reports/actions.test.ts` through the real
+  `getPnLDataV2`. Re-ran the full suite: **zero existing tests needed
+  their expected numbers changed** — none of them had ever set
+  `shipping_fee`/`voucher_amount`/`discount_amount` in their fixtures,
+  which is exactly how this bug went unnoticed until real data forced it
+  into view. `npx tsc --noEmit`: 0 errors. `npm run build`: succeeds. `npx
+  vitest run`: 1044/1044 (+6 from D10's 1038). `check-rules-current.ts`:
+  clean. No migration — display-only calculation, no schema or business-
+  data change. Not deployed.
 
 - **D12** Stop a blank cancelled stocktake from consuming a session number.
   **Added 2026-08-09. The owner rejected my reasoning, and his is better.**
