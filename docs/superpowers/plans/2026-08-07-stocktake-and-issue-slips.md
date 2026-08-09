@@ -1537,9 +1537,21 @@ khi hoàn tất rồi mới bắt đầu code."*
   (`reverse_manual_issue_atomic` refuses non-`MANUAL` rows), so there is no
   double-reversal path to guard. Keep it that way.
 
-  **Build it working, not polished.** Owner 2026-08-09: *"trước mắt có trước đã
+  **Build it working, not polished** — owner 2026-08-09: *"trước mắt có trước đã
   rồi tối ưu và làm đẹp giao diện sau."* A plain button and a confirm dialog is
   the deliverable.
+
+  **But "not polished" does not mean "not usable on a phone."** He drew that line
+  himself, immediately, because the sentence above invites the wrong reading:
+  *"Nhưng vẫn phải có tính dễ nhìn và dễ sử dụng trên điện thoại nhé. Mobile
+  first và responsive phải thông minh."*
+
+  Mobile-first is a **floor**, not a finish (`CLAUDE.md` section 8). What is
+  deferred is visual refinement — spacing, colour, transitions. What is not
+  deferred: it reads and works one-handed on a phone, because the person who
+  discovers a miscount is standing in the stockroom holding the shelf that proves
+  it. A cancel button that needs a desktop to reach is not a working cancel
+  button.
 
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
