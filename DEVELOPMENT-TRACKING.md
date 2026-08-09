@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-09 (owner's own hands, Claude Sonnet 5 recording) - D14 proved live for the first time, on STK-006, before its evidence was cleaned up
+
+**Written before `scripts/cleanup-stocktake-test.ts --apply` deletes the only evidence this ever ran, same reason as the prior cleanup-adjacent entries: the numbers have to exist somewhere once the rows that produced them are gone.**
+
+08:42, the owner himself clicked "Huỷ phiên kiểm kê này" on `STK-006` (his own earlier test count of `Dâu sấy`), reason `"Test"`. This was the first time `reverse_stocktake_session_atomic` (migration `0062`, D14) ran outside a `BEGIN...ROLLBACK` verification — every check on it before this had been either a rejected-guard call (safe by construction, nothing written) or a unit test against a mocked RPC. Result, measured directly:
+
+- `ISS-00001` (`+3.100`, the original stocktake-sourced issue) **kept exactly as posted** — not edited, not deleted.
+- `ISS-00002` (`-3.100`, `reverses_issue_id = ISS-00001`, `session_id = STK-006`) — the compensating row, correctly negated and correctly tied back to the session it corrects.
+- `stock_ledger`: `STK-021` (`-3.100`) and `STK-022` (`+3.100`), both kept, both tied to `STK-006`.
+- `STK-006.status = REVERSED` — **not** `CANCELLED`. This is the exact distinction D14 built: had it landed as `CANCELLED`, D12's `cancel_stocktake_session_atomic` would have nothing to do with it (that function only ever touches `OPEN` sessions), but the point stands as designed — `REVERSED` is its own status precisely so no future function reading `CANCELLED` as "safe to delete" ever reaches a session with real reversal history. `reversed_by_name = admin`, `reversed_reason = "Test"`.
+- `inventory_balances.quantity` for `ING-028`: `1.000 -> 4.100` g — the compensating `stock_ledger` row's insert correctly fired `trg_stock_ledger_inventory_balances` and restored the pre-test balance.
+
+Every figure landed exactly where the migration's own logic said it would. Nothing here was inferred after the fact — it is the direct read of production immediately after the click, before any cleanup touched it.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D14: undo a confirmed stocktake session, and cancel a whole issue slip
 
 **Trigger:** an owner interview, requested after watching two under-specified prompts in a row (D10's missing issue-slip list, D13's three unlisted screens). His reason for the feature: *"không có gì chắc chắn nhân viên đúng 100% cả. Nếu sai thì phải hủy phiếu cũ tạo phiếu mới chứ."* A confirmed stocktake had no undo at all, and staff — who have never counted before — are about to start.
