@@ -128,6 +128,12 @@ nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
   có mục nào đổi trạng thái.
 - **Không tự push.** Xong việc là xong ở máy. Đẩy ra ngoài repo là việc riêng,
   chủ quán duyệt từng lần (mục 2) — không phải bước cuối của "xong việc".
+- **Deploy xong: phải có người MỞ TRANG SAU KHI ĐĂNG NHẬP.** `curl` trả 307
+  không chứng minh gì về trang — 307 là phản hồi cho người **chưa** đăng nhập,
+  nên nó chỉ nói máy chủ biết đá về màn hình đăng nhập. Ngày 2026-08-09 trang
+  Kiểm Kê hỏng ở mọi lần mở (sắp xếp theo cột `findAllWhere` không nhận), và cả
+  bốn cửa — tsc, vitest, build, curl 307 — đều xanh. Chủ quán mở bằng mắt mới
+  thấy. Cửa nào không thể thất bại thì không phải cửa.
 
 ## 10. Tra ở đâu
 
