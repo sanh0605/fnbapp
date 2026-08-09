@@ -1593,6 +1593,48 @@ khi hoàn tất rồi mới bắt đầu code."*
   it. A cancel button that needs a desktop to reach is not a working cancel
   button.
 
+- **D15** Separate "how it is bought" from "what sits on the shelf". **Added
+  2026-08-09, from the owner's question.**
+
+  He asked what happens when two purchase units are not two package sizes:
+
+  > *"Robusta Dak Mil có 2 đơn vị 'túi 500gr' và 'combo 2' nhưng thực tế 'combo
+  > 2' là '2 túi 500gr' nên khi đếm sẽ đếm theo từng túi… Còn trường hợp số lẻ
+  > thì sao?"*
+
+  **His worry dissolves, and the answer is worth stating because it is not
+  obvious:** count lines do not have to match how the goods were bought. They are
+  ways of expressing a quantity, summed in base units. Five bags on the shelf is
+  `5` on the `Túi 500 g` line and blank on `Combo 2` — 2.500 g. Entering 2 combos
+  plus 1 bag gives the same 2.500 g. An odd count was never a problem.
+
+  **But the question exposes a real defect.** The count list offers `Combo 2` as
+  though a combo were a thing on a shelf. It never is — open the box and there
+  are two bags. A line that cannot be counted invites a new member of staff to
+  wonder which one to fill in.
+
+  Measured across the four items with more than one purchase unit: `Dâu sấy`
+  (three real bag sizes), `Kem whipping Anchor` (two real tubs) and `Đá viên`
+  (bag and sack — genuinely different objects) are all real packaging. **Only
+  `Bột cà phê MR.PHIN Robusta Dak Mil` carries a purchase-only bundle.** One item
+  today, and it recurs with every bulk deal.
+
+  **Owner decision: hide purchase-only units from counting.** A flag on
+  `uom_conversions`, set where units are declared
+  (`app/admin/inventory/conversions`).
+
+  - **Purchasing keeps offering it** — combos are how the goods are actually
+    bought.
+  - **Counting and issue slips hide it** — neither describes something you can
+    pick up.
+
+  **The trap to guard before writing the migration:** if every conversion of a
+  purchased item were marked purchase-only, that item would have no countable
+  line at all. It could never be counted, so under S1/S2 its ingredient's
+  quantity would freeze permanently — the same shape as C17, arrived at from a
+  different direction. Refuse to mark the last countable conversion, and say why
+  in the message rather than silently rejecting.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
