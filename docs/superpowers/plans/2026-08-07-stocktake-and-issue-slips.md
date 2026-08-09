@@ -1486,6 +1486,61 @@ khi hoàn tất rồi mới bắt đầu code."*
   calls, and every session that exists today was independently confirmed
   untouched).
 
+- **D14** Undo a confirmed stocktake, and undo a whole issue slip. **Added
+  2026-08-09 after an interview the owner asked for**, having watched me
+  under-specify twice: *"Anh cần em phỏng vấn anh rõ hơn trước khi gửi bất kỳ
+  prompt nào tiếp theo cho sonnet."*
+
+  His reason is the one that matters: *"không có gì chắc chắn nhân viên đúng
+  100% cả. Nếu sai thì phải hủy phiếu cũ tạo phiếu mới chứ."* Staff will do the
+  counting; a confirmed stocktake today has **no undo at all**.
+
+  **Owner answers:**
+
+  1. **Shape: cancel the whole slip, not per item** — his own words, "huỷ phiếu
+     cũ tạo phiếu mới". Chosen over per-item editing deliberately: asked what a
+     miscount usually looks like, he answered honestly that he has never had
+     staff count before. With no experience to design against, the simpler tool
+     wins — a whole-slip cancel leaves the state unambiguous (this slip counts,
+     or it is cancelled and another replaces it), where selective edits can leave
+     a half-right count nobody can reason about. Revisit once real miscounts have
+     been seen.
+  2. **Only the owner may cancel a confirmed count.** A stocktake is a control
+     document; if the person being checked can erase the check, it stops being
+     one. **`requireAdmin()` accepts `MANAGER` (`lib/auth.ts:57`)**, so this is
+     the first action in the system that needs a stricter guard than the one that
+     exists.
+
+  **Derived, not asked** — these follow from the logic and were put to him
+  rather than posed as questions:
+
+  3. **Only the most recent confirmed session can be cancelled.** If a later
+     count exists, reality has moved on: the right response is a fresh count, not
+     erasing an old one.
+  4. **A reason is required**, one line, kept with the record.
+  5. **Nothing is deleted.** The session stays, marked cancelled-after-apply with
+     the reason, who, and when. The count remains readable — what staff recorded
+     that day is evidence even when it was wrong.
+  6. **Reversal lands now, at today's running average** — `BR-INV-009`, not a new
+     rule. Compensating rows in `stock_issues` and `stock_ledger`; never edits or
+     deletes the originals, and the balance trigger restores quantities.
+  7. **Issue slips gain a whole-slip cancel** beside the existing per-line
+     reversal, settling I11. The owner thinks in whole slips, and the two screens
+     should not disagree about what cancelling means.
+
+  **A distinct status is needed.** `CANCELLED` today means "abandoned before
+  apply" and D12 deletes those when blank. A reversed-after-apply session must
+  never be deleted and must be distinguishable — give it its own status rather
+  than overloading `CANCELLED`.
+
+  **Watch:** stocktake-sourced issues cannot be individually reversed today
+  (`reverse_manual_issue_atomic` refuses non-`MANUAL` rows), so there is no
+  double-reversal path to guard. Keep it that way.
+
+  **Build it working, not polished.** Owner 2026-08-09: *"trước mắt có trước đã
+  rồi tối ưu và làm đẹp giao diện sau."* A plain button and a confirm dialog is
+  the deliverable.
+
 - **D8** Re-run the whole of §5 against the finished code, and record what was
   found. The owner expects new cases to surface here: *"Thậm chí trong lúc đó có
   thể sẽ xuất hiện thêm cái lỗi chưa được liệt kê."* Add them to §5 rather than
