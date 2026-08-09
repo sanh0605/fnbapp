@@ -4,6 +4,41 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - D14 follow-up: missing Vietnamese diacritics in stored notes and error messages, `0063_fix_d14_vietnamese_diacritics.sql`
+
+**Trigger:** the owner reading `STK-006`'s own reversal note, `"Huy phien kiem ke STK-006 -- Test"`, plain ASCII, next to the original line's `"Kiểm kê định kỳ 2026-08-09"`, which has full diacritics -- he is the one who reads these. `0062` was already live in production, so this is a new migration, `create or replace function` on both, not an edit to the applied file.
+
+**Scope widened from the one note flagged** to every Vietnamese-language string in both `0062` functions -- the same plain-ASCII mistake was in every raised exception message a user can see in the UI too (the `Alert` component surfaces `error.message` directly), not only the stored note. Every other migration on this plan writes Vietnamese business-facing text with full diacritics (`reverse_manual_issue_atomic`, `0058`, is the direct precedent this should have matched from the start); English stayed for the structural-validation messages (`"p_session_id is required"` and similar), matching that same precedent's own split. No logic changed -- string literals only.
+
+**Verified live, safe by construction (raises before any write, same technique as the guard checks in `scripts/verify-d14-guards-live.ts`):** `reverse_stocktake_session_atomic` with a blank reason now returns `"Lý do huỷ phiên kiểm kê là bắt buộc"`; `cancel_issue_slip_atomic` returns `"Lý do huỷ phiếu là bắt buộc"`. Script kept as `scripts/verify-0063-diacritics-live.ts`.
+
+`npx tsc --noEmit`: 0 errors (SQL only). Migration pushed live.
+
+---
+
+## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Cleanup: every stocktake test trace removed, `scripts/cleanup-stocktake-test.ts --apply`
+
+**Trigger:** the entry directly below this one -- once STK-006's reversal was measured and recorded, the owner approved cleanup. Removes the one test session (`STK-006`, both its original stocktake-derived rows and their D14 compensating rows) and five real, already-`CANCELLED` sessions left over from before the issue-based flow existed (`STK-001..005`).
+
+**Dry run matched the owner's own reported numbers exactly, row for row**, before `--apply` touched anything: `ISS-00001` (+3.100, original), `ISS-00002` (-3.100, compensating, `reverses ISS-00001`), `STK-021`/`STK-022` (∓3.100 in `stock_ledger`), all five `STK-001..005` confirmed `CANCELLED` with the exact line counts D12 had already established (89/89/1/89/50).
+
+**Deletion order for `stock_issues` split into two passes**, found necessary only after D14 shipped: compensating rows (`reverses_issue_id is not null`) deleted before originals, so a compensating row's self-referencing FK (`reverses_issue_id -> stock_issues.id`, no `ON DELETE` clause) never points at an already-deleted row. The `session_id`/`reference_id` filters needed no change -- D14's own compensating-row inserts (migration `0062`) already tag every compensating row with the *original* session's id, not `null` and not a different one, so the existing filters already caught both directions.
+
+**Post-write self-check, all four targets exact, not just printed:**
+
+- `stock_issues` = 0
+- `stock_ledger` = 138
+- `Dâu sấy` (`ING-028`) = **4.100,000000 g** exactly -- the deletion of a `-3.100` row and a `+3.100` row canceling through the trigger, proving both the delete order and the trigger direction were right, not merely that the count came out even
+- `stocktake_sessions` = 0
+
+Exit code 0, "All post-write checks passed."
+
+**What this means going forward, stated so it is not mistaken for a bug later:** the shop's first real stocktake session will be numbered `STK-001` again -- ids derive from `max(existing) + 1`, and the table is now empty. Not a defect; the numbering restarted on purpose by this cleanup.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-08-09 (owner's own hands, Claude Sonnet 5 recording) - D14 proved live for the first time, on STK-006, before its evidence was cleaned up
 
 **Written before `scripts/cleanup-stocktake-test.ts --apply` deletes the only evidence this ever ran, same reason as the prior cleanup-adjacent entries: the numbers have to exist somewhere once the rows that produced them are gone.**
