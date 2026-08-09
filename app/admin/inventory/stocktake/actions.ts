@@ -123,10 +123,18 @@ export async function getLastConfirmedStocktakeSession(): Promise<RecentConfirme
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
+  // Production bug 2026-08-09: this used order.column = "confirmed_at".
+  // findAllWhere (lib/sheets_db.ts) only supports 'id' or 'created_at' and
+  // throws on anything else -- every load of this page failed, regardless
+  // of data. created_at is not a workaround, it is equivalent here: at most
+  // one session can ever be OPEN at a time (idx_stocktake_sessions_one_open,
+  // 0036), so a session cannot even be created until the previous one has
+  // left OPEN status -- created_at order among sessions already matches
+  // confirmed_at order for the ones that reach CONFIRMED.
   const [confirmedSessions, openSessions] = await Promise.all([
     findAllWhere<any>("stocktake_sessions", {
       eq: { status: "CONFIRMED" },
-      order: { column: "confirmed_at", ascending: false },
+      order: { column: "created_at", ascending: false },
       limit: 1,
     }),
     findAllWhere<any>("stocktake_sessions", { eq: { status: "OPEN" }, limit: 1 }),
