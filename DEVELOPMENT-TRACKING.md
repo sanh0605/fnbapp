@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D14: undo a confirmed stocktake session, and cancel a whole issue slip
+
+**Trigger:** an owner interview, requested after watching two under-specified prompts in a row (D10's missing issue-slip list, D13's three unlisted screens). His reason for the feature: *"không có gì chắc chắn nhân viên đúng 100% cả. Nếu sai thì phải hủy phiếu cũ tạo phiếu mới chứ."* A confirmed stocktake had no undo at all, and staff — who have never counted before — are about to start.
+
+**Critique before coding, per the standing "Sonnet phản biện plan trước khi code" rule — two findings, both folded into the build rather than blocking it:**
+- `ADMIN` is not technically "the owner" (`docs/ACCESS-MODEL.md`: "Owner and admin are not technically distinct"). Checked live, read-only: exactly one `ADMIN` account exists today (`admin`), one `MANAGER` (`tuyen2612`), so gating on `role === 'ADMIN'` does pick out the owner uniquely right now — a real assumption, not currently a gap, worth knowing before a second `ADMIN` account ever exists.
+- The plan never addressed a new count opening while an old one is being reversed — an `OPEN` session's `theoretical_at_count` snapshots are taken from the ledger as it stands when each line is saved, and reversing an older session under it would move the ground mid-count. Closed by refusing the reversal outright while any session is `OPEN`, not left undefined.
+
+Both findings and the full U1-U13 case table written into `docs/superpowers/plans/2026-08-07-stocktake-and-issue-slips.md` §5 before any code, per the owner's own "as usual" instruction.
+
+**`supabase/migrations/0062_reverse_confirmed_stocktake_and_issue_slip.sql`** — two new RPCs:
+- `reverse_stocktake_session_atomic`: undoes the most recently `CONFIRMED` session. Compensating rows only — one `stock_issues` row per purchased-item line the session wrote, one `stock_ledger` row per ingredient correction it wrote, dated now, negated quantity, `BR-INV-009`'s exact mechanism (today's running average, not a new valuation rule — `lib/issue-costing.ts` only reads the sign of `base_quantity`, never special-cases `source`). Original rows never touched. Refuses: unknown session, wrong status, not the most recent `CONFIRMED` one, any session currently `OPEN`, or a blank reason. Session moves to a new status, `REVERSED` — deliberately not `CANCELLED`, which already means "abandoned before apply" and is what D12's `cancel_stocktake_session_atomic` deletes when blank; folding the two together would put real reversal history in the path of that delete.
+- `cancel_issue_slip_atomic`: reverses every line of a slip not already individually reversed, in one call, one reason — settles I11 beside the existing per-line `reverse_manual_issue_atomic` (D7b), unchanged. Composes the existing function per eligible row rather than duplicating its logic, so there is one reversal mechanism, not two that could drift apart.
+
+**`lib/auth.ts`: new `requireOwner()`**, accepting only `ADMIN`+`SYSTEM` (not `MANAGER`) — the first guard in the system stricter than `requireAdmin()`, because a stocktake checks the person counting and the person being checked cannot be the one who erases the check. `requireAdmin()` itself untouched. Issue-slip whole-cancel deliberately stays at the `requireAdmin()` level (U12) — a slip records waste/internal use, not a check on staff, so the stricter guard does not carry over.
+
+**Trigger check could not be re-run live this time** — no Docker (`supabase db dump --linked` needs it) and no direct Postgres driver in this repo/environment. Reconstructed instead from every `create trigger`/`drop trigger` statement across all 61 prior migrations touching the four tables this migration writes to, which matches exactly what every earlier migration on this plan found live. Documented as a reconstruction, not a live check, in the migration header.
+
+**Live-verified after pushing, guard paths only (`scripts/verify-d14-guards-live.ts`, kept in the repo, read-only/non-committing by construction)**: every call is one that must raise before the function's first `INSERT`, so nothing is ever written — no `BEGIN...ROLLBACK` needed. Confirmed against real data: unknown session id raises; a real `CANCELLED` session (`STK-001`) raises "not confirmed"; a real `CONFIRMED` session with a blank reason raises "reason required"; an unknown slip id raises. **Discovered along the way: `STK-006` is now a real `CONFIRMED` session** — the owner's own test stocktake count (a separate, parallel task) already happened. Not touched further; the success/write path of both new RPCs is deliberately unexercised live, both because there is no rollback-safe tooling available this session and because exercising it now would write real compensating data at exactly the moment the parallel cleanup task is waiting on that same session untouched.
+
+**`docs/BUSINESS-RULES.md`**: `BR-INV-009` extended with both whole-event forms; its stale "Not yet implemented" status line corrected in the same edit (D7b has been live since 2026-08-08). `docs/OPEN-ITEMS.md` item 32 marked resolved — both questions it raised (negative `base_quantity`, whether an over-recorded issue can be reversed) were already answered by `BR-INV-008`/`BR-INV-009`, text kept rather than deleted.
+
+`npx tsc --noEmit`: 0 errors. `npx vitest run`: 1060/1060 passing (36 new: RPC-wrapper parsing in `lib/stocktake-transaction.test.ts`/`lib/manual-issue-transaction.test.ts`, guard/permission behavior in both screens' `actions.test.ts`). `check-rules-current.ts`: clean. `npm run build`: succeeds. Migration pushed live. **Not pushed to the remote git repo** — push/deploy needs separate owner approval every time, per standing rule.
+
+---
+
 ## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D12: a blank cancelled stocktake stops consuming its session number, and a false alarm along the way
 
 **Trigger:** the owner rejected an earlier defense of the current behavior (analogy to a cancelled invoice keeping its number) with a distinction the analogy missed: *"đơn này thì còn có thể dùng để đo, nhưng phiếu kiểm kho thì chỉ có thể tính như vậy sau khi đã hoàn thành tất cả khâu... Còn đây anh chưa đếm."* A cancelled invoice consumes its number because the transaction happened; opening a stocktake screen and closing it with nothing counted is a blank form thrown away.

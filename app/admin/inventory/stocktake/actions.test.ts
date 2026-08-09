@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findAllNoCache: vi.fn(),
   findAllWhere: vi.fn(),
@@ -10,9 +11,10 @@ const mocks = vi.hoisted(() => ({
   saveStocktakeLineAtomic: vi.fn(),
   cancelStocktakeSessionAtomic: vi.fn(),
   applyStocktakeSessionAtomic: vi.fn(),
+  reverseStocktakeSessionAtomic: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/sheets_db", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,
@@ -24,6 +26,7 @@ vi.mock("@/lib/stocktake-transaction", () => ({
   saveStocktakeLineAtomic: mocks.saveStocktakeLineAtomic,
   cancelStocktakeSessionAtomic: mocks.cancelStocktakeSessionAtomic,
   applyStocktakeSessionAtomic: mocks.applyStocktakeSessionAtomic,
+  reverseStocktakeSessionAtomic: mocks.reverseStocktakeSessionAtomic,
 }));
 
 import * as stocktakeActions from "./actions";
@@ -272,5 +275,107 @@ describe("getStocktakeSessionData package lines", () => {
     const result = await stocktakeActions.getStocktakeSessionData();
 
     expect(result?.lines[0].packageLines).toEqual([]);
+  });
+});
+
+describe("reverseConfirmedStocktakeSession (Plan D D14, U1-U6)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("U6: refuses a non-owner before ever calling the RPC", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: false, error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+
+    const result = await stocktakeActions.reverseConfirmedStocktakeSession("STK-004", "Đếm nhầm");
+
+    expect(result).toEqual({ error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+    expect(mocks.reverseStocktakeSessionAtomic).not.toHaveBeenCalled();
+  });
+
+  it("U5: refuses an empty reason before ever calling the RPC", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+
+    const result = await stocktakeActions.reverseConfirmedStocktakeSession("STK-004", "   ");
+
+    expect(result.error).toBe("Lý do huỷ phiên kiểm kê là bắt buộc");
+    expect(mocks.reverseStocktakeSessionAtomic).not.toHaveBeenCalled();
+  });
+
+  it("calls the RPC as the resolved owner actor and relays the result", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    mocks.reverseStocktakeSessionAtomic.mockResolvedValue({
+      sessionId: "STK-004",
+      status: "REVERSED",
+      reason: "Đếm nhầm",
+      reversedById: "admin-1",
+      reversedByName: "Admin",
+      reversedAt: "2026-08-09T10:00:00Z",
+      issueCount: 1,
+      ledgerCount: 1,
+      issueIds: ["ISS-00002"],
+      ledgerIds: ["STK-005"],
+    });
+
+    const result = await stocktakeActions.reverseConfirmedStocktakeSession("STK-004", "  Đếm nhầm  ");
+
+    expect(mocks.reverseStocktakeSessionAtomic).toHaveBeenCalledWith({
+      sessionId: "STK-004",
+      reason: "Đếm nhầm",
+      reversedById: "admin-1",
+      reversedByName: "Admin",
+    });
+    expect(result.result?.status).toBe("REVERSED");
+    expect(mocks.revalidatePath).toHaveBeenCalled();
+  });
+
+  it("relays a guard refusal from the RPC itself (e.g. U2/U3/U4) as a plain error, not a thrown exception", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    mocks.reverseStocktakeSessionAtomic.mockRejectedValue(
+      new Error("Dang co mot phien kiem ke dang mo -- xu ly xong phien do truoc khi huy phien da ap dung"),
+    );
+
+    const result = await stocktakeActions.reverseConfirmedStocktakeSession("STK-004", "Đếm nhầm");
+
+    expect(result.error).toContain("dang mo");
+  });
+});
+
+describe("getLastConfirmedStocktakeSession (Plan D D14)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("returns null when there is no confirmed session at all", async () => {
+    mocks.findAllWhere.mockResolvedValue([]);
+
+    await expect(stocktakeActions.getLastConfirmedStocktakeSession()).resolves.toBeNull();
+  });
+
+  it("reports whether an OPEN session currently blocks reversal (U4)", async () => {
+    mocks.findAllWhere.mockImplementation((table: string, opts: any) => {
+      if (table === "stocktake_sessions" && opts?.eq?.status === "CONFIRMED") {
+        return Promise.resolve([{
+          id: "STK-004",
+          confirmed_by_name: "Admin",
+          confirmed_at: "2026-08-09T10:00:00Z",
+          notes: "",
+        }]);
+      }
+      if (table === "stocktake_sessions" && opts?.eq?.status === "OPEN") {
+        return Promise.resolve([{ id: "STK-006" }]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const result = await stocktakeActions.getLastConfirmedStocktakeSession();
+
+    expect(result).toEqual({
+      id: "STK-004",
+      confirmedByName: "Admin",
+      confirmedAt: "2026-08-09T10:00:00Z",
+      notes: "",
+      hasOpenSessionBlocking: true,
+    });
   });
 });

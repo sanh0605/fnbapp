@@ -188,3 +188,73 @@ describe("stocktake atomic adapters", () => {
     expect(ingredientRow?.projectedQty).toBe(1000);
   });
 });
+
+describe("reverseStocktakeSessionAtomic (Plan D D14, U1-U8)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
+  });
+
+  it("parses a reversal with both an issue-level and a ledger-level compensating row", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        session_id: "STK-004",
+        status: "REVERSED",
+        reason: "Đếm nhầm, đã đếm lại",
+        reversed_by_id: "admin-1",
+        reversed_by_name: "Admin",
+        reversed_at: "2026-08-09T10:00:00Z",
+        issue_count: 1,
+        ledger_count: 1,
+        issue_ids: ["ISS-00002"],
+        ledger_ids: ["STK-005"],
+      },
+      error: null,
+    });
+
+    const result = await stocktakeTransaction.reverseStocktakeSessionAtomic({
+      sessionId: "STK-004",
+      reason: "Đếm nhầm, đã đếm lại",
+      reversedById: "admin-1",
+      reversedByName: "Admin",
+    });
+
+    expect(result.status).toBe("REVERSED");
+    expect(result.issueIds).toEqual(["ISS-00002"]);
+    expect(result.ledgerIds).toEqual(["STK-005"]);
+    expect(mocks.rpc).toHaveBeenCalledWith("reverse_stocktake_session_atomic", {
+      p_session_id: "STK-004",
+      p_reason: "Đếm nhầm, đã đếm lại",
+      p_reversed_by_id: "admin-1",
+      p_reversed_by_name: "Admin",
+    });
+  });
+
+  it("rejects an RPC result that is not actually REVERSED", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: { session_id: "STK-004", status: "CONFIRMED" },
+      error: null,
+    });
+
+    await expect(stocktakeTransaction.reverseStocktakeSessionAtomic({
+      sessionId: "STK-004",
+      reason: "test",
+      reversedById: "admin-1",
+      reversedByName: "Admin",
+    })).rejects.toThrow("invalid result");
+  });
+
+  it("propagates the RPC's own refusal message (e.g. U2/U3/U4/U5 guards) rather than swallowing it", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { message: "Chi phien da ap dung gan nhat (STK-005) moi duoc huy, khong phai STK-004" },
+    });
+
+    await expect(stocktakeTransaction.reverseStocktakeSessionAtomic({
+      sessionId: "STK-004",
+      reason: "test",
+      reversedById: "admin-1",
+      reversedByName: "Admin",
+    })).rejects.toThrow("STK-005");
+  });
+});

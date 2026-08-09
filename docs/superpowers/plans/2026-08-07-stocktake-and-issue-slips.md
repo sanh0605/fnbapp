@@ -446,6 +446,46 @@ mid-count loses nothing already confirmed. Rebuilding the layout must not
 collapse this into a submit-at-the-end form — that would trade the one
 property that makes counting on a phone viable for a cleaner-looking diff.
 
+### Undoing a confirmed count or a whole issue slip (D14, added 2026-08-09)
+
+Added after an owner interview (§8, D14) — a confirmed stocktake session had
+no undo at all, and staff will do the counting. Sonnet's own critique of the
+plan before coding, folded into the cases below rather than listed
+separately:
+
+- **`ADMIN` is not technically "the owner" today, only accidentally so.**
+  `docs/ACCESS-MODEL.md` records owner and admin as the same technical role,
+  `INTENDED` not enforced. Checked live (read-only, `users` table): exactly
+  one `ADMIN` account exists today (`admin`) and one `MANAGER`
+  (`tuyen2612`), so gating on `role === 'ADMIN'` does pick out the owner
+  uniquely *right now*. If a second `ADMIN` account is ever created for
+  someone other than the owner, this guard silently stops meaning what D14
+  needs it to mean — worth knowing before that day, not a reason to block
+  this task.
+- **The plan never says what happens if a new count is opened while an old
+  one is being reversed.** A new `OPEN` session takes its
+  `theoretical_at_count` snapshots from the ledger as it stands *right now*
+  — reversing an older confirmed session after those snapshots are taken
+  would move the ground under a count already in progress. Closed by
+  refusing the reversal outright while any session is `OPEN` (U4 below)
+  rather than leaving the interleaving undefined.
+
+| # | Case | Required behaviour |
+|---|---|---|
+| U1 | Reverse the most recently confirmed stocktake session | Compensating rows only — one `stock_issues` row per counted purchased-item line this session wrote, one `stock_ledger` row per ingredient correction it wrote — dated now, valued at today's running average (`BR-INV-009`, same mechanism, not a new one). Original `stocktake_lines`/`stock_issues`/`stock_ledger` rows are never edited or deleted. Session status moves to `REVERSED` with who, when, and the reason |
+| U2 | Reverse a `CONFIRMED` session that is **not** the most recent `CONFIRMED` one | Refused, naming the session that actually is most recent — a later count means reality moved on, undo the newest first |
+| U3 | Reverse a session that is not `CONFIRMED` (`OPEN`, `CANCELLED`, or already `REVERSED`) | Refused, naming its real status |
+| U4 | Reverse while a stocktake session is currently `OPEN` | Refused — see the interleaving note above |
+| U5 | Reverse with no reason given | Refused. One line, required, kept with the record |
+| U6 | Reverse a confirmed session as `MANAGER` | Refused. This is the one action in the system stricter than `requireAdmin()` — a stocktake checks the person counting, so only the owner can erase the check. New guard function; `requireAdmin()` itself is untouched, still `ADMIN`+`MANAGER`+`SYSTEM` everywhere else |
+| U7 | Reverse a session whose apply wrote only `stock_issues` rows (every ingredient's purchased-item variances summed to zero, e.g. `+5` and `-5` on two package sizes cancelling out — no `stock_ledger` row was ever written for that ingredient) | Reversal only undoes rows that actually exist for the session; nothing invented, nothing missed |
+| U8 | Reverse a session whose apply wrote only `stock_ledger` rows (a legacy `BASE_INGREDIENT` line, from a session opened before D6 and kept alive per C8/C16, has no `stock_issues` row at all) | Same as U7, the other direction |
+| U9 | Cancel a whole issue slip | Reverses every line of the slip that is not already individually reversed, in one call, one reason — settles I11's "whole slip" side without changing the existing per-line `reverseIssueSlip` (D7b), which stays available for a single wrong line |
+| U10 | Cancel a whole slip where one line was already reversed individually before the whole-slip cancel is used | Skips the already-reversed line, reverses the rest. Never double-reverses — `reverse_manual_issue_atomic`'s own already-reversed check is reused, not re-implemented |
+| U11 | Cancel a whole slip where every line is already reversed | Refused — nothing left to cancel, stated plainly rather than silently doing nothing |
+| U12 | Cancel a whole issue slip as `MANAGER` | Allowed — same `requireAdmin()` level as the existing per-line reversal, deliberately **not** raised to owner-only. An issue slip records waste/internal use; it is not a check on the person who counted, so U6's reasoning does not carry over here |
+| U13 | `CANCELLED` must not gain a second meaning | A reversed-after-apply session gets its own status, `REVERSED`, never `CANCELLED`. D12's `cancel_stocktake_session_atomic` only ever touches `OPEN` sessions (checked by its own status guard) and can never run against a `CONFIRMED` or `REVERSED` one — if `REVERSED` were folded into `CANCELLED` instead, D12 would delete a session with real reversal history the first time it ran |
+
 ---
 
 ## 6. Worked example — `Dâu sấy`, the hardest case, real numbers

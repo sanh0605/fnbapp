@@ -6,7 +6,7 @@ vi.mock("@/lib/supabase", () => ({
   getSupabaseClient: mocks.getSupabaseClient,
 }));
 
-import { createIssueSlipAtomic, reverseManualIssueAtomic } from "./manual-issue-transaction";
+import { createIssueSlipAtomic, reverseManualIssueAtomic, cancelIssueSlipAtomic } from "./manual-issue-transaction";
 
 describe("createIssueSlipAtomic", () => {
   beforeEach(() => {
@@ -183,6 +183,91 @@ describe("reverseManualIssueAtomic", () => {
     await expect(reverseManualIssueAtomic({
       issueId: "ISS-00001",
       note: "",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    })).rejects.toThrow("invalid result");
+  });
+});
+
+describe("cancelIssueSlipAtomic (Plan D D14, U9-U12)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
+  });
+
+  it("calls the RPC and parses every line reversal in the result", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        slip_id: "ISL-00003",
+        reason: "Ghi nhầm cả phiếu",
+        reversed_count: 2,
+        reversals: [
+          {
+            reversal_issue_id: "ISS-00010",
+            ledger_id: "STK-030",
+            reverses_issue_id: "ISS-00005",
+            purchased_item_id: "SPM-033",
+            base_ingredient_id: "ING-028",
+            base_quantity: -300,
+            issued_at: "2026-08-09T09:00:00Z",
+            created_by_id: "admin-1",
+            created_by_name: "Admin",
+          },
+          {
+            reversal_issue_id: "ISS-00011",
+            ledger_id: "STK-031",
+            reverses_issue_id: "ISS-00006",
+            purchased_item_id: "SPM-034",
+            base_ingredient_id: "ING-029",
+            base_quantity: -50,
+            issued_at: "2026-08-09T09:00:00Z",
+            created_by_id: "admin-1",
+            created_by_name: "Admin",
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await cancelIssueSlipAtomic({
+      slipId: "ISL-00003",
+      reason: "Ghi nhầm cả phiếu",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith("cancel_issue_slip_atomic", {
+      p_slip_id: "ISL-00003",
+      p_reason: "Ghi nhầm cả phiếu",
+      p_created_by_id: "admin-1",
+      p_created_by_name: "Admin",
+    });
+    expect(result.reversedCount).toBe(2);
+    expect(result.reversals).toHaveLength(2);
+    expect(result.reversals[0].reversalIssueId).toBe("ISS-00010");
+    expect(result.reversals[1].reversalIssueId).toBe("ISS-00011");
+  });
+
+  it("relays the RPC's own refusal when nothing is left to cancel (U11)", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { message: "Phiếu ISL-00003 không còn dòng nào để huỷ -- có thể đã được đảo toàn bộ trước đó" },
+    });
+
+    await expect(cancelIssueSlipAtomic({
+      slipId: "ISL-00003",
+      reason: "test",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    })).rejects.toThrow("không còn dòng nào để huỷ");
+  });
+
+  it("rejects a malformed result rather than returning a half-built object", async () => {
+    mocks.rpc.mockResolvedValue({ data: { slip_id: "ISL-00003" }, error: null });
+
+    await expect(cancelIssueSlipAtomic({
+      slipId: "ISL-00003",
+      reason: "test",
       createdById: "admin-1",
       createdByName: "Admin",
     })).rejects.toThrow("invalid result");

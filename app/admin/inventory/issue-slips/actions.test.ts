@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
   createIssueSlipAtomic: vi.fn(),
   reverseManualIssueAtomic: vi.fn(),
+  cancelIssueSlipAtomic: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
@@ -20,6 +21,7 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/manual-issue-transaction", () => ({
   createIssueSlipAtomic: mocks.createIssueSlipAtomic,
   reverseManualIssueAtomic: mocks.reverseManualIssueAtomic,
+  cancelIssueSlipAtomic: mocks.cancelIssueSlipAtomic,
 }));
 
 import * as issueSlipActions from "./actions";
@@ -300,5 +302,63 @@ describe("reverseIssueSlip", () => {
     const res = await issueSlipActions.reverseIssueSlip({ issueId: "ISS-00001", note: "" });
     expect(res.error).toContain("không đảo hai lần");
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe("cancelIssueSlip (Plan D D14, U9-U12)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("U12: MANAGER is accepted -- same requireAdmin() level as the per-line reversal, not owner-only", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "mgr-1", name: "Manager", role: "MANAGER" } });
+    mocks.cancelIssueSlipAtomic.mockResolvedValue({
+      slipId: "ISL-00003",
+      reason: "Ghi nhầm cả phiếu",
+      reversedCount: 2,
+      reversals: [],
+    });
+
+    const res = await issueSlipActions.cancelIssueSlip({ slipId: "ISL-00003", reason: "Ghi nhầm cả phiếu" });
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.cancelIssueSlipAtomic).toHaveBeenCalledWith({
+      slipId: "ISL-00003",
+      reason: "Ghi nhầm cả phiếu",
+      createdById: "mgr-1",
+      createdByName: "Manager",
+    });
+  });
+
+  it("refuses an empty reason before ever calling the RPC", async () => {
+    const res = await issueSlipActions.cancelIssueSlip({ slipId: "ISL-00003", reason: "   " });
+
+    expect(res.error).toBe("Lý do huỷ phiếu là bắt buộc");
+    expect(mocks.cancelIssueSlipAtomic).not.toHaveBeenCalled();
+  });
+
+  it("relays the RPC's own refusal when nothing is left to cancel (U11)", async () => {
+    mocks.cancelIssueSlipAtomic.mockRejectedValue(
+      new Error("cancel_issue_slip_atomic: Phiếu ISL-00003 không còn dòng nào để huỷ -- có thể đã được đảo toàn bộ trước đó"),
+    );
+
+    const res = await issueSlipActions.cancelIssueSlip({ slipId: "ISL-00003", reason: "test" });
+
+    expect(res.error).toContain("không còn dòng nào để huỷ");
+  });
+
+  it("revalidates the page and returns the reversal count on success", async () => {
+    mocks.cancelIssueSlipAtomic.mockResolvedValue({
+      slipId: "ISL-00003",
+      reason: "Ghi nhầm cả phiếu",
+      reversedCount: 2,
+      reversals: [],
+    });
+
+    const res = await issueSlipActions.cancelIssueSlip({ slipId: "ISL-00003", reason: "Ghi nhầm cả phiếu" });
+
+    expect(res.result?.reversedCount).toBe(2);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips");
   });
 });

@@ -126,6 +126,54 @@ export async function reverseManualIssueAtomic(input: {
   return parseReversalResult(data);
 }
 
+export type SlipCancelResult = {
+  slipId: string;
+  reason: string;
+  reversedCount: number;
+  reversals: ReversalResult[];
+};
+
+// Plan D D14 / I11: cancel a WHOLE slip -- reverses every line not already
+// individually reversed, in one call. Composes reverse_manual_issue_atomic
+// per line server-side (see migration 0062); the existing per-line
+// reverseManualIssueAtomic above is unchanged and stays available for a
+// single wrong line.
+export async function cancelIssueSlipAtomic(input: {
+  slipId: string;
+  reason: string;
+  createdById: string;
+  createdByName: string;
+}): Promise<SlipCancelResult> {
+  const { data, error } = await getSupabaseClient().rpc("cancel_issue_slip_atomic", {
+    p_slip_id: input.slipId,
+    p_reason: input.reason,
+    p_created_by_id: input.createdById,
+    p_created_by_name: input.createdByName,
+  });
+  if (error) {
+    throw new Error(`cancel_issue_slip_atomic: ${error.message}`);
+  }
+  return parseSlipCancelResult(data);
+}
+
+function parseSlipCancelResult(data: unknown): SlipCancelResult {
+  const result = data as {
+    slip_id?: string;
+    reason?: string;
+    reversed_count?: number;
+    reversals?: unknown[];
+  } | null;
+  if (!result?.slip_id || !result.reversed_count) {
+    throw new Error("cancel_issue_slip_atomic returned an invalid result");
+  }
+  return {
+    slipId: result.slip_id,
+    reason: result.reason || "",
+    reversedCount: Number(result.reversed_count) || 0,
+    reversals: (result.reversals || []).map(parseReversalResult),
+  };
+}
+
 function parseReversalResult(data: unknown): ReversalResult {
   const result = data as {
     reversal_issue_id?: string;

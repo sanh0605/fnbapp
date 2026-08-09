@@ -7,8 +7,10 @@ import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import {
   createIssueSlipAtomic,
   reverseManualIssueAtomic,
+  cancelIssueSlipAtomic,
   type IssueSlipResult,
   type ReversalResult,
+  type SlipCancelResult,
 } from "@/lib/manual-issue-transaction";
 import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
 import { computeOnHandByPurchasedItem, filterByC17 } from "@/lib/purchased-item-onhand";
@@ -189,6 +191,37 @@ export async function reverseIssueSlip(input: {
     const result = await reverseManualIssueAtomic({
       issueId: input.issueId,
       note: input.note,
+      createdById: auth.actor.id,
+      createdByName: auth.actor.name,
+    });
+    revalidatePath(PATH);
+    return ok({ result });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return fail(message);
+  }
+}
+
+// Plan D D14 / I11: cancel a WHOLE slip -- reverses every line not already
+// individually reversed, in one call, one reason. Same requireAdmin() level
+// as the existing per-line reversal above -- deliberately not raised to
+// owner-only (U12): an issue slip records waste/internal use, not a check on
+// the person who counted, so the stocktake reversal's stricter guard does
+// not carry over here.
+export async function cancelIssueSlip(input: {
+  slipId: string;
+  reason: string;
+}): Promise<ActionResponse & { result?: SlipCancelResult }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+  if (!input.reason.trim()) {
+    return fail("Lý do huỷ phiếu là bắt buộc");
+  }
+
+  try {
+    const result = await cancelIssueSlipAtomic({
+      slipId: input.slipId,
+      reason: input.reason.trim(),
       createdById: auth.actor.id,
       createdByName: auth.actor.name,
     });

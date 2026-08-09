@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/format";
+import { formatDateTime } from "@/lib/datetime";
 import { confirm } from "@/lib/dialog";
 import type { StocktakeApplyResult } from "@/lib/stocktake-transaction";
 import {
@@ -14,14 +15,89 @@ import {
   cancelStocktakeSession,
   getStocktakeConfirmPreview,
   confirmStocktakeSession,
+  reverseConfirmedStocktakeSession,
   type StocktakeSessionView,
+  type RecentConfirmedStocktakeSessionView,
 } from "../actions";
 
-export function StocktakeClient({ session }: { session: StocktakeSessionView | null }) {
-  if (!session) {
-    return <StartSessionView />;
+export function StocktakeClient({
+  session,
+  lastConfirmed,
+}: {
+  session: StocktakeSessionView | null;
+  lastConfirmed: RecentConfirmedStocktakeSessionView | null;
+}) {
+  return (
+    <div className="space-y-6">
+      {session ? <ActiveSessionView session={session} /> : <StartSessionView />}
+      {lastConfirmed && <LastConfirmedSessionPanel session={lastConfirmed} />}
+    </div>
+  );
+}
+
+// Plan D D14, U1-U6: undo the most recently applied count. Shown regardless
+// of whether a new session is OPEN -- U4 blocks the actual reversal while
+// one is, but the owner should still see the last confirmed session exists,
+// not have it silently disappear from the screen.
+function LastConfirmedSessionPanel({ session }: { session: RecentConfirmedStocktakeSessionView }) {
+  const [reason, setReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  async function handleReverse() {
+    if (!reason.trim()) {
+      setError("Nhập lý do trước khi huỷ phiên kiểm kê");
+      return;
+    }
+    const approved = await confirm({
+      title: `Huỷ phiên kiểm kê ${session.id}?`,
+      message:
+        "Số liệu đã đếm được giữ nguyên, không xoá. Toàn bộ điều chỉnh tồn kho phiên này đã ghi sẽ được đảo " +
+        "ngược lại hôm nay, theo giá bình quân hiện tại (BR-INV-009). Chỉ Chủ quán mới thực hiện được thao tác này.",
+      variant: "danger",
+    });
+    if (!approved) return;
+
+    setError(null);
+    setCancelling(true);
+    const res = await reverseConfirmedStocktakeSession(session.id, reason.trim());
+    setCancelling(false);
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    setDone(true);
   }
-  return <ActiveSessionView session={session} />;
+
+  if (done) return null;
+
+  return (
+    <div className="bg-surface-card rounded-card shadow-sm border border-border p-4 space-y-2">
+      <h2 className="font-bold text-text-primary text-sm">Phiên kiểm kê gần nhất</h2>
+      <p className="text-xs text-text-secondary">
+        {session.id} &middot; áp dụng bởi {session.confirmedByName} lúc {formatDateTime(session.confirmedAt)}
+        {session.notes && ` · ${session.notes}`}
+      </p>
+      {error && <Alert variant="danger">{error}</Alert>}
+      {session.hasOpenSessionBlocking ? (
+        <p className="text-xs text-warning">Đang có một phiên kiểm kê mới mở -- xử lý xong phiên đó trước khi huỷ phiên này.</p>
+      ) : (
+        <>
+          <input
+            type="text"
+            placeholder="Lý do huỷ (bắt buộc)"
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
+          />
+          <Button variant="danger" onClick={handleReverse} loading={cancelling}>
+            Huỷ phiên kiểm kê này
+          </Button>
+        </>
+      )}
+    </div>
+  );
 }
 
 function StartSessionView() {

@@ -10,7 +10,7 @@ import { formatNumber } from "@/lib/format";
 import { formatDateTime } from "@/lib/datetime";
 import { confirm } from "@/lib/dialog";
 import { computeAffectedMonths } from "@/lib/issue-slip-warnings";
-import { createIssueSlip, reverseIssueSlip, type IssueSlipItemView, type IssueSlipRow } from "../actions";
+import { createIssueSlip, reverseIssueSlip, cancelIssueSlip, type IssueSlipItemView, type IssueSlipRow } from "../actions";
 import type { IssueSlipResult } from "@/lib/manual-issue-transaction";
 
 // I1/I2: the two reasons the plan names explicitly, plus a free-form escape
@@ -387,6 +387,8 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
   const [isPending, startTransition] = useTransition();
   const [reversingId, setReversingId] = useState<string | null>(null);
   const [reasonById, setReasonById] = useState<Record<string, string>>({});
+  const [cancellingSlipId, setCancellingSlipId] = useState<string | null>(null);
+  const [slipReasonById, setSlipReasonById] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   const groups = useMemo(() => {
@@ -420,6 +422,35 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
     });
   }
 
+  // Plan D D14, U9-U11: cancel every line of the slip not already
+  // individually reversed, in one call. Reason is required here (unlike the
+  // per-line reversal above) -- a whole-slip cancel is the higher-stakes,
+  // newer action.
+  async function handleCancelWholeSlip(slipId: string) {
+    const reason = (slipReasonById[slipId] ?? "").trim();
+    if (!reason) {
+      setError("Nhập lý do trước khi huỷ cả phiếu");
+      return;
+    }
+    const approved = await confirm({
+      title: `Huỷ cả phiếu ${slipId}?`,
+      message:
+        "Mọi dòng chưa đảo trong phiếu này sẽ được đảo cùng lúc, mỗi dòng một dòng bù ghi hôm nay theo giá " +
+        "bình quân hiện tại (BR-INV-009). Dòng gốc được giữ nguyên, không xoá. Dòng nào đã đảo lẻ từ trước sẽ " +
+        "được bỏ qua, không đảo hai lần.",
+      variant: "danger",
+    });
+    if (!approved) return;
+
+    setError(null);
+    setCancellingSlipId(slipId);
+    startTransition(async () => {
+      const res = await cancelIssueSlip({ slipId, reason });
+      setCancellingSlipId(null);
+      if (res.error) setError(res.error);
+    });
+  }
+
   return (
     <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">
       <h2 className="font-bold text-text-primary mb-3">Phiếu xuất gần đây</h2>
@@ -428,12 +459,38 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
         <EmptyState icon="🧾" title="Chưa có phiếu xuất nào" description="Phiếu xuất kho ghi ở đây sẽ hiện ngay tại mục này." />
       ) : (
         <div className="space-y-4 text-sm">
-          {groups.map(([groupKey, rows]) => (
+          {groups.map(([groupKey, rows]) => {
+            const slipId = rows[0].slipId;
+            const hasActiveLine = rows.some(r => r.reversesIssueId === null && r.reversedByIssueId === null);
+            return (
             <div key={groupKey} className="border-b border-border pb-3 last:border-0">
-              <div className="text-xs text-text-muted mb-1.5">
-                {rows[0].slipId ?? "(phiếu cũ)"} &middot; {formatDateTime(rows[0].issuedAt)}
-                {rows[0].note && ` · ${rows[0].note}`}
+              <div className="flex items-start justify-between gap-2 mb-1.5">
+                <div className="text-xs text-text-muted">
+                  {slipId ?? "(phiếu cũ)"} &middot; {formatDateTime(rows[0].issuedAt)}
+                  {rows[0].note && ` · ${rows[0].note}`}
+                </div>
+                {/* D14, U9-U12: whole-slip cancel, only for a real multi/single-line
+                    slip (not a legacy row with no slipId) that still has something
+                    to cancel. */}
+                {slipId && hasActiveLine && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleCancelWholeSlip(slipId)}
+                    loading={isPending && cancellingSlipId === slipId}
+                  >
+                    Huỷ cả phiếu
+                  </Button>
+                )}
               </div>
+              {slipId && hasActiveLine && (
+                <input
+                  type="text"
+                  placeholder="Lý do huỷ cả phiếu (bắt buộc)"
+                  value={slipReasonById[slipId] ?? ""}
+                  onChange={e => setSlipReasonById(prev => ({ ...prev, [slipId]: e.target.value }))}
+                  className="mb-2 w-full border border-border rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
+                />
+              )}
               <div className="space-y-2">
                 {rows.map(row => {
                   const isReversal = row.reversesIssueId !== null;
@@ -473,7 +530,8 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

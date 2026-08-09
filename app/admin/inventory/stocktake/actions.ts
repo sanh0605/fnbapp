@@ -2,15 +2,17 @@
 
 import { findAll, findAllWhere } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import {
   openStocktakeSessionAtomic,
   saveStocktakeLineAtomic,
   cancelStocktakeSessionAtomic,
   applyStocktakeSessionAtomic,
+  reverseStocktakeSessionAtomic,
   type StocktakeItemType,
   type StocktakeApplyResult,
+  type StocktakeReversalResult,
 } from "@/lib/stocktake-transaction";
 import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
 import { filterByC17 } from "@/lib/purchased-item-onhand";
@@ -35,11 +37,22 @@ export interface StocktakeLineView {
 
 export interface StocktakeSessionView {
   id: string;
-  status: "OPEN" | "CONFIRMED" | "CANCELLED";
+  status: "OPEN" | "CONFIRMED" | "CANCELLED" | "REVERSED";
   createdByName: string;
   createdAt: string;
   notes: string;
   lines: StocktakeLineView[];
+}
+
+// Plan D D14: the last CONFIRMED session, shown so the owner can undo it
+// (U1-U6) even after no session is OPEN any more. Lightweight -- reversal is
+// whole-session, so there is nothing to show per line.
+export interface RecentConfirmedStocktakeSessionView {
+  id: string;
+  confirmedByName: string;
+  confirmedAt: string;
+  notes: string;
+  hasOpenSessionBlocking: boolean;
 }
 
 async function loadItemNameMaps() {
@@ -99,6 +112,35 @@ async function loadPackageLinesByPurchasedItem(
     byPurchasedItem.set(line.purchasedItemId, list);
   }
   return byPurchasedItem;
+}
+
+// Plan D D14, U1-U6: the most recently CONFIRMED session, so it can be
+// undone even after it stops being the OPEN session shown above. Read-only
+// -- requireAdmin() is enough to see it (both ADMIN and MANAGER already see
+// everything else on this screen); the stricter owner-only guard applies
+// only to the reversal action itself.
+export async function getLastConfirmedStocktakeSession(): Promise<RecentConfirmedStocktakeSessionView | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const [confirmedSessions, openSessions] = await Promise.all([
+    findAllWhere<any>("stocktake_sessions", {
+      eq: { status: "CONFIRMED" },
+      order: { column: "confirmed_at", ascending: false },
+      limit: 1,
+    }),
+    findAllWhere<any>("stocktake_sessions", { eq: { status: "OPEN" }, limit: 1 }),
+  ]);
+  const session = confirmedSessions[0];
+  if (!session) return null;
+
+  return {
+    id: session.id,
+    confirmedByName: session.confirmed_by_name,
+    confirmedAt: session.confirmed_at,
+    notes: session.notes ?? "",
+    hasOpenSessionBlocking: openSessions.length > 0,
+  };
 }
 
 export async function getStocktakeSessionData(): Promise<StocktakeSessionView | null> {
@@ -252,6 +294,35 @@ export async function confirmStocktakeSession(
     if (result.dryRun || result.status !== "CONFIRMED") {
       throw new Error("Stocktake confirmation did not apply the session");
     }
+    revalidatePath(PATH);
+    return ok({ result });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return fail(message);
+  }
+}
+
+// Plan D D14, U1-U6: undo a confirmed stocktake session. Owner-only
+// (requireOwner, not requireAdmin) -- the one action in the system stricter
+// than the usual ADMIN+MANAGER guard, because this is the check on the
+// person who counted.
+export async function reverseConfirmedStocktakeSession(
+  sessionId: string,
+  reason: string,
+): Promise<ActionResponse & { result?: StocktakeReversalResult }> {
+  const auth = await requireOwner();
+  if (!auth.ok) return fail(auth.error);
+  if (!reason.trim()) {
+    return fail("Lý do huỷ phiên kiểm kê là bắt buộc");
+  }
+
+  try {
+    const result = await reverseStocktakeSessionAtomic({
+      sessionId,
+      reason: reason.trim(),
+      reversedById: auth.actor.id,
+      reversedByName: auth.actor.name,
+    });
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {

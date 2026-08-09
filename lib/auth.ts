@@ -60,6 +60,33 @@ export async function requireAdmin(): Promise<AuthResult> {
   return result;
 }
 
+/**
+ * Require ADMIN (the owner today -- see below) or internal SYSTEM. Stricter
+ * than requireAdmin(), which also accepts MANAGER.
+ *
+ * Plan D D14, owner decision 2026-08-09: undoing a confirmed stocktake count
+ * is the first action in the system that needs a guard tighter than
+ * requireAdmin() -- a stocktake checks the person counting, and if the
+ * person being checked (MANAGER, the same role staff-facing counting
+ * screens run under) can erase the check, it stops being one. A dedicated
+ * function rather than editing requireAdmin(), which stays correct for
+ * every other call site.
+ *
+ * ADMIN is not a distinct "owner" role today (docs/ACCESS-MODEL.md: "Owner
+ * and admin are not technically distinct"), only accidentally equivalent to
+ * it -- checked live 2026-08-09, exactly one ADMIN account exists. SYSTEM is
+ * kept for CLI scripts under CLAUDE.md section 2's own dry-run/--apply/
+ * owner-approval protocol, the same allowance requireAdmin() already makes.
+ */
+export async function requireOwner(): Promise<AuthResult> {
+  const result = await resolveActor();
+  if (!result.ok) return result;
+  if (result.actor.role !== "ADMIN" && result.actor.role !== "SYSTEM") {
+    return { ok: false, error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" };
+  }
+  return result;
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
