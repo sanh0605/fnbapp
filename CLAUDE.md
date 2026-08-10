@@ -16,6 +16,13 @@ phân biệt được với bỏ qua.
 
 Không ai vừa làm vừa tự duyệt việc của mình.
 
+**Hai agent nói chuyện với nhau bằng tiếng Anh** (chủ quán chốt 2026-08-10):
+prompt giao việc, phản biện, báo cáo kỹ thuật giữa Opus và Sonnet — tiếng Anh,
+vì tốn ít token hơn và chủ quán không phải đọc phần đó.
+
+**Mọi thứ chủ quán đọc thì bằng tiếng Việt**: kết quả, giải thích, câu hỏi, cảnh
+báo. Không đổi. Chữ hiển thị trong app cũng vậy (mục 8).
+
 ## 2. Mức rủi ro quyết định mọi thứ
 
 Không tra theo đường dẫn file — file sẽ đổi chỗ. Tra theo loại việc:
