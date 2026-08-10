@@ -16,7 +16,7 @@ async function main() {
   const apply = process.argv.includes("--apply");
   const { getSupabaseClient } = await import("../lib/supabase");
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { computeSaleTimeCogs } = await import("../lib/backdated-ledger/compute-sale-time-cogs");
+  const { computeSaleTimeCogs } = await import("../lib/historical/backdated-ledger/compute-sale-time-cogs");
 
   const [orders, lines, ledger, recipes, semiProducts, existingEvents] = await Promise.all([
     findAllNoCache("Orders_V2"),

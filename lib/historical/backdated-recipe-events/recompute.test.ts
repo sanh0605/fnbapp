@@ -12,14 +12,14 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
 }));
 
-vi.mock("../supabase", () => ({
+vi.mock("../../supabase", () => ({
   getSupabaseClient: () => ({
     from: mocks.from,
     rpc: mocks.rpc,
   }),
 }));
 
-vi.mock("../sheets_db", () => ({
+vi.mock("../../sheets_db", () => ({
   findAllNoCache: mocks.findAllNoCache,
   update: mocks.update,
 }));

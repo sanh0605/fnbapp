@@ -1,4 +1,4 @@
-import { parseLineRecipeSnapshot } from "../order-types";
+import { parseLineRecipeSnapshot } from "../../order-types";
 import type {
   BackdatedLedgerOrder,
   BackdatedLedgerOrderLine,

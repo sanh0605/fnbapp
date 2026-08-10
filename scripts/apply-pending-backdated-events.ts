@@ -18,7 +18,7 @@ process.env.CLI_MODE = "true";
 async function main() {
   const apply = process.argv.includes("--apply");
   const { getSupabaseClient } = await import("../lib/supabase");
-  const { recomputeEventDryRun, recomputeEventApply } = await import("../lib/backdated-ledger/recompute-event");
+  const { recomputeEventDryRun, recomputeEventApply } = await import("../lib/historical/backdated-ledger/recompute-event");
 
   const supabase = getSupabaseClient();
   const { data: events, error } = await supabase

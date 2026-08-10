@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import { getSupabaseClient } from "../supabase";
+import { getSupabaseClient } from "../../supabase";
 import { computeSaleTimeCogs } from "../backdated-ledger/compute-sale-time-cogs";
-import { buildRepairedSnapshot } from "../recipe-snapshot-repair";
+import { buildRepairedSnapshot } from "../../recipe-snapshot-repair";
 import type {
   BackdatedLedgerOrder,
   BackdatedLedgerOrderLine,
@@ -71,7 +71,7 @@ export async function recomputeRecipeEventApply(
   // derived from the snapshot, so recording a new cost against a still-stale
   // snapshot would just recreate Hole 3.
   if (plan.snapshot_repairs.length > 0) {
-    const { update } = await import("../sheets_db");
+    const { update } = await import("../../sheets_db");
     for (const repair of plan.snapshot_repairs) {
       await update("Order_Lines_V2", repair.line_id, {
         recipe_snapshot_json: repair.new_recipe_snapshot_json,
@@ -179,7 +179,7 @@ async function loadRecoveryData(eventId: string): Promise<RecoveryData> {
   if (error) throw new Error(error.message);
   if (!event) throw new Error(`Backdated recipe event not found: ${eventId}`);
 
-  const { findAllNoCache } = await import("../sheets_db");
+  const { findAllNoCache } = await import("../../sheets_db");
   const [orders, lines, ledger, recipes, semiProducts] = await Promise.all([
     findAllNoCache("Orders_V2") as Promise<BackdatedLedgerOrder[]>,
     findAllNoCache("Order_Lines_V2") as Promise<BackdatedLedgerOrderLine[]>,

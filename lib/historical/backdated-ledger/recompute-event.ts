@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { getSupabaseClient } from "../supabase";
+import { getSupabaseClient } from "../../supabase";
 import { computeSaleTimeCogs } from "./compute-sale-time-cogs";
 import {
   findAffectedLines,
@@ -119,7 +119,7 @@ async function loadRecoveryData(eventId: string): Promise<RecoveryData> {
   if (error) throw new Error(error.message);
   if (!event) throw new Error(`Backdated ledger event not found: ${eventId}`);
 
-  const { findAllNoCache } = await import("../sheets_db");
+  const { findAllNoCache } = await import("../../sheets_db");
   const [orders, lines, ledger, recipes, semiProducts] = await Promise.all([
     findAllNoCache("Orders_V2") as Promise<BackdatedLedgerOrder[]>,
     findAllNoCache("Order_Lines_V2") as Promise<BackdatedLedgerOrderLine[]>,

@@ -2,8 +2,8 @@ import {
   buildInventoryBalances,
   buildLineConsumptionRows,
   buildSemiProductRecipeMaps,
-} from "../inventory-consumption";
-import { parseLineRecipeSnapshot } from "../order-types";
+} from "../../inventory-consumption";
+import { parseLineRecipeSnapshot } from "../../order-types";
 
 export type BackdatedLedgerEvent = {
   id: string;

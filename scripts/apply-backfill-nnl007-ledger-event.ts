@@ -28,9 +28,9 @@ async function main() {
   const apply = process.argv.includes("--apply");
   const { getSupabaseClient } = await import("../lib/supabase");
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { recomputeEventApply, recomputeEventDryRun } = await import("../lib/backdated-ledger/recompute-event");
-  const { findAffectedLines } = await import("../lib/backdated-ledger/find-affected-lines");
-  const { computeSaleTimeCogs } = await import("../lib/backdated-ledger/compute-sale-time-cogs");
+  const { recomputeEventApply, recomputeEventDryRun } = await import("../lib/historical/backdated-ledger/recompute-event");
+  const { findAffectedLines } = await import("../lib/historical/backdated-ledger/find-affected-lines");
+  const { computeSaleTimeCogs } = await import("../lib/historical/backdated-ledger/compute-sale-time-cogs");
 
   const [ledger, existingEvents, orders, lines, recipes, semiProducts] = await Promise.all([
     findAllNoCache("Stock_Ledger"),

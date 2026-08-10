@@ -30,9 +30,9 @@ async function main() {
   const apply = process.argv.includes("--apply");
   const { getSupabaseClient } = await import("../lib/supabase");
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { findAffectedRecipeLines } = await import("../lib/backdated-recipe-events/find-affected-lines");
-  const { computeSaleTimeCogs } = await import("../lib/backdated-ledger/compute-sale-time-cogs");
-  const { recomputeRecipeEventApply } = await import("../lib/backdated-recipe-events/recompute-event");
+  const { findAffectedRecipeLines } = await import("../lib/historical/backdated-recipe-events/find-affected-lines");
+  const { computeSaleTimeCogs } = await import("../lib/historical/backdated-ledger/compute-sale-time-cogs");
+  const { recomputeRecipeEventApply } = await import("../lib/historical/backdated-recipe-events/recompute-event");
 
   const [recipes, orders, lines, ledger, semiProducts] = await Promise.all([
     findAllNoCache("Recipes"),
