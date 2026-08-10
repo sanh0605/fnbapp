@@ -22,7 +22,7 @@ dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true"; // bypass unstable_cache for CLI execution
 
 const { findAllNoCache, insert, insertMany } = require("../lib/sheets_db");
-const { reconstructOrderV2 } = require("../lib/history-ops/migrate-v1-to-v2");
+const { reconstructOrderV2 } = require("../lib/historical/history-ops/migrate-v1-to-v2");
 const { InvariantError } = require("../lib/order-types");
 const { parseLineRecipeSnapshot } = require("../lib/order-types");
 

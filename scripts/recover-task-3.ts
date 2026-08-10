@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { isRecoveryRunId } from "../lib/history-ops/recovery-snapshot";
+import { isRecoveryRunId } from "../lib/historical/history-ops/recovery-snapshot";
 import {
   assessTask3BaselineLocks,
   buildTask3RecoveryPlan,
@@ -12,7 +12,7 @@ import {
   type Task3BaselineLock,
   type Task3RecoveryPlan,
   verifyTask3SnapshotFiles,
-} from "../lib/history-ops/task-3-recovery";
+} from "../lib/historical/history-ops/task-3-recovery";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

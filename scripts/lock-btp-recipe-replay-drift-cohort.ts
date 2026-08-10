@@ -15,7 +15,7 @@ import {
   type BtpDriftExistingLock,
   type BtpDriftLiveLine,
   type BtpDriftLockPlan,
-} from "../lib/history-ops/btp-drift-lock";
+} from "../lib/historical/history-ops/btp-drift-lock";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

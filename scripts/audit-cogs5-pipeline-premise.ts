@@ -6,7 +6,7 @@ import {
   classifyCogs5PriorWrites,
   type Cogs5AuditChange,
   type Cogs5AuditEvent,
-} from "../lib/history-ops/cogs5-pipeline-audit";
+} from "../lib/historical/history-ops/cogs5-pipeline-audit";
 import { getSupabaseClient } from "../lib/supabase";
 
 const PAGE_SIZE = 1000;

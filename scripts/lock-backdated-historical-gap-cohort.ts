@@ -15,7 +15,7 @@ import {
   type BackdatedHistoricalGapExistingLock,
   type BackdatedHistoricalGapLiveLine,
   type BackdatedHistoricalGapLockPlan,
-} from "../lib/history-ops/backdated-historical-gap-lock";
+} from "../lib/historical/history-ops/backdated-historical-gap-lock";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

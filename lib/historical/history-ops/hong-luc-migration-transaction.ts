@@ -1,11 +1,11 @@
 import type {
   HongToLucMigrationWriteSet,
   RecoverySnapshotMetadata,
-} from "@/lib/history-ops/hong-luc-migration";
+} from "@/lib/historical/history-ops/hong-luc-migration";
 import {
   classifyHongToLucRpcProbe,
   type HongToLucRpcReadiness,
-} from "@/lib/history-ops/hong-luc-migration-rpc-readiness";
+} from "@/lib/historical/history-ops/hong-luc-migration-rpc-readiness";
 import { getSupabaseClient } from "@/lib/supabase";
 
 export { classifyHongToLucRpcProbe };
