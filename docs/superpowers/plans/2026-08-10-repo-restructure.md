@@ -86,6 +86,41 @@ declarations. It cannot simply be moved to the historical directory, and it is
 not simply live either — the types want extracting. Classify these separately
 rather than forcing them into one of the three buckets.
 
+### 2b. Correction the third, 2026-08-10 — and the pattern is the point
+
+**E1 measured it and `inventory-consumption` is plainly live.** Verified
+directly: `lib/report-v2-allocators.ts:17` imports `buildLineConsumptionRows`
+**without** `type`, calls it at line 204, and that file is imported by
+`app/admin/page.tsx`, `app/admin/reports/actions.ts` and `app/pos/actions.ts`.
+Real code, running on the dashboard, the sales report and the till.
+
+Final counts: **54 live / 1 type-edge-only / 43 spent / 8 orphan = 106.** The
+type-edge bucket was worth creating and holds exactly one module — not this one.
+
+**Three wrong answers about one module, and all three failed the same way:**
+
+| # | Who | Method | Conclusion |
+|---|---|---|---|
+| 1 | Sonnet's map | counted direct importers | "no live caller" |
+| 2 | this plan | quoted that as verification | repeated it |
+| 3 | this plan again | found the `mac-cogs` type edge | "runtime code is dead" |
+
+The third is the instructive one, because it was written *while correcting the
+first two*. Having found **a** path, it stopped and generalised from it — the
+identical error to counting direct importers and stopping, approached from the
+other direction and dressed as a more careful analysis.
+
+**The rule this yields, and it governs E2 onward:** *is this module live?* cannot
+be answered by finding one path. It is answered by enumerating **every** path and
+finding no value edge. A single value import anywhere is enough to make a module
+live; no number of type edges proves the opposite.
+
+**Sonnet's own limit, self-declared and worth keeping:** it confirmed that
+`report-v2-allocators` calls the function, not that every live caller reaches the
+branch containing line 204. That is branch-level reachability, which nothing in
+this plan has attempted and which E2 does not need — a module with a reachable
+value import stays where it is regardless.
+
 **On Gemini:** section 2 used the wrong row as the main evidence that Gemini's
 count was misleading. It was less wrong than stated — it saw a real edge this
 plan denied. What survives is the narrower point, about **role rather than
