@@ -278,6 +278,10 @@ A stocktake counts only packages that are still sealed. An opened package is not
 
 **Worked example, real figures.** `Dâu sấy` (`ING-028`): 4.100 g bought for 2.443.600đ, a weighted average of exactly **596 đ/g**. Counting one sealed 1 kg bag gives 1.000 g on hand, an issue of **3.100 g** costing **1.847.600đ**, and remaining stock worth **596.000đ** — which reconciles against the 2.443.600đ paid.
 
+**Observed 2026-08-10, first real count: some items will read 0 for ever, and that is the rule working.** `Nước đường Glofood` counted 0 against a theoretical 50 kg. The owner explained why, and it is not an error: syrup is measured by the can, a can is finished once opened, and at current volume a can is opened as soon as it arrives. There will essentially never be a sealed can, so this item costs out as everything bought in the period.
+
+This is the edge Sonnet named while reviewing `BR-INV-007`: an item that always has exactly one open package can never show sealed stock, so each period expenses that period's purchases in full. For such items the rule collapses into expense-on-receipt, which is the honest treatment when the shop genuinely cannot say how much is left. **Expect a permanent 0 on the stock screen for them, and do not read it as a missed count.**
+
 ### BR-INV-008 — Counting more than expected is recorded as goods found, not refused
 
 **Status:** `APPROVED` — owner decision 2026-08-07. **Implemented 2026-08-08** (Plan D D5b, `0056_found_stock.sql`): the `stock_issues.base_quantity` constraint now accepts a negative value (the `NaN` guard kept alongside it), `save_stocktake_line_atomic` no longer refuses the found-stock range, and the negative issue row carries a Vietnamese note explaining itself. Verified live against real `Dâu sấy` data inside a rolled-back transaction — nothing persisted; see the plan's D5b entry for the five checks. No screen writes this yet — that is Plan D D7.
