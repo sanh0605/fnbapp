@@ -152,6 +152,10 @@ export interface DBUOMConversion {
   purchased_unit?: string; // Joined field
   base_unit?: string; // Joined field
   conversion_rate?: string; // Joined field
+  // Plan D D15: true for a purchase-only bundle (e.g. a combo of several
+  // bags) -- offered when receiving a purchase order, hidden from
+  // stocktake and issue-slip lines (lib/stocktake-package-lines.ts).
+  purchase_only: boolean;
 }
 
 export interface DBRecipe {

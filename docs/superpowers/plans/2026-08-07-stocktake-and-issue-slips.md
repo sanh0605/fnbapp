@@ -486,6 +486,28 @@ separately:
 | U12 | Cancel a whole issue slip as `MANAGER` | Allowed — same `requireAdmin()` level as the existing per-line reversal, deliberately **not** raised to owner-only. An issue slip records waste/internal use; it is not a check on the person who counted, so U6's reasoning does not carry over here |
 | U13 | `CANCELLED` must not gain a second meaning | A reversed-after-apply session gets its own status, `REVERSED`, never `CANCELLED`. D12's `cancel_stocktake_session_atomic` only ever touches `OPEN` sessions (checked by its own status guard) and can never run against a `CONFIRMED` or `REVERSED` one — if `REVERSED` were folded into `CANCELLED` instead, D12 would delete a session with real reversal history the first time it ran |
 
+### Purchase-only conversions (D15, added 2026-08-09)
+
+From the owner's own question about `Bột cà phê MR.PHIN Robusta Dak Mil`:
+*"Robusta Dak Mil có 2 đơn vị 'túi 500gr' và 'combo 2' nhưng thực tế 'combo 2'
+là '2 túi 500gr' nên khi đếm sẽ đếm theo từng túi… Còn trường hợp số lẻ thì
+sao?"* — his worry (an odd count) dissolves, count lines sum in base units
+regardless of how the goods were bought. The real defect it exposed: the
+count list was offering `Combo 2` as though a combo were a physical thing on
+the shelf. It never is.
+
+| # | Case | Required behaviour |
+|---|---|---|
+| P1 | A conversion marked `purchase_only` | Still offered when receiving a purchase order — a combo is how the goods are actually bought |
+| P2 | A conversion marked `purchase_only` | Not offered as a stocktake count line — `buildPackageLines` filters it out the same way it already filters `status <> 'ACTIVE'` (C8), same single point of truth, both screens inherit it for free |
+| P3 | A conversion marked `purchase_only` | Not offered as an issue-slip line — same filter, same function |
+| P4 | Marking the only `ACTIVE` conversion of a purchased item `purchase_only` | Refused. The item would have zero countable lines, so under S1/S2 its ingredient's quantity would freeze permanently — C17's shape, reached from a different direction. The message names the item and says why, not a silent rejection |
+| P5 | Marking a conversion `purchase_only` when another `ACTIVE`, non-`purchase_only` conversion of the same item still exists | Allowed — still at least one countable line |
+| P6 | Marking the only remaining `ACTIVE` conversion `purchase_only` while the item's *other* conversions are `INACTIVE`, not deleted | Still refused. An `INACTIVE` conversion is not offered for counting either (C8) — it cannot stand in as "still countable" |
+| P7 | Unmarking `purchase_only` (turning it back off) | Always allowed — never reduces how many lines are countable |
+
+**Related, out of scope for this task, flagged rather than fixed:** deactivating or deleting a purchased item's last `ACTIVE` conversion (the existing `deleteConversionAction` path, unrelated to `purchase_only`) has the exact same C17-shaped freezing risk and is not guarded today. Not touched here — the owner asked about the `purchase_only` trap specifically, and this is a pre-existing gap on a different code path.
+
 ---
 
 ## 6. Worked example — `Dâu sấy`, the hardest case, real numbers

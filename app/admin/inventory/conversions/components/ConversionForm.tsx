@@ -27,6 +27,9 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
   );
   const [conversionRate, setConversionRate] = useState(initialData?.conversion_rate || "");
   const [updateHistory, setUpdateHistory] = useState(true);
+  // Plan D D15: a purchase-only bundle (e.g. "Combo 2") -- keeps showing up
+  // when receiving a purchase order, hidden from stocktake/issue-slip lines.
+  const [purchaseOnly, setPurchaseOnly] = useState(initialData?.purchase_only === true);
 
   const itemOptions = items.map(item => ({ id: item.id, label: item.name }));
   const unitOptions = units.map(u => ({ id: u.name, label: u.name }));
@@ -67,6 +70,7 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
     formData.append("purchased_unit", unitObj.id);
     formData.append("conversion_rate", conversionRate);
     formData.append("base_unit", baseUnit.id);
+    formData.append("purchase_only", String(purchaseOnly));
 
     if (isEdit) {
       formData.append("id", initialData!.id);
@@ -82,6 +86,7 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
         setSelectedItemId("");
         setSelectedUnitName("");
         setConversionRate("");
+        setPurchaseOnly(false);
       }
     }
     setLoading(false);
@@ -187,6 +192,23 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
               </div>
             </div>
           )}
+
+          <label
+            htmlFor={`${formId}-purchase_only`}
+            className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px]"
+          >
+            <input
+              type="checkbox"
+              id={`${formId}-purchase_only`}
+              checked={purchaseOnly}
+              onChange={(e) => setPurchaseOnly(e.target.checked)}
+              className="mt-0.5 w-5 h-5 shrink-0 rounded border-border text-primary focus:ring-focus-ring"
+            />
+            <span className="text-sm text-text-secondary leading-tight">
+              <span className="font-medium text-text-primary">Chỉ là cách mua</span> (ví dụ: combo, thùng khuyến mãi) —
+              vẫn hiện khi nhập hàng, nhưng ẩn khỏi kiểm kê và phiếu xuất kho vì đây không phải thứ cầm lên đếm được.
+            </span>
+          </label>
 
           {isEdit && (
             <div className="flex items-start gap-2 p-2 bg-warning/10 rounded-lg border border-warning/20">

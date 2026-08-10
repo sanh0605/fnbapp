@@ -1,0 +1,33 @@
+-- Plan D D15: separate "how it is bought" from "what sits on the shelf".
+-- Design: docs/superpowers/plans/2026-08-07-stocktake-and-issue-slips.md
+-- section 5 "Purchase-only conversions" (P1-P7), section 8 D15.
+--
+-- Owner's question, about Bột cà phê MR.PHIN Robusta Dak Mil: it has two
+-- purchase units, "Túi 500g" and "Combo 2" -- but a combo is physically two
+-- bags, never a thing on the shelf. Offering it as a count line invites a
+-- new staff member to wonder which line to fill in for an odd number of
+-- bags (the worry itself dissolves: count lines sum in base units
+-- regardless of how the goods were bought). Fix: a flag, set where
+-- conversions are declared (app/admin/inventory/conversions) -- purchasing
+-- keeps offering a purchase-only conversion, counting and issue slips hide
+-- it.
+--
+-- Trigger check: no live query available this session (same limitation
+-- noted in 0062/0063's own headers -- no Docker for `supabase db dump
+-- --linked`, no direct Postgres driver in this repo). Reconstructed from
+-- every migration touching uom_conversions: only 0022_gate3_database_
+-- hardening.sql references it, and only to revoke direct grants from
+-- anon/authenticated -- no trigger was ever created on this table.
+--
+-- This migration only adds a column with a default; no existing row's
+-- countability changes. The C17-shaped trap this column could otherwise
+-- create (marking every conversion of an item purchase-only, freezing its
+-- ingredient's quantity under S1/S2) is guarded application-side, not by a
+-- database constraint -- the check needs "at least one other ACTIVE,
+-- non-purchase-only conversion for the same purchased_item_id", a
+-- cross-row condition this schema does not enforce with constraints
+-- anywhere else either (matches the existing isReferenced check in
+-- app/admin/inventory/conversions/actions.ts, also server-action-level, not
+-- a trigger).
+alter table public.uom_conversions
+  add column if not exists purchase_only boolean not null default false;

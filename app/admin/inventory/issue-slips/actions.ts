@@ -55,6 +55,7 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
     baseUnitName: unitNameById.get(c.base_unit) ?? c.base_unit ?? "",
     conversionRate: Number(c.conversion_rate),
     status: c.status,
+    purchaseOnly: c.purchase_only === true,
   }));
   const packageLinesByPurchasedItem = new Map<string, PackageLine[]>();
   for (const line of buildPackageLines(input)) {

@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-10 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan D D15: separate "how it is bought" from "what sits on the shelf"
+
+**Trigger:** the owner's own question about `Bột cà phê MR.PHIN Robusta Dak Mil`: it has two purchase units, `Túi 500g` and `Combo 2`, but a combo is physically two bags -- never a thing on the shelf. *"Robusta Dak Mil có 2 đơn vị 'túi 500gr' và 'combo 2' nhưng thực tế 'combo 2' là '2 túi 500gr' nên khi đếm sẽ đếm theo từng túi… Còn trường hợp số lẻ thì sao?"* His worry (an odd count of bags) dissolves -- count lines sum in base units regardless of how the goods were bought, so 5 bags is `5` on the bag line and blank on the combo line, or `2` combos plus `1` bag, either way `2.500 g`. The real defect the question exposed: the count list was offering `Combo 2` as though it were a countable thing, which a new staff member has no way to satisfy.
+
+**Measured across all four multi-unit items** before deciding scope: `Dâu sấy` (three bag sizes), `Kem whipping Anchor` (two tub sizes) and `Đá viên` (bag vs. sack, genuinely different objects) are all real packaging. Only Robusta carries a purchase-only bundle -- one item today, recurring with every bulk deal.
+
+**Owner decision: a `purchase_only` flag on `uom_conversions`** (`0064_uom_conversion_purchase_only.sql`, boolean, default `false`), set on the conversions screen (`app/admin/inventory/conversions`). Purchase orders read `uom_conversions` directly and are untouched -- a purchase-only conversion keeps showing there. Stocktake and issue slips both build their count lines through the same shared pure function, `lib/stocktake-package-lines.ts`'s `buildPackageLines`, which already filtered `status <> 'ACTIVE'` (C8) -- extended to also filter `purchase_only`, so both screens inherit the hide from one place, not two copies that could drift apart.
+
+**The trap guarded before writing any code, per the owner's explicit instruction to name the reason rather than silently refuse:** marking every conversion of a purchased item `purchase_only` would leave it with zero countable lines, freezing its ingredient's quantity forever under S1/S2 -- C17's shape, reached from a different direction. `lib/conversion-countability.ts` (`wouldLeaveNoCountableConversion`), a pure function, wired into both `addConversion` and `updateConversion` (`app/admin/inventory/conversions/actions.ts`): before saving a conversion as `purchase_only`, fetch every *other* `ACTIVE` conversion of the same purchased item and refuse if none of them would still be countable, naming the item and the consequence in the message (`"Không thể đánh dấu quy đổi này là 'chỉ là cách mua' -- đây là quy đổi cuối cùng còn đếm được của [tên] ..."`). An `INACTIVE` sibling conversion never counts as "still countable" either, matching C8. Turning the flag back off is never blocked.
+
+**Flagged, not fixed — a related, pre-existing gap on a different code path:** deactivating or deleting a purchased item's last `ACTIVE` conversion (the existing `deleteConversionAction`, unrelated to `purchase_only`) has the exact same C17-shaped freezing risk today, with no guard. Written into the plan's own D15 section so it is not lost, not touched in this task -- the owner asked about the `purchase_only` trap specifically.
+
+**Mobile-first applied to the new control** (`CLAUDE.md` section 8, a floor on any touched screen): the new checkbox is a `min-h-[44px]` tappable label, not a bare 16px box, with the reason it exists written directly under it rather than left to a tooltip.
+
+7 new tests: `lib/conversion-countability.test.ts` (P4-P7, the guard in isolation) and an extension to `lib/stocktake-package-lines.test.ts` (P2/P3, `buildPackageLines` dropping a purchase-only line using Robusta's real shape). `app/admin/inventory/conversions/actions.ts` itself has no test file, matching every sibling CRUD-style admin screen (base-ingredients, suppliers, items, …) in this codebase -- none of that class of file is unit-tested; the new logic is a thin call into the already-tested pure function.
+
+`npx tsc --noEmit`: 0 errors. `npx vitest run`: 1069/1069. `check-rules-current.ts`: clean. `npm run build`: succeeds. Migration pushed live.
+
+---
+
 ## 2026-08-09 (Claude Sonnet 5 implementing, Opus 5 coordinating) - D14 follow-up: missing Vietnamese diacritics in stored notes and error messages, `0063_fix_d14_vietnamese_diacritics.sql`
 
 **Trigger:** the owner reading `STK-006`'s own reversal note, `"Huy phien kiem ke STK-006 -- Test"`, plain ASCII, next to the original line's `"Kiểm kê định kỳ 2026-08-09"`, which has full diacritics -- he is the one who reads these. `0062` was already live in production, so this is a new migration, `create or replace function` on both, not an edit to the applied file.

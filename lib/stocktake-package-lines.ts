@@ -17,6 +17,11 @@ export type PurchasedItemConversion = {
   baseUnitName: string;
   conversionRate: number;
   status: string;
+  // Plan D D15: true for a purchase-only bundle (e.g. "Combo 2" of two
+  // 500 g bags) -- never a thing that sits on the shelf, so never a count
+  // or issue-slip line. Still offered when receiving a purchase order,
+  // which does not go through this function.
+  purchaseOnly: boolean;
 };
 
 export type PackageLine = {
@@ -34,12 +39,19 @@ export type PackageLine = {
  * already-open session must keep its existing lines regardless (C8/C16),
  * which is the caller's responsibility, not this function's.
  *
+ * Plan D D15 (P2/P3): a purchase_only conversion is dropped here too -- it
+ * describes how goods were bought (a combo, a bulk-deal bundle), never
+ * something that sits on the shelf to be counted or issued. Both counting
+ * and issue slips call this same function, so both inherit the filter from
+ * one place -- purchase orders read uom_conversions directly, not through
+ * here, so purchase_only conversions stay offered there (P1).
+ *
  * Sorted by purchased item name, then ascending size, so a multi-conversion
  * item's lines stay grouped and ordered small-to-large on screen.
  */
 export function buildPackageLines(conversions: readonly PurchasedItemConversion[]): PackageLine[] {
   return conversions
-    .filter(c => c.status === "ACTIVE")
+    .filter(c => c.status === "ACTIVE" && !c.purchaseOnly)
     .map(c => ({
       conversionId: c.conversionId,
       purchasedItemId: c.purchasedItemId,

@@ -99,6 +99,11 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
                     <td className="px-6 py-4 text-primary font-bold">
                       {conv.purchased_unit ? unitMap[conv.purchased_unit] : ""}
                       {!conv.purchased_unit && conv.from_unit_id ? unitMap[conv.from_unit_id] : ""}
+                      {conv.purchase_only && (
+                        <span className="ml-2 inline-block text-[10px] font-bold uppercase tracking-wider text-warning-active bg-warning/10 rounded px-1.5 py-0.5">
+                          Chỉ cách mua
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 font-mono text-text-muted">
                       x{conv.conversion_rate}
@@ -138,6 +143,11 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
               <div key={conv.id} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div className="font-bold text-text-primary">{itemMap[conv.purchased_item_id] || conv.purchased_item_id}</div>
+                  {conv.purchase_only && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-warning-active bg-warning/10 rounded px-1.5 py-0.5">
+                      Chỉ cách mua
+                    </span>
+                  )}
                 </div>
                 
                 <div className="flex items-center justify-between mt-2 p-3 bg-surface-secondary rounded-lg">

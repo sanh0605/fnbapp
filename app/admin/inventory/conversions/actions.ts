@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBUOMConversion, DBPurchasedItem, DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
+import { wouldLeaveNoCountableConversion } from "@/lib/conversion-countability";
 
 const SHEET = "UOM_Conversions";
 const PATH = "/admin/inventory/conversions";
@@ -17,6 +18,39 @@ function readConversionText(formData: FormData, key: string): string {
 function normalizeConversionRate(value: string): string | null {
   const rate = Number(value);
   return Number.isFinite(rate) && rate > 0 ? String(rate) : null;
+}
+
+// Plan D D15, P4-P6: refuse to leave a purchased item with zero countable
+// (ACTIVE, not purchase_only) conversions -- the C17-shaped freezing trap
+// the owner flagged before any migration was written. excludeConversionId
+// is the conversion being saved (omitted for a brand-new one via
+// addConversion, since it cannot yet be "another" conversion of itself).
+async function checkStillCountableAfterSave(
+  purchasedItemId: string,
+  savingPurchaseOnly: boolean,
+  excludeConversionId: string | null,
+): Promise<string | null> {
+  if (!savingPurchaseOnly) return null; // P7: turning it off never needs this check
+
+  const [allConversions, items] = await Promise.all([
+    findAll(SHEET) as Promise<DBUOMConversion[]>,
+    findAll("Purchased_Items") as Promise<DBPurchasedItem[]>,
+  ]);
+  const otherActivePurchaseOnly = allConversions
+    .filter(c =>
+      c.purchased_item_id === purchasedItemId &&
+      c.status === "ACTIVE" &&
+      c.id !== excludeConversionId,
+    )
+    .map(c => c.purchase_only === true);
+
+  if (!wouldLeaveNoCountableConversion(otherActivePurchaseOnly, true)) return null;
+
+  const itemName = items.find(i => i.id === purchasedItemId)?.name ?? purchasedItemId;
+  return (
+    `Không thể đánh dấu quy đổi này là "chỉ là cách mua" -- đây là quy đổi cuối cùng còn đếm được của ` +
+    `${itemName}. Nếu đánh dấu, tồn kho nguyên liệu chứa mặt hàng này sẽ không bao giờ kiểm kê được nữa.`
+  );
 }
 
 export async function getConversionsData(): Promise<{
@@ -51,6 +85,7 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
   const purchased_unit = readConversionText(formData, "purchased_unit");
   const rawConversionRate = readConversionText(formData, "conversion_rate");
   const base_unit = readConversionText(formData, "base_unit");
+  const purchase_only = readConversionText(formData, "purchase_only") === "true";
 
   if (!purchased_item_id || !purchased_unit || !rawConversionRate || !base_unit) {
     return fail("Thiếu thông tin quy đổi");
@@ -59,6 +94,12 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
   if (!conversion_rate) return fail("Tỷ lệ quy đổi phải là số hữu hạn lớn hơn 0");
 
   try {
+    // D15/P4: a brand-new conversion has no "other" copy of itself yet, so
+    // excludeConversionId is null -- the check runs against every existing
+    // ACTIVE conversion of the item as-is.
+    const countableError = await checkStillCountableAfterSave(purchased_item_id, purchase_only, null);
+    if (countableError) return fail(countableError);
+
     const id = await generateNewId(SHEET, "QD");
     await insert(SHEET, {
       id,
@@ -67,6 +108,7 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
       conversion_rate,
       base_unit,
       status: "ACTIVE",
+      purchase_only,
       created_at: new Date().toISOString(),
     });
     revalidatePath(PATH);
@@ -86,6 +128,7 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
   const purchased_unit = readConversionText(formData, "purchased_unit");
   const rawConversionRate = readConversionText(formData, "conversion_rate");
   const base_unit = readConversionText(formData, "base_unit");
+  const purchase_only = readConversionText(formData, "purchase_only") === "true";
   const update_history = formData.get("update_history") === "true";
 
   if (!id || !purchased_item_id || !purchased_unit || !rawConversionRate || !base_unit) {
@@ -93,6 +136,12 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
   }
   const conversion_rate = normalizeConversionRate(rawConversionRate);
   if (!conversion_rate) return fail("Tỷ lệ quy đổi phải là số hữu hạn lớn hơn 0");
+
+  // D15/P4-P6: exclude this conversion's own id -- otherwise it would count
+  // as "another" countable conversion of itself and the guard could never
+  // fire.
+  const countableError = await checkStillCountableAfterSave(purchased_item_id, purchase_only, id);
+  if (countableError) return fail(countableError);
 
   try {
     const [allConvs, poLines] = await Promise.all([
@@ -123,7 +172,7 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
       }
     }
 
-    await update(SHEET, id, { purchased_item_id, purchased_unit, conversion_rate, base_unit });
+    await update(SHEET, id, { purchased_item_id, purchased_unit, conversion_rate, base_unit, purchase_only });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
