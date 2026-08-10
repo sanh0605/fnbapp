@@ -51,11 +51,46 @@ did not:
 
 | | Gemini | Verified |
 |---|---|---|
-| `inventory-consumption` | 27 importers, treated as core | **No live screen uses it.** All 27 are one-off scripts and tests |
+| `inventory-consumption` | 27 importers, treated as core | **See the correction below — the original claim here was wrong** |
 | `mac-cogs` | 23 importers, treated as core | **2 live callers**, both the product cost-*estimate* page, not reporting |
 | `issue-costing` | not mentioned | **This is the costing engine** — Plan D wrote it; the 2026-08-02 map predates it |
 | Old conclusion "the tangle is infrastructure" | *"VẪN CÒN ĐÚNG 100%"* | Restated confidently about modules that no longer run |
 | Cluster table | sums to 86 of 106 | Sonnet's sums to exactly 106 |
+
+### 2a. Correction, 2026-08-10, from Sonnet's challenge round
+
+**The `inventory-consumption` row above was wrong, and it was the row this plan
+leaned on hardest.** It read "no live screen uses it". Sonnet re-ran the
+reachability as a proper graph walk instead of a single hop and found:
+
+```
+app/admin/products/cogs-estimate/page.tsx → lib/mac-cogs.ts → lib/inventory-consumption.ts
+```
+
+The error was mine and Sonnet's together: their 2026-08-10 map counted **direct**
+importers only, and this plan quoted that number as verification without walking
+the graph. Ten modules move from "spent" to "live" once the walk is done — the
+counts become **56 live / 42 spent / 8 orphan**, not 46/31/8.
+
+**And the corrected version needs one more correction.** `lib/mac-cogs.ts:1`
+reads `import type { ConsumptionRow }` — a **type-only import, erased at
+compile time**. So no runtime code from `inventory-consumption` executes on that
+path. Three statements, all imprecise: "no live caller" (wrong), "live via
+mac-cogs" (true of compilation, not of execution), "still core" (wrong about its
+role). The accurate one is narrower: **its runtime code is dead; only its type
+declarations are still reached.**
+
+**This creates a category E1 must carry: type-only edges.** A module reachable
+from a live root *only* through `import type` has dead runtime code and live
+declarations. It cannot simply be moved to the historical directory, and it is
+not simply live either — the types want extracting. Classify these separately
+rather than forcing them into one of the three buckets.
+
+**On Gemini:** section 2 used the wrong row as the main evidence that Gemini's
+count was misleading. It was less wrong than stated — it saw a real edge this
+plan denied. What survives is the narrower point, about **role rather than
+reachability**: the engine reports run on is `issue-costing`, which its report
+never mentions, and "VẪN CÒN ĐÚNG 100%" remained an overclaim.
 
 Recorded because the lesson generalises: **a confident wrong answer is more
 dangerous than an uncertain one**, since certainty suppresses the instinct to
@@ -93,6 +128,44 @@ know what an import is.
   an *audit* script the shop still runs is **live tooling**, not spent; and a
   module whose only importer is a test is **orphan**, because a test proving that
   dead code still works proves nothing.
+
+  **"The shop still runs it" requires evidence, not a plausible filename**
+  (Sonnet's refinement, accepted). Valid evidence: listed in `package.json`
+  scripts, wired into `.husky/`, or documented as a recurring job. Applied to the
+  data, exactly **one** of the 31 script-only modules qualifies —
+  `check-rules-current.ts`, in `.husky/pre-commit`. The other 30 are one-off
+  investigations from Plans A–C; they are **spent** unless the owner says he
+  still runs one by hand.
+
+  **The roots list in this plan was wrong and is corrected here.** The real
+  entry points:
+
+  - `app/**` — but only `page.tsx` / `layout.tsx` / `route.ts` and Next.js's
+    other special files are true roots. A component sitting in `app/` is reached
+    *through* a page, so it needs the same graph walk. Sonnet flagged that its
+    first pass treated all of `app/**` as roots and that this bound has not been
+    tightened yet — do it in E1.
+  - `components/**` — reached through `app/`, not an independent root.
+  - `supabase/functions/backup-to-drive/**`, `backup-to-sheets/**`,
+    `user-admin/**` — **three** edge functions. This plan named one.
+  - `scripts/check-rules-current.ts`.
+  - `middleware.ts` — a root, though it currently imports nothing from `lib/`.
+
+  None of the three edge functions imports from `lib/` today, so the counts do
+  not move — but they belong on the list so a future import is not missed.
+
+  **`supabase/functions/backup-to-drive/core.ts` does not import
+  `lib/backup-restore.ts`.** This plan asserted it did. The only occurrence of
+  that path in the file is a comment about restore ordering. The coordinator
+  wrote that assertion **into the same document that warns about being fooled by
+  a module name inside a comment**, one turn after making the identical mistake
+  while checking Sonnet's work. The trap does not care who is looking for it.
+  `lib/backup-restore.ts` has exactly one real user:
+  `scripts/restore-backup-to-target.ts`, run by hand.
+
+  **"Orphan" is not "unchecked".** `tsc --noEmit` compiles every `.ts`/`.tsx` in
+  the repo regardless of who imports it, so an orphan is still type-checked. It
+  means "does not run in production", nothing more.
 
 - **E2 — Segregate the spent tooling.** Move it under one clearly named
   directory (`lib/historical/` or similar — Sonnet chooses, then says why). Pure
