@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-11 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan E, E2: segregated all 42 spent modules into lib/historical/
+
+**Scope, exactly as instructed:** the 43 spent modules from E1's classification, minus `lib/__tests__/fixtures.ts` (excluded and flagged -- active, real test fixture data used by 4 live test suites, not one-off repair tooling; putting it in a folder promising "not code anyone should call" would misdescribe it). Not the 8 orphans (E3's scope). Not the 1 type-edge-only module (`order-cogs.ts`, stays exactly where it is). Pure moves only -- no logic changed, no exported symbol renamed, no file split.
+
+**Directory: `lib/historical/`** -- the plan's own suggested example. Tells a reader in six months what it is without opening a file: one-off repair tools from Plans A-D that ran against real data, kept as the record of what was done, not code to call. Internal structure preserved where it existed (`backdated-ledger/`, `backdated-recipe-events/`, `history-ops/` moved as subdirectories under it, not flattened); the 26 previously-flat top-level scripts stay flat under it too.
+
+**4 batches, one commit each, each independently verified green before the next started:**
+
+1. `backdated-ledger` + `backdated-recipe-events` (5 modules, 9 files with tests) -- `2aa3ccc`
+2. `history-ops` spent subset (11 modules, 21 files) -- `58d3687`. Contains the one `require(...)` call site the E1 measurement flagged as a real risk (`scripts/migrate-orders-to-v2.ts:25`, targeting `history-ops/migrate-v1-to-v2`), checked and fixed correctly.
+3. COGS/ledger-audit flat scripts (13 modules, 26 files) -- `7998d35`
+4. Remaining flat audit scripts (13 modules, 25 files) -- `362b576`
+
+**Two real bugs found in the mover tool itself, both before trusting a batch, both fixed and the batch redone clean rather than patched over:**
+
+1. `vi.mock("../supabase", ...)` calls inside moved test files were not being rewritten -- the tool only recognized `import`, `require`, and dynamic `import()` syntax, and Vitest's own mocking call is none of those. Found in batch 1's first attempt (`recompute.test.ts` left pointing at the wrong relative depth). Fixed by adding a dedicated pattern for `vi.mock`/`vi.doMock`/`vi.unmock`.
+2. A moved file's own `@/lib/x` alias import to *another* file moving in the *same* batch was silently left unrewritten, twice over: first because the tool treated every `@/` specifier as position-independent and skipped it outright (conflating "does not depend on the importer's location" with "never needs changing when the target itself moves"); then, after fixing that, still broken because the tool resolves specifiers against live disk state and moves files one at a time -- by the time it reached a later entry in the batch, an earlier entry's old path was already gone via `git mv`, so resolution silently failed. Fixed by resolving every specifier against a static pre-move file snapshot, making resolution order-independent within a batch. Found in batch 2 (`mac-drift-baseline.test.ts`'s own import of its subject).
+
+**Verification, every batch, all four gates green every time:** `tsc --noEmit` 0 errors, `npx vitest run` 1069/1069 (test count never moved), `npm run build` succeeds, `check-rules-current` clean. Per-module importer count checked individually before/after for all 42 -- none changed. `scripts/`'s `../lib/` occurrence count checked before/after every batch, not assumed -- stayed at 177 files / 330 occurrences throughout (same prefix, different suffix, exactly as expected for a within-`lib/` move). `docs/FEATURE-CATALOG.md`'s stale path citations (9 across the four batches) updated in the same commit as the move that broke them, each noting the move rather than silently swapping the path.
+
+Not touched: `lib/history-ops/`'s 3 remaining files (the orphans -- `gate4-mac-drift-classification.ts`, `negative-stock-resolution.ts`, `purchase-cost-recovery.ts` -- E3's scope), `lib/backdated-ledger/detection.test.ts` and `lib/backdated-recipe-events/detection.test.ts` (test SQL migration files directly, no source module of their own, nothing to move), `lib/order-cogs.ts` (the type-edge-only module).
+
+No production data touched, no migration, no deploy. Local commits only, all four still unpushed pending owner approval, same as the rest of Plan E so far.
+
+---
+
 ## 2026-08-10 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan E, E1: classified every `lib/` module by real reachability, not import counts
 
 **Trigger:** owner's challenge round on Plan E's first draft, which leaned on a one-hop importer count (`docs/audits/2026-08-10-lib-dependency-map.md`) that this same session had produced the day before. Two rounds of critique, both catching real errors — one in Opus's plan, one in this session's own prior measurement, one shared by both.
