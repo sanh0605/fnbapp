@@ -21,7 +21,7 @@ const FLAG_LABELS: Record<string, string> = {
 
 async function main() {
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { auditSemiProductYields } = await import("../lib/semi-product-yield-audit");
+  const { auditSemiProductYields } = await import("../lib/historical/semi-product-yield-audit");
   const fs = await import("node:fs");
   const path = await import("node:path");
 

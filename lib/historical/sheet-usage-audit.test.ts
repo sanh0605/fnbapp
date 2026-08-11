@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifySheets, extractSheetReferences } from "@/lib/sheet-usage-audit";
+import { classifySheets, extractSheetReferences } from "@/lib/historical/sheet-usage-audit";
 
 describe("sheet usage audit", () => {
   it("extracts sheet names from sheets_db helper calls and explicit ranges", () => {

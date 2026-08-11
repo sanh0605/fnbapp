@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getSaigonDateStamp } from "../lib/script-cleanup-tools";
+import { getSaigonDateStamp } from "../lib/historical/script-cleanup-tools";
 import { categorize, type Category } from "./generate-script-cleanup-plan-core";
 
 /**

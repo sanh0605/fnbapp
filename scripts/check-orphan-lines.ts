@@ -4,7 +4,7 @@ dotenv.config({ path: '.env.local' });
 
 async function main() {
   const { getSupabaseClient } = await import('../lib/supabase');
-  const { readAllFromSheets } = await import('../lib/sheets-source');
+  const { readAllFromSheets } = await import('../lib/historical/sheets-source');
   const supabase = getSupabaseClient();
 
   // Read missing Order_Lines from source.

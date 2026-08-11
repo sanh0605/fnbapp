@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { auditActionExports } from "@/lib/admin-auth-guard-audit";
+import { auditActionExports } from "@/lib/historical/admin-auth-guard-audit";
 
 const adminReadsByFile: Record<string, string[]> = {
   "app/admin/brands/actions.ts": ["getBrands"],

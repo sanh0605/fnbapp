@@ -1,4 +1,4 @@
-import type { GuardKind } from "../lib/admin-auth-guard-audit";
+import type { GuardKind } from "../lib/historical/admin-auth-guard-audit";
 
 export type IntendedAccess =
   | "ADMIN"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as auditModule from "@/lib/admin-auth-guard-audit";
+import * as auditModule from "@/lib/historical/admin-auth-guard-audit";
 
 const { findUnguardedAdminMutations } = auditModule;
 

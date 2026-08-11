@@ -8,7 +8,7 @@ process.env.CLI_MODE = "true";
 
 async function main() {
   const { getSheetsClient } = await import("../lib/sheets_db");
-  const { classifySheets, extractSheetReferences } = await import("../lib/sheet-usage-audit");
+  const { classifySheets, extractSheetReferences } = await import("../lib/historical/sheet-usage-audit");
 
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
   if (!spreadsheetId) throw new Error("GOOGLE_SPREADSHEET_ID is required");
@@ -65,7 +65,7 @@ function listSourceFiles(): string[] {
   return output.split(/\r?\n/).filter(Boolean).map(file => resolve(process.cwd(), file));
 }
 
-function renderMarkdown(report: ReturnType<typeof import("../lib/sheet-usage-audit").classifySheets>, references: any[]): string {
+function renderMarkdown(report: ReturnType<typeof import("../lib/historical/sheet-usage-audit").classifySheets>, references: any[]): string {
   const lines: string[] = [];
   lines.push("# Google Sheets Cleanup Plan");
   lines.push("");
@@ -99,7 +99,7 @@ function renderMarkdown(report: ReturnType<typeof import("../lib/sheet-usage-aud
   return lines.join("\n");
 }
 
-function printSummary(report: ReturnType<typeof import("../lib/sheet-usage-audit").classifySheets>, mdPath: string, jsonPath: string): void {
+function printSummary(report: ReturnType<typeof import("../lib/historical/sheet-usage-audit").classifySheets>, mdPath: string, jsonPath: string): void {
   console.log("=== SHEET USAGE AUDIT ===");
   console.log(`KEEP:              ${report.filter(row => row.status === "KEEP").length}`);
   console.log(`REVIEW:            ${report.filter(row => row.status === "REVIEW").length}`);

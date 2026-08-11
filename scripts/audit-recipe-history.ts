@@ -4,7 +4,7 @@ import {
   auditRecipeHistory,
   renderRecipeAuditMarkdown,
   type RecipeHistoryTransition,
-} from "../lib/recipe-history-audit";
+} from "../lib/historical/recipe-history-audit";
 import { planRecipeSave } from "../lib/recipe-selection";
 
 dotenv.config({ path: ".env.local" });

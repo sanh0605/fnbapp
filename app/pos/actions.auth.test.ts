@@ -27,7 +27,7 @@ vi.mock("@/lib/sheets_db", () => ({
   update: mocks.update,
   remove: mocks.remove,
 }));
-vi.mock("@/lib/pos-inventory-state", () => ({
+vi.mock("@/lib/historical/pos-inventory-state", () => ({
   getPosInventoryState: mocks.getPosInventoryState,
 }));
 vi.mock("@/lib/pos-order-transaction", () => ({

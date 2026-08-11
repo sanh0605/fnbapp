@@ -10,7 +10,7 @@ vi.mock("@/lib/supabase", () => ({
   }),
 }));
 
-import { getPosInventoryState } from "@/lib/pos-inventory-state";
+import { getPosInventoryState } from "@/lib/historical/pos-inventory-state";
 
 describe("getPosInventoryState", () => {
   beforeEach(() => {

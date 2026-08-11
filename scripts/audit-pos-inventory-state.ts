@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import { buildInventoryBalances } from "../lib/inventory-consumption";
 import { getMacUnitCost } from "../lib/mac-cogs";
-import { getPosInventoryState } from "../lib/pos-inventory-state";
+import { getPosInventoryState } from "../lib/historical/pos-inventory-state";
 import { findAllNoCache } from "../lib/sheets_db";
 
 dotenv.config({ path: ".env.local" });

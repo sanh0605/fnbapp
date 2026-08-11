@@ -18,7 +18,7 @@ import {
   getSaigonDateStamp,
   hasScriptReference,
   parseDeleteOneOffList,
-} from "../lib/script-cleanup-tools";
+} from "../lib/historical/script-cleanup-tools";
 
 const REPO_ROOT = process.cwd();
 const SCRIPTS_DIR = path.join(REPO_ROOT, "scripts");

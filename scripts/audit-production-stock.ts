@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { sumCompletedProductionYieldBySemiProduct } from "../lib/production-stock-audit";
+import { sumCompletedProductionYieldBySemiProduct } from "../lib/historical/production-stock-audit";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

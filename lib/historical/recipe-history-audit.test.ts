@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   auditRecipeHistory,
   renderRecipeAuditMarkdown,
-} from "@/lib/recipe-history-audit";
+} from "@/lib/historical/recipe-history-audit";
 
 describe("auditRecipeHistory", () => {
   it("classifies a same-name ingredient ID change as TYPE_REPLACEMENT", () => {

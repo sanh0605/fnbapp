@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyPurchaseOrderRpcProbe } from "@/lib/purchase-order-rpc-readiness";
+import { classifyPurchaseOrderRpcProbe } from "@/lib/historical/purchase-order-rpc-readiness";
 
 describe("classifyPurchaseOrderRpcProbe", () => {
   it("recognizes the guarded RPC without accepting the payload", () => {

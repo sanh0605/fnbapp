@@ -236,7 +236,7 @@ async function main() {
   console.log(`=== MIGRATE ${sheetName} → ${tableName} (${apply ? 'APPLY' : 'DRY-RUN'}) ===`);
 
   // 1. Read source from Sheets.
-  const { readAllFromSheets } = await import('../lib/sheets-source');
+  const { readAllFromSheets } = await import('../lib/historical/sheets-source');
   console.log(`Reading source from Google Sheets...`);
   const { headers, rows: sourceRows } = await readAllFromSheets(sheetName);
   console.log(`Source rows: ${sourceRows.length}, columns: ${headers.length}`);

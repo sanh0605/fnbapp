@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { summarizeSheetContent } from "@/lib/sheet-content-audit";
+import { summarizeSheetContent } from "@/lib/historical/sheet-content-audit";
 
 describe("sheet content audit", () => {
   it("marks empty sheets as archive recommended", () => {

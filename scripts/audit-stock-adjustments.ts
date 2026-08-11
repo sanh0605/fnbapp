@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { auditStockAdjustmentLedgerLinks } from "../lib/stock-adjustment-audit";
+import { auditStockAdjustmentLedgerLinks } from "../lib/historical/stock-adjustment-audit";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

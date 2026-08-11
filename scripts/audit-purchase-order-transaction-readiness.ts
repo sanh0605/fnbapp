@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import * as dotenv from "dotenv";
-import { classifyPurchaseOrderRpcProbe } from "../lib/purchase-order-rpc-readiness";
+import { classifyPurchaseOrderRpcProbe } from "../lib/historical/purchase-order-rpc-readiness";
 
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";

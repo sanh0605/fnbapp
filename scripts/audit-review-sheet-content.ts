@@ -7,8 +7,8 @@ process.env.CLI_MODE = "true";
 
 async function main() {
   const { getSheetsClient } = await import("../lib/sheets_db");
-  const { classifySheets } = await import("../lib/sheet-usage-audit");
-  const { summarizeSheetContent } = await import("../lib/sheet-content-audit");
+  const { classifySheets } = await import("../lib/historical/sheet-usage-audit");
+  const { summarizeSheetContent } = await import("../lib/historical/sheet-content-audit");
   const usageReport = await import("../docs/audits/sheet-usage-report.json");
 
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;

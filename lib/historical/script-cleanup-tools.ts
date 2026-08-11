@@ -1,4 +1,4 @@
-import { toSaigonIsoString } from "./datetime";
+import { toSaigonIsoString } from "../datetime";
 
 export function getSaigonDateStamp(date = new Date()): string {
   return toSaigonIsoString(date).slice(0, 10);

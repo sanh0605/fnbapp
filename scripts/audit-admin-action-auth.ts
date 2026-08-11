@@ -5,7 +5,7 @@ import {
   auditRouteHandlers,
   isServerActionSourceFile,
   type GuardKind,
-} from "../lib/admin-auth-guard-audit";
+} from "../lib/historical/admin-auth-guard-audit";
 import {
   classifyActionStatus,
   classifyRouteStatus,

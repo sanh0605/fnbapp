@@ -18,7 +18,7 @@ function fmt(value: number): string {
 }
 
 async function main() {
-  const { auditDuplicateItems } = await import("../lib/duplicate-item-audit");
+  const { auditDuplicateItems } = await import("../lib/historical/duplicate-item-audit");
   const { findAllNoCache } = await import("../lib/sheets_db");
   const fs = await import("node:fs");
   const path = await import("node:path");
