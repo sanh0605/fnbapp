@@ -4,6 +4,29 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-11 (Claude Sonnet 5 implementing, Opus 5 coordinating) - lib/historical/README.md, and Plan E E3: the 8 orphans
+
+**Trigger:** owner's independent verification of E2 found the one real gap -- the directory name alone did not tell a reader in six months what it was, only what it was not ("historical" conveys "old", not "ran against real data, kept as the record, never import it"). Added `lib/historical/README.md` stating the three criteria, pointing at the reachability audit for how the list was derived, deliberately not enumerating files (a list rots, the criterion does not).
+
+**E3, same rules as E2:** moved the 8 orphans, never deleted, one commit. Re-verified each as genuinely unreferenced across all four import forms plus `require()` before touching -- two apparent hits turned out to be a false positive (`require("crypto")` is Node's own module, not `lib/crypto.ts`) and confirmed-stale `vi.mock()` calls in two test files whose subject no longer imports the mocked module (same shape as the `production-order-transaction` finding from E1); both mock paths updated by the mover tool, not stripped.
+
+**The owner asked directly why the 8 orphans were not simply "historical" too -- investigated each one's real history instead of guessing from its content, and every single one turned out to have a concrete, evidenced past, not speculative dead code:**
+
+- `crypto.ts` verified real password changes in `app/actions/auth.ts` until commit `fe04f4a` replaced it with `bcrypt.compare`.
+- `sheets.ts` was the entire pre-Supabase data layer this app ran on.
+- `sheets-db-v2.ts` wrote real V2 orders during the early orders-v2 build-out, before the current checkout write path superseded it.
+- `order-ledger-read-scope.ts` fed checkout's sale-time cost recompute until Plan C Task 3 removed that computation entirely.
+- `production-order-transaction.ts` wrote every implicit production order at sale time until Plan C's cutover retired it, 2026-08-07.
+- The three `history-ops` files (`gate4-mac-drift-classification`, `negative-stock-resolution`, `purchase-cost-recovery`) were already independently confirmed orphaned once before, by an **earlier restructure attempt found during this investigation**: `docs/audits/2026-07-24-repo-structure-audit-and-infrastructure-plan.md` (RS-2), which moved exactly these three into `lib/history-ops/` on 2026-07-24 and then paused -- for the same reason (the COGS calculation work landing next) that also paused this plan until now.
+
+Every file got a one-line header note recording this -- the plan's own explicit, deliberate exception to "pure moves only," and the only content change in this batch. The three `history-ops` orphans went to `lib/historical/history-ops/`, reuniting them with the 11 spent siblings E2 already moved there, rather than scattering them flat elsewhere -- they were one family before RS-2 ever split anything off them, and E1's spent/orphan distinction is about current reachability, not a reason to separate modules meant to travel together.
+
+Verified: `tsc` 0 errors, `vitest` 1069/1069 (unchanged), `build` succeeds, `check-rules-current` clean. Per-module importer count unchanged (all 8 stayed at 0, as an orphan must). `lib/history-ops/` now holds only `hong-luc-migration-migration.test.ts` (tests a SQL migration file directly, no source module of its own -- out of scope, always was). No stale doc reference found.
+
+**This closes Plan E through E3.** E4 -- the decision point, whether the ~55 surviving live/type-only modules are genuinely tangled across business domains -- has not been touched; if they are not, per the plan's own words, the domain split does not happen and the plan ends there.
+
+---
+
 ## 2026-08-11 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan E, E2: segregated all 42 spent modules into lib/historical/
 
 **Scope, exactly as instructed:** the 43 spent modules from E1's classification, minus `lib/__tests__/fixtures.ts` (excluded and flagged -- active, real test fixture data used by 4 live test suites, not one-off repair tooling; putting it in a folder promising "not code anyone should call" would misdescribe it). Not the 8 orphans (E3's scope). Not the 1 type-edge-only module (`order-cogs.ts`, stays exactly where it is). Pure moves only -- no logic changed, no exported symbol renamed, no file split.
