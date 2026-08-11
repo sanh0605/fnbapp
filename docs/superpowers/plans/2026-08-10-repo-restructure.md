@@ -219,6 +219,50 @@ know what an import is.
   domain split does not happen** and this plan ends here. Splitting for tidiness
   is not a reason to touch a working system.
 
+  ### E4 answered 2026-08-11: STOP. E5 and E6 do not happen.
+
+  After E2 and E3, `lib/` holds **55 live modules** and `lib/historical/` holds
+  **50**. For context, the 2026-07-24 audit counted ~85 modules in a flat `lib/`
+  — the live surface is now **smaller than before Plans A–D began adding tooling
+  to it**.
+
+  Cross-domain usage of the 55, counted across `pos`, `admin/inventory`,
+  `admin/reports`, `admin/orders`, `admin/products`:
+
+  | Used by | Modules |
+  |---|---|
+  | exactly one domain | **29** |
+  | two domains | 6 |
+  | three or more | **4** |
+  | reached only indirectly | 16 |
+
+  **The four heavily-shared modules are `sheets_db`, `auth`, `format` and
+  `order-types`** — database access, sign-in, number formatting, shared types.
+  Infrastructure and a type module. Every domain using them is correct, in the
+  way every room in a building uses the same wiring.
+
+  **No business-logic module spans domains.** Twenty-nine already sit in exactly
+  one. The 2026-08-02 conclusion survives re-testing on a codebase half of which
+  has since been retired.
+
+  **So the split would only make the folder tree resemble an arrangement that is
+  already correct** — at the cost of touching 55 files. The burden is asymmetric:
+  proceeding needs positive evidence of a tangle, stopping needs only the absence
+  of it, and the absence is what was measured.
+
+  **Limit of this measurement, stated rather than hidden:** it counted direct
+  imports across five app areas, not the transitive walk E1 used, so the 16
+  indirect modules are not precisely placed. The owner was offered a rigorous
+  re-measure before committing to stop and chose to stop — reasonable, since a
+  more careful measurement could only reveal *more* tangle, and 29-in-one-domain
+  leaves little room for that to change the answer.
+
+  **Redirected instead to `components/POSScreen.tsx`, 1.378 lines.** It is the
+  till. A file that long means every change requires reading a thousand lines
+  first, and every change is a chance to break the screen that takes money.
+  Smaller job, concentrated risk, real benefit — unlike shuffling 55 files for a
+  tidier tree.
+
   The 2026-08-02 map concluded the tangle was infrastructural rather than
   cross-domain. That conclusion was reached about a codebase half of which is now
   dead — so it must be re-tested on what remains, not inherited.
