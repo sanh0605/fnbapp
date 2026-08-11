@@ -20,8 +20,8 @@ async function main() {
   const { createHash } = await import("node:crypto");
   const { getSupabaseClient } = await import("../lib/supabase");
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
-  const { buildVoidShortfallRepairPlan } = await import("../lib/void-order-ledger-repair");
+  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/historical/full-history-recompute");
+  const { buildVoidShortfallRepairPlan } = await import("../lib/historical/void-order-ledger-repair");
 
   const [orders, lines, ledger, recipes, semiProducts, purchaseOrders, purchaseOrderLines, purchasedItems, conversions] =
     await Promise.all([

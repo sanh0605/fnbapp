@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditPurchaseLedger } from "@/lib/purchase-ledger-audit";
+import { auditPurchaseLedger } from "@/lib/historical/purchase-ledger-audit";
 
 describe("auditPurchaseLedger", () => {
   it("classifies missing conversion_id as safe backfill when there is one matching conversion", () => {

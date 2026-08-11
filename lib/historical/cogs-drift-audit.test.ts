@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditCogsDrift } from "@/lib/cogs-drift-audit";
+import { auditCogsDrift } from "@/lib/historical/cogs-drift-audit";
 
 describe("auditCogsDrift", () => {
   it("reports line and order mismatches between stored COGS and FIFO COGS", () => {

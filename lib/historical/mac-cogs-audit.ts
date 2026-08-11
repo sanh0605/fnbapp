@@ -1,12 +1,12 @@
-import { computeMacCostForConsumptionRows, type MacLedgerEntry } from "./mac-cogs";
-import { parseLineRecipeSnapshot } from "./order-types";
+import { computeMacCostForConsumptionRows, type MacLedgerEntry } from "../mac-cogs";
+import { parseLineRecipeSnapshot } from "../order-types";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
   buildLineConsumptionRows,
   buildSemiProductRecipeMaps,
   type ConsumptionRow,
-} from "./inventory-consumption";
+} from "../inventory-consumption";
 
 type RawOrder = {
   id: string;

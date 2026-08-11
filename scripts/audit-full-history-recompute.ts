@@ -38,8 +38,8 @@ process.env.CLI_MODE = "true";
 async function main() {
   const { findAllNoCache } = await import("../lib/sheets_db");
   const { getSupabaseClient } = await import("../lib/supabase");
-  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
-  const { summariseItemBalances } = await import("../lib/item-balance-summary");
+  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/historical/full-history-recompute");
+  const { summariseItemBalances } = await import("../lib/historical/item-balance-summary");
   const fs = await import("node:fs");
   const path = await import("node:path");
 

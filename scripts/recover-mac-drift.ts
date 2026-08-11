@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { auditMacCogsDrift } from "../lib/mac-cogs-audit";
+import { auditMacCogsDrift } from "../lib/historical/mac-cogs-audit";
 import {
   buildMacDriftBaselineReport,
   buildMacDriftRecoveryPlan,

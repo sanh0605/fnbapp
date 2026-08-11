@@ -8,8 +8,8 @@ function fmt(value: number): string {
 }
 
 async function main() {
-  const { auditFullHistoryOrderLedger } = await import("../lib/full-history-ledger-audit");
-  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
+  const { auditFullHistoryOrderLedger } = await import("../lib/historical/full-history-ledger-audit");
+  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/historical/full-history-recompute");
   const { findAllNoCache } = await import("../lib/sheets_db");
 
   const [

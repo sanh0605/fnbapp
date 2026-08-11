@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditMacCogsDrift } from "@/lib/mac-cogs-audit";
+import { auditMacCogsDrift } from "@/lib/historical/mac-cogs-audit";
 
 const recipeSnapshot = {
   variant: {

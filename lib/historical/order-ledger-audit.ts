@@ -1,10 +1,10 @@
-import { parseLineRecipeSnapshot } from "./order-types";
+import { parseLineRecipeSnapshot } from "../order-types";
 import {
   allocateRecipeConsumption,
   buildInventoryBalances,
   buildSemiProductRecipeMaps,
   type ConsumptionRow,
-} from "./inventory-consumption";
+} from "../inventory-consumption";
 
 type RawOrder = {
   id: string;

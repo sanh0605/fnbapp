@@ -35,8 +35,8 @@ async function main() {
   const { getSupabaseClient } = await import("../lib/supabase");
   const { createHash } = await import("node:crypto");
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
-  const { groupCostChangesByMonth } = await import("../lib/phase5-cost-scope");
+  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/historical/full-history-recompute");
+  const { groupCostChangesByMonth } = await import("../lib/historical/phase5-cost-scope");
   const { toSaigonIsoString } = await import("../lib/datetime");
   const fs = await import("node:fs");
   const path = await import("node:path");

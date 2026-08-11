@@ -8,7 +8,7 @@ function fmt(value: number): string {
 }
 
 async function main() {
-  const { auditInventoryBalances } = await import("../lib/inventory-balance-audit");
+  const { auditInventoryBalances } = await import("../lib/historical/inventory-balance-audit");
   const { findAllNoCache } = await import("../lib/sheets_db");
 
   const [ledger, balances] = await Promise.all([

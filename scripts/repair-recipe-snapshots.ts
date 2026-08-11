@@ -16,7 +16,7 @@ process.env.CLI_MODE = "true";
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
   const { findAllNoCache, update } = await import("../lib/sheets_db");
-  const { findSnapshotMismatches } = await import("../lib/recipe-snapshot-repair");
+  const { findSnapshotMismatches } = await import("../lib/historical/recipe-snapshot-repair");
   const { toSaigonIsoString } = await import("../lib/datetime");
   const fs = await import("node:fs");
   const path = await import("node:path");
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
       arr.push(f);
       findingsByLine.set(f.line_id, arr);
     }
-    const { buildRepairedSnapshot } = await import("../lib/recipe-snapshot-repair");
+    const { buildRepairedSnapshot } = await import("../lib/historical/recipe-snapshot-repair");
     for (const [lineId] of findingsByLine) {
       const line = (lines as any[]).find(l => l.id === lineId);
       if (!line) { applyErrors.push(`${lineId}: line not found`); continue; }

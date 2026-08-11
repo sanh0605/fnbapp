@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { getSupabaseClient } from "../../supabase";
 import { computeSaleTimeCogs } from "../backdated-ledger/compute-sale-time-cogs";
-import { buildRepairedSnapshot } from "../../recipe-snapshot-repair";
+import { buildRepairedSnapshot } from "../recipe-snapshot-repair";
 import type {
   BackdatedLedgerOrder,
   BackdatedLedgerOrderLine,

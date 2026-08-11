@@ -25,7 +25,7 @@ process.env.CLI_MODE = "true";
  * Dry-run by default. --apply required to write.
  */
 
-import { resolveConversion, getPurchasedItemId, type RawPurchaseOrderLine, type RawConversion } from "../lib/purchase-ledger-audit";
+import { resolveConversion, getPurchasedItemId, type RawPurchaseOrderLine, type RawConversion } from "../lib/historical/purchase-ledger-audit";
 import { computeBaseQuantity } from "../lib/purchase-line-base-quantity";
 
 type Line = RawPurchaseOrderLine & { base_quantity?: string | number };

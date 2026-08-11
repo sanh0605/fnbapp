@@ -13,7 +13,7 @@ process.env.CLI_MODE = "true";
 
 async function main() {
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
+  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/historical/full-history-recompute");
 
   console.log("Loading data...");
   const [orders, lines, ledger, recipes, semiProducts, purchaseOrders, purchaseOrderLines, purchasedItems, conversions] =

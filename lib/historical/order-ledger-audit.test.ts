@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditOrderLedger } from "@/lib/order-ledger-audit";
+import { auditOrderLedger } from "@/lib/historical/order-ledger-audit";
 
 describe("auditOrderLedger", () => {
   it("passes when completed order ledger matches variant and modifier quantities", () => {

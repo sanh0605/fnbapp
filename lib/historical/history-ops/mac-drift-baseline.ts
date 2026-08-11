@@ -1,7 +1,7 @@
 import type {
   MacCogsDriftAuditReport,
   MacCogsLineMismatch,
-} from "@/lib/mac-cogs-audit";
+} from "@/lib/historical/mac-cogs-audit";
 import { createHash } from "node:crypto";
 
 export type MacDriftOrder = {

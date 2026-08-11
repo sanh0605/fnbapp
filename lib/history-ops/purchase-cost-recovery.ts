@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { PurchaseLedgerMismatch } from "@/lib/purchase-ledger-audit";
+import type { PurchaseLedgerMismatch } from "@/lib/historical/purchase-ledger-audit";
 
 type LedgerRow = {
   id: string;

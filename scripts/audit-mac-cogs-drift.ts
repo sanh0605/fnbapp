@@ -13,7 +13,7 @@ function fmtDelta(value: number): string {
 }
 
 async function main() {
-  const { auditMacCogsDrift } = await import("../lib/mac-cogs-audit");
+  const { auditMacCogsDrift } = await import("../lib/historical/mac-cogs-audit");
   const { findAllNoCache } = await import("../lib/sheets_db");
 
   const [orders, lines, ledger, recipes, semiProducts] = await Promise.all([

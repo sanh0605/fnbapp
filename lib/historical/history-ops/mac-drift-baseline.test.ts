@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { MacCogsLineMismatch } from "@/lib/mac-cogs-audit";
+import type { MacCogsLineMismatch } from "@/lib/historical/mac-cogs-audit";
 import {
   buildMacDriftBaselineReport,
   buildMacDriftRecoveryPlan,

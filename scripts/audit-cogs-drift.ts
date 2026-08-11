@@ -16,7 +16,7 @@ function printRows<T>(title: string, rows: T[], render: (row: T, index: number) 
 }
 
 async function main() {
-  const { auditCogsDrift } = await import("../lib/cogs-drift-audit");
+  const { auditCogsDrift } = await import("../lib/historical/cogs-drift-audit");
   const { findAllNoCache } = await import("../lib/sheets_db");
 
   console.log("Loading COGS audit data...");

@@ -22,7 +22,7 @@ function printRows<T>(title: string, rows: T[], render: (row: T, index: number) 
 }
 
 async function main() {
-  const { auditPurchaseLedger } = await import("../lib/purchase-ledger-audit");
+  const { auditPurchaseLedger } = await import("../lib/historical/purchase-ledger-audit");
   const { findAllNoCache } = await import("../lib/sheets_db");
 
   console.log("Loading purchase ledger audit data...");

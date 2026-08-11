@@ -13,7 +13,7 @@ process.env.CLI_MODE = "true";
  */
 
 async function main() {
-  const { auditOrderLedger } = await import("../lib/order-ledger-audit");
+  const { auditOrderLedger } = await import("../lib/historical/order-ledger-audit");
   const { findAllNoCache } = await import("../lib/sheets_db");
   const {
     buildLineConsumptionRows,

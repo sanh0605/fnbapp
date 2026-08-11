@@ -5,7 +5,7 @@ process.env.CLI_MODE = "true";
 
 async function main() {
   const apply = process.argv.includes("--apply");
-  const { auditOrderLedger } = await import("../lib/order-ledger-audit");
+  const { auditOrderLedger } = await import("../lib/historical/order-ledger-audit");
   const { findAllNoCache, removeMany } = await import("../lib/sheets_db");
 
   const [ordersV2, linesV2, ledger] = await Promise.all([

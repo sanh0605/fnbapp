@@ -14,7 +14,7 @@ import {
 } from "node:fs";
 import { dirname } from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { auditMacCogsDrift } from "../lib/mac-cogs-audit";
+import { auditMacCogsDrift } from "../lib/historical/mac-cogs-audit";
 import {
   buildMacDriftAuditOutputPath,
   classifyMacDriftMismatches,

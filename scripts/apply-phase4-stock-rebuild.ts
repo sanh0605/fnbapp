@@ -56,8 +56,8 @@ async function main() {
   const { getSupabaseClient } = await import("../lib/supabase");
   const { createHash } = await import("node:crypto");
   const { findAllNoCache } = await import("../lib/sheets_db");
-  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/full-history-recompute");
-  const { selectRebuildableOrders } = await import("../lib/phase4-rebuild-scope");
+  const { buildTrustedPrimitiveLedger, replayFullHistory } = await import("../lib/historical/full-history-recompute");
+  const { selectRebuildableOrders } = await import("../lib/historical/phase4-rebuild-scope");
   const fs = await import("node:fs");
   const path = await import("node:path");
 
