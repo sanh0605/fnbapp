@@ -1,3 +1,8 @@
+// HISTORICAL (Plan E E3, 2026-08-11) -- see lib/historical/README.md.
+// Written to plan purchase cost corrections; the correction script did not
+// end up importing it. Confirmed orphaned twice: 2026-07-24 (RS-2,
+// docs/audits/2026-07-24-repo-structure-audit-and-infrastructure-plan.md)
+// and again by this plan's own measurement. Not imported anywhere live.
 import { createHash } from "node:crypto";
 import type { PurchaseLedgerMismatch } from "@/lib/historical/purchase-ledger-audit";
 

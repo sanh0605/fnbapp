@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPurchaseCostRecoveryPlan } from "@/lib/history-ops/purchase-cost-recovery";
+import { buildPurchaseCostRecoveryPlan } from "@/lib/historical/history-ops/purchase-cost-recovery";
 
 const mismatch = {
   po_id: "PO-048",

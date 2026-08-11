@@ -1,3 +1,8 @@
+// HISTORICAL (Plan E E3, 2026-08-11) -- see lib/historical/README.md.
+// The original Google Sheets data layer this whole app ran on before the
+// migration to Supabase; superseded by lib/sheets_db.ts. Kept as the record
+// of what the data layer looked like pre-migration; not imported anywhere
+// live.
 import { google } from 'googleapis';
 import path from 'path';
 

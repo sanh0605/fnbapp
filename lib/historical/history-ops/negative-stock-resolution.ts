@@ -1,3 +1,8 @@
+// HISTORICAL (Plan E E3, 2026-08-11) -- see lib/historical/README.md.
+// Written for a negative-stock diagnosis script; that script did not end
+// up importing it. Confirmed orphaned twice: 2026-07-24 (RS-2, docs/audits/
+// 2026-07-24-repo-structure-audit-and-infrastructure-plan.md) and again by
+// this plan's own measurement. Not imported anywhere live.
 export type NegativeStockClassification =
   | "MISSING_PRODUCTION_YIELD"
   | "INSUFFICIENT_PRODUCTION_YIELD"

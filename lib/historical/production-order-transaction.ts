@@ -1,3 +1,7 @@
+// HISTORICAL (Plan E E3, 2026-08-11) -- see lib/historical/README.md.
+// Wrote every implicit production order at sale time, live in production
+// until Plan C's cutover retired it, 2026-08-07 (CLAUDE.md section 7:
+// "không còn lệnh nấu ngầm"). Not imported anywhere live.
 import { getSupabaseClient } from "@/lib/supabase";
 
 export type ProductionOrderAtomicInput = {

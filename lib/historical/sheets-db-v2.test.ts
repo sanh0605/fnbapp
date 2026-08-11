@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { insertOrderV2Records } from "@/lib/sheets-db-v2";
+import { insertOrderV2Records } from "@/lib/historical/sheets-db-v2";
 import type { OrderV2, OrderLineV2, OrderEvent } from "@/lib/order-types";
 
 vi.mock("@/lib/sheets_db", () => ({

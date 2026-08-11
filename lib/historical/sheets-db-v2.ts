@@ -1,4 +1,10 @@
 /**
+ * HISTORICAL (Plan E E3, 2026-08-11) -- see lib/historical/README.md.
+ * Wrote real V2 orders during the early orders-v2 build-out (referenced by
+ * the original submitOrderV2 action and the first POS-checkout-atomicity
+ * pass); superseded before this measurement by the current checkout write
+ * path. Not imported anywhere live.
+ *
  * Batched write helpers for V2 sheets.
  *
  * Writes OrderV2 + lines + event + ledger as a logical unit.

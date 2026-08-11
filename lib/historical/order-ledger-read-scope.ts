@@ -1,8 +1,13 @@
-import type { SemiProductConsumptionMaps } from "./inventory-consumption";
+// HISTORICAL (Plan E E3, 2026-08-11) -- see lib/historical/README.md.
+// Bounded the ledger lookup for order-edit's sale-time cost recompute,
+// until Plan C Task 3 removed checkout's sale-time cost computation
+// entirely (docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md). Not
+// imported anywhere live.
+import type { SemiProductConsumptionMaps } from "../inventory-consumption";
 import {
   parseLineRecipeSnapshot,
   type RecipeIngredientSnapshot,
-} from "./order-types";
+} from "../order-types";
 
 type OrderLineRecipe = {
   recipe_snapshot_json?: string;

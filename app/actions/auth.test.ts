@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next-auth/next", () => ({ getServerSession: mocks.getServerSession }));
 vi.mock("@/lib/auth", () => ({ authOptions: {} }));
 vi.mock("@/lib/supabase", () => ({ getSupabaseClient: mocks.getSupabaseClient }));
-vi.mock("@/lib/sheets", () => ({
+vi.mock("@/lib/historical/sheets", () => ({
   getSheetData: vi.fn(),
   SPREADSHEET_ID: "legacy-sheet",
   sheets: {

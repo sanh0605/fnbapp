@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/production-order-transaction", () => ({
+vi.mock("@/lib/historical/production-order-transaction", () => ({
   saveProductionOrderAtomic: mocks.saveProductionOrderAtomic,
 }));
 
