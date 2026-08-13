@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F2b: fixed the regression F2 introduced in the POS item modal
+
+**The defect.** F2's own pre-code verification concluded a second `openProductModal` call while the modal is already open "is not reachable through any code path" -- true for the mouse (the backdrop is `z-50` and opaque) but not the keyboard: the modal traps no focus and sets no role (OPEN-ITEMS 40), so the product tiles behind it stay in the tab order. Before F2, `openProductModal` re-initialised the five item state vars through its own setters on every call. After F2, `<ItemConfigModal>` is already mounted with no `key` -- React reconciles it in place (same type, same position), so its `useState` initialisers never re-run on a second call. The modal then shows the new product's name and variants while holding the previous product's variant, modifiers, quantity and discount; pressing THÊM writes a cart line with one drink's name and another drink's `variant_id`/`size_name`/`unit_price`.
+
+**Verified before fixing, not taken as given:** traced `openProductModal`'s body directly -- confirmed it only calls `setSelectedProduct`/`setEditingCartIndex`, nothing else, matching the claim exactly. One correction to the task's own premise, checked rather than assumed: `CartItemRow`'s edit-trigger (a `<div onClick>`) carries no `tabIndex`, so it is NOT actually in the tab order today -- only `ProductCard`'s tiles (real `<button>` elements) are. The "cart line 2 to cart line 5" keyboard transition is therefore not reachable yet; the tile-to-tile path is, and is the one this fixes. Recorded, not acted on -- correctness of the fix does not depend on it, and it matters if a later fix to OPEN-ITEMS 40 makes cart rows focusable too.
+
+**The fix:** one `key` prop on `<ItemConfigModal>` in `components/POSScreen.tsx`: `` key={`${selectedProduct.id}-${editingCartIndex ?? "new"}`} ``. Verified the key handles every reachable transition correctly before trusting it, not just the one case: product A to product B (both add mode) -- key changes, remounts; same product, different cart index (line 2 to line 5) -- key changes, remounts, correctly handled even though not reachable today; add mode to edit mode and back for the same product -- key changes both directions; same product and same index reopened -- key unchanged, no remount, correct since nothing changed. Checked for accidental key collisions given the value domain (product id concatenated with either a plain integer or the literal `"new"`) and found none reachable.
+
+**The test**, added to `components/POSScreen.itemModal.test.tsx`: two products, open the first, raise quantity to 3, then activate the second product's tile without closing (a dispatched click reaches the tile's handler regardless of DOM stacking in jsdom -- the same entry point the keyboard path uses in a real browser). Asserts quantity is back to 1 and the total is the second product's price. Proved the test has teeth before trusting it: removed the `key`, confirmed the test fails with quantity still `3` (matching the task's own three-run measurement against `e8dcd11`/`c750c5d`/post-fix exactly), then restored the key and confirmed green.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1099 -> 1100 (+1, authorised** -- F2's "count stays identical" rule existed to prove a pure move, and this test proves the move was not pure). `check-rules-current` clean. `npm run build` succeeds. `git status` confirms only `components/POSScreen.tsx` (the one-attribute fix) and `components/POSScreen.itemModal.test.tsx` (the one new test) changed.
+
+**Out of scope, left alone:** OPEN-ITEMS 40 itself (no focus trap adopted, `components/ui/Dialog.tsx` not used here, no `role`/ARIA added), the drafts modal (F3's subject).
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-13 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan G G5: sidebar entry, and a third tab by month
 
 **1. Sidebar.** `app/admin/layout.tsx` repointed from `/admin/reports/stock` ("Báo cáo Tồn kho") to `/admin/reports/issued` ("Giá trị hàng đã xuất") -- owner decision 2026-08-13, given the old page's three panels (`StockTable`, `ReorderSuggestionTable`, `ShiftStockCheckPanel`) exist nowhere else. `app/admin/reports/stock` is not deleted -- stays on disk, reachable by URL, confirmed still in `npm run build`'s route list. A comment at the changed line records that leaving it is the decision, not an oversight, so it does not read as dead code to a later cleanup.

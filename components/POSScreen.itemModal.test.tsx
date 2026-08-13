@@ -593,4 +593,52 @@ describe("POSScreen item-configuration modal", () => {
     expect(addToCartButton().textContent).toContain(formatNumber(63750));
     expect(gocText()).toContain(formatNumber(75000));
   });
+
+  // Plan F, F2b. F2's own pre-code verification concluded a second
+  // openProductModal call while the modal is already open "is not reachable
+  // through any code path" -- true for the mouse (the backdrop is z-50 and
+  // opaque) but not for the keyboard: the modal traps no focus and sets no
+  // role (OPEN-ITEMS 40), so the product tiles behind it stay in the tab
+  // order. Tab to a tile, press Enter, and this fires while the modal is
+  // still mounted.
+  //
+  // Before F2, openProductModal re-initialised the five item state vars
+  // itself. After F2, <ItemConfigModal> reconciles in place on a second
+  // call (same type, same position, no key) -- its useState initialisers
+  // only ran once, at first mount, so it kept product A's variant/qty under
+  // product B's name and price. Measured directly: this test fails against
+  // c750c5d (post-F2, no key) and passes against both e8dcd11 (pre-F2) and
+  // post-F2 with the key restored below.
+  it("F2b regression: activating a second product's tile without closing resets the modal instead of keeping the first product's quantity", async () => {
+    const productA = makeProduct("P1", "Cà phê sữa");
+    const productB = makeProduct("P2", "Trà đào");
+    const variants = [
+      { id: "VA", product_id: "P1", size_name: "M", price: 20000 },
+      { id: "VB", product_id: "P2", size_name: "M", price: 15000 },
+    ];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[productA, productB]}
+        variants={variants}
+        modifiers={[]}
+        bestSellers={[productA.id, productB.id]}
+      />,
+    );
+
+    await openProductByName(productA.name);
+    await fireClick(qtyControls().plusBtn);
+    await fireClick(qtyControls().plusBtn); // qty = 3
+    expect(qtyControls().qtySpan.textContent).toBe("3");
+
+    // Product B's tile is still in the DOM behind the modal -- a real mouse
+    // click cannot reach it (opaque backdrop), but a dispatched click
+    // reaches the handler regardless of stacking in jsdom, the same entry
+    // point OPEN-ITEMS 40's missing focus trap leaves open to the keyboard.
+    await openProductByName(productB.name);
+
+    expect(qtyControls().qtySpan.textContent).toBe("1");
+    expect(addToCartButton().textContent).toContain(formatNumber(15000));
+  });
 });

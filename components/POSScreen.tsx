@@ -1073,6 +1073,19 @@ export default function POSScreen({
       {/* Product Selection Modal (Popup Chọn Món) */}
       {selectedProduct && (
         <ItemConfigModal
+          // F2b (regression from F2): the modal has no focus trap (OPEN-ITEMS
+          // 40), so the tiles and cart rows behind it can still be reached by
+          // keyboard while it is open. Without a key, a second
+          // openProductModal call while already mounted only changes props --
+          // React reconciles the same component instance in place, so the
+          // useState initialisers that seed variant/modifiers/qty/discount
+          // from `initialLine` never re-run, and the modal keeps the previous
+          // product's configuration under the new product's name. The key
+          // forces a remount (fresh useState initialisers) whenever the
+          // product or the cart line being edited changes -- exactly what
+          // openProductModal's own setters used to do before F2 moved that
+          // state into the child.
+          key={`${selectedProduct.id}-${editingCartIndex ?? "new"}`}
           product={selectedProduct}
           variants={variants}
           groupedModifiers={groupedModifiers}
