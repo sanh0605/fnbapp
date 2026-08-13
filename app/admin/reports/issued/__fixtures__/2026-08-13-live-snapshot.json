@@ -1,0 +1,2571 @@
+{
+  "_comment": "Real production snapshot, taken 2026-08-13, for Plan G G3 -- proves getIssuedValueReport reproduces the figures documented in docs/superpowers/plans/2026-08-13-issued-value-page.md section 2 exactly. Not synthetic data.",
+  "purchaseOrders": [
+    {
+      "id": "PO-001",
+      "status": "COMPLETED",
+      "shipping_fee": 19600,
+      "tax_amount": 0,
+      "voucher_amount": 52640,
+      "discount_amount": 0,
+      "transaction_date": "2026-03-26T17:00:00+00:00",
+      "created_at": "2026-06-01T10:06:25.881+00:00"
+    },
+    {
+      "id": "PO-002",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-03-26T17:00:00+00:00",
+      "created_at": "2026-06-01T10:42:08.96+00:00"
+    },
+    {
+      "id": "PO-003",
+      "status": "COMPLETED",
+      "shipping_fee": 18300,
+      "tax_amount": 0,
+      "voucher_amount": 66140,
+      "discount_amount": 0,
+      "transaction_date": "2026-03-26T17:00:00+00:00",
+      "created_at": "2026-06-01T10:45:40.126+00:00"
+    },
+    {
+      "id": "PO-004",
+      "status": "COMPLETED",
+      "shipping_fee": 18300,
+      "tax_amount": 0,
+      "voucher_amount": 30840,
+      "discount_amount": 0,
+      "transaction_date": "2026-03-26T17:00:00+00:00",
+      "created_at": "2026-06-01T10:46:51.071+00:00"
+    },
+    {
+      "id": "PO-005",
+      "status": "COMPLETED",
+      "shipping_fee": 16500,
+      "tax_amount": 0,
+      "voucher_amount": 43100,
+      "discount_amount": 0,
+      "transaction_date": "2026-03-26T17:00:00+00:00",
+      "created_at": "2026-06-01T10:47:51.212+00:00"
+    },
+    {
+      "id": "PO-006",
+      "status": "COMPLETED",
+      "shipping_fee": 19600,
+      "tax_amount": 0,
+      "voucher_amount": 26100,
+      "discount_amount": 0,
+      "transaction_date": "2026-03-26T17:00:00+00:00",
+      "created_at": "2026-06-01T10:49:10.286+00:00"
+    },
+    {
+      "id": "PO-007",
+      "status": "COMPLETED",
+      "shipping_fee": 26000,
+      "tax_amount": 0,
+      "voucher_amount": 204800,
+      "discount_amount": 3000,
+      "transaction_date": "2026-04-03T17:00:00+00:00",
+      "created_at": "2026-06-01T10:50:44.073+00:00"
+    },
+    {
+      "id": "PO-008",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-03-26T17:00:00+00:00",
+      "created_at": "2026-06-01T11:07:23.145+00:00"
+    },
+    {
+      "id": "PO-009",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 4,
+      "transaction_date": "2026-04-05T17:00:00+00:00",
+      "created_at": "2026-06-01T11:08:55.545+00:00"
+    },
+    {
+      "id": "PO-010",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-04-12T17:00:00+00:00",
+      "created_at": "2026-06-01T11:10:13.527+00:00"
+    },
+    {
+      "id": "PO-011",
+      "status": "COMPLETED",
+      "shipping_fee": 21200,
+      "tax_amount": 0,
+      "voucher_amount": 218540,
+      "discount_amount": 2224,
+      "transaction_date": "2026-04-09T17:00:00+00:00",
+      "created_at": "2026-06-01T11:11:30.136+00:00"
+    },
+    {
+      "id": "PO-012",
+      "status": "COMPLETED",
+      "shipping_fee": 20100,
+      "tax_amount": 0,
+      "voucher_amount": 89070,
+      "discount_amount": 776,
+      "transaction_date": "2026-04-09T17:00:00+00:00",
+      "created_at": "2026-06-01T11:14:13.518+00:00"
+    },
+    {
+      "id": "PO-013",
+      "status": "COMPLETED",
+      "shipping_fee": 59600,
+      "tax_amount": 0,
+      "voucher_amount": 654600,
+      "discount_amount": 0,
+      "transaction_date": "2026-04-13T17:00:00+00:00",
+      "created_at": "2026-06-01T11:15:29.149+00:00"
+    },
+    {
+      "id": "PO-014",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-04-17T17:00:00+00:00",
+      "created_at": "2026-06-01T11:16:38.78+00:00"
+    },
+    {
+      "id": "PO-015",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-04-18T17:00:00+00:00",
+      "created_at": "2026-06-01T11:17:37.539+00:00"
+    },
+    {
+      "id": "PO-016",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-04-26T17:00:00+00:00",
+      "created_at": "2026-06-01T11:20:42.391+00:00"
+    },
+    {
+      "id": "PO-017",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-11T17:00:00+00:00",
+      "created_at": "2026-06-01T11:21:57.902+00:00"
+    },
+    {
+      "id": "PO-018",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-09T17:00:00+00:00",
+      "created_at": "2026-06-01T11:23:17.424+00:00"
+    },
+    {
+      "id": "PO-019",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-13T17:00:00+00:00",
+      "created_at": "2026-06-01T11:24:19.246+00:00"
+    },
+    {
+      "id": "PO-020",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-16T17:00:00+00:00",
+      "created_at": "2026-06-01T11:24:55.135+00:00"
+    },
+    {
+      "id": "PO-021",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-16T17:00:00+00:00",
+      "created_at": "2026-06-01T11:25:44.224+00:00"
+    },
+    {
+      "id": "PO-022",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-03T17:00:00+00:00",
+      "created_at": "2026-06-01T11:27:02.706+00:00"
+    },
+    {
+      "id": "PO-023",
+      "status": "COMPLETED",
+      "shipping_fee": 48100,
+      "tax_amount": 0,
+      "voucher_amount": 146500,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-28T17:00:00+00:00",
+      "created_at": "2026-06-01T11:29:32.84+00:00"
+    },
+    {
+      "id": "PO-025",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-31T17:00:00+00:00",
+      "created_at": "2026-06-05T13:52:30.572+00:00"
+    },
+    {
+      "id": "PO-026",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-02T17:00:00+00:00",
+      "created_at": "2026-06-05T13:55:15.7+00:00"
+    },
+    {
+      "id": "PO-027",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-03T17:00:00+00:00",
+      "created_at": "2026-06-05T13:55:54.745+00:00"
+    },
+    {
+      "id": "PO-028",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-09T17:00:00+00:00",
+      "created_at": "2026-06-15T07:48:27.365+00:00"
+    },
+    {
+      "id": "PO-029",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-17T17:00:00+00:00",
+      "created_at": "2026-06-24T05:15:04.631+00:00"
+    },
+    {
+      "id": "PO-030",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-21T17:00:00+00:00",
+      "created_at": "2026-06-24T05:51:02.347+00:00"
+    },
+    {
+      "id": "PO-031",
+      "status": "COMPLETED",
+      "shipping_fee": 57200,
+      "tax_amount": 0,
+      "voucher_amount": 722200,
+      "discount_amount": 57200,
+      "transaction_date": "2026-06-12T17:00:00+00:00",
+      "created_at": "2026-06-24T05:53:23.482+00:00"
+    },
+    {
+      "id": "PO-032",
+      "status": "COMPLETED",
+      "shipping_fee": 26000,
+      "tax_amount": 0,
+      "voucher_amount": 239200,
+      "discount_amount": 26000,
+      "transaction_date": "2026-06-12T17:00:00+00:00",
+      "created_at": "2026-06-24T05:54:38.768+00:00"
+    },
+    {
+      "id": "PO-033",
+      "status": "COMPLETED",
+      "shipping_fee": 8000,
+      "tax_amount": 0,
+      "voucher_amount": 151320,
+      "discount_amount": 8000,
+      "transaction_date": "2026-06-12T17:00:00+00:00",
+      "created_at": "2026-06-24T05:57:02.655+00:00"
+    },
+    {
+      "id": "PO-034",
+      "status": "COMPLETED",
+      "shipping_fee": 19600,
+      "tax_amount": 0,
+      "voucher_amount": 104500,
+      "discount_amount": 19600,
+      "transaction_date": "2026-06-24T06:14:50.678+00:00",
+      "created_at": "2026-06-24T06:14:51.331+00:00"
+    },
+    {
+      "id": "PO-035",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-14T17:00:00+00:00",
+      "created_at": "2026-06-24T07:41:12.447+00:00"
+    },
+    {
+      "id": "PO-036",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-06T17:00:00+00:00",
+      "created_at": "2026-06-25T03:21:30.711+00:00"
+    },
+    {
+      "id": "PO-038",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-24T17:00:00+00:00",
+      "created_at": "2026-06-26T10:50:20.643+00:00"
+    },
+    {
+      "id": "PO-039",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-04T17:00:00+00:00",
+      "created_at": "2026-06-26T11:06:54.498+00:00"
+    },
+    {
+      "id": "PO-040",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-08T17:00:00+00:00",
+      "created_at": "2026-06-26T11:07:30.887+00:00"
+    },
+    {
+      "id": "PO-041",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-11T17:00:00+00:00",
+      "created_at": "2026-06-26T11:08:06.742+00:00"
+    },
+    {
+      "id": "PO-042",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-15T17:00:00+00:00",
+      "created_at": "2026-06-26T11:08:52.407+00:00"
+    },
+    {
+      "id": "PO-043",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-18T17:00:00+00:00",
+      "created_at": "2026-06-26T11:09:35.441+00:00"
+    },
+    {
+      "id": "PO-044",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-21T17:00:00+00:00",
+      "created_at": "2026-06-26T11:10:23.569+00:00"
+    },
+    {
+      "id": "PO-045",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-24T17:00:00+00:00",
+      "created_at": "2026-06-26T11:13:26.702+00:00"
+    },
+    {
+      "id": "PO-046",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-27T17:00:00+00:00",
+      "created_at": "2026-06-30T09:13:24.433+00:00"
+    },
+    {
+      "id": "PO-047",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-28T17:00:00+00:00",
+      "created_at": "2026-06-30T09:33:26.87+00:00"
+    },
+    {
+      "id": "PO-048",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-29T17:00:00+00:00",
+      "created_at": "2026-06-30T09:43:06.325+00:00"
+    },
+    {
+      "id": "PO-049",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-29T17:00:00+00:00",
+      "created_at": "2026-07-01T15:09:02.358+00:00"
+    },
+    {
+      "id": "PO-050",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-04T17:00:00+00:00",
+      "created_at": "2026-07-05T13:22:10.453249+00:00"
+    },
+    {
+      "id": "PO-051",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-04T17:00:00+00:00",
+      "created_at": "2026-07-06T04:38:14.956371+00:00"
+    },
+    {
+      "id": "PO-024",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-05-27T17:00:00+00:00",
+      "created_at": "2026-06-01T11:33:31.997+00:00"
+    },
+    {
+      "id": "PO-052",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-08T17:00:00+00:00",
+      "created_at": "2026-07-15T11:03:17.179821+00:00"
+    },
+    {
+      "id": "PO-053",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-12T17:00:00+00:00",
+      "created_at": "2026-07-15T11:03:49.618324+00:00"
+    },
+    {
+      "id": "PO-054",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-14T17:00:00+00:00",
+      "created_at": "2026-07-15T11:04:34.472374+00:00"
+    },
+    {
+      "id": "PO-055",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-16T17:00:00+00:00",
+      "created_at": "2026-07-18T12:43:23.08713+00:00"
+    },
+    {
+      "id": "PO-056",
+      "status": "COMPLETED",
+      "shipping_fee": 40000,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-19T17:00:00+00:00",
+      "created_at": "2026-07-23T04:19:21.779079+00:00"
+    },
+    {
+      "id": "PO-057",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-21T17:00:00+00:00",
+      "created_at": "2026-07-23T04:21:17.263857+00:00"
+    },
+    {
+      "id": "PO-058",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-18T17:00:00+00:00",
+      "created_at": "2026-07-23T05:18:40.740957+00:00"
+    },
+    {
+      "id": "PO-059",
+      "status": "COMPLETED",
+      "shipping_fee": 64400,
+      "tax_amount": 0,
+      "voucher_amount": 610800,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-28T03:08:43+00:00",
+      "created_at": "2026-07-28T03:08:44.404234+00:00"
+    },
+    {
+      "id": "PO-060",
+      "status": "COMPLETED",
+      "shipping_fee": 35500,
+      "tax_amount": 0,
+      "voucher_amount": 306240,
+      "discount_amount": 35500,
+      "transaction_date": "2026-07-28T03:17:00.477+00:00",
+      "created_at": "2026-07-28T03:17:00.754905+00:00"
+    },
+    {
+      "id": "PO-061",
+      "status": "COMPLETED",
+      "shipping_fee": 69600,
+      "tax_amount": 0,
+      "voucher_amount": 138600,
+      "discount_amount": 69600,
+      "transaction_date": "2026-07-28T03:18:01.794+00:00",
+      "created_at": "2026-07-28T03:18:02.10309+00:00"
+    },
+    {
+      "id": "PO-037",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-06-24T17:00:00+00:00",
+      "created_at": "2026-06-26T10:49:28.689+00:00"
+    },
+    {
+      "id": "PO-062",
+      "status": "COMPLETED",
+      "shipping_fee": 0,
+      "tax_amount": 0,
+      "voucher_amount": 0,
+      "discount_amount": 0,
+      "transaction_date": "2026-07-30T06:02:46.987+00:00",
+      "created_at": "2026-07-30T06:02:51.106345+00:00"
+    },
+    {
+      "id": "PO-063",
+      "status": "COMPLETED",
+      "shipping_fee": 60600,
+      "tax_amount": 0,
+      "voucher_amount": 244600,
+      "discount_amount": 0,
+      "transaction_date": "2026-08-02T17:00:00+00:00",
+      "created_at": "2026-08-04T11:00:20.632735+00:00"
+    }
+  ],
+  "purchaseOrderLines": [
+    {
+      "id": "POL-001",
+      "purchase_order_id": "PO-001",
+      "purchased_item_id": "SPM-003",
+      "base_quantity": 500,
+      "subtotal": 149000
+    },
+    {
+      "id": "POL-002",
+      "purchase_order_id": "PO-001",
+      "purchased_item_id": "SPM-004",
+      "base_quantity": 500,
+      "subtotal": 87000
+    },
+    {
+      "id": "POL-003",
+      "purchase_order_id": "PO-002",
+      "purchased_item_id": "SPM-006",
+      "base_quantity": 1000,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-004",
+      "purchase_order_id": "PO-003",
+      "purchased_item_id": "SPM-007",
+      "base_quantity": 500,
+      "subtotal": 299000
+    },
+    {
+      "id": "POL-005",
+      "purchase_order_id": "PO-004",
+      "purchased_item_id": "SPM-008",
+      "base_quantity": 500,
+      "subtotal": 104500
+    },
+    {
+      "id": "POL-006",
+      "purchase_order_id": "PO-005",
+      "purchased_item_id": "SPM-009",
+      "base_quantity": 200,
+      "subtotal": 190000
+    },
+    {
+      "id": "POL-007",
+      "purchase_order_id": "PO-006",
+      "purchased_item_id": "SPM-010",
+      "base_quantity": 1284,
+      "subtotal": 65000
+    },
+    {
+      "id": "POL-008",
+      "purchase_order_id": "PO-007",
+      "purchased_item_id": "SPM-003",
+      "base_quantity": 3000,
+      "subtotal": 894000
+    },
+    {
+      "id": "POL-009",
+      "purchase_order_id": "PO-007",
+      "purchased_item_id": "SPM-011",
+      "base_quantity": 380,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-010",
+      "purchase_order_id": "PO-008",
+      "purchased_item_id": "SPM-001",
+      "base_quantity": 1000,
+      "subtotal": 50000
+    },
+    {
+      "id": "POL-011",
+      "purchase_order_id": "PO-008",
+      "purchased_item_id": "SPM-002",
+      "base_quantity": 1000,
+      "subtotal": 35000
+    },
+    {
+      "id": "POL-012",
+      "purchase_order_id": "PO-009",
+      "purchased_item_id": "SPM-012",
+      "base_quantity": 5000,
+      "subtotal": 210000
+    },
+    {
+      "id": "POL-013",
+      "purchase_order_id": "PO-009",
+      "purchased_item_id": "SPM-002",
+      "base_quantity": 12000,
+      "subtotal": 329004
+    },
+    {
+      "id": "POL-014",
+      "purchase_order_id": "PO-009",
+      "purchased_item_id": "SPM-009",
+      "base_quantity": 400,
+      "subtotal": 278000
+    },
+    {
+      "id": "POL-015",
+      "purchase_order_id": "PO-010",
+      "purchased_item_id": "SPM-009",
+      "base_quantity": 2000,
+      "subtotal": 1370000
+    },
+    {
+      "id": "POL-016",
+      "purchase_order_id": "PO-010",
+      "purchased_item_id": "SPM-002",
+      "base_quantity": 60000,
+      "subtotal": 1625040
+    },
+    {
+      "id": "POL-017",
+      "purchase_order_id": "PO-010",
+      "purchased_item_id": "SPM-012",
+      "base_quantity": 24000,
+      "subtotal": 959016
+    },
+    {
+      "id": "POL-018",
+      "purchase_order_id": "PO-011",
+      "purchased_item_id": "SPM-007",
+      "base_quantity": 1500,
+      "subtotal": 897000
+    },
+    {
+      "id": "POL-019",
+      "purchase_order_id": "PO-012",
+      "purchased_item_id": "SPM-008",
+      "base_quantity": 1500,
+      "subtotal": 313500
+    },
+    {
+      "id": "POL-020",
+      "purchase_order_id": "PO-013",
+      "purchased_item_id": "SPM-003",
+      "base_quantity": 10000,
+      "subtotal": 2980000
+    },
+    {
+      "id": "POL-021",
+      "purchase_order_id": "PO-013",
+      "purchased_item_id": "SPM-011",
+      "base_quantity": 380,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-022",
+      "purchase_order_id": "PO-014",
+      "purchased_item_id": "SPM-013",
+      "base_quantity": 28,
+      "subtotal": 30240
+    },
+    {
+      "id": "POL-023",
+      "purchase_order_id": "PO-014",
+      "purchased_item_id": "SPM-014",
+      "base_quantity": 1000,
+      "subtotal": 182520
+    },
+    {
+      "id": "POL-024",
+      "purchase_order_id": "PO-014",
+      "purchased_item_id": "SPM-015",
+      "base_quantity": 454,
+      "subtotal": 38880
+    },
+    {
+      "id": "POL-025",
+      "purchase_order_id": "PO-015",
+      "purchased_item_id": "SPM-016",
+      "base_quantity": 1000,
+      "subtotal": 118000
+    },
+    {
+      "id": "POL-026",
+      "purchase_order_id": "PO-015",
+      "purchased_item_id": "SPM-017",
+      "base_quantity": 630,
+      "subtotal": 69000
+    },
+    {
+      "id": "POL-027",
+      "purchase_order_id": "PO-015",
+      "purchased_item_id": "SPM-018",
+      "base_quantity": 1000,
+      "subtotal": 80000
+    },
+    {
+      "id": "POL-028",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-019",
+      "base_quantity": 1000,
+      "subtotal": 95000
+    },
+    {
+      "id": "POL-029",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-020",
+      "base_quantity": 750,
+      "subtotal": 184000
+    },
+    {
+      "id": "POL-030",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-021",
+      "base_quantity": 8,
+      "subtotal": 37000
+    },
+    {
+      "id": "POL-031",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-022",
+      "base_quantity": 8,
+      "subtotal": 32000
+    },
+    {
+      "id": "POL-032",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-023",
+      "base_quantity": 1400,
+      "subtotal": 120000
+    },
+    {
+      "id": "POL-033",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-024",
+      "base_quantity": 1000,
+      "subtotal": 35000
+    },
+    {
+      "id": "POL-034",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-025",
+      "base_quantity": 200,
+      "subtotal": 52000
+    },
+    {
+      "id": "POL-035",
+      "purchase_order_id": "PO-016",
+      "purchased_item_id": "SPM-026",
+      "base_quantity": 200,
+      "subtotal": 64000
+    },
+    {
+      "id": "POL-036",
+      "purchase_order_id": "PO-017",
+      "purchased_item_id": "SPM-012",
+      "base_quantity": 24000,
+      "subtotal": 1914000
+    },
+    {
+      "id": "POL-037",
+      "purchase_order_id": "PO-017",
+      "purchased_item_id": "SPM-027",
+      "base_quantity": 25000,
+      "subtotal": 490000
+    },
+    {
+      "id": "POL-038",
+      "purchase_order_id": "PO-018",
+      "purchased_item_id": "SPM-028",
+      "base_quantity": 750,
+      "subtotal": 194000
+    },
+    {
+      "id": "POL-039",
+      "purchase_order_id": "PO-018",
+      "purchased_item_id": "SPM-029",
+      "base_quantity": 750,
+      "subtotal": 194000
+    },
+    {
+      "id": "POL-040",
+      "purchase_order_id": "PO-018",
+      "purchased_item_id": "SPM-030",
+      "base_quantity": 1000,
+      "subtotal": 101000
+    },
+    {
+      "id": "POL-041",
+      "purchase_order_id": "PO-018",
+      "purchased_item_id": "SPM-031",
+      "base_quantity": 1000,
+      "subtotal": 136000
+    },
+    {
+      "id": "POL-042",
+      "purchase_order_id": "PO-018",
+      "purchased_item_id": "SPM-032",
+      "base_quantity": 500,
+      "subtotal": 26000
+    },
+    {
+      "id": "POL-043",
+      "purchase_order_id": "PO-019",
+      "purchased_item_id": "SPM-006",
+      "base_quantity": 1000,
+      "subtotal": 30000
+    },
+    {
+      "id": "POL-044",
+      "purchase_order_id": "PO-020",
+      "purchased_item_id": "SPM-033",
+      "base_quantity": 100,
+      "subtotal": 57000
+    },
+    {
+      "id": "POL-045",
+      "purchase_order_id": "PO-021",
+      "purchased_item_id": "SPM-034",
+      "base_quantity": 500,
+      "subtotal": 108000
+    },
+    {
+      "id": "POL-046",
+      "purchase_order_id": "PO-021",
+      "purchased_item_id": "SPM-011",
+      "base_quantity": 380,
+      "subtotal": 24000
+    },
+    {
+      "id": "POL-047",
+      "purchase_order_id": "PO-021",
+      "purchased_item_id": "SPM-035",
+      "base_quantity": 1000,
+      "subtotal": 84000
+    },
+    {
+      "id": "POL-048",
+      "purchase_order_id": "PO-022",
+      "purchased_item_id": "SPM-036",
+      "base_quantity": 1000,
+      "subtotal": 108000
+    },
+    {
+      "id": "POL-049",
+      "purchase_order_id": "PO-022",
+      "purchased_item_id": "SPM-037",
+      "base_quantity": 750,
+      "subtotal": 184000
+    },
+    {
+      "id": "POL-050",
+      "purchase_order_id": "PO-023",
+      "purchased_item_id": "SPM-033",
+      "base_quantity": 1000,
+      "subtotal": 510000
+    },
+    {
+      "id": "POL-062",
+      "purchase_order_id": "PO-025",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 1800,
+      "subtotal": 110000
+    },
+    {
+      "id": "POL-063",
+      "purchase_order_id": "PO-026",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 1800,
+      "subtotal": 110000
+    },
+    {
+      "id": "POL-064",
+      "purchase_order_id": "PO-027",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 1800,
+      "subtotal": 110000
+    },
+    {
+      "id": "POL-065",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-034",
+      "base_quantity": 1500,
+      "subtotal": 309000
+    },
+    {
+      "id": "POL-066",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-039",
+      "base_quantity": 6000,
+      "subtotal": 153000
+    },
+    {
+      "id": "POL-067",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-037",
+      "base_quantity": 750,
+      "subtotal": 185000
+    },
+    {
+      "id": "POL-068",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-028",
+      "base_quantity": 750,
+      "subtotal": 185000
+    },
+    {
+      "id": "POL-069",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-038",
+      "base_quantity": 30000,
+      "subtotal": 1100010
+    },
+    {
+      "id": "POL-070",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-020",
+      "base_quantity": 750,
+      "subtotal": 185000
+    },
+    {
+      "id": "POL-4a1751c7-1f30-4f58-939b-dd8bf57adc62",
+      "purchase_order_id": "PO-050",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 4800,
+      "subtotal": 329000
+    },
+    {
+      "id": "POL-9d695538-4d23-468a-aa65-eb93ac88e4c5",
+      "purchase_order_id": "PO-050",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 600,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-610e91c5-f7ae-4fdc-9e96-a059acc559be",
+      "purchase_order_id": "PO-051",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 60,
+      "subtotal": 144000
+    },
+    {
+      "id": "POL-a56512a6-fd98-4670-ae34-07dc1d6fffbf",
+      "purchase_order_id": "PO-052",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 60,
+      "subtotal": 144000
+    },
+    {
+      "id": "POL-a3804acd-eb18-42a1-a804-dacd4bec5bda",
+      "purchase_order_id": "PO-053",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 60,
+      "subtotal": 156000
+    },
+    {
+      "id": "POL-0d8be668-4caf-4184-b755-6ee912ae21d8",
+      "purchase_order_id": "PO-054",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 90,
+      "subtotal": 225000
+    },
+    {
+      "id": "POL-c9a413e4-f078-4037-8383-b0ef7966903f",
+      "purchase_order_id": "PO-055",
+      "purchased_item_id": "SPM-009",
+      "base_quantity": 2000,
+      "subtotal": 1600000
+    },
+    {
+      "id": "POL-a1835bc6-1e4a-4e5b-a10b-aa7c7dc5b511",
+      "purchase_order_id": "PO-055",
+      "purchased_item_id": "SPM-034",
+      "base_quantity": 2500,
+      "subtotal": 515000
+    },
+    {
+      "id": "POL-5849167c-0b3a-4c4f-b2b8-fa281222c62a",
+      "purchase_order_id": "PO-055",
+      "purchased_item_id": "SPM-020",
+      "base_quantity": 2250,
+      "subtotal": 555000
+    },
+    {
+      "id": "POL-0f35b83d-f844-4e4a-a36b-b6ef5c5bac59",
+      "purchase_order_id": "PO-055",
+      "purchased_item_id": "SPM-030",
+      "base_quantity": 2000,
+      "subtotal": 182000
+    },
+    {
+      "id": "POL-bedbd162-5a9a-437a-8fc2-d657395cf34d",
+      "purchase_order_id": "PO-055",
+      "purchased_item_id": "SPM-036",
+      "base_quantity": 5000,
+      "subtotal": 445000
+    },
+    {
+      "id": "POL-e1519ce5-9762-4876-ab86-548663876d6d",
+      "purchase_order_id": "PO-055",
+      "purchased_item_id": "SPM-042",
+      "base_quantity": 3000,
+      "subtotal": 270000
+    },
+    {
+      "id": "POL-78d18e58-9241-4332-95b2-b458f2ed1bb6",
+      "purchase_order_id": "PO-056",
+      "purchased_item_id": "SPM-047",
+      "base_quantity": 500,
+      "subtotal": 15000
+    },
+    {
+      "id": "POL-c10b5f94-f3a6-4932-ba51-3bc4cbc4f586",
+      "purchase_order_id": "PO-056",
+      "purchased_item_id": "SPM-048",
+      "base_quantity": 700,
+      "subtotal": 57000
+    },
+    {
+      "id": "POL-9a3a41d8-84e0-44dc-8e69-2f1e794ba992",
+      "purchase_order_id": "PO-056",
+      "purchased_item_id": "SPM-049",
+      "base_quantity": 425,
+      "subtotal": 37000
+    },
+    {
+      "id": "POL-fc0228e9-9afa-455e-8e65-bcd8234b0fb9",
+      "purchase_order_id": "PO-056",
+      "purchased_item_id": "SPM-050",
+      "base_quantity": 700,
+      "subtotal": 62000
+    },
+    {
+      "id": "POL-4ce45e55-b429-47f1-9612-fad18e037334",
+      "purchase_order_id": "PO-057",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 4800,
+      "subtotal": 329184
+    },
+    {
+      "id": "POL-1b9be4e7-a317-40b9-9ef9-4d3c9f2a68f2",
+      "purchase_order_id": "PO-057",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 600,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-fea6b46d-2c8a-499f-b6c5-ccc0e5883d61",
+      "purchase_order_id": "PO-058",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 90,
+      "subtotal": 225000
+    },
+    {
+      "id": "POL-940613af-757a-4431-b8c8-d2f368ea1005",
+      "purchase_order_id": "PO-059",
+      "purchased_item_id": "SPM-004",
+      "base_quantity": 500,
+      "subtotal": 92000
+    },
+    {
+      "id": "POL-190eaf37-c325-4648-8e1a-4f09f92c7818",
+      "purchase_order_id": "PO-059",
+      "purchased_item_id": "SPM-051",
+      "base_quantity": 500,
+      "subtotal": 183000
+    },
+    {
+      "id": "POL-8215dd25-7bf4-4f07-890e-1d5bae24adc9",
+      "purchase_order_id": "PO-059",
+      "purchased_item_id": "SPM-003",
+      "base_quantity": 10000,
+      "subtotal": 3140000
+    },
+    {
+      "id": "POL-525bb147-8e8b-4a17-a443-132fe685f319",
+      "purchase_order_id": "PO-060",
+      "purchased_item_id": "SPM-007",
+      "base_quantity": 3000,
+      "subtotal": 1914000
+    },
+    {
+      "id": "POL-08d1c9d8-b775-4377-98c2-82dba4e8e674",
+      "purchase_order_id": "PO-061",
+      "purchased_item_id": "SPM-033",
+      "base_quantity": 1000,
+      "subtotal": 630000
+    },
+    {
+      "id": "POL-071",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-036",
+      "base_quantity": 5000,
+      "subtotal": 450000
+    },
+    {
+      "id": "POL-072",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-031",
+      "base_quantity": 2000,
+      "subtotal": 240000
+    },
+    {
+      "id": "POL-073",
+      "purchase_order_id": "PO-028",
+      "purchased_item_id": "SPM-044",
+      "base_quantity": 1000,
+      "subtotal": 170000
+    },
+    {
+      "id": "POL-074",
+      "purchase_order_id": "PO-029",
+      "purchased_item_id": "SPM-039",
+      "base_quantity": 6000,
+      "subtotal": 153000
+    },
+    {
+      "id": "POL-075",
+      "purchase_order_id": "PO-029",
+      "purchased_item_id": "SPM-034",
+      "base_quantity": 2500,
+      "subtotal": 515000
+    },
+    {
+      "id": "POL-076",
+      "purchase_order_id": "PO-029",
+      "purchased_item_id": "SPM-030",
+      "base_quantity": 2000,
+      "subtotal": 182000
+    },
+    {
+      "id": "POL-077",
+      "purchase_order_id": "PO-029",
+      "purchased_item_id": "SPM-042",
+      "base_quantity": 2000,
+      "subtotal": 180000
+    },
+    {
+      "id": "POL-078",
+      "purchase_order_id": "PO-029",
+      "purchased_item_id": "SPM-031",
+      "base_quantity": 5000,
+      "subtotal": 595000
+    },
+    {
+      "id": "POL-079",
+      "purchase_order_id": "PO-029",
+      "purchased_item_id": "SPM-002",
+      "base_quantity": 60000,
+      "subtotal": 1625040
+    },
+    {
+      "id": "POL-080",
+      "purchase_order_id": "PO-030",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 4800,
+      "subtotal": 329184
+    },
+    {
+      "id": "POL-081",
+      "purchase_order_id": "PO-030",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 600,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-082",
+      "purchase_order_id": "PO-031",
+      "purchased_item_id": "SPM-003",
+      "base_quantity": 10000,
+      "subtotal": 3140000
+    },
+    {
+      "id": "POL-083",
+      "purchase_order_id": "PO-032",
+      "purchased_item_id": "SPM-007",
+      "base_quantity": 2000,
+      "subtotal": 1196000
+    },
+    {
+      "id": "POL-084",
+      "purchase_order_id": "PO-033",
+      "purchased_item_id": "SPM-033",
+      "base_quantity": 1000,
+      "subtotal": 696600
+    },
+    {
+      "id": "POL-085",
+      "purchase_order_id": "PO-034",
+      "purchased_item_id": "SPM-033",
+      "base_quantity": 1000,
+      "subtotal": 550000
+    },
+    {
+      "id": "POL-086",
+      "purchase_order_id": "PO-035",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 4800,
+      "subtotal": 329184
+    },
+    {
+      "id": "POL-087",
+      "purchase_order_id": "PO-035",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 600,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-088",
+      "purchase_order_id": "PO-036",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 4800,
+      "subtotal": 329184
+    },
+    {
+      "id": "POL-089",
+      "purchase_order_id": "PO-036",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 600,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-091",
+      "purchase_order_id": "PO-038",
+      "purchased_item_id": "SPM-022",
+      "base_quantity": 24,
+      "subtotal": 114000
+    },
+    {
+      "id": "POL-092",
+      "purchase_order_id": "PO-039",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 40,
+      "subtotal": 100000
+    },
+    {
+      "id": "POL-093",
+      "purchase_order_id": "PO-040",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 30,
+      "subtotal": 66000
+    },
+    {
+      "id": "POL-094",
+      "purchase_order_id": "PO-041",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 20,
+      "subtotal": 40000
+    },
+    {
+      "id": "POL-095",
+      "purchase_order_id": "PO-042",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 50,
+      "subtotal": 100000
+    },
+    {
+      "id": "POL-096",
+      "purchase_order_id": "PO-043",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 30,
+      "subtotal": 60000
+    },
+    {
+      "id": "POL-097",
+      "purchase_order_id": "PO-044",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 50,
+      "subtotal": 120000
+    },
+    {
+      "id": "POL-098",
+      "purchase_order_id": "PO-045",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 70,
+      "subtotal": 168000
+    },
+    {
+      "id": "POL-099",
+      "purchase_order_id": "PO-046",
+      "purchased_item_id": "SPM-046",
+      "base_quantity": 100,
+      "subtotal": 29160
+    },
+    {
+      "id": "POL-100",
+      "purchase_order_id": "PO-046",
+      "purchased_item_id": "SPM-014",
+      "base_quantity": 500,
+      "subtotal": 123120
+    },
+    {
+      "id": "POL-101",
+      "purchase_order_id": "PO-047",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 4800,
+      "subtotal": 329000
+    },
+    {
+      "id": "POL-102",
+      "purchase_order_id": "PO-047",
+      "purchased_item_id": "SPM-043",
+      "base_quantity": 600,
+      "subtotal": 0
+    },
+    {
+      "id": "POL-103",
+      "purchase_order_id": "PO-048",
+      "purchased_item_id": "SPM-044",
+      "base_quantity": 5000,
+      "subtotal": 850000
+    },
+    {
+      "id": "POL-104",
+      "purchase_order_id": "PO-048",
+      "purchased_item_id": "SPM-041",
+      "base_quantity": 2500,
+      "subtotal": 460000
+    },
+    {
+      "id": "POL-105",
+      "purchase_order_id": "PO-048",
+      "purchased_item_id": "SPM-017",
+      "base_quantity": 3150,
+      "subtotal": 310000
+    },
+    {
+      "id": "POL-106",
+      "purchase_order_id": "PO-048",
+      "purchased_item_id": "SPM-027",
+      "base_quantity": 25000,
+      "subtotal": 490000
+    },
+    {
+      "id": "POL-107",
+      "purchase_order_id": "PO-049",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 60,
+      "subtotal": 132000
+    },
+    {
+      "id": "POL-700ae621-6c3f-4de5-ba18-0606d6b54c44",
+      "purchase_order_id": "PO-037",
+      "purchased_item_id": "SPM-039",
+      "base_quantity": 4000,
+      "subtotal": 102000
+    },
+    {
+      "id": "POL-f231cf5c-8db4-4ee2-9031-8e58d43f512e",
+      "purchase_order_id": "PO-037",
+      "purchased_item_id": "SPM-036",
+      "base_quantity": 5000,
+      "subtotal": 445000
+    },
+    {
+      "id": "POL-32a66d55-b7b2-4edc-8b9a-ead174194396",
+      "purchase_order_id": "PO-037",
+      "purchased_item_id": "SPM-037",
+      "base_quantity": 1500,
+      "subtotal": 370000
+    },
+    {
+      "id": "POL-98205694-8c74-4719-b8ec-86f863dc4303",
+      "purchase_order_id": "PO-037",
+      "purchased_item_id": "SPM-020",
+      "base_quantity": 1500,
+      "subtotal": 370000
+    },
+    {
+      "id": "POL-f9d45410-c6a1-4497-be12-15d147ddaab3",
+      "purchase_order_id": "PO-037",
+      "purchased_item_id": "SPM-029",
+      "base_quantity": 1500,
+      "subtotal": 370000
+    },
+    {
+      "id": "POL-3b2b0224-126d-49b8-81ed-361881dabc41",
+      "purchase_order_id": "PO-037",
+      "purchased_item_id": "SPM-012",
+      "base_quantity": 48000,
+      "subtotal": 1914000
+    },
+    {
+      "id": "POL-d4aeac51-bac2-4a08-82e9-cc8f29ab47bf",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-038",
+      "base_quantity": 12000,
+      "subtotal": 460008
+    },
+    {
+      "id": "POL-1fef5147-b7ae-49b2-a0d2-66cfdc9a47d2",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-034",
+      "base_quantity": 1500,
+      "subtotal": 309000
+    },
+    {
+      "id": "POL-4f69f5c1-a221-416c-94c4-fe9fef0dd465",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-041",
+      "base_quantity": 1500,
+      "subtotal": 276000
+    },
+    {
+      "id": "POL-c163706e-8448-44f2-9d9f-1d541194d632",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-022",
+      "base_quantity": 32,
+      "subtotal": 128000
+    },
+    {
+      "id": "POL-7996bcb3-4d17-4ce8-9443-bf74ecabf390",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-039",
+      "base_quantity": 6000,
+      "subtotal": 153000
+    },
+    {
+      "id": "POL-365b12c0-69f9-47ba-9bf8-7c02ada7fecc",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-035",
+      "base_quantity": 4000,
+      "subtotal": 288000
+    },
+    {
+      "id": "POL-38179b42-728c-4272-a2c5-b319e622835e",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-036",
+      "base_quantity": 4000,
+      "subtotal": 356000
+    },
+    {
+      "id": "POL-2f0d7957-b48b-4a89-a246-bc6c05058431",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-030",
+      "base_quantity": 4000,
+      "subtotal": 364000
+    },
+    {
+      "id": "POL-a9627c8e-c63b-43ad-b613-a37304921336",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-031",
+      "base_quantity": 4000,
+      "subtotal": 476000
+    },
+    {
+      "id": "POL-834da166-2a72-4c1e-8995-76c49189f823",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-042",
+      "base_quantity": 4000,
+      "subtotal": 360000
+    },
+    {
+      "id": "POL-91391d4a-cfab-4568-85ef-de4cac88f3ca",
+      "purchase_order_id": "PO-024",
+      "purchased_item_id": "SPM-040",
+      "base_quantity": 6000,
+      "subtotal": 942000
+    },
+    {
+      "id": "POL-9d64828d-41ff-4162-8155-e1106aac128f",
+      "purchase_order_id": "PO-062",
+      "purchased_item_id": "SPM-045",
+      "base_quantity": 60,
+      "subtotal": 170000
+    },
+    {
+      "id": "POL-5a16b8c6-2018-4825-ba3a-e470b3f42435",
+      "purchase_order_id": "PO-063",
+      "purchased_item_id": "SPM-004",
+      "base_quantity": 5000,
+      "subtotal": 920000
+    }
+  ],
+  "stockIssues": [
+    {
+      "id": "ISS-00001",
+      "purchased_item_id": "SPM-001",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00002",
+      "purchased_item_id": "SPM-002",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 114000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00003",
+      "purchased_item_id": "SPM-003",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 24500,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00004",
+      "purchased_item_id": "SPM-004",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 2000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00005",
+      "purchased_item_id": "SPM-006",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 2000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00006",
+      "purchased_item_id": "SPM-007",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 4000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00007",
+      "purchased_item_id": "SPM-009",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 2600,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00008",
+      "purchased_item_id": "SPM-010",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1284,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00009",
+      "purchased_item_id": "SPM-011",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1140,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00010",
+      "purchased_item_id": "SPM-012",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 70000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00011",
+      "purchased_item_id": "SPM-013",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 28,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00012",
+      "purchased_item_id": "SPM-014",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1500,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00013",
+      "purchased_item_id": "SPM-015",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 454,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00014",
+      "purchased_item_id": "SPM-016",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00015",
+      "purchased_item_id": "SPM-017",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 630,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00016",
+      "purchased_item_id": "SPM-018",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00017",
+      "purchased_item_id": "SPM-019",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00018",
+      "purchased_item_id": "SPM-020",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 3750,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00019",
+      "purchased_item_id": "SPM-021",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 8,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00020",
+      "purchased_item_id": "SPM-022",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 56,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00021",
+      "purchased_item_id": "SPM-023",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1400,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00022",
+      "purchased_item_id": "SPM-024",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00023",
+      "purchased_item_id": "SPM-025",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 200,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00024",
+      "purchased_item_id": "SPM-026",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 200,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00025",
+      "purchased_item_id": "SPM-027",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 50000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00026",
+      "purchased_item_id": "SPM-028",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1500,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00027",
+      "purchased_item_id": "SPM-029",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 1500,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00028",
+      "purchased_item_id": "SPM-030",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 6000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00029",
+      "purchased_item_id": "SPM-031",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 8000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00030",
+      "purchased_item_id": "SPM-032",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 500,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00031",
+      "purchased_item_id": "SPM-033",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 3100,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00032",
+      "purchased_item_id": "SPM-034",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 5000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00033",
+      "purchased_item_id": "SPM-035",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 3000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00034",
+      "purchased_item_id": "SPM-036",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 15000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00035",
+      "purchased_item_id": "SPM-037",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 2250,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00036",
+      "purchased_item_id": "SPM-038",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 27000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00037",
+      "purchased_item_id": "SPM-039",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 18000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00038",
+      "purchased_item_id": "SPM-040",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 5000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00039",
+      "purchased_item_id": "SPM-041",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 2000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00040",
+      "purchased_item_id": "SPM-042",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 5000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00041",
+      "purchased_item_id": "SPM-043",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 35100,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00042",
+      "purchased_item_id": "SPM-044",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 2000,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00043",
+      "purchased_item_id": "SPM-045",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 747,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00044",
+      "purchased_item_id": "SPM-046",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 100,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00045",
+      "purchased_item_id": "SPM-047",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 500,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00046",
+      "purchased_item_id": "SPM-048",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 700,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00047",
+      "purchased_item_id": "SPM-049",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 425,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00048",
+      "purchased_item_id": "SPM-050",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 700,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00049",
+      "purchased_item_id": "SPM-051",
+      "issued_at": "2026-08-09T15:02:24.914754+00:00",
+      "base_quantity": 500,
+      "source": "STOCKTAKE",
+      "session_id": "STK-001",
+      "issue_slip_id": null,
+      "note": "Kiểm kê định kỳ 2026-08-09"
+    },
+    {
+      "id": "ISS-00050",
+      "purchased_item_id": "SPM-002",
+      "issued_at": "2026-08-09T15:04:00+00:00",
+      "base_quantity": 1000,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00001",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00051",
+      "purchased_item_id": "SPM-003",
+      "issued_at": "2026-08-10T05:42:00+00:00",
+      "base_quantity": 500,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00002",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00052",
+      "purchased_item_id": "SPM-004",
+      "issued_at": "2026-08-10T05:42:00+00:00",
+      "base_quantity": 500,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00002",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00053",
+      "purchased_item_id": "SPM-039",
+      "issued_at": "2026-08-10T05:42:00+00:00",
+      "base_quantity": 2000,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00002",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00054",
+      "purchased_item_id": "SPM-038",
+      "issued_at": "2026-08-10T05:42:00+00:00",
+      "base_quantity": 1000,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00002",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00055",
+      "purchased_item_id": "SPM-002",
+      "issued_at": "2026-08-11T04:26:00+00:00",
+      "base_quantity": 1000,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00003",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00056",
+      "purchased_item_id": "SPM-012",
+      "issued_at": "2026-08-11T11:37:00+00:00",
+      "base_quantity": 1000,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00004",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00057",
+      "purchased_item_id": "SPM-007",
+      "issued_at": "2026-08-11T11:37:00+00:00",
+      "base_quantity": 500,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00004",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00058",
+      "purchased_item_id": "SPM-008",
+      "issued_at": "2026-08-12T10:52:00+00:00",
+      "base_quantity": 500,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00005",
+      "note": "Khác"
+    },
+    {
+      "id": "ISS-00059",
+      "purchased_item_id": "SPM-002",
+      "issued_at": "2026-08-12T23:23:00+00:00",
+      "base_quantity": 1000,
+      "source": "MANUAL",
+      "session_id": null,
+      "issue_slip_id": "ISL-00006",
+      "note": "Khác"
+    }
+  ],
+  "purchasedItems": [
+    {
+      "id": "SPM-001",
+      "name": "Sữa tươi TH True Milk",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-002",
+      "name": "Sữa tươi Mlekovita",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-004",
+      "name": "Bột cà phê truyền thống Phin Đậm",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-005",
+      "name": "Đá viên",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-006",
+      "name": "Đường trắng",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-007",
+      "name": "Bột cacao DK Harvest",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-008",
+      "name": "Bột milkfoam muối biển",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-009",
+      "name": "Bột matcha trà xanh Cozy",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-010",
+      "name": "Sữa đặc Vinamilk",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-011",
+      "name": "Sữa đặc Ngôi Sao Phương Nam",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-012",
+      "name": "Sữa đặc La rosee",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-013",
+      "name": "Tinh dầu vani Rayner",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-015",
+      "name": "Kem béo thực vật Rich",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-016",
+      "name": "Bột frappe Base Dans",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-017",
+      "name": "Xốt caramel Golden Farm",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-018",
+      "name": "Kem toffee caramel",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-019",
+      "name": "Sinh tố đào Golden Farm",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-020",
+      "name": "Siro đào Torani",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-021",
+      "name": "Đào ngâm Rich",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-022",
+      "name": "Đào ngâm Countree",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-023",
+      "name": "Mật ong hoa cà phê Kenbar",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-024",
+      "name": "Đường mạch nha/maltose",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-025",
+      "name": "Trà xanh lài ngọc lan Kenbar",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-026",
+      "name": "Hồng trà ngũ vị Kenbar",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-027",
+      "name": "Nước đường Glofood",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-028",
+      "name": "Siro xoài Torani",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-003",
+      "name": "Bột cà phê MR.PHIN Robusta Dak Mil",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-029",
+      "name": "Siro việt quất Torani",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-030",
+      "name": "Sinh tố xoài Berrino",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-031",
+      "name": "Sinh tố việt quất Berrino",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-032",
+      "name": "Bột kem béo Hà Lan",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-033",
+      "name": "Dâu sấy",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-034",
+      "name": "Bột milkfoam phô mai DP Food",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-035",
+      "name": "Bột sữa B One",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-036",
+      "name": "Sinh tố dâu Berrino",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-037",
+      "name": "Siro dâu Torani",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-038",
+      "name": "Sữa yến mạch Oatside",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-039",
+      "name": "Trân châu trắng Bibi",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-041",
+      "name": "Bột milkfoam muối biển DP Food",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-042",
+      "name": "Sinh tố đào Berrino",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-043",
+      "name": "Sữa chua không đường Vinamilk",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-044",
+      "name": "Trà lài Lạc Vương",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-045",
+      "name": "Trứng gà",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-046",
+      "name": "Bột whipping cream không đường",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-014",
+      "name": "Kem whipping Anchor",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-047",
+      "name": "Thạch dừa Thanh Bình",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-048",
+      "name": "Siro quýt Mama Rosa",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-049",
+      "name": "Quýt ngâm Coutree",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-050",
+      "name": "Siro quýt Goldenfarm",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-051",
+      "name": "Bột cà phê MR.PHIN Pha Phin Truyền Thống",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-040",
+      "name": "Hồng trà Lộc Phát",
+      "default_unit_id": null
+    },
+    {
+      "id": "SPM-052",
+      "name": "Khoai lang",
+      "default_unit_id": null
+    }
+  ],
+  "units": [
+    {
+      "id": "U-002",
+      "name": "kg"
+    },
+    {
+      "id": "U-003",
+      "name": "ml"
+    },
+    {
+      "id": "U-004",
+      "name": "lít"
+    },
+    {
+      "id": "U-005",
+      "name": "Hộp"
+    },
+    {
+      "id": "U-006",
+      "name": "Thùng"
+    },
+    {
+      "id": "U-007",
+      "name": "Bao"
+    },
+    {
+      "id": "U-008",
+      "name": "Túi"
+    },
+    {
+      "id": "UNT-001",
+      "name": "Bình"
+    },
+    {
+      "id": "UNT-002",
+      "name": "Bộ"
+    },
+    {
+      "id": "UNT-003",
+      "name": "Cái"
+    },
+    {
+      "id": "UNT-004",
+      "name": "Can"
+    },
+    {
+      "id": "UNT-005",
+      "name": "Cây"
+    },
+    {
+      "id": "UNT-006",
+      "name": "Chai"
+    },
+    {
+      "id": "UNT-007",
+      "name": "Chiếc"
+    },
+    {
+      "id": "UNT-008",
+      "name": "Combo"
+    },
+    {
+      "id": "UNT-009",
+      "name": "Combo 10"
+    },
+    {
+      "id": "UNT-010",
+      "name": "Combo 2"
+    },
+    {
+      "id": "UNT-011",
+      "name": "Combo 5"
+    },
+    {
+      "id": "UNT-012",
+      "name": "Combo 50"
+    },
+    {
+      "id": "UNT-013",
+      "name": "Cuộn"
+    },
+    {
+      "id": "UNT-014",
+      "name": "Gói"
+    },
+    {
+      "id": "UNT-015",
+      "name": "Lon"
+    },
+    {
+      "id": "UNT-016",
+      "name": "Xấp"
+    },
+    {
+      "id": "UNT-017",
+      "name": "g"
+    },
+    {
+      "id": "UNT-018",
+      "name": "miếng"
+    },
+    {
+      "id": "U-001",
+      "name": "DELETED_gram"
+    },
+    {
+      "id": "U-009",
+      "name": "trái"
+    },
+    {
+      "id": "U-010",
+      "name": "Ca"
+    }
+  ]
+}
