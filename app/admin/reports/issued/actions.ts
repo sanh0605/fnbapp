@@ -3,7 +3,7 @@
 import { findAll, findAllNoCache } from "@/lib/sheets_db";
 import { requireAdmin } from "@/lib/auth";
 import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/issue-costing-inputs";
-import { computeIssuedItemFigures, computeIssuedEventFigures } from "@/lib/issued-value-report";
+import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/issued-value-report";
 import { displayMoney } from "@/lib/display-rounding";
 
 export interface IssuedItemRow {
@@ -24,10 +24,16 @@ export interface IssuedEventRow {
   value: number;
 }
 
+export interface IssuedMonthRow {
+  yearMonth: string;
+  value: number;
+}
+
 export interface IssuedValueReport {
   grandTotal: number;
   items: IssuedItemRow[];
   events: IssuedEventRow[];
+  months: IssuedMonthRow[];
 }
 
 // Plan G: a read-only monitoring page for the value of goods issued so far.
@@ -95,5 +101,11 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
     value: displayMoney(f.valueExact),
   }));
 
-  return { grandTotal, items, events };
+  const monthFigures = computeIssuedMonthFigures(purchases, allIssues);
+  const months: IssuedMonthRow[] = monthFigures.map(f => ({
+    yearMonth: f.yearMonth,
+    value: displayMoney(f.valueExact),
+  }));
+
+  return { grandTotal, items, events, months };
 }

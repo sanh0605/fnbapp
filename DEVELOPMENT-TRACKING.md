@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-13 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan G G5: sidebar entry, and a third tab by month
+
+**1. Sidebar.** `app/admin/layout.tsx` repointed from `/admin/reports/stock` ("Báo cáo Tồn kho") to `/admin/reports/issued` ("Giá trị hàng đã xuất") -- owner decision 2026-08-13, given the old page's three panels (`StockTable`, `ReorderSuggestionTable`, `ShiftStockCheckPanel`) exist nowhere else. `app/admin/reports/stock` is not deleted -- stays on disk, reachable by URL, confirmed still in `npm run build`'s route list. A comment at the changed line records that leaving it is the decision, not an oversight, so it does not read as dead code to a later cleanup.
+
+**2. Third tab "Theo tháng" -- reverses plan §4's "no period filter."** Argued against a period filter twice on the ground that months mislead before a second count; the owner heard it and asked for the tab anyway. Updated §4 in the same commit to record the reversal and why, rather than leaving the plan contradicting the code (`docs/superpowers/plans/2026-08-13-issued-value-page.md`).
+
+- One row per calendar month, newest first, from the earliest month with a purchase or an issue through the current month -- zero months shown, not hidden. New `computeIssuedMonthFigures` in `lib/issued-value-report.ts` (same file as the tab-2 derivation, same reason it is not in `actions.ts`: that file is `"use server"`, and this is a plain synchronous function). Values from `computePeriodIssuedValue` -- no new cost definition, plan §3/§5 still hold. Month boundaries from `toSaigonUtcRange`, the same helper `app/admin/reports/actions.ts` already uses -- no hand-rolled timezone arithmetic.
+- **The G5 sum gate, same shape as §5's:** consecutive months' boundaries are adjacent by construction (`toSaigonUtcRange`'s end is `23:59:59.999`, the next month's start is `00:00:00.000` the next instant), so every purchase/issue falls into exactly one month and the months partition the range with no gap or overlap. Verified against the real snapshot (sum of exact per-month values minus the exact grand total = 0) and against a synthetic case with issues placed at the exact millisecond on either side of a month boundary, proving neither event's value leaks into the other's month. Proved the gate has teeth before trusting it: a one-line mutation (`+ 1` on every month's value) was caught by 4 of the new tests at once, then reverted clean (`git diff` on `lib/issued-value-report.ts` after revert shows only the real additions, no mutation marker).
+- A short Vietnamese note above the list, in plain words rather than accounting language, as specified: months before the first stocktake read 0đ because nothing had been counted yet, not because nothing was used.
+- **Live figures, reported for the owner to check against the total:** March-July 2026 all read **0đ**; August 2026 reads **35.616.236đ** (the whole total -- every issue in the live data falls in August). Sum of the six months' exact values matches the exact grand total exactly (difference 0).
+
+**Mobile-first, checked not assumed:** the tab strip now holds three items. Estimated the longest label ("Theo nguyên liệu", ~128px rendered) against a 360px-wide phone's available per-tab width (~100px after padding) -- it does not fit on one line at that width. Rather than shrinking text or truncating, the tab buttons wrap to two lines (`leading-tight`, no `whitespace-nowrap`, `min-h-[44px]` as a floor, not a fixed height, so a wrapped label still gets a real tap target, just a taller one).
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1094 -> 1099 (+5, all green)**. `check-rules-current` clean. `npm run build` succeeds, `/admin/reports/stock` still in the route list (not deleted). Not touched: `lib/issue-costing.ts`, POS files, OPEN-ITEMS 39/40, per-drink cost, editing affordances.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-13 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan G G4: two display fixes on the issued-value page
 
 **Trigger:** owner review of Plan G found two display defects, both display-only (no logic change).

@@ -117,4 +117,21 @@ describe("getIssuedValueReport", () => {
     const stocktakeEvent = report.events.find(e => e.kind === "STOCKTAKE")!;
     expect(stocktakeEvent.label).toBe("Kiểm kê định kỳ");
   });
+
+  // Plan G G5: tab "Theo tháng". June and July read 0đ -- shown, not
+  // hidden -- because nothing had been counted yet, not because nothing was
+  // used. August carries the whole rounded total.
+  it("tab 3 (by month): June and July read 0đ, August carries the rounded grand total", async () => {
+    mockLiveSnapshot();
+    const report = await getIssuedValueReport();
+    const june = report.months.find(m => m.yearMonth === "2026-06");
+    const july = report.months.find(m => m.yearMonth === "2026-07");
+    const august = report.months.find(m => m.yearMonth === "2026-08");
+
+    expect(june).toBeDefined();
+    expect(july).toBeDefined();
+    expect(june!.value).toBe(0);
+    expect(july!.value).toBe(0);
+    expect(august!.value).toBe(35_616_236);
+  });
 });

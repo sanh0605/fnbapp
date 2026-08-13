@@ -68,7 +68,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       children: [
         { name: "Tổng kết ngày", href: "/admin/reports/daily" },
         { name: "Báo cáo Bán hàng", href: "/admin/reports/sales" },
-        { name: "Báo cáo Tồn kho", href: "/admin/reports/stock" },
+        // Owner decision 2026-08-13 (Plan G G5): repointed from
+        // /admin/reports/stock to the new issued-value page. The old
+        // page's three panels (StockTable, ReorderSuggestionTable,
+        // ShiftStockCheckPanel) live nowhere else in the app and are NOT
+        // deleted -- app/admin/reports/stock stays on disk, reachable by
+        // URL, so restoring this link is a one-line change if ever needed.
+        { name: "Giá trị hàng đã xuất", href: "/admin/reports/issued" },
       ]
     },
     {

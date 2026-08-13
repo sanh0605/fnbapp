@@ -1,5 +1,7 @@
-import { computeIssueCosting, type Purchase, type Issue } from "@/lib/issue-costing";
+import { computeIssueCosting, computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/issue-costing";
 import { buildIssueCostingIssues } from "@/lib/issue-costing-inputs";
+import { toSaigonUtcRange } from "@/lib/report-time";
+import { toSaigonIsoString } from "@/lib/datetime";
 
 // Plan G. Split out of app/admin/reports/issued/actions.ts (not defined
 // there) because that file is "use server" -- every export from a "use
@@ -125,4 +127,76 @@ export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchas
 
   // Newest first -- matches getRecentIssueSlips's own ordering.
   return eventFigures.reverse();
+}
+
+export type IssuedMonthFigure = {
+  yearMonth: string; // "YYYY-MM", Saigon calendar
+  valueExact: number;
+};
+
+function parseYearMonth(ym: string): { year: number; month: number } {
+  const [year, month] = ym.split("-").map(Number);
+  return { year, month }; // month is 1-indexed
+}
+
+function formatYearMonth(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function nextYearMonth(ym: string): string {
+  const { year, month } = parseYearMonth(ym);
+  return month === 12 ? formatYearMonth(year + 1, 1) : formatYearMonth(year, month + 1);
+}
+
+function lastDayOfMonth(year: number, month: number): number {
+  // Date.UTC(year, month, 0) -- month here is 1-indexed, so this lands on
+  // day 0 of the month AFTER the one being measured, i.e. the last day of
+  // the target month. Plain UTC arithmetic, no timezone ambiguity.
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+// Tab "Theo tháng" (Plan G G5, reversing section 4's original "no period
+// filter"). One row per calendar month, in Asia/Saigon terms, from the
+// earliest month with a purchase or an issue through the current month --
+// zero months included, not hidden.
+//
+// Section 3 and 5 still hold: no second cost definition. Each month's value
+// comes from computePeriodIssuedValue, the same function
+// app/admin/reports/actions.ts already uses for getPnLDataV2's totalCOGS,
+// with Asia/Saigon month boundaries from toSaigonUtcRange (the same helper
+// that file uses for its own date filters) -- no hand-rolled timezone
+// arithmetic.
+//
+// Consecutive months' boundaries are adjacent by construction
+// (toSaigonUtcRange's end is 23:59:59.999, the next month's start is
+// 00:00:00.000 the same instant later), so every purchase/issue falls into
+// exactly one month and the months partition the full range with no gap and
+// no overlap -- which is what makes the section 5-style sum gate hold here
+// too: summed exactly, the months equal the exact grand total.
+export function computeIssuedMonthFigures(purchases: Purchase[], allIssues: Issue[]): IssuedMonthFigure[] {
+  const allTimestamps = [
+    ...purchases.map(p => new Date(p.at).getTime()),
+    ...allIssues.map(i => new Date(i.at).getTime()),
+  ];
+  if (allTimestamps.length === 0) return [];
+
+  const earliestYearMonth = toSaigonIsoString(new Date(Math.min(...allTimestamps))).slice(0, 7);
+  const currentYearMonth = toSaigonIsoString(new Date()).slice(0, 7);
+
+  const months: string[] = [];
+  for (let ym = earliestYearMonth; ym <= currentYearMonth; ym = nextYearMonth(ym)) {
+    months.push(ym);
+  }
+
+  const figures: IssuedMonthFigure[] = months.map(ym => {
+    const { year, month } = parseYearMonth(ym);
+    const startDate = `${ym}-01`;
+    const endDate = `${ym}-${String(lastDayOfMonth(year, month)).padStart(2, "0")}`;
+    const range = toSaigonUtcRange(startDate, endDate)!;
+    const valueExact = computePeriodIssuedValue(purchases, allIssues, range.startUtc, range.endUtc);
+    return { yearMonth: ym, valueExact };
+  });
+
+  // Newest first -- matches the events tab.
+  return figures.reverse();
 }

@@ -62,7 +62,7 @@ nicety.
 
 ## 4. Scope
 
-One page, two tabs, no filters.
+One page, three tabs, no editing.
 
 - **Tab "Theo nguyên liệu"** — total at top, then one card per purchased item:
   issued quantity, issued value, closing value. Sorted by issued value
@@ -70,10 +70,26 @@ One page, two tabs, no filters.
 - **Tab "Theo lần xuất"** — one card per stocktake session and per manual slip:
   date, what it was (`note` for a slip, the session for a count), number of
   items, and that event's value.
+- **Tab "Theo tháng"** (G5, reversing the "no period filter" line below) — one
+  row per calendar month, newest first, from the earliest month with a
+  purchase or an issue through the current month. Zero months are shown, not
+  hidden — June and July reading 0đ is information. A short line above the
+  list, in plain words rather than accounting language, says why: those
+  months read 0đ because nothing had been counted yet, not because nothing
+  was used.
 
-**Deliberately excluded**, each for a reason:
-- **No period filter.** §1: months mislead until the second count. Adding one
-  invites the exact misreading the page exists to avoid.
+**Correction, G5 (2026-08-13).** The line below was written 2026-08-13
+morning and held for one full task (G1-G4): **"No period filter. §1: months
+mislead until the second count. Adding one invites the exact misreading the
+page exists to avoid."** Argued against a period filter twice on exactly this
+ground. The owner heard the argument both times and asked for a by-month tab
+anyway — not a case of the argument being wrong, but of the owner weighing it
+against wanting the number and choosing to see it, with the caveat carried on
+the tab itself rather than by not building it. The tab exists because of
+that decision, not because the original concern stopped applying; the note
+above is how that concern still shows up on the page.
+
+**Still excluded, each for a reason:**
 - **No per-drink cost.** Issue-based costing knows what left stock, not which
   drink used it — the same reason `getPnLDataV2` dropped per-product margin.
 - **No editing.** Read-only. Issue slips are created and reversed on their own
