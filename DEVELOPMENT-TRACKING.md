@@ -4,6 +4,21 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-13 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan G G4: two display fixes on the issued-value page
+
+**Trigger:** owner review of Plan G found two display defects, both display-only (no logic change).
+
+1. **Blank unit on every card.** `purchased_items.default_unit_id` is null for all 52 rows (OPEN-ITEMS 41, measured 2026-08-13) -- `app/admin/reports/issued/actions.ts` sourced the unit from it and always got `""`. Verified independently before fixing, not trusted from the open-items note alone (`scratchpad/verify-g4-units.ts`, not committed): 52/52 null `default_unit_id`; 0 items with zero `ACTIVE` `UOM_Conversions` rows; **0 items whose `ACTIVE` conversions disagree on `base_unit`** -- the "stop and tell me" condition never triggered. Sourced the unit from `UOM_Conversions.base_unit` instead, the same lookup `getIssueSlipFormData` already uses for `baseUnitName` (`app/admin/inventory/issue-slips/actions.ts:55`) -- that screen's own identical defect (`unitName` from `default_unit_id`, same file, line 81) is untouched, per the instruction not to make this a drive-by fix of adjacent code; it stays open as OPEN-ITEMS 41, the owner's call.
+2. **Session code on the stocktake card.** `lib/issued-value-report.ts`'s label read `Kiểm kê định kỳ · STK-001` -- a code read to the owner, against `CLAUDE.md` section 5. The date is already on the card; the label is now `Kiểm kê định kỳ` alone.
+
+**New test, as instructed:** the existing suite passed with every unit blank -- nothing caught it, which is how this reached review. Added an assertion that every item's `unitName` is non-empty against the real snapshot fixture (extended with a `uomConversions` slice, 57 real rows, fetched live the same way the rest of the fixture was), plus a check on the largest item's real resolved unit (`g`), plus a check that the stocktake label carries no code.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1092 -> 1094 (+2, all green)**. `check-rules-current` clean. `npm run build` succeeds. Confirmed against live data directly (`scratchpad/verify-g4-live.ts`, not committed): 0/50 items with a blank unit, stocktake label reads exactly `"Kiểm kê định kỳ"`. `git diff` on `app/admin/inventory/issue-slips/actions.ts` is empty -- the sibling screen's identical defect was not touched.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-13 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan G: a read-only page showing the value of goods issued
 
 **Trigger:** `docs/superpowers/plans/2026-08-13-issued-value-page.md`. Owner asked for a temporary monitoring page mid-session; Plan F (POS split) stays paused at F2b. Three tasks, each its own commit: G1 extract, G2 page + action, G3 tests.

@@ -89,7 +89,10 @@ export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchas
       group = {
         key,
         kind: isStocktake ? "STOCKTAKE" : "MANUAL",
-        label: isStocktake ? `Kiểm kê định kỳ · ${groupId}` : (row.note?.trim() || "Không có ghi chú"),
+        // CLAUDE.md section 5: never read a code to the owner. The date is
+        // already on the card, so the session id adds nothing a person
+        // reading the card needs.
+        label: isStocktake ? "Kiểm kê định kỳ" : (row.note?.trim() || "Không có ghi chú"),
         at: atMs,
         rows: [],
       };

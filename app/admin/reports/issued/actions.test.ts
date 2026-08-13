@@ -38,6 +38,7 @@ describe("getIssuedValueReport", () => {
     (findAll as any).mockImplementation((sheet: string) => {
       if (sheet === "Purchased_Items") return liveSnapshot.purchasedItems;
       if (sheet === "Units") return liveSnapshot.units;
+      if (sheet === "UOM_Conversions") return liveSnapshot.uomConversions;
       throw new Error(`unexpected findAll sheet: ${sheet}`);
     });
   }
@@ -91,5 +92,29 @@ describe("getIssuedValueReport", () => {
     expect(report.events).toHaveLength(7);
     expect(report.events.filter(e => e.kind === "STOCKTAKE")).toHaveLength(1);
     expect(report.events.filter(e => e.kind === "MANUAL")).toHaveLength(6);
+  });
+
+  // OPEN-ITEMS 41 / Plan G G4: purchased_items.default_unit_id is null for
+  // every row, so the earlier version of this action (sourcing the unit
+  // straight from that column) rendered a blank unit on every card, and this
+  // suite passed with it blank -- nothing here caught it. Every item's unit
+  // now comes from UOM_Conversions.base_unit instead.
+  it("every item card carries a real (non-empty) unit label, not the blank default_unit_id would give", async () => {
+    mockLiveSnapshot();
+    const report = await getIssuedValueReport();
+    expect(report.items.length).toBeGreaterThan(0);
+    for (const item of report.items) {
+      expect(item.unitName).not.toBe("");
+    }
+    const largest = report.items[0];
+    expect(largest.name).toBe("Bột cà phê MR.PHIN Robusta Dak Mil");
+    expect(largest.unitName).toBe("g");
+  });
+
+  it("stocktake card label carries no session code (CLAUDE.md section 5: never read a code to the owner)", async () => {
+    mockLiveSnapshot();
+    const report = await getIssuedValueReport();
+    const stocktakeEvent = report.events.find(e => e.kind === "STOCKTAKE")!;
+    expect(stocktakeEvent.label).toBe("Kiểm kê định kỳ");
   });
 });

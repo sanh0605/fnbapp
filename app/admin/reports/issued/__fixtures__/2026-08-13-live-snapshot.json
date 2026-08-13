@@ -2567,5 +2567,520 @@
       "id": "U-010",
       "name": "Ca"
     }
+  ],
+  "uomConversions": [
+    {
+      "id": "QD-001",
+      "purchased_item_id": "SPM-001",
+      "purchased_unit": "U-005",
+      "base_unit": "U-003",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-003",
+      "purchased_item_id": "SPM-002",
+      "purchased_unit": "U-005",
+      "base_unit": "U-003",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-006",
+      "purchased_item_id": "SPM-004",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-007",
+      "purchased_item_id": "SPM-005",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 5000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-009",
+      "purchased_item_id": "SPM-006",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-010",
+      "purchased_item_id": "SPM-005",
+      "purchased_unit": "U-007",
+      "base_unit": "UNT-017",
+      "conversion_rate": 20000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-011",
+      "purchased_item_id": "SPM-007",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-012",
+      "purchased_item_id": "SPM-008",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-013",
+      "purchased_item_id": "SPM-009",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 200,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-014",
+      "purchased_item_id": "SPM-010",
+      "purchased_unit": "U-005",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1284,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-016",
+      "purchased_item_id": "SPM-011",
+      "purchased_unit": "U-005",
+      "base_unit": "UNT-017",
+      "conversion_rate": 380,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-017",
+      "purchased_item_id": "SPM-012",
+      "purchased_unit": "UNT-015",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-018",
+      "purchased_item_id": "SPM-013",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 28,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-020",
+      "purchased_item_id": "SPM-015",
+      "purchased_unit": "U-005",
+      "base_unit": "UNT-017",
+      "conversion_rate": 454,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-021",
+      "purchased_item_id": "SPM-016",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-022",
+      "purchased_item_id": "SPM-017",
+      "purchased_unit": "UNT-006",
+      "base_unit": "UNT-017",
+      "conversion_rate": 630,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-023",
+      "purchased_item_id": "SPM-018",
+      "purchased_unit": "U-005",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-024",
+      "purchased_item_id": "SPM-019",
+      "purchased_unit": "UNT-006",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-025",
+      "purchased_item_id": "SPM-020",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 750,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-026",
+      "purchased_item_id": "SPM-021",
+      "purchased_unit": "UNT-015",
+      "base_unit": "UNT-018",
+      "conversion_rate": 8,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-027",
+      "purchased_item_id": "SPM-022",
+      "purchased_unit": "UNT-015",
+      "base_unit": "UNT-018",
+      "conversion_rate": 8,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-028",
+      "purchased_item_id": "SPM-023",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 1400,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-029",
+      "purchased_item_id": "SPM-024",
+      "purchased_unit": "U-005",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-030",
+      "purchased_item_id": "SPM-025",
+      "purchased_unit": "UNT-014",
+      "base_unit": "UNT-017",
+      "conversion_rate": 200,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-031",
+      "purchased_item_id": "SPM-026",
+      "purchased_unit": "UNT-014",
+      "base_unit": "UNT-017",
+      "conversion_rate": 200,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-032",
+      "purchased_item_id": "SPM-027",
+      "purchased_unit": "UNT-004",
+      "base_unit": "U-003",
+      "conversion_rate": 25000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-033",
+      "purchased_item_id": "SPM-028",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 750,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-034",
+      "purchased_item_id": "SPM-029",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 750,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-035",
+      "purchased_item_id": "SPM-030",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-036",
+      "purchased_item_id": "SPM-031",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-037",
+      "purchased_item_id": "SPM-032",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-038",
+      "purchased_item_id": "SPM-033",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 100,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-039",
+      "purchased_item_id": "SPM-034",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-040",
+      "purchased_item_id": "SPM-035",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-041",
+      "purchased_item_id": "SPM-036",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-042",
+      "purchased_item_id": "SPM-037",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 750,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-043",
+      "purchased_item_id": "SPM-033",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-005",
+      "purchased_item_id": "SPM-003",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-015",
+      "purchased_item_id": "SPM-003",
+      "purchased_unit": "UNT-010",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": true
+    },
+    {
+      "id": "QD-044",
+      "purchased_item_id": "SPM-038",
+      "purchased_unit": "U-005",
+      "base_unit": "U-003",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-045",
+      "purchased_item_id": "SPM-039",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 2000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-047",
+      "purchased_item_id": "SPM-041",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-048",
+      "purchased_item_id": "SPM-042",
+      "purchased_unit": "UNT-006",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-049",
+      "purchased_item_id": "SPM-043",
+      "purchased_unit": "U-005",
+      "base_unit": "U-003",
+      "conversion_rate": 100,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-050",
+      "purchased_item_id": "SPM-044",
+      "purchased_unit": "UNT-014",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-051",
+      "purchased_item_id": "SPM-033",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-052",
+      "purchased_item_id": "SPM-045",
+      "purchased_unit": "U-009",
+      "base_unit": "U-009",
+      "conversion_rate": 1,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-053",
+      "purchased_item_id": "SPM-046",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 100,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-019",
+      "purchased_item_id": "SPM-014",
+      "purchased_unit": "U-005",
+      "base_unit": "U-003",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-054",
+      "purchased_item_id": "SPM-014",
+      "purchased_unit": "U-005",
+      "base_unit": "U-003",
+      "conversion_rate": 250,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-055",
+      "purchased_item_id": "SPM-047",
+      "purchased_unit": "U-010",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-056",
+      "purchased_item_id": "SPM-048",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 700,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-057",
+      "purchased_item_id": "SPM-049",
+      "purchased_unit": "UNT-015",
+      "base_unit": "UNT-017",
+      "conversion_rate": 425,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-058",
+      "purchased_item_id": "SPM-050",
+      "purchased_unit": "UNT-006",
+      "base_unit": "U-003",
+      "conversion_rate": 700,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-059",
+      "purchased_item_id": "SPM-051",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 500,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-046",
+      "purchased_item_id": "SPM-040",
+      "purchased_unit": "U-008",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1000,
+      "status": "ACTIVE",
+      "purchase_only": false
+    },
+    {
+      "id": "QD-060",
+      "purchased_item_id": "SPM-052",
+      "purchased_unit": "UNT-017",
+      "base_unit": "UNT-017",
+      "conversion_rate": 1,
+      "status": "ACTIVE",
+      "purchase_only": false
+    }
   ]
 }

@@ -40,20 +40,35 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [purchaseOrders, purchaseOrderLines, stockIssues, purchasedItems, units] = await Promise.all([
+  const [purchaseOrders, purchaseOrderLines, stockIssues, purchasedItems, units, conversions] = await Promise.all([
     findAllNoCache("Purchase_Orders"),
     findAllNoCache("Purchase_Order_Lines"),
     findAllNoCache("Stock_Issues"),
     findAll("Purchased_Items"),
     findAll("Units"),
+    findAll("UOM_Conversions"),
   ]);
 
   const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
   const allIssues = buildIssueCostingIssues(stockIssues as any[]);
 
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
-  const unitIdById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.default_unit_id]));
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
+  // OPEN-ITEMS 41: purchased_items.default_unit_id is null for every row
+  // (measured 2026-08-13), so the base unit has to come from
+  // UOM_Conversions.base_unit instead -- the same source
+  // getIssueSlipFormData already uses for baseUnitName
+  // (app/admin/inventory/issue-slips/actions.ts:55). All 52 items have
+  // exactly one ACTIVE base unit and none disagree (verified 2026-08-13);
+  // takes the first ACTIVE conversion found per item on that basis, not as
+  // an unchecked assumption.
+  const baseUnitIdByPurchasedItem = new Map<string, string>();
+  for (const c of conversions as any[]) {
+    if (c.status !== "ACTIVE") continue;
+    if (!baseUnitIdByPurchasedItem.has(c.purchased_item_id)) {
+      baseUnitIdByPurchasedItem.set(c.purchased_item_id, c.base_unit);
+    }
+  }
 
   const itemFigures = computeIssuedItemFigures(purchases, allIssues);
   const items: IssuedItemRow[] = itemFigures
@@ -61,7 +76,7 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
     .map(f => ({
       purchasedItemId: f.purchasedItemId,
       name: nameById.get(f.purchasedItemId) ?? f.purchasedItemId,
-      unitName: unitNameById.get(unitIdById.get(f.purchasedItemId) ?? "") ?? "",
+      unitName: unitNameById.get(baseUnitIdByPurchasedItem.get(f.purchasedItemId) ?? "") ?? "",
       issuedQuantity: f.issuedQuantity,
       issuedValue: displayMoney(f.issuedValueExact),
       closingValue: displayMoney(f.closingValueExact),
