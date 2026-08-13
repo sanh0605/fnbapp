@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-13 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F2: extracted the POS item-configuration modal into components/pos/ItemConfigModal.tsx
+
+**Trigger:** `docs/superpowers/plans/2026-08-11-split-pos-screen.md`, task F2. F1 (`e7ebb8f`) landed the characterisation tests; this moves the modal itself, gated on F1's tests passing with zero changes.
+
+**Pre-code verification, as instructed:**
+- Traced every one of the five item-config state vars (`selectedVariant`, `selectedModifiers`, `selectedQty`, `itemDiscount`, `itemDiscountType`) and the derived price block (`currentItemBasePrice`...`currentItemFinalTotal`) by name across the whole file. All usage sits inside `openProductModal`/`addModifier`/`removeModifier`/`addToCart`/the derived block (300-406) and the modal JSX (1133-1283) -- nothing outside those regions reads them. One look-alike found and ruled out: two *local* `let itemDiscount = 0` variables inside the `appliedPromo`/`itemPromoDiscounts` `useMemo` loops (OPEN-ITEMS 39's territory, lines ~428 and ~505 after the move) shadow the state variable's name but read `item.unit_price`/`item.qty` off cart lines, not the moved state at all -- confirmed by reading the surrounding scope, not by the name alone.
+- Re-initialisation on open: confirmed the modal has exactly one gate, `{selectedProduct && (...)}`, so the child unmounts fully when it closes and remounts fresh on next open -- `useState(() => ...)` initialisers replace what `openProductModal`'s five setters used to do. Checked whether "open line A, then immediately open line B without closing" is reachable: the only two call sites of `openProductModal` are the product tile (`ProductGrid`) and the cart-line click (`CartItemRow`), and both are only clickable while the modal is closed -- the modal's own backdrop is `z-50`, opaque, `fixed inset-0`, no `pointer-events-none`, and every other interactive surface in `POSScreen`/`CartPanel` sits at `z-40` or below, so real clicks on the tiles/cart rows underneath are blocked while it is open. Grepped every `setSelectedProduct(` and `setEditingCartIndex(` call site directly rather than assuming: the only place either is set to a new *open* value is inside `openProductModal` itself. The A-then-B-without-closing transition is not reachable through any code path in the file, so a `useState` initialiser (not a `useEffect` sync) is correct and required no behaviour change.
+- Confirmed the modal's discount_type option set (`PERCENT`, `FLAT_VND`, `FLAT_PRICE`, per the admin form) and OPEN-ITEMS 39's cited line ranges still match after the move.
+
+**The move:** new `components/pos/ItemConfigModal.tsx` (matching `ProductGrid.tsx`/`CartPanel.tsx`'s existing shape -- `"use client"`, a typed `Props` interface, named export). Took the five state vars (now initialised from an `initialLine` prop instead of `openProductModal`'s setters), `addModifier`, `removeModifier`, the derived price block, and the modal JSX verbatim -- same elements, classNames, aria-labels, Vietnamese strings, same order. `addToCart`'s guard (`if (!selectedVariant) return;`) moved with it, now calling `onSubmit(config)` instead of building the cart row itself.
+
+**Stayed in the parent, exactly as scoped:** `cart` and everything that writes it; `openProductModal`'s zero-variant guard (302, unchanged) and its now-two-line body (just `setSelectedProduct`/`setEditingCartIndex`); the cart-item assembly (renamed `handleItemConfigSubmit`, same `cart[editingCartIndex].id` rule, same three closing `setSelectedProduct(null)`/`setEditingCartIndex(null)`/`setLastCheckoutError(null)` calls in the same order); `promoVariantsMap`/`promoDetailsMap`/`groupedModifiers`, passed down as props, not relocated. The close button's `onClick` is still the single `setSelectedProduct(null)` call it always was (does not reset `editingCartIndex` -- an existing quirk relying on the next `openProductModal` call to reset it, left exactly as is, not "fixed").
+
+**Not touched, per the plan's explicit exclusions:** OPEN-ITEMS 39 (the two divergent promo calculations stay exactly as divergent), the unnamed `FLAT_VND` branch, the qty-minus-button's missing `disabled` affordance (F1's other recorded finding), `isCheckingOut`/`processingOrder`/`lastCheckoutError` and everything they reach beyond the one pre-existing `setLastCheckoutError(null)` call in the moved `addToCart`.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1082/1082, unchanged** (F1's 13 render tests included, verbatim). `check-rules-current` clean. `npm run build` succeeds. `git diff -- components/POSScreen.itemModal.test.tsx` is empty -- the characterisation tests needed zero edits, proving the extraction preserved behaviour rather than just proving the new code self-consistent. `components/POSScreen.tsx`: **1378 -> 1181 lines** (-197). New file: **258 lines**.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-13 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F1: characterisation tests for the POS item-configuration modal
 
 **Trigger:** `docs/superpowers/plans/2026-08-11-split-pos-screen.md`, task F1 -- render tests against the current, unsplit `components/POSScreen.tsx` (item-config modal, JSX at lines 1133-1283) that must keep passing unchanged through F2's later extraction, proving nothing moved except the file.
