@@ -8,10 +8,10 @@ one screen that takes money every day.
 
 ## 1. What is actually wrong
 
-`components/POSScreen.tsx` is **1.378 lines in a single component** with **25
+`components/POSScreen.tsx` is **1.378 lines in a single component** with **24
 `useState` calls** and 7 handlers. Nothing is extracted.
 
-The line count is the symptom. The 25 pieces of state in one scope are the
+The line count is the symptom. The 24 pieces of state in one scope are the
 problem: any change requires holding all of them in mind, and the compiler cannot
 tell you which ones a given edit can reach.
 
@@ -19,15 +19,30 @@ tell you which ones a given edit can reach.
 
 | Cluster | State vars | Purpose |
 |---|---|---|
-| **Item configuration** | **10** | variant, modifiers, quantity, item discount + type, promo code, applied promo, promo error, custom discount + type |
+| **Item configuration** | **5** | `selectedVariant`, `selectedModifiers`, `selectedQty`, `itemDiscount`, `itemDiscountType` |
+| Order-level discount | 5 | `promoCodeInput`, `appliedPromoCode`, `manualPromoError`, `userCustomDiscount`, `userCustomDiscountType` |
 | Cart | 3 | `cart`, `isCartOpen`, `editingCartIndex` |
 | Drafts | 3 | `drafts`, `isDraftModalOpen`, `activeDraftId` |
 | Checkout | 3 | `isCheckingOut`, `processingOrder`, `lastCheckoutError` |
 | Browsing | 3 | `activeCategory`, `searchQuery`, `selectedProduct` |
 | Connectivity | 2 | `isOnline`, `toasts` |
 
-**Item configuration is 10 of 25** and is self-contained: it decides what one
-cart line looks like before the line exists. It does not move money.
+**Correction, 2026-08-13 (Opus 5, before handing F1 over).** The first version of
+this table put all ten discount-related state vars in "item configuration" and
+called that 10 of 25. Reading the file proves otherwise, and both errors matter:
+
+- The count is **24**, not 25 — `grep -c useState` counts the `import` line.
+- The five **order-level** discount vars are not item state. They are passed
+  down to `CartPanel` (lines 1098-1107) and are read, backed up and restored by
+  `handleConfirmCheckout` (lines 734-738, 770-773, 857-859, 907-909). Extracting
+  them **would touch the checkout path**, which rule 3 below forbids. They are
+  out of scope for F2, and F1 must not test them through the item modal.
+
+**Item configuration is 5 of 24**, is self-contained, and does not move money:
+it decides what one cart line looks like before the line exists. Its code is
+the modal JSX at lines **1133-1283** plus `openProductModal` (300),
+`addModifier` (323), `removeModifier` (327), `addToCart` (336) and the derived
+price block at **381-406**.
 
 ---
 
@@ -72,24 +87,37 @@ first, then move code, and let the tests prove nothing changed.
 ## 4. Tasks
 
 - **F1 — Characterise the item-configuration modal.** Render tests against the
-  current file covering: variant selection changes price; modifiers add; quantity
-  multiplies; item discount as amount and as percent; promo code accepted;
-  promo code rejected with its message; custom discount; and the composition of
-  several at once. **Whatever these tests capture becomes the contract** — if
+  current file covering: variant selection changes the displayed total; modifiers
+  add their price and the +/- counter tracks repeats; quantity multiplies; item
+  discount as a flat amount and as a percent; the **automatic variant promo**
+  (lines 392-404: `PERCENT`, `FLAT_PRICE`, and flat-amount each compute
+  differently); the `Gốc:` strike-through line appearing only when a discount
+  applies; edit mode pre-filling from an existing cart line; and the composition
+  of several at once. **Whatever these tests capture becomes the contract** — if
   something looks wrong while writing them, record it, do not fix it.
 
+  Order-level promo code and custom discount are **not** part of this — they
+  belong to `CartPanel` and the checkout path (see the correction in §1).
+
 - **F2 — Extract the item-configuration modal** into its own component with the
-  10 state variables moved inside it. Its interface to the parent is one thing:
-  the configured cart line it produces. F1's tests must pass unchanged, with only
-  the import path edited.
+  5 item state variables moved inside it. Its interface to the parent is two
+  things: which product/edit-index opened it, and the configured cart line it
+  produces. F1's tests must pass unchanged, with only the import path edited.
 
-- **F3 — Characterise and extract the drafts modal** (3 state vars). Smaller,
-  same shape, and it exercises the pattern a second time.
+- **F3 — Characterise and extract the drafts modal** (3 state vars, JSX at
+  1288-1355). Smaller, same shape, and it exercises the pattern a second time.
+  Note before starting: `saveDraft` and `deleteDraft` are also called from the
+  checkout path, so F3 extracts the **modal**, not the draft handlers.
 
-- **F4 — Measure and decide, as E4 did.** After F2 and F3 the file should be
-  around 700–800 lines. If that is workable, **stop.** Do not continue to a line
-  count for its own sake — the goal was that a change to the till no longer
-  requires reading everything, not a particular number.
+- **F4 — Measure and decide, as E4 did.** Honest arithmetic, not the earlier
+  guess: the item modal is ~150 JSX lines plus ~80 of handlers and derived
+  price, and the drafts modal ~70. F2 should land the file near **1.150** and F3
+  near **1.050-1.100** — not the 700-800 first written here, which was an
+  estimate made without measuring. **That is fine, and it is the point:** if a
+  change to item configuration no longer requires reading the whole file, the
+  goal is met. **Stop there.** Do not keep cutting toward a line count for its
+  own sake, and do not let a disappointing number become the reason to start
+  touching checkout.
 
 ---
 
