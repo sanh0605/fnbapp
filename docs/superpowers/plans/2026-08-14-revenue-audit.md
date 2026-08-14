@@ -93,8 +93,27 @@ and it must not be quietly upgraded to "audited" later.
   reconstructed** in a way that survives (a `oln-reconstructed-` id prefix and
   a dated note on the order's `migration_notes`), and **no snapshot is
   invented** — a recipe or modifier snapshot fabricated to look real is the
-  part that would actually corrupt the record, and none is needed, since
-  nothing reads them for this order.
+  part that would actually corrupt the record.
+
+  **Amendment, 2026-08-14 (H7b): `product_snapshot_json` is filled after all,
+  and the reason is evidence rather than convenience.** The dry run showed the
+  empty snapshot has a measurable cost: `getPnLDataV2` and `getSalesDataV2`
+  read `product_snapshot_json.category_id` when a category filter is applied,
+  so a report filtered to the "Trà" category would be **15.000đ short, for
+  ever**, while every unfiltered figure stayed correct. Asked to choose, the
+  owner chose to fill it.
+
+  This does not reopen "no invented snapshots", because the content is
+  attested, not guessed: **all 105 lines ever sold of `PROD-025` record the
+  same category, `CAT-004` / "Trà", spanning 2026-06-03 to 2026-08-10 — 68 of
+  them inside June 2026 itself.** A value corroborated by 68 contemporaneous
+  records from the same month is a recovered fact.
+
+  `recipe_snapshot_json` stays empty and the distinction is the whole point:
+  it records which ingredients in what quantities were consumed at that
+  moment, and **nothing attests to it**. `variant_snapshot_json` and
+  `modifiers_snapshot_json` also stay empty — no report reads them for this
+  order, so filling them would be decoration with no evidence behind it.
 
   **Trigger check done before any write** (`fnbapp-bulk-data-change` step 1),
   run by the owner in the Supabase SQL editor 2026-08-14 with a control:
