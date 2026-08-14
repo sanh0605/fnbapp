@@ -83,9 +83,32 @@ and it must not be quietly upgraded to "audited" later.
   header commits — whether the two writes are in one transaction, and whether
   anything else in that period lost a line without the totals noticing.
 
-  It is master data: **do not delete it, do not back-fill a line into it**
-  (`CLAUDE.md` section 2). Reconstructing the line from a plausible story
-  would turn an honest gap into a fabricated record.
+  It is master data: **do not delete it** (`CLAUDE.md` section 2).
+
+  **Owner decision 2026-08-14: reconstruct the missing line.** This plan
+  originally said not to, on the grounds that a line rebuilt from a
+  recollection is a fabricated record. The owner read that and asked for the
+  reconstruction anyway. It goes ahead as **H7**, under two conditions that
+  answer the original objection rather than ignore it: the row is **marked as
+  reconstructed** in a way that survives (a `oln-reconstructed-` id prefix and
+  a dated note on the order's `migration_notes`), and **no snapshot is
+  invented** — a recipe or modifier snapshot fabricated to look real is the
+  part that would actually corrupt the record, and none is needed, since
+  nothing reads them for this order.
+
+  **Trigger check done before any write** (`fnbapp-bulk-data-change` step 1),
+  run by the owner in the Supabase SQL editor 2026-08-14 with a control:
+
+  - `order_lines_v2`: **no triggers at all.**
+  - `orders_v2`: one, `trg_orders_v2_touch`, `BEFORE UPDATE`, sets
+    `updated_at` and nothing else.
+  - Control (`stock_ledger`) returned `trg_stock_ledger_inventory_balances`,
+    so the empty result above is a real absence, not a broken query.
+
+  Nothing recomputes the header from its lines. Inserting the line cannot move
+  revenue, and there is no queue table and no downstream automation to feed
+  (step 2): the only trigger in scope fires on `UPDATE` of `orders_v2`, which
+  H7 does exactly once, for the note, with `updated_at` as the entire effect.
 
 ---
 
@@ -127,7 +150,17 @@ frozen zero to a real total.
   57.832.000đ before and after, because no such row exists. **That identical
   total is the proof the change is a guard and not a correction.**
 - **H6 — Record §2 in `docs/BUSINESS-RULES.md`** as a dated rule: revenue
-  before 2026-07-19 has no independent verification and never will.
+  before 2026-07-19 has no independent verification and never will. H1's
+  script already points readers at this rule, so until H6 lands that pointer
+  goes nowhere.
+- **H7 — Reconstruct `UCK000269`'s missing line** (§3, owner decision). One
+  insert, marked as reconstructed, no invented snapshots. Dry run by default,
+  `--apply` to write, exact row printed before writing, owner approves the
+  apply (`CLAUDE.md` section 2). **Neutrality proof:** total revenue and every
+  monthly figure identical before and after — the change adds a line to an
+  order whose header already carried it, so H1 must report the same
+  57.832.000đ, and its "orders with zero lines" count must go 1 to 0. That
+  count moving, and nothing else moving, is the whole result.
 
 ---
 
