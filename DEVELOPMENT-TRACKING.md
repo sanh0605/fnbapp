@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H7: script to reconstruct UCK000269's missing line (not applied)
+
+**Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md` sections 3 and 5, H7 -- owner decision 2026-08-14. Writes to production data; `fnbapp-bulk-data-change` skill followed in full before writing anything.
+
+**Skill step 1-2 (triggers), checked live against `pg_trigger` directly, not re-derived from the plan's own summary:** `order_lines_v2` has zero triggers (empty result). `orders_v2` has exactly one, `trg_orders_v2_touch` (BEFORE UPDATE) -- read its function body via `pg_get_functiondef`, confirmed it is literally `new.updated_at = now(); return new;`, nothing else. Control check: queried `stock_ledger` (known to carry a real trigger) the same way and got one back, confirming the query method finds triggers when they exist -- the zero result for `order_lines_v2` is real, not a blind query. Nothing downstream to follow: no queue table, no cron sweep, no header recomputed from lines.
+
+**Snapshot columns, checked against `information_schema.columns` before writing anything:** `product_snapshot_json`, `variant_snapshot_json`, `modifiers_snapshot_json`, `recipe_snapshot_json` are all `NOT NULL` but each carries a genuinely empty default (`'{}'::jsonb` or `'[]'::jsonb`) -- none demands a fabricated value. Left at that default by omitting them from the insert, per the explicit instruction not to invent a snapshot.
+
+**Consequence of the empty `product_snapshot_json`, checked and reported as instructed:** `getPnLDataV2`/`getSalesDataV2` read `product_snapshot_json.category_id` only when a `categoryId` filter is applied. An empty snapshot means this line will never appear in a category-filtered report (e.g. `CAT-004`, this product's own category) and will not count toward that filter's order count either. Every UNFILTERED revenue figure -- which is everything `scripts/verify-revenue.ts` checks -- sums `orders_v2.net_total` directly, never lines, so it is unaffected either way.
+
+**One immaterial discrepancy found and reported, not silently corrected:** the plan's prose gives PRM-003's window as "2026-05-31..2026-06-30"; the stored `start_date` reads `2026-06-01 00:00:00+07` (likely a UTC-vs-Saigon display difference upstream of the plan text). The order's own date, 2026-06-25, falls inside the window either way, so this changes nothing about the reconstruction.
+
+**Every fact re-verified live before writing the script**, not accepted from the plan's own prose: `PROD-025` = "Trà sữa truyền thống" (category `CAT-004`); `VAR-032` = 700ml, list price 18.000đ, sole variant of `PROD-025`; `PRM-003` = `KHAI TRƯƠNG ĐỒNG GIÁ`, `FLAT_PRICE`, `ACTIVE`, per-variant-map form, `VAR-032 -> 15.000đ` specifically (confirmed the map form matters: `VAR-031` maps to 25.000đ in the same promotion, not the top-level `discount_value`). The order header itself: gross 18.000đ, promo_discount_total 3.000đ, net 15.000đ, `applied_promotion_id = PRM-003`, 0 existing lines -- all reconfirmed against the live row, matching the plan exactly.
+
+**`scripts/reconstruct-uck000269-line.ts`** -- dry-run by default, `--apply` required to write, re-verifies the order's header and zero-line state live before printing anything (throws rather than writes if any of those facts have changed since the plan was written). Prints the exact row for `order_lines_v2` and the exact before/after `migration_notes` text for `orders_v2`; touches no other column on the order.
+
+**Dry run executed, `--apply` NOT run, per instruction.** Ran `scripts/verify-revenue.ts` before the dry run (baseline: 2.087 COMPLETED orders live-drifted from H1's 2.086 since real sales keep happening -- unrelated to this work -- UCK000269 still 0 lines, check 2 at 2.086 checked/0 violations, all frozen April-July figures still matching), then the reconstruction script in dry-run mode (printed the row and note, wrote nothing), then `scripts/verify-revenue.ts` again -- **output identical to the before-baseline in every field**, confirming the dry run made zero writes. The plan's predicted post-`--apply` outcome (check 2's checked-count 2.085/2.086 -> +1, zero-line orders 1 -> 0, every revenue figure otherwise unchanged) was not demonstrated in this session, since `--apply` was correctly not run.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` 1122/1122 unchanged (no new tests -- a data-write script, not a logic module). `check-rules-current` clean. `npm run build` succeeds.
+
+Committed locally, script only. `--apply` was not run; the owner approves that separately.
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H1: a re-runnable revenue verification script
 
 **Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md`, task H1 -- every check in section 1, as a script that can be run again after any future change.
