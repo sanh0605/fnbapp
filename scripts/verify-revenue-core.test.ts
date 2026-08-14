@@ -6,9 +6,14 @@ import {
   checkPayments,
   computeMonthlyTotal,
   meetsMinimumOrderCount,
+  checkLineGrossFormula,
+  checkLineNetFormula,
+  checkOrderLineSums,
+  checkLineSanity,
   type RevenueOrder,
   type RevenueLine,
   type RevenuePayment,
+  type RevenueLineDetail,
 } from "./verify-revenue-core";
 
 function makeOrder(overrides: Partial<RevenueOrder> = {}): RevenueOrder {
@@ -192,5 +197,172 @@ describe("meetsMinimumOrderCount", () => {
 
   it("false when the actual count falls below the floor -- the trap this guards: a silent 1.000-row truncation", () => {
     expect(meetsMinimumOrderCount(1000, 2086)).toBe(false);
+  });
+});
+
+// Plan H, task H2 -- line-level arithmetic.
+
+function makeLine(overrides: Partial<RevenueLineDetail> = {}): RevenueLineDetail {
+  return {
+    order_id: "ord-1",
+    order_no: "UCK000001",
+    line_no: 1,
+    product_name: "Cà phê sữa",
+    unit_price: 20000,
+    qty: 1,
+    modifiers: [],
+    gross_line_total: 20000,
+    promo_discount: 0,
+    manual_item_discount: 0,
+    order_discount_allocation: 0,
+    net_line_total: 20000,
+    ...overrides,
+  };
+}
+
+describe("checkLineGrossFormula", () => {
+  it("no mismatch: gross = (unit_price + sum(modifier.price * modifier.qty)) * qty, no modifiers", () => {
+    const line = makeLine({ unit_price: 20000, qty: 2, modifiers: [], gross_line_total: 40000 });
+    const result = checkLineGrossFormula([line]);
+    expect(result.mismatches).toEqual([]);
+    expect(result.checkedCount).toBe(1);
+    expect(result.emptyModifierCount).toBe(1);
+  });
+
+  it("no mismatch with modifiers, including a modifier qty above 1 (the same modifier picked twice)", () => {
+    // (20000 + 5000*2 + 3000*1) * 2 = (20000 + 13000) * 2 = 66000
+    const line = makeLine({
+      unit_price: 20000,
+      qty: 2,
+      modifiers: [{ price: 5000, qty: 2 }, { price: 3000, qty: 1 }],
+      gross_line_total: 66000,
+    });
+    const result = checkLineGrossFormula([line]);
+    expect(result.mismatches).toEqual([]);
+    expect(result.emptyModifierCount).toBe(0);
+  });
+
+  it("reports a mismatch with expected/actual/product name", () => {
+    const line = makeLine({ unit_price: 20000, qty: 2, gross_line_total: 45000 }); // should be 40000
+    const result = checkLineGrossFormula([line]);
+    expect(result.mismatches).toEqual([
+      { order_no: "UCK000001", order_id: "ord-1", line_no: 1, product_name: "Cà phê sữa", expected: 40000, actual: 45000 },
+    ]);
+  });
+
+  // H7's reconstructed line: empty modifiers is correct, not a violation --
+  // but a pass here only exercises the (unit_price * qty) term, never the
+  // modifier-summing term. The script must say this explicitly, not let a
+  // clean run imply the modifier arithmetic was exercised when it wasn't.
+  it("a line with an empty modifier list (H7's reconstructed UCK000269 line) passes trivially, counted separately", () => {
+    const line = makeLine({
+      order_no: "UCK000269",
+      product_name: "Trà sữa truyền thống",
+      unit_price: 18000,
+      qty: 1,
+      modifiers: [],
+      gross_line_total: 18000,
+    });
+    const result = checkLineGrossFormula([line]);
+    expect(result.mismatches).toEqual([]);
+    expect(result.emptyModifierCount).toBe(1);
+  });
+});
+
+describe("checkLineNetFormula", () => {
+  it("no mismatch: net = gross - promo - manual_item - order_alloc", () => {
+    const line = makeLine({
+      gross_line_total: 50000,
+      promo_discount: 5000,
+      manual_item_discount: 2000,
+      order_discount_allocation: 1000,
+      net_line_total: 42000,
+    });
+    expect(checkLineNetFormula([line])).toEqual([]);
+  });
+
+  it("reports a mismatch", () => {
+    const line = makeLine({
+      gross_line_total: 50000,
+      promo_discount: 5000,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 44000, // should be 45000
+    });
+    expect(checkLineNetFormula([line])).toEqual([
+      { order_no: "UCK000001", order_id: "ord-1", line_no: 1, product_name: "Cà phê sữa", expected: 45000, actual: 44000 },
+    ]);
+  });
+});
+
+describe("checkOrderLineSums", () => {
+  it("no mismatch when all four line-column sums equal their header totals", () => {
+    const order = makeOrder({
+      gross_total: 60000,
+      promo_discount_total: 6000,
+      manual_item_discount_total: 2000,
+      manual_order_discount: 1000,
+    });
+    const lines: RevenueLineDetail[] = [
+      makeLine({ gross_line_total: 40000, promo_discount: 4000, manual_item_discount: 1000, order_discount_allocation: 600 }),
+      makeLine({ line_no: 2, gross_line_total: 20000, promo_discount: 2000, manual_item_discount: 1000, order_discount_allocation: 400 }),
+    ];
+    expect(checkOrderLineSums([order], lines)).toEqual([]);
+  });
+
+  it("catches an error that cancels between two discount columns -- the shape H1's net-total check cannot see", () => {
+    // promo_discount summed too high by 1000, manual_item_discount summed
+    // too low by 1000 -- net (gross - promo - manual_item - alloc) stays
+    // correct even though neither individual column is.
+    const order = makeOrder({
+      gross_total: 40000,
+      promo_discount_total: 5000,
+      manual_item_discount_total: 1000,
+      manual_order_discount: 0,
+      net_total: 34000,
+    });
+    const lines: RevenueLineDetail[] = [
+      makeLine({
+        gross_line_total: 40000,
+        promo_discount: 6000, // header says 5000 -- off by +1000
+        manual_item_discount: 0, // header says 1000 -- off by -1000
+        order_discount_allocation: 0,
+        net_line_total: 34000, // still correct: 40000 - 6000 - 0 - 0 = 34000
+      }),
+    ];
+    const mismatches = checkOrderLineSums([order], lines);
+    expect(mismatches).toEqual([
+      { order_no: order.order_no, order_id: order.id, field: "promo_discount_total", expected: 6000, actual: 5000 },
+      { order_no: order.order_no, order_id: order.id, field: "manual_item_discount_total", expected: 0, actual: 1000 },
+    ]);
+  });
+
+  it("skips an order with zero lines (nothing to sum), same convention as checkLineSum", () => {
+    const order = makeOrder({ id: "ord-269", order_no: "UCK000269" });
+    expect(checkOrderLineSums([order], [])).toEqual([]);
+  });
+});
+
+describe("checkLineSanity", () => {
+  it("no violation for a normal line", () => {
+    expect(checkLineSanity([makeLine({ qty: 1, unit_price: 20000 })])).toEqual([]);
+  });
+
+  it("reports qty <= 0", () => {
+    const line = makeLine({ qty: 0 });
+    expect(checkLineSanity([line])).toEqual([
+      { order_no: line.order_no, order_id: line.order_id, line_no: line.line_no, product_name: line.product_name, qty: 0, unit_price: line.unit_price, reason: "qty 0 is not > 0" },
+    ]);
+  });
+
+  it("reports unit_price < 0", () => {
+    const line = makeLine({ unit_price: -100 });
+    expect(checkLineSanity([line])).toEqual([
+      { order_no: line.order_no, order_id: line.order_id, line_no: line.line_no, product_name: line.product_name, qty: line.qty, unit_price: -100, reason: "unit_price -100 is not >= 0" },
+    ]);
+  });
+
+  it("unit_price of exactly 0 is not a violation (>= 0, not > 0)", () => {
+    expect(checkLineSanity([makeLine({ unit_price: 0 })])).toEqual([]);
   });
 });

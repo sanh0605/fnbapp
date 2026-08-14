@@ -4,12 +4,13 @@ process.env.CLI_MODE = "true";
 
 // Type-only, erased at compile time -- does not run before dotenv.config()
 // the way a value import from this module's siblings would.
-import type { RevenueOrder, RevenueLine, RevenuePayment } from "./verify-revenue-core";
+import type { RevenueOrder, RevenueLine, RevenuePayment, RevenueLineDetail } from "./verify-revenue-core";
 
 /**
- * Plan H, task H1 (docs/superpowers/plans/2026-08-14-revenue-audit.md).
- * Re-runnable revenue verification: every check in section 1, against live
- * data. Prints the figures, exits non-zero if any structural check finds a
+ * Plan H, tasks H1 and H2 (docs/superpowers/plans/2026-08-14-revenue-audit.md).
+ * Re-runnable revenue verification: every check in section 1 (H1) plus
+ * line-level arithmetic (H2, section 3 first bullet), against live data.
+ * Prints the figures, exits non-zero if any structural check finds a
  * violation.
  *
  * Read-only. No writes, no --apply, no migration -- this script audits.
@@ -17,7 +18,7 @@ import type { RevenueOrder, RevenueLine, RevenuePayment } from "./verify-revenue
  * Run: npx vite-node scripts/verify-revenue.ts
  *
  * Gated (exit 1 on failure):
- *   - checks 1-4, zero violations required
+ *   - H1 checks 1-4 and H2 checks 1-4, zero violations required
  *   - row-count sanity (trap #1 below)
  *   - April-July monthly revenue AND order count, exact match against the
  *     frozen figures below -- these months are closed history, per the plan
@@ -26,9 +27,18 @@ import type { RevenueOrder, RevenueLine, RevenuePayment } from "./verify-revenue
  *     an exact match
  *
  * Printed, not gated: overall revenue total, August's monthly figures
- * (still open), check 4's own order-count/amount breakdown beyond "zero
- * violations" (grows as more sales record a payment), and the no-payment
- * bucket (section 2: permanently unverifiable, not a target to shrink).
+ * (still open), H1 check 4's own order-count/amount breakdown beyond "zero
+ * violations" (grows as more sales record a payment), the no-payment
+ * bucket (section 2: permanently unverifiable, not a target to shrink),
+ * and H2's empty-modifier-line count (informational, not a violation).
+ *
+ * H2's formula (gross_line_total = (unit_price + sum(modifier.price *
+ * modifier.qty)) * qty) was derived BEFORE touching any data, from the
+ * write path itself: lib/order-cart.ts's buildLine (live checkout and
+ * order-edit, which reuses the same function) and lib/historical/
+ * history-ops/migrate-v1-to-v2.ts's line builder (the V1->V2 migration)
+ * compute it independently and agree exactly. Neither was read after
+ * getting a result from live data -- both were read first.
  */
 
 const EXPECTED_ORDER_COUNT = 2086;
@@ -61,6 +71,10 @@ async function main(): Promise<void> {
     checkPayments,
     computeMonthlyTotal,
     meetsMinimumOrderCount,
+    checkLineGrossFormula,
+    checkLineNetFormula,
+    checkOrderLineSums,
+    checkLineSanity,
   } = await import("./verify-revenue-core");
 
   const failures: string[] = [];
@@ -102,12 +116,79 @@ async function main(): Promise<void> {
   }));
 
   const orderIds = new Set(orders.map(o => o.id));
-  const lines: RevenueLine[] = (rawLines as any[])
-    .filter(l => orderIds.has(l.order_id))
-    .map(l => ({ order_id: l.order_id, net_line_total: Number(l.net_line_total) || 0 }));
+  const orderNoById = new Map(orders.map(o => [o.id, o.order_no]));
+  const rawCompletedLines = (rawLines as any[]).filter(l => orderIds.has(l.order_id));
+
+  const lines: RevenueLine[] = rawCompletedLines.map(l => ({
+    order_id: l.order_id,
+    net_line_total: Number(l.net_line_total) || 0,
+  }));
   const payments: RevenuePayment[] = (rawPayments as any[])
     .filter(p => orderIds.has(p.order_id))
     .map(p => ({ order_id: p.order_id, amount: Number(p.amount) || 0 }));
+
+  // H2. product_snapshot_json/modifiers_snapshot_json are jsonb columns in
+  // Postgres, but lib/sheets_db.ts's serializeRow (checked, not assumed --
+  // it lists both under order_lines_v2's JSON_COLUMNS_BY_TABLE) converts
+  // them back to JSON strings on the way out, for JSON.parse-based callers
+  // like this one -- an empty/null value comes back as "", not "{}"/"[]".
+  // lineIdByKey is presentation-only (grouping below), not part of any
+  // check.
+  const lineIdByKey = new Map<string, string>();
+  const lineDetails: RevenueLineDetail[] = rawCompletedLines.map(l => {
+    lineIdByKey.set(`${l.order_id}:${l.line_no}`, l.id);
+    let productSnapshot: any = {};
+    try {
+      productSnapshot = JSON.parse(l.product_snapshot_json || "{}");
+    } catch {
+      // leave as {} -- product_name falls back to product_id below
+    }
+    let modifiers: Array<{ price: number; qty: number }> = [];
+    try {
+      const parsed = JSON.parse(l.modifiers_snapshot_json || "[]");
+      if (Array.isArray(parsed)) {
+        modifiers = parsed.map((m: any) => ({ price: Number(m.price) || 0, qty: Number(m.qty) || 0 }));
+      }
+    } catch {
+      // leave as [] -- gross-formula check will report the real mismatch
+      // this produces rather than silently treating it as correct
+    }
+    return {
+      order_id: l.order_id,
+      order_no: orderNoById.get(l.order_id) || l.order_id,
+      line_no: Number(l.line_no) || 0,
+      product_name: productSnapshot.name || l.product_id,
+      unit_price: Number(l.unit_price) || 0,
+      qty: Number(l.qty) || 0,
+      modifiers,
+      gross_line_total: Number(l.gross_line_total) || 0,
+      promo_discount: Number(l.promo_discount) || 0,
+      manual_item_discount: Number(l.manual_item_discount) || 0,
+      order_discount_allocation: Number(l.order_discount_allocation) || 0,
+      net_line_total: Number(l.net_line_total) || 0,
+    };
+  });
+
+  // Presentation only: classify a line by its id prefix, for grouping
+  // mismatches by shape rather than dumping every row (H2's own reporting
+  // requirement). Not used by any check.
+  function lineOrigin(orderId: string, lineNo: number): "native" | "migrated" | "reconstructed (H7)" {
+    const id = lineIdByKey.get(`${orderId}:${lineNo}`) || "";
+    if (id.startsWith("oln-reconstructed-")) return "reconstructed (H7)";
+    if (id.startsWith("ol-migrated-")) return "migrated";
+    return "native";
+  }
+
+  function groupByOrigin<T extends { order_id: string; line_no: number }>(items: T[]): Map<string, T[]> {
+    const groups = new Map<string, T[]>();
+    for (const item of items) {
+      const key = lineOrigin(item.order_id, item.line_no);
+      const list = groups.get(key) ?? [];
+      list.push(item);
+      groups.set(key, list);
+    }
+    return groups;
+  }
 
   const totalRevenue = orders.reduce((s, o) => s + o.net_total, 0);
   console.log(`\nCOMPLETED orders: ${orders.length}, total net_total: ${formatNumber(totalRevenue)}d.`);
@@ -169,6 +250,87 @@ async function main(): Promise<void> {
     console.log(`  ${m.order_no} (${m.order_id}): expected ${m.expected}, actual ${m.actual}`);
   }
   if (check4.mismatches.length > 0) failures.push(`Check 4: ${check4.mismatches.length} payment-sum violation(s).`);
+
+  // --- H2: line-level arithmetic -----------------------------------------
+  console.log(
+    "\n=== H2: line-level arithmetic (docs/superpowers/plans/2026-08-14-revenue-audit.md section 3) ===",
+  );
+
+  function reportLineMismatches<T extends { order_id: string; line_no: number; order_no: string; product_name: string }>(
+    label: string,
+    mismatches: T[],
+    render: (m: T) => string,
+  ) {
+    if (mismatches.length === 0) return;
+    const groups = groupByOrigin(mismatches);
+    console.log(`  By origin: ${[...groups.entries()].map(([k, v]) => `${k}=${v.length}`).join(", ")}`);
+    for (const [origin, group] of groups) {
+      console.log(`  -- ${origin} (${group.length}) --`);
+      for (const m of group.slice(0, 10)) {
+        console.log(`    ${m.order_no} line ${m.line_no} (${m.product_name}): ${render(m)}`);
+      }
+      if (group.length > 10) console.log(`    ...and ${group.length - 10} more.`);
+    }
+  }
+
+  // H2 check 1: gross_line_total formula.
+  const h2Check1 = checkLineGrossFormula(lineDetails);
+  console.log(
+    `\nH2 check 1 (gross_line_total == (unit_price + sum(modifier.price * modifier.qty)) * qty): ` +
+      `${h2Check1.mismatches.length} violation(s) / ${h2Check1.checkedCount}.`,
+  );
+  console.log(
+    `  Lines with an empty modifier list: ${h2Check1.emptyModifierCount} / ${h2Check1.checkedCount} -- these only exercise the ` +
+      `(unit_price * qty) term, never the modifier-summing term, so their passing is not evidence the modifier arithmetic is right. ` +
+      `oln-reconstructed-uck000269-line1 (H7) is one of these by design (empty modifiers_snapshot_json is correct there, not a gap).`,
+  );
+  reportLineMismatches("h2c1", h2Check1.mismatches, m => `expected ${m.expected}, actual ${m.actual}, diff ${m.actual - m.expected}`);
+  if (h2Check1.mismatches.length > 0) failures.push(`H2 check 1: ${h2Check1.mismatches.length} gross_line_total violation(s).`);
+
+  // H2 check 2: per-line net formula.
+  const h2Check2 = checkLineNetFormula(lineDetails);
+  console.log(
+    `\nH2 check 2 (net_line_total == gross_line_total - promo_discount - manual_item_discount - order_discount_allocation): ` +
+      `${h2Check2.length} violation(s) / ${lineDetails.length}.`,
+  );
+  console.log("  Same formula lib/order-math.ts's assertOrderInvariants (I6) already asserts at write time -- not a new formula, the first re-check since.");
+  reportLineMismatches("h2c2", h2Check2, m => `expected ${m.expected}, actual ${m.actual}, diff ${m.actual - m.expected}`);
+  if (h2Check2.length > 0) failures.push(`H2 check 2: ${h2Check2.length} net_line_total violation(s).`);
+
+  // H2 check 3: per-order column sums vs header (the check H1 could not do).
+  const h2Check3 = checkOrderLineSums(orders, lineDetails);
+  console.log(
+    `\nH2 check 3 (per order: sum(gross_line_total/promo_discount/manual_item_discount/order_discount_allocation) == the matching header total): ` +
+      `${h2Check3.length} violation(s) across ${orders.length} orders.`,
+  );
+  console.log(
+    "  This is the check H1 could not do -- H1 only compared the single net figure, so an error that cancels between two " +
+      "discount columns would have passed it. A promo_discount-column mismatch here is cross-referenced against OPEN-ITEMS 39 " +
+      "before being called new: that item is about the POS preview differing from what the cart actually charges, a different " +
+      "layer from whether the STORED line and header figures agree with each other, which is all this check looks at.",
+  );
+  if (h2Check3.length > 0) {
+    const byField = new Map<string, typeof h2Check3>();
+    for (const m of h2Check3) {
+      const list = byField.get(m.field) ?? [];
+      list.push(m);
+      byField.set(m.field, list);
+    }
+    for (const [field, group] of byField) {
+      console.log(`  -- ${field} (${group.length}) --`);
+      for (const m of group.slice(0, 10)) {
+        console.log(`    ${m.order_no}: expected ${m.expected}, actual ${m.actual}, diff ${m.actual - m.expected}`);
+      }
+      if (group.length > 10) console.log(`    ...and ${group.length - 10} more.`);
+    }
+    failures.push(`H2 check 3: ${h2Check3.length} order-vs-line-sum violation(s).`);
+  }
+
+  // H2 check 4: line sanity.
+  const h2Check4 = checkLineSanity(lineDetails);
+  console.log(`\nH2 check 4 (qty > 0 and unit_price >= 0 on every line): ${h2Check4.length} violation(s) / ${lineDetails.length}.`);
+  reportLineMismatches("h2c4", h2Check4, m => m.reason);
+  if (h2Check4.length > 0) failures.push(`H2 check 4: ${h2Check4.length} line-sanity violation(s).`);
 
   // --- Monthly table -----------------------------------------------------
   console.log("\nMonthly (Asia/Saigon):");

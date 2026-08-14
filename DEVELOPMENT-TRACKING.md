@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H2: line-level revenue arithmetic
+
+**Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md` §3 first bullet, §5 H2. Extends H1 (`f22b9e5`) -- same `scripts/verify-revenue.ts` / `scripts/verify-revenue-core.ts` pair, no parallel tool.
+
+**Formula derived from the write path before touching any data, as instructed:** `lib/order-cart.ts`'s `buildLine` (the live checkout path, and the order-edit path via the same `buildOrderFromCart`) computes `gross = (variantSnap.price + modifierSnap.reduce((s,m) => s + m.price*m.qty, 0)) * item.qty`. Cross-checked against a second, independent write path -- `lib/historical/history-ops/migrate-v1-to-v2.ts`'s line builder computes `gross = (unitPrice + modsTotal) * qty` with `modsTotal = modifierSnap.reduce((s,m) => s + m.price*m.qty, 0)` -- byte-identical formula, arrived at independently. Neither was read after seeing a result from live data; both were read first, and the check was written from that derivation, not reverse-engineered from what the data already showed.
+
+**`promo_discount` vs `promo_discount_total` -- checked, not assumed to be the same thing.** `buildOrderFromCart` (same file) computes `promo_discount_total` as `builtLines.reduce((s,l) => s + l.spec.promo_discount, 0)` with no independent order-level contribution -- they are defined to be the same thing (a sum relationship), not two figures that may legitimately diverge, confirmed directly in the code that writes both.
+
+**Also confirmed:** `lib/order-math.ts`'s `assertOrderInvariants` (I1-I7) is called as a write-time guardian by both `buildOrderFromCart` and the V1→V2 migration -- it already asserts most of what H2 checks 2-3 re-check (net = gross - promo - manual_item - order_alloc per line, and the four column sums against header totals), throwing at write time on violation. **Check 1 (gross_line_total's own derivation from unit_price/qty/modifiers) is the one layer nothing else checks** -- not enforced by the guardian, which takes `gross_line_total` as given.
+
+**The four checks**, added as `checkLineGrossFormula`, `checkLineNetFormula`, `checkOrderLineSums`, `checkLineSanity` in `scripts/verify-revenue-core.ts`, with 13 new unit tests in `scripts/verify-revenue-core.test.ts` (including a case built specifically to prove check 3's value: two discount columns off by the same amount in opposite directions, which cancels in the net total H1 checks and is caught here by name).
+
+**H7's reconstructed line handled explicitly, not silently passed:** `oln-reconstructed-uck000269-line1` has an empty `modifiers_snapshot_json` by design -- correct, not a violation, but a pass on that row only exercises the `(unit_price * qty)` term, never the modifier-summing term. The script prints the empty-modifier-line count every run (2675/2904 live) and names that specific line, so a clean run is never read as stronger evidence about modifier arithmetic than it is. Also picked up OPEN-ITEMS 43 correctly by construction -- line details are joined through `orders_v2.created_at` for reporting/month figures (never `order_lines_v2.created_at`, which is the migration timestamp on `ol-migrated-*` rows), and `l.product_snapshot_json`/`modifiers_snapshot_json` are `JSON.parse`d (checked `lib/sheets_db.ts`'s `serializeRow`, which converts jsonb columns back to strings for `JSON.parse` callers -- an initial draft assumed they came back as native objects and was corrected before running anything).
+
+**Reporting, as instructed:** mismatches (none found on real data) would group by shape (native / migrated / reconstructed, by line-id prefix) rather than dumping every row, with product name read from the line's own `product_snapshot_json` (the real name, not a code). A `promo_discount`-column mismatch is explicitly cross-referenced against OPEN-ITEMS 39 in the script's own printed output before being called new -- that item is about the POS preview differing from what the cart charges, a different layer from whether stored line/header figures agree with each other.
+
+**Result, live 2026-08-14: 0 violations on all four H2 checks, 2.901-2.904 lines checked (moved slightly across runs as real sales happened), 2.088-2.090 COMPLETED orders.** H1's own four checks and the frozen April-July monthly gate stayed at 0 violations / exact match throughout. Total revenue ~57.862.000đ, matching the plan's own stale-by-design update note.
+
+**Control demonstrated, against real data, not a synthetic fixture:** the gross-formula check's modifier term was deliberately dropped (`expected = l.unit_price * l.qty`, silently ignoring `modifiersTotal`), run live -- **229 real lines failed** (117 native, 112 migrated, grouped by origin as designed, real product names and diffs shown), script printed `REVENUE VERIFICATION FAILED -- H2 check 1: 229 gross_line_total violation(s).` and exited 1, while every other check stayed at 0 violations in the same run (proving the mutation was isolated, not a cascading break). Reverted; `git diff` on the core module shows only the real H2 additions, no marker; re-run exits 0.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1125 -> 1138 (+13, all green)**. `check-rules-current` clean. `npm run build` succeeds. Read-only throughout -- no writes, no `--apply`; nothing found, so §6's "a task that changes a total stops and reports" did not need to trigger.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-14 (Opus 5 executing the approved write) - Plan H, H7: UCK000269's line APPLIED to production
 
 **Owner approved the write 2026-08-14** after reviewing the dry run and choosing to fill `product_snapshot_json` (H7b). Ran `scripts/reconstruct-uck000269-line.ts --apply`.
