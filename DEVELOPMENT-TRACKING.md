@@ -4,6 +4,31 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Opus 5 executing the approved write) - Plan H, H7: UCK000269's line APPLIED to production
+
+**Owner approved the write 2026-08-14** after reviewing the dry run and choosing to fill `product_snapshot_json` (H7b). Ran `scripts/reconstruct-uck000269-line.ts --apply`.
+
+**Written:** one row in `order_lines_v2` (`oln-reconstructed-uck000269-line1`): PROD-025 / VAR-032, qty 1, unit_price 18.000đ, promo 3.000đ, net 15.000đ, with the attested product snapshot. One `orders_v2.migration_notes` update on the order. `recipe_snapshot_json {}`, `modifiers_snapshot_json []`, `variant_snapshot_json {}` — left empty as planned.
+
+**Neutrality proven by running `scripts/verify-revenue.ts` immediately before and after, not by argument:**
+
+| | Before | After |
+|---|---|---|
+| Total revenue | 57.862.000đ | **57.862.000đ** |
+| Apr / May / Jun / Jul | 2.190.000 / 7.675.000 / 22.157.000 / 18.661.000 | **identical** |
+| Check 1 violations | 0 / 2.088 | 0 / 2.088 |
+| Check 2 | 0 violations / 2.087 | 0 violations / **2.088** |
+| **Orders with zero lines** | **1** | **0** |
+| Check 4 | 0 / 515 | 0 / 515 |
+
+Exactly the two predicted movements (check 2's denominator +1, zero-line orders 1→0) and nothing else. Script exits 0.
+
+**Side effects (skill step 5):** `orders_v2.updated_at` on that one order moved to 2026-08-14T07:56:19Z via `trg_orders_v2_touch` — the only trigger in scope and its entire effect. No queue table written, no automation scheduled, `order_lines_v2` has no triggers. Baseline note: totals read 57.862.000đ / 2.088 orders rather than H1's 57.832.000đ / 2.086, because the shop sold two more drinks between the two runs — real trading, unrelated to this write, and why only April–July are gated as frozen history.
+
+**Still open from Plan H:** H2 (line-level arithmetic), H3 (promotion recomputation), H5 (the `superseded_by` guard), H6 (the `BUSINESS-RULES.md` entry `verify-revenue.ts` already points at).
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H7b: fill product_snapshot_json on the reconstructed UCK000269 line (not applied)
 
 **Trigger:** amendment to `docs/superpowers/plans/2026-08-14-revenue-audit.md` §3, owner decision 2026-08-14, after H7's own finding (empty `product_snapshot_json` makes the line invisible to any category-filtered report) was put to them with the concrete consequence. Amends `scripts/reconstruct-uck000269-line.ts` (`72e20c8`). `--apply` still not run.
