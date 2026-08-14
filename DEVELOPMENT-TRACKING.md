@@ -4,6 +4,25 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F3a: characterisation tests for the POS drafts modal
+
+**Trigger:** `docs/superpowers/plans/2026-08-11-split-pos-screen.md`, task F3a -- render tests against the current, unsplit `components/POSScreen.tsx` (drafts modal JSX at 1104-1171) that must keep passing unchanged through F3b's extraction, same discipline as F1/F2.
+
+**Pre-code verification, as instructed:**
+- **The duplicate-formula claim, checked character by character, not by shape.** `calculateItemTotal` (349-361) and the inline per-item total inside the drafts modal (1125-1137) compute identically: same `modsPrice` reduce, same `baseTotal`, same VND/PERCENT discount branch, same `Math.max(0, ...)` floor. Two differences found, both non-semantic: the inner reduce's accumulator is named `sum` in `calculateItemTotal` but `s` inline -- forced by the inline version nesting inside an OUTER reduce that already owns the name `sum`, not a computational difference; and the final line is a bare `return Math.max(0, baseTotal - discount)` in `calculateItemTotal` versus `return sum + Math.max(0, baseTotal - discount)` inline -- the outer reduce's own accumulation step, not part of the formula itself (the same shape `calculateSubtotal` already uses: `sum + calculateItemTotal(item)`). Confirmed: the claim holds, the authorised consolidation is safe.
+- **Confirmed the modal reads nothing beyond `drafts`, `loadDraft`, `deleteDraft`, and the close setter** (plus, after consolidation, `calculateItemTotal`) by reading the full JSX line by line -- no other identifier referenced.
+- **Reopening while already open, checked rather than assumed the same as F2b's finding.** The "Nháp" button (998) is a real `<button>`, in the tab order; the drafts modal has no focus trap either (OPEN-ITEMS 40), so the same keyboard path F2b fixed for the item modal reaches it. But the outcome differs, and matters for F3b: the drafts modal holds **no internal state of its own** -- no `useState` anywhere in its JSX, unlike the item modal's five state vars. A second `setIsDraftModalOpen(true)` while already `true` is a no-op (React skips re-render on an unchanged primitive); a second `refreshDrafts()` call just redundantly re-fetches and calls `setDrafts` again, harmlessly, since drafts lives in the parent, not duplicated into a child that could go stale. **No key is needed on the extracted component** -- checked, not assumed, and the reason is recorded so F3b doesn't need to re-derive it.
+
+**5 new tests, `components/POSScreen.draftsModal.test.tsx`,** same `createRoot` + `act` pattern and the same two `vi.mock` calls as `POSScreen.itemModal.test.tsx`, opened via the real "Nháp" button: empty-state text; a draft card's name, item count, and total; a draft with modifiers, qty above one, and a PERCENT discount computing one exact number (89.100đ); "Nạp" loading the draft into the cart and closing the modal; "Xóa" calling `deletePOSDraft` with the right id and the card disappearing once the refresh resolves.
+
+**Proved the tests have teeth before trusting them:** a one-character mutation to the inline discount divisor (`/ 100` -> `/ 1000`, the drafts modal's own copy at line 1131, not `calculateItemTotal`'s) was caught by exactly the complex-draft test and no other, then reverted clean (`git diff` empty).
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1100 -> 1105 (+5, all green)**. `check-rules-current` clean. `npm run build` succeeds. `git status` confirms only the new test file -- `components/POSScreen.tsx` untouched.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F2b: fixed the regression F2 introduced in the POS item modal
 
 **The defect.** F2's own pre-code verification concluded a second `openProductModal` call while the modal is already open "is not reachable through any code path" -- true for the mouse (the backdrop is `z-50` and opaque) but not the keyboard: the modal traps no focus and sets no role (OPEN-ITEMS 40), so the product tiles behind it stay in the tab order. Before F2, `openProductModal` re-initialised the five item state vars through its own setters on every call. After F2, `<ItemConfigModal>` is already mounted with no `key` -- React reconciles it in place (same type, same position), so its `useState` initialisers never re-run on a second call. The modal then shows the new product's name and variants while holding the previous product's variant, modifiers, quantity and discount; pressing THÊM writes a cart line with one drink's name and another drink's `variant_id`/`size_name`/`unit_price`.
