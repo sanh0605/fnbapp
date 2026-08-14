@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H7b: fill product_snapshot_json on the reconstructed UCK000269 line (not applied)
+
+**Trigger:** amendment to `docs/superpowers/plans/2026-08-14-revenue-audit.md` §3, owner decision 2026-08-14, after H7's own finding (empty `product_snapshot_json` makes the line invisible to any category-filtered report) was put to them with the concrete consequence. Amends `scripts/reconstruct-uck000269-line.ts` (`72e20c8`). `--apply` still not run.
+
+**Verified independently, not taken from the plan's own numbers, and one real discrepancy caught mid-check:** first pass queried `order_lines_v2.created_at` directly and got a date range starting 2026-06-28, not the plan's 2026-06-03 -- investigated rather than reported as a mismatch, and found the cause: `order_lines_v2.created_at` on migrated rows (`ol-migrated-*`) records when the V1→V2 migration ran (a single bulk timestamp, 2026-06-28), not the original sale time. Re-queried via `orders_v2.created_at` (joined through `order_id`, the real sale time) and got **105 lines, 2026-06-03 to 2026-08-10, 68 in June** -- matching the plan exactly. Category check: `select category_id, category_name, count(*) group by 1,2` over all 105 lines returns exactly **one** group, `CAT-004` / `"Trà"`, count 105 -- zero exceptions, confirmed exhaustively (not sampled). Read the exact snapshot shape off three real PROD-025 lines directly rather than copying the plan's JSON: `{id, name, category_id, category_name}`, nothing more.
+
+**The change:** `product_snapshot_json` on the inserted row is now the attested shape (`{"id":"PROD-025","name":"Trà sữa truyền thống","category_id":"CAT-004","category_name":"Trà"}`). `recipe_snapshot_json`, `variant_snapshot_json`, `modifiers_snapshot_json` stay empty, and the script's header comment now states why each one differs rather than treating "leave snapshots empty" as one blanket rule: `recipe_snapshot_json` is the one that would actually corrupt the record (nothing attests to what was consumed at that moment, and a fabricated one would look exactly like a real capture); the other two have no reader for this order at all, so filling them would be decoration with no evidence behind it, not a correction of a real gap.
+
+**`migration_notes` extended** to say the product snapshot was reconstructed too and on what basis (105 lines, all CAT-004/"Trà", 68 in June) -- a future reader can tell which parts of the row are recovered fact and which are deliberately absent without opening git.
+
+**New defensive check added to the script itself** (not just checked once while writing it): re-verifies live, on every run, that every existing PROD-025 line still agrees on one category before writing -- aborts if that ever stops being true, since a category change would mean today's value is no longer necessarily what June's was.
+
+**Dry run executed, `--apply` NOT run, per instruction.** Printed the exact row (including the filled `product_snapshot_json`) and the exact extended `migration_notes` text. Ran `scripts/verify-revenue.ts` after the dry run: UCK000269 still lists under "orders with zero lines" (1), all structural checks and every frozen monthly figure unchanged -- confirms zero writes.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` 1125/1125 unchanged (a data-write script, no new tests). `check-rules-current` clean. `npm run build` succeeds.
+
+Committed locally, script only. `--apply` was not run; the owner approves that separately.
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 42: hide INACTIVE ingredients from the recipe picker
 
 **Trigger:** the recipe picker in `components/ProductForm.tsx` offered an INACTIVE ingredient (`NNL-004` "Sữa yến mạch", a duplicate the owner retired) as a normal choice. Small, self-contained -- kept separate from H2 and H7, both in flight the same session.

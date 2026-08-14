@@ -44,20 +44,50 @@ process.env.CLI_MODE = "true";
  * update have no downstream effect beyond updated_at.
  *
  * Snapshot columns (product_snapshot_json, variant_snapshot_json,
- * modifiers_snapshot_json, recipe_snapshot_json) are NOT NULL but each has
- * a genuinely empty default ('{}'::jsonb or '[]'::jsonb, confirmed live via
- * information_schema.columns) -- left at that default by omitting them from
- * the insert below, not fabricated.
+ * modifiers_snapshot_json, recipe_snapshot_json) are all NOT NULL but each
+ * has a genuinely empty default ('{}'::jsonb or '[]'::jsonb, confirmed live
+ * via information_schema.columns). Amendment 2026-08-14 (H7b), owner
+ * decision, after being shown the concrete consequence of leaving
+ * product_snapshot_json empty (below): it is now filled, on record here
+ * because it is attested, not guessed. The other three stay at their empty
+ * default -- deliberately, not an oversight, and the reasons differ per
+ * column, not one blanket "leave it empty":
  *
- * Consequence of that, checked before writing: app/admin/reports/actions.ts
- * (getPnLDataV2 and getSalesDataV2) reads product_snapshot_json.category_id
- * ONLY when a categoryId filter is applied, to decide which lines belong to
- * that filtered view -- an empty snapshot means this line will never appear
- * in a category-filtered report (e.g. category = CAT-004, this product's own
- * category), and will not be counted toward that filter's order count
- * either. Every UNFILTERED revenue figure -- which is everything
- * scripts/verify-revenue.ts checks -- sums typedOrders.net_total directly,
- * never lines, so it is unaffected either way.
+ *   product_snapshot_json -- FILLED. Every order_lines_v2 row ever recorded
+ *     for PROD-025 was checked live 2026-08-14, not taken from the plan's
+ *     own numbers: 105 lines total (joined to orders_v2.created_at, the real
+ *     sale time -- order_lines_v2.created_at on migrated rows instead
+ *     records when the V1->V2 migration ran, 2026-06-28, which is NOT when
+ *     these sales happened and was caught and discarded as the wrong field
+ *     before trusting any date range from it), spanning 2026-06-03 to
+ *     2026-08-10, 68 of them inside June 2026. Every single one carries
+ *     product_snapshot_json.category_id = CAT-004, category_name = "Trà" --
+ *     zero exceptions, so the product never changed category across its
+ *     whole recorded history and today's category is not a guess about
+ *     June's. The exact shape below was read off three real PROD-025 lines
+ *     (newest, not copied from the plan): {"id","name","category_id",
+ *     "category_name"}, nothing more.
+ *   recipe_snapshot_json -- STAYS EMPTY. This is the one that would
+ *     actually corrupt the record: it claims to capture which ingredients,
+ *     in what quantities, were consumed at the moment of sale. Nothing
+ *     attests to that for this line -- there is no surviving evidence of
+ *     what recipe version was effective on 2026-06-25, and fabricating one
+ *     would look exactly like a real capture to anyone reading it later.
+ *   variant_snapshot_json, modifiers_snapshot_json -- STAY EMPTY. No report
+ *     in this codebase reads either for revenue or COGS purposes on this
+ *     order; filling them would be decoration with no evidence behind it,
+ *     not a correction of a real gap the way product_snapshot_json was.
+ *
+ * Consequence of the (now-fixed) empty product_snapshot_json, checked
+ * before this amendment: app/admin/reports/actions.ts (getPnLDataV2 and
+ * getSalesDataV2) reads product_snapshot_json.category_id ONLY when a
+ * categoryId filter is applied, to decide which lines belong to that
+ * filtered view -- an empty snapshot meant this line would never have
+ * appeared in a category-filtered report (e.g. category = CAT-004, this
+ * product's own category, filtered to June) -- permanently 15.000d short in
+ * that specific view, though every UNFILTERED revenue figure (everything
+ * scripts/verify-revenue.ts checks) sums typedOrders.net_total directly,
+ * never lines, and was never affected either way.
  *
  * Dry-run by default; --apply writes for real. The owner approves --apply.
  */
@@ -67,11 +97,23 @@ const ORDER_NO = "UCK000269";
 const PROMOTION_ID = "PRM-003";
 const LINE_ID = "oln-reconstructed-uck000269-line1";
 
+const PRODUCT_SNAPSHOT = {
+  id: "PROD-025",
+  name: "Trà sữa truyền thống",
+  category_id: "CAT-004",
+  category_name: "Trà",
+};
+
 const MIGRATION_NOTE =
   `[2026-08-14] Line 1 reconstructed from the owner's identification: PROD-025 ` +
   `"Trà sữa truyền thống" / VAR-032 (700ml), qty 1, unit_price 18000, promo ${PROMOTION_ID} ` +
   `(FLAT_PRICE, VAR-032 -> 15000), net_line_total 15000. Verified against VAR-032's list price ` +
-  `and ${PROMOTION_ID}'s flat price before writing. See docs/superpowers/plans/2026-08-14-revenue-audit.md section 3.`;
+  `and ${PROMOTION_ID}'s flat price before writing. product_snapshot_json also reconstructed ` +
+  `(H7b, 2026-08-14), on the basis that all 105 order_lines_v2 rows ever recorded for PROD-025 ` +
+  `(2026-06-03 to 2026-08-10, 68 in June 2026) carry category_id CAT-004 / "Trà" with zero ` +
+  `exceptions -- checked live before writing, not assumed. recipe_snapshot_json, ` +
+  `variant_snapshot_json and modifiers_snapshot_json remain empty: nothing attests to their ` +
+  `content for this line. See docs/superpowers/plans/2026-08-14-revenue-audit.md section 3.`;
 
 const NEW_LINE: Record<string, unknown> = {
   id: LINE_ID,
@@ -88,8 +130,12 @@ const NEW_LINE: Record<string, unknown> = {
   net_line_total: 15000,
   cost_at_sale: 0,
   promo_discount_reason: `PRM-003 "KHAI TRƯƠNG ĐỒNG GIÁ", FLAT_PRICE, VAR-032 -> 15000đ`,
-  // product_snapshot_json, variant_snapshot_json, modifiers_snapshot_json,
-  // recipe_snapshot_json deliberately omitted -- column defaults apply.
+  product_snapshot_json: PRODUCT_SNAPSHOT,
+  // variant_snapshot_json, modifiers_snapshot_json, recipe_snapshot_json
+  // deliberately omitted -- column defaults apply. Nothing attests to their
+  // content for this line; product_snapshot_json is different because
+  // every real PROD-025 line agrees on it with zero exceptions (see the
+  // header comment above). Do not "complete" these by analogy.
   // manual_discount_reason omitted -- no manual discount on this line.
 };
 
@@ -147,6 +193,33 @@ async function main(): Promise<void> {
     throw new Error(
       `Expected 0 existing lines, found ${existingLineCount} -- stop, do not write ` +
         `(the order may already have a line, or this is the wrong target).`,
+    );
+  }
+
+  // H7b: re-verify live, every run, that product_snapshot_json is still
+  // attested -- not just once while writing this script. If PROD-025 ever
+  // picks up a line in a different category, that category assignment is no
+  // longer uniform across its history and this snapshot needs re-justifying
+  // before writing it again.
+  const { data: prodLines, error: prodLinesErr } = await supabase
+    .from("order_lines_v2")
+    .select("product_snapshot_json")
+    .eq("product_id", "PROD-025");
+  if (prodLinesErr) throw new Error(`PROD-025 line read failed: ${prodLinesErr.message}`);
+  const categories = new Set(
+    (prodLines || []).map((l: any) => JSON.stringify({
+      category_id: l.product_snapshot_json?.category_id,
+      category_name: l.product_snapshot_json?.category_name,
+    })),
+  );
+  console.log(
+    `\nPROD-025 category check: ${prodLines?.length ?? 0} existing lines, ${categories.size} distinct category value(s).`,
+  );
+  if (categories.size !== 1 || ![...categories][0].includes("CAT-004")) {
+    throw new Error(
+      `PROD-025's recorded category is no longer uniformly CAT-004/"Trà" across its ${prodLines?.length ?? 0} lines ` +
+        `(${categories.size} distinct value(s) found) -- stop, do not write. The product may have moved category, ` +
+        `and today's value is not necessarily what June's was.`,
     );
   }
 
