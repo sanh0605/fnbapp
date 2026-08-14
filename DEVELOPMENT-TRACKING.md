@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F3b: extracted the drafts modal into components/pos/DraftsModal.tsx
+
+**Trigger:** `docs/superpowers/plans/2026-08-11-split-pos-screen.md`, task F3b. F3a (`2e47982`) landed the characterisation tests; this moves the modal, gated on F3a's tests passing with zero changes.
+
+**The move:** new `components/pos/DraftsModal.tsx` (69 lines, matching the sibling files' shape), taking the modal JSX (1104-1171) verbatim -- same markup, same order, same Vietnamese strings. Props exactly as scoped: `drafts`, `calculateItemTotal`, `onLoad`, `onDelete`, `onClose`. The child owns none of the three drafts state vars, `refreshDrafts`, `saveDraft`, `loadDraft`, or `deleteDraft` -- all stayed in the parent per rule 3 (all four are called from the checkout path).
+
+**The authorised consolidation:** the inline per-item total (13 lines: mods-price reduce, base total, VND/PERCENT discount branch, floor at 0) is gone, replaced by `sum + calculateItemTotal(item)` inside the same reduce -- the exact shape `calculateSubtotal` already uses elsewhere in `POSScreen.tsx`. No third copy of the formula exists anywhere in the codebase now. Safe per F3a's character-by-character verification: the two expressions differed only in a forced accumulator rename and the outer reduce's own wrapper, never in the formula.
+
+**No `key` added to `<DraftsModal>`** -- per F3a's finding, the drafts modal holds no internal state to go stale on a second open while already open, unlike the item modal's five state vars that needed F2b's fix. Re-verified after the move: the modal's own JSX still contains zero `useState` calls.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1105/1105, unchanged** (F3a's 5 tests included, verbatim -- `git diff` on the test file is empty). `check-rules-current` clean. `npm run build` succeeds. `components/POSScreen.tsx`: **1194 -> 1136 lines** (-58). New file: **69 lines**.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F3a: characterisation tests for the POS drafts modal
 
 **Trigger:** `docs/superpowers/plans/2026-08-11-split-pos-screen.md`, task F3a -- render tests against the current, unsplit `components/POSScreen.tsx` (drafts modal JSX at 1104-1171) that must keep passing unchanged through F3b's extraction, same discipline as F1/F2.
