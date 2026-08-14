@@ -121,6 +121,47 @@ first, then move code, and let the tests prove nothing changed.
 
 ---
 
+## 4b. F4 answered, 2026-08-14: stop
+
+Measured, not estimated.
+
+| | Before F1 | After F3 |
+|---|---|---|
+| `components/POSScreen.tsx` | 1.378 lines | **1.136** (-242) |
+| `useState` in it | 24 | **19** |
+| `components/pos/` | 5 files | 7 files (`ItemConfigModal.tsx` 258, `DraftsModal.tsx` 69) |
+| POS render tests | 0 | **19** (14 item modal, 5 drafts) |
+
+**The file landed at 1.136, above the 1.050-1.100 §4 predicted** — and §4
+already says that is fine, because the goal was never a number.
+
+**The decision is stop, and the reason is not fatigue — it is that the
+remaining work is all forbidden.** Every one of the 19 surviving state vars is
+the checkout path or is read by it:
+
+- **Order-level discount (5)** — backed up and restored inside
+  `handleConfirmCheckout`.
+- **Drafts (3)** — `saveDraft`, `deleteDraft` and `refreshDrafts` are all
+  called from the checkout path; F3 extracted the modal precisely because the
+  handlers could not move.
+- **Checkout (3)** — the path itself.
+- **Connectivity (2)** — `addToast` is called from checkout, `isOnline` gates it.
+- **Cart (3)** and **browsing (3)** — the core the checkout path consumes.
+
+Rule 3 puts all of it out of scope. Continuing would mean either breaking that
+rule on the till, or moving code without moving its state, which buys nothing.
+
+**The goal was met on its own terms:** a change to item configuration now
+touches a 258-line file with its own five state vars and 14 tests around it,
+instead of requiring the whole screen to be read. That was the point.
+
+What is *not* claimed: the file is not now simple, 1.136 lines is not a
+comfortable size, and the checkout path is exactly as tangled as it was on
+2026-08-11. Those are real, and they need their own plan with its own safety
+argument — not the tail end of this one.
+
+---
+
 ## 5. Verification bar
 
 `CLAUDE.md` section 9 in full, plus:
