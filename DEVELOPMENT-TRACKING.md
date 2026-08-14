@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H1: a re-runnable revenue verification script
+
+**Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md`, task H1 -- every check in section 1, as a script that can be run again after any future change.
+
+**Pre-code verification, as instructed:**
+- Reproduced all four of section 1's results independently against live data (`scratchpad/verify-h1.ts`, not committed) before writing the real script: 2.086 COMPLETED orders, 57.832.000đ; check 1 zero violations/2.086; check 2 zero violations/2.085 (UCK000269 has no lines); check 3 zero violations, 13 SUPERSEDED + 19 VOIDED excluded by status; check 4, 513 orders, 13.603.000đ both sides, difference 0đ; orders with no payment row, 1.573 carrying 44.229.000đ; monthly Apr 2.190.000đ/53 through Aug 7.149.000đ/274. **Every figure matched exactly** -- no discrepancy found, "checked, clean."
+- **Check 2's blindness, addressed as instructed rather than left implicit.** An order that lost every one of its lines while the header still reflects what was actually sold (UCK000269's shape) produces nothing to sum -- it cannot register as a numeric mismatch, only as "zero lines, excluded from this check." The script says this in its own output (not just this log): zero violations on check 2 proves whichever lines survive sum correctly to their header, and does not prove no line was ever lost. Orders with zero lines are counted and listed separately, never folded into the violation count or the checked-count denominator.
+
+**Structure**, matching `scripts/reset-cost-at-sale-core.ts`'s existing split: `scripts/verify-revenue-core.ts` (pure comparison functions, no I/O, no Supabase client -- `checkHeaderArithmetic`, `checkLineSum`, `checkNoSupersededCompleted`, `checkPayments`, `computeMonthlyTotal`, `meetsMinimumOrderCount`) with 17 unit tests in `scripts/verify-revenue-core.test.ts`, including UCK000269's own shape (net_total > 0, zero lines, lands in the separate bucket not in mismatches) and the 2026-08-14 manual-order-discount-not-subtracted-twice correction as an explicit regression case. `scripts/verify-revenue.ts` only fetches (`findAllNoCache`, which already paginates past Supabase's 1.000-row cap -- trap #1 from the plan) and calls the core functions.
+
+**Gated** (exits 1 on failure): checks 1-4 zero violations; row-count sanity (a floor, `meetsMinimumOrderCount`, since COMPLETED count only grows); April-July monthly revenue AND order count, exact match against the frozen figures. **Printed, not gated:** overall revenue/count (moves as the shop sells), August's monthly figures (still open), check 4's own order-count/amount breakdown beyond the zero-violations requirement, and the no-payment-row bucket (section 2: permanently unverifiable by design, not a target to shrink toward).
+
+**The control, demonstrated and reported as required:** temporarily changed June's known-good revenue from 22.157.000đ to 22.157.999đ, ran the script live -- it printed `GATE MISMATCH` on exactly that line, listed `Month 2026-06: revenue 22.157.000đ does not match known 22.157.999đ.` under `REVENUE VERIFICATION FAILED -- 1 check(s) failed`, and exited **1**. Every other check still read zero violations in the same run -- the control did not mask or trip anything else. Reverted; `git diff` on the script is empty; re-run exits 0.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1105 -> 1122 (+17, all green)**. `check-rules-current` clean. `npm run build` succeeds. Read-only throughout -- no writes, no `--apply`, no migration; confirmed by the script's own code (never calls `.insert`/`.update`/`.delete`, only fetches).
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan F, F3b: extracted the drafts modal into components/pos/DraftsModal.tsx
 
 **Trigger:** `docs/superpowers/plans/2026-08-11-split-pos-screen.md`, task F3b. F3a (`2e47982`) landed the characterisation tests; this moves the modal, gated on F3a's tests passing with zero changes.
