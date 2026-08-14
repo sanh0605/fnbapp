@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 42: hide INACTIVE ingredients from the recipe picker
+
+**Trigger:** the recipe picker in `components/ProductForm.tsx` offered an INACTIVE ingredient (`NNL-004` "Sữa yến mạch", a duplicate the owner retired) as a normal choice. Small, self-contained -- kept separate from H2 and H7, both in flight the same session.
+
+**Measured, sanity-checked live before writing anything:** `base_ingredients` 45 ACTIVE + 1 INACTIVE (`NNL-004`, confirmed by name); `semi_products` 16 ACTIVE + 1 DELETED, 0 INACTIVE; 139 recipes total, 0 reference `NNL-004` (`ingredients_json::text like '%NNL-004%'` matched nothing). All matched the task's own figures exactly.
+
+**Pre-code verification, as instructed:**
+- **Semi-products checked, not assumed to need nothing:** `semi_products` shares the exact same `status ('ACTIVE','INACTIVE','DELETED')` check constraint as `base_ingredients` (confirmed in `supabase/migrations/0001_init_schema.sql`), and the picker builds both ingredient types through the same `SearchableSelect` call site, branching only on `ingredient_type`. Zero INACTIVE rows today does not mean the code is right -- it means the identical bug hasn't been exposed by data yet. Fixed both, symmetrically, in the same change -- not a sweep of the other 27 filters, since this is the one shared picker component.
+- **Confirmed the second consumer, as instructed:** `calculateVariantCost` (same file) looks up `current_mac` from the same `baseIngredients`/`semiProducts` props to estimate a variant's cost. If the props themselves were narrowed to ACTIVE-only, any recipe referencing a retired ingredient would silently cost it at 0. The fix does not touch the props `page.tsx`/`ProductsClient.tsx` pass down at all (confirmed by `git diff` showing zero changes to either file) -- it only narrows what one `<select>` row *offers*, computed locally inside `ProductForm.tsx` from the full list it already receives.
+
+**The fix:** `offeredIngredientOptions(allItems, selectedId)` -- offers `status === "ACTIVE"` items, plus whichever item a given row's own `ing.ingredient_id` already points to even if it has since gone INACTIVE, labelled `(Ngừng dùng)` so it reads as retired rather than a normal option. A recipe that references a retired ingredient never renders as an empty select (which would have silently invited picking a different ingredient -- turning a display bug into a data change, exactly what the task warned against).
+
+**Tested for real, not by source grep** (`components/ProductForm.test.tsx`, `createRoot` + `act`, same pattern as `POSScreen.itemModal.test.tsx`): a fresh ingredient row offers the ACTIVE base ingredient but not the INACTIVE one; the same for semi-products after switching the row's type; a row pre-filled with a reference to the now-INACTIVE ingredient still shows it (both in the closed trigger's own label and in the opened option list, tagged `Ngừng dùng`) alongside the normal ACTIVE options, not instead of them. `SearchableSelect` is a custom combobox, not a native `<select>` -- options render as `<li role="option">` only once opened, into `document.body` via `ModalPortal`; a source-text grep cannot see this (OPEN-ITEMS 38's exact blindness). Two incidental jsdom gaps stubbed locally in the test file, unrelated to the fix itself: `window.matchMedia` (react-datepicker's mount effect) and `Element.prototype.scrollIntoView` (the combobox's own highlight-scroll effect).
+
+**Proved the tests have teeth:** reverted the fix to the original unfiltered `.map()`, ran the suite -- all 3 new tests failed, then restored; `git diff` on `ProductForm.tsx` shows only the real fix, no leftover marker.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1122 -> 1125 (+3, all green)**. `check-rules-current` clean. `npm run build` succeeds. Scope held to the recipe picker only -- `page.tsx`, `ProductsClient.tsx`, and the other 27 `status !== "DELETED"` filters elsewhere in the codebase are untouched, per instruction; OPEN-ITEMS 42 stays open to record them.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H7: script to reconstruct UCK000269's missing line (not applied)
 
 **Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md` sections 3 and 5, H7 -- owner decision 2026-08-14. Writes to production data; `fnbapp-bulk-data-change` skill followed in full before writing anything.

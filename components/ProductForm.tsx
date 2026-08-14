@@ -115,6 +115,28 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
     return cost;
   };
 
+  // OPEN-ITEMS 42: the recipe picker must not OFFER an INACTIVE ingredient
+  // as a normal choice, but a recipe written while it was ACTIVE can still
+  // legitimately reference it -- excluding it outright would render that
+  // row as an empty select and silently invite picking a different
+  // ingredient, turning a display fix into a data change. So this narrows
+  // only what a given row's <select> offers (ACTIVE items, plus that row's
+  // own already-selected item even if it has since gone INACTIVE, tagged so
+  // it reads as retired rather than a normal option) -- it does not touch
+  // baseIngredients/semiProducts themselves, which calculateVariantCost
+  // above still needs at full (ACTIVE + INACTIVE) strength: an INACTIVE
+  // ingredient still has a real historical cost, and shrinking the list it
+  // costs against would silently price it at 0.
+  const offeredIngredientOptions = (allItems: any[], selectedId: string) => {
+    return allItems
+      .filter((item: any) => item.status === "ACTIVE" || item.id === selectedId)
+      .map((item: any) => {
+        const unitName = units.find((u: any) => u.id === item.base_unit)?.name || item.base_unit;
+        const retiredTag = item.status !== "ACTIVE" ? " (Ngừng dùng)" : "";
+        return { id: item.id, label: `${item.name} (Tồn kho: ${unitName})${retiredTag}` };
+      });
+  };
+
   return (
     <>
       {!isEdit ? (
@@ -247,8 +269,8 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
                                         onChange={(val) => updateIngredient(vIdx, iIdx, "ingredient_id", val)}
                                         options={
                                           ing.ingredient_type === "BASE_INGREDIENT"
-                                            ? baseIngredients.map((b: any) => ({ id: b.id, label: `${b.name} (Tồn kho: ${units.find((u: any) => u.id === b.base_unit)?.name || b.base_unit})` }))
-                                            : semiProducts.map((s: any) => ({ id: s.id, label: `${s.name} (Tồn kho: ${units.find((u: any) => u.id === s.base_unit)?.name || s.base_unit})` }))
+                                            ? offeredIngredientOptions(baseIngredients, ing.ingredient_id)
+                                            : offeredIngredientOptions(semiProducts, ing.ingredient_id)
                                         }
                                         placeholder="- Chọn -"
                                       />
