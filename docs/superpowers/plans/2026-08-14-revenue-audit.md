@@ -183,6 +183,35 @@ frozen zero to a real total.
 
 ---
 
+## 5b. H2 answered, 2026-08-16: clean, and three of its four checks could not have failed
+
+**0 violations on all four checks**, 2.931 lines across 2.110 completed orders.
+But the four are not worth the same, and saying so is the finding:
+
+- **Checks 2 and 3 were already guaranteed at write time.**
+  `assertOrderInvariants` (`lib/order-math.ts:143`) throws on exactly these
+  relationships and is called by both the checkout and the V1→V2 migration
+  path. An order violating them could not have been written. Their passing
+  proves that guard has held, which is worth knowing — it is **not**
+  independent evidence that the data is right.
+- **Check 4** (`qty > 0`, `unit_price >= 0`) is a sanity floor, not an audit.
+- **Check 1 is the whole yield.** `gross_line_total == (unit_price +
+  Σ(modifier.price × modifier.qty)) × qty` is the one layer nothing has ever
+  guarded, and it is clean.
+
+**Its coverage is honest about itself:** 2.699 of 2.931 lines carry no
+modifiers, so they exercise only `unit_price × qty` and never the
+modifier-summing term. **232 lines actually test it.** The script prints that
+split on every run so a clean pass is not read as broader than it is.
+
+**The formula was derived from the write path, not from the data** — from
+`buildLine` in `lib/order-cart.ts`, then cross-checked against the
+independently written line builder in `lib/historical/history-ops/`. Deriving
+it from the data it is meant to check would have made the check circular and
+guaranteed a pass.
+
+---
+
 ## 6. Verification bar
 
 `CLAUDE.md` section 9 in full. Plus:
