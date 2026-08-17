@@ -115,6 +115,24 @@ nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
   ở `docs/OPEN-ITEMS.md` mục 28 — đừng biến quy tắc này thành cái cớ viết lại cả
   admin trong một lượt.
 
+  **Mở rộng, chủ quán chốt 2026-08-17.** Khi tới đợt cải tổ giao diện, phạm vi
+  là **toàn bộ hệ thống**, và **điện thoại là bản duy nhất được dựng trước** —
+  bản máy tính làm sau, thành một đợt riêng. Lý do ông ấy nêu: thiết bị dùng hệ
+  thống nhiều nhất là điện thoại, không phải máy tính.
+
+  Điều này **không huỷ** đoạn trên. Câu "đừng viết lại cả admin trong một lượt"
+  vẫn còn hiệu lực và vẫn là cách làm: cải tổ đi từng đợt, mỗi đợt vài trang.
+  Cái đổi là **đích đến của mỗi đợt** — trước đây một trang được coi là xong khi
+  chạy tốt trên cả hai; từ nay xong nghĩa là **xong trên điện thoại**, và máy
+  tính được phép còn thô cho tới đợt sau.
+
+  **Hệ quả phải nói trước, không phải để cãi mà để khỏi bất ngờ:** vài màn hình
+  quản trị dày số liệu (báo cáo, danh sách đơn nhập, công thức) trên điện thoại
+  **không phải là bảng cũ thu nhỏ** — chúng cần một cách trình bày khác hẳn.
+  Nên mỗi trang như vậy tốn công **hơn** là "làm cho responsive", không phải ít
+  hơn. Trang Giá trị hàng đã xuất (2026-08-13) là mẫu đã dựng theo lối này:
+  không có bảng ngang nào, mỗi mục một thẻ.
+
 - Code và chú thích bằng tiếng Anh. Chữ hiển thị cho người dùng bằng tiếng Việt.
 - Đơn giản trước. Không thêm tính năng, trừu tượng, hay tuỳ biến ngoài yêu cầu.
 - Chỉ chạm đúng chỗ cần. Không "cải thiện" code lân cận, không refactor thứ
