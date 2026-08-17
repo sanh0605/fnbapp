@@ -74,6 +74,49 @@ it** — see §5's gate.
 
 ---
 
+## 3b. COGS is not spread across months — owner decision 2026-08-18
+
+Measured while asking: the first count (49 rows, 2026-08-09) is worth
+**34.864.627đ** and the manual slips since are **1.127.515đ**, together the
+**35.992.142đ** now in the owner's own sheet — a figure that matches this
+system's engine to the dong.
+
+That figure covers consumption **from opening to 2026-08-09**, so a monthly
+P&L shows nothing for April to July and a **−26.529.142đ gross loss in
+August**, which is an artefact of when the count happened, not of trading.
+
+Two options were put to the owner with worked numbers — spread it across the
+months in proportion to revenue (a flat 63% everywhere, which is arithmetic
+rather than measurement), or report by count-period. **He chose neither:
+leave it exactly as it falls.** *"Mình cũng đã chốt sẽ chấp nhận các tháng
+trước bị 0 và từ tháng kiểm kê lần đầu tính tiếp… chủ yếu cũng có thể nắm
+được toàn bộ năm 2026 đã diễn ra thế nào… sai số vài tháng không quan
+trọng."*
+
+**This is sound for the purpose he stated, and not merely accepted:** the
+annual total is correct under every option, because allocation only moves
+money between months inside the year. He is reading the year, so the
+distortion does not touch what he uses.
+
+**What the report must therefore do:** show COGS where it falls, and carry a
+short line saying months before the first count read 0đ because nothing had
+been counted yet, not because nothing was consumed — the same sentence
+`app/admin/reports/issued` already carries.
+
+**The permanent rule this leaves in place**, and the thing a future reader
+must not mistake for a one-off: **a stocktake's value belongs to the period
+since the previous count.** Every future count behaves the same way; the
+first is only unusual in that its period is four months. Counting more often
+makes each figure smaller and easier to read — which is the real argument for
+a second count soon, not any adjustment to the report.
+
+**A related misunderstanding, corrected with the owner 2026-08-18:** selling a
+drink creates no issue row (`BR-COGS-005` — sales do not deduct stock), so the
+1.127.515đ of manual slips is breakage and giveaways, not August's cost of
+sales. August's real cost is still unknown and arrives with the second count.
+
+---
+
 ## 4. Tasks
 
 - **J1 — Expense entry.** Table + screen + link in the sidebar (owner's
