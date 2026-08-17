@@ -131,18 +131,32 @@ and it must not be quietly upgraded to "audited" later.
 
 ---
 
-## 4. What is unguarded
+## 4. What is unguarded — ~~a gap~~ **retracted 2026-08-17, there is no gap**
 
-The `superseded_by` exclusion is **absent from the query and currently
-harmless** — `findCompletedOrders` filters on `status = COMPLETED` only, and
-edited orders happen to carry `SUPERSEDED` status instead. Revenue is correct
-today by coincidence of two independent facts, not by construction. A change to
-how an edit marks the old version would double-count revenue silently, and
-nothing would fail.
+**This section was wrong and H5 is dropped because of it.** It claimed the
+`superseded_by` exclusion was absent and that revenue was "correct today by
+coincidence of two independent facts, not by construction". Checked properly
+before writing the fix: `findCompletedOrders` (`app/admin/reports/actions.ts:52`)
+does filter on status alone, but **each of its four callers re-applies the
+exclusion in JavaScript a few lines later** — callers at 93, 328, 710, 778,
+exclusions at **119, 355, 719, 786**. The same exclusion appears in
+`app/admin/page.tsx:164`, `app/pos/actions.ts:166`, and at the database level
+in `app/admin/orders/actions.ts:141`
+(`.or("superseded_by.is.null,superseded_by.eq.")`).
 
-That is the same shape as every real incident this project has had: a check
-that cannot fail, a guard on a branch nothing takes, an audit comparing a
-frozen zero to a real total.
+So revenue is guarded **twice**, by construction, not once by accident. And
+`verify-revenue.ts` check 3 already fails loudly if a `COMPLETED` row ever
+carries `superseded_by` — the test H5 proposed to add exists and has been
+running since H1.
+
+**The honest pattern, recorded because it is about this plan's author rather
+than the code:** three concerns written into this plan dissolved under
+measurement — a 2.317.000đ line discrepancy that was a double-subtraction in
+the measuring formula (§1), a claim that any till operator could set an
+arbitrary discount when the POS never sends that field at all
+(`OPEN-ITEMS 44`), and now this. Each was stated with more confidence than the
+checking that preceded it. The audit found one real thing (`OPEN-ITEMS 44`'s
+narrower, true form) and three phantoms of my own making.
 
 ---
 
@@ -163,7 +177,7 @@ frozen zero to a real total.
   totals disagreeing — §1's `sum(line net) == net_total` check cannot see a
   lost line when the header total was already reduced with it. No deletion, no
   edit, no reconstructed line.
-- **H5 — Close the §4 gap**: make `findCompletedOrders` exclude `superseded_by`
+- **H5 — DROPPED 2026-08-17, see §4.** There is no gap: every caller of `findCompletedOrders` already excludes `superseded_by`, and `verify-revenue.ts` check 3 already fails if such a row appears. Original text kept below for the record: ~~Close the §4 gap~~: make `findCompletedOrders` exclude `superseded_by`
   explicitly, plus a test that fails if a `COMPLETED` row carrying
   `superseded_by` would be counted. Behaviour must not change today — the same
   57.832.000đ before and after, because no such row exists. **That identical
