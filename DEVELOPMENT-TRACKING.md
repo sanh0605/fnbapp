@@ -105,6 +105,34 @@ Not committed as a push -- local only, per standing rule, awaiting separate owne
 
 ---
 
+## 2026-08-17 (Opus 5 executing the approved write) - QD-049's base_unit corrected in production (OPEN-ITEMS 41)
+
+**Owner confirmed 2026-08-17** that one hộp of Sữa chua không đường Vinamilk is 100 **grams**, then approved the write. Ran `scripts/correct-qd049-base-unit.ts --apply`.
+
+**Written:** `uom_conversions.QD-049.base_unit` `U-003` ("ml") → `UNT-017` ("g"). One row, one column. `conversion_rate` untouched at 100.
+
+**This deliberately bypassed a guard**, which is why it needed a script rather than the UI: `app/admin/inventory/conversions/actions.ts:152-162` refuses to edit a referenced conversion's core fields, and QD-049 is referenced by 15 purchase lines. The guard is right in general — changing a *rate* would reinterpret historical purchases — and did not apply here because the rate was unchanged and **nothing computes from the label**. That claim was verified by grep across `app/` and `lib/` before writing: every figure (`onHand`, `base_quantity`, reorder suggestions, issue costing) reads `conversion_rate`; `base_unit` is read only to build a display string or to detect that a form submission changed a field.
+
+**Neutrality measured before and after, not argued:**
+
+| | Before | After |
+|---|---|---|
+| QD-049 label | "ml" | **"g"** |
+| SPM-043 issued quantity | 35.100 | 35.100 |
+| SPM-043 issued value | 2.140.112đ | 2.140.112đ |
+| SPM-043 closing value | 164.624đ | 164.624đ |
+| Revenue Apr / May / Jun / Jul | all match | all match |
+
+The label moved and nothing numeric did. Structural backing for why it could not: `verify-revenue.ts` and its core never reference `uom_conversions` at all.
+
+**How this was found:** Sonnet checked all 52 purchased items while fixing the blank unit on the issue-slip screen, rather than fixing the reported symptom and stopping — 51 agreed with their ingredient's own unit, this one did not. They then flagged, unprompted, that the issued-value report was likely showing the wrong "ml" for it too, which it was.
+
+**Side effects (skill step 5):** `updated_at` on that one row, via `trg_uom_conversions_touch` (`BEFORE UPDATE`, sets `updated_at`, nothing else — function body read via `pg_get_functiondef`). No queue table, no downstream automation.
+
+**Still open:** remove the deliberate blank-unit special case for this item on the issue-slip screen, and re-verify by rendered test that both that screen and the issued-value report now read "g".
+
+---
+
 ## 2026-08-14 (Opus 5 executing the approved write) - Plan H, H7: UCK000269's line APPLIED to production
 
 **Owner approved the write 2026-08-14** after reviewing the dry run and choosing to fill `product_snapshot_json` (H7b). Ran `scripts/reconstruct-uck000269-line.ts --apply`.
