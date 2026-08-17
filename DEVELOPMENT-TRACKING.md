@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 41: the issue-slip screen's blank unit fixed
+
+**Trigger:** standalone task, small and self-contained per the owner's own framing, not bundled with Plan H. `purchased_items.default_unit_id` is null on all 52 rows; `getIssueSlipFormData` (`app/admin/inventory/issue-slips/actions.ts:81`) read it directly and fell back to `""`, so "Tồn hiện tại" on the issue-slip form always rendered a bare number. G4 (`7882894`) had already solved the identical bug on `app/admin/reports/issued` by sourcing the label from `UOM_Conversions.base_unit` instead.
+
+**Before any code, re-verified live rather than trusting G4's or the task's own numbers:** 52/52 purchased items have exactly one `ACTIVE` conversion, zero items with disagreeing conversions -- matches the 2026-08-13 figure.
+
+**A second check, not run before G4, found a real exception the blind application of the fix would have gotten wrong.** Cross-referenced each item's `ACTIVE` conversion `base_unit` against its own underlying ingredient's (`base_ingredients`/`semi_products`) canonical `base_unit` -- 51 of 52 agree; `SPM-043` "Sữa chua không đường Vinamilk" does not. Its only conversion (`QD-049`) says `base_unit = ml`; its base ingredient (`ING-032`) says `g`; every historical `purchase_order_lines` row for it independently recorded `g`; and the stored `base_quantity` values only make sense as grams (48 units x 100 = 4.800, matching a gram reading, not a sane ml figure for yogurt sold by weight). The conversion row's own `base_unit` looks like a data-entry mistake, not a genuine ambiguity. Per the task's own warning -- a confidently wrong label is worse than the blank it replaces -- `SPM-043` is deliberately excluded from the fix and keeps showing blank; the other 51 items now show their real unit.
+
+**Fix, scoped to this screen only:** `getIssueSlipFormData` now builds the label from `UOM_Conversions.base_unit`, falling back to blank whenever that unit disagrees with the item's own ingredient/semi-product `base_unit` (added one extra fetch, `Semi_Products`, needed for the cross-check). `purchased_items.default_unit_id` was not backfilled -- whether to populate it at all stays the owner's call (OPEN-ITEMS 41). The other 27 `status !== "DELETED"` filters (OPEN-ITEMS 42) were not touched.
+
+**Tested by real render, not source-text grep (OPEN-ITEMS 38):** new `app/admin/inventory/issue-slips/components/IssueSlipClient.test.tsx`, `createRoot` + `act` pattern matching `components/POSScreen.itemModal.test.tsx` / `components/ProductForm.test.tsx`. Two cases: an item with a real unit renders "Tồn hiện tại: 12 kg"; an item shaped like `SPM-043` renders "Tồn hiện tại: 48" with no unit. `vitest.config.ts`'s `include` was widened to also pick up `app/**/*.test.tsx` (it previously only matched `.test.ts` under `app/`, so this test file would not have run at all) -- the only reason this is not purely a same-screen change.
+
+**Cross-impact flagged, not fixed here:** `app/admin/reports/issued` (G4) uses the same `UOM_Conversions.base_unit` source and almost certainly shows the same wrong "ml" label for `SPM-043` -- not verified, out of scope for this task, recorded in OPEN-ITEMS 41.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1166 -> 1168 (+2, all green)**. `check-rules-current` clean. `npm run build` succeeds. Read-only throughout -- no data written, no `--apply`.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H3: promotion discount recomputation
 
 **Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md` §3 second bullet, §5 H3. Extends `scripts/verify-revenue.ts` / `verify-revenue-core.ts` (H2, `70bebd0`) -- same tool, no parallel one.

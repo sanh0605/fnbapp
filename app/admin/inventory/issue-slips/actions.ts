@@ -30,11 +30,12 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [purchasedItems, conversions, units, baseIngredients] = await Promise.all([
+  const [purchasedItems, conversions, units, baseIngredients, semiProducts] = await Promise.all([
     findAll("Purchased_Items"),
     findAll("UOM_Conversions"),
     findAll("Units"),
     findAll("Base_Ingredients"),
+    findAll("Semi_Products"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
@@ -73,12 +74,55 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   const eligible = await filterByC17(eligiblePurchasedItems);
   const onHandById = await computeOnHandByPurchasedItem();
 
+  // OPEN-ITEMS 41: purchased_items.default_unit_id is null on every row, so
+  // it can never label onHand. The base unit has to come from
+  // UOM_Conversions.base_unit instead -- the same fix G4 (7882894) applied
+  // to app/admin/reports/issued. Verified 2026-08-17 against live data: all
+  // 52 purchased items have exactly one ACTIVE conversion, and no item has
+  // conversions that disagree with each other.
+  //
+  // A second, narrower check compared each item's ACTIVE conversion base
+  // unit against the underlying ingredient's own canonical base_unit (the
+  // unit onHand's own inputs -- purchase_order_lines.base_quantity and
+  // stock_issues.base_quantity -- are ultimately denominated in). One item
+  // disagrees: SPM-043 "Sua chua khong duong Vinamilk" -- its ACTIVE
+  // conversion (QD-049) says base_unit = ml, but its base_ingredient
+  // (ING-032) says base_unit = g, and every purchase_order_lines row for it
+  // recorded base_unit = g independently. Showing "ml" there would be a
+  // confidently wrong label on a quantity actually tracked in grams -- worse
+  // than the blank it replaces -- so this one item is deliberately excluded
+  // and stays blank. This is a data question about that one conversion row,
+  // not something a display fix should silently paper over.
+  const baseIngredientUnitById = new Map<string, string>(
+    (baseIngredients as any[]).map(b => [b.id, b.base_unit]),
+  );
+  const semiProductUnitById = new Map<string, string>(
+    (semiProducts as any[]).map(s => [s.id, s.base_unit]),
+  );
+  const conversionBaseUnitIdByPurchasedItem = new Map<string, string>();
+  for (const c of conversions as any[]) {
+    if (c.status !== "ACTIVE") continue;
+    conversionBaseUnitIdByPurchasedItem.set(c.purchased_item_id, c.base_unit);
+  }
+
+  function resolveBaseUnitName(p: any): string {
+    const convBaseUnitId = conversionBaseUnitIdByPurchasedItem.get(p.id);
+    if (!convBaseUnitId) return "";
+    const ingredientUnitId = p.base_ingredient_id
+      ? baseIngredientUnitById.get(p.base_ingredient_id)
+      : p.semi_product_id
+        ? semiProductUnitById.get(p.semi_product_id)
+        : undefined;
+    if (ingredientUnitId && ingredientUnitId !== convBaseUnitId) return "";
+    return unitNameById.get(convBaseUnitId) ?? "";
+  }
+
   return eligible
     .map(p => ({
       id: p.id as string,
       name: p.name as string,
       onHand: onHandById.get(p.id) ?? 0,
-      unitName: unitNameById.get(p.default_unit_id) ?? "",
+      unitName: resolveBaseUnitName(p),
       packageLines: packageLinesByPurchasedItem.get(p.id) ?? [],
     }))
     .filter(item => item.packageLines.length > 0) // nothing to select without at least one active conversion

@@ -14,7 +14,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["lib/**/*.test.ts", "lib/**/*.property.test.ts", "scripts/**/*.test.ts", "app/**/*.test.ts", "components/**/*.test.tsx"],
+    include: ["lib/**/*.test.ts", "lib/**/*.property.test.ts", "scripts/**/*.test.ts", "app/**/*.test.ts", "app/**/*.test.tsx", "components/**/*.test.tsx"],
     exclude: ["node_modules", ".next", "dist"],
     coverage: {
       provider: "v8",
