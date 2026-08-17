@@ -16,6 +16,16 @@ phân biệt được với bỏ qua.
 
 Không ai vừa làm vừa tự duyệt việc của mình.
 
+**Hai agent sửa cùng một file tài liệu thì phải xem `git status` trước khi
+lưu** (chốt sau sự cố 2026-08-17). `docs/OPEN-ITEMS.md`, `CLAUDE.md`,
+`DEVELOPMENT-TRACKING.md` là chỗ cả hai cùng ghi. Hôm đó Opus chạy
+`git add docs/OPEN-ITEMS.md` trong lúc Sonnet đang sửa mục 38 trong cùng file,
+nên một lần lưu nói về kích thước bản sao lưu lại **nuốt luôn** thay đổi của
+mục 38. Nội dung không sai, nhưng ai tra lịch sử dòng đó sẽ đọc được một lời
+giải thích không liên quan. Không nghiêm trọng, nhưng lặp lại nhiều lần thì
+lịch sử mất giá trị — mà lịch sử là thứ mục 10 bảo tra khi cần biết "vì sao có
+một luật".
+
 **Hai agent nói chuyện với nhau bằng tiếng Anh** (chủ quán chốt 2026-08-10):
 prompt giao việc, phản biện, báo cáo kỹ thuật giữa Opus và Sonnet — tiếng Anh,
 vì tốn ít token hơn và chủ quán không phải đọc phần đó.
