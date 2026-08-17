@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 41 follow-up: QD-049 base_unit correction, dry run only, owner said wait
+
+**Trigger:** follow-up to the same day's issue-slip fix, owner-confirmed fact: one hộp of "Sữa chua không đường Vinamilk" is 100 grams, so `uom_conversions` row `QD-049` (base_unit `ml`) is wrong and should say `g`. This writes production master data, so `fnbapp-bulk-data-change` skill applied in full before any code.
+
+**Step 1, triggers:** `uom_conversions` has exactly one, `trg_uom_conversions_touch` (`BEFORE UPDATE`), function body read via `pg_get_functiondef` (not assumed): `new.updated_at = now(); return new;`. Nothing downstream reads a table this trigger touches beyond `updated_at`.
+
+**The claim to verify before writing anything -- "the rate is unchanged and nothing computes from the label" -- checked directly, not trusted:** grepped every read of `.base_unit` across `app/` and `lib/` (45 files matched `base_unit` broadly; narrowed to the ones actually touching `uom_conversions.base_unit` specifically, since `base_ingredients.base_unit` / `semi_products.base_unit` are different columns on different tables sharing a name). Every arithmetic path that produces a number from a purchased item (`lib/purchased-item-onhand.ts`, `lib/stocktake-package-lines.ts`, `lib/purchase-order-write-plan.ts`, `lib/reorder-suggestion.ts`, `lib/issue-costing.ts` / `issue-costing-inputs.ts` / `issued-value-report.ts`) reads `conversion_rate`, never `base_unit`. Every place that does read `uom_conversions.base_unit` (`issue-slips/actions.ts`, `stocktake/actions.ts`, `reports/issued/actions.ts`) uses it only to build a display string. The two guards that do compare `base_unit` (`conversions/actions.ts:157`, `items/actions.ts:147`) compare the conversion's own old value against the new form value being submitted through the UI -- change detection to block editing a referenced conversion's core fields -- never against the ingredient's own `base_unit`. No arithmetic and no compatibility check anywhere activates or changes behaviour based on whether a conversion's `base_unit` agrees with its ingredient's. Confirms the correction is a pure label fix.
+
+**`scripts/correct-qd049-base-unit.ts`** written: dry-run by default, `--apply` to write, one column (`base_unit: U-003 -> UNT-017`) on one row. Re-verifies live before writing: `purchased_item_id`, current `base_unit`, `status`, `conversion_rate` all match the expected pre-state; `ING-032`'s own `base_unit` is still `g`; exactly 15 `purchase_order_lines` reference `QD-049` with `base_quantity` summing to 37.800 (unchanged either way, since the script never touches `conversion_rate` or any purchase row). Prints the full row before and after.
+
+**Dry run 2026-08-17: clean.** All five live pre-checks passed; before/after rows printed; nothing else in the row would change beyond `updated_at`. **Structural proof, not just a same-number observation, that this write cannot move any figure:** `scripts/verify-revenue-core.ts` and `scripts/verify-revenue.ts` never reference `uom_conversions` at all (grepped, zero matches) -- not "the number happened not to move," but "the table isn't even read." `stock_issues` for `SPM-043`: 1 row, `base_quantity` 35.100 -- unaffected by construction, since `lib/issue-costing.ts` never reads `base_unit` either.
+
+**Asked the owner whether to apply now. Answer: not yet.** Per CLAUDE.md section 2 and the skill's own rule 4, this specific write stops here -- **no `--apply` run, no production data touched.** The `SPM-043` blank-fallback left in `app/admin/inventory/issue-slips/actions.ts` by the earlier fix was correspondingly **not removed** -- removing it before the underlying `QD-049` row is actually corrected would make the issue-slip screen show the wrong "ml" again instead of blank, the exact failure mode that fix was built to avoid. `app/admin/reports/issued` (G4) was not revisited either, for the same reason.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` 1168/1168 pass (no new tests -- no behaviour changed this session). `check-rules-current` clean. `npm run build` succeeds. Read-only against production throughout; the one write script that exists was run in dry-run mode only.
+
+`docs/OPEN-ITEMS.md` item 41 updated: script written and dry-run proven, write pending owner approval; what still follows once applied (remove the `SPM-043` special case, re-verify `reports/issued`) spelled out there.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 41: the issue-slip screen's blank unit fixed
 
 **Trigger:** standalone task, small and self-contained per the owner's own framing, not bundled with Plan H. `purchased_items.default_unit_id` is null on all 52 rows; `getIssueSlipFormData` (`app/admin/inventory/issue-slips/actions.ts:81`) read it directly and fell back to `""`, so "Tồn hiện tại" on the issue-slip form always rendered a bare number. G4 (`7882894`) had already solved the identical bug on `app/admin/reports/issued` by sourcing the label from `UOM_Conversions.base_unit` instead.
