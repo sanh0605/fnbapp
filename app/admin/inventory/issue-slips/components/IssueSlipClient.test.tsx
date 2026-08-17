@@ -5,8 +5,11 @@
 // because purchased_items.default_unit_id is null on every row (actions.ts
 // used to read unitNameById.get(p.default_unit_id)). getIssueSlipFormData
 // now sources the label from UOM_Conversions.base_unit instead (same fix as
-// G4, 7882894), except for the one item whose conversion disagrees with its
-// own ingredient's canonical unit -- that item is left blank on purpose.
+// G4, 7882894). SPM-043's conversion QD-049 disagreed with its own
+// ingredient's base_unit (ml vs g) from 2026-06-28 to 2026-08-17; the owner
+// confirmed the ingredient's own g was correct and the conversion row was
+// corrected in production the same day, so the generic lookup now covers it
+// too -- no special case left in actions.ts.
 //
 // OPEN-ITEMS 38: a test that greps source text cannot see a wrong render.
 // This renders the real component and reads the DOM, following the
@@ -85,16 +88,16 @@ const itemWithRealUnit: IssueSlipItemView = {
   ],
 };
 
-// Mirrors the real SPM-043 case: the fix deliberately leaves unitName blank
-// when the item's conversion disagrees with its own ingredient's base unit,
-// rather than showing a confidently wrong label.
-const itemWithBlankUnit: IssueSlipItemView = {
+// The real SPM-043 case, post-correction (2026-08-17): QD-049's base_unit
+// now agrees with its ingredient's own "g", so getIssueSlipFormData's
+// generic lookup resolves it like any other item -- no special case.
+const itemFormerlyMismatched: IssueSlipItemView = {
   id: "SPM-043",
   name: "Sua chua khong duong Vinamilk",
   onHand: 48,
-  unitName: "",
+  unitName: "g",
   packageLines: [
-    { conversionId: "QD-049", purchasedItemId: "SPM-043", purchasedItemName: "Sua chua khong duong Vinamilk", sizeLabel: "Hop 100g", conversionRate: 100, baseUnitName: "" },
+    { conversionId: "QD-049", purchasedItemId: "SPM-043", purchasedItemName: "Sua chua khong duong Vinamilk", sizeLabel: "Hop 100 g", conversionRate: 100, baseUnitName: "g" },
   ],
 };
 
@@ -111,15 +114,15 @@ describe("IssueSlipClient onHand unit label (OPEN-ITEMS 41)", () => {
     expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 12 kg");
   });
 
-  it("stays blank rather than showing a wrong unit for the known SPM-043 case", async () => {
+  it("renders g for Sua chua khong duong Vinamilk now that QD-049 is corrected", async () => {
     const container = await renderTracked(
-      <IssueSlipClient items={[itemWithBlankUnit]} recentSlips={[]} />,
+      <IssueSlipClient items={[itemFormerlyMismatched]} recentSlips={[]} />,
     );
     await selectItem(container, "Sua chua khong duong Vinamilk");
 
     const line = Array.from(container.querySelectorAll("p")).find(p =>
       p.textContent?.includes("Tồn hiện tại"),
     );
-    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 48");
+    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 48 g");
   });
 });

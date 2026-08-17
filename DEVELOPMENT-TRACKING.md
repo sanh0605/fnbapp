@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 41 closed: QD-049 correction applied, SPM-043 special case removed
+
+**Trigger:** the owner approved and ran `scripts/correct-qd049-base-unit.ts --apply` after the earlier dry-run session. Confirmed live: `uom_conversions.QD-049.base_unit = UNT-017` ("g"), `conversion_rate` unchanged at 100. This task removes the now-unnecessary special case and re-verifies both affected screens.
+
+**Neutrality re-confirmed after the write, not just before:** `SPM-043`'s issued quantity (35.100), issued value (2.140.112đ) and closing value (164.624đ) all identical to their pre-write figures; every frozen monthly revenue figure unchanged -- matching exactly what the dry-run's structural proof predicted (nothing reads `base_unit` as an arithmetic input).
+
+**Re-ran the 52-item conversion-vs-ingredient agreement check.** Result: 52 items, 0 disagreements -- as expected. One thing worth recording, not a problem: the join underneath returns 57 rows, not 52, because 4 purchased items (`SPM-003`, `SPM-005`, `SPM-014`, `SPM-033`) legitimately carry more than one `ACTIVE` conversion (different package sizes). Checked each: every item's own multiple conversions agree with each other (same `base_unit` across all of an item's rows) and each still agrees with its ingredient's own `base_unit` -- so this pre-existing shape does not reopen anything and needed no fix.
+
+**`app/admin/inventory/issue-slips/actions.ts`:** removed the `SPM-043` cross-check special case added for the earlier (pre-correction) state -- `resolveBaseUnitName`, the `baseIngredientUnitById`/`semiProductUnitById` maps, and the `Semi_Products` fetch (unused once the cross-check is gone) are all gone. The unit label is now the plain `UOM_Conversions.base_unit` lookup, same shape as G4, with no per-item exception.
+
+**Re-verified both screens by rendered test (OPEN-ITEMS 38), not grep:**
+- `app/admin/inventory/issue-slips/components/IssueSlipClient.test.tsx`: replaced the "stays blank" case with one asserting "Tồn hiện tại: 48 g" for the same item shape.
+- `app/admin/reports/issued/ItemCard.test.tsx` (new): the issued-value report's per-item card had no render test at all before this -- `app/admin/reports/issued/actions.test.ts` only tested the action's output, not what reaches the screen. `ItemCard` had to be pulled out of `page.tsx` into its own module (`app/admin/reports/issued/ItemCard.tsx`) first: Next's route-module type checking rejects any named export from a `page.tsx` file beyond its fixed set (`default`, `metadata`, ...), caught by `tsc`/`npm run build`, not by `vitest`. Asserts the "Đã xuất" line reads "100,00 g".
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` 1168 -> 1169 (net +1: one test's assertion changed, one new file's one test added). `check-rules-current` clean. `npm run build` succeeds.
+
+`docs/OPEN-ITEMS.md` item 41 closed for the unit-label symptom. What remains open, unchanged and still the owner's call: whether `purchased_items.default_unit_id` should be backfilled at all.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 41 follow-up: QD-049 base_unit correction, dry run only, owner said wait
 
 **Trigger:** follow-up to the same day's issue-slip fix, owner-confirmed fact: one hộp of "Sữa chua không đường Vinamilk" is 100 grams, so `uom_conversions` row `QD-049` (base_unit `ml`) is wrong and should say `g`. This writes production master data, so `fnbapp-bulk-data-change` skill applied in full before any code.

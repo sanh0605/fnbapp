@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getIssuedValueReport } from "./actions";
 import { formatNumber } from "@/lib/format";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ItemCard } from "./ItemCard";
 
 export const dynamic = "force-dynamic";
 
@@ -34,40 +35,6 @@ function MonthNotice() {
     <p className="text-xs text-text-secondary">
       Những tháng trước lần kiểm kê đầu tiên hiện 0đ -- không phải vì tháng đó không dùng gì, mà vì lúc đó chưa đếm để biết đã dùng bao nhiêu. Số chỉ thật sự có ý nghĩa khi tính giữa hai lần kiểm kê, mà hiện mới có đúng một lần.
     </p>
-  );
-}
-
-function ItemCard({
-  name,
-  unitName,
-  issuedQuantity,
-  issuedValue,
-  closingValue,
-}: {
-  name: string;
-  unitName: string;
-  issuedQuantity: number;
-  issuedValue: number;
-  closingValue: number;
-}) {
-  return (
-    <div className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-2">
-      <p className="font-bold text-text-primary text-sm leading-snug">{name}</p>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className="text-text-secondary">Đã xuất</span>
-        <span className="font-semibold text-text-primary">
-          {formatNumber(issuedQuantity, { withDecimals: true })} {unitName}
-        </span>
-      </div>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className="text-text-secondary">Giá trị đã xuất</span>
-        <span className="font-bold text-danger">{formatNumber(issuedValue)}đ</span>
-      </div>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className="text-text-secondary">Giá trị tồn còn lại</span>
-        <span className="font-semibold text-text-primary">{formatNumber(closingValue)}đ</span>
-      </div>
-    </div>
   );
 }
 
