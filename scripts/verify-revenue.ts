@@ -4,21 +4,30 @@ process.env.CLI_MODE = "true";
 
 // Type-only, erased at compile time -- does not run before dotenv.config()
 // the way a value import from this module's siblings would.
-import type { RevenueOrder, RevenueLine, RevenuePayment, RevenueLineDetail } from "./verify-revenue-core";
+import type {
+  RevenueOrder,
+  RevenueLine,
+  RevenuePayment,
+  RevenueLineDetail,
+  RevenuePromoOrder,
+  RevenuePromoLine,
+} from "./verify-revenue-core";
 
 /**
- * Plan H, tasks H1 and H2 (docs/superpowers/plans/2026-08-14-revenue-audit.md).
- * Re-runnable revenue verification: every check in section 1 (H1) plus
- * line-level arithmetic (H2, section 3 first bullet), against live data.
- * Prints the figures, exits non-zero if any structural check finds a
- * violation.
+ * Plan H, tasks H1, H2 and H3 (docs/superpowers/plans/2026-08-14-revenue-audit.md).
+ * Re-runnable revenue verification: every check in section 1 (H1), line-
+ * level arithmetic (H2, section 3 first bullet), and promotion discount
+ * recomputation (H3, section 3 second bullet), against live data. Prints
+ * the figures, exits non-zero if any structural check finds a violation.
  *
  * Read-only. No writes, no --apply, no migration -- this script audits.
  *
  * Run: npx vite-node scripts/verify-revenue.ts
  *
  * Gated (exit 1 on failure):
- *   - H1 checks 1-4 and H2 checks 1-4, zero violations required
+ *   - H1 checks 1-4, H2 checks 1-4, and H3 checks 1-4, zero violations
+ *     required (H3's "unrecomputable" orders are reported, never gated --
+ *     see the H3 section below for why)
  *   - row-count sanity (trap #1 below)
  *   - April-July monthly revenue AND order count, exact match against the
  *     frozen figures below -- these months are closed history, per the plan
@@ -30,7 +39,9 @@ import type { RevenueOrder, RevenueLine, RevenuePayment, RevenueLineDetail } fro
  * (still open), H1 check 4's own order-count/amount breakdown beyond "zero
  * violations" (grows as more sales record a payment), the no-payment
  * bucket (section 2: permanently unverifiable, not a target to shrink),
- * and H2's empty-modifier-line count (informational, not a violation).
+ * H2's empty-modifier-line count (informational, not a violation), and H3's
+ * unrecomputable-order count/reason (a known V1-era data gap, not this
+ * script's failure to check).
  *
  * H2's formula (gross_line_total = (unit_price + sum(modifier.price *
  * modifier.qty)) * qty) was derived BEFORE touching any data, from the
@@ -39,6 +50,17 @@ import type { RevenueOrder, RevenueLine, RevenuePayment, RevenueLineDetail } fro
  * history-ops/migrate-v1-to-v2.ts's line builder (the V1->V2 migration)
  * compute it independently and agree exactly. Neither was read after
  * getting a result from live data -- both were read first.
+ *
+ * H3 -- WHAT THIS CANNOT SEE, stated here and again at print time:
+ * OPEN-ITEMS 39 says the POS previews a promo price with one calculation
+ * and charges with another; only the charged figure was ever written down,
+ * so nothing below confirms or refutes what the cashier was shown -- that
+ * data does not exist to recover. H3 only checks whether the CHARGED
+ * discount agrees with the terms of the promotion recorded on the order at
+ * the time, recomputed from lib/order-cart.ts's computePromoForLine (the
+ * function that actually decided what got charged), derived before touching
+ * any data. See scripts/verify-revenue-core.ts's own H3 section comment for
+ * the three discount_type formulas and how they were derived.
  */
 
 const EXPECTED_ORDER_COUNT = 2086;
@@ -75,6 +97,11 @@ async function main(): Promise<void> {
     checkLineNetFormula,
     checkOrderLineSums,
     checkLineSanity,
+    parsePromotionSnapshot,
+    checkPromoRecomputation,
+    checkPromoEligibility,
+    checkLineVariantCoverage,
+    checkPromoAsymmetry,
   } = await import("./verify-revenue-core");
 
   const failures: string[] = [];
@@ -132,11 +159,17 @@ async function main(): Promise<void> {
   // it lists both under order_lines_v2's JSON_COLUMNS_BY_TABLE) converts
   // them back to JSON strings on the way out, for JSON.parse-based callers
   // like this one -- an empty/null value comes back as "", not "{}"/"[]".
-  // lineIdByKey is presentation-only (grouping below), not part of any
-  // check.
+  // lineIdByKey and promoReasonsByOrderId are presentation-only (grouping
+  // and H3 check 3 reporting below), not part of any check.
   const lineIdByKey = new Map<string, string>();
+  const promoReasonsByOrderId = new Map<string, Set<string>>();
   const lineDetails: RevenueLineDetail[] = rawCompletedLines.map(l => {
     lineIdByKey.set(`${l.order_id}:${l.line_no}`, l.id);
+    if (l.promo_discount_reason) {
+      const set = promoReasonsByOrderId.get(l.order_id) ?? new Set<string>();
+      set.add(l.promo_discount_reason);
+      promoReasonsByOrderId.set(l.order_id, set);
+    }
     let productSnapshot: any = {};
     try {
       productSnapshot = JSON.parse(l.product_snapshot_json || "{}");
@@ -158,6 +191,7 @@ async function main(): Promise<void> {
       order_no: orderNoById.get(l.order_id) || l.order_id,
       line_no: Number(l.line_no) || 0,
       product_name: productSnapshot.name || l.product_id,
+      variant_id: l.variant_id,
       unit_price: Number(l.unit_price) || 0,
       qty: Number(l.qty) || 0,
       modifiers,
@@ -331,6 +365,190 @@ async function main(): Promise<void> {
   console.log(`\nH2 check 4 (qty > 0 and unit_price >= 0 on every line): ${h2Check4.length} violation(s) / ${lineDetails.length}.`);
   reportLineMismatches("h2c4", h2Check4, m => m.reason);
   if (h2Check4.length > 0) failures.push(`H2 check 4: ${h2Check4.length} line-sanity violation(s).`);
+
+  // --- H3: promotion discount recomputation -------------------------------
+  console.log(
+    "\n=== H3: promotion discount recomputation (docs/superpowers/plans/2026-08-14-revenue-audit.md section 3) ===",
+  );
+  console.log(
+    "WHAT THIS CANNOT SEE (OPEN-ITEMS 39): the POS previews a promo price with one calculation and charges with " +
+      "another; only the charged figure was ever written down. What the cashier was shown is gone and no audit can " +
+      "recover it. Nothing below confirms or refutes OPEN-ITEMS 39 -- it only checks whether the CHARGED discount " +
+      "agrees with the terms of the promotion recorded on the order at the time.",
+  );
+
+  const promoOrders: RevenuePromoOrder[] = completedRaw.map(o => {
+    let snapshotRaw: any = null;
+    try {
+      const parsed = JSON.parse(o.applied_promotion_snapshot_json || "{}");
+      snapshotRaw = Object.keys(parsed).length > 0 ? parsed : null;
+    } catch {
+      snapshotRaw = null; // malformed outer JSON -- unrecomputable, same as absent
+    }
+    return {
+      order_id: o.id,
+      order_no: o.order_no,
+      created_at: o.created_at,
+      gross_total: Number(o.gross_total) || 0,
+      applied_promotion_id: o.applied_promotion_id || "",
+      promo_discount_total: Number(o.promo_discount_total) || 0,
+      snapshot: parsePromotionSnapshot(snapshotRaw),
+    };
+  });
+
+  const promoLines: RevenuePromoLine[] = lineDetails.map(l => ({
+    order_id: l.order_id,
+    order_no: l.order_no,
+    line_no: l.line_no,
+    product_name: l.product_name,
+    variant_id: l.variant_id,
+    unit_price: l.unit_price,
+    qty: l.qty,
+    gross_line_total: l.gross_line_total,
+    promo_discount: l.promo_discount,
+  }));
+  const promoLinesByOrderId = new Map<string, RevenuePromoLine[]>();
+  for (const l of promoLines) {
+    const list = promoLinesByOrderId.get(l.order_id) ?? [];
+    list.push(l);
+    promoLinesByOrderId.set(l.order_id, list);
+  }
+
+  function groupByPromotion<T extends { order_id: string }>(items: T[]): Map<string, T[]> {
+    const snapshotIdByOrderId = new Map(promoOrders.map(o => [o.order_id, o.snapshot?.id || o.applied_promotion_id || "(none)"]));
+    const groups = new Map<string, T[]>();
+    for (const item of items) {
+      const key = snapshotIdByOrderId.get(item.order_id) || "(unknown)";
+      const list = groups.get(key) ?? [];
+      list.push(item);
+      groups.set(key, list);
+    }
+    return groups;
+  }
+
+  // H3 check 1: recompute from the snapshot.
+  const h3Check1 = checkPromoRecomputation(promoOrders, promoLinesByOrderId);
+  const ordersWithPromoId = promoOrders.filter(o => o.applied_promotion_id !== "").length;
+  console.log(
+    `\nH3 check 1 (promo_discount recomputed from applied_promotion_snapshot_json): ` +
+      `${h3Check1.recomputedOrderCount} order(s) recomputed / ${ordersWithPromoId} with applied_promotion_id set, ` +
+      `${h3Check1.unrecomputable.length} unrecomputable.`,
+  );
+  if (h3Check1.unrecomputable.length > 0) {
+    const groups = groupByPromotion(h3Check1.unrecomputable);
+    console.log(
+      `  Unrecomputable orders (applied_promotion_id set, applied_promotion_snapshot_json empty) -- known V1-era gap, ` +
+        `not this script's failure to check (see lib/historical/history-ops/migrate-v1-to-v2.ts's own "legacy E.1 bug ` +
+        `pattern" note; migration copied V1's snapshot verbatim, and V1 sometimes never wrote one):`,
+    );
+    for (const [promoId, group] of groups) {
+      console.log(`    ${promoId}: ${group.length} order(s), e.g. ${group.slice(0, 5).map(o => o.order_no).join(", ")}${group.length > 5 ? ", ..." : ""}`);
+    }
+    // Not gated -- reported, per the reason above.
+  }
+  if (h3Check1.orderMismatches.length > 0 || h3Check1.lineMismatches.length > 0) {
+    const orderGroups = groupByPromotion(h3Check1.orderMismatches);
+    console.log(`  Order-total mismatches: ${h3Check1.orderMismatches.length}, by promotion:`);
+    let totalAtStake = 0;
+    let overcharged = 0;
+    let undercharged = 0;
+    for (const [promoId, group] of orderGroups) {
+      console.log(`    -- ${promoId} (${group.length}) --`);
+      for (const m of group.slice(0, 10)) {
+        const diff = m.actual - m.expected;
+        totalAtStake += Math.abs(diff);
+        if (diff > 0) overcharged++; else if (diff < 0) undercharged++;
+        console.log(`      ${m.order_no}: recomputed ${m.expected}, actually charged ${m.actual}, diff ${diff}`);
+      }
+      if (group.length > 10) console.log(`      ...and ${group.length - 10} more.`);
+    }
+    console.log(
+      `  Total at stake (order-level, |actual - recomputed|): ${formatNumber(totalAtStake)}d -- if the recomputation is ` +
+        `right and the charge was wrong, ${overcharged} order(s) charged MORE than the promotion's own terms (revenue ` +
+        `would move DOWN if corrected) and ${undercharged} charged LESS (revenue would move UP if corrected).`,
+    );
+    if (h3Check1.lineMismatches.length > 0) {
+      console.log(`  Line-level mismatches: ${h3Check1.lineMismatches.length}.`);
+      for (const m of h3Check1.lineMismatches.slice(0, 10)) {
+        console.log(`    ${m.order_no} line ${m.line_no} (${m.product_name}): recomputed ${m.expected}, actual ${m.actual}`);
+      }
+      if (h3Check1.lineMismatches.length > 10) console.log(`    ...and ${h3Check1.lineMismatches.length - 10} more.`);
+    }
+    failures.push(`H3 check 1: ${h3Check1.orderMismatches.length} order-total and ${h3Check1.lineMismatches.length} line-level recomputation mismatch(es).`);
+  }
+
+  // H3 check 2: eligibility (date window, min_order_value where the
+  // snapshot shape carries it).
+  const h3Check2 = checkPromoEligibility(promoOrders);
+  console.log(`\nH3 check 2 (promotion was actually eligible: date window, min_order_value where recorded): ${h3Check2.length} violation(s).`);
+  console.log(
+    "  min_order_value is only checked where the snapshot shape carries it -- migrated (V1-origin) snapshots do, " +
+      "native V2 snapshots (built via lib/order-snapshot.ts's buildPromotionSnapshot) never captured this field at " +
+      "all. Both live promotions (PRM-003, PRM-004) have min_order_value 0, so this has never mattered in practice.",
+  );
+  for (const v of h3Check2.slice(0, 20)) {
+    console.log(`  ${v.order_no} (${v.order_id}): ${v.reason}`);
+  }
+  if (h3Check2.length > 0) failures.push(`H3 check 2: ${h3Check2.length} eligibility violation(s).`);
+
+  // H3 check 3: the two asymmetric cases. NOT gated (does not push to
+  // failures) -- unlike checks 1/2/4, this is not an arithmetic identity
+  // that must hold; both shapes have a real, code-confirmed legitimate
+  // reading, investigated below rather than assumed. Reported with full
+  // detail regardless, per the plan's own framing ("the ones most likely to
+  // be real") -- visibility, not a false "FAILED" verdict on designed
+  // behaviour.
+  const h3Check3 = checkPromoAsymmetry(promoOrders);
+  const asym1 = h3Check3.filter(c => c.shape === "promo_id_set_zero_discount");
+  const asym2 = h3Check3.filter(c => c.shape === "discount_set_no_promo_id");
+  console.log(
+    `\nH3 check 3 (asymmetric cases, NOT gated -- see below for why): applied_promotion_id set but promo_discount_total 0: ` +
+      `${asym1.length}. promo_discount_total > 0 but no applied_promotion_id: ${asym2.length}.`,
+  );
+
+  if (asym1.length > 0) {
+    const asym1UnrecomputableCount = asym1.filter(c => !promoOrders.find(o => o.order_id === c.order_id)?.snapshot).length;
+    console.log(
+      `  applied_promotion_id + 0 discount (${asym1.length}): all ${asym1UnrecomputableCount} of them fall inside H3 check 1's ` +
+        `${h3Check1.unrecomputable.length}-order unrecomputable bucket (no snapshot) -- check 1 cannot confirm or refute these ` +
+        `systematically. Investigated one by hand (UCK000124, PRM-003 on VAR-018): VAR-018's own list price is 15.000d, ` +
+        `identical to PRM-003's flat target for it -- a legitimate 0 discount by the FLAT_PRICE formula, not an error. ` +
+        `Not verified for the other ${asym1.length - 1} the same way -- reported, not asserted clean.`,
+    );
+    for (const c of asym1.slice(0, 10)) {
+      console.log(`    ${c.order_no} (${c.order_id})`);
+    }
+  }
+
+  if (asym2.length > 0) {
+    let totalNoPromoDiscount = 0;
+    console.log(`  promo_discount_total > 0 with no applied_promotion_id (${asym2.length}) -- real, code-confirmed, not a data artifact:`);
+    for (const c of asym2) {
+      totalNoPromoDiscount += c.promo_discount_total;
+      const reasons = [...(promoReasonsByOrderId.get(c.order_id) ?? [])].join(",") || "(none)";
+      console.log(`    ${c.order_no} (${c.order_id}): promo_discount_total ${c.promo_discount_total}, line reason(s): ${reasons}`);
+    }
+    console.log(
+      `  Total: ${formatNumber(totalNoPromoDiscount)}d. Confirmed in code, not inferred: lib/order-cart.ts:420 sets ` +
+        `promo_discount_reason to "SNAPSHOT" when a line's charged discount came directly from the client-supplied ` +
+        `item.promo_discount_snapshot -- used verbatim even when the SERVER's own promotion resolution (resolvedPromo) ` +
+        `came back null, which is exactly why applied_promotion_id stays empty. lib/historical/history-ops/` +
+        `migrate-v1-to-v2.ts:366 has the same shape for migrated orders, marked "MIGRATED_PROMO". This is OPEN-ITEMS 39's ` +
+        `own territory but a different angle on it -- not "preview differs from what was charged" but "the previewed ` +
+        `value WAS what was charged, with no server-side record of which promotion (if any) justified it." If this ` +
+        `discount should not have been honoured without a resolvable promotion, revenue would move UP by ` +
+        `${formatNumber(totalNoPromoDiscount)}d if corrected -- not corrected here, per the plan's own rule against fixing ` +
+        `anything this audit finds.`,
+    );
+  }
+
+  // H3 check 4: line variant coverage.
+  const h3Check4 = checkLineVariantCoverage(promoOrders, promoLines);
+  console.log(`\nH3 check 4 (any line carrying promo_discount whose variant the applied promotion does not cover): ${h3Check4.length} violation(s).`);
+  for (const v of h3Check4.slice(0, 20)) {
+    console.log(`  ${v.order_no} line ${v.line_no} (${v.product_name}, ${v.variant_id}): promo_discount ${v.promo_discount}`);
+  }
+  if (h3Check4.length > 0) failures.push(`H3 check 4: ${h3Check4.length} line-variant-coverage violation(s).`);
 
   // --- Monthly table -----------------------------------------------------
   console.log("\nMonthly (Asia/Saigon):");

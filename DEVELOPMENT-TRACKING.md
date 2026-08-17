@@ -4,6 +4,39 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H3: promotion discount recomputation
+
+**Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md` §3 second bullet, §5 H3. Extends `scripts/verify-revenue.ts` / `verify-revenue-core.ts` (H2, `70bebd0`) -- same tool, no parallel one.
+
+**What this cannot see, stated in the script's own output, not just here:** OPEN-ITEMS 39 says the POS previews a promo price with one calculation and charges with another; only the charged figure was ever written down, so nothing here confirms or refutes what the cashier saw. H3 only checks whether the CHARGED discount agrees with the promotion terms recorded on the order.
+
+**Three formulas derived from `lib/order-cart.ts`'s `computePromoForLine` (the function that decided what got charged), before touching any data:**
+- `FLAT_PRICE`: `max(0, unit_price - targetPrice) * qty`, capped at `gross_line_total` -- variant only, modifiers untouched.
+- `PERCENT`: `round(gross_line_total * discount_value / 100)`, capped -- the one case where modifiers ARE discounted, since it applies to the whole line gross.
+- `FLAT_VND` (the type system's name for the branch unnamed in the charging code): `discount_value * qty`, capped -- **ignores any per-variant map override entirely**, unlike `FLAT_PRICE`. Also reproduced faithfully: production's own `targetPrice = override || discount_value` uses `||` not `??`, so a genuine 0 override would fall through to `discount_value` -- a latent quirk, never triggered in live data (neither real promotion has a 0 override), not fixed.
+
+**Two real findings from the "before any code" checks, exactly the kind the task asked for:**
+- **296 of 813 orders with `applied_promotion_id` set have an empty `applied_promotion_snapshot_json`** -- all migrated (V1-origin), dated 2026-06-01 to 2026-06-16. Traced to `lib/historical/history-ops/migrate-v1-to-v2.ts`'s own `classifyV1Discounts`, which already names this "legacy E.1 bug pattern": migration copies V1's own snapshot verbatim, and V1 sometimes never wrote one. A known, pre-existing gap faithfully carried forward, not a migration bug -- reported as unrecomputable, never silently passed or backfilled from live promotions data.
+- **The snapshot shape changed over time, confirmed by reading real rows, not assumed:** migrated (V1-origin) snapshots carry extra fields (`brand_id`, `created_at`, `min_order_value`, `status`) with `discount_value`/`min_order_value` as strings; native V2 snapshots (via `lib/order-snapshot.ts`'s `buildPromotionSnapshot`) carry exactly `{id, name, type, discount_type, discount_value (number), applicable_products_json, code, start_date, end_date}` -- no `min_order_value` at all. `min_order_value` is also never read anywhere in the charging code itself (`resolvePromotion`/`computePromoForLine`) -- checked, not assumed. Eligibility check 2 only verifies `min_order_value` where the snapshot shape actually carries it.
+
+**A genuine, code-confirmed finding from check 3's two asymmetric cases, investigated rather than assumed either way:**
+- **10 orders** (all migrated) carry `applied_promotion_id` set with `promo_discount_total` 0 -- all fall inside the same 296-order unrecomputable bucket, so check 1 cannot confirm or refute them systematically. One investigated by hand (UCK000124, PRM-003 on VAR-018): VAR-018's own list price is 15.000đ, identical to PRM-003's flat target for it -- a legitimate 0 discount by the FLAT_PRICE formula, not an error. Not verified for the other 9 the same way; reported, not asserted clean.
+- **4 orders** (3 native, 1 migrated), totaling **46.000đ**, carry `promo_discount_total > 0` with no `applied_promotion_id` -- confirmed in code, not inferred: every one of their lines carries `promo_discount_reason = "SNAPSHOT"` (native) or `"MIGRATED_PROMO"` (migrated), the exact literal string `lib/order-cart.ts:420` writes when a line's charged discount came directly from the client-supplied `item.promo_discount_snapshot`, used verbatim even when the server's own `resolvedPromo` came back null. A different angle on OPEN-ITEMS 39 than "preview differs from charge": here the previewed value **was** what was charged, with no server-side record of which promotion (if any) justified it. If this should not have been honoured without a resolvable promotion, revenue would move **up** by 46.000đ if corrected -- not corrected here.
+
+**Check 3 is reported but deliberately not gated** (does not push to `failures`), unlike checks 1/2/4: both asymmetric shapes have real, code-confirmed legitimate readings (a designed client-snapshot fallback; a documented V1-era gap), not pure arithmetic identities that must hold. Treating a designed fallback as a script "FAILURE" would itself be the false-alarm pattern §4 of the plan warns against. This is a deliberate reporting-design choice, explained in the script's own comments, not an oversight.
+
+**Result, live 2026-08-17: checks 1, 2, 4 -- 0 violations. 517 orders recomputed, 296 unrecomputable (reported, not gated), 14 asymmetric cases (reported, not gated, both shapes investigated).** H1/H2's own checks and the frozen April-July monthly gate stayed at 0 violations / exact match throughout.
+
+**Control demonstrated against real data:** added `+ 1` to the FLAT_PRICE per-unit formula, ran live -- **395 order-total and 580 line-level mismatches**, all traced to PRM-003, real product names and diffs shown, grouped by promotion, exited 1 naming `H3 check 1` exactly, while checks 1/2/4 and (correctly) check 3 stayed unaffected in the same run. Reverted; `git diff` clean; re-run exits 0.
+
+**28 new unit tests** in `scripts/verify-revenue-core.test.ts`, including the production `||`-quirk reproduction, both real snapshot shapes, and each of the four H3 checks independently.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` **1138 -> 1166 (+28, all green)**. `check-rules-current` clean. `npm run build` succeeds. Read-only throughout -- no writes, no `--apply`; nothing found required §6's "a task that changes a total stops and reports" to trigger (no revenue total was touched).
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-14 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Plan H, H2: line-level revenue arithmetic
 
 **Trigger:** `docs/superpowers/plans/2026-08-14-revenue-audit.md` §3 first bullet, §5 H2. Extends H1 (`f22b9e5`) -- same `scripts/verify-revenue.ts` / `scripts/verify-revenue-core.ts` pair, no parallel tool.

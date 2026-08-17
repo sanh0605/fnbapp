@@ -224,6 +224,7 @@ export interface RevenueLineDetail {
   order_no: string;
   line_no: number;
   product_name: string;
+  variant_id: string;
   unit_price: number;
   qty: number;
   modifiers: Array<{ price: number; qty: number }>;
@@ -400,4 +401,309 @@ export function checkLineSanity(lines: readonly RevenueLineDetail[]): LineSanity
     }
   }
   return violations;
+}
+
+// ============================================================================
+// Plan H, task H3 -- promotion discount recomputation. What this section
+// CANNOT do: OPEN-ITEMS 39 says the POS previews a promo price with one
+// calculation and charges with another; only the charged figure was ever
+// written down, so nothing here confirms or refutes what the cashier saw --
+// that data does not exist to recover. This section only checks whether the
+// CHARGED discount agrees with the terms of the promotion recorded on the
+// order at the time.
+//
+// The three discount_type formulas are derived from lib/order-cart.ts's
+// computePromoForLine (the function that actually decided what got charged),
+// not from data and not reverse-engineered after the fact:
+//   FLAT_PRICE: perUnitDiscount = max(0, unit_price - targetPrice);
+//     discount = min(gross_line_total, perUnitDiscount * qty).
+//     Applies to the variant's own price only -- modifiers are untouched.
+//   PERCENT: discount = min(gross_line_total, round(gross_line_total *
+//     discount_value / 100)). Applies to the WHOLE line gross, variant AND
+//     modifiers together -- the one case where modifiers are discounted too.
+//   FLAT_VND (the type system's name for the third, unnamed-in-code branch):
+//     discount = min(gross_line_total, discount_value * qty). Per unit, but
+//     unlike FLAT_PRICE it ignores any per-variant map override entirely and
+//     always uses the promotion's own top-level discount_value.
+// targetPrice = applicable.get(variant_id) || discount_value -- note this is
+// production's own `||`, not `??`: a real per-variant override of exactly 0
+// would silently fall through to discount_value. Reproduced here exactly as
+// written (matching what actually charged), not fixed. Never observed
+// triggering in live data -- neither PRM-003 nor PRM-004's map has a 0
+// override -- so this is a latent quirk to know about, not an active one.
+
+export interface PromoSnapshotParsed {
+  id: string;
+  discountType: string;
+  discountValue: number;
+  applicable: Map<string, number>;
+  startDate: string;
+  endDate: string;
+  // null when the snapshot shape does not carry this field at all -- native
+  // V2 orders (built via lib/order-snapshot.ts's buildPromotionSnapshot)
+  // never captured min_order_value. Migrated (V1-origin) orders copied V1's
+  // own snapshot verbatim, which does carry it (as a string). Two real
+  // snapshot shapes exist in live data, confirmed by reading actual rows,
+  // not assumed: migrated snapshots additionally carry brand_id, created_at,
+  // min_order_value, status, and discount_value/min_order_value as strings;
+  // native snapshots carry exactly {id, name, type, discount_type,
+  // discount_value (number), applicable_products_json, code, start_date,
+  // end_date}, nothing more.
+  minOrderValue: number | null;
+}
+
+// Accepts the ALREADY JSON.parsed outer applied_promotion_snapshot_json
+// value (or null/undefined/{} for a missing one -- the script does the
+// outer JSON.parse, matching how it already handles product_snapshot_json
+// in H2, since lib/sheets_db.ts's serializeRow hands these back as strings).
+// Returns null only when the snapshot itself is absent -- an order in that
+// state is unrecomputable, reported separately, never silently skipped.
+// A malformed inner applicable_products_json does NOT return null here --
+// it degrades to an empty map, deliberately mirroring lib/order-cart.ts's
+// own parseApplicable, which is exactly as lenient. Recomputing with a
+// STRICTER parser than the one that actually ran would manufacture
+// mismatches that never really happened.
+export function parsePromotionSnapshot(raw: unknown): PromoSnapshotParsed | null {
+  if (!raw || typeof raw !== "object" || Object.keys(raw as object).length === 0) return null;
+  const r = raw as Record<string, unknown>;
+
+  const applicable = new Map<string, number>();
+  try {
+    const parsedApplicable = JSON.parse(String(r.applicable_products_json || ""));
+    if (Array.isArray(parsedApplicable)) {
+      for (const v of parsedApplicable) applicable.set(String(v), 0);
+    } else if (parsedApplicable && typeof parsedApplicable === "object") {
+      for (const [k, v] of Object.entries(parsedApplicable)) applicable.set(k, Number(v));
+    }
+  } catch {
+    // malformed -- empty map, matching parseApplicable's own leniency
+  }
+
+  return {
+    id: String(r.id || ""),
+    discountType: String(r.discount_type || ""),
+    discountValue: Number(r.discount_value) || 0,
+    applicable,
+    startDate: String(r.start_date || ""),
+    endDate: String(r.end_date || ""),
+    minOrderValue:
+      r.min_order_value !== undefined && r.min_order_value !== null && r.min_order_value !== ""
+        ? Number(r.min_order_value)
+        : null,
+  };
+}
+
+// The charging formula itself -- see the section header comment above for
+// the derivation and the three formulas.
+export function computeExpectedPromoDiscountForLine(
+  snapshot: PromoSnapshotParsed,
+  variantId: string,
+  unitPrice: number,
+  qty: number,
+  grossLineTotal: number,
+): number {
+  if (!snapshot.applicable.has(variantId)) return 0;
+  const override = snapshot.applicable.get(variantId)!;
+  const targetPrice = override || snapshot.discountValue;
+
+  if (snapshot.discountType === "FLAT_PRICE") {
+    const perUnitDiscount = Math.max(0, unitPrice - targetPrice);
+    return Math.min(grossLineTotal, perUnitDiscount * qty);
+  }
+  if (snapshot.discountType === "PERCENT") {
+    return Math.min(grossLineTotal, Math.round(grossLineTotal * (snapshot.discountValue / 100)));
+  }
+  return Math.min(grossLineTotal, snapshot.discountValue * qty);
+}
+
+export interface RevenuePromoOrder {
+  order_id: string;
+  order_no: string;
+  created_at: string;
+  gross_total: number;
+  applied_promotion_id: string;
+  promo_discount_total: number;
+  snapshot: PromoSnapshotParsed | null;
+}
+
+export interface RevenuePromoLine {
+  order_id: string;
+  order_no: string;
+  line_no: number;
+  product_name: string;
+  variant_id: string;
+  unit_price: number;
+  qty: number;
+  gross_line_total: number;
+  promo_discount: number;
+}
+
+export interface UnrecomputableOrder {
+  order_no: string;
+  order_id: string;
+  reason: string;
+}
+
+export interface PromoRecomputationResult {
+  lineMismatches: LineMismatch[];
+  orderMismatches: Mismatch[];
+  recomputedOrderCount: number;
+  unrecomputable: UnrecomputableOrder[];
+}
+
+// Check 1 (plan section 5 H3): recompute from the snapshot, compare against
+// both the header's promo_discount_total and each line's own promo_discount.
+// Only orders with applied_promotion_id set are considered here -- the
+// no-promo-but-discount-present asymmetric case is checkPromoAsymmetry's
+// job, not this function's, since there is no snapshot to recompute from in
+// that case either way.
+export function checkPromoRecomputation(
+  orders: readonly RevenuePromoOrder[],
+  linesByOrderId: ReadonlyMap<string, readonly RevenuePromoLine[]>,
+): PromoRecomputationResult {
+  const lineMismatches: LineMismatch[] = [];
+  const orderMismatches: Mismatch[] = [];
+  const unrecomputable: UnrecomputableOrder[] = [];
+  let recomputedOrderCount = 0;
+
+  for (const o of orders) {
+    if (!o.applied_promotion_id) continue;
+
+    if (!o.snapshot) {
+      unrecomputable.push({
+        order_no: o.order_no,
+        order_id: o.order_id,
+        reason: "applied_promotion_id set but applied_promotion_snapshot_json is empty",
+      });
+      continue;
+    }
+
+    recomputedOrderCount++;
+    const ls = linesByOrderId.get(o.order_id) ?? [];
+    let expectedOrderTotal = 0;
+    for (const l of ls) {
+      const expected = computeExpectedPromoDiscountForLine(o.snapshot, l.variant_id, l.unit_price, l.qty, l.gross_line_total);
+      expectedOrderTotal += expected;
+      if (expected !== l.promo_discount) {
+        lineMismatches.push({
+          order_no: l.order_no,
+          order_id: l.order_id,
+          line_no: l.line_no,
+          product_name: l.product_name,
+          expected,
+          actual: l.promo_discount,
+        });
+      }
+    }
+    if (expectedOrderTotal !== o.promo_discount_total) {
+      orderMismatches.push({ order_no: o.order_no, order_id: o.order_id, expected: expectedOrderTotal, actual: o.promo_discount_total });
+    }
+  }
+
+  return { lineMismatches, orderMismatches, recomputedOrderCount, unrecomputable };
+}
+
+export interface PromoEligibilityViolation {
+  order_no: string;
+  order_id: string;
+  reason: string;
+}
+
+// Check 2: was the promotion eligible at all at that moment -- order date
+// inside the snapshot's window, min_order_value satisfied (only where the
+// snapshot shape carries that field -- see PromoSnapshotParsed's comment),
+// and (separately, checkLineVariantCoverage below) the variant actually
+// covered.
+export function checkPromoEligibility(orders: readonly RevenuePromoOrder[]): PromoEligibilityViolation[] {
+  const violations: PromoEligibilityViolation[] = [];
+  for (const o of orders) {
+    if (!o.snapshot) continue; // unrecomputable, reported separately
+
+    const orderDate = new Date(o.created_at).getTime();
+    const start = o.snapshot.startDate ? new Date(o.snapshot.startDate).getTime() : NaN;
+    const end = o.snapshot.endDate ? new Date(o.snapshot.endDate).getTime() : NaN;
+
+    if (!Number.isNaN(start) && orderDate < start) {
+      violations.push({
+        order_no: o.order_no,
+        order_id: o.order_id,
+        reason: `order date (${o.created_at}) is before the promotion's own start_date (${o.snapshot.startDate})`,
+      });
+    }
+    if (!Number.isNaN(end) && orderDate > end) {
+      violations.push({
+        order_no: o.order_no,
+        order_id: o.order_id,
+        reason: `order date (${o.created_at}) is after the promotion's own end_date (${o.snapshot.endDate})`,
+      });
+    }
+    if (o.snapshot.minOrderValue !== null && o.gross_total < o.snapshot.minOrderValue) {
+      violations.push({
+        order_no: o.order_no,
+        order_id: o.order_id,
+        reason: `gross_total (${o.gross_total}) is below the snapshot's own min_order_value (${o.snapshot.minOrderValue})`,
+      });
+    }
+  }
+  return violations;
+}
+
+export interface LineCoverageViolation {
+  order_no: string;
+  order_id: string;
+  line_no: number;
+  product_name: string;
+  variant_id: string;
+  promo_discount: number;
+}
+
+// Check 4: any line carrying promo_discount whose variant the applied
+// promotion does not cover.
+export function checkLineVariantCoverage(
+  orders: readonly RevenuePromoOrder[],
+  lines: readonly RevenuePromoLine[],
+): LineCoverageViolation[] {
+  const snapshotByOrderId = new Map(orders.map(o => [o.order_id, o.snapshot]));
+  const violations: LineCoverageViolation[] = [];
+  for (const l of lines) {
+    if (l.promo_discount <= 0) continue;
+    const snapshot = snapshotByOrderId.get(l.order_id);
+    if (!snapshot) continue; // unrecomputable order (or no promo on it at all), reported elsewhere
+    if (!snapshot.applicable.has(l.variant_id)) {
+      violations.push({
+        order_no: l.order_no,
+        order_id: l.order_id,
+        line_no: l.line_no,
+        product_name: l.product_name,
+        variant_id: l.variant_id,
+        promo_discount: l.promo_discount,
+      });
+    }
+  }
+  return violations;
+}
+
+export interface AsymmetricPromoCase {
+  order_no: string;
+  order_id: string;
+  promo_discount_total: number;
+  shape: "promo_id_set_zero_discount" | "discount_set_no_promo_id";
+}
+
+// Check 3: the two asymmetric cases, checked over every COMPLETED order
+// regardless of whether a snapshot exists -- neither case needs one.
+export function checkPromoAsymmetry(
+  orders: readonly { order_id: string; order_no: string; applied_promotion_id: string; promo_discount_total: number }[],
+): AsymmetricPromoCase[] {
+  const cases: AsymmetricPromoCase[] = [];
+  for (const o of orders) {
+    const hasPromoId = o.applied_promotion_id !== "";
+    if (hasPromoId && o.promo_discount_total === 0) {
+      cases.push({ order_no: o.order_no, order_id: o.order_id, promo_discount_total: o.promo_discount_total, shape: "promo_id_set_zero_discount" });
+    }
+    if (!hasPromoId && o.promo_discount_total > 0) {
+      cases.push({ order_no: o.order_no, order_id: o.order_id, promo_discount_total: o.promo_discount_total, shape: "discount_set_no_promo_id" });
+    }
+  }
+  return cases;
 }
