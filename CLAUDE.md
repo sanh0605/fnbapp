@@ -133,6 +133,12 @@ nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
   hơn. Trang Giá trị hàng đã xuất (2026-08-13) là mẫu đã dựng theo lối này:
   không có bảng ngang nào, mỗi mục một thẻ.
 
+  **Không cần đo tỉ lệ thiết bị.** Đề xuất ghi lại người dùng mở bằng máy gì đã
+  được nêu và chủ quán bác ngay: ông ấy biết chắc là điện thoại. **Điều kiện xem
+  lại là chủ quán tự nêu, không phải một con số** — khi nào bắt đầu dùng máy
+  tính thật thì ông ấy sẽ đổi hướng xây dựng. Đừng dựng công cụ đo để "xác nhận"
+  một điều đã được chốt.
+
 - Code và chú thích bằng tiếng Anh. Chữ hiển thị cho người dùng bằng tiếng Việt.
 - Đơn giản trước. Không thêm tính năng, trừu tượng, hay tuỳ biến ngoài yêu cầu.
 - Chỉ chạm đúng chỗ cần. Không "cải thiện" code lân cận, không refactor thứ
