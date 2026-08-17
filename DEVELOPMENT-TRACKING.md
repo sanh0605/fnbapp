@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 38: StocktakeClient converted to render tests
+
+**Trigger:** OPEN-ITEMS 38, rationale corrected the same day (`60bbb4e`) -- not the 2026-08-09 stocktake outage (a server action throw, component never rendered, no component test could have caught it), but the two failure modes standing on their own: a source-text assertion passes while the component throws at render, and fails on a rename that changes nothing a user sees.
+
+**Classification pass, done before any code, as instructed.** Went through every assertion in `StocktakeClient.test.ts` (12 `it` blocks) and sorted each into: (a) a behaviour a render test can assert, (b) a claim a render test genuinely cannot express, (c) a coupling to an identifier that asserts nothing a user experiences. Result: the great majority were (c) -- literal function names (`"function PackageLineCard("`), literal source lines (`"const isPreviewing = preview !== null"`, `"sumBaseQty += parsed * pkg.conversionRate"`), literal call-site text -- each gesturing at a real behaviour but only checking that a string exists somewhere in the file, not that the behaviour happens. Every (c) converts cleanly to a stronger (a) render assertion of the same underlying behaviour, so nothing is lost by deleting it. Exactly two genuine (b) cases, as expected: the M1 table's `hidden md:block` / `md:hidden` responsive-visibility classes, and M4's `fixed right-4 bottom-` sticky-positioning class -- both Tailwind CSS-only claims that jsdom (no layout engine, no media-query evaluation) cannot verify; both variants of the M1 table are simultaneously present in the rendered tree regardless of viewport. These two stay as source-text, with a comment explaining why.
+
+**New `StocktakeClient.test.tsx`** (10 tests, `createRoot` + `act`, pattern from `components/POSScreen.itemModal.test.tsx`), covering every bucket-(a) item: package-size counting summed correctly into one `saveStocktakeLine` call; per-line independent saving, proven by call count and arguments on a mocked `saveStocktakeLine` across two different cards, not by a function name appearing in the file (the task's own explicit ask); BR-INV-007's decimal rejection and the resulting no-save; the confirmed badge clearing on edit (C6); legacy-vs-package card selection (`inputMode`, which buttons exist); tap-target sizing (`min-h-[44px]` vs `[32px]`, DOM-observable via the rendered `className`, not a source grep); the counted/total banner text; and the preview-gates-apply flow (no preview -> no confirm button and enabled inputs; previewing -> inputs and the per-line confirm button disable; "Quay lại chỉnh sửa" re-enables them) plus the unconfirmed-items-named-during-preview case.
+
+**Proved the new tests have teeth, per the task's explicit requirement.** Deliberately changed `sumBaseQty += parsed * pkg.conversionRate` to `... + 1` in the component. Ran both suites against the broken component: the two render tests touching that value failed with the exact wrong numbers (51 expected, 53 received; 48 expected, 49 received). The old source-text test asserting `expect(source).toContain("sumBaseQty += parsed * pkg.conversionRate")` still passed, because that string is still a literal substring of the now-wrong line -- the precise blind spot this task exists to close. Reverted; `git diff` on the component clean.
+
+**`StocktakeClient.test.ts` slimmed from 12 assertions to 2** -- the two (b) cases above, kept with a comment at the top of the file explaining why it still exists rather than being deleted outright.
+
+**`IssueSlipClient` deliberately NOT touched.** Its own `.test.ts` (126 lines, source-text) still stands beside `.test.tsx` (the render test added earlier the same day for the unit-label fix only) -- the same two-copies shape this item warns against, unresolved. Out of scope for this pass per the task's own stated priority ("StocktakeClient first, it has no render coverage at all"); recorded as still open in `docs/OPEN-ITEMS.md` item 38 rather than silently left unmentioned.
+
+**Test count:** 1169 -> 1169 (net zero for the suite as a whole; `StocktakeClient.test.ts` went 12 -> 2, `StocktakeClient.test.tsx` added 10, one new file). Same total, materially different coverage.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` 1169/1169 pass. `check-rules-current` clean. `npm run build` succeeds.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 41 closed: QD-049 correction applied, SPM-043 special case removed
 
 **Trigger:** the owner approved and ran `scripts/correct-qd049-base-unit.ts --apply` after the earlier dry-run session. Confirmed live: `uom_conversions.QD-049.base_unit = UNT-017` ("g"), `conversion_rate` unchanged at 100. This task removes the now-unnecessary special case and re-verifies both affected screens.
