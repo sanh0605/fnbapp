@@ -130,12 +130,19 @@ sales. August's real cost is still unknown and arrives with the second count.
   value. The monthly figure is **derived, never stored** — same rule as costs
   (`BR-COGS-006`), so a corrected term or amount fixes every past period.
 - **J3 — The P&L.** Doanh thu → Giá vốn → Lợi nhuận gộp → Chi phí (J1 + J2's
-  monthly charge) → Thuế GTGT 3% and TNCN 1,5% on revenue → **Lợi nhuận
-  ròng, after expenses, not before**.
-- **J4 — Record the rules** in `docs/BUSINESS-RULES.md`: the two tax rates,
-  straight-line depreciation with its default term, and §3's
-  purchases-are-not-expenses rule, which is the one a future reader is most
-  likely to get wrong.
+  monthly charge) → **Lợi nhuận ròng, after expenses, not before**. Period
+  selectable by month, quarter, year and a free date range (owner, 2026-08-17).
+- **J4 — Record the rules** in `docs/BUSINESS-RULES.md`: straight-line
+  depreciation with its default term, the count-or-expense judgement in §7.3,
+  and §3's purchases-are-not-expenses rule, which is the one a future reader is
+  most likely to get wrong.
+
+**No tax line — owner decision 2026-08-17, reversing §1's description of his
+old sheet.** He pays none: annual revenue is under the 1 billion đồng
+threshold, and he has not yet decided between a household business and a
+company, which changes the regime. *"Có lẽ nên đảm bảo đăng ký loại hình nào
+rồi thì mới cần bổ sung thêm tính năng này."* Build no tax arithmetic now;
+leave the P&L's shape able to take a rate later.
 
 ---
 
@@ -150,9 +157,8 @@ sales. August's real cost is still unknown and arrives with the second count.
   before and after, and the issued-value total unchanged. This plan adds a
   statement on top of existing figures; it does not recompute them.
 - **A worked example, checked by hand before the screen is trusted:** one real
-  month, with revenue, COGS, the entered expenses, the depreciation charge and
-  both taxes, reconciling to a profit figure the owner can verify on a
-  calculator.
+  month, with revenue, COGS, the entered expenses and the depreciation charge,
+  reconciling to a profit figure the owner can verify on a calculator.
 - The owner **opens both screens on a phone while logged in** — section 9's
   last clause.
 
