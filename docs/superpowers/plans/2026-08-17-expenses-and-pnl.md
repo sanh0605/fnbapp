@@ -155,3 +155,73 @@ sales. August's real cost is still unknown and arrives with the second count.
   calculator.
 - The owner **opens both screens on a phone while logged in** — section 9's
   last clause.
+
+---
+
+## 7. Interview, 2026-08-17/18 — what the app is actually missing
+
+The owner objected that this plan was written before he had been interviewed
+properly, and he was right; three of his corrections came from parts of his
+spreadsheet its author had not read. Recorded here because it changes the
+shape of the work far more than the original §4 tasks did.
+
+### 7.1 There are two parallel systems, and they barely overlap
+
+Measured from his workbook against the database:
+
+| | In the app | In his spreadsheet |
+|---|---|---|
+| Nguyên liệu | 52 items, **64 purchase orders**, 49.305.880đ | listed, purchases not held here |
+| Công cụ dụng cụ | **nothing** | 71 items, 48 orders, 11.163.120đ |
+| Vật tư tiêu hao | **nothing** | 26 items, 17 orders, 15.803.989đ |
+
+**Not an oversight on his part — a deliberate split**, because the app has
+nowhere to put the other two. `OPEN-ITEMS 8` is the visible corner of this.
+
+**Safe to import:** of his 62 purchase orders, **none contains an ingredient
+line** (44 CCDC, 14 VTTH, 3 mixed CCDC+VTTH, 1 CCDC+Tài liệu). So bringing
+them in cannot disturb any ingredient's share of order-level shipping and
+vouchers, and **the 35.992.142đ COGS figure cannot move**. That was the
+largest risk in this work and it does not exist.
+
+### 7.2 His three item types already are three accounting treatments
+
+| His `Loại sản phẩm` | Treatment | Reaches the P&L as |
+|---|---|---|
+| Nguyên liệu | stock → count → issue | Giá vốn |
+| Vật tư tiêu hao | stock → count → issue | Giá vốn |
+| Công cụ dụng cụ | asset → depreciate | Chi phí, monthly |
+
+He classified these himself before any of this was discussed. Nothing new to
+teach; the app has to catch up to a distinction he already makes.
+
+### 7.3 Counting is decided per item by what counting costs, not by principle
+
+Owner decisions 2026-08-18, after being shown that he holds roughly **4.655
+unused cups** (8.550 bought against 3.895 drinks sold) — so purchases are not
+yet a proxy for consumption, and his own "it converges once volumes are large"
+argument does not hold yet:
+
+- **Counted** — ly and nắp (sleeves of 50, easy), and **ống hút**, which
+  arrives in 500g bags; he will start entering it by bag rather than by kg so
+  it becomes countable. **12.455.231đ, 78,8%.**
+- **Not counted, expensed in the month bought** — muỗng (loose, thousands at a
+  time: *"công đếm còn đắt hơn"*), every kind of túi (*"không có cách nào để
+  đếm được, việc phải cân để biết thì công luôn rất đắt"*), and the small
+  operational items. **3.348.758đ, 21,2%.**
+
+**The principle, in his words about group 3: "dùng là xuất".** Count a thing
+only when counting it costs less than the error of not counting it — the same
+judgement already applied to đá viên, chanh and tắc via `is_non_inventory`.
+
+### 7.4 The daily-expense items have no cost path at all
+
+`Đá viên` (`SPM-005` → `ING-001`) and `Khoai lang` (`SPM-052` → `NNL-012`)
+exist as purchased items linked to `is_non_inventory` ingredients, and have
+**zero purchase lines** — measured, not assumed. Nothing marked
+`is_non_inventory` has ever been bought through the app, so **0đ of 49,3
+million** in app purchases is daily-expense material.
+
+That is the mechanism `OPEN-ITEMS 8` needs: a non-inventory purchase must
+reach the P&L as an expense in the month bought. The flag already exists; the
+path from it to a report does not.
