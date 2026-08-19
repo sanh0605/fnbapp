@@ -12,6 +12,7 @@ import {
   type RawPurchaseOrderLine,
   type RawSupplier,
 } from "@/lib/item-purchase-history";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
 
 const SHEET = "Purchased_Items";
 const PATH = "/admin/inventory/items";
@@ -69,8 +70,15 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
   if (!name || !item_category_id) return fail("Vui lòng nhập Tên và chọn Phân loại");
 
   try {
+    // Batch 1, section A2: the app-level half of the duplicate-name guard --
+    // the database index (0065_duplicate_name_guard.sql) is what actually
+    // stops it, this is what turns that into a message naming the row.
+    const existingItems = await findAll("Purchased_Items");
+    const conflict = findDuplicateActiveName(existingItems as any[], name);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict as any));
+
     const id = await generateNewId("Purchased_Items", "SPM");
-    await insert("Purchased_Items", { 
+    await insert("Purchased_Items", {
       id, 
       name, 
       item_category_id, 
@@ -116,7 +124,11 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
   const update_history = formData.get("update_history") === "true";
 
   try {
-    await update("Purchased_Items", id, { 
+    const existingItems = await findAll("Purchased_Items");
+    const conflict = findDuplicateActiveName(existingItems as any[], name, id);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict as any));
+
+    await update("Purchased_Items", id, {
       name, 
       item_category_id, 
       base_ingredient_id: base_ingredient_id || "" 

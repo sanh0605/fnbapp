@@ -6,6 +6,7 @@ import { planRecipeSave } from "@/lib/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
 import { findAll, update } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
 
 const PRODUCT_SHEET = "Products";
 const VARIANT_SHEET = "Product_Variants";
@@ -40,10 +41,14 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     }
     const variants = parsedVariants as VariantFormInput[];
     const isEdit = Boolean(id);
-    const [allVariants, allRecipes] = await Promise.all([
+    const [allVariants, allRecipes, allProducts] = await Promise.all([
       isEdit ? findAll(VARIANT_SHEET) : Promise.resolve([]),
       findAll(RECIPE_SHEET),
+      findAll(PRODUCT_SHEET),
     ]);
+
+    const duplicateName = findDuplicateActiveName(allProducts as any[], name, isEdit ? id : undefined);
+    if (duplicateName) return fail(duplicateNameErrorMessage(duplicateName));
     const existingVariants = allVariants.filter((variant: Record<string, unknown>) =>
       variant.product_id === id && variant.status !== "DELETED"
     );

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBSemiProduct, DBRecipe, DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
 
 const SP_SHEET = "Semi_Products";
 const RECIPE_SHEET = "Recipes";
@@ -82,6 +83,14 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
 
   try {
     let semi_product_id = formData.get("id") as string;
+
+    const existingSemiProducts = (await findAll(SP_SHEET)) as any[];
+    const conflict = findDuplicateActiveName(
+      existingSemiProducts,
+      name,
+      isEdit ? semi_product_id : undefined,
+    );
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     if (isEdit) {
       await update("Semi_Products", semi_product_id, {

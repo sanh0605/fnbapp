@@ -9,6 +9,7 @@ import {
   submitStockAdjustmentAtomic,
 } from "@/lib/stock-adjustment-transaction";
 import { computeReorderSuggestions } from "@/lib/reorder-suggestion";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
 export async function addItemCategory(formData: FormData): Promise<ActionResponse> {
@@ -21,6 +22,10 @@ export async function addItemCategory(formData: FormData): Promise<ActionRespons
   if (!name || !system_type) return fail("Vui lòng nhập đầy đủ thông tin");
 
   try {
+    const existingCategories = (await findAll("Item_Categories")) as any[];
+    const conflict = findDuplicateActiveName(existingCategories, name);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
+
     const id = await generateNewId("Item_Categories", "NHH");
     await insert("Item_Categories", { id, name, system_type });
     revalidatePath("/admin/inventory/categories");
@@ -39,6 +44,10 @@ export async function updateItemCategory(formData: FormData): Promise<ActionResp
   const system_type = formData.get("system_type") as string;
 
   try {
+    const existingCategories = (await findAll("Item_Categories")) as any[];
+    const conflict = findDuplicateActiveName(existingCategories, name, id);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
+
     await update("Item_Categories", id, { name, system_type });
     revalidatePath("/admin/inventory/categories");
     return ok();
@@ -369,6 +378,10 @@ export async function addUnit(formData: FormData): Promise<ActionResponse> {
   
   if (!name) return fail("Vui lòng nhập tên đơn vị");
   try {
+    const existingUnits = (await findAll("Units")) as any[];
+    const conflict = findDuplicateActiveName(existingUnits, name);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
+
     const id = await generateNewId("Units", "U");
     await insert("Units", {
       id,
@@ -393,6 +406,10 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
   
   if (!id || !name) return fail("Thiếu thông tin");
   try {
+    const existingUnits = (await findAll("Units")) as any[];
+    const conflict = findDuplicateActiveName(existingUnits, name, id);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
+
     await update("Units", id, { name, description });
     revalidatePath("/admin/inventory/units");
     return ok();

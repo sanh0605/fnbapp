@@ -4,6 +4,35 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-19 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 item A: duplicate-name guard, both layers, all seven catalogue tables
+
+**Trigger:** `docs/superpowers/plans/2026-08-19-batch-1-foundations.md` section A, following the review of the parent plan (`docs/superpowers/plans/2026-08-17-expenses-and-pnl.md` section 11).
+
+**Pre-code verification, as the task required, before writing anything:**
+- Every function in the normalisation expression (`normalize`, `replace`, `chr`, `btrim`, `regexp_replace`, `lower`) confirmed `IMMUTABLE` (`pg_proc.provolatile = 'i'`) in this database (PostgreSQL 17.6). Proved further, not just trusted: built the actual expression index against real `purchased_items` data inside a transaction, then rolled it back -- it built.
+- All seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, `products`, `item_categories`, `units`, `suppliers`) share an identical `CHECK (status = ANY ({ACTIVE, INACTIVE, DELETED}))` constraint, `ACTIVE` genuinely the only live value in every one -- checked per table, not assumed uniform.
+- Checked whether any other code path writes `uom_conversions`, per the task's own question: found a third one, `app/admin/inventory/actions.ts`, which duplicates `addPurchasedItem`/`updatePurchasedItem`/`addConversion`/`updateConversion`/`deleteConversion`/`deleteBaseIngredient` from three different live files -- confirmed dead by tracing every `.tsx` importer of each function name and finding none reference this file for them. Not touched (out of scope, not asked); reported so it is not rediscovered as a live risk.
+
+**`lib/duplicate-name-guard.ts`**: `normalizeNameForComparison` mirrors the migration's SQL expression exactly, same order of operations (nbsp-to-space, NFC, space-only trim, whitespace-collapse, case-fold) -- got the order wrong once while writing it (used JS's broader `\s`-matching internal collapse before realising a leading/trailing nbsp needs the dedicated step to run *before* trimming, same as SQL's `btrim` runs before `regexp_replace`), caught by the test written to prove exactly that case. `findDuplicateActiveName` scopes to the caller's own row set only (never across tables) and skips a row with no usable name defensively rather than throwing.
+
+**Migration `0065_duplicate_name_guard.sql`**: one partial unique expression index per table, `WHERE status = 'ACTIVE'`. **Not applied** -- `README:63`, schema changes go through reviewed migrations the owner runs himself. Pending his run.
+
+**Proved the index actually refuses a collision, not just that it builds clean.** In a transaction: set `NNL-004` ("Sữa yến mạch", normally `INACTIVE`) to `ACTIVE` alongside the already-`ACTIVE` `ING-033` of the same name, attempted the index -- `ERROR: 23505: could not create unique index ... Key (...)=(sữa yến mạch) is duplicated.` -- then rolled back. Verified live afterward: `NNL-004` still `INACTIVE`, nothing persisted.
+
+**Application-layer check wired into all seven tables' create/update paths**, replacing an existing weaker ad-hoc version in `suppliers/actions.ts` (case-fold only, no nbsp/NFC/whitespace handling, no row named in the message) rather than leaving two versions. `base_ingredients`' bulk-import path checks the whole batch for internal collisions *before* writing any row -- an earlier version checked and inserted in the same loop, which let an earlier valid row save silently while a later conflicting one was refused; caught by the batch's own test, restructured into a validate-all-then-insert-all pass.
+
+**Tests:** `lib/duplicate-name-guard.test.ts` -- one assertion per normalisation step, plus the "does not strip diacritics" anti-requirement. Proved teeth: temporarily disabled the nbsp step, the leading-nbsp test failed with the exact predicted mismatch (`" sữa yến mạch"` vs `"sữa yến mạch"`), reverted. New `app/admin/inventory/base-ingredients/actions.test.ts` proves, against the real action with mocked I/O (not a source grep, `OPEN-ITEMS 38`): a cross-table collision with `purchased_items`' `SPM-005` "Đá viên" stays legal (the check never fetches that table); a within-table `ACTIVE` collision is refused, naming the row; a retired (`INACTIVE`) name is reusable; the bulk-batch collision is refused before any row is written.
+
+**Neutrality:** `scripts/verify-revenue.ts` -- all structural checks pass, every monthly figure matches its known value, unchanged. This item touches no money.
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` 1188 -> 1194 (+6, `duplicate-name-guard.test.ts` folded into an already-passing baseline plus the new `base-ingredients/actions.test.ts`). `check-rules-current` clean. `npm run build` succeeds.
+
+**Pending the owner's own run:** the migration itself. Nothing in this commit writes to production; the application-layer check is live in code but the database index -- the actually-unbypassable half -- is not yet in effect until the migration is applied.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval. Item B (conversions for consumables) is a separate commit, reported alongside this one.
+
+---
+
 ## 2026-08-17 (Claude Sonnet 5 implementing, Opus 5 coordinating) - OPEN-ITEMS 38 part 2: IssueSlipClient converted to render tests, item closed
 
 **Trigger:** part 2 of the same-day OPEN-ITEMS 38 pass. `IssueSlipClient.test.ts` had 20 source-text assertions and `IssueSlipClient.test.tsx` had only the 2 unit-label render tests added earlier the same day (OPEN-ITEMS 41) -- the two-copies shape this item exists to close, broader than StocktakeClient's "no render coverage at all" case.

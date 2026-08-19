@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
 
 const SHEET = "Base_Ingredients";
 const PATH = "/admin/inventory/base-ingredients";
@@ -43,6 +44,27 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
         is_non_inventory: boolean;
       }>;
 
+      // Batch 1, section A2: check every row in the batch BEFORE inserting
+      // any of them -- against existing ACTIVE rows and against names
+      // earlier in this same batch (two new rows in one submission sharing
+      // a name is the same duplicate). A single pass that checks and
+      // inserts together would let earlier rows save silently while a
+      // later one is refused, leaving a partial batch the owner did not
+      // ask for and the error message does not mention.
+      const existingIngredients = (await findAll(SHEET)) as any[];
+      const namesInThisBatch: { id: string; name: string; status: string }[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item.name || !item.base_unit) continue;
+        const conflict =
+          findDuplicateActiveName(existingIngredients, item.name) ??
+          findDuplicateActiveName(namesInThisBatch, item.name);
+        if (conflict) {
+          return fail(`Dòng ${i + 1}: ${duplicateNameErrorMessage(conflict)}`);
+        }
+        namesInThisBatch.push({ id: `__pending_${i}`, name: item.name, status: "ACTIVE" });
+      }
+
       for (const item of items) {
         if (!item.name || !item.base_unit) continue;
         const id = await generateNewId(SHEET, "NNL");
@@ -63,6 +85,10 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
     const name = formData.get("name") as string;
     const base_unit = formData.get("base_unit") as string;
     if (!name || !base_unit) return fail("Thiếu thông tin nguyên liệu");
+
+    const existingIngredients = (await findAll(SHEET)) as any[];
+    const conflict = findDuplicateActiveName(existingIngredients, name);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     const id = await generateNewId(SHEET, "NNL");
     await insert(SHEET, {
@@ -93,6 +119,10 @@ export async function updateBaseIngredient(formData: FormData): Promise<ActionRe
   if (!id || !name || !base_unit) return fail("Thiếu thông tin");
 
   try {
+    const existingIngredients = (await findAll(SHEET)) as any[];
+    const conflict = findDuplicateActiveName(existingIngredients, name, id);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
+
     const nonInv = is_non_inventory === "true" ? "TRUE" : "FALSE";
     await update(SHEET, id, { name, base_unit, is_non_inventory: nonInv });
     revalidatePath(PATH);

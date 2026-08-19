@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/shared-actions";
 import type { DBSupplier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
 
 const SHEET = "Suppliers";
 const PATH = "/admin/suppliers";
@@ -66,11 +67,9 @@ export async function addSupplier(formData: FormData): Promise<ActionResponse> {
   if (validationError) return fail(validationError);
 
   try {
-    const suppliers = await findAll(SHEET);
-    const existing = suppliers.find(
-      (s: DBSupplier) => s.name.toLowerCase() === name.toLowerCase()
-    );
-    if (existing) return fail("Da ton tai nha cung cap voi ten nay");
+    const suppliers = (await findAll(SHEET)) as any[];
+    const conflict = findDuplicateActiveName(suppliers, name);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     const id = await generateNewId(SHEET, "NCC");
     const created_at = new Date().toISOString();
@@ -99,11 +98,9 @@ export async function editSupplier(formData: FormData): Promise<ActionResponse> 
   if (validationError) return fail(validationError);
 
   try {
-    const suppliers = await findAll(SHEET);
-    const existing = suppliers.find(
-      (s: DBSupplier) => s.name.toLowerCase() === name.toLowerCase() && s.id !== id
-    );
-    if (existing) return fail("Da ton tai nha cung cap khac voi ten nay");
+    const suppliers = (await findAll(SHEET)) as any[];
+    const conflict = findDuplicateActiveName(suppliers, name, id);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     await update(SHEET, id, { name, phone, tax_id, address, links });
     revalidatePath(PATH);
