@@ -106,6 +106,105 @@ describe("addBaseIngredient -- duplicate-name guard (Batch 1, section A)", () =>
   });
 });
 
+// Batch 1, item A, section A3b/A5. "Level 2 needs both of its outcomes
+// proved, not just one" -- a level-2 implementation that only ever refuses
+// is level 1 wearing a prompt, and the "Thạch dứa" case is what proves it
+// is not: it warns and then SAVES.
+describe("addBaseIngredient -- level 2, diacritic-stripped warning (section A3b)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.generateNewId.mockResolvedValue("NNL-999");
+  });
+
+  it("'Ca phe' against an existing 'Cà phê' warns, and does not save without confirmation", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "ING-050", name: "Cà phê", status: "ACTIVE" }]);
+
+    const formData = new FormData();
+    formData.set("name", "Ca phe");
+    formData.set("base_unit", "UNT-017");
+
+    const res: any = await actions.addBaseIngredient(formData);
+
+    expect(res.error).toBeUndefined(); // a warning is not a refusal
+    expect(res.needsDuplicateWarning).toBeTruthy();
+    expect(res.needsDuplicateWarning.conflictId).toBe("ING-050");
+    expect(res.needsDuplicateWarning.conflictName).toBe("Cà phê");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("'Ca phe' declined ('tôi gõ nhầm') -- the caller simply never resubmits with confirmation, nothing is saved", async () => {
+    // Modelling "tôi gõ nhầm": the owner does not resubmit at all. Nothing
+    // beyond the warning response above is needed to prove this side --
+    // repeated here as its own case so both outcomes of section A5 are
+    // each their own test, not inferred from one.
+    mocks.findAll.mockResolvedValue([{ id: "ING-050", name: "Cà phê", status: "ACTIVE" }]);
+    const formData = new FormData();
+    formData.set("name", "Ca phe");
+    formData.set("base_unit", "UNT-017");
+
+    await actions.addBaseIngredient(formData);
+
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("'Thạch dứa' against the existing 'Thạch dừa' (NNL-009) warns, then SAVES on confirmation ('món khác'), recording it", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "NNL-009", name: "Thạch dừa", status: "ACTIVE" }]);
+
+    const firstAttempt = new FormData();
+    firstAttempt.set("name", "Thạch dứa");
+    firstAttempt.set("base_unit", "UNT-017");
+    const warned: any = await actions.addBaseIngredient(firstAttempt);
+    expect(warned.needsDuplicateWarning).toBeTruthy();
+    expect(mocks.insert).not.toHaveBeenCalled();
+
+    // "món khác" -- the owner confirms it really is a different item, the
+    // form resubmits with the confirmation flag set.
+    const confirmedAttempt = new FormData();
+    confirmedAttempt.set("name", "Thạch dứa");
+    confirmedAttempt.set("base_unit", "UNT-017");
+    confirmedAttempt.set("duplicate_warning_confirmed", "true");
+    const saved = await actions.addBaseIngredient(confirmedAttempt);
+
+    expect(saved.error).toBeUndefined();
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "Base_Ingredients",
+      expect.objectContaining({
+        name: "Thạch dứa",
+        duplicate_warning_confirmed: true,
+        duplicate_warning_confirmed_by: "Admin",
+      }),
+    );
+  });
+
+  it("'Da vien' against 'Đá viên' reaches level 2 -- proves đ/Đ are stripped explicitly, not missed by NFD alone", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "ING-001", name: "Đá viên", status: "ACTIVE" }]);
+
+    const formData = new FormData();
+    formData.set("name", "Da vien");
+    formData.set("base_unit", "UNT-017");
+
+    const res: any = await actions.addBaseIngredient(formData);
+
+    expect(res.needsDuplicateWarning).toBeTruthy();
+    expect(res.needsDuplicateWarning.conflictId).toBe("ING-001");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("a genuine exact match still hits level 1 (refuse), never level 2", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "ING-050", name: "Cà phê", status: "ACTIVE" }]);
+
+    const formData = new FormData();
+    formData.set("name", "cà phê"); // level-1 match (case-fold only, same diacritics)
+    formData.set("base_unit", "UNT-017");
+
+    const res: any = await actions.addBaseIngredient(formData);
+
+    expect(res.error).toBeTruthy(); // refused outright, not a warning
+    expect(res.needsDuplicateWarning).toBeUndefined();
+  });
+});
+
 describe("updateBaseIngredient -- duplicate-name guard", () => {
   beforeEach(() => {
     vi.clearAllMocks();

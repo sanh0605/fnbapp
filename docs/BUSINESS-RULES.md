@@ -383,6 +383,25 @@ The cost of a purchased item is the line amount **plus its share of shipping and
 
 What is true is narrower: a count taken first would have been *reviewed* against wrong figures, and the owner would have been asked to accept a first-ever cost number that was 7,4% high. That is a good reason to land the fix first, and not the same as irreversibility. The overstatement is recorded because a rule that overstates its own stakes is harder to trust on the points where it is right.
 
+### BR-CATALOG-001 — A catalogue name is unique among live rows; a near-match warns instead of refusing
+
+**Status:** `APPROVED` — owner decision 2026-08-19 (Plan J batch 1, `docs/superpowers/plans/2026-08-19-batch-1-foundations.md` section A).
+
+Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, `products`, `item_categories`, `units`, `suppliers`) each enforce their own name uniqueness, scoped **within the table only, never across tables** — a purchased item and the ingredient it becomes legitimately share a name (e.g. `SPM-005`/`ING-001`, both "Đá viên"). Uniqueness is scoped to `ACTIVE` rows: retiring a row (mark-inactive, never delete — `CLAUDE.md` section 2) makes its name reusable.
+
+**Two levels, found by asking what stripping diacritics actually costs, not by principle.** The owner asked for "Ca phe" to be caught as a duplicate of "Cà phê." Stripping diacritics does that — and also collapses "Dứa" and "Dừa" (pineapple vs coconut) into one word; this catalogue already holds "Thạch dừa" (`NNL-009`), so a blanket strip would one day refuse "Thạch dứa" on a drinks menu with no way to say "that is a real, different item."
+
+| Level | Trigger | Behaviour |
+|---|---|---|
+| **1 — refuse** | Name matches an existing live row after normalising (non-breaking space → space, Unicode NFC, trim, whitespace collapse, case-fold — diacritics **not** stripped) | Blocked outright, both as a database partial unique expression index (unbypassable) and an application check naming the row |
+| **2 — warn** | Only the **diacritic-stripped** forms match | Shown the existing row, asked *"đây có phải là một mặt hàng khác không?"*, proceeds only on confirmation |
+
+**Level 2 lives in the application only** — it needs a human answer, so it cannot be an index. The confirmation is recorded as a field (`duplicate_warning_confirmed`, `_by`, `_at`), not a note — same reasoning as `Không nhớ` (Plan J section 9.3): "which items were created despite a warning" has to be answerable by a query.
+
+**đ/Đ (U+0111/U+0110) do not decompose under NFD**, unlike ordinary Vietnamese diacritics — verified directly (`đ.normalize("NFD")` stays one codepoint; `á` splits into `a` + a combining acute). The diacritic strip replaces `đ`/`Đ` explicitly before the NFD step; missing this would make "Da vien" silently fail to warn against "Đá viên."
+
+**Scoped to `base_ingredients` today.** The level-2 comparison logic (`findDiacriticStrippedMatch`, `lib/duplicate-name-guard.ts`) is table-agnostic and reusable, matching level 1's helper; only `base_ingredients` has the confirmation field migrated and wired so far (`0066_duplicate_name_warning_confirmation.sql`). The other six tables get level 1 only until they need level 2 too.
+
 ## Unresolved items
 
 | ID | Status | Decision needed | Current safe statement |

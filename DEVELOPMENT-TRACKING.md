@@ -4,6 +4,36 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-19 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 item A addendum: level 2, diacritic-stripped warning
+
+**Trigger:** a mid-turn plan update (`6fbcc57`, `1e08261`) arriving after item A's first commit (`99eacfe`) was already made: the owner asked for "Ca phe" to be caught as a near-duplicate of "Cà phê." Stripping diacritics does that, but also collapses "Dứa" and "Dừa" (pineapple vs coconut) -- this catalogue already holds "Thạch dừa" (`NNL-009`), so a blanket strip would refuse "Thạch dứa" with no way to say "real, different item." Owner's resolution: level 1 (exact match, already built) refuses; a new level 2 (diacritic-stripped-only match) warns and asks, never refuses on its own.
+
+**Three commits for item A, not two, and why:** the owner's own two doc-only commits landed on `main` between item A's first commit and this one. Amending a non-HEAD commit needs interactive rebase, unavailable in this environment (`git rebase -i` is disabled), and resetting past the owner's own commits to fold this in was the riskier option, not the safer one. This addendum is its own commit, still fully part of "item A" conceptually and still independently revertible; item B remains the second, separate commit exactly as instructed.
+
+**`lib/duplicate-name-guard.ts`**: added `stripDiacritics` and `findDiacriticStrippedMatch`, reusing `normalizeNameForComparison` first so level 2 never re-reports a conflict level 1 would already refuse. **đ/Đ (U+0111/U+0110) verified directly to NOT decompose under NFD** (`đ.normalize("NFD")` stays one codepoint, unlike `á` which splits into `a` + a combining acute) before writing anything -- replaced explicitly, ahead of the NFD strip, or "Da vien" would silently fail to warn against "Đá viên."
+
+**Migration `0066_duplicate_name_warning_confirmation.sql`**: `duplicate_warning_confirmed` (boolean), `_by`, `_at` on `base_ingredients` -- "the confirmation is recorded as a field, not a note," same reasoning as the parent plan's `Không nhớ` (section 9.3): a later "which items were created despite a warning" has to be answerable by a query. **Not applied** -- pending the owner's own run, same as migration 0065. Dry-run proven in a rolled-back transaction against real data.
+
+**Scoped to `base_ingredients` for now**, not all seven tables -- the two required proof cases are both `base_ingredients` examples, and extending level 2's UI flow (confirm-and-retry) to the other six tables' forms is real, additional work not yet done. Level 2's comparison logic itself is table-agnostic and ready when they need it, matching level 1's own "helper for tables that don't exist yet" framing.
+
+**Wired into `addBaseIngredient` (bulk and single-item paths) and `updateBaseIngredient`.** The server never trusts a client-sent confirmation blindly -- it re-checks live whether a genuine level-2 match still exists before recording `duplicate_warning_confirmed`. Bulk path: one confirmation covers the whole submission (matching how every other multi-line warning in this app works, e.g. the issue slip's backdated-month confirm), but only the specific rows that actually tripped level 2 get the field recorded true.
+
+**`BaseIngredientForm.tsx`**: wired the confirm-and-retry flow using `lib/dialog.ts`'s `confirm()` -- the same mechanism already proven elsewhere in this app. Could not be rendered-tested through actual DOM submission; see item B's entry below for why (same root cause, same evidence).
+
+**Both required proof cases from section A5, verified against real production data, not assumed:** `NNL-009` really is "Thạch dừa," `ING-001` really is "Đá viên" (confirmed live before writing the tests). Tests prove BOTH outcomes, not just refusal: "Ca phe" against "Cà phê" warns and, undecided, saves nothing; "Thạch dứa" against "Thạch dừa" warns and, confirmed, SAVES with `duplicate_warning_confirmed: true` recorded -- the case that proves this is level 2, not level 1 wearing a prompt. "Da vien" against "Đá viên" separately proves the đ case specifically.
+
+**Proved teeth twice.** Disabled the đ/Đ replacement in `stripDiacritics` -- 5 tests failed across both the unit level (`duplicate-name-guard.test.ts`) and the action level (`base-ingredients/actions.test.ts`), all on the đ-specific cases, exactly matching the task's own predicted failure mode ("the warning just doesn't fire sometimes"). Reverted; `git diff` clean.
+
+**`docs/BUSINESS-RULES.md`**: new `BR-CATALOG-001`, recording the two-level rule, the per-table scoping, the đ/Đ non-decomposition finding, and the current base_ingredients-only scope -- a real operating-rule change per `CLAUDE.md` section 6, not left to drift out of a chat message.
+
+**Verified:** `tsc --noEmit` 0 errors. `check-rules-current` clean. `npm run build` succeeds. `scripts/verify-revenue.ts`: all structural checks pass, unchanged. `uom_conversions` checksum unchanged from the pre-task baseline throughout. Full `vitest run` count reported in item B's entry below (both items landed together before either was tested in isolation).
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval. Pending: the owner's own run of migration `0066` (and `0065`, still pending from the first commit).
+
+---
+
+---
+
 ## 2026-08-19 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 item A: duplicate-name guard, both layers, all seven catalogue tables
 
 **Trigger:** `docs/superpowers/plans/2026-08-19-batch-1-foundations.md` section A, following the review of the parent plan (`docs/superpowers/plans/2026-08-17-expenses-and-pnl.md` section 11).

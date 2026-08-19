@@ -5,6 +5,7 @@ import { addBaseIngredient, updateBaseIngredient } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { SearchableSelect } from "@/components/SearchableSelect";
+import { confirm } from "@/lib/dialog";
 import type { DBBaseIngredient, DBUnit } from "@/types/db";
 
 interface BaseIngredientFormProps {
@@ -75,12 +76,49 @@ export function BaseIngredientForm({ initialData, units }: BaseIngredientFormPro
       formData.append("name", item.name);
       formData.append("base_unit", item.base_unit);
       formData.append("is_non_inventory", String(item.is_non_inventory));
-      const res = await updateBaseIngredient(formData);
+      let res = await updateBaseIngredient(formData);
+      // Section A3b, level 2: a near-match warning, not a refusal --
+      // "tên này gần giống X, đây có phải là một mặt hàng khác không?" If
+      // he says yes ("món khác"), resubmit once with the confirmation
+      // flag so the server records it; if not ("tôi gõ nhầm"), stay on
+      // the form with nothing saved so he can fix the name himself.
+      if (res.needsDuplicateWarning) {
+        const approved = await confirm({
+          title: "Tên gần giống một mục đã có",
+          message: (res.needsDuplicateWarning as { message: string }).message,
+          okText: "Món khác",
+          cancelText: "Tôi gõ nhầm",
+          variant: "warning",
+        });
+        if (approved) {
+          formData.append("duplicate_warning_confirmed", "true");
+          res = await updateBaseIngredient(formData);
+        } else {
+          setLoading(false);
+          return;
+        }
+      }
       if (res.error) setError(res.error);
       else setIsOpen(false);
     } else {
       formData.append("items_json", JSON.stringify(processedItems.filter(it => it.name && it.base_unit)));
-      const res = await addBaseIngredient(formData);
+      let res = await addBaseIngredient(formData);
+      if (res.needsDuplicateWarning) {
+        const approved = await confirm({
+          title: "Tên gần giống một mục đã có",
+          message: (res.needsDuplicateWarning as { message: string }).message,
+          okText: "Món khác",
+          cancelText: "Tôi gõ nhầm",
+          variant: "warning",
+        });
+        if (approved) {
+          formData.append("duplicate_warning_confirmed", "true");
+          res = await addBaseIngredient(formData);
+        } else {
+          setLoading(false);
+          return;
+        }
+      }
       if (res.error) setError(res.error);
       else {
         setIsOpen(false);

@@ -5,7 +5,12 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
-import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
+import {
+  findDuplicateActiveName,
+  duplicateNameErrorMessage,
+  findDiacriticStrippedMatch,
+  duplicateWarningMessage,
+} from "@/lib/duplicate-name-guard";
 
 const SHEET = "Base_Ingredients";
 const PATH = "/admin/inventory/base-ingredients";
@@ -34,6 +39,12 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
+  // Section A3b: a blanket "yes, I mean it" for this whole submission --
+  // one dialog per submit, matching how every other multi-line warning in
+  // this app (e.g. the issue slip's backdated-month confirm) works, not
+  // one confirmation per row.
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
+
   try {
     const itemsJson = formData.get("items_json") as string;
 
@@ -53,6 +64,7 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
       // ask for and the error message does not mention.
       const existingIngredients = (await findAll(SHEET)) as any[];
       const namesInThisBatch: { id: string; name: string; status: string }[] = [];
+      const linesNeedingWarningConfirmation = new Set<number>();
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (!item.name || !item.base_unit) continue;
@@ -62,11 +74,32 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
         if (conflict) {
           return fail(`Dòng ${i + 1}: ${duplicateNameErrorMessage(conflict)}`);
         }
+        // Section A3b, level 2: only warn, never refuse. If the whole
+        // submission is already confirmed, record which lines the warning
+        // actually applied to rather than blanket-marking every row.
+        const warning =
+          findDiacriticStrippedMatch(existingIngredients, item.name) ??
+          findDiacriticStrippedMatch(namesInThisBatch, item.name);
+        if (warning) {
+          if (!warningConfirmed) {
+            return {
+              needsDuplicateWarning: {
+                line: i + 1,
+                conflictId: warning.conflict.id,
+                conflictName: warning.conflict.name,
+                message: duplicateWarningMessage(warning.conflict),
+              },
+            };
+          }
+          linesNeedingWarningConfirmation.add(i);
+        }
         namesInThisBatch.push({ id: `__pending_${i}`, name: item.name, status: "ACTIVE" });
       }
 
-      for (const item of items) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
         if (!item.name || !item.base_unit) continue;
+        const wasConfirmed = linesNeedingWarningConfirmation.has(i);
         const id = await generateNewId(SHEET, "NNL");
         await insert(SHEET, {
           id,
@@ -75,6 +108,9 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
           is_non_inventory: item.is_non_inventory ? "TRUE" : "FALSE",
           status: "ACTIVE",
           created_at: new Date().toISOString(),
+          duplicate_warning_confirmed: wasConfirmed,
+          duplicate_warning_confirmed_by: wasConfirmed ? auth.actor.name : null,
+          duplicate_warning_confirmed_at: wasConfirmed ? new Date().toISOString() : null,
         });
       }
       revalidatePath(PATH);
@@ -90,6 +126,21 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
     const conflict = findDuplicateActiveName(existingIngredients, name);
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
+    // Section A3b, level 2. Re-checked here even if the client already
+    // sends warningConfirmed=true -- the server never trusts that a
+    // warning genuinely fired just because the client claims it did.
+    const warning = findDiacriticStrippedMatch(existingIngredients, name);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict),
+        },
+      };
+    }
+    const wasConfirmed = !!warning && warningConfirmed;
+
     const id = await generateNewId(SHEET, "NNL");
     await insert(SHEET, {
       id,
@@ -98,6 +149,9 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
       is_non_inventory: "FALSE",
       status: "ACTIVE",
       created_at: new Date().toISOString(),
+      duplicate_warning_confirmed: wasConfirmed,
+      duplicate_warning_confirmed_by: wasConfirmed ? auth.actor.name : null,
+      duplicate_warning_confirmed_at: wasConfirmed ? new Date().toISOString() : null,
     });
     revalidatePath(PATH);
     return ok();
@@ -115,6 +169,7 @@ export async function updateBaseIngredient(formData: FormData): Promise<ActionRe
   const name = formData.get("name") as string;
   const base_unit = formData.get("base_unit") as string;
   const is_non_inventory = formData.get("is_non_inventory") as string;
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
 
   if (!id || !name || !base_unit) return fail("Thiếu thông tin");
 
@@ -123,8 +178,31 @@ export async function updateBaseIngredient(formData: FormData): Promise<ActionRe
     const conflict = findDuplicateActiveName(existingIngredients, name, id);
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
+    const warning = findDiacriticStrippedMatch(existingIngredients, name, id);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict),
+        },
+      };
+    }
+    const wasConfirmed = !!warning && warningConfirmed;
+
     const nonInv = is_non_inventory === "true" ? "TRUE" : "FALSE";
-    await update(SHEET, id, { name, base_unit, is_non_inventory: nonInv });
+    await update(SHEET, id, {
+      name,
+      base_unit,
+      is_non_inventory: nonInv,
+      ...(wasConfirmed
+        ? {
+            duplicate_warning_confirmed: true,
+            duplicate_warning_confirmed_by: auth.actor.name,
+            duplicate_warning_confirmed_at: new Date().toISOString(),
+          }
+        : {}),
+    });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
