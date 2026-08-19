@@ -231,3 +231,110 @@ million** in app purchases is daily-expense material.
 That is the mechanism `OPEN-ITEMS 8` needs: a non-inventory purchase must
 reach the P&L as an expense in the month bought. The flag already exists; the
 path from it to a report does not.
+
+---
+
+## 8. Interview part 2 — equipment, and what the P&L's lines actually are
+
+### 8.1 Depreciation term is data, not code
+
+Owner asked directly whether the term table would be editable from the system
+rather than hardcoded, and accepted the proposal on that condition. **It is a
+table with a screen**, so changing a band or a term recomputes every period
+from that point without a deploy.
+
+Proposed defaults, from his own 92 equipment purchase lines
+(11.163.120đ: 41 items under 50k, 33 at 50-200k, 16 at 200-500k, 2 above):
+
+| Value | Term | Why |
+|---|---|---|
+| under 200k | 12 months | ca đong, khăn, dây — break or go missing |
+| 200k-500k | 24 months | thùng đá, bình bơm |
+| above 500k | 36 months | **Xe cà phê lưu động 2.100.000đ**, machines |
+
+Monthly charge across everything he owns: **930.260đ** at a flat 12 months
+(his current sheet) against **583.449đ** under the bands. Not a saving — the
+cart stops being written off in a year it will obviously outlive. Vietnamese
+tax practice caps CCDC allocation at 36 months, so the table stays inside it
+whichever business form he registers.
+
+**No minimum threshold**, on his instruction: *"cái nào cứ cầm nắm để sử
+dụng được thì đều phải có tính khấu hao"* — the charge is computed, so there
+is no per-item work to avoid.
+
+### 8.2 The register answers "what does the shop own", not just "what did it cost"
+
+Owner: *"anh cần biết quán đang có những gì"*. So it lists items with their
+remaining value; an item whose term has ended **stays listed at 0đ** because
+it is still owned; and only marking it broken or disposed removes it, sending
+the remaining value to that month (the ca đong that breaks in month 3 charges
+its remaining 33.750đ then, totalling the 45.000đ actually paid).
+
+### 8.3 Purchasing is reused for all three types — the model already exists
+
+Owner asked whether the existing purchase function could be reused. It can,
+and more of it exists than expected: `item_categories` has held
+**NHH-001 Nguyên liệu (RAW), NHH-002 Vật tư tiêu hao (CONSUMABLE), NHH-003
+Dụng cụ (EQUIPMENT)** since 2026-06-28, all 52 items sit in the first,
+`PurchasedItemForm` already branches on `system_type`, and the purchase-order
+screen does not filter by category. `purchased_items.base_ingredient_id` is
+nullable, so equipment needs no invented ingredient.
+
+`computeOnHandByPurchasedItem` is **purchases minus issues per purchased
+item**, touching neither `base_ingredients` nor `stock_ledger` — so a
+consumable becomes countable the moment it is a purchased item with a
+conversion. Nothing new is required downstream.
+
+**One real gap:** `PurchasedItemForm` shows the conversion rows only when
+`isRaw`, so a consumable cannot yet be given "1 cây = 50 cái" or "1 bao =
+500 g". Open that section for CONSUMABLE too. Equipment does not need it.
+
+### 8.4 Over half of "operating expenses" is ingredient buying
+
+Of 8.087.000đ recorded as non-purchase spending: **đá viên 2.735.000đ
+(33,8%)**, **khoai 1.681.000đ (20,8%)**, điện/nước/gas 1.410.000đ,
+printing and signage 1.180.000đ, and the rest — parking, entertainment,
+**tắc 247.000đ, chanh 40.000đ**.
+
+So roughly **4,7 million of direct materials sits under "Vận hành"** because
+there was nowhere else. Those four are exactly the `is_non_inventory`
+ingredients, and they belong on the P&L's direct-materials line
+(`BR-COGS-007`), not among operating costs.
+
+The owner's reason they cannot be stock-managed, which settles it: *"cho dù
+là cân để biết còn lại bao nhiêu thì khi một ngày chỉ cần mua lên cả trăm kg
+thì cũng không có ai đi dành thời gian để cân xem nó còn tồn bao nhiêu"*.
+
+**Blocker to fix:** the purchase screen requires a supplier when a purchase
+order is completed (`app/admin/inventory/purchase-orders/actions.ts:61`),
+while the column is nullable. Buying khoai at a market has no supplier —
+either allow it blank or let him record a generic one. This is why khoai is
+still only in the spreadsheet.
+
+### 8.5 Recurring expenses stay pending until confirmed, in their own month
+
+Owner, 2026-08-19. A recurring item (tiền gas, tiền điện, tiền nước — 9
+entries, 1.410.000đ so far) appears as **a line awaiting confirmation when he
+opens the app**. No push notification; *"mở app lên thấy một dòng xác nhận"*.
+
+It **stays pending** rather than posting itself, and the amount is editable
+each time so the real figure is recorded.
+
+**The date rule, and it is the point of the whole feature:** a pending item
+belongs to its own month and cannot be confirmed into another. Confirming
+August's gas on some day in September must **ask again for the actual date
+within August** rather than defaulting to today. His words: *"tới tháng 9 mới
+quay lại xác nhận và quên điều chỉnh ngày chi trả thực tế, lúc đó hệ thống sẽ
+yêu cầu xác nhận lại ngày ghi nhận chi phí thực tế trong tháng 8."*
+
+**Why this is worth the friction:** it makes the cost land in the month it was
+incurred rather than the month someone got round to clicking, which is the
+only way a month-to-month comparison means anything. It is a deliberate
+accrual for recurring items, while everything else in the system records on
+its transaction date — the two coincide everywhere except here, and nobody
+should later "simplify" this to the payment date.
+
+**Proposed, not yet decided:** the P&L shows how many recurring items are
+still unconfirmed for the period, next to the expense total — the same idea
+as showing the issue-slip count beside shrinkage (`BR-COGS-007`). A month
+missing its gas bill should say so rather than quietly reading low.
