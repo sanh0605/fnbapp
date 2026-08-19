@@ -60,8 +60,40 @@ trimmed; internal whitespace runs collapsed; case folded.
 expression index requires it, and the migration fails loudly if not. Do not
 work around a failure by dropping a step; report it.
 
-**Diacritics are deliberately not stripped** (§9.2): `cà` and `ca` are both
-real words.
+### A3b. Two levels — block on the same name, warn on the same letters
+
+**Owner decision 2026-08-19, revising §9.2.** He asked for `Ca phe` to be
+caught as a duplicate of `Cà phê`, which stripping diacritics does. Shown the
+cost of stripping, he chose a warning rather than a refusal.
+
+**The cost, measured, not argued.** Strip diacritics and **`Dứa` and `Dừa`
+become the same word** — pineapple and coconut. This catalogue already holds
+`Thạch dừa` (`NNL-009`, `SPM-047`), so a blanket rule would one day refuse
+`Thạch dứa` on a drinks menu with no explanation the owner could act on. Same
+for `Cam`/`Cám`, `Chanh`/`Chánh`, `Sả`/`Sa`.
+
+| Level | Trigger | Behaviour |
+|---|---|---|
+| **1 — refuse** | §A3's expression matches an existing live row | Blocked outright. Same name, nothing to ask. |
+| **2 — warn** | only the **diacritic-stripped** forms match | Show the existing row, ask *"món khác đúng không?"*, proceed only on confirmation |
+
+Typing `Ca phe` hits level 2, he answers *"tôi gõ nhầm"*, and the mistake is
+caught. Adding `Thạch dứa` hits level 2, he answers *"món khác"*, and it saves.
+
+**The confirmation is recorded as a field, not a note** — same reasoning as
+`Không nhớ` in the parent plan §9.3: a later question like *"which items were
+created despite a warning"* has to be answerable by a query.
+
+**Level 2 lives in the application, not the database.** It needs a human answer,
+so it cannot be an index. `unaccent` is available but **not installed** on this
+project, and installing it for this would add a dependency for nothing — the
+strip is a few characters of TypeScript. Note that `đ`/`Đ` (U+0111/U+0110) are
+**not** decomposable, so NFD plus combining-mark removal misses them and they
+need an explicit replacement; a strip that leaves `đ` alone would not match
+`Ca phe` against `Cà phê` in names containing đ.
+
+**Level 1 stays the unbypassable guard.** The index enforces it whatever code
+path writes.
 
 ### A4. The partial predicate
 
