@@ -95,6 +95,16 @@ need an explicit replacement; a strip that leaves `đ` alone would not match
 **Level 1 stays the unbypassable guard.** The index enforces it whatever code
 path writes.
 
+**Table scope (added 2026-08-20 — the gap this plan originally left open).**
+Level 2 covers `base_ingredients`, `purchased_items`, `semi_products`,
+`products` and `suppliers`: the five whose rows accumulate stock or purchase
+history, where a near-duplicate splits a ledger. `units` and `item_categories`
+are level 1 only — they are labels referenced by other rows, never bought,
+counted or sold, so a near-duplicate is a confusing dropdown, not split money.
+Checked before accepting: neither table holds a diacritic-stripped collision
+among live rows today. Migrations `0066` (base_ingredients) and `0067` (the
+other four) carry the confirmation columns; both applied to production.
+
 ### A4. The partial predicate
 
 `WHERE status = 'ACTIVE'`.

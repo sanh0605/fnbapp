@@ -4,6 +4,40 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-20 (Opus 5 executing the approved migration) - Migration 0067 APPLIED to production
+
+**Owner approved 2026-08-20**, per-instance as always. Applied `0067_duplicate_name_warning_confirmation_more_tables.sql` through the Supabase management API: three level-2 confirmation columns on `purchased_items`, `semi_products`, `products`, `suppliers`.
+
+**Re-measured immediately before applying, not reusing the earlier read:** only `base_ingredients` carried `duplicate_warning_confirmed*`; no column of that name existed on the four targets under any type, so `add column if not exists` could not silently skip a type mismatch.
+
+**Triggers on the four tables, listed before writing** (`fnbapp-bulk-data-change` step 1): `trg_products_touch`, `trg_purchased_items_touch`, `trg_semi_products_touch` — all `before update ... touch_updated_at()`, none `after insert or update`, none feeding a queue table. `suppliers` has none. A metadata-only `add column` issues no UPDATE, so none of them fire; the evidence is below rather than the argument alone.
+
+**Proved neutral per row, not by argument:**
+
+| Table | Rows before → after | `max(updated_at)` before → after |
+|---|---|---|
+| `purchased_items` | 52 → **52** | `2026-07-30 14:08:32` → **unchanged** |
+| `semi_products` | 17 → **17** | `2026-07-31 19:47:59` → **unchanged** |
+| `products` | 47 → **47** | `2026-08-14 14:29:56` → **unchanged** |
+| `suppliers` | 33 → **33** | (no `updated_at` column) |
+
+An unmoved `max(updated_at)` is the falsifiable form of "no table rewrite": had PostgreSQL rewritten rows, the touch trigger would have moved it.
+
+**Proved the guard works on a newly-covered table, rather than assuming the migration's success implies it.** Both halves, inside one rolled-back transaction on `suppliers`:
+
+| Attempt | Expected | Result |
+|---|---|---|
+| an existing live supplier's name, upper-cased and padded (`'  ' \|\| upper(name) \|\| '   '`) | level 1 refuses | **23505 unique violation** — the `do` block was written to `raise exception` had the insert succeeded, so a silent pass was not possible |
+| a distinct name written with `duplicate_warning_confirmed = true`, `_by`, `_at` | level 2 records | **accepted, all three columns readable** |
+
+Afterwards: 33 suppliers, **0** rows matching `PROBE-%`. Nothing persisted.
+
+**Neutral, measured:** `scripts/verify-revenue.ts` re-run against live data — April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ, all still matching; all structural checks passed. No code changed in this step, so the `tsc` / `vitest` (1.239 passing) / `build` gates from `5bad600` stand unmoved.
+
+**Scope note the owner accepted:** he approved extending level 2 to "cả bảy bảng"; the delivered work covers **five**. `units` and `item_categories` were argued out by the implementer and the argument was checked against data before being accepted — neither accumulates stock or purchase history, so a near-duplicate there is a confusing dropdown rather than a split ledger, and querying both tables for diacritic-stripped collisions among ACTIVE rows returned `[]`. Level 1 (migration `0065`) still covers all seven.
+
+---
+
 ## 2026-08-20 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 follow-up: level-2 warning extended to five of seven tables
 
 **Trigger:** the 2026-08-19 entry below flagged this as still open. The plan (`docs/superpowers/plans/2026-08-19-batch-1-foundations.md` §A3b) never stated which tables level 2 covers; `base_ingredients` alone left the owner's own example uncaught -- "Cà phê" is a `products` row (`PROD-001`), not an ingredient, so "Ca phe da" against it produced no warning at all.
