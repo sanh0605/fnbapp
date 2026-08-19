@@ -127,8 +127,13 @@ sales. August's real cost is still unknown and arrives with the second count.
   category, fixed/variable, note. Categories seeded from the owner's own list.
 - **J2 — Equipment register with depreciation.** Item, purchase date, cost,
   months (default 12), and a derived monthly charge. Straight-line, no salvage
-  value. The monthly figure is **derived, never stored** — same rule as costs
-  (`BR-COGS-006`), so a corrected term or amount fixes every past period.
+  value. ~~The monthly figure is **derived, never stored** — same rule as costs
+  (`BR-COGS-006`), so a corrected term or amount fixes every past period.~~
+  **CORRECTED by §9.1 (2026-08-19): the term is frozen on the item at creation
+  and changing the band table never touches items already created.** The
+  struck sentence is left visible rather than deleted because it was written
+  first and a reader who skims the task list must not build the retroactive
+  version — the owner reversed this explicitly.
 - **J3 — The P&L.** Doanh thu → Giá vốn → Lợi nhuận gộp → Chi phí (J1 + J2's
   monthly charge) → **Lợi nhuận ròng, after expenses, not before**. Period
   selectable by month, quarter, year and a free date range (owner, 2026-08-17).
@@ -150,11 +155,21 @@ leave the P&L's shape able to take a rate later.
 
 `CLAUDE.md` section 9 in full, plus:
 
-- **The double-count gate:** a test that fails if any figure feeding the P&L's
-  expense total can originate from `purchase_orders`. Assert it structurally,
-  not by inspection.
+- **The double-count gate:** a test that fails if any figure feeding the
+  P&L's **`Chi phí` line specifically** — J1's expenses plus J2's depreciation
+  — can originate from `purchase_orders`. Naming the line matters:
+  `Nguyên liệu mua dùng ngay` is a cost-of-sales line that **is designed to
+  read from purchases** (§7.4), so a gate written against "the expense total"
+  either tests nothing or fails on the one line built to do this. Assert it
+  structurally, not by inspection.
 - **Revenue and COGS must not move.** `scripts/verify-revenue.ts` identical
-  before and after, and the issued-value total unchanged. This plan adds a
+  before and after, and the issued-value total unchanged — **compared by
+  calling the live function, never against a figure copied out of this plan.**
+  `BR-COGS-005` already requires this, and this document proves why: it quotes
+  the issued value as 35.992.142đ in §3b and 36.174.149đ in §10.1, one day
+  apart, both correct when written. Purchases moved too (64 orders /
+  49.305.880đ in §7.1, 65 / 49.455.880đ in §10.1). Every figure here is a
+  timestamp, not a constant. This plan adds a
   statement on top of existing figures; it does not recompute them.
 - **A worked example, checked by hand before the screen is trusted:** one real
   month, with revenue, COGS, the entered expenses and the depreciation charge,
@@ -285,9 +300,20 @@ item**, touching neither `base_ingredients` nor `stock_ledger` — so a
 consumable becomes countable the moment it is a purchased item with a
 conversion. Nothing new is required downstream.
 
-**One real gap:** `PurchasedItemForm` shows the conversion rows only when
-`isRaw`, so a consumable cannot yet be given "1 cây = 50 cái" or "1 bao =
-500 g". Open that section for CONSUMABLE too. Equipment does not need it.
+**One real gap, and it is two gates rather than one.** `PurchasedItemForm`
+shows the conversion rows only when `isRaw` (line 224) — but the payload is
+built inside a second `if (isRaw)` block at **line 82**, and that is where
+`units_json` is appended (line 110).
+
+**Opening only the display gate ships a form that silently discards what the
+user typed:** the conversion inputs render, accept values, report success, and
+`units_json` never leaves the browser. There is no error to explain it, and
+the first item it would bite is `ống hút` — the one the owner named in §7.3 as
+the reason consumables must be countable at all. Found by Sonnet's review of
+this plan 2026-08-19; verified at the line.
+
+The fix splits line 82: the base-ingredient requirement stays `isRaw`-only,
+the unit processing runs for `isRaw || isConsumable`. Equipment needs neither.
 
 ### 8.4 Over half of "operating expenses" is ingredient buying
 
@@ -368,9 +394,20 @@ He then asked the sharper question: do those rows carry an id, and what stops
 a second row with the same name — *"nếu chỉ dùng tên nhưng không check
 duplicate trùng thì sẽ xảy ra trường hợp tương tự như sữa yến mạch"*.
 
+**The rule is per table, never across tables — and the plan's own wording hid
+this.** Sonnet's review 2026-08-19 read the sentence below as one search space,
+which is its natural reading, and measured the consequence: **16 duplicate
+groups across the 226 names pooled together, against 3 within individual
+tables.** The extra 13 are legitimate and must never be refused — `Đá viên` is
+both `SPM-005` (the thing bought) and `ING-001` (the ingredient it becomes);
+`Dâu sấy` is `SPM-033`, `ING-028` **and** `PROD-035`, a raw material, an
+ingredient and a drink made from it. A global rule would refuse the very next
+catalogue entry the owner creates, because one name per layer is this
+catalogue's normal shape. Verified independently at the line.
+
 **Measured: there is no uniqueness constraint on any name column anywhere in
-the schema** (only `users.username`). Three duplicate pairs exist across 226
-names in 7 tables:
+the schema** (only `users.username`). Three duplicate pairs exist **within
+individual tables**, across 226 names in 7 tables:
 
 | Name | Rows |
 |---|---|
@@ -489,3 +526,79 @@ paying), and **owner capital** (*"cứ mặc định là tiền của quán bỏ
 Without cash the two sides cannot balance, so a balance sheet is blocked until
 that decision changes. The occasions that would change it are registering the
 business, borrowing, or taking an investor who asks where their money sits.
+
+---
+
+## 11. Review corrections, 2026-08-19
+
+Sonnet reviewed this plan before any implementation planning began, at the
+owner's suggestion. It re-derived every database-checkable figure using the
+app's own functions rather than a hand rebuild — purchased 49.455.880đ, issued
+36.174.149đ, closing 13.281.731đ, all matching §10.1 to the đồng, plus the
+`item_categories` timestamps, the zero non-inventory purchase lines, the 96
+active variant recipes and the 226-name normalisation counts. **Nothing
+measured was wrong.** What it found was ambiguity, contradiction and ordering —
+the things measurement cannot catch.
+
+§8.1, §8.3, §9.2 and §5 are corrected in place above. The rest is here.
+
+### 11.1 Batch ordering was asserted more strongly than it was argued
+
+§10 called its sequence "dependency order". Two parts of that do not hold:
+
+- **Batch 1's third item does not block batch 2.** Excluding `is_non_inventory`
+  items from the issue-costing engine concerns đá viên and khoai lang, which
+  are `Nguyên liệu`, have zero purchase lines and zero issues. Nothing about
+  consumables depends on it. It belongs with **batch 5**, whose
+  `Nguyên liệu mua dùng ngay` line is the first thing that needs it.
+- **Batch 3 does not depend on batch 2.** Equipment needs no conversions
+  (§8.3), no consumable import, and a standalone term table. It could ship
+  first or alongside. The order is a preference, and saying so is more honest
+  than implying a constraint.
+
+What does hold, and was checked: batches 2 and 3 both need batch 1's
+duplicate-name guard, and batch 5 needs 2, 3 and 4's data to exist.
+
+### 11.2 A data dependency no batch owns
+
+`Nguyên liệu mua dùng ngay` (§8.4, `BR-COGS-007`) reports đá viên, khoai lang,
+trái tắc and trái chanh. Two things stop it reading anything real:
+
+- **Trái tắc and trái chanh have no `purchased_items` row at all.** Only đá
+  viên and khoai lang do. §7.4 describes all four as equally ready; they are
+  not, and no batch creates the missing two.
+- **No batch imports their historical spending.** Batch 2 imports the 26
+  `Vật tư tiêu hao` items; đá viên and khoai are `Nguyên liệu`, so the
+  2.735.000đ and 1.681.000đ already spent (sitting under "Vận hành" in the
+  spreadsheet, §8.4) reach nothing.
+
+Left as batch 5 ships, the new line reads near-zero for months that already
+happened — the same shape as the COGS artefact §3b takes such care to explain,
+with nobody having written the equivalent sentence or scheduled the work.
+**Assign both to batch 5 explicitly, or state in the report that the line
+begins from the date the feature shipped.**
+
+### 11.3 Gaps the owner meets in week one
+
+- **Correcting an expense entry is unspecified.** J1 lists date, amount,
+  category, fixed/variable, note, and says nothing about fixing a wrong
+  amount after saving. Issue slips and stocktakes both have explicit
+  correction paths (`BR-INV-009`); this does not.
+- **No onboarding story for recurring items.** The shop opened in April and
+  this ships months later. Does the pending queue start clean, or greet him
+  with four months of backdated gas, water and rent to confirm? Either is
+  defensible; neither is written.
+- **Recurring cadence is assumed monthly and never stated.** Every example is
+  monthly. "Same day-of-month as the previous period" and "last day of the
+  period" both need restating if a quarterly or annual item is ever added —
+  and §9.2's own rule that flexible lists get a settings screen invites
+  exactly that.
+- **"Tài liệu" is named once and scoped nowhere.** It appears in §7.1's order
+  breakdown (1 order, `Bộ công thức pha chế Kenbar`, 497.697đ) and never
+  again — no category, no batch, no treatment.
+- **Four mixed-category historical orders straddle batches 2 and 3.** Three
+  are `CCDC + Vật tư tiêu hao`, one is `CCDC + Tài liệu`. Neither batch says
+  whether such an order is split into two app-side purchase orders, entered
+  whole into whichever batch ships second, or something else. The owner will
+  notice when his historical totals fail to reconcile against
+  15.803.989đ + 11.163.120đ.
