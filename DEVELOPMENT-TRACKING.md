@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-19 (Opus 5 executing the approved migration) - Batch 1 migrations APPLIED to production
+
+**Owner approved 2026-08-19.** Applied `0065_duplicate_name_guard.sql` and `0066_duplicate_name_warning_confirmation.sql` through the Supabase management API.
+
+**Re-measured immediately before applying, not reusing the 2026-08-19 morning figure:** zero live duplicate names across all seven catalogue tables. Had any appeared while batch 1 was being built, `0065` would have failed part-way.
+
+**Written:** seven partial unique expression indexes (`ux_*_active_name` on `purchased_items`, `base_ingredients`, `semi_products`, `products`, `item_categories`, `units`, `suppliers`), each scoped `where status = 'ACTIVE'`; three columns on `base_ingredients` recording a level-2 warning confirmation.
+
+**Proved the index refuses, rather than assuming it:** three inserts inside rolled-back transactions —
+
+| Attempt | Expected | Result |
+|---|---|---|
+| `Sữa yến mạch` exactly | refused | **23505 unique violation** |
+| `"  SỮA   yến mạch  "` | refused | **23505 unique violation** |
+| `Sữa yến mạch hạnh nhân` | allowed | **accepted** |
+
+The second is the one that matters: different case, leading, trailing and doubled spaces, all collapsed by the index expression. Confirmed afterwards that no test row persisted.
+
+**Neutral, measured:** `scripts/verify-revenue.ts` unchanged — April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ all still matching.
+
+**Still open from batch 1:** level-2 warning is wired into `base_ingredients` only. The owner approved extending it to all seven tables 2026-08-19 — the plan never stated level 2's table scope, which is the author's specification gap, not the implementer's. `0066`'s columns will need adding to the other six tables as part of that work.
+
+---
+
 ## 2026-08-19 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 item B: conversions for consumables
 
 **Trigger:** `docs/superpowers/plans/2026-08-19-batch-1-foundations.md` section B. Four gates block a consumable's `1 bao = 500 g`, and opening fewer than all four fails silently: `PurchasedItemForm.tsx:224` (render), `:82` (build/send `units_json`), `items/actions.ts`'s create and update paths (`if (base_ingredient_id && unitsJson && base_unit)`, requiring a field a consumable never has). Section B1 names gates 1-2 as already caught by the parent plan's review; writing this technical plan found gates 3-4.
