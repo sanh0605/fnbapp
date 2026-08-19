@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-20 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 follow-up: level-2 warning extended to five of seven tables
+
+**Trigger:** the 2026-08-19 entry below flagged this as still open. The plan (`docs/superpowers/plans/2026-08-19-batch-1-foundations.md` §A3b) never stated which tables level 2 covers; `base_ingredients` alone left the owner's own example uncaught -- "Cà phê" is a `products` row (`PROD-001`), not an ingredient, so "Ca phe da" against it produced no warning at all.
+
+**Pre-code challenge, per the task's own requirement:**
+- **Form round-trip check:** all four remaining forms with a level-1-worthy write path (`ProductForm.tsx`, `SemiProductForm.tsx`, `SupplierForm.tsx`, `PurchasedItemForm.tsx`) can carry the confirm-and-retry round trip -- each already had a single `handleSubmit` calling exactly one save action per branch. None saves through a path that cannot prompt.
+- **Bypass-writer check, same method as item B's `uom_conversions` finding:** re-grepped every writer of each of the six tables. Clean for all six -- no additional insert/update path found beyond the ones already wired (the one known dead duplicate in `app/admin/inventory/actions.ts`, out of scope, unchanged, already reported when found under item A).
+- **`units`/`item_categories` argued out, not wired for symmetry:** queried both tables' real rows; found zero existing diacritic-stripped collisions in either. Argument for exclusion: neither accumulates its own stock/purchase history (the split-ledger harm level 2 exists to prevent) -- they are labels referenced by other rows, not things bought, counted, or sold. Both populations are small and do not grow under shelf-pressure (`item_categories`: 3 rows since 2026-06-28). Level 1 already covers the only collision risk either has produced historically.
+
+**Wired:** `purchased_items`, `semi_products`, `products`, `suppliers` -- server-side `findDiacriticStrippedMatch` check plus `needsDuplicateWarning` response (matching `base_ingredients`' existing shape) in each table's save action, and client-side confirm-and-retry via `lib/dialog.ts`'s `confirm()` in each form.
+
+**Migration written, NOT applied:** `0067_duplicate_name_warning_confirmation_more_tables.sql` adds the same three confirmation columns (`duplicate_warning_confirmed`, `_by`, `_at`) to the four newly-wired tables. Verified inside a rolled-back transaction against production (`supabase db query --linked`, `begin; ... rollback;`): all four tables' columns appeared during the transaction and were confirmed gone immediately after rollback. Awaiting owner approval to apply, same as `0065`/`0066`.
+
+**Verification, §A5's required two-outcome proof, on `products` (the owner's own "Cà phê" example) -- PROD-001 confirmed live-named "Cà phê đá" before writing the test:**
+- "Ca phe da" against PROD-001 warns, and a decline ("tôi gõ nhầm") saves nothing.
+- "Cá phê đá" (a genuinely different name, same diacritic-stripped letters) warns, then saves on confirmation ("món khác"), with `duplicate_warning_confirmed`/`_by` recorded on the write.
+Matching action-level tests added for `semi_products`, `suppliers`, `purchased_items` (warn-then-decline, warn-then-confirm-and-save-with-field-recorded, exact-match-still-hits-level-1).
+
+**Test count:** 1225 before this task, 1239 after (+14: 3 `products`, 3 `semi_products`, 5 `suppliers` -- no prior test file for this table -- 3 `purchased_items`).
+
+**Gates run, all green:** `npx tsc --noEmit` (0 errors), `npx vitest run` (187 files, 1239 tests), `npx vite-node scripts/check-rules-current.ts` (3/3 pass), `npm run build` (compiled, 40/40 static pages).
+
+**Neutral, unchanged:** `scripts/verify-revenue.ts` not touched this session; no `uom_conversions` writer touched.
+
+---
+
 ## 2026-08-19 (Opus 5 executing the approved migration) - Batch 1 migrations APPLIED to production
 
 **Owner approved 2026-08-19.** Applied `0065_duplicate_name_guard.sql` and `0066_duplicate_name_warning_confirmation.sql` through the Supabase management API.

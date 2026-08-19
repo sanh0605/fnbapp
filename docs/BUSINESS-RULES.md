@@ -400,7 +400,9 @@ Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, 
 
 **đ/Đ (U+0111/U+0110) do not decompose under NFD**, unlike ordinary Vietnamese diacritics — verified directly (`đ.normalize("NFD")` stays one codepoint; `á` splits into `a` + a combining acute). The diacritic strip replaces `đ`/`Đ` explicitly before the NFD step; missing this would make "Da vien" silently fail to warn against "Đá viên."
 
-**Scoped to `base_ingredients` today.** The level-2 comparison logic (`findDiacriticStrippedMatch`, `lib/duplicate-name-guard.ts`) is table-agnostic and reusable, matching level 1's helper; only `base_ingredients` has the confirmation field migrated and wired so far (`0066_duplicate_name_warning_confirmation.sql`). The other six tables get level 1 only until they need level 2 too.
+**Level 2 is wired into five of the seven tables**: `base_ingredients` (`0066_duplicate_name_warning_confirmation.sql`), plus `purchased_items`, `semi_products`, `products`, `suppliers` (Batch 1 follow-up, 2026-08-20, `0067_duplicate_name_warning_confirmation_more_tables.sql`). The level-2 comparison logic (`findDiacriticStrippedMatch`, `lib/duplicate-name-guard.ts`) is table-agnostic; each of these five tables carries its own `duplicate_warning_confirmed`/`_by`/`_at` columns.
+
+**`units` and `item_categories` carry level 1 only, deliberately.** Neither accumulates its own stock or purchase history — they are labels referenced by other rows, not things bought, counted, or sold, so a near-duplicate there is cosmetic dropdown confusion, not the split-ledger harm level 2 exists to catch. Both populations are also small and do not grow under shelf-pressure (`item_categories` has held exactly 3 rows since 2026-06-28; a new unit is a rare, deliberate, admin-time event). Level 1 already covers the only collision risk either table has ever actually produced.
 
 ## Unresolved items
 

@@ -12,7 +12,12 @@ import {
   type RawPurchaseOrderLine,
   type RawSupplier,
 } from "@/lib/item-purchase-history";
-import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
+import {
+  findDuplicateActiveName,
+  duplicateNameErrorMessage,
+  findDiacriticStrippedMatch,
+  duplicateWarningMessage,
+} from "@/lib/duplicate-name-guard";
 
 const SHEET = "Purchased_Items";
 const PATH = "/admin/inventory/items";
@@ -67,6 +72,8 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
   const unitsJson = formData.get("units_json") as string;
   const base_unit = formData.get("base_unit") as string;
 
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
+
   if (!name || !item_category_id) return fail("Vui lòng nhập Tên và chọn Phân loại");
 
   try {
@@ -77,12 +84,31 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
     const conflict = findDuplicateActiveName(existingItems as any[], name);
     if (conflict) return fail(duplicateNameErrorMessage(conflict as any));
 
+    // Batch 1 follow-up, level 2 (BR-CATALOG-001): warn, not refuse, on a
+    // diacritic-stripped-only match -- "Ca phe" against an existing item
+    // named "Cà phê" is a plausible typo, but stripping is not safe to
+    // refuse on outright (section A3b).
+    const warning = findDiacriticStrippedMatch(existingItems as any[], name);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict as any),
+        },
+      };
+    }
+    const wasWarningConfirmed = !!warning && warningConfirmed;
+
     const id = await generateNewId("Purchased_Items", "SPM");
     await insert("Purchased_Items", {
-      id, 
-      name, 
-      item_category_id, 
-      base_ingredient_id: base_ingredient_id || "" 
+      id,
+      name,
+      item_category_id,
+      base_ingredient_id: base_ingredient_id || "",
+      duplicate_warning_confirmed: wasWarningConfirmed,
+      duplicate_warning_confirmed_by: wasWarningConfirmed ? auth.actor.name : null,
+      duplicate_warning_confirmed_at: wasWarningConfirmed ? new Date().toISOString() : null,
     });
 
     // Batch 1, item B, gate 3 of 4 (section B1): base_ingredient_id is no
@@ -126,16 +152,36 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
   const unitsJson = formData.get("units_json") as string;
   const base_unit = formData.get("base_unit") as string;
   const update_history = formData.get("update_history") === "true";
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
 
   try {
     const existingItems = await findAll("Purchased_Items");
     const conflict = findDuplicateActiveName(existingItems as any[], name, id);
     if (conflict) return fail(duplicateNameErrorMessage(conflict as any));
 
+    const warning = findDiacriticStrippedMatch(existingItems as any[], name, id);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict as any),
+        },
+      };
+    }
+    const wasWarningConfirmed = !!warning && warningConfirmed;
+
     await update("Purchased_Items", id, {
-      name, 
-      item_category_id, 
-      base_ingredient_id: base_ingredient_id || "" 
+      name,
+      item_category_id,
+      base_ingredient_id: base_ingredient_id || "",
+      ...(wasWarningConfirmed
+        ? {
+            duplicate_warning_confirmed: true,
+            duplicate_warning_confirmed_by: auth.actor.name,
+            duplicate_warning_confirmed_at: new Date().toISOString(),
+          }
+        : {}),
     });
 
     // Batch 1, item B, gate 4 of 4 (section B1): same relaxation as the

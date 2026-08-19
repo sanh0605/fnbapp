@@ -5,7 +5,12 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/shared-actions";
 import type { DBSupplier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
-import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
+import {
+  findDuplicateActiveName,
+  duplicateNameErrorMessage,
+  findDiacriticStrippedMatch,
+  duplicateWarningMessage,
+} from "@/lib/duplicate-name-guard";
 
 const SHEET = "Suppliers";
 const PATH = "/admin/suppliers";
@@ -65,15 +70,41 @@ export async function addSupplier(formData: FormData): Promise<ActionResponse> {
   const links = readSupplierText(formData, "links");
   const validationError = validateSupplierFields({ name, phone, taxId: tax_id, address, links });
   if (validationError) return fail(validationError);
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
 
   try {
     const suppliers = (await findAll(SHEET)) as any[];
     const conflict = findDuplicateActiveName(suppliers, name);
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
+    const warning = findDiacriticStrippedMatch(suppliers, name);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict),
+        },
+      };
+    }
+    const wasWarningConfirmed = !!warning && warningConfirmed;
+
     const id = await generateNewId(SHEET, "NCC");
     const created_at = new Date().toISOString();
-    await insert(SHEET, { id, name, phone, tax_id, address, links, parent_id: "", status: "ACTIVE", created_at });
+    await insert(SHEET, {
+      id,
+      name,
+      phone,
+      tax_id,
+      address,
+      links,
+      parent_id: "",
+      status: "ACTIVE",
+      created_at,
+      duplicate_warning_confirmed: wasWarningConfirmed,
+      duplicate_warning_confirmed_by: wasWarningConfirmed ? auth.actor.name : null,
+      duplicate_warning_confirmed_at: wasWarningConfirmed ? new Date().toISOString() : null,
+    });
     revalidatePath(PATH);
     return ok({ id });
   } catch (error: unknown) {
@@ -96,13 +127,39 @@ export async function editSupplier(formData: FormData): Promise<ActionResponse> 
   if (!id) return fail("ID không hợp lệ");
   const validationError = validateSupplierFields({ name, phone, taxId: tax_id, address, links });
   if (validationError) return fail(validationError);
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
 
   try {
     const suppliers = (await findAll(SHEET)) as any[];
     const conflict = findDuplicateActiveName(suppliers, name, id);
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
-    await update(SHEET, id, { name, phone, tax_id, address, links });
+    const warning = findDiacriticStrippedMatch(suppliers, name, id);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict),
+        },
+      };
+    }
+    const wasWarningConfirmed = !!warning && warningConfirmed;
+
+    await update(SHEET, id, {
+      name,
+      phone,
+      tax_id,
+      address,
+      links,
+      ...(wasWarningConfirmed
+        ? {
+            duplicate_warning_confirmed: true,
+            duplicate_warning_confirmed_by: auth.actor.name,
+            duplicate_warning_confirmed_at: new Date().toISOString(),
+          }
+        : {}),
+    });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

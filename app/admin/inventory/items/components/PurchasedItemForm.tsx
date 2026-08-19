@@ -6,6 +6,7 @@ import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/SearchableSelect";
+import { confirm } from "@/lib/dialog";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
 
 // Batch 1, item B: the part of handleSubmit that decides what goes into
@@ -181,22 +182,40 @@ export function PurchasedItemForm({
     }
 
     formData.append("item_category_id", selectedCategoryId);
-    
+
+    const submitFn = isEdit ? updatePurchasedItem : addPurchasedItem;
     if (isEdit) {
       formData.append("id", initialData!.id);
       formData.append("update_history", String(updateHistory));
-      const res = await updatePurchasedItem(formData);
-      if (res.error) setError(res.error);
-      else setIsOpen(false);
-    } else {
-      const res = await addPurchasedItem(formData);
-      if (res.error) setError(res.error);
-      else {
-        setIsOpen(false);
-        setSelectedCategoryId("");
-        setSelectedBaseIngredientId("");
-        setUnitsState([{ name: "", conversion_rate: "" }]);
+    }
+    let res = await submitFn(formData);
+    // Batch 1 follow-up, level 2 (BR-CATALOG-001): a near-match warning,
+    // not a refusal -- ask, resubmit once on "món khác", stay on the form
+    // with nothing saved on "tôi gõ nhầm".
+    if ((res as any).needsDuplicateWarning) {
+      const approved = await confirm({
+        title: "Tên gần giống một mục đã có",
+        message: (res as any).needsDuplicateWarning.message,
+        okText: "Món khác",
+        cancelText: "Tôi gõ nhầm",
+        variant: "warning",
+      });
+      if (approved) {
+        formData.append("duplicate_warning_confirmed", "true");
+        res = await submitFn(formData);
+      } else {
+        setLoading(false);
+        return;
       }
+    }
+    if (res.error) setError(res.error);
+    else if (isEdit) {
+      setIsOpen(false);
+    } else {
+      setIsOpen(false);
+      setSelectedCategoryId("");
+      setSelectedBaseIngredientId("");
+      setUnitsState([{ name: "", conversion_rate: "" }]);
     }
     setLoading(false);
   }

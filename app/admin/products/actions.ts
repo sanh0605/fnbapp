@@ -6,7 +6,12 @@ import { planRecipeSave } from "@/lib/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
 import { findAll, update } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
-import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
+import {
+  findDuplicateActiveName,
+  duplicateNameErrorMessage,
+  findDiacriticStrippedMatch,
+  duplicateWarningMessage,
+} from "@/lib/duplicate-name-guard";
 
 const PRODUCT_SHEET = "Products";
 const VARIANT_SHEET = "Product_Variants";
@@ -30,6 +35,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
   const imageUrl = String(formData.get("image_url") || "");
   const variantsJson = String(formData.get("variants_json") || "");
   const effectiveDate = String(formData.get("effective_date") || "");
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
   if (!name || !categoryId || !variantsJson) {
     return fail("Thiếu thông tin bắt buộc");
   }
@@ -49,6 +55,19 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
 
     const duplicateName = findDuplicateActiveName(allProducts as any[], name, isEdit ? id : undefined);
     if (duplicateName) return fail(duplicateNameErrorMessage(duplicateName));
+
+    const warning = findDiacriticStrippedMatch(allProducts as any[], name, isEdit ? id : undefined);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict),
+        },
+      };
+    }
+    const wasWarningConfirmed = !!warning && warningConfirmed;
+
     const existingVariants = allVariants.filter((variant: Record<string, unknown>) =>
       variant.product_id === id && variant.status !== "DELETED"
     );
@@ -108,7 +127,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
         .map((variant: Record<string, unknown>) => String(variant.id))
       : [];
 
-    await saveProductAtomic({
+    const result = await saveProductAtomic({
       isEdit,
       product: {
         ...(isEdit ? { id } : {}),
@@ -124,6 +143,18 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       expectedPriceHistoryCount,
       expectedRecipeCount,
     });
+
+    // A separate, small write rather than plumbing this through the atomic
+    // RPC -- the confirmation is metadata about the save decision, not part
+    // of what save_product_atomic's own row-count invariants need to know
+    // about.
+    if (wasWarningConfirmed) {
+      await update(PRODUCT_SHEET, result.productId, {
+        duplicate_warning_confirmed: true,
+        duplicate_warning_confirmed_by: auth.actor.name,
+        duplicate_warning_confirmed_at: new Date().toISOString(),
+      });
+    }
 
     revalidatePath(PATH);
     return ok();

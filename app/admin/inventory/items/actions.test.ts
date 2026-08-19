@@ -128,3 +128,71 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
     );
   });
 });
+
+// Batch 1 follow-up, level 2 (section A3b, BR-CATALOG-001), wired into
+// Purchased_Items the same way as Base_Ingredients.
+describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follow-up)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.generateNewId.mockResolvedValue("SPM-999");
+  });
+
+  it("'Ong hut den nhon P6' against an existing 'Ống hút đen nhọn P6' warns, and does not save on decline", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "SPM-043", name: "Ống hút đen nhọn P6", status: "ACTIVE" }]);
+
+    const formData = new FormData();
+    formData.set("name", "Ong hut den nhon P6");
+    formData.set("item_category_id", "NHH-002");
+
+    const res: any = await actions.addPurchasedItem(formData);
+
+    expect(res.error).toBeUndefined();
+    expect(res.needsDuplicateWarning).toBeTruthy();
+    expect(res.needsDuplicateWarning.conflictId).toBe("SPM-043");
+    expect(mocks.insert).not.toHaveBeenCalledWith("Purchased_Items", expect.anything());
+
+    // "tôi gõ nhầm" -- no resubmission with the confirmation flag, so
+    // nothing beyond the warning above is needed to prove decline.
+  });
+
+  it("a genuinely different name that strips the same warns, then SAVES on confirmation ('món khác'), recording it", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "NNL-009", name: "Thạch dừa", status: "ACTIVE" }]);
+
+    const formData = new FormData();
+    formData.set("name", "Thạch dứa");
+    formData.set("item_category_id", "NHH-001");
+    const warned: any = await actions.addPurchasedItem(formData);
+    expect(warned.needsDuplicateWarning).toBeTruthy();
+    expect(mocks.insert).not.toHaveBeenCalledWith("Purchased_Items", expect.anything());
+
+    const confirmedFormData = new FormData();
+    confirmedFormData.set("name", "Thạch dứa");
+    confirmedFormData.set("item_category_id", "NHH-001");
+    confirmedFormData.set("duplicate_warning_confirmed", "true");
+    const saved: any = await actions.addPurchasedItem(confirmedFormData);
+
+    expect(saved.error).toBeUndefined();
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "Purchased_Items",
+      expect.objectContaining({
+        name: "Thạch dứa",
+        duplicate_warning_confirmed: true,
+        duplicate_warning_confirmed_by: "Admin",
+      }),
+    );
+  });
+
+  it("an exact match (case-fold only, same diacritics) still hits level 1 (refuse), never level 2", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "SPM-043", name: "Ống hút đen nhọn P6", status: "ACTIVE" }]);
+
+    const formData = new FormData();
+    formData.set("name", "ống hút đen nhọn p6");
+    formData.set("item_category_id", "NHH-002");
+
+    const res: any = await actions.addPurchasedItem(formData);
+
+    expect(res.error).toBeTruthy();
+    expect(res.needsDuplicateWarning).toBeUndefined();
+  });
+});

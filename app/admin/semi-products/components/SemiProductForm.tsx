@@ -6,6 +6,7 @@ import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
+import { confirm } from "@/lib/dialog";
 import type { DBSemiProduct, DBRecipe, DBBaseIngredient, DBUnit } from "@/types/db";
 
 interface SemiProductFormProps {
@@ -93,9 +94,25 @@ export function SemiProductForm({ units, baseIngredients, semiProducts, initialD
       formData.append("effective_date", effectiveDate.toISOString());
     }
 
-    const res = await saveSemiProduct(formData);
+    let res = await saveSemiProduct(formData);
+    if ((res as any).needsDuplicateWarning) {
+      const approved = await confirm({
+        title: "Tên gần giống một mục đã có",
+        message: (res as any).needsDuplicateWarning.message,
+        okText: "Món khác",
+        cancelText: "Tôi gõ nhầm",
+        variant: "warning",
+      });
+      if (approved) {
+        formData.append("duplicate_warning_confirmed", "true");
+        res = await saveSemiProduct(formData);
+      } else {
+        setLoading(false);
+        return;
+      }
+    }
     setLoading(false);
-    
+
     if (res.error) {
       setError(res.error);
     } else {

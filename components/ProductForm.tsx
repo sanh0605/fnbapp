@@ -42,7 +42,27 @@ export default function ProductForm({ categories, baseIngredients, semiProducts,
     const effectiveDateStr = effectiveDate ? effectiveDate.toISOString() : "";
     formData.append("effective_date", effectiveDateStr);
 
-    const res = await saveProduct(formData);
+    let res = await saveProduct(formData);
+    // Batch 1 follow-up, level 2 (docs/BUSINESS-RULES.md BR-CATALOG-001): a
+    // near-match warning, not a refusal -- ask whether it is really a
+    // different item, resubmit once on "món khác", stay on the form with
+    // nothing saved on "tôi gõ nhầm".
+    if ((res as any).needsDuplicateWarning) {
+      const approved = await confirm({
+        title: "Tên gần giống một mục đã có",
+        message: (res as any).needsDuplicateWarning.message,
+        okText: "Món khác",
+        cancelText: "Tôi gõ nhầm",
+        variant: "warning",
+      });
+      if (approved) {
+        formData.append("duplicate_warning_confirmed", "true");
+        res = await saveProduct(formData);
+      } else {
+        setLoading(false);
+        return;
+      }
+    }
     setLoading(false);
 
     if (res.success) {

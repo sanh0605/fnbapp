@@ -5,7 +5,12 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import type { DBSemiProduct, DBRecipe, DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
-import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
+import {
+  findDuplicateActiveName,
+  duplicateNameErrorMessage,
+  findDiacriticStrippedMatch,
+  duplicateWarningMessage,
+} from "@/lib/duplicate-name-guard";
 
 const SP_SHEET = "Semi_Products";
 const RECIPE_SHEET = "Recipes";
@@ -81,6 +86,8 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
     return fail("Vui lòng nhập đầy đủ thông tin");
   }
 
+  const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
+
   try {
     let semi_product_id = formData.get("id") as string;
 
@@ -92,12 +99,32 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
     );
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
+    const warning = findDiacriticStrippedMatch(existingSemiProducts, name, isEdit ? semi_product_id : undefined);
+    if (warning && !warningConfirmed) {
+      return {
+        needsDuplicateWarning: {
+          conflictId: warning.conflict.id,
+          conflictName: warning.conflict.name,
+          message: duplicateWarningMessage(warning.conflict),
+        },
+      };
+    }
+    const wasWarningConfirmed = !!warning && warningConfirmed;
+    const warningFields = wasWarningConfirmed
+      ? {
+          duplicate_warning_confirmed: true,
+          duplicate_warning_confirmed_by: auth.actor.name,
+          duplicate_warning_confirmed_at: new Date().toISOString(),
+        }
+      : {};
+
     if (isEdit) {
       await update("Semi_Products", semi_product_id, {
         name,
         base_unit,
         batch_yield,
         status,
+        ...warningFields,
       });
     } else {
       semi_product_id = await generateNewId("Semi_Products", "BTP");
@@ -107,7 +134,8 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
         base_unit,
         batch_yield,
         status,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        ...warningFields,
       });
     }
 

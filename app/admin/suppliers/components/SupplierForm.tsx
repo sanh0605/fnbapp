@@ -5,6 +5,7 @@ import { addSupplier, editSupplier, deleteSupplierAction } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { confirm } from "@/lib/dialog";
 import type { DBSupplier } from "@/types/db";
 
 interface SupplierFormProps {
@@ -25,7 +26,23 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
       formData.append("id", initialData.id);
     }
     const fn = isEdit ? editSupplier : addSupplier;
-    const res = await fn(formData);
+    let res = await fn(formData);
+    if ((res as any).needsDuplicateWarning) {
+      const approved = await confirm({
+        title: "Tên gần giống một mục đã có",
+        message: (res as any).needsDuplicateWarning.message,
+        okText: "Món khác",
+        cancelText: "Tôi gõ nhầm",
+        variant: "warning",
+      });
+      if (approved) {
+        formData.append("duplicate_warning_confirmed", "true");
+        res = await fn(formData);
+      } else {
+        setLoading(false);
+        return;
+      }
+    }
     setLoading(false);
     if (res.error) {
       setError(res.error);
