@@ -338,3 +338,115 @@ should later "simplify" this to the payment date.
 still unconfirmed for the period, next to the expense total — the same idea
 as showing the issue-slip count beside shrinkage (`BR-COGS-007`). A month
 missing its gas bill should say so rather than quietly reading low.
+
+---
+
+## 9. Interview part 3 — settings, identity, and recurring items in detail
+
+### 9.1 A depreciation term is fixed when the item is created
+
+Owner, 2026-08-19: *"anh chỉ thay đổi luật chứ không đồng nghĩa luật đó phải
+áp dụng lại cho tất cả những gì đã được áp dụng trước đó."*
+
+An item takes its term from the band table **at the moment it is created**, and
+keeps it. Changing a band later applies only to items created after the change;
+the coffee cart bought under a 36-month band stays on 36 months for ever. Each
+item's term stays individually editable.
+
+**Why this differs from `BR-COGS-006`'s derive-never-store rule:** a cost is a
+**measurement**, so correcting it must correct every past period. A term is a
+**decision**, and changing today's decision does not make last year's wrong.
+Recomputing would silently move a month the owner already read and acted on,
+which is how a report loses its authority.
+
+### 9.2 Every flexible list is a table with a screen — and every row needs an identity
+
+Owner's general rule, now in `CLAUDE.md` section 8: anything that varies with
+how the shop runs gets a settings screen, never a constant.
+
+He then asked the sharper question: do those rows carry an id, and what stops
+a second row with the same name — *"nếu chỉ dùng tên nhưng không check
+duplicate trùng thì sẽ xảy ra trường hợp tương tự như sữa yến mạch"*.
+
+**Measured: there is no uniqueness constraint on any name column anywhere in
+the schema** (only `users.username`). Three duplicate pairs exist across 226
+names in 7 tables:
+
+| Name | Rows |
+|---|---|
+| Sữa yến mạch | `ING-033` ACTIVE, `NNL-004` INACTIVE |
+| Cà phê đá | `PROD-001` ACTIVE (278 sold), `PROD-010` DELETED (0 sold) |
+| Cà phê caramel kem muối | `PROD-036` ACTIVE (3 sold), `PROD-037` DELETED (0 sold) |
+
+In every pair exactly one row is live, so **a uniqueness rule scoped to active
+rows passes on today's data with nothing to clean up first.**
+
+**The rule.** Normalise before comparing: trim ends, collapse runs of
+whitespace to one, case-fold, treat non-breaking space as space, and normalise
+Unicode to NFC. Then refuse a duplicate **among rows that are not retired**.
+
+The last two steps matter most and are the ones the owner could not have
+listed, because they are invisible on screen: `ế` composed one way and
+decomposed another render identically and compare unequal, and spreadsheet
+paste routinely carries U+00A0. Current data is clean of all four hidden forms
+(0 leading/trailing spaces, 0 double spaces, 0 NBSP, 0 non-NFC across 226
+names), so the guard costs nothing to add now and gets harder later.
+
+**Diacritics are deliberately NOT stripped.** Tested: stripping finds no pair
+that exact normalisation misses. And it would wrongly merge real words — the
+owner's own example, **"cà" and "ca" are both meaningful**. The test is *looks
+the same*, not *sounds similar*.
+
+Retirement stays mark-inactive, never delete (`CLAUDE.md` section 2), and a
+retired name becomes reusable precisely because the rule is scoped to live rows.
+
+### 9.3 Recurring items: the amount is optional, the date is not
+
+Refines §8.5, where this plan said the amount is always blank. Wrong for
+contract-priced costs.
+
+| Template | Default amount | At confirmation |
+|---|---|---|
+| Tiền wifi | 200.000 | pre-filled, confirm |
+| Tiền thuê mặt bằng | 5.000.000 | pre-filled |
+| Tiền gas | *(blank)* | typed each time |
+| Tiền điện | *(blank)* | typed each time |
+
+When a contract renews, the owner edits the template's default; entries already
+recorded keep what was actually paid.
+
+**No contract module.** The payment rows already are the history — twelve
+months at 5.000.000đ followed by months at 5.500.000đ shows both the change and
+its date. If dates of signature, terms and durations are ever needed, that is
+contract management and a separate thing, not part of an expense feature.
+
+**"Không nhớ" is a first-class field, not a note.** When confirming outside the
+period and the real date is unknown, a **Không nhớ** button records the same
+day-of-month as the previous period's payment (last day of the period if there
+is no previous one, and the last day of a short month if the previous day does
+not exist), and stores **that the date was inferred, who confirmed it, and
+when**.
+
+The owner's reason is future staff evaluation, and that is exactly why it
+cannot be free text: *"tháng nào bạn A quên nhiều nhất"* has to be answerable
+by a query, not by reading rows by hand.
+
+### 9.4 A reminder clears by looking at the data, never by being clicked
+
+Owner asked which of three mechanisms decides that a stocktake happened. The
+answer is the third, and the other two are broken in opposite directions:
+
+- **Clicking the reminder** measures a click, not the work: counting via the
+  stocktake screen would leave a false overdue.
+- **Pressing "start"** clears it on a session that is opened and abandoned,
+  which produces no issues, no cost and no variance.
+- **Checking for a confirmed session in the period** cannot be fooled either
+  way. A session left open at the due date correctly stays overdue.
+
+The reminder remains clickable as a shortcut — a convenience, never the
+mechanism. The schedule supports both an nth/last weekday and a fixed day of
+month, with a day beyond the month's length falling back to its last day.
+
+**Counting early satisfies the period.** Counting on 26/08 clears August; the
+September reminder still lands on the scheduled date (27/09), not 26/09 — the
+calendar does not drift with behaviour.
