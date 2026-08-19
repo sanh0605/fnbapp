@@ -149,6 +149,21 @@ nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
   tính thật thì ông ấy sẽ đổi hướng xây dựng. Đừng dựng công cụ đo để "xác nhận"
   một điều đã được chốt.
 
+- **Thứ gì linh hoạt thì phải có chỗ cho chủ quán tự đặt, không nhét cứng vào
+  code.** Chủ quán chốt 2026-08-19: *"các điểm mang tính linh hoạt đều phải có
+  nơi mà anh có thể tự thiết lập trực tiếp trên hệ thống mà không thông qua
+  hardcode."*
+
+  Cụ thể là những thứ đổi theo cách quán vận hành chứ không theo luật kế toán:
+  danh sách nhóm chi phí, các khoản chi định kỳ, lịch kiểm kê và số ngày nhắc
+  trước, bảng thời hạn khấu hao theo mức giá. Mỗi thứ đó là **một bảng dữ liệu
+  kèm một màn hình**, không phải một hằng số trong code.
+
+  Phép thử: nếu chủ quán muốn đổi mà phải chờ sửa code rồi đẩy bản mới, thì đã
+  làm sai. Ngược lại, thứ gì đổi được sẽ **đổi kết quả tính toán** — nên phải
+  ghi lại giá trị đã dùng tại thời điểm tính, hoặc chấp nhận rằng sửa bảng là
+  tính lại toàn bộ (như khấu hao), và nói rõ là cái nào.
+
 - Code và chú thích bằng tiếng Anh. Chữ hiển thị cho người dùng bằng tiếng Việt.
 - Đơn giản trước. Không thêm tính năng, trừu tượng, hay tuỳ biến ngoài yêu cầu.
 - Chỉ chạm đúng chỗ cần. Không "cải thiện" code lân cận, không refactor thứ
