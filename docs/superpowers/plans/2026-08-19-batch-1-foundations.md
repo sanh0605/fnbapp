@@ -126,6 +126,16 @@ is what `CLAUDE.md` section 2's mark-inactive rule needs.
   the NBSP form, and the decomposed-`ế` form.
 - A cross-table pair stays legal: creating a `base_ingredients` row named
   `Đá viên` while `SPM-005` exists must **succeed**.
+- **Level 2 (§A3b) needs both of its outcomes proved, not just one.**
+  `Ca phe` against an existing `Cà phê` must **warn** and, on
+  *"tôi gõ nhầm"*, not save. `Thạch dứa` against the existing `Thạch dừa`
+  (`NNL-009`) must **warn** and, on *"món khác"*, save — with the
+  confirmation recorded in its field. A level-2 implementation that only
+  ever refuses is level 1 wearing a prompt, and the `Thạch dứa` case is what
+  proves it is not.
+- The `đ` case specifically: `Da vien` against `Đá viên` must reach level 2.
+  If the strip leaves `đ` alone it will not, and that failure looks like
+  "the warning just doesn't fire sometimes".
 - `scripts/verify-revenue.ts` unchanged — this touches no money.
 
 ---
