@@ -8,6 +8,57 @@ import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
 
+// Batch 1, item B: the part of handleSubmit that decides what goes into
+// units_json/base_unit/base_ingredient_id, pulled out as a pure function.
+// react-dom 18.3.1 (what this repo's package.json declares, and what
+// vitest resolves) treats a function-valued <form action> as an ordinary
+// (sanitised-to-string) DOM attribute -- Next.js's own build pipeline
+// aliases react-dom to a different, forms-action-aware build at runtime,
+// which is why this works in the real app but no combination of
+// dispatched submit event, requestSubmit(), or a real button .click()
+// reaches handleSubmit under plain vitest+jsdom. Extracted so the actual
+// decision logic -- the thing OPEN-ITEMS 38/section B4 care about -- is
+// directly testable without depending on that gap. handleSubmit calls this
+// unchanged; behaviour is identical to before the extraction.
+export type ConversionSubmissionFields = {
+  base_ingredient_id?: string;
+  base_unit: string;
+  units_json: string;
+};
+
+export function buildConversionSubmission(params: {
+  isRaw: boolean;
+  isConsumable: boolean;
+  selectedBaseIngredientId: string;
+  baseUnitId: string | undefined;
+  unitsState: Array<{ id?: string; name: string; conversion_rate: string }>;
+  units: Array<{ id: string; name: string }>;
+}): { ok: true; fields: ConversionSubmissionFields } | { ok: false; error: string } | { ok: true; fields: null } {
+  const { isRaw, isConsumable, selectedBaseIngredientId, baseUnitId, unitsState, units } = params;
+
+  if (!(isRaw || isConsumable)) return { ok: true, fields: null }; // equipment: neither section applies
+
+  const processedUnits = unitsState.map(u => ({ ...u }));
+  for (let i = 0; i < processedUnits.length; i++) {
+    const u = processedUnits[i];
+    if (!u.name || !u.conversion_rate) {
+      return { ok: false, error: `Vui lòng nhập đủ thông tin Quy đổi (dòng ${i + 1})` };
+    }
+    const unitObj = units.find(unit => unit.name.toLowerCase() === u.name.toLowerCase());
+    if (!unitObj) {
+      return { ok: false, error: `Đơn vị "${u.name}" không hợp lệ (dòng ${i + 1})` };
+    }
+    processedUnits[i] = { ...u, name: unitObj.id };
+  }
+
+  const fields: ConversionSubmissionFields = {
+    base_unit: baseUnitId || "",
+    units_json: JSON.stringify(processedUnits),
+  };
+  if (isRaw) fields.base_ingredient_id = selectedBaseIngredientId;
+  return { ok: true, fields };
+}
+
 interface PurchasedItemFormProps {
   itemCategories: DBItemCategory[];
   baseIngredients: DBBaseIngredient[];
@@ -34,6 +85,10 @@ export function PurchasedItemForm({
 
   const activeCategory = itemCategories.find(c => c.id === selectedCategoryId);
   const isRaw = activeCategory?.system_type === "RAW";
+  // Batch 1, item B (section B2): a consumable has no ingredient to derive
+  // a base unit from, so it needs its own selector -- equipment gets
+  // neither this nor the conversion rows below (section B3).
+  const isConsumable = activeCategory?.system_type === "CONSUMABLE";
 
   const [unitsState, setUnitsState] = useState<Array<{ id?: string; name: string; conversion_rate: string }>>(
     initialConversions && initialConversions.length > 0
@@ -49,9 +104,17 @@ export function PurchasedItemForm({
 
   const [updateHistory, setUpdateHistory] = useState(true);
 
+  // A consumable's base unit has no ingredient to read from -- on edit,
+  // seed it from whatever its existing conversions already agree on
+  // (every conversion of one item shares one base_unit).
+  const [selectedConsumableBaseUnitId, setSelectedConsumableBaseUnitId] = useState(
+    initialConversions && initialConversions.length > 0 ? initialConversions[0].base_unit || "" : "",
+  );
+
   const activeBaseIngredient = baseIngredients.find(b => b.id === selectedBaseIngredientId);
-  const baseUnitId = activeBaseIngredient?.base_unit;
+  const baseUnitId = isRaw ? activeBaseIngredient?.base_unit : isConsumable ? selectedConsumableBaseUnitId : undefined;
   const baseUnitName = baseUnitId ? units.find(u => u.id === baseUnitId)?.name : "";
+  const showConversionSection = isRaw ? !!selectedBaseIngredientId : isConsumable ? !!selectedConsumableBaseUnitId : false;
 
   function addUnitRow() {
     setUnitsState([...unitsState, { name: "", conversion_rate: "" }]);
@@ -79,35 +142,42 @@ export function PurchasedItemForm({
       return;
     }
 
-    if (isRaw) {
-      if (!selectedBaseIngredientId) {
-        setError("Nguyên liệu thô cần được liên kết với một Nhóm Nguyên Liệu");
-        setLoading(false);
-        return;
+    // Batch 1, item B: the base-ingredient requirement stays RAW-only
+    // (section B3) -- a consumable must not be forced to invent one.
+    if (isRaw && !selectedBaseIngredientId) {
+      setError("Nguyên liệu thô cần được liên kết với một Nhóm Nguyên Liệu");
+      setLoading(false);
+      return;
+    }
+    if (isConsumable && !selectedConsumableBaseUnitId) {
+      setError("Vui lòng chọn Đơn vị gốc cho vật tư tiêu hao");
+      setLoading(false);
+      return;
+    }
+
+    // Gate 2 of 4 (section B1): building and sending units_json at all.
+    // Equipment gets neither this nor the section that renders the inputs
+    // (section B3) -- isRaw || isConsumable is the same gate the JSX below
+    // uses to decide whether to show them.
+    const submission = buildConversionSubmission({
+      isRaw,
+      isConsumable,
+      selectedBaseIngredientId,
+      baseUnitId,
+      unitsState,
+      units,
+    });
+    if (!submission.ok) {
+      setError(submission.error);
+      setLoading(false);
+      return;
+    }
+    if (submission.fields) {
+      if (submission.fields.base_ingredient_id !== undefined) {
+        formData.append("base_ingredient_id", submission.fields.base_ingredient_id);
       }
-      
-      const processedUnits = [...unitsState];
-      for (let i = 0; i < processedUnits.length; i++) {
-        const u = processedUnits[i];
-        if (!u.name || !u.conversion_rate) {
-          setError(`Vui lòng nhập đủ thông tin Quy đổi (dòng ${i + 1})`);
-          setLoading(false);
-          return;
-        }
-        
-        // Resolve unit name to ID
-        const unitObj = units.find(unit => unit.name.toLowerCase() === u.name.toLowerCase());
-        if (!unitObj) {
-          setError(`Đơn vị "${u.name}" không hợp lệ (dòng ${i + 1})`);
-          setLoading(false);
-          return;
-        }
-        processedUnits[i].name = unitObj.id;
-      }
-      
-      formData.append("base_ingredient_id", selectedBaseIngredientId);
-      formData.append("base_unit", baseUnitId || "");
-      formData.append("units_json", JSON.stringify(processedUnits));
+      formData.append("base_unit", submission.fields.base_unit);
+      formData.append("units_json", submission.fields.units_json);
     }
 
     formData.append("item_category_id", selectedCategoryId);
@@ -238,83 +308,164 @@ export function PurchasedItemForm({
                 />
               </div>
 
-              {selectedBaseIngredientId && (
-                <div className="bg-page p-4 rounded-xl border border-border">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-bold text-text-primary">Quy đổi đơn vị mua</h4>
-                    <button
-                      type="button"
-                      onClick={addUnitRow}
-                      className="text-xs font-bold text-primary hover:text-primary-hover"
-                    >
-                      + Thêm đơn vị mua
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {unitsState.map((u, idx) => {
-                      const unitRowId = `${formId}-unit-${idx}`;
-                      return (
-                        <div key={idx} className="flex gap-2 items-end">
-                          <div className="flex-1">
-                            <label htmlFor={`${unitRowId}-name`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đơn vị mua</label>
-                            <SearchableSelect
-                              id={`${unitRowId}-name`}
-                              options={unitOptions}
-                              value={u.name}
-                              onChange={(val) => updateUnitRow(idx, "name", val)}
-                              placeholder="VD: Bao 10kg"
-                            />
-                          </div>
-                          <div className="px-2 pb-2 text-text-muted font-bold">=</div>
-                          <div className="w-24 relative">
-                            <label htmlFor={`${unitRowId}-conversion_rate`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Hệ số</label>
-                            <input
-                              id={`${unitRowId}-conversion_rate`}
-                              type="number"
-                              step="any"
-                              value={u.conversion_rate}
-                              onChange={(e) => updateUnitRow(idx, "conversion_rate", e.target.value)}
-                              className="w-full border border-border rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
-                            />
-                          </div>
-                          <div className="px-2 pb-2 text-sm text-text-secondary font-medium">
-                            {baseUnitName || "cơ bản"}
-                          </div>
-                          {unitsState.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeUnitRow(idx)}
-                              className="pb-2 px-2 text-text-muted hover:text-danger"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+              {showConversionSection && (
+                <ConversionRowsSection
+                  formId={formId}
+                  unitsState={unitsState}
+                  unitOptions={unitOptions}
+                  baseUnitName={baseUnitName}
+                  addUnitRow={addUnitRow}
+                  updateUnitRow={updateUnitRow}
+                  removeUnitRow={removeUnitRow}
+                  isEdit={isEdit}
+                  updateHistory={updateHistory}
+                  setUpdateHistory={setUpdateHistory}
+                />
+              )}
+            </div>
+          )}
 
-                  {isEdit && (
-                    <div className="mt-4 flex items-start gap-2 p-2 bg-warning/10 rounded-lg border border-warning/20">
-                      <input
-                        type="checkbox"
-                        id={`${formId}-update_history`}
-                        checked={updateHistory}
-                        onChange={(e) => setUpdateHistory(e.target.checked)}
-                        className="mt-1 w-4 h-4 rounded border-border text-warning focus:ring-warning"
-                      />
-                      <label htmlFor={`${formId}-update_history`} className="text-xs text-warning-active leading-tight">
-                        Cập nhật lại đơn vị mua cho các đơn đặt hàng cũ của mặt hàng này nếu đơn vị mua bị thay đổi.
-                      </label>
-                    </div>
-                  )}
-                </div>
+          {/* Batch 1, item B (section B2/B3): a consumable has no
+              ingredient to derive a base unit from, so it gets its own
+              selector here. Equipment gets neither this block nor the RAW
+              one above. */}
+          {isConsumable && (
+            <div className="pt-4 border-t border-border space-y-4">
+              <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
+                Đây là nhóm <strong>Vật Tư Tiêu Hao</strong>. Chọn đơn vị gốc để hệ thống biết cách quy đổi và đếm tồn kho.
+              </div>
+
+              <div>
+                <label htmlFor={`${formId}-consumableBaseUnitId`} className="block text-sm font-medium text-text-secondary mb-1">Đơn vị gốc</label>
+                <SearchableSelect
+                  id={`${formId}-consumableBaseUnitId`}
+                  options={unitOptions}
+                  value={selectedConsumableBaseUnitId}
+                  onChange={setSelectedConsumableBaseUnitId}
+                  placeholder="Chọn đơn vị gốc..."
+                />
+              </div>
+
+              {showConversionSection && (
+                <ConversionRowsSection
+                  formId={formId}
+                  unitsState={unitsState}
+                  unitOptions={unitOptions}
+                  baseUnitName={baseUnitName}
+                  addUnitRow={addUnitRow}
+                  updateUnitRow={updateUnitRow}
+                  removeUnitRow={removeUnitRow}
+                  isEdit={isEdit}
+                  updateHistory={updateHistory}
+                  setUpdateHistory={setUpdateHistory}
+                />
               )}
             </div>
           )}
         </form>
       </FormModal>
     </>
+  );
+}
+
+// Batch 1, item B: the conversion-rows block, unchanged in behaviour from
+// what previously rendered only inside the RAW branch -- extracted so RAW
+// and CONSUMABLE (section B2) share one implementation instead of two
+// copies that could silently drift apart.
+function ConversionRowsSection({
+  formId,
+  unitsState,
+  unitOptions,
+  baseUnitName,
+  addUnitRow,
+  updateUnitRow,
+  removeUnitRow,
+  isEdit,
+  updateHistory,
+  setUpdateHistory,
+}: {
+  formId: string;
+  unitsState: Array<{ id?: string; name: string; conversion_rate: string }>;
+  unitOptions: Array<{ id: string; label: string }>;
+  baseUnitName: string | undefined;
+  addUnitRow: () => void;
+  updateUnitRow: (index: number, field: "name" | "conversion_rate", value: string) => void;
+  removeUnitRow: (index: number) => void;
+  isEdit: boolean;
+  updateHistory: boolean;
+  setUpdateHistory: (value: boolean) => void;
+}) {
+  return (
+    <div className="bg-page p-4 rounded-xl border border-border">
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="text-sm font-bold text-text-primary">Quy đổi đơn vị mua</h4>
+        <button
+          type="button"
+          onClick={addUnitRow}
+          className="text-xs font-bold text-primary hover:text-primary-hover"
+        >
+          + Thêm đơn vị mua
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {unitsState.map((u, idx) => {
+          const unitRowId = `${formId}-unit-${idx}`;
+          return (
+            <div key={idx} className="flex gap-2 items-end">
+              <div className="flex-1">
+                <label htmlFor={`${unitRowId}-name`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đơn vị mua</label>
+                <SearchableSelect
+                  id={`${unitRowId}-name`}
+                  options={unitOptions}
+                  value={u.name}
+                  onChange={(val) => updateUnitRow(idx, "name", val)}
+                  placeholder="VD: Bao 10kg"
+                />
+              </div>
+              <div className="px-2 pb-2 text-text-muted font-bold">=</div>
+              <div className="w-24 relative">
+                <label htmlFor={`${unitRowId}-conversion_rate`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Hệ số</label>
+                <input
+                  id={`${unitRowId}-conversion_rate`}
+                  type="number"
+                  step="any"
+                  value={u.conversion_rate}
+                  onChange={(e) => updateUnitRow(idx, "conversion_rate", e.target.value)}
+                  className="w-full border border-border rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
+                />
+              </div>
+              <div className="px-2 pb-2 text-sm text-text-secondary font-medium">
+                {baseUnitName || "cơ bản"}
+              </div>
+              {unitsState.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeUnitRow(idx)}
+                  className="pb-2 px-2 text-text-muted hover:text-danger"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {isEdit && (
+        <div className="mt-4 flex items-start gap-2 p-2 bg-warning/10 rounded-lg border border-warning/20">
+          <input
+            type="checkbox"
+            id={`${formId}-update_history`}
+            checked={updateHistory}
+            onChange={(e) => setUpdateHistory(e.target.checked)}
+            className="mt-1 w-4 h-4 rounded border-border text-warning focus:ring-warning"
+          />
+          <label htmlFor={`${formId}-update_history`} className="text-xs text-warning-active leading-tight">
+            Cập nhật lại đơn vị mua cho các đơn đặt hàng cũ của mặt hàng này nếu đơn vị mua bị thay đổi.
+          </label>
+        </div>
+      )}
+    </div>
   );
 }

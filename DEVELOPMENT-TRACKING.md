@@ -4,6 +4,36 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-19 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 item B: conversions for consumables
+
+**Trigger:** `docs/superpowers/plans/2026-08-19-batch-1-foundations.md` section B. Four gates block a consumable's `1 bao = 500 g`, and opening fewer than all four fails silently: `PurchasedItemForm.tsx:224` (render), `:82` (build/send `units_json`), `items/actions.ts`'s create and update paths (`if (base_ingredient_id && unitsJson && base_unit)`, requiring a field a consumable never has). Section B1 names gates 1-2 as already caught by the parent plan's review; writing this technical plan found gates 3-4.
+
+**Pre-code verification, per the task's own explicit checks:**
+- **Section B2's claim re-confirmed by reading the code, not assumed:** `PurchasedItemForm.tsx`'s `baseUnitId` derives from `activeBaseIngredient?.base_unit`, reachable only when `isRaw`. A consumable has no ingredient picker at all, so there is genuinely no existing source to derive a base unit from -- the new selector is not optional.
+- **Checked whether any other code path writes `uom_conversions` besides the two gated ones:** found three total. `items/actions.ts` (fixed here), `conversions/actions.ts` (the standalone `/admin/inventory/conversions` screen -- already takes `base_unit` as a direct required field with no `base_ingredient_id` dependency, so it already works for any item type, checked clean, no fix needed), and `app/admin/inventory/actions.ts` (a third, near-identical duplicate of `addPurchasedItem`/`updatePurchasedItem` -- confirmed dead code while checking for item A's own duplicate-writer question, reported there, not touched here either).
+
+**The base-unit selector (section B2) and the four gates (section B1) fixed:**
+- `PurchasedItemForm.tsx`: added `isConsumable`, a base-unit `SearchableSelect` shown only for `CONSUMABLE` categories, and `showConversionSection` gating the (now-shared) conversion-rows block for either `isRaw` or `isConsumable`. Extracted the shared block into `ConversionRowsSection` rather than duplicating ~90 lines of JSX for the two categories.
+- `items/actions.ts`, both `addPurchasedItem` and `updatePurchasedItem`: `if (base_ingredient_id && unitsJson && base_unit)` -> `if (unitsJson && base_unit)`. `base_ingredient_id` stays required client-side for RAW only (section B3), untouched.
+
+**A genuine environment gap found and worked around, not ignored.** react-dom 18.3.1 -- this repo's own declared `package.json` version, what vitest resolves -- treats a function-valued `<form action>` as an ordinary DOM attribute; it does not implement React 19's form-actions feature. Next.js's own build pipeline aliases react-dom to a forms-action-aware build at runtime, which is why the real app works. Verified directly, not assumed: a real submit-button `.click()`, `form.requestSubmit()`, a dispatched `submit`/`SubmitEvent` (with an explicit `submitter`, and separately with a forced `isTrusted` -- blocked by a non-configurable property), all confirmed the native event genuinely fires (a plain `addEventListener` catches it every time) while `handleSubmit` never runs. This is a structural gap in the test harness, not fixable by trying a different event.
+
+**Resolution: extracted `buildConversionSubmission`, handleSubmit's own payload-building logic, as a pure, exported, directly-testable function -- identical behaviour, zero logic change, `handleSubmit` calls it unchanged.** Rendered tests cover what jsdom genuinely can drive (category-based rendering, typed values captured into visible DOM state); `PurchasedItemForm.submission.test.ts` covers the exact payload-construction assertion section B4 names, decoupled from the untestable submission mechanism rather than skipped.
+
+**Section B4's "end to end against a scratch record"**: interpreted as the mocked action-level round trip (`items/actions.test.ts`), not a real production write -- creating any consumable item is explicitly batch 2's job (section C), out of scope here, and `CLAUDE.md` section 2 requires owner approval before any production write regardless.
+
+**Proved teeth twice, on real logic, not a cosmetic string.** Reintroduced the exact original bug in `buildConversionSubmission` (gated on `isRaw` only) -- 3 of 5 tests in `PurchasedItemForm.submission.test.ts` failed. Reintroduced the exact original gate in `items/actions.ts` (`if (base_ingredient_id && unitsJson && base_unit)`) -- the consumable test in `items/actions.test.ts` failed, showing the item saves but `UOM_Conversions` is never called: the precise silent-failure shape section B1 warned about. Both reverted; `git diff` clean both times.
+
+**What must not change, verified against live production data, not assumed:** `uom_conversions` checksum (`md5` over every row's id/purchased_unit/base_unit/conversion_rate) is `643db67637ce210e8f1c8d49cc7649df` before this task and after -- unchanged, matching section B3's "57 ACTIVE rows across 52 items, every rate identical."
+
+**Test count for both items together:** 1194 (after item A's first commit) -> 1225 (+31: 5 new files -- `duplicate-name-guard`'s level-2 additions, `items/actions.test.ts`, `PurchasedItemForm.test.tsx`, `PurchasedItemForm.submission.test.ts` -- plus additions to `base-ingredients/actions.test.ts`).
+
+**Verified:** `tsc --noEmit` 0 errors. `vitest run` 1225/1225 pass. `check-rules-current` clean. `npm run build` succeeds. `scripts/verify-revenue.ts`: all structural checks pass, unchanged.
+
+Not committed as a push -- local only, per standing rule, awaiting separate owner approval.
+
+---
+
 ## 2026-08-19 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 1 item A addendum: level 2, diacritic-stripped warning
 
 **Trigger:** a mid-turn plan update (`6fbcc57`, `1e08261`) arriving after item A's first commit (`99eacfe`) was already made: the owner asked for "Ca phe" to be caught as a near-duplicate of "Cà phê." Stripping diacritics does that, but also collapses "Dứa" and "Dừa" (pineapple vs coconut) -- this catalogue already holds "Thạch dừa" (`NNL-009`), so a blanket strip would refuse "Thạch dứa" with no way to say "real, different item." Owner's resolution: level 1 (exact match, already built) refuses; a new level 2 (diacritic-stripped-only match) warns and asks, never refuses on its own.

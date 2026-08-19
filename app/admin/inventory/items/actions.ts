@@ -85,8 +85,12 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
       base_ingredient_id: base_ingredient_id || "" 
     });
 
-    // Nếu có chọn nhóm nguyên liệu và có truyền array units thì tạo quy đổi luôn
-    if (base_ingredient_id && unitsJson && base_unit) {
+    // Batch 1, item B, gate 3 of 4 (section B1): base_ingredient_id is no
+    // longer required here -- a consumable has none, only base_unit (from
+    // its own selector, section B2) and units_json. Requiring
+    // base_ingredient_id silently dropped every consumable's conversions,
+    // which is the defect this task exists to fix.
+    if (unitsJson && base_unit) {
       const units = JSON.parse(unitsJson);
       for (const u of units) {
         if (u.name && u.conversion_rate) {
@@ -134,9 +138,11 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       base_ingredient_id: base_ingredient_id || "" 
     });
 
-    if (base_ingredient_id && unitsJson && base_unit) {
+    // Batch 1, item B, gate 4 of 4 (section B1): same relaxation as the
+    // create path above.
+    if (unitsJson && base_unit) {
       const newUnits = JSON.parse(unitsJson);
-      
+
       const allConversions = await findAll("UOM_Conversions");
       const poLines = await findAll("Purchase_Order_Lines");
       const existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);
