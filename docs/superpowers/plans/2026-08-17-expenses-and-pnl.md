@@ -450,3 +450,42 @@ month, with a day beyond the month's length falling back to its last day.
 **Counting early satisfies the period.** Counting on 26/08 clears August; the
 September reminder still lands on the scheduled date (27/09), not 26/09 — the
 calendar does not drift with behaviour.
+
+---
+
+## 10. Six batches, in dependency order
+
+Approved by the owner 2026-08-19. Each batch ships alone. §4's original J1-J4
+is superseded by this.
+
+| # | Batch | Leaves behind |
+|---|---|---|
+| **1** | **Foundations.** Duplicate-name guard on every catalogue table (§9.2); open the conversion section for `CONSUMABLE` (§8.3); exclude `is_non_inventory` items from the issue-costing engine (§7.4) | Nothing visible on screen — but batch 2 cannot start without it |
+| **2** | **Consumables into the system.** 26 items with conversions, 15.803.989đ of purchase history; verify the stocktake screen accepts a count above expectation (`BR-INV-008`) | The next count includes cups, lids and straws |
+| **3** | **Asset register.** Editable term-band table (§8.1), 71 equipment items and 11.163.120đ, straight-line depreciation with the term frozen at creation (§9.1), mark-broken with the remaining value charged that month (§8.2) | Answers "what does the shop own" |
+| **4** | **Expenses and recurring items.** Expense entry with owner-managed categories, recurring templates with optional default amounts, the "Không nhớ" field, the stocktake schedule and its reminder (§9.3, §9.4) | Nothing is recorded in the spreadsheet any more |
+| **5** | **P&L.** Three cost lines (`BR-COGS-007`), period filters, the issue-slip count beside shrinkage and the unconfirmed-recurring count beside expenses | Replaces the sheet that reads `#REF!` |
+| **6** | **Cash-flow statement.** Money in against money out by period, cumulative — the left-hand block of the owner's own sheet | Both statements he already keeps by hand |
+
+**Batches 2 and 3 write historical data to production** — roughly 27 million
+đồng of purchase history between them. Dry run, exact rows printed, owner
+approves the apply, and revenue and COGS proved unmoved before and after
+(`CLAUDE.md` section 2).
+
+### 10.1 The balance sheet is out of scope, and by whose decision
+
+The owner asked where a balance sheet sits. It is **not scheduled, and not
+because it was overlooked** — three of his own decisions on 2026-08-17 remove
+its foundation.
+
+Already available: **inventory at 13.281.731đ** (49.455.880đ purchased less
+36.174.149đ issued, measured 2026-08-19) and equipment at 11.163.120đ before
+depreciation, with packaging stock arriving in batch 2.
+
+Missing, each by decision: **cash and bank balances** (*"số dư đầu kỳ hay cuối
+kỳ cơ bản đều không quan trọng"*), **payables** (none exist — buying is
+paying), and **owner capital** (*"cứ mặc định là tiền của quán bỏ ra"*).
+
+Without cash the two sides cannot balance, so a balance sheet is blocked until
+that decision changes. The occasions that would change it are registering the
+business, borrowing, or taking an investor who asks where their money sits.
