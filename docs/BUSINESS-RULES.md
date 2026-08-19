@@ -335,6 +335,30 @@ A manual issue slip entered by mistake is never deleted and never edited. It is 
 
 Implemented `supabase/migrations/0062_reverse_confirmed_stocktake_and_issue_slip.sql`; full case list in the plan's §5 "Undoing a confirmed count or a whole issue slip" (U1-U13).
 
+### BR-COGS-007 — Cost of sales, direct materials and shrinkage are three separate lines, and shrinkage has a precondition
+
+**Status:** `APPROVED` — owner decision 2026-08-19 (Plan J, `docs/superpowers/plans/2026-08-17-expenses-and-pnl.md`).
+
+The P&L separates three things that were previously one:
+
+| Line | Source | Why separate |
+|---|---|---|
+| **Giá vốn** | `stock_issues` with `source = 'MANUAL'` — what staff recorded leaving stock | Goods that actually went into what was sold |
+| **Nguyên liệu mua dùng ngay** | purchases of `is_non_inventory` ingredients (đá viên, khoai lang, trái tắc, trái chanh) | Consumed the day they are bought; stock-managing them costs more than the error (`BR-INV-007`'s judgement) |
+| **Hao hụt** | `stock_issues` with `source = 'STOCKTAKE'` — what a count finds missing beyond what was issued | Merging it into cost of sales hides it: *"nếu ghi vào giá vốn thì sẽ không biết thất thoát thực tế"* |
+
+**The precondition, and the reason this is not an exception anyone has to remember:**
+
+**A count's difference is shrinkage only if issue slips were being recorded through that period.** A variance measures departure from a baseline; with no issues recorded there is no baseline, and the difference is simply consumption nobody wrote down.
+
+The first count (2026-08-09, **34.864.627đ**) falls exactly there: **zero issue slips existed before it**, because the feature had not been used since the shop opened in April. That figure is four months of unrecorded consumption, not loss, and it is reported where it falls (`BR-SALE-005`'s sibling decision in Plan J §3b) rather than as shrinkage.
+
+**The rule carries its own validity check.** Any period whose issue-slip count is zero, or implausibly low against sales, produces a variance that must not be read as shrinkage. The report shows the period's slip count beside the figure so the reader can see this without being told.
+
+**Worked example, real data.** From 2026-08-09 to 2026-08-18 staff issued **1.127.515đ** across 17 slips — whole packages opened (Sữa tươi Mlekovita 1.000 ml, Bột cà phê 500 g, Trân châu 2.000 g), which is `BR-INV-007` working as designed. Against roughly 9,5 million đồng of August revenue that is about 12%, where an F&B norm is 30-40%. **The second count resolves which explanation is right:** either staff are not issuing everything, or goods are being lost. Until it happens, neither can be asserted.
+
+**Recipes are not used to compute any of these figures.** Recipe-based expectation was considered as a way to split consumption from loss and set aside: this system measures cost from goods that physically left stock (`BR-COGS-005`), and a recipe states intent, not fact. Coverage is complete (96 active variant recipes cover 3.988 of 3.988 drinks sold), so the option remains open, but nothing in this rule depends on it.
+
 ### BR-COGS-006 — A purchase is valued at what was paid, shipping and discounts included
 
 **Status:** `APPROVED` — owner decision 2026-08-09. **Implemented 2026-08-09** (Plan D D11, `lib/purchase-order-cost-allocation.ts`).
