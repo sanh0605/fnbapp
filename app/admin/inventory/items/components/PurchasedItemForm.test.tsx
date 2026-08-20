@@ -150,6 +150,25 @@ async function openForm() {
   return container;
 }
 
+// 2026-08-20 fix: edit mode seeds its base-unit selector from
+// initialConversions -- the only way to reach the id-in-a-name-keyed-select
+// half of the defect (section 1, path #2).
+async function openEditForm(initialData: any, initialConversions: any[]) {
+  const container = await renderTracked(
+    <PurchasedItemForm
+      itemCategories={CATEGORIES as any}
+      baseIngredients={BASE_INGREDIENTS as any}
+      units={UNITS as any}
+      initialData={initialData}
+      initialConversions={initialConversions}
+    />,
+  );
+  const openBtn = findButtonWithText(container, "Sửa")!;
+  await fireClick(openBtn);
+  await flush();
+  return container;
+}
+
 describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1, item B)", () => {
   it("EQUIPMENT gets neither section -- no base-unit selector, no conversion rows (section B3)", async () => {
     await openForm();
@@ -214,5 +233,51 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
     expect(document.body.textContent).toContain("Hàng Hóa Chế Biến (RAW)");
     expect(document.body.textContent).toContain("Liên kết Nhóm Nguyên Liệu");
     expect(document.body.textContent).not.toContain("Đơn vị gốc"); // that label is the consumable-only one
+  });
+});
+
+// 2026-08-20 fix: docs/superpowers/plans/2026-08-20-consumable-base-unit-mismatch.md.
+// unitOptions is keyed by unit *name*; the consumable base-unit state used to
+// hold the id SearchableSelect never emits for this field, so it matched
+// nothing. These assert the rendered text a user actually sees, not the
+// internal state, and both were confirmed to fail against the pre-fix code
+// before this task started.
+describe("PurchasedItemForm -- consumable base unit renders correctly, not as an id-in-a-name-keyed-select mismatch (2026-08-20 fix)", () => {
+  it("choosing base unit 'g' shows 'g' beside the conversion rate, not the 'cơ bản' fallback", async () => {
+    await openForm();
+
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-002");
+
+    const baseUnitWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    await chooseInCombobox(baseUnitWrapper, "g");
+
+    // Scoped to the specific label beside the rate input, not a whole-page
+    // text search -- the base-unit selector's own trigger already displays
+    // "g" regardless of this defect (its options are keyed by name, so the
+    // chosen value always matches something), so a document.body.textContent
+    // check would pass whether or not the bug this task fixes exists.
+    const rateInput = document.querySelector('input[type="number"]') as HTMLInputElement;
+    const row = rateInput.closest(".flex.gap-2.items-end") as HTMLElement;
+    const baseUnitLabel = row.querySelector(".text-sm.text-text-secondary.font-medium") as HTMLElement;
+
+    expect(baseUnitLabel.textContent?.trim()).toBe("g");
+  });
+
+  it("edit mode seeds the base-unit selector from the stored unit id, showing its name (not empty)", async () => {
+    const initialData = {
+      id: "SPM-053",
+      name: "Ống hút nhỏ",
+      item_category_id: "NHH-002",
+      base_ingredient_id: "",
+    };
+    const initialConversions = [
+      { id: "QD-001", purchased_item_id: "SPM-053", purchased_unit: "U-BAO", base_unit: "U-G", conversion_rate: "500" },
+    ];
+    await openEditForm(initialData, initialConversions);
+
+    const baseUnitTrigger = document.querySelector('[role="combobox"]') as HTMLElement;
+
+    expect(baseUnitTrigger.textContent?.trim()).toBe("g");
   });
 });

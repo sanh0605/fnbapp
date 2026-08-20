@@ -39,6 +39,15 @@ export function buildConversionSubmission(params: {
 
   if (!(isRaw || isConsumable)) return { ok: true, fields: null }; // equipment: neither section applies
 
+  // 2026-08-20 fix: close the hole, not just the instance that caused it --
+  // baseUnitId must already be resolved to a real unit id by the caller. A
+  // name (or anything else units[] does not recognise) fails visibly here
+  // instead of writing a corrupt uom_conversions.base_unit row, mirroring
+  // the per-row unit validation just below.
+  if (!baseUnitId || !units.some(unit => unit.id === baseUnitId)) {
+    return { ok: false, error: "Đơn vị gốc không hợp lệ" };
+  }
+
   const processedUnits = unitsState.map(u => ({ ...u }));
   for (let i = 0; i < processedUnits.length; i++) {
     const u = processedUnits[i];
@@ -107,15 +116,28 @@ export function PurchasedItemForm({
 
   // A consumable's base unit has no ingredient to read from -- on edit,
   // seed it from whatever its existing conversions already agree on
-  // (every conversion of one item shares one base_unit).
-  const [selectedConsumableBaseUnitId, setSelectedConsumableBaseUnitId] = useState(
-    initialConversions && initialConversions.length > 0 ? initialConversions[0].base_unit || "" : "",
+  // (every conversion of one item shares one base_unit). unitOptions below
+  // is keyed by unit *name* (SearchableSelect has no separate id/label
+  // split for this field), so the state this selector drives must hold a
+  // name, not the id stored on the row -- the same id-to-name conversion
+  // `purchased_unit` already goes through just above, for the same reason.
+  // 2026-08-20 fix: this field used to hold the id directly, which matched
+  // nothing in a name-keyed select (created rows: name saved as base_unit
+  // instead of id; edited rows: selector rendered empty).
+  const [selectedConsumableBaseUnitName, setSelectedConsumableBaseUnitName] = useState(
+    initialConversions && initialConversions.length > 0
+      ? units.find(u => u.id === initialConversions[0].base_unit)?.name || initialConversions[0].base_unit || ""
+      : "",
   );
 
   const activeBaseIngredient = baseIngredients.find(b => b.id === selectedBaseIngredientId);
-  const baseUnitId = isRaw ? activeBaseIngredient?.base_unit : isConsumable ? selectedConsumableBaseUnitId : undefined;
+  const baseUnitId = isRaw
+    ? activeBaseIngredient?.base_unit
+    : isConsumable
+      ? units.find(u => u.name === selectedConsumableBaseUnitName)?.id
+      : undefined;
   const baseUnitName = baseUnitId ? units.find(u => u.id === baseUnitId)?.name : "";
-  const showConversionSection = isRaw ? !!selectedBaseIngredientId : isConsumable ? !!selectedConsumableBaseUnitId : false;
+  const showConversionSection = isRaw ? !!selectedBaseIngredientId : isConsumable ? !!selectedConsumableBaseUnitName : false;
 
   function addUnitRow() {
     setUnitsState([...unitsState, { name: "", conversion_rate: "" }]);
@@ -150,7 +172,7 @@ export function PurchasedItemForm({
       setLoading(false);
       return;
     }
-    if (isConsumable && !selectedConsumableBaseUnitId) {
+    if (isConsumable && !selectedConsumableBaseUnitName) {
       setError("Vui lòng chọn Đơn vị gốc cho vật tư tiêu hao");
       setLoading(false);
       return;
@@ -359,8 +381,8 @@ export function PurchasedItemForm({
                 <SearchableSelect
                   id={`${formId}-consumableBaseUnitId`}
                   options={unitOptions}
-                  value={selectedConsumableBaseUnitId}
-                  onChange={setSelectedConsumableBaseUnitId}
+                  value={selectedConsumableBaseUnitName}
+                  onChange={setSelectedConsumableBaseUnitName}
                   placeholder="Chọn đơn vị gốc..."
                 />
               </div>

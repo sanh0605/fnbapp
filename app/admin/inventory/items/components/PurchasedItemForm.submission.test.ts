@@ -83,6 +83,41 @@ describe("buildConversionSubmission -- RAW, unaffected by the consumable change 
   });
 });
 
+// 2026-08-20 fix (docs/superpowers/plans/2026-08-20-consumable-base-unit-mismatch.md
+// section 3): "close the hole rather than only the instance." baseUnitId
+// must already be a real unit id by the time it reaches here -- a name (the
+// exact shape of the original defect) fails visibly instead of writing a
+// corrupt uom_conversions.base_unit row.
+describe("buildConversionSubmission -- rejects a baseUnitId that is not a real unit id (2026-08-20 fix)", () => {
+  it("a unit NAME passed as baseUnitId (the original defect's shape) is refused, not silently written", () => {
+    const result = buildConversionSubmission({
+      isRaw: false,
+      isConsumable: true,
+      selectedBaseIngredientId: "",
+      baseUnitId: "Cái", // a name, not one of UNITS' ids ("U-BAO", "U-G")
+      unitsState: [{ name: "Bao", conversion_rate: "500" }],
+      units: UNITS,
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected a validation error");
+    expect(result.error).toBeTruthy();
+  });
+
+  it("also refuses on the RAW path -- the guard is not consumable-specific", () => {
+    const result = buildConversionSubmission({
+      isRaw: true,
+      isConsumable: false,
+      selectedBaseIngredientId: "ING-032",
+      baseUnitId: "Không rõ",
+      unitsState: [{ name: "Bao", conversion_rate: "500" }],
+      units: UNITS,
+    });
+
+    expect(result.ok).toBe(false);
+  });
+});
+
 describe("buildConversionSubmission -- EQUIPMENT gets neither section (section B3)", () => {
   it("returns no fields at all -- nothing to append", () => {
     const result = buildConversionSubmission({

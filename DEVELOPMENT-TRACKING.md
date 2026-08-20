@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-20 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Fixed: consumable base unit stored as a name where an ID was required (OPEN-ITEMS 47)
+
+**Trigger:** `docs/superpowers/plans/2026-08-20-consumable-base-unit-mismatch.md`. Owner tested batch 1 item B on production, created a consumable with base unit "Cái", and the conversion row rendered `Bao = 10 cơ bản` instead of `Bao = 10 Cái`.
+
+**Critique before coding, per CLAUDE.md section 1:** verified every root-cause claim in the plan line-by-line against `PurchasedItemForm.tsx` -- all confirmed correct. Specifically checked section 4's claim that render assertions are available where DOM submission is not (OPEN-ITEMS 46): confirmed `SearchableSelect` drives its whole interaction through plain `onClick` on `role="combobox"`/`role="option"` elements, none of it routed through the form's `action={handleSubmit}`, so a rendered assertion about the base-unit label needs no submission at all. Found two things the plan itself did not: its "nineteen assertions were green" claim undercounts (actual: 25, 13 + 12 across the two existing test files) -- doesn't change the fix; and the standalone `/admin/inventory/conversions` screen (`ConversionForm.tsx`) has an adjacent, different gap -- it derives its base unit only from `baseIngredient.base_unit`, so it silently refuses to save any conversion for a CONSUMABLE item at all. Flagged, not fixed -- out of this plan's scope. Checked production directly before writing anything: zero `uom_conversions` rows currently fail to resolve `base_unit` against a real unit id (no data corrupted yet); `SPM-053` remains the only CONSUMABLE item, with zero conversions -- corroborating the plan's own refusal to claim which of two explanations caused that.
+
+**Fix, exactly as the plan specified:** renamed `selectedConsumableBaseUnitId` -> `selectedConsumableBaseUnitName` (the state was always fed by `SearchableSelect`'s own emitted value, which is a name, since `unitOptions` is keyed by `u.name`). Derived `baseUnitId` for consumables as `units.find(u => u.name === selectedConsumableBaseUnitName)?.id`. Seeded edit mode by converting the stored ID to a name, the same idiom already used for `purchased_unit` a few lines above. RAW path, validation message text, and `showConversionSection` behaviour unchanged. Also closed the hole rather than only the instance: `buildConversionSubmission` now refuses any `baseUnitId` that is not a real `units[].id`, on both the RAW and CONSUMABLE paths.
+
+**Verification, per the plan's own requirement -- proved the tests fail before the fix, not just that they pass after:** wrote the two required render tests (base-unit label reads the real unit name beside the conversion rate, not `cơ bản`; edit mode shows the stored unit's name, not an empty selector) plus the new `buildConversionSubmission` guard test, `git stash`ed only the component fix, ran all three against the pre-fix code, confirmed all three failed with the exact predicted wrong values (`cơ bản` instead of `g`; the placeholder instead of `g`; `ok: true` instead of `ok: false`), then restored the fix and confirmed all three pass.
+
+**Gates run, all green:** `npx tsc --noEmit` (0 errors), `npx vitest run` (187 files, 1243 tests, up from 1239), `npx vite-node scripts/check-rules-current.ts` (3/3 pass), `npm run build` (compiled, 40/40 static pages), `npx vite-node scripts/verify-revenue.ts` (all four closed months unchanged: April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ).
+
+**OPEN-ITEMS 47 closed.**
+
+---
+
 ## 2026-08-20 (Opus 5 executing the approved migration) - Migration 0067 APPLIED to production
 
 **Owner approved 2026-08-20**, per-instance as always. Applied `0067_duplicate_name_warning_confirmation_more_tables.sql` through the Supabase management API: three level-2 confirmation columns on `purchased_items`, `semi_products`, `products`, `suppliers`.
