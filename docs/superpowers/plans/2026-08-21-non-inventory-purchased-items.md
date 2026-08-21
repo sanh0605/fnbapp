@@ -80,11 +80,30 @@ money yet), any change to how cost is computed, and entering the items.
 
 ## 4. Where this must NOT be done
 
-Not in `filterByC17` (`lib/conversion-countability.ts`), which answers a
-different question — whether an item *can* be counted at all, having at least
-one countable conversion. Merging "cannot be counted" with "deliberately not
-counted" would make `OPEN-ITEMS 37`'s guard unreadable and would hide a real
-data problem behind a policy choice.
+Not in `filterByC17` (`lib/purchased-item-onhand.ts:47`), which answers a
+different question: it keeps an **INACTIVE** item in the list while its
+computed on-hand is still above zero, so retiring an item cannot strand stock
+that can never be counted or issued out (Plan D C17). Merging a policy choice
+into it would mean a flagged item stops being offered even while it still
+holds stock — and would put "the owner does not count this" in the same place
+as "this item is retired but not empty".
+
+**Corrected 2026-08-21, having read the file rather than recalling it:** this
+section first cited `lib/conversion-countability.ts` and described
+`filterByC17` as testing for a countable conversion. Both wrong. That file
+holds `wouldLeaveNoCountableConversion`, used by the *conversions* screen
+(`OPEN-ITEMS 37`), which `filterByC17` does not call. The instruction stands;
+its stated reason did not.
+
+**What this means for EQUIPMENT, checked in the same pass.** Equipment gets no
+conversion rows at all (batch 1 item B, section B3), and nothing in
+`startStocktakeSession` drops an item for having none — `filterByC17` tests
+status, not conversions. So an equipment item becomes a session line whose
+`packageLines` resolve to `[]`: an entry with nothing to count. There are no
+equipment items yet, so this is unreached today, and it is the reason the
+checkbox is worth showing for EQUIPMENT rather than CONSUMABLE alone. If you
+find a filter that already drops such items, say so — then EQUIPMENT drops out
+of scope and the checkbox is CONSUMABLE-only.
 
 ## 5. Verification
 
