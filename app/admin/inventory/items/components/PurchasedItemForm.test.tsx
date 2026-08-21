@@ -281,3 +281,32 @@ describe("PurchasedItemForm -- consumable base unit renders correctly, not as an
     expect(baseUnitTrigger.textContent?.trim()).toBe("g");
   });
 });
+
+// 2026-08-21: docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md
+// section 3.2 / 5. Render assertion only (OPEN-ITEMS 46's limit) -- no
+// submission needed to check whether the checkbox appears.
+describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-21)", () => {
+  it("appears for Vật tư tiêu hao (CONSUMABLE)", async () => {
+    await openForm();
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-002");
+
+    expect(document.body.textContent).toContain("Không quản lý tồn kho");
+  });
+
+  it("appears for Dụng cụ (EQUIPMENT)", async () => {
+    await openForm();
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-003");
+
+    expect(document.body.textContent).toContain("Không quản lý tồn kho");
+  });
+
+  it("does not appear for Nguyên liệu (RAW) -- inherits the decision from its ingredient instead", async () => {
+    await openForm();
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-001");
+
+    expect(document.body.textContent).not.toContain("Không quản lý tồn kho");
+  });
+});

@@ -132,6 +132,40 @@ describe("startStocktakeSession item list", () => {
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 
+  // 2026-08-21 (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md):
+  // a CONSUMABLE item has no base_ingredient_id, so the ingredient-side
+  // is_non_inventory flag can never reach it -- every consumable was
+  // offered for counting regardless of BR-INV-007. This is the item's own
+  // flag, additive to the ingredient one already covered above.
+  it("excludes a purchased item flagged is_non_inventory on itself, while an unflagged sibling stays offered", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Base_Ingredients") return Promise.resolve([]);
+      if (sheet === "Semi_Products") return Promise.resolve([]);
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-070", name: "Túi rác", base_ingredient_id: "", default_unit_id: "U-BAO", status: "ACTIVE", is_non_inventory: true },
+          { id: "SPM-053", name: "Ống hút nhỏ", base_ingredient_id: "", default_unit_id: "U-BAO", status: "ACTIVE", is_non_inventory: false },
+        ]);
+      }
+      if (sheet === "Units") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.openStocktakeSessionAtomic.mockResolvedValue({
+      id: "STK-003", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
+      created_at: "2026-08-21T00:00:00Z", notes: "",
+    });
+
+    const result = await stocktakeActions.startStocktakeSession();
+
+    expect(result).toEqual({ success: true });
+    const { items } = mocks.openStocktakeSessionAtomic.mock.calls[0][0];
+    const references = items.map((item: { itemReference: string }) => item.itemReference);
+
+    expect(references).not.toContain("SPM-070");
+    expect(references).toContain("SPM-053");
+    expect(references).toEqual(["SPM-053"]);
+  });
+
   // C17: an inactive purchased item is not simply dropped -- if it still
   // has stock physically on the shelf, its ingredient's quantity could
   // never be corrected again (S1 needs every purchased item counted).

@@ -139,6 +139,10 @@ export interface DBPurchasedItem {
   default_unit_id: string;
   status: string;
   created_at: string;
+  // 2026-08-21: same concept as base_ingredients.is_non_inventory, needed
+  // here because a CONSUMABLE item has no base_ingredient_id to carry the
+  // flag on (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md).
+  is_non_inventory: boolean;
 }
 
 export interface DBUOMConversion {

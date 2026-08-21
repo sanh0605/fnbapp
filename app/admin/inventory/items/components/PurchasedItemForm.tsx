@@ -99,6 +99,7 @@ export function PurchasedItemForm({
   // a base unit from, so it needs its own selector -- equipment gets
   // neither this nor the conversion rows below (section B3).
   const isConsumable = activeCategory?.system_type === "CONSUMABLE";
+  const isEquipment = activeCategory?.system_type === "EQUIPMENT";
 
   const [unitsState, setUnitsState] = useState<Array<{ id?: string; name: string; conversion_rate: string }>>(
     initialConversions && initialConversions.length > 0
@@ -113,6 +114,13 @@ export function PurchasedItemForm({
   );
 
   const [updateHistory, setUpdateHistory] = useState(true);
+
+  // 2026-08-21 (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md):
+  // the discriminator is BR-INV-007 -- does a sealed pack of it sit on the
+  // shelf to be counted -- not the category itself, so this is offered for
+  // CONSUMABLE and EQUIPMENT alike, never RAW (a RAW item inherits the
+  // decision from its ingredient's own is_non_inventory).
+  const [isNonInventory, setIsNonInventory] = useState(initialData?.is_non_inventory ?? false);
 
   // A consumable's base unit has no ingredient to read from -- on edit,
   // seed it from whatever its existing conversions already agree on
@@ -204,6 +212,7 @@ export function PurchasedItemForm({
     }
 
     formData.append("item_category_id", selectedCategoryId);
+    formData.append("is_non_inventory", String(isNonInventory));
 
     const submitFn = isEdit ? updatePurchasedItem : addPurchasedItem;
     if (isEdit) {
@@ -238,6 +247,7 @@ export function PurchasedItemForm({
       setSelectedCategoryId("");
       setSelectedBaseIngredientId("");
       setUnitsState([{ name: "", conversion_rate: "" }]);
+      setIsNonInventory(false);
     }
     setLoading(false);
   }
@@ -402,6 +412,29 @@ export function PurchasedItemForm({
                 />
               )}
             </div>
+          )}
+
+          {/* 2026-08-21: CONSUMABLE and EQUIPMENT only, never RAW -- a RAW
+              item inherits the decision from its ingredient's own
+              is_non_inventory (BR-COGS-007), and two sources for one answer
+              is how they drift apart. */}
+          {(isConsumable || isEquipment) && (
+            <label
+              htmlFor={`${formId}-isNonInventory`}
+              className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px]"
+            >
+              <input
+                type="checkbox"
+                id={`${formId}-isNonInventory`}
+                checked={isNonInventory}
+                onChange={(e) => setIsNonInventory(e.target.checked)}
+                className="mt-0.5 w-5 h-5 shrink-0 rounded border-border text-primary focus:ring-focus-ring"
+              />
+              <span className="text-sm text-text-secondary leading-tight">
+                <span className="font-medium text-text-primary">Không quản lý tồn kho</span> (ví dụ: muỗng nhựa, túi rác) —
+                mua đâu dùng đó, không đóng gói để đếm được, nên sẽ không xuất hiện trong danh sách kiểm kê.
+              </span>
+            </label>
           )}
         </form>
       </FormModal>

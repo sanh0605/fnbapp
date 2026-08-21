@@ -344,8 +344,10 @@ The P&L separates three things that were previously one:
 | Line | Source | Why separate |
 |---|---|---|
 | **Giá vốn** | `stock_issues` with `source = 'MANUAL'` — what staff recorded leaving stock | Goods that actually went into what was sold |
-| **Nguyên liệu mua dùng ngay** | purchases of `is_non_inventory` ingredients (đá viên, khoai lang, trái tắc, trái chanh) | Consumed the day they are bought; stock-managing them costs more than the error (`BR-INV-007`'s judgement) |
+| **Nguyên liệu mua dùng ngay** | purchases of `is_non_inventory` ingredients or purchased items | Consumed the day they are bought, or never sits on a shelf to be counted at all; stock-managing them costs more than the error (`BR-INV-007`'s judgement) |
 | **Hao hụt** | `stock_issues` with `source = 'STOCKTAKE'` — what a count finds missing beyond what was issued | Merging it into cost of sales hides it: *"nếu ghi vào giá vốn thì sẽ không biết thất thoát thực tế"* |
+
+**Widened 2026-08-21:** `is_non_inventory` originally existed only on `base_ingredients` (đá viên, khoai lang, trái tắc, trái chanh, muối hồng, nước, nước sôi). A CONSUMABLE purchased item (a straw, a plastic spoon) has no `base_ingredient_id`, so that flag had nowhere to sit for one — `purchased_items.is_non_inventory` (migration `0068`) closes that gap. **The discriminator is still `BR-INV-007`** (does a sealed pack of it sit on the shelf to be counted), not the item's category: both straws and carrier bags are bought by the kilo and split opposite ways, because one arrives in sealed countable bags and the other does not. Excluded from stocktake when either the linked ingredient is flagged or the purchased item's own flag is set (additive, `app/admin/inventory/stocktake/actions.ts`). Not yet reached by the expense line itself — batch 5 of Plan J is what makes this column feed money; today it only controls stocktake eligibility.
 
 **The precondition, and the reason this is not an exception anyone has to remember:**
 

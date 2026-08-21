@@ -4,6 +4,26 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-21 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A purchased item can now be flagged "not stock-managed" (BR-COGS-007 widened)
+
+**Trigger:** `docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md`. `is_non_inventory` existed only on `base_ingredients`; a CONSUMABLE purchased item has no `base_ingredient_id`, so every consumable was being offered for stocktake regardless of `BR-INV-007` -- live, not theoretical: `SPM-053`/`SPM-054` already qualified, and the owner was about to enter 25 more, several of which (spoons, bin bags) genuinely should not be counted.
+
+**Critique before coding, per CLAUDE.md section 1:** verified section 4's claim (the fix must not go in `filterByC17`) by reading `lib/purchased-item-onhand.ts` directly -- confirmed it tests `status` and computed on-hand only, never conversions, and confirmed `lib/conversion-countability.ts`'s `wouldLeaveNoCountableConversion` has exactly one caller (`app/admin/inventory/conversions/actions.ts`), never `filterByC17`, matching the plan's own self-correction. Verified section 4's EQUIPMENT claim (an equipment item would become a session line with empty `packageLines`, unreached today) directly against production: zero EQUIPMENT purchased items currently exist. Verified `BR-COGS-007`'s wording really is ingredient-scoped as claimed, and that the 7 flagged `base_ingredients` rows match the plan's list exactly.
+
+**Found the plan's one stale number:** section 5 says "the 52 pre-existing purchased items must have the same stocktake eligibility before and after" -- the real live count is now **70** (52 RAW + **18 CONSUMABLE**, up from 1 CONSUMABLE the day before, per OPEN-ITEMS 47's tracking entry), not 52. Ran the actual comparison against all 70 (old filter vs. new filter, both through `filterByC17`), not the stale 52: **68 eligible under both, 0 changed.** Reported per the `fnbapp-bulk-data-change` skill's step 3 (count compared, not just that it matched).
+
+**Migration `0068_purchased_items_non_inventory.sql`:** adds `is_non_inventory boolean not null default false` to `purchased_items`. Checked triggers first (`fnbapp-bulk-data-change` step 1): one, `trg_purchased_items_touch` (`BEFORE UPDATE`, `touch_updated_at()`). Verified inside a rolled-back transaction that `ADD COLUMN ... DEFAULT` does not fire it and does not rewrite rows: `max(updated_at)` and row count (70) identical before/after, `flagged_count` 0 immediately after add (every row gets the default). **Not applied to production** -- awaiting owner approval, per the plan's explicit instruction.
+
+**Scope, exactly as planned:** checkbox on `PurchasedItemForm` for CONSUMABLE and EQUIPMENT, not RAW (a RAW item inherits the decision from its ingredient). Stocktake filter (`app/admin/inventory/stocktake/actions.ts`) widened additively: excluded when either the linked ingredient is flagged or the purchased item's own flag is set. `BR-COGS-007`'s "Nguyên liệu mua dùng ngay" row widened from "ingredients" to "ingredients or purchased items," dated note added in the same commit as the code.
+
+**Verification, per the plan's own requirement -- proved the tests fail before the fix:** wrote the stocktake exclusion test and the three checkbox-visibility render tests, `git stash`ed only the four production-code files, ran all four against the pre-fix code, confirmed all four failed with the exact predicted wrong output (flagged item still offered; checkbox absent for both CONSUMABLE and EQUIPMENT), restored the fix, confirmed all four pass.
+
+**Gates run, all green:** `npx tsc --noEmit` (0 errors), `npx vitest run` (187 files, 1247 tests, up from 1243), `npx vite-node scripts/check-rules-current.ts` (3/3 pass), `npm run build` (compiled, 40/40 static pages), `npx vite-node scripts/verify-revenue.ts` (all four closed months unchanged: April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ).
+
+**Not done, by design:** the P&L expense line itself (batch 5 -- nothing reads this column for money yet), any change to cost computation, entering the 8 not-stock-managed items or the remaining consumables. Migration written, ready, unapplied.
+
+---
+
 ## 2026-08-20 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Fixed: consumable base unit stored as a name where an ID was required (OPEN-ITEMS 47)
 
 **Trigger:** `docs/superpowers/plans/2026-08-20-consumable-base-unit-mismatch.md`. Owner tested batch 1 item B on production, created a consumable with base unit "Cái", and the conversion row rendered `Bao = 10 cơ bản` instead of `Bao = 10 Cái`.

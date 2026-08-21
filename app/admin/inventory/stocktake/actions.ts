@@ -207,9 +207,18 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     // screen telling them apart -- the owner chose purchased item (Plan D
     // section 3, decision 1). Semi-products carry no stock and no value
     // (BR-INV-006) and were never offered here.
-    const eligiblePurchasedItems = purchasedItems.filter(
-      p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id),
-    );
+    //
+    // 2026-08-21 (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md):
+    // a CONSUMABLE item has no base_ingredient_id, so the ingredient-side
+    // flag above can never reach it -- every consumable was offered for
+    // counting regardless of BR-INV-007. Additive, not a replacement: an
+    // item drops out when EITHER its ingredient is flagged OR its own flag
+    // is set.
+    const eligiblePurchasedItems = purchasedItems.filter(p => {
+      const ingredientFlagged = nonInventoryBaseIngredientIds.has(p.base_ingredient_id);
+      const ownFlagged = p.is_non_inventory === true || p.is_non_inventory === "TRUE";
+      return !ingredientFlagged && !ownFlagged;
+    });
     const includedPurchasedItems = await filterByC17(eligiblePurchasedItems);
     const items = includedPurchasedItems.map(p => ({
       itemReference: p.id as string,
