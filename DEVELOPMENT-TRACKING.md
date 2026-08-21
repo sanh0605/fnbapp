@@ -4,6 +4,43 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-21 (Owner entering, Opus 5 verifying) - Plan J batch 2 data entry COMPLETE: 25 consumables
+
+**Owner entered all of them himself**, by his own decision 2026-08-21 (*"anh nên nhập liệu trước đã do anh cũng đã có sẵn thông tin trên sản phẩm rồi"*) — no import script was written, and none is needed.
+
+**Verified against live data, not the screen:** **85** ACTIVE `uom_conversions` rows, **0** with a `base_unit` or `purchased_unit` that fails to resolve to a real unit id. That is the check promised after `OPEN-ITEMS 47`, run over every item, not a sample.
+
+**The stocktake predicate re-run read-only on production** (deliberately not by opening a session, which writes rows):
+
+| | Count |
+|---|---|
+| ACTIVE purchased items | 77 |
+| Excluded by the item's own `is_non_inventory` | **6** |
+| Excluded via a flagged ingredient (pre-existing: Đá viên and siblings) | 2 |
+| **Offered for counting** | **69** |
+
+77 − 6 − 2 = 69. The six: `Muỗng nhựa đen`, `Túi đựng rác`, `Túi chữ T`, `Túi PE 1 ly seal`, `Túi PE 2 ly seal`, `Túi xốp 1 ly`.
+
+**Review found two real gaps before the owner called it done**, both fixed by him the same session: `Túi PE 2 ly seal` was unticked while its three siblings were ticked, and `Muỗng nhựa` / `Nắp nhựa phẳng PP 117` were missing entirely.
+
+**Name reconciliation, so the sheet and the system can be compared later.** The owner standardised names during entry; three of his sheet's rows have no separate item on purpose:
+
+| Sheet row | In the system |
+|---|---|
+| `Túi Chữ T 12.5x26 - 2kg` | merged into **`Túi chữ T`** |
+| `Nắp nhựa phẳng PP 117` + `Combo ly + nắp nhựa PP` | kept separate — both exist |
+| `Nắp nhựa không dùng ống hút PET 98` | **same product as** `Nắp nhựa phẳng PET 98`; one item |
+| `Túi lọc đa năng size M` | **not a consumable** — a tool for making semi-products; belongs to the equipment batch |
+| `Túi đựng khoai` | **not entered as an item** — see below |
+
+Names also gained sizes the sheet lacked (`Ly Nhựa PET 98 - 16OZ - 500ml`), and one item exists that the sheet does not have at all: **`Nắp ly mập Uchako - 700ml`** — the book was short a row, not the system long one.
+
+**Two entries better than what was proposed to him:** `Baking Soda Caster` as `1 Túi = 454 g` rather than `Túi = 1`, and `Túi đựng rác` as `1 Túi = 3 Cuộn`. Neither was suggested.
+
+**Still open:** `Túi đựng khoai` was bought but the owner has no quantity for it, so it never becomes a purchased item — it goes straight to an expense line in batch 4 (`OPEN-ITEMS 51`).
+
+---
+
 ## 2026-08-21 (Opus 5 executing the approved migration) - Migration 0068 APPLIED to production
 
 **Owner approved 2026-08-21.** Applied `0068_purchased_items_non_inventory.sql`: `is_non_inventory boolean not null default false` on `public.purchased_items`.
