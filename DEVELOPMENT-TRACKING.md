@@ -4,6 +4,35 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-21 (Opus 5 executing the approved migration) - Migration 0068 APPLIED to production
+
+**Owner approved 2026-08-21.** Applied `0068_purchased_items_non_inventory.sql`: `is_non_inventory boolean not null default false` on `public.purchased_items`.
+
+**Re-measured immediately before applying, not reusing the implementer's figure:** the column did not exist under any type, 70 rows, one trigger (`trg_purchased_items_touch`, `BEFORE UPDATE`, `touch_updated_at()`), none `after insert or update`, none feeding a queue.
+
+**Proved neutral per row:** 70 rows before → **70** after; `max(updated_at)` `2026-08-21 19:17:28` → **unchanged**; 0 rows flagged immediately after. An unmoved `max(updated_at)` is the falsifiable form of "no rewrite" — the touch trigger would have moved it had rows been rewritten.
+
+**Proved the flag actually excludes, rather than inferring it from the column existing.** Replicated the stocktake predicate in SQL inside a rolled-back transaction:
+
+| | Eligible items |
+|---|---|
+| Before | **68** |
+| After flagging `SPM-053` "Ống hút nhỏ" | **67** |
+| `SPM-053` present? | before yes → after **no** |
+| `SPM-054` "Ống hút lớn" (unflagged sibling) | **still offered** |
+
+68 independently reproduces the implementer's own before/after figure. After rollback: 0 flagged, 70 rows, `max(updated_at)` unmoved.
+
+**Independent re-verification of the fail-first claim:** reverted the four production files, kept the tests, ran them. **Three** of the four new tests fail against the pre-fix code — the stocktake exclusion (`expected [ 'SPM-070', 'SPM-053' ] to not include 'SPM-070'`) and the two checkbox-visibility tests. The fourth (the checkbox is *absent* for `Nguyên liệu`) passes both before and after and **cannot** fail pre-fix, since the checkbox then renders nowhere; it is a regression guard, not a discriminating test. The implementer's report said all four failed. The outcome is unaffected, but "a test that never failed has not been shown to test anything" only holds if the count is exact.
+
+**Neutral, measured:** `scripts/verify-revenue.ts` — April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ, all still matching; all structural checks passed. `tsc` clean, `vitest` 187 files / **1.247** passing, `npm run build` succeeds.
+
+**Owner's data entry, verified the same day:** 18 CONSUMABLE items now exist (52 RAW unchanged). All **77** ACTIVE `uom_conversions` resolve `base_unit` and `purchased_unit` to real unit ids — **0 broken** — which is the check promised after `OPEN-ITEMS 47`. Ten of the 27 remain: the 8 not-stock-managed items (waiting on this flag) plus `Nắp nhựa không dùng ống hút PET 98` and `Nắp nhựa phẳng PP 117`, which are countable and need nothing.
+
+**The plan's own stale number, caught by the implementer:** §5 named "52 pre-existing purchased items". The live count was already 70. Following the plan literally would have verified the RAW items and skipped exactly the 18 consumables the defect was acting on.
+
+---
+
 ## 2026-08-21 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A purchased item can now be flagged "not stock-managed" (BR-COGS-007 widened)
 
 **Trigger:** `docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md`. `is_non_inventory` existed only on `base_ingredients`; a CONSUMABLE purchased item has no `base_ingredient_id`, so every consumable was being offered for stocktake regardless of `BR-INV-007` -- live, not theoretical: `SPM-053`/`SPM-054` already qualified, and the owner was about to enter 25 more, several of which (spoons, bin bags) genuinely should not be counted.
