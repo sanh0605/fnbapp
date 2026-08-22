@@ -193,20 +193,45 @@ Vietnamese labels; `inputMode="numeric"` on every number field.
 - Migration checks per `fnbapp-bulk-data-change`: list triggers, prove no
   existing row is rewritten. **Do not apply; the owner approves each run.**
 
-## 7. Data questions for the owner — raise, do not guess
+## 7. Cancelled orders, and the answers the owner gave
 
-1. **Five items carry no usable figure** and are excluded from §2's total:
-   `Thảm bar pha chế 30x40cm` (1 cái, 0đ), `Ống bơm hút chất lỏng 1000mm`
-   (1, 0đ) and `Chai nhựa xịt 900ml` (2, 0đ) — bought but with no price
-   recorded — plus `Phin cà phê lớn` (0 cái) and `Standee` (0 cái), which look
-   like duplicate rows of items that do have purchases.
-2. **`Bộ công thức pha chế Kenbar`, 497.697đ**, is typed `Tài liệu` in the
-   sheet — a fourth type the app has no category for. Equipment on a 24-month
-   term, or an outright expense? Nearly half a million đồng, so it cannot be
-   quietly folded in.
-3. **`NH000010`** (bình thuỷ tinh) still does not add up: before-discount
-   264.000đ, discount 264.000đ, actual 411.840đ. The owner already found this;
-   the register carries whatever the corrected line says.
+**Cancelled orders are excluded by setting `Giá nhập thực tế` to 0**, not by
+removing the row. The sheet holds **13 cancelled lines** across **2 cancelled
+orders**. This was missed on the first read — the status column was not looked
+at — and the owner withheld the hint deliberately, to see whether the whole
+sheet had been read. It had not.
+
+**Do not enter cancelled orders into the system.** They contribute 0 to every
+per-product total, so excluding them leaves §6's 95/95 reconciliation intact.
+
+Four of the five items previously flagged as "no usable figure" explain
+themselves once status is read:
+
+| Item | Explanation |
+|---|---|
+| `Thảm bar pha chế 30x40cm` | its only line is `NH000024`, **cancelled** |
+| `Chai nhựa xịt 900ml` | its only line is `NH000047`, **cancelled** |
+| `Phin cà phê lớn` (0 cái) | a spare catalogue row; the real one holds 4 cái / 455.625đ under another code |
+| `Standee` (0 cái) | a spare catalogue row; `Trụ standee` holds 2 cái / 500.000đ |
+
+**One is still unexplained and is the owner's to answer:**
+`Ống bơm hút chất lỏng 1000mm`, line `NH000045`, status **Thành công**, 34.999đ
+after discount but **0đ** actual. Probably a free item carried by a voucher. If
+so it enters the register at 0đ and generates no charge, while still being
+listed as owned — which is exactly what §8.2's "what does the shop own" asks
+for, and is the case that proves the register is not merely a cost table.
+
+**Owner decisions, 2026-08-22:**
+
+- `Bộ công thức pha chế Kenbar` (497.697đ) is **equipment**, not a separate
+  type. At 497.697đ per unit it falls under 500k, so **24 months**. The sheet's
+  `Tài liệu` type needs no counterpart in the app.
+- `NH000010` (bình thuỷ tinh) needs **three** cells corrected, not one: with
+  the line at 528.000đ before and after discount, `Đơn giá nhập` must be
+  264.000đ (not 132.000đ) and `Chiết khấu` must be 0 (not 264.000đ). The
+  allocated 411.840đ is unaffected — it is 528.000đ less a 116.160đ voucher
+  share. **Attribution corrected:** this row was raised here and confirmed by
+  the owner, not found by him; an earlier draft said otherwise.
 
 ## 8. Out of scope
 
