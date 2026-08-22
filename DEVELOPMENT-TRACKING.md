@@ -4,6 +4,49 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-23 (Opus 5 executing the approved migration) - Migration 0070 APPLIED and pushed
+
+**Owner approved 2026-08-23.** Applied `0070_asset_band_bounds_and_total_cost.sql`, then pushed `7d57f5c..4610e15`.
+
+**Migration first, push second, deliberately.** The two must agree, and each ordering has a different failure in the window between them: with the new rows and the old code, exactly 200.000đ matches both the first and second band and the lookup returns the first — **12 months where 24 is meant, silently**; with the new code and the old rows, 199.999đ matches nothing at all. Applying first leaves only the narrower fault, live for the length of one Vercel build, and the band table is read only when an equipment purchase order is **completed** — which nobody was doing, and the owner was told not to.
+
+**Re-measured immediately before applying:** bands still `0–199999 / 200000–500000 / 500001–null`, `assets` **0 rows**, no `total_cost` column. The row count mattered: `add column ... not null` with no default succeeds only on an empty table.
+
+**After:**
+
+| | Before | After |
+|---|---|---|
+| `KH-001` | 0 – 199999 | **0 – 200000** |
+| `KH-002` | 200000 – 500000 | **200000 – 500000** |
+| `KH-003` | 500001 – null | **500000 – null** |
+| `assets.total_cost` | absent | **present** |
+| `assets` rows | 0 | 0 |
+
+Bounds are now half-open — min inclusive, max exclusive — as the owner specified: `x < 200.000`, `200.000 ≤ x < 500.000`, `500.000 ≤ x`.
+
+**Proved the live rows classify, rather than trusting that three updates landed.** Ran `findBandForUnitPrice` and `validateBands` against the rows actually in production:
+
+| Unit price | Band |
+|---|---|
+| 9.720đ | 12 tháng |
+| **199.999,05đ** | **12 tháng** — matched nothing before |
+| 200.000đ | 24 tháng |
+| 497.697đ (Kenbar) | 24 tháng |
+| **500.000,50đ** | **36 tháng** — matched nothing before |
+| 500.000đ | 36 tháng (was 24; the owner's own rule change) |
+| 2.100.000đ | 36 tháng |
+
+`validateBands` returns ok on the live set.
+
+**Independently re-verified the implementer's two claims about the review:**
+
+- **The coverage hole they found is real and my plan missed it.** The plan asked only for no gap *between* bands. Nothing checked that the lowest starts at 0đ or that the highest is unbounded, so deleting either edge band would have passed every check. Confirmed by hand: dropping the lowest is refused with *"Khung thấp nhất phải bắt đầu từ 0đ"*, dropping the highest with *"Phải có một khung không giới hạn trên"*, and a middle gap still refused.
+- **Their correction to my own drift table is right.** I recorded `Cốc đong 100ml` as −4đ; it is **+4đ**. The cause is worth more than the number: I computed the table in Python, whose `round()` breaks ties to even (`14392,5 → 14392`), while the application runs JavaScript `Math.round`, which breaks ties upward (`→ 14393`). Measuring with a different tool than the one that runs is the same failure as reading a spreadsheet column by position, recorded here earlier this week.
+
+**Neutral, measured:** `scripts/verify-revenue.ts` — April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ, all still matching. `tsc` clean, `vitest` 194 files / **1.326** passing, `npm run build` succeeds.
+
+---
+
 ## 2026-08-23 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Depreciation bands: half-open bounds, add/delete, and an exact cost basis (BR-COGS-008)
 
 **Trigger:** `docs/superpowers/plans/2026-08-23-band-bounds-and-crud.md`. Owner raised the gap and the missing add/delete from the live screen; a third issue (unit-cost drift) was found while checking the first and fixed in the same pass.
