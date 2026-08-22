@@ -4,6 +4,35 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-23 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Depreciation bands: half-open bounds, add/delete, and an exact cost basis (BR-COGS-008)
+
+**Trigger:** `docs/superpowers/plans/2026-08-23-band-bounds-and-crud.md`. Owner raised the gap and the missing add/delete from the live screen; a third issue (unit-cost drift) was found while checking the first and fixed in the same pass.
+
+**Critique before coding, per CLAUDE.md section 1 -- not clean, four findings:**
+1. **§1 (gap math): verified true.** Confirmed the live `findBandForUnitPrice`/`validateBands` used inclusive-inclusive bounds and integer +1 adjacency; empirically confirmed 199.999,05đ and 500.000,50đ matched no band under that logic.
+2. **The delete-safety claim (the plan's own intro mislabels this "section 3's claim" -- it is actually section 2's): verified true, and extended.** Confirmed no foreign key exists from `assets` to `asset_depreciation_bands`, confirmed `term_months` is frozen and independently stored, confirmed no code hardcodes a band id. Hard delete is safe exactly as claimed. **But found a bigger gap the plan did not address:** `validateBands` only ever checked consistency AMONG existing bands -- it never required the lowest band to start at 0đ or that an unbounded band exist at all. Deleting the first or last band would have passed every check while leaving a real coverage hole at one edge, surfacing only later as an opaque refusal. Extended `validateBands` to require both, closing the whole hole rather than just the middle-gap case the plan named.
+3. **§3 (unit-cost drift): verified true, with one arithmetic sign error found in the plan's own table.** Recomputed all four worked-example rows exactly (`Math.round(paid/qty)*qty - paid`): three match the plan (+48, +1, +1); the second row (`Cốc đong 100ml`) is stated as -4đ but is actually **+4đ**. Does not affect the fix's design or the required test, which correctly uses the first row.
+4. **§4 ("assets is empty"): re-verified directly against production, true.** `assets`: 0 rows. `asset_disposals`: 0 rows. Migration 0069 had been applied to production since the prior session (confirmed before starting).
+
+**Fixed, per section 1:** `min_unit_price` stays inclusive, `max_unit_price` becomes exclusive. `findBandForUnitPrice`, `validateBands`'s adjacency check, every error message, and every screen label updated. Added `formatBandRange` as the one place the three phrases ("Dưới X", "Từ X đến dưới Y", "Từ X trở lên") are written, reused by both the error messages and the two screens so they cannot drift apart.
+
+**Fixed, per section 2:** `createAssetBand` and `deleteAssetBand` added, both validating the resulting full set. Delete is a genuine hard delete. `validateBands` also now requires universal [0, ∞) coverage (see finding 2).
+
+**Fixed, per section 3:** `assets.total_cost` (the unrounded allocated line total) added alongside `unit_cost` (kept for the band lookup and display only). The depreciation schedule's basis moved from `quantity × unit_cost` to `total_cost`, apportioned across disposal cohorts with the last cohort absorbing the rounding remainder -- the same device already used one level down for a cohort's own months, applied once more. `AssetSummary.totalCost` (the register card's own total) was also switched from `quantity × unitCost` to the stored `total_cost`, extending the fix to the display side the plan did not explicitly name but which shared the identical defect.
+
+**Verification, per section 4:**
+- Boundary tests (199.999,05 / 500.000,50) and the required drift test (`Hủ đựng topping liền nắp`: 200 units, 80.352đ, 12 months, must total exactly 80.352đ) added and passing.
+- **Every new/changed behavior proved to fail first, and why.** For `buildAssetSchedule`/`findBandForUnitPrice`/`validateBands`, the whole lib file changed together (adding `total_cost` alongside the bound fix), so a single git-stash-and-rerun would have failed on an unrelated import/type mismatch rather than demonstrating the specific behavior in question. Verified each concern in isolation instead: replayed the pre-fix `findBandForUnitPrice` comparison directly (confirmed both non-integer prices resolve to no band), replayed the pre-fix `validateBands` directly (confirmed it returns `{ok:true}` for both a no-floor and a no-ceiling table), and reused the already-verified `Math.round(80352/200)*200 = 80400 ≠ 80352` computation for the drift case. The action-level tests (`asset-bands/actions.test.ts`'s new create/delete cases) were proved to fail the ordinary way (functions did not exist pre-change).
+- `validateBands` still refuses an overlap, a gap, and an unbounded band that is not last; create refused on overlap/gap; delete refused when it would open a gap **or** uncover the low/high end (14/14 tests passing, including a delete that correctly succeeds once a neighbour has absorbed the deleted band's range).
+- `scripts/verify-revenue.ts`: all four closed months unchanged.
+- Migration: one trigger on `assets` (`trg_assets_touch`, `BEFORE UPDATE`), confirmed it does not fire on `ADD COLUMN`; table empty, so "no row rewritten" holds trivially. Verified in a rolled-back transaction that the migration applies cleanly and rolls back cleanly.
+
+**Gates run, all green:** `npx tsc --noEmit` (0 errors), `npx vitest run` (194 files, 1326 tests, up from 1309), `npx vite-node scripts/check-rules-current.ts` (3/3 pass), `npm run build` (compiled), `npx vite-node scripts/verify-revenue.ts` (unchanged).
+
+**`BR-COGS-008` amended** with the half-open bounds, the universal-coverage requirement, and the exact cost basis. Migration `0070_asset_band_bounds_and_total_cost.sql` written, ready, **not applied**.
+
+---
+
 ## 2026-08-23 (Opus 5 executing the approved migration) - Migration 0069 APPLIED to production
 
 **Owner approved 2026-08-23, on a second and explicit ask.** The first attempt was **refused by the tooling's own safety check**, and the refusal was correct: the question had been put as a compound one ("run the migration and push?") and the owner answered "Đẩy đi" — the push, one of the two. Not worked around; the migration was re-asked on its own and approved on its own. Recorded because a blocked action that is then re-asked rather than routed around is the behaviour to keep.

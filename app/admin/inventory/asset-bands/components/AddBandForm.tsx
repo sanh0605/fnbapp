@@ -3,61 +3,63 @@
 import { useId, useState } from "react";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { updateAssetBand } from "../actions";
-import type { DBAssetDepreciationBand } from "@/types/db";
+import { Button } from "@/components/ui/Button";
+import { createAssetBand } from "../actions";
 
-// Batch 3, section 5.3: "Bảng thời hạn khấu hao" -- the flexible-thing-
-// needs-a-screen rule (CLAUDE.md section 8), not a later pass. Phone-first
-// and phone-only for this batch (owner 2026-08-17): one card per band, no
-// horizontal table, min-h-[44px] tap targets, inputMode="numeric" on every
-// number field.
-export function BandEditForm({ band }: { band: DBAssetDepreciationBand }) {
+// 2026-08-23, section 2: "A table the owner cannot add a row to is not the
+// settings screen CLAUDE.md section 8 requires; it is a constant with an
+// edit box." A new band typically requires narrowing an existing neighbour
+// first (createAssetBand validates the whole resulting set and refuses a
+// band that overlaps or gaps another).
+export function AddBandForm() {
   const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [minPrice, setMinPrice] = useState(String(band.min_unit_price));
-  const [maxPrice, setMaxPrice] = useState(band.max_unit_price === null ? "" : String(band.max_unit_price));
-  const [termMonths, setTermMonths] = useState(String(band.term_months));
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [termMonths, setTermMonths] = useState("");
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
-    formData.set("id", band.id);
-    const res = await updateAssetBand(formData);
+    const res = await createAssetBand(formData);
     setLoading(false);
     if (res.error) {
       setError(res.error);
     } else {
       setIsOpen(false);
+      setMinPrice("");
+      setMaxPrice("");
+      setTermMonths("");
     }
   }
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="text-primary hover:text-primary-hover font-medium text-sm min-h-[44px] px-2"
-      >
-        Sửa
-      </button>
+      <Button variant="primary" onClick={() => setIsOpen(true)}>
+        + Thêm khung
+      </Button>
 
       <FormModal
         isOpen={isOpen}
         onClose={() => { setIsOpen(false); setError(null); }}
-        title="Sửa khung khấu hao"
+        title="Thêm khung khấu hao"
         footer={
-          <LoadingButton type="submit" form={`${formId}-band-form`} loading={loading} loadingText="Đang lưu...">
+          <LoadingButton type="submit" form={`${formId}-add-band-form`} loading={loading} loadingText="Đang lưu...">
             Lưu
           </LoadingButton>
         }
       >
-        <form id={`${formId}-band-form`} action={handleSubmit} className="space-y-4">
+        <form id={`${formId}-add-band-form`} action={handleSubmit} className="space-y-4">
           {error && (
             <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
               {error}
             </div>
           )}
+          <p className="text-xs text-text-muted">
+            Khung mới phải khớp khít với các khung hiện có -- không chồng lấn, không để trống khoảng. Thường cần thu hẹp một khung liền kề trước.
+          </p>
           <div>
             <label htmlFor={`${formId}-min`} className="block text-sm font-medium text-text-secondary mb-1">
               Giá thấp nhất (đ, tính theo đơn giá 1 cái)
@@ -104,9 +106,6 @@ export function BandEditForm({ band }: { band: DBAssetDepreciationBand }) {
               className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
             />
           </div>
-          <p className="text-xs text-text-muted">
-            Sửa khung chỉ áp dụng cho tài sản mua sau khi lưu -- tài sản đã có giữ nguyên số tháng đã tính lúc mua.
-          </p>
         </form>
       </FormModal>
     </>

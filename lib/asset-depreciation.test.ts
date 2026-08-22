@@ -5,28 +5,33 @@ import {
   remainingValueAsOf,
   chargeForMonth,
   findBandForUnitPrice,
+  formatBandRange,
   validateBands,
   summarizeAsset,
   type Band,
 } from "./asset-depreciation";
 
+// 2026-08-23 fix: half-open bounds (min_unit_price inclusive, max_unit_price
+// exclusive). Only the NUMBERS on KH-001/KH-003 actually changed from the
+// original seed -- KH-002's stored numbers were already correct under this
+// reading.
 const SEEDED_BANDS: Band[] = [
-  { min_unit_price: 0, max_unit_price: 199_999, term_months: 12 },
+  { min_unit_price: 0, max_unit_price: 200_000, term_months: 12 },
   { min_unit_price: 200_000, max_unit_price: 500_000, term_months: 24 },
-  { min_unit_price: 500_001, max_unit_price: null, term_months: 36 },
+  { min_unit_price: 500_000, max_unit_price: null, term_months: 36 },
 ];
 
 // Batch 3 plan section 4, worked example 1: the ordinary case, real numbers.
 describe("buildAssetSchedule -- worked example 1 (Bình nhựa có bơm 1000ml, no disposal)", () => {
-  it("8 units at 95.150d/unit over 12 months sums exactly to 761.200d, final month absorbs the rounding remainder", () => {
+  it("8 units, 761.200d total over 12 months sums exactly to 761.200d, final month absorbs the rounding remainder", () => {
     const schedule = buildAssetSchedule(
-      { acquired_date: "2026-01-15", unit_cost: 95_150, quantity: 8, term_months: 12 },
+      { acquired_date: "2026-01-15", total_cost: 761_200, quantity: 8, term_months: 12 },
       [],
     );
 
     expect(schedule).toHaveLength(12);
     expect(totalScheduledCharge(schedule)).toBe(761_200);
-    // 8 * 95150 / 12 = 63433.33... -- eleven months round down to 63433,
+    // 761200 / 12 = 63433.33... -- eleven months round down to 63433,
     // the twelfth absorbs what those eleven left unaccounted for (63437,
     // not 63433 -- the plan's own prose names 63.433d for every month,
     // which is the ideal, unrounded-in-the-details figure; this is the
@@ -47,7 +52,7 @@ describe("buildAssetSchedule -- worked example 1 (Bình nhựa có bơm 1000ml, 
 describe("buildAssetSchedule -- worked example 2 (ca đong, disposed mid-term)", () => {
   it("45.000d over 12 months, broken in month 3: months 1-3 charge 3.750d each, month 3 also charges the remaining 33.750d, total 45.000d", () => {
     const schedule = buildAssetSchedule(
-      { acquired_date: "2026-03-01", unit_cost: 45_000, quantity: 1, term_months: 12 },
+      { acquired_date: "2026-03-01", total_cost: 45_000, quantity: 1, term_months: 12 },
       [{ quantity: 1, disposed_date: "2026-05-15" }], // month index 2 -- the third month
     );
 
@@ -69,7 +74,7 @@ describe("buildAssetSchedule -- worked example 2 (ca đong, disposed mid-term)",
 describe("buildAssetSchedule -- worked example 3 (Xe cà phê lưu động, 36 months)", () => {
   it("2.100.000d over 36 months sums exactly, final month absorbs the remainder", () => {
     const schedule = buildAssetSchedule(
-      { acquired_date: "2026-01-01", unit_cost: 2_100_000, quantity: 1, term_months: 36 },
+      { acquired_date: "2026-01-01", total_cost: 2_100_000, quantity: 1, term_months: 36 },
       [],
     );
 
@@ -82,34 +87,54 @@ describe("buildAssetSchedule -- worked example 3 (Xe cà phê lưu động, 36 m
   });
 });
 
+// 2026-08-23 fix, section 3: the schedule's basis is the real allocated
+// total, not quantity * round(total / quantity). Real shape from the
+// owner's 72 equipment items: 200 units, 80.352d paid, 12 months.
+// quantity * unit_cost (200 * round(80352/200) = 200 * 402 = 80.400d) would
+// overstate the true cost by 48d -- this is the case that must fail against
+// the pre-fix code (which took unit_cost as its basis) and pass here.
+describe("buildAssetSchedule -- exact cost basis (section 3, Hủ đựng topping liền nắp)", () => {
+  it("200 units, 80.352d total, 12 months: total charged is exactly 80.352d, not 80.400d", () => {
+    const schedule = buildAssetSchedule(
+      { acquired_date: "2026-01-01", total_cost: 80_352, quantity: 200, term_months: 12 },
+      [],
+    );
+
+    expect(totalScheduledCharge(schedule)).toBe(80_352);
+    expect(totalScheduledCharge(schedule)).not.toBe(80_400);
+  });
+});
+
 // Section 6: "A schedule-sums-to-cost test across every band."
 describe("buildAssetSchedule -- sums to cost exactly, across every band and several non-round costs", () => {
-  const cases: Array<{ unit_cost: number; quantity: number; term_months: number }> = [
-    { unit_cost: 95_150, quantity: 8, term_months: 12 }, // 12-month band
-    { unit_cost: 497_697, quantity: 1, term_months: 24 }, // 24-month band (Kenbar)
-    { unit_cost: 2_100_000, quantity: 1, term_months: 36 }, // 36-month band
-    { unit_cost: 1, quantity: 7, term_months: 12 }, // pathological: does not divide evenly at all
-    { unit_cost: 123_457, quantity: 3, term_months: 24 },
-    { unit_cost: 999_999, quantity: 5, term_months: 36 },
+  const cases: Array<{ total_cost: number; quantity: number; term_months: number }> = [
+    { total_cost: 761_200, quantity: 8, term_months: 12 }, // 12-month band
+    { total_cost: 497_697, quantity: 1, term_months: 24 }, // 24-month band (Kenbar)
+    { total_cost: 2_100_000, quantity: 1, term_months: 36 }, // 36-month band
+    { total_cost: 7, quantity: 7, term_months: 12 }, // pathological: does not divide evenly at all
+    { total_cost: 370_371, quantity: 3, term_months: 24 },
+    { total_cost: 4_999_995, quantity: 5, term_months: 36 },
+    { total_cost: 80_352, quantity: 200, term_months: 12 }, // real shape, does not divide by quantity or by 12 cleanly at the unit level
   ];
 
   for (const c of cases) {
-    it(`quantity=${c.quantity}, unit_cost=${c.unit_cost}, term=${c.term_months}`, () => {
+    it(`quantity=${c.quantity}, total_cost=${c.total_cost}, term=${c.term_months}`, () => {
       const schedule = buildAssetSchedule(
-        { acquired_date: "2026-01-01", unit_cost: c.unit_cost, quantity: c.quantity, term_months: c.term_months },
+        { acquired_date: "2026-01-01", total_cost: c.total_cost, quantity: c.quantity, term_months: c.term_months },
         [],
       );
-      expect(totalScheduledCharge(schedule)).toBe(c.unit_cost * c.quantity);
+      expect(totalScheduledCharge(schedule)).toBe(c.total_cost);
     });
   }
 });
 
 describe("buildAssetSchedule -- partial disposal, multiple events on one asset", () => {
   it("two separate partial disposals each settle their own cohort exactly, and the whole schedule still sums to cost", () => {
-    // 10 units at 1.200d, term 12. 4 disposed in month 3 (index 2), 3 more
-    // disposed in month 7 (index 6), 3 survive to term end (month 12).
+    // 10 units at 1.200d each (12.000d total), term 12. 4 disposed in month
+    // 3 (index 2), 3 more disposed in month 7 (index 6), 3 survive to term
+    // end (month 12).
     const schedule = buildAssetSchedule(
-      { acquired_date: "2026-01-01", unit_cost: 1_200, quantity: 10, term_months: 12 },
+      { acquired_date: "2026-01-01", total_cost: 12_000, quantity: 10, term_months: 12 },
       [
         { quantity: 4, disposed_date: "2026-03-01" },
         { quantity: 3, disposed_date: "2026-07-01" },
@@ -129,10 +154,26 @@ describe("buildAssetSchedule -- partial disposal, multiple events on one asset",
     expect(schedule[11].unitsHeld).toBe(3); // survive to term end
   });
 
+  // 2026-08-23 fix, section 3: proves cohort-level apportionment (not just
+  // month-level) absorbs its own rounding remainder correctly when
+  // total_cost does not divide evenly by quantity -- a case that could
+  // never arise before this fix, since quantity * unit_cost was always a
+  // whole multiple of quantity by construction.
+  it("apportions a total_cost that does not divide evenly across cohorts, still summing exactly", () => {
+    // 1.000d total for 3 units -- 1000/3 is not an integer. 1 unit disposed
+    // mid-term, 2 survive to term end.
+    const schedule = buildAssetSchedule(
+      { acquired_date: "2026-01-01", total_cost: 1_000, quantity: 3, term_months: 12 },
+      [{ quantity: 1, disposed_date: "2026-04-01" }],
+    );
+
+    expect(totalScheduledCharge(schedule)).toBe(1_000);
+  });
+
   it("refuses disposals that sum to more than the asset's quantity", () => {
     expect(() =>
       buildAssetSchedule(
-        { acquired_date: "2026-01-01", unit_cost: 1_000, quantity: 2, term_months: 12 },
+        { acquired_date: "2026-01-01", total_cost: 2_000, quantity: 2, term_months: 12 },
         [{ quantity: 3, disposed_date: "2026-02-01" }],
       ),
     ).toThrow(/exceed/);
@@ -141,7 +182,7 @@ describe("buildAssetSchedule -- partial disposal, multiple events on one asset",
   it("refuses a disposal dated before the asset was acquired", () => {
     expect(() =>
       buildAssetSchedule(
-        { acquired_date: "2026-06-01", unit_cost: 1_000, quantity: 1, term_months: 12 },
+        { acquired_date: "2026-06-01", total_cost: 1_000, quantity: 1, term_months: 12 },
         [{ quantity: 1, disposed_date: "2026-01-01" }],
       ),
     ).toThrow(/before/);
@@ -151,7 +192,7 @@ describe("buildAssetSchedule -- partial disposal, multiple events on one asset",
 describe("remainingValueAsOf / chargeForMonth", () => {
   it("remaining value after the disposal month in worked example 2 is zero", () => {
     const schedule = buildAssetSchedule(
-      { acquired_date: "2026-03-01", unit_cost: 45_000, quantity: 1, term_months: 12 },
+      { acquired_date: "2026-03-01", total_cost: 45_000, quantity: 1, term_months: 12 },
       [{ quantity: 1, disposed_date: "2026-05-15" }],
     );
     expect(remainingValueAsOf(schedule, "2026-05")).toBe(0);
@@ -170,6 +211,7 @@ describe("summarizeAsset -- bucket derivation (section 5.1)", () => {
     name: "Máy pha cà phê",
     acquired_date: "2026-01-01",
     unit_cost: 95_150,
+    total_cost: 761_200,
     quantity: 8,
     term_months: 12, // schedule runs 2026-01 through 2026-12
   };
@@ -178,6 +220,7 @@ describe("summarizeAsset -- bucket derivation (section 5.1)", () => {
     const summary = summarizeAsset(asset, [], "2026-06");
     expect(summary.bucket).toBe("IN_USE");
     expect(summary.remainingQuantity).toBe(8);
+    expect(summary.totalCost).toBe(761_200);
     expect(summary.remainingValue).toBeGreaterThan(0);
     expect(summary.remainingValue).toBeLessThan(summary.totalCost);
   });
@@ -202,16 +245,24 @@ describe("summarizeAsset -- bucket derivation (section 5.1)", () => {
   });
 });
 
-// Section 3.1's band table.
-describe("findBandForUnitPrice", () => {
-  it("matches the owner's own boundary examples", () => {
+// Section 1's boundary fix.
+describe("findBandForUnitPrice -- half-open bounds (section 1)", () => {
+  it("matches the owner's own boundary examples under the new half-open form", () => {
     expect(findBandForUnitPrice(SEEDED_BANDS, 95_150)?.term_months).toBe(12);
     expect(findBandForUnitPrice(SEEDED_BANDS, 199_999)?.term_months).toBe(12);
-    expect(findBandForUnitPrice(SEEDED_BANDS, 200_000)?.term_months).toBe(24);
+    expect(findBandForUnitPrice(SEEDED_BANDS, 200_000)?.term_months).toBe(24); // boundary now belongs to the second band
     expect(findBandForUnitPrice(SEEDED_BANDS, 497_697)?.term_months).toBe(24); // Bộ công thức pha chế Kenbar
-    expect(findBandForUnitPrice(SEEDED_BANDS, 500_000)?.term_months).toBe(24);
-    expect(findBandForUnitPrice(SEEDED_BANDS, 500_001)?.term_months).toBe(36);
+    expect(findBandForUnitPrice(SEEDED_BANDS, 499_999)?.term_months).toBe(24);
+    expect(findBandForUnitPrice(SEEDED_BANDS, 500_000)?.term_months).toBe(36); // boundary now belongs to the third band
     expect(findBandForUnitPrice(SEEDED_BANDS, 2_100_000)?.term_months).toBe(36);
+  });
+
+  // The exact cases that motivated the change (section 1): unreachable
+  // before only because the caller rounded before this function ever saw
+  // the number. Must fail against the pre-fix inclusive-inclusive code.
+  it("199.999,05 and 500.000,50 each match exactly one band -- the non-integer prices the old bounds missed entirely", () => {
+    expect(findBandForUnitPrice(SEEDED_BANDS, 199_999.05)?.term_months).toBe(12);
+    expect(findBandForUnitPrice(SEEDED_BANDS, 500_000.5)?.term_months).toBe(36);
   });
 
   it("returns null when no band covers the price (a gap in a misconfigured table)", () => {
@@ -223,20 +274,28 @@ describe("findBandForUnitPrice", () => {
   });
 });
 
+describe("formatBandRange", () => {
+  it("renders the owner's three exact phrases", () => {
+    expect(formatBandRange(SEEDED_BANDS[0])).toBe("Dưới 200.000đ");
+    expect(formatBandRange(SEEDED_BANDS[1])).toBe("Từ 200.000đ đến dưới 500.000đ");
+    expect(formatBandRange(SEEDED_BANDS[2])).toBe("Từ 500.000đ trở lên");
+  });
+});
+
 describe("validateBands", () => {
-  it("accepts the seeded three bands", () => {
+  it("accepts the seeded three (half-open) bands", () => {
     expect(validateBands(SEEDED_BANDS)).toEqual({ ok: true });
   });
 
-  it("refuses a gap between bands, naming the colliding pair", () => {
+  it("refuses a gap between bands, naming the colliding pair, under half-open adjacency", () => {
     const gap: Band[] = [
-      { min_unit_price: 0, max_unit_price: 199_999, term_months: 12 },
-      { min_unit_price: 200_001, max_unit_price: null, term_months: 36 }, // 200.000 falls in neither
+      { min_unit_price: 0, max_unit_price: 200_000, term_months: 12 },
+      { min_unit_price: 200_001, max_unit_price: null, term_months: 36 }, // exactly 200.000 falls in neither
     ];
     const result = validateBands(gap);
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected refusal");
-    expect(result.error).toContain("199.999");
+    expect(result.error).toContain("200.000");
     expect(result.error).toContain("200.001");
   });
 
@@ -262,5 +321,47 @@ describe("validateBands", () => {
 
   it("refuses an empty band table", () => {
     expect(validateBands([])).toEqual({ ok: false, error: "Phải có ít nhất một khung khấu hao" });
+  });
+
+  it("refuses a band whose max equals its min (a half-open band with min=max covers nothing)", () => {
+    const zeroWidth: Band[] = [
+      { min_unit_price: 0, max_unit_price: 200_000, term_months: 12 },
+      { min_unit_price: 200_000, max_unit_price: 200_000, term_months: 24 },
+      { min_unit_price: 200_000, max_unit_price: null, term_months: 36 },
+    ];
+    expect(validateBands(zeroWidth).ok).toBe(false);
+  });
+
+  // 2026-08-23 addition, beyond section 2's literal ask: closing the whole
+  // hole, not just the gap-between-two-remaining-bands case the plan
+  // named. Reachable the moment delete exists -- deleting the first or
+  // last band would otherwise pass every other check while leaving a real
+  // coverage hole at one edge of the price line.
+  describe("universal coverage (2026-08-23, beyond section 2's literal ask)", () => {
+    it("refuses a table whose lowest band does not start at 0", () => {
+      const noFloor: Band[] = [
+        { min_unit_price: 100_000, max_unit_price: 500_000, term_months: 24 },
+        { min_unit_price: 500_000, max_unit_price: null, term_months: 36 },
+      ];
+      const result = validateBands(noFloor);
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error("expected refusal");
+      expect(result.error).toContain("0đ");
+    });
+
+    it("refuses a table with no unbounded band at all", () => {
+      const noCeiling: Band[] = [
+        { min_unit_price: 0, max_unit_price: 200_000, term_months: 12 },
+        { min_unit_price: 200_000, max_unit_price: 500_000, term_months: 24 },
+      ];
+      const result = validateBands(noCeiling);
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error("expected refusal");
+      expect(result.error).toContain("không giới hạn trên");
+    });
+
+    it("a single unbounded band starting at 0 is valid on its own", () => {
+      expect(validateBands([{ min_unit_price: 0, max_unit_price: null, term_months: 12 }])).toEqual({ ok: true });
+    });
   });
 });

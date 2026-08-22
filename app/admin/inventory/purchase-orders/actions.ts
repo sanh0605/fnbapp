@@ -196,6 +196,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
               name_snapshot: plan.name_snapshot,
               acquired_date: effectiveDate.slice(0, 10),
               unit_cost: plan.unit_cost,
+              total_cost: plan.total_cost,
               quantity: plan.quantity,
               term_months: plan.term_months,
             });

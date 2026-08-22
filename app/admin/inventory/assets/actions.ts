@@ -61,6 +61,7 @@ export async function getAssetsData(): Promise<AssetView[]> {
             name: asset.name_snapshot,
             acquired_date: asset.acquired_date,
             unit_cost: Number(asset.unit_cost),
+            total_cost: Number(asset.total_cost),
             quantity: Number(asset.quantity),
             term_months: Number(asset.term_months),
           },
@@ -105,7 +106,7 @@ export async function previewDisposalCharge(
     const schedule = buildAssetSchedule(
       {
         acquired_date: asset.acquired_date,
-        unit_cost: Number(asset.unit_cost),
+        total_cost: Number(asset.total_cost),
         quantity: Number(asset.quantity),
         term_months: Number(asset.term_months),
       },
@@ -158,7 +159,7 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
     buildAssetSchedule(
       {
         acquired_date: asset.acquired_date,
-        unit_cost: Number(asset.unit_cost),
+        total_cost: Number(asset.total_cost),
         quantity: Number(asset.quantity),
         term_months: Number(asset.term_months),
       },

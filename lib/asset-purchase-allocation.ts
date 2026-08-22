@@ -32,6 +32,12 @@ export type NewAssetPlan = {
   purchase_order_line_id: string;
   name_snapshot: string;
   unit_cost: number;
+  // 2026-08-23 fix (section 3): the allocated line total, unrounded by
+  // division. unit_cost stays for the band lookup and for display, but the
+  // depreciation schedule's basis is this figure, not quantity * unit_cost
+  // -- multiplying a rounded per-unit price back up does not reproduce
+  // what was paid.
+  total_cost: number;
   quantity: number;
   term_months: number;
 };
@@ -67,6 +73,7 @@ export function planAssetsFromCompletedOrder(params: {
       purchase_order_line_id: line.lineId,
       name_snapshot: line.itemName,
       unit_cost: unitCost,
+      total_cost: allocatedTotal,
       quantity: line.quantity,
       term_months: band.term_months,
     });

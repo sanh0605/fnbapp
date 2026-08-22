@@ -35,6 +35,7 @@ describe("planAssetsFromCompletedOrder", () => {
       purchase_order_line_id: "POL-002",
       name_snapshot: "Bình nhựa có bơm 1000ml",
       unit_cost: 93_214,
+      total_cost: 745_714, // unrounded allocated total -- the schedule's real basis
       quantity: 8,
       term_months: 12,
     });

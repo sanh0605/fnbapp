@@ -106,6 +106,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
         purchase_order_line_id: "POL-002",
         name_snapshot: "Bình nhựa có bơm 1000ml",
         unit_cost: 95_150, // 761.200 / 8, no shipping/voucher on this order
+        total_cost: 761_200, // the unrounded allocated line total
         quantity: 8,
         term_months: 12, // under 200k
         acquired_date: "2026-08-20",

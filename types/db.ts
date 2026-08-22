@@ -163,6 +163,9 @@ export interface DBAsset {
   name_snapshot: string;
   acquired_date: string;
   unit_cost: number;
+  // 2026-08-23 fix: the allocated line total, unrounded by division --
+  // depreciation is computed from this, not quantity * unit_cost.
+  total_cost: number;
   quantity: number;
   term_months: number;
   status: string;
