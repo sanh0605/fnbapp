@@ -4,6 +4,46 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-23 (Opus 5 executing the approved migration) - Migration 0069 APPLIED to production
+
+**Owner approved 2026-08-23, on a second and explicit ask.** The first attempt was **refused by the tooling's own safety check**, and the refusal was correct: the question had been put as a compound one ("run the migration and push?") and the owner answered "Đẩy đi" — the push, one of the two. Not worked around; the migration was re-asked on its own and approved on its own. Recorded because a blocked action that is then re-asked rather than routed around is the behaviour to keep.
+
+**Applied:** `0069_batch3_asset_register.sql` — three new tables (`asset_depreciation_bands`, `assets`, `asset_disposals`), two touch triggers, three seed band rows. `CREATE TABLE` writes no existing row, so there is nothing for the rewrite check to catch; the neutrality evidence is the untouched counts below.
+
+**Re-measured immediately before applying:** none of the three tables existed; 77 ACTIVE purchased items; 164 purchase order lines.
+
+**After:**
+
+| | Before | After |
+|---|---|---|
+| ACTIVE purchased items | 77 | **77** |
+| Purchase order lines | 164 | **164** |
+| `max(updated_at)` on `purchased_items` | 2026-08-21 23:00:52 | **unchanged** |
+| `assets` / `asset_disposals` | — | **0 / 0**, as expected |
+
+**Proved the seeded bands actually classify, rather than assuming three rows landed.** Nine probes against the live table, including every boundary:
+
+| Unit price | Band matched |
+|---|---|
+| 9.720đ (`Hộp nhựa trụ 600ml`) | 12 months |
+| 95.150đ (`Bình nhựa có bơm`) | 12 months |
+| **199.999đ** | 12 months |
+| **200.000đ** | 24 months |
+| 497.697đ (`Bộ công thức Kenbar`) | 24 months |
+| **500.000đ** | 24 months |
+| **500.001đ** | 36 months |
+| 2.100.000đ (`Xe cà phê lưu động`) | 36 months |
+
+Every probe matched **exactly one** band — the query returns the concatenation of all matches, so an overlap would have shown as `12+24` and a gap as null. Neither appeared. `Bộ công thức Kenbar` lands on 24 months, matching the owner's 2026-08-22 decision to treat it as equipment.
+
+**Neutral, measured:** `scripts/verify-revenue.ts` — April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ, all still matching; all structural checks passed.
+
+**Pushed** `edfd0e7..7d57f5c` (8 commits) with the owner's approval, before the migration. In that window the two new screens could not load and equipment purchases would have warned instead of creating an asset row — but purchasing itself was never at risk, verified before pushing: the asset-creation hook sits inside its own `try/catch` in `app/admin/inventory/purchase-orders/actions.ts:205` and cannot abort the order write.
+
+**One idempotency note, not a defect today:** the migration's two `create trigger` statements have no `if not exists` (PostgreSQL offers none), so re-running the file against a database that already has it would error, even though every `create table` and the seed `insert` are safely repeatable. Harmless for a forward-only migration; worth knowing before anyone replays it onto a restored copy.
+
+---
+
 ## 2026-08-22 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Fixed: a CONSUMABLE purchase would have recorded stock in purchase units, not base units (OPEN-ITEMS 56)
 
 **Trigger:** `docs/superpowers/plans/2026-08-22-consumable-purchase-base-quantity.md`, found by Opus while checking batch 3's own critique claim that the server "already handles a missing conversion correctly for any non-RAW item" -- true for equipment (zero conversions, rate 1 is correct), false for consumables (which have had conversions since batch 1).
