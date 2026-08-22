@@ -29,6 +29,11 @@ type ConversionInput = {
   id: string;
   purchased_item_id?: string;
   purchased_unit?: string;
+  // Deliberately unread by resolveConversion (2026-08-22 fix, OPEN-ITEMS 56):
+  // an old line pointing at a since-deactivated conversion must still
+  // resolve it, matching lib/purchased-item-onhand.ts's C17 spirit. Typed
+  // here only so a real DB row (which does carry this column) type-checks.
+  status?: string;
   conversion_rate?: string | number;
 };
 
@@ -58,8 +63,20 @@ export function buildPurchaseReceipt(input: {
   conversions: ConversionInput[];
 }): PurchaseReceiptBuildResult {
   const purchasedItemId = input.line.purchased_item_id || input.line.item_id || "";
-  const isRaw = Boolean(input.item.base_ingredient_id);
-  const conversion = isRaw
+  // 2026-08-22 fix (OPEN-ITEMS 56): base_ingredient_id ("is this item RAW")
+  // used to be the same question as "does this item have a conversion" --
+  // true until batch 1 gave CONSUMABLE items their own conversions too.
+  // Gated on existence, not on status: an item with a conversion that has
+  // since gone INACTIVE must still resolve it (resolveConversion looks up
+  // without a status filter, same C17 spirit as
+  // lib/purchased-item-onhand.ts), or an old line silently falls back to
+  // rate 1 the moment its conversion is retired. EQUIPMENT items have
+  // literally zero conversion rows -- that absence, not RAW-ness, is the
+  // real discriminator for "this purchase is already in base units."
+  const itemHasAnyConversion = input.conversions.some(
+    candidate => candidate.purchased_item_id === purchasedItemId,
+  );
+  const conversion = itemHasAnyConversion
     ? resolveConversion(input.line, purchasedItemId, input.conversions)
     : null;
 

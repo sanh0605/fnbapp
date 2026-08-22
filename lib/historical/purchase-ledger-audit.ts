@@ -166,7 +166,15 @@ export function auditPurchaseLedger(input: {
     }
 
     const itemReference = item.base_ingredient_id || purchasedItemId;
-    const conversionRate = item.base_ingredient_id ? Number(conversion.conversion.conversion_rate) || 0 : 1;
+    // 2026-08-22 fix (OPEN-ITEMS 56), same stale proxy as
+    // lib/purchase-ledger-rebuild.ts: by the time execution reaches here,
+    // resolveConversion above has already found a real conversion (kind
+    // "resolved" or "safe_backfill" -- "ambiguous"/"missing" already
+    // `continue`d past this line), so its rate applies regardless of
+    // whether the item is RAW. An audit that discards a rate it already
+    // resolved, only for non-RAW items, reports false discrepancies
+    // against the very path this fix corrects.
+    const conversionRate = Number(conversion.conversion.conversion_rate) || 0;
     const quantity = Number(line.quantity) || 0;
     const quantityChange = quantity * conversionRate;
     const landedCost = calculateLineLandedCost(po, line);

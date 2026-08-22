@@ -90,6 +90,29 @@ describe("auditPurchaseLedger", () => {
     ]);
     expect(report.ledgerMismatches).toHaveLength(0);
   });
+
+  // OPEN-ITEMS 56: same stale proxy as lib/purchase-ledger-rebuild.ts. This
+  // audit's own resolveConversion already resolves a CONSUMABLE item's
+  // conversion unconditionally (kind "resolved"/"safe_backfill") -- the bug
+  // was discarding that resolved rate afterward, only for items with no
+  // base_ingredient_id, and forcing 1 instead.
+  it("uses a CONSUMABLE item's own resolved conversion rate, not 1 (OPEN-ITEMS 56)", () => {
+    const report = auditPurchaseLedger({
+      purchaseOrders: [completedPo("PO-001")],
+      purchaseOrderLines: [poLine({ id: "POL-1", po_id: "PO-001", purchased_item_id: "SPM-053", quantity: "2", conversion_id: "QD-BAO" })],
+      purchasedItems: [consumableItem()],
+      conversions: [
+        conversion({ id: "QD-BAO", purchased_item_id: "SPM-053", purchased_unit: "Bao", conversion_rate: "500" }),
+      ],
+      // The real system, once lib/purchase-ledger-rebuild.ts is fixed too,
+      // writes quantity_change 1000 (2 bao * 500 g/bao) -- an audit that
+      // still forced rate 1 here would report a false 998-unit mismatch
+      // against a stock_ledger row that is, in fact, already correct.
+      stockLedger: [ledgerEntry({ reference_id: "PO-001", item_reference: "SPM-053", quantity_change: "1000", unit_cost: "100" })],
+    });
+
+    expect(report.ledgerMismatches).toHaveLength(0);
+  });
 });
 
 function completedPo(id: string) {
@@ -123,6 +146,14 @@ function rawItem() {
     id: "SPM-001",
     name: "Raw item",
     base_ingredient_id: "ING-001",
+  };
+}
+
+function consumableItem() {
+  return {
+    id: "SPM-053",
+    name: "Ống hút nhỏ",
+    // CONSUMABLE: no base_ingredient_id.
   };
 }
 

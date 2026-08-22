@@ -4,6 +4,33 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-22 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Fixed: a CONSUMABLE purchase would have recorded stock in purchase units, not base units (OPEN-ITEMS 56)
+
+**Trigger:** `docs/superpowers/plans/2026-08-22-consumable-purchase-base-quantity.md`, found by Opus while checking batch 3's own critique claim that the server "already handles a missing conversion correctly for any non-RAW item" -- true for equipment (zero conversions, rate 1 is correct), false for consumables (which have had conversions since batch 1).
+
+**Critique before coding, per CLAUDE.md section 1 -- clean, both named claims verified true:**
+- Section 3's gate choice (existence, not `status`): confirmed `resolveConversion` filters by neither status nor `.some()`'s own existence check, so gating on existence rather than ACTIVE-only is correct -- filtering to ACTIVE would silently reintroduce the same bug the moment a consumable's only conversion is later deactivated.
+- Section 4's "all 164 lines are RAW": queried production directly (`purchase_order_lines` joined through `purchased_items`/`item_categories`) -- 164 RAW, 164 total, exact match, no orphans excluded by the join.
+- Spot-checked all three RAW worked examples in section 2 against live data (`Sữa tươi Mlekovita`, `Trân châu trắng Bibi`, `Bột cà phê truyền thống Phin Đậm`) -- exact matches.
+- Checked for a third stale-proxy site beyond the two the plan named (broad grep for `base_ingredient_id ?` and `isRaw =` shapes across `lib/` and `app/`) -- found none; confirms the plan's own "check whether other callers exist" instruction rather than trusting it.
+
+**Fixed, exactly as specified, two sites:** `lib/purchase-ledger-rebuild.ts`'s `buildPurchaseReceipt` (the live write path) and `lib/historical/purchase-ledger-audit.ts`'s per-line grouping (the audit that checks it) -- both gated on whether the item's conversions array actually contains a row for it, not on `base_ingredient_id`.
+
+**Found during implementation, not anticipated by the plan:** fixing the gate broke one pre-existing test (`rejects a conversion_id from another purchased item`) -- its fixture supplied a conversion only for a *different* item, which was irrelevant to the old RAW-only gate but now (correctly) reads as "this item has no conversion of its own" under the new one. Fixed the fixture to include the item's own real conversion alongside the mismatched one, restoring the test's actual intent (catch a conversion_id belonging to another item) rather than weakening the assertion.
+
+**Verification, per section 4:**
+- **Neutrality proven empirically, not by argument:** wrote a script replaying `buildPurchaseReceipt` over every real `purchase_order_line`, ran it with the fix applied and with it stashed, diffed the two outputs byte-for-byte. **164 compared, 0 differed.**
+- **New tests proven to fail for the right reason, not because a symbol was missing:** stashed each fix in turn, ran the new tests, confirmed the exact wrong values the plan predicted (`quantity_change: 2`, matching "buy 2 Bao -> base_quantity stored as 2" from the plan's own worked example, not 1000), restored, confirmed all pass.
+- Equipment (zero conversions -> rate 1) and RAW (including a line pointing at a now-INACTIVE conversion) both proven unchanged by new tests covering exactly those cases.
+- `scripts/verify-revenue.ts`: all four closed months unchanged (purchases are not revenue).
+- No migration, no data change -- both consumables and equipment still have 0 purchase lines in production.
+
+**Gates run, all green:** `npx tsc --noEmit` (0 errors), `npx vitest run` (194 files, 1309 tests, up from 1304), `npx vite-node scripts/check-rules-current.ts` (3/3 pass), `npm run build` (compiled), `npx vite-node scripts/verify-revenue.ts` (unchanged).
+
+**`BR-COGS-006` amended** with a note on this second, separate bug (the allocation rule itself was never wrong; only whether a consumable's conversion was resolved at all). **OPEN-ITEMS 56 closed.**
+
+---
+
 ## 2026-08-22 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 3: asset register and depreciation (BR-COGS-008)
 
 **Trigger:** `docs/superpowers/plans/2026-08-22-batch-3-asset-register.md`, implementing batch 3 of `docs/superpowers/plans/2026-08-17-expenses-and-pnl.md` §10.
