@@ -406,6 +406,24 @@ Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, 
 
 **`units` and `item_categories` carry level 1 only, deliberately.** Neither accumulates its own stock or purchase history — they are labels referenced by other rows, not things bought, counted, or sold, so a near-duplicate there is cosmetic dropdown confusion, not the split-ledger harm level 2 exists to catch. Both populations are also small and do not grow under shelf-pressure (`item_categories` has held exactly 3 rows since 2026-06-28; a new unit is a rare, deliberate, admin-time event). Level 1 already covers the only collision risk either table has ever actually produced.
 
+### BR-COGS-008 — Equipment is depreciated straight-line, banded by its own unit price, frozen at purchase
+
+**Status:** `APPROVED` — owner decisions 2026-08-19/22 (`docs/superpowers/plans/2026-08-17-expenses-and-pnl.md` §8, `docs/superpowers/plans/2026-08-22-batch-3-asset-register.md`).
+
+**No minimum threshold.** *"cái nào cứ cầm nắm để sử dụng được thì đều phải có tính khấu hao"* — everything purchased under an `EQUIPMENT` category is depreciated; there is no expense-it-outright tier.
+
+**Term bands are chosen by unit price, not line total** (owner 2026-08-22: *"Anh cũng nghiêng về giá một cái"*) — eight identical pumps bought on one line at 95.150đ each are eight small 12-month assets, not one 761.200đ 36-month asset. Bands live in `asset_depreciation_bands` (editable in a screen, `/admin/inventory/asset-bands` — `CLAUDE.md` §8's rule that a flexible thing without a screen is a hardcoded thing wearing a table), seeded at under 200k → 12 months, 200k–500k → 24, above 500k → 36 (Vietnamese CCDC practice caps allocation at 36 months).
+
+**The term is frozen at the moment an asset is created, never re-derived.** *"anh chỉ thay đổi luật chứ không đồng nghĩa luật đó phải áp dụng lại cho tất cả những gì đã được áp dụng trước đó."* Editing a band's term or boundaries affects only assets created after the edit; `assets.term_months` is a stored value, not a live lookup.
+
+**The register answers "what does the shop own," not "what still has value."** An asset whose term has ended stays listed at 0đ; only marking it broken or disposed (`asset_disposals`, insert-only, never a delete or a downward mutation of `assets.quantity`) removes it from what is owned, charging whatever value remained to that month.
+
+**One row per purchase line, not per physical unit.** Eight pumps bought together share a price, a date and a term; partial disposal is handled by `quantity` on the asset minus the sum of its disposals, not by giving each physical unit its own identity. `lib/asset-depreciation.ts`'s schedule builder settles each disposal's own cohort of units exactly (the remaining undepreciated value of exactly the disposed units, computed from first principles each time), so the schedule sums to cost exactly regardless of how many separate disposals one asset accumulates.
+
+**Purchasing an equipment item creates the asset automatically.** Completing a NEW purchase order with an `EQUIPMENT`-category line inserts the corresponding `assets` row, `unit_cost` taken from the same `allocatePurchaseOrderCost` allocation the COGS report uses (BR-COGS-006) — never recomputed independently. **Known limitation:** editing an already-completed purchase order does not touch any asset it already created; what should happen there is unaddressed by the plan and left for a future decision rather than guessed at.
+
+**Not yet consumed anywhere.** The monthly charge this rule computes feeds no P&L line yet — that is batch 4/5's job. This rule governs the register and the schedule only.
+
 ## Unresolved items
 
 | ID | Status | Decision needed | Current safe statement |

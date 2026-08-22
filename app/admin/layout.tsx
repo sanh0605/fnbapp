@@ -34,6 +34,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Điều chỉnh Tồn kho", href: "/admin/inventory/stock-adjustments" },
         { name: "Kiểm Kê Định Kỳ", href: "/admin/inventory/stocktake" },
         { name: "Phiếu Xuất Kho", href: "/admin/inventory/issue-slips" },
+        { name: "Sổ Tài Sản", href: "/admin/inventory/assets" },
+        { name: "Bảng Thời Hạn Khấu Hao", href: "/admin/inventory/asset-bands" },
       ]
     },
     {

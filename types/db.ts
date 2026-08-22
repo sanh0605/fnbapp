@@ -145,6 +145,42 @@ export interface DBPurchasedItem {
   is_non_inventory: boolean;
 }
 
+// Batch 3 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md).
+export interface DBAssetDepreciationBand {
+  id: string;
+  min_unit_price: number;
+  max_unit_price: number | null;
+  term_months: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DBAsset {
+  id: string;
+  purchased_item_id: string;
+  purchase_order_line_id: string | null;
+  name_snapshot: string;
+  acquired_date: string;
+  unit_cost: number;
+  quantity: number;
+  term_months: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DBAssetDisposal {
+  id: string;
+  asset_id: string;
+  quantity: number;
+  disposed_date: string;
+  reason: string;
+  created_by_id: string;
+  created_by_name: string;
+  created_at: string;
+}
+
 export interface DBUOMConversion {
   id: string;
   purchased_item_id: string;

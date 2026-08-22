@@ -3,11 +3,13 @@
 import { findAll, findById, insert, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
-import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem } from "@/types/db";
+import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";
 import { savePurchaseOrderAtomic } from "@/lib/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth";
 import type { RawPurchaseOrderLine } from "@/lib/item-purchase-history";
+import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/asset-purchase-allocation";
+import type { Band } from "@/lib/asset-depreciation";
 
 const PATH = "/admin/inventory/purchase-orders";
 
@@ -82,9 +84,10 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     }
 
     const total_amount = subtotal_amount + shipping_fee + tax_amount - voucher_amount - discount_amount;
-    const [purchasedItems, conversions] = await Promise.all([
+    const [purchasedItems, conversions, itemCategories] = await Promise.all([
       findAll("Purchased_Items"),
       findAll("UOM_Conversions"),
+      findAll("Item_Categories"),
     ]);
 
     // Purchase orders have no edit history (unlike sales orders' order_events).
@@ -135,6 +138,82 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     });
     const po_id = saved.purchaseOrderId;
 
+    // Batch 3, section 3.2 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md):
+    // completing a NEW purchase order with an EQUIPMENT line creates the
+    // corresponding assets row. purchase_order_line_id (nullable) plus the
+    // complete absence of any "add asset" screen anywhere in the plan's
+    // own section 5 are the only two things that say how an asset is ever
+    // created -- this is the mechanism, inferred rather than stated
+    // outright; flagged as such in the handoff.
+    //
+    // Deliberately scoped to a brand-new order only (!id): what should
+    // happen to an already-created asset if its source purchase order is
+    // later EDITED is not addressed anywhere in the plan, and silently
+    // re-deriving or overwriting a depreciation record on every PO edit
+    // risks corrupting term_months' freeze (section 9.1) or a disposal
+    // history that already exists on that asset. Left as a known
+    // limitation rather than guessed at.
+    let assetWarning: string | undefined;
+    if (!id && status === "COMPLETED") {
+      try {
+        const equipmentCategoryIds = new Set(
+          (itemCategories as DBItemCategory[])
+            .filter(c => c.system_type === "EQUIPMENT")
+            .map(c => c.id),
+        );
+        const purchasedItemById = new Map((purchasedItems as any[]).map(p => [p.id, p]));
+        const equipmentLines: EquipmentPurchaseLine[] = writePlan.lines
+          .filter((line: any) => {
+            const item = purchasedItemById.get(line.purchased_item_id);
+            return item && equipmentCategoryIds.has(item.item_category_id);
+          })
+          .map((line: any) => {
+            const item = purchasedItemById.get(line.purchased_item_id);
+            return {
+              lineId: line.id as string,
+              purchasedItemId: line.purchased_item_id as string,
+              itemName: item?.name || line.purchased_item_id,
+              subtotal: Number(line.subtotal),
+              quantity: Number(line.quantity),
+            };
+          });
+
+        if (equipmentLines.length > 0) {
+          const bands = (await findAll("asset_depreciation_bands")) as unknown as Band[];
+          const assetPlans = planAssetsFromCompletedOrder({
+            allLines: writePlan.lines.map((line: any) => ({ lineId: line.id as string, subtotal: Number(line.subtotal) })),
+            equipmentLines,
+            additions: shipping_fee + tax_amount,
+            subtractions: voucher_amount + discount_amount,
+            bands,
+          });
+          for (const plan of assetPlans) {
+            const assetId = await generateNewId("assets", "TS");
+            await insert("assets", {
+              id: assetId,
+              purchased_item_id: plan.purchased_item_id,
+              purchase_order_line_id: plan.purchase_order_line_id,
+              name_snapshot: plan.name_snapshot,
+              acquired_date: effectiveDate.slice(0, 10),
+              unit_cost: plan.unit_cost,
+              quantity: plan.quantity,
+              term_months: plan.term_months,
+            });
+          }
+          revalidatePath("/admin/inventory/assets");
+        }
+      } catch (assetError: unknown) {
+        // The PO itself already committed -- do not report the whole save
+        // as failed for this (same reasoning as the edit-trail write
+        // below). Surfaced as a warning instead of swallowed silently,
+        // since an un-created asset means real equipment goes untracked.
+        console.error("Asset creation failed (purchase order already saved):", assetError);
+        assetWarning = assetError instanceof Error
+          ? assetError.message
+          : "Không tạo được tài sản cho dụng cụ trong đơn này";
+      }
+    }
+
     if (id && previousPo) {
       // The atomic save has already committed at this point. The edit trail is
       // observability, not correctness -- a failure here must never be reported
@@ -163,7 +242,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     revalidateTag("sheets-Stock_Ledger");
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
-    return ok({ po_id });
+    return ok({ po_id, ...(assetWarning ? { assetWarning } : {}) });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return fail(message);

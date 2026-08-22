@@ -12,6 +12,34 @@ import { formatNumber } from "@/lib/format";
 import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBBaseIngredient, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
 import { alert, confirm } from "@/lib/dialog";
 
+// Batch 3 fix, 2026-08-22 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md,
+// found while critiquing section 6's reconciliation, which needs equipment
+// purchase orders to be completable at all): a Dụng cụ (EQUIPMENT) item
+// structurally has no UOM_Conversions row (batch 1 item B section B3 --
+// equipment gets no conversion-rows UI, unlike RAW/CONSUMABLE, which are
+// validated at entry to always carry at least one). Requiring conversion_id
+// unconditionally meant no EQUIPMENT line could ever be completed: the
+// dropdown had nothing to offer, so conversion_id could never become
+// truthy. The server (lib/purchase-ledger-rebuild.ts's buildPurchaseReceipt)
+// already handles a missing conversion correctly for any non-RAW item --
+// this only relaxes the requirement, and only when the item has zero
+// conversions to choose from in the first place; RAW/CONSUMABLE items,
+// which always have at least one, are completely unaffected. Extracted as
+// a pure function (matching PurchasedItemForm.tsx's buildConversionSubmission)
+// rather than tested through this large component's render tree.
+export function validatePurchaseOrderLine(
+  line: { purchased_item_id?: string; unit?: string; conversion_id?: string },
+  conversions: Array<{ purchased_item_id?: string; status?: string }>,
+): string | null {
+  if (!line.purchased_item_id) return "Vui lòng chọn hàng hoá";
+  if (!line.unit) return "Vui lòng nhập hoặc chọn đơn vị";
+  const availableUnitsForLine = conversions.filter(
+    c => c.purchased_item_id === line.purchased_item_id && c.status !== "INACTIVE",
+  );
+  if (availableUnitsForLine.length > 0 && !line.conversion_id) return "Vui lòng chọn đơn vị";
+  return null;
+}
+
 interface PurchaseOrderFormProps {
   suppliers: DBSupplier[];
   sources: DBPurchaseSource[];
@@ -155,10 +183,8 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
       // Validation
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line.purchased_item_id) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: Vui lòng chọn hàng hoá`, variant: "warning" });
-        if (!line.unit) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: Vui lòng nhập hoặc chọn đơn vị`, variant: "warning" });
-        if (!line.conversion_id) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: Vui lòng chọn đơn vị`, variant: "warning" });
+        const lineError = validatePurchaseOrderLine(lines[i], conversions);
+        if (lineError) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: ${lineError}`, variant: "warning" });
       }
     }
 

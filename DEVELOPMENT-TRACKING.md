@@ -4,6 +4,39 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-22 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Batch 3: asset register and depreciation (BR-COGS-008)
+
+**Trigger:** `docs/superpowers/plans/2026-08-22-batch-3-asset-register.md`, implementing batch 3 of `docs/superpowers/plans/2026-08-17-expenses-and-pnl.md` §10.
+
+**Critique before coding, per CLAUDE.md section 1 -- not clean, three real findings:**
+1. **Blocking:** §1's "purchasing is the existing flow" premise was false for equipment. `PurchaseOrderForm.tsx` required `conversion_id` on every line unconditionally; EQUIPMENT items structurally have zero conversions (batch 1 item B section B3), so no equipment purchase order could ever be completed -- meaning §6's own reconciliation, and the data entry §8 defers to "after this ships," were both unreachable as written. Server side already handled it correctly (`buildPurchaseReceipt`'s `isRaw` branch); only the client blocked it. Fixed as part of this batch (OPEN-ITEMS 52, closed same day) -- relaxed the requirement only when an item has zero available conversions to choose from, extracted as `validatePurchaseOrderLine`, tested directly; RAW/CONSUMABLE unaffected.
+2. **Verified correct, not a defect:** §3.2's per-line-not-per-unit design. Traced the math through a partial-disposal, multi-event case by hand (not in any worked example) using a "cohort" algorithm -- each disposal event settles its own group of units exactly, so the schedule sums to cost regardless of how many disposals one asset accumulates. Confirmed §4's own worked example 2 numbers exactly (37.500đ month-3 charge) as a by-product of the general algorithm, not a special case for it.
+3. **Minor:** §4's worked-example prose states each month at a flat rounded figure (e.g. "63.433đ/month") without showing where "the final month absorbs the remainder" actually lands the leftover đồng -- the literal schedule's last month is 63.437đ (example 1) / 58.345đ (example 3), not 63.433đ/58.333đ as the prose reads. The rule itself is unambiguous and implemented exactly; only the illustrative numbers gloss over it.
+
+**Also found, not part of this batch's scope, recorded as new open items:** two different, undocumented-as-such cost-allocation methods exist in this codebase (`allocatePurchaseOrderCost`, the one `BR-COGS-006` actually names, vs. `calculateLineLandedCost`, which writes every `stock_ledger.unit_cost` and appears unread by any report per CLAUDE.md section 7) -- OPEN-ITEMS 54. A pre-existing timezone-ambiguous date round-trip in `purchase-orders/actions.ts`, confirmed reachable (shifted a test's date by a day on this machine's own local timezone) -- OPEN-ITEMS 55. What happens to an asset if its source purchase order is later edited, unaddressed by the plan -- OPEN-ITEMS 53.
+
+**Implemented, per section 3, exactly as specified:**
+- Migration `0069_batch3_asset_register.sql`: three new tables (`asset_depreciation_bands` seeded with the three owner-decided bands, `assets`, `asset_disposals`), all CREATE TABLE (no existing row of any table touched). Dry-run verified in a rolled-back transaction: seed rows land correctly, tables gone after rollback. **Not applied to production.**
+- `lib/asset-depreciation.ts`: pure schedule builder (cohort-based, exact sum-to-cost), band lookup, band validation (no gap, no overlap, Vietnamese refusal naming the colliding band), and `summarizeAsset` (the "còn dùng / đã hết khấu hao / đã thanh lý" bucket, taking the current month as an explicit parameter rather than reading the clock, so it is testable independent of when the suite runs).
+- `lib/asset-purchase-allocation.ts`: bands an equipment line's unit price using the order-wide `allocatePurchaseOrderCost` allocation (BR-COGS-006's actual implementation), never re-derived.
+- `/admin/inventory/asset-bands`: band editor (phone-only, per section 5 and CLAUDE.md section 8's 2026-08-17 addendum -- no desktop pass for this batch).
+- `/admin/inventory/assets`: the register, one card per asset, filter tabs by bucket, disposal action that previews the exact charge before confirming (section 5.2).
+- Completing a NEW purchase order with an EQUIPMENT line now auto-creates the corresponding `assets` row (inferred from `purchase_order_line_id` being nullable and no "add asset" screen existing anywhere in section 5 -- documented as an inference, not a stated instruction). Scoped to new orders only, per finding 3 above.
+
+**Verification, per section 6:**
+- Every worked example (1, 2, 3) reproduced exactly, including the literal per-month rounding the prose glosses over.
+- Sum-to-cost proven across all three bands plus deliberately non-round costs (`unit_cost=1, quantity=7` -- does not divide evenly at all).
+- Band-freeze proven: `term_months` is stored on the asset row, never re-derived from the band table at read time -- `buildAssetSchedule` structurally cannot re-derive it, since it only ever receives `term_months` as an already-given input.
+- The purchase-order-form fix's tests proven to fail against the pre-fix code (stashed the fix, ran, confirmed `TypeError: validatePurchaseOrderLine is not a function`, restored, confirmed pass).
+- `scripts/verify-revenue.ts`: all four closed months unchanged.
+- Migration triggers checked before writing (none exist yet on brand-new tables); "no row rewritten" is vacuous for CREATE TABLE, noted as such rather than mechanically claimed.
+
+**Gates run, all green:** `npx tsc --noEmit` (0 errors), `npx vitest run` (194 files, 1304 tests, up from 1247), `npx vite-node scripts/check-rules-current.ts` (3/3 pass), `npm run build` (compiled, both new routes present), `npx vite-node scripts/verify-revenue.ts` (unchanged).
+
+**Not done, by design (section 8):** entering the 72 items or 63 purchase orders (data entry, blocked until now by OPEN-ITEMS 52, now unblocked); the expense subsystem (batch 4); the P&L itself (batch 5) -- `BR-COGS-008` explicitly notes the monthly charge feeds no report yet. Migration written, ready, unapplied.
+
+---
+
 ## 2026-08-21 (Owner entering, Opus 5 verifying) - Plan J batch 2 data entry COMPLETE: 25 consumables
 
 **Owner entered all of them himself**, by his own decision 2026-08-21 (*"anh nên nhập liệu trước đã do anh cũng đã có sẵn thông tin trên sản phẩm rồi"*) — no import script was written, and none is needed.
