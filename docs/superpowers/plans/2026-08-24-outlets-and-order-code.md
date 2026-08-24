@@ -40,10 +40,10 @@ selection has to be manual for now. Shape it as the spec's *manager* path — a
 picker over outlets — so that when tickets arrive they add automatic resolution
 in front of it rather than replacing it.
 
-**Not included, and the owner should confirm:** the per-outlet sales table he
-asked for on 2026-08-24 is **not** among the three objectives he listed on
-2026-08-25. It is cheap once `outlet_id` exists on every order, but it is not
-built here without a word from him.
+**A fourth objective, confirmed by the owner 2026-08-25:** the sales report
+gains a per-outlet breakdown (§6b). He asked for it on 2026-08-24, it was left
+out of the three objectives he restated, and he confirmed it back in when asked
+rather than having it added silently.
 
 ## 2. What the data says, measured 2026-08-25
 
@@ -61,10 +61,25 @@ built here without a word from him.
 version 1 `SUPERSEDED`, version 2 `COMPLETED`, version 2 `VOIDED`. The rename
 must therefore operate **per code**, never per row.
 
-**The zero-spanning-days result is a fact about today, not a guarantee.** Edit
-an order the morning after and its versions straddle two dates. So the new code
-must be derived from the **earliest row of the chain**, which is correct in both
-worlds — not because the case bites now, but because it silently will.
+**The zero-spanning-days result is a guarantee, not luck — corrected
+2026-08-25 after the owner asked whether a date inside the code could drift.**
+An edited order **copies the original `created_at`** to the millisecond:
+`PHD000632`'s three rows all read `2026-06-25 08:16:00.189`. It is deliberate
+and guarded — `lib/order-edit-cart.ts:5` documents *"created_at =
+original.created_at (preserves sale time)"* and
+`lib/order-edit-cart.test.ts:36` is a test named *"preserves created_at from
+original order"*.
+
+**So the date in the code cannot disagree with the date in the report**, because
+`scripts/verify-revenue-core.ts:199` buckets revenue by that same
+`orders_v2.created_at`. Edit yesterday's order today and both still say
+yesterday.
+
+An earlier draft of this section claimed the case "silently will" bite. That was
+wrong: it cannot arise while the sale time is frozen. The rule below — derive
+from the **earliest row of the chain** — is kept anyway as a second lock, since
+it costs nothing and keeps the rename correct if that invariant is ever
+abandoned.
 
 ## 3. Data model
 
@@ -174,6 +189,23 @@ thương hiệu đó."*
 
 Everything that reports by brand keeps working untouched, which is what the
 owner's standing instruction about preserving revenue requires.
+
+## 6b. Objective 4 — a per-outlet table on the sales report
+
+`app/admin/reports/sales` gains a breakdown by outlet, alongside what it shows
+today. Because §3.2's backfill labels every historical order, it covers the full
+history from **2026-04-20**, not only from the switchover — the owner does not
+have to wait for data to accumulate.
+
+**Phone first** (`CLAUDE.md` §8): one card per outlet, not a wide table. Show
+the outlet's name, its order count and its revenue for the period the report is
+already showing; do not invent a second date filter.
+
+**The check that can fail:** the per-outlet revenue figures must **sum** to the
+report's existing total for the same period, and to the frozen monthly figures
+`scripts/verify-revenue.ts` gates. Report the number of orders covered next to
+the totals — a breakdown that quietly drops orders with no outlet would
+otherwise look right.
 
 ## 7. Verification beyond §4
 
