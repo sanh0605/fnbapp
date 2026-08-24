@@ -12,7 +12,7 @@ vi.mock("@/lib/sheets_db", () => ({
 import { insert, insertMany, removeMany } from "@/lib/sheets_db";
 
 const order: OrderV2 = {
-  id: "ord-1", order_no: "UCK001", brand_id: "BR-002", status: "COMPLETED", version: 1,
+  id: "ord-1", order_no: "UCK001", brand_id: "BR-002", outlet_id: "OUT-002", status: "COMPLETED", version: 1,
   parent_order_id: "", superseded_by: "",
   created_at: "2026-06-18T00:00:00Z", created_by_id: "U1", created_by_name: "Test",
   completed_at: "2026-06-18T00:00:00Z",

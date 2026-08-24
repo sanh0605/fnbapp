@@ -4,6 +4,83 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Outlets thin slice: order-code rename script, till-by-outlet, brand-follows-outlet, sales report breakdown (built, not applied)
+
+**Critique before coding, per CLAUDE.md section 1.** Read the spec
+(`docs/superpowers/specs/2026-07-28-multi-outlet-design.md`) and the plan
+(`docs/superpowers/plans/2026-08-24-outlets-and-order-code.md`) before writing
+anything, then verified the plan's two load-bearing claims against production
+rather than trusting the prose:
+
+- **Per-code, not per-row rename.** Confirmed `orders_v2` is 2.355 rows /
+  2.339 distinct `order_no`, 15 codes shared across rows, 0 chains spanning
+  two calendar days or two brands. Pulled `PHD000632`'s real 3-row chain
+  (v1 SUPERSEDED, v2 COMPLETED, v2 VOIDED) and confirmed all three rows carry
+  byte-identical `created_at`.
+- **Sale time frozen across edits.** Read `lib/order-edit-cart.ts` and its
+  test directly — `created_at: original.order.created_at` and a test named
+  exactly that. `void_order_atomic` `UPDATE`s in place, never inserts a row.
+
+Review came back clean on both points — reported to Opus as such, not
+silently assumed.
+
+**Built, none of it applied or pushed (owner's separate approval per plan
+section 8 and CLAUDE.md section 2):**
+
+- `supabase/migrations/0071_outlets.sql` — `outlets` table (seeds `OUT-001`/
+  `OUT-002`, codes `001`/`002`, linked to `BR-001`/`BR-002`), plus nullable
+  `orders_v2.outlet_id` and `legacy_order_no`.
+- `lib/order-code.ts` + 9 tests — the per-code rename logic: groups by
+  `order_no`, dates in `Asia/Ho_Chi_Minh`, sequences per (outlet, date),
+  idempotent by construction (a second pass yields `changed: false`
+  everywhere). Verified against real `orders_v2` data read-only, reproducing
+  the plan's own numbers exactly and moving `PHD000632`'s three rows to one
+  new code together.
+- `scripts/backfill-outlet-and-rename-orders.ts` — dry-run by default,
+  `--apply` writes `outlet_id`/`order_no`/`legacy_order_no`, re-reads after
+  and asserts zero legacy-format rows remain and every old code maps to
+  exactly one new one. Not run — the table it depends on does not exist yet.
+- `supabase/migrations/0072_outlet_order_no_minting.sql` — tightens
+  `outlet_id` to `NOT NULL`, swaps the unique index from `(brand_id,
+  order_no)` to `(order_no)` alone, replaces `create_pos_order_atomic_
+  unvalidated_0024` with `_0025` (outlet+date-keyed advisory lock and
+  sequence). Verified end-to-end in one rolled-back transaction (0071 + a
+  real backfill simulation + 0072 + two live RPC calls minting
+  `260825001001` then `...002`), then independently confirmed the rollback
+  left production untouched. Separately proved the advisory lock under 40
+  genuinely concurrent requests (throwaway table, dropped after) — 40
+  unique, contiguous codes, zero collisions, per the plan's own demand to
+  prove this "against the real advisory lock, not by argument."
+- **Till opens by outlet, brand resolved server-side.** `app/admin/layout.tsx`'s
+  POS modal now lists outlets (`app/admin/outlets/actions.ts`, new); it
+  pushes `/pos?outletId=...`. `app/pos/page.tsx` resolves the outlet
+  server-side and derives `brand_id` from it — a `brandId` in the URL is
+  never read. `app/pos/actions.ts`'s `submitOrderV2` re-resolves the outlet
+  itself and overwrites whatever `brand_id` the client sent before building
+  the order, so the brand can't be forged client-side either.
+- **`outlet_id` threaded end-to-end**: `CartInput`, `OrderV2`,
+  `lib/order-cart.ts`, `lib/pos-order-transaction.ts` (`brandCode` renamed
+  `outletCode`), `components/POSScreen.tsx`. `lib/order-edit-cart.ts`
+  preserves the original order's `outlet_id` across edits, mirroring how it
+  already preserves `created_at`.
+- **Sales report per-outlet breakdown** (`app/admin/reports/actions.ts`'s
+  `getSalesDataV2`, `app/admin/reports/sales/page.tsx`) — phone-first cards,
+  not a table. Orders with no `outlet_id` (pre-backfill history) land in an
+  explicit "Chưa gắn điểm bán" bucket instead of being dropped; a test
+  asserts the buckets sum to the report's own total revenue and order count.
+
+**Gates:** `tsc` 0 errors. `vitest` 197 files / **1.344** passing (added 46:
+outlet resolution, `getOutlets`, order-edit outlet preservation, outlet
+breakdown sum-check). `check-rules-current` clean. `npm run build` succeeds.
+`scripts/verify-revenue.ts` — April/May/June/July all still match; confirms
+nothing in production moved, as expected since nothing was applied.
+
+**Left for the owner:** apply 0071, run the backfill script with `--apply`
+and review its printed counts, apply 0072, then push — each its own
+approval, in that order (0072 before the backfill breaks minting).
+
+---
+
 ## 2026-08-23 (Opus 5 executing the approved migration) - Migration 0070 APPLIED and pushed
 
 **Owner approved 2026-08-23.** Applied `0070_asset_band_bounds_and_total_cost.sql`, then pushed `7d57f5c..4610e15`.

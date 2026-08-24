@@ -8,7 +8,11 @@ export type PosOrderPaymentInput = {
 };
 
 export type PosOrderAtomicInput = {
-  brandCode: string;
+  // 2026-08-25 (docs/superpowers/plans/2026-08-24-outlets-and-order-code.md
+  // section 4/objective 1): order numbers are now minted per outlet+date,
+  // not per brand -- outletCode replaces brandCode as the RPC's locking
+  // and sequencing key.
+  outletCode: string;
   order: object;
   lines: object[];
   event: object;
@@ -37,7 +41,7 @@ export async function savePosOrderAtomic(
   const clientRequestId = normalizeClientRequestId(input.clientRequestId);
   const payments = input.payments ?? [];
   const rpcArgs: Record<string, unknown> = {
-    p_brand_code: input.brandCode,
+    p_outlet_code: input.outletCode,
     p_order: parseJsonColumns(input.order, [
       "applied_promotion_snapshot_json",
       "pos_snapshot_json",

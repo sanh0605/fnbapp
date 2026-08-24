@@ -15,6 +15,7 @@ process.env.CLI_MODE = "true";
 const APPLY = process.argv.includes("--apply");
 
 const TEST_BRAND_ID = "BR-001";
+const TEST_OUTLET_ID = "OUT-001"; // seeded by 0071_outlets.sql, brand_id BR-001
 const TEST_PRODUCT_ID = "PROD-001";
 const TEST_VARIANT_ID = "VAR-001";
 const TEST_SEMI_PRODUCT_ID = "BTP-009";
@@ -68,6 +69,7 @@ async function apply(): Promise<void> {
 
   const cart = {
     brand_id: TEST_BRAND_ID,
+    outlet_id: TEST_OUTLET_ID,
     items: [
       {
         product_id: TEST_PRODUCT_ID,

@@ -89,6 +89,11 @@ export function buildEditedOrderFromCart(
     version: original.order.version + 1,
     parent_order_id: rootId,
     created_at: original.order.created_at, // preserve sale time
+    // 2026-08-25: preserve outlet_id the same way -- an admin editing an
+    // order from /admin/orders has no "current outlet" of their own, so
+    // without this it would silently blank out on every edit. Sale-time
+    // facts (where and when) do not move on edit.
+    outlet_id: original.order.outlet_id,
     completed_at: original.order.completed_at,
     // created_by_* reflects the editor (who made this version), not original cashier
   };

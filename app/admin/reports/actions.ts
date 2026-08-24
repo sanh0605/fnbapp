@@ -315,6 +315,11 @@ export interface SalesReportResult {
   salesByMonth: Array<{ label: string; amount: number }>;
   salesByDayOfWeek: Array<{ label: string; amount: number }>;
   salesByHour: Array<{ label: string; amount: number }>;
+  // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 6b.
+  // Sums to totalRevenue/totalOrders for the same period -- orders with no
+  // outlet_id (pre-backfill history) land under outlet_id: "" rather than
+  // being dropped silently.
+  outletBreakdown: Array<{ outlet_id: string; name: string; orderCount: number; revenue: number }>;
   // Reconciliation indicator
   v2OrderCount: number;
 }
@@ -326,7 +331,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const orders = await findCompletedOrders(queryDateRange, filters);
-    const [orderLines, orderPayments, modifiers, products] = await Promise.all([
+    const [orderLines, orderPayments, modifiers, products, outlets] = await Promise.all([
       findAllWhereInBatches(
         "Order_Lines_V2",
         "order_id",
@@ -339,6 +344,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       ),
       findAll("Modifiers"),
       findAll("Products"),
+      findAll("Outlets"),
     ]);
 
     // Standalone topping products (category_id=CAT-007) mapped to their linked
@@ -535,6 +541,33 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       byHour.set(hour, (byHour.get(hour) || 0) + rev);
     }
 
+    // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 6b.
+    // Same order set and per-order revenue as the time series above, so this
+    // sums to totalRevenue/totalOrders for the same period. Orders with no
+    // outlet_id (pre-backfill history) are kept under key "" rather than
+    // dropped, so the sum-check catches a bug instead of hiding one.
+    const outletNameById = new Map<string, string>(
+      (outlets as any[]).map(o => [String(o.id), String(o.name)]),
+    );
+    const outletBuckets = new Map<string, { orderCount: number; revenue: number }>();
+    for (const o of timeSeriesOrders) {
+      const rev = categoryId
+        ? typedLines.filter(l => l.order_id === o.id).reduce((s, l) => s + l.net_line_total, 0)
+        : o.net_total;
+      const outletId = o.outlet_id || "";
+      if (!outletBuckets.has(outletId)) outletBuckets.set(outletId, { orderCount: 0, revenue: 0 });
+      const bucket = outletBuckets.get(outletId)!;
+      bucket.orderCount += 1;
+      bucket.revenue += rev;
+    }
+    const outletBreakdown = Array.from(outletBuckets.entries())
+      .map(([outlet_id, v]) => ({
+        outlet_id,
+        name: outlet_id ? (outletNameById.get(outlet_id) || outlet_id) : "Chưa gắn điểm bán",
+        ...v,
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+
     const sortMap = (m: Map<string, number>) =>
       Array.from(m.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => a.label.localeCompare(b.label));
 
@@ -563,6 +596,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       salesByMonth: sortMap(byMonth),
       salesByDayOfWeek,
       salesByHour: sortMap(byHour),
+      outletBreakdown,
       v2OrderCount: typedOrders.length,
     };
   } catch (err: any) {
@@ -574,6 +608,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       bestSellers: [], bestToppings: [],
       uniqueSizes: [], totalQtyBySize: {}, totalQtyAll: 0,
       salesByDate: [], salesByMonth: [], salesByDayOfWeek: [], salesByHour: [],
+      outletBreakdown: [],
       v2OrderCount: 0,
     };
   }

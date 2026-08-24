@@ -175,6 +175,11 @@ export default function OrderEditModal({
 
     const cartInput: CartInput = {
       brand_id: order.brand_id,
+      // Ignored by buildEditedOrderFromCart, which always preserves the
+      // original order's own outlet_id -- present only to satisfy
+      // CartInput's shape (an admin editing an order has no "current
+      // outlet" of their own to supply here).
+      outlet_id: (order as any).outlet_id || "",
       items: items.map(item => {
         let manualItemValue = item.discount_amount;
         let manualItemType: "VND" | "PERCENT" = item.discount_type === "PERCENT" ? "PERCENT" : "VND";

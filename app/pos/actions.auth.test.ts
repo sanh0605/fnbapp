@@ -58,6 +58,7 @@ describe("POS action authentication", () => {
   it("rejects unauthenticated checkout before any read or write", async () => {
     const result = await submitOrderV2({
       brand_id: "BR-001",
+      outlet_id: "OUT-001",
       items: [{ product_id: "PROD-001", quantity: 1 }],
     } as never);
 

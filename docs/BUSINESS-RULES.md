@@ -78,6 +78,16 @@ The system records payments in `order_payments`, and **that table begins 2026-07
 
 **Verification is re-runnable:** `scripts/verify-revenue.ts` re-checks every structural claim above and prints the unbacked figure on each run. It is the audit, not a record of one.
 
+### BR-SALE-006 — Order code is outlet+date+sequence; brand always follows the outlet, never the reverse
+
+**Status:** `APPROVED` — owner decision 2026-08-25 (`docs/superpowers/plans/2026-08-24-outlets-and-order-code.md`). **Not yet applied** — migrations `0071`/`0072` and the rename script are built and verified but await the owner's separate approval to run against production (`CLAUDE.md` section 2). Recorded here on decision, per `CLAUDE.md` section 6, not on delivery. Until then, existing orders keep their pre-2026-08-25 codes and new orders keep minting under the old brand-keyed scheme.
+
+`order_no` is 12 digits, `YYMMDD` (`Asia/Ho_Chi_Minh`) + 3-digit outlet code + 3-digit sequence — e.g. `260825001001` is 2026-08-25, outlet `001`, first order that outlet-day. The sequence resets per (outlet, date), minted under a Postgres advisory lock keyed the same way. An edited order **keeps its original code across every version** — the rename groups by `order_no`, not by row, and the date/outlet come from the group's earliest row, matching `BR-SALE-002`'s existing snapshot-freeze pattern for `created_at`.
+
+`orders_v2.brand_id` is derived server-side from `orders_v2.outlet_id` at the moment of sale, **never accepted from the client.** The till (`/pos`) opens by picking an outlet, not a brand; a `brandId` present in the URL is ignored by both the page and `submitOrderV2`. `outlet_id` itself is frozen at sale time the same way `created_at` is — an order edit preserves the original outlet, not the editor's own.
+
+This is a **thin slice** of the approved multi-outlet design (`docs/superpowers/specs/2026-07-28-multi-outlet-design.md`, ARCH-1): one `brand_id` per outlet, no time-windowed brand slots, no staff-to-outlet assignment, manual outlet picker only. See `docs/OPEN-ITEMS.md` item 5.
+
 ## COGS and reporting rules
 
 ### BR-COGS-001 — MAC is the primary valuation method

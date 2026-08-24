@@ -55,6 +55,13 @@ export interface CartPaymentInput {
 
 export interface CartInput {
   brand_id: string;
+  // 2026-08-25 (docs/superpowers/plans/2026-08-24-outlets-and-order-code.md
+  // section 3.2/6): set once at sale, never revisited (order-edit-cart.ts
+  // preserves it explicitly, the same way created_at already is). The
+  // server derives and trusts brand_id from this, not the reverse --
+  // submitOrderV2 overwrites whatever brand_id the client sent with the
+  // outlet's own brand before this function ever sees it.
+  outlet_id: string;
   items: CartItemInput[];
   payment_method: "CASH" | "BANK_TRANSFER";
   // Optional split/mixed payment (e.g. part cash, part bank transfer). When
@@ -197,6 +204,7 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
     id: orderId,
     order_no: "", // assigned by server action after row reservation
     brand_id: input.brand_id,
+    outlet_id: input.outlet_id,
     status: ORDER_STATUS.COMPLETED,
     version: 1,
     parent_order_id: "",

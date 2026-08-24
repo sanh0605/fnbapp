@@ -150,7 +150,15 @@ intent and order, not authorization to start.
    rework.
 5. **Multi-branch management** — first of the two expansion features. Needs
    outlet entity, data isolation, outlet-scoped roles, consolidated
-   reporting design (see `docs/FEATURE-CATALOG.md` `ORG-MULTI-OUTLET`).
+   reporting design (see `docs/FEATURE-CATALOG.md` `ORG-MULTI-OUTLET`). **A
+   thin slice landed 2026-08-25** ahead of this phase, on the owner's direct
+   instruction rather than as phase 5 starting early: an `outlets` table
+   (code + brand link only, not the spec's full `Outlet_Brand_Slot`/
+   `Staff_Slot_Assignment` model), the till picks an outlet and the brand
+   follows it, and order codes carry the outlet. See
+   `docs/superpowers/plans/2026-08-24-outlets-and-order-code.md`. Data
+   isolation, outlet-scoped roles, and consolidated reporting design are
+   still unbuilt — this phase has not actually started.
 6. **Full permissions and security hardening** — done once the system's
    shape through multi-branch is known, to avoid designing the permission
    model twice. Distinct from the eight closed security gates, which stay

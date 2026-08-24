@@ -11,6 +11,7 @@ import type { CartInput } from "./order-cart";
 
 const cartInput: CartInput = {
   brand_id: "BR-001",
+  outlet_id: "OUT-001",
   items: [{ product_id: "PROD-1", variant_id: "VAR-1", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
   payment_method: "CASH",
   actor: { id: "U1", name: "Test" },

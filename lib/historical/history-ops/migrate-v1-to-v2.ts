@@ -191,6 +191,9 @@ export function reconstructOrderV2(
     id: orderId,
     order_no: v1Order.order_no || "",
     brand_id: v1Order.brand_id || "",
+    // Archival code (lib/historical/README.md) -- ran before outlets
+    // existed and never runs again. Empty string keeps OrderV2's shape.
+    outlet_id: "",
     status,
     version: 1,
     parent_order_id: "",

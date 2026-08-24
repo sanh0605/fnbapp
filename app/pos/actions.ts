@@ -43,8 +43,8 @@ export async function submitOrderV2(
     if (!input.items || input.items.length === 0) {
       return { success: false, error: "Giỏ hàng trống" };
     }
-    if (!input.brand_id) {
-      return { success: false, error: "Không xác định được thương hiệu" };
+    if (!input.outlet_id) {
+      return { success: false, error: "Không xác định được điểm bán" };
     }
 
     // 2. Require a real session, or the explicit CLI_MODE system actor.
@@ -53,7 +53,8 @@ export async function submitOrderV2(
     const actor = auth.actor;
 
     // 3. Load reference data (cached where possible)
-    const [brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients] = await Promise.all([
+    const [outlets, brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients] = await Promise.all([
+      findAll("Outlets"),
       findAll("Brands"),
       findAll("Products"),
       findAll("Product_Variants"),
@@ -64,8 +65,18 @@ export async function submitOrderV2(
       findAll("Base_Ingredients"),
     ]);
 
+    // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 5/6:
+    // the brand must not be user-suppliable -- resolve it server-side from
+    // the outlet and overwrite whatever brand_id the client sent, before
+    // buildOrderFromCart (and its promotion filtering) ever sees it.
+    const outlet = outlets.find((o: any) => o.id === input.outlet_id);
+    if (!outlet) {
+      return { success: false, error: "Điểm bán không tồn tại" };
+    }
+    const resolvedInput = { ...input, brand_id: outlet.brand_id };
+
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
-    const built = buildOrderFromCart({ ...input, actor }, {
+    const built = buildOrderFromCart({ ...resolvedInput, actor }, {
       brands, products, variants, categories, modifiers, promotions, recipes, base_ingredients: baseIngredients,
     });
     const saleTime = built.order.created_at;
@@ -76,9 +87,9 @@ export async function submitOrderV2(
     // from checkout entirely, not merely ignored: that lookup was latency on
     // the till for a result nothing reads anymore.
 
-    // 5. The database allocates order_no under a transaction lock.
-    const brand = brands.find(b => b.id === input.brand_id);
-    const brandCode = brand?.code || "ORD";
+    // 5. The database allocates order_no under a transaction lock, keyed by
+    // outlet+date (section 4), not brand -- outletCode replaces brandCode.
+    const outletCode = outlet.code || "000";
 
     // 6. Build Order_Events audit record
     const event = {
@@ -101,7 +112,7 @@ export async function submitOrderV2(
 
     // 7. Persist the complete bill in one database transaction.
     const saved = await savePosOrderAtomic({
-      brandCode,
+      outletCode,
       order: built.order,
       lines: built.lines,
       event,

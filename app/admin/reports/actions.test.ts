@@ -973,6 +973,57 @@ describe("getSalesDataV2", () => {
       revenue: fixture.order.net_total,
     });
   });
+
+  // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 6b:
+  // the check that can fail is the sum, and orders with no outlet_id must
+  // land in an explicit bucket rather than being dropped silently.
+  it("breaks revenue down by outlet, summing to the report total, with unassigned orders in their own bucket", async () => {
+    const makeOrder = (id: string, outletId: string, netTotal: number) => ({
+      id, order_no: id, brand_id: "BR-001", outlet_id: outletId,
+      status: "COMPLETED", version: 1, parent_order_id: "", superseded_by: "",
+      created_at: "2026-06-15T10:00:00.000Z", created_by_id: "U", created_by_name: "Test",
+      completed_at: "2026-06-15T10:00:00.000Z", voided_at: "", voided_by_id: "", void_reason: "",
+      currency: "VND", gross_total: netTotal, promo_discount_total: 0,
+      manual_item_discount_total: 0, manual_order_discount: 0, net_total: netTotal,
+      applied_promotion_id: "", applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}", payment_method: "CASH", payment_ref: "", migration_notes: "",
+    });
+    const orders = [
+      makeOrder("ord-out1-a", "OUT-001", 25000),
+      makeOrder("ord-out1-b", "OUT-001", 15000),
+      makeOrder("ord-out2-a", "OUT-002", 30000),
+      makeOrder("ord-no-outlet", "", 5000), // pre-backfill history
+    ];
+    (findAllWhere as any).mockResolvedValue(orders);
+    (findAllWhereInBatches as any).mockResolvedValue([]);
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockImplementation((sheet: string) => {
+      if (sheet === "Outlets") {
+        return [
+          { id: "OUT-001", code: "001", name: "Điểm bán 1", brand_id: "BR-001" },
+          { id: "OUT-002", code: "002", name: "Điểm bán 2", brand_id: "BR-002" },
+        ];
+      }
+      return [];
+    });
+
+    const result = await getSalesDataV2({
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+    });
+
+    expect(result.outletBreakdown).toEqual(
+      expect.arrayContaining([
+        { outlet_id: "OUT-001", name: "Điểm bán 1", orderCount: 2, revenue: 40000 },
+        { outlet_id: "OUT-002", name: "Điểm bán 2", orderCount: 1, revenue: 30000 },
+        { outlet_id: "", name: "Chưa gắn điểm bán", orderCount: 1, revenue: 5000 },
+      ]),
+    );
+    const sumRevenue = result.outletBreakdown.reduce((s, o) => s + o.revenue, 0);
+    const sumOrders = result.outletBreakdown.reduce((s, o) => s + o.orderCount, 0);
+    expect(sumRevenue).toBe(result.totalRevenue);
+    expect(sumOrders).toBe(result.totalOrders);
+  });
 });
 
 describe("getHourlyHeatmapV2", () => {

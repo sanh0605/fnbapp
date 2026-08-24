@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useId } from "react";
-import { getBrands } from "@/app/admin/brands/actions";
+import { getOutlets } from "@/app/admin/outlets/actions";
 import { LayoutDashboard, Package, Truck, CookingPot, Coffee, Receipt, TrendingUp, Settings, LogOut, Store } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -92,9 +92,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
-  const [brands, setBrands] = useState<any[]>([]);
-  const [brandsLoading, setBrandsLoading] = useState(false);
-  const [brandsError, setBrandsError] = useState<string | null>(null);
+  const [outlets, setOutlets] = useState<any[]>([]);
+  const [outletsLoading, setOutletsLoading] = useState(false);
+  const [outletsError, setOutletsError] = useState<string | null>(null);
   const router = useRouter();
 
   const posModalTitleId = useId();
@@ -163,27 +163,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return null;
   });
 
-  const loadBrandsForPosModal = async () => {
-    setBrandsLoading(true);
-    setBrandsError(null);
+  const loadOutletsForPosModal = async () => {
+    setOutletsLoading(true);
+    setOutletsError(null);
     try {
-      const fetchedBrands = await getBrands();
-      setBrands(fetchedBrands);
+      const fetchedOutlets = await getOutlets();
+      setOutlets(fetchedOutlets);
     } catch {
-      setBrandsError("Không tải được danh sách thương hiệu. Vui lòng thử lại.");
+      setOutletsError("Không tải được danh sách điểm bán. Vui lòng thử lại.");
     } finally {
-      setBrandsLoading(false);
+      setOutletsLoading(false);
     }
   };
 
   const handleOpenPosModal = () => {
     setIsPosModalOpen(true);
-    void loadBrandsForPosModal();
+    void loadOutletsForPosModal();
   };
 
-  const selectBrandForPos = (brandId: string) => {
+  const selectOutletForPos = (outletId: string) => {
     setIsPosModalOpen(false);
-    router.push(`/pos?brandId=${brandId}`);
+    router.push(`/pos?outletId=${outletId}`);
   };
 
   useEffect(() => {
@@ -384,7 +384,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className="bg-surface-card w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up outline-none"
           >
             <div className="p-5 border-b border-border flex justify-between items-center bg-surface-secondary">
-              <h3 id={posModalTitleId} className="text-xl font-bold text-text-primary">Chọn thương hiệu</h3>
+              <h3 id={posModalTitleId} className="text-xl font-bold text-text-primary">Chọn điểm bán</h3>
               <button 
                 onClick={() => setIsPosModalOpen(false)} 
                 className="p-1.5 bg-surface-secondary rounded-full text-text-muted hover:bg-border focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
@@ -396,30 +396,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             
             <div className="p-6 bg-surface-card space-y-3">
               <p className="text-sm text-text-muted mb-4 text-center">
-                Mở máy POS để bắt đầu bán hàng cho thương hiệu nào?
+                Mở máy POS để bắt đầu bán hàng tại điểm bán nào?
               </p>
-              
-              {brandsError ? (
+
+              {outletsError ? (
                 <div className="text-center py-4 space-y-3">
-                  <p className="text-sm text-danger">{brandsError}</p>
+                  <p className="text-sm text-danger">{outletsError}</p>
                   <button
-                    onClick={() => void loadBrandsForPosModal()}
+                    onClick={() => void loadOutletsForPosModal()}
                     className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-button hover:bg-primary-hover transition-colors"
                   >
                     Thử lại
                   </button>
                 </div>
-              ) : brandsLoading || brands.length === 0 ? (
+              ) : outletsLoading || outlets.length === 0 ? (
                 <div className="text-center text-text-muted py-4 animate-pulse">Đang tải danh sách…</div>
               ) : (
-                brands.map(brand => (
-                  <button 
-                    key={brand.id}
-                    onClick={() => selectBrandForPos(brand.id)}
+                outlets.map(outlet => (
+                  <button
+                    key={outlet.id}
+                    onClick={() => selectOutletForPos(outlet.id)}
                     className="w-full bg-primary text-white border border-primary font-bold text-lg py-4 rounded-button hover:bg-primary-hover active:bg-primary-active active:scale-[0.98] transition-colors flex justify-center items-center gap-3 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
                   >
                     <Store size={24} />
-                    <span>{brand.name}</span>
+                    <span>{outlet.name}</span>
                   </button>
                 ))
               )}

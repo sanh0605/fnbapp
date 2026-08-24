@@ -60,6 +60,7 @@ describe("Property tests", () => {
             id: orderId,
             order_no: "PROP-001",
             brand_id: "B",
+            outlet_id: "OUT-TEST",
             status: "COMPLETED",
             version: 1,
             parent_order_id: "",

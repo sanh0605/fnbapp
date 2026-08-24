@@ -105,6 +105,7 @@ export default async function SalesReportPage({
     salesByMonth,
     salesByDayOfWeek,
     salesByHour,
+    outletBreakdown,
   } = data;
 
   const bestDrinks = bestSellers.filter(item => {
@@ -226,6 +227,33 @@ export default async function SalesReportPage({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Outlet breakdown (docs/superpowers/plans/2026-08-24-outlets-and-order-code.md
+          section 6b) -- phone-first: one card per outlet, no table at any width. */}
+      <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">
+        <h3 className="font-bold text-text-primary text-lg mb-1">Doanh thu theo Điểm bán</h3>
+        <p className="text-sm text-text-secondary mb-4">
+          Theo khoảng thời gian đang xem ở trên. {totalOrders} đơn trong tổng.
+        </p>
+        {outletBreakdown.length === 0 ? (
+          <div className="text-center py-6 text-text-muted text-sm">Không có dữ liệu</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {outletBreakdown.map(o => (
+              <div
+                key={o.outlet_id || "none"}
+                className="bg-page rounded-xl p-4 border border-border flex flex-col gap-2"
+              >
+                <div className="font-bold text-text-primary">{o.name}</div>
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm text-text-secondary">{o.orderCount} đơn</span>
+                  <span className="font-bold text-success">{formatNumber(o.revenue)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Hourly Heatmap Section */}

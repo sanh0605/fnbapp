@@ -103,6 +103,7 @@ export interface OrderV2 {
   id: string;
   order_no: string;
   brand_id: string;
+  outlet_id: string;
 
   // Lifecycle
   status: OrderStatus;

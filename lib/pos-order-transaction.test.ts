@@ -29,7 +29,7 @@ describe("savePosOrderAtomic", () => {
     });
 
     const result = await savePosOrderAtomic({
-      brandCode: "PHD",
+      outletCode: "001",
       order: { id: "ord-1" },
       lines: [{ id: "line-1" }],
       event: { id: "event-1" },
@@ -38,7 +38,7 @@ describe("savePosOrderAtomic", () => {
     });
 
     expect(mocks.rpc).toHaveBeenCalledWith("create_pos_order_atomic", {
-      p_brand_code: "PHD",
+      p_outlet_code: "001",
       p_order: { id: "ord-1" },
       p_lines: [{ id: "line-1" }],
       p_event: { id: "event-1" },
@@ -66,7 +66,7 @@ describe("savePosOrderAtomic", () => {
     });
 
     await savePosOrderAtomic({
-      brandCode: "PHD",
+      outletCode: "001",
       order: { id: "ord-exact" },
       lines: [{ id: "line-1", cost_at_sale: 3980.4237 }],
       event: { id: "event-1" },
@@ -94,7 +94,7 @@ describe("savePosOrderAtomic", () => {
     });
 
     const result = await savePosOrderAtomic({
-      brandCode: "PHD",
+      outletCode: "001",
       order: { id: "ord-split" },
       lines: [{ id: "line-1" }],
       event: { id: "event-1" },
@@ -136,7 +136,7 @@ describe("savePosOrderAtomic", () => {
     });
 
     await expect(savePosOrderAtomic({
-      brandCode: "PHD",
+      outletCode: "001",
       order: { id: "ord-split" },
       lines: [{ id: "line-1" }],
       event: { id: "event-1" },
@@ -160,7 +160,7 @@ describe("savePosOrderAtomic", () => {
     });
 
     await savePosOrderAtomic({
-      brandCode: "PHD",
+      outletCode: "001",
       order: { id: "ord-legacy" },
       lines: [{ id: "line-legacy" }],
       event: { id: "event-legacy" },
@@ -206,7 +206,7 @@ describe("savePosOrderAtomic", () => {
       return { data: persisted, error: null };
     });
     const common = {
-      brandCode: "PHD",
+      outletCode: "001",
       clientRequestId: "request-ambiguous-success",
     };
 
@@ -256,7 +256,7 @@ describe("savePosOrderAtomic", () => {
     });
     await expect(
       savePosOrderAtomic({
-        brandCode: "PHD",
+        outletCode: "001",
         order: { id: "ord-1" },
         lines: [],
         event: { id: "event-1" },
@@ -275,7 +275,7 @@ describe("savePosOrderAtomic", () => {
     });
     await expect(
       savePosOrderAtomic({
-        brandCode: "PHD",
+        outletCode: "001",
         order: { id: "ord-1" },
         lines: [{ id: "line-1" }],
         event: { id: "event-1" },
@@ -296,7 +296,7 @@ describe("savePosOrderAtomic", () => {
     });
 
     await savePosOrderAtomic({
-      brandCode: "PHD",
+      outletCode: "001",
       order: {
         id: "ord-1",
         pos_snapshot_json: "{\"source\":\"POS\"}",

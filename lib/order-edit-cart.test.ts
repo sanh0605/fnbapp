@@ -37,6 +37,7 @@ describe("buildEditedOrderFromCart", () => {
     const original = makeSuaDauStandaloneOrder();
     const editInput: CartInput = {
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{
         product_id: "PROD-024", variant_id: "VAR-031", qty: 2, // changed qty 1 → 2
         modifiers: [], manual_item_discount: { value: 0, type: "VND" },
@@ -57,6 +58,7 @@ describe("buildEditedOrderFromCart", () => {
 
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{ product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
       payment_method: "CASH",
       actor: { id: "U2", name: "Editor" },
@@ -65,10 +67,30 @@ describe("buildEditedOrderFromCart", () => {
     expect(result.order.version).toBe(2);
   });
 
+  it("preserves outlet_id from original, ignoring whatever the editor's input carries", () => {
+    // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 3.2:
+    // outlet_id is set once at sale and never revisited, the same guarantee
+    // created_at already has. Input deliberately uses a DIFFERENT outlet than
+    // the original order's own (OUT-002) to prove this isn't a coincidental match.
+    const original = makeSuaDauStandaloneOrder();
+    expect(original.order.outlet_id).toBe("OUT-002");
+
+    const result = buildEditedOrderFromCart({
+      brand_id: "BR-002",
+      outlet_id: "OUT-999-NOT-THE-ORIGINAL",
+      items: [{ product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
+      payment_method: "CASH",
+      actor: { id: "U2", name: "Editor" },
+    }, REF, original);
+
+    expect(result.order.outlet_id).toBe("OUT-002");
+  });
+
   it("preserves order_no from original", () => {
     const original = makeSuaDauStandaloneOrder();
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{ product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
       payment_method: "CASH",
       actor: { id: "U2", name: "Editor" },
@@ -87,6 +109,7 @@ describe("buildEditedOrderFromCart", () => {
     // Now edit v2
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{ product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
       payment_method: "CASH",
       actor: { id: "U3", name: "Editor" },
@@ -100,6 +123,7 @@ describe("buildEditedOrderFromCart", () => {
     const original = makeSuaDauStandaloneOrder();
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{ product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
       payment_method: "CASH",
       actor: { id: "user-editor-01", name: "Quản lý A" },
@@ -115,6 +139,7 @@ describe("buildEditedOrderFromCart", () => {
 
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{
         product_id: "PROD-024",
         variant_id: "VAR-031",
@@ -136,6 +161,7 @@ describe("buildEditedOrderFromCart", () => {
     const original = makeSuaDauStandaloneOrder();
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
       ],
@@ -168,6 +194,7 @@ describe("buildEditedOrderFromCart", () => {
 
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{
         product_id: "PROD-024",
         variant_id: "VAR-031",
@@ -210,6 +237,7 @@ describe("buildEditedOrderFromCart", () => {
 
     const result = buildEditedOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{
         product_id: "PROD-024",
         variant_id: "VAR-031",
@@ -261,6 +289,7 @@ describe("buildEditedOrderFromCart resolves recipes against the original sale ti
 
   const originalOrder: OrderV2 = {
     id: "ord-original", order_no: "UCK-TEST-001", brand_id: "BR-002",
+    outlet_id: "OUT-002",
     status: "COMPLETED", version: 1, parent_order_id: "", superseded_by: "",
     created_at: "2026-04-20T03:00:00.000Z", // in force under REC-001
     created_by_id: "U1", created_by_name: "Cashier",
@@ -274,6 +303,7 @@ describe("buildEditedOrderFromCart resolves recipes against the original sale ti
   };
   const cartInput: CartInput = {
     brand_id: "BR-002",
+    outlet_id: "OUT-002",
     items: [{ product_id: "PROD-001", variant_id: "VAR-001", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
     payment_method: "CASH",
     actor: { id: "U2", name: "Editor" },

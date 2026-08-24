@@ -24,6 +24,7 @@ import { reportPosSyncFailure } from "@/app/pos/actions";
 
 export default function POSScreen({
   brandId,
+  outletId,
   categories,
   products,
   variants,
@@ -33,6 +34,7 @@ export default function POSScreen({
   outOfStockProductIds = []
 }: {
   brandId?: string;
+  outletId?: string;
   categories: any[];
   products: any[];
   variants: any[];
@@ -689,6 +691,7 @@ export default function POSScreen({
     // is recognized as "the same attempt" by resolvePosCheckoutAttempt.
     const cartInputWithoutTimestamp: CartInput = {
       brand_id: brandId || "",
+      outlet_id: outletId || "",
       items: cart.map(item => {
         let manualItemValue = Number(item.discount_amount || 0);
         let manualItemType: "VND" | "PERCENT" = item.discount_type === "PERCENT" ? "PERCENT" : "VND";

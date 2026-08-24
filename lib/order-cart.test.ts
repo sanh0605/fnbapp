@@ -49,6 +49,7 @@ describe("buildOrderFromCart", () => {
     expect(() =>
       buildOrderFromCart({
         brand_id: "BR-002",
+        outlet_id: "OUT-002",
         items: [],
         payment_method: "CASH",
         actor: { id: "U1", name: "Test" },
@@ -60,6 +61,7 @@ describe("buildOrderFromCart", () => {
     expect(() =>
       buildOrderFromCart({
         brand_id: "BR-002",
+        outlet_id: "OUT-002",
         items: [
           { product_id: "PROD-024", variant_id: "VAR-UNKNOWN", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
         ],
@@ -72,6 +74,7 @@ describe("buildOrderFromCart", () => {
   it("Sữa Dâu standalone: net_total = 25000 (audit headline)", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         {
           product_id: "PROD-024",
@@ -100,6 +103,7 @@ describe("buildOrderFromCart", () => {
   it("FLAT_PRICE promo: VAR-024 Trà dâu (27k → 15k target) → promo 12k", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         {
           product_id: "PROD-017",
@@ -129,6 +133,7 @@ describe("buildOrderFromCart", () => {
     };
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{
         product_id: "PROD-024",
         variant_id: "VAR-031",
@@ -148,6 +153,7 @@ describe("buildOrderFromCart", () => {
   it("manual_item_discount VND: subtracts directly from line", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         {
           product_id: "PROD-024",
@@ -170,6 +176,7 @@ describe("buildOrderFromCart", () => {
   it("manual_item_discount PERCENT: converts to VND on gross", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         {
           product_id: "PROD-024",
@@ -196,6 +203,7 @@ describe("buildOrderFromCart", () => {
     // Allocations: round(4000 * 25/40) = 2500 (Sữa Dâu), residual 1500 (Trà dâu)
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
         { product_id: "PROD-017", variant_id: "VAR-024", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
@@ -214,6 +222,7 @@ describe("buildOrderFromCart", () => {
   it("manual_order_discount PERCENT: converts to VND on gross", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
       ],
@@ -229,6 +238,7 @@ describe("buildOrderFromCart", () => {
     // 35k - 10k promo = 25k capacity. Manual 50k → capped at 25k.
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 50000, type: "VND" } },
       ],
@@ -250,6 +260,7 @@ describe("buildOrderFromCart", () => {
     };
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
       ],
@@ -264,6 +275,7 @@ describe("buildOrderFromCart", () => {
   it("all 7 invariants pass on built order+lines (buildOrderFromCart calls assertOrderInvariants)", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
         { product_id: "PROD-017", variant_id: "VAR-024", qty: 2, modifiers: [], manual_item_discount: { value: 1000, type: "VND" } },
@@ -303,6 +315,7 @@ describe("buildOrderFromCart", () => {
 
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{
         product_id: "PROD-024",
         variant_id: "VAR-031",
@@ -343,6 +356,7 @@ describe("buildOrderFromCart", () => {
 
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [{
         product_id: "PROD-024",
         variant_id: "VAR-031",
@@ -368,6 +382,7 @@ describe("buildOrderFromCart", () => {
     // manual_order_discount: 3000 VND
     const result = buildOrderFromCart({
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         {
           product_id: "PROD-024",
@@ -404,6 +419,7 @@ describe("buildOrderFromCart", () => {
   describe("split/mixed payment", () => {
     const singleItemCart = {
       brand_id: "BR-002",
+      outlet_id: "OUT-002",
       items: [
         {
           product_id: "PROD-024",
@@ -479,6 +495,7 @@ describe("buildOrderFromCart", () => {
 describe("buildOrderFromCart client_captured_at", () => {
   const baseInput: CartInput = {
     brand_id: "BR-002",
+    outlet_id: "OUT-002",
     items: [
       {
         product_id: "PROD-024",
