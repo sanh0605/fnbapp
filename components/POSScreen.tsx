@@ -784,7 +784,7 @@ export default function POSScreen({
       if (res.success) {
         checkoutAttemptRef.current = null;
         clientCapturedAtRef.current = null;
-        addToast("success", `Thanh toán thành công! Mã đơn: ${res.order_no || ""}`);
+        addToast("success", "Thanh toán thành công!");
         
         if (draftIdBackup) {
           deletePOSDraft(draftIdBackup).then(delRes => {

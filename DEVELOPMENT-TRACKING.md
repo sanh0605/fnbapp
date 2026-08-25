@@ -4,6 +4,42 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - POS success toast no longer announces the order code
+
+Live defect against the owner's own instruction, found by the owner testing
+the deployed build after the outlets rollout: *"CÓ HIỂN THỊ, NHƯNG VẪN CÒN
+HIỆN MÃ ĐƠN."* `docs/superpowers/plans/2026-08-25-pos-success-message.md`
+(handoff from Opus 5) traced it to one line, `components/POSScreen.tsx`'s
+success toast after checkout.
+
+**Render test written and run against the unmodified code first**
+(`components/POSScreen.checkoutToast.test.tsx`, following the createRoot +
+act pattern from `POSScreen.itemModal.test.tsx`; per `OPEN-ITEMS 46`,
+`submitOrderV2` here is a plain mocked function call, not a `<form action>`
+submit, so driving the real "TIỀN MẶT" button through the DOM and awaiting
+its resolution works under vitest). **It failed on a wrong value, not a
+missing symbol:** the toast rendered, and contained "Thanh toán thành công"
+as expected — the failing assertion was `messages.some(m =>
+m.includes("260825001001"))` expecting `false` and getting `true`. The
+order code was present in the message when it should not have been; nothing
+was missing from the DOM.
+
+**The fix is exactly the one line the plan named:**
+
+```ts
+addToast("success", "Thanh toán thành công!");
+```
+
+The offline-queue toast (*"Đã lưu đơn hàng, sẽ gửi khi có mạng trở lại."*)
+is untouched and covered in the same test file so a future edit cannot
+quietly collapse the two messages into one.
+
+**Gates:** `tsc` 0 errors. `vitest` 198 files / **1.346** passing (+2 new).
+`check-rules-current` clean. `npm run build` succeeds.
+
+**Not pushed** — the plan flags this as wanting a quick deploy once ready;
+owner approves the push separately.
+
 ## 2026-08-25 (Opus 5 executing the approved change) - Migration 0071 APPLIED and all order codes renamed
 
 **Owner approved each step separately.** Step 1: `0071_outlets.sql`. Step 2: `scripts/backfill-outlet-and-rename-orders.ts --apply`. Step 3 (`0072`, the new minting) and the push are **not** done and need their own approvals.
