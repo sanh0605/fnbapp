@@ -4,6 +4,24 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The outlet breakdown gets a real table from md up, cards unchanged below it
+
+Implements `docs/superpowers/plans/2026-08-25-outlet-breakdown-table.md`. The owner was right that two cards adrift in a wide row was wrong, and the plan traces it to a misreading: `CLAUDE.md` section 8 forbids a horizontal table **on a phone**, not on a desktop -- "điện thoại trước" means design for the phone first, not never build the wide layout. One dataset, two shapes, not cards replaced by a table.
+
+### The change
+
+`app/admin/reports/sales/page.tsx`'s outlet-breakdown block extracted into `app/admin/reports/sales/OutletBreakdownSection.tsx` (same reason `OutletsList.tsx` was extracted: an async Server Component's default export cannot be rendered directly in a vitest test). Below `md`: the original stacked cards, byte-identical in content, only `lg:grid-cols-3` dropped -- it could never take effect once `md:hidden` hides the whole block at `lg` too. From `md` up: a real `<table>` in its own `overflow-x-auto` container, columns Điểm bán / Số đơn / Doanh thu / TB/đơn / % tổng, plus a total row (orders and revenue summed, `TB/đơn` and `% tổng` left blank rather than a blended average nobody asked for). `TB/đơn` and `% tổng` are pure functions in `lib/outlet-breakdown-table.ts` (`avgPerOrder`, `percentOfTotal`, `formatPercent`), each returning `null` -- not `NaN`, not `0` -- on division by zero, rendered as `—`.
+
+**Presentation only, verified rather than assumed:** the component sums `outletBreakdown` itself for the total row and the `% tổng` denominator (not a separately-passed total), so a render test comparing that sum against hand-computed expected values for a fixture is a real check that no row was dropped or double-counted, not a tautology from sharing one input.
+
+### Verification, class-presence vs. rendered-layout named explicitly per the plan's own instruction
+
+`OPEN-ITEMS 38`: jsdom cannot evaluate Tailwind breakpoint classes, so "does the table actually show at this width" is not checkable there. Three tests in `OutletBreakdownSection.test.tsx` say **"class presence only"** in their own names and check that the right classes (`hidden`/`md:block`/`overflow-x-auto` on the table wrapper, `md:hidden` on the card wrapper, both present simultaneously) sit on the right elements -- not that a browser would actually show one and hide the other. Seven further tests say **"rendered layout"** and check real DOM output regardless of width: card content unchanged (no avg/percent leaking into cards), one table row per outlet, `TB/đơn` = `—` for a zero-order outlet (not `NaN`, not `0đ`), `% tổng` across three outlets sums to 100.0% within the rounding tolerance the plan allows, the total row's sums and blank cells, the unassigned bucket becoming a row instead of being dropped, and the empty state. `lib/outlet-breakdown-table.test.ts` covers the same division-by-zero guards and the percent-sum rounding directly on the pure functions, including the three-outlet case that actually exercises non-trivial rounding (1.000.000 / 1.500.000 / 700.000 -- not the easy 50/50 split).
+
+### Gates
+
+`tsc` 0 errors; `vitest` 204 files / 1,389 tests (+2 files, +18); `check-rules-current` clean; `npm run build` succeeds, `/admin/reports/sales` unchanged in the route table. **Not pushed** -- owner approves the push separately, per `CLAUDE.md` section 2.
+
 ## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The outlet screen was built, and a mechanical guard against this class of defect
 
 Implements `docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md`. This is the third defect of the same shape in the same batch (screen the plan promised, never built or linked, caught only by the owner opening the app) -- section 3 exists specifically so a fourth one fails a gate instead of a screenshot.
