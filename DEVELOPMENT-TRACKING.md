@@ -4,6 +4,60 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-25 - Outlets: minting switched over, the code hidden at the till, and the breakdown reconciled
+
+Completes the thin slice begun earlier the same day. `0071` and the rename are recorded in the entry below this one.
+
+### `0072` applied and the code pushed, with a declared outage
+
+`0072` **replaces** `create_pos_order_atomic` rather than adding a second signature: the old one took `p_brand_code`, the new one takes `p_outlet_code`. So no ordering avoids a gap — either the deployed code calls a parameter the function no longer has, or the reverse.
+
+**The owner was told before it ran, not after.** Measured to size it: 15:15 on a weekday, the shop's 15:00 hour holds **20 orders across four months** — roughly one a week — the day's 21 orders were all before 08:50, and the evening rush starts at 17:00. He chose to accept the gap rather than wait for an additive rewrite or for closing time.
+
+Migration at **15:22:42**, push at **15:22:50** — eight seconds apart, with the migration first so a failure there would have stopped the push instead of stranding a deploy that needed it.
+
+### The sequence continued exactly where the rename stopped
+
+This was the reason `0072` had to follow the rename and not precede it, and the owner's own two test orders proved it on production:
+
+| Code | Origin |
+|---|---|
+| `260825001021` | last renamed legacy order (`PHD001640`) |
+| **`260825001022`** | owner's first test order, minted by the new RPC |
+| **`260825001023`** | second test order |
+
+Had minting switched over first, the new order would have counted a day that still held 21 old-format rows it could not see, and minted `260825001001` — colliding with that morning's first sale. Both test orders were voided by the owner and carry `OUT-001`/`BR-001` correctly.
+
+### The defect the owner found that three passes had not
+
+The owner's instruction was explicit and recorded in the plan: *"Khi nhân viên bấm tạo đơn thành công sẽ không thông báo mã đơn mà chỉ thông báo thành công."* `components/POSScreen.tsx:787` still concatenated it. The plan carried the instruction, the implementation did not act on it, the implementer's report did not mention it, and the independent review pass did not catch it. **Opening the till did.**
+
+Fixed to `addToast("success", "Thanh toán thành công!")`, with a render test proven to fail first on a *wrong value* (`expected true to be false` — the code present in the toast) rather than a missing symbol, plus a second test pinning the offline-save wording so the two messages cannot later collapse into one.
+
+### The breakdown reconciles to the đồng
+
+Per-outlet revenue, completed and non-superseded orders only:
+
+| Month | Điểm bán 1 | Điểm bán 2 | Sum | Frozen figure |
+|---|---:|---:|---:|---|
+| 2026-04 | 2.190.000đ | — | 2.190.000đ | **matches** |
+| 2026-05 | 7.675.000đ | — | 7.675.000đ | **matches** |
+| 2026-06 | 7.308.000đ | 14.849.000đ | 22.157.000đ | **matches** |
+| 2026-07 | 8.641.000đ | 10.020.000đ | 18.661.000đ | **matches** |
+| 2026-08 | 8.568.000đ | 5.771.000đ | 14.339.000đ | open month |
+
+**0 completed orders carry no outlet**, so nothing is silently excluded — the failure mode a breakdown invites is dropping rows and still looking tidy.
+
+**What the breakdown shows that the system could not answer before today:** Điểm bán 1 took 1.611 orders for 34.382.000đ (**21.300đ** average), Điểm bán 2 took **733** for 30.640.000đ (**41.800đ** average) — under half the orders for nearly the same revenue, and in June it out-earned Điểm bán 1 despite opening on the 3rd. Recorded as an observation, not a conclusion: it is revenue before any cost, and COGS still reads 0đ until the first stocktake.
+
+### State
+
+Gates green throughout: `tsc` clean, `vitest` 198 files / **1.346** passing, `check-rules-current` clean, `npm run build` succeeds, and `scripts/verify-revenue.ts` unmoved across every step.
+
+Outlet names `Điểm bán 1` / `Điểm bán 2` are placeholders the owner can rename on the screen; only `001`/`002` are frozen.
+
+---
+
 ## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - POS success toast no longer announces the order code
 
 Live defect against the owner's own instruction, found by the owner testing
