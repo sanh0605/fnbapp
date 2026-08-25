@@ -78,6 +78,19 @@ export interface DBBrand {
   created_at: string;
 }
 
+export interface DBOutlet {
+  id: string;
+  code: string;
+  name: string;
+  brand_id: string;
+  address: string;
+  status: string;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DBModifier {
   id: string;
   group_name: string;

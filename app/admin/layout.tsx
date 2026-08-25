@@ -18,6 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: <Package size={20} />,
       children: [
         { name: "Thương hiệu", href: "/admin/brands" },
+        { name: "Điểm bán", href: "/admin/outlets" },
         { name: "Nhà cung cấp", href: "/admin/suppliers" },
         { name: "Phân loại Hàng", href: "/admin/inventory/categories" },
         { name: "Nhóm Nguyên Liệu", href: "/admin/inventory/base-ingredients" },

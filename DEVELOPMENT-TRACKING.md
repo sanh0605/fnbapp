@@ -4,6 +4,30 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The outlet screen was built, and a mechanical guard against this class of defect
+
+Implements `docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md`. This is the third defect of the same shape in the same batch (screen the plan promised, never built or linked, caught only by the owner opening the app) -- section 3 exists specifically so a fourth one fails a gate instead of a screenshot.
+
+### Critique before coding, per `CLAUDE.md` section 1
+
+Recounted the plan's own numbers against the real tree rather than trusting them: 35 `page.tsx` files, 2 dynamic (`[id]`), 33 static; `layout.tsx`'s `navItems` carries exactly 28 hrefs, all resolving; 33 - 28 = 5 unlinked, exactly the plan's table. Opened the three "TODO: owner decision" pages to check what they actually are before allowlisting them: `/admin/products/toppings` is confirmed dead (its entire body is `redirect("/admin/products/modifiers")`); `/admin/reports/stock` is confirmed intentional (`layout.tsx`'s own 2026-08-13 comment already documents the supersession); `/admin/pos-sync` is **not** dead -- a real, working screen ("Đơn cần chú ý": late orders + sync failures) that looks like a plain linking oversight, not a "possibly superseded" page like the other two. Allowlisted as instructed (owner decides, don't silently link) but flagged as the most actionable of the three.
+
+Guard placement: a vitest test, not `scripts/check-rules-current.ts`. That script's three checks all validate a *documentation file's claims* against reality over a fixed list of prose docs; the nav-guard checks a structural property of the app itself, independent of any doc. `npx vitest run` is already a section 9 gate, so a separate test costs nothing in coverage.
+
+### The screen
+
+`app/admin/outlets/page.tsx` (phone-first, one card per outlet, no table) plus `lib/outlet-code.ts` (`nextOutletCode`, pure and extracted out of the `"use server"` actions file for the same reason `lib/order-code.ts` was -- a sync export from a `"use server"` file breaks the build, `CLAUDE.md` section 9's 2026-08-05 incident). Code assignment is `max(code) + 1` over every outlet regardless of status, so a retired code is never reused -- tested directly against the owner's own example (retire 002, next create still gets 004, not 002). Retiring refuses the last active outlet ("would be nothing left to open the till with") and never deletes -- sets `status`/`end_date` only. Nav entry added under Danh mục, beside Thương hiệu.
+
+### The guard
+
+`lib/nav-completeness.ts` (pure `checkNavCompleteness`, plus filesystem/source-text extraction helpers) + `app/admin/nav-allowlist.ts` (the 5 entries, with the 3 "TODO: owner decision" ones documented individually) + `app/admin/nav-guard.test.ts` (wires the real tree to the real `layout.tsx`). Both failure modes are exercised: `lib/nav-completeness.test.ts` proves the page-with-no-entry half and, with a synthetic fixture, the entry-with-no-page half too -- the real tree has zero of the latter today, so a fixture is what actually exercises it, not the live check. **Proven to fail first:** removed the outlets `href` from `navItems`, ran the guard, got `Pages with no nav entry and no allowlist entry: /admin/outlets`, restored, reran, green.
+
+### Verification
+
+`lib/outlet-code.test.ts`, `app/admin/outlets/actions.test.ts` (add/rename/retire, including the 003-then-004-skipping-002 case and the last-active refusal), `app/admin/outlets/components/OutletsList.test.tsx` (render test: the two seeded outlets list by name, code and brand; rename/retire actions present per active outlet; retire action absent on an already-inactive one; empty state). `lib/nav-completeness.test.ts`, `app/admin/nav-guard.test.ts`. Gates: `tsc` 0 errors; `vitest` 202 files / 1,371 passing (+4 files, +25 tests); `check-rules-current` clean; `npm run build` succeeds, `/admin/outlets` present in the route table.
+
+**Not pushed** -- owner approves the push separately, per `CLAUDE.md` section 2.
+
 ## 2026-08-25 - Outlets: minting switched over, the code hidden at the till, and the breakdown reconciled
 
 Completes the thin slice begun earlier the same day. `0071` and the rename are recorded in the entry below this one.
