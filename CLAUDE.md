@@ -204,6 +204,17 @@ Một quán đồ uống, **hai điểm bán** (`001`, `002`), mỗi điểm g�
 **Đường đi của tiền vào:** máy POS → `orders_v2` + `order_lines_v2` → báo cáo
 bán hàng. Mã đơn dạng `YYMMDD` + điểm bán(3) + số thứ tự trong ngày(3).
 
+**Một đơn có thể có nhiều dòng dữ liệu.** Sửa một đơn không ghi đè bản cũ mà
+tạo bản mới: bản cũ thành `SUPERSEDED`, bản mới `COMPLETED`, **cả hai giữ chung
+một mã đơn**. Đo 26/08: 2.376 dòng cho 2.360 đơn. Hệ quả bắt buộc nhớ:
+
+- Đếm doanh thu phải lọc `status='COMPLETED'` **và** `superseded_by` rỗng —
+  thiếu một trong hai là đếm đôi.
+- Xử lý theo mã đơn, đừng theo dòng. Đổi mã theo dòng sẽ xé một đơn làm ba.
+- **Thời điểm bán được đóng băng khi sửa:** bản mới chép nguyên `created_at`
+  của bản gốc (`lib/order-edit-cart.ts`). Nên ngày trên mã đơn và ngày trong
+  báo cáo không bao giờ lệch nhau.
+
 **Đường đi của tiền ra — đây là chỗ dễ hiểu sai nhất:**
 
 1. **Bán hàng không trừ tồn, không tính giá vốn tại lúc bán.** Cutover
@@ -242,6 +253,18 @@ kỳ kiểm kê đầu tiên gánh nhiều tháng dồn lại.
 **Dòng in đậm là dòng thiếu suốt ba tháng.** Ngày 24/08 đã viết lại một bản
 thiết kế mà chủ quán duyệt từ 28/07, chỉ vì bảng này không có lối chỉ tới
 `specs/`. Trước khi thiết kế bất cứ thứ gì lớn, **mở `specs/` trước**.
+
+**Trong `specs/` có 32 file, không có mục lục — và sẽ không bao giờ có**, vì một
+mục lục viết tay sẽ cũ đi đúng như câu giá vốn ở đầu file này. Liệt kê lại bằng
+lệnh, mỗi lần chạy là mỗi lần đúng:
+
+```
+grep -il "status.*approv" docs/superpowers/specs/*.md
+```
+
+Ra 13 bản đã được chủ quán duyệt (đo 26/08). **Cái nào có tên trong đó thì đã
+chốt — đọc, đừng thiết kế lại.** 15 file tháng 6 không có dòng `Status` phần lớn
+là bảng phân việc cũ, không phải thiết kế.
 
 **Lịch sử — KHÔNG đọc để biết trạng thái hiện tại:**
 

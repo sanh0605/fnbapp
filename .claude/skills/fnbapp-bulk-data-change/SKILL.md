@@ -30,12 +30,28 @@ that merely fills in a column still fires it.
 ## 2. Follow what the triggers feed
 
 A trigger that writes to a queue table is only half the story. Find what reads
-that queue. In this repository, `backdated_ledger_events` and
-`backdated_recipe_events` are swept nightly at 03:00 by
-`/api/cron/apply-backdated-corrections`, which can rewrite `cost_at_sale` and
-`recipe_snapshot_json` on historical order lines with no human approval.
+that queue, and state what it will do with the rows the change creates.
 
-State what the downstream automation will do with the rows the change creates.
+**Measured 2026-08-26: this repository has no scheduled job at all.**
+`app/api/cron/` is empty and `vercel.json` is `{}`. So today the only thing a
+trigger can do is act inside your own transaction.
+
+**Do not trust the previous sentence without re-checking it.** Until 2026-08-26
+this section described a nightly 03:00 sweep of `backdated_ledger_events` and
+`backdated_recipe_events` that could rewrite `cost_at_sale` on historical order
+lines. That machinery was retired by Plan C Task 6 — the route is gone and
+**neither table exists** — but the warning stayed here for weeks, in the one
+document meant to make bulk writes safe. A safety note describing a danger that
+no longer exists is worse than none: it makes the reader believe the dangers are
+known.
+
+**The live example to reason from instead.** Every table with an
+`updated_at` column carries a `BEFORE UPDATE ... touch_updated_at()` trigger
+(`trg_orders_v2_touch`, `trg_purchased_items_touch`, and siblings). It feeds no
+queue and starts nothing — but it **will** move `updated_at` on every row the
+change touches. Renaming 2.376 order codes on 2026-08-25 moved all 2.376. That
+is a side effect to declare in the report, never to avoid by disabling the
+trigger.
 
 ## 3. Prove neutrality per row, not by argument
 
