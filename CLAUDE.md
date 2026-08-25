@@ -3,6 +3,16 @@
 Bộ quy tắc duy nhất phải đọc mỗi phiên. Hai phần: **nguyên tắc làm việc**, và
 **sơ đồ hệ thống** để biết mở gì trước khi trả lời.
 
+**Quy ước bắt buộc trong mọi tài liệu và skill: viết đường dẫn theo lối kho mã**
+— bắt đầu bằng `app/`, `lib/`, `scripts/`, `docs/`, `supabase/`, `types/`,
+`.claude/` — chứ đừng viết kiểu URL bắt đầu bằng dấu gạch chéo. Cửa
+`check-rules-current` chỉ nhận dạng lối thứ nhất, nên một file hay route bị gỡ
+mà tài liệu còn nhắc sẽ **đỏ ngay lúc lưu**; viết lối kia thì lọt qua.
+
+Đo 26/08 bằng một tài liệu thử chứa cùng một route viết hai kiểu: kiểu đúng bị
+chặn, kiểu kia không. **Và cửa này bắt luôn ví dụ minh hoạ đầu tiên của chính
+đoạn văn này** — nên đừng đóng khung một đường dẫn không có thật để làm ví dụ.
+
 **Luật số 0 — không câu nào trong file này được mô tả số liệu hiện tại.**
 Tài liệu chỉ nói được điều đúng lúc nó được viết. Câu "`stock_issues` rỗng, giá
 vốn 0đ" nằm ở đây từ 07/08, sai từ 09/08, và tới 26/08 vẫn được đọc như hiện
