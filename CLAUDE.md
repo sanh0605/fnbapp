@@ -264,17 +264,18 @@ kỳ kiểm kê đầu tiên gánh nhiều tháng dồn lại.
 thiết kế mà chủ quán duyệt từ 28/07, chỉ vì bảng này không có lối chỉ tới
 `specs/`. Trước khi thiết kế bất cứ thứ gì lớn, **mở `specs/` trước**.
 
-**Trong `specs/` có 32 file, không có mục lục — và sẽ không bao giờ có**, vì một
-mục lục viết tay sẽ cũ đi đúng như câu giá vốn ở đầu file này. Liệt kê lại bằng
-lệnh, mỗi lần chạy là mỗi lần đúng:
+**`specs/` không có mục lục — và sẽ không bao giờ có**, vì một mục lục viết tay
+sẽ cũ đi đúng như câu giá vốn ở đầu file này. Liệt kê lại bằng lệnh, mỗi lần
+chạy là mỗi lần đúng:
 
 ```
 grep -il "status.*approv" docs/superpowers/specs/*.md
 ```
 
-Ra 13 bản đã được chủ quán duyệt (đo 26/08). **Cái nào có tên trong đó thì đã
-chốt — đọc, đừng thiết kế lại.** 15 file tháng 6 không có dòng `Status` phần lớn
-là bảng phân việc cũ, không phải thiết kế.
+Đo 26/08 ra 13 bản đã được chủ quán duyệt trên tổng 32 file. **Cái nào có tên
+trong đó thì đã chốt — đọc, đừng thiết kế lại.** Số file tháng 6 không có dòng
+`Status` phần lớn là bảng phân việc cũ, không phải thiết kế — cũng đừng tin con
+số này, chạy lệnh đi.
 
 **Lịch sử — KHÔNG đọc để biết trạng thái hiện tại:**
 
