@@ -4,6 +4,59 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-25 (Opus 5 executing the approved change) - Migration 0071 APPLIED and all order codes renamed
+
+**Owner approved each step separately.** Step 1: `0071_outlets.sql`. Step 2: `scripts/backfill-outlet-and-rename-orders.ts --apply`. Step 3 (`0072`, the new minting) and the push are **not** done and need their own approvals.
+
+### The number in the plan was already stale
+
+The plan said **2.355** orders, measured 2026-08-24. At apply time it was **2.376** — the shop kept selling while the work was being built. Re-measured immediately before each step rather than reusing the figure, and the dry run was re-derived on the current data.
+
+### Step 1 — `0071`
+
+Created `outlets` (seeded `001` "Điểm bán 1" → Phin Đi, `002` "Điểm bán 2" → Uchako; names are placeholders and editable, only the code is frozen) and added two nullable columns to `orders_v2`: `outlet_id`, `legacy_order_no`.
+
+Both are `add column` with no default, so no row was rewritten: `orders_v2` stayed at 2.376 rows with `max(updated_at)` unmoved at `2026-08-25 08:50:16`.
+
+### Step 2 — the rename, verified independently before it ran
+
+**The plan's derivation was re-implemented in SQL by the reviewer** and compared against the implementer's TypeScript on five real orders, chosen to cover the edges rather than the easy cases:
+
+| Old | New | Why this one |
+|---|---|---|
+| `PHD000001` | `260420001001` | the shop's first ever order |
+| `UCK000001` | `260603002001` | the second outlet's first order |
+| `UCK000220` | `260622002036` | the 36th order of the busiest day |
+| `PHD000632` | `260625001017` | **three rows sharing one code** |
+| `PHD001619` | `260824001025` | the most recent at planning time |
+
+Two independent implementations agreeing on all five is the evidence; either alone would not have been.
+
+### After applying
+
+| Check | Result |
+|---|---|
+| Rows updated | **2.376** |
+| Rows with an outlet | **2.376** — none missed |
+| Rows carrying their old code | **2.376** |
+| Rows still in the old format | **0** |
+| Chains (by `legacy_order_no`) | **2.360** |
+| Chains wrongly split across two codes | **0** |
+
+`PHD000632`'s three rows — version 1 `SUPERSEDED`, version 2 `COMPLETED`, version 2 `VOIDED` — all carry `260625001017` and `OUT-001`. That was the case worth checking: a per-row rename would have given one order three different codes and broken its edit history.
+
+**Idempotent, proven rather than argued:** a second `--apply` reported `Groups to rename: 0`, `Rows to update: 0`, `Updated 0 rows`.
+
+**Revenue unmoved:** April 2.190.000đ, May 7.675.000đ, June 22.157.000đ, July 18.661.000đ, all still matching; all structural checks passed.
+
+**Declared side effect:** the rename moved `updated_at` on all 2.376 rows, via `trg_orders_v2_touch`. Expected, stated rather than discovered, and the trigger was not disabled to avoid it.
+
+### Not done, and the order matters
+
+`0072` (minting new orders in the new format) is written but **not applied**, and the code is **not pushed**. Until `0072` runs, a new sale still mints `PHD001620` in the old scheme — which is why `0072` must not run before this rename had completed: minting a new code while old-format rows still occupied the day would have counted the day's sequence against a set that did not include them.
+
+---
+
 ## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Outlets thin slice: order-code rename script, till-by-outlet, brand-follows-outlet, sales report breakdown (built, not applied)
 
 **Critique before coding, per CLAUDE.md section 1.** Read the spec
