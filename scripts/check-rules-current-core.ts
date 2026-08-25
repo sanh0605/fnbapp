@@ -111,10 +111,80 @@ function checkBusinessRuleTests(docs: string[], repoRoot: string): CheckResult {
   return { check: "business-rule-tests", ok: problems.length === 0, problems };
 }
 
+// docs/superpowers/plans/2026-08-26-undated-data-claims.md. CLAUDE.md's own
+// Rule 0 (top of file): a claim is only true at the moment it was written --
+// a date next to a number is what lets a reader judge how stale it might be.
+// A number with a data unit and no date nearby is exactly the shape of the
+// defect this exists to catch: section 7 once carried "0d" (stock_issues
+// giá vốn) with no date, true on 2026-08-07 and read as current fact until
+// 2026-08-26.
+//
+// Two attachment styles appear in this document's own prose. "d" (dong) and
+// "%" glue directly onto the number with no space -- "0d", "~95%" -- while
+// every other unit is its own separate word with a required space before it
+// -- "52 mon", "2.376 dong". Vietnamese does not fuse syllables into a
+// single unspaced token the way English compounds sometimes do, so
+// requiring the space for these is safe, not just a style guess.
+const DIRECT_UNITS = ["đ", "%"];
+const SPACED_UNITS = ["dòng", "đơn", "món", "file", "bảng", "phép kiểm", "MB"];
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const NUMBER = "[0-9][0-9.,~]*";
+
+// (?!\p{L}) after a direct unit is load-bearing, not decorative: measuring
+// this exact file by hand, a naive "digit, optional space, d" pattern read
+// the date fragment "24/08 da" as "08 d" (8 dong) -- "da" (da roi, already)
+// happens to start with the same letter as the currency unit. Requiring no
+// letter follow "d" rules that out while still matching the real "0d"/
+// "174.000d" currency notation this document actually uses.
+const DATA_CLAIM_PATTERN = new RegExp(
+  `(?:${NUMBER}(?:${DIRECT_UNITS.map(escapeRegExp).join("|")})(?!\\p{L}))` +
+  `|(?:${NUMBER}[ \\t]+(?:${SPACED_UNITS.map(escapeRegExp).join("|")})\\b)`,
+  "u",
+);
+
+const DATE_PATTERN = /\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}/;
+
+// "A small window of lines" (the plan's own words, not quantified further).
+// 2 is a judgment call: wide enough to catch a date opening a short
+// paragraph, tight enough that a date several sentences away in a different
+// point does not silently cover an unrelated claim.
+const NEARBY_WINDOW = 2;
+
+// The plan requires an escape hatch or false positives get "fixed" by
+// deleting useful sentences. Deliberately visible in raw markdown (so a
+// reader sees it was a deliberate choice) and invisible when rendered as
+// HTML (so it does not clutter a rendered view) -- ordinary HTML comment
+// semantics, not a bespoke convention.
+const ESCAPE_MARKER = "<!-- undated-ok -->";
+
+function checkUndatedDataClaims(docs: string[], repoRoot: string): CheckResult {
+  const problems: string[] = [];
+  for (const doc of docs) {
+    const docPath = join(repoRoot, doc);
+    if (!existsSync(docPath)) continue;
+    const lines = readFileSync(docPath, "utf8").split("\n");
+    lines.forEach((line, index) => {
+      if (!DATA_CLAIM_PATTERN.test(line)) return;
+      if (line.includes(ESCAPE_MARKER)) return;
+      const windowStart = Math.max(0, index - NEARBY_WINDOW);
+      const windowEnd = Math.min(lines.length - 1, index + NEARBY_WINDOW);
+      const nearby = lines.slice(windowStart, windowEnd + 1).join("\n");
+      if (DATE_PATTERN.test(nearby)) return;
+      problems.push(`${doc}:${index + 1} carries a number with a data unit and no date nearby: ${line.trim()}`);
+    });
+  }
+  return { check: "undated-data-claims", ok: problems.length === 0, problems };
+}
+
 export function checkRulesCurrent(docs: string[], repoRoot: string): CheckResult[] {
   return [
     checkPathsExist(docs, repoRoot),
     checkNoRetiredAgents(docs, repoRoot),
     checkBusinessRuleTests(docs, repoRoot),
+    checkUndatedDataClaims(docs, repoRoot),
   ];
 }

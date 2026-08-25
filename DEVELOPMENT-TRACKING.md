@@ -4,6 +4,29 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A fourth rule-drift check for undated data claims -- shipped advisory, not blocking
+
+Implements `docs/superpowers/plans/2026-08-26-undated-data-claims.md`: `checkUndatedDataClaims` in `scripts/check-rules-current-core.ts`, a fourth check alongside `paths-exist`/`no-retired-agents`/`business-rule-tests`. A line in a `RULE_DOCS` document carrying a number with a data unit (`đ`, `dòng`, `đơn`, `món`, `file`, `bảng`, `phép kiểm`, `MB`, `%`) and no date (`YYYY-MM-DD` or `DD/MM`) within 2 lines gets named. An HTML comment marker (`<!-- undated-ok -->`) suppresses exactly the line it sits on.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- the false-positive budget was worse than measured, exactly the condition the plan told me to stop on
+
+The plan's own section 3 measured 3 expected false positives against `CLAUDE.md` alone (270 lines). Section 4 scopes the check to all of `RULE_DOCS` -- `CLAUDE.md` + `docs/BUSINESS-RULES.md` + `docs/OPEN-ITEMS.md` + `docs/operations/*.md`. **Run for real against the full scope: 16 lines, not 3 -- 5.3x the stated budget.** Two patterns account for most of the gap, neither present in the 3-line measurement because it never looked past `CLAUDE.md`:
+
+- **Runbook thresholds.** `docs/operations/orders-v2-cutover.md` is a step-by-step procedure full of pass/fail criteria ("Stop if drift > 5đ/order", "Invariant failed count (target: < 5% of total)") -- structurally identical to `CLAUDE.md`'s own already-accepted "~95%" threshold false positive, just never counted because the measurement never opened this file.
+- **A canonical date outside the window, in a longer document.** `docs/BUSINESS-RULES.md` BR-COGS-006 states "7,4% wrong" with its full date two sections earlier ("Implemented 2026-08-09"); `docs/OPEN-ITEMS.md`'s Logging Hygiene section states a date once, then a wrapped sentence carries its trailing numbers 3-4 lines past a ±2-line window. This is the plan's own third named category (an anecdote whose date sits further up the paragraph than the window) -- just recurring far more often once documents with longer paragraphs than `CLAUDE.md` are in scope.
+
+The plan's own instruction for exactly this outcome: *"if it is worse than measured, say so and stop rather than shipping a noisy gate people learn to ignore."* Marking all 16 with the escape hatch to force a clean gate would have been the "tuning until it passes" the plan explicitly prohibits -- the gap is a scope question (all of `RULE_DOCS` vs. `CLAUDE.md` alone; whether a runbook's procedural thresholds are "data claims" in Rule 0's sense at all), not a false-positive count to silently absorb.
+
+**Resolution: ship the check, running and reporting on every commit, but not blocking.** `scripts/check-rules-current.ts` now treats `undated-data-claims` as advisory (`ADVISORY_CHECKS`) -- `[rules] WARN`, prints all problems, does not set the failing exit code. The other three checks are unaffected and still hard-fail as before. This is not a permanent design; it is the honest state until the scope question above gets a decision. None of the 16 lines were touched or marked -- that decision belongs to whoever settles the scope question, not to whichever count made the gate green fastest.
+
+### Verification
+
+`scripts/check-rules-current-core.test.ts`: 9 new tests, including the required fails-first proof (ran against the code before the check existed -- `TypeError: Cannot read properties of undefined`, confirmed **missing function**, not a wrong value, before implementing), the escape-hatch marker suppressing exactly its own line and not a neighbour, the window boundary in both directions, DD/MM date recognition, and a regression test for a real false-positive found by hand while measuring this file: a naive "digit, optional space, đ" pattern reads the date fragment "24/08 đã" as "08 đ" (8 đồng) -- fixed by requiring `đ`/`%` to attach with no space, matching how this document actually writes currency, while every other unit keeps its required space.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 204 files / 1406 tests (+9); `check-rules-current` exits 0 (3 PASS, 1 WARN, printed above); `npm run build` succeeds. **Not pushed** -- owner approves the push separately, per `CLAUDE.md` section 2.
+
 ## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Sales charts bucket by Saigon calendar time, not UTC
 
 Implements `docs/superpowers/plans/2026-08-26-sales-chart-timezone.md`. Found by the owner: filtering to 2026-08-01 -> 2026-08-26 drew a `2026-07` column, 174.000d that belonged to four orders sold 06:22-06:59 on the 1st.

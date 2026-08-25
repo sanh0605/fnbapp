@@ -125,3 +125,70 @@ describe("check 3: a declared test link points at a test that exists", () => {
     expect(resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]).ok).toBe(true);
   });
 });
+
+// docs/superpowers/plans/2026-08-26-undated-data-claims.md.
+describe("check 4: a number with a data unit must have a date nearby", () => {
+  it("fails and names a line carrying a number-plus-unit with no date anywhere nearby", () => {
+    write("CLAUDE.md", "Kho hiện có 0đ giá trị hàng tồn.");
+    const result = resultFor("undated-data-claims", ["CLAUDE.md"]);
+    expect(result.ok).toBe(false);
+    expect(result.problems.join(" ")).toContain("0đ");
+  });
+
+  it("passes the identical claim once a date sits on the same line", () => {
+    // The original defect this gate exists to catch: CLAUDE.md section 7
+    // carried "stock_issues rong, gia von 0d" with no date at all.
+    write("CLAUDE.md", "Đo 2026-08-07: kho hiện có 0đ giá trị hàng tồn.");
+    expect(resultFor("undated-data-claims", ["CLAUDE.md"]).ok).toBe(true);
+  });
+
+  it("accepts a date within the small window above the claim", () => {
+    write("CLAUDE.md", "Đo 2026-08-07.\nMột dòng đệm ở giữa.\nKho hiện có 300 đơn.");
+    expect(resultFor("undated-data-claims", ["CLAUDE.md"]).ok).toBe(true);
+  });
+
+  it("still flags a date that sits outside the window", () => {
+    write("CLAUDE.md", "Đo 2026-08-07.\nA.\nB.\nC.\nD.\nKho hiện có 300 đơn.");
+    const result = resultFor("undated-data-claims", ["CLAUDE.md"]);
+    expect(result.ok).toBe(false);
+    expect(result.problems.join(" ")).toContain("300");
+  });
+
+  it("recognises DD/MM dates, not only YYYY-MM-DD", () => {
+    write("CLAUDE.md", "Đo 26/08: kho hiện có 300 đơn.");
+    expect(resultFor("undated-data-claims", ["CLAUDE.md"]).ok).toBe(true);
+  });
+
+  // Found by hand while measuring this exact file: a naive "digit, optional
+  // space, d" regex reads the day-of-month in "24/08 da" as "08 d" (8 dong),
+  // because "da" (da roi) starts with the same letter as the currency unit.
+  it("does not mistake a date's day-of-month plus the next word's first letter for a currency figure", () => {
+    write("CLAUDE.md", "Ngày 24/08 đã viết lại một bản thiết kế cũ.");
+    expect(resultFor("undated-data-claims", ["CLAUDE.md"]).ok).toBe(true);
+  });
+
+  it("requires a space before a multi-character unit, so a bare number is not a claim", () => {
+    write("CLAUDE.md", "Phòng họp 20 người, không liên quan đến đơn hàng.");
+    expect(resultFor("undated-data-claims", ["CLAUDE.md"]).ok).toBe(true);
+  });
+
+  it("the escape-hatch marker suppresses exactly the line it is on, not its neighbours", () => {
+    write(
+      "CLAUDE.md",
+      "Kho hiện có 0đ giá trị hàng tồn. <!-- undated-ok -->\n" +
+        "Đã bán 500 đơn trong tháng.",
+    );
+    const result = resultFor("undated-data-claims", ["CLAUDE.md"]);
+    expect(result.ok).toBe(false);
+    expect(result.problems.join(" ")).not.toContain("0đ");
+    expect(result.problems.join(" ")).toContain("500");
+  });
+
+  // Scoping to RULE_DOCS is enforced by the caller's docs list (this check
+  // has no internal allow-list of its own, unlike check 2's
+  // AGENT_CURRENT_DOCS) -- proven here by simply not passing the file in.
+  it("never reads a document that was not passed in the docs list", () => {
+    write("DEVELOPMENT-TRACKING.md", "Ngày xong: đã xử lý 900 đơn không ghi ngày lại lần nữa.");
+    expect(resultFor("undated-data-claims", []).ok).toBe(true);
+  });
+});
