@@ -247,8 +247,8 @@ thiết kế mà chủ quán duyệt từ 28/07, chỉ vì bảng này không c�
 
 | Thư mục | Là gì |
 |---|---|
-| `docs/handoffs/` | Bản giao việc tháng 6–7 cho **hai agent đã nghỉ hẳn từ 31/07** (tên họ nằm trong tên file). Không còn hiệu lực |
-| `docs/audits/` | Kết quả điều tra tháng 6–7, phần lớn đã được kết luận vào `docs/BUSINESS-RULES.md`. File `.json` trong đó là **dữ liệu**, có cái là bản sao lưu duy nhất của dữ liệu đã xoá — không đụng vào |
+| `docs/handoffs/` | Bản giao việc tháng 6–7 cho **hai agent đã nghỉ hẳn từ 31/07**. Dọn 26/08: chỉ giữ lại thứ có mã nguồn hoặc migration trỏ tới. Không còn hiệu lực |
+| `docs/audits/` | Kết quả điều tra tháng 6–7, phần lớn đã kết luận vào `docs/BUSINESS-RULES.md`. Dọn 26/08 cùng lúc. File `.json` trong đó là **dữ liệu**, có cái là bản sao lưu duy nhất của dữ liệu đã xoá — không đụng vào |
 | `DEVELOPMENT-TRACKING.md` | Nhật ký, ~8.300 dòng, mới nhất ở trên. Tra "đã làm gì khi nào", không tra "hiện đang thế nào" |
 | git log | Vì sao có một luật |
 
