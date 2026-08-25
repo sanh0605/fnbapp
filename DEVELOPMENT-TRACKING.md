@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Sales charts bucket by Saigon calendar time, not UTC
+
+Implements `docs/superpowers/plans/2026-08-26-sales-chart-timezone.md`. Found by the owner: filtering to 2026-08-01 -> 2026-08-26 drew a `2026-07` column, 174.000d that belonged to four orders sold 06:22-06:59 on the 1st.
+
+### Critique before coding, per `CLAUDE.md` section 1
+
+Section 4's claim (totals unaffected) checked against the code, not just read: `totalRevenue`/`totalOrders` (`actions.ts:393-399`) sum `typedOrders`/`typedLines` directly with no date-component derivation at all; `outletBreakdown` (`actions.ts:552-562`) sums `orderCount`/`revenue` per order the same way. Checked one level further than the plan states: the order-*inclusion* boundary (which orders land in the filtered set to begin with) already goes through `toSaigonUtcRange` at every call site in this file, so both "which orders are counted" and "how they are summed" were already right -- only the four chart buckets' per-order calendar labels were wrong. No correction needed to the plan.
+
+### The fix
+
+`lib/report-time.ts` gains `saigonBucketKeys(iso)`, next to `toSaigonUtcRange` as the plan asked -- one helper for all four series (`Theo Ngày`/`Theo Tháng`/`Theo Thứ`/`Theo Giờ`), replacing per-order `toISOString()` (always UTC) and `getDay()`/`getHours()` (the runtime's local zone) in `app/admin/reports/actions.ts`'s `getSalesDataV2`. Day-of-week derived from the Saigon Y/M/D components via `Date.UTC` + `getUTCDay()`, never from the timestamp's own `getDay()` -- reading that is the bug being fixed. Same midnight-emits-24 guard `lib/datetime.ts`'s `getSaigonParts` already carries.
+
+**A real, environment-dependent gotcha found while proving the test failed first:** this dev machine's own local timezone is `Asia/Ho_Chi_Minh` (`Intl.DateTimeFormat().resolvedOptions().timeZone` confirms it), so `getDay()`/`getHours()` were *already locally correct here* even on the unfixed code -- only `toISOString()`'s date/month bucketing reproduced the bug. Reproducing the hour/day-of-week half required `TZ=UTC npx vitest run ...` to simulate Vercel's actual runtime zone; under that, the pre-fix code gave exactly the plan's predicted wrong values: day `2026-07-31`, month `2026-07`, hour `23:00` for the owner's `2026-08-01T06:22:53+07:00` case. Recorded so a future run of this test suite on a differently-configured machine does not silently under-test this class of bug again. The fix itself no longer depends on the runtime's local zone at all (explicit `timeZone: "Asia/Ho_Chi_Minh"` throughout), so it is correct identically under any `TZ`.
+
+### A sibling bug found, not fixed -- `OPEN-ITEMS 57`
+
+`getHourlyHeatmapV2` (`actions.ts:772-776`) has the identical `getDay()`/`getHours()` bug, a third site alongside this one and `OPEN-ITEMS 55`. Not bundled, per the plan's own instruction (a fix spanning two sites is harder to verify than two that do not) and its own section 6 note that a repository-wide sweep is its own item, not scope creep here.
+
+### Verification
+
+`lib/report-time.test.ts`: the owner's exact case (boundary-crossing), a non-crossing case, two independently-verified day-of-week facts (2026-01-01 = Thursday, chained from 2024-01-01 = Monday through both leap-year steps; 2026-01-04 = Sunday), and the midnight-24 guard. `app/admin/reports/actions.test.ts`: the owner's case reproduced through the full `getSalesDataV2` path (fails first as shown above), a day-of-week regression guard, and a fixture with four orders spanning multiple UTC-boundary crossings proving all four series still sum to `totalRevenue` -- nothing dropped or double-counted by rebucketing. `scripts/verify-revenue.ts` run live: all four closed months match exactly (April 2.190.000d, May 7.675.000d, June 22.157.000d, July 18.661.000d), August reads 14.587.000d matching the plan's own figure. "All structural checks passed."
+
+### Gates
+
+`tsc` 0 errors; `vitest` 204 files / 1397 tests (+8); `check-rules-current` clean; `npm run build` succeeds. **Not pushed** -- owner approves the push separately, per `CLAUDE.md` section 2.
+
 ## 2026-08-25 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The outlet breakdown gets a real table from md up, cards unchanged below it
 
 Implements `docs/superpowers/plans/2026-08-25-outlet-breakdown-table.md`. The owner was right that two cards adrift in a wide row was wrong, and the plan traces it to a misreading: `CLAUDE.md` section 8 forbids a horizontal table **on a phone**, not on a desktop -- "điện thoại trước" means design for the phone first, not never build the wide layout. One dataset, two shapes, not cards replaced by a table.

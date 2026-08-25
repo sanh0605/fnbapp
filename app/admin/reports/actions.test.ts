@@ -1026,6 +1026,101 @@ describe("getSalesDataV2", () => {
   });
 });
 
+// docs/superpowers/plans/2026-08-26-sales-chart-timezone.md. Chart buckets
+// (Theo Ngay/Thang/Thu/Gio) must key off the Saigon calendar date, not the
+// UTC one toISOString()/getDay()/getHours() produced before this fix.
+describe("getSalesDataV2 chart bucketing (Asia/Ho_Chi_Minh)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findAllWhere as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
+    (findAll as any).mockResolvedValue([]);
+  });
+
+  function orderAt(id: string, createdAt: string, net_total: number) {
+    const fixture = makeSuaDauStandaloneOrder();
+    return {
+      ...fixture.order,
+      id,
+      order_no: id,
+      created_at: createdAt,
+      completed_at: createdAt,
+      net_total,
+      gross_total: net_total,
+      promo_discount_total: 0,
+    };
+  }
+
+  it("buckets the owner's real case to Saigon day 2026-08-01, month 2026-08, hour 06:00", async () => {
+    // The owner's own repro: an order sold 2026-08-01T06:22:53+07:00 (Saigon)
+    // is 2026-07-31T23:22:53Z in UTC. Before this fix that UTC instant is
+    // what toISOString()/getHours() read, so this test fails against the
+    // pre-fix code with day 2026-07-31, month 2026-07, hour 23:00 -- the
+    // exact wrong values the plan reports.
+    const order = orderAt("ord-owner-case", "2026-08-01T06:22:53+07:00", 43500);
+    const line = { ...makeSuaDauStandaloneOrder().lines[0], order_id: order.id };
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [line];
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+
+    expect(result.salesByDate).toEqual(expect.arrayContaining([{ label: "2026-08-01", amount: 43500 }]));
+    expect(result.salesByMonth).toEqual(expect.arrayContaining([{ label: "2026-08", amount: 43500 }]));
+    expect(result.salesByHour).toEqual(expect.arrayContaining([{ label: "06:00", amount: 43500 }]));
+  });
+
+  it("buckets a known date to the day of week it actually was, so an off-by-one in the label array cannot pass", async () => {
+    // 2026-01-01 was a Thursday: 2024-01-01 was a Monday (a leap year, 366
+    // days, so 2025-01-01 is Monday+2 = Wednesday), and 2025 is not a leap
+    // year (365 days, +1), so 2026-01-01 is Wednesday+1 = Thursday.
+    // Thursday -> "T5" in this codebase's ["CN","T2","T3","T4","T5","T6","T7"]
+    // (Sunday-first) labeling. Picked mid-morning Saigon time, nowhere near
+    // a UTC date-boundary crossing, so this isolates the day-of-week index
+    // specifically rather than re-testing the date-boundary fix above.
+    const order = orderAt("ord-known-dow", "2026-01-01T10:00:00+07:00", 20000);
+    const line = { ...makeSuaDauStandaloneOrder().lines[0], order_id: order.id };
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [line];
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+
+    expect(result.salesByDayOfWeek).toEqual(expect.arrayContaining([{ label: "T5", amount: 20000 }]));
+  });
+
+  it("rebuckets without dropping or double-counting: each of the four series still sums to totalRevenue", async () => {
+    const orders = [
+      orderAt("ord-1", "2026-08-01T06:22:53+07:00", 43500), // UTC-day/month boundary crossing
+      orderAt("ord-2", "2026-08-15T14:00:00+07:00", 30000), // safely mid-day
+      orderAt("ord-3", "2026-07-31T23:50:00+07:00", 12000), // Saigon 23:50 -> UTC same day, no crossing
+      orderAt("ord-4", "2026-01-01T00:30:00+07:00", 8000),  // Saigon just after midnight -> UTC previous day
+    ];
+    const lines = orders.map(o => ({ ...makeSuaDauStandaloneOrder().lines[0], order_id: o.id }));
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return orders;
+      if (sheet === "Order_Lines_V2") return lines;
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+    const sumOf = (series: { amount: number }[]) => series.reduce((s, r) => s + r.amount, 0);
+
+    expect(sumOf(result.salesByDate)).toBe(result.totalRevenue);
+    expect(sumOf(result.salesByMonth)).toBe(result.totalRevenue);
+    expect(sumOf(result.salesByDayOfWeek)).toBe(result.totalRevenue);
+    expect(sumOf(result.salesByHour)).toBe(result.totalRevenue);
+  });
+});
+
 describe("getHourlyHeatmapV2", () => {
   beforeEach(() => {
     vi.clearAllMocks();

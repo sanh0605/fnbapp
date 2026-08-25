@@ -13,7 +13,7 @@ import {
   breakdownRevenueByProduct,
   type ProductRevenueRow,
 } from "@/lib/report-v2-allocators";
-import { toSaigonUtcRange } from "@/lib/report-time";
+import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/report-time";
 import { displayMoney } from "@/lib/display-rounding";
 import { computePeriodIssuedValue } from "@/lib/issue-costing";
 import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/issue-costing-inputs";
@@ -519,26 +519,22 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     const byDayOfWeek = new Map<string, number>();
     const byHour = new Map<string, number>();
 
-    const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
+    // docs/superpowers/plans/2026-08-26-sales-chart-timezone.md: all four
+    // series bucket by the Saigon calendar date/hour, not toISOString()
+    // (always UTC) or getDay()/getHours() (the runtime's local zone -- UTC
+    // on Vercel, which is why this was wrong there but not on a machine
+    // whose local zone already happens to be Asia/Ho_Chi_Minh).
     for (const o of timeSeriesOrders) {
       if (!o.created_at) continue;
-      const d = new Date(o.created_at);
       const rev = categoryId
         ? typedLines.filter(l => l.order_id === o.id).reduce((s, l) => s + l.net_line_total, 0)
         : o.net_total;
 
-      const dateStr = d.toISOString().split("T")[0];
-      byDate.set(dateStr, (byDate.get(dateStr) || 0) + rev);
-
-      const monthStr = d.toISOString().substring(0, 7);
-      byMonth.set(monthStr, (byMonth.get(monthStr) || 0) + rev);
-
-      const dow = days[d.getDay()];
-      byDayOfWeek.set(dow, (byDayOfWeek.get(dow) || 0) + rev);
-
-      const hour = d.getHours().toString().padStart(2, "0") + ":00";
-      byHour.set(hour, (byHour.get(hour) || 0) + rev);
+      const { dateKey, monthKey, dowLabel, hourKey } = saigonBucketKeys(o.created_at);
+      byDate.set(dateKey, (byDate.get(dateKey) || 0) + rev);
+      byMonth.set(monthKey, (byMonth.get(monthKey) || 0) + rev);
+      byDayOfWeek.set(dowLabel, (byDayOfWeek.get(dowLabel) || 0) + rev);
+      byHour.set(hourKey, (byHour.get(hourKey) || 0) + rev);
     }
 
     // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 6b.
