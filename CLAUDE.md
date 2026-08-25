@@ -101,10 +101,19 @@ nền tảng cũ chốt 2026-07-22 — tra git log nếu cần biết nền cũ.
 3. **Giá vốn tính theo đợt kiểm kê, không theo lần bán.** Đóng kiểm kê ghi
    chênh lệch đếm-thật trừ lý-thuyết vào `stock_issues`, định giá theo bình
    quân gia quyền nguyên liệu mua vào (`lib/issue-costing.ts`).
-4. **`stock_issues` hiện RỖNG — trạng thái thật, không phải lỗi.** Mọi báo
-   cáo giá vốn hiện 0đ. Nguyên liệu thô: tồn = toàn bộ đã nhập, chưa trừ gì.
-   Bán thành phẩm: tồn về 0, không còn nền để tính (`BR-INV-006`). **Lần
-   kiểm kê đầu tiên là thứ bật máy tính giá vốn lên**, không phải dọn dẹp.
+4. **Máy tính giá vốn ĐÃ CHẠY từ 09/08/2026.** Kỳ kiểm kê đầu tiên đã đóng
+   hôm đó và bật nó lên. Đo lại 26/08: `stock_issues` có **82 dòng** —
+   **34.864.627đ** từ kiểm kê và **2.025.811đ** từ phiếu xuất kho.
+
+   **Hai con số đó KHÔNG được cộng lại rồi gọi là giá vốn tháng 8.** Phần
+   34,8 triệu là **bốn tháng dùng mà không ai ghi phiếu xuất**, dồn vào một
+   ngày (`BR-COGS-007`). Chỉ 2,0 triệu là giá vốn đang chạy.
+
+   **Câu cũ ở chỗ này ghi "stock_issues hiện RỖNG, mọi báo cáo giá vốn 0đ".**
+   Đúng lúc viết (07/08), sai từ 09/08, và vẫn nằm đây tới 26/08 — chủ quán
+   là người phát hiện. Một câu cũ trong file này nguy hiểm hơn không có gì,
+   vì nó chặn người đọc đi tra. **Ngày là bắt buộc với mọi câu mô tả trạng
+   thái dữ liệu ở đây**; không có ngày thì không biết nó đã hết hạn.
 
 ## 8. Viết code
 
