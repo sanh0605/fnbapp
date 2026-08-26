@@ -104,3 +104,6 @@ fnbapp-monthly-*.json
 # owner's own point-and-comment notes from the local preview -- his, not
 # the repository's.
 /UI-FEEDBACK.md
+
+# per-session working files, never part of the repo
+/scratchpad/
