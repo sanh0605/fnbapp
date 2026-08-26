@@ -1,3 +1,14 @@
+# WITHDRAWN 2026-08-26
+
+**Superseded by `docs/superpowers/plans/2026-08-26-outlet-done-properly.md`.**
+This plan patched one symptom of a screen with three problems, and proposed a
+warning dialog for a drafts defect whose correct fix is to change the key —
+against a table holding 0 rows. Kept rather than deleted, because the reasoning
+it got right about brand safety was carried forward, and the reasoning it got
+wrong is the point.
+
+---
+
 # The outlet screen should edit an outlet, not just rename it
 
 **Written 2026-08-26 by Opus 5.** Handoff to Sonnet 5. Critique before coding
