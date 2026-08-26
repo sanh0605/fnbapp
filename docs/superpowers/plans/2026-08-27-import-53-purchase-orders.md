@@ -21,7 +21,7 @@ lines of raw output is not something he can judge.
 **So the approval shape changes, not the approval.** He approves on a figure he
 can judge (§6). The line-by-line checking is the reviewer's job, not his.
 
-## 2. Inputs — three confirmed, one still open
+## 2. Inputs, all owner-confirmed
 
 Four files in `scratchpad/`, produced during the 2026-08-27 session:
 
@@ -36,18 +36,28 @@ Four files in `scratchpad/`, produced during the 2026-08-27 session:
 twice already during this work — and every figure below has a measurement date
 for that reason.
 
-**Held open 2026-08-27, Sonnet caught it.** `owner-map.json` covers 31 names.
-Another **11 sheet names, touching 20 of the 107 lines**, were resolved during
-planning by a prefix rule (*sheet name is a prefix of the system name, or vice
-versa*) and **were never shown to the owner**. That rule is a guess wearing the
-costume of a match. The 11 are with him now; do not code against the prefix
-rule, and do not run until they are confirmed and written into
-`owner-map.json` the same way the 31 were.
+**Closed 2026-08-27, after Sonnet caught it.** `owner-map.json` held 31 names.
+Another **11, touching 20 of the 107 lines**, had been resolved during planning
+by a prefix rule (*sheet name is a prefix of the system name, or vice versa*)
+and **were never shown to the owner** — a guess wearing the costume of a match.
+The 11 went to him and he confirmed all 11, including the one flagged as a
+genuine judgment call rather than a case difference: the sheet carries both
+`Túi chữ T` and `Túi Chữ T 12.5x26 - 2kg` while the system has only the former,
+so their costs merge into one average. He was told that and confirmed anyway.
+`owner-map.json` now holds **42 owner-confirmed names**.
 
-The one that is not merely a case difference: the sheet carries **both**
-`Túi chữ T` and `Túi Chữ T 12.5x26 - 2kg` as separate items, while the system has
-only `Túi chữ T`. If they are two sizes, merging them blends two average costs
-into one.
+**The prefix rule is now deleted, not merely unused — and that was verified by
+re-resolving with it removed** (`scratchpad/strict.py`, owner map + exact match
+only). Result on the 53 orders: **107 lines, 57 via the owner map, 50 exact,
+0 unresolved, 0 unit problems.** Nothing depends on the guess any more.
+
+**That check was wrong the first time it ran, and the failure is worth
+copying.** It reported 90 of 107 lines as having an unusable unit. The data was
+fine: `uom_conversions.purchased_unit` holds a unit **id** (`UNT-003`), not a
+display name, so the check was comparing ids against the sheet's words and
+could not have matched anything. Joining `units` dropped it to 0. A check that
+fails on almost everything is reporting on itself, not on the data — read it
+before believing it.
 
 ## 3. Preparation, both owner-approved
 
@@ -121,6 +131,12 @@ this repository (`app/api/cron/` is empty, `vercel.json` is `{}`, verified
 | `inventory_balances` rows | 73 |
 | Suppliers | 33 |
 | Sum of `total_amount` | **58.903.591đ** |
+
+**Re-measured 2026-08-27 after the owner confirmed the 11 names:** all six
+figures unmoved, and the sheet still totals 29.004.697đ with 53/53 orders
+reconciling. He enters data between sessions, so this is a re-measurement, not
+a copy. Measure again before applying — the target below is only as fresh as
+its last reading.
 
 **And what the 53 orders must add**, computed from the sheet and internally
 consistent — subtotal + shipping + voucher + discount + tax equals the stated
