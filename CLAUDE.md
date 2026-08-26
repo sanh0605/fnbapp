@@ -129,25 +129,34 @@ Chủ quán là người kinh doanh, không phải người viết phần mềm.
 
 ## 7. Viết code
 
-- **Điện thoại trước, máy tính sau — mọi trang, kể cả bố cục.** Chủ quán chốt
-  2026-08-08, mở rộng 2026-08-17: khi tới đợt cải tổ giao diện, phạm vi là
-  **toàn bộ hệ thống**, và **điện thoại là bản duy nhất được dựng trước**.
+- **Thiết bị nào ra thiết bị đó — chủ quán chốt lại 2026-08-26.** Màn hình máy
+  tính dựng theo lối máy tính, màn hình điện thoại dựng theo lối điện thoại.
+  **Không để bản này bóp méo bản kia**, và không có bản nào là "bản chính".
 
-  Lý do ông ấy nêu bằng việc thật: đếm hàng là đứng trước kệ, hàng vỡ thì ghi
-  tại chỗ. Không ai chạy về bàn mở máy tính để ghi một hộp sữa đổ.
+  **Đây là luật thay thế.** Từ 2026-08-08 tới 2026-08-25 luật là *"điện thoại
+  trước, máy tính sau, xong nghĩa là xong trên điện thoại, máy tính được phép
+  còn thô"*. Nó sinh ra đúng thứ nó cho phép: bảng thống kê theo điểm bán dựng
+  toàn thẻ dọc, mở trên máy tính thành vài cái thẻ trôi giữa khoảng trắng — chủ
+  quán phải bảo mới sửa. Luật cũ không sai về ý, nhưng cái nó **cho phép** thì
+  hại hơn cái nó bảo vệ.
 
-  Cụ thể: không bảng ngang **trên điện thoại** (mỗi dòng một thẻ xếp dọc);
+  **Trang chỉ xong khi cả hai thiết bị đều dùng được**, không phải khi điện
+  thoại xong.
+
+  Lý do điện thoại vẫn quan trọng, chủ quán nêu bằng việc thật (2026-08-08):
+  đếm hàng là đứng trước kệ, hàng vỡ thì ghi tại chỗ. Không ai chạy về bàn mở
+  máy tính để ghi một hộp sữa đổ. Nên điện thoại **không được là bản rút gọn**
+  của máy tính — nhưng máy tính cũng không được là bản phóng to của điện thoại.
+
+  Cụ thể trên **điện thoại**: không bảng ngang (mỗi dòng một thẻ xếp dọc);
   `inputMode="numeric"` cho mọi ô số; vùng bấm vừa ngón cái; việc dài phải hiện
   tiến độ và **lưu từng bước lên máy chủ**.
 
-  **"Điện thoại trước" không có nghĩa là cấm bảng trên máy tính** (chốt lại
-  2026-08-25, sau khi hiểu sai đúng chỗ này). Màn hình rộng mà bày vài cái thẻ
-  giữa khoảng trắng thì vừa xấu vừa khó so sánh. Đúng cách là **một dữ liệu, hai
-  hình dạng**: điện thoại thẻ dọc, máy tính bảng ngang.
+  Cụ thể trên **máy tính**: dữ liệu nhiều cột thì dùng bảng thật, so sánh được
+  bằng mắt theo cột; đừng bày thẻ rời giữa khoảng trắng.
 
-  **Đừng biến quy tắc này thành cái cớ viết lại cả admin trong một lượt.** Cải
-  tổ đi từng đợt, mỗi đợt vài trang. Trang được coi là xong khi **xong trên điện
-  thoại**; máy tính được phép còn thô tới đợt sau.
+  Cùng một dữ liệu, **hai bố cục viết riêng** — không phải một bố cục co giãn
+  cho vừa cả hai.
 
   **Không cần đo tỉ lệ thiết bị.** Đề xuất ghi lại người dùng mở bằng máy gì đã
   bị chủ quán bác: ông ấy biết chắc là điện thoại. Điều kiện xem lại là chủ quán
