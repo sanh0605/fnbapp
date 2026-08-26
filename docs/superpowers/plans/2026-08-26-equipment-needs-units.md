@@ -47,8 +47,24 @@ instead of a unit price can land in the wrong band. That is a genuine hazard
 and it is why this should be fixed before the equipment purchase orders are
 entered.
 
-**But it changes no term in the owner's actual history.** All 78 equipment
-purchase lines were examined; **4** use a genuine multi-unit pack:
+**But it changes no term in anything already recorded — and the reason is
+stronger than this section first claimed.**
+
+**Corrected 2026-08-26, after Sonnet challenged the wording.** The original read
+*"all 78 equipment purchase lines were examined"* without saying **where**, which
+reads as live data. It was not: those 78 lines are in the **owner's Google
+Sheet**, and the system holds **0 equipment purchase lines and 0 asset rows**
+(verified directly). So nothing needs retroactive correction — not because a
+check found no band boundary crossed, but because there is nothing yet to have
+crossed one.
+
+**Sonnet's own diagnosis of the number was also wrong**, and both belong in the
+record: it read 78 as the total purchased-item catalogue count. The catalogue
+does hold 78 rows, but that is a coincidence — the two 78s count different
+things. The challenge was right; the explanation of it was not.
+
+The sheet examination still matters, because it is what the owner is about to
+enter. **4** of its 78 lines use a genuine multi-unit pack:
 
 | Item | Pack | Line total | Band as a pack | Band per unit |
 |---|---|---|---|---|
