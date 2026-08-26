@@ -3,6 +3,7 @@
 import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -156,8 +157,7 @@ export async function addBaseIngredient(formData: FormData): Promise<ActionRespo
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -206,8 +206,7 @@ export async function updateBaseIngredient(formData: FormData): Promise<ActionRe
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -223,7 +222,6 @@ export async function deleteBaseIngredientAction(formData: FormData): Promise<Ac
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

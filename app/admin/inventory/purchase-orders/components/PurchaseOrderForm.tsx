@@ -40,6 +40,25 @@ export function validatePurchaseOrderLine(
   return null;
 }
 
+// docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md section 3:
+// source_id was read into state and appended to the payload but never
+// checked here -- an empty source reached the server and failed
+// downstream, far from the cause, and the owner was shown the raw
+// technical text of whatever failed instead of an instruction he could
+// follow. Extracted as a pure function, same reasoning as
+// validatePurchaseOrderLine above: this large component's render tree is
+// not what should have to be mounted to prove a validation order.
+export function validatePurchaseOrderHeader(input: {
+  supplierId: string;
+  sourceId: string;
+  lineCount: number;
+}): string | null {
+  if (!input.supplierId) return "Vui lòng chọn nhà cung cấp";
+  if (!input.sourceId) return "Vui lòng chọn nguồn nhập hàng";
+  if (input.lineCount === 0) return "Vui lòng thêm ít nhất 1 mặt hàng";
+  return null;
+}
+
 interface PurchaseOrderFormProps {
   suppliers: DBSupplier[];
   sources: DBPurchaseSource[];
@@ -178,8 +197,8 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
   const handleSubmit = async (status: string) => {
     if (status === "COMPLETED") {
-      if (!supplierId) return await alert({ title: "Thiếu thông tin", message: "Vui lòng chọn nhà cung cấp", variant: "warning" });
-      if (lines.length === 0) return await alert({ title: "Thiếu thông tin", message: "Vui lòng thêm ít nhất 1 mặt hàng", variant: "warning" });
+      const headerError = validatePurchaseOrderHeader({ supplierId, sourceId, lineCount: lines.length });
+      if (headerError) return await alert({ title: "Thiếu thông tin", message: headerError, variant: "warning" });
 
       // Validation
       for (let i = 0; i < lines.length; i++) {

@@ -55,9 +55,12 @@ describe("stocktake confirmation actions", () => {
       ledgerIds: [],
     });
 
-    await expect(stocktakeActions.getStocktakeConfirmPreview("STK-001")).resolves.toEqual({
-      error: "Stocktake preview did not return a dry run",
-    });
+    // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md: an
+    // internal English assertion is not written for the owner either --
+    // wrapped the same as a raw technical exception, detail preserved.
+    const result = await stocktakeActions.getStocktakeConfirmPreview("STK-001");
+    expect(result.error).toMatch(/Có lỗi xảy ra/);
+    expect(result.errorDetail).toBe("Stocktake preview did not return a dry run");
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
@@ -364,13 +367,18 @@ describe("reverseConfirmedStocktakeSession (Plan D D14, U1-U6)", () => {
 
   it("relays a guard refusal from the RPC itself (e.g. U2/U3/U4) as a plain error, not a thrown exception", async () => {
     mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    // Current RAISE EXCEPTION wording, post-0063 (0062's original was
+    // diacritic-free -- fixed by 0063_fix_d14_vietnamese_diacritics.sql).
+    // Also exercises docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md's
+    // wrapper: a message with real Vietnamese diacritics must relay
+    // verbatim, not collapse into the generic sentence.
     mocks.reverseStocktakeSessionAtomic.mockRejectedValue(
-      new Error("Dang co mot phien kiem ke dang mo -- xu ly xong phien do truoc khi huy phien da ap dung"),
+      new Error("Đang có một phiên kiểm kê đang mở -- xử lý xong phiên đó trước khi huỷ phiên đã áp dụng"),
     );
 
     const result = await stocktakeActions.reverseConfirmedStocktakeSession("STK-004", "Đếm nhầm");
 
-    expect(result.error).toContain("dang mo");
+    expect(result.error).toContain("đang mở");
   });
 });
 

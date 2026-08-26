@@ -3,6 +3,7 @@
 import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 
@@ -144,8 +145,7 @@ export async function savePromotion(promoData: Record<string, any>): Promise<Act
       return ok({ id: newId });
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -161,7 +161,6 @@ export async function deletePromotionAction(promoId: string): Promise<ActionResp
     revalidatePath("/pos");
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

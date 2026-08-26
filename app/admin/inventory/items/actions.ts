@@ -3,6 +3,7 @@
 import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -138,8 +139,7 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
     revalidatePath("/admin/inventory/conversions");
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -267,8 +267,7 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
     revalidatePath("/admin/inventory/conversions");
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -282,7 +281,6 @@ export async function deletePurchasedItemAction(formData: FormData): Promise<Act
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

@@ -65,13 +65,17 @@ describe("saveProduct atomic persistence", () => {
   });
 
   it("leaves no partial create state after rollback and permits retry", async () => {
+    // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md: a
+    // raw ASCII exception is replaced with the generic Vietnamese sentence;
+    // the raw text survives as errorDetail, not shown to the owner.
     mocks.saveProductAtomic
       .mockRejectedValueOnce(new Error("forced rollback"))
       .mockResolvedValueOnce(makeRpcResult());
 
-    await expect(saveProduct(makeCreateFormData())).resolves.toEqual({
-      error: "forced rollback",
-    });
+    const res = await saveProduct(makeCreateFormData());
+    expect(res.error).toMatch(/Có lỗi xảy ra/);
+    expect(res.errorDetail).toBe("forced rollback");
+
     await expect(saveProduct(makeCreateFormData())).resolves.toEqual({ success: true });
     expect(mocks.saveProductAtomic).toHaveBeenCalledTimes(2);
   });

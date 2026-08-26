@@ -3,6 +3,7 @@
 import { findAll, update, insert, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import { requireAdmin } from "@/lib/auth";
 import { validateBands, type Band } from "@/lib/asset-depreciation";
 import type { DBAssetDepreciationBand } from "@/types/db";
@@ -69,8 +70,7 @@ export async function updateAssetBand(formData: FormData): Promise<ActionRespons
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -98,8 +98,7 @@ export async function createAssetBand(formData: FormData): Promise<ActionRespons
     revalidatePath(PATH);
     return ok({ id });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -131,7 +130,6 @@ export async function deleteAssetBand(formData: FormData): Promise<ActionRespons
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

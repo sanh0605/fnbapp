@@ -3,6 +3,7 @@
 import { findAll, findById, insert, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";
 import { savePurchaseOrderAtomic } from "@/lib/purchase-order-transaction";
@@ -60,8 +61,14 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
 
   const effectiveDate = transaction_date ? new Date(transaction_date).toISOString() : new Date().toISOString();
 
-  if (status === "COMPLETED" && (!supplier_id || !linesJson || linesJson === "[]")) {
-    return fail("Vui lòng nhập đầy đủ thông tin (nhà cung cấp và mặt hàng) để hoàn thành đơn");
+  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md
+  // section 3: the client-side form validates this same field beside
+  // supplier_id (PurchaseOrderForm.tsx's validatePurchaseOrderHeader) --
+  // mirrored here so a request that reaches the server without going
+  // through that form is refused the same way, not left to fail
+  // downstream with no relation to what was actually missing.
+  if (status === "COMPLETED" && (!supplier_id || !source_id || !linesJson || linesJson === "[]")) {
+    return fail("Vui lòng nhập đầy đủ thông tin (nhà cung cấp, nguồn nhập và mặt hàng) để hoàn thành đơn");
   }
 
   try {
@@ -245,8 +252,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
     return ok({ po_id, ...(assetWarning ? { assetWarning } : {}) });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -264,7 +270,6 @@ export async function addPurchaseSource(name: string): Promise<ActionResponse> {
     });
     return ok({ id });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

@@ -3,6 +3,7 @@
 import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBUOMConversion, DBPurchasedItem, DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import { wouldLeaveNoCountableConversion } from "@/lib/conversion-countability";
@@ -114,8 +115,7 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -176,8 +176,7 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -199,7 +198,6 @@ export async function deleteConversionAction(formData: FormData): Promise<Action
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

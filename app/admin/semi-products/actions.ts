@@ -3,6 +3,7 @@
 import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBSemiProduct, DBRecipe, DBBaseIngredient, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -209,8 +210,7 @@ export async function saveSemiProduct(formData: FormData): Promise<ActionRespons
     revalidatePath("/admin/semi-products");
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -224,7 +224,6 @@ export async function deleteSemiProductAction(formData: FormData): Promise<Actio
     revalidatePath("/admin/inventory/semi-products");
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

@@ -35,6 +35,12 @@ describe("addSupplier -- duplicate-name guard (Batch 1 follow-up, level 1)", () 
     mocks.generateNewId.mockResolvedValue("NCC-999");
   });
 
+  // Also the plan section 5 requirement that a message already written for
+  // the owner survives lib/action-error.ts's wrapper: this returns via
+  // `return fail(duplicateNameErrorMessage(conflict))` from inside the try
+  // block, which exits before the catch that now calls describeActionError
+  // could ever touch it -- proven here by the exact message still showing
+  // up untouched, not a generic sentence.
   it("refuses a within-table collision against an ACTIVE row, naming it", async () => {
     mocks.findAll.mockResolvedValue([{ id: "NCC-010", name: "Công ty ABC", status: "ACTIVE" }]);
 

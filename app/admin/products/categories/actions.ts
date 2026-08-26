@@ -3,6 +3,7 @@
 import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, softDeleteEntity, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBProductCategory, DBProduct } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 
@@ -49,8 +50,7 @@ export async function saveCategory(formData: FormData): Promise<ActionResponse> 
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -67,8 +67,7 @@ export async function updateCategory(formData: FormData): Promise<ActionResponse
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 

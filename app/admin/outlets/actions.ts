@@ -4,6 +4,7 @@ import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import { nextOutletCode } from "@/lib/outlet-code";
 import { toSaigonIsoString } from "@/lib/datetime";
 import type { DBOutlet } from "@/types/db";
@@ -73,8 +74,7 @@ export async function addOutlet(formData: FormData): Promise<ActionResponse> {
     revalidatePath(PATH);
     return ok({ code });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -115,8 +115,7 @@ export async function editOutlet(formData: FormData): Promise<ActionResponse> {
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -149,7 +148,6 @@ export async function retireOutlet(formData: FormData): Promise<ActionResponse> 
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

@@ -4,6 +4,38 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The owner should never be shown an error he cannot act on
+
+Implements `docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md`. The owner entered a purchase order, pressed save, and got `Lỗi: findAll(Item_Categories): JWT issued at future` -- he worked out himself that he had not chosen a nguồn nhập. His words: *"nó hiển thị lỗi như này anh sẽ không biết anh cần làm gì."*
+
+### Critique before coding, per `CLAUDE.md` section 1 -- the 43-site count was accurate; found a larger, real risk the plan's own examples didn't cover
+
+Section 3's core measurement checked out exactly: `error instanceof Error ? error.message : "Unknown error"` -- **43 occurrences across 16 files in `app/`**, confirmed by grep before touching anything. `PurchaseOrderForm.tsx`'s validation gap also checked out exactly at the cited lines: supplier, lines and each line's fields are validated; `source_id` is read into state and appended to the payload and never checked.
+
+**Found a fourth site class the plan's own "duplicate-name" example didn't anticipate, verified by tracing real call sites, not assumed:** several of these 43 catches sit downstream of a Postgres RPC's own `RAISE EXCEPTION` guard (`create_issue_slip_atomic`'s I4/I5/I10, `reverse_manual_issue_atomic`, `cancel_issue_slip_atomic`'s U11, `reverse_stocktake_session_atomic`'s U2-U4) -- all Vietnamese, all **already tested as deliberately relayed verbatim** ("relays the RPC's own refusal... verbatim" is the literal name of four existing tests). A mechanical wrap would have silently regressed all four. Also found two `throw new Error("Không tìm thấy biến thể...")` calls in `products/actions.ts`'s `saveProduct`, inside the same try block its own 43-pattern catch sits in -- a second, independent instance of the same risk. **Fixed the actual root cause of the risk, not each instance:** every deliberately-written message in this codebase is Vietnamese (`CLAUDE.md`'s own rule for anything the owner reads) and every known raw/technical exception is plain ASCII (Supabase/Postgres/JS internals never emit Vietnamese) -- `lib/action-error.ts`'s `describeActionError` uses a non-ASCII check to distinguish them, verified against all four real RPC fixtures plus both `products/actions.ts` throws, none of which needed touching.
+
+One stale test fixture found along the way: `stocktake/actions.test.ts`'s U2-U4 fixture still used `0062`'s original diacritic-free wording, superseded by `0063_fix_d14_vietnamese_diacritics.sql`. Updated to the current, real RPC message -- the test now checks what production actually says.
+
+**A cheap scope extension found and included:** `lib/shared-actions.ts`'s `createEntity`/`updateEntity`/`deleteEntity`/`softDeleteEntity` carry the identical pattern (4 more sites), and `brands/actions.ts` relies on them exclusively with no local catch of its own -- meaning it was invisible to an `app/`-only count but hits the owner exactly the same way. Fixed alongside the 43, bringing the total to 47.
+
+**Narrowed the plan's "hide behind an expander" UI proposal, argued in the critique:** building it would mean touching every client call site that displays one of these 47 actions' `res.error` -- a second, unscoped surface the plan's own "43 sites" count never included. Shipped the data layer in full instead (`error` is always the friendly sentence, `errorDetail` carries the raw text, logged server-side via `console.error` so nothing is lost) and left the actual expander as a follow-up, logged as `OPEN-ITEMS 61` rather than silently expanding this task's footprint or silently dropping the detail.
+
+### What was changed
+
+- `lib/action-error.ts`: `describeActionError(error)` -- the wrapper described above.
+- `lib/shared-actions.ts`: `ActionResponse` gains `errorDetail?: string`; its 4 catch blocks use the new wrapper.
+- All 43 `app/` sites across 16 files: `const message = error instanceof Error ? error.message : "Unknown error"; return fail(message);` -> `return describeActionError(error);` (one site, `assets/actions.ts`'s `previewDisposalCharge`, has a narrower `{ charge } | { error }` return type with no `errorDetail` slot -- extracts just the `.error` half).
+- `PurchaseOrderForm.tsx`: `validatePurchaseOrderHeader` (supplier, then source, then lines -- extracted as a pure function, matching this file's own existing convention for `validatePurchaseOrderLine`, rather than render-testing the large component tree). Message: *"Vui lòng chọn nguồn nhập hàng."*
+- `purchase-orders/actions.ts`: the server-side neighbour of the same check, so a request reaching `savePurchaseOrder` without going through the form is refused the same way.
+
+### Verification
+
+`lib/action-error.test.ts` (9 tests: generic wrap + detail + server log for a raw ASCII exception, verbatim passthrough + no log for a Vietnamese message, all four real RPC fixtures, a non-Error thrown value). `PurchaseOrderForm.validation.test.ts`'s new `validatePurchaseOrderHeader` suite (5 tests) **proven to fail first** against the pre-fix component (`git stash` on just that file): all five failed with `validatePurchaseOrderHeader is not a function` -- missing function, not a wrong value. `purchase-orders/actions.subtotal.test.ts` extended for the server-side guard (2 new tests); its and two sibling test files' `buildFormData` helpers needed a default `source_id` or every existing `COMPLETED`-status test in those files would have tripped the new header check before reaching its own actual subject. `suppliers/actions.test.ts`'s existing duplicate-name test doubles as the plan's required "a message already written for the owner survives the wrapper" proof -- annotated to say so explicitly rather than relying on an unremarked pass.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 214 files / 1486 tests (+9); `check-rules-current` exits 0 (unchanged: 3 PASS, 1 WARN, `OPEN-ITEMS 58`; `OPEN-ITEMS 60` already recorded section 4's dead-fallback finding before this handoff, `OPEN-ITEMS 61` added for the deferred expander UI); `npm run build` succeeds. **Not pushed.**
+
 ## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A point-and-comment tool on the local preview
 
 Implements `docs/superpowers/plans/2026-08-26-ui-feedback-tool.md`, the first work under the revised UI rule (`CLAUDE.md` section 7): so the owner can say "this is wrong here" by pointing at it on his phone, instead of describing it in words.

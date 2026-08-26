@@ -37,6 +37,10 @@ import { savePurchaseOrder } from "./actions";
 function buildFormData(fields: Record<string, string>): FormData {
   const formData = new FormData();
   formData.set("supplier_id", "SUP-1");
+  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md
+  // section 3: savePurchaseOrder now also requires source_id for a
+  // COMPLETED order.
+  formData.set("source_id", "SRC-1");
   formData.set("transaction_date", "2026-07-29");
   formData.set("status", "COMPLETED");
   formData.set("subtotal_amount", "102000");

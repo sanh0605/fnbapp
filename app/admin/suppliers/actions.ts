@@ -3,6 +3,7 @@
 import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBSupplier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -108,8 +109,7 @@ export async function addSupplier(formData: FormData): Promise<ActionResponse> {
     revalidatePath(PATH);
     return ok({ id });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -163,8 +163,7 @@ export async function editSupplier(formData: FormData): Promise<ActionResponse> 
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 

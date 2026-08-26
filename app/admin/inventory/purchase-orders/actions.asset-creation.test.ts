@@ -51,6 +51,10 @@ const BANDS = [
 function buildFormData(status = "COMPLETED", id = ""): FormData {
   const formData = new FormData();
   formData.set("supplier_id", "SUP-1");
+  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md
+  // section 3: savePurchaseOrder now also requires source_id for a
+  // COMPLETED order.
+  formData.set("source_id", "SRC-1");
   // A "Z"-suffixed UTC instant, not the bare "YYYY-MM-DDTHH:mm:ss" the real
   // client actually sends (toSaigonIsoString has no offset marker at all) --
   // that form is parsed as LOCAL TIME by plain new Date(), which is exactly

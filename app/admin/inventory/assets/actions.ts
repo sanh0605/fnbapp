@@ -3,6 +3,7 @@
 import { findAll, insert, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import { requireAdmin } from "@/lib/auth";
 import {
   buildAssetSchedule,
@@ -115,8 +116,10 @@ export async function previewDisposalCharge(
     const month = disposedDate.slice(0, 7);
     return { charge: chargeForMonth(schedule, month) };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { error: message };
+    // This function's return type is narrower than ActionResponse (no
+    // errorDetail) -- same generic-vs-verbatim decision, just the { error }
+    // half of it.
+    return { error: describeActionError(error).error! };
   }
 }
 
@@ -179,7 +182,6 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

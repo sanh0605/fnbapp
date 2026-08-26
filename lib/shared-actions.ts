@@ -1,9 +1,14 @@
 import { insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
+import { describeActionError } from "@/lib/action-error";
 
 export interface ActionResponse {
   success?: boolean;
   error?: string;
+  // Set only when error is the generic fallback sentence -- the raw
+  // exception text an engineer needs, never shown to the owner by default.
+  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md.
+  errorDetail?: string;
   [key: string]: unknown;
 }
 
@@ -28,8 +33,7 @@ export async function createEntity(
     revalidatePath(revalidatePathStr);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -44,8 +48,7 @@ export async function updateEntity(
     revalidatePath(revalidatePathStr);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -59,8 +62,7 @@ export async function deleteEntity(
     revalidatePath(revalidatePathStr);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -74,7 +76,6 @@ export async function softDeleteEntity(
     revalidatePath(revalidatePathStr);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

@@ -4,6 +4,7 @@ import { findAll, findAllWhere } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import {
   openStocktakeSessionAtomic,
   saveStocktakeLineAtomic,
@@ -235,8 +236,7 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -249,8 +249,7 @@ export async function saveStocktakeLine(lineId: string, countedQty: number): Pro
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -263,8 +262,7 @@ export async function cancelStocktakeSession(sessionId: string): Promise<ActionR
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -286,8 +284,7 @@ export async function getStocktakeConfirmPreview(
     }
     return ok({ preview });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -315,8 +312,7 @@ export async function confirmStocktakeSession(
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -344,7 +340,6 @@ export async function reverseConfirmedStocktakeSession(
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

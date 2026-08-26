@@ -4,6 +4,7 @@ import { findAll, findAllWhere } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import {
   createIssueSlipAtomic,
   reverseManualIssueAtomic,
@@ -139,8 +140,7 @@ export async function createIssueSlip(input: {
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -214,8 +214,7 @@ export async function reverseIssueSlip(input: {
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -245,7 +244,6 @@ export async function cancelIssueSlip(input: {
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

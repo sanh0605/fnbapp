@@ -3,6 +3,7 @@
 import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import type { DBUser } from "@/types/db";
 import bcrypt from "bcryptjs";
 import { requireAdmin } from "@/lib/auth";
@@ -74,8 +75,7 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -92,8 +92,7 @@ export async function deleteUserAction(formData: FormData): Promise<ActionRespon
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }
 
@@ -119,7 +118,6 @@ export async function updateUser(formData: FormData): Promise<ActionResponse> {
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return fail(message);
+    return describeActionError(error);
   }
 }

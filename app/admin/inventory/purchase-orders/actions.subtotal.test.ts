@@ -37,6 +37,12 @@ import { savePurchaseOrder } from "./actions";
 function buildFormData(fields: Record<string, string>): FormData {
   const formData = new FormData();
   formData.set("supplier_id", "SUP-1");
+  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md
+  // section 3: savePurchaseOrder now also requires source_id for a
+  // COMPLETED order, mirroring supplier_id -- defaulted here the same way,
+  // so every test in this file keeps exercising its own actual subject
+  // (the subtotal guard) rather than tripping the new header check first.
+  formData.set("source_id", "SRC-1");
   formData.set("transaction_date", "2026-07-29");
   for (const [key, value] of Object.entries(fields)) {
     formData.set(key, value);
@@ -121,6 +127,56 @@ describe("savePurchaseOrder header/lines subtotal guard", () => {
       status: "DRAFT",
       subtotal_amount: "3571000",
       lines_json: JSON.stringify([{ purchased_item_id: "PI-1", quantity: 1, subtotal: 0 }]),
+    });
+
+    const res = await savePurchaseOrder(formData);
+
+    expect(res.success).toBe(true);
+    expect(res.error).toBeUndefined();
+  });
+});
+
+// docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md section 3:
+// PurchaseOrderForm.tsx's client-side check is the fix for the form, this
+// is its server-side neighbour -- a request that reaches savePurchaseOrder
+// without going through that form (or a future caller that forgets to)
+// must be refused the same way, not left to fail downstream with no
+// relation to what was actually missing.
+describe("savePurchaseOrder source_id guard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({
+      ok: true,
+      actor: { id: "admin-1", name: "Quản lý" },
+    });
+  });
+
+  it("refuses a COMPLETED order with no source_id, before touching storage", async () => {
+    const formData = buildFormData({
+      status: "COMPLETED",
+      source_id: "",
+      subtotal_amount: "102000",
+      lines_json: JSON.stringify([{ purchased_item_id: "PI-1", quantity: 1, subtotal: 102000 }]),
+    });
+
+    const res = await savePurchaseOrder(formData);
+
+    expect(res.error).toBeTruthy();
+    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.savePurchaseOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("does not apply the source_id check to DRAFT saves, matching supplier_id and lines", async () => {
+    mocks.findAll.mockResolvedValue([]);
+    mocks.findById.mockResolvedValue(null);
+    mocks.generateNewId.mockResolvedValue("POE-002");
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({ order: {}, lines: [], ledgerRows: [] });
+    mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-998" });
+
+    const formData = buildFormData({
+      status: "DRAFT",
+      source_id: "",
+      lines_json: "[]",
     });
 
     const res = await savePurchaseOrder(formData);

@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { saveProductAtomic } from "@/lib/product-save-transaction";
 import { planRecipeSave } from "@/lib/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import { findAll, update } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import {
@@ -159,7 +160,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    return fail(error instanceof Error ? error.message : "Unknown error");
+    return describeActionError(error);
   }
 }
 
@@ -180,6 +181,6 @@ export async function deleteProduct(formData: FormData): Promise<ActionResponse>
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    return fail(error instanceof Error ? error.message : "Unknown error");
+    return describeActionError(error);
   }
 }
