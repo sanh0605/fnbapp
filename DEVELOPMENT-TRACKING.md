@@ -4,6 +4,52 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-27 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Imported 53 purchase orders from the owner's sheet
+
+Implements `docs/superpowers/plans/2026-08-27-import-53-purchase-orders.md`. The owner's own instruction: one system order per `NH` code, not batched. He declined a line-by-line dry-run review (*"anh vibecode thì có đọc cũng không hiểu"*) and approved on the total figure instead, per the plan's own approval shape.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- three real findings, all independently re-derived
+
+**Plan's `owner-map.json` (31 entries) was incomplete: 11 item names, touching 20 of 107 lines, had never been shown to the owner** -- resolved during planning by a prefix-matching guess. Found by resolving all 107 lines against production `Purchased_Items` directly rather than trusting the map's own completeness claim. All 11 sent to the owner and confirmed, including one genuine judgment call (`Túi chữ T` merging two sheet items into one system item, cost-averaged) rather than a case difference. Map now holds 42.
+
+**One of the plan's "16 new suppliers" already existed.** `CÔNG TY TMĐT Ô MUA ĐI` was a truncated name (from a console table reused as data) for `CÔNG TY TMĐT Ô MUA ĐI - GIÁ LUÔN TỐT NHẤT!`, already `NCC-021`. Corrected to 15; that order links to the existing row.
+
+**`supplier_invoice_code` is not unique in production** (`PO-090`/`PO-098` share one code, a pre-existing typo) -- checked before relying on it for idempotency, confirmed it does not collide with any of the 53 incoming codes, recorded as `OPEN-ITEMS 63` rather than fixed (out of scope, the import is not blocked).
+
+### A side effect the plan's own trigger table did not name
+
+65 of the 107 lines are `EQUIPMENT` category. Completing these orders is not only bookkeeping and a stock move (the plan's own `stock_ledger` framing) -- it also fires Batch 3's application-level asset-creation hook (`planAssetsFromCompletedOrder`, not a DB trigger, so `fnbapp-bulk-data-change` section 1's trigger query never surfaces it) for every equipment line. Flagged before applying, not discovered after: this import creates 65 new `assets` rows, each dated with its real historical `acquired_date` and therefore already partway through its depreciation term as of today.
+
+### A mechanism bug found while building, one layer deeper than the owner's own units-join correction
+
+`resolveConversion`'s no-`conversion_id` fallback (`lib/purchase-ledger-rebuild.ts`) compares a line's `unit` against the conversion's **raw `purchased_unit` column value -- a unit id, not a joined name.** The first version of the importer supplied no `conversion_id`, reasoning the fallback would name-match; it threw `"Thiếu quy đổi"` on the first order. Fixed by resolving `conversion_id` explicitly for every line via a real `units` join (every one of the 71 distinct items already has exactly one matching conversion; `unit-rules.json`'s 15 entries turned out to be exactly the items whose sheet unit word does not already match that conversion's real name).
+
+### The importer
+
+`scripts/import-53-purchase-orders.ts` -- dry-run by default, `--apply` to write. Reuses real production functions throughout rather than reimplementing them: `buildPurchaseOrderWritePlan`, `planAssetsFromCompletedOrder`, `findDuplicateActiveName`/`findDiacriticStrippedMatch`. Re-parses `scratchpad/sheet2.txt` fresh on every run (never trusts a prior session's intermediate JSON), re-verifies live production state before either mode proceeds.
+
+Dry run shown to the owner in full (53 orders, 107 lines) before any approval was sought -- he approves the total, the reviewer reads the detail, per the plan's own division of labour.
+
+### Applied 2026-08-27, owner-approved on 87.908.288đ
+
+53 orders created (`PO-101`-`PO-153`), 15 suppliers created, 2 conversions retitled (`QD-119`, `QD-137`: `Cái` -> `Hộp`), 65 assets created via the equipment hook. Verified against production after, every figure with its denominator:
+
+- `sum(total_amount)`: 87.908.288đ, exact match.
+- Counts: 153 orders / 297 lines / 374 `stock_ledger` rows, all exact.
+- **53/53** `NH` codes produced exactly one order -- 0 zero, 0 duplicate.
+- **107/107** new lines: `base_quantity` = `quantity` x `conversion_rate`, exact.
+- `assets`: 84 rows, sum `total_cost` 14.720.817đ, exact. 65/65 new rows carry a real historical `acquired_date` (2026-03-26 through 2026-08-16), none stamped today.
+- Category split (order total allocated to lines by subtotal share): RAW 56.096.930đ/168 lines (unmoved, untouched by this import), CONSUMABLE 17.090.541đ/45 lines, EQUIPMENT 14.720.817đ/84 lines -- all three exact.
+- `scripts/verify-revenue.ts`: byte-identical output before and after, all four gated months still match.
+
+**A second `--apply` was run to prove idempotency, and its first attempt caught a real bug in the check meant to prove it.** The pre-flight re-verification's `(date, supplier, total)` key compared `transaction_date.slice(0, 10)` against the sheet's own `DD/MM/YYYY` -- the same off-by-one-day hazard as `OPEN-ITEMS 55` (`transaction_date` is stored as Saigon midnight, i.e. the *previous* UTC calendar day). It correctly caught all 14 code-keyed duplicates (a real string match) but would have missed all 39 date-keyed ones and let the script attempt to re-insert them -- averted only because the 14 real catches threw first and stopped the script before any write. Fixed to compare by instant, matching `saigonMidnightIso`'s own construction; re-ran, and this time all 53/53 were caught by the corrected check, nothing written, counts confirmed unchanged before and after.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 214 files / 1490 tests, unaffected (this touches no `app/`/`lib/` source). **Not pushed** (no source change to push -- `scripts/import-53-purchase-orders.ts` is a one-off, tracked in the repo per convention).
+
+---
+
 ## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Equipment: excluded from stocktake by category, and it finally gets a unit
 
 Implements `docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md` and `docs/superpowers/plans/2026-08-26-equipment-needs-units.md` as one sequenced job, per the handoff. The owner had paused entering the equipment catalogue waiting on this. Withdraws the prior instruction to tick "Không quản lý tồn kho" on each of 72 equipment items; from his own observation entering the catalogue: *"Muỗng nhựa định lượng 10g thì đáng lẽ đơn vị nhỏ nhất là 'cái'. Nhưng nếu anh nhập 1 thùng thì thay vì anh phải nhớ là 1 thùng 50 cái xong nhân theo số lượng ... nó sẽ rất phiền và càng làm cho dữ liệu lịch sử không chính xác thực tế."*
