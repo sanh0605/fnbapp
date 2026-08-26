@@ -86,13 +86,19 @@ purchase orders, not evidence that anything is already wrong.
 
 ## 5. Sequencing, which matters more than the code
 
-The owner is entering the 72 equipment names **now**. He should keep going:
-adding a unit later through the edit form is cheap, and blocking 72 entries for
-4 affected lines would be worse.
+**The owner has paused the equipment entry until this lands, and overruled the
+advice to keep going.** His reasoning is better than the advice was: creating
+each item **with** its unit in one pass avoids revisiting 72 rows, and — the
+part the advice missed — it lets him **judge each item as he goes** rather than
+copying his spreadsheet mechanically. His words: *"chưa chắc anh sẽ nhập chính
+xác những gì có trong sheet."*
 
-**What must not happen is entering the 63 equipment purchase orders before this
-lands** — a purchase recorded as "1 combo" creates an asset row that is wrong,
-and asset rows are not something to rewrite afterwards. Tell him this plainly.
+So he is waiting. **This is blocking real work**, which is a reason to keep the
+change tight rather than to hurry it.
+
+**And the 63 equipment purchase orders must still come after both this and the
+stocktake exclusion** — a purchase recorded as "1 combo" creates an asset row
+that is wrong, and asset rows are not something to rewrite afterwards.
 
 ## 6. Verification
 
