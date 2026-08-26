@@ -181,7 +181,13 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
               purchasedItemId: line.purchased_item_id as string,
               itemName: item?.name || line.purchased_item_id,
               subtotal: Number(line.subtotal),
-              quantity: Number(line.quantity),
+              // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+              // base_quantity, not quantity -- quantity is in PURCHASE units
+              // (e.g. "1 Combo 10"), base_quantity is already correctly
+              // computed by buildPurchaseOrderWritePlan/buildPurchaseReceipt
+              // (OPEN-ITEMS 56) as quantity * conversion_rate, or quantity
+              // itself when the item has no conversion at all.
+              baseQuantity: Number(line.base_quantity),
             };
           });
 

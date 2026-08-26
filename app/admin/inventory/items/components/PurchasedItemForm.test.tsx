@@ -170,15 +170,23 @@ async function openEditForm(initialData: any, initialConversions: any[]) {
 }
 
 describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1, item B)", () => {
-  it("EQUIPMENT gets neither section -- no base-unit selector, no conversion rows (section B3)", async () => {
+  // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+  // replaces the old "EQUIPMENT gets neither section" test -- a purchase
+  // line should record what the invoice says (e.g. "1 Combo 10"), the same
+  // as CONSUMABLE, not force the owner into pack-size arithmetic.
+  it("choosing Dụng cụ shows the base-unit selector, and choosing a unit reveals the conversion rows", async () => {
     await openForm();
 
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
     await setSelectValue(categorySelect, "NHH-003");
 
-    expect(document.body.textContent).not.toContain("Đơn vị gốc");
+    expect(document.body.textContent).toContain("Đơn vị gốc");
     expect(document.body.textContent).not.toContain("Quy đổi đơn vị mua");
-    expect(document.querySelectorAll('[role="combobox"]')).toHaveLength(0);
+
+    const baseUnitWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    await chooseInCombobox(baseUnitWrapper, "g");
+
+    expect(document.body.textContent).toContain("Quy đổi đơn vị mua");
   });
 
   it("choosing Vật tư tiêu hao shows the base-unit selector, and choosing a unit reveals the conversion rows", async () => {
@@ -285,7 +293,14 @@ describe("PurchasedItemForm -- consumable base unit renders correctly, not as an
 // 2026-08-21: docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md
 // section 3.2 / 5. Render assertion only (OPEN-ITEMS 46's limit) -- no
 // submission needed to check whether the checkbox appears.
-describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-21)", () => {
+//
+// Narrowed to CONSUMABLE-only on 2026-08-26
+// (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md): once
+// equipment is excluded from stocktake by category, this flag no longer
+// controls that for equipment, and leaving it settable would reopen the
+// double-count OPEN-ITEMS 59 warns about (equipment must always be
+// depreciated, never expensed on purchase).
+describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-21, narrowed 2026-08-26)", () => {
   it("appears for Vật tư tiêu hao (CONSUMABLE)", async () => {
     await openForm();
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
@@ -294,12 +309,12 @@ describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-2
     expect(document.body.textContent).toContain("Không quản lý tồn kho");
   });
 
-  it("appears for Dụng cụ (EQUIPMENT)", async () => {
+  it("does not appear for Dụng cụ (EQUIPMENT) -- category-based stocktake exclusion makes it inert, and settable would risk double-counting against depreciation", async () => {
     await openForm();
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
     await setSelectValue(categorySelect, "NHH-003");
 
-    expect(document.body.textContent).toContain("Không quản lý tồn kho");
+    expect(document.body.textContent).not.toContain("Không quản lý tồn kho");
   });
 
   it("does not appear for Nguyên liệu (RAW) -- inherits the decision from its ingredient instead", async () => {

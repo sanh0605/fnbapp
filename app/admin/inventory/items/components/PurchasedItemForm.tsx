@@ -30,14 +30,21 @@ export type ConversionSubmissionFields = {
 export function buildConversionSubmission(params: {
   isRaw: boolean;
   isConsumable: boolean;
+  isEquipment: boolean;
   selectedBaseIngredientId: string;
   baseUnitId: string | undefined;
   unitsState: Array<{ id?: string; name: string; conversion_rate: string }>;
   units: Array<{ id: string; name: string }>;
 }): { ok: true; fields: ConversionSubmissionFields } | { ok: false; error: string } | { ok: true; fields: null } {
-  const { isRaw, isConsumable, selectedBaseIngredientId, baseUnitId, unitsState, units } = params;
+  const { isRaw, isConsumable, isEquipment, selectedBaseIngredientId, baseUnitId, unitsState, units } = params;
 
-  if (!(isRaw || isConsumable)) return { ok: true, fields: null }; // equipment: neither section applies
+  // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+  // EQUIPMENT now gets the same base-unit/conversion section as CONSUMABLE --
+  // a purchase line should record what the invoice says (e.g. "1 Combo 10"),
+  // not force the owner to do pack-size arithmetic in his head. This branch
+  // is unreachable in practice once a category is chosen (all three system
+  // types are covered above), and stays as the "nothing selected yet" case.
+  if (!(isRaw || isConsumable || isEquipment)) return { ok: true, fields: null };
 
   // 2026-08-20 fix: close the hole, not just the instance that caused it --
   // baseUnitId must already be resolved to a real unit id by the caller. A
@@ -139,13 +146,20 @@ export function PurchasedItemForm({
   );
 
   const activeBaseIngredient = baseIngredients.find(b => b.id === selectedBaseIngredientId);
+  // 2026-08-26: EQUIPMENT shares CONSUMABLE's manual base-unit selector --
+  // neither has an ingredient to derive one from, and both now need
+  // conversion rows for the same reason (docs/superpowers/plans/2026-08-26-equipment-needs-units.md).
   const baseUnitId = isRaw
     ? activeBaseIngredient?.base_unit
-    : isConsumable
+    : (isConsumable || isEquipment)
       ? units.find(u => u.name === selectedConsumableBaseUnitName)?.id
       : undefined;
   const baseUnitName = baseUnitId ? units.find(u => u.id === baseUnitId)?.name : "";
-  const showConversionSection = isRaw ? !!selectedBaseIngredientId : isConsumable ? !!selectedConsumableBaseUnitName : false;
+  const showConversionSection = isRaw
+    ? !!selectedBaseIngredientId
+    : (isConsumable || isEquipment)
+      ? !!selectedConsumableBaseUnitName
+      : false;
 
   function addUnitRow() {
     setUnitsState([...unitsState, { name: "", conversion_rate: "" }]);
@@ -180,19 +194,19 @@ export function PurchasedItemForm({
       setLoading(false);
       return;
     }
-    if (isConsumable && !selectedConsumableBaseUnitName) {
-      setError("Vui lòng chọn Đơn vị gốc cho vật tư tiêu hao");
+    if ((isConsumable || isEquipment) && !selectedConsumableBaseUnitName) {
+      setError("Vui lòng chọn Đơn vị gốc");
       setLoading(false);
       return;
     }
 
     // Gate 2 of 4 (section B1): building and sending units_json at all.
-    // Equipment gets neither this nor the section that renders the inputs
-    // (section B3) -- isRaw || isConsumable is the same gate the JSX below
-    // uses to decide whether to show them.
+    // isRaw || isConsumable || isEquipment is the same gate the JSX below
+    // uses to decide whether to show the base-unit/conversion inputs.
     const submission = buildConversionSubmission({
       isRaw,
       isConsumable,
+      isEquipment,
       selectedBaseIngredientId,
       baseUnitId,
       unitsState,
@@ -212,7 +226,14 @@ export function PurchasedItemForm({
     }
 
     formData.append("item_category_id", selectedCategoryId);
-    formData.append("is_non_inventory", String(isNonInventory));
+    // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
+    // equipment's stocktake exclusion is now category-based, so this flag no
+    // longer controls that for equipment -- only its other meaning remains
+    // (the future batch-5 expense line), which equipment must never opt
+    // into (it is always depreciated, never expensed on purchase). Forced
+    // here, not just hidden below, so stale local state from a prior
+    // category selection can never leak through.
+    formData.append("is_non_inventory", String(isEquipment ? false : isNonInventory));
 
     const submitFn = isEdit ? updatePurchasedItem : addPurchasedItem;
     if (isEdit) {
@@ -376,14 +397,18 @@ export function PurchasedItemForm({
             </div>
           )}
 
-          {/* Batch 1, item B (section B2/B3): a consumable has no
-              ingredient to derive a base unit from, so it gets its own
-              selector here. Equipment gets neither this block nor the RAW
-              one above. */}
-          {isConsumable && (
+          {/* Batch 1, item B (section B2), extended 2026-08-26 to EQUIPMENT
+              (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+              neither category has an ingredient to derive a base unit from,
+              so both get this selector. RAW gets its own block above. */}
+          {(isConsumable || isEquipment) && (
             <div className="pt-4 border-t border-border space-y-4">
               <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                Đây là nhóm <strong>Vật Tư Tiêu Hao</strong>. Chọn đơn vị gốc để hệ thống biết cách quy đổi và đếm tồn kho.
+                {isEquipment ? (
+                  <>Đây là nhóm <strong>Dụng Cụ</strong>. Chọn đơn vị gốc để hệ thống ghi đúng số lượng khi mua theo lốc/thùng (VD: 1 Combo 10 Chai = 10 cái).</>
+                ) : (
+                  <>Đây là nhóm <strong>Vật Tư Tiêu Hao</strong>. Chọn đơn vị gốc để hệ thống biết cách quy đổi và đếm tồn kho.</>
+                )}
               </div>
 
               <div>
@@ -414,11 +439,21 @@ export function PurchasedItemForm({
             </div>
           )}
 
-          {/* 2026-08-21: CONSUMABLE and EQUIPMENT only, never RAW -- a RAW
-              item inherits the decision from its ingredient's own
-              is_non_inventory (BR-COGS-007), and two sources for one answer
-              is how they drift apart. */}
-          {(isConsumable || isEquipment) && (
+          {/* 2026-08-21: CONSUMABLE only. RAW inherits the decision from its
+              ingredient's own is_non_inventory (BR-COGS-007), and two
+              sources for one answer is how they drift apart. Narrowed from
+              CONSUMABLE-or-EQUIPMENT to CONSUMABLE-only on 2026-08-26
+              (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
+              once equipment is excluded from stocktake by category, this
+              flag no longer affects equipment's stocktake eligibility at
+              all, and leaving it settable would let the owner re-open the
+              exact double-count this flag's other meaning (the future
+              batch-5 expense line, OPEN-ITEMS 59) exists to prevent --
+              equipment must always be depreciated, never expensed on
+              purchase. handleSubmit forces is_non_inventory to false for
+              equipment regardless, but hiding the control here is what
+              keeps that forcing from ever being a surprise. */}
+          {isConsumable && (
             <label
               htmlFor={`${formId}-isNonInventory`}
               className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px]"

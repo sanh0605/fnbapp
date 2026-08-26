@@ -169,6 +169,47 @@ describe("startStocktakeSession item list", () => {
     expect(references).toEqual(["SPM-053"]);
   });
 
+  // docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md: equipment
+  // is excluded by CATEGORY (item_categories.system_type = 'EQUIPMENT'), not
+  // by the per-item is_non_inventory flag -- that flag also feeds a future
+  // batch-5 expense line (OPEN-ITEMS 59), so ticking it on equipment would
+  // double-count. This item's own flag is left false on purpose: the
+  // category exclusion must work even when nobody ticked anything.
+  it("excludes every purchased item whose category is EQUIPMENT, regardless of its own is_non_inventory flag", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Base_Ingredients") return Promise.resolve([]);
+      if (sheet === "Semi_Products") return Promise.resolve([]);
+      if (sheet === "Item_Categories") {
+        return Promise.resolve([
+          { id: "NHH-001", name: "Nguyên liệu", system_type: "RAW" },
+          { id: "NHH-002", name: "Vật tư tiêu hao", system_type: "CONSUMABLE" },
+          { id: "NHH-003", name: "Dụng cụ", system_type: "EQUIPMENT" },
+        ]);
+      }
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-078", name: "Muỗng nhựa định lượng 10g", item_category_id: "NHH-003", base_ingredient_id: "", default_unit_id: "", status: "ACTIVE", is_non_inventory: false },
+          { id: "SPM-053", name: "Ống hút nhỏ", item_category_id: "NHH-002", base_ingredient_id: "", default_unit_id: "U-BAO", status: "ACTIVE", is_non_inventory: false },
+        ]);
+      }
+      if (sheet === "Units") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.openStocktakeSessionAtomic.mockResolvedValue({
+      id: "STK-010", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
+      created_at: "2026-08-26T00:00:00Z", notes: "",
+    });
+
+    const result = await stocktakeActions.startStocktakeSession();
+
+    expect(result).toEqual({ success: true });
+    const { items } = mocks.openStocktakeSessionAtomic.mock.calls[0][0];
+    const references = items.map((item: { itemReference: string }) => item.itemReference);
+
+    expect(references).not.toContain("SPM-078");
+    expect(references).toEqual(["SPM-053"]);
+  });
+
   // C17: an inactive purchased item is not simply dropped -- if it still
   // has stock physically on the shelf, its ingredient's quantity could
   // never be corrected again (S1 needs every purchased item counted).

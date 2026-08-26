@@ -24,7 +24,12 @@ export type EquipmentPurchaseLine = {
   purchasedItemId: string;
   itemName: string;
   subtotal: number;
-  quantity: number;
+  // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+  // renamed from `quantity` to force every caller to decide explicitly.
+  // Must be the BASE quantity (e.g. 10 bottles), not the purchase-unit
+  // quantity (e.g. 1 box) -- a purchase of "1 Combo 10" at 108.000d must
+  // become 10 assets at 10.800d each, not 1 asset at 108.000d.
+  baseQuantity: number;
 };
 
 export type NewAssetPlan = {
@@ -59,11 +64,11 @@ export function planAssetsFromCompletedOrder(params: {
 
   const plans: NewAssetPlan[] = [];
   for (const line of equipmentLines) {
-    if (line.quantity <= 0) {
+    if (line.baseQuantity <= 0) {
       throw new Error(`${line.itemName}: hàng dụng cụ không có số lượng hợp lệ`);
     }
     const allocatedTotal = allocatedByLineId.get(line.lineId) ?? line.subtotal;
-    const unitCost = Math.round(allocatedTotal / line.quantity);
+    const unitCost = Math.round(allocatedTotal / line.baseQuantity);
     const band = findBandForUnitPrice(bands, unitCost);
     if (!band) {
       throw new Error(`${line.itemName}: không tìm thấy khung khấu hao cho đơn giá ${unitCost}đ`);
@@ -74,7 +79,7 @@ export function planAssetsFromCompletedOrder(params: {
       name_snapshot: line.itemName,
       unit_cost: unitCost,
       total_cost: allocatedTotal,
-      quantity: line.quantity,
+      quantity: line.baseQuantity,
       term_months: band.term_months,
     });
   }

@@ -96,7 +96,9 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
   it("creates an assets row for an EQUIPMENT line, banded by its own unit price", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
-      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8 }],
+      // No conversion on this line -- base_quantity equals the purchase
+      // quantity, unchanged (plan section 4.2's "no conversion" case).
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
       ledgerRows: [],
     });
 
@@ -121,7 +123,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
   it("creates no asset for a RAW-only order", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
-      lines: [{ id: "POL-001", purchased_item_id: "SPM-100", subtotal: 761_200, quantity: 10 }],
+      lines: [{ id: "POL-001", purchased_item_id: "SPM-100", subtotal: 761_200, quantity: 10, base_quantity: 10 }],
       ledgerRows: [],
     });
 
@@ -134,7 +136,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
   it("creates no asset for a DRAFT order, even with an equipment line", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
-      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8 }],
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
       ledgerRows: [],
     });
 
@@ -147,7 +149,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     mocks.findById.mockResolvedValue({ status: "COMPLETED", subtotal_amount: 761_200 });
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
-      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8 }],
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
       ledgerRows: [],
     });
 
@@ -156,10 +158,47 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
   });
 
+  // docs/superpowers/plans/2026-08-26-equipment-needs-units.md section 6,
+  // the owner's own numbers: 1 line, 1 "Combo 10", 108.000d, conversion
+  // 1 Combo 10 = 10 Chai -> asset quantity 10, unit_cost 10.800d. Against
+  // the pre-fix code (equipmentLines.baseQuantity read from line.quantity,
+  // the PURCHASE-unit quantity of 1) this would have produced quantity 1
+  // at 108.000d -- confirmed by stashing the actions.ts fix below.
+  it("a purchase of '1 Combo 10' becomes 10 assets at a tenth of the price, not 1 asset at the box price", async () => {
+    mockFindAll({
+      Purchased_Items: [
+        { id: "SPM-201", name: "Chai nhựa HDPE 1000ml", item_category_id: "NHH-003", base_ingredient_id: "" },
+      ],
+    });
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [
+        { id: "POL-003", purchased_item_id: "SPM-201", subtotal: 108_000, quantity: 1, base_quantity: 10 },
+      ],
+      ledgerRows: [],
+    });
+
+    const res = await savePurchaseOrder(buildFormData());
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "assets",
+      expect.objectContaining({
+        purchased_item_id: "SPM-201",
+        purchase_order_line_id: "POL-003",
+        name_snapshot: "Chai nhựa HDPE 1000ml",
+        unit_cost: 10_800,
+        total_cost: 108_000,
+        quantity: 10,
+        term_months: 12,
+      }),
+    );
+  });
+
   it("reports the order as saved (not failed) even if asset creation errors, with a warning attached", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
-      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 100, quantity: 1 }],
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 100, quantity: 1, base_quantity: 1 }],
       ledgerRows: [],
     });
     // No band covers 100d -- planAssetsFromCompletedOrder throws.

@@ -57,11 +57,12 @@ export interface RecentConfirmedStocktakeSessionView {
 }
 
 async function loadItemNameMaps() {
-  const [baseIngredients, semiProducts, purchasedItems, units] = await Promise.all([
+  const [baseIngredients, semiProducts, purchasedItems, units, itemCategories] = await Promise.all([
     findAll("Base_Ingredients"),
     findAll("Semi_Products"),
     findAll("Purchased_Items"),
     findAll("Units"),
+    findAll("Item_Categories"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>();
@@ -81,6 +82,7 @@ async function loadItemNameMaps() {
     baseIngredients: baseIngredients as any[],
     semiProducts: semiProducts as any[],
     purchasedItems: purchasedItems as any[],
+    itemCategories: itemCategories as any[],
   };
 }
 
@@ -196,11 +198,22 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
   if (!auth.ok) return fail(auth.error);
 
   try {
-    const { baseIngredients, purchasedItems } = await loadItemNameMaps();
+    const { baseIngredients, purchasedItems, itemCategories } = await loadItemNameMaps();
     const nonInventoryBaseIngredientIds = new Set(
       baseIngredients
         .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
         .map(b => b.id as string),
+    );
+    // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
+    // equipment is never stocktaken -- a fixed property of the EQUIPMENT
+    // category (CLAUDE.md section 7), not a per-item judgment. Excluding by
+    // category rather than by is_non_inventory keeps that flag free for its
+    // other meaning (the future batch-5 "mua dùng ngay" expense line,
+    // OPEN-ITEMS 59): equipment must never be expensed on purchase, since it
+    // is always depreciated instead, and ticking it per item would let the
+    // two collide.
+    const equipmentCategoryIds = new Set(
+      itemCategories.filter(c => c.system_type === "EQUIPMENT").map(c => c.id as string),
     );
     // Plan D Gap 1: a new session no longer offers BASE_INGREDIENT lines at
     // all. Counting by generic ingredient and counting by purchased item fed
@@ -213,12 +226,13 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     // a CONSUMABLE item has no base_ingredient_id, so the ingredient-side
     // flag above can never reach it -- every consumable was offered for
     // counting regardless of BR-INV-007. Additive, not a replacement: an
-    // item drops out when EITHER its ingredient is flagged OR its own flag
-    // is set.
+    // item drops out when its ingredient is flagged, its own flag is set, OR
+    // its category is EQUIPMENT.
     const eligiblePurchasedItems = purchasedItems.filter(p => {
       const ingredientFlagged = nonInventoryBaseIngredientIds.has(p.base_ingredient_id);
       const ownFlagged = p.is_non_inventory === true || p.is_non_inventory === "TRUE";
-      return !ingredientFlagged && !ownFlagged;
+      const isEquipment = equipmentCategoryIds.has(p.item_category_id);
+      return !ingredientFlagged && !ownFlagged && !isEquipment;
     });
     const includedPurchasedItems = await filterByC17(eligiblePurchasedItems);
     const items = includedPurchasedItems.map(p => ({

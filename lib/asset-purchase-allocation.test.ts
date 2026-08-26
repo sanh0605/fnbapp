@@ -20,7 +20,7 @@ describe("planAssetsFromCompletedOrder", () => {
     const plans = planAssetsFromCompletedOrder({
       allLines: [rawLine, equipmentLine],
       equipmentLines: [
-        { lineId: "POL-002", purchasedItemId: "SPM-200", itemName: "Bình nhựa có bơm 1000ml", subtotal: 720_000, quantity: 8 },
+        { lineId: "POL-002", purchasedItemId: "SPM-200", itemName: "Bình nhựa có bơm 1000ml", subtotal: 720_000, baseQuantity: 8 },
       ],
       additions: 40_000,
       subtractions: 0,
@@ -57,7 +57,7 @@ describe("planAssetsFromCompletedOrder", () => {
     const plans = planAssetsFromCompletedOrder({
       allLines: [{ lineId: "POL-010", subtotal: 2_100_000 }],
       equipmentLines: [
-        { lineId: "POL-010", purchasedItemId: "SPM-300", itemName: "Xe cà phê lưu động", subtotal: 2_100_000, quantity: 1 },
+        { lineId: "POL-010", purchasedItemId: "SPM-300", itemName: "Xe cà phê lưu động", subtotal: 2_100_000, baseQuantity: 1 },
       ],
       additions: 0,
       subtractions: 0,
@@ -72,7 +72,7 @@ describe("planAssetsFromCompletedOrder", () => {
       planAssetsFromCompletedOrder({
         allLines: [{ lineId: "POL-020", subtotal: 100 }],
         equipmentLines: [
-          { lineId: "POL-020", purchasedItemId: "SPM-400", itemName: "Món lạ", subtotal: 100, quantity: 1 },
+          { lineId: "POL-020", purchasedItemId: "SPM-400", itemName: "Món lạ", subtotal: 100, baseQuantity: 1 },
         ],
         additions: 0,
         subtractions: 0,
@@ -86,7 +86,7 @@ describe("planAssetsFromCompletedOrder", () => {
       planAssetsFromCompletedOrder({
         allLines: [{ lineId: "POL-030", subtotal: 100_000 }],
         equipmentLines: [
-          { lineId: "POL-030", purchasedItemId: "SPM-500", itemName: "Máy hỏng dữ liệu", subtotal: 100_000, quantity: 0 },
+          { lineId: "POL-030", purchasedItemId: "SPM-500", itemName: "Máy hỏng dữ liệu", subtotal: 100_000, baseQuantity: 0 },
         ],
         additions: 0,
         subtractions: 0,

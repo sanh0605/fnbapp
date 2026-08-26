@@ -4,6 +4,44 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Equipment: excluded from stocktake by category, and it finally gets a unit
+
+Implements `docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md` and `docs/superpowers/plans/2026-08-26-equipment-needs-units.md` as one sequenced job, per the handoff. The owner had paused entering the equipment catalogue waiting on this. Withdraws the prior instruction to tick "Không quản lý tồn kho" on each of 72 equipment items; from his own observation entering the catalogue: *"Muỗng nhựa định lượng 10g thì đáng lẽ đơn vị nhỏ nhất là 'cái'. Nhưng nếu anh nhập 1 thùng thì thay vì anh phải nhớ là 1 thùng 50 cái xong nhân theo số lượng ... nó sẽ rất phiền và càng làm cho dữ liệu lịch sử không chính xác thực tế."*
+
+### Critique before coding, per `CLAUDE.md` section 1 -- both plans' central claims checked against live data, not read
+
+**Plan 1's "0 EQUIPMENT items, 77 total" was stale.** Queried live: **1** EQUIPMENT item already exists (`SPM-078` "Muỗng nhựa định lượng 10g", created the same day), and the total is **78**, not 77. Does not change the fix, but means the category exclusion has one real, currently-affected row, not only a fixture case.
+
+**Plan 2 section 3's "examined all 78 equipment purchase lines... actual history" does not match production, and the plan's own numbers say so once checked.** Queried live: **0** equipment purchase order lines exist, and **0** `assets` rows exist. There is no "78 equipment purchase lines" in this system's history to have examined -- 78 is the total purchased-item catalogue count across all three categories (RAW+CONSUMABLE+EQUIPMENT), not a purchase-line count, and the section's own band-comparison table (4 items, one flagged as actually two items on one line) can only be describing the owner's prepared spreadsheet, not live data. **The section's bottom line is still correct, and stronger than claimed:** with 0 real equipment purchase lines and 0 assets, nothing needs retroactive correction -- not because no band boundary was crossed, but because there is nothing yet to have crossed one. Flagged as overstated rather than corrected silently, since the practical conclusion (fix before entering purchase orders, not because history is already wrong) still holds and needed saying precisely, not loosely.
+
+**Plan 2 section 4's sizing of the `lib/asset-purchase-allocation.ts` fix overstated the amount of new logic needed.** The hard part -- computing a purchase line's correct base quantity, including "no conversion means base quantity equals line quantity" -- was already solved by `OPEN-ITEMS 56` (2026-08-22) and sits correctly computed, unused, in `purchase_order_lines.base_quantity` for every completed order line. The actual gap was one field-population line in `purchase-orders/actions.ts` reading `line.quantity` (purchase units) instead of `line.base_quantity` (already-converted base units). Fixed by renaming `EquipmentPurchaseLine.quantity` to `baseQuantity` so the one real call site fails to compile until corrected, rather than rewriting the allocation arithmetic, which needed no changes at all.
+
+**Decided, per plan 1 section 2's explicit request: the "Không quản lý tồn kho" checkbox no longer shows for EQUIPMENT, only CONSUMABLE.** Once stocktake exclusion is category-based, the checkbox no longer controls equipment's stocktake eligibility at all -- leaving it settable would let the owner re-open exactly the double-count `OPEN-ITEMS 59` already warns about (equipment must always be depreciated, never expensed on purchase). `handleSubmit` forces `is_non_inventory` to `false` for equipment regardless of stale local state, not only hides the control.
+
+**`OPEN-ITEMS 59`** (Batch 5's expense line would double-count anything the asset register depreciates) already covers plan 1 section 4's "record for batch 5" request -- confirmed, no new entry needed.
+
+### What was changed
+
+- `app/admin/inventory/stocktake/actions.ts`: `loadItemNameMaps` now also fetches `Item_Categories`. `startStocktakeSession`'s `eligiblePurchasedItems` filter gained a third exclusion (`item_category_id` in the EQUIPMENT-category set), additive to the existing two (ingredient-flagged, own-flagged) -- equipment is excluded by category, a fixed property (`CLAUDE.md` section 7), not by the per-item flag that also feeds the future batch-5 expense line.
+- `app/admin/inventory/items/components/PurchasedItemForm.tsx`: `buildConversionSubmission` gains an `isEquipment` parameter, gate widened to `!(isRaw || isConsumable || isEquipment)`. `baseUnitId`/`showConversionSection` extended so EQUIPMENT shares CONSUMABLE's manual base-unit selector. The CONSUMABLE and EQUIPMENT JSX blocks merged into one, with a category-specific banner. The "Không quản lý tồn kho" checkbox narrowed to CONSUMABLE only; `handleSubmit` forces `is_non_inventory=false` for equipment.
+- `lib/asset-purchase-allocation.ts`: `EquipmentPurchaseLine.quantity` renamed to `baseQuantity` (no arithmetic changed).
+- `app/admin/inventory/purchase-orders/actions.ts`: the one real call site now reads `Number(line.base_quantity)` instead of `Number(line.quantity)`.
+
+### Verification
+
+Fails-first, confirmed by `git stash` on just the production file in each case, restored after:
+- `app/admin/inventory/stocktake/actions.test.ts`: new test failed on a wrong value (`SPM-078` present in the offered items) before the category exclusion landed.
+- `PurchasedItemForm.submission.test.ts` / `PurchasedItemForm.test.tsx`: new EQUIPMENT-gets-the-section tests failed on wrong values (fields null, selector absent) before the gate widened; the checkbox-hidden test failed the same way.
+- `app/admin/inventory/purchase-orders/actions.asset-creation.test.ts`: the owner's own numbers -- 1 line, "1 Combo 10", 108.000đ, conversion 1 Combo 10 = 10 Chai -- asserted to produce asset `quantity` 10, `unit_cost` 10.800đ; against the pre-fix code it threw (band lookup on `NaN`, since the renamed field was not being populated), matching the plan's own prediction of "1 at 108.000đ" in spirit if not in the exact failure shape.
+- `lib/asset-purchase-allocation.test.ts`: existing 5 tests' fixtures renamed `quantity` to `baseQuantity`, no behaviour change.
+- `assets` re-verified 0 rows and equipment purchase order lines re-verified 0 rows immediately before implementing (plan 2 section 6's requirement) -- no backfill needed.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 214 files / 1490 tests (+4); `check-rules-current` exits 0 (unchanged: 3 PASS, 1 WARN, `OPEN-ITEMS 58`); `npm run build` succeeds. **Not pushed, no migration.**
+
+---
+
 ## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The owner should never be shown an error he cannot act on
 
 Implements `docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md`. The owner entered a purchase order, pressed save, and got `Lỗi: findAll(Item_Categories): JWT issued at future` -- he worked out himself that he had not chosen a nguồn nhập. His words: *"nó hiển thị lỗi như này anh sẽ không biết anh cần làm gì."*
