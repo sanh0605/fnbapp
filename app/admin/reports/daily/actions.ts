@@ -4,6 +4,7 @@ import { getSalesDataV2 } from "../actions";
 import { getRealtimeStock } from "@/app/admin/inventory/actions";
 import { requireAdmin } from "@/lib/auth";
 import { getDigestDateOffsets, comparePeriods, type PeriodComparison } from "@/lib/daily-digest";
+import { toSaigonIsoString } from "@/lib/datetime";
 
 export interface DailyDigestPeriod {
   revenue: number;
@@ -34,7 +35,12 @@ export async function getDailyDigest(dateStr?: string): Promise<DailyDigestResul
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const date = dateStr || new Date().toISOString().slice(0, 10);
+  // 2026-08-27 fix (OPEN-ITEMS 64): new Date().toISOString() is UTC --
+  // sliced directly, this opened yesterday's report between 00:00 and
+  // 07:00 Saigon, and getDigestDateOffsets(date) shifted yesterday and
+  // last-week along with it, so the comparison still looked internally
+  // consistent while being a day off.
+  const date = dateStr || toSaigonIsoString(new Date()).slice(0, 10);
   const { today, yesterday, sameWeekdayLastWeek } = getDigestDateOffsets(date);
 
   const [todayData, todaySummary, yesterdaySummary, lastWeekSummary, realtimeStock] =

@@ -10,6 +10,7 @@ import { savePurchaseOrderAtomic } from "@/lib/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth";
 import type { RawPurchaseOrderLine } from "@/lib/item-purchase-history";
 import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/asset-purchase-allocation";
+import { toSaigonIsoString } from "@/lib/datetime";
 import type { Band } from "@/lib/asset-depreciation";
 
 const PATH = "/admin/inventory/purchase-orders";
@@ -207,7 +208,11 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
               purchased_item_id: plan.purchased_item_id,
               purchase_order_line_id: plan.purchase_order_line_id,
               name_snapshot: plan.name_snapshot,
-              acquired_date: effectiveDate.slice(0, 10),
+              // 2026-08-27 fix (OPEN-ITEMS 64): effectiveDate is a UTC
+              // string; slicing it directly reads the UTC calendar day,
+              // one day early for a purchase recorded at Saigon midnight.
+              // toSaigonIsoString converts to Saigon wall-clock first.
+              acquired_date: toSaigonIsoString(new Date(effectiveDate)).slice(0, 10),
               unit_cost: plan.unit_cost,
               total_cost: plan.total_cost,
               quantity: plan.quantity,

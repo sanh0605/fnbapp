@@ -195,6 +195,35 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     );
   });
 
+  // docs/superpowers/plans/2026-08-27-asset-acquired-date-off-by-one.md
+  // (OPEN-ITEMS 64): acquired_date is sliced from effectiveDate, a UTC
+  // string, while the purchase's real date is Saigon wall-clock -- a
+  // purchase made at Saigon midnight on the 1st slices to the last UTC
+  // hour of the PREVIOUS day, one calendar day early. Financially inert
+  // most of the time (lib/asset-depreciation.ts's parseYearMonth reads
+  // only the month), but not when the shift crosses a month boundary,
+  // which this fixture deliberately does. An explicit +07:00 offset is
+  // used (not toSaigonIsoString's bare local-time string) so this test's
+  // result does not depend on the machine or CI runner's own timezone --
+  // OPEN-ITEMS 55's own hazard, avoided rather than repeated here.
+  it("a purchase at Saigon midnight on the 1st is acquired that day, not the last day of the previous month", async () => {
+    const formData = buildFormData();
+    formData.set("transaction_date", "2026-06-01T00:00:00+07:00");
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
+      ledgerRows: [],
+    });
+
+    const res = await savePurchaseOrder(formData);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "assets",
+      expect.objectContaining({ acquired_date: "2026-06-01" }),
+    );
+  });
+
   it("reports the order as saved (not failed) even if asset creation errors, with a warning attached", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},

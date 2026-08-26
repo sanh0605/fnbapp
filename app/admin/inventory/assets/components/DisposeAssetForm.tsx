@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { formatNumber } from "@/lib/format";
+import { toSaigonIsoString } from "@/lib/datetime";
 import { disposeAsset, previewDisposalCharge } from "../actions";
 import type { AssetView } from "../actions";
 
@@ -17,7 +18,11 @@ export function DisposeAssetForm({ asset }: { asset: AssetView }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState("1");
-  const [disposedDate, setDisposedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  // 2026-08-27 fix (OPEN-ITEMS 64): new Date().toISOString() is UTC, this
+  // browser's clock -- sliced directly, a disposal recorded between 00:00
+  // and 07:00 Saigon defaulted to the previous day, silently. The shop is
+  // in Saigon; every other date in the system already means Saigon.
+  const [disposedDate, setDisposedDate] = useState(() => toSaigonIsoString(new Date()).slice(0, 10));
   const [reason, setReason] = useState("");
   const [preview, setPreview] = useState<number | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);

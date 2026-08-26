@@ -4,6 +4,42 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-27 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Every asset's `acquired_date` was one day early -- three sites fixed, backfill dry-run only
+
+Implements `docs/superpowers/plans/2026-08-27-asset-acquired-date-off-by-one.md` (`OPEN-ITEMS 64`). `app/admin/inventory/purchase-orders/actions.ts` sliced a UTC ISO string (`effectiveDate.slice(0, 10)`) to get `acquired_date`, while the purchase itself is recorded at Saigon midnight -- every asset landed one calendar day early. Owner approved the code fix and the backfill after being shown the figure.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- every measured claim re-derived independently, two real discrepancies found
+
+**Sections 1, 2, 5's trigger table, and 7's "swept and found none" all check out exactly**, re-derived rather than trusted: the defect's exact line and expression; 84 assets, 82 resolvable, 82/82 exactly one day early, 0 correct, `TS-009`/`TS-010` unresolvable (`OPEN-ITEMS 65`); `assets` carries only `trg_assets_touch` (`BEFORE UPDATE`, `touch_updated_at`, traced through migration `0069`'s DDL since a live `pg_get_triggerdef` query was unavailable in this environment), `asset_disposals` carries none; a project-wide grep for the same `.toISOString().slice(` shape found no fourth broken site (`lib/issued-value-report.ts` already uses `toSaigonIsoString`; `assets/actions.ts`'s `currentSaigonMonth` shifts +7h before slicing, correctly).
+
+**The 72.728đ figure in section 3 is off by 1đ.** Rebuilt the depreciation schedule for all 10 month-crossing assets with `lib/asset-depreciation.ts`'s own `buildAssetSchedule` (not a hand calculation) and got **72.727đ**. Every other number in that section -- the 10 assets, which two months, which items -- matched exactly.
+
+**Section 6's "639.518đ in aggregate" could not be reproduced.** Computed the current month's (2026-08) aggregate depreciation charge across all 84 assets two independent ways -- `chargeForMonth` per asset summed, and the date-independent steady-state `sum(round(total_cost/term_months))` -- both converge on **801.641đ**, not 639.518đ. Reported as an open discrepancy rather than silently substituted; does not block the fix or the backfill, since neither changes any total (only which month 72.727đ of already-computed charge belongs to).
+
+**`asset_disposals`'s no-backfill claim (section 7) was queried live, not accepted**, per the explicit instruction to check it: **0 rows**, so trivially nothing needs backfilling today. The claim's forward-looking half (hand-entered dates are visible and self-correcting) is a process argument, not a data claim, and stays unverified either way since there is no data to check it against.
+
+**Agree with the `TS-009`/`TS-010` exclusion from the backfill** -- their `purchase_order_line_id` cannot be joined to a real line, so the backfill's mechanism cannot reach them, and inventing a date would be a guess wearing the costume of a measurement. Found while backfilling: their current date (2026-04-03) traces by item name and total to `PO-098`, whose real Saigon date is 2026-04-04 -- very likely wrong by this same defect, but a guess with no line to verify against. Recorded as an addendum to `OPEN-ITEMS 65`, not corrected.
+
+### The three fixes
+
+All use `lib/datetime.ts`'s existing `toSaigonIsoString`, per the plan's own instruction not to hand-roll a fourth spelling of Saigon time:
+
+- `app/admin/inventory/purchase-orders/actions.ts`: `acquired_date: toSaigonIsoString(new Date(effectiveDate)).slice(0, 10)`.
+- `app/admin/reports/daily/actions.ts`: `getDailyDigest`'s default date, same expression -- was silently opening yesterday's report between 00:00 and 07:00 Saigon, and shifting `getDigestDateOffsets`'s yesterday/last-week comparisons along with it.
+- `app/admin/inventory/assets/components/DisposeAssetForm.tsx`: the disposal form's default date -- a disposal recorded before 07:00 Saigon defaulted to the previous day.
+
+Tests written first for all three, each proven to fail on the **value** (e.g. `"2026-05-31"` where `"2026-06-01"` was expected), not a missing import, against the pre-fix code: `actions.asset-creation.test.ts`'s new case (an explicit `+07:00`-offset fixture, deliberately not `toSaigonIsoString`'s own bare-string form, so the test's result does not depend on the runner's timezone -- `OPEN-ITEMS 55`'s own hazard, avoided rather than repeated); a new `app/admin/reports/daily/actions.test.ts` (none existed before); a new `DisposeAssetForm.test.tsx` render test (`OPEN-ITEMS 38`'s convention), using `vi.useFakeTimers({ toFake: ["Date"] })` so the real `setTimeout` `ModalPortal` needs to mount still runs.
+
+### The backfill -- dry run only, not applied
+
+`scripts/backfill-asset-acquired-date.ts`: dry-run by default, `--apply` to write. Reuses the exact recomputation the plan's SQL describes, via the same JS-script-plus-`update()` pattern every other bulk correction in this repo already follows (no direct Postgres connection is available in this environment). Dry run confirms **exactly 82 rows** to correct (matching section 5's expectation precisely), the same 10 month-crossers, and re-derives 72.727đ. Not applied -- the owner's approval covers the fix and the backfill in principle, but `--apply` was explicitly withheld this session per the handoff instruction; a separate approval step should confirm the 639.518đ discrepancy is resolved or accepted before writing 82 production rows.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 216 files / 1493 tests (+3); `check-rules-current` exits 0 (unchanged: 3 PASS, 1 WARN, `OPEN-ITEMS 58`); `npm run build` succeeds. `scripts/verify-revenue.ts` clean, unaffected (this touches no `orders_v2` path). **Not applied, not pushed.**
+
+---
+
 ## 2026-08-27 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Imported 53 purchase orders from the owner's sheet
 
 Implements `docs/superpowers/plans/2026-08-27-import-53-purchase-orders.md`. The owner's own instruction: one system order per `NH` code, not batched. He declined a line-by-line dry-run review (*"anh vibecode thì có đọc cũng không hiểu"*) and approved on the total figure instead, per the plan's own approval shape.
