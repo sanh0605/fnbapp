@@ -69,7 +69,7 @@ describe("POS action authentication", () => {
   });
 
   it("rejects unauthenticated draft reads before reading storage", async () => {
-    await expect(getPOSDrafts("BR-001")).rejects.toThrow("Yêu cầu đăng nhập");
+    await expect(getPOSDrafts("OUT-001")).rejects.toThrow("Yêu cầu đăng nhập");
 
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });

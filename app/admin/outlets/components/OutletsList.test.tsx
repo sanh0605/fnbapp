@@ -21,7 +21,7 @@ import type { DBOutlet, DBBrand } from "@/types/db";
 // none of which are needed to check that the list renders.
 vi.mock("../actions", () => ({
   addOutlet: vi.fn(),
-  renameOutlet: vi.fn(),
+  editOutlet: vi.fn(),
   retireOutlet: vi.fn(),
 }));
 vi.mock("@/lib/dialog", () => ({
@@ -64,11 +64,13 @@ const BRANDS: DBBrand[] = [
 const SEEDED_OUTLETS: DBOutlet[] = [
   {
     id: "OUT-001", code: "001", name: "Điểm bán 1", brand_id: "BR-001", address: "",
-    status: "ACTIVE", start_date: null, end_date: null, created_at: "", updated_at: "",
+    status: "ACTIVE", start_date: null, end_date: null, open_time: null, close_time: null,
+    created_at: "", updated_at: "",
   },
   {
     id: "OUT-002", code: "002", name: "Điểm bán 2", brand_id: "BR-002", address: "",
-    status: "ACTIVE", start_date: null, end_date: null, created_at: "", updated_at: "",
+    status: "ACTIVE", start_date: null, end_date: null, open_time: null, close_time: null,
+    created_at: "", updated_at: "",
   },
 ];
 
@@ -85,11 +87,11 @@ describe("OutletsList", () => {
     expect(text).toContain("Uchako");
   });
 
-  it("offers rename and retire actions for each active outlet", async () => {
+  it("offers edit and retire actions for each active outlet", async () => {
     const container = await renderTracked(<OutletsList outlets={SEEDED_OUTLETS} brands={BRANDS} />);
     const buttons = Array.from(container.querySelectorAll("button")).map(b => b.textContent);
 
-    expect(buttons.filter(t => t === "Đổi tên")).toHaveLength(2);
+    expect(buttons.filter(t => t === "Sửa")).toHaveLength(2);
     expect(buttons.filter(t => t === "Ngừng hoạt động")).toHaveLength(2);
   });
 

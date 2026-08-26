@@ -158,6 +158,7 @@ describe("POSScreen drafts modal", () => {
     await renderTracked(
       <POSScreen
         brandId="BRAND1"
+        outletId="OUT-001"
         categories={[CATEGORY]}
         products={[]}
         variants={[]}
@@ -177,6 +178,7 @@ describe("POSScreen drafts modal", () => {
     await renderTracked(
       <POSScreen
         brandId="BRAND1"
+        outletId="OUT-001"
         categories={[CATEGORY]}
         products={[]}
         variants={[]}
@@ -199,6 +201,7 @@ describe("POSScreen drafts modal", () => {
     await renderTracked(
       <POSScreen
         brandId="BRAND1"
+        outletId="OUT-001"
         categories={[CATEGORY]}
         products={[]}
         variants={[]}
@@ -222,6 +225,7 @@ describe("POSScreen drafts modal", () => {
     await renderTracked(
       <POSScreen
         brandId="BRAND1"
+        outletId="OUT-001"
         categories={[CATEGORY]}
         products={[]}
         variants={[]}
@@ -255,6 +259,7 @@ describe("POSScreen drafts modal", () => {
     await renderTracked(
       <POSScreen
         brandId="BRAND1"
+        outletId="OUT-001"
         categories={[CATEGORY]}
         products={[]}
         variants={[]}

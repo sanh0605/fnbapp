@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useId } from "react";
 import { getOutlets } from "@/app/admin/outlets/actions";
+import { getSaigonNowHHMM } from "@/lib/outlet-hours";
+import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
 import { LayoutDashboard, Package, Truck, CookingPot, Coffee, Receipt, TrendingUp, Settings, LogOut, Store } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -96,6 +98,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [outlets, setOutlets] = useState<any[]>([]);
   const [outletsLoading, setOutletsLoading] = useState(false);
   const [outletsError, setOutletsError] = useState<string | null>(null);
+  // Snapshotted once when the picker opens (plan section 2), not a ticking
+  // clock -- the picker is on screen for seconds, not hours.
+  const [nowHHMM, setNowHHMM] = useState("");
   const router = useRouter();
 
   const posModalTitleId = useId();
@@ -170,6 +175,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try {
       const fetchedOutlets = await getOutlets();
       setOutlets(fetchedOutlets);
+      setNowHHMM(getSaigonNowHHMM());
     } catch {
       setOutletsError("Không tải được danh sách điểm bán. Vui lòng thử lại.");
     } finally {
@@ -182,7 +188,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     void loadOutletsForPosModal();
   };
 
-  const selectOutletForPos = (outletId: string) => {
+  const openTillAtOutlet = (outletId: string) => {
     setIsPosModalOpen(false);
     router.push(`/pos?outletId=${outletId}`);
   };
@@ -413,16 +419,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               ) : outletsLoading || outlets.length === 0 ? (
                 <div className="text-center text-text-muted py-4 animate-pulse">Đang tải danh sách…</div>
               ) : (
-                outlets.map(outlet => (
-                  <button
-                    key={outlet.id}
-                    onClick={() => selectOutletForPos(outlet.id)}
-                    className="w-full bg-primary text-white border border-primary font-bold text-lg py-4 rounded-button hover:bg-primary-hover active:bg-primary-active active:scale-[0.98] transition-colors flex justify-center items-center gap-3 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
-                  >
-                    <Store size={24} />
-                    <span>{outlet.name}</span>
-                  </button>
-                ))
+                <PosOutletPicker outlets={outlets} nowHHMM={nowHHMM} onOpenTill={openTillAtOutlet} />
               )}
             </div>
           </div>

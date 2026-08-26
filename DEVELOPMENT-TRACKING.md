@@ -4,6 +4,40 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Outlets, done properly: hours, a real edit form, and drafts keyed to the till
+
+Implements `docs/superpowers/plans/2026-08-26-outlet-done-properly.md`, superseding the withdrawn `2026-08-26-outlet-edit-all-fields.md`. The owner's verdict on the outlet screen after opening it once: *"căn bản em chỉ đang làm cho có chứ không phải là đang giúp đỡ anh"* -- rename-only editing, no operating hours, drafts keyed to brand instead of the till.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- re-verified the plan's central claim against live data, not the document
+
+Section 3's claim that `pos_drafts` holds 0 rows is exactly the kind of data claim `CLAUDE.md` section 4 says never to trust from a document -- queried it directly (`findAllNoCache("POS_Drafts")` via `vite-node`, not the plan's own assertion): **0 rows, confirmed**. This is what made the migration safe to write with no backfill.
+
+### Operating hours belong to the outlet
+
+`outlets.open_time`/`close_time` (nullable `time`, both), never seeded with a guessed value even though sales cluster 06:00-09:00 and 17:00-21:00 -- that is when customers bought, not when the shop opened. `lib/outlet-hours.ts`'s `isOutletOpenAt` is pure and fixed-clock-tested (plan section 5): open/close bounds compared against a Saigon "HH:MM" the caller supplies, handles an overnight window (17:00-02:00) correctly, treats equal open/close as unset rather than permanently closed, and never marks an outlet closed when either bound is null. `getSaigonNowHHMM` derives the real current time with an explicit `Asia/Ho_Chi_Minh` zone -- `OPEN-ITEMS 57` and the sales-chart timezone bug were both this exact mistake, made twice already.
+
+The "MỞ MÁY POS" picker now marks each outlet open/closed and confirms before opening a till at a closed one -- extracted into `app/admin/components/PosOutletPicker.tsx` specifically so this flow is render-testable without mocking next-auth/next-navigation (no precedent for that combination in this repo). The confirmation does not block: declining leaves the picker up, accepting still opens the till, matching the plan's own instruction that a guard which blocks would be worse than none, since the shop may genuinely trade late.
+
+### Editing an outlet, not renaming it
+
+`app/admin/outlets/actions.ts`'s `renameOutlet` became `editOutlet`: name, brand, address, start date and both hours in one call. `code` is never read from `formData` at all -- proven by a test that posts one and asserts the update payload the server actually sends carries no `code` key, not merely that the client-side form omits the field. Changing the brand was traced, not assumed safe: `outlets.brand_id` is read in exactly two places, both at sale time, and everything downstream reads the brand already frozen on the order. `OutletForm.tsx` unified around one set of fields for add and edit (previously edit showed the name alone) -- retitled "Sửa điểm bán", button label "Sửa".
+
+### Drafts belong to the outlet, not the brand
+
+`pos_drafts.outlet_id` (nullable, FK to `outlets`), filtered on instead of `brand_id`. `brand_id` is kept on the draft -- the sale-time fact, same as on an order. `components/POSScreen.tsx`'s `refreshDrafts`/`saveDraft` now key on `outletId`.
+
+### Migration
+
+`supabase/migrations/0073_outlet_hours_and_draft_outlet.sql` -- schema only, no backfill (0-row claim re-verified live, above). **Not applied** -- owner approves separately, per `CLAUDE.md` section 2, tracked apart from the push approval.
+
+### Verification
+
+Render tests proven to fail first against the pre-fix `OutletForm.tsx` (`git stash` on just that file): all four failed on the missing "Sửa" button/hour fields, not an environment error, before the fix landed. `lib/outlet-hours.test.ts` (9 tests, fixed clock, overnight window, null-hours, Postgres `HH:MM:SS` serialization). `app/admin/components/PosOutletPicker.test.tsx` (6 tests: open outlet skips the confirmation, closed outlet shows it and withholds `onOpenTill` until answered, accepting still opens the till, declining does not, no-stated-hours never confirms). `app/pos/actions.drafts.test.ts` (a draft created at one outlet is not listed at another). `app/admin/outlets/actions.test.ts` extended for `editOutlet` and hours on `addOutlet`.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 208 files / 1431 tests (+4 files, +25); `check-rules-current` exits 0 (unchanged: 3 PASS, 1 WARN, `OPEN-ITEMS 58`); `npm run build` succeeds, `/admin/outlets` unchanged in the route table. **Migration not applied, not pushed** -- both are the owner's own approval, separately.
+
 ## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A fourth rule-drift check for undated data claims -- shipped advisory, not blocking
 
 Implements `docs/superpowers/plans/2026-08-26-undated-data-claims.md`: `checkUndatedDataClaims` in `scripts/check-rules-current-core.ts`, a fourth check alongside `paths-exist`/`no-retired-agents`/`business-rule-tests`. A line in a `RULE_DOCS` document carrying a number with a data unit (`đ`, `dòng`, `đơn`, `món`, `file`, `bảng`, `phép kiểm`, `MB`, `%`) and no date (`YYYY-MM-DD` or `DD/MM`) within 2 lines gets named. An HTML comment marker (`<!-- undated-ok -->`) suppresses exactly the line it sits on.

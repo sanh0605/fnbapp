@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
-import { addOutlet, renameOutlet, retireOutlet } from "../actions";
+import { addOutlet, editOutlet, retireOutlet } from "../actions";
 import { nextOutletCode } from "@/lib/outlet-code";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
@@ -15,6 +15,18 @@ function formatDateToYYYYMMDD(date: Date): string {
   return localDate.toISOString().split("T")[0];
 }
 
+function parseYYYYMMDD(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// <input type="time"> wants "HH:MM"; Postgres time comes back "HH:MM:SS".
+function toTimeInputValue(value: string | null | undefined): string {
+  if (!value) return "";
+  return value.slice(0, 5);
+}
+
 interface OutletFormProps {
   initialData?: DBOutlet;
   brands: DBBrand[];
@@ -23,6 +35,12 @@ interface OutletFormProps {
   outlets: DBOutlet[];
 }
 
+// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 4: the
+// edit form shows brand, address, start date and hours, not the name
+// alone -- the owner's own verdict on the name-only version was "built to
+// look finished rather than to be used". Add and edit share every field
+// except code, which only add previews (system-assigned) and edit displays
+// (frozen, never posted).
 export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
   const isEdit = !!initialData;
   const formId = useId();
@@ -31,17 +49,34 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [brandId, setBrandId] = useState(initialData?.brand_id || "");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => parseYYYYMMDD(initialData?.start_date));
 
   const previewCode = isEdit ? initialData!.code : nextOutletCode(outlets.map(o => o.code));
+
+  function resetForNextOpen() {
+    setSelectedDate(parseYYYYMMDD(initialData?.start_date));
+    setBrandId(initialData?.brand_id || "");
+  }
+
+  // Shared by the modal's own close affordances (backdrop, Escape, the X
+  // button, via FormModal's onClose) and the footer's "Huy" button, which
+  // does not go through onClose -- state must reset on every path or a
+  // cancelled edit's unsaved date/brand would leak into the next open.
+  function handleClose() {
+    setIsOpen(false);
+    setError(null);
+    resetForNextOpen();
+  }
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
 
+    if (selectedDate) formData.set("start_date", formatDateToYYYYMMDD(selectedDate));
+
     if (isEdit && initialData) {
       formData.set("id", initialData.id);
-      const res = await renameOutlet(formData);
+      const res = await editOutlet(formData);
       setLoading(false);
       if (res.error) {
         setError(res.error);
@@ -51,7 +86,6 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
       return;
     }
 
-    if (selectedDate) formData.set("start_date", formatDateToYYYYMMDD(selectedDate));
     const res = await addOutlet(formData);
     setLoading(false);
     if (res.error) {
@@ -70,7 +104,7 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
           onClick={() => setIsOpen(true)}
           className="text-primary hover:text-primary-hover font-medium text-sm"
         >
-          Đổi tên
+          Sửa
         </button>
       ) : (
         <button
@@ -83,16 +117,13 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
 
       <FormModal
         isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false);
-          setError(null);
-        }}
-        title={isEdit ? "Đổi tên điểm bán" : "Thêm điểm bán mới"}
+        onClose={handleClose}
+        title={isEdit ? "Sửa điểm bán" : "Thêm điểm bán mới"}
         footer={
           <>
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
             >
               Huỷ
@@ -112,7 +143,8 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
 
           {isEdit ? (
             <p className="text-sm text-text-secondary bg-surface-secondary rounded-lg px-3 py-2">
-              Mã điểm bán <span className="font-mono font-semibold">{previewCode}</span> không đổi khi đổi tên.
+              Mã điểm bán <span className="font-mono font-semibold">{previewCode}</span> không đổi được -- mã này nằm
+              trong mã đơn của mọi đơn hàng bán tại điểm bán này.
             </p>
           ) : (
             <p className="text-sm text-text-secondary bg-surface-secondary rounded-lg px-3 py-2">
@@ -135,56 +167,83 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
             />
           </div>
 
-          {!isEdit && (
-            <>
-              <div>
-                <label htmlFor={`${formId}-brand`} className="block text-sm font-medium text-text-secondary mb-1">
-                  Thương hiệu
-                </label>
-                <select
-                  id={`${formId}-brand`}
-                  name="brand_id"
-                  required
-                  value={brandId}
-                  onChange={(e) => setBrandId(e.target.value)}
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
-                >
-                  <option value="" disabled>-- Chọn thương hiệu --</option>
-                  {brands.map(b => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label htmlFor={`${formId}-brand`} className="block text-sm font-medium text-text-secondary mb-1">
+              Thương hiệu
+            </label>
+            <select
+              id={`${formId}-brand`}
+              name="brand_id"
+              required
+              value={brandId}
+              onChange={(e) => setBrandId(e.target.value)}
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
+            >
+              <option value="" disabled>-- Chọn thương hiệu --</option>
+              {brands.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
 
-              <div>
-                <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-text-secondary mb-1">
-                  Địa chỉ
-                </label>
-                <input
-                  id={`${formId}-address`}
-                  type="text"
-                  name="address"
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-                  placeholder="VD: 123 Đường ABC, Quận 1"
-                />
-              </div>
+          <div>
+            <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-text-secondary mb-1">
+              Địa chỉ
+            </label>
+            <input
+              id={`${formId}-address`}
+              type="text"
+              name="address"
+              defaultValue={initialData?.address}
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+              placeholder="VD: 123 Đường ABC, Quận 1"
+            />
+          </div>
 
-              <div>
-                <label htmlFor={`${formId}-start-date`} className="block text-sm font-medium text-text-secondary mb-1">
-                  Ngày bắt đầu hoạt động
-                </label>
-                <CustomDatePicker
-                  id={`${formId}-start-date`}
-                  selected={selectedDate}
-                  onChange={(date: Date | null) => setSelectedDate(date)}
-                  dateFormat="dd/MM/yyyy"
-                  showTimeSelect={false}
-                  placeholderText="DD/MM/YYYY"
-                  className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-                />
-              </div>
-            </>
-          )}
+          <div>
+            <label htmlFor={`${formId}-start-date`} className="block text-sm font-medium text-text-secondary mb-1">
+              Ngày bắt đầu hoạt động
+            </label>
+            <CustomDatePicker
+              id={`${formId}-start-date`}
+              selected={selectedDate}
+              onChange={(date: Date | null) => setSelectedDate(date)}
+              dateFormat="dd/MM/yyyy"
+              showTimeSelect={false}
+              placeholderText="DD/MM/YYYY"
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor={`${formId}-open-time`} className="block text-sm font-medium text-text-secondary mb-1">
+                Giờ mở cửa
+              </label>
+              <input
+                id={`${formId}-open-time`}
+                type="time"
+                name="open_time"
+                defaultValue={toTimeInputValue(initialData?.open_time)}
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+              />
+            </div>
+            <div>
+              <label htmlFor={`${formId}-close-time`} className="block text-sm font-medium text-text-secondary mb-1">
+                Giờ đóng cửa
+              </label>
+              <input
+                id={`${formId}-close-time`}
+                type="time"
+                name="close_time"
+                defaultValue={toTimeInputValue(initialData?.close_time)}
+                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-text-muted -mt-2">
+            Để trống nếu chưa muốn hệ thống nhắc giờ mở/đóng cửa cho điểm bán này.
+          </p>
         </form>
       </FormModal>
     </>

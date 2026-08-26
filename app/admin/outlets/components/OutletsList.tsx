@@ -62,6 +62,14 @@ export function OutletsList({ outlets, brands }: OutletsListProps) {
                 <span className="font-medium">{new Date(outlet.end_date).toLocaleDateString("en-GB")}</span>
               </div>
             )}
+            <div>
+              <span className="text-text-muted">Giờ hoạt động:</span>{" "}
+              <span className="font-medium">
+                {outlet.open_time && outlet.close_time
+                  ? `${outlet.open_time.slice(0, 5)} - ${outlet.close_time.slice(0, 5)}`
+                  : "Chưa đặt"}
+              </span>
+            </div>
           </div>
 
           <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">

@@ -254,13 +254,16 @@ export async function getPOSStockStatus(): Promise<PosStockStatus[]> {
   return loadPOSStockStatus();
 }
 
-export async function getPOSDrafts(brandId: string) {
+// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 3: a
+// draft belongs to the till it was started at, not whatever brand happened
+// to be stamped at that moment -- filtered by outlet_id, not brand_id.
+export async function getPOSDrafts(outletId: string) {
   const auth = await resolveActor();
   if (!auth.ok) throw new Error(auth.error);
 
   try {
     const allDrafts = await findAllNoCache("POS_Drafts");
-    return allDrafts.filter((d: any) => d.brand_id === brandId);
+    return allDrafts.filter((d: any) => d.outlet_id === outletId);
   } catch (err: any) {
     console.error("Error getting POS drafts:", err);
     return [];
@@ -272,6 +275,11 @@ export async function savePOSDraft(draft: {
   name: string;
   cart_json: string;
   brand_id: string;
+  // Optional only so existing callers/tests that predate this field keep
+  // compiling; components/POSScreen.tsx always supplies it. brand_id is
+  // kept alongside it -- the sale-time fact, same as on an order -- outlet_id
+  // is what filtering now keys on.
+  outlet_id?: string;
 }) {
   try {
     const auth = await resolveActor();
@@ -279,7 +287,7 @@ export async function savePOSDraft(draft: {
     const actor = auth.actor;
 
     const now = new Date().toISOString();
-    
+
     if (draft.id) {
       const allDrafts = await findAllNoCache("POS_Drafts");
       const existing = allDrafts.find((d: any) => d.id === draft.id);
@@ -300,6 +308,7 @@ export async function savePOSDraft(draft: {
       name: draft.name,
       cart_json: draft.cart_json,
       brand_id: draft.brand_id,
+      outlet_id: draft.outlet_id || null,
       created_by_id: actor.id,
       created_by_name: actor.name,
       created_at: now,

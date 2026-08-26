@@ -27,8 +27,19 @@ export async function getOutlets() {
   }
 }
 
+// A time field arrives as "" from a cleared <input type="time"> and as
+// undefined when the key is absent -- both mean "not set", never a claim
+// that the outlet opens at midnight.
+function readTime(formData: FormData, key: string): string | null {
+  const value = ((formData.get(key) as string) || "").trim();
+  return value || null;
+}
+
 // docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md section 2:
 // the code is assigned by the system, never chosen, never a freed gap.
+// Hours (docs/superpowers/plans/2026-08-26-outlet-done-properly.md section
+// 2) are never seeded with a guessed value -- null unless the owner enters
+// one.
 export async function addOutlet(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
@@ -37,6 +48,8 @@ export async function addOutlet(formData: FormData): Promise<ActionResponse> {
   const brand_id = ((formData.get("brand_id") as string) || "").trim();
   const address = ((formData.get("address") as string) || "").trim();
   const start_date = ((formData.get("start_date") as string) || "").trim();
+  const open_time = readTime(formData, "open_time");
+  const close_time = readTime(formData, "close_time");
 
   if (!name) return fail("Tên điểm bán không được để trống");
   if (!brand_id) return fail("Vui lòng chọn thương hiệu");
@@ -53,6 +66,8 @@ export async function addOutlet(formData: FormData): Promise<ActionResponse> {
       address,
       status: "ACTIVE",
       start_date: start_date || null,
+      open_time,
+      close_time,
       created_at: new Date().toISOString(),
     });
     revalidatePath(PATH);
@@ -63,18 +78,40 @@ export async function addOutlet(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// The code is frozen; only the name is editable here (plan section 2).
-export async function renameOutlet(formData: FormData): Promise<ActionResponse> {
+// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 4: the
+// edit form covers brand, address, start date and hours, not the name
+// alone -- "built to look finished rather than to be used" was the
+// owner's own verdict on the name-only version. code is deliberately never
+// read from formData here: it cannot be changed by posting a different
+// value, not merely disabled in the form. Changing the brand is safe --
+// traced, not assumed, in the plan: outlets.brand_id is read only at sale
+// time, and everything downstream reads the brand already frozen on the
+// order.
+export async function editOutlet(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
   const id = ((formData.get("id") as string) || "").trim();
   const name = ((formData.get("name") as string) || "").trim();
+  const brand_id = ((formData.get("brand_id") as string) || "").trim();
+  const address = ((formData.get("address") as string) || "").trim();
+  const start_date = ((formData.get("start_date") as string) || "").trim();
+  const open_time = readTime(formData, "open_time");
+  const close_time = readTime(formData, "close_time");
+
   if (!id) return fail("ID không hợp lệ");
   if (!name) return fail("Tên điểm bán không được để trống");
+  if (!brand_id) return fail("Vui lòng chọn thương hiệu");
 
   try {
-    await update(SHEET, id, { name });
+    await update(SHEET, id, {
+      name,
+      brand_id,
+      address,
+      start_date: start_date || null,
+      open_time,
+      close_time,
+    });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

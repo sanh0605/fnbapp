@@ -17,7 +17,7 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { getOutlets, addOutlet, renameOutlet, retireOutlet } from "./actions";
+import { getOutlets, addOutlet, editOutlet, retireOutlet } from "./actions";
 
 const ADMIN = { ok: true as const, actor: { id: "admin-1", name: "Admin" } };
 
@@ -111,25 +111,80 @@ describe("addOutlet", () => {
     expect(res.error).toBeTruthy();
     expect(mocks.insert).not.toHaveBeenCalled();
   });
+
+  it("saves hours when given, and null when left blank -- never guessed", async () => {
+    mocks.findAll.mockResolvedValue([]);
+
+    await addOutlet(formData({ name: "Điểm bán 3", brand_id: "BR-001", open_time: "06:00", close_time: "21:00" }));
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "Outlets",
+      expect.objectContaining({ open_time: "06:00", close_time: "21:00" }),
+    );
+
+    mocks.insert.mockClear();
+    await addOutlet(formData({ name: "Điểm bán 4", brand_id: "BR-001" }));
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "Outlets",
+      expect.objectContaining({ open_time: null, close_time: null }),
+    );
+  });
 });
 
-describe("renameOutlet", () => {
+describe("editOutlet", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue(ADMIN);
   });
 
-  it("updates only the name, leaving the code untouched", async () => {
-    const res = await renameOutlet(formData({ id: "OUT-001", name: "Cửa hàng Quận 1" }));
+  it("updates name, brand, address, start date and hours in one call", async () => {
+    const res = await editOutlet(formData({
+      id: "OUT-001",
+      name: "Cửa hàng Quận 1",
+      brand_id: "BR-002",
+      address: "1 Đường ABC",
+      start_date: "2026-01-01",
+      open_time: "07:00",
+      close_time: "22:00",
+    }));
 
     expect(res.success).toBe(true);
-    expect(mocks.update).toHaveBeenCalledWith("Outlets", "OUT-001", { name: "Cửa hàng Quận 1" });
+    expect(mocks.update).toHaveBeenCalledWith("Outlets", "OUT-001", {
+      name: "Cửa hàng Quận 1",
+      brand_id: "BR-002",
+      address: "1 Đường ABC",
+      start_date: "2026-01-01",
+      open_time: "07:00",
+      close_time: "22:00",
+    });
   });
 
   it("refuses without a name", async () => {
-    const res = await renameOutlet(formData({ id: "OUT-001" }));
+    const res = await editOutlet(formData({ id: "OUT-001", brand_id: "BR-001" }));
     expect(res.error).toBeTruthy();
     expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses without a brand", async () => {
+    const res = await editOutlet(formData({ id: "OUT-001", name: "Cửa hàng Quận 1" }));
+    expect(res.error).toBeTruthy();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  // Plan section 5: "code cannot be changed by posting a different value,
+  // not merely disabled in the form" -- proven here by posting one and
+  // confirming the update call the server actually makes carries no code
+  // key at all, not just that the field was absent from a form the client
+  // controls.
+  it("ignores a client-posted code -- it cannot be changed by posting a different value", async () => {
+    await editOutlet(formData({
+      id: "OUT-001",
+      name: "Cửa hàng Quận 1",
+      brand_id: "BR-001",
+      code: "999",
+    }));
+
+    const [, , payload] = mocks.update.mock.calls[0];
+    expect(payload).not.toHaveProperty("code");
   });
 });
 
