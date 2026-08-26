@@ -119,6 +119,39 @@ Nothing here feeds a queue or schedules unattended work: there is no cron in
 this repository (`app/api/cron/` is empty, `vercel.json` is `{}`, verified
 2026-08-26).
 
+### The consequence this section missed: 65 new assets
+
+**Found by Sonnet 2026-08-27, not by this plan.** The table above lists database
+triggers, and finding nothing else concluded too much. `planAssetsFromCompletedOrder`
+is **application** logic in `app/admin/inventory/purchase-orders/actions.ts`, so
+no trigger inventory could ever surface it — a table of triggers is not a table
+of consequences.
+
+**65 of the 107 lines are EQUIPMENT.** Completing those orders creates one
+`assets` row per line: 19 today → **84**. Re-derived independently rather than
+taken from the dry run:
+
+| | |
+|---|---|
+| Equipment lines | **65**, covering 341 physical units |
+| Value, after BR-COGS-006 allocation | **12.063.066đ** |
+| Band lookups that fail | **0** |
+| Terms assigned | 53 at 12 months, 10 at 24, 2 at 36 |
+| Depreciation created | **639.518đ per month** |
+| Earliest acquisition | 2026-03-27, so **1.676.673đ of it has already elapsed** |
+
+**Cross-checked against the owner's own spreadsheet, which computes this too:**
+his `Giá nhập thực tế` column agrees with the system's allocation on **65 of 65
+lines, within 1đ** — two independent implementations of BR-COGS-006 landing on
+the same number.
+
+**They disagree on term for 12 lines, and the disagreement is correct.** His
+sheet depreciates everything over 12 months; the system applies the 12/24/36
+bands he set on 2026-08-19, so anything over 200.000đ runs longer. His sheet
+says 1.005.255đ/month, the system says 639.518đ/month. Same 12.063.066đ, spread
+differently. Nothing to fix — but he will see both numbers, so he was told
+before approving rather than left to find it.
+
 ## 6. Verification — and what the owner is actually shown
 
 **Measured 2026-08-27, before anything runs:**
