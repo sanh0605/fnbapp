@@ -4,7 +4,7 @@
 (`CLAUDE.md` §1). Owner approved the fix on 2026-08-27 ("Sửa bây giờ") after
 being shown the 72.728đ figure in §3.
 
-**Two parts: a one-line code fix, and a recompute of 84 production rows.**
+**Three one-line code fixes, and a recompute of 82 production rows.**
 The recompute is a production write — `fnbapp-bulk-data-change` applies.
 
 ---
@@ -120,20 +120,44 @@ month-movers before writing.
 - A second `--apply` updates **0 rows** — the `where` clause makes this true by
   construction, so prove it by running it, not by pointing at the clause.
 
-## 7. Found while fixing, deliberately NOT in this scope
+## 7. Two more sites of the same class — also in scope
 
-Two more sites of the same class, both real, neither approved:
+**Owner approved these on 2026-08-27 after being shown what each one does.**
+Same defect, same fix, same helper.
 
-- `app/admin/reports/daily/actions.ts:37` — `new Date().toISOString().slice(0, 10)`
-  as the default date. Between 00:00 and 07:00 Saigon this opens **yesterday's**
-  report.
-- `app/admin/inventory/assets/components/DisposeAssetForm.tsx:20` — same
-  expression as the default disposal date, so a disposal recorded before 07:00
-  is dated the previous day.
+**`app/admin/reports/daily/actions.ts:37`** — `new Date().toISOString().slice(0, 10)`
+as the default date. Between 00:00 and 07:00 Saigon this opens **yesterday's**
+report. Worse than it first looks: the value feeds `getDigestDateOffsets(date)`
+on line 38, so *today*, *yesterday* and *same weekday last week* all shift
+together — the comparison still looks internally consistent while being a day
+off, which is why nobody would notice it from the screen.
 
-Report them; do not fix them here. The owner approved the asset-acquisition
-date, and widening the scope of an approved production change without asking is
-the thing `CLAUDE.md` §2 exists to stop.
+**`app/admin/inventory/assets/components/DisposeAssetForm.tsx:20`** — same
+expression as the default disposal date. A `"use client"` component, so this is
+the **browser's** clock, but `toISOString()` is UTC there too and the outcome is
+identical: a disposal recorded before 07:00 is dated the previous day. Fix it to
+Saigon rather than to browser-local — the shop is in Saigon and every other date
+in the system already means Saigon.
+
+**Neither needs a backfill.** The daily report computes nothing persistent, and
+`asset_disposals` rows were entered by hand with a visible date the owner could
+see and correct. Confirm the second claim by querying `asset_disposals` rather
+than assuming it — if any row's `disposed_date` is a day before its
+`created_at`'s Saigon date, say so and stop rather than backfilling unasked.
+
+**Swept for a fourth site and found none.** Every other
+`new Date().toISOString()` in `app/`, `lib/` and `components/` stores a full
+timestamp, which is correct regardless of zone — the defect only appears when a
+UTC string is *sliced to a date*. `app/admin/inventory/assets/actions.ts:27`'s
+`currentSaigonMonth` looks like the same shape but is right: it shifts the
+instant by +7h before reading UTC, and says so in a comment. `lib/historical/*`
+is one-off tooling and stays out.
+
+That makes **four** private spellings of "Saigon time" in this repository
+(`toSaigonIsoString`, `saigonBucketKeys`, `getSaigonParts`, `currentSaigonMonth`)
+before counting the three broken ones. Consolidating them is not this plan's
+job — but note it in the report, because a fifth is how this bug gets a fourth
+home.
 
 ## 8. Done means
 
