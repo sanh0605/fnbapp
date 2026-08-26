@@ -4,6 +4,37 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A point-and-comment tool on the local preview
+
+Implements `docs/superpowers/plans/2026-08-26-ui-feedback-tool.md`, the first work under the revised UI rule (`CLAUDE.md` section 7): so the owner can say "this is wrong here" by pointing at it on his phone, instead of describing it in words.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- checked both named claims empirically, not read
+
+**Section 4's fingerprint.** Started a real `next dev` server and inspected the actual served bundle rather than guessing. Confirmed: Next's default dev transform emits `jsxDEV(type, props, key, isStaticChildren, {fileName, lineNumber, columnNumber})` for every JSX element with zero extra config -- found exact `fileName`/`lineNumber` in the live bundle. React's dev build stores this on each element's Fiber as `_debugSource`, reachable from any DOM node via its `__reactFiber$<key>` property. Added as a fifth field alongside the plan's baseline four, not instead of them -- it is structurally dev-only for free (`_debugSource` does not exist in production's `react-dom` build at all), and the baseline stays useful for cross-checking even when it is present.
+
+**Section 6's tree-shaking claim.** `app/layout.tsx` is a Server Component; the toolbar has to be a Client Component. Whether a plain `{NODE_ENV !== "production" && <Toolbar/>}` conditional reliably keeps the client chunk out of the production bundle is a real App Router uncertainty, not settled -- so built a second, stronger guard on top: `DevPreviewToolsLoader` never imports the heavy component at module scope, only inside a `useEffect` gated by the same check, via a dynamic `import()`. **Verified by evidence, both ways:** built for real, then read the compiled production `DevPreviewToolsLoader` function directly out of `.next/static/chunks/app/layout-*.js` -- its `useEffect` body compiled down to a literal empty `()=>{}`, meaning Terser proved the whole branch (the `import()` call included) unreachable and removed it entirely. Started the real production server (`next start`) and confirmed: the toolbar's chunk is not referenced by any script tag on a real page load, and `GET`/`POST /api/dev-feedback` both return real 404s against the running server, not just a mocked test.
+
+**A concrete correction to section 3, also checked, not assumed:** `next dev -H 0.0.0.0`'s own "Network:" banner line prints `http://0.0.0.0:<port>` verbatim -- not usable, a phone cannot connect to `0.0.0.0`. Confirmed by actually starting it. The plan's instruction to detect the real LAN address separately was necessary, not redundant.
+
+### What was built
+
+- `npm run preview` (`scripts/preview.ts` + `scripts/lan-address.ts`): binds `next dev` to `0.0.0.0`, prints every non-internal IPv4 address found (not a single guess -- a machine with a VPN/Docker/WSL often has several). `npm run dev` untouched.
+- Scroll position persisted to `sessionStorage` on unload, restored once and only for the same path (`components/dev-feedback/ScrollRestoration.tsx`).
+- `lib/ui-feedback-fingerprint.ts`: CSS selector path, className, text snippet, route, viewport width, plus the React-fiber-derived exact file/line when available.
+- `components/dev-feedback/UiFeedbackTool.tsx`: the "Góp ý" toolbar, portalled into its own container appended to `<body>` (not nested inside `{children}`), zero Tailwind classes (all inline styles), the highlight outline drawn as a separate overlay element rather than mutating the hovered element's own style, picking intercepted via a capturing `document` listener so the overlay itself stays `pointer-events: none` and never blocks the real page.
+- `app/api/dev-feedback/route.ts` + `lib/ui-feedback-store.ts`: `GET`/`POST`/`DELETE` against `UI-FEEDBACK.md` at the project root, newest last, human-readable. Dev-only guard independent of the client-side one (section 6's "one guard is a single point of failure").
+- `.gitignore`: `/UI-FEEDBACK.md` (the owner's own notes, not the repository's) and `!.claude/commands/` (project tooling, committed, matching the existing `!.claude/skills/` exception).
+- `.claude/commands/fix-ui-feedback.md`: reads `UI-FEEDBACK.md`, locates each target (prefers the exact source line, falls back to selector/className/text), fixes only what the owner's note actually says, clears only the entries it fixed, leaves the rest with a reason, reports in Vietnamese.
+- `docs/operations/preview-and-feedback-tool.md`: the Vietnamese usage note section 10 requires, kept as a durable doc rather than only chat text.
+
+### Verification
+
+`lib/ui-feedback-fingerprint.test.ts` (11), `lib/ui-feedback-store.test.ts` (10, including CRLF tolerance and multi-line notes), `app/api/dev-feedback/route.test.ts` (9, including the production-404 guard), `scripts/lan-address.test.ts` (4), `components/dev-feedback/UiFeedbackTool.test.tsx` (5: mounts, portalled outside the app tree and asserted rather than assumed, picking records a real selector/className/text, a general comment saves with no element, an entry deletes). Production-build evidence and the live 404s are the section 6 verification above, not re-described here.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 213 files / 1470 tests (+9 files, +39); `check-rules-current` exits 0 (unchanged: 3 PASS, 1 WARN, `OPEN-ITEMS 58`); `npm run build` succeeds, evidence above. `git check-ignore -v UI-FEEDBACK.md` confirms it is ignored; `.claude/commands/` confirmed NOT ignored the same way. **Not pushed.**
+
 ## 2026-08-26 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Outlets, done properly: hours, a real edit form, and drafts keyed to the till
 
 Implements `docs/superpowers/plans/2026-08-26-outlet-done-properly.md`, superseding the withdrawn `2026-08-26-outlet-edit-all-fields.md`. The owner's verdict on the outlet screen after opening it once: *"căn bản em chỉ đang làm cho có chứ không phải là đang giúp đỡ anh"* -- rename-only editing, no operating hours, drafts keyed to brand instead of the till.

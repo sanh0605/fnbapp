@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import NextAuthSessionProvider from "@/components/SessionProvider";
 import { DialogHost } from "@/components/DialogHost";
+import { DevPreviewToolsLoader } from "@/components/dev-feedback/DevPreviewToolsLoader";
 
 export const metadata: Metadata = {
   title: "FNB App v2 - Google Sheets",
@@ -36,6 +37,7 @@ export default function RootLayout({
         <NextAuthSessionProvider>
           {children}
           <DialogHost />
+          {process.env.NODE_ENV !== "production" && <DevPreviewToolsLoader />}
         </NextAuthSessionProvider>
       </body>
     </html>

@@ -79,6 +79,7 @@ vite.config.ts.timestamp-*
 .claude/*
 !.claude/settings.json
 !.claude/skills/
+!.claude/commands/
 
 # WS-1 cleanup: scratch files, generated output, test caches
 scratch/
@@ -98,3 +99,8 @@ fnbapp-backup-*.json
 fnbapp-monthly-*.json
 
 .vercel
+
+# docs/superpowers/plans/2026-08-26-ui-feedback-tool.md section 7: the
+# owner's own point-and-comment notes from the local preview -- his, not
+# the repository's.
+/UI-FEEDBACK.md
