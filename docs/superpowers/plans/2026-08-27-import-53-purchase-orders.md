@@ -21,7 +21,7 @@ lines of raw output is not something he can judge.
 **So the approval shape changes, not the approval.** He approves on a figure he
 can judge (§6). The line-by-line checking is the reviewer's job, not his.
 
-## 2. Inputs, all owner-confirmed
+## 2. Inputs — three confirmed, one still open
 
 Four files in `scratchpad/`, produced during the 2026-08-27 session:
 
@@ -36,15 +36,35 @@ Four files in `scratchpad/`, produced during the 2026-08-27 session:
 twice already during this work — and every figure below has a measurement date
 for that reason.
 
+**Held open 2026-08-27, Sonnet caught it.** `owner-map.json` covers 31 names.
+Another **11 sheet names, touching 20 of the 107 lines**, were resolved during
+planning by a prefix rule (*sheet name is a prefix of the system name, or vice
+versa*) and **were never shown to the owner**. That rule is a guess wearing the
+costume of a match. The 11 are with him now; do not code against the prefix
+rule, and do not run until they are confirmed and written into
+`owner-map.json` the same way the 31 were.
+
+The one that is not merely a case difference: the sheet carries **both**
+`Túi chữ T` and `Túi Chữ T 12.5x26 - 2kg` as separate items, while the system has
+only `Túi chữ T`. If they are two sizes, merging them blends two average costs
+into one.
+
 ## 3. Preparation, both owner-approved
 
-1. **Create 16 suppliers**, exactly as named in the sheet: `ShopGiaDungTienIchSale`,
+1. **Create 15 suppliers**, exactly as named in the sheet: `ShopGiaDungTienIchSale`,
    `GIA DỤNG ROSE`, `VANA AUTO`, `TÍN PHÁT SÀI GÒN`, `Gia Dụng Cương Nga`,
    `UNMEI_MART_TÂN PHÚ`, `NHỰA DUY TÂN - SHOP`, `HỘ KINH DOANH NGỌC PHÁT`,
    `Cửa hàng điện E78`, `THEA OFFICIAL STORE`, `ookas.lighting`, `THƯ PHA CHẾ`,
-   `Thiên Phúc`, `Thành Danh`, `Cửa Hàng B&B Supplier Ly - Bar`,
-   `CÔNG TY TMĐT Ô MUA ĐI`. The duplicate-name guard applies; a near-match
-   warning must be surfaced, not auto-confirmed.
+   `Thiên Phúc`, `Thành Danh`, `Cửa Hàng B&B Supplier Ly - Bar`.
+   The duplicate-name guard applies; a near-match warning must be surfaced,
+   not auto-confirmed.
+
+   **Corrected 2026-08-27, Sonnet caught it.** This list said 16 and included
+   `CÔNG TY TMĐT Ô MUA ĐI`, which already exists as `NCC-021` under its full
+   name `CÔNG TY TMĐT Ô MUA ĐI - GIÁ LUÔN TỐT NHẤT!`. NH000026 links to the
+   existing row. The wrong name came from copying a console table that
+   truncates at 40 characters — **output formatted for reading was reused as
+   data.** Anything derived from a printed table must be re-read from source.
 2. **Retitle two conversions** from `Cái` to `Hộp`: `SPM-105` Hộp nhựa 1500ml,
    `SPM-123` Hộp nhựa có nắp gài 1000ml. Both have **0 purchase lines**
    (verified 2026-08-27), so nothing historical moves — re-verify before doing it.
