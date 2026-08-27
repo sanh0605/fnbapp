@@ -57,7 +57,7 @@ Không tra theo đường dẫn file — file sẽ đổi chỗ. Tra theo loại
 |---|---|
 | Đụng giá vốn hoặc tồn kho | Có plan; Sonnet phản biện; kèm script kiểm tra chạy lại được |
 | Ghi vào dữ liệu thật | Mặc định chạy thử; `--apply` mới ghi; in số lượng và đối tượng chính xác trước khi ghi; chủ quán duyệt **từng lần** ghi |
-| Xoá dữ liệu gốc (nguyên liệu, món, công thức, đơn, nhà cung cấp) | **Không xoá. Đánh dấu ngừng dùng.** Đơn hàng cũ vẫn cần chúng để giải thích được số của chính nó |
+| Xoá dữ liệu gốc (nguyên liệu, món, công thức, đơn, nhà cung cấp) | **Không xoá. Đánh dấu ngừng dùng.** Đơn hàng cũ vẫn cần chúng để giải thích được số của chính nó. **Một ngoại lệ, chủ quán chốt 27/08:** công thức và bán thành phẩm bị xoá hẳn — lý do ông ấy nêu là làm lại trên nền sạch dễ hơn chữa cái sai cũ, và số liệu ủng hộ: 3.363/3.364 dòng đơn đã tự mang bản sao công thức nên lịch sử không mất. Ngoại lệ này **chỉ áp cho công thức**, không mở rộng ra mục nào khác |
 | Xoá file tài liệu hoặc dữ liệu kết xuất | Kiểm ai đang trích dẫn nó trước. Một bản sao lưu dữ liệu đã xoá có thể là **bản duy nhất** |
 | Lộ ra ngoài repo (push, deploy) | Chủ quán duyệt **từng lần**. Không có uỷ quyền sẵn |
 | Chạy migration lên máy chủ thật | Chủ quán duyệt **từng lần**, tách bạch với duyệt push |
