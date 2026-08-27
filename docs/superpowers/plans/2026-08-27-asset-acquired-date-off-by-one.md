@@ -2,7 +2,7 @@
 
 **Written 2026-08-27 by Opus 5.** Handoff to Sonnet 5. Critique before coding
 (`CLAUDE.md` §1). Owner approved the fix on 2026-08-27 ("Sửa bây giờ") after
-being shown the 72.728đ figure in §3.
+being shown the figure in §3.
 
 **Three one-line code fixes, and a recompute of 82 production rows.**
 The recompute is a production write — `fnbapp-bulk-data-change` applies.
@@ -59,7 +59,7 @@ previous month:
 | 2026-06-01 | 2026-05-31 | Kẹp gắp răng cưa Inox 190mm, Vợt múc trân châu inox, Dụng cụ lọc trà |
 | 2026-07-01 | 2026-06-30 | Bình bơm, Muỗng vét kem, Cốc đong 100ml, Đầu đánh bọt Uniblend DC 201, Thảm bar pha chế 600x300mm, Cân tiểu ly, Khay đựng ly ống hút |
 
-**72.728đ of depreciation sits in the wrong month.** The other 72 assets move
+**72.727đ of depreciation sits in the wrong month.** The other 72 assets move
 by a day within the same month and change no figure at all — say so in the
 report rather than letting 84 changed rows imply 84 changed schedules.
 
@@ -113,8 +113,20 @@ month-movers before writing.
 - Re-run §2's comparison: **82 of 82 matching, 0 early, 0 late.**
 - `assets` count still **84**, `sum(total_cost)` still **14.720.817đ** — this
   moves dates only, and a moved total means something else was touched.
-- Depreciation per month still **639.518đ** in aggregate; report the 10 assets'
-  before/after month explicitly.
+- Depreciation per month still **801.641đ** across all 84 assets; report the 10
+  assets' before/after month explicitly.
+
+  **Corrected 2026-08-27, Sonnet caught it.** This line said 639.518đ "in
+  aggregate". 639.519đ is the **65 new** assets' monthly charge, not the
+  aggregate of all 84 — the 19 that predate the import add 162.122đ. A figure
+  computed for one set was carried into a sentence about a larger one.
+
+  **Both corrections here have the same cause**, and it is the one
+  `CLAUDE.md` §5 already names: the figures were computed in Python with float
+  division and banker's rounding, while the system rounds each asset then sums.
+  72.728 → **72.727**, 639.518 → **639.519**. Third time this class has bitten.
+  Compute money with the tool that will run it — SQL or the repo's own
+  `buildAssetSchedule`, never a scratch script in another language.
 - `sum(total_amount)` on `purchase_orders` still **87.908.288đ**.
 - `scripts/verify-revenue.ts` unmoved.
 - A second `--apply` updates **0 rows** — the `where` clause makes this true by
