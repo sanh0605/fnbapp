@@ -260,7 +260,78 @@ một mã đơn**. Đo 26/08: 2.376 dòng cho 2.360 đơn. Hệ quả bắt bu�
 chênh lệch kiểm kê. **Không được cộng hai cái rồi gọi là giá vốn tháng đó** —
 kỳ kiểm kê đầu tiên gánh nhiều tháng dồn lại.
 
-## 11. Tra ở đâu
+## 11. Tra ở đâu — và tra thế nào cho khỏi làm trùng
+
+**Luật này thay cho câu "trước khi thiết kế việc lớn thì mở `specs/`".** Câu đó
+hỏng ba lần trong một tháng, và hỏng cùng một kiểu, nên đừng khôi phục nó.
+
+### Cửa mở lúc nào
+
+**Bất cứ khi nào sắp đề xuất, lên kế hoạch, hay thiết kế một việc — kể cả việc
+một dòng.** Không hỏi "việc này có lớn không".
+
+Chữ "lớn" là chỗ hỏng: người tự đánh giá là người sắp làm, và cả ba lần đều tự
+chấm là nhỏ. Ngày 27/08 việc bị chấm nhỏ là "cho máy bán hàng tự gửi lại" —
+nghe như một chi tiết nối theo bản vá, thật ra đã có bản thiết kế chủ quán
+duyệt từ 27/07.
+
+### Một lệnh. Đọc hết danh sách nó in ra.
+
+```
+grep -il "status.*approv" docs/superpowers/specs/*.md
+```
+
+Lệnh này ngắn vì kho `specs/` ngắn — đo 27/08 ra 13 bản đã duyệt trên 32 file,
+và tên file tự nói ra nội dung (`2026-07-27-pos-offline-resilience`,
+`2026-07-28-multi-outlet`). Đừng tin con số đó, chạy lệnh đi; nhưng dù nó tăng
+gấp đôi thì đọc hết vẫn rẻ hơn đoán chữ. Đọc hết
+dòng nó in ra — **đừng lọc, đừng tìm kiếm.**
+
+**Vì sao không tìm kiếm:** bản nháp đầu của chính luật này bảo tra bằng danh từ
+lĩnh vực. Thử lại trên hai lần hỏng cũ thì gõ "pos" ra **12 trên 13 bản** — lọc
+mà ra gần hết thì không lọc gì cả. Tra theo tên file thì chính xác (ra đúng 1),
+nhưng "stocktake", "asset", "purchase" ra **0** dù việc quanh chúng đều có tài
+liệu. Mọi cách tìm kiếm đều đòi đoán đúng chữ, mà **đoán sai chữ chính là chỗ
+hỏng ngày 27/08**: hôm đó chữ nghĩ trong đầu là "thử lại", còn bản thiết kế tên
+là *POS Offline Resilience*.
+
+Đọc hết thì không cần đoán gì cả.
+
+**Có tên trong danh sách mà chạm vào vùng mình định làm thì mở ra đọc, đừng
+thiết kế lại.**
+
+### Rồi tra thứ liên đới
+
+Danh sách trên cho biết *đã chốt cái gì*. Còn hai chỗ cho biết *việc này đụng
+vào ai*:
+
+```
+grep -in "<danh-từ>" docs/OPEN-ITEMS.md docs/BUSINESS-RULES.md
+```
+
+Ở đây tìm kiếm dùng được, vì hai file này là danh sách dài chứ không phải kho
+file, và trả về nhiều dòng cũng vẫn đọc được.
+
+### Dừng khi nào
+
+Trả lời được hai câu này thì dừng:
+
+1. **Bản thiết kế đã duyệt nào chạm vào vùng này?** (kể cả câu trả lời "không
+   có" — nhưng phải là sau khi đọc hết 13 dòng)
+2. **Mục nào trong `docs/OPEN-ITEMS.md` sẽ đổi nghĩa nếu làm việc này?**
+
+Không trả lời được thì chưa tra xong. Đọc đủ để bắt đầu viết **không phải** là
+điều kiện dừng.
+
+### Tra tài liệu KHÔNG thay được việc đo
+
+Ba lần trên là lỗi tra thiếu. Có một lỗi khác ngược hẳn: **tra ra rồi tin luôn
+con số trong đó** (Luật số 0, mục 4). Tài liệu cho biết *đã quyết cái gì*; chỉ
+truy vấn mới cho biết *hiện đang thế nào*. Ngày 27/08 việc được đề xuất vì
+tưởng có rủi ro, đo ra **0 đơn hỏng trên 689 đơn** — thứ chặn được nó cuối cùng
+là phép đếm, không phải bản thiết kế.
+
+---
 
 **Tài liệu hiện hành — đọc để biết trạng thái:**
 
@@ -268,7 +339,7 @@ kỳ kiểm kê đầu tiên gánh nhiều tháng dồn lại.
 |---|---|
 | Việc chưa xong | `docs/OPEN-ITEMS.md` |
 | Cách tính, nguyên tắc hiển thị số | `docs/BUSINESS-RULES.md` |
-| **Thiết kế đã duyệt cho việc lớn** | **`docs/superpowers/specs/`** |
+| **Thiết kế đã duyệt — đọc TRƯỚC khi đề xuất bất cứ việc gì** | **`docs/superpowers/specs/`** |
 | Kế hoạch triển khai từng đợt | `docs/superpowers/plans/` |
 | Quán là gì, phạm vi tới đâu | `CONTEXT.md` |
 | Thuật ngữ | `docs/domain-dictionary.md` |
@@ -276,9 +347,11 @@ kỳ kiểm kê đầu tiên gánh nhiều tháng dồn lại.
 | File mới đặt ở đâu | `docs/FILE-ORGANIZATION.md` |
 | Tính năng nào đã có | `docs/FEATURE-CATALOG.md` |
 
-**Dòng in đậm là dòng thiếu suốt ba tháng.** Ngày 24/08 đã viết lại một bản
-thiết kế mà chủ quán duyệt từ 28/07, chỉ vì bảng này không có lối chỉ tới
-`specs/`. Trước khi thiết kế bất cứ thứ gì lớn, **mở `specs/` trước**.
+**Dòng in đậm là dòng đã gây ba lần làm trùng.** Ngày 24/08 nó còn chưa có
+trong bảng, và hôm đó một bản thiết kế chủ quán duyệt từ 28/07 bị viết lại từ
+đầu. Thêm dòng vào bảng vẫn chưa đủ: 27/08 lại suýt viết lại bản duyệt từ
+27/07, lần này vì tra bằng tên cách chữa thay vì tên lĩnh vực. **Quy trình tra
+ở đầu mục này mới là thứ chặn được, không phải bảng này.**
 
 **`specs/` không có mục lục — và sẽ không bao giờ có**, vì một mục lục viết tay
 sẽ cũ đi đúng như câu giá vốn ở đầu file này. Liệt kê lại bằng lệnh, mỗi lần
