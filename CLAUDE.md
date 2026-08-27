@@ -255,6 +255,14 @@ một mã đơn**. Đo 26/08: 2.376 dòng cho 2.360 đơn. Hệ quả bắt bu�
 5. **Chênh lệch kiểm kê chỉ là thất thoát nếu kỳ đó có ghi phiếu xuất**
    (`BR-COGS-007`). Không có phiếu thì không có mốc để so.
 
+**Web chạy ở đâu, dữ liệu nằm ở đâu — phải cùng một chỗ.** Máy chủ dữ liệu
+đặt tại Singapore. Máy chạy web phải đặt ở Singapore (`sin1`) chứ không để
+Vercel tự chọn — mặc định của nó là Washington, và ngày 27/08 chính chỗ đó làm
+trang Hàng Mua Vào hỏng suốt cả buổi, đồng thời mỗi lần mở trang mất 3,5 giây
+thay vì dưới 1 giây. Đây là một dòng cài đặt trong dự án, **không nằm trong mã
+nguồn** — nên đổi chỗ chạy hay dựng lại dự án là mất, và không cửa kiểm nào
+bắt được.
+
 **Muốn biết giá vốn hiện là bao nhiêu thì đo, đừng đọc** (mục 4). Bảng
 `stock_issues`, tách theo cột `source`: `MANUAL` là phiếu xuất, `STOCKTAKE` là
 chênh lệch kiểm kê. **Không được cộng hai cái rồi gọi là giá vốn tháng đó** —
