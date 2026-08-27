@@ -278,27 +278,42 @@ duyệt từ 27/07.
 ### Một lệnh. Đọc hết danh sách nó in ra.
 
 ```
-grep -il "status.*approv" docs/superpowers/specs/*.md
+for f in docs/superpowers/specs/*.md; do
+  printf "%-50s | %s
+" "$(basename "$f" .md)"     "$(grep -im1 status "$f" | sed 's/[*_#]//g' | cut -c1-58)"
+done
 ```
 
-Lệnh này ngắn vì kho `specs/` ngắn — đo 27/08 ra 13 bản đã duyệt trên 32 file,
-và tên file tự nói ra nội dung (`2026-07-27-pos-offline-resilience`,
-`2026-07-28-multi-outlet`). Đừng tin con số đó, chạy lệnh đi; nhưng dù nó tăng
-gấp đôi thì đọc hết vẫn rẻ hơn đoán chữ. Đọc hết
-dòng nó in ra — **đừng lọc, đừng tìm kiếm.**
+In ra **mọi** file kèm dòng trạng thái của nó. Đọc hết — **đừng lọc, đừng tìm
+kiếm, đừng nhờ lệnh phân loại hộ.**
 
-**Vì sao không tìm kiếm:** bản nháp đầu của chính luật này bảo tra bằng danh từ
-lĩnh vực. Thử lại trên hai lần hỏng cũ thì gõ "pos" ra **12 trên 13 bản** — lọc
-mà ra gần hết thì không lọc gì cả. Tra theo tên file thì chính xác (ra đúng 1),
-nhưng "stocktake", "asset", "purchase" ra **0** dù việc quanh chúng đều có tài
-liệu. Mọi cách tìm kiếm đều đòi đoán đúng chữ, mà **đoán sai chữ chính là chỗ
-hỏng ngày 27/08**: hôm đó chữ nghĩ trong đầu là "thử lại", còn bản thiết kế tên
-là *POS Offline Resilience*.
+**Vì sao không lọc — đo 27/08, hai lần liên tiếp cùng ngày.** Bản đầu của luật
+này bảo tra bằng danh từ lĩnh vực: gõ "pos" ra **12 trên 13 bản**, lọc mà ra
+gần hết thì không lọc gì cả. Tra theo tên file thì chính xác nhưng "stocktake",
+"asset", "purchase" ra **0** dù cả ba đều có tài liệu. Và chỗ hỏng thật ngày
+hôm đó là **đoán sai chữ**: chữ nghĩ trong đầu là "thử lại", tài liệu tên là
+*POS Offline Resilience*.
 
-Đọc hết thì không cần đoán gì cả.
+**Rồi bản thứ hai của luật này cũng sai, theo chiều nguy hiểm hơn.** Nó dùng
+`grep -il "status.*approv"` — mà `approv` khớp cả *"approved by owner"* lẫn
+*"awaiting owner **approval**"*, hai thứ ngược nhau. Danh sách nó in ra gọi **5
+bản chủ quán chưa đồng ý** là đã chốt, đồng thời bỏ sót vài bản duyệt thật vì
+chúng viết trạng thái kiểu khác. Đem một bản chưa duyệt ra làm căn cứ còn tệ
+hơn không tra.
+
+Dòng trạng thái trong `specs/` viết mỗi file một kiểu — "Approved", "Approved
+by user", "approved by owner", "Draft — awaiting user approval", "proposed,
+awaiting owner approval", "design, pending owner review", "ACTIVE" — và nhiều
+file tháng 6 không có dòng nào (phần lớn là bảng phân việc cũ, không phải thiết
+kế). **Không có mẫu chung nào để lệnh tự phân loại đúng.** Nên lệnh chỉ được
+phép in ra, còn phân loại là việc của người đọc.
+
+**Đọc hết thì không cần đoán gì cả** — và nhìn thấy chữ "awaiting" tận mắt thì
+không nhầm nó thành "approved" được.
 
 **Có tên trong danh sách mà chạm vào vùng mình định làm thì mở ra đọc, đừng
-thiết kế lại.**
+thiết kế lại. Nhưng đọc xong phải nhìn đúng dòng trạng thái**: chưa duyệt thì
+đó là đề xuất đang chờ chủ quán, không phải quyết định đã có.
 
 ### Rồi tra thứ liên đới
 
@@ -354,17 +369,13 @@ trong bảng, và hôm đó một bản thiết kế chủ quán duyệt từ 28
 ở đầu mục này mới là thứ chặn được, không phải bảng này.**
 
 **`specs/` không có mục lục — và sẽ không bao giờ có**, vì một mục lục viết tay
-sẽ cũ đi đúng như câu giá vốn ở đầu file này. Liệt kê lại bằng lệnh, mỗi lần
-chạy là mỗi lần đúng:
+sẽ cũ đi đúng như câu giá vốn ở đầu file này. Liệt kê lại bằng lệnh ở đầu mục
+này, và **đọc cả dòng trạng thái**.
 
-```
-grep -il "status.*approv" docs/superpowers/specs/*.md
-```
-
-Đo 26/08 ra 13 bản đã được chủ quán duyệt trên tổng 32 file. **Cái nào có tên
-trong đó thì đã chốt — đọc, đừng thiết kế lại.** Số file tháng 6 không có dòng
-`Status` phần lớn là bảng phân việc cũ, không phải thiết kế — cũng đừng tin con
-số này, chạy lệnh đi.
+**Câu "đo 26/08 ra 13 bản đã được chủ quán duyệt" từng nằm ở đây và nó sai** —
+con số đó do một lệnh lọc nhầm sinh ra, gộp cả những bản đang chờ chủ quán
+duyệt vào cùng một rổ với bản đã duyệt. Đó là lý do lệnh bây giờ chỉ in ra chứ
+không phân loại.
 
 **Lịch sử — KHÔNG đọc để biết trạng thái hiện tại:**
 
