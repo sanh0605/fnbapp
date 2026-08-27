@@ -89,9 +89,19 @@ is called from **205 places** and none of them should have to know about this.
   twice. Purchases and orders are exactly the wrong place to guess. Leave every
   write path alone.
 - **Only clearly transient errors.** Match the PostgREST code (`PGRST303`) or
-  the message, plus network-level failures. **Do not retry on 401/403** — a
-  genuinely wrong key must still fail loudly and immediately, or `OPEN-ITEMS 60`
-  becomes invisible instead of merely confusing.
+  the message, plus network-level failures. A genuinely wrong key must still
+  fail loudly and immediately, or `OPEN-ITEMS 60` becomes invisible instead of
+  merely confusing.
+
+  **This bullet originally said "do not retry on 401/403", which cannot be
+  implemented — Sonnet caught it 2026-08-27.** `PGRST303` *is* served as HTTP
+  401, the same status as a wrong key, so a status-based denylist would have
+  refused to retry the exact error this plan exists for. The two halves of the
+  instruction contradicted each other and only one could survive a status check.
+  Resolved as an **allowlist**: retry on the `PGRST303` code, on its message, or
+  on `status === 0` (verified as `postgrest-js`'s own convention for a
+  client-side network failure, `dist/index.cjs:366`) — and on nothing else.
+  Both halves then hold at once.
 - **Small and bounded:** 2 retries, short backoff (roughly 150ms then 400ms).
   This is a sub-second clock disagreement, not an outage. If it is an outage,
   failing after ~0.5s is correct.
