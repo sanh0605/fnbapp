@@ -152,6 +152,66 @@ function getBooleanColumns(tableName: string): Set<string> {
 }
 
 // ============================================================================
+// Transient-error retry (docs/superpowers/plans/2026-08-27-survive-transient-supabase-errors.md,
+// OPEN-ITEMS 66)
+// ============================================================================
+//
+// A clock skew between two of Supabase's own components (the gateway that
+// mints a JWT from the sb_secret_... key, and PostgREST, which validates
+// it) intermittently rejects a request with PGRST303 ("JWT issued at
+// future"). Nothing in this repository mints a JWT -- this is not fixable
+// here, only survivable. Reads only: a write that failed after reaching
+// Postgres is indistinguishable from one that failed before it, and
+// retrying it can insert twice. Purchases and orders are exactly the
+// wrong place to guess, so every write path in this file is untouched.
+//
+// PGRST303 itself carries HTTP 401 -- the same status class as a
+// genuinely wrong key -- so the status code alone can never be the
+// signal for what to retry. Retrying is gated on the specific PGRST303
+// code or its message, plus a client-side network failure (the
+// installed @supabase/postgrest-js reports these with status 0 and an
+// empty error.code, verified by reading its source: PostgrestBuilder.ts's
+// no-throw-on-error branch explicitly does not populate code/hint for
+// "client-side network errors since those fields are meant for upstream
+// service errors"). Anything else -- including any other 401/403 -- is
+// refused loudly and immediately, so a real bad key (OPEN-ITEMS 60) stays
+// visible instead of silently retried into a longer, quieter failure.
+const RETRY_DELAYS_MS = [150, 400];
+
+function isTransientSupabaseError(error: any, status: number): boolean {
+  if (!error) return false;
+  if (error.code === "PGRST303") return true;
+  if (typeof error.message === "string" && error.message.includes("JWT issued at future")) return true;
+  if (status === 0) return true; // client-side network failure, see comment above
+  return false;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// queryFactory must build and return a FRESH query on every call -- a
+// retry that re-awaited an already-resolved query object would just
+// replay the same failure, not re-issue the request.
+async function withReadRetry<T extends { data: any; error: any; status?: number }>(
+  queryFactory: () => PromiseLike<T>,
+  context: string,
+): Promise<T> {
+  let attempt = 0;
+  while (true) {
+    const result = await queryFactory();
+    if (!isTransientSupabaseError(result.error, result.status ?? -1) || attempt >= RETRY_DELAYS_MS.length) {
+      return result;
+    }
+    console.warn(
+      `[sheets_db] transient error on ${context}, retrying (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length}): ${result.error.message}`,
+    );
+    await sleep(RETRY_DELAYS_MS[attempt]);
+    attempt++;
+  }
+}
+
+// ============================================================================
 // Read APIs
 // ============================================================================
 
@@ -203,15 +263,18 @@ export const findAllNoCache = async (sheetName: string) => {
   const all: any[] = [];
   let lastId: string | null = null;
   while (true) {
-    let query: any = supabase
-      .from(tableName)
-      .select('*')
-      .order("id", { ascending: true })
-      .limit(PAGE_SIZE);
-    if (lastId !== null) {
-      query = query.gt("id", lastId);
-    }
-    const { data, error } = await query;
+    const currentLastId = lastId;
+    const { data, error } = await withReadRetry(() => {
+      let query: any = supabase
+        .from(tableName)
+        .select('*')
+        .order("id", { ascending: true })
+        .limit(PAGE_SIZE);
+      if (currentLastId !== null) {
+        query = query.gt("id", currentLastId);
+      }
+      return query;
+    }, `findAll(${sheetName})`);
     if (error) {
       throw new Error(`findAll(${sheetName}): ${error.message}`);
     }
@@ -259,38 +322,40 @@ export async function findAllWhere<T = any>(
   while (filters.limit === undefined || all.length < filters.limit) {
     const remaining = filters.limit === undefined ? PAGE_SIZE : filters.limit - all.length;
     const pageSize = Math.min(PAGE_SIZE, remaining);
-    let query: any = supabase.from(tableName).select("*");
 
-    for (const [column, value] of Object.entries(filters.gte || {})) {
-      query = query.gte(column, normalizeFilterValue(value));
-    }
-    for (const [column, value] of Object.entries(filters.lte || {})) {
-      query = query.lte(column, normalizeFilterValue(value));
-    }
-    for (const [column, value] of Object.entries(filters.eq || {})) {
-      query = query.eq(column, value);
-    }
-    for (const [column, values] of Object.entries(filters.in || {})) {
-      query = query.in(column, values);
-    }
+    const { data, error } = await withReadRetry(() => {
+      let query: any = supabase.from(tableName).select("*");
 
-    if (orderColumn === "created_at") {
-      query = query.order("created_at", { ascending }).order("id", { ascending }).limit(pageSize);
-      if (cursorValue !== null) {
-        // Tuple comparison (created_at, id) via OR, so identical
-        // timestamps don't skip or duplicate rows across pages.
-        query = cursorId !== null
-          ? query.or(`created_at.${cmp}.${cursorValue},and(created_at.eq.${cursorValue},id.${cmp}.${cursorId})`)
-          : query[cmp]("created_at", cursorValue);
+      for (const [column, value] of Object.entries(filters.gte || {})) {
+        query = query.gte(column, normalizeFilterValue(value));
       }
-    } else {
-      query = query.order("id", { ascending }).limit(pageSize);
-      if (cursorValue !== null) {
-        query = query[cmp]("id", cursorValue);
+      for (const [column, value] of Object.entries(filters.lte || {})) {
+        query = query.lte(column, normalizeFilterValue(value));
       }
-    }
+      for (const [column, value] of Object.entries(filters.eq || {})) {
+        query = query.eq(column, value);
+      }
+      for (const [column, values] of Object.entries(filters.in || {})) {
+        query = query.in(column, values);
+      }
 
-    const { data, error } = await query;
+      if (orderColumn === "created_at") {
+        query = query.order("created_at", { ascending }).order("id", { ascending }).limit(pageSize);
+        if (cursorValue !== null) {
+          // Tuple comparison (created_at, id) via OR, so identical
+          // timestamps don't skip or duplicate rows across pages.
+          query = cursorId !== null
+            ? query.or(`created_at.${cmp}.${cursorValue},and(created_at.eq.${cursorValue},id.${cmp}.${cursorId})`)
+            : query[cmp]("created_at", cursorValue);
+        }
+      } else {
+        query = query.order("id", { ascending }).limit(pageSize);
+        if (cursorValue !== null) {
+          query = query[cmp]("id", cursorValue);
+        }
+      }
+      return query;
+    }, `findAllWhere(${sheetName})`);
     if (error) {
       throw new Error(`findAllWhere(${sheetName}): ${error.message}`);
     }
@@ -343,11 +408,10 @@ export async function findById(sheetName: string, id: string) {
   const tableName = normalizeTableName(sheetName);
   const jsonCols = getJsonColumns(tableName);
   const booleanCols = getBooleanColumns(tableName);
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+  const { data, error } = await withReadRetry(
+    () => supabase.from(tableName).select('*').eq('id', id).maybeSingle(),
+    `findById(${sheetName}, ${id})`,
+  );
   if (error) {
     throw new Error(`findById(${sheetName}, ${id}): ${error.message}`);
   }
@@ -359,10 +423,10 @@ export const getHeadersNoCache = async (sheetName: string): Promise<string[]> =>
   const tableName = normalizeTableName(sheetName);
   // Use PostgREST OpenAPI to get columns. Cheaper than full row select.
   // Fallback: SELECT * LIMIT 0 to get column names.
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*')
-    .limit(1);
+  const { data, error } = await withReadRetry(
+    () => supabase.from(tableName).select('*').limit(1),
+    `getHeaders(${sheetName})`,
+  );
   if (error) {
     throw new Error(`getHeaders(${sheetName}): ${error.message}`);
   }

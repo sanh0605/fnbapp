@@ -100,6 +100,62 @@ describe("findAllNoCache legacy compatibility", () => {
   });
 });
 
+// docs/superpowers/plans/2026-08-27-survive-transient-supabase-errors.md
+// (OPEN-ITEMS 64's neighbour, OPEN-ITEMS 66). A JWT clock-skew between two
+// of Supabase's own components -- not a bug in this repository, not
+// reproducible on demand -- surfaces as PGRST303 and throws a bare Error,
+// turning one transient hiccup into a broken server render. Two tests,
+// per the plan's own instruction: the retry retries, and a 401 that is
+// NOT this specific signature still fails immediately with no retry.
+describe("read retry on a transient JWT clock-skew error", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.supabaseSelect.mockReset();
+    mocks.queryCalls.length = 0;
+  });
+
+  it("retries once on PGRST303, returns the eventual rows, and logs the retry with the table name", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mocks.supabaseSelect
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST303", message: "JWT issued at future" },
+        status: 401,
+      })
+      .mockResolvedValueOnce({ data: [{ id: "ING-001" }], error: null, status: 200 });
+
+    const rows = await findAllNoCache("Base_Ingredients");
+
+    expect(rows).toEqual([{ id: "ING-001" }]);
+    expect(mocks.supabaseSelect).toHaveBeenCalledTimes(2);
+    // section 5: "Log every retry with the table name, so the rate
+    // becomes measurable instead of anecdotal." Proved by the test, not
+    // by reading the code (section 7).
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("findAll(Base_Ingredients)"));
+    warnSpy.mockRestore();
+  });
+
+  // The plan is explicit: "Do not retry on 401/403 -- a genuinely wrong
+  // key must still fail loudly and immediately, or OPEN-ITEMS 60 becomes
+  // invisible instead of merely confusing." PGRST303 itself carries HTTP
+  // 401 (it is a JWT-validation rejection, same status class as a wrong
+  // key) -- so the status code alone cannot be the signal; retrying must
+  // be gated on the specific PGRST303 code or message, never on "401" by
+  // itself. This fixture's 401 deliberately does not carry either.
+  it("does NOT retry a 401 that lacks the PGRST303 signature -- a genuinely wrong key fails immediately", async () => {
+    mocks.supabaseSelect.mockResolvedValueOnce({
+      data: null,
+      error: { code: "", message: "Invalid API key" },
+      status: 401,
+    });
+
+    await expect(findAllNoCache("Base_Ingredients")).rejects.toThrow(
+      "findAll(Base_Ingredients): Invalid API key",
+    );
+    expect(mocks.supabaseSelect).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("findAllWhere", () => {
   beforeEach(() => {
     vi.clearAllMocks();
