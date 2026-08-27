@@ -4,6 +4,36 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-27 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Applied the `acquired_date` backfill -- 82 rows, verified against the owner's own sheet
+
+Applies the backfill half of `docs/superpowers/plans/2026-08-27-asset-acquired-date-off-by-one.md` (`OPEN-ITEMS 64`, now closed). The code fix landed and was verified in an earlier session; this is the production write.
+
+### The owner's approval condition, and re-verifying it after applying, not just before
+
+He declined to approve on the arithmetic (*"Anh không biết xác nhận thế nào, so đúng với trong sổ là được"*) -- so the check that actually gates this write is independent of anything computed in this repo: every resolvable asset matched against his own sheet by amount and date proximity. Re-ran `scratchpad/vs_sheet.py` after `--apply`, not only before, per the explicit instruction that this is "the number that matters, not the totals."
+
+**Found and fixed a bug in my own regeneration step before trusting its output.** `scratchpad/vs_sheet.py` matches an asset to a sheet order by the order's own total (`Thành tiền`), not the asset's own allocated `total_cost` -- an order with several equipment lines has several assets all pointing at the same order total, a smaller number than any individual line's own cost. My first regeneration of `scratchpad/assetdates.json` used each asset's own `total_cost`, which produced a false **36 of 82** matched (46 falsely unmatched) -- not a data problem, a bug in how I fed the checker its input. Fixed to use the order's `total_amount`, matching the checker's actual matching key; re-ran clean.
+
+| | Before `--apply` | After `--apply` |
+|---|---|---|
+| Assets resolvable to an order | 82 | 82 |
+| Matched to a sheet order (amount + date proximity) | 82 -- 0 unmatched, 0 ambiguous | 82 -- 0 unmatched, 0 ambiguous |
+| **Matching the sheet's own date** | **0** | **82** |
+
+That is the approval condition, met and re-confirmed live -- not carried forward from a pre-apply snapshot.
+
+### What else was checked, after writing
+
+`assets`: still 84 rows. `sum(total_cost)`: still 14.720.817đ (moves dates only). `Purchase_Orders.sum(total_amount)`: still 87.908.288đ. Depreciation charge for the current month (2026-08), summed across all 84 assets with the repo's own `buildAssetSchedule`: **801.641đ**, matching the plan's corrected §6 figure exactly. `scripts/verify-revenue.ts`: all four gated months unmoved. A second `--apply`: **0 rows updated** -- proved by running it, not by pointing at the `where` clause.
+
+`TS-009`/`TS-010` (`OPEN-ITEMS 65`) left untouched, as planned -- their `purchase_order_line_id` does not resolve to a real line, so there is no order to recompute their date from, and inventing one would be a guess wearing the costume of a measurement.
+
+### Gates
+
+No source changed this session (the code fix was gated and verified earlier); the write itself was run via the already-tested `scripts/backfill-asset-acquired-date.ts`. **Not pushed.**
+
+---
+
 ## 2026-08-27 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Reads survive a transient Supabase clock skew -- this does not fix it, it hides it
 
 Implements `docs/superpowers/plans/2026-08-27-survive-transient-supabase-errors.md` (`OPEN-ITEMS 66`). Production logged `findAll(...): JWT issued at future` three times on 2026-08-26, one of them reaching the owner as a rendered error page on `/admin/reports/sales`. **The cause is not in this repository** -- a clock skew between two of Supabase's own components -- and this change does not touch that. **Say this plainly, not as "fixed": the retry hides the symptom. The owner still needs to report the skew to Supabase** with the project ref and the three UTC timestamps; that is the only path that actually stops it.
