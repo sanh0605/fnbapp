@@ -110,6 +110,28 @@ month-movers before writing.
 
 ## 6. Verification
 
+**The check that actually settles it, and the one the owner asked for.** Told
+the figures were his to approve, he answered: *"Anh không biết xác nhận thế
+nào, so đúng với trong sổ là được"* — do not ask him to sign off on arithmetic
+he cannot judge, check it against his own record instead. That is the right
+instinct and it produces a stronger test than anything else in this section,
+because his sheet is an independent source rather than a restatement of ours.
+
+Run 2026-08-27 (`scratchpad/vs_sheet.py`): every asset matched back to a sheet
+order by amount and date proximity, then compared against that order's own
+`Ngày tạo phiếu`.
+
+| | |
+|---|---|
+| Assets resolvable to an order | 82 |
+| Of those, matched to a sheet order | **82** — 0 unmatched, 0 ambiguous |
+| Matching the sheet **today** | **0** |
+| Matching the sheet **after the backfill** | **82** |
+
+Zero before and all of them after is what a real fix looks like. Re-run this
+after `--apply` — it is the check to repeat, not the totals.
+
+
 - Re-run §2's comparison: **82 of 82 matching, 0 early, 0 late.**
 - `assets` count still **84**, `sum(total_cost)` still **14.720.817đ** — this
   moves dates only, and a moved total means something else was touched.
