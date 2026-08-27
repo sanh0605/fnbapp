@@ -106,6 +106,13 @@ thể**, không phải bằng cách diễn đạt lại trừu tượng.
 
 Trước khi kết luận từ một truy vấn, nói rõ truy vấn đó **không** cho thấy điều gì.
 
+**Truy vấn hỏng của mình nằm trong nhật ký lỗi của chủ quán.** Ngày 27/08 có
+bốn câu gõ sai tên cột, cả bốn được Supabase ghi lại thành ERROR trong đúng
+chỗ chủ quán mở ra để xem hệ thống có bất thường không — và ông ấy đã mang một
+cái sang hỏi. Hại thật không nằm ở câu hỏng, mà ở chỗ **sau này không ai phân
+biệt được lỗi thật với rác của mình**. Lấy tên cột từ `information_schema` một
+lần rồi tra bản đó, đừng đoán tên rồi thử.
+
 **Đo bằng đúng công cụ sẽ chạy thật.** Tính nháp bằng Python rồi kết luận cho
 mã chạy bằng JavaScript đã cho ra sai dấu một lần (26/08): hai ngôn ngữ làm
 tròn số 0,5 ngược nhau.
