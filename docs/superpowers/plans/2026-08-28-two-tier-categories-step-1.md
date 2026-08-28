@@ -26,6 +26,23 @@ Confirmed with him against three real examples before this was written
 Nguyên liệu whose own unit is kg, while its tier-2 label stays "Trái tắc" and
 no longer forces "trái".**
 
+## 1b. Half of this plan was superseded the same day
+
+**Written in the morning, overtaken in the afternoon.** §2 and §4 below are
+about how purchases are recorded into `stock_ledger`. The owner then decided to
+**retire that ledger entirely**
+(`docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md`).
+
+**Changing how a table is written before deleting the table is wasted work.**
+Skip §2 and §4. Do not change `purchase-ledger-rebuild.ts:108` — it disappears
+with the ledger.
+
+**What survives, and it is the part that actually unblocks him:** a purchased
+item's unit must stop being forced to its tier-2 group's unit. That is the Trái
+tắc problem — the group says *trái*, he buys in *kg*, and the form will not let
+the two differ. Everything in §1, §3's unit findings, §5.2 and §5.3 still
+applies; the stock-keying half does not.
+
 ## 2. The whole dependency is one line
 
 `lib/purchase-ledger-rebuild.ts:108`:
