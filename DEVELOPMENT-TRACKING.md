@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-28 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Recipes and semi-products removal, phase 1 of 4 -- backup only, nothing deleted
+
+Implements phase 1 of `docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md` (`OPEN-ITEMS 72`). **This deletes master data**, which `CLAUDE.md` section 2 forbids by default -- proceeding on the owner's own explicit decision, made after the objection was put to him twice. My job this session was to find what it breaks, not relitigate whether it should happen, and to do phase 1 only: export and verify, nothing removed.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- every figure in section 2 re-derived, one stale, one genuinely corrected
+
+All of section 2's counts reproduced exactly against live production: 134 recipes (96 product-variant, 29 semi-product, 9 modifier), 17 semi-products, 0 `production_orders`/`production_items`, 0 order lines with `cost_at_sale > 0` (confirmed as a single distinct value, `"0"`, across all 3.403 lines, not just checked `>0`), 0 `purchased_items`/`stock_ledger` rows referencing a semi-product, 11 `inventory_balances` rows all `0.00`. `breakdownCOGSByIngredientFifoLegacy` confirmed called from nowhere in `app/` or `lib/`. The sales report's only import from `lib/report-v2-allocators` is `breakdownRevenueByProduct`, confirmed by reading its full body, not reading no recipe. FK claims confirmed by reading `0001_init_schema.sql` directly: `purchased_items.semi_product_id` and `production_orders.semi_product_id` both `RESTRICT`, `recipes` has zero incoming FKs anywhere in `supabase/migrations/`.
+
+**"Nothing blocks a sale for want of a recipe" traced into the actual code, not inferred from absence of a bug report.** `lib/order-cart.ts`'s `buildLine`: when `selectEffectiveRecipe` returns `null` for a variant, the line falls back to `{ target_type, target_id, ingredients: [] }` rather than throwing; a modifier with no matching recipe is silently skipped from the snapshot's `modifiers` array rather than failing the line. Confirmed by reading both fallback branches directly.
+
+**One figure was stale, ratio-preserving.** "3.363 of 3.364 order lines carry their own snapshot" is now 3.402 of 3.403 -- the shop kept selling between when the plan was measured and this session, and every new line still gets a snapshot (same code path), so the ratio is effectively unchanged. Not a correction to the plan's reasoning, just a number that ages by the hour and needs re-measuring before phase 3, same as every other "measured, not argued" figure in this codebase's plans.
+
+**Section 7's 25-of-96 figure, checked specifically as asked: correct for the definition the plan itself states, but a stricter definition gives 30.** The plan's own wording is "those variants were never sold with a snapshot" -- a variant-level check (does *any* order line ever, for this variant, carry a snapshot). Reproduced exactly: 25. But `recipes` versions a variant over time (96 rows cover only 58 distinct variants, `start_date`/`end_date` bounded) -- a snapshot only captures whichever version was active *at that sale*, so "the variant was sold with a snapshot" does not mean "*this specific recipe row's* content is in that snapshot." Checked the stricter question -- does any order line's sale time (the order's own frozen `created_at`, not the line's) fall inside *this row's own* active window -- and got 30 unrecoverable, not 25: 5 more recipe rows where the variant sold, but only under a different version, so this exact version's ingredient list is nowhere but the backup file. Doesn't change what phase 1 backs up (every row, regardless), but changes how the true scope should be described before phase 3's report repeats a number that's now been shown to undercount by 5. Also confirmed, separately: neither semi-product recipes nor modifier recipes are ever recoverable in *any* sense -- a variant's snapshot records that it consumed a given semi-product or modifier by id, never that referenced item's own ingredient list, so all 29 + 9 are backup-only regardless of which definition is used.
+
+### Phase 1 -- the only phase run this session
+
+`scripts/backup-recipes-semi-products.ts`: exports every column of `recipes` (134), `semi_products` (17), and the 11 semi-product `inventory_balances` rows to `docs/audits/2026-08-27-recipes-semi-products-backup.json`. Re-reads the file from disk after writing (not the in-memory object) and asserts both row counts and deep content equality against the live query -- all six checks passed. Independently opened the file afterward and spot-checked real ids/names by hand, not only through the script's own self-report (91.7 KB, `RC-001`/`BTP-001`/`Cốt cà phê` and the last row `REC-107` all present and coherent).
+
+**Phases 2 (code removal) and 3 (data deletion) were not started.** Per the handoff, they come back to the owner before running -- nothing in `app/`, `lib/`, or the database was touched this session beyond the one new backup script.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 216 files / 1497 tests (unaffected -- no app/lib source touched); `check-rules-current` exits 0; `npm run build` succeeds. **Not pushed. No data deleted.**
+
+---
+
 ## 2026-08-28 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Order editing has been broken in production since 2026-08-25 -- fix written, migration NOT applied
 
 Implements `docs/superpowers/plans/2026-08-27-fix-order-edit-outlet-id.md` (`OPEN-ITEMS 71`). **Production is broken right now**: `0072` (2026-08-25) tightened `orders_v2.outlet_id` to `NOT NULL`; `supersede_order_v2_atomic` was last defined in `0046`, before that column existed, and its insert never named it. Every order edit since has failed with a not-null violation. This entry is the fix, written and tested; **the migration is not applied** -- the owner approves that step separately, per `CLAUDE.md` section 2, and until he does, editing stays broken.
