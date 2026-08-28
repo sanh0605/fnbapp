@@ -51,7 +51,7 @@ This is the strongest argument for the deletion and it is the owner's, not mine.
 | `production_orders` — the manufacturing flow, **never used once** | **0** |
 | `production_items` | **0** |
 | Order lines whose cost came from a recipe | **0** |
-| Order lines carrying their own `recipe_snapshot_json` | **3.363 of 3.364** |
+| Order lines carrying their own `recipe_snapshot_json` | **3.402 of 3.403** (was 3.363 of 3.364 on 2026-08-27 — he keeps selling, and every new line still gets one) |
 | `purchased_items` referencing a semi-product | **0** |
 | `stock_ledger` rows for a semi-product | **0** |
 | `inventory_balances` rows for a semi-product, **all `0.00`** | **11** |
@@ -134,9 +134,20 @@ of `1 kg = 1` unblocks him immediately at no cost, since the item is
 
 ## 7. What this costs, stated plainly
 
-- **25 of 96 product recipes cannot be recovered from order history** — those
-  variants were never sold with a snapshot. Plus 29 semi-product and 9 modifier
-  recipes. **After phase 3 the backup file in `docs/audits/` is the only copy.**
+- **30 of 96 product recipes cannot be recovered from order history.** Plus all
+  29 semi-product and all 9 modifier recipes. **After phase 3 the backup file in
+  `docs/audits/` is the only copy.**
+
+  **This said 25 and 25 was the wrong question — Sonnet caught it, re-derived
+  2026-08-28.** The 96 recipes cover only **58 distinct variants**, because a
+  recipe is versioned over time. My figure asked *was this variant ever sold with
+  any snapshot* — variant-level. The question that matters is *does any sale fall
+  inside this version's own active window*, because a snapshot captures only the
+  version live at that sale. Five more versions belong to variants that did sell,
+  but under a different version, so those exact ingredient lists exist nowhere
+  else. The semi-product and modifier recipes are backup-only under **either**
+  definition: a snapshot records that a drink consumed them, never their own
+  ingredient lists.
 - **The consumption-versus-theft question closes.** `BR-COGS-007` keeps
   recipe-based expectation open as the way to split them, and August's issue
   slips ran at ~12% of revenue against a 30-40% norm. The 3.363 snapshots still
