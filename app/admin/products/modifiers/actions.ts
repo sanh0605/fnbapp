@@ -4,84 +4,25 @@ import { findAll, insert, update, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
-import type { DBModifier, DBRecipe, DBBaseIngredient, DBSemiProduct, DBUnit } from "@/types/db";
-import {
-  findActiveRecipeIntegrity,
-  normalizeModifierIngredients,
-  parseModifierIngredients,
-  validateModifierIngredients,
-} from "@/lib/modifier-recipe";
+import type { DBModifier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
-import { planRecipeSave, type EffectiveRecipe } from "@/lib/recipe-selection";
 
 const MODIFIER_SHEET = "Modifiers";
-const RECIPE_SHEET = "Recipes";
 const PATH = "/admin/products/modifiers";
 
 export async function getModifiersData(): Promise<{
-  modifiers: Array<DBModifier & { activeRecipe?: DBRecipe; recipeHistory: Array<any> }>;
-  baseIngredients: DBBaseIngredient[];
-  semiProducts: DBSemiProduct[];
-  units: DBUnit[];
+  modifiers: DBModifier[];
 }> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const [modifiers, recipes, baseIngredients, semiProducts, allUnits] = await Promise.all([
-      findAll(MODIFIER_SHEET) as Promise<DBModifier[]>,
-      findAll(RECIPE_SHEET) as Promise<DBRecipe[]>,
-      findAll("Base_Ingredients") as Promise<DBBaseIngredient[]>,
-      findAll("Semi_Products") as Promise<DBSemiProduct[]>,
-      findAll("Units") as Promise<DBUnit[]>,
-    ]);
-
+    const modifiers = (await findAll(MODIFIER_SHEET)) as DBModifier[];
     const activeModifiers = modifiers.filter(m => m.status !== "DELETED");
-    const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
-    const activeBI = baseIngredients.filter(b => b.status !== "DELETED");
-    const activeSP = semiProducts.filter(s => s.status !== "DELETED");
-
-    const enriched = activeModifiers.map(m => {
-      const modifierRecipes = recipes.filter(
-        r => r.target_type === "MODIFIER" && r.target_id === m.id
-      );
-
-      const recipeIntegrity = findActiveRecipeIntegrity(modifierRecipes);
-      const activeRecipe = recipeIntegrity.activeRecipe;
-
-      const recipeHistory = modifierRecipes.map(r => {
-        const ings = parseModifierIngredients(r.ingredients_json);
-        return {
-          ...r,
-          ingredients: ings.map((ing: any) => {
-            const bi = activeBI.find(b => b.id === ing.ingredient_id);
-            const sp = activeSP.find(s => s.id === ing.ingredient_id);
-            const source = bi || sp;
-            const unitObj = units.find((u: any) => u.id === source?.base_unit);
-            return {
-              ...ing,
-              name: source?.name || ing.ingredient_id,
-              unit: unitObj?.name || "",
-            };
-          }),
-        };
-      }).sort((a: any, b: any) =>
-        (b.created_at || "").localeCompare(a.created_at || "")
-      );
-
-      return {
-        ...m,
-        activeRecipe,
-        recipeHistory,
-        activeRecipeCount: recipeIntegrity.activeRecipeCount,
-        hasMultipleActiveRecipes: recipeIntegrity.hasMultipleActiveRecipes,
-      };
-    });
-
-    return { modifiers: enriched, baseIngredients: activeBI, semiProducts: activeSP, units };
+    return { modifiers: activeModifiers };
   } catch (error) {
     console.error("Loi getModifiersData:", error);
-    return { modifiers: [], baseIngredients: [], semiProducts: [], units: [] };
+    return { modifiers: [] };
   }
 }
 
@@ -94,71 +35,21 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
   const name = formData.get("name") as string;
   const group_name = formData.get("group_name") as string;
   const price = formData.get("price") as string;
-  const ingredientsJson = formData.get("ingredients_json") as string;
 
   if (!name || !group_name) return fail("Vui lòng nhập đầy đủ thông tin");
-  const ingredients = parseModifierIngredients(ingredientsJson);
-  const validation = validateModifierIngredients(ingredients);
-  if (!validation.ok) return fail(validation.error);
-  const normalizedIngredients = normalizeModifierIngredients(ingredients);
-  const normalizedIngredientsJson = JSON.stringify(normalizedIngredients);
 
   try {
-    let finalId = modifier_id;
-    const nowIso = new Date().toISOString();
-
     if (isEdit && modifier_id) {
       await update(MODIFIER_SHEET, modifier_id, { name, group_name, price });
     } else {
-      finalId = await generateNewId(MODIFIER_SHEET, "MOD");
+      const finalId = await generateNewId(MODIFIER_SHEET, "MOD");
       await insert(MODIFIER_SHEET, {
         id: finalId,
         group_name,
         name,
         price,
         status: "ACTIVE",
-        created_at: nowIso,
-      });
-    }
-
-    const allRecipes = (await findAll(RECIPE_SHEET)) as DBRecipe[];
-    const targetRecipes = allRecipes.filter(
-      r => r.target_type === "MODIFIER" && r.target_id === finalId,
-    ) as EffectiveRecipe[];
-    const recipePlan = planRecipeSave(
-      targetRecipes,
-      "MODIFIER",
-      finalId,
-      normalizedIngredients,
-    );
-
-    if (recipePlan.decision === "CREATE_VERSION") {
-      if (!recipePlan.activeRecipe?.id) {
-        throw new Error(`Active recipe for ${finalId} is missing an ID`);
-      }
-      await update(RECIPE_SHEET, recipePlan.activeRecipe.id, { end_date: nowIso });
-      const recipeId = await generateNewId(RECIPE_SHEET, "RC");
-      await insert(RECIPE_SHEET, {
-        id: recipeId,
-        target_type: "MODIFIER",
-        target_id: finalId,
-        ingredients_json: normalizedIngredientsJson,
-        status: "ACTIVE",
-        start_date: nowIso,
-        end_date: null,
-        created_at: nowIso,
-      });
-    } else if (recipePlan.decision === "CREATE_INITIAL") {
-      const recipeId = await generateNewId(RECIPE_SHEET, "RC");
-      await insert(RECIPE_SHEET, {
-        id: recipeId,
-        target_type: "MODIFIER",
-        target_id: finalId,
-        ingredients_json: normalizedIngredientsJson,
-        status: "ACTIVE",
-        start_date: nowIso,
-        end_date: null,
-        created_at: nowIso,
+        created_at: new Date().toISOString(),
       });
     }
 
@@ -177,21 +68,7 @@ export async function deleteModifierAction(formData: FormData): Promise<ActionRe
   if (!id) return fail("ID không hợp lệ");
 
   try {
-    // Soft delete modifier
     await update(MODIFIER_SHEET, id, { status: "DELETED" });
-
-    // Also close the active recipe (fixes current bug where recipe is left open)
-    const allRecipes = await findAll(RECIPE_SHEET);
-    const activeRecipe = allRecipes.find(
-      (r: DBRecipe) =>
-        r.target_type === "MODIFIER" &&
-        r.target_id === id &&
-        (!r.end_date || r.end_date === "")
-    );
-    if (activeRecipe) {
-      await update(RECIPE_SHEET, activeRecipe.id, { end_date: new Date().toISOString() });
-    }
-
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

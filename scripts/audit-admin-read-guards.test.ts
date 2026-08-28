@@ -11,7 +11,6 @@ const adminReadsByFile: Record<string, string[]> = {
   "app/admin/inventory/items/actions.ts": ["getItemsData"],
   "app/admin/inventory/purchase-orders/actions.ts": ["getPurchaseOrdersData"],
   "app/admin/orders/actions.ts": ["getOrdersV2", "getOrderDetailV2"],
-  "app/admin/production/actions.ts": ["getProductionData"],
   "app/admin/products/categories/actions.ts": ["getCategoriesWithCounts"],
   "app/admin/products/modifiers/actions.ts": ["getModifiersData"],
   "app/admin/promotions/actions.ts": ["getPromotionsData"],
@@ -25,7 +24,6 @@ const adminReadsByFile: Record<string, string[]> = {
     "getCheckedItems",
     "getActiveShiftStockCheck",
   ],
-  "app/admin/semi-products/actions.ts": ["getSemiProductsData"],
   "app/admin/suppliers/actions.ts": ["getSuppliers"],
   "app/admin/users/actions.ts": ["getUsers", "getUserById"],
 };

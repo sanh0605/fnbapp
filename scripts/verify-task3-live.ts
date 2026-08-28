@@ -1,12 +1,17 @@
 /**
- * Live proof that Plan C Task 3 holds against the real database: selling,
- * editing, and attempting a production batch must leave stock_ledger's row
- * count unchanged. Dry-run by default (CLAUDE.md section 2); --apply writes
- * one real sale, edits it once, attempts one refused production batch, then
- * voids the edited order so nothing countable is left behind.
+ * Live proof that Plan C Task 3 holds against the real database: selling
+ * and editing must leave stock_ledger's row count unchanged. Dry-run by
+ * default (CLAUDE.md section 2); --apply writes one real sale, edits it
+ * once, then voids the edited order so nothing countable is left behind.
  *
  * Keep this script -- it is the only proof of "selling does not touch the
- * ledger" against production data, and Task 5 will want it run again.
+ * ledger" against production data.
+ *
+ * The production-batch step (originally step 3, proving a batch attempt is
+ * refused and writes nothing) was removed 2026-08-28: the production
+ * feature itself is gone, not merely refused
+ * (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md
+ * Phase 2). There is no longer a function to call for that step.
  */
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
@@ -44,28 +49,25 @@ async function dryRun(): Promise<void> {
 
   console.log("=== Task 3 live verification -- DRY RUN (default; nothing is written) ===\n");
   console.log(`stock_ledger right now: ${before} rows\n`);
-  console.log(`[1/3] Would ring up one real sale: 1x "${product?.name}" (${variant?.size_name}, ${TEST_VARIANT_ID}), brand ${TEST_BRAND_ID}.`);
+  console.log(`[1/2] Would ring up one real sale: 1x "${product?.name}" (${variant?.size_name}, ${TEST_VARIANT_ID}), brand ${TEST_BRAND_ID}.`);
   console.log(`      Would then count stock_ledger and expect it still ${before}.\n`);
-  console.log(`[2/3] Would edit that same order once (no content change -- proves the edit path writes nothing).`);
-  console.log(`      Would then count stock_ledger and expect it still ${before}.\n`);
-  console.log(`[3/3] Would attempt one production batch: "${semiProduct?.name}" (${TEST_SEMI_PRODUCT_ID}), expecting refusal per BR-INV-006.`);
+  console.log(`[2/2] Would edit that same order once (no content change -- proves the edit path writes nothing).`);
   console.log(`      Would then count stock_ledger and expect it still ${before}.\n`);
   console.log("Would then void the edited order and print its final status (SUPERSEDED / VOIDED).\n");
-  console.log("Nothing written. Run with --apply to actually create these three real transactions.");
+  console.log("Nothing written. Run with --apply to actually create these two real transactions.");
 }
 
 async function apply(): Promise<void> {
-  const { product, variant, semiProduct } = await describeTargets();
+  const { product, variant } = await describeTargets();
   const { submitOrderV2 } = await import("../app/pos/actions");
   const { editOrderV2, voidOrderV2 } = await import("../app/admin/orders/actions");
-  const { saveProductionOrder } = await import("../app/admin/production/actions");
   const { findAllWhere, findById } = await import("../lib/sheets_db");
 
   console.log("=== Task 3 live verification -- APPLY (writing real data) ===\n");
 
   // ---- 1) POS sale ----
   const before1 = await ledgerCount();
-  console.log(`[1/3] POS sale -- writing 1x "${product?.name}" (${variant?.size_name}) -- stock_ledger before: ${before1}`);
+  console.log(`[1/2] POS sale -- writing 1x "${product?.name}" (${variant?.size_name}) -- stock_ledger before: ${before1}`);
 
   const cart = {
     brand_id: TEST_BRAND_ID,
@@ -96,7 +98,7 @@ async function apply(): Promise<void> {
 
   // ---- 2) Edit that same order (fresh, zero pre-existing ledger rows) ----
   const before2 = await ledgerCount();
-  console.log(`[2/3] Edit order ${saleResult.order_id} -- stock_ledger before: ${before2}`);
+  console.log(`[2/2] Edit order ${saleResult.order_id} -- stock_ledger before: ${before2}`);
 
   const editResult = await editOrderV2({
     orderId: saleResult.order_id,
@@ -110,24 +112,6 @@ async function apply(): Promise<void> {
   const after2 = await ledgerCount();
   console.log(`  stock_ledger after:  ${after2}`);
   console.log(`  RESULT: ${after2 === before2 ? "EQUAL (pass)" : "MISMATCH (FAIL)"}\n`);
-
-  // ---- 3) Attempt a production batch -- must be refused, must write nothing ----
-  const before3 = await ledgerCount();
-  console.log(`[3/3] Production attempt -- "${semiProduct?.name}" (${TEST_SEMI_PRODUCT_ID}) -- stock_ledger before: ${before3}`);
-
-  const formData = new FormData();
-  formData.set("semi_product_id", TEST_SEMI_PRODUCT_ID);
-  formData.set("target_yield", "100");
-  formData.set("consumed_ingredients", JSON.stringify([
-    { ingredient_id: "ING-015", ingredient_type: "BASE_INGREDIENT", unit_id: "", qtyNeeded: 10, is_non_inventory: false },
-  ]));
-
-  const prodResult = await saveProductionOrder(formData);
-  console.log(`  result: ${JSON.stringify(prodResult)}`);
-
-  const after3 = await ledgerCount();
-  console.log(`  stock_ledger after:  ${after3}`);
-  console.log(`  RESULT: ${after3 === before3 ? "EQUAL (pass)" : "MISMATCH (FAIL)"}\n`);
 
   // ---- Cleanup: void the test order so it has zero effect on real reports ----
   console.log(`Cleanup: voiding ${editResult.new_order_id}...`);

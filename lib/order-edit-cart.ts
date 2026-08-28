@@ -70,12 +70,8 @@ export function buildEditedOrderFromCart(
   original: OriginalOrder,
 ): BuildOrderResult {
   // Delegate core math to buildOrderFromCart, then patch identity fields.
-  // recipe_as_of is the trusted original sale time, read from the database --
-  // it bypasses resolveCapturedAt's POS-clock guard entirely (see
-  // CartInput.recipe_as_of), so an edit's recipe resolves against what was
-  // actually in force when the order was sold, not the moment of the edit.
   const built = buildOrderFromCart(
-    { ...input, suppress_auto_promotion: true, recipe_as_of: original.order.created_at },
+    { ...input, suppress_auto_promotion: true },
     ref,
   );
 

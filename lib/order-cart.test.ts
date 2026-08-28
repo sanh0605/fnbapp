@@ -31,7 +31,6 @@ const REF: ReferenceData = {
       min_order_value: "0",
     },
   ],
-  recipes: [],
   base_ingredients: [],
 };
 
@@ -292,25 +291,10 @@ describe("buildOrderFromCart", () => {
     expect(result.lines.length).toBe(2);
   });
 
-  it("modifier recipes are captured in recipe_snapshot_json", () => {
-    const refWithModifierRecipe: ReferenceData = {
+  it("recipe_snapshot_json is always the inert no-recipe shape (Phase 2, recipes removed from the sale path)", () => {
+    const refWithModifier: ReferenceData = {
       ...REF,
       modifiers: [{ id: "MOD-004", name: "Trân châu trắng", price: "5000", status: "ACTIVE" }],
-      recipes: [
-        // Existing variant recipes...
-        ...REF.recipes,
-        {
-          id: "RCP-MOD-004",
-          target_type: "MODIFIER",
-          target_id: "MOD-004",
-          ingredients_json: JSON.stringify([
-            { ingredient_id: "BI-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 0.03, unit_id: "UNIT-KG" },
-          ]),
-          end_date: "",
-          start_date: "2026-06-01T00:00:00Z",
-          created_at: "2026-06-01T00:00:00Z",
-        },
-      ],
     };
 
     const result = buildOrderFromCart({
@@ -325,54 +309,15 @@ describe("buildOrderFromCart", () => {
       }],
       payment_method: "CASH",
       actor: { id: "U1", name: "Test" },
-    }, refWithModifierRecipe);
+    }, refWithModifier);
 
     const recipeSnap = JSON.parse(result.lines[0].recipe_snapshot_json);
-    expect(recipeSnap.variant).toBeDefined();
-    expect(recipeSnap.modifiers.length).toBe(1);
-    expect(recipeSnap.modifiers[0].modifier_id).toBe("MOD-004");
-    expect(recipeSnap.modifiers[0].modifier_qty).toBe(1);
-    expect(recipeSnap.modifiers[0].recipe.ingredients[0].ingredient_id).toBe("BI-PEARL");
-  });
-
-  it("modifier recipe snapshots keep modifier quantity", () => {
-    const refWithModifierRecipe: ReferenceData = {
-      ...REF,
-      modifiers: [{ id: "MOD-004", name: "Tran chau trang", price: "5000", status: "ACTIVE" }],
-      recipes: [
-        {
-          id: "RCP-MOD-004",
-          target_type: "MODIFIER",
-          target_id: "MOD-004",
-          ingredients_json: JSON.stringify([
-            { ingredient_id: "BI-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 0.03, unit_id: "UNIT-KG" },
-          ]),
-          end_date: "",
-          start_date: "2026-06-01T00:00:00Z",
-          created_at: "2026-06-01T00:00:00Z",
-        },
-      ],
-    };
-
-    const result = buildOrderFromCart({
-      brand_id: "BR-002",
-      outlet_id: "OUT-002",
-      items: [{
-        product_id: "PROD-024",
-        variant_id: "VAR-031",
-        qty: 1,
-        modifiers: [{ modifier_id: "MOD-004", modifier_qty: 2 }],
-        manual_item_discount: { value: 0, type: "VND" },
-      }],
-      payment_method: "CASH",
-      actor: { id: "U1", name: "Test" },
-    }, refWithModifierRecipe);
-
-    const modifiers = JSON.parse(result.lines[0].modifiers_snapshot_json);
-    const recipeSnap = JSON.parse(result.lines[0].recipe_snapshot_json);
-
-    expect(modifiers[0].qty).toBe(2);
-    expect(recipeSnap.modifiers[0].modifier_qty).toBe(2);
+    expect(recipeSnap.variant).toEqual({
+      target_type: "PRODUCT_VARIANT",
+      target_id: "VAR-031",
+      ingredients: [],
+    });
+    expect(recipeSnap.modifiers).toEqual([]);
   });
 
   it("3-discount coexistence: manual item, system promo, and custom order discount all active", () => {

@@ -15,12 +15,10 @@ import {
   buildVariantSnapshot,
   buildModifierSnapshotsFromCart,
   buildPromotionSnapshot,
-  buildRecipeSnapshot,
 } from "@/lib/order-snapshot";
 import { allocateOrderDiscount, assertOrderInvariants } from "@/lib/order-math";
 import { InvariantError, ORDER_STATUS, PAYMENT_METHOD } from "@/lib/order-types";
 import { resolveCapturedAt } from "@/lib/pos-captured-at";
-import { selectEffectiveRecipe } from "@/lib/recipe-selection";
 import type {
   OrderV2,
   OrderLineV2,
@@ -79,15 +77,6 @@ export interface CartInput {
   // pressed, not when the request reached the server. Optional and
   // defaults to server time for any caller that doesn't send it.
   client_captured_at?: string;
-  // Explicit, trusted resolution time for recipe selection, bypassing the
-  // POS-clock sanity guard in resolveCapturedAt entirely (not weakening it --
-  // that guard exists to defend against a device with a bad clock, and does
-  // not apply to a timestamp read back out of the database). Used by order
-  // edits to resolve recipes against the order's original sale time instead
-  // of the moment the edit happens. Falls back to the resolved createdAt
-  // (POS checkout's own client_captured_at, guard-checked as before) when
-  // absent, so the checkout path is unaffected.
-  recipe_as_of?: string;
 }
 
 export interface BuiltPayment {
@@ -104,7 +93,6 @@ export interface ReferenceData {
   categories: any[];
   modifiers: any[];
   promotions: any[];
-  recipes: any[];
   base_ingredients: any[];
 }
 
@@ -130,9 +118,6 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   if (!brand) throw new InvariantError(`Unknown brand: ${input.brand_id}`);
 
   const { createdAt, rejected: capturedAtRejected } = resolveCapturedAt(input.client_captured_at);
-  // Bypasses resolveCapturedAt entirely -- see the CartInput.recipe_as_of doc
-  // comment for why the 30-day guard must not apply here.
-  const recipeAsOf = input.recipe_as_of || createdAt;
   const orderId = `ord-${crypto.randomUUID()}`;
 
   // Resolve promotion (auto or explicit) against the true sale time, not
@@ -145,7 +130,7 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   const builtLines: BuiltLine[] = [];
   for (let i = 0; i < input.items.length; i++) {
     const item = input.items[i];
-    const line = buildLine(item, ref, orderId, i + 1, recipeAsOf, resolvedPromo);
+    const line = buildLine(item, ref, orderId, i + 1, resolvedPromo);
     builtLines.push(line);
   }
 
@@ -337,7 +322,6 @@ function buildLine(
   ref: ReferenceData,
   orderId: string,
   lineNo: number,
-  recipeAsOf: string,
   resolvedPromo: any | null,
 ): BuiltLine {
   const product = ref.products.find(p => p.id === item.product_id);
@@ -355,41 +339,18 @@ function buildLine(
   });
   const modifierSnap = buildModifierSnapshotsFromCart(item.modifiers, ref.modifiers);
 
-  // Pick variant recipe (most recent non-expired)
-  const variantRecipe = pickRecipe(
-    ref.recipes,
-    "PRODUCT_VARIANT",
-    item.variant_id,
-    recipeAsOf,
-  );
-  const variantRecipeSnap = variantRecipe ? buildRecipeSnapshot(variantRecipe) : {
-    target_type: "PRODUCT_VARIANT" as const,
-    target_id: item.variant_id,
-    ingredients: [],
-  };
-
-  // Pick each modifier's recipe (most recent non-expired)
-  const modifierRecipeEntries: ModifierRecipeEntry[] = [];
-  for (const mod of modifierSnap) {
-    const modRecipe = pickRecipe(
-      ref.recipes,
-      "MODIFIER",
-      mod.id,
-      recipeAsOf,
-    );
-    if (modRecipe) {
-      modifierRecipeEntries.push({
-        modifier_id: mod.id,
-        modifier_name: mod.name,
-        modifier_qty: mod.qty,
-        recipe: buildRecipeSnapshot(modRecipe),
-      });
-    }
-  }
-
+  // Recipes were removed from the sale path (Phase 2,
+  // docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md):
+  // no recipe is resolved or looked up any more. recipe_snapshot_json keeps
+  // being written on every new line, always this same inert shape -- the
+  // column and the 3.402 pre-existing values stay exactly as they are.
   const lineRecipeSnap = {
-    variant: variantRecipeSnap,
-    modifiers: modifierRecipeEntries,
+    variant: {
+      target_type: "PRODUCT_VARIANT" as const,
+      target_id: item.variant_id,
+      ingredients: [] as RecipeSnapshot["ingredients"],
+    },
+    modifiers: [] as ModifierRecipeEntry[],
   };
 
   // Gross
@@ -430,15 +391,6 @@ function buildLine(
   };
 
   return { spec, capacity: Math.max(0, gross - promoDiscount - manualItem) };
-}
-
-function pickRecipe(
-  recipes: any[],
-  targetType: string,
-  targetId: string,
-  asOf: string,
-): any | null {
-  return selectEffectiveRecipe(recipes, targetType, targetId, asOf);
 }
 
 function computePromoForLine(

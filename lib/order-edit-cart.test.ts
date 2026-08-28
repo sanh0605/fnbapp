@@ -20,7 +20,7 @@ const REF: ReferenceData = {
     code: "", start_date: "2026-05-31T17:00:00.000Z", end_date: "2026-06-30T16:59:00.000Z",
     status: "ACTIVE", brand_id: "", min_order_value: "0",
   }],
-  recipes: [], base_ingredients: [],
+  base_ingredients: [],
 };
 
 beforeAll(() => {
@@ -181,15 +181,6 @@ describe("buildEditedOrderFromCart", () => {
       ...REF,
       variants: [{ id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "99000" }],
       modifiers: [{ id: "MOD-001", name: "20ml cot ca phe new", price: "10000" }],
-      recipes: [{
-        id: "RCP-MOD-001",
-        target_type: "MODIFIER",
-        target_id: "MOD-001",
-        ingredients_json: "[]",
-        end_date: "",
-        start_date: "2026-06-01T00:00:00Z",
-        created_at: "2026-06-01T00:00:00Z",
-      }],
     };
 
     const result = buildEditedOrderFromCart({
@@ -255,84 +246,6 @@ describe("buildEditedOrderFromCart", () => {
     expect(result.lines[0].net_line_total).toBe(25000);
     expect(result.order.promo_discount_total).toBe(10000);
     expect(result.order.net_total).toBe(25000);
-  });
-});
-
-describe("buildEditedOrderFromCart resolves recipes against the original sale time", () => {
-  // REC-001 for VAR-001 (Cà phê đá 500ml), consuming BTP-004 (Nước đường),
-  // in force 2026-03-26 -> 2026-05-12. Its successor, effective from that
-  // same instant, consumes ING-022 instead -- the real shape verified
-  // against production in docs/superpowers/plans/2026-07-30-phase6-recipe-snapshot-repair.md.
-  const REF_WITH_TWO_RECIPE_VERSIONS: ReferenceData = {
-    brands: [{ id: "BR-002", code: "UCK", name: "UCK" }],
-    products: [{ id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001" }],
-    variants: [{ id: "VAR-001", product_id: "PROD-001", size_name: "500ml", price: "18000" }],
-    categories: [{ id: "CAT-001", name: "Đồ uống" }],
-    modifiers: [],
-    promotions: [],
-    recipes: [
-      {
-        id: "REC-001", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
-        ingredients_json: JSON.stringify([{ ingredient_id: "BTP-004", ingredient_type: "SEMI_PRODUCT", quantity: 20, unit_id: "U-ML" }]),
-        status: "ACTIVE", start_date: "2026-03-26T17:00:00.000Z",
-        created_at: "2026-03-26T17:00:00.000Z", end_date: "2026-05-12T17:00:00.000Z",
-      },
-      {
-        id: "REC-002", target_type: "PRODUCT_VARIANT", target_id: "VAR-001",
-        ingredients_json: JSON.stringify([{ ingredient_id: "ING-022", ingredient_type: "BASE_INGREDIENT", quantity: 20, unit_id: "U-ML" }]),
-        status: "ACTIVE", start_date: "2026-05-12T17:00:00.000Z",
-        created_at: "2026-05-12T17:00:00.000Z", end_date: null,
-      },
-    ],
-    base_ingredients: [],
-  };
-
-  const originalOrder: OrderV2 = {
-    id: "ord-original", order_no: "UCK-TEST-001", brand_id: "BR-002",
-    outlet_id: "OUT-002",
-    status: "COMPLETED", version: 1, parent_order_id: "", superseded_by: "",
-    created_at: "2026-04-20T03:00:00.000Z", // in force under REC-001
-    created_by_id: "U1", created_by_name: "Cashier",
-    completed_at: "2026-04-20T03:00:00.000Z",
-    voided_at: "", voided_by_id: "", void_reason: "",
-    currency: "VND", gross_total: 18000, promo_discount_total: 0,
-    manual_item_discount_total: 0, manual_order_discount: 0, net_total: 18000,
-    applied_promotion_id: "", applied_promotion_snapshot_json: "",
-    pos_snapshot_json: "{}", payment_method: "CASH", payment_ref: "",
-    migration_notes: "",
-  };
-  const cartInput: CartInput = {
-    brand_id: "BR-002",
-    outlet_id: "OUT-002",
-    items: [{ product_id: "PROD-001", variant_id: "VAR-001", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
-    payment_method: "CASH",
-    actor: { id: "U2", name: "Editor" },
-  };
-
-  it("resolves the recipe against the original sale time, not now", () => {
-    const built = buildEditedOrderFromCart(cartInput, REF_WITH_TWO_RECIPE_VERSIONS, {
-      order: originalOrder,
-      lines: [],
-    });
-    const snapshot = JSON.parse(built.lines[0].recipe_snapshot_json);
-    const ingredientIds = snapshot.variant.ingredients.map((i: any) => i.ingredient_id);
-    expect(ingredientIds).toContain("BTP-004");
-    expect(ingredientIds).not.toContain("ING-022");
-  });
-
-  it("still resolves correctly when the sale is older than the 30-day POS clock guard", () => {
-    // resolveCapturedAt rejects >30 days and falls back to now. An edit's sale
-    // time comes from the database, not a device clock, so that guard must not
-    // apply here. Without a bypass this test fails while the previous one passes
-    // (fake system time in this file is 2026-06-15, ~56 days after the sale).
-    const built = buildEditedOrderFromCart(cartInput, REF_WITH_TWO_RECIPE_VERSIONS, {
-      order: originalOrder,
-      lines: [],
-    });
-    expect(built.order.migration_notes || "").not.toContain("rejected");
-    const ingredientIds = JSON.parse(built.lines[0].recipe_snapshot_json).variant.ingredients
-      .map((i: any) => i.ingredient_id);
-    expect(ingredientIds).toContain("BTP-004");
   });
 });
 

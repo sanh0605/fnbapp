@@ -34,7 +34,12 @@ describe("saveProduct atomic persistence", () => {
     });
   });
 
-  it("creates product, variant, initial price history, and recipe through one RPC", async () => {
+  it("creates product, variant, and initial price history through one RPC; the recipe stays empty", async () => {
+    // The product editor no longer offers a recipe/ingredient picker (Phase 2,
+    // docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+    // -- a brand-new variant has no existing active recipe to feed back as a
+    // no-op, so ingredients_json stays [] and save_product_atomic still gets
+    // a valid CREATE_INITIAL decision (its own hard requirement, unchanged).
     mocks.saveProductAtomic.mockResolvedValue(makeRpcResult());
 
     await expect(saveProduct(makeCreateFormData())).resolves.toEqual({ success: true });
@@ -55,7 +60,7 @@ describe("saveProduct atomic persistence", () => {
         price: 30_000,
         recipe_decision: "CREATE_INITIAL",
         active_recipe_id: null,
-        ingredients_json: [makeIngredient("ING-001")],
+        ingredients_json: [],
       }],
       removedVariantIds: [],
       effectiveAt: "2026-07-19T00:00:00.000Z",
@@ -105,7 +110,14 @@ describe("saveProduct atomic persistence", () => {
     });
   });
 
-  it("plans recipe close and replacement in the same transaction", async () => {
+  it("never creates a new recipe version -- the editor no longer offers a picker, so an edit is always a no-op against the variant's own current recipe", async () => {
+    // Phase 2 (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+    // removed the ingredient picker; saveProduct no longer reads client-
+    // submitted ingredients at all. Even a stale/forged payload that still
+    // carries a different ingredientId (as a pre-Phase-2 client might) must
+    // not move the variant's real recipe -- an unrelated name/price/size
+    // edit must never silently mutate or version master data it no longer
+    // lets anyone see.
     seedExisting();
     mocks.saveProductAtomic.mockResolvedValue({
       ...makeRpcResult(),
@@ -117,9 +129,9 @@ describe("saveProduct atomic persistence", () => {
       success: true,
     });
     expect(mocks.saveProductAtomic.mock.calls[0][0].variants[0]).toMatchObject({
-      recipe_decision: "CREATE_VERSION",
+      recipe_decision: "UNCHANGED",
       active_recipe_id: "REC-EXISTING",
-      ingredients_json: [makeIngredient("ING-002")],
+      ingredients_json: [makeIngredient("ING-001")],
     });
   });
 

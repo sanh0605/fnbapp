@@ -6,7 +6,7 @@ import { buildPriceHistoryTimeline } from "@/lib/price-history";
 import { formatNumber } from "@/lib/format";
 import { History, X } from "lucide-react";
 
-export default function HistoryModal({ title, recipeHistory, priceHistory }: any) {
+export default function HistoryModal({ title, priceHistory }: any) {
   const [isOpen, setIsOpen] = useState(false);
   const priceTimeline = buildPriceHistoryTimeline(priceHistory || []);
 
@@ -78,44 +78,7 @@ export default function HistoryModal({ title, recipeHistory, priceHistory }: any
                 </div>
               )}
 
-              {/* LỊCH SỬ CÔNG THỨC */}
-              {recipeHistory && recipeHistory.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-bold text-text-primary mb-4 border-b pb-2">Lịch sử Công Thức (Định mức)</h3>
-                  <div className="space-y-4">
-                    {recipeHistory.map((r:any, idx:number) => (
-                      <div key={idx} className={`p-4 rounded-xl border ${!r.end_date ? 'bg-success/10 border-success/30' : 'bg-surface-card border-border'} shadow-sm relative`}>
-                        {!r.end_date && (
-                          <div className="absolute top-3 right-3 bg-success text-white text-[10px] font-bold px-2 py-1 rounded">
-                            Đang áp dụng
-                          </div>
-                        )}
-                        <div className="text-sm font-bold text-text-secondary mb-3 flex flex-col sm:flex-row sm:gap-4">
-                          <span>Bắt đầu: <span className="text-text-primary">{formatDate(r.created_at)}</span></span>
-                          {r.end_date && <span>Kết thúc: <span className="text-text-primary">{formatDate(r.end_date)}</span></span>}
-                        </div>
-                        
-                        <div className="bg-page p-3 rounded-lg border border-border">
-                          {r.ingredients.length === 0 ? (
-                            <span className="text-text-muted italic text-sm">Chưa khai báo thành phần</span>
-                          ) : (
-                            <ul className="space-y-1.5">
-                              {r.ingredients.map((ing:any, iIdx:number) => (
-                                <li key={iIdx} className="text-sm flex justify-between border-b border-border/60 pb-1.5 last:border-0 last:pb-0">
-                                  <span className="font-medium text-text-primary">{ing.name}</span>
-                                  <span className="font-bold text-primary">{ing.quantity} {ing.unitName}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {(!priceHistory || priceHistory.length === 0) && (!recipeHistory || recipeHistory.length === 0) && (
+              {(!priceHistory || priceHistory.length === 0) && (
                 <div className="text-center py-8 text-text-secondary italic">
                   Chưa có lịch sử thay đổi nào.
                 </div>

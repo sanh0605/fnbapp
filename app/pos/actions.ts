@@ -53,7 +53,7 @@ export async function submitOrderV2(
     const actor = auth.actor;
 
     // 3. Load reference data (cached where possible)
-    const [outlets, brands, products, variants, categories, modifiers, promotions, recipes, baseIngredients] = await Promise.all([
+    const [outlets, brands, products, variants, categories, modifiers, promotions, baseIngredients] = await Promise.all([
       findAll("Outlets"),
       findAll("Brands"),
       findAll("Products"),
@@ -61,7 +61,6 @@ export async function submitOrderV2(
       findAll("Product_Categories"),
       findAll("Modifiers"),
       findAll("Promotions"),
-      findAll("Recipes"),
       findAll("Base_Ingredients"),
     ]);
 
@@ -77,7 +76,7 @@ export async function submitOrderV2(
 
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
     const built = buildOrderFromCart({ ...resolvedInput, actor }, {
-      brands, products, variants, categories, modifiers, promotions, recipes, base_ingredients: baseIngredients,
+      brands, products, variants, categories, modifiers, promotions, base_ingredients: baseIngredients,
     });
     const saleTime = built.order.created_at;
 
@@ -85,7 +84,10 @@ export async function submitOrderV2(
     // cost_at_sale stays at its column default (0), and no stock_ledger row
     // is written here. Recipes and inventory-consumption lookups are gone
     // from checkout entirely, not merely ignored: that lookup was latency on
-    // the till for a result nothing reads anymore.
+    // the till for a result nothing reads anymore. As of Phase 2
+    // (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+    // the Recipes fetch itself is gone too -- buildOrderFromCart no longer
+    // resolves a recipe at all.
 
     // 5. The database allocates order_no under a transaction lock, keyed by
     // outlet+date (section 4), not brand -- outletCode replaces brandCode.

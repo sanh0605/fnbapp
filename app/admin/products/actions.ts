@@ -2,7 +2,7 @@
 
 import { requireAdmin } from "@/lib/auth";
 import { saveProductAtomic } from "@/lib/product-save-transaction";
-import { planRecipeSave } from "@/lib/recipe-selection";
+import { planRecipeSave, findLatestActiveRecipe } from "@/lib/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import { findAll, update } from "@/lib/sheets_db";
@@ -23,7 +23,6 @@ type VariantFormInput = {
   id?: unknown;
   size_name?: unknown;
   price?: unknown;
-  ingredients?: unknown;
 };
 
 export async function saveProduct(formData: FormData): Promise<ActionResponse> {
@@ -96,10 +95,23 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       if (!sizeName || !Number.isFinite(price) || price < 0) {
         throw new Error("Dữ liệu biến thể không hợp lệ");
       }
-      const ingredients = Array.isArray(variant.ingredients)
-        ? variant.ingredients
-        : [];
+      // The product editor no longer offers a recipe/ingredient picker
+      // (Phase 2, docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+      // -- the form never sends ingredients. save_product_atomic still
+      // requires a valid recipe_decision per variant, so feed planRecipeSave
+      // the variant's own current active-recipe ingredients back as a
+      // no-op: this always resolves to UNCHANGED for an existing variant
+      // (never creating a new recipe version or touching recipes table
+      // content on an unrelated name/price/size edit) and to CREATE_INITIAL
+      // with an empty recipe for a brand-new variant, matching what an
+      // empty picker already produced before this change.
       const recipeTargetId = variantId || `__NEW_VARIANT_${index}`;
+      const existingRecipe = variantId
+        ? findLatestActiveRecipe(allRecipes, "PRODUCT_VARIANT", variantId)
+        : null;
+      const ingredients = existingRecipe
+        ? JSON.parse(existingRecipe.ingredients_json || "[]")
+        : [];
       const recipePlan = planRecipeSave(
         allRecipes,
         "PRODUCT_VARIANT",

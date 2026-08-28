@@ -478,22 +478,23 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       categories,
       modifiers,
       promotions,
-      recipes,
       baseIngredients,
       oldOrderLedger,
     ] = await Promise.all([
       findAll("Brands"), findAll("Products"), findAll("Product_Variants"),
       findAll("Product_Categories"), findAll("Modifiers"), findAll("Promotions"),
-      findAll("Recipes"), findAll("Base_Ingredients"),
+      findAll("Base_Ingredients"),
       findAllWhere("Stock_Ledger", {
         eq: { reference_id: oldOrderV2.id },
       }),
     ]);
 
-    // 4. Build edited order (preserves sale time, increments version)
+    // 4. Build edited order (preserves sale time, increments version). As of
+    // Phase 2 (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+    // this no longer resolves a recipe, so Recipes is not fetched above.
     const built = buildEditedOrderFromCart(
       { ...input.cart, actor },
-      { brands, products, variants, categories, modifiers, promotions, recipes, base_ingredients: baseIngredients },
+      { brands, products, variants, categories, modifiers, promotions, base_ingredients: baseIngredients },
       { order: oldOrderV2, lines: oldLinesV2 },
     );
     const paymentPlan = planEditedOrderPayments(

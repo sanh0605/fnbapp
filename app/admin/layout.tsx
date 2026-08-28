@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useId } from "react";
 import { getOutlets } from "@/app/admin/outlets/actions";
 import { getSaigonNowHHMM } from "@/lib/outlet-hours";
 import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
-import { LayoutDashboard, Package, Truck, CookingPot, Coffee, Receipt, TrendingUp, Settings, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, Package, Truck, Coffee, Receipt, TrendingUp, Settings, LogOut, Store } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -42,21 +42,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ]
     },
     {
-      name: "Sản xuất",
-      icon: <CookingPot size={20} />,
-      children: [
-        { name: "Công thức Bán thành phẩm", href: "/admin/semi-products" },
-        { name: "Sản xuất / Nấu Bếp", href: "/admin/production" },
-      ]
-    },
-    {
       name: "Menu Bán hàng",
       icon: <Coffee size={20} />,
       children: [
         { name: "Danh mục Nhóm", href: "/admin/products/categories" },
         { name: "Danh sách Món", href: "/admin/products" },
         { name: "Topping & Tùy chọn", href: "/admin/products/modifiers" },
-        { name: "Dự toán Giá vốn", href: "/admin/products/cogs-estimate" },
       ]
     },
     {

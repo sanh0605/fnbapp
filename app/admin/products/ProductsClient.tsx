@@ -16,7 +16,6 @@ interface Product {
   status: string;
   image_url?: string;
   variants: any[];
-  recipeHistory: any[];
   priceHistory: any[];
 }
 
@@ -28,16 +27,10 @@ interface Category {
 export default function ProductsClient({
   enhancedProducts,
   activeCategories,
-  activeBaseIngredients,
-  activeSemiProducts,
-  units,
   categories
 }: {
   enhancedProducts: Product[];
   activeCategories: Category[];
-  activeBaseIngredients: any[];
-  activeSemiProducts: any[];
-  units: any[];
   categories: Category[];
 }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,11 +51,8 @@ export default function ProductsClient({
       <div className="hidden sm:block text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
         {filteredProducts.length} / {enhancedProducts.length} món
       </div>
-      <ProductForm 
+      <ProductForm
         categories={categories}
-        baseIngredients={activeBaseIngredients}
-        semiProducts={activeSemiProducts}
-        units={units}
       />
     </div>
   );
@@ -160,24 +150,16 @@ export default function ProductsClient({
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-2 max-w-lg">
-                            {product.variants.map((v: any, idx: number) => {
-                              const ingCount = v.ingredients?.length || 0;
-                              return (
-                                <div 
-                                  key={idx} 
-                                  className="flex items-center gap-2 bg-page border border-border px-2.5 py-1 rounded-lg text-xs"
-                                >
-                                  <span className="font-bold text-text-primary">{v.size_name}</span>
-                                  <span className="text-border">|</span>
-                                  <span className="font-black text-primary">{formatNumber(v.price)}</span>
-                                  {ingCount > 0 ? (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-success" title={`Đã định mức: ${ingCount} món`} />
-                                  ) : (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-danger" title="Chưa có định mức" />
-                                  )}
-                                </div>
-                              );
-                            })}
+                            {product.variants.map((v: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-2 bg-page border border-border px-2.5 py-1 rounded-lg text-xs"
+                              >
+                                <span className="font-bold text-text-primary">{v.size_name}</span>
+                                <span className="text-border">|</span>
+                                <span className="font-black text-primary">{formatNumber(v.price)}</span>
+                              </div>
+                            ))}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -191,16 +173,12 @@ export default function ProductsClient({
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2 items-center">
-                            <HistoryModal 
+                            <HistoryModal
                               title={product.name}
-                              recipeHistory={product.recipeHistory}
                               priceHistory={product.priceHistory}
                             />
-                            <ProductForm 
+                            <ProductForm
                               categories={categories}
-                              baseIngredients={activeBaseIngredients}
-                              semiProducts={activeSemiProducts}
-                              units={units}
                               initialData={product}
                             />
                           </div>
@@ -240,22 +218,12 @@ export default function ProductsClient({
                     <div className="space-y-2 flex-1">
                       <div className="text-[10px] uppercase font-bold text-text-muted">Các kích cỡ & Giá:</div>
                       <div className="grid grid-cols-1 gap-1.5">
-                        {product.variants.map((v: any, idx: number) => {
-                          const ingCount = v.ingredients?.length || 0;
-                          return (
-                            <div key={idx} className="flex justify-between items-center bg-page p-2 rounded-lg border border-border text-xs">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-text-primary">{v.size_name}</span>
-                                {ingCount > 0 ? (
-                                  <span className="inline-flex items-center px-1 py-0.2 bg-success/10 text-success text-[9px] rounded font-bold">Định mức</span>
-                                ) : (
-                                  <span className="inline-flex items-center px-1 py-0.2 bg-danger/20 text-danger text-[9px] rounded font-bold">Chưa có</span>
-                                )}
-                              </div>
-                              <span className="font-black text-primary">{formatNumber(v.price)}</span>
-                            </div>
-                          );
-                        })}
+                        {product.variants.map((v: any, idx: number) => (
+                          <div key={idx} className="flex justify-between items-center bg-page p-2 rounded-lg border border-border text-xs">
+                            <span className="font-bold text-text-primary">{v.size_name}</span>
+                            <span className="font-black text-primary">{formatNumber(v.price)}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
@@ -268,16 +236,12 @@ export default function ProductsClient({
                         )}
                       </div>
                       <div className="flex gap-2 items-center">
-                        <HistoryModal 
+                        <HistoryModal
                           title={product.name}
-                          recipeHistory={product.recipeHistory}
                           priceHistory={product.priceHistory}
                         />
-                        <ProductForm 
+                        <ProductForm
                           categories={categories}
-                          baseIngredients={activeBaseIngredients}
-                          semiProducts={activeSemiProducts}
-                          units={units}
                           initialData={product}
                         />
                       </div>

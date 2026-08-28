@@ -3,30 +3,20 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import HistoryModal from "@/components/HistoryModal";
 import { formatNumber } from "@/lib/format";
 import { deleteModifierAction } from "../actions";
 import { ModifierForm } from "./ModifierForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";
-import type { DBModifier, DBRecipe, DBBaseIngredient, DBSemiProduct, DBUnit } from "@/types/db";
-import { parseModifierIngredients } from "@/lib/modifier-recipe";
+import type { DBModifier } from "@/types/db";
 import ToppingsManager from "@/components/ToppingsManager";
 
 interface ModifiersClientProps {
-  modifiers: Array<DBModifier & {
-    activeRecipe?: DBRecipe;
-    recipeHistory: Array<any>;
-    hasMultipleActiveRecipes?: boolean;
-    activeRecipeCount?: number;
-  }>;
-  baseIngredients: DBBaseIngredient[];
-  semiProducts: DBSemiProduct[];
-  units: DBUnit[];
+  modifiers: DBModifier[];
   toppings: any[];
 }
 
-export default function ModifiersClient({ modifiers, baseIngredients, semiProducts, units, toppings }: ModifiersClientProps) {
+export default function ModifiersClient({ modifiers, toppings }: ModifiersClientProps) {
   const [activeTab, setActiveTab] = useState<"modifiers" | "standalone">("modifiers");
   const [search, setSearch] = useState("");
   const router = useRouter();
@@ -34,29 +24,14 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
   const filteredModifiers = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     if (!normalizedSearch) return modifiers;
-    return modifiers.filter((m) => {
-      const ingredientNames = parseModifierIngredients(m.activeRecipe?.ingredients_json)
-        .map((ing) => {
-          const source = ing.ingredient_type === "BASE_INGREDIENT"
-            ? baseIngredients.find(bi => bi.id === ing.ingredient_id)
-            : semiProducts.find(sp => sp.id === ing.ingredient_id);
-          return source?.name || ing.ingredient_id || "";
-        })
-        .join(" ");
-      return (
-        m.name.toLowerCase().includes(normalizedSearch) ||
-        m.group_name.toLowerCase().includes(normalizedSearch) ||
-        ingredientNames.toLowerCase().includes(normalizedSearch)
-      );
-    });
-  }, [baseIngredients, modifiers, search, semiProducts]);
+    return modifiers.filter((m) => (
+      m.name.toLowerCase().includes(normalizedSearch) ||
+      m.group_name.toLowerCase().includes(normalizedSearch)
+    ));
+  }, [modifiers, search]);
 
   const rightContent = (
-    <ModifierForm 
-      baseIngredients={baseIngredients} 
-      semiProducts={semiProducts} 
-      units={units} 
-    />
+    <ModifierForm />
   );
 
   return (
@@ -99,7 +74,7 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
             />
           </div>
         )}
-      
+
       </div>
 
       {activeTab === "modifiers" ? (
@@ -111,14 +86,13 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                 <th className="px-6 py-4 font-bold">Nhóm</th>
                 <th className="px-6 py-4 font-bold">Tên Tùy Chọn</th>
                 <th className="px-6 py-4 font-bold">Giá Thêm</th>
-                <th className="px-6 py-4 font-bold">Định Mức (Recipe)</th>
                 <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredModifiers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-text-muted italic">
+                  <td colSpan={4} className="px-6 py-12 text-center text-text-muted italic">
                     Không tìm thấy tùy chọn nào phù hợp.
                   </td>
                 </tr>
@@ -134,49 +108,9 @@ export default function ModifiersClient({ modifiers, baseIngredients, semiProduc
                     <td className="px-6 py-4 text-warning font-bold">
                       {formatNumber(m.price)}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-md">
-                        {m.activeRecipe ? (
-                          (() => {
-                            const ings = parseModifierIngredients(m.activeRecipe.ingredients_json);
-                            if (ings.length === 0) return <span className="text-text-muted italic text-[11px]">Chưa có định mức</span>;
-                            
-                            return ings.map((ing, idx) => {
-                              const source = ing.ingredient_type === "BASE_INGREDIENT"
-                                ? baseIngredients.find(bi => bi.id === ing.ingredient_id)
-                                : semiProducts.find(sp => sp.id === ing.ingredient_id);
-                              const unitName = units.find(u => u.id === source?.base_unit)?.name || "";
-                              return (
-                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-primary-soft text-primary-active border border-primary/20">
-                                  {source?.name || ing.ingredient_id}: {ing.quantity}{unitName}
-                                </span>
-                              );
-                            });
-                          })()
-                        ) : (
-                          <span className="text-text-muted italic text-[11px]">Chưa có định mức</span>
-                        )}
-                        {m.hasMultipleActiveRecipes && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-warning/10 text-warning-active border border-warning/20">
-                            {m.activeRecipeCount} phiên bản hoạt động
-                          </span>
-                        )}
-                      </div>
-                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end items-center gap-1">
-                        {m.recipeHistory.length > 0 && (
-                          <HistoryModal 
-                            title={m.name}
-                            recipeHistory={m.recipeHistory}
-                          />
-                        )}
-                        <ModifierForm 
-                          initialData={m} 
-                          baseIngredients={baseIngredients} 
-                          semiProducts={semiProducts} 
-                          units={units} 
-                        />
+                        <ModifierForm initialData={m} />
                         <DeleteModifierButton id={m.id} name={m.name} onDeleted={() => router.refresh()} />
                       </div>
                     </td>
@@ -214,7 +148,7 @@ function DeleteModifierButton({ id, name, onDeleted }: { id: string; name: strin
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onConfirm={handleDelete}
-        description={`Bạn có chắc chắn muốn xóa tùy chọn "${name}"? Định mức nguyên liệu liên quan cũng sẽ được đóng.`}
+        description={`Bạn có chắc chắn muốn xóa tùy chọn "${name}"?`}
       />
     </>
   );

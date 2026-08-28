@@ -4,6 +4,50 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-28 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Recipes and semi-products removal, phase 2 of 4 -- code removed, all 134/17/11 rows still in the database
+
+Implements phase 2 of `docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md` (`OPEN-ITEMS 72`). Code only, per the handoff -- "if a removal breaks something the data is still there to restore behaviour." Nothing was deleted from the database this session.
+
+### Per-file reachability, the same discipline that proved `breakdownCOGSByIngredientFifoLegacy` dead, done for every item in section 4's list, not as a batch
+
+Deleted outright, each confirmed to have zero importers anywhere (`app/`, `lib/`, `components/`, `scripts/`, including `lib/historical/`, checked by filename substring, not just the `@/lib/...` import-alias pattern -- see the correction below for why that distinction mattered): `app/admin/production/`, `app/admin/semi-products/`, `app/admin/products/cogs-estimate/` (whole directories, screens + actions + components + tests), `components/RecipeHistoryTimeline.tsx` (already fully dead before this pass, an unrelated pre-existing orphan found while grepping the plan's list), `lib/modifier-recipe.ts`.
+
+**Two functions in `lib/report-v2-allocators.ts` turned out to be dead but were not named in the plan's own section 4 list**: `breakdownCOGSByIngredient` (distinct from `breakdownCOGSByIngredientFifoLegacy`, zero external callers) and `breakdownCOGSBySource` (same). Along with `breakdownCOGSByIngredientFifoLegacy` and two internal helpers, the file shrank from ~530 lines to 75 -- kept only `breakdownRevenueByProduct` and the imports it actually uses (verified by diffing the retained function's body against `git show HEAD:...`, byte-for-byte identical, since this function computes real revenue and `scripts/verify-revenue.ts` was going to be run against it).
+
+**A real near-miss, caught by `tsc` rather than by the grep pass**: `lib/fifo-tracker.ts`, `lib/order-cogs.ts`, and `lib/order-cogs-fifo.ts` were deleted first, since every importer inside `app/`, `lib/`, `components/` matched by the `@/lib/...` alias pattern was gone. `tsc --noEmit` then failed on `lib/historical/cogs-drift-audit.ts` (imports `fifo-tracker` via `../fifo-tracker`, a relative path) and `scripts/migrate-orders-to-v2.ts` (imports `order-cogs-fifo` via `require("../lib/order-cogs-fifo")`) -- both historical/one-off tooling that the first grep pass missed because it searched for the `@/lib/` alias form only, and these two files use relative imports instead. All three files restored (`git checkout HEAD --`). Re-swept every other file slated for deletion or simplification the same way (filename substring across the whole tree, not an import-statement pattern) before trusting the remaining list.
+
+**`lib/recipe-selection.ts`, `lib/mac-cogs.ts`, and `lib/inventory-consumption.ts` all survive as files, for the same reason**: each still has a real caller inside `lib/historical/*` (`migrate-v1-to-v2.ts`, `recipe-snapshot-repair.ts` for recipe-selection; `full-history-recompute.ts` for mac-cogs; six different historical scripts for inventory-consumption -- `buildLineConsumptionRows`, `buildSemiProductRecipeMaps`, `allocateRecipeConsumption`, `splitImplicitProduction` are all still imported by at least one). `lib/inventory-consumption.ts` needed zero edits: every one of its exports turned out to have a real caller once historical tooling was counted, including `buildInventoryBalances`, which is live and unrelated to recipes (`lib/reorder-suggestion.ts`). Only the *live, non-historical* callers of `recipe-selection.ts` and `mac-cogs.ts` were changed.
+
+### The `save_product_atomic` RPC contract -- resolved without a migration
+
+`app/admin/products/actions.ts` calls `save_product_atomic` (`supabase/migrations/0050`), which hard-requires a valid `recipe_decision` per variant or raises. With the ingredient picker gone from `components/ProductForm.tsx`, the form no longer sends `ingredients` at all. Two options considered: (a) a migration simplifying the RPC to drop recipe handling -- rejected, since the RPC and the code calling it would need to land in the same deploy instant or every product save breaks immediately, the same deploy-ordering failure mode as the `outlet_id` incident (`OPEN-ITEMS 71`); (b) feed the RPC a no-op -- chosen. `saveProduct` now looks up the variant's own current active recipe (`findLatestActiveRecipe`) and passes its own `ingredients_json` straight back to `planRecipeSave`, which always resolves `UNCHANGED` for an existing variant (comparing a value to itself) and `CREATE_INITIAL` with `[]` for a brand-new one. An edit to name/price/size can no longer version, close, or otherwise touch a variant's real recipe row. Proven by two updated tests in `app/admin/products/actions.failure.test.ts`, one of them specifically constructed to show a stale/forged client payload carrying a different ingredient id is ignored.
+
+The modifiers screen had no RPC contract to preserve (`app/admin/products/modifiers/actions.ts` wrote to `Recipes` with plain `insert`/`update`, no atomic invariant) -- `saveModifierAction` and `deleteModifierAction` now touch `Recipes` not at all. `lib/modifier-recipe.ts` and its test were deleted outright once all three modifiers-screen files stopped importing it.
+
+### `order_lines_v2.recipe_snapshot_json` -- column and existing values untouched, new lines get an inert value
+
+`lib/order-cart.ts`'s `buildLine` no longer calls `selectEffectiveRecipe`/`pickRecipe`/`buildRecipeSnapshot`; every new line's `recipe_snapshot_json` is now the same fixed `{variant: {target_type, target_id, ingredients: []}, modifiers: []}`, matching the shape `buildLine` already fell back to when no recipe existed. The `recipe_as_of` bypass mechanism (`CartInput.recipe_as_of`, threaded through `order-cart.ts` and `order-edit-cart.ts` solely to resolve a recipe at the original sale time on an edit) had no remaining purpose and was removed end to end, not left as dead plumbing. `app/pos/actions.ts` and `app/admin/orders/actions.ts` stopped fetching `Recipes` accordingly. The column itself, and all 3.402 pre-existing values, were never touched -- no write path in this phase reads or writes an existing row.
+
+### Nav
+
+`app/admin/layout.tsx`: removed the "Sản xuất" group (both children pointed at deleted screens) and the "Dự toán Giá vốn" entry from "Menu Bán hàng". `nav-guard.test.ts` needed no edit -- both the page and its nav link were removed together, so the guard stayed green without intervention.
+
+### Tests updated for the new behaviour, not just deleted
+
+`lib/order-cart.test.ts`/`lib/order-edit-cart.test.ts`: the two tests asserting real recipe content in `recipe_snapshot_json`, and the whole "resolves recipes against the original sale time" describe block, replaced with one test asserting the new inert shape (the second block's "30-day POS clock guard" assertion turned out to be trivially true regardless of recipes -- its `cartInput` never set `client_captured_at`, so `resolveCapturedAt` never had a guard to bypass; confirmed by reading `lib/pos-captured-at.ts` directly before deleting it, not assumed). `app/admin/products/actions.failure.test.ts`: one test's expected `ingredients_json` corrected from a fabricated value to `[]`; one test renamed and rewritten to assert the new no-op guarantee instead of the now-impossible "client changes an ingredient" case. `scripts/audit-admin-read-guards.test.ts`: removed the two hardcoded entries pointing at deleted files. `components/ProductForm.test.tsx` (the whole file, three tests, all specific to the deleted ingredient picker) and `app/admin/products/modifiers/actions.test.ts` (all four tests specific to the deleted recipe-versioning logic) deleted outright. `scripts/verify-task3-live.ts` (a live diagnostic script, not a vitest file) had its production-batch step removed -- it called `saveProductionOrder`, which no longer exists; the script's real remaining purpose (proving selling and editing do not touch `stock_ledger`) is unaffected.
+
+### Proof, not assumption
+
+`scripts/verify-revenue.ts` re-run against live production: all structural checks pass, all four gated months (April-July) match their known totals to the đồng. `lib/issue-costing.ts`, `lib/issue-costing-inputs.ts`, `app/admin/reports/actions.ts` (the real COGS/P&L path) carry zero diff from this phase (`git diff --stat` empty) -- COGS is architecturally unmoved, not merely unchanged in value. `tsc --noEmit` 0 errors, `npx vitest run` 210 files / 1458 tests green, `check-rules-current` clean (pre-existing advisory warnings only, none in a file this phase touched), `npm run build` succeeds and the three deleted routes no longer appear in its route table.
+
+**Not yet proven live**: an actual POS sale end to end. `scripts/verify-task3-live.ts --apply` would write one real sale, edit it once, then void it -- self-cleaning, but a real production write, which needs the owner's go-ahead each time per `CLAUDE.md` section 2, not assumed from this session's approval to do phase 2's code work.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 210 files / 1458 tests, all green; `check-rules-current` clean; `npm run build` succeeds. **Not pushed. No data deleted -- phase 3 still waits for the owner.**
+
+---
+
 ## 2026-08-28 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Recipes and semi-products removal, phase 1 of 4 -- backup only, nothing deleted
 
 Implements phase 1 of `docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md` (`OPEN-ITEMS 72`). **This deletes master data**, which `CLAUDE.md` section 2 forbids by default -- proceeding on the owner's own explicit decision, made after the objection was put to him twice. My job this session was to find what it breaks, not relitigate whether it should happen, and to do phase 1 only: export and verify, nothing removed.
