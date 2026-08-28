@@ -93,3 +93,29 @@ Add that to the skill.
 approval from pushing (`CLAUDE.md` §2) — and then to edit a real order himself
 and see it save. `curl` proves nothing here; the failure was only visible from
 inside a logged-in session, which is exactly how it survived three days.
+
+---
+
+## 7. Applied 2026-08-28
+
+Owner approved; `0074` ran against production. The 6-argument function is now
+9.753 characters and contains `outlet_id`; it was 9.669 without it. Data
+unmoved: 2.464 order rows, 15 superseded, **0 rows with a null `outlet_id`**.
+
+**A false alarm caught before it was raised, worth recording.** The live
+database holds **two** functions named `supersede_order_v2_atomic` — a
+6-argument one and a 7-argument one — and the app calls the **7**-argument
+version (`p_payments`, added by `0035`), while this migration replaces the
+**6**-argument one. That looks exactly like fixing a function nobody calls.
+
+Reading the 7-argument body settled it: it is a thin wrapper that calls the
+6-argument function at its line 65, captures the result, inserts payments, and
+returns. Fixing the inner function fixes both.
+
+**The lesson is the same one this plan's §4 already states, in a second
+costume:** an overload count is a signal, not a conclusion. Sonnet nearly
+mis-reported `updated_at` the same way on the same day and also stopped to
+trace it. Read the body.
+
+**Still unproven here:** that an edit now saves. Only a real logged-in edit
+shows that, per §6.
