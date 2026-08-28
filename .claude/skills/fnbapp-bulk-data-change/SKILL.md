@@ -11,7 +11,7 @@ backfill of 124 rows was correct in every value it wrote, and it still created
 132 spurious detection events and scheduled an unreviewed rewrite of historical
 sales data.
 
-Work through all five before writing anything.
+Work through all six before writing anything.
 
 ## 1. List the target table's triggers
 
@@ -71,3 +71,26 @@ state.
 
 Say what else changed: rows added to queue tables, events raised, automation now
 scheduled. A report that lists only the intended writes is incomplete.
+
+## 6. Tightening a constraint needs a writer inventory, the same way a trigger needs one
+
+This happened on 2026-08-25: migration `0072` set `orders_v2.outlet_id` NOT NULL
+and broke every order edit for three days, because `supersede_order_v2_atomic`
+— last defined three migrations earlier, before that column existed — still
+inserted without it. `0072` was reviewed for triggers and for the minting path
+it was itself rewriting; nobody listed the *other* functions that write to the
+same table. **The owner found it, not a test.**
+
+Before adding or tightening any `NOT NULL`, `CHECK`, foreign key, or unique
+constraint on an existing column:
+
+```sh
+grep -rn "insert into public.<table>" supabase/migrations/*.sql
+grep -rln "insert(\"?<Table>\"?\|insertMany(\"?<Table>\"?" app/ lib/
+```
+
+For every writer found, state in one sentence whether it satisfies the new
+constraint — and check which migration's `create or replace` is the one
+**currently live** (the last one that redefines that function), not just
+whichever one first introduced it. A function redefined five times has four
+dead versions and one real writer; testing the wrong one proves nothing.

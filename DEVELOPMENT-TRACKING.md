@@ -4,6 +4,38 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-28 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Order editing has been broken in production since 2026-08-25 -- fix written, migration NOT applied
+
+Implements `docs/superpowers/plans/2026-08-27-fix-order-edit-outlet-id.md` (`OPEN-ITEMS 71`). **Production is broken right now**: `0072` (2026-08-25) tightened `orders_v2.outlet_id` to `NOT NULL`; `supersede_order_v2_atomic` was last defined in `0046`, before that column existed, and its insert never named it. Every order edit since has failed with a not-null violation. This entry is the fix, written and tested; **the migration is not applied** -- the owner approves that step separately, per `CLAUDE.md` section 2, and until he does, editing stays broken.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- section 2 fully re-derived, one figure corrected along the way after nearly reporting a false one
+
+Every claim in section 2 re-derived independently, not trusted: `0046` is confirmed the current live definition (grepped every `create or replace function public.supersede_order_v2_atomic` across all migrations -- three exist, 0020/0035/0046, nothing after 0046 redefines it); its insert names exactly 26 columns, `outlet_id` not among them; `0071` added the column nullable, `0072` line 18 tightened it. Swept for a stale writer more broadly than the plan's own list, per the instruction that a missed writer is the finding that matters: every literal `insert into public.orders_v2` across `supabase/migrations/` (8 found, all accounted for as dead redefinitions except the two live ones), every generic `insert("Orders_V2"...)` in `app/`/`lib/` outside test files and `lib/historical/` (none), and confirmed `lib/historical/sheets-db-v2.ts` genuinely has no live importer (a same-named-but-different file, `lib/sheets-db-v2-edit.ts`, does have one -- it calls the RPC by name, not a raw insert, so it's the client wrapper around the same bug, not a second writer).
+
+**Nearly reported a false correction to section 2's dates, caught before reporting it.** `orders_v2.updated_at` on the 15 superseded rows all cluster within a two-minute window on 2026-08-25, which would put "last successful edit" on 08-25, not the plan's stated 08-24. Investigated the anomaly instead of reporting it as a plan error: that same day's `backfill-outlet-and-rename-orders.ts` (`update("orders_v2", rowId, {...})`, run before `0072` per its own ordering) touches every row in every multi-version order chain to rename `order_no`, including already-superseded rows from edits made days earlier -- `updated_at` on those rows reflects that later bulk touch, not the original edit. Re-derived from `order_events.event_at` (`EDITED` rows, a table the backfill never writes) instead: the true last successful edit is **2026-08-24 08:34:40 Saigon**, confirming the plan's figure was right, and that my first signal was the wrong one to trust.
+
+### Section 3 -- agree with sourcing `outlet_id` from the order being superseded, with one thing found that strengthens the case beyond the plan's own reasoning
+
+`lib/order-edit-cart.ts:96` already sets `outlet_id: original.order.outlet_id` on the client side, dated 2026-08-25 -- the client has been sending the correct value all along; the bug is purely that the stale RPC's insert never reads it. That means either sourcing choice (client payload or re-read from the database) would produce the correct value today. Chose to agree with reading it from the database anyway: `created_at` and `brand_id` are both still trusted from `p_new_order` in this same function, an asymmetry worth naming rather than silently extending -- but `outlet_id` specifically is the column that just proved a stale writer can silently omit or mishandle a field, so making the RPC self-defending for that one field (immune to any future caller's payload, not just today's known-good client) is worth the one extra `select` column it costs. Did not touch `created_at`/`brand_id`'s existing pattern -- out of scope for this fix, not raised as a problem here.
+
+### The fix
+
+`supabase/migrations/0074_fix_supersede_order_outlet_id.sql`: `create or replace function public.supersede_order_v2_atomic`, copied forward from `0046` unchanged except for `outlet_id` -- added to the same `select ... into ... for update` that already reads `status`/`version` from the old row, and to the insert's column list and values. Grants restated for defensiveness (harmless no-op; `create or replace` preserves them on an unchanged signature).
+
+### Verification
+
+No live Postgres connection is available to this session (a direct-connection attempt was blocked earlier this session; the migration is deliberately not applied here). Tested at the level this repo's own migration tests already use (`lib/order-edit-transaction-migration.test.ts`'s existing `0020` suite): SQL text, not executed behaviour. Two new tests, added to that same file. **The first, proven to fail on the value, not a missing function:** asserts `0046`'s function body (extracted precisely, not matched against the whole multi-function file) lacks `outlet_id` -- true today, and a real content mismatch (`0046` exists, the function exists, the string is genuinely absent), confirmed by running the *opposite* assertion (that it *should* contain `outlet_id`) against `0046` in isolation and watching it fail on the same value, not a thrown/missing-symbol error, before restoring the real test. The second asserts `0074` sources `outlet_id` from `v_old_outlet_id` (the SELECT), not `p_new_order`, and that it appears in both the insert's column list and values -- passes.
+
+Also, per the plan's section 4: added a sixth section to `fnbapp-bulk-data-change` requiring a writer inventory before tightening any constraint, mirroring the skill's existing trigger-inventory requirement -- and specifically naming "find the currently *live* redefinition, not just any migration that once defined it," since that distinction is exactly what this incident got wrong.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 216 files / 1497 tests (+2); `check-rules-current` exits 0 (unchanged: 3 PASS, 1 WARN, `OPEN-ITEMS 58`); `npm run build` succeeds. `scripts/verify-revenue.ts`: all four gated months unmoved (expected -- nothing was applied). `OPEN-ITEMS 71` updated to record the migration is written, not applied.
+
+**Migration NOT applied. Not pushed.** Needs the owner's separate approval to run, and then to edit a real order himself and see it save -- `curl` cannot prove this, the failure was only ever visible from inside a logged-in session.
+
+---
+
 ## 2026-08-27 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Applied the `acquired_date` backfill -- 82 rows, verified against the owner's own sheet
 
 Applies the backfill half of `docs/superpowers/plans/2026-08-27-asset-acquired-date-off-by-one.md` (`OPEN-ITEMS 64`, now closed). The code fix landed and was verified in an earlier session; this is the production write.
