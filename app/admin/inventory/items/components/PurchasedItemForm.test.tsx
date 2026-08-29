@@ -232,7 +232,13 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
     expect(document.body.textContent).toContain("g");
   });
 
-  it("RAW items are unaffected: the base-ingredient section still renders exactly as before", async () => {
+  // 2026-08-29 (docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md
+  // section 5.1): this assertion is now the opposite of what it was --
+  // before this task, "Đơn vị gốc" never appeared for RAW because the unit
+  // was silently derived from the linked group; confirmed to fail on the
+  // VALUE against the pre-fix code (not a missing field or function), which
+  // is the whole point this task exists to change.
+  it("RAW keeps its group-link requirement, and now also gets its own base-unit selector -- the unit no longer comes from the group", async () => {
     await openForm();
 
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
@@ -240,7 +246,65 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
 
     expect(document.body.textContent).toContain("Hàng Hóa Chế Biến (RAW)");
     expect(document.body.textContent).toContain("Liên kết Nhóm Nguyên Liệu");
-    expect(document.body.textContent).not.toContain("Đơn vị gốc"); // that label is the consumable-only one
+    expect(document.body.textContent).toContain("Đơn vị gốc");
+    // Conversion rows require a unit chosen first (same as CONSUMABLE/EQUIPMENT) --
+    // picking a group alone must not reveal them.
+    expect(document.body.textContent).not.toContain("Quy đổi đơn vị mua");
+  });
+
+  it("a RAW item's base unit is chosen independently of its group -- kg for an item linked to a group whose own label is a different unit", async () => {
+    await openForm();
+
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-001");
+
+    const baseIngredientWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    await chooseInCombobox(baseIngredientWrapper, "Sữa chua không đường");
+
+    // BASE_INGREDIENTS' own base_unit is "g" (U-G) -- choosing "Bao" here as
+    // the item's base unit must not be overridden by the group's unit.
+    const baseUnitWrapper = Array.from(document.querySelectorAll('[role="combobox"]'))
+      .map(el => el.closest(".relative") as HTMLElement)
+      .find(w => w !== baseIngredientWrapper)!;
+    await chooseInCombobox(baseUnitWrapper, "Bao");
+
+    expect(baseUnitWrapper.textContent).toContain("Bao");
+    // Conversion rows now appear, keyed to the chosen base unit ("Bao"),
+    // not the group's ("g").
+    expect(document.body.textContent).toContain("Quy đổi đơn vị mua");
+  });
+
+  it("editing a RAW item with purchase/issue history shows its base unit read-only, with an explanation, and does not offer the selector", async () => {
+    const initialData = {
+      id: "SPM-100",
+      name: "Trái tắc",
+      item_category_id: "NHH-001",
+      base_ingredient_id: "ING-032",
+    };
+    const initialConversions = [
+      { id: "QD-100", purchased_item_id: "SPM-100", purchased_unit: "U-BAO", base_unit: "U-G", conversion_rate: "1000" },
+    ];
+    const container = await renderTracked(
+      <PurchasedItemForm
+        itemCategories={CATEGORIES as any}
+        baseIngredients={BASE_INGREDIENTS as any}
+        units={UNITS as any}
+        initialData={initialData as any}
+        initialConversions={initialConversions as any}
+        isUnitLocked={true}
+      />,
+    );
+    const openBtn = findButtonWithText(container, "Sửa")!;
+    await fireClick(openBtn);
+    await flush();
+
+    // No interactive selector for the base unit -- its placeholder (only
+    // ever rendered by the editable SearchableSelect variant) must not
+    // appear at all, even though other comboboxes on the form (the
+    // group-link selector, the purchase-unit picker inside the conversion
+    // row) are unaffected by this lock and stay interactive.
+    expect(document.body.textContent).not.toContain("Chọn đơn vị gốc...");
+    expect(document.body.textContent).toContain("Không thể đổi đơn vị gốc");
   });
 });
 

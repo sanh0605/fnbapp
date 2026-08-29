@@ -18,9 +18,11 @@ interface ItemsClientProps {
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
+  unitLockedItemIds: string[];
 }
 
-export default function ItemsClient({ categories, baseIngredients, items, conversions, units }: ItemsClientProps) {
+export default function ItemsClient({ categories, baseIngredients, items, conversions, units, unitLockedItemIds }: ItemsClientProps) {
+  const unitLockedSet = useMemo(() => new Set(unitLockedItemIds), [unitLockedItemIds]);
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
     q: "",
     category: "ALL",
@@ -161,6 +163,7 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                             itemCategories={categories}
                             baseIngredients={baseIngredients}
                             units={units}
+                            isUnitLocked={unitLockedSet.has(item.id)}
                           />
                           <DeleteItemButton id={item.id} name={item.name} />
                         </div>
@@ -226,6 +229,7 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                         itemCategories={categories}
                         baseIngredients={baseIngredients}
                         units={units}
+                        isUnitLocked={unitLockedSet.has(item.id)}
                       />
                     </div>
                     <div className="flex items-center">

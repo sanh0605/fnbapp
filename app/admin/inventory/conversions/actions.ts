@@ -1,12 +1,42 @@
 "use server";
 
-import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
+import { findAll, findAllWhere, insert, update, remove, generateNewId } from "@/lib/sheets_db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
-import type { DBUOMConversion, DBPurchasedItem, DBBaseIngredient, DBUnit } from "@/types/db";
+import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import { wouldLeaveNoCountableConversion } from "@/lib/conversion-countability";
+import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/unit-lock";
+
+// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+// the same check as app/admin/inventory/items/actions.ts's
+// updatePurchasedItem -- this screen used to be "safe" only because the
+// base unit here was always derived from the item's tier-2 group, so every
+// row agreed by construction (verified at the line before this task:
+// ConversionForm.tsx always read baseIngredient.base_unit). Once that
+// derivation is removed (section 5.2), a base_unit submitted here needs its
+// own check -- addConversion in particular had none at all before this.
+async function checkUnitLockBeforeSave(
+  purchasedItemId: string,
+  submittedBaseUnit: string,
+): Promise<string | null> {
+  const [itemConversions, poLines, stockIssues] = await Promise.all([
+    findAllWhere<DBUOMConversion>("UOM_Conversions", { eq: { purchased_item_id: purchasedItemId } }),
+    findAllWhere("Purchase_Order_Lines", { eq: { purchased_item_id: purchasedItemId } }),
+    findAllWhere("Stock_Issues", { eq: { purchased_item_id: purchasedItemId } }),
+  ]);
+  const lock = resolveUnitLock({
+    itemConversions,
+    hasPurchaseOrderLine: poLines.length > 0,
+    hasStockIssue: stockIssues.length > 0,
+  });
+  if (!unitChangeIsRefused(lock, submittedBaseUnit)) return null;
+
+  const units = await findAll("Units");
+  const currentUnitName = (units as any[]).find(u => u.id === lock.currentBaseUnitId)?.name || lock.currentBaseUnitId || "";
+  return unitLockRefusalMessage(currentUnitName);
+}
 
 const SHEET = "UOM_Conversions";
 const PATH = "/admin/inventory/conversions";
@@ -55,7 +85,6 @@ async function checkStillCountableAfterSave(
 }
 
 export async function getConversionsData(): Promise<{
-  baseIngredients: DBBaseIngredient[];
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
@@ -64,17 +93,21 @@ export async function getConversionsData(): Promise<{
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const [baseIngredients, items, conversions, allUnits] = await Promise.all([
-      findAll("Base_Ingredients") as Promise<DBBaseIngredient[]>,
+    // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section
+    // 5.2: Base_Ingredients is no longer fetched here -- ConversionForm.tsx
+    // used to derive base_unit from an item's linked group; now it reads
+    // the item's own conversions instead, so this screen has no remaining
+    // use for the group data at all.
+    const [items, conversions, allUnits] = await Promise.all([
       findAll("Purchased_Items") as Promise<DBPurchasedItem[]>,
       findAll(SHEET) as Promise<DBUOMConversion[]>,
       findAll("Units") as Promise<DBUnit[]>,
     ]);
     const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
-    return { baseIngredients, items, conversions, units };
+    return { items, conversions, units };
   } catch (error) {
     console.error("Loi getConversionsData:", error);
-    return { baseIngredients: [], items: [], conversions: [], units: [] };
+    return { items: [], conversions: [], units: [] };
   }
 }
 
@@ -95,6 +128,9 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
   if (!conversion_rate) return fail("Tỷ lệ quy đổi phải là số hữu hạn lớn hơn 0");
 
   try {
+    const unitLockError = await checkUnitLockBeforeSave(purchased_item_id, base_unit);
+    if (unitLockError) return fail(unitLockError);
+
     // D15/P4: a brand-new conversion has no "other" copy of itself yet, so
     // excludeConversionId is null -- the check runs against every existing
     // ACTIVE conversion of the item as-is.
@@ -142,6 +178,9 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
   // fire.
   const countableError = await checkStillCountableAfterSave(purchased_item_id, purchase_only, id);
   if (countableError) return fail(countableError);
+
+  const unitLockError = await checkUnitLockBeforeSave(purchased_item_id, base_unit);
+  if (unitLockError) return fail(unitLockError);
 
   try {
     const [allConvs, poLines] = await Promise.all([

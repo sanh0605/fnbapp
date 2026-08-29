@@ -19,6 +19,7 @@ import {
   findDiacriticStrippedMatch,
   duplicateWarningMessage,
 } from "@/lib/duplicate-name-guard";
+import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/unit-lock";
 
 const SHEET = "Purchased_Items";
 const PATH = "/admin/inventory/items";
@@ -29,23 +30,34 @@ export async function getItemsData(): Promise<{
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
+  unitLockedItemIds: string[];
 }> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const [categories, baseIngredients, items, conversions, allUnits] = await Promise.all([
+    const [categories, baseIngredients, items, conversions, allUnits, poLines, stockIssues] = await Promise.all([
       findAll("Item_Categories") as Promise<DBItemCategory[]>,
       findAll("Base_Ingredients") as Promise<DBBaseIngredient[]>,
       findAll(SHEET) as Promise<DBPurchasedItem[]>,
       findAll("UOM_Conversions") as Promise<DBUOMConversion[]>,
       findAll("Units") as Promise<DBUnit[]>,
+      findAll("Purchase_Order_Lines") as Promise<any[]>,
+      findAll("Stock_Issues") as Promise<any[]>,
     ]);
     const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
-    return { categories, baseIngredients, items, conversions, units };
+
+    // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+    // both tables checked, not only purchase_order_lines -- see
+    // lib/unit-lock.ts for why.
+    const lockedIds = new Set<string>();
+    for (const line of poLines) if (line.purchased_item_id) lockedIds.add(line.purchased_item_id);
+    for (const issue of stockIssues) if (issue.purchased_item_id) lockedIds.add(issue.purchased_item_id);
+
+    return { categories, baseIngredients, items, conversions, units, unitLockedItemIds: Array.from(lockedIds) };
   } catch (error) {
     console.error("Loi getItemsData:", error);
-    return { categories: [], baseIngredients: [], items: [], conversions: [], units: [] };
+    return { categories: [], baseIngredients: [], items: [], conversions: [], units: [], unitLockedItemIds: [] };
   }
 }
 
@@ -173,6 +185,32 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       };
     }
     const wasWarningConfirmed = !!warning && warningConfirmed;
+
+    // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+    // the base unit is free to choose until the item has real history --
+    // purchase_order_lines.base_quantity and stock_issues.base_quantity are
+    // both stored in it, so changing it silently reinterprets every
+    // quantity ever recorded. Nothing at the schema level notices this
+    // (unlike the product stop-selling rule), so this is the one real
+    // check; runs before any write, keyed to the item as a whole, not to a
+    // single conversion row.
+    if (unitsJson && base_unit) {
+      const [itemConversionsForLock, poLinesForLock, stockIssuesForLock] = await Promise.all([
+        findAllWhere<DBUOMConversion>("UOM_Conversions", { eq: { purchased_item_id: id } }),
+        findAllWhere("Purchase_Order_Lines", { eq: { purchased_item_id: id } }),
+        findAllWhere("Stock_Issues", { eq: { purchased_item_id: id } }),
+      ]);
+      const lock = resolveUnitLock({
+        itemConversions: itemConversionsForLock,
+        hasPurchaseOrderLine: poLinesForLock.length > 0,
+        hasStockIssue: stockIssuesForLock.length > 0,
+      });
+      if (unitChangeIsRefused(lock, base_unit)) {
+        const allUnits = await findAll("Units");
+        const currentUnitName = (allUnits as any[]).find(u => u.id === lock.currentBaseUnitId)?.name || lock.currentBaseUnitId || "";
+        return fail(unitLockRefusalMessage(currentUnitName));
+      }
+    }
 
     await update("Purchased_Items", id, {
       name,

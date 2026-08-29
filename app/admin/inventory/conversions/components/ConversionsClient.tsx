@@ -6,16 +6,15 @@ import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteConversionAction } from "../actions";
-import type { DBUOMConversion, DBPurchasedItem, DBBaseIngredient, DBUnit } from "@/types/db";
+import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 
 interface ConversionsClientProps {
-  baseIngredients: DBBaseIngredient[];
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
 }
 
-export default function ConversionsClient({ baseIngredients, items, conversions, units }: ConversionsClientProps) {
+export default function ConversionsClient({ items, conversions, units }: ConversionsClientProps) {
   const [search, setSearch] = useState("");
 
   const unitMap = useMemo(() => {
@@ -38,10 +37,10 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
   }, [conversions, search, itemMap]);
 
   const rightContent = (
-    <ConversionForm 
-      items={items} 
-      baseIngredients={baseIngredients} 
-      units={units} 
+    <ConversionForm
+      items={items}
+      conversions={conversions}
+      units={units}
     />
   );
 
@@ -114,11 +113,11 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end items-center">
-                        <ConversionForm 
-                          initialData={conv} 
-                          items={items} 
-                          baseIngredients={baseIngredients} 
-                          units={units} 
+                        <ConversionForm
+                          initialData={conv}
+                          items={items}
+                          conversions={conversions}
+                          units={units}
                         />
                         <DeleteConversionButton id={conv.id} itemName={itemMap[conv.purchased_item_id] || ""} />
                       </div>
@@ -175,11 +174,11 @@ export default function ConversionsClient({ baseIngredients, items, conversions,
 
                 <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
-                    <ConversionForm 
-                      initialData={conv} 
-                      items={items} 
-                      baseIngredients={baseIngredients} 
-                      units={units} 
+                    <ConversionForm
+                      initialData={conv}
+                      items={items}
+                      conversions={conversions}
+                      units={units}
                     />
                   </div>
                   <div className="flex items-center min-h-[44px]">

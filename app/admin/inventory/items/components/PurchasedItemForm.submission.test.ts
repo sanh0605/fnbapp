@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildConversionSubmission } from "./PurchasedItemForm";
+import { buildConversionSubmission, resolveBaseUnitId } from "./PurchasedItemForm";
 
 // Batch 1, item B, section B4: "assert units_json is present in the
 // payload with the typed values. That assertion is the one that fails
@@ -181,5 +181,67 @@ describe("buildConversionSubmission -- no category selected yet", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected ok");
     expect(result.fields).toBeNull();
+  });
+});
+
+// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 5.1:
+// the base unit belongs to the item, not its tier-2 group. Before this
+// task, a RAW item's baseUnitId was computed inline in the component as
+// `activeBaseIngredient?.base_unit` -- extracted here specifically so the
+// group-independence can be asserted directly, the exact behaviour change
+// section 6 asks to prove.
+describe("resolveBaseUnitId -- the unit belongs to the item, not its group (2026-08-29)", () => {
+  it("RAW resolves from the item's own selected unit name, same as CONSUMABLE/EQUIPMENT -- not from any group", () => {
+    const kg = resolveBaseUnitId({
+      isRaw: true,
+      isConsumable: false,
+      isEquipment: false,
+      selectedBaseUnitName: "kg",
+      units: [{ id: "U-KG", name: "kg" }, { id: "U-TRAI", name: "trái" }],
+    });
+    expect(kg).toBe("U-KG");
+  });
+
+  it("a RAW item can choose kg even though nothing about a trái-labelled group is passed in at all -- there is no group input to this function any more", () => {
+    // Trái tắc / Trái chanh's real shape: the group's own unit is "trái",
+    // bought in "kg". This function never receives the group's unit as an
+    // input -- proving the item's choice cannot be overridden by it.
+    const result = resolveBaseUnitId({
+      isRaw: true,
+      isConsumable: false,
+      isEquipment: false,
+      selectedBaseUnitName: "kg",
+      units: [{ id: "U-KG", name: "kg" }, { id: "U-TRAI", name: "trái" }],
+    });
+    expect(result).toBe("U-KG");
+    expect(result).not.toBe("U-TRAI");
+  });
+
+  it("CONSUMABLE and EQUIPMENT resolve the same way as RAW", () => {
+    const units = [{ id: "U-CAI", name: "cái" }];
+    expect(resolveBaseUnitId({ isRaw: false, isConsumable: true, isEquipment: false, selectedBaseUnitName: "cái", units })).toBe("U-CAI");
+    expect(resolveBaseUnitId({ isRaw: false, isConsumable: false, isEquipment: true, selectedBaseUnitName: "cái", units })).toBe("U-CAI");
+  });
+
+  it("returns undefined when no category type is selected", () => {
+    const result = resolveBaseUnitId({
+      isRaw: false,
+      isConsumable: false,
+      isEquipment: false,
+      selectedBaseUnitName: "kg",
+      units: [{ id: "U-KG", name: "kg" }],
+    });
+    expect(result).toBeUndefined();
+  });
+
+  it("returns undefined when the selected name matches no real unit", () => {
+    const result = resolveBaseUnitId({
+      isRaw: true,
+      isConsumable: false,
+      isEquipment: false,
+      selectedBaseUnitName: "không tồn tại",
+      units: [{ id: "U-KG", name: "kg" }],
+    });
+    expect(result).toBeUndefined();
   });
 });

@@ -5,16 +5,16 @@ import { addConversion, updateConversion } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { SearchableSelect } from "@/components/SearchableSelect";
-import type { DBPurchasedItem, DBBaseIngredient, DBUnit, DBUOMConversion } from "@/types/db";
+import type { DBPurchasedItem, DBUnit, DBUOMConversion } from "@/types/db";
 
 interface ConversionFormProps {
   items: DBPurchasedItem[];
-  baseIngredients: DBBaseIngredient[];
+  conversions: DBUOMConversion[];
   units: DBUnit[];
   initialData?: DBUOMConversion;
 }
 
-export function ConversionForm({ items, baseIngredients, units, initialData }: ConversionFormProps) {
+export function ConversionForm({ items, conversions, units, initialData }: ConversionFormProps) {
   const formId = useId();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
@@ -39,14 +39,22 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
     [items, selectedItemId]
   );
 
-  const baseIngredient = useMemo(() => 
-    selectedItem ? baseIngredients.find(bi => bi.id === selectedItem.base_ingredient_id) : null,
-    [baseIngredients, selectedItem]
+  // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section
+  // 5.2: the base unit belongs to the item, not to its tier-2 group -- take
+  // it from the item's own existing conversions (they all agree, verified
+  // 2026-08-29 across all 146 real items, 0 disagree), the same way this
+  // screen already trusted that agreement implicitly. This is also what
+  // lets a CONSUMABLE/EQUIPMENT item (no base_ingredient_id at all) get a
+  // conversion here -- previously refused outright since baseIngredient
+  // was always null for them.
+  const itemConversions = useMemo(() =>
+    selectedItem ? conversions.filter(c => c.purchased_item_id === selectedItem.id) : [],
+    [conversions, selectedItem]
   );
 
-  const baseUnit = useMemo(() => 
-    baseIngredient ? units.find(u => u.id === baseIngredient.base_unit) : null,
-    [units, baseIngredient]
+  const baseUnit = useMemo(() =>
+    itemConversions.length > 0 ? units.find(u => u.id === itemConversions[0].base_unit) : null,
+    [units, itemConversions]
   );
 
   async function handleSubmit(formData: FormData) {
@@ -188,7 +196,7 @@ export function ConversionForm({ items, baseIngredients, units, initialData }: C
                 1 {selectedUnitName || "..."} = <span className="font-bold text-primary">{conversionRate || "0"}</span> {baseUnit.name}
               </div>
               <div className="text-[10px] text-primary mt-1 italic">
-                (Dựa trên nguyên liệu: {baseIngredient?.name})
+                (Đơn vị gốc đã thiết lập cho {selectedItem?.name})
               </div>
             </div>
           )}

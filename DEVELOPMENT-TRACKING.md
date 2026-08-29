@@ -4,6 +4,40 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The unit belongs to the item, not to its tier-2 group
+
+Implements `docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md`. Was blocking the owner from entering 15 real purchase rows: Trái tắc and Trái chanh are counted in *trái* by their group but bought by the *kg*, and a group has one unit.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- both figures reproduced exactly, both gaps confirmed, one corrected by the owner
+
+`§2`'s two-screens claim confirmed at the exact lines: `PurchasedItemForm.tsx:152-156` derived a RAW item's unit from `activeBaseIngredient?.base_unit` always; `ConversionForm.tsx:47-56` always derived it from the group and refused any item with no `base_ingredient_id`. `§3`'s two figures reproduced exactly against live production: 146/146 items with conversions, 156/156 conversion rows carrying `base_unit`, 52 RAW items, 57 conversions, **0 mismatches** against the group; **51 of 52** RAW items already purchased (`SPM-005 "Đá viên"` the one exception). Also checked something the plan needed but didn't have: 0 of 146 items have conversions that disagree with each other on `base_unit` -- what makes "read the current unit off the item's own conversions" well defined.
+
+Found while critiquing: the *existing* per-conversion-row lock (`updatePurchasedItem`, `updateConversion`) is narrower than this task needs, in two ways. The owner corrected my framing of both in `§4b` of the plan: **the serious gap is one this change itself creates**, not one it inherits -- `addConversion` had zero base-unit protection because it never needed any (every row agreed by construction, since the unit always came from the group; removing that derivation removes what was holding it together). The **stock_issues gap is real but not currently exposed** -- measured 0 items have issues without purchases (91 purchase-only, 50 both, 5 with no history) -- closed anyway since the shared helper covers it for free and a stocktake can find stock for an item never purchased. `§5.3`'s ambiguity (does RAW's group-link requirement change?) resolved as: no, unchanged, the owner's own separate design question.
+
+### The change
+
+`lib/unit-lock.ts`: one shared, pure, tested function (`resolveUnitLock`/`unitChangeIsRefused`/`unitLockRefusalMessage`) called from both `app/admin/inventory/items/actions.ts` (`updatePurchasedItem`) and `app/admin/inventory/conversions/actions.ts` (`addConversion`, `updateConversion`) -- replacing what would otherwise have been two independently-drifting per-row checks with one item-level check: does this item have *any* `purchase_order_lines` or `stock_issues` row, and does the submitted `base_unit` match what its conversions already carry. Checks both tables, not only purchases.
+
+`PurchasedItemForm.tsx`: `resolveBaseUnitId` extracted as a pure function (same reason `buildConversionSubmission` was) -- RAW now resolves its base unit the same way CONSUMABLE/EQUIPMENT already did, from a free selector, not from the linked group. `selectedConsumableBaseUnitName` renamed to `selectedBaseUnitName` -- the old name was the bug's fingerprint. New shared `BaseUnitSelector` sub-component renders read-only with a Vietnamese explanation when `isUnitLocked`, used by both the RAW and CONSUMABLE/EQUIPMENT sections so the locked rendering can't drift between them. `base_ingredient_id`'s RAW requirement is untouched.
+
+`ConversionForm.tsx`: `baseUnit` now derived from the selected item's own existing conversions (`conversions` added as a new prop, threaded through `ConversionsClient.tsx`'s three call sites), not the group -- the refusal at the old line 56 fires under the same condition as before (`!baseUnit`) but for a different, now-correct reason, and a CONSUMABLE/EQUIPMENT item can get a conversion on this screen for the first time. `baseIngredients` removed end to end (`getConversionsData`, `ConversionsClient.tsx`, `ConversionForm.tsx`) -- this task's change is what made it fully unused across every consumer, not a spot fix.
+
+`app/admin/inventory/items/actions.ts`: `getItemsData()` now also fetches `Purchase_Order_Lines`/`Stock_Issues` and returns `unitLockedItemIds`, threaded through `ItemsClient.tsx` to both `PurchasedItemForm` call sites (desktop and mobile).
+
+### Verification, per section 6
+
+**Test-first, failing on the value:** `PurchasedItemForm.test.tsx`'s pre-existing "RAW items are unaffected... not.toContain('Đơn vị gốc')" assertion failed against the implemented fix with the exact rendered text showing "Đơn vị gốc" now present -- a value-level proof, not a missing-field one, confirmed by running the suite before updating that assertion. `resolveBaseUnitId` tested directly: a RAW item can resolve to `kg` while its linked group's own unit is `trái`, with no group data even passed into the function.
+
+**The lock tested, not just the freedom:** new coverage in `items/actions.test.ts` and a new `conversions/actions.test.ts` -- refuses on a `purchase_order_lines` row with a differing unit; refuses on a `stock_issues` row *alone*, zero purchase lines (proves both tables checked, the closed-but-unexposed gap); does not refuse when the submitted unit matches what's on record (other fields stay editable); free to choose any unit with no history at all. `addConversion` specifically covered for the gap this change creates: a second conversion row with a different base unit than the item's existing one is refused, one matching it is allowed.
+
+**On-hand unmoved for all 146 items:** `computeOnHandByPurchasedItem()`'s full map (141 items carrying a non-zero-relevant entry, sum 360.489) diffed byte-for-byte against the same computation run with these changes `git stash`ed away -- identical. Expected: nothing in this change touches `purchase_order_lines`/`stock_issues` data, only what a save is allowed to submit.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 215 files / 1502 tests, all green; `check-rules-current` clean; `npm run build` succeeds. Not pushed.
+
+---
+
 ## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - resumeProduct's silent trap, and the row that hides it
 
 Two follow-ups from the owner hitting the product-status work in production. Confirmed live while investigating: `0075_erase_never_sold_product.sql` has been applied and used for real -- `PROD-037` "Cà phê caramel kem muối" no longer exists in `Products`, `Product_Variants`, or `Product_Price_History` (checked directly by id, all three return nothing). That validates the erase path end to end, something the previous session's work could only prove at the migration-shape level.

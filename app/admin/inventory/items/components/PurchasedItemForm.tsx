@@ -76,20 +76,46 @@ export function buildConversionSubmission(params: {
   return { ok: true, fields };
 }
 
+// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 5.1:
+// the base unit belongs to the item, not to its tier-2 group. Before this,
+// a RAW item's baseUnitId was derived inline as
+// `activeBaseIngredient?.base_unit` -- always the group's unit, with no way
+// to choose a different one even when the item is bought in a different
+// unit than its group's label suggests (the Trái tắc / Trái chanh case).
+// Extracted to a pure function for the same reason buildConversionSubmission
+// was: this decision needs to be directly testable, and a RAW item choosing
+// its own unit is exactly the behaviour change this plan makes.
+export function resolveBaseUnitId(params: {
+  isRaw: boolean;
+  isConsumable: boolean;
+  isEquipment: boolean;
+  selectedBaseUnitName: string;
+  units: Array<{ id: string; name: string }>;
+}): string | undefined {
+  if (!(params.isRaw || params.isConsumable || params.isEquipment)) return undefined;
+  return params.units.find(u => u.name === params.selectedBaseUnitName)?.id;
+}
+
 interface PurchasedItemFormProps {
   itemCategories: DBItemCategory[];
   baseIngredients: DBBaseIngredient[];
   units: DBUnit[];
   initialData?: DBPurchasedItem;
   initialConversions?: DBUOMConversion[];
+  // section 4: true once this item has any purchase_order_lines or
+  // stock_issues row -- every recorded quantity is expressed in its
+  // current base unit, so the selector below renders read-only instead of
+  // editable. Absent (undefined) for a brand-new item, which is always free.
+  isUnitLocked?: boolean;
 }
 
-export function PurchasedItemForm({ 
-  itemCategories, 
-  baseIngredients, 
-  units, 
-  initialData, 
-  initialConversions 
+export function PurchasedItemForm({
+  itemCategories,
+  baseIngredients,
+  units,
+  initialData,
+  initialConversions,
+  isUnitLocked = false,
 }: PurchasedItemFormProps) {
   const formId = useId();
   const isEdit = !!initialData;
@@ -129,37 +155,37 @@ export function PurchasedItemForm({
   // decision from its ingredient's own is_non_inventory).
   const [isNonInventory, setIsNonInventory] = useState(initialData?.is_non_inventory ?? false);
 
-  // A consumable's base unit has no ingredient to read from -- on edit,
-  // seed it from whatever its existing conversions already agree on
-  // (every conversion of one item shares one base_unit). unitOptions below
-  // is keyed by unit *name* (SearchableSelect has no separate id/label
-  // split for this field), so the state this selector drives must hold a
-  // name, not the id stored on the row -- the same id-to-name conversion
-  // `purchased_unit` already goes through just above, for the same reason.
+  // An item's base unit has no field of its own to read from -- on edit,
+  // seed it from whatever its existing conversions already agree on (every
+  // conversion of one item shares one base_unit; verified 2026-08-29 across
+  // all 146 real items, 0 disagree). unitOptions below is keyed by unit
+  // *name* (SearchableSelect has no separate id/label split for this
+  // field), so the state this selector drives must hold a name, not the id
+  // stored on the row -- the same id-to-name conversion `purchased_unit`
+  // already goes through just above, for the same reason.
   // 2026-08-20 fix: this field used to hold the id directly, which matched
   // nothing in a name-keyed select (created rows: name saved as base_unit
   // instead of id; edited rows: selector rendered empty).
-  const [selectedConsumableBaseUnitName, setSelectedConsumableBaseUnitName] = useState(
+  //
+  // Renamed 2026-08-29 (docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md
+  // section 5.1) from selectedConsumableBaseUnitName -- the old name was
+  // the bug's fingerprint, since RAW now uses this same state instead of
+  // deriving its unit from the linked ingredient's group.
+  const [selectedBaseUnitName, setSelectedBaseUnitName] = useState(
     initialConversions && initialConversions.length > 0
       ? units.find(u => u.id === initialConversions[0].base_unit)?.name || initialConversions[0].base_unit || ""
       : "",
   );
 
   const activeBaseIngredient = baseIngredients.find(b => b.id === selectedBaseIngredientId);
-  // 2026-08-26: EQUIPMENT shares CONSUMABLE's manual base-unit selector --
-  // neither has an ingredient to derive one from, and both now need
-  // conversion rows for the same reason (docs/superpowers/plans/2026-08-26-equipment-needs-units.md).
-  const baseUnitId = isRaw
-    ? activeBaseIngredient?.base_unit
-    : (isConsumable || isEquipment)
-      ? units.find(u => u.name === selectedConsumableBaseUnitName)?.id
-      : undefined;
+  // The unit belongs to the item, not to its group (same plan, section
+  // 5.1): RAW, CONSUMABLE, and EQUIPMENT all resolve the same way now.
+  // activeBaseIngredient above stays -- RAW still requires linking a group
+  // (that requirement is unchanged, only where the *unit* comes from), it
+  // just no longer supplies base_unit.
+  const baseUnitId = resolveBaseUnitId({ isRaw, isConsumable, isEquipment, selectedBaseUnitName, units });
   const baseUnitName = baseUnitId ? units.find(u => u.id === baseUnitId)?.name : "";
-  const showConversionSection = isRaw
-    ? !!selectedBaseIngredientId
-    : (isConsumable || isEquipment)
-      ? !!selectedConsumableBaseUnitName
-      : false;
+  const showConversionSection = (isRaw || isConsumable || isEquipment) && !!selectedBaseUnitName;
 
   function addUnitRow() {
     setUnitsState([...unitsState, { name: "", conversion_rate: "" }]);
@@ -188,13 +214,18 @@ export function PurchasedItemForm({
     }
 
     // Batch 1, item B: the base-ingredient requirement stays RAW-only
-    // (section B3) -- a consumable must not be forced to invent one.
+    // (section B3) -- a consumable must not be forced to invent one. This
+    // requirement is separate from, and unchanged by, where the base UNIT
+    // comes from (docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md
+    // section 5.3 -- the owner's own design question, not this task's).
     if (isRaw && !selectedBaseIngredientId) {
       setError("Nguyên liệu thô cần được liên kết với một Nhóm Nguyên Liệu");
       setLoading(false);
       return;
     }
-    if ((isConsumable || isEquipment) && !selectedConsumableBaseUnitName) {
+    // 2026-08-29: RAW now needs this too -- it no longer inherits a unit
+    // from its group.
+    if ((isRaw || isConsumable || isEquipment) && !selectedBaseUnitName) {
       setError("Vui lòng chọn Đơn vị gốc");
       setLoading(false);
       return;
@@ -366,7 +397,7 @@ export function PurchasedItemForm({
           {isRaw && (
             <div className="pt-4 border-t border-border space-y-4">
               <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                Đây là nhóm <strong>Hàng Hóa Chế Biến (RAW)</strong>. Hàng mua vào phải được liên kết với một Nhóm Nguyên Liệu để hệ thống biết cách lưu kho và quản lý định lượng.
+                Đây là nhóm <strong>Hàng Hóa Chế Biến (RAW)</strong>. Hàng mua vào phải được liên kết với một Nhóm Nguyên Liệu để phân nhóm báo cáo.
               </div>
 
               <div>
@@ -379,6 +410,19 @@ export function PurchasedItemForm({
                   placeholder="Tìm nhóm nguyên liệu..."
                 />
               </div>
+
+              {/* docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md
+                  section 5.1: the base unit belongs to the item, not to
+                  this group -- it no longer comes from the ingredient
+                  above, it is chosen here, the same way CONSUMABLE and
+                  EQUIPMENT already choose theirs. */}
+              <BaseUnitSelector
+                formId={formId}
+                unitOptions={unitOptions}
+                selectedBaseUnitName={selectedBaseUnitName}
+                setSelectedBaseUnitName={setSelectedBaseUnitName}
+                isUnitLocked={isUnitLocked}
+              />
 
               {showConversionSection && (
                 <ConversionRowsSection
@@ -411,16 +455,13 @@ export function PurchasedItemForm({
                 )}
               </div>
 
-              <div>
-                <label htmlFor={`${formId}-consumableBaseUnitId`} className="block text-sm font-medium text-text-secondary mb-1">Đơn vị gốc</label>
-                <SearchableSelect
-                  id={`${formId}-consumableBaseUnitId`}
-                  options={unitOptions}
-                  value={selectedConsumableBaseUnitName}
-                  onChange={setSelectedConsumableBaseUnitName}
-                  placeholder="Chọn đơn vị gốc..."
-                />
-              </div>
+              <BaseUnitSelector
+                formId={formId}
+                unitOptions={unitOptions}
+                selectedBaseUnitName={selectedBaseUnitName}
+                setSelectedBaseUnitName={setSelectedBaseUnitName}
+                isUnitLocked={isUnitLocked}
+              />
 
               {showConversionSection && (
                 <ConversionRowsSection
@@ -474,6 +515,54 @@ export function PurchasedItemForm({
         </form>
       </FormModal>
     </>
+  );
+}
+
+// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4/5.1:
+// one implementation shared by RAW, CONSUMABLE and EQUIPMENT, so the locked
+// (read-only) rendering can never drift between them the way two separate
+// copies could. When isUnitLocked, this is display-only text, not an input
+// -- there is no client-side path that can submit a different value, and
+// the server-side check (lib/unit-lock.ts, called from
+// app/admin/inventory/items/actions.ts) is what actually enforces it.
+function BaseUnitSelector({
+  formId,
+  unitOptions,
+  selectedBaseUnitName,
+  setSelectedBaseUnitName,
+  isUnitLocked,
+}: {
+  formId: string;
+  unitOptions: Array<{ id: string; label: string }>;
+  selectedBaseUnitName: string;
+  setSelectedBaseUnitName: (value: string) => void;
+  isUnitLocked: boolean;
+}) {
+  return (
+    <div>
+      <label htmlFor={`${formId}-baseUnitId`} className="block text-sm font-medium text-text-secondary mb-1">Đơn vị gốc</label>
+      {isUnitLocked ? (
+        <>
+          <div
+            id={`${formId}-baseUnitId`}
+            className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-surface-secondary text-text-secondary"
+          >
+            {selectedBaseUnitName || "—"}
+          </div>
+          <p className="text-xs text-text-muted mt-1">
+            Không thể đổi đơn vị gốc vì mặt hàng này đã có phiếu nhập hàng hoặc phiếu xuất kho ghi số lượng theo đơn vị này.
+          </p>
+        </>
+      ) : (
+        <SearchableSelect
+          id={`${formId}-baseUnitId`}
+          options={unitOptions}
+          value={selectedBaseUnitName}
+          onChange={setSelectedBaseUnitName}
+          placeholder="Chọn đơn vị gốc..."
+        />
+      )}
+    </div>
   );
 }
 

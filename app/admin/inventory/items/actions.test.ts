@@ -108,6 +108,9 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
       if (sheet === "Purchase_Order_Lines") return Promise.resolve([]);
       return Promise.resolve([]);
     });
+    // No purchase/issue history by default -- the unit-lock check (section
+    // 4) added 2026-08-29 must not refuse these pre-existing scenarios.
+    mocks.findAllWhere.mockResolvedValue([]);
     mocks.generateNewId.mockResolvedValue("QD-998");
   });
 
@@ -126,6 +129,102 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
       "UOM_Conversions",
       expect.objectContaining({ purchased_item_id: "SPM-043", base_unit: "U-G", conversion_rate: "500" }),
     );
+  });
+});
+
+// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+// "the lock is tested, not just the freedom -- a guard nobody tested is a
+// guard that will not hold, and this one has no database backstop." Every
+// case here is the server-side check, not the client's own derivation --
+// proving the refusal survives even a request that bypasses the UI.
+describe("updatePurchasedItem -- the unit lock (2026-08-29, no database backstop)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.generateNewId.mockResolvedValue("QD-LOCK");
+  });
+
+  function baseFormData(overrides: Record<string, string> = {}): FormData {
+    const fd = new FormData();
+    fd.set("id", "SPM-TRAITAC");
+    fd.set("name", "Trái tắc");
+    fd.set("item_category_id", "NHH-001");
+    fd.set("base_unit", "U-KG");
+    fd.set("units_json", JSON.stringify([{ name: "U-BAO", conversion_rate: "10" }]));
+    for (const [k, v] of Object.entries(overrides)) fd.set(k, v);
+    return fd;
+  }
+
+  it("refuses when the item has a purchase_order_lines row and the submitted base unit differs from the one on record", async () => {
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve([{ id: "QD-1", base_unit: "U-TRAI" }]);
+      if (sheet === "Purchase_Order_Lines") return Promise.resolve([{ id: "POL-1" }]);
+      if (sheet === "Stock_Issues") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve([]);
+      if (sheet === "Units") return Promise.resolve([{ id: "U-TRAI", name: "trái" }]);
+      return Promise.resolve([]);
+    });
+
+    const res = await actions.updatePurchasedItem(baseFormData()); // submits U-KG, on record is U-TRAI
+
+    expect(res.error).toContain("trái");
+    expect(res.error).toMatch(/Không thể đổi đơn vị gốc/);
+    expect(mocks.update).not.toHaveBeenCalledWith("Purchased_Items", "SPM-TRAITAC", expect.anything());
+  });
+
+  // The gap identified while critiquing the plan: not a live exposure today
+  // (measured 2026-08-29: every item with a stock_issues row also has a
+  // purchase_order_lines row), but a stocktake can in principle find stock
+  // for an item never purchased, and the shared helper closes it for free.
+  it("refuses on a stock_issues row alone, with zero purchase_order_lines rows -- proves both tables are checked, not only purchases", async () => {
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve([{ id: "QD-1", base_unit: "U-TRAI" }]);
+      if (sheet === "Purchase_Order_Lines") return Promise.resolve([]);
+      if (sheet === "Stock_Issues") return Promise.resolve([{ id: "SI-1" }]);
+      return Promise.resolve([]);
+    });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve([]);
+      if (sheet === "Units") return Promise.resolve([{ id: "U-TRAI", name: "trái" }]);
+      return Promise.resolve([]);
+    });
+
+    const res = await actions.updatePurchasedItem(baseFormData());
+
+    expect(res.error).toMatch(/Không thể đổi đơn vị gốc/);
+  });
+
+  it("does not refuse when the item has history but the submitted base unit matches what is already on record", async () => {
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve([{ id: "QD-1", base_unit: "U-KG" }]);
+      if (sheet === "Purchase_Order_Lines") return Promise.resolve([{ id: "POL-1" }]);
+      if (sheet === "Stock_Issues") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+
+    const res = await actions.updatePurchasedItem(baseFormData()); // submits U-KG, on record is also U-KG
+
+    expect(res.error).toBeUndefined();
+  });
+
+  it("is free to choose any base unit when the item has neither a purchase_order_lines nor a stock_issues row", async () => {
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve([{ id: "QD-1", base_unit: "U-TRAI" }]);
+      if (sheet === "Purchase_Order_Lines") return Promise.resolve([]);
+      if (sheet === "Stock_Issues") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+
+    const res = await actions.updatePurchasedItem(baseFormData()); // submits U-KG, on record U-TRAI, but no history
+
+    expect(res.error).toBeUndefined();
   });
 });
 
