@@ -71,6 +71,43 @@ shape deliberately; two rules that behave alike should look alike.
 constraint that notices a unit changing meaning. It has to be a real check, and
 it has to be tested, because nothing else will catch it.
 
+## 4b. The existing lock is narrower than this change needs — Sonnet found it
+
+`updatePurchasedItem` and `updateConversion` already refuse to change a
+conversion's `base_unit` when that **row** is referenced by a purchase line. Two
+holes, and they are not equal:
+
+**The one this change creates, and the serious one.** The check is **per
+conversion row**. `addConversion` (`conversions/actions.ts`) validates only that
+`base_unit` is non-empty and inserts — **it never compares against the item's
+other conversions**. That is harmless today *only because* the unit is derived
+from the group, so every row agrees by construction. **Removing that derivation
+removes the thing that was holding it together**, and a second conversion row
+carrying a different base unit would then be accepted silently. Verified at the
+line.
+
+**The one that is real but not yet exposed.** Neither check looks at
+`stock_issues`, only `Purchase_Order_Lines`. Measured 2026-08-29: **0 items have
+issues without purchases** — 91 purchase-only, 50 both, 5 with no history — so
+nothing is unprotected today. Sonnet read the coverage figures as "2 RAW items
+are issue-only"; they are `Đá viên` (no history at all) and `Khoai lang` (22
+purchases, 0 issues), which is the opposite shape. **Close the hole anyway** —
+the shared helper covers it for free and a stocktake can find stock for an item
+never purchased through the app — but do not justify it with an exposure that
+does not exist.
+
+**One item-level check, called from both screens**, replacing two per-row checks
+that have already drifted apart: does this item have **any** purchase line or
+stock issue, and does the submitted `base_unit` match what its conversions
+already carry. Verified this is well defined: **0 of 146 items have conversions
+that disagree with each other** on `base_unit`.
+
+**`base_ingredient_id` keeps its current RAW requirement.** §5.3 was ambiguous
+and Sonnet read it correctly: this plan moves where the *unit* comes from and
+nothing else. Whether a raw material must belong to a group at all is the
+owner's design question, not a consequence of this one — it does not block him,
+since both `Trái tắc` and `Trái chanh` already exist as groups.
+
 ## 5. The change
 
 1. `PurchasedItemForm.tsx` — offer the base-unit selector for **RAW** too, and
