@@ -23,8 +23,10 @@ export async function getOutlets() {
   try {
     return await findAll(SHEET);
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getOutlets:", error);
-    return [];
+    throw error;
   }
 }
 

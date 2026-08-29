@@ -106,8 +106,10 @@ export async function getConversionsData(): Promise<{
     const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
     return { items, conversions, units };
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getConversionsData:", error);
-    return { items: [], conversions: [], units: [] };
+    throw error;
   }
 }
 

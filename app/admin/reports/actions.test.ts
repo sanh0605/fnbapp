@@ -17,7 +17,7 @@ import {
   findAllWhere,
   findAllWhereInBatches,
 } from "@/lib/sheets_db";
-import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2 } from "./actions";
+import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2, getPromotionPerformanceV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 beforeEach(() => {
@@ -62,6 +62,18 @@ describe("getPnLDataV2", () => {
       lte: { created_at: new Date("2026-06-19T16:59:59.999Z") },
       eq: { status: "COMPLETED" },
     });
+  });
+
+  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+  // not in the plan's own list (found while re-deriving it), and arguably
+  // worse than an empty list -- an all-zero P&L reads as "no sales this
+  // period", not "we don't know". "returns empty result when no orders
+  // match filters" above already covers the genuinely-empty half of
+  // section 5's two required tests; this is the other half.
+  it("propagates the failure instead of returning a fabricated all-zero report", async () => {
+    (findAllWhere as any).mockRejectedValue(new Error("db down"));
+
+    await expect(getPnLDataV2({ startDate: "2026-06-19", endDate: "2026-06-19" })).rejects.toThrow("db down");
   });
 
   it("loads order lines only for the server-filtered report orders", async () => {
@@ -717,6 +729,26 @@ describe("getSalesDataV2", () => {
     ));
   });
 
+  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+  // section 5: both required tests. The second guards against the fix
+  // becoming "throw on empty" -- a different bug wearing the same diff.
+  it("propagates the failure instead of returning a fabricated zero-revenue report", async () => {
+    (findAllWhere as any).mockRejectedValue(new Error("db down"));
+
+    await expect(getSalesDataV2({})).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty order history still resolves with a zeroed report and does not throw", async () => {
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getSalesDataV2({});
+
+    expect(result.totalRevenue).toBe(0);
+    expect(result.totalOrders).toBe(0);
+    expect(result.bestSellers).toEqual([]);
+  });
+
   it("merges historical duplicate toppings into the latest active modifier id", async () => {
     const createdAt = "2026-06-15T10:00:00.000Z";
     const order = {
@@ -1143,5 +1175,42 @@ describe("getHourlyHeatmapV2", () => {
       lte: { created_at: new Date("2026-07-02T16:59:59.999Z") },
       eq: { status: "COMPLETED" },
     });
+  });
+
+  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+  // section 5, the other required test -- "pushes the completed-status..."
+  // above already covers the genuinely-empty half (a real, zero-order
+  // result returns the full 7*24 zeroed grid, not []; on failure the old
+  // code returned literally [], a different, wrong shape on top of being a
+  // lie).
+  it("propagates the failure instead of returning a fabricated empty heatmap", async () => {
+    (findAllWhere as any).mockRejectedValue(new Error("db down"));
+
+    await expect(getHourlyHeatmapV2({ startDate: "2026-07-01", endDate: "2026-07-02" })).rejects.toThrow("db down");
+  });
+});
+
+// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+// section 5: both required tests. The second guards against the fix
+// becoming "throw on empty" -- a different bug wearing the same diff.
+describe("getPromotionPerformanceV2", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findAllWhere as any).mockImplementation((sheet: string) => (
+      (findAllNoCache as any)(sheet)
+    ));
+  });
+
+  it("propagates the failure instead of returning a fabricated empty result", async () => {
+    (findAllWhere as any).mockRejectedValue(new Error("db down"));
+
+    await expect(getPromotionPerformanceV2({})).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty order/promotion history still resolves with [] and does not throw", async () => {
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    await expect(getPromotionPerformanceV2({})).resolves.toEqual([]);
   });
 });

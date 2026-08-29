@@ -21,8 +21,10 @@ export async function getModifiersData(): Promise<{
     const activeModifiers = modifiers.filter(m => m.status !== "DELETED");
     return { modifiers: activeModifiers };
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getModifiersData:", error);
-    return { modifiers: [] };
+    throw error;
   }
 }
 

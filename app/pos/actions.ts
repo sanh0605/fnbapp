@@ -267,8 +267,15 @@ export async function getPOSDrafts(outletId: string) {
     const allDrafts = await findAllNoCache("POS_Drafts");
     return allDrafts.filter((d: any) => d.outlet_id === outletId);
   } catch (err: any) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // not in the plan's own list (found while re-deriving it). Rethrow so
+    // the failure is real, not a fabricated "no drafts" -- the caller
+    // (components/POSScreen.tsx's refreshDrafts) already has its own
+    // try/catch around this call, so this does not reach app/error.tsx's
+    // boundary the way the admin loaders do; that presentation gap is a
+    // separate, follow-up concern, not this fix.
     console.error("Error getting POS drafts:", err);
-    return [];
+    throw err;
   }
 }
 

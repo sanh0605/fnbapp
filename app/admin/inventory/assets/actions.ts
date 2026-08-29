@@ -72,8 +72,10 @@ export async function getAssetsData(): Promise<AssetView[]> {
       )
       .sort((a, b) => a.name.localeCompare(b.name, "vi"));
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getAssetsData:", error);
-    return [];
+    throw error;
   }
 }
 

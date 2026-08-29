@@ -46,13 +46,27 @@ describe("getOutlets", () => {
     expect(mocks.findAll).not.toHaveBeenCalled();
   });
 
-  it("returns an empty list instead of throwing when the read fails", async () => {
+  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+  // this test previously asserted the defect itself -- "returns an empty
+  // list instead of throwing when the read fails" was the bug, codified as
+  // the expected behaviour. Found by running the suite after the fix: this
+  // is the one pre-existing test in the codebase that failed on the value
+  // (result no longer equalled [], it rejected instead), not on a missing
+  // function -- the mirror image of the usual "write a failing test first"
+  // flow, since the wrong behaviour was already pinned by a test before
+  // this task started.
+  it("propagates the failure instead of returning a fabricated empty list", async () => {
     mocks.requireAdmin.mockResolvedValue(ADMIN);
     mocks.findAll.mockRejectedValue(new Error("db down"));
 
-    const result = await getOutlets();
+    await expect(getOutlets()).rejects.toThrow("db down");
+  });
 
-    expect(result).toEqual([]);
+  it("a genuinely empty Outlets table still resolves with [] and does not throw", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([]);
+
+    await expect(getOutlets()).resolves.toEqual([]);
   });
 });
 

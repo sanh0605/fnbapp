@@ -20,13 +20,35 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { addSupplier, editSupplier } from "./actions";
+import { addSupplier, editSupplier, getSuppliers } from "./actions";
 
 function baseFormData(name: string): FormData {
   const formData = new FormData();
   formData.set("name", name);
   return formData;
 }
+
+// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+// section 5: both required tests. The second guards against the fix
+// becoming "throw on empty" -- a different bug wearing the same diff.
+describe("getSuppliers", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("propagates the failure instead of returning a fabricated empty list", async () => {
+    mocks.findAll.mockRejectedValue(new Error("db down"));
+
+    await expect(getSuppliers()).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty Suppliers table still resolves with [] and does not throw", async () => {
+    mocks.findAll.mockResolvedValue([]);
+
+    await expect(getSuppliers()).resolves.toEqual([]);
+  });
+});
 
 describe("addSupplier -- duplicate-name guard (Batch 1 follow-up, level 1)", () => {
   beforeEach(() => {

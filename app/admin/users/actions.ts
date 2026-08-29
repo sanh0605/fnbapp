@@ -31,8 +31,10 @@ export async function getUsers(): Promise<DBUser[]> {
     const users = await findAll(SHEET) as DBUserRow[];
     return users.map(toClientUser);
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getUsers:", error);
-    return [];
+    throw error;
   }
 }
 
@@ -45,8 +47,11 @@ export async function getUserById(id: string): Promise<DBUser | null> {
     const user = users.find(candidate => candidate.id === id);
     return user ? toClientUser(user) : null;
   } catch (error) {
+    // Same fix, same plan: null here already means "not found" on a
+    // successful read (see the try block) -- a real findAll failure must
+    // not collapse into that same, genuinely different, outcome.
     console.error("Loi getUserById:", error);
-    return null;
+    throw error;
   }
 }
 

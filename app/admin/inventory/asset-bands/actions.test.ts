@@ -20,7 +20,29 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { updateAssetBand, createAssetBand, deleteAssetBand } from "./actions";
+import { updateAssetBand, createAssetBand, deleteAssetBand, getAssetBands } from "./actions";
+
+// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+// section 5: both required tests. The second guards against the fix
+// becoming "throw on empty" -- a different bug wearing the same diff.
+describe("getAssetBands", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("propagates the failure instead of returning a fabricated empty list", async () => {
+    mocks.findAll.mockRejectedValue(new Error("db down"));
+
+    await expect(getAssetBands()).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty asset-bands table still resolves with [] and does not throw", async () => {
+    mocks.findAll.mockResolvedValue([]);
+
+    await expect(getAssetBands()).resolves.toEqual([]);
+  });
+});
 
 // 2026-08-23 fix: half-open bounds (max_unit_price exclusive). Only
 // KH-001/KH-003's numbers actually changed from the original seed.

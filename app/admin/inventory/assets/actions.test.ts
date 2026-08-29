@@ -60,6 +60,21 @@ describe("getAssetsData", () => {
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
+  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+  // section 5: both required tests. The second guards against the fix
+  // becoming "throw on empty" -- a different bug wearing the same diff.
+  it("propagates the failure instead of returning a fabricated empty list", async () => {
+    mocks.findAll.mockRejectedValue(new Error("db down"));
+
+    await expect(getAssetsData()).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty assets table still resolves with [] and does not throw", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([]));
+
+    await expect(getAssetsData()).resolves.toEqual([]);
+  });
+
   it("excludes an INACTIVE (administratively retired) asset row", async () => {
     mocks.findAll.mockImplementation(
       findAllMockFor([ASSET, { ...CA_DONG, id: "TS-999", status: "INACTIVE" }]),

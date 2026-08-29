@@ -246,8 +246,12 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
       categories: (categories as any[]).filter(c => c.status !== "DELETED"),
     };
   } catch (err: any) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // not in the plan's own list (found while re-deriving it) -- same
+    // defect: a real orders-history read failure must not render as "no
+    // orders". Rethrow instead; app/error.tsx handles it.
     console.error("[getOrdersV2]", err);
-    return { orders: [], totalCount: 0, itemsPerPage: ORDERS_ITEMS_PER_PAGE, brands: [], products: [], variants: [], modifiers: [], categories: [] };
+    throw err;
   }
 }
 

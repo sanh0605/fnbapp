@@ -19,8 +19,10 @@ export async function getAssetBands(): Promise<DBAssetDepreciationBand[]> {
     const bands = (await findAll(SHEET)) as DBAssetDepreciationBand[];
     return bands.sort((a, b) => a.min_unit_price - b.min_unit_price);
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getAssetBands:", error);
-    return [];
+    throw error;
   }
 }
 

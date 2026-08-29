@@ -33,8 +33,10 @@ export async function getPurchaseOrdersData(): Promise<{
     ]);
     return { orders, suppliers, lines, items };
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getPurchaseOrdersData:", error);
-    return { orders: [], suppliers: [], lines: [], items: [] };
+    throw error;
   }
 }
 

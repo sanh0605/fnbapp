@@ -71,3 +71,22 @@ describe("admin order edit COGS calculation", () => {
     expect(editOrderSource).not.toContain('transaction_type === "SALES_CONSUME"');
   });
 });
+
+// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+// getOrdersV2 was not in the plan's own list -- found while re-deriving it.
+// Source-grep, matching this file's own convention for actions.ts (the
+// function builds a raw Supabase query-builder chain, not the findAll/
+// findAllWhere shape the rest of this sweep's execution-level tests mock).
+describe("getOrdersV2 -- not in the plan's own list, found while re-deriving it", () => {
+  it("rethrows on failure instead of returning a fabricated empty page", () => {
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const getOrdersSource = source.slice(
+      source.indexOf("export async function getOrdersV2"),
+      source.indexOf("export async function getOrderDetailV2"),
+    );
+
+    expect(getOrdersSource).toContain("} catch (err: any) {");
+    expect(getOrdersSource).toContain("throw err;");
+    expect(getOrdersSource).not.toContain("return { orders: [], totalCount: 0");
+  });
+});

@@ -26,6 +26,31 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
 import * as actions from "./actions";
 
+// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md,
+// OPEN-ITEMS 69: this is the exact production incident that started the
+// plan -- the owner opened Hàng Mua Vào and it said "Chưa có hàng hóa" while
+// 145 rows sat untouched. Both required tests from section 5.
+describe("getItemsData -- the production incident this plan exists to fix", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("propagates the failure instead of returning a fabricated empty result", async () => {
+    mocks.findAll.mockRejectedValue(new Error("db down"));
+
+    await expect(actions.getItemsData()).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty catalogue still resolves with [] and does not throw -- not the same as a real failure", async () => {
+    mocks.findAll.mockResolvedValue([]);
+
+    await expect(actions.getItemsData()).resolves.toEqual({
+      categories: [], baseIngredients: [], items: [], conversions: [], units: [], unitLockedItemIds: [],
+    });
+  });
+});
+
 // Batch 1, item B, gates 3/4 (section B1): `if (base_ingredient_id &&
 // unitsJson && base_unit)` used to silently drop a consumable's
 // conversions, since a consumable never has base_ingredient_id. These

@@ -4,6 +4,38 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Stop reporting a database failure as "you have no data"
+
+Implements `docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md` (`OPEN-ITEMS 69`). Code only, no data touched, no migration. Found in production by the owner: he opened *Hàng Mua Vào* and it said "Chưa có hàng hóa" while 145 rows sat untouched -- a real `findAll` failure had been caught and reported as an empty catalogue.
+
+### Critique before coding -- the count moved, exactly as expected, but further than expected
+
+The plan's own §2 list (15 loaders, grepped 2026-08-27) needed re-deriving: `production`/`semi-products` are gone (deleted screens), leaving 13. A broader sweep -- both `return [...]` and `return {...: []}` shapes, every catch-variable spelling, not just the plan's own grep pattern -- found **3 more loaders never in the original list**: `getOrdersV2` (`app/admin/orders/actions.ts`), `getPOSDrafts` (`app/pos/actions.ts`), and **all four** report loaders in one file (`getPnLDataV2`, `getSalesDataV2`, `getHourlyHeatmapV2`, `getPromotionPerformanceV2` in `app/admin/reports/actions.ts`). `getPnLDataV2` swallowing to an all-zero P&L is arguably worse than an empty list -- it reads as "no sales this period", not "unknown". Also found `getUserById`, which returns `null` on failure -- the same lie in the "single record" shape, colliding with a legitimately different `null` ("not found"). **Final: 16 files, 20 functions**, up from the plan's 13/13.
+
+`app/actions/auth.ts`'s exclusion re-confirmed correct, not moved: `changePasswordAction` returns `{success, error}`, the action-result pattern `lib/action-error.ts` exists to serve. Verified by reading it directly -- its one catch block returns a genuine, meaningful Vietnamese error, not a fabricated "everything is fine" default.
+
+Also verified: `app/admin/inventory/actions.ts` has ~13 more catch blocks with the same shape, but they belong to dead code (superseded, never-imported duplicates of `addPurchasedItem`/`addConversion`/etc. -- confirmed by grepping every importer of that file; only `getRealtimeStock`, `getReorderSuggestions`, `addUnit`/`updateUnit`/`deleteUnit`, `deleteItemCategory` are actually live, and the two live loaders already correctly propagate). Not touched -- out of scope, and CLAUDE.md section 3 says mention dead code, not delete it uninvited.
+
+### The fix
+
+All 20: `console.error(...)` kept (unchanged, this is how the owner's Vercel logs named the failing table), `return {...fabricated empty...}` replaced with `throw error;` (or the function's own catch-variable name). `app/error.tsx`/`app/global-error.tsx` already exist and are already right -- nothing new built, per the plan's own instruction.
+
+One nuance worth recording: `getPOSDrafts` is called from a **client** component (`components/POSScreen.tsx`'s `refreshDrafts`, inside a `useEffect`), which already has its own try/catch that logs and does nothing further. Rethrowing here is still the correct fix at this layer -- the loader itself must not lie -- but it does not reach `app/error.tsx`'s boundary the way the admin loaders do, since this never goes through a page's initial server render. Fixing that client-side presentation gap is a separate, follow-up concern, not this one.
+
+### Verification, per section 5
+
+**Both required tests, for all 20**: propagates a real failure (rejects); a genuinely empty table still resolves with `[]`/`null`-for-not-found and does not throw (guards against the fix becoming "throw on empty", a different bug wearing the same diff). 11 of the 16 touched files already had a test counterpart to extend; 5 needed a new one (`brands`, `purchase-orders`, `products/categories`, `products/modifiers`, `promotions`). `getOrdersV2` alone got a source-grep proof instead of an execution-level one -- its data layer is a raw Supabase query-builder chain (`.from().select().eq().or()...`), not the `findAll`/`findAllWhere` shape every other loader in this sweep uses, and this is the one file in the set whose own pre-existing test convention is already source-grep-only; building full chain-mocking infrastructure for one function was judged disproportionate. Recorded here plainly rather than claimed as equivalent rigor.
+
+**One pre-existing test had pinned the bug itself.** `app/admin/outlets/actions.test.ts`'s "returns an empty list instead of throwing when the read fails" asserted the defect as the expected behaviour. Found by running the full suite after the fix landed -- it failed on the *value* (`result` no longer equalled `[]`, it rejected instead), not on a missing function, the mirror image of the usual "write a failing test first" flow since the wrong behaviour was already codified before this task started. Corrected to assert the rethrow, plus the genuinely-empty case added alongside it.
+
+**No action function touched, confirmed by diff, not assumed.** `git diff` across all 16 files scanned for any `success`/`error:`-shaped return being altered -- zero hits beyond one explanatory comment using the word "successful".
+
+### Gates
+
+`tsc` 0 errors; `vitest` 220 files / 1538 tests, all green (36 new/updated tests); `check-rules-current` clean; `npm run build` succeeds. Not pushed.
+
+---
+
 ## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - The unit belongs to the item, not to its tier-2 group
 
 Implements `docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md`. Was blocking the owner from entering 15 real purchase rows: Trái tắc and Trái chanh are counted in *trái* by their group but bought by the *kg*, and a group has one unit.

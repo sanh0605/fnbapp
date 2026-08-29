@@ -31,8 +31,10 @@ export async function getBaseIngredientsData(): Promise<{
     const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
     return { ingredients, units };
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getBaseIngredientsData:", error);
-    return { ingredients: [], units: [] };
+    throw error;
   }
 }
 

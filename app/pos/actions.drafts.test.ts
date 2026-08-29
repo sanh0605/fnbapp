@@ -54,6 +54,24 @@ describe("getPOSDrafts", () => {
 
     expect(result).toEqual([]);
   });
+
+  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+  // not in the plan's own list (found while re-deriving it). Both required
+  // tests -- the second guards against the fix becoming "throw on empty",
+  // a different bug wearing the same diff, and is distinct from "returns
+  // nothing for an outlet with no drafts" above (that is a real, non-empty
+  // table filtered to nothing; this is a genuinely empty table).
+  it("propagates the failure instead of returning a fabricated empty list", async () => {
+    mocks.findAllNoCache.mockRejectedValue(new Error("db down"));
+
+    await expect(getPOSDrafts("OUT-001")).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty POS_Drafts table still resolves with [] and does not throw", async () => {
+    mocks.findAllNoCache.mockResolvedValue([]);
+
+    await expect(getPOSDrafts("OUT-001")).resolves.toEqual([]);
+  });
 });
 
 describe("savePOSDraft", () => {

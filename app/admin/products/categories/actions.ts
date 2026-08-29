@@ -31,8 +31,10 @@ export async function getCategoriesWithCounts(): Promise<{
     }
     return { categories: activeCategories, counts };
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getCategories:", error);
-    return { categories: [], counts: {} };
+    throw error;
   }
 }
 

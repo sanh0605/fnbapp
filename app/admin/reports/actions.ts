@@ -267,16 +267,12 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       v2OrderCount: typedOrders.length,
     };
   } catch (err: any) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // not in the plan's own list (found while re-deriving it), and arguably
+    // worse than an empty list -- an all-zero P&L reads as "no sales this
+    // period", not "we don't know". Rethrow instead; app/error.tsx handles it.
     console.error("[getPnLDataV2]", err);
-    return {
-      totalRevenue: 0,
-      totalCOGS: 0,
-      grossProfit: 0,
-      margin: 0,
-      orderCount: 0,
-      productProfitAnalysis: [],
-      v2OrderCount: 0,
-    };
+    throw err;
   }
 }
 
@@ -596,17 +592,11 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       v2OrderCount: typedOrders.length,
     };
   } catch (err: any) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // not in the plan's own list (found while re-deriving it). Rethrow
+    // instead of a fabricated zero-revenue report; app/error.tsx handles it.
     console.error("[getSalesDataV2]", err);
-    return {
-      totalRevenue: 0, totalOrders: 0, avgOrderValue: 0,
-      grossRevenue: 0, systemPromotionDiscount: 0, manualItemDiscount: 0,
-      manualOrderDiscount: 0, totalDiscount: 0, paymentBreakdown: [],
-      bestSellers: [], bestToppings: [],
-      uniqueSizes: [], totalQtyBySize: {}, totalQtyAll: 0,
-      salesByDate: [], salesByMonth: [], salesByDayOfWeek: [], salesByHour: [],
-      outletBreakdown: [],
-      v2OrderCount: 0,
-    };
+    throw err;
   }
 }
 
@@ -784,8 +774,11 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
 
     return Array.from(cellsMap.values());
   } catch (err: any) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // not in the plan's own list (found while re-deriving it). Rethrow
+    // instead of a fabricated empty heatmap; app/error.tsx handles it.
     console.error("[getHourlyHeatmapV2]", err);
-    return [];
+    throw err;
   }
 }
 
@@ -865,7 +858,10 @@ export async function getPromotionPerformanceV2(filters: PnLReportFilters = {}):
 
     return Array.from(perfMap.values()).filter(r => r.appliedCount > 0);
   } catch (err: any) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // not in the plan's own list (found while re-deriving it). Rethrow
+    // instead of a fabricated empty result; app/error.tsx handles it.
     console.error("[getPromotionPerformanceV2]", err);
-    return [];
+    throw err;
   }
 }

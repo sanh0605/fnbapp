@@ -22,6 +22,28 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
 import * as actions from "./actions";
 
+// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+// section 5: both required tests. The second guards against the fix
+// becoming "throw on empty" -- a different bug wearing the same diff.
+describe("getBaseIngredientsData", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("propagates the failure instead of returning a fabricated empty result", async () => {
+    mocks.findAll.mockRejectedValue(new Error("db down"));
+
+    await expect(actions.getBaseIngredientsData()).rejects.toThrow("db down");
+  });
+
+  it("a genuinely empty Base_Ingredients table still resolves with [] and does not throw", async () => {
+    mocks.findAll.mockResolvedValue([]);
+
+    await expect(actions.getBaseIngredientsData()).resolves.toEqual({ ingredients: [], units: [] });
+  });
+});
+
 // Batch 1, item A, section A5: "a cross-table pair stays legal: creating a
 // base_ingredients row named Da vien while SPM-005 exists must succeed."
 // This exercises the real addBaseIngredient action with mocked I/O, not a

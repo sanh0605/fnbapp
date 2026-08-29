@@ -22,13 +22,35 @@ vi.mock("@/lib/sheets_db", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { addConversion, updateConversion } from "./actions";
+import { addConversion, updateConversion, getConversionsData } from "./actions";
 
 function formData(fields: Record<string, string>): FormData {
   const fd = new FormData();
   for (const [k, v] of Object.entries(fields)) fd.set(k, v);
   return fd;
 }
+
+// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
+// section 5: both required tests. The second guards against the fix
+// becoming "throw on empty" -- a different bug wearing the same diff.
+describe("getConversionsData", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("propagates the failure instead of returning a fabricated empty result", async () => {
+    mocks.findAll.mockRejectedValue(new Error("db down"));
+
+    await expect(getConversionsData()).rejects.toThrow("db down");
+  });
+
+  it("genuinely empty tables still resolve with [] and do not throw", async () => {
+    mocks.findAll.mockResolvedValue([]);
+
+    await expect(getConversionsData()).resolves.toEqual({ items: [], conversions: [], units: [] });
+  });
+});
 
 // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
 // "addConversion is safe today only because the unit is derived from the

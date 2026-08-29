@@ -56,8 +56,12 @@ export async function getItemsData(): Promise<{
 
     return { categories, baseIngredients, items, conversions, units, unitLockedItemIds: Array.from(lockedIds) };
   } catch (error) {
+    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
+    // this is the exact defect the plan was written to fix -- returning []
+    // here is how the owner's real 145-row catalogue rendered as "Chưa có
+    // hàng hóa" in production. Rethrow instead; app/error.tsx handles it.
     console.error("Loi getItemsData:", error);
-    return { categories: [], baseIngredients: [], items: [], conversions: [], units: [], unitLockedItemIds: [] };
+    throw error;
   }
 }
 
