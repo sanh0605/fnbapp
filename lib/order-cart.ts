@@ -330,6 +330,23 @@ function buildLine(
   const variant = ref.variants.find(v => v.id === item.variant_id);
   if (!variant) throw new InvariantError(`Unknown variant: ${item.variant_id}`);
 
+  // docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md
+  // section 5.4/5b: this is the one choke point shared by POS checkout and
+  // order-edit, so the "must not sell a paused product" guarantee belongs
+  // here -- app/pos/page.tsx filtering status === "ACTIVE" only secures
+  // what the screen offers, not a stale cart or an order queued offline
+  // before the pause took effect. The message serves two readers: a
+  // cashier seeing this immediately at checkout, and whoever later reads
+  // Pos_Sync_Failures.error_message for an order that failed sync after
+  // the item was paused mid-queue -- it covers both outcomes rather than
+  // assuming one.
+  if (product.status !== "ACTIVE" || variant.status !== "ACTIVE") {
+    throw new InvariantError(
+      `Món "${product.name} (${variant.size_name})" đã ngừng bán nên đơn này chưa được lưu. `
+      + `Nếu đã giao hàng cho khách, hãy ghi nhận doanh thu thủ công; nếu chưa, hãy bỏ món này khỏi đơn rồi thử lại.`,
+    );
+  }
+
   const category = ref.categories.find(c => c.id === product.category_id) || null;
 
   const productSnap = buildProductSnapshot(product, category);

@@ -9,8 +9,8 @@ import type { OrderV2 } from "@/lib/order-types";
 
 const REF: ReferenceData = {
   brands: [{ id: "BR-002", code: "UCK", name: "UCK" }],
-  products: [{ id: "PROD-024", name: "Sữa dâu sấy giòn", category_id: "CAT-001" }],
-  variants: [{ id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "35000" }],
+  products: [{ id: "PROD-024", name: "Sữa dâu sấy giòn", category_id: "CAT-001", status: "ACTIVE" }],
+  variants: [{ id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "35000", status: "ACTIVE" }],
   categories: [{ id: "CAT-001", name: "Đồ uống" }],
   modifiers: [],
   promotions: [{
@@ -179,7 +179,7 @@ describe("buildEditedOrderFromCart", () => {
     const original = makeSuaDauStandaloneOrder();
     const refWithChangedPrices: ReferenceData = {
       ...REF,
-      variants: [{ id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "99000" }],
+      variants: [{ id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "99000", status: "ACTIVE" }],
       modifiers: [{ id: "MOD-001", name: "20ml cot ca phe new", price: "10000" }],
     };
 
@@ -246,6 +246,27 @@ describe("buildEditedOrderFromCart", () => {
     expect(result.lines[0].net_line_total).toBe(25000);
     expect(result.order.promo_discount_total).toBe(10000);
     expect(result.order.net_total).toBe(25000);
+  });
+
+  it("also refuses editing an order onto a since-paused product (shares buildOrderFromCart's guard, not a separate check)", () => {
+    const original = makeSuaDauStandaloneOrder();
+    const refWithPausedProduct: ReferenceData = {
+      ...REF,
+      products: [{ ...REF.products[0], status: "INACTIVE" }],
+    };
+
+    expect(() =>
+      buildEditedOrderFromCart({
+        brand_id: "BR-002",
+        outlet_id: "OUT-002",
+        items: [{
+          product_id: "PROD-024", variant_id: "VAR-031", qty: 1,
+          modifiers: [], manual_item_discount: { value: 0, type: "VND" },
+        }],
+        payment_method: "CASH",
+        actor: { id: "U2", name: "Editor" },
+      }, refWithPausedProduct, original),
+    ).toThrow(/ngừng bán/);
   });
 });
 

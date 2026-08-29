@@ -39,8 +39,8 @@ const OUTLET_2 = { id: "OUT-002", code: "002", name: "Điểm bán 2", brand_id:
 const REF_TABLES: Record<string, any[]> = {
   Outlets: [OUTLET_1, OUTLET_2],
   Brands: [{ id: "BR-001", code: "PHD" }, { id: "BR-002", code: "UCK" }],
-  Products: [{ id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001" }],
-  Product_Variants: [{ id: "VAR-001", product_id: "PROD-001", size_name: "500ml", price: "18000" }],
+  Products: [{ id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001", status: "ACTIVE" }],
+  Product_Variants: [{ id: "VAR-001", product_id: "PROD-001", size_name: "500ml", price: "18000", status: "ACTIVE" }],
   Product_Categories: [{ id: "CAT-001", name: "Đồ uống" }],
   Modifiers: [],
   Promotions: [],

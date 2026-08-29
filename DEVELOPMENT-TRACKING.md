@@ -4,6 +4,42 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A "Ngừng bán" toggle, and a delete that means it
+
+Implements `docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md` (`OPEN-ITEMS 73`). Products screen had a `Ngừng bán` filter/badge nothing could set, and a delete button that hid instead of deleting. `CLAUDE.md` section 2's exception (products never sold, only, dated 2026-08-29) was already recorded in the plan's own handoff commit -- confirmed via `git log`, not re-added.
+
+### Critique before coding, per `CLAUDE.md` section 1 -- one gap found the plan itself had not checked
+
+`§3`'s FK claim re-derived exhaustively: grepped every `products(id)`/`product_variants(id)` reference across all of `supabase/migrations/` (no live `pg_constraint` access in this environment) -- exactly the plan's four `RESTRICT` keys, nothing else references either table, no later migration alters a constraint. Holds.
+
+`§5.4`, the thing explicitly not to assume: `app/pos/page.tsx:56-57` filters `status === "ACTIVE"`, confirmed directly, with a pre-existing comment anticipating this exact feature. **But that only secures what the screen offers.** `app/pos/actions.ts:59-60` -- `submitOrderV2`'s own reference-data fetch, the one feeding `buildOrderFromCart` -- pulled `Products`/`Product_Variants` with no status filter at all, and neither `buildOrderFromCart` nor `buildLine` checked status. A stale cart, or an order queued offline before a pause took effect, would still complete the sale. Not in the plan; found and reported before coding, then confirmed at the exact lines (327/330 for the id lookups, 239 for the unrelated promotion status check) and fixed at the shared choke point.
+
+`§1`'s count (44 ACTIVE / 4 DELETED) was already stale by the time of critique -- live measurement: 43/5, the fifth being `PROD-048 "Test1"` (1 variant, 1 price-history row, 1 real sale), matching `§6`'s own named fixture shape exactly. Re-derived the erasable counts independently against the current 5: 1 of 5 erasable without the price-history cascade, 4 of 5 with it -- same two numbers the plan states, unaffected by the count drift since `Test1` (sold) correctly falls in neither bucket.
+
+### The sale-path guard
+
+`lib/order-cart.ts`'s `buildLine`: after resolving product/variant by id, refuses (`InvariantError`) when either's `status !== "ACTIVE"`. Shared by POS checkout and order-edit (both call `buildOrderFromCart`), so one fix covers both. Message worded for two readers, per the owner's own instruction: a cashier seeing this immediately at checkout, and an admin later reading `Pos_Sync_Failures.error_message` (the only context that screen renders -- `PosSyncClient.tsx` shows no cart contents) for an offline order that failed sync after the item was paused mid-queue. Names the product and size, states plainly the order was not saved, and gives both possible next steps (record the sale by hand if it already reached the customer; remove the item and retry if not) since either reader only needs the half that applies to them.
+
+Existing `lib/order-cart.test.ts`/`lib/order-edit-cart.test.ts`/`app/pos/actions.outlet.test.ts` fixtures had no `status` field on products/variants at all -- adding the guard without fixing them would have broken every existing scenario on a false refusal. Fixed all three before adding new tests. New coverage: refuses on an INACTIVE product, refuses on an INACTIVE variant under an ACTIVE product, the message contains both actionable steps, no regression on a normal ACTIVE sale, and the edit path shares the same guard (not a separate check). `app/pos/page.tsx`'s own filter proved at execution level, not by source grep: `POSPage` called directly as the async function it is, mocked dependencies, inspected the actual props reaching `<POSScreen>` -- a future edit that changes the filter's logic, not just its literal string, still fails this test.
+
+### The erase RPC
+
+`supabase/migrations/0075_erase_never_sold_product.sql` -- **written, not applied**, per `CLAUDE.md` section 2 (the owner approves migrations separately from approving this work). `erase_never_sold_product_atomic(p_product_id)` locks the product row, then deletes price history, then variants, then the product, all inside one exception-catching block so a `foreign_key_violation` anywhere in the three rolls all three back together -- a partial erase would produce exactly the dangling-reference shape `TS-009`/`TS-010` (`OPEN-ITEMS 65`) already show a month later, the second reason given for the atomic requirement alongside the first (a delete path whose refusal nobody tested). The refusal is translated to Vietnamese *inside* the RPC, naming the product, per the plan's "the guarantee comes from the deepest layer" -- not a JS-side re-derivation of who's allowed to be deleted. `lib/product-erase-transaction.ts` throws the RPC's message unmodified rather than prefixing it with the function name (the existing `save_product_atomic` wrapper's convention), since this message is meant to reach the owner exactly as written. Migration-shape test (`lib/erase-never-sold-product-migration.test.ts`, no live Postgres connection available, same discipline as `lib/order-edit-transaction-migration.test.ts`) proves the delete ordering, that all three sit inside the exception block, the Vietnamese refusal text and its suggested next action, the row lock, and the service-role-only grant.
+
+### Buttons
+
+`app/admin/products/actions.ts`: `deleteProduct` (soft-hide to `DELETED`) removed outright -- its only caller was `ProductForm.tsx`, being rewritten anyway, and no test referenced it. Replaced with `pauseProduct`/`resumeProduct` (writing `INACTIVE`/`ACTIVE`, cascading to variants only at the status they came from -- a variant already `DELETED` by an earlier, separate discontinuation is never resurrected by pausing or resuming its parent product) and `eraseProduct` (calls the RPC wrapper). `app/admin/products/page.tsx` now also fetches `Order_Lines_V2` once and computes `neverSold` per product the same way Postgres's own `RESTRICT` keys decide it (any line referencing the product or one of its variants, by either column, regardless of that order's own status) -- passed through so `components/ProductForm.tsx` offers "Xoá vĩnh viễn" only when erasing is actually possible, per the plan's section 5.2, not shown-then-refused. Pause/resume are one-click with no confirm modal (`Reversible: one click`, the plan's own state table); erase keeps a confirm modal naming the product and stating plainly it cannot be undone.
+
+### Test-first proof, per section 6
+
+`git show HEAD:app/admin/products/actions.ts` confirmed the pre-fix file exported exactly `saveProduct` and `deleteProduct` -- `pauseProduct` did not exist. The pre-fix failure mode was a **missing function**, not a wrong value. The erase refusal is tested using the plan's own named fixture (`Test1`/`PROD-048`) shape.
+
+### Gates and what is not yet provable
+
+`tsc` 0 errors; `vitest` 213 files / 1476 tests, all green; `check-rules-current` clean; `npm run build` succeeds; `scripts/verify-revenue.ts` clean against production, all four gated months unchanged (nothing in this change touches order math -- the guard only adds a refusal path, and the erase RPC never references `order_lines_v2`). **Not yet provable live:** the erase RPC's actual effect on `order_lines_v2`'s row count and on `verify-revenue.ts` needs `0075` applied and a real erase run -- the migration-shape test proves the SQL never references that table, which is not the same as a before/after measurement. Not pushed.
+
+---
+
 ## 2026-08-28 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Recipes and semi-products removal, phase 2 of 4 -- code removed, all 134/17/11 rows still in the database
 
 Implements phase 2 of `docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md` (`OPEN-ITEMS 72`). Code only, per the handoff -- "if a removal breaks something the data is still there to restore behaviour." Nothing was deleted from the database this session.

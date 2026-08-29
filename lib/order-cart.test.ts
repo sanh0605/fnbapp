@@ -6,12 +6,12 @@ import type { CartInput, ReferenceData } from "@/lib/order-cart";
 const REF: ReferenceData = {
   brands: [{ id: "BR-002", code: "UCK", name: "UCK" }],
   products: [
-    { id: "PROD-024", name: "Sữa dâu sấy giòn", category_id: "CAT-001" },
-    { id: "PROD-017", name: "Trà dâu", category_id: "CAT-001" },
+    { id: "PROD-024", name: "Sữa dâu sấy giòn", category_id: "CAT-001", status: "ACTIVE" },
+    { id: "PROD-017", name: "Trà dâu", category_id: "CAT-001", status: "ACTIVE" },
   ],
   variants: [
-    { id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "35000" },
-    { id: "VAR-024", product_id: "PROD-017", size_name: "700ml", price: "27000" },
+    { id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "35000", status: "ACTIVE" },
+    { id: "VAR-024", product_id: "PROD-017", size_name: "700ml", price: "27000", status: "ACTIVE" },
   ],
   categories: [{ id: "CAT-001", name: "Đồ uống" }],
   modifiers: [],
@@ -68,6 +68,99 @@ describe("buildOrderFromCart", () => {
         actor: { id: "U1", name: "Test" },
       }, REF),
     ).toThrow(/variant/i);
+  });
+
+  describe("does not sell a paused product (docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md section 5.4/5b)", () => {
+    it("refuses when the product is INACTIVE, naming the product in the message", () => {
+      const refWithPausedProduct: ReferenceData = {
+        ...REF,
+        products: [
+          { id: "PROD-024", name: "Sữa dâu sấy giòn", category_id: "CAT-001", status: "INACTIVE" },
+          REF.products[1],
+        ],
+      };
+
+      expect(() =>
+        buildOrderFromCart({
+          brand_id: "BR-002",
+          outlet_id: "OUT-002",
+          items: [
+            { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
+          ],
+          payment_method: "CASH",
+          actor: { id: "U1", name: "Test" },
+        }, refWithPausedProduct),
+      ).toThrow(/Sữa dâu sấy giòn.*ngừng bán/);
+    });
+
+    it("refuses when the variant is INACTIVE even though the product is ACTIVE", () => {
+      const refWithPausedVariant: ReferenceData = {
+        ...REF,
+        variants: [
+          { id: "VAR-031", product_id: "PROD-024", size_name: "700ml", price: "35000", status: "INACTIVE" },
+          REF.variants[1],
+        ],
+      };
+
+      expect(() =>
+        buildOrderFromCart({
+          brand_id: "BR-002",
+          outlet_id: "OUT-002",
+          items: [
+            { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
+          ],
+          payment_method: "CASH",
+          actor: { id: "U1", name: "Test" },
+        }, refWithPausedVariant),
+      ).toThrow(/ngừng bán/);
+    });
+
+    it("the message covers both readers: a cashier at checkout, and an admin reading a later offline-sync failure", () => {
+      const refWithPausedProduct: ReferenceData = {
+        ...REF,
+        products: [
+          { id: "PROD-024", name: "Sữa dâu sấy giòn", category_id: "CAT-001", status: "INACTIVE" },
+          REF.products[1],
+        ],
+      };
+
+      try {
+        buildOrderFromCart({
+          brand_id: "BR-002",
+          outlet_id: "OUT-002",
+          items: [
+            { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
+          ],
+          payment_method: "CASH",
+          actor: { id: "U1", name: "Test" },
+        }, refWithPausedProduct);
+        throw new Error("expected buildOrderFromCart to throw");
+      } catch (err: any) {
+        // The cashier's actionable step (remove the item, retry) and the
+        // admin's (an offline order that already reached the customer needs
+        // manual revenue entry, since it never got saved) both need to be
+        // present -- neither reader gets any other context, see
+        // app/admin/pos-sync/PosSyncClient.tsx, which renders only this
+        // string next to the request token and timestamp.
+        expect(err.message).toContain("chưa được lưu");
+        expect(err.message).toContain("ghi nhận doanh thu thủ công");
+        expect(err.message).toContain("bỏ món này khỏi đơn rồi thử lại");
+      }
+    });
+
+    it("does not refuse a normal ACTIVE product/variant (no regression)", () => {
+      expect(() =>
+        buildOrderFromCart({
+          brand_id: "BR-002",
+          outlet_id: "OUT-002",
+          items: [
+            { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
+          ],
+          payment_method: "CASH",
+          actor: { id: "U1", name: "Test" },
+        }, REF),
+      ).not.toThrow();
+    });
   });
 
   it("Sữa Dâu standalone: net_total = 25000 (audit headline)", () => {

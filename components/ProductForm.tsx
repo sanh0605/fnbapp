@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
-import { saveProduct, deleteProduct } from "@/app/admin/products/actions";
+import { saveProduct, pauseProduct, resumeProduct, eraseProduct } from "@/app/admin/products/actions";
 import { CustomDatePicker } from "./CustomDatePicker";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
@@ -13,8 +13,9 @@ export default function ProductForm({ categories, initialData }: any) {
   const isEdit = !!initialData;
   const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isEraseOpen, setIsEraseOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
   const [name, setName] = useState(initialData?.name || "");
@@ -75,16 +76,42 @@ export default function ProductForm({ categories, initialData }: any) {
     }
   };
 
-  const handleDelete = async () => {
+  // Pause/resume are one-click, reversible -- no confirm modal, matching
+  // the state table's "Ngừng bán: Reversible: one click" (the plan's
+  // section 2). Erase is the only irreversible action here and keeps its
+  // confirm modal.
+  const handlePause = async () => {
+    setStatusLoading(true);
+    const formData = new FormData();
+    formData.append("id", initialData.id);
+    const res = await pauseProduct(formData);
+    setStatusLoading(false);
+    if (res?.error) {
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+    }
+  };
+
+  const handleResume = async () => {
+    setStatusLoading(true);
+    const formData = new FormData();
+    formData.append("id", initialData.id);
+    const res = await resumeProduct(formData);
+    setStatusLoading(false);
+    if (res?.error) {
+      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+    }
+  };
+
+  const handleErase = async () => {
     setLoading(true);
     const formData = new FormData();
     formData.append("id", initialData.id);
-    const res = await deleteProduct(formData);
+    const res = await eraseProduct(formData);
     setLoading(false);
     if (res?.error) {
       await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
     } else {
-      setIsDeleteOpen(false);
+      setIsEraseOpen(false);
     }
   };
 
@@ -111,7 +138,14 @@ export default function ProductForm({ categories, initialData }: any) {
       ) : (
         <div className="flex justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>Sửa</Button>
-          <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => setIsDeleteOpen(true)}>Xoá</Button>
+          {initialData.status === "ACTIVE" ? (
+            <Button variant="ghost" size="sm" onClick={handlePause} loading={statusLoading}>Ngừng bán</Button>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={handleResume} loading={statusLoading}>Bán lại</Button>
+          )}
+          {initialData.neverSold && (
+            <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => setIsEraseOpen(true)}>Xoá vĩnh viễn</Button>
+          )}
         </div>
       )}
 
@@ -220,13 +254,13 @@ export default function ProductForm({ categories, initialData }: any) {
         </ModalPortal>
       )}
 
-      {isDeleteOpen && (
+      {isEraseOpen && (
         <DeleteConfirmModal
-          isOpen={isDeleteOpen}
-          onClose={() => setIsDeleteOpen(false)}
-          onConfirm={handleDelete}
-          title="Xác nhận xoá"
-          description={`Bạn có chắc chắn muốn xoá món ${initialData.name} không? Thao tác này không thể hoàn tác.`}
+          isOpen={isEraseOpen}
+          onClose={() => setIsEraseOpen(false)}
+          onConfirm={handleErase}
+          title="Xác nhận xoá vĩnh viễn"
+          description={`Xoá vĩnh viễn món "${initialData.name}"? Toàn bộ lịch sử giá và kích cỡ của món này sẽ mất theo. Việc này KHÔNG THỂ hoàn tác.`}
         />
       )}
     </>

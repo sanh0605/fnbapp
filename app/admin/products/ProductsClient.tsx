@@ -17,6 +17,7 @@ interface Product {
   image_url?: string;
   variants: any[];
   priceHistory: any[];
+  neverSold: boolean;
 }
 
 interface Category {

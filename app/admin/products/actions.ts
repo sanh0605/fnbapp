@@ -2,6 +2,7 @@
 
 import { requireAdmin } from "@/lib/auth";
 import { saveProductAtomic } from "@/lib/product-save-transaction";
+import { eraseProductAtomic } from "@/lib/product-erase-transaction";
 import { planRecipeSave, findLatestActiveRecipe } from "@/lib/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
@@ -176,20 +177,70 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-export async function deleteProduct(formData: FormData): Promise<ActionResponse> {
+// docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md,
+// CLAUDE.md section 2 exception recorded 2026-08-29: pauseProduct/resumeProduct
+// replace the old deleteProduct's soft-hide (status = 'DELETED'), which
+// announced "Xoá" while doing something reversible -- INACTIVE is now the
+// one hidden-but-recoverable state ("Ngừng bán" / "Bán lại", one click,
+// reversible). eraseProduct is the only place this codebase writes a real
+// SQL DELETE against products/product_variants, scoped by Postgres's own
+// RESTRICT foreign keys to products that have never been sold -- see
+// supabase/migrations/0075_erase_never_sold_product.sql.
+//
+// Both cascades only touch variants at the status they came from
+// (ACTIVE -> INACTIVE on pause, INACTIVE -> ACTIVE on resume), never a
+// DELETED variant -- pausing a product must not resurrect a size the owner
+// individually discontinued before the product itself was ever paused.
+export async function pauseProduct(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
   const id = String(formData.get("id") || "");
   if (!id) return fail("ID không hợp lệ");
   try {
-    await update(PRODUCT_SHEET, id, { status: "DELETED" });
+    await update(PRODUCT_SHEET, id, { status: "INACTIVE" });
     const variants = await findAll(VARIANT_SHEET);
     for (const variant of variants) {
-      if (variant.product_id === id) {
-        await update(VARIANT_SHEET, variant.id, { status: "DELETED" });
+      if (variant.product_id === id && variant.status === "ACTIVE") {
+        await update(VARIANT_SHEET, variant.id, { status: "INACTIVE" });
       }
     }
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+export async function resumeProduct(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const id = String(formData.get("id") || "");
+  if (!id) return fail("ID không hợp lệ");
+  try {
+    await update(PRODUCT_SHEET, id, { status: "ACTIVE" });
+    const variants = await findAll(VARIANT_SHEET);
+    for (const variant of variants) {
+      if (variant.product_id === id && variant.status === "INACTIVE") {
+        await update(VARIANT_SHEET, variant.id, { status: "ACTIVE" });
+      }
+    }
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+export async function eraseProduct(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const id = String(formData.get("id") || "");
+  if (!id) return fail("ID không hợp lệ");
+  try {
+    await eraseProductAtomic(id);
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
