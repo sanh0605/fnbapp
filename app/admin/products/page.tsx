@@ -19,7 +19,12 @@ export default async function ProductsPage() {
   ]);
 
   const activeCategories = categories.filter(c => c.status !== "DELETED");
-  const activeProducts = products.filter(p => p.status !== "DELETED");
+  // Owner decision 2026-08-29: no third state, no archive -- the status
+  // filter itself (ProductsClient.tsx) is the only route to a DELETED
+  // product now that "Tất cả" is gone, so DELETED products must reach the
+  // client instead of being filtered out here. 5 products carry that
+  // status today.
+  const visibleProducts = products;
   const activeVariants = variants.filter(v => v.status !== "DELETED");
 
   // docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md
@@ -38,7 +43,7 @@ export default async function ProductsPage() {
   }
 
   // Build the rich data for the form
-  const enhancedProducts = activeProducts.map(p => {
+  const enhancedProducts = visibleProducts.map(p => {
     const productVariants = activeVariants.filter(v => v.product_id === p.id);
 
     // Thu thập toàn bộ lịch sử giá của các variants thuộc Product này

@@ -25,6 +25,15 @@ interface Category {
   name: string;
 }
 
+// Owner decision 2026-08-29: no "Tất cả" status option any more -- the
+// default (ACTIVE) already covers the everyday case, and a paused/deleted
+// product is reachable only by switching this filter, which is the point.
+const STATUS_LABELS: Record<string, string> = {
+  ACTIVE: "Đang bán",
+  INACTIVE: "Ngừng bán",
+  DELETED: "Đã xóa",
+};
+
 export default function ProductsClient({
   enhancedProducts,
   activeCategories,
@@ -46,6 +55,21 @@ export default function ProductsClient({
       return true;
     });
   }, [enhancedProducts, categoryId, statusFilter, searchQuery]);
+
+  // Without "Tất cả", a search for a paused drink while viewing "Đang bán"
+  // returns zero rows -- the same lie OPEN-ITEMS 69 already names: an empty
+  // list reads as "it is gone", not "it is somewhere else". Say which
+  // status actually has it, and offer to switch straight there, instead of
+  // going silent the way a plain empty state would.
+  const matchingOtherStatus = useMemo(() => {
+    if (!searchQuery || filteredProducts.length > 0) return null;
+    const match = enhancedProducts.find(p => {
+      if (categoryId && p.category_id !== categoryId) return false;
+      if (p.status === statusFilter) return false;
+      return p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    return match ? match.status : null;
+  }, [enhancedProducts, categoryId, statusFilter, searchQuery, filteredProducts.length]);
 
   const rightContent = (
     <div className="flex items-center gap-3">
@@ -97,7 +121,6 @@ export default function ProductsClient({
             onChange={(e) => setStatusFilter(e.target.value)}
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
           >
-            <option value="">Tất cả</option>
             <option value="ACTIVE">Đang bán</option>
             <option value="INACTIVE">Ngừng bán</option>
             <option value="DELETED">Đã xóa</option>
@@ -107,11 +130,23 @@ export default function ProductsClient({
       </div>
 
       {filteredProducts.length === 0 ? (
-        <EmptyState
-          icon={<Search className="w-8 h-8" />}
-          title="Không tìm thấy món nào"
-          description="Vui lòng thử điều chỉnh lại bộ lọc tìm kiếm."
-        />
+        matchingOtherStatus ? (
+          <EmptyState
+            icon={<Search className="w-8 h-8" />}
+            title={`Không có món ${(STATUS_LABELS[statusFilter] || "").toLowerCase()} nào khớp`}
+            description={`Có món khớp nhưng đang ở trạng thái "${STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}".`}
+            action={{
+              label: `Xem "${STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}"`,
+              onClick: () => setStatusFilter(matchingOtherStatus),
+            }}
+          />
+        ) : (
+          <EmptyState
+            icon={<Search className="w-8 h-8" />}
+            title="Không tìm thấy món nào"
+            description="Vui lòng thử điều chỉnh lại bộ lọc tìm kiếm."
+          />
+        )
       ) : (
         <>
           {/* Desktop Table View (>= 768px) */}
@@ -232,8 +267,10 @@ export default function ProductsClient({
                       <div>
                         {product.status === "ACTIVE" ? (
                           <Badge variant="success">Đang bán</Badge>
-                        ) : (
+                        ) : product.status === "INACTIVE" ? (
                           <Badge variant="warning">Ngừng bán</Badge>
+                        ) : (
+                          <Badge variant="neutral">Đã xóa</Badge>
                         )}
                       </div>
                       <div className="flex gap-2 items-center">

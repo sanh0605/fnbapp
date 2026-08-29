@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Products status filter: "Tất cả" removed, no third state
+
+Owner refined §2 of `docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md` after the pause/erase feature shipped: no third state, no archive. The status filter (`ProductsClient.tsx`) loses its "Tất cả" option; default stays `ACTIVE`, unchanged. A paused product is reachable only by switching the filter to `Ngừng bán`, which is the point.
+
+**`Đã xóa` kept, which surfaced a real bug in the fix itself.** `app/admin/products/page.tsx` was filtering `status !== "DELETED"` at the source -- the 5 DELETED products never reached the client at all, so the "Đã xóa" filter option (already present in the dropdown) had nothing to show and always returned zero rows. Removed that filter (`visibleProducts = products`, no longer `activeProducts`) so those 5 rows actually flow through. **That in turn exposed a mislabelling bug the mobile card view already had**: its status badge was a plain `ACTIVE ? success : warning` two-way ternary, so a DELETED product (never reachable before this change) would have rendered as "Ngừng bán" -- wrong. The desktop table already had the correct three-way ACTIVE/INACTIVE/else-DELETED logic; the mobile card is now the same, per `CLAUDE.md` §7 (a device's view isn't allowed to be a reduced copy of the other's).
+
+**Found and reported, not silently fixed:** all 5 legacy DELETED products have 100% DELETED variants (measured live). `resumeProduct`'s cascade only restores a variant that is currently `INACTIVE` -- by design, so pausing/resuming a product never resurrects a size someone individually discontinued earlier. Clicking "Bán lại" on one of these 5 sets the product back to `ACTIVE` correctly, but its only variant stays `DELETED`, so it would show as sellable with nothing to add. Not a money or data-integrity bug -- the POS only ever offers `ACTIVE` variants, so this can't produce a sale with no price -- but worth the owner knowing before he uses "Bán lại" on one of these 5 specifically; resurrecting the variant needs "Sửa" afterward. Not fixed here since it wasn't asked and the blast radius is exactly 5 legacy rows from the now-retired soft-delete.
+
+**Search no longer goes silent within a status filter.** With "Tất cả" gone, searching for a paused drink while viewing "Đang bán" used to return zero rows -- the same lie `OPEN-ITEMS 69` already names: empty reads as "it is gone", not "it is elsewhere". Chose the more actionable of the two options offered: when a search matches nothing under the current status but matches something under a different one (same category filter honoured), the empty state now says which status has it and offers a one-click switch straight there, instead of a generic "no results" or a same-page mixed-status list that would have broken the filter's own promise.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 213 files / 1476 tests, all green (no existing test covered `page.tsx`/`ProductsClient.tsx` directly, so nothing needed updating for the removed filter); `check-rules-current` clean; `npm run build` succeeds. Not pushed.
+
+---
+
 ## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - A "Ngừng bán" toggle, and a delete that means it
 
 Implements `docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md` (`OPEN-ITEMS 73`). Products screen had a `Ngừng bán` filter/badge nothing could set, and a delete button that hid instead of deleting. `CLAUDE.md` section 2's exception (products never sold, only, dated 2026-08-29) was already recorded in the plan's own handoff commit -- confirmed via `git log`, not re-added.
