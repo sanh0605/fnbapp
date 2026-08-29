@@ -98,6 +98,35 @@ here, and why the sold case must stay hidden rather than erased.
    if it filters on `!== "DELETED"` it is not, and a paused drink stays on sale.
    **Establish which, do not assume** — this is the whole point of the feature.
 
+## 5b. Two gaps Sonnet found, both accepted
+
+**The display was secured; the sale was not.** `app/pos/page.tsx:56` already
+filters `status === "ACTIVE"`, so a paused drink leaves the catalogue on its
+own. But `submitOrderV2` (`app/pos/actions.ts:57`) loads `Products` and
+`Product_Variants` with **no status filter**, and `lib/order-cart.ts` resolves
+them at lines 327/330 **by id only** — the one `status !== "ACTIVE"` check in
+that file, at line 239, belongs to promotions. Verified independently.
+
+So a cart that already held the item, or any direct call, completes the sale.
+§2's table said *"Shown on POS: no"* as if it were a guarantee; **as written it
+secured what is offered, not what is accepted.** Add the status check where
+`buildOrderFromCart` resolves the product and variant. Order-edit shares that
+function and inherits the fix.
+
+**Name the two people this refusal reaches**, and give each a Vietnamese
+sentence that says what to do: a cashier holding a stale cart at checkout, and
+an order queued offline before the pause that now fails on sync — the offline
+design already routes a genuine server rejection to `pos_sync_failures` rather
+than retrying forever, which is the correct landing place, but only if the
+message explains itself.
+
+**The erase must be one transaction.** Today `deleteProduct` is sequential
+`update()` calls. Three deletes — price history, variants, product — with the
+last one able to be refused by `RESTRICT` would leave orphaned variants behind.
+Do it in an RPC, the shape `save_product_atomic` already uses, so a refusal
+rolls the whole thing back. **A partial erase is worse than no erase**, because
+it produces exactly the dangling reference §4 exists to avoid.
+
 ## 6. Verification
 
 - **Test first, failing on the value:** pausing a product sets `INACTIVE` on it
