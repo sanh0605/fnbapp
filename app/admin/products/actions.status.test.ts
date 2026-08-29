@@ -56,7 +56,11 @@ describe("pauseProduct / resumeProduct -- docs/superpowers/plans/2026-08-29-prod
     expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-OTHER", expect.anything());
   });
 
-  it("resuming sets ACTIVE on the product and its INACTIVE variants only", async () => {
+  // Fixed 2026-08-29 after the owner hit it in production: Test1 (PROD-048)
+  // has exactly this shape -- one variant, DELETED, no ACTIVE variant at
+  // all. Under the old INACTIVE-only rule, resuming it set the product back
+  // to ACTIVE with nothing sellable ("Đang bán" but zero size to add).
+  it("resuming a product with no ACTIVE variant at all restores every non-ACTIVE variant, including a DELETED one -- Test1's real shape in production", async () => {
     mocks.findAll.mockResolvedValue([
       { id: "VAR-A", product_id: "PROD-1", status: "INACTIVE" },
       { id: "VAR-DELETED", product_id: "PROD-1", status: "DELETED" },
@@ -67,6 +71,34 @@ describe("pauseProduct / resumeProduct -- docs/superpowers/plans/2026-08-29-prod
     expect(res.error).toBeUndefined();
     expect(mocks.update).toHaveBeenCalledWith("Products", "PROD-1", { status: "ACTIVE" });
     expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-A", { status: "ACTIVE" });
+    // No curated size exists to protect -- there is nothing sellable to
+    // leave the product without, so this DELETED size comes back too.
+    expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-DELETED", { status: "ACTIVE" });
+  });
+
+  // The mixed case: at least one size already ACTIVE, alongside an
+  // INACTIVE one and a DELETED one. Measured live 2026-08-29: 43 products
+  // have every variant ACTIVE, 4 have none ACTIVE, 0 are mixed -- so no
+  // production data exercises this branch today. It is exactly the branch
+  // the asymmetric rule exists to protect (someone curated sizes
+  // individually; resuming the product must not resurrect one they
+  // deliberately discontinued), so it is tested here regardless.
+  it("resuming a product where at least one size is already ACTIVE restores only the INACTIVE ones, leaving a DELETED one untouched (the mixed case, not exercised by any product today)", async () => {
+    mocks.findAll.mockResolvedValue([
+      { id: "VAR-ACTIVE", product_id: "PROD-1", status: "ACTIVE" },
+      { id: "VAR-INACTIVE", product_id: "PROD-1", status: "INACTIVE" },
+      { id: "VAR-DELETED", product_id: "PROD-1", status: "DELETED" },
+    ]);
+
+    const res = await resumeProduct(formDataWithId("PROD-1"));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith("Products", "PROD-1", { status: "ACTIVE" });
+    expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-INACTIVE", { status: "ACTIVE" });
+    // Already ACTIVE -- no redundant write.
+    expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-ACTIVE", expect.anything());
+    // A size individually discontinued before this pause/resume cycle must
+    // not be resurrected just because a sibling size is already live.
     expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-DELETED", expect.anything());
   });
 

@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - resumeProduct's silent trap, and the row that hides it
+
+Two follow-ups from the owner hitting the product-status work in production. Confirmed live while investigating: `0075_erase_never_sold_product.sql` has been applied and used for real -- `PROD-037` "Cà phê caramel kem muối" no longer exists in `Products`, `Product_Variants`, or `Product_Price_History` (checked directly by id, all three return nothing). That validates the erase path end to end, something the previous session's work could only prove at the migration-shape level.
+
+**1. `resumeProduct` fixed.** It restored only `INACTIVE` variants, so a product whose sizes are all `DELETED` came back `ACTIVE` with nothing to sell -- `Test1` (`PROD-048`, one variant, `DELETED`) is exactly this shape and is what the owner hit. Re-derived the safety claim before changing anything: measured live, 43 products have every variant `ACTIVE`, 4 have none `ACTIVE`, **0 are mixed**. Fix is asymmetric, matching the instruction: when a product has no `ACTIVE` variant at all, resume restores every non-`ACTIVE` variant (nothing curated is left to protect); when at least one is already `ACTIVE`, today's behaviour holds -- only `INACTIVE` -> `ACTIVE`, a `DELETED` size stays `DELETED`. Tested the mixed case even though no product exercises it today, per the explicit instruction: it is the branch the rule exists to protect, and an untested branch is the one that fails.
+
+**2. The silent trap surfaced on the row.** A product `ACTIVE` or `INACTIVE` with zero sellable size looked identical to a normal one in the list -- says it is on sale (or pausably so), POS shows nothing, nothing on the row explains why. Same defect class as `OPEN-ITEMS 69`. `app/admin/products/page.tsx` now computes `hasNoSellableVariant` per product (scoped to non-`DELETED` products only -- a `DELETED` row already carries its own "Đã xóa" badge and needs no second warning) and `ProductsClient.tsx` renders a `danger`-variant badge, "Không có size nào đang bán", in the size/price cell on both the desktop table and the mobile card -- the same place the gap was actually invisible.
+
+### Gates
+
+`tsc` 0 errors; `vitest` 213 files / 1477 tests, all green (3 new `resumeProduct` tests replacing the 1 that no longer matched the fixed behaviour); `check-rules-current` clean; `npm run build` succeeds. Not pushed.
+
+---
+
 ## 2026-08-29 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Products status filter: "Tất cả" removed, no third state
 
 Owner refined §2 of `docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md` after the pause/erase feature shipped: no third state, no archive. The status filter (`ProductsClient.tsx`) loses its "Tất cả" option; default stays `ACTIVE`, unchanged. A paused product is reachable only by switching the filter to `Ngừng bán`, which is the point.

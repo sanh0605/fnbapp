@@ -51,7 +51,21 @@ export default async function ProductsPage() {
       .filter((ph: PriceHistory) => productVariants.some(v => v.id === ph.variant_id))
       .sort((a: PriceHistory, b: PriceHistory) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    return { ...p, variants: productVariants, priceHistory: pPriceHistory, neverSold: !soldProductIds.has(p.id) };
+    // OPEN-ITEMS 73/74: a product that says "Đang bán" or "Ngừng bán" but
+    // has no ACTIVE size at all is a silent trap -- the list claims it is
+    // sellable (or pausably sellable), POS never shows it, and nothing on
+    // the row explains the gap. Scoped to ACTIVE/INACTIVE only; a DELETED
+    // product already shows its own "Đã xóa" badge and needs no second
+    // warning.
+    const hasNoSellableVariant = p.status !== "DELETED" && !productVariants.some(v => v.status === "ACTIVE");
+
+    return {
+      ...p,
+      variants: productVariants,
+      priceHistory: pPriceHistory,
+      neverSold: !soldProductIds.has(p.id),
+      hasNoSellableVariant,
+    };
   });
 
   return (

@@ -18,6 +18,7 @@ interface Product {
   variants: any[];
   priceHistory: any[];
   neverSold: boolean;
+  hasNoSellableVariant: boolean;
 }
 
 interface Category {
@@ -196,6 +197,9 @@ export default function ProductsClient({
                                 <span className="font-black text-primary">{formatNumber(v.price)}</span>
                               </div>
                             ))}
+                            {product.hasNoSellableVariant && (
+                              <Badge variant="danger">Không có size nào đang bán</Badge>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -260,6 +264,9 @@ export default function ProductsClient({
                             <span className="font-black text-primary">{formatNumber(v.price)}</span>
                           </div>
                         ))}
+                        {product.hasNoSellableVariant && (
+                          <Badge variant="danger">Không có size nào đang bán</Badge>
+                        )}
                       </div>
                     </div>
 

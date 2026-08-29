@@ -187,10 +187,19 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
 // RESTRICT foreign keys to products that have never been sold -- see
 // supabase/migrations/0075_erase_never_sold_product.sql.
 //
-// Both cascades only touch variants at the status they came from
-// (ACTIVE -> INACTIVE on pause, INACTIVE -> ACTIVE on resume), never a
-// DELETED variant -- pausing a product must not resurrect a size the owner
-// individually discontinued before the product itself was ever paused.
+// pauseProduct's cascade only touches ACTIVE variants (-> INACTIVE), never
+// a DELETED one -- pausing a product must not resurrect a size the owner
+// individually discontinued beforehand.
+//
+// resumeProduct's cascade is asymmetric, fixed 2026-08-29 after the owner
+// hit it in production: Test1 (PROD-048) has one variant, DELETED, so
+// resuming it under the old INACTIVE-only rule set the product back to
+// ACTIVE with nothing sellable -- "Đang bán" with zero size to add, a
+// silent trap (OPEN-ITEMS 73/74). Measured 2026-08-29: 43 products have
+// every variant ACTIVE, 4 have none ACTIVE, 0 are mixed -- so "restore
+// every non-ACTIVE variant when none is ACTIVE" is safe today, but the
+// mixed case is the one this rule exists to protect and is tested even
+// though nothing currently exercises it live.
 export async function pauseProduct(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
@@ -220,9 +229,21 @@ export async function resumeProduct(formData: FormData): Promise<ActionResponse>
   if (!id) return fail("ID không hợp lệ");
   try {
     await update(PRODUCT_SHEET, id, { status: "ACTIVE" });
-    const variants = await findAll(VARIANT_SHEET);
-    for (const variant of variants) {
-      if (variant.product_id === id && variant.status === "INACTIVE") {
+    const allVariants = await findAll(VARIANT_SHEET);
+    const productVariants = allVariants.filter((v: any) => v.product_id === id);
+    const hasActiveVariant = productVariants.some((v: any) => v.status === "ACTIVE");
+    for (const variant of productVariants) {
+      if (hasActiveVariant) {
+        // At least one size is already live -- someone curated sizes
+        // individually, so only undo this specific pause; a DELETED size
+        // must not come back just because the product resumed.
+        if (variant.status === "INACTIVE") {
+          await update(VARIANT_SHEET, variant.id, { status: "ACTIVE" });
+        }
+      } else if (variant.status !== "ACTIVE") {
+        // No size is live at all -- there is no curated selection left to
+        // protect. Restoring only INACTIVE ones here would resume the
+        // product with nothing sellable (Test1's shape in production).
         await update(VARIANT_SHEET, variant.id, { status: "ACTIVE" });
       }
     }
