@@ -104,9 +104,7 @@ export type StocktakeReversalResult = {
   reversedByName: string;
   reversedAt: string;
   issueCount: number;
-  ledgerCount: number;
   issueIds: string[];
-  ledgerIds: string[];
 };
 
 // Plan D D14, U1-U8: undo a confirmed stocktake session. Compensating rows
@@ -140,9 +138,7 @@ function parseStocktakeReversalResult(data: unknown): StocktakeReversalResult {
     reversed_by_name?: string;
     reversed_at?: string;
     issue_count?: number;
-    ledger_count?: number;
     issue_ids?: string[];
-    ledger_ids?: string[];
   } | null;
   if (!result?.session_id || result.status !== "REVERSED") {
     throw new Error("reverse_stocktake_session_atomic returned an invalid result");
@@ -155,9 +151,7 @@ function parseStocktakeReversalResult(data: unknown): StocktakeReversalResult {
     reversedByName: result.reversed_by_name || "",
     reversedAt: result.reversed_at || "",
     issueCount: Number(result.issue_count) || 0,
-    ledgerCount: Number(result.ledger_count) || 0,
     issueIds: result.issue_ids || [],
-    ledgerIds: result.ledger_ids || [],
   };
 }
 

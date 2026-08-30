@@ -195,7 +195,7 @@ describe("reverseStocktakeSessionAtomic (Plan D D14, U1-U8)", () => {
     mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
   });
 
-  it("parses a reversal with both an issue-level and a ledger-level compensating row", async () => {
+  it("parses a reversal with an issue-level compensating row", async () => {
     mocks.rpc.mockResolvedValue({
       data: {
         session_id: "STK-004",
@@ -205,9 +205,7 @@ describe("reverseStocktakeSessionAtomic (Plan D D14, U1-U8)", () => {
         reversed_by_name: "Admin",
         reversed_at: "2026-08-09T10:00:00Z",
         issue_count: 1,
-        ledger_count: 1,
         issue_ids: ["ISS-00002"],
-        ledger_ids: ["STK-005"],
       },
       error: null,
     });
@@ -221,7 +219,6 @@ describe("reverseStocktakeSessionAtomic (Plan D D14, U1-U8)", () => {
 
     expect(result.status).toBe("REVERSED");
     expect(result.issueIds).toEqual(["ISS-00002"]);
-    expect(result.ledgerIds).toEqual(["STK-005"]);
     expect(mocks.rpc).toHaveBeenCalledWith("reverse_stocktake_session_atomic", {
       p_session_id: "STK-004",
       p_reason: "Đếm nhầm, đã đếm lại",
