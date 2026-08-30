@@ -161,6 +161,60 @@ không có ai gọi, **nhưng nửa duyệt/từ chối là thật** — màn h�
 vẫn nối vào hàm thật. Nó chỉ đang **đói dữ liệu vĩnh viễn** vì phần tạo chưa bao
 giờ được xây. Giữ ở giai đoạn C.
 
+## 2d. Đo lại 31/08 trước giai đoạn B — SỔ CHƯA CHẾT, và giai đoạn C to hơn kế hoạch
+
+### 2d.1 Sửa lại điều đã nói: sổ không đứng yên ở 382
+
+Tôi đã nói sổ **bất động ở 382 dòng**, chứng minh bằng một lần bán, một lần sửa
+đơn, một lần huỷ đơn thật — sổ không nhúc nhích.
+
+**Phép thử đó chỉ chứng minh ĐƯỜNG BÁN không ghi sổ. Nó không nói gì về đường
+nhập hàng.** Đây đúng là lỗi `CLAUDE.md` mục 5 cấm: kết luận từ một truy vấn mà
+không nói truy vấn đó *không* cho thấy điều gì.
+
+Đo 31/08: **384 dòng**, dòng mới nhất **29/08 lúc 14:48** — đơn nhập `PO-155`.
+
+| Đường ghi | Số dòng | Lần cuối | Còn sống? |
+|---|---:|---|---|
+| Nhận hàng đơn nhập (`PO_RECEIPT`) | 300 | 29/08 14:48 | **CÒN** |
+| Phiếu xuất kho (`STOCK_ADJUST ← ISS-`) | 46 | 29/08 12:41 | **ĐÃ NGỪNG** |
+| Đóng kỳ kiểm kê (`STOCK_ADJUST ← STK-`) | 38 | 09/08 | Chưa đóng kỳ nào từ đó |
+
+**Phiếu xuất đã ngừng thật, chứng minh trên phiếu thật:** mọi phiếu tới
+`ISS-00095` (29/08) đều sinh 1 dòng sổ; **cả 8 phiếu từ `ISS-00096` trở đi
+(30/08, sau migration `0076`) sinh 0 dòng.** Không phải suy từ mã nguồn.
+
+**Đường nhập hàng vẫn ghi.** Nó im từ 29/08 chỉ vì **chưa có đơn nhập nào từ
+26/08 tới nay** — không phải vì đã tắt.
+
+`inventory_balances`: **130 dòng** — đúng con số chủ quán hỏi.
+
+### 2d.2 Giai đoạn C không phải "gỡ một khối lệnh" — có một chốt chặn ném lỗi
+
+`lib/stocktake-transaction.ts` có **hai** chốt, **cả hai đều ném lỗi** chứ không
+hiện sai:
+
+- dòng 232 — `ledger_count + issue_count` khác số dòng đếm
+- dòng 236 — số mã dòng sổ trả về khác `ledger_count`
+
+Đây là **đóng kỳ kiểm kê**, một trong **hai** đường duy nhất sinh ra giá vốn.
+Nếu migration bỏ ghi sổ mà code chưa đổi, **đóng kỳ sẽ hỏng hẳn**, không phải
+hiện xấu. Đúng bài học `0076`, nhưng vào chỗ đắt hơn nhiều.
+
+Nên **hàm kiểm kê phải sửa code và migration cùng một lần lưu**, không phải
+"một migration cơ học" như mục 5 đang viết. Sửa lại mục 5 khi làm tới.
+
+### 2d.3 Nhánh ghi sổ trong kiểm kê chưa từng chạy — nhưng 38 dòng kia có nguồn khác
+
+Đo: **cả 50 dòng kiểm kê đều là hàng mua** (`PURCHASED_ITEM`), nên nhánh ghi sổ
+theo từng dòng **chưa chạy lần nào**. 38 dòng sổ của kỳ `STK-001` đến từ **vòng
+lặp thứ hai** — vòng quy đổi ngược ra nguyên liệu gốc.
+
+**Chỗ tôi CHƯA xem, và nó có thể đắt:** vòng đó quy từ hàng mua ra nguyên liệu
+gốc. **Công thức đã bị xoá hôm 31/08.** Chưa ai đóng kỳ kiểm kê nào từ lúc đó,
+nên **không ai biết đóng kỳ bây giờ còn chạy được không.** Việc này độc lập với
+giai đoạn B–D và phải kiểm riêng.
+
 ## 3. Phase A — stop reading, delete the screen
 
 Owner instruction: *"Anh không xài báo cáo tồn kho với những thông tin đó, sẽ
