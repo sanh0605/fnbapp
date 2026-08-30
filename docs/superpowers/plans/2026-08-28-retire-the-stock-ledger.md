@@ -270,11 +270,38 @@ trước khi gỡ chỗ gọi**.
 Chủ quán chốt 31/08 là *"làm tiếp một thể"* — nghĩa là viết hết rồi đẩy một
 lượt, **không phải chạy hết một lượt**.
 
-## 4. Phase B — drop the 8 dead functions
+## 4. Phase B — drop the dead functions
 
-One migration. Each is unreferenced; **prove it per function**, do not batch the
-proof. `save_production_order_atomic` also dies with the recipes plan — whichever
-lands first takes it.
+One migration that drops the dead functions. **Write it. Do not apply it.**
+Applying to production is a separate approval the owner gives himself, and §3b
+forbids applying it before Phase A is deployed.
+
+1. **Re-derive the dead list live. Do not trust this plan's counts.** §4 once
+   said 8 and §5 says 13; §2b and §2c revised both, and the list has changed
+   twice already. Enumerate the functions that exist in production **today** and
+   touch `stock_ledger` or `inventory_balances`, then split dead from live.
+
+2. **Prove each candidate unreferenced individually**, not with one batched
+   search. Per name, search `app/`, `lib/`, `scripts/`, `supabase/migrations/`
+   and tests separately and report per name. A function referenced only by the
+   migration that created it is dead; one referenced by a test is not — say
+   which case each is.
+
+3. **Check every candidate against `origin/main` as well as the working tree.**
+   The local tree already lost its callers to Phase A. A function dead locally
+   may still be called by what is running in production right now. Report both
+   columns.
+
+4. **Write `supabase/migrations/0077_*.sql`** — one `drop function if exists`
+   per name **with its full argument signature**, since some are overloaded.
+   Do not apply it.
+
+5. **Say what happens to `save_production_order_atomic`** — it also dies with
+   the recipes work, which has since landed. State whether it is already gone.
+
+**Do not touch the live writers in this phase.** In particular do not remove the
+ledger write from the purchase receipt path: §2d measured it still writing as of
+29/08, and it belongs to Phase C, one function per commit.
 
 ## 5. Phase C — remove the write from the 13 live functions
 
