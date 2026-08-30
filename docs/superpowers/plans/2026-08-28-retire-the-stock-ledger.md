@@ -126,6 +126,41 @@ Số dư giảm 11 vì xoá bán thành phẩm. Sổ kho **chỉ tăng 2 trong b
 - **Màn hình Điều chỉnh Tồn kho** còn trong menu hay chưa — chưa xem.
 - **`get_pos_inventory_state`** đọc chứ không ghi, nhưng chưa xem ai gọi nó.
 
+## 2c. Sau giai đoạn A — một chỗ đọc còn sống, và một kiểu hụt mới
+
+**`getRealtimeStock` vẫn sống**, vì **báo cáo ngày** dùng nó cho mục *hàng đang
+âm kho* (`reports/daily/actions.ts:52` và `:72`). Nó đọc `Inventory_Balances`.
+**Phải xử lý trước giai đoạn D**, nếu không xoá bảng là báo cáo ngày vỡ.
+
+**Kiểu hụt này khác lần trước, và đáng ghi.** Mục 2b.2 **có** nói
+`getRealtimeStock` nuôi *"báo cáo tồn kho **và báo cáo ngày**"*. Nhưng danh sách
+việc của giai đoạn A — viết 28/08, trước khi có mục 2b — chỉ nói xoá báo cáo tồn
+kho và nhắc đặt hàng. **Mô tả đúng, rồi không mang sang phần việc.**
+
+Lần 31/08 trước là *mô tả thiếu*. Lần này là *mô tả đủ mà không dùng*. Cả hai
+đều lọt vì không có bước nào bắt đối chiếu **mỗi thứ đã mô tả có được xử lý
+trong phần thay đổi hay không**.
+
+**Sonnet sửa hai chỗ tôi ghi sai tên hàm** trong 2b.2: dòng 446 là
+`loadRealtimeStock` chứ không phải `deleteUnit`, dòng 492 là
+`loadReorderSuggestions` chứ không phải `getRealtimeStock`. Không đổi phạm vi,
+nhưng ghi lại vì mục 1b bảo kiểm cả chỗ mô tả sai.
+
+**Hai câu 2b.4 để ngỏ, Sonnet trả lời:**
+
+`open_shift_stock_check_atomic` và `close_shift_stock_check_atomic` **chỉ đọc, không
+ghi** — trái với phỏng đoán ở giai đoạn C rằng chúng "có thể tồn tại chỉ để ghi
+sổ". Chỗ gọi duy nhất là màn hình vừa xoá, nên chúng thành **hàm chết**, chuyển
+sang giai đoạn B.
+
+`get_pos_inventory_state` chỉ được gọi từ `lib/historical/` và một script chạy
+một lần — **cũng chết**, sang giai đoạn B.
+
+Hai hàm điều chỉnh tồn kho thì **không chết**: bảng rỗng 0 dòng và đường tạo
+không có ai gọi, **nhưng nửa duyệt/từ chối là thật** — màn hình vẫn trong menu,
+vẫn nối vào hàm thật. Nó chỉ đang **đói dữ liệu vĩnh viễn** vì phần tạo chưa bao
+giờ được xây. Giữ ở giai đoạn C.
+
 ## 3. Phase A — stop reading, delete the screen
 
 Owner instruction: *"Anh không xài báo cáo tồn kho với những thông tin đó, sẽ
