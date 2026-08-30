@@ -1,8 +1,5 @@
 import { randomUUID } from "node:crypto";
-import {
-  buildPurchaseReceipt,
-  buildPurchaseReceiptLedgerEntry,
-} from "@/lib/purchase-ledger-rebuild";
+import { buildPurchaseReceipt } from "@/lib/purchase-ledger-rebuild";
 
 type PurchaseOrderWriteInput = {
   id: string;
@@ -46,7 +43,6 @@ type ConversionWriteInput = {
 export type PurchaseOrderWritePlan = {
   order: PurchaseOrderWriteInput;
   lines: Array<Record<string, unknown>>;
-  ledgerRows: Array<Record<string, unknown>>;
 };
 
 export function buildPurchaseOrderWritePlan(input: {
@@ -59,7 +55,6 @@ export function buildPurchaseOrderWritePlan(input: {
 }): PurchaseOrderWritePlan {
   const idFactory = input.idFactory || randomUUID;
   const lineRows: Array<Record<string, unknown>> = [];
-  const ledgerRows: Array<Record<string, unknown>> = [];
 
   for (const line of input.lines) {
     const isCompleted = input.order.status === "COMPLETED";
@@ -114,21 +109,10 @@ export function buildPurchaseOrderWritePlan(input: {
       base_quantity: baseQuantity,
       created_at: input.createdAt,
     });
-
-    if (receipt) {
-      ledgerRows.push(
-        buildPurchaseReceiptLedgerEntry(receipt, {
-          id: `STK-${idFactory()}`,
-          purchaseOrderId: input.order.id,
-          createdAt: input.order.transaction_date,
-        }),
-      );
-    }
   }
 
   return {
     order: input.order,
     lines: lineRows,
-    ledgerRows,
   };
 }

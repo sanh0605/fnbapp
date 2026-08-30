@@ -22,7 +22,6 @@ describe("savePurchaseOrderAtomic", () => {
       data: {
         purchase_order_id: "PO-050",
         line_count: 1,
-        ledger_count: 1,
       },
       error: null,
     });
@@ -30,14 +29,12 @@ describe("savePurchaseOrderAtomic", () => {
     const result = await savePurchaseOrderAtomic({
       order: { id: "", status: "COMPLETED" },
       lines: [{ id: "pol-uuid", quantity: 1 }],
-      ledgerRows: [{ id: "stk-uuid", unit_cost: 19.6 }],
       replaceExisting: false,
     });
 
     expect(mocks.rpc).toHaveBeenCalledWith("save_purchase_order_atomic", {
       p_order: { id: "", status: "COMPLETED" },
       p_lines: [{ id: "pol-uuid", quantity: 1 }],
-      p_ledger: [{ id: "stk-uuid", unit_cost: 19.6 }],
       p_replace_existing: false,
     });
     expect(result.purchaseOrderId).toBe("PO-050");
@@ -53,18 +50,16 @@ describe("savePurchaseOrderAtomic", () => {
       savePurchaseOrderAtomic({
         order: { id: "PO-050" },
         lines: [],
-        ledgerRows: [],
         replaceExisting: true,
       }),
     ).rejects.toThrow("transaction aborted");
   });
 
-  it("rejects a response whose persisted counts do not match the write plan", async () => {
+  it("rejects a response whose persisted line count does not match the write plan", async () => {
     mocks.rpc.mockResolvedValue({
       data: {
         purchase_order_id: "PO-050",
-        line_count: 1,
-        ledger_count: 0,
+        line_count: 0,
       },
       error: null,
     });
@@ -73,7 +68,6 @@ describe("savePurchaseOrderAtomic", () => {
       savePurchaseOrderAtomic({
         order: { id: "" },
         lines: [{ id: "pol-uuid" }],
-        ledgerRows: [{ id: "stk-uuid" }],
         replaceExisting: false,
       }),
     ).rejects.toThrow("persisted row count mismatch");

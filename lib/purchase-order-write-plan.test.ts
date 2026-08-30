@@ -32,7 +32,7 @@ const lines = [
 
 describe("buildPurchaseOrderWritePlan", () => {
   it("builds collision-safe child rows and preserves conversion data", () => {
-    const ids = ["line-uuid", "ledger-uuid"];
+    const ids = ["line-uuid"];
     const plan = buildPurchaseOrderWritePlan({
       order,
       lines,
@@ -63,14 +63,6 @@ describe("buildPurchaseOrderWritePlan", () => {
         created_at: "2026-07-01T04:00:00.000Z",
       }),
     ]);
-    expect(plan.ledgerRows).toEqual([
-      expect.objectContaining({
-        id: "STK-ledger-uuid",
-        item_reference: "ING-001",
-        quantity_change: 10,
-        unit_cost: 19.6,
-      }),
-    ]);
   });
 
   it("does not create receipt ledger rows for a draft order", () => {
@@ -98,7 +90,6 @@ describe("buildPurchaseOrderWritePlan", () => {
         base_quantity: 10,
       }),
     ]);
-    expect(plan.ledgerRows).toEqual([]);
   });
 
   it("allows an incomplete draft line without creating stock", () => {
@@ -128,7 +119,6 @@ describe("buildPurchaseOrderWritePlan", () => {
         base_quantity: 0,
       }),
     ]);
-    expect(plan.ledgerRows).toEqual([]);
   });
 
   it("fails before returning a partial plan when an item is missing", () => {

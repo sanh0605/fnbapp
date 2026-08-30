@@ -143,7 +143,6 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     const saved = await savePurchaseOrderAtomic({
       order: writePlan.order,
       lines: writePlan.lines,
-      ledgerRows: writePlan.ledgerRows,
       replaceExisting: Boolean(id),
     });
     const po_id = saved.purchaseOrderId;

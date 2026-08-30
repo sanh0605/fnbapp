@@ -545,9 +545,8 @@ async function main(): Promise<void> {
         item: purchasedItemById.get(wl.purchased_item_id)?.name, unit: wl.unit,
         sheetQty: sheetLines[i].sheetQty, sheetUnit: sheetLines[i].sheetUnit,
         quantitySubmitted: wl.quantity, subtotal: wl.subtotal,
-        baseQuantity: writePlan.lines[i].base_quantity, unitCostLedger: writePlan.ledgerRows[i]?.unit_cost,
+        baseQuantity: writePlan.lines[i].base_quantity,
       })),
-      ledgerRowCount: writePlan.ledgerRows.length,
       equipmentLineCount: equipmentLines.length,
       assetPlans: assetPlans.map(p => ({ item: p.name_snapshot, quantity: p.quantity, unitCost: p.unit_cost, totalCost: p.total_cost, termMonths: p.term_months })),
       assetError,
@@ -560,7 +559,7 @@ async function main(): Promise<void> {
     console.log(`${r.code} | ${r.date} | ${r.source} | ${r.supplier} | invoice: ${r.invoiceCode}`);
     console.log(`  subtotal ${r.subtotal.toLocaleString("vi-VN")}d + shipping ${r.shippingNet.toLocaleString("vi-VN")}d + voucher ${r.voucher.toLocaleString("vi-VN")}d + discount ${r.discount.toLocaleString("vi-VN")}d + tax ${r.tax.toLocaleString("vi-VN")}d = ${r.total.toLocaleString("vi-VN")}d`);
     for (const l of r.lines) {
-      console.log(`    - ${l.item} | sheet: ${l.sheetQty} ${l.sheetUnit} @ ${(l.subtotal / l.sheetQty).toLocaleString("vi-VN")}d/${l.sheetUnit} | submit: unit="${l.unit}" qty=${l.quantitySubmitted} subtotal=${l.subtotal.toLocaleString("vi-VN")}d | base_quantity=${l.baseQuantity} unit_cost(ledger)=${Math.round(l.unitCostLedger).toLocaleString("vi-VN")}d`);
+      console.log(`    - ${l.item} | sheet: ${l.sheetQty} ${l.sheetUnit} @ ${(l.subtotal / l.sheetQty).toLocaleString("vi-VN")}d/${l.sheetUnit} | submit: unit="${l.unit}" qty=${l.quantitySubmitted} subtotal=${l.subtotal.toLocaleString("vi-VN")}d | base_quantity=${l.baseQuantity}`);
     }
     if (r.assetPlans.length > 0) {
       console.log(`  -> creates ${r.assetPlans.length} asset row(s):`);
@@ -574,7 +573,6 @@ async function main(): Promise<void> {
   console.log("--- Summary ---");
   console.log(`Orders: ${orderReports.length}`);
   console.log(`Lines: ${orderReports.reduce((s, r) => s + r.lines.length, 0)}`);
-  console.log(`stock_ledger rows to be created: ${orderReports.reduce((s, r) => s + r.ledgerRowCount, 0)} (production ${prodStockLedger.length} -> ${prodStockLedger.length + orderReports.reduce((s, r) => s + r.ledgerRowCount, 0)})`);
   console.log(`Equipment lines: ${orderReports.reduce((s, r) => s + r.equipmentLineCount, 0)}`);
   console.log(`assets rows to be created: ${totalAssetLines} (production ${assets.length} -> ${assets.length + totalAssetLines})`);
   console.log(`Band lookup failures: ${totalBandFailures}`);
@@ -650,7 +648,7 @@ async function main(): Promise<void> {
     });
 
     const saved = await savePurchaseOrderAtomic({
-      order: writePlan.order, lines: writePlan.lines, ledgerRows: writePlan.ledgerRows, replaceExisting: false,
+      order: writePlan.order, lines: writePlan.lines, replaceExisting: false,
     });
     ordersCreated++;
 
@@ -677,7 +675,7 @@ async function main(): Promise<void> {
         assetsCreated++;
       }
     }
-    console.log(`${o.code} -> ${saved.purchaseOrderId} (${saved.lineCount} lines, ${saved.ledgerCount} ledger rows)`);
+    console.log(`${o.code} -> ${saved.purchaseOrderId} (${saved.lineCount} lines)`);
   }
 
   console.log(`\nDone. Orders created: ${ordersCreated}. Assets created: ${assetsCreated}. Suppliers created: ${createdSupplierIds.size}. Conversions retitled: ${retitles.length}.`);
