@@ -112,6 +112,31 @@ nó hỏng.
 **Chỉ hỏi chủ quán thứ chỉ ông ấy trả lời được.** Tra được bằng mã nguồn hay
 truy vấn thì tự đi tra.
 
+### Trả lời trong lúc nói chuyện CŨNG là bước thiết kế
+
+**Bổ sung 31/08, sau khi luật này bị phá đúng một lượt trao đổi sau khi viết
+ra.** Chủ quán hỏi ô thu hồi khi thanh lý tài sản hiện thế nào trong báo cáo —
+một cột mới và một dòng báo cáo mới, tức đúng loại "tạo thứ chưa từng có". Thay
+vì làm bốn bước, tôi trả lời ngay trong khung chat, **tự đặt ra một dòng "Lãi/lỗ
+thanh lý tài sản"** kèm ba lý do nghe rất chắc. Chủ quán vặn thì mới đi tra, và
+tên đó không tồn tại trong lối kế toán Việt Nam — Thông tư 200 tách thành **Thu
+nhập khác** và **Chi phí khác**, không gộp.
+
+**Luật gắn vào tài liệu, nhưng thiết kế thật sự diễn ra trong lúc nói chuyện.**
+Chủ quán hỏi "cái này nên chạy thế nào", mình trả lời, và câu trả lời đó **là**
+bản thiết kế — không viết ra, không tra nguồn, không ai duyệt. Canh cửa trước
+thì mình đi cửa sau.
+
+**Nên:** câu hỏi nào là câu hỏi thiết kế cho thứ chưa tồn tại thì **không trả
+lời ứng khẩu**. Nói thẳng "đây là câu thiết kế, để tôi tra rồi viết ra", rồi
+mới trả lời. Nhanh mà sai thì chủ quán phải đi vặn từng câu — đúng cái việc
+mình đang cố gỡ khỏi vai ông ấy.
+
+**Và thứ gì có chuẩn bên ngoài thì phải dẫn nguồn, không nói theo trí nhớ.**
+Kế toán, thuế, mẫu báo cáo — chủ quán chốt 31/08: *"anh cần bảng báo cáo phải
+đúng theo mẫu và có nguồn rõ ràng, không được tự ý ghi vì vẫn cần phải có sổ kế
+toán sau này."* Tự đặt tên một chỉ tiêu là tạo ra thứ sau này phải làm lại.
+
 ### Sonnet được phép chặn
 
 Giao việc mà kế hoạch thiếu mục mô tả hiện trạng thì **Sonnet trả lại, chưa
