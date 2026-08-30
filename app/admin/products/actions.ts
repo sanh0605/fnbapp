@@ -7,7 +7,7 @@ import { planRecipeSave, findLatestActiveRecipe } from "@/lib/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import { findAll, update } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   findDuplicateActiveName,
   duplicateNameErrorMessage,
@@ -170,6 +170,16 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       });
     }
 
+    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // revalidatePath only refreshes this exact screen. lib/sheets_db.ts's
+    // findAll cache is keyed by TABLE (tag `sheets-<SheetName>`), and POS
+    // reads the same tables through a different path -- so without this,
+    // POS kept serving a stale Products/Product_Variants read for up to the
+    // 10-minute catalog TTL after a save here. The manual "Xoá Cache" button
+    // (app/admin/clear-cache/page.tsx) already calls these same two tags;
+    // this makes that automatic on the write, not a new mechanism.
+    revalidateTag("sheets-Products");
+    revalidateTag("sheets-Product_Variants");
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -214,6 +224,11 @@ export async function pauseProduct(formData: FormData): Promise<ActionResponse> 
         await update(VARIANT_SHEET, variant.id, { status: "INACTIVE" });
       }
     }
+    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // same fix as saveProduct above -- POS reads these two tables through a
+    // cache tag, not this screen's path.
+    revalidateTag("sheets-Products");
+    revalidateTag("sheets-Product_Variants");
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -247,6 +262,11 @@ export async function resumeProduct(formData: FormData): Promise<ActionResponse>
         await update(VARIANT_SHEET, variant.id, { status: "ACTIVE" });
       }
     }
+    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // this is the exact case the owner hit -- resumeProduct fixed the data
+    // at 02:24:58, POS at 02:25 still read the pre-resume cache.
+    revalidateTag("sheets-Products");
+    revalidateTag("sheets-Product_Variants");
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -262,6 +282,12 @@ export async function eraseProduct(formData: FormData): Promise<ActionResponse> 
   if (!id) return fail("ID không hợp lệ");
   try {
     await eraseProductAtomic(id);
+    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // same fix as the other three actions above -- an erased (never-sold)
+    // product must stop being offered on POS without waiting on the cache
+    // TTL, same as a paused or resumed one.
+    revalidateTag("sheets-Products");
+    revalidateTag("sheets-Product_Variants");
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

@@ -29,7 +29,7 @@ export default function ProductForm({ categories, initialData }: any) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !categoryId) return await alert({ title: "Thiếu thông tin", message: "Vui lòng nhập Tên món và chọn Nhóm.", variant: "warning" });
-    if (variants.length === 0) return await alert({ title: "Thiếu thông tin", message: "Phải có ít nhất 1 kích cỡ/size.", variant: "warning" });
+    if (variants.length === 0) return await alert({ title: "Thiếu thông tin", message: "Phải có ít nhất 1 size.", variant: "warning" });
 
     setLoading(true);
     const formData = new FormData();
@@ -206,7 +206,7 @@ export default function ProductForm({ categories, initialData }: any) {
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
                       <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
-                      Các Kích Cỡ
+                      Các Size
                     </h3>
                     <Button variant="secondary" size="sm" onClick={addVariant}><Plus className="w-4 h-4 mr-1"/> Thêm Size</Button>
                   </div>
@@ -217,7 +217,7 @@ export default function ProductForm({ categories, initialData }: any) {
                       return (
                         <div key={vIdx} className="bg-page p-4 border border-border rounded-xl flex gap-4 items-end">
                           <div className="flex-1">
-                            <label htmlFor={`${variantRowId}-size-name`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Tên Kích cỡ (Size)</label>
+                            <label htmlFor={`${variantRowId}-size-name`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Tên Size</label>
                             <input id={`${variantRowId}-size-name`} type="text" required value={variant.size_name} onChange={e => updateVariant(vIdx, "size_name", e.target.value)} className="w-full border border-border rounded-md px-3 py-2 text-sm font-bold focus:ring-focus-ring bg-surface-card text-text-primary" placeholder="VD: Mặc định, Size M..." />
                           </div>
                           <div className="flex-1">
@@ -260,7 +260,7 @@ export default function ProductForm({ categories, initialData }: any) {
           onClose={() => setIsEraseOpen(false)}
           onConfirm={handleErase}
           title="Xác nhận xoá vĩnh viễn"
-          description={`Xoá vĩnh viễn món "${initialData.name}"? Toàn bộ lịch sử giá và kích cỡ của món này sẽ mất theo. Việc này KHÔNG THỂ hoàn tác.`}
+          description={`Xoá vĩnh viễn món "${initialData.name}"? Toàn bộ lịch sử giá và size của món này sẽ mất theo. Việc này KHÔNG THỂ hoàn tác.`}
         />
       )}
     </>

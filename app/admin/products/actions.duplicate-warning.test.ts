@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   saveProductAtomic: vi.fn(),
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
@@ -16,7 +17,7 @@ vi.mock("@/lib/sheets_db", () => ({
 vi.mock("@/lib/product-save-transaction", () => ({
   saveProductAtomic: mocks.saveProductAtomic,
 }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import { saveProduct } from "./actions";
 

@@ -76,3 +76,54 @@ describe("POSPage does not offer a paused (INACTIVE) product", () => {
     expect(variantIds).not.toContain("VAR-PAUSED");
   });
 });
+
+// docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 1.4
+// (Bug B), independent of the cache fix (Bug A) covered by
+// app/admin/products/actions.status.test.ts and actions.failure.test.ts. An
+// ACTIVE product with every variant DELETED/INACTIVE was still handed to
+// POSScreen, only refusing after a tap (POSScreen.tsx:303's "Món này chưa
+// cấu hình size & giá.") -- mid-shift, in front of a customer. Today
+// (pre-fix) this is a wrong VALUE, not a missing function: POSPage already
+// existed and already returned a products list, it just never checked
+// whether a product had anything sellable left.
+describe("POSPage does not offer a product with no ACTIVE variant left", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getServerSession.mockResolvedValue({ user: { name: "Cashier" } });
+    mocks.getPOSBestSellerProductIds.mockResolvedValue([]);
+    mocks.findAll.mockImplementation(async (sheet: string) => {
+      if (sheet === "Outlets") {
+        return [{ id: "OUT-001", brand_id: "BR-001" }];
+      }
+      if (sheet === "Product_Categories") {
+        return [{ id: "CAT-001", name: "Đồ uống", status: "ACTIVE" }];
+      }
+      if (sheet === "Products") {
+        return [
+          { id: "PROD-SELLABLE", name: "Cà phê đá", status: "ACTIVE" },
+          // Test1's real production shape (2026-08-31): ACTIVE product,
+          // every variant DELETED/INACTIVE -- nothing left to sell.
+          { id: "PROD-EMPTY", name: "Test1", status: "ACTIVE" },
+        ];
+      }
+      if (sheet === "Product_Variants") {
+        return [
+          { id: "VAR-SELLABLE", product_id: "PROD-SELLABLE", status: "ACTIVE" },
+          { id: "VAR-GONE-1", product_id: "PROD-EMPTY", status: "DELETED" },
+          { id: "VAR-GONE-2", product_id: "PROD-EMPTY", status: "INACTIVE" },
+        ];
+      }
+      if (sheet === "Modifiers") return [];
+      if (sheet === "Promotions") return [];
+      return [];
+    });
+  });
+
+  it("excludes the ACTIVE product whose every variant is DELETED/INACTIVE, keeps a genuinely sellable sibling", async () => {
+    const element: any = await POSPage({ params: {}, searchParams: { outletId: "OUT-001" } } as any);
+
+    const productIds = element.props.products.map((p: any) => p.id);
+    expect(productIds).not.toContain("PROD-EMPTY");
+    expect(productIds).toContain("PROD-SELLABLE");
+  });
+});

@@ -117,7 +117,7 @@ export function ItemConfigModal({
         <div className="p-5 overflow-y-auto flex-1 space-y-6 bg-surface-card">
           {/* SIZE SELECTION */}
           <div>
-            <h4 className="font-bold text-sm text-text-primary mb-3 uppercase">Chọn Kích Cỡ</h4>
+            <h4 className="font-bold text-sm text-text-primary mb-3 uppercase">Chọn Size</h4>
             <div className="grid grid-cols-2 gap-3">
               {variants.filter((v: any) => v.product_id === product.id).map((v: any) => {
                 const hasPromo = promoVariantsMap.has(v.id);

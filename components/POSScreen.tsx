@@ -300,7 +300,7 @@ export default function POSScreen({
 
   const openProductModal = async (product: any, editIndex: number | null = null) => {
     const prodVariants = variants.filter((v: any) => v.product_id === product.id);
-    if (prodVariants.length === 0) return await alert({ message: "Món này chưa cấu hình kích cỡ & giá." });
+    if (prodVariants.length === 0) return await alert({ message: "Món này chưa cấu hình size & giá." });
 
     setSelectedProduct(product);
     setEditingCartIndex(editIndex);

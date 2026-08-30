@@ -53,8 +53,17 @@ export default async function POSPage({
   // POS must show ACTIVE only so the admin toggle (Product.status ACTIVE/INACTIVE)
   // actually hides toppings from the catalog.
   const activeCategories = categories.filter(c => c.status === "ACTIVE");
-  const activeProducts = products.filter(p => p.status === "ACTIVE");
   const activeVariants = variants.filter(v => v.status === "ACTIVE");
+  // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section
+  // 1.4 (Bug B), independent of the cache fix in ../admin/products/actions.ts:
+  // an ACTIVE product with every variant DELETED/INACTIVE was still offered
+  // here, and only refused after a tap (POSScreen.tsx's openProductModal),
+  // mid-shift, in front of a customer. The admin screen already computes
+  // this same "no sellable size" state as a badge (app/admin/products/page.tsx's
+  // hasNoSellableVariant); POS has no badge to show a cashier mid-sale, so it
+  // excludes the product outright rather than inviting the tap.
+  const productIdsWithActiveVariant = new Set(activeVariants.map(v => v.product_id));
+  const activeProducts = products.filter(p => p.status === "ACTIVE" && productIdsWithActiveVariant.has(p.id));
   const activeModifiers = modifiers.filter(m => m.status === "ACTIVE");
   const activePromotions = promotions.filter(p => p.status === "ACTIVE");
 

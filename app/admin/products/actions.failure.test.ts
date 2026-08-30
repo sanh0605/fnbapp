@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   saveProductAtomic: vi.fn(),
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
@@ -16,7 +17,7 @@ vi.mock("@/lib/sheets_db", () => ({
 vi.mock("@/lib/product-save-transaction", () => ({
   saveProductAtomic: mocks.saveProductAtomic,
 }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import { saveProduct } from "./actions";
 
@@ -67,6 +68,14 @@ describe("saveProduct atomic persistence", () => {
       expectedPriceHistoryCount: 1,
       expectedRecipeCount: 1,
     });
+    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 3:
+    // revalidatePath alone only refreshes /admin/products -- POS reads the
+    // same tables through lib/sheets_db.ts's tag-keyed cache, which
+    // revalidatePath never touches. Today (pre-fix) this is a wrong VALUE,
+    // not a missing function: saveProduct already existed and already
+    // called revalidatePath, it just never called revalidateTag at all.
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
   });
 
   it("leaves no partial create state after rollback and permits retry", async () => {

@@ -159,7 +159,7 @@ export default function ProductsClient({
                     <th className="px-6 py-4 font-bold w-20">Ảnh</th>
                     <th className="px-6 py-4 font-bold">Tên Món</th>
                     <th className="px-6 py-4 font-bold">Phân Loại</th>
-                    <th className="px-6 py-4 font-bold">Kích Cỡ & Giá Bán</th>
+                    <th className="px-6 py-4 font-bold">Size & Giá Bán</th>
                     <th className="px-6 py-4 font-bold">Trạng Thái</th>
                     <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
                   </tr>
@@ -256,7 +256,7 @@ export default function ProductsClient({
                     </div>
 
                     <div className="space-y-2 flex-1">
-                      <div className="text-[10px] uppercase font-bold text-text-muted">Các kích cỡ & Giá:</div>
+                      <div className="text-[10px] uppercase font-bold text-text-muted">Các Size & Giá:</div>
                       <div className="grid grid-cols-1 gap-1.5">
                         {product.variants.map((v: any, idx: number) => (
                           <div key={idx} className="flex justify-between items-center bg-page p-2 rounded-lg border border-border text-xs">
