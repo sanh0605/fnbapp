@@ -113,7 +113,6 @@ export async function submitOrderV2(
       order: built.order,
       lines: built.lines,
       event,
-      ledgerRows: [],
       clientRequestId: requestToken,
       payments: built.payments,
     });

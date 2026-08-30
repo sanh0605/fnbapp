@@ -9,7 +9,12 @@ describe("POS order COGS calculation", () => {
   // buildStockLedgerEntries, the implicit-production split) -- replaced with
   // the opposite assertion rather than deleted silently, since "checkout
   // stops doing the work" is exactly the regression worth locking in now.
-  it("computes no cost and writes no ledger row -- one atomic write with an empty ledger", () => {
+  //
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase C
+  // (8/8, POS): this test used to assert `ledgerRows: []` was still being
+  // sent -- Phase C removed create_pos_order_atomic's stock_ledger write
+  // entirely, so there is no longer a ledgerRows field to send at all.
+  it("computes no cost and writes no ledger row -- one atomic write with no ledger field", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const submitOrderSource = source.slice(
       source.indexOf("export async function submitOrderV2"),
@@ -21,7 +26,7 @@ describe("POS order COGS calculation", () => {
     expect(source).not.toContain("buildStockLedgerEntries");
     expect(source).not.toContain("splitImplicitProduction");
     expect(source).toContain("savePosOrderAtomic");
-    expect(submitOrderSource).toContain("ledgerRows: []");
+    expect(submitOrderSource).not.toContain("ledgerRows");
     expect(submitOrderSource).not.toContain('findAllNoCache("Stock_Ledger")');
     expect(submitOrderSource).not.toContain("assignOrderNo");
     expect(submitOrderSource).not.toContain("ensureUniqueOrderNo");

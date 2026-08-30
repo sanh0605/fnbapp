@@ -16,7 +16,6 @@ export type PosOrderAtomicInput = {
   order: object;
   lines: object[];
   event: object;
-  ledgerRows: object[];
   clientRequestId?: string;
   payments?: PosOrderPaymentInput[];
 };
@@ -25,7 +24,6 @@ type PosOrderAtomicResult = {
   order_id: string;
   order_no: string;
   line_count: number;
-  ledger_count: number;
   payment_count?: number;
 };
 
@@ -35,7 +33,6 @@ export async function savePosOrderAtomic(
   orderId: string;
   orderNo: string;
   lineCount: number;
-  ledgerCount: number;
   paymentCount: number;
 }> {
   const clientRequestId = normalizeClientRequestId(input.clientRequestId);
@@ -53,7 +50,6 @@ export async function savePosOrderAtomic(
       "recipe_snapshot_json",
     ])),
     p_event: parseJsonColumns(input.event, ["delta_json"]),
-    p_ledger: input.ledgerRows,
   };
   if (clientRequestId) {
     rpcArgs.p_client_request_id = clientRequestId;
@@ -74,12 +70,8 @@ export async function savePosOrderAtomic(
     throw new Error("create_pos_order_atomic returned an invalid result");
   }
   const lineCount = Number(result.line_count) || 0;
-  const ledgerCount = Number(result.ledger_count) || 0;
   const paymentCount = Number(result.payment_count) || 0;
-  if (
-    lineCount !== input.lines.length ||
-    ledgerCount !== input.ledgerRows.length
-  ) {
+  if (lineCount !== input.lines.length) {
     throw new Error("create_pos_order_atomic persisted row count mismatch");
   }
   if (payments.length > 0 && paymentCount !== payments.length) {
@@ -89,7 +81,6 @@ export async function savePosOrderAtomic(
     orderId: result.order_id,
     orderNo: result.order_no,
     lineCount,
-    ledgerCount,
     paymentCount,
   };
 }

@@ -73,7 +73,6 @@ describe("submitOrderV2 outlet resolution", () => {
       orderId: "ord-1",
       orderNo: "260825001001",
       lineCount: input.lines.length,
-      ledgerCount: input.ledgerRows.length,
       paymentCount: 0,
     }));
   });
