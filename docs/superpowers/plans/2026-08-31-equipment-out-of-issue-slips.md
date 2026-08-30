@@ -112,3 +112,44 @@ lỗ nên thuộc đợt làm báo cáo.
 `CLAUDE.md` §9. Không tự đẩy. **Rồi chủ quán mở Phiếu Xuất Kho và tìm một món
 dụng cụ — phải không tìm thấy.** Và thử đánh dấu hỏng một tài sản với ngày tháng
 trước — phải nhận.
+
+---
+
+## 6. Hai chỗ mục 1 mô tả SAI — Sonnet bắt được
+
+**Đây là lần đầu `CLAUDE.md` §1b được dùng, và nó bắt đúng thứ nó sinh ra để
+bắt: sai trong phần mô tả, không phải sai trong phần đề xuất.**
+
+**§1.1 tả lỗi thời.** Tôi viết danh sách chỉ loại món tồn 0 *khi món đã ngừng
+dùng*. Đúng cho tới 30/08 — nhưng chính `OPEN-ITEMS 76` hôm đó đã đổi thành
+**loại mọi món tồn 0, bất kể trạng thái** (`issue-slips/actions.ts:128`,
+`.filter(item => item.onHand > 0)`, không có nhánh nào theo trạng thái). Tôi tả
+hiện trạng của hôm trước.
+
+**§2 đúng một nửa, và nửa sai quan trọng hơn.** Tôi viết *"ngày thanh lý không
+bị kiểm"*. Thật ra `lib/asset-depreciation.ts:217` **đã chặn** ngày trước ngày
+mua từ đợt 3, có phép kiểm hẳn hoi.
+
+**Nhưng nó không nói được.** Câu chặn viết bằng tiếng Anh thuần ASCII —
+`"disposal dated before the asset was acquired"` — và `describeActionError` chỉ
+giữ nguyên câu **có dấu tiếng Việt**, nên nó bị thay bằng *"Có lỗi xảy ra, vui
+lòng thử lại"*.
+
+Nên chủ quán **đã bị chặn từ trước**, chỉ là màn hình không cho biết vì sao.
+Đây là `OPEN-ITEMS 62` xảy ra thật lần đầu — mục đó ghi bộ lọc "tin mọi ký tự
+không phải ASCII" có lỗ, và đây đúng là cái lỗ ấy. **Sửa đúng chỗ là viết lại
+câu chặn bằng tiếng Việt, không phải thêm một lớp chặn nữa.**
+
+Chỉ nửa *ngày tương lai* là đúng như tả: không có gì chặn, ghi thẳng vào.
+
+**Bốn chỗ §1.4 ghi là chưa xem, Sonnet xem hết:**
+
+| Chỗ | Kết quả |
+|---|---|
+| Màn hình Điều chỉnh Tồn kho | Đường tạo **không ai gọi**, bảng **0 dòng** — không mời dụng cụ được |
+| Máy POS đọc số dư | Chỉ đọc nhóm nguyên liệu và bán thành phẩm, **không chạm hàng mua vào** |
+| Báo cáo hàng đã xuất | **Có dính cùng lỗi** — nhưng dùng chung một bộ máy, nên lớp chặn ở §3.2 vá luôn, không cần chỗ thứ tư |
+| Nhãn "Ngày thanh lý" | Cố ý để ngoài |
+
+**Ghi danh sách "chưa xem" ra đã đáng công:** một trong bốn chỗ đó thật sự có
+lỗi, và nó được vá miễn phí thay vì được phát hiện sau ba tuần.
