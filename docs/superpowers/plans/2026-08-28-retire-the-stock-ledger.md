@@ -303,20 +303,97 @@ forbids applying it before Phase A is deployed.
 ledger write from the purchase receipt path: §2d measured it still writing as of
 29/08, and it belongs to Phase C, one function per commit.
 
-## 5. Phase C — remove the write from the 13 live functions
+## 5. Phase C — remove the write from the 8 live functions
 
-**One function per commit, POS last.** Each is a mechanical removal of an
-`insert into stock_ledger` block and its `p_ledger` argument — not a logic
-rewrite. Copy the body forward otherwise unchanged, the same discipline `0074`
-used.
+**Sửa thứ đã có → mô tả hiện trạng rút gọn, năm mục đánh số** (`CLAUDE.md` §1b).
+Danh sách dưới đây dựng lại 31/08 từ **thân hàm mới nhất của từng hàm**, không
+từ tên — vì đúng cách tra bằng tên đã bỏ sót hàm POS suốt bốn ngày.
 
-**Two of these need a decision, not an edit:** `open_shift_stock_check_atomic`
-and `close_shift_stock_check_atomic` may exist *only* to write the ledger. If
-removing the write leaves an empty function, say so and stop — deleting a
-feature is the owner's call, not a consequence of this plan.
+### 5.1 Đường ống này có mấy trạng thái, đặt bằng cách nào
 
-**After each commit:** the POS completes a sale, a purchase saves, an issue slip
-saves. Not at the end — after each.
+Hai, và **không ai đặt được bằng tay**. Mỗi hàm hoặc còn khối `insert into
+public.stock_ledger`, hoặc không. Không có công tắc, không có cấu hình, không có
+màn hình. Đổi trạng thái = chạy một migration.
+
+Riêng đường POS có trạng thái thứ ba, **kín**: khối lệnh còn nguyên nhưng luôn
+nhận danh sách rỗng, nên nó *ở tư thế ghi mà không ghi* — trạng thái này chính là
+thứ làm hàm đó bị chấm nhầm là chết.
+
+### 5.2 Màn hình nào có nút gì
+
+**Không áp dụng — không màn hình nào của chủ quán chạm tới sổ kho nữa.** Màn
+hình duy nhất từng hiện nó đã bị xoá ở giai đoạn A. Việc này thuần máy chủ.
+
+### 5.3 Danh sách 8 hàm — cái gì vào, cái gì bị loại ra
+
+| # | Hàm | Việc thật của nó | Còn ghi thật? |
+|---|---|---|---|
+| 1 | `save_purchase_order_atomic` | Nhận hàng đơn nhập | **CÓ** — 300 dòng, mới nhất 29/08 |
+| 2 | `apply_stocktake_session_atomic` | Đóng kỳ kiểm kê | **CÓ** — 38 dòng, 09/08. **Hai** khối ghi |
+| 3 | `reverse_stocktake_session_atomic` | Đảo một kỳ kiểm kê | Chưa chạy lần nào |
+| 4 | `void_order_atomic` | Huỷ đơn | Không — 0 dòng trên cả 53 đơn thật |
+| 5 | `supersede_order_v2_atomic` | Sửa đơn | Không — như trên |
+| 6 | `create_pos_order_atomic_unvalidated_0025` | Bán hàng | Không — luôn nhận rỗng |
+| 7 | `submit_stock_adjustment_atomic` | Tạo phiếu điều chỉnh | Không — bảng rỗng, chưa nối form |
+| 8 | `approve_stock_adjustment_atomic` | Duyệt phiếu điều chỉnh | Không — như trên |
+
+**Bị loại ra, có lý do:**
+
+- `stock_ledger_apply_inventory_balance_delta` — hàm trigger, **giai đoạn D**.
+- `save_stocktake_line_atomic` — **chỉ đọc**, không ghi. Nhưng nó đang được dùng
+  thật (`lib/stocktake-transaction.ts:80`), nên **phải xử lý trước giai đoạn D**
+  chứ không phải ở đây.
+- 12 hàm chết — giai đoạn B đã lo.
+
+### 5.4 Giá trị nào hợp lệ ở mỗi ô, và ngoài khoảng thì sao
+
+Không có ô nhập của người dùng. Ô duy nhất là tham số `p_ledger` giữa hai lớp
+máy, và **chỗ này là chỗ dễ vỡ nhất của cả giai đoạn**:
+
+| Chỗ | Kiểm gì | Hỏng thì ra sao |
+|---|---|---|
+| `0072:78` | `p_ledger` phải là mảng | Ném lỗi |
+| `0072:331` | Số dòng ghi được phải bằng số dòng truyền vào | Ném lỗi |
+| `lib/pos-order-transaction.ts:81` | `ledger_count` trả về phải khớp | **Ném lỗi — hỏng mọi lần bán** |
+| `lib/order-edit-transaction.ts:65` | như trên, đường sửa đơn | Ném lỗi |
+| `lib/stocktake-transaction.ts:232,236` | như trên, đóng kỳ kiểm kê | **Ném lỗi — hỏng đóng kỳ** |
+
+**Ba chốt cuối là chốt ném lỗi, không phải chốt hiện sai.** Đây là lý do giai
+đoạn này **không** phải "một migration cơ học" như bản đầu của mục này viết.
+
+### 5.5 Phục vụ dữ liệu nào, cố ý không phục vụ loại nào
+
+Chỉ gỡ **chỗ ghi vào `stock_ledger`**. Cố ý **không** đụng: `stock_issues` (đường
+giá vốn thật), `inventory_balances` (giai đoạn D), tên hàm, và **bất kỳ logic
+nghiệp vụ nào khác trong cùng hàm**. Chép nguyên phần còn lại, đúng kỷ luật
+`0074`.
+
+**Không đổi tên `create_pos_order_atomic_unvalidated_0025`.** Cái tên gây hiểu
+nhầm, nhưng đổi tên một hàm trên đường thu tiền là rủi ro thật đổi lấy chỗ dễ
+đọc; và sau khi gỡ xong nó không còn xuất hiện trong danh sách "ai đụng sổ kho"
+nữa, nên nguyên nhân hiểu nhầm tự mất.
+
+### 5.6 Cách làm
+
+**Một hàm một lần lưu. POS làm SAU CÙNG** — đường tiền.
+
+Với mỗi hàm: gỡ khối `insert`, gỡ tham số `p_ledger` và phần kiểm định dạng của
+nó, gỡ chốt đối chiếu số dòng, gỡ `ledger_count` khỏi kết quả trả về — **và sửa
+TypeScript tương ứng trong CÙNG lần lưu đó.**
+
+**Sau mỗi lần lưu:** bán một ly, lưu một đơn nhập, lưu một phiếu xuất. Sau mỗi
+lần, không phải để dồn cuối.
+
+### 5.7 Thứ tự đẩy — lần này thuận, không nghịch
+
+Gỡ một tham số là **đổi chữ ký hàm**. Nếu migration lên trước, code cũ vẫn gọi
+kèm `p_ledger`, máy chủ không tìm thấy hàm khớp, **mọi lần bán hỏng**.
+
+Nhưng chiều ngược lại an toàn: `p_ledger` có sẵn giá trị mặc định rỗng, nên
+**code mới không truyền gì vẫn chạy được với hàm cũ**.
+
+**Nên: đẩy code trước, chạy migration sau. Không có khoảng hở.** Đây là ngoại lệ
+so với `0076` — ở đó code phải theo sau migration; ở đây phải đi trước.
 
 ## 6. Phase D — drop the trigger, then the tables
 
