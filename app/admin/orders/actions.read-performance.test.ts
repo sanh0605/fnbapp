@@ -146,24 +146,21 @@ describe("getOrderDetailV2 query scope", () => {
     });
   });
 
-  it("loads only the selected order and its ledger rows when voiding", async () => {
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+  // replaces this test's own prior claim -- it used to prove the ledger
+  // read was bounded to the one order being voided. There is no ledger
+  // read left to bound: proved live first that it always returned zero
+  // rows for a real order, then removed it.
+  it("loads only the selected order when voiding, and reads no ledger table at all", async () => {
     mocks.findById.mockResolvedValue({
       id: "ord-void",
       status: "COMPLETED",
       version: 1,
       net_total: 25_000,
     });
-    mocks.findAllWhere.mockResolvedValue([{
-      id: "stk-sale",
-      transaction_type: "SALES_CONSUME",
-      reference_id: "ord-void",
-      item_reference: "BI-001",
-      quantity_change: -1,
-      unit_cost: 2_000,
-    }]);
     mocks.voidOrderAtomic.mockResolvedValue({
       orderId: "ord-void",
-      reversalCount: 1,
+      reversalCount: 0,
       alreadyVoided: false,
     });
 
@@ -171,9 +168,7 @@ describe("getOrderDetailV2 query scope", () => {
 
     expect(result).toEqual({ success: true });
     expect(mocks.findById).toHaveBeenCalledWith("Orders_V2", "ord-void");
-    expect(mocks.findAllWhere).toHaveBeenCalledWith("Stock_Ledger", {
-      eq: { reference_id: "ord-void" },
-    });
+    expect(mocks.findAllWhere).not.toHaveBeenCalledWith("Stock_Ledger", expect.anything());
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Orders_V2");
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Stock_Ledger");
   });

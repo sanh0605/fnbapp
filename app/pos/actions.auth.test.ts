@@ -119,12 +119,9 @@ describe("POS action authentication", () => {
 
   it("rejects unauthenticated POS summary reads before storage access", async () => {
     const getBestSellers = (posActions as any).getPOSBestSellerProductIds;
-    const getStockStatus = (posActions as any).getPOSStockStatus;
 
     expect(getBestSellers).toBeTypeOf("function");
-    expect(getStockStatus).toBeTypeOf("function");
     await expect(getBestSellers({ limit: 8 })).rejects.toThrow("Yêu cầu đăng nhập");
-    await expect(getStockStatus()).rejects.toThrow("Yêu cầu đăng nhập");
     expect(mocks.findAllWhere).not.toHaveBeenCalled();
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
     expect(mocks.findAll).not.toHaveBeenCalled();
@@ -167,43 +164,15 @@ describe("POS action authentication", () => {
     expect(result.every((value: unknown) => typeof value === "string")).toBe(true);
   });
 
-  it("returns only item ID and current stock for the authenticated POS caller", async () => {
-    const getStockStatus = (posActions as any).getPOSStockStatus;
-    expect(getStockStatus).toBeTypeOf("function");
-    mocks.resolveActor.mockResolvedValue({
-      ok: true,
-      actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" },
-    });
-    mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
-      if (sheet === "Inventory_Balances") {
-        return [
-          { item_reference: "BI-1", quantity: 7 },
-          { item_reference: "BTP-1", quantity: 4 },
-        ];
-      }
-      throw new Error(`unexpected uncached read: ${sheet}`);
-    });
-    mocks.findAll.mockImplementation(async (sheet: string) => {
-      if (sheet === "Base_Ingredients") {
-        return [
-          { id: "BI-1", is_non_inventory: false },
-          { id: "BI-NON", is_non_inventory: true },
-        ];
-      }
-      if (sheet === "Semi_Products") return [{ id: "BTP-1" }];
-      return [];
-    });
-
-    const result = await getStockStatus();
-
-    expect(result).toEqual([
-      { id: "BI-1", current_stock: 7 },
-      { id: "BTP-1", current_stock: 4 },
-    ]);
-    expect(result[0]).not.toHaveProperty("name");
-    expect(result[0]).not.toHaveProperty("unit_cost");
-    expect(mocks.findAllNoCache).toHaveBeenCalledWith("Inventory_Balances");
-    expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Stock_Ledger");
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+  // getPOSStockStatus/loadPOSStockStatus deleted outright (owner decision
+  // 2026-08-31) -- had no live caller left, only read Inventory_Balances,
+  // the known-incomplete copy of stock_ledger (38 of 49 adjustments from
+  // the first stocktake). The test that used to prove this function's own
+  // shape is gone with it; see the new test below proving nothing on the
+  // module still exports it.
+  it("no longer exports getPOSStockStatus at all", () => {
+    expect((posActions as any).getPOSStockStatus).toBeUndefined();
   });
 
   it("rejects an unauthenticated sync-failure report before writing", async () => {

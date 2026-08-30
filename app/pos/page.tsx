@@ -67,8 +67,16 @@ export default async function POSPage({
   const activeModifiers = modifiers.filter(m => m.status === "ACTIVE");
   const activePromotions = promotions.filter(p => p.status === "ACTIVE");
 
-  // Out-of-stock badges remain owner-disabled. If they return, derive them
-  // from a materialized per-item balance and the canonical recipe selector.
+  // Out-of-stock badges remain owner-disabled -- decided again, explicitly,
+  // 2026-08-31 (docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md
+  // Phase A): getPOSStockStatus/loadPOSStockStatus (app/pos/actions.ts) had
+  // no live caller left anywhere by then, only the function itself, reading
+  // Inventory_Balances -- the known-incomplete copy of stock_ledger (38 of
+  // 49 adjustments from the first stocktake). A wrong stock-out badge is
+  // worse than none, so the function was deleted outright rather than left
+  // as dead code someone might wire back up. If badges return, derive them
+  // fresh from computeOnHandByPurchasedItem and the canonical recipe
+  // selector, not from this table.
 
   return (
     <POSScreen

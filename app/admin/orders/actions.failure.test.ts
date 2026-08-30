@@ -52,41 +52,14 @@ describe("voidOrderV2 atomic failure handling", () => {
         net_total: 25_000,
       };
     });
-    mocks.findAllWhere.mockImplementation(async (sheet: string) => {
-      if (sheet === "Stock_Ledger") {
-        return [
-          {
-            id: "stk-production-consume-1",
-            transaction_type: "PRODUCTION_CONSUME",
-            reference_id: "ord-void-1",
-            item_reference: "ING-001",
-            quantity_change: -10,
-            unit_cost: 100,
-            source: "IMPLICIT_PRODUCTION",
-          },
-          {
-            id: "stk-production-yield-1",
-            transaction_type: "PRODUCTION_YIELD",
-            reference_id: "ord-void-1",
-            item_reference: "BTP-001",
-            quantity_change: 10,
-            unit_cost: 100,
-            source: "IMPLICIT_PRODUCTION",
-          },
-          {
-            id: "stk-consume-1",
-            transaction_type: "SALES_CONSUME",
-            reference_id: "ord-void-1",
-            item_reference: "BTP-001",
-            quantity_change: -10,
-            unit_cost: 100,
-            cost_at_sale: 1_000,
-            source: "VARIANT_RECIPE",
-          },
-        ];
-      }
-      return [];
-    });
+    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+    // voidOrderV2 no longer reads Stock_Ledger at all -- this mock used to
+    // return three fabricated ledger rows to prove they got reversed. Real
+    // stock_ledger has carried zero sales-driven rows since the 2026-08-07
+    // cutover (proved live for every real voided order in production
+    // before the code was deleted), so findAllWhere has nothing left to
+    // serve here and no test below should call it.
+    mocks.findAllWhere.mockResolvedValue([]);
   });
 
   it("returns the atomic rollback error and permits a clean retry without sequential fallback writes", async () => {
@@ -123,10 +96,16 @@ describe("voidOrderV2 atomic failure handling", () => {
     expect(mocks.voidOrderAtomic).toHaveBeenCalledOnce();
   });
 
-  it("sends reversals for the sale and both implicit-production effects", async () => {
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+  // replaces this test's own prior claim -- it used to prove three
+  // fabricated ledger rows (a sale plus its implicit-production pair) got
+  // reversed. That reversal machinery is gone: proved live first that it
+  // was always reversing nothing (0 stock_ledger rows for every real
+  // voided order in production), then removed the read.
+  it("sends no reversal rows at all -- voidOrderV2 no longer reads or reverses the ledger", async () => {
     mocks.voidOrderAtomic.mockResolvedValue({
       orderId: "ord-void-1",
-      reversalCount: 3,
+      reversalCount: 0,
       alreadyVoided: false,
     });
 
@@ -134,12 +113,8 @@ describe("voidOrderV2 atomic failure handling", () => {
 
     expect(result).toEqual({ success: true });
     const reversalRows = mocks.voidOrderAtomic.mock.calls[0][0].reversalRows;
-    expect(reversalRows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ item_reference: "ING-001", quantity_change: 10 }),
-      expect.objectContaining({ item_reference: "BTP-001", quantity_change: -10 }),
-      expect.objectContaining({ item_reference: "BTP-001", quantity_change: 10 }),
-    ]));
-    expect(reversalRows).toHaveLength(3);
+    expect(reversalRows).toEqual([]);
+    expect(mocks.findAllWhere).not.toHaveBeenCalledWith("Stock_Ledger", expect.anything());
   });
 
   it("rejects a non-voidable state before invoking the RPC", async () => {

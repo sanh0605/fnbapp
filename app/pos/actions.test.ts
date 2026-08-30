@@ -49,7 +49,7 @@ describe("POS order COGS calculation", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const bestSellerSource = source.slice(
       source.indexOf("export async function getPOSBestSellerProductIds"),
-      source.indexOf("const loadPOSStockStatus"),
+      source.indexOf("export async function getPOSDrafts"),
     );
 
     // Regression: this used to call findAllNoCache("Order_Lines_V2")
@@ -65,11 +65,17 @@ describe("POS order COGS calculation", () => {
     );
   });
 
-  it("does not fetch stock or recipes for the disabled out-of-stock feature", () => {
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+  // getPOSStockStatus is gone from the module entirely now (owner decision
+  // 2026-08-31, see app/pos/actions.auth.test.ts's "no longer exports"
+  // proof), not merely uncalled -- the not.toContain check below is on the
+  // CALL shape, not the bare name, since the page's own comment names the
+  // deleted function on purpose, explaining why it is gone.
+  it("does not fetch stock or recipes -- the out-of-stock feature stays disabled, and its data function is gone", () => {
     const pageSource = readFileSync(resolve(__dirname, "page.tsx"), "utf8");
 
     expect(pageSource).toContain("getPOSBestSellerProductIds");
-    expect(pageSource).not.toContain("getPOSStockStatus");
+    expect(pageSource).not.toContain("getPOSStockStatus()");
     expect(pageSource).not.toContain('findAll("Recipes")');
     expect(pageSource).not.toContain("pickVariantRecipe");
     expect(pageSource).not.toContain("outOfStockProductIds=");

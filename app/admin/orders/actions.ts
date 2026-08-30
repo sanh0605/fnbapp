@@ -23,7 +23,6 @@ import {
 import { supersedeOrderV2 } from "@/lib/sheets-db-v2-edit";
 import type { CartInput } from "@/lib/order-cart";
 import { voidOrderAtomic } from "@/lib/void-order-transaction";
-import { buildVoidReversalRows } from "@/lib/void-order-reversal";
 
 function parseObject(value: any): any {
   if (!value) return {};
@@ -408,18 +407,14 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       reason,
     };
 
-    // Reverse the complete checkout inventory effect, including any implicit
-    // production rows created to cover a semi-product shortfall.
-    const ledger = await findAllWhere("Stock_Ledger", {
-      eq: { reference_id: orderId },
-    });
-    const reversalEntries = buildVoidReversalRows({
-      orderId,
-      orderEventId: event.id,
-      eventTime,
-      ledgerRows: ledger as any[],
-      createRowId: () => `stk-${crypto.randomUUID()}`,
-    });
+    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+    // this used to reverse stock_ledger rows for the order's checkout, but
+    // selling has never written one since the 2026-08-07 cutover -- proved
+    // live before this code was removed, not assumed: 0 stock_ledger rows
+    // across all 24 real VOIDED orders and all 17 real EDITED (superseded)
+    // orders in production, both old and new versions, 53 unique order ids
+    // checked. reversalEntries is therefore always [], and always was.
+    const reversalEntries: never[] = [];
 
     await voidOrderAtomic({
       orderId,
@@ -483,14 +478,10 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       modifiers,
       promotions,
       baseIngredients,
-      oldOrderLedger,
     ] = await Promise.all([
       findAll("Brands"), findAll("Products"), findAll("Product_Variants"),
       findAll("Product_Categories"), findAll("Modifiers"), findAll("Promotions"),
       findAll("Base_Ingredients"),
-      findAllWhere("Stock_Ledger", {
-        eq: { reference_id: oldOrderV2.id },
-      }),
     ]);
 
     // 4. Build edited order (preserves sale time, increments version). As of
@@ -557,20 +548,13 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       reason: input.reason,
     };
 
-    // 7. Build reversal entries. Reverses the complete original checkout
-    // inventory effect, including any implicit-production rows created to
-    // cover a semi-product shortfall -- same fix as voidOrderV2 (commit
-    // 4f6ba40), applied here because editing an order that triggered
-    // implicit production had the identical gap: only SALES_CONSUME was
-    // reversed, permanently losing the PRODUCTION_CONSUME raw-ingredient
-    // deduction and double-counting the PRODUCTION_YIELD semi-product gain.
-    const reversalEntries = buildVoidReversalRows({
-      orderId: oldOrderV2.id,
-      orderEventId: event.id,
-      eventTime,
-      ledgerRows: oldOrderLedger as any[],
-      createRowId: () => `stk-${crypto.randomUUID()}`,
-    });
+    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+    // this used to reverse stock_ledger rows for the order's original
+    // checkout, but selling has never written one since the 2026-08-07
+    // cutover -- proved live before removal (see voidOrderV2's own comment
+    // above for the exact count: 0 rows across all 53 real voided/edited
+    // order ids checked). reversalEntries is therefore always [].
+    const reversalEntries: never[] = [];
 
     // 9. Execute supersede. No consumeEntries for the new version -- editing
     // no longer moves stock, only the reversal (if any) above does.

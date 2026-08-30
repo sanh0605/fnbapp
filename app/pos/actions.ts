@@ -2,7 +2,7 @@
 
 import { findAll, findAllNoCache, findAllWhere, insert, update, remove } from "@/lib/sheets_db";
 import type { SheetFilter } from "@/lib/sheets_db";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { resolveActor } from "@/lib/auth";
 import crypto from "node:crypto";
 
@@ -27,11 +27,6 @@ export type PosBestSellerFilters = {
   endDate?: string;
   brandId?: string;
   limit?: number;
-};
-
-export type PosStockStatus = {
-  id: string;
-  current_stock: number;
 };
 
 export async function submitOrderV2(
@@ -213,47 +208,6 @@ export async function getPOSBestSellerProductIds(
     .sort((left, right) => right[1] - left[1])
     .slice(0, limit)
     .map(([productId]) => productId);
-}
-
-const loadPOSStockStatus = unstable_cache(
-  async (): Promise<PosStockStatus[]> => {
-    // PERF-2 Phase B: read the trigger-maintained balance instead of
-    // replaying the whole Stock_Ledger. Cache tag stays "sheets-Stock_Ledger"
-    // (not "sheets-Inventory_Balances") -- see the matching comment in
-    // app/admin/inventory/actions.ts's loadRealtimeStock.
-    const [balances, baseIngredients, semiProducts] = await Promise.all([
-      findAllNoCache("Inventory_Balances"),
-      findAll("Base_Ingredients"),
-      findAll("Semi_Products"),
-    ]);
-    const stockByItem = new Map<string, number>();
-    for (const row of balances as any[]) {
-      const itemId = String(row.item_reference || "");
-      if (!itemId) continue;
-      stockByItem.set(itemId, Number(row.quantity) || 0);
-    }
-    const inventoryItems = [
-      ...(baseIngredients as any[]).filter((item) => (
-        item.is_non_inventory !== true && item.is_non_inventory !== "TRUE"
-      )),
-      ...(semiProducts as any[]),
-    ];
-    return inventoryItems.map((item) => ({
-      id: String(item.id),
-      current_stock: stockByItem.get(String(item.id)) || 0,
-    }));
-  },
-  ["pos-stock-status"],
-  {
-    revalidate: 60,
-    tags: ["sheets-Stock_Ledger", "sheets-Base_Ingredients", "sheets-Semi_Products"],
-  },
-);
-
-export async function getPOSStockStatus(): Promise<PosStockStatus[]> {
-  const auth = await resolveActor();
-  if (!auth.ok) throw new Error(auth.error);
-  return loadPOSStockStatus();
 }
 
 // docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 3: a

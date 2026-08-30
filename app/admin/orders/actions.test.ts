@@ -33,17 +33,19 @@ describe("admin order edit COGS calculation", () => {
     expect(editOrderSource).toContain("payments: editedPayments");
   });
 
-  it("bounds edit reads to the target order, and no longer reads ledger history for cost", () => {
+  it("bounds edit reads to the target order, and reads no ledger table at all", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
 
     expect(editOrderSource).toContain('findById("Orders_V2", input.orderId)');
     expect(editOrderSource).toContain('findAllWhere("Order_Lines_V2"');
-    // Still reads the old version's own ledger rows, to reverse them.
-    expect(editOrderSource).toContain('eq: { reference_id: oldOrderV2.id }');
     expect(editOrderSource).not.toContain('findAllNoCache("Orders_V2")');
     expect(editOrderSource).not.toContain('findAllNoCache("Order_Lines_V2")');
-    expect(editOrderSource).not.toContain('findAllNoCache("Stock_Ledger")');
+    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+    // editOrderV2 no longer reads Stock_Ledger through any call shape --
+    // proved live before removal that it always returned zero rows anyway
+    // (53 real voided/edited order ids checked, 0 stock_ledger rows).
+    expect(editOrderSource).not.toContain("Stock_Ledger");
     // The cost-time ledger-history read (findLedgerHistoryForItems, bounded
     // by lte: created_at / in: item_reference) is gone entirely, not merely
     // narrowed -- there is no cost left to compute it for.
@@ -51,24 +53,25 @@ describe("admin order edit COGS calculation", () => {
     expect(source).not.toContain("in: { item_reference: batch }");
   });
 
-  it("reverses the complete original checkout effect on edit, including implicit production, same as void", () => {
-    // Same underlying gap voidOrderV2 had before commit 4f6ba40: reversing
-    // only SALES_CONSUME on edit would permanently lose the raw-ingredient
-    // PRODUCTION_CONSUME deduction and double-count the PRODUCTION_YIELD
-    // semi-product gain whenever the original sale triggered implicit
-    // production. editOrderV2 must reuse the same buildVoidReversalRows
-    // helper voidOrderV2 uses (already unit-tested in
-    // lib/void-order-reversal.test.ts for the PRODUCTION_CONSUME/YIELD case),
-    // not a bespoke SALES_CONSUME-only filter.
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+  // replaces this test's own prior claim. It used to assert editOrderV2
+  // called buildVoidReversalRows to reverse the old order's real ledger
+  // rows (same gap voidOrderV2 fixed before commit 4f6ba40: reversing only
+  // SALES_CONSUME would lose the PRODUCTION_CONSUME/YIELD pair). That
+  // machinery is gone -- proved live first that it was reversing nothing:
+  // stock_ledger has carried zero sales-driven rows since the 2026-08-07
+  // cutover, confirmed for every real voided/edited order in production
+  // before this code was deleted, not assumed from that fact alone.
+  it("no longer builds a reversal from ledger data -- reversalEntries is a plain empty array", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const editOrderSource = source.slice(
       source.indexOf("export async function editOrderV2"),
-      source.indexOf("// 8. Build new SALES_CONSUME entries"),
+      source.indexOf("export async function", source.indexOf("export async function editOrderV2") + 1),
     );
 
-    expect(editOrderSource).toContain("buildVoidReversalRows({");
-    expect(editOrderSource).toContain("ledgerRows: oldOrderLedger");
-    expect(editOrderSource).not.toContain('transaction_type === "SALES_CONSUME"');
+    expect(source).not.toContain("buildVoidReversalRows");
+    expect(source).not.toContain("void-order-reversal");
+    expect(editOrderSource).toContain("const reversalEntries: never[] = [];");
   });
 });
 

@@ -20,10 +20,6 @@ const adminReadsByFile: Record<string, string[]> = {
     "getHourlyHeatmapV2",
     "getPromotionPerformanceV2",
   ],
-  "app/admin/reports/stock/shift-check-actions.ts": [
-    "getCheckedItems",
-    "getActiveShiftStockCheck",
-  ],
   "app/admin/suppliers/actions.ts": ["getSuppliers"],
   "app/admin/users/actions.ts": ["getUsers", "getUserById"],
 };

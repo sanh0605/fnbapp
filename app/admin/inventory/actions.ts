@@ -8,7 +8,6 @@ import {
   approveStockAdjustmentAtomic,
   submitStockAdjustmentAtomic,
 } from "@/lib/stock-adjustment-transaction";
-import { computeReorderSuggestions } from "@/lib/reorder-suggestion";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
@@ -482,54 +481,6 @@ export async function getRealtimeStock() {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
   return loadRealtimeStock();
-}
-
-// FC-2: smart low-stock detection + reorder-quantity suggestion (read-only).
-const loadReorderSuggestions = unstable_cache(
-  async () => {
-    const [stockLedger, baseIngredients, semiProducts, units, purchasedItems, uomConversions, purchaseOrders, purchaseOrderLines] =
-      await Promise.all([
-        findAllNoCache("Stock_Ledger"),
-        findAll("Base_Ingredients"),
-        findAll("Semi_Products"),
-        findAll("Units"),
-        findAll("Purchased_Items"),
-        findAll("UOM_Conversions"),
-        findAll("Purchase_Orders"),
-        findAll("Purchase_Order_Lines"),
-      ]);
-
-    return computeReorderSuggestions({
-      stockLedger,
-      baseIngredients,
-      semiProducts,
-      units,
-      purchasedItems,
-      uomConversions,
-      purchaseOrders,
-      purchaseOrderLines,
-    });
-  },
-  ["reorder-suggestions-all"],
-  {
-    revalidate: 60,
-    tags: [
-      "sheets-Stock_Ledger",
-      "sheets-Base_Ingredients",
-      "sheets-Semi_Products",
-      "sheets-Units",
-      "sheets-Purchased_Items",
-      "sheets-UOM_Conversions",
-      "sheets-Purchase_Orders",
-      "sheets-Purchase_Order_Lines",
-    ],
-  }
-);
-
-export async function getReorderSuggestions() {
-  const auth = await requireAdmin();
-  if (!auth.ok) throw new Error(auth.error);
-  return loadReorderSuggestions();
 }
 
 export async function submitStockAdjustment(data: any, _clientRole?: string, _clientUsername?: string): Promise<ActionResponse> {
