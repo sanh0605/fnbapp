@@ -62,6 +62,70 @@ Plus one trigger, `trg_stock_ledger_inventory_balances`, and 8 TypeScript sites.
 **Re-derive this list before acting.** It was produced by grep on 2026-08-28 and
 a function added tomorrow will not be in it.
 
+## 2b. Hiện trạng đo lại 31/08 — việc nhỏ đi một nửa
+
+**§2 đo ngày 28/08 và đã lỗi thời.** Từ đó: công thức và bán thành phẩm bị xoá
+hẳn, phiếu xuất kho thôi ghi sổ (migration `0076`), và mấy màn hình đọc sổ qua
+công thức đã biến mất theo. Kế hoạch tự dặn phải đo lại trước khi làm — đây là
+lần đo lại.
+
+### 2b.1 Ai còn GHI vào hai bảng
+
+21 hàm còn nhắc tên, nhưng **6 hàm chỉ nhắc trong chú thích hoặc chỉ đọc** —
+trong đó có `create_issue_slip_atomic` và `reverse_manual_issue_atomic`, đã gỡ
+phần ghi hôm 30/08.
+
+**7 hàm còn sống và ghi thật** (§2 đoán 13):
+
+`apply_stocktake_session_atomic`, `approve_stock_adjustment_atomic`,
+`reverse_stocktake_session_atomic`, `save_purchase_order_atomic`,
+`submit_stock_adjustment_atomic`, `supersede_order_v2_atomic`,
+`void_order_atomic`.
+
+**7 hàm ghi nhưng đã chết**, xoá thẳng: `apply_hong_to_luc_migration`,
+`apply_purchase_cost_recovery`, `create_pos_order_atomic_unvalidated_0025`,
+`rebuild_stock_ledger_for_order`, `rollback_purchase_cost_recovery`,
+`save_production_order_atomic`, `rebuild_inventory_balances`.
+
+Cộng cơ chế tự động `trg_stock_ledger_inventory_balances` và hàm của nó.
+
+### 2b.2 Ai còn ĐỌC — chỉ còn 5 chỗ trong 3 file
+
+| Chỗ | Làm gì |
+|---|---|
+| `inventory/actions.ts:446` | `deleteUnit` — kiểm một đơn vị còn ai dùng không trước khi xoá |
+| `inventory/actions.ts:492` | `getRealtimeStock` — nuôi báo cáo tồn kho và báo cáo ngày |
+| `orders/actions.ts:413` | `voidOrderV2` — đọc để trả hàng về kho khi huỷ đơn |
+| `orders/actions.ts:491` | `editOrderV2` — như trên, khi sửa đơn |
+| `pos/actions.ts:225` | `loadPOSStockStatus` — hiện còn/hết hàng cho nhân viên |
+
+**Hai chỗ đọc của màn hình sản phẩm đã tự biến mất** cùng lúc xoá công thức.
+
+**Hai chỗ đọc ở đơn hàng đọc ra rỗng**: sổ kho không có dòng nào từ bán hàng —
+chỉ có `PO_RECEIPT` và `STOCK_ADJUST`. Chứng minh lại bằng hành động 29/08: bán
+một ly thật, sửa, rồi huỷ — sổ kho đứng nguyên 382 dòng qua cả ba bước.
+
+### 2b.3 Số dòng hôm nay
+
+| | 28/08 | 31/08 |
+|---|---:|---:|
+| `stock_ledger` | 382 | **384** |
+| `inventory_balances` | 141 | **130** |
+| `stock_issues` | 94 | **103** |
+
+Số dư giảm 11 vì xoá bán thành phẩm. Sổ kho **chỉ tăng 2 trong bốn ngày** — và
+9 phiếu xuất mới trong cùng kỳ **không sinh dòng nào**, đúng như migration `0076`
+định làm.
+
+### 2b.4 Chỗ tôi CHƯA xem
+
+- **`approve_stock_adjustment_atomic` và `submit_stock_adjustment_atomic`** hiện
+  là "còn sống" theo phép tra tên, nhưng Sonnet đo 31/08 rằng đường tạo điều
+  chỉnh tồn **không có ai gọi** và bảng **0 dòng**. Hai phép đo mâu thuẫn nhau —
+  **phải làm rõ trước khi sửa hai hàm này**, vì có thể chúng thuộc nhóm chết.
+- **Màn hình Điều chỉnh Tồn kho** còn trong menu hay chưa — chưa xem.
+- **`get_pos_inventory_state`** đọc chứ không ghi, nhưng chưa xem ai gọi nó.
+
 ## 3. Phase A — stop reading, delete the screen
 
 Owner instruction: *"Anh không xài báo cáo tồn kho với những thông tin đó, sẽ
