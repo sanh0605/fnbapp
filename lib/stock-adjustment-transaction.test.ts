@@ -17,9 +17,9 @@ describe("stock adjustment atomic adapters", () => {
     mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
   });
 
-  it("submits one approved adjustment and its ledger effect through one RPC", async () => {
+  it("submits one approved adjustment through one RPC", async () => {
     mocks.rpc.mockResolvedValue({
-      data: { adjustment_id: "SADJ-001", ledger_count: 1 },
+      data: { adjustment_id: "SADJ-001", already_completed: false },
       error: null,
     });
     const adjustment = {
@@ -37,7 +37,6 @@ describe("stock adjustment atomic adapters", () => {
 
     await expect(submitStockAdjustmentAtomic(adjustment)).resolves.toEqual({
       adjustmentId: "SADJ-001",
-      ledgerCount: 1,
     });
     expect(mocks.rpc).toHaveBeenCalledWith("submit_stock_adjustment_atomic", {
       p_adjustment: adjustment,

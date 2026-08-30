@@ -2,7 +2,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 
 export async function submitStockAdjustmentAtomic(
   adjustment: Record<string, unknown>,
-): Promise<{ adjustmentId: string; ledgerCount: number }> {
+): Promise<{ adjustmentId: string }> {
   const { data, error } = await getSupabaseClient().rpc(
     "submit_stock_adjustment_atomic",
     { p_adjustment: adjustment },
@@ -11,12 +11,8 @@ export async function submitStockAdjustmentAtomic(
     throw new Error(`submit_stock_adjustment_atomic: ${error.message}`);
   }
   const result = parseResult(data, "submit_stock_adjustment_atomic");
-  if (result.ledgerCount !== 1) {
-    throw new Error("submit_stock_adjustment_atomic persisted ledger count mismatch");
-  }
   return {
     adjustmentId: result.adjustmentId,
-    ledgerCount: result.ledgerCount,
   };
 }
 
