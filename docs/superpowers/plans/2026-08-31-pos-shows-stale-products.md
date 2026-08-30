@@ -7,82 +7,87 @@
 
 ---
 
-## 1. Hiện trạng — mô tả để chủ quán bác
+## 1. Hiện trạng
 
-### 1.1 Chuyện đã xảy ra
+Viết lại 31/08 sau khi chủ quán hỏi quy trình có bị bỏ bước không. **Bản đầu
+lấp mục này bằng kết quả điều tra nguyên nhân thay vì liệt kê bề mặt** — và chỗ
+thiếu đang che một lỗi thứ hai (§1.4).
 
-Chủ quán bấm **Ngừng bán** rồi **Bán lại** món `Test1`. Mở máy POS, chọn món, và
-màn hình báo **"Món này chưa cấu hình kích cỡ & giá."**
+### 1.1 Món có ba trạng thái, đặt bằng bốn nút
 
-**Dữ liệu đúng.** Đo 31/08: `VAR-060`, cỡ 500ml, giá 10.000đ, trạng thái
-**ACTIVE**, sửa lúc **02:24:58** — đúng lúc ông ấy bấm Bán lại. Bản vá
-`resumeProduct` hôm qua chạy chính xác.
+| Trạng thái | Đặt bằng | Hiện ở màn hình quản lý | Hiện trên POS |
+|---|---|---|---|
+| `ACTIVE` — đang bán | `saveProduct` (tạo mới), `resumeProduct` | Có, mặc định | **Có** |
+| `INACTIVE` — ngừng bán | `pauseProduct` | Chỉ khi lọc "Ngừng bán" | Không |
+| `DELETED` — đã xoá | *(không còn nút nào đặt)* | Chỉ khi lọc "Đã xoá" | Không |
 
-**Màn hình sai.** Máy POS lúc 02:25 vẫn đang đọc bản chụp cũ.
+**Cỡ có cùng ba trạng thái**, và bốn nút kia đổ theo món xuống cỡ — trừ một chỗ
+cố ý: `resumeProduct` chỉ hồi sinh cỡ `DELETED` khi món **không còn cỡ nào** đang
+bán; nếu còn ít nhất một cỡ sống thì cỡ đã xoá vẫn nằm im.
 
-### 1.2 Vì sao
+### 1.2 Danh sách trên POS chứa gì, loại gì
 
-Hệ thống lưu đệm dữ liệu theo **tên bảng**: `lib/sheets_db.ts:34` đặt nhãn
-`sheets-<TênBảng>`, nên danh sách món mang nhãn `sheets-Products` và
-`sheets-Product_Variants`.
+`app/pos/page.tsx:55-57` giữ **món `ACTIVE`**, **cỡ `ACTIVE`**, cùng nhóm món,
+topping và khuyến mãi `ACTIVE`.
 
-Nhưng cả bốn hành động trên màn hình Sản phẩm — `saveProduct`, `pauseProduct`,
-`resumeProduct`, `eraseProduct` — đều gọi `revalidatePath("/admin/products")`,
-tức **chỉ làm mới đúng màn hình chúng đang đứng**. Máy POS đọc cùng bảng đó
-nhưng ở đường dẫn khác, nên **không được báo là dữ liệu đã đổi**.
+**Không có phép kiểm nào hỏi "món này còn cỡ nào không".**
 
-**Sửa món ở màn hình quản lý không nói cho màn hình bán hàng biết.**
+### 1.3 Dữ liệu được nhớ tạm bao lâu, và ai xoá được
 
-### 1.3 Đây không phải lỗi riêng của màn hình Sản phẩm
+`lib/sheets_db.ts:34` đánh nhãn mỗi bảng là `sheets-<TênBảng>`;
+`sheets_db.ts:51` cho nhóm bảng danh mục — trong đó có `Products` và
+`Product_Variants` — sống **600 giây, tức 10 phút**.
 
-Đo 31/08: **20 file dùng `revalidatePath`, 3 file dùng `revalidateTag`.**
+| Ai xoá được | Xoá cái gì |
+|---|---|
+| `revalidatePath("/admin/products")` — bốn nút trên màn hình Sản phẩm | **Chỉ màn hình Sản phẩm** |
+| Nút **"Xoá Cache"** trong menu (`app/admin/clear-cache/page.tsx`) | `sheets-Products`, `sheets-Product_Variants`, `sheets-Recipes`, `sheets-Product_Price_History` — **đúng thứ cần** |
+| Tự hết hạn | Sau 10 phút |
 
-Hai trong ba file kia là kho và đơn nhập — nhiều khả năng đã bị đúng lỗi này
-trước đây rồi sửa riêng. **Phần còn lại vẫn theo lối cũ.**
+### 1.4 Hai lỗi, không phải một
 
-### 1.4 Chữ "Cỡ"
+**Lỗi A — sửa món không báo cho POS.** Bốn nút chỉ làm mới đường dẫn màn hình
+Sản phẩm, trong khi bộ đệm đánh nhãn theo **tên bảng**. Nên POS giữ bản cũ tới
+10 phút. Đúng chuyện chủ quán gặp: `Test1` được bán lại lúc **02:24:58**, dữ
+liệu đã đúng (`VAR-060`, 500ml, 10.000đ, `ACTIVE`), mà POS lúc **02:25** vẫn báo
+chưa có cỡ.
 
-Chủ quán muốn đổi thành **"Size"**. Hiện xuất hiện ở: bảng danh sách món
-(`ProductsClient.tsx`), khung chọn món trên POS (`ItemConfigModal.tsx`), câu
-cảnh báo trong `POSScreen.tsx`, và màn hình sửa món (`ProductForm.tsx`, cả nhãn
-"Các Kích Cỡ").
+**Bản vá đã tồn tại sẵn trong hệ thống** — nút "Xoá Cache" gọi đúng hai nhãn cần
+gọi. Nó chỉ đang nằm dưới dạng **một nút chủ quán phải nhớ bấm**, thay vì chạy
+tự động lúc sửa món.
 
-### 1.4b Màn hình POS — phần tôi BỎ SÓT, và nó che một lỗi thứ hai
+**Lỗi B — POS mời bấm vào món không bán được.** Vì §1.2 không kiểm món còn cỡ
+hay không, một món `ACTIVE` mà mọi cỡ đều `DELETED`/`INACTIVE` **vẫn nằm trong
+danh sách**, và chỉ báo *"Món này chưa cấu hình kích cỡ & giá"* **sau khi nhân
+viên đã bấm** — giữa ca, trước mặt khách.
 
-**Chủ quán hỏi 31/08 rằng kế hoạch này có bỏ bước nào không. Có.** Mục 1b bắt mô
-tả tối thiểu năm thứ; bản đầu của kế hoạch này chỉ làm hai — cơ chế bộ nhớ đệm
-và danh sách chỗ chưa xem. Thiếu hẳn phần **"màn hình POS hiện danh sách gồm gì,
-loại gì ra"**.
+**Hai lỗi độc lập.** Hôm nay chúng trùng nhau nên trông như một: dữ liệu `Test1`
+đã đúng, chỉ màn hình cũ. Nhưng một món **thật sự** hết cỡ thì POS vẫn mời bấm
+rồi mới từ chối. Sonnet đã vá đúng chuyện này ở **màn hình quản lý** hôm 30/08
+(dòng *"Không có size nào đang bán"*); màn hình POS không được vá cùng lúc vì
+lúc đó không ai liệt kê nó ra.
 
-Viết bù, và nó lòi ra ngay:
+### 1.5 Không phải lỗi riêng của màn hình Sản phẩm
 
-`app/pos/page.tsx:55-57` lọc **món** `status === "ACTIVE"` và **cỡ**
-`status === "ACTIVE"` — **nhưng không bao giờ kiểm một món có còn cỡ nào không.**
+Đo 31/08: **20 file dùng `revalidatePath`, 3 file dùng `revalidateTag`.** Hai
+trong ba file kia là kho và đơn nhập — nhiều khả năng đã dính rồi sửa riêng, mà
+không ai rút thành luật chung.
 
-Nên **một món đang bán mà không còn cỡ nào vẫn nằm trong danh sách POS**, và chỉ
-báo *"Món này chưa cấu hình kích cỡ & giá"* **sau khi nhân viên đã bấm vào** —
-giữa ca, trước mặt khách.
+### 1.6 Chữ "Cỡ"
 
-**Đây là lỗi thứ hai, độc lập với chuyện bộ nhớ đệm.** Hôm nay hai lỗi trùng
-nhau nên trông như một: dữ liệu của `Test1` đã đúng, chỉ màn hình cũ; nhưng nếu
-một món **thật sự** không còn cỡ nào thì POS vẫn mời bấm vào rồi mới từ chối.
+Chủ quán muốn đổi thành **"Size"**: bảng danh sách món (`ProductsClient.tsx`),
+khung chọn món trên POS (`ItemConfigModal.tsx`), câu cảnh báo trong
+`POSScreen.tsx`, và màn hình sửa món (`ProductForm.tsx`, cả tiêu đề *"Các Kích
+Cỡ"*).
 
-**Sonnet đã vá đúng chuyện này ở màn hình quản lý hôm 30/08** — dòng cảnh báo
-*"Không có size nào đang bán"*. Màn hình POS không được vá cùng lúc, vì lúc đó
-không ai liệt kê nó ra.
+### 1.7 Chỗ tôi CHƯA xem
 
-**Thêm vào thay đổi:** POS loại món không còn cỡ đang bán. Một món không bán
-được thì không nên mời bấm.
-
-### 1.5 Chỗ tôi CHƯA xem
-
-- **18 file `revalidatePath` còn lại** — chưa kiểm cái nào cũng có màn hình thứ
-  hai đọc cùng bảng. Có thể phần lớn vô hại; chưa đo.
-- **`app/api/revalidate/route.ts`** — chưa đọc nó làm gì, và có phải là đường
-  làm mới thủ công đang bù cho lỗi này không.
-- **Thời hạn tự hết hạn của bộ đệm** — chưa đo mỗi nhãn sống bao lâu, nên chưa
-  biết chủ quán phải chờ bao lâu thì nó tự đúng.
-- **Nút "Xoá bộ nhớ đệm"** trong menu — chưa xem nó xoá gì.
+- **18 file `revalidatePath` còn lại** — chưa đo cái nào có màn hình thứ hai đọc
+  cùng bảng. Có thể phần lớn vô hại.
+- **Máy POS có tự làm mới khi quay lại tab không** — chưa xem, và nó quyết định
+  nhân viên có phải tải lại trang bằng tay hay không.
+- **Bốn nút kia có đổ trạng thái xuống topping không** — món và cỡ thì có, chưa
+  kiểm topping.
 
 ## 2. Thay đổi
 
