@@ -15,13 +15,11 @@ export async function supersedeOrderAtomic(
     newOrder: Record<string, unknown>;
     newLines: Array<Record<string, unknown>>;
     event: Record<string, unknown>;
-    ledgerRows: Array<Record<string, unknown>>;
     payments: OrderEditPaymentInput[];
   },
 ): Promise<{
   newOrderId: string;
   lineCount: number;
-  ledgerCount: number;
   paymentCount: number;
 }> {
   const { data, error } = await getSupabaseClient().rpc(
@@ -40,7 +38,6 @@ export async function supersedeOrderAtomic(
         "recipe_snapshot_json",
       ])),
       p_event: parseJsonColumns(input.event, ["delta_json"]),
-      p_ledger: input.ledgerRows,
       p_payments: input.payments,
     },
   );
@@ -51,18 +48,15 @@ export async function supersedeOrderAtomic(
   const result = data as {
     new_order_id?: string;
     line_count?: number;
-    ledger_count?: number;
     payment_count?: number;
   } | null;
   if (!result?.new_order_id) {
     throw new Error("supersede_order_v2_atomic returned no new_order_id");
   }
   const lineCount = Number(result.line_count) || 0;
-  const ledgerCount = Number(result.ledger_count) || 0;
   const paymentCount = Number(result.payment_count) || 0;
   if (
     lineCount !== input.newLines.length ||
-    ledgerCount !== input.ledgerRows.length ||
     paymentCount !== input.payments.length
   ) {
     throw new Error("supersede_order_v2_atomic persisted row count mismatch");
@@ -70,7 +64,6 @@ export async function supersedeOrderAtomic(
   return {
     newOrderId: result.new_order_id,
     lineCount,
-    ledgerCount,
     paymentCount,
   };
 }

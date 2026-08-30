@@ -12,11 +12,10 @@ describe("supersedeOrderV2", () => {
     vi.clearAllMocks();
   });
 
-  it("forwards the replacement order, lines, event, and combined ledger batch", async () => {
+  it("forwards the replacement order, lines, event, and payments", async () => {
     mocks.supersedeOrderAtomic.mockResolvedValue({
       newOrderId: "ord-new",
       lineCount: 1,
-      ledgerCount: 2,
       paymentCount: 2,
     });
     const input = makeInput();
@@ -28,7 +27,6 @@ describe("supersedeOrderV2", () => {
       newOrder: input.newOrder,
       newLines: input.newLines,
       event: input.event,
-      ledgerRows: [...input.reversalEntries, ...input.consumeEntries],
       payments: input.payments,
     });
   });
@@ -62,28 +60,6 @@ function makeInput(): SupersedeOrderV2Input {
       order_id: "ord-new",
       event_type: "EDITED",
     } as SupersedeOrderV2Input["event"],
-    reversalEntries: [{
-      id: "ledger-reversal",
-      transaction_type: "EDIT_REVERSAL",
-      reference_id: "ord-old",
-      item_reference: "ING-001",
-      quantity_change: 10,
-      unit_cost: 100,
-      created_at: "2026-07-19T00:00:00.000Z",
-      order_event_id: "event-edit",
-      cost_at_sale: 1_000,
-    }],
-    consumeEntries: [{
-      id: "ledger-consume",
-      transaction_type: "SALES_CONSUME",
-      reference_id: "ord-new",
-      item_reference: "ING-001",
-      quantity_change: -12,
-      unit_cost: 100,
-      created_at: "2026-07-19T00:00:00.000Z",
-      order_event_id: "event-edit",
-      cost_at_sale: 1_200,
-    }],
     payments: [
       { id: "pay-cash", order_id: "ord-new", method: "CASH", amount: 15000, reference: "" },
       { id: "pay-bank", order_id: "ord-new", method: "BANK_TRANSFER", amount: 10000, reference: "TX-1" },

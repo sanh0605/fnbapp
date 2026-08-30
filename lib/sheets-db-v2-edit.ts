@@ -12,27 +12,12 @@ import { supersedeOrderAtomic } from "@/lib/order-edit-transaction";
 import type { OrderEditPaymentInput } from "@/lib/order-edit-transaction";
 import type { OrderEvent, OrderLineV2, OrderV2 } from "@/lib/order-types";
 
-interface LedgerEntryInput {
-  id: string;
-  transaction_type: string;
-  reference_id: string;
-  item_reference: string;
-  quantity_change: number;
-  unit_cost: number;
-  created_at: string;
-  order_event_id: string;
-  cost_at_sale: number;
-  source?: string;
-}
-
 export interface SupersedeOrderV2Input {
   oldOrderId: string;
   expectedOldVersion: number;
   newOrder: OrderV2;
   newLines: OrderLineV2[];
   event: OrderEvent;
-  reversalEntries: LedgerEntryInput[];
-  consumeEntries: LedgerEntryInput[];
   payments: OrderEditPaymentInput[];
 }
 
@@ -50,10 +35,6 @@ export async function supersedeOrderV2(
       newOrder: input.newOrder as unknown as Record<string, unknown>,
       newLines: input.newLines as unknown as Array<Record<string, unknown>>,
       event: input.event as unknown as Record<string, unknown>,
-      ledgerRows: [
-        ...input.reversalEntries,
-        ...input.consumeEntries,
-      ] as unknown as Array<Record<string, unknown>>,
       payments: input.payments,
     });
     return { success: true };

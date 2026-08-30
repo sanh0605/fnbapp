@@ -18,7 +18,7 @@ describe("supersedeOrderV2 atomic failures", () => {
   it("leaves no intermediate state after a forced rollback and permits retry", async () => {
     mocks.supersedeOrderAtomic
       .mockRejectedValueOnce(new Error("forced rollback"))
-      .mockResolvedValueOnce({ newOrderId: "ord-new", lineCount: 1, ledgerCount: 2 });
+      .mockResolvedValueOnce({ newOrderId: "ord-new", lineCount: 1 });
 
     await expect(supersedeOrderV2(makeInput())).resolves.toEqual({
       success: false,
@@ -58,28 +58,6 @@ function makeInput(): SupersedeOrderV2Input {
       order_id: "ord-new",
       event_type: "EDITED",
     } as SupersedeOrderV2Input["event"],
-    reversalEntries: [{
-      id: "ledger-reversal",
-      transaction_type: "EDIT_REVERSAL",
-      reference_id: "ord-old",
-      item_reference: "ING-001",
-      quantity_change: 10,
-      unit_cost: 100,
-      created_at: "2026-07-19T00:00:00.000Z",
-      order_event_id: "event-edit",
-      cost_at_sale: 1_000,
-    }],
-    consumeEntries: [{
-      id: "ledger-consume",
-      transaction_type: "SALES_CONSUME",
-      reference_id: "ord-new",
-      item_reference: "ING-001",
-      quantity_change: -12,
-      unit_cost: 100,
-      created_at: "2026-07-19T00:00:00.000Z",
-      order_event_id: "event-edit",
-      cost_at_sale: 1_200,
-    }],
     payments: [{
       id: "pay-new",
       order_id: "ord-new",

@@ -11,6 +11,11 @@ describe("admin order edit COGS calculation", () => {
   // exactly the regression worth locking in now. The reversal of the OLD
   // version's real ledger rows is unchanged -- see "reverses the complete
   // original checkout effect on edit" below, which still passes untouched.
+  //
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase C:
+  // this test used to assert `consumeEntries: []` was still being sent --
+  // Phase C removed supersede_order_v2_atomic's stock_ledger write
+  // entirely, so there is no longer a consumeEntries field to send at all.
   it("computes no cost for the edited lines and writes no new consumption", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
@@ -20,7 +25,7 @@ describe("admin order edit COGS calculation", () => {
     expect(source).not.toContain("splitImplicitProduction");
     expect(source).not.toContain("buildLineConsumptionRows");
     expect(editOrderSource).not.toContain("FIFOTracker");
-    expect(editOrderSource).toContain("consumeEntries: []");
+    expect(editOrderSource).not.toContain("consumeEntries");
   });
 
   it("preserves payment rows through the atomic edit transaction", () => {
@@ -62,7 +67,13 @@ describe("admin order edit COGS calculation", () => {
   // stock_ledger has carried zero sales-driven rows since the 2026-08-07
   // cutover, confirmed for every real voided/edited order in production
   // before this code was deleted, not assumed from that fact alone.
-  it("no longer builds a reversal from ledger data -- reversalEntries is a plain empty array", () => {
+  //
+  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase C:
+  // this test used to assert `const reversalEntries: never[] = [];` was
+  // still constructed -- Phase C removed supersede_order_v2_atomic's
+  // stock_ledger write entirely, so there is no longer a reversalEntries
+  // field to construct or send at all.
+  it("no longer builds a reversal from ledger data -- there is no reversalEntries field left to send", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
     const editOrderSource = source.slice(
       source.indexOf("export async function editOrderV2"),
@@ -71,7 +82,7 @@ describe("admin order edit COGS calculation", () => {
 
     expect(source).not.toContain("buildVoidReversalRows");
     expect(source).not.toContain("void-order-reversal");
-    expect(editOrderSource).toContain("const reversalEntries: never[] = [];");
+    expect(editOrderSource).not.toContain("reversalEntries");
   });
 });
 

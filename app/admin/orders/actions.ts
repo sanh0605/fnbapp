@@ -546,24 +546,18 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       reason: input.reason,
     };
 
-    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
-    // this used to reverse stock_ledger rows for the order's original
-    // checkout, but selling has never written one since the 2026-08-07
-    // cutover -- proved live before removal (see voidOrderV2's own comment
-    // above for the exact count: 0 rows across all 53 real voided/edited
-    // order ids checked). reversalEntries is therefore always [].
-    const reversalEntries: never[] = [];
-
-    // 9. Execute supersede. No consumeEntries for the new version -- editing
-    // no longer moves stock, only the reversal (if any) above does.
+    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+    // proved the old reversal always wrote 0 stock_ledger rows (see
+    // voidOrderV2's own comment above for the exact count: 0 rows across
+    // all 53 real voided/edited order ids checked). Phase C removed
+    // supersede_order_v2_atomic's stock_ledger write entirely, so this call
+    // no longer has a ledger movement pair to build or send.
     const result = await supersedeOrderV2({
       oldOrderId: oldOrderV2.id,
       expectedOldVersion: input.expectedVersion,
       newOrder: built.order,
       newLines: built.lines,
       event,
-      reversalEntries,
-      consumeEntries: [],
       payments: editedPayments,
     });
 
