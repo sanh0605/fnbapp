@@ -32,9 +32,18 @@ With `Cây 50 Cái` selected against 1.000 Cái, show **20 Cây**.
 figure is what every other screen and every refusal message uses; hiding it
 would make a rejection ("còn 1.000") unreadable against what the screen said.
 
-**Non-exact division is the normal case, not an edge.** 1.030 Cái at 50 per Cây
-is 20,6. Do not round to a whole number — a screen that says *20 Cây* when 1.030
-remain invites issuing 20 and losing 30. Show one decimal, Vietnamese comma.
+**Rounding, set by the owner 2026-08-30:** show the exact value when the
+division is clean (`20,6`), and **two decimal places** when it is not
+(`20,62`). Vietnamese comma. Never round to a whole number.
+
+**This is a mistake guard, not a convenience — and that is the stronger
+reason.** Verified at `IssueSlipClient.tsx:163`: the form submits
+`parsedQty * pkg.conversionRate`, so with `Cây 50 Cái` selected, typing 10
+issues **500**. A screen showing `Tồn hiện tại: 1.000 Cái` beside a box that
+means *cây* invites typing 1.000 — **50.000 cái, fifty times the intent**. The
+server refuses only when the result exceeds stock; when stock is large enough it
+passes, and the error is silent. `Ly mập Uchako` is exactly this shape: two
+conversions, `Cái` at rate 1 and `Cây` at rate 50.
 
 **Rate 1 conversions change nothing** — 26 of the consumables are `Cái 1 Cái`,
 and `20 Cái (1.000 Cái)` is noise. When the rate is 1, show the base figure
