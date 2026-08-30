@@ -192,6 +192,30 @@ xây lại chuẩn chỉnh sau, xoá đi."*
 
 **Gate:** POS sells, orders void and edit, full suite, `npm run build`.
 
+## 3b. THỨ TỰ BẮT BUỘC — giai đoạn B không được chạy trước khi A lên web
+
+**Đo 31/08:** nhánh đang chạy trên web (`origin/main`) vẫn còn
+`lib/shift-stock-check-transaction.ts` gọi `open_shift_stock_check_atomic` và
+`close_shift_stock_check_atomic`. Giai đoạn A vừa xoá chỗ gọi đó **ở máy**, chưa
+đẩy.
+
+**Chạy migration giai đoạn B lúc này là làm hỏng màn hình kiểm kho đầu ca trên
+web thật.**
+
+Đây là bài học `0076` ngày 30/08 lặp lại theo chiều ngược: lần đó migration đi
+trước code và mọi phiếu xuất báo lỗi đỏ suốt bốn tiếng. Lần này là **xoá hàm
+trước khi gỡ chỗ gọi**.
+
+**Thứ tự đúng:**
+
+1. Viết migration của B và C — **không chạy**.
+2. Đẩy toàn bộ code, chờ Vercel dựng xong.
+3. Chủ quán mở web xác nhận bán được, huỷ đơn được.
+4. **Rồi mới** chạy migration B, sau đó C.
+
+Chủ quán chốt 31/08 là *"làm tiếp một thể"* — nghĩa là viết hết rồi đẩy một
+lượt, **không phải chạy hết một lượt**.
+
 ## 4. Phase B — drop the 8 dead functions
 
 One migration. Each is unreferenced; **prove it per function**, do not batch the
