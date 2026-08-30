@@ -49,11 +49,16 @@ và chủ quán không phải đọc phần đó.
 **Mọi thứ chủ quán đọc thì bằng tiếng Việt**: kết quả, giải thích, câu hỏi, cảnh
 báo. Chữ hiển thị trong app cũng vậy (mục 7).
 
-## 1b. Mô tả thứ đang có, trước khi bàn cách sửa
+## 1b. Bốn bước, và bước nào cũng nằm trong file này
 
-**Chủ quán chốt 31/08.** Đo hôm đó: **25 kế hoạch triển khai trong 7 ngày, 0
-tài liệu thiết kế trong 29 ngày.** Quy trình thật đang là *kế hoạch → code*,
-bỏ hẳn bước mô tả.
+**Chủ quán chốt 31/08.** Luật này viết đủ ngay tại đây, **không trỏ sang file
+khác**. Lý do ông ấy nêu: đọc hết `CLAUDE.md` rồi *tự quyết đọc gì tiếp* — và
+chính chỗ tự quyết đó là chỗ bỏ sót. Nguyên tắc này đã nằm trong bản thiết kế
+01/08 (*"luật nằm ở chỗ máy tự nạp, không nằm ở file phải nhớ mở"*) và vẫn bị
+vi phạm.
+
+**Đo 31/08: 25 kế hoạch triển khai trong 7 ngày, 0 tài liệu thiết kế trong 29
+ngày.** Quy trình thật đang là *kế hoạch → code*.
 
 Hậu quả không phải lỗi khó. Sáu thứ chủ quán phải tự phát hiện trong một tuần —
 bộ lọc "Ngừng bán" cho một trạng thái không đặt được, không có nút ngừng bán,
@@ -61,32 +66,56 @@ phiếu xuất chưa từng chạy cho vật tư tiêu hao, tồn không đổi 
 dụng cụ nằm trong danh sách phiếu xuất, ngày thanh lý không bị kiểm — **cả sáu
 đều là "chưa ai viết ra thứ này là gì"**, không cái nào là đánh đổi lợi hại.
 
-Kế hoạch hiện rất kỹ về *sửa thế nào cho an toàn* và mù về *cái này gồm những
-gì*. Nên vá rất cẩn thận chỗ đã biết, và không thấy chỗ chưa ai kể ra.
+### Bốn bước
 
-### Luật
+| Bước | Là gì | Ai đọc |
+|---|---|---|
+| **1. Đặc tả** | Chủ quán cần gì, tính năng phục vụ ai, cố ý **không** phục vụ ai | Chủ quán |
+| **2. Thiết kế** | Hình dạng: trạng thái, ô nhập, danh sách, nút, luồng tiền | Chủ quán duyệt, Sonnet đọc |
+| **3. Kế hoạch** | Sửa file nào, đo bằng gì, cái gì có thể vỡ | Sonnet |
+| **4. Code** | Sonnet viết, phản biện trước khi viết | — |
 
-**Mỗi kế hoạch phải mở đầu bằng một mục mô tả hiện trạng đầy đủ, viết trước khi
-bàn tới thay đổi.** Không phải danh sách câu hỏi đưa chủ quán trả lời — **là bản
-mô tả do mình viết, để ông ấy đọc và bác.** Đưa câu hỏi là đẩy phần đảm bảo đủ
-về phía ông ấy; đưa mô tả là ông ấy chỉ cần nói "sai chỗ này".
+### Bước nào áp dụng — mốc phải MÁY nhìn ra được
 
-Mục đó tối thiểu phải trả lời: có mấy trạng thái và đặt bằng cách nào; màn hình
-có nút nào, làm gì, khi nào không nên hiện; danh sách chứa gì và loại gì ra;
-mỗi ô nhận giá trị nào là hợp lệ và ngoài khoảng thì sao; phục vụ loại dữ liệu
-nào và cố ý không phục vụ loại nào.
+**Tạo thứ chưa từng có** — bảng dữ liệu mới, màn hình mới, khái niệm mới →
+**đủ bốn bước**, đặc tả và thiết kế lưu vào `docs/superpowers/specs/`.
 
-**Đó là sàn, không phải trần.** Mỗi việc có bộ câu hỏi riêng của nó và không ai
-nhớ hết được — **nghĩ ra bộ câu hỏi cho đúng việc đó là phần việc của mình**,
-không phải việc chủ quán nhớ giùm.
+**Sửa thứ đã có** → **bước 2 rút gọn nằm trong kế hoạch** (xem dưới) rồi bước
+3, 4.
+
+**Không được tự chấm việc mình sắp làm là lớn hay nhỏ.** Luật cũ ghi *"trước
+khi thiết kế việc lớn thì mở specs"* và hỏng ba lần, mỗi lần vì người đánh giá
+chính là người sắp làm. Mốc mới nhìn được bằng mắt: migration có `create table`
+không; `app/` có thêm thư mục không.
+
+### Mục mô tả hiện trạng — bắt buộc trong MỌI kế hoạch
+
+**Viết trước khi bàn tới thay đổi.** Không phải danh sách câu hỏi đưa chủ quán
+trả lời — **là bản mô tả do mình viết, để ông ấy đọc và bác.** Đưa câu hỏi là
+đẩy phần đảm bảo đủ về phía ông ấy; đưa mô tả thì ông ấy chỉ cần nói "sai chỗ
+này".
+
+Tối thiểu: có mấy trạng thái và đặt bằng cách nào; màn hình có nút nào, làm gì,
+khi nào không nên hiện; danh sách chứa gì và loại gì ra; mỗi ô nhận giá trị nào
+là hợp lệ và ngoài khoảng thì sao; phục vụ loại dữ liệu nào và cố ý không phục
+vụ loại nào.
+
+**Đó là sàn, không phải trần.** Mỗi việc có bộ câu hỏi riêng và không ai nhớ hết
+được — **nghĩ ra bộ câu hỏi cho đúng việc đó là phần việc của mình**, không phải
+việc chủ quán nhớ giùm. Chủ quán nói thẳng 31/08: *"anh cần em làm rõ các vấn đề
+mà anh chưa nhắc đến"*.
 
 **Và phải ghi rõ chỗ mình CHƯA xem.** "Đã xem A, B, C. Chưa xem D, E." Thiếu sót
 viết ra thì chủ quán thấy được; thiếu sót im lặng thì không ai thấy cho tới lúc
 nó hỏng.
 
-**Chỉ hỏi chủ quán thứ chỉ ông ấy trả lời được.** Mọi thứ tra được bằng mã nguồn
-hay truy vấn thì tự đi tra. Hỏi một điều đã nằm sẵn trong code là bắt ông ấy làm
-việc của mình.
+**Chỉ hỏi chủ quán thứ chỉ ông ấy trả lời được.** Tra được bằng mã nguồn hay
+truy vấn thì tự đi tra.
+
+### Sonnet được phép chặn
+
+Giao việc mà kế hoạch thiếu mục mô tả hiện trạng thì **Sonnet trả lại, chưa
+code**. Chặn ở đầu vào rẻ hơn chặn sau khi đã làm.
 
 ## 2. Mức rủi ro quyết định mọi thứ
 
