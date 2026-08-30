@@ -16,7 +16,7 @@ import {
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/report-time";
 import { displayMoney } from "@/lib/display-rounding";
 import { computePeriodIssuedValue } from "@/lib/issue-costing";
-import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/issue-costing-inputs";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/issue-costing-inputs";
 import { requireAdmin } from "@/lib/auth";
 
 export interface PnLReportFilters {
@@ -91,7 +91,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const orders = await findCompletedOrders(queryDateRange, filters);
-    const [orderLines, recipes, modifiers, products, purchaseOrderLines, purchaseOrders, stockIssues] = await Promise.all([
+    const [orderLines, recipes, modifiers, products, purchaseOrderLines, purchaseOrders, stockIssues, purchasedItems, itemCategories] = await Promise.all([
       findAllWhereInBatches(
         "Order_Lines_V2",
         "order_id",
@@ -103,6 +103,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       findAllNoCache("Purchase_Order_Lines"),
       findAllNoCache("Purchase_Orders"),
       findAllNoCache("Stock_Issues"),
+      findAll("Purchased_Items"),
+      findAll("Item_Categories"),
     ]);
 
     // Standalone topping → linked modifier map (CAT-007 products with migration_notes link).
@@ -162,7 +164,12 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // stock_issues do. See computePeriodIssuedValue in lib/issue-costing.ts
     // for why this is two full replays and a subtraction, not a single pass.
     const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
-    const allIssues = buildIssueCostingIssues(stockIssues as any[]);
+    // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
+    // section 3.2: an issue slip line naming equipment must never enter
+    // COGS -- it already depreciates through the asset register, and
+    // counting it here too would charge its full price twice.
+    const nonEquipmentIssues = filterOutEquipmentIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
+    const allIssues = buildIssueCostingIssues(nonEquipmentIssues);
     const totalCOGS = computePeriodIssuedValue(
       purchases,
       allIssues,

@@ -9,6 +9,7 @@ import {
   buildAssetSchedule,
   chargeForMonth,
   summarizeAsset,
+  validateDisposalDate,
   type AssetSummary,
   type DisposalInput,
 } from "@/lib/asset-depreciation";
@@ -25,6 +26,15 @@ export type AssetView = AssetSummary;
 function currentSaigonMonth(): string {
   const saigonNow = new Date(Date.now() + 7 * 60 * 60 * 1000);
   return saigonNow.toISOString().slice(0, 7);
+}
+
+// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// 3.3: same Saigon-offset computation as currentSaigonMonth above, day
+// granularity instead of month -- the server's own "today", never the
+// client's clock, for validateDisposalDate's upper bound.
+function currentSaigonDate(): string {
+  const saigonNow = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  return saigonNow.toISOString().slice(0, 10);
 }
 
 function toDisposalInputs(disposals: DBAssetDisposal[]): DisposalInput[] {
@@ -106,6 +116,9 @@ export async function previewDisposalCharge(
       return { error: `Số lượng không hợp lệ -- còn lại ${remaining}` };
     }
 
+    const dateCheck = validateDisposalDate(disposedDate, asset.acquired_date, currentSaigonDate());
+    if (!dateCheck.ok) return { error: dateCheck.error };
+
     const schedule = buildAssetSchedule(
       {
         acquired_date: asset.acquired_date,
@@ -156,6 +169,13 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
     if (quantity > remaining) {
       return fail(`Số lượng thanh lý (${quantity}) vượt quá số lượng còn lại (${remaining})`);
     }
+
+    // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
+    // section 3.3: server-side, day-granular, before buildAssetSchedule's
+    // own opaque month-level guard can fire -- see validateDisposalDate's
+    // own comment for why a second check is needed here at all.
+    const dateCheck = validateDisposalDate(disposed_date, asset.acquired_date, currentSaigonDate());
+    if (!dateCheck.ok) return fail(dateCheck.error);
 
     // Validate the schedule can be built with this disposal added -- the
     // same guard buildAssetSchedule already enforces (date order, no

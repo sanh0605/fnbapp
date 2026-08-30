@@ -121,6 +121,31 @@ describe("previewDisposalCharge -- section 5.2", () => {
 
     expect("error" in result).toBe(true);
   });
+
+  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
+  // section 3.3: the preview endpoint gets the same server-side date check
+  // as the real submit -- it is called on every keystroke
+  // (DisposeAssetForm's onChange), so a clear refusal here is what the
+  // owner actually sees while filling the form, not just at final submit.
+  it("refuses a future disposal date, naming the valid range", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([CA_DONG], []));
+
+    const result = await previewDisposalCharge("TS-002", 1, "2099-01-01");
+
+    expect("error" in result).toBe(true);
+    if (!("error" in result)) throw new Error("expected refusal");
+    expect(result.error).toContain("tương lai");
+  });
+
+  it("refuses a disposal date before the asset's own acquired_date, naming the valid range", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([CA_DONG], [])); // acquired 2026-03-01
+
+    const result = await previewDisposalCharge("TS-002", 1, "2026-01-15");
+
+    expect("error" in result).toBe(true);
+    if (!("error" in result)) throw new Error("expected refusal");
+    expect(result.error).toContain("trước ngày mua");
+  });
 });
 
 describe("disposeAsset -- section 3.3", () => {
@@ -176,5 +201,50 @@ describe("disposeAsset -- section 3.3", () => {
 
     expect(res.error).toBeTruthy();
     expect(mocks.findAll).not.toHaveBeenCalled();
+  });
+
+  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
+  // section 3.3/4. Today (pre-fix), buildAssetSchedule silently clamps a
+  // future date to the term's last month and writes the row anyway -- this
+  // is a wrong VALUE (the insert happens, res.error is undefined), not a
+  // missing check, since disposeAsset already validated other fields.
+  it("refuses a future disposal date before ever writing a row", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([CA_DONG], []));
+
+    const res = await disposeAsset(fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2099-01-01" }));
+
+    expect(res.error).toContain("tương lai");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  // Today (pre-fix), a same-month-earlier-day case slips past the existing
+  // month-level guard inside buildAssetSchedule entirely (it only compares
+  // year/month, not day) and writes the row -- the gap this plan's
+  // critique found that the plan itself did not name.
+  it("refuses a disposal dated earlier in the same month as acquisition", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([{ ...CA_DONG, acquired_date: "2026-03-20" }], []));
+
+    const res = await disposeAsset(fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2026-03-05" }));
+
+    expect(res.error).toContain("trước ngày mua");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  // The load-bearing case (section 3.3): a real backdate, months before
+  // today and after acquisition, must be ACCEPTED and written -- this is
+  // what the owner actually does. A guard that refused this would be
+  // worse than no guard.
+  it("accepts and writes a valid backdate, months before today", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([CA_DONG], [])); // acquired 2026-03-01
+
+    const res = await disposeAsset(
+      fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2026-05-15", reason: "Vỡ hôm trước, ghi trễ" }),
+    );
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "asset_disposals",
+      expect.objectContaining({ asset_id: "TS-002", disposed_date: "2026-05-15" }),
+    );
   });
 });

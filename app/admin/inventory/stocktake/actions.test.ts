@@ -211,6 +211,15 @@ describe("startStocktakeSession item list", () => {
   // batch-5 expense line (OPEN-ITEMS 59), so ticking it on equipment would
   // double-count. This item's own flag is left false on purpose: the
   // category exclusion must work even when nobody ticked anything.
+  //
+  // This test is also the stocktake half of
+  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md's
+  // section 4 requirement: the issue-slip picker was given the identical
+  // system_type === "EQUIPMENT" test (deliberately, not a second
+  // definition), and this screen's own exclusion must stay unmoved by that
+  // -- if the two ever get merged into one shared helper, this is the test
+  // that would need to start guarding the merge instead of just this
+  // screen's own behaviour.
   it("excludes every purchased item whose category is EQUIPMENT, regardless of its own is_non_inventory flag", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") return Promise.resolve([]);

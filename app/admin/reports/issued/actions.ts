@@ -2,7 +2,7 @@
 
 import { findAll, findAllNoCache } from "@/lib/sheets_db";
 import { requireAdmin } from "@/lib/auth";
-import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/issue-costing-inputs";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/issue-costing-inputs";
 import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/issued-value-report";
 import { displayMoney } from "@/lib/display-rounding";
 
@@ -46,17 +46,23 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [purchaseOrders, purchaseOrderLines, stockIssues, purchasedItems, units, conversions] = await Promise.all([
+  const [purchaseOrders, purchaseOrderLines, stockIssues, purchasedItems, units, conversions, itemCategories] = await Promise.all([
     findAllNoCache("Purchase_Orders"),
     findAllNoCache("Purchase_Order_Lines"),
     findAllNoCache("Stock_Issues"),
     findAll("Purchased_Items"),
     findAll("Units"),
     findAll("UOM_Conversions"),
+    findAll("Item_Categories"),
   ]);
 
   const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
-  const allIssues = buildIssueCostingIssues(stockIssues as any[]);
+  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
+  // section 3.2: same exclusion as getPnLDataV2 (app/admin/reports/actions.ts)
+  // -- this report reuses the same issue-costing engine, so it inherited
+  // the same gap and gets the same fix, from the one shared function.
+  const nonEquipmentIssues = filterOutEquipmentIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
+  const allIssues = buildIssueCostingIssues(nonEquipmentIssues);
 
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));

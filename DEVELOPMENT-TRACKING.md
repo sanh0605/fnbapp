@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-31 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Equipment leaves through the asset register, not through a stock issue
+
+Implements docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md (OPEN-ITEMS 77, plus the date-validation half informally bundled under OPEN-ITEMS 78). First plan written under CLAUDE.md section 1b -- critiqued its own current-state section as a description to refute, not just its proposed change.
+
+**Two things section 1 described wrongly, found by checking rather than trusting.** The picker description no longer matches the code: OPEN-ITEMS 76's zero-stock filter (2026-08-30) already excludes a zero-stock item regardless of ACTIVE/INACTIVE status, not only an inactive-and-empty one as section 1.1 stated. More load-bearing: section 2 claimed a disposal dated before an asset's purchase is entirely unchecked -- false. buildAssetSchedule already throws for it (tested, since Batch 3), at month granularity, with a plain-ASCII English exception that lib/action-error.ts's describeActionError demotes to the generic "Co loi xay ra..." message. The owner already saw a refusal for that case; it just never said why. The future-date half of section 2 was accurate: genuinely no guard, silently clamped and written.
+
+**Section 1.4's four unexamined areas, checked.** Stock-adjustments: submitStockAdjustment (the create path) has zero live callers anywhere, the table holds 0 rows, and the screen only approves/rejects existing rows -- structurally cannot offer equipment. POS stock status: built only from Base_Ingredients and Semi_Products, never purchased_items -- equipment cannot reach it by construction. reports/issued: does share the costing-engine gap (reuses the same buildIssueCostingIssues chain as the P&L), but this is one engine bug in two views, not a fourth site -- closed by the same shared filter. The disposal-date label stays out of scope, per the plan.
+
+**Re-measured 2026-08-31, not reused from the plan's 2026-08-30 numbers:** the picker's 65 equipment / 27 raw / 18 consumable is now 65 / 26 / 18 -- one raw item's stock moved overnight, ordinary drift, re-verified rather than assumed.
+
+**Shipped, three parts.** (1) getIssueSlipFormData excludes item_categories.system_type === 'EQUIPMENT' -- the identical test stocktake already uses, not a second definition; that screen's existing test now cross-references this plan as the guard against a future merge into one shared helper. (2) New filterOutEquipmentIssues (lib/issue-costing-inputs.ts) strips an equipment-tagged row before buildIssueCostingIssues sees it, called from both getPnLDataV2 and getIssuedValueReport -- the only two callers. A filter, not a refusal: protects a slip written before the picker change too, without breaking the report if one exists (0 today). (3) New validateDisposalDate (lib/asset-depreciation.ts), day-granular, called server-side in both disposeAsset and previewDisposalCharge before buildAssetSchedule's own opaque backstop can fire -- states the valid range in Vietnamese. The third required case is load-bearing and tested explicitly: a real backdate (disposed months ago, recorded today) is accepted and written -- a guard that blocked a valid backdate would be worse than none, since backdating is what the owner actually does.
+
+**Proved test-first, by actually reverting the source and re-running, not asserted.** git-stashed the six source files, ran the new/changed tests: the picker test failed on the VALUE (an equipment id was still in the list); the two new pure functions' tests failed on MISSING FUNCTION; the disposal-date tests split -- future-date failed on value (silently written, no error at all), before-acquisition failed on value in the subtler way the section-1 correction above describes (an error, but the generic wrong one). Restored via stash pop.
+
+Gates: tsc 0 errors, vitest 222 files / 1564 tests green, check-rules-current clean, npm run build succeeds. Not pushed.
+
 ## 2026-08-30 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Issue-slip picker: converted on-hand and a zero-stock filter
 
 Implements `docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md` (`OPEN-ITEMS 77`). UI only -- no data, no migration, no server contract change. Both asked for by the owner 2026-08-30, recording his first consumable issue slip: convert "Tồn hiện tại" into the unit being typed, and stop offering items with nothing to issue.

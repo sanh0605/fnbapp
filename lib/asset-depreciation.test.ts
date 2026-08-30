@@ -7,6 +7,7 @@ import {
   findBandForUnitPrice,
   formatBandRange,
   validateBands,
+  validateDisposalDate,
   summarizeAsset,
   type Band,
 } from "./asset-depreciation";
@@ -363,5 +364,53 @@ describe("validateBands", () => {
     it("a single unbounded band starting at 0 is valid on its own", () => {
       expect(validateBands([{ min_unit_price: 0, max_unit_price: null, term_months: 12 }])).toEqual({ ok: true });
     });
+  });
+});
+
+// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// 3.3/4: three required cases, the third load-bearing -- a guard that
+// blocks a valid backdate is worse than no guard, since backdating is what
+// the owner actually does (see every other date field in this app: issue
+// slips, purchase orders).
+describe("validateDisposalDate", () => {
+  it("refuses a date after today", () => {
+    const result = validateDisposalDate("2026-09-15", "2026-01-01", "2026-08-31");
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected refusal");
+    expect(result.error).toContain("tương lai");
+    expect(result.error).toContain("01/01/2026"); // states the valid range, not just "invalid"
+    expect(result.error).toContain("31/08/2026");
+  });
+
+  it("refuses a date before the asset was acquired", () => {
+    const result = validateDisposalDate("2025-12-31", "2026-01-01", "2026-08-31");
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected refusal");
+    expect(result.error).toContain("trước ngày mua");
+    expect(result.error).toContain("01/01/2026");
+  });
+
+  // The load-bearing case: a backdate well into the past, still on or
+  // after acquisition, must be ACCEPTED. Section 3.3's own example --
+  // recording today a disposal that actually happened last month.
+  it("accepts a valid backdate months before today, on or after acquisition", () => {
+    expect(validateDisposalDate("2026-06-15", "2026-01-01", "2026-08-31")).toEqual({ ok: true });
+  });
+
+  it("accepts the acquisition date itself (inclusive lower bound)", () => {
+    expect(validateDisposalDate("2026-01-01", "2026-01-01", "2026-08-31")).toEqual({ ok: true });
+  });
+
+  it("accepts today itself (inclusive upper bound)", () => {
+    expect(validateDisposalDate("2026-08-31", "2026-01-01", "2026-08-31")).toEqual({ ok: true });
+  });
+
+  // The gap the existing month-level guard inside buildAssetSchedule
+  // cannot see: same month as acquisition, but an earlier day.
+  it("refuses a date earlier in the same month as acquisition, a case the month-level guard alone misses", () => {
+    const result = validateDisposalDate("2026-01-05", "2026-01-20", "2026-08-31");
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected refusal");
+    expect(result.error).toContain("trước ngày mua");
   });
 });

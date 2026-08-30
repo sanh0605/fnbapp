@@ -265,6 +265,63 @@ export function buildAssetSchedule(asset: AssetInput, disposals: DisposalInput[]
   }));
 }
 
+// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// 3.3: today the only date check anywhere is buildAssetSchedule's own
+// month-granularity "disposal dated before the asset was acquired" guard
+// (line ~217 above) -- real, tested, but two gaps a critique of this plan
+// found, not the plan itself: it only compares MONTHS, so a disposal dated
+// earlier in the SAME month as acquisition slips through uncaught; and its
+// exception is plain-ASCII English, which lib/action-error.ts's
+// describeActionError demotes to the generic "Co loi xay ra..." message
+// (looksHandWrittenForTheOwner only trusts a message with a Vietnamese
+// character) -- so the owner already sees a refusal today, just one that
+// never says why or what range is valid. There is also no guard anywhere
+// against a FUTURE date; buildAssetSchedule silently clamps it to the
+// term's last month.
+//
+// This function is deliberately day-granular (stricter than the existing
+// month-level guard) and called BEFORE buildAssetSchedule at both call
+// sites, so a same-month-earlier-day case is caught here with a clear
+// message instead of ever reaching the opaque one. The existing guard
+// inside buildAssetSchedule is left exactly as it was -- a backstop for
+// any future caller that skips this check, not something this duplicates
+// away.
+//
+// Load-bearing: the valid range is inclusive on both ends and rejects nothing between them, including a
+// backdate months into the past -- backdating (a disposal recorded today
+// for something that broke last month) is what the owner actually does,
+// per every other date field in this app (issue slips, purchase orders).
+// A guard that refused a valid backdate would be worse than no guard.
+export function validateDisposalDate(
+  disposedDate: string,
+  acquiredDate: string,
+  todaySaigon: string,
+): { ok: true } | { ok: false; error: string } {
+  if (disposedDate < acquiredDate) {
+    return {
+      ok: false,
+      error: `Ngày thanh lý phải từ ngày mua (${formatVnDate(acquiredDate)}) đến hôm nay (${formatVnDate(todaySaigon)}) -- ${formatVnDate(disposedDate)} là trước ngày mua`,
+    };
+  }
+  if (disposedDate > todaySaigon) {
+    return {
+      ok: false,
+      error: `Ngày thanh lý phải từ ngày mua (${formatVnDate(acquiredDate)}) đến hôm nay (${formatVnDate(todaySaigon)}) -- ${formatVnDate(disposedDate)} là ngày trong tương lai`,
+    };
+  }
+  return { ok: true };
+}
+
+// "YYYY-MM-DD" -> "DD/MM/YYYY", matching lib/datetime.ts's formatDate
+// convention without importing a Saigon-timezone-aware Date parser here --
+// these are already plain calendar dates (see this file's own top comment),
+// so a string split is exact and does not risk formatDate's UTC-midnight
+// round-trip for a value that is already the right calendar day.
+function formatVnDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-");
+  return `${d}/${m}/${y}`;
+}
+
 export function totalScheduledCharge(schedule: MonthlyCharge[]): number {
   return schedule.reduce((sum, m) => sum + m.charge, 0);
 }

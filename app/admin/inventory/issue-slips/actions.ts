@@ -31,11 +31,12 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [purchasedItems, conversions, units, baseIngredients] = await Promise.all([
+  const [purchasedItems, conversions, units, baseIngredients, itemCategories] = await Promise.all([
     findAll("Purchased_Items"),
     findAll("UOM_Conversions"),
     findAll("Units"),
     findAll("Base_Ingredients"),
+    findAll("Item_Categories"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
@@ -46,6 +47,16 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
     (baseIngredients as any[])
       .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
       .map(b => b.id as string),
+  );
+  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+  // 3.1: same test the stocktake screen already uses
+  // (app/admin/inventory/stocktake/actions.ts) -- equipment leaves through
+  // the asset register (docs/superpowers/plans/2026-08-22-batch-3-asset-
+  // register.md), never through a stock issue. Deliberately not written as
+  // a second, independent test: reusing system_type === "EQUIPMENT" means
+  // the two screens can only ever agree or both be wrong the same way.
+  const equipmentCategoryIds = new Set(
+    (itemCategories as any[]).filter(c => c.system_type === "EQUIPMENT").map(c => c.id as string),
   );
 
   const input: PurchasedItemConversion[] = (conversions as any[]).map(c => ({
@@ -66,7 +77,7 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   }
 
   const eligiblePurchasedItems = (purchasedItems as any[]).filter(
-    p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id),
+    p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id) && !equipmentCategoryIds.has(p.item_category_id),
   );
   // Same C17 shape as the stocktake screen: an inactive item stays offered
   // while it still has stock to issue out; it is dropped only once it has

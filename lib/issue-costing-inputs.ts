@@ -66,3 +66,29 @@ export function buildIssueCostingIssues(stockIssues: any[]): Issue[] {
     source: row.source,
   }));
 }
+
+// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// 3.2: equipment leaves through the asset register (depreciation), not
+// through cost of goods sold -- a stock_issues row naming a piece of
+// equipment must never reach computeIssueCosting, or it is charged twice
+// (the full purchase price into COGS, the same asset still depreciating in
+// the register). This layer is a filter, not a refusal: it protects any
+// issue slip already recorded before the picker excluded equipment too
+// (section 3.1) -- 0 exist today, but this must not depend on that number
+// staying 0. Called by both app/admin/reports/actions.ts (getPnLDataV2)
+// and app/admin/reports/issued/actions.ts (getIssuedValueReport), the only
+// two callers of buildIssueCostingIssues -- one place, so both can only
+// ever agree.
+export function filterOutEquipmentIssues(
+  stockIssues: any[],
+  purchasedItems: any[],
+  itemCategories: any[],
+): any[] {
+  const equipmentCategoryIds = new Set(
+    itemCategories.filter(c => c.system_type === "EQUIPMENT").map(c => c.id),
+  );
+  const equipmentItemIds = new Set(
+    purchasedItems.filter(p => equipmentCategoryIds.has(p.item_category_id)).map(p => p.id),
+  );
+  return stockIssues.filter(row => !equipmentItemIds.has(row.purchased_item_id));
+}

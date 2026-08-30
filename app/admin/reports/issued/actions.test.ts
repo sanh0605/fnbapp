@@ -39,6 +39,13 @@ describe("getIssuedValueReport", () => {
       if (sheet === "Purchased_Items") return liveSnapshot.purchasedItems;
       if (sheet === "Units") return liveSnapshot.units;
       if (sheet === "UOM_Conversions") return liveSnapshot.uomConversions;
+      // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
+      // section 3.2: this 2026-08-13 snapshot predates item_category_id
+      // being relevant here, and does not carry one. Empty is the honest
+      // answer, not a guess -- filterOutEquipmentIssues then excludes
+      // nothing, so every value below still matches the real snapshot
+      // exactly, unchanged by this fix.
+      if (sheet === "Item_Categories") return [];
       throw new Error(`unexpected findAll sheet: ${sheet}`);
     });
   }

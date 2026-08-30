@@ -151,6 +151,61 @@ describe("getIssueSlipFormData", () => {
 
     expect(items.map(i => i.id)).toEqual(["SPM-HAS"]);
   });
+
+  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
+  // section 3.1/4: equipment leaves through the asset register, never
+  // through a stock issue. Today (pre-fix) this list has 65 equipment
+  // items in it -- this test is a wrong VALUE (the list still contains
+  // "May danh bot"), not a missing function, since getIssueSlipFormData
+  // already existed and already returned a list.
+  it("excludes an EQUIPMENT item, keeps a RAW and a CONSUMABLE sibling (section 3.1)", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-COFFEE", name: "Bột cà phê", base_ingredient_id: "ING-A", item_category_id: "NHH-001", status: "ACTIVE" },
+          { id: "SPM-CUP", name: "Ly giấy", base_ingredient_id: "", item_category_id: "NHH-002", status: "ACTIVE" },
+          { id: "SPM-MACHINE", name: "Máy đánh bọt", base_ingredient_id: "", item_category_id: "NHH-003", status: "ACTIVE" },
+        ]);
+      }
+      if (sheet === "UOM_Conversions") {
+        return Promise.resolve([
+          { id: "CONV-1", purchased_item_id: "SPM-COFFEE", purchased_unit: "U-G", base_unit: "U-G", conversion_rate: 1, status: "ACTIVE" },
+          { id: "CONV-2", purchased_item_id: "SPM-CUP", purchased_unit: "U-CAI", base_unit: "U-CAI", conversion_rate: 1, status: "ACTIVE" },
+          { id: "CONV-3", purchased_item_id: "SPM-MACHINE", purchased_unit: "U-CAI", base_unit: "U-CAI", conversion_rate: 1, status: "ACTIVE" },
+        ]);
+      }
+      if (sheet === "Units") return Promise.resolve([{ id: "U-G", name: "g" }, { id: "U-CAI", name: "Cái" }]);
+      if (sheet === "Base_Ingredients") return Promise.resolve([]);
+      if (sheet === "Item_Categories") {
+        return Promise.resolve([
+          { id: "NHH-001", name: "Nguyên liệu", system_type: "RAW" },
+          { id: "NHH-002", name: "Vật tư tiêu hao", system_type: "CONSUMABLE" },
+          { id: "NHH-003", name: "Dụng cụ", system_type: "EQUIPMENT" },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    mocks.findAllNoCache.mockImplementation((sheet: string) => {
+      if (sheet === "Purchase_Order_Lines") {
+        return Promise.resolve([
+          { purchase_order_id: "PO-1", purchased_item_id: "SPM-COFFEE", base_quantity: 5000 },
+          { purchase_order_id: "PO-1", purchased_item_id: "SPM-CUP", base_quantity: 500 },
+          { purchase_order_id: "PO-1", purchased_item_id: "SPM-MACHINE", base_quantity: 1 },
+        ]);
+      }
+      if (sheet === "Purchase_Orders") return Promise.resolve([{ id: "PO-1", status: "COMPLETED" }]);
+      if (sheet === "Stock_Issues") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+
+    const items = await issueSlipActions.getIssueSlipFormData();
+
+    const ids = items.map(i => i.id);
+    expect(ids).not.toContain("SPM-MACHINE");
+    expect(ids).toContain("SPM-COFFEE");
+    expect(ids).toContain("SPM-CUP");
+    expect(ids).toEqual(["SPM-COFFEE", "SPM-CUP"]);
+  });
 });
 
 describe("createIssueSlip", () => {
