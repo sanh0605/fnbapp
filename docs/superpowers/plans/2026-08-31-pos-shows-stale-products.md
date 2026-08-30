@@ -47,6 +47,33 @@ Chủ quán muốn đổi thành **"Size"**. Hiện xuất hiện ở: bảng da
 cảnh báo trong `POSScreen.tsx`, và màn hình sửa món (`ProductForm.tsx`, cả nhãn
 "Các Kích Cỡ").
 
+### 1.4b Màn hình POS — phần tôi BỎ SÓT, và nó che một lỗi thứ hai
+
+**Chủ quán hỏi 31/08 rằng kế hoạch này có bỏ bước nào không. Có.** Mục 1b bắt mô
+tả tối thiểu năm thứ; bản đầu của kế hoạch này chỉ làm hai — cơ chế bộ nhớ đệm
+và danh sách chỗ chưa xem. Thiếu hẳn phần **"màn hình POS hiện danh sách gồm gì,
+loại gì ra"**.
+
+Viết bù, và nó lòi ra ngay:
+
+`app/pos/page.tsx:55-57` lọc **món** `status === "ACTIVE"` và **cỡ**
+`status === "ACTIVE"` — **nhưng không bao giờ kiểm một món có còn cỡ nào không.**
+
+Nên **một món đang bán mà không còn cỡ nào vẫn nằm trong danh sách POS**, và chỉ
+báo *"Món này chưa cấu hình kích cỡ & giá"* **sau khi nhân viên đã bấm vào** —
+giữa ca, trước mặt khách.
+
+**Đây là lỗi thứ hai, độc lập với chuyện bộ nhớ đệm.** Hôm nay hai lỗi trùng
+nhau nên trông như một: dữ liệu của `Test1` đã đúng, chỉ màn hình cũ; nhưng nếu
+một món **thật sự** không còn cỡ nào thì POS vẫn mời bấm vào rồi mới từ chối.
+
+**Sonnet đã vá đúng chuyện này ở màn hình quản lý hôm 30/08** — dòng cảnh báo
+*"Không có size nào đang bán"*. Màn hình POS không được vá cùng lúc, vì lúc đó
+không ai liệt kê nó ra.
+
+**Thêm vào thay đổi:** POS loại món không còn cỡ đang bán. Một món không bán
+được thì không nên mời bấm.
+
 ### 1.5 Chỗ tôi CHƯA xem
 
 - **18 file `revalidatePath` còn lại** — chưa kiểm cái nào cũng có màn hình thứ
