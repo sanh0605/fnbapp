@@ -26,7 +26,6 @@ describe("voidOrderAtomic", () => {
     const result = await voidOrderAtomic({
       orderId: "ord-1",
       event: { id: "evt-1", event_type: "VOIDED", delta_json: "{\"voided\":true}" },
-      reversalRows: [{ id: "stk-1", transaction_type: "EDIT_REVERSAL" }],
       voidedAt: "2026-07-19T00:00:00.000Z",
       voidedById: "admin-1",
       reason: "Customer request",
@@ -35,7 +34,6 @@ describe("voidOrderAtomic", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("void_order_atomic", {
       p_order_id: "ord-1",
       p_event: { id: "evt-1", event_type: "VOIDED", delta_json: { voided: true } },
-      p_reversal_ledger: [{ id: "stk-1", transaction_type: "EDIT_REVERSAL" }],
       p_voided_at: "2026-07-19T00:00:00.000Z",
       p_voided_by_id: "admin-1",
       p_reason: "Customer request",
@@ -49,7 +47,6 @@ describe("voidOrderAtomic", () => {
     await expect(voidOrderAtomic({
       orderId: "ord-1",
       event: { id: "evt-1", event_type: "VOIDED" },
-      reversalRows: [],
       voidedAt: "2026-07-19T00:00:00.000Z",
       voidedById: "admin-1",
       reason: "Customer request",

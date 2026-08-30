@@ -101,7 +101,9 @@ describe("voidOrderV2 atomic failure handling", () => {
   // fabricated ledger rows (a sale plus its implicit-production pair) got
   // reversed. That reversal machinery is gone: proved live first that it
   // was always reversing nothing (0 stock_ledger rows for every real
-  // voided order in production), then removed the read.
+  // voided order in production), then removed the read. Phase C went
+  // further and removed the write itself -- voidOrderAtomic no longer
+  // accepts a reversalRows field at all.
   it("sends no reversal rows at all -- voidOrderV2 no longer reads or reverses the ledger", async () => {
     mocks.voidOrderAtomic.mockResolvedValue({
       orderId: "ord-void-1",
@@ -112,8 +114,8 @@ describe("voidOrderV2 atomic failure handling", () => {
     const result = await voidOrderV2("ord-void-1", "Customer request");
 
     expect(result).toEqual({ success: true });
-    const reversalRows = mocks.voidOrderAtomic.mock.calls[0][0].reversalRows;
-    expect(reversalRows).toEqual([]);
+    const callArgs = mocks.voidOrderAtomic.mock.calls[0][0];
+    expect(callArgs).not.toHaveProperty("reversalRows");
     expect(mocks.findAllWhere).not.toHaveBeenCalledWith("Stock_Ledger", expect.anything());
   });
 

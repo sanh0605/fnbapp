@@ -413,13 +413,11 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
     // live before this code was removed, not assumed: 0 stock_ledger rows
     // across all 24 real VOIDED orders and all 17 real EDITED (superseded)
     // orders in production, both old and new versions, 53 unique order ids
-    // checked. reversalEntries is therefore always [], and always was.
-    const reversalEntries: never[] = [];
-
+    // checked. Phase C removed void_order_atomic's stock_ledger write
+    // entirely, so there is no longer a reversalRows field to send.
     await voidOrderAtomic({
       orderId,
       event,
-      reversalRows: reversalEntries,
       voidedAt: eventTime,
       voidedById: actor.id,
       reason,
