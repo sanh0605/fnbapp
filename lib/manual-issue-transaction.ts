@@ -2,7 +2,6 @@ import { getSupabaseClient } from "@/lib/supabase";
 
 export type IssueSlipLineResult = {
   issueId: string;
-  ledgerId: string;
   purchasedItemId: string;
   baseIngredientId: string;
   baseQuantity: number;
@@ -54,7 +53,6 @@ function parseIssueSlipResult(data: unknown): IssueSlipResult {
     created_by_name?: string;
     lines?: Array<{
       issue_id?: string;
-      ledger_id?: string;
       purchased_item_id?: string;
       base_ingredient_id?: string;
       base_quantity?: number;
@@ -65,12 +63,17 @@ function parseIssueSlipResult(data: unknown): IssueSlipResult {
     throw new Error("create_issue_slip_atomic returned an invalid result");
   }
   const lines = result.lines.map(line => {
-    if (!line.issue_id || !line.ledger_id) {
+    // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md:
+    // ledger_id used to be required here, back when the RPC still wrote a
+    // stock_ledger row and returned its id. The migration stops writing
+    // that row for every line, raw ingredient or consumable, so ledger_id
+    // no longer exists in the RPC's response at all -- requiring it here
+    // would fail every issue slip, not just a consumable one.
+    if (!line.issue_id) {
       throw new Error("create_issue_slip_atomic returned an invalid line result");
     }
     return {
       issueId: line.issue_id,
-      ledgerId: line.ledger_id,
       purchasedItemId: line.purchased_item_id || "",
       baseIngredientId: line.base_ingredient_id || "",
       baseQuantity: Number(line.base_quantity) || 0,
@@ -89,7 +92,6 @@ function parseIssueSlipResult(data: unknown): IssueSlipResult {
 
 export type ReversalResult = {
   reversalIssueId: string;
-  ledgerId: string;
   reversesIssueId: string;
   purchasedItemId: string;
   baseIngredientId: string;
@@ -177,7 +179,6 @@ function parseSlipCancelResult(data: unknown): SlipCancelResult {
 function parseReversalResult(data: unknown): ReversalResult {
   const result = data as {
     reversal_issue_id?: string;
-    ledger_id?: string;
     reverses_issue_id?: string;
     purchased_item_id?: string;
     base_ingredient_id?: string;
@@ -186,12 +187,14 @@ function parseReversalResult(data: unknown): ReversalResult {
     created_by_id?: string;
     created_by_name?: string;
   } | null;
-  if (!result?.reversal_issue_id || !result.ledger_id || !result.reverses_issue_id) {
+  // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md: same
+  // ledger_id retirement as parseIssueSlipResult above -- the RPC no longer
+  // writes or returns one, for a raw-ingredient reversal or a consumable's.
+  if (!result?.reversal_issue_id || !result.reverses_issue_id) {
     throw new Error("reverse_manual_issue_atomic returned an invalid result");
   }
   return {
     reversalIssueId: result.reversal_issue_id,
-    ledgerId: result.ledger_id,
     reversesIssueId: result.reverses_issue_id,
     purchasedItemId: result.purchased_item_id || "",
     baseIngredientId: result.base_ingredient_id || "",

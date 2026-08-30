@@ -159,8 +159,8 @@ describe("createIssueSlip", () => {
       createdById: "admin-1",
       createdByName: "Admin",
       lines: [
-        { issueId: "ISS-00001", ledgerId: "STK-021", purchasedItemId: "SPM-033", baseIngredientId: "ING-028", baseQuantity: 500, onHandAfter: 3600 },
-        { issueId: "ISS-00002", ledgerId: "STK-022", purchasedItemId: "SPM-014", baseIngredientId: "ING-009", baseQuantity: 200, onHandAfter: 1300 },
+        { issueId: "ISS-00001", purchasedItemId: "SPM-033", baseIngredientId: "ING-028", baseQuantity: 500, onHandAfter: 3600 },
+        { issueId: "ISS-00002", purchasedItemId: "SPM-014", baseIngredientId: "ING-009", baseQuantity: 200, onHandAfter: 1300 },
       ],
     });
 
@@ -272,7 +272,6 @@ describe("reverseIssueSlip", () => {
   it("forwards to reverseManualIssueAtomic and revalidates on success", async () => {
     mocks.reverseManualIssueAtomic.mockResolvedValue({
       reversalIssueId: "ISS-00002",
-      ledgerId: "STK-022",
       reversesIssueId: "ISS-00001",
       purchasedItemId: "SPM-033",
       baseIngredientId: "ING-028",

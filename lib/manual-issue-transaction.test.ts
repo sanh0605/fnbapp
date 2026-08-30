@@ -24,12 +24,12 @@ describe("createIssueSlipAtomic", () => {
         created_by_name: "Admin",
         lines: [
           {
-            issue_id: "ISS-00001", ledger_id: "STK-021",
+            issue_id: "ISS-00001",
             purchased_item_id: "SPM-033", base_ingredient_id: "ING-028",
             base_quantity: 1000, on_hand_after: 3100,
           },
           {
-            issue_id: "ISS-00002", ledger_id: "STK-022",
+            issue_id: "ISS-00002",
             purchased_item_id: "SPM-014", base_ingredient_id: "ING-009",
             base_quantity: 200, on_hand_after: 1300,
           },
@@ -63,9 +63,50 @@ describe("createIssueSlipAtomic", () => {
     expect(result.slipId).toBe("ISL-00001");
     expect(result.lines).toHaveLength(2);
     expect(result.lines[0]).toEqual({
-      issueId: "ISS-00001", ledgerId: "STK-021",
+      issueId: "ISS-00001",
       purchasedItemId: "SPM-033", baseIngredientId: "ING-028",
       baseQuantity: 1000, onHandAfter: 3100,
+    });
+  });
+
+  // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md section 5:
+  // an issue slip naming a consumable succeeds. Today (pre-fix) the RPC
+  // itself raises "chưa gắn với nguyên liệu gốc, không thể ghi phiếu xuất"
+  // before ever returning -- this test is at the parser boundary, one layer
+  // up, and proves the other half: once the RPC does return a line with no
+  // base_ingredient_id and no ledger_id (a consumable, after the fix), the
+  // parser accepts it rather than throwing "invalid line result".
+  it("parses a consumable's line -- no base_ingredient_id, no ledger_id, RPC succeeds", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        slip_id: "ISL-00002",
+        issued_at: "2026-08-30T09:00:00+07:00",
+        note: "Ly + nap ban combo",
+        created_by_id: "admin-1",
+        created_by_name: "Admin",
+        lines: [
+          {
+            issue_id: "ISS-00003",
+            purchased_item_id: "SPM-CUP", base_ingredient_id: null,
+            base_quantity: 50, on_hand_after: 450,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await createIssueSlipAtomic({
+      issuedAt: new Date("2026-08-30T09:00:00+07:00"),
+      note: "Ly + nap ban combo",
+      createdById: "admin-1",
+      createdByName: "Admin",
+      lines: [{ purchasedItemId: "SPM-CUP", baseQuantity: 50 }],
+    });
+
+    expect(result.lines[0]).toEqual({
+      issueId: "ISS-00003",
+      purchasedItemId: "SPM-CUP", baseIngredientId: "",
+      baseQuantity: 50, onHandAfter: 450,
     });
   });
 
@@ -125,7 +166,6 @@ describe("reverseManualIssueAtomic", () => {
     mocks.rpc.mockResolvedValue({
       data: {
         reversal_issue_id: "ISS-00002",
-        ledger_id: "STK-022",
         reverses_issue_id: "ISS-00001",
         purchased_item_id: "SPM-033",
         base_ingredient_id: "ING-028",
@@ -152,12 +192,48 @@ describe("reverseManualIssueAtomic", () => {
     });
     expect(result).toEqual({
       reversalIssueId: "ISS-00002",
-      ledgerId: "STK-022",
       reversesIssueId: "ISS-00001",
       purchasedItemId: "SPM-033",
       baseIngredientId: "ING-028",
       baseQuantity: -500,
       issuedAt: "2026-08-08T11:21:17+07:00",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+  });
+
+  // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md section 5:
+  // reversal tested on a consumable, not only creation -- and its RPC
+  // response no longer carries ledger_id either.
+  it("parses a consumable's reversal -- no base_ingredient_id, no ledger_id, RPC succeeds", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        reversal_issue_id: "ISS-00004",
+        reverses_issue_id: "ISS-00003",
+        purchased_item_id: "SPM-CUP",
+        base_ingredient_id: null,
+        base_quantity: -50,
+        issued_at: "2026-08-30T10:00:00+07:00",
+        created_by_id: "admin-1",
+        created_by_name: "Admin",
+      },
+      error: null,
+    });
+
+    const result = await reverseManualIssueAtomic({
+      issueId: "ISS-00003",
+      note: "Ghi nhầm",
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+
+    expect(result).toEqual({
+      reversalIssueId: "ISS-00004",
+      reversesIssueId: "ISS-00003",
+      purchasedItemId: "SPM-CUP",
+      baseIngredientId: "",
+      baseQuantity: -50,
+      issuedAt: "2026-08-30T10:00:00+07:00",
       createdById: "admin-1",
       createdByName: "Admin",
     });
@@ -204,7 +280,6 @@ describe("cancelIssueSlipAtomic (Plan D D14, U9-U12)", () => {
         reversals: [
           {
             reversal_issue_id: "ISS-00010",
-            ledger_id: "STK-030",
             reverses_issue_id: "ISS-00005",
             purchased_item_id: "SPM-033",
             base_ingredient_id: "ING-028",
@@ -215,7 +290,6 @@ describe("cancelIssueSlipAtomic (Plan D D14, U9-U12)", () => {
           },
           {
             reversal_issue_id: "ISS-00011",
-            ledger_id: "STK-031",
             reverses_issue_id: "ISS-00006",
             purchased_item_id: "SPM-034",
             base_ingredient_id: "ING-029",
