@@ -2,7 +2,7 @@
 
 **Written 2026-08-31 by Opus 5.**
 
-Status: design, pending owner review
+Status: **tạm gác 31/08 theo yêu cầu chủ quán** — *"hiện chưa đến lúc làm bảng báo cáo tài chính, báo cáo dòng tiền, báo cáo kết quả kinh doanh nên tạm thời sẽ xử lý sau."* Giữ lại vì phần tra cứu và dẫn nguồn đã xong; mở lại thì không phải tra lại.
 
 Bước 2 theo `CLAUDE.md` §1b. Chủ quán chốt 31/08: dựng **cả hai loại hình**, khi
 nào xác định được thì ẩn bớt. Và: *"anh cần bảng báo cáo phải đúng theo mẫu và
@@ -144,3 +144,25 @@ vào mã 25.
 - Thông tư 88/2021/TT-BTC, Điều 5 — danh mục sổ kế toán hộ kinh doanh, S1–S7-HKD
 - Hạch toán thanh lý/nhượng bán TSCĐ: TK 711 (thu nhập khác), TK 811 (giá trị
   còn lại), TK 214 (hao mòn), TK 211 (nguyên giá)
+
+---
+
+## 8. Chủ quán bổ sung 31/08, trước khi gác lại
+
+**Không phải quán — là điểm bán vỉa hè.** Hai điểm bán, **chi phí ghi chung, và
+không có cách nào tách được của điểm nào.** Nên ghi thành một, cố ý. Sau này nếu
+mở quán thì hai điểm cũng gộp làm một.
+
+**Điều đó xác nhận gợi ý ở §5 câu 2 và 3:** mã 26 để 0 và khấu hao vào mã 25 —
+vì không có bộ máy quản lý tách rời, và giờ biết thêm là **không có cả ranh giới
+giữa hai điểm bán**.
+
+**Nhưng nó cũng đặt ra một câu chưa ai trả lời**, ghi lại để lúc mở lại còn nhớ:
+hệ thống **đã tách doanh thu theo điểm bán** (`orders_v2.outlet_id`, từ migration
+`0071`) nhưng **không tách được chi phí**. Nên báo cáo theo điểm bán sẽ có doanh
+thu mà không có chi phí — nửa vời theo hướng dễ đọc nhầm thành "điểm này lãi".
+Chưa phải vấn đề hôm nay vì chưa có báo cáo nào; sẽ là vấn đề khi làm.
+
+**Câu chủ quán hỏi mà tôi chưa trả lời:** *"kiểm toán cũng chỉ quan tâm bảng kết
+quả kinh doanh tổng thể đúng không?"* — chưa tra, chưa trả lời. Đừng gật bừa lúc
+mở lại.
