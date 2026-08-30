@@ -95,10 +95,28 @@ trả lời — **là bản mô tả do mình viết, để ông ấy đọc và
 đẩy phần đảm bảo đủ về phía ông ấy; đưa mô tả thì ông ấy chỉ cần nói "sai chỗ
 này".
 
-Tối thiểu: có mấy trạng thái và đặt bằng cách nào; màn hình có nút nào, làm gì,
-khi nào không nên hiện; danh sách chứa gì và loại gì ra; mỗi ô nhận giá trị nào
-là hợp lệ và ngoài khoảng thì sao; phục vụ loại dữ liệu nào và cố ý không phục
-vụ loại nào.
+**Viết thành năm mục ĐÁNH SỐ, không viết văn xuôi.** Mục nào không áp dụng thì
+ghi *"không áp dụng, vì…"* — **không được bỏ trống**:
+
+1. Thứ này có mấy trạng thái, và mỗi trạng thái đặt bằng cách nào?
+2. Màn hình có những nút nào, mỗi nút làm gì, và cái nào không nên hiện khi nào?
+3. Danh sách/bảng này chứa gì, và cái gì bị loại ra vì lý do gì?
+4. Mỗi ô nhập nhận giá trị nào là hợp lệ, và nhập ngoài khoảng đó thì sao?
+5. Phục vụ loại dữ liệu nào, và cố ý không phục vụ loại nào?
+
+**Đánh số vì văn xuôi giấu được chỗ thiếu.** Ngày 31/08 mục hiện trạng viết dạng
+văn xuôi, lấp đầy bằng *kết quả điều tra nguyên nhân* thay vì *liệt kê bề mặt* —
+hai thứ đó trông giống nhau đủ để không ai nhận ra một cái đã thay cái kia. Chủ
+quán phải hỏi *"em có bỏ bước nào không"* mới lòi ra thiếu ba trên năm mục, và
+mục số 3 bị thiếu đang che một lỗi thứ hai: máy POS mời bấm vào món không còn cỡ
+nào bán được.
+
+**Chỗ trống có đánh số thì nhìn thấy được. Chỗ trống trong văn xuôi thì không.**
+
+**Và mở luật này ra đối chiếu trước khi gửi, đừng viết theo trí nhớ.** Lần trượt
+31/08 không phải vì không biết luật — luật nằm ngay trong file này và đã đọc.
+Trượt vì viết xong không so lại. `superpowers:using-superpowers` nói đúng chuyện
+đó: *nhớ về một quy tắc không giống với việc mở nó ra*.
 
 **Đó là sàn, không phải trần.** Mỗi việc có bộ câu hỏi riêng và không ai nhớ hết
 được — **nghĩ ra bộ câu hỏi cho đúng việc đó là phần việc của mình**, không phải
