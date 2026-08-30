@@ -47,7 +47,6 @@ describe("stock adjustment atomic adapters", () => {
     mocks.rpc.mockResolvedValue({
       data: {
         adjustment_id: "SADJ-001",
-        ledger_count: 1,
         already_completed: true,
       },
       error: null,
@@ -59,7 +58,6 @@ describe("stock adjustment atomic adapters", () => {
       approvedAt: "2026-07-19T00:00:00.000Z",
     })).resolves.toEqual({
       adjustmentId: "SADJ-001",
-      ledgerCount: 1,
       alreadyCompleted: true,
     });
     expect(mocks.rpc).toHaveBeenCalledWith("approve_stock_adjustment_atomic", {

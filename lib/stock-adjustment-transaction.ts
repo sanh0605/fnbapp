@@ -20,7 +20,6 @@ export async function approveStockAdjustmentAtomic(
   input: { adjustmentId: string; approvedBy: string; approvedAt: string },
 ): Promise<{
   adjustmentId: string;
-  ledgerCount: number;
   alreadyCompleted: boolean;
 }> {
   const { data, error } = await getSupabaseClient().rpc(
@@ -34,20 +33,15 @@ export async function approveStockAdjustmentAtomic(
   if (error) {
     throw new Error(`approve_stock_adjustment_atomic: ${error.message}`);
   }
-  const result = parseResult(data, "approve_stock_adjustment_atomic");
-  if (result.ledgerCount !== 1) {
-    throw new Error("approve_stock_adjustment_atomic persisted ledger count mismatch");
-  }
-  return result;
+  return parseResult(data, "approve_stock_adjustment_atomic");
 }
 
 function parseResult(
   data: unknown,
   rpcName: string,
-): { adjustmentId: string; ledgerCount: number; alreadyCompleted: boolean } {
+): { adjustmentId: string; alreadyCompleted: boolean } {
   const result = data as {
     adjustment_id?: string;
-    ledger_count?: number;
     already_completed?: boolean;
   } | null;
   if (!result?.adjustment_id) {
@@ -55,7 +49,6 @@ function parseResult(
   }
   return {
     adjustmentId: result.adjustment_id,
-    ledgerCount: Number(result.ledger_count) || 0,
     alreadyCompleted: Boolean(result.already_completed),
   };
 }
