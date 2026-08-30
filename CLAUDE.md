@@ -106,6 +106,14 @@ thể**, không phải bằng cách diễn đạt lại trừu tượng.
 
 Trước khi kết luận từ một truy vấn, nói rõ truy vấn đó **không** cho thấy điều gì.
 
+**Gỡ một thứ ra thì phải xem ai đang ĂN đầu ra của nó**, không chỉ xem ai gọi
+nó. Ngày 30/08 một kế hoạch bảo "thôi ghi dòng sổ kho trong hàm ghi phiếu
+xuất" — hợp lý, vì quyển sổ đó sắp bỏ. Nhưng hàm đó **trả về mã dòng sổ kho**,
+và phía TypeScript có dòng `if (!line.ledger_id) throw`. Làm theo kế hoạch là
+**mọi phiếu xuất đều hỏng**, kể cả 95 phiếu đang chạy tốt — chữa một món, làm
+hỏng cả tính năng. Cùng họ với mục 71 (siết một cột là sửa mọi chỗ ghi), nhưng
+áp cho **giá trị trả về**: liệt kê chỗ đọc kết quả, đừng chỉ liệt kê chỗ gọi.
+
 **Truy vấn hỏng của mình nằm trong nhật ký lỗi của chủ quán.** Ngày 27/08 có
 bốn câu gõ sai tên cột, cả bốn được Supabase ghi lại thành ERROR trong đúng
 chỗ chủ quán mở ra để xem hệ thống có bất thường không — và ông ấy đã mang một
