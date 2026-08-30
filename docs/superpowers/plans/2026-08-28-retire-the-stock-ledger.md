@@ -139,13 +139,21 @@ xây lại chuẩn chỉnh sau, xoá đi."*
 - Remove the ledger read from `voidOrderV2` and `editOrderV2`. **It returns
   nothing today** — prove that with a test asserting zero rows for a real order
   before deleting the code, so the removal is evidenced rather than assumed.
-- `app/admin/products/page.tsx` and `products/cogs-estimate/page.tsx` read the
-  ledger beside `Recipes` — both die with recipes in the other plan. Coordinate;
-  do not fix them twice.
-- **POS stock status** (`loadPOSStockStatus`, `app/pos/actions.ts:223`) shows
-  cashiers what is in stock from `Inventory_Balances`. That number comes from
-  the incomplete copy. **Ask the owner before changing what a cashier sees** —
-  it is the only reader in this phase that faces a person mid-shift.
+- ~~`app/admin/products/page.tsx` và `products/cogs-estimate/page.tsx`~~ —
+  **đã biến mất cùng lúc xoá công thức 31/08**, không còn việc gì ở đây.
+- **POS stock status** (`loadPOSStockStatus`, `app/pos/actions.ts:225`):
+  **chủ quán chốt 31/08 — bỏ hẳn.** Được hỏi vì đây là chỗ duy nhất trong giai
+  đoạn này mà nhân viên nhìn thấy giữa ca; ông ấy chọn bỏ chứ không chọn giữ rồi
+  tính lại cho đúng. Lý do đứng vững: con số đó lấy từ bảng số dư, tức từ **bản
+  chép thiếu** — 38 dòng trên 49 điều chỉnh của kỳ kiểm kê đầu tiên — nên **số
+  sai còn tệ hơn không có số**.
+
+  Và code đã ghi sẵn rằng nhãn hết hàng *"đang bị chủ quán tắt"*, nên việc này
+  chỉ dọn nốt phần còn lại của một quyết định đã có, không phải bỏ một tính năng
+  đang dùng.
+
+  **Xoá cả hàm, không chỉ ẩn chỗ hiển thị** — để không còn ai đọc `Inventory_Balances`
+  từ đường bán hàng.
 
 **Gate:** POS sells, orders void and edit, full suite, `npm run build`.
 
