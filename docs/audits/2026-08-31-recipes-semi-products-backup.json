@@ -1,0 +1,3935 @@
+{
+ "generated_at": "2026-08-31 02:21:59.103426+07",
+ "purpose": "Ban sao luy nhat truoc khi xoa cong thuc va ban thanh pham -- giai doan 3, chu quan duyet 31/08/2026",
+ "counts": {
+  "recipes": 136,
+  "semi_products": 17,
+  "inventory_balances_semi_product": 11
+ },
+ "recipes": [
+  {
+   "id": "RC-001",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-001",
+   "ingredients_json": [
+    {
+     "quantity": "200",
+     "ingredient_id": "NNL-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "650",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-10T00:00:00+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-04-10T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:48:51.62552+07:00"
+  },
+  {
+   "id": "RC-003",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-003",
+   "ingredients_json": [
+    {
+     "quantity": "200",
+     "ingredient_id": "ING-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "1000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-10T00:00:00+07:00",
+   "end_date": "2026-06-24T14:24:52.177+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-04-10T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:50.947794+07:00"
+  },
+  {
+   "id": "RC-004",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-004",
+   "ingredients_json": [
+    {
+     "quantity": "600",
+     "ingredient_id": "ING-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "1000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-10T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-04-10T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.112792+07:00"
+  },
+  {
+   "id": "RC-006",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-006",
+   "ingredients_json": [
+    {
+     "quantity": "350",
+     "ingredient_id": "ING-009",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "80",
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "40",
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "30",
+     "ingredient_id": "ING-004",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "50",
+     "ingredient_id": "ING-010",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "20",
+     "ingredient_id": "NNL-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "65",
+     "ingredient_id": "ING-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-21T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-04-21T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.297371+07:00"
+  },
+  {
+   "id": "RC-007",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-007",
+   "ingredients_json": [
+    {
+     "quantity": "500",
+     "ingredient_id": "ING-013",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "30",
+     "ingredient_id": "ING-010",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "20",
+     "ingredient_id": "NNL-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "65",
+     "ingredient_id": "ING-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "ING-014",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "28",
+     "ingredient_id": "ING-004",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-21T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-04-21T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.392726+07:00"
+  },
+  {
+   "id": "RC-008",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-008",
+   "ingredients_json": [
+    {
+     "quantity": "50",
+     "ingredient_id": "ING-021",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "1500",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "500",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T16:55:42.982+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.480991+07:00"
+  },
+  {
+   "id": "RC-009",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-009",
+   "ingredients_json": [
+    {
+     "quantity": "50",
+     "ingredient_id": "ING-020",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "1500",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "500",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T16:56:01.32+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.573635+07:00"
+  },
+  {
+   "id": "RC-010",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-010",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-021",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "2000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "180",
+     "ingredient_id": "ING-027",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "240",
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "3",
+     "ingredient_id": "ING-014",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "800",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T16:54:55.315+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.666686+07:00"
+  },
+  {
+   "id": "RC-011",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-011",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-029",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "150",
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "30",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.760218+07:00"
+  },
+  {
+   "id": "RC-012",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-012",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-006",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "200",
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-10T00:00:00+07:00",
+   "end_date": "2026-05-20T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-04-10T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.851783+07:00"
+  },
+  {
+   "id": "RC-013",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-012",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-006",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "150",
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "30",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.937398+07:00"
+  },
+  {
+   "id": "REC-001",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-001",
+   "ingredients_json": [
+    {
+     "quantity": 60,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "BTP-004",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-03-27T00:00:00+07:00",
+   "end_date": "2026-05-13T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-03-27T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.258403+07:00"
+  },
+  {
+   "id": "REC-002",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-002",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-03-27T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-03-27T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.342775+07:00"
+  },
+  {
+   "id": "REC-003",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-003",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-03-27T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-03-27T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.429491+07:00"
+  },
+  {
+   "id": "REC-004",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-004",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-03-27T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-03-27T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.516111+07:00"
+  },
+  {
+   "id": "REC-005",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-005",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-03-27T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-03-27T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.602155+07:00"
+  },
+  {
+   "id": "REC-006",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-006",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-03-27T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-03-27T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.697709+07:00"
+  },
+  {
+   "id": "REC-021",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-020",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-024",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-026",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T14:16:20.582+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.020423+07:00"
+  },
+  {
+   "id": "REC-008",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-008",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-006",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-04-21T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-04-21T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.870646+07:00"
+  },
+  {
+   "id": "REC-009",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-009",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-007",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-04-21T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-04-21T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.956295+07:00"
+  },
+  {
+   "id": "REC-010",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-010",
+   "ingredients_json": [
+    {
+     "quantity": 45,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 15,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-13T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-13T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.042565+07:00"
+  },
+  {
+   "id": "REC-011",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-001",
+   "ingredients_json": [
+    {
+     "quantity": 60,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-13T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-13T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.128416+07:00"
+  },
+  {
+   "id": "REC-012",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-011",
+   "ingredients_json": [
+    {
+     "quantity": 45,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 15,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-13T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-13T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.225177+07:00"
+  },
+  {
+   "id": "REC-013",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-012",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-13T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-13T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.310031+07:00"
+  },
+  {
+   "id": "REC-014",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-013",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-13T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-13T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.398058+07:00"
+  },
+  {
+   "id": "REC-015",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-014",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-13T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-13T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.48299+07:00"
+  },
+  {
+   "id": "REC-016",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-015",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-13T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-13T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.571551+07:00"
+  },
+  {
+   "id": "REC-017",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-016",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T14:15:45.848+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.657672+07:00"
+  },
+  {
+   "id": "REC-019",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-018",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T14:16:01.33+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.841986+07:00"
+  },
+  {
+   "id": "REC-020",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-019",
+   "ingredients_json": [
+    {
+     "quantity": 300,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 60,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.930735+07:00"
+  },
+  {
+   "id": "REC-022",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-021",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-023",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-025",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T14:16:32.89+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.107872+07:00"
+  },
+  {
+   "id": "REC-023",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-022",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-016",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T14:16:45.164+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.193631+07:00"
+  },
+  {
+   "id": "REC-024",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-023",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "ING-017",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T14:19:32.543+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.279609+07:00"
+  },
+  {
+   "id": "REC-025",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-024",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-031",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T14:19:46.838+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.369188+07:00"
+  },
+  {
+   "id": "REC-026",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-025",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-026",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.462281+07:00"
+  },
+  {
+   "id": "REC-027",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-026",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.549803+07:00"
+  },
+  {
+   "id": "RC-014",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-001",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-01T16:48:51.639+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T16:48:51.639+07:00",
+   "updated_at": "2026-07-31T18:53:52.031328+07:00"
+  },
+  {
+   "id": "RC-015",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-002",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-01T16:49:47.686+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T16:49:47.686+07:00",
+   "updated_at": "2026-07-31T18:53:52.118266+07:00"
+  },
+  {
+   "id": "RC-016",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-003",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-007",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-01T16:50:18.854+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T16:50:18.854+07:00",
+   "updated_at": "2026-07-31T18:53:52.204841+07:00"
+  },
+  {
+   "id": "RC-017",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-004",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-034",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-01T16:51:15.964+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T16:51:15.964+07:00",
+   "updated_at": "2026-07-31T18:53:52.289534+07:00"
+  },
+  {
+   "id": "RC-018",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-005",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-01T16:51:45.936+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T16:51:45.936+07:00",
+   "updated_at": "2026-07-31T18:53:52.376165+07:00"
+  },
+  {
+   "id": "RC-019",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-006",
+   "ingredients_json": [
+    {
+     "quantity": 1,
+     "ingredient_id": "ING-017",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-01T16:52:09.678+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T16:52:09.678+07:00",
+   "updated_at": "2026-07-31T18:53:52.464438+07:00"
+  },
+  {
+   "id": "REC-029",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-028",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-025",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.7243+07:00"
+  },
+  {
+   "id": "REC-030",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-029",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T16:09:52.071+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.817565+07:00"
+  },
+  {
+   "id": "REC-031",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-030",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T16:10:05.471+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.906298+07:00"
+  },
+  {
+   "id": "REC-032",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-031",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-028",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T19:05:37.947+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.994478+07:00"
+  },
+  {
+   "id": "REC-033",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-032",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-010",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-034",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-04T15:22:25.337+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:56.083102+07:00"
+  },
+  {
+   "id": "REC-035",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-016",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T14:15:45.848+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T14:15:45.848+07:00",
+   "updated_at": "2026-07-31T18:53:56.254892+07:00"
+  },
+  {
+   "id": "REC-036",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-018",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T14:16:01.33+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T14:16:01.33+07:00",
+   "updated_at": "2026-07-31T18:53:56.339263+07:00"
+  },
+  {
+   "id": "REC-037",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-020",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-024",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-026",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T14:16:20.582+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T14:16:20.582+07:00",
+   "updated_at": "2026-07-31T18:53:56.429945+07:00"
+  },
+  {
+   "id": "REC-038",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-021",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-023",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-025",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T14:16:32.89+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T14:16:32.89+07:00",
+   "updated_at": "2026-07-31T18:53:56.517406+07:00"
+  },
+  {
+   "id": "REC-039",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-022",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-016",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T14:16:45.164+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T14:16:45.164+07:00",
+   "updated_at": "2026-07-31T18:53:56.607632+07:00"
+  },
+  {
+   "id": "REC-040",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-023",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "ING-017",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T14:19:32.543+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T14:19:32.543+07:00",
+   "updated_at": "2026-07-31T18:53:56.695704+07:00"
+  },
+  {
+   "id": "REC-041",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-024",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-031",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T14:19:46.838+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T14:19:46.838+07:00",
+   "updated_at": "2026-07-31T18:53:56.781217+07:00"
+  },
+  {
+   "id": "REC-042",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-032",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-010",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-034",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T15:22:25.337+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T15:22:25.337+07:00",
+   "updated_at": "2026-07-31T18:53:56.865281+07:00"
+  },
+  {
+   "id": "REC-043",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-029",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T16:09:52.071+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T16:09:52.071+07:00",
+   "updated_at": "2026-07-31T18:53:56.948351+07:00"
+  },
+  {
+   "id": "RC-020",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-010",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-021",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "2000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "180",
+     "ingredient_id": "ING-027",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "240",
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "3",
+     "ingredient_id": "ING-014",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "500",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T16:54:55.315+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T16:54:55.315+07:00",
+   "updated_at": "2026-07-31T18:53:52.55048+07:00"
+  },
+  {
+   "id": "RC-022",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-009",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-020",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "2000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "500",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T16:56:01.32+07:00",
+   "end_date": "2026-07-12T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T16:56:01.32+07:00",
+   "updated_at": "2026-07-31T18:49:16.644329+07:00"
+  },
+  {
+   "id": "RC-021",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-008",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-021",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "2000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "500",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T16:55:42.982+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T16:55:42.982+07:00",
+   "updated_at": "2026-07-31T18:53:52.636203+07:00"
+  },
+  {
+   "id": "REC-044",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-030",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T16:10:05.471+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T16:10:05.471+07:00",
+   "updated_at": "2026-07-31T18:53:57.036335+07:00"
+  },
+  {
+   "id": "REC-045",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-034",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T16:11:01.755+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T16:11:01.755+07:00",
+   "updated_at": "2026-07-31T18:53:57.122321+07:00"
+  },
+  {
+   "id": "REC-046",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-035",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T16:11:44.709+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T16:11:44.709+07:00",
+   "updated_at": "2026-07-31T18:53:57.207879+07:00"
+  },
+  {
+   "id": "REC-047",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-031",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-028",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T19:05:37.947+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T19:05:37.947+07:00",
+   "updated_at": "2026-07-31T18:53:57.304568+07:00"
+  },
+  {
+   "id": "REC-053",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-018",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 3,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:57.829857+07:00"
+  },
+  {
+   "id": "REC-071",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-038",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-27T01:48:45.183+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-27T01:48:45.183+07:00",
+   "updated_at": "2026-07-31T18:53:59.309485+07:00"
+  },
+  {
+   "id": "REC-072",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-039",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-27T01:48:45.183+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-27T01:48:45.183+07:00",
+   "updated_at": "2026-07-31T18:53:59.397073+07:00"
+  },
+  {
+   "id": "REC-060",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-024",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-031",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:13:03.633386+07:00"
+  },
+  {
+   "id": "REC-061",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-032",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-010",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-034",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:58.516775+07:00"
+  },
+  {
+   "id": "RC-029",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-013",
+   "ingredients_json": [
+    {
+     "quantity": "1",
+     "ingredient_id": "NNL-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-01T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-26T18:15:16.242+07:00",
+   "updated_at": "2026-07-21T18:21:33.824417+07:00"
+  },
+  {
+   "id": "RC-023",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-011",
+   "ingredients_json": [
+    {
+     "quantity": "200",
+     "ingredient_id": "ING-029",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "270",
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "50",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:52.725623+07:00"
+  },
+  {
+   "id": "RC-024",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-001",
+   "ingredients_json": [
+    {
+     "quantity": "200",
+     "ingredient_id": "NNL-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "950",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:52.820119+07:00"
+  },
+  {
+   "id": "RC-025",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-003",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "1000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-24T14:24:52.177+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-24T14:24:52.177+07:00",
+   "updated_at": "2026-07-31T18:53:52.91065+07:00"
+  },
+  {
+   "id": "RC-026",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-007",
+   "ingredients_json": [
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-028",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-24T17:04:05.831+07:00",
+   "end_date": "2026-06-24T22:30:56.099+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-24T17:04:05.831+07:00",
+   "updated_at": "2026-07-31T18:53:52.995253+07:00"
+  },
+  {
+   "id": "RC-027",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-007",
+   "ingredients_json": [
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-028",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-24T22:30:56.099+07:00",
+   "end_date": "2026-06-24T22:31:29.244+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-24T22:30:56.099+07:00",
+   "updated_at": "2026-07-31T18:53:53.087324+07:00"
+  },
+  {
+   "id": "RC-028",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-008",
+   "ingredients_json": [
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-028",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-24T22:31:58.333+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-24T22:31:58.333+07:00",
+   "updated_at": "2026-07-31T18:53:53.173786+07:00"
+  },
+  {
+   "id": "REC-059",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-023",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "ING-017",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:12:46.157721+07:00"
+  },
+  {
+   "id": "REC-062",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-016",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-006",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:14:44.198432+07:00"
+  },
+  {
+   "id": "REC-063",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-028",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-025",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:58.687189+07:00"
+  },
+  {
+   "id": "REC-064",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-027",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-016",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:58.774632+07:00"
+  },
+  {
+   "id": "REC-065",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-026",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:58.87608+07:00"
+  },
+  {
+   "id": "REC-066",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-025",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-026",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:58.965086+07:00"
+  },
+  {
+   "id": "REC-067",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-031",
+   "ingredients_json": [
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-028",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:59.054172+07:00"
+  },
+  {
+   "id": "REC-069",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-036",
+   "ingredients_json": [],
+   "start_date": "2026-05-01T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:59.136948+07:00"
+  },
+  {
+   "id": "REC-070",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-037",
+   "ingredients_json": [
+    {
+     "quantity": 1,
+     "ingredient_id": "BTP-013",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-05-01T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-05-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:59.221662+07:00"
+  },
+  {
+   "id": "REC-058",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-022",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-016",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:12:32.303902+07:00"
+  },
+  {
+   "id": "REC-082",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-050",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-01T00:00:00+07:00",
+   "end_date": "2026-07-01T12:41:11.926+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:00.322449+07:00"
+  },
+  {
+   "id": "REC-083",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-049",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-07-01T12:41:02.899+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T12:41:02.899+07:00",
+   "updated_at": "2026-07-31T18:54:00.414896+07:00"
+  },
+  {
+   "id": "REC-080",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-048",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-01T00:00:00+07:00",
+   "end_date": "2026-07-01T12:41:39.786+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:00.143174+07:00"
+  },
+  {
+   "id": "REC-081",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-049",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-07-01T00:00:00+07:00",
+   "end_date": "2026-07-01T12:41:02.899+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:00.227395+07:00"
+  },
+  {
+   "id": "RC-032",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-014",
+   "ingredients_json": [
+    {
+     "quantity": "1",
+     "ingredient_id": "NNL-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-01T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-30T14:33:17.407+07:00",
+   "updated_at": "2026-07-30T14:46:06.56723+07:00"
+  },
+  {
+   "id": "RC-031",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-002",
+   "ingredients_json": [
+    {
+     "quantity": "150",
+     "ingredient_id": "ING-004",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "1000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-14T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-14T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:48:57.588003+07:00"
+  },
+  {
+   "id": "REC-073",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-040",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-007",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-27T01:48:45.183+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-27T01:48:45.183+07:00",
+   "updated_at": "2026-07-31T18:53:59.484983+07:00"
+  },
+  {
+   "id": "REC-074",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-041",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-034",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-27T01:48:45.183+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-27T01:48:45.183+07:00",
+   "updated_at": "2026-07-31T18:53:59.569851+07:00"
+  },
+  {
+   "id": "REC-075",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-042",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-06-27T01:48:45.183+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-27T01:48:45.183+07:00",
+   "updated_at": "2026-07-31T18:53:59.656966+07:00"
+  },
+  {
+   "id": "REC-076",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-043",
+   "ingredients_json": [
+    {
+     "quantity": 1,
+     "ingredient_id": "ING-017",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-27T01:48:45.183+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-27T01:48:45.183+07:00",
+   "updated_at": "2026-07-31T18:53:59.742771+07:00"
+  },
+  {
+   "id": "REC-077",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-044",
+   "ingredients_json": [
+    {
+     "quantity": 10,
+     "ingredient_id": "ING-028",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-27T01:48:45.183+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-27T01:48:45.183+07:00",
+   "updated_at": "2026-07-31T18:53:59.824656+07:00"
+  },
+  {
+   "id": "REC-078",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-045",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-01T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:59.923957+07:00"
+  },
+  {
+   "id": "REC-079",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-047",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 120,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-07-01T00:00:00+07:00",
+   "end_date": "2026-07-01T12:41:29.982+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:00.048926+07:00"
+  },
+  {
+   "id": "REC-084",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-050",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-01T12:41:11.926+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T12:41:11.926+07:00",
+   "updated_at": "2026-07-31T18:54:00.524763+07:00"
+  },
+  {
+   "id": "REC-085",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-047",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-07-01T12:41:29.982+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T12:41:29.982+07:00",
+   "updated_at": "2026-07-31T18:54:00.610882+07:00"
+  },
+  {
+   "id": "REC-086",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-048",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "NNL-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-01T12:41:39.786+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T12:41:39.786+07:00",
+   "updated_at": "2026-07-31T18:54:00.694917+07:00"
+  },
+  {
+   "id": "REC-057",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-021",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-023",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-025",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:02+07:00",
+   "updated_at": "2026-08-14T18:12:20.446019+07:00"
+  },
+  {
+   "id": "REC-096",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-016",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-006",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:14:10.563672+07:00"
+  },
+  {
+   "id": "REC-095",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-019",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 3,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:01.4814+07:00"
+  },
+  {
+   "id": "RC-030",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-009",
+   "ingredients_json": [
+    {
+     "quantity": "50",
+     "ingredient_id": "ING-020",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "2000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "500",
+     "ingredient_id": "ING-001",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-12T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-12T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:49:10.655496+07:00"
+  },
+  {
+   "id": "REC-018",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-017",
+   "ingredients_json": [
+    {
+     "quantity": 300,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 60,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:54.746532+07:00"
+  },
+  {
+   "id": "REC-034",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-033",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-04T10:00:34.413+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-04T10:00:34.413+07:00",
+   "updated_at": "2026-07-31T18:53:56.168758+07:00"
+  },
+  {
+   "id": "REC-088",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-021",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-009",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-023",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-025",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:00.869179+07:00"
+  },
+  {
+   "id": "REC-089",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-022",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-009",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-016",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:00.958414+07:00"
+  },
+  {
+   "id": "REC-090",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-023",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-009",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-015",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "ING-017",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:01.047101+07:00"
+  },
+  {
+   "id": "REC-091",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-024",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-009",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-031",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-030",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:01.131741+07:00"
+  },
+  {
+   "id": "REC-097",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-017",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-006",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:13:47.761069+07:00"
+  },
+  {
+   "id": "REC-098",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-051",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-009",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-006",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:01.756767+07:00"
+  },
+  {
+   "id": "REC-099",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-052",
+   "ingredients_json": [
+    {
+     "quantity": 200,
+     "ingredient_id": "BTP-009",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-006",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:01.850465+07:00"
+  },
+  {
+   "id": "REC-100",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-033",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:54:01.938035+07:00"
+  },
+  {
+   "id": "REC-092",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-020",
+   "ingredients_json": [
+    {
+     "quantity": 150,
+     "ingredient_id": "BTP-009",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-024",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-026",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-29T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-06-29T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:13:30.879847+07:00"
+  },
+  {
+   "id": "REC-102",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-054",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-08-14T14:09:31.916+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-14T14:09:31.916+07:00",
+   "updated_at": "2026-08-14T14:09:33.414081+07:00"
+  },
+  {
+   "id": "RC-034",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-015",
+   "ingredients_json": [
+    {
+     "quantity": "10",
+     "ingredient_id": "ING-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-01T00:00:00+07:00",
+   "end_date": "2026-09-01T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-07-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T17:38:32.982763+07:00"
+  },
+  {
+   "id": "RC-035",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-015",
+   "ingredients_json": [
+    {
+     "quantity": "20",
+     "ingredient_id": "ING-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-09-01T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-09-01T00:00:00+07:00",
+   "updated_at": "2026-07-31T17:38:33.534353+07:00"
+  },
+  {
+   "id": "REC-103",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-055",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-08-14T14:11:01.936+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-14T14:11:01.936+07:00",
+   "updated_at": "2026-08-14T14:11:03.595009+07:00"
+  },
+  {
+   "id": "RC-037",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-016",
+   "ingredients_json": [
+    {
+     "quantity": "20",
+     "ingredient_id": "ING-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-01T00:00:00+07:00",
+   "end_date": "2026-09-01T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-07-31T17:45:37.314+07:00",
+   "updated_at": "2026-07-31T17:45:56.067262+07:00"
+  },
+  {
+   "id": "RC-038",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-016",
+   "ingredients_json": [
+    {
+     "quantity": "30",
+     "ingredient_id": "ING-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-09-01T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-31T17:45:55.653+07:00",
+   "updated_at": "2026-07-31T17:45:56.278698+07:00"
+  },
+  {
+   "id": "RC-002",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-002",
+   "ingredients_json": [
+    {
+     "quantity": "200",
+     "ingredient_id": "ING-004",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "1000",
+     "ingredient_id": "NNL-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-10T00:00:00+07:00",
+   "end_date": "2026-07-14T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-04-10T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:49:02.903402+07:00"
+  },
+  {
+   "id": "RC-005",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-005",
+   "ingredients_json": [
+    {
+     "quantity": "250",
+     "ingredient_id": "ING-008",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "150",
+     "ingredient_id": "ING-009",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "20",
+     "ingredient_id": "NNL-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "65",
+     "ingredient_id": "ING-007",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "15",
+     "ingredient_id": "ING-004",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "10",
+     "ingredient_id": "ING-010",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": "5",
+     "ingredient_id": "ING-011",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-04-21T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-04-21T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:51.203717+07:00"
+  },
+  {
+   "id": "REC-007",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-007",
+   "ingredients_json": [
+    {
+     "quantity": 50,
+     "ingredient_id": "BTP-001",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-005",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-04-21T00:00:00+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-04-21T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:53.784964+07:00"
+  },
+  {
+   "id": "REC-028",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-027",
+   "ingredients_json": [
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-016",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-05-20T00:00:00+07:00",
+   "end_date": "2026-06-15T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-05-20T00:00:00+07:00",
+   "updated_at": "2026-07-31T18:53:55.638293+07:00"
+  },
+  {
+   "id": "RC-039",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-017",
+   "ingredients_json": [
+    {
+     "quantity": "100",
+     "ingredient_id": "ING-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-31T18:32:49.541+07:00",
+   "end_date": "2026-07-31T19:47:59.675+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-07-31T18:32:49.541+07:00",
+   "updated_at": "2026-07-31T19:48:00.238758+07:00"
+  },
+  {
+   "id": "RC-040",
+   "target_type": "SEMI_PRODUCT",
+   "target_id": "BTP-017",
+   "ingredients_json": [
+    {
+     "quantity": "150",
+     "ingredient_id": "ING-002",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-07-31T19:47:59.675+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-07-31T19:47:59.675+07:00",
+   "updated_at": "2026-07-31T19:48:00.653674+07:00"
+  },
+  {
+   "id": "REC-101",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-053",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-08-14T14:08:30.249+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-14T14:08:30.249+07:00",
+   "updated_at": "2026-08-14T14:08:31.606331+07:00"
+  },
+  {
+   "id": "REC-104",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-056",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-011",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-08-14T14:13:29.108+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-14T14:13:29.108+07:00",
+   "updated_at": "2026-08-14T14:13:31.234829+07:00"
+  },
+  {
+   "id": "REC-105",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-057",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-002",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-08-14T14:15:13.509+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-14T14:15:13.509+07:00",
+   "updated_at": "2026-08-14T14:15:15.322672+07:00"
+  },
+  {
+   "id": "REC-106",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-058",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    }
+   ],
+   "start_date": "2026-08-14T14:21:59.225+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-14T14:21:59.225+07:00",
+   "updated_at": "2026-08-14T14:22:00.925633+07:00"
+  },
+  {
+   "id": "REC-107",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-059",
+   "ingredients_json": [
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-003",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "ING-003",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 70,
+     "ingredient_id": "ING-033",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 40,
+     "ingredient_id": "BTP-012",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-012",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-08-14T14:29:54.557+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-14T14:29:54.557+07:00",
+   "updated_at": "2026-08-14T14:29:56.775701+07:00"
+  },
+  {
+   "id": "REC-055",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-020",
+   "ingredients_json": [
+    {
+     "quantity": 220,
+     "ingredient_id": "BTP-008",
+     "ingredient_type": "SEMI_PRODUCT"
+    },
+    {
+     "quantity": 20,
+     "ingredient_id": "ING-024",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 50,
+     "ingredient_id": "ING-022",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 30,
+     "ingredient_id": "ING-026",
+     "ingredient_type": "BASE_INGREDIENT"
+    },
+    {
+     "quantity": 1,
+     "ingredient_id": "NNL-005",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-06-15T00:00:00+07:00",
+   "end_date": "2026-06-29T00:00:00+07:00",
+   "status": "ACTIVE",
+   "created_at": "2026-06-15T00:00:01+07:00",
+   "updated_at": "2026-08-14T18:11:48.745985+07:00"
+  },
+  {
+   "id": "RC-041",
+   "target_type": "MODIFIER",
+   "target_id": "MOD-009",
+   "ingredients_json": [
+    {
+     "quantity": 100,
+     "ingredient_id": "ING-032",
+     "ingredient_type": "BASE_INGREDIENT"
+    }
+   ],
+   "start_date": "2026-08-28T21:38:09.815+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-28T21:38:09.815+07:00",
+   "updated_at": "2026-08-28T21:38:10.340217+07:00"
+  },
+  {
+   "id": "REC-108",
+   "target_type": "PRODUCT_VARIANT",
+   "target_id": "VAR-060",
+   "ingredients_json": [],
+   "start_date": "2026-08-29T09:58:24.059+07:00",
+   "end_date": null,
+   "status": "ACTIVE",
+   "created_at": "2026-08-29T09:58:24.059+07:00",
+   "updated_at": "2026-08-29T09:58:24.208669+07:00"
+  }
+ ],
+ "semi_products": [
+  {
+   "id": "BTP-001",
+   "name": "Cốt cà phê",
+   "base_unit": "U-003",
+   "batch_yield": 500.0,
+   "status": "ACTIVE",
+   "created_at": "2026-05-31T22:23:18.25+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-003",
+   "name": "Cốt matcha",
+   "base_unit": "U-003",
+   "batch_yield": 1000.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T14:54:06.84+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-004",
+   "name": "Nước đường",
+   "base_unit": "U-003",
+   "batch_yield": 1000.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T14:55:15.905+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-005",
+   "name": "Kem dẻo CT1",
+   "base_unit": "UNT-017",
+   "batch_yield": 800.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:11:18.577+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-006",
+   "name": "Kem dẻo CT2",
+   "base_unit": "UNT-017",
+   "batch_yield": 800.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:15:09.902+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-007",
+   "name": "Kem dẻo CT3",
+   "base_unit": "UNT-017",
+   "batch_yield": 800.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:16:15.043+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-008",
+   "name": "Hồng trà",
+   "base_unit": "U-003",
+   "batch_yield": 2100.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:16:57.132+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-010",
+   "name": "Trà sữa hồng trà",
+   "base_unit": "U-003",
+   "batch_yield": 2400.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:21:04.847+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-011",
+   "name": "Kem muối phô mai",
+   "base_unit": "UNT-017",
+   "batch_yield": 850.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:21:52.148+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-012",
+   "name": "Kem muối",
+   "base_unit": "UNT-017",
+   "batch_yield": 300.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:22:44.23+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-013",
+   "name": "Trứng luộc",
+   "base_unit": "U-009",
+   "batch_yield": 1.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-26T18:15:15.394+07:00",
+   "updated_at": "2026-06-28T23:25:42.414222+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-009",
+   "name": "Lục trà",
+   "base_unit": "U-003",
+   "batch_yield": 2100.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T15:19:38.358+07:00",
+   "updated_at": "2026-07-13T10:11:09.285424+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-002",
+   "name": "Cốt cacao",
+   "base_unit": "U-003",
+   "batch_yield": 1000.0,
+   "status": "ACTIVE",
+   "created_at": "2026-06-01T14:51:08.469+07:00",
+   "updated_at": "2026-07-14T18:51:01.615981+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-014",
+   "name": "Khoai luộc",
+   "base_unit": "UNT-017",
+   "batch_yield": 1.0,
+   "status": "ACTIVE",
+   "created_at": "2026-07-30T14:33:16.855+07:00",
+   "updated_at": "2026-07-30T14:33:17.126866+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-015",
+   "name": "Test",
+   "base_unit": "U-002",
+   "batch_yield": 1.0,
+   "status": "DELETED",
+   "created_at": "2026-07-31T17:37:37.601+07:00",
+   "updated_at": "2026-07-31T17:41:41.349046+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-016",
+   "name": "Test lần 2",
+   "base_unit": "U-002",
+   "batch_yield": 1.0,
+   "status": "ACTIVE",
+   "created_at": "2026-07-31T17:45:19.855+07:00",
+   "updated_at": "2026-07-31T17:45:55.933568+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  },
+  {
+   "id": "BTP-017",
+   "name": "Test Task6 Step8",
+   "base_unit": "U-002",
+   "batch_yield": 1.0,
+   "status": "ACTIVE",
+   "created_at": "2026-07-31T18:32:49.387+07:00",
+   "updated_at": "2026-07-31T19:47:59.932518+07:00",
+   "duplicate_warning_confirmed": false,
+   "duplicate_warning_confirmed_by": null,
+   "duplicate_warning_confirmed_at": null
+  }
+ ],
+ "inventory_balances_semi_product": [
+  {
+   "item_reference": "BTP-013",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.384188+07:00",
+   "id": "BTP-013"
+  },
+  {
+   "item_reference": "BTP-012",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.28396+07:00",
+   "id": "BTP-012"
+  },
+  {
+   "item_reference": "BTP-007",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.28396+07:00",
+   "id": "BTP-007"
+  },
+  {
+   "item_reference": "BTP-009",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.483851+07:00",
+   "id": "BTP-009"
+  },
+  {
+   "item_reference": "BTP-008",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.483851+07:00",
+   "id": "BTP-008"
+  },
+  {
+   "item_reference": "BTP-010",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.483851+07:00",
+   "id": "BTP-010"
+  },
+  {
+   "item_reference": "BTP-011",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.483851+07:00",
+   "id": "BTP-011"
+  },
+  {
+   "item_reference": "BTP-004",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:12.752524+07:00",
+   "id": "BTP-004"
+  },
+  {
+   "item_reference": "BTP-001",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.483851+07:00",
+   "id": "BTP-001"
+  },
+  {
+   "item_reference": "BTP-003",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.483851+07:00",
+   "id": "BTP-003"
+  },
+  {
+   "item_reference": "BTP-002",
+   "quantity": 0.0,
+   "updated_at": "2026-08-07T13:25:13.483851+07:00",
+   "id": "BTP-002"
+  }
+ ]
+}
