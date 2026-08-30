@@ -348,12 +348,11 @@ function AppliedSessionView({ sessionId, result }: { sessionId: string; result: 
       />
       <Alert variant="success" title={`Đã áp dụng phiên ${sessionId}`}>
         <div>
-          Đã ghi {result.ledgerCount} điều chỉnh sổ kho
-          {result.issueCount > 0 ? ` và ${result.issueCount} dòng xuất kho (kiểm kê)` : ""}.
+          {result.issueCount > 0 ? `Đã ghi ${result.issueCount} dòng xuất kho (kiểm kê)` : "Không có dòng xuất kho nào"}
+          {result.ledgerCount > 0 ? `, và phát hiện ${result.ledgerCount} điều chỉnh nguyên liệu (xem bảng bên dưới)` : ""}.
         </div>
-        {result.ledgerIds.length > 0 && <div>Các mã ledger: {result.ledgerIds.join(", ")}.</div>}
         {result.issueIds.length > 0 && <div>Các mã xuất kho: {result.issueIds.join(", ")}.</div>}
-        {result.ledgerIds.length === 0 && result.issueIds.length === 0 && <div>Không có điều chỉnh nào.</div>}
+        {result.ledgerCount === 0 && result.issueIds.length === 0 && <div>Không có điều chỉnh nào.</div>}
       </Alert>
       {result.rows.length > 0 && (
         <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">

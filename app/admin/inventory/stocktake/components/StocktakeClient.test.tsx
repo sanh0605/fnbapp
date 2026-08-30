@@ -198,7 +198,6 @@ function previewResult(overrides: Partial<StocktakeApplyResult> = {}): Stocktake
     rows: [],
     skippedIngredients: [],
     planHash: "hash-1",
-    ledgerIds: [],
     issueIds: [],
     ...overrides,
   };

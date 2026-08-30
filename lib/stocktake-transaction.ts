@@ -51,7 +51,6 @@ export type StocktakeApplyResult = {
   // rows.length, enforced below).
   skippedIngredients: StocktakeSkippedIngredient[];
   planHash: string;
-  ledgerIds: string[];
   issueIds: string[];
 };
 
@@ -206,7 +205,6 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
       count_variance?: number;
       projected_qty?: number;
     }>;
-    ledger_ids?: string[];
     issue_ids?: string[];
     skipped_ingredients?: Array<{ ingredient_id?: string; reason?: string }>;
     plan_hash?: string;
@@ -233,9 +231,6 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
   if (ledgerCount + issueCount !== rows.length) {
     throw new Error("apply_stocktake_session_atomic returned a row count mismatch");
   }
-  if (!result.dry_run && (result.ledger_ids || []).length !== ledgerCount) {
-    throw new Error("apply_stocktake_session_atomic returned ledger IDs mismatch");
-  }
   if (!result.dry_run && (result.issue_ids || []).length !== issueCount) {
     throw new Error("apply_stocktake_session_atomic returned issue IDs mismatch");
   }
@@ -254,7 +249,6 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     rows,
     skippedIngredients,
     planHash: result.plan_hash,
-    ledgerIds: result.ledger_ids || [],
     issueIds: result.issue_ids || [],
   };
 }
