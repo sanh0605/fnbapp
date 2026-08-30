@@ -135,6 +135,42 @@ describe("startStocktakeSession item list", () => {
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 
+  // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
+  // section 4: the issue-slip screen was given a zero-stock filter, but
+  // deliberately NOT here -- this is the "one test each side" the plan
+  // asks for, guarding against that filter being copied into filterByC17
+  // (shared with this screen) later. Counting exists precisely to find out
+  // the system's zero is wrong, so a zero-stock ACTIVE item must stay
+  // offered. See the issue-slip side of this same test in
+  // app/admin/inventory/issue-slips/actions.test.ts.
+  it("an ACTIVE item with zero on-hand stays offered for counting, unlike the issue-slip picker", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Base_Ingredients") return Promise.resolve([]);
+      if (sheet === "Semi_Products") return Promise.resolve([]);
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-EMPTY", name: "Hết tồn", base_ingredient_id: "ING-B", default_unit_id: "U-G", status: "ACTIVE" },
+        ]);
+      }
+      if (sheet === "Units") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.openStocktakeSessionAtomic.mockResolvedValue({
+      id: "STK-020", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
+      created_at: "2026-08-30T00:00:00Z", notes: "",
+    });
+
+    const result = await stocktakeActions.startStocktakeSession();
+
+    expect(result).toEqual({ success: true });
+    const { items } = mocks.openStocktakeSessionAtomic.mock.calls[0][0];
+    // ACTIVE items skip the C17 lookup entirely (same assertion as the test
+    // above) -- on-hand is never even computed for them here, let alone
+    // filtered on.
+    expect(mocks.findAllNoCache).not.toHaveBeenCalled();
+    expect(items).toEqual([{ itemReference: "SPM-EMPTY", itemType: "PURCHASED_ITEM" }]);
+  });
+
   // 2026-08-21 (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md):
   // a CONSUMABLE item has no base_ingredient_id, so the ingredient-side
   // is_non_inventory flag can never reach it -- every consumable was

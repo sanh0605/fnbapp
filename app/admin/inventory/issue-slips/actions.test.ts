@@ -53,6 +53,19 @@ describe("getIssueSlipFormData", () => {
       if (sheet === "Base_Ingredients") return Promise.resolve([]);
       return Promise.resolve([]);
     });
+    // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
+    // section 4: on-hand now gates the picker, so this test (about package
+    // lines, not stock) needs a real purchase behind it to survive that
+    // filter -- otherwise it silently tests nothing, exactly the failure
+    // mode section 5's own tests exist to prove doesn't happen quietly.
+    mocks.findAllNoCache.mockImplementation((sheet: string) => {
+      if (sheet === "Purchase_Order_Lines") {
+        return Promise.resolve([{ purchase_order_id: "PO-1", purchased_item_id: "SPM-033", base_quantity: 1000 }]);
+      }
+      if (sheet === "Purchase_Orders") return Promise.resolve([{ id: "PO-1", status: "COMPLETED" }]);
+      if (sheet === "Stock_Issues") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
 
     const items = await issueSlipActions.getIssueSlipFormData();
 
@@ -99,6 +112,44 @@ describe("getIssueSlipFormData", () => {
 
     const items = await issueSlipActions.getIssueSlipFormData();
     expect(items).toEqual([]);
+  });
+
+  // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
+  // section 4: offering a zero-stock item offers something the RPC will
+  // always refuse. Filtered here, in the issue-slip screen itself -- see
+  // the stocktake side of this same test in
+  // app/admin/inventory/stocktake/actions.test.ts, which must NOT filter
+  // the same way.
+  it("drops an item with zero on-hand, keeps a sibling that still has stock", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-HAS", name: "Còn tồn", base_ingredient_id: "ING-A", default_unit_id: "U-G", status: "ACTIVE" },
+          { id: "SPM-EMPTY", name: "Hết tồn", base_ingredient_id: "ING-B", default_unit_id: "U-G", status: "ACTIVE" },
+        ]);
+      }
+      if (sheet === "UOM_Conversions") {
+        return Promise.resolve([
+          { id: "CONV-HAS", purchased_item_id: "SPM-HAS", purchased_unit: "U-G", base_unit: "U-G", conversion_rate: 1, status: "ACTIVE" },
+          { id: "CONV-EMPTY", purchased_item_id: "SPM-EMPTY", purchased_unit: "U-G", base_unit: "U-G", conversion_rate: 1, status: "ACTIVE" },
+        ]);
+      }
+      if (sheet === "Units") return Promise.resolve([{ id: "U-G", name: "g" }]);
+      if (sheet === "Base_Ingredients") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.findAllNoCache.mockImplementation((sheet: string) => {
+      if (sheet === "Purchase_Order_Lines") {
+        return Promise.resolve([{ purchase_order_id: "PO-1", purchased_item_id: "SPM-HAS", base_quantity: 500 }]);
+      }
+      if (sheet === "Purchase_Orders") return Promise.resolve([{ id: "PO-1", status: "COMPLETED" }]);
+      if (sheet === "Stock_Issues") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+
+    const items = await issueSlipActions.getIssueSlipFormData();
+
+    expect(items.map(i => i.id)).toEqual(["SPM-HAS"]);
   });
 });
 

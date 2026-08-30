@@ -142,6 +142,7 @@ function pkg(overrides: Partial<PackageLine> = {}): PackageLine {
     sizeLabel: "Thùng 24 hộp",
     conversionRate: 24,
     baseUnitName: "hộp",
+    purchasedUnitName: "Thùng",
     ...overrides,
   };
 }

@@ -164,6 +164,7 @@ function pkg(overrides: Partial<PackageLine> = {}): PackageLine {
     sizeLabel: "Thùng 12 hộp",
     conversionRate: 12,
     baseUnitName: "hộp",
+    purchasedUnitName: "Thùng",
     ...overrides,
   };
 }
@@ -213,7 +214,7 @@ const itemWithRealUnit: IssueSlipItemView = {
   onHand: 12,
   unitName: "kg",
   packageLines: [
-    { conversionId: "QD-001", purchasedItemId: "SPM-001", purchasedItemName: "Sua tuoi Vinamilk", sizeLabel: "Thung 12 hop", conversionRate: 12, baseUnitName: "kg" },
+    { conversionId: "QD-001", purchasedItemId: "SPM-001", purchasedItemName: "Sua tuoi Vinamilk", sizeLabel: "Thung 12 hop", conversionRate: 12, baseUnitName: "kg", purchasedUnitName: "Thung" },
   ],
 };
 
@@ -226,12 +227,18 @@ const itemFormerlyMismatched: IssueSlipItemView = {
   onHand: 48,
   unitName: "g",
   packageLines: [
-    { conversionId: "QD-049", purchasedItemId: "SPM-043", purchasedItemName: "Sua chua khong duong Vinamilk", sizeLabel: "Hop 100 g", conversionRate: 100, baseUnitName: "g" },
+    { conversionId: "QD-049", purchasedItemId: "SPM-043", purchasedItemName: "Sua chua khong duong Vinamilk", sizeLabel: "Hop 100 g", conversionRate: 100, baseUnitName: "g", purchasedUnitName: "Hop" },
   ],
 };
 
 describe("IssueSlipClient onHand unit label (OPEN-ITEMS 41)", () => {
-  it("renders the real unit next to the on-hand quantity", async () => {
+  // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
+  // section 3 superseded this test's own original claim: selecting an item
+  // auto-selects its first package (handleItemChange), so the base-unit
+  // figure alone is no longer what this shows once a conversion with a
+  // rate other than 1 is in play -- it now shows the figure converted into
+  // that package's own unit, base kept alongside in parens.
+  it("renders the on-hand quantity converted into the selected package's unit, base kept alongside", async () => {
     const container = await renderTracked(
       <IssueSlipClient items={[itemWithRealUnit]} recentSlips={[]} />,
     );
@@ -240,7 +247,8 @@ describe("IssueSlipClient onHand unit label (OPEN-ITEMS 41)", () => {
     const line = Array.from(container.querySelectorAll("p")).find(p =>
       p.textContent?.includes("Tồn hiện tại"),
     );
-    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 12 kg");
+    // 12 kg on hand / 12 (Thung 12 hop's rate) = 1 Thung exactly.
+    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 1 Thung (12 kg)");
   });
 
   it("renders g for Sua chua khong duong Vinamilk now that QD-049 is corrected", async () => {
@@ -252,7 +260,54 @@ describe("IssueSlipClient onHand unit label (OPEN-ITEMS 41)", () => {
     const line = Array.from(container.querySelectorAll("p")).find(p =>
       p.textContent?.includes("Tồn hiện tại"),
     );
-    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 48 g");
+    // 48 g on hand / 100 (Hop 100 g's rate) = 0,48 Hop, not clean -- two
+    // decimal places, per section 3's rounding rule.
+    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 0,48 Hop (48 g)");
+  });
+});
+
+// --- section 3: converted on-hand is a mistake guard, not a convenience ---
+//
+// Verified at handleSubmit (line ~163): the form submits
+// parsedQty * pkg.conversionRate. With "Cây 50 Cái" selected against 1.000
+// Cái on hand, a screen still showing "1.000 Cái" invites typing "1.000"
+// against a box that means cây -- 50.000 cái, fifty times the intent. The
+// RPC only refuses when the result exceeds stock; with enough stock it
+// passes silently. These tests are at the value the plan itself names.
+describe("IssueSlipClient -- converted on-hand is a mistake guard (section 3)", () => {
+  const lyMap: IssueSlipItemView = {
+    id: "SPM-CUP",
+    name: "Ly mập Uchako",
+    onHand: 1000,
+    unitName: "Cái",
+    packageLines: [
+      { conversionId: "QD-CAI", purchasedItemId: "SPM-CUP", purchasedItemName: "Ly mập Uchako", sizeLabel: "Cái 1 Cái", conversionRate: 1, baseUnitName: "Cái", purchasedUnitName: "Cái" },
+      { conversionId: "QD-CAY", purchasedItemId: "SPM-CUP", purchasedItemName: "Ly mập Uchako", sizeLabel: "Cây 50 Cái", conversionRate: 50, baseUnitName: "Cái", purchasedUnitName: "Cây" },
+    ],
+  };
+
+  function onHandText(container: HTMLElement): string | undefined {
+    return Array.from(container.querySelectorAll("p"))
+      .find(p => p.textContent?.includes("Tồn hiện tại"))
+      ?.textContent?.trim();
+  }
+
+  it("Cây 50 Cái selected against 1.000 Cái on hand shows 20 Cây (1.000 Cái), not 1.000 Cái", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[lyMap]} recentSlips={[]} />);
+    const block = getLineBlocks(container)[0];
+    await selectItemInBlock(block, "Ly mập Uchako");
+    await selectPackage(block, "Cây 50 Cái");
+
+    expect(onHandText(container)).toBe("Tồn hiện tại: 20 Cây (1.000 Cái)");
+  });
+
+  it("Cái 1 Cái selected (rate 1) shows the base figure alone, not doubled", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[lyMap]} recentSlips={[]} />);
+    const block = getLineBlocks(container)[0];
+    await selectItemInBlock(block, "Ly mập Uchako");
+    await selectPackage(block, "Cái 1 Cái");
+
+    expect(onHandText(container)).toBe("Tồn hiện tại: 1.000 Cái");
   });
 });
 
@@ -263,8 +318,8 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
     mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
     const theItem = item({
       packageLines: [
-        pkg({ conversionId: "QD-001", sizeLabel: "Thùng 12 hộp", conversionRate: 12 }),
-        pkg({ conversionId: "QD-002", sizeLabel: "Hộp lẻ", conversionRate: 1 }),
+        pkg({ conversionId: "QD-001", sizeLabel: "Thùng 12 hộp", conversionRate: 12, purchasedUnitName: "Thùng" }),
+        pkg({ conversionId: "QD-002", sizeLabel: "Hộp lẻ", conversionRate: 1, purchasedUnitName: "Hộp" }),
       ],
     });
     const container = await renderTracked(<IssueSlipClient items={[theItem]} recentSlips={[]} />);
@@ -406,17 +461,17 @@ describe("IssueSlipClient -- sends every line in ONE RPC call, not one per item 
       item({
         id: "SPM-001",
         name: "Sữa tươi Vinamilk",
-        packageLines: [pkg({ conversionId: "QD-001", purchasedItemId: "SPM-001", sizeLabel: "Thùng 12 hộp", conversionRate: 12 })],
+        packageLines: [pkg({ conversionId: "QD-001", purchasedItemId: "SPM-001", sizeLabel: "Thùng 12 hộp", conversionRate: 12, purchasedUnitName: "Thùng" })],
       }),
       item({
         id: "SPM-002",
         name: "Đường cát",
-        packageLines: [pkg({ conversionId: "QD-002", purchasedItemId: "SPM-002", sizeLabel: "Bao 25kg", conversionRate: 25 })],
+        packageLines: [pkg({ conversionId: "QD-002", purchasedItemId: "SPM-002", sizeLabel: "Bao 25kg", conversionRate: 25, purchasedUnitName: "Bao" })],
       }),
       item({
         id: "SPM-003",
         name: "Cà phê hạt",
-        packageLines: [pkg({ conversionId: "QD-003", purchasedItemId: "SPM-003", sizeLabel: "Túi 1kg", conversionRate: 1 })],
+        packageLines: [pkg({ conversionId: "QD-003", purchasedItemId: "SPM-003", sizeLabel: "Túi 1kg", conversionRate: 1, purchasedUnitName: "Túi" })],
       }),
     ];
     const container = await renderTracked(<IssueSlipClient items={items3} recentSlips={[]} />);

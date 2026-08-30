@@ -99,6 +99,22 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
       packageLines: packageLinesByPurchasedItem.get(p.id) ?? [],
     }))
     .filter(item => item.packageLines.length > 0) // nothing to select without at least one active conversion
+    // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
+    // section 4: offering a zero-stock item offers something the RPC will
+    // always refuse (I4/I5). Filtered HERE, not in filterByC17 -- that
+    // helper is shared with the stocktake screen, which must keep showing
+    // a zero-stock item (counting exists to find out the system's zero is
+    // wrong). computeOnHandByPurchasedItem has no notion of "as of a date"
+    // at all -- it sums every completed purchase and every issue,
+    // unconditionally -- while the RPC checks stock as of p_issued_at, and
+    // this screen lets the owner backdate a slip. A slip backdated to
+    // before an item was fully consumed would disagree with the RPC on
+    // whether it has stock, and the RPC wins. The payload this function
+    // returns has no way to carry a chosen issue date (it is built once,
+    // before the form's own datetime field exists on screen), so this
+    // filters on TODAY's on-hand and says so here rather than shipping a
+    // quiet mismatch -- a real, known gap, not a solved one.
+    .filter(item => item.onHand > 0)
     .sort((a, b) => a.name.localeCompare(b.name, "vi"));
 }
 

@@ -10,6 +10,7 @@ import { formatNumber } from "@/lib/format";
 import { formatDateTime } from "@/lib/datetime";
 import { confirm } from "@/lib/dialog";
 import { computeAffectedMonths } from "@/lib/issue-slip-warnings";
+import { formatConvertedOnHand } from "@/lib/issue-slip-onhand-display";
 import { createIssueSlip, reverseIssueSlip, cancelIssueSlip, type IssueSlipItemView, type IssueSlipRow } from "../actions";
 import type { IssueSlipResult } from "@/lib/manual-issue-transaction";
 
@@ -231,7 +232,13 @@ function FormView({
                     placeholder="-- Chọn hàng --"
                   />
                   {item && (
-                    <p className="mt-1 text-xs text-text-muted">Tồn hiện tại: {formatNumber(item.onHand)} {item.unitName}</p>
+                    <p className="mt-1 text-xs text-text-muted">
+                      Tồn hiện tại: {formatConvertedOnHand(
+                        item.onHand,
+                        item.unitName,
+                        item.packageLines.find(p => p.conversionId === line.conversionId),
+                      )}
+                    </p>
                   )}
                 </div>
                 {/* D10: "Quy cách" and "Số lượng" side by side even on a
