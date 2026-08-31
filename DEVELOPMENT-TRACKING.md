@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Move both screens off the ingredient-group flag onto the item's own flag
+
+Implements docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md (OPEN-ITEMS 75, last blocker before the ingredient groups can be deleted). The two filters look alike and are not: stocktake dropped its group-flag check outright (the item's own flag, moved there 2026-08-31, already covers the same ground, additive with the equipment check it keeps); issue-slips REPLACED its group check with an item check, since it never had one -- dropping instead of replacing would have brought Đá viên and Khoai lang back into the picker.
+
+**Critique found the two required tests would have passed for the wrong reason as first drafted.** Issue-slips gates on today's on-hand (a separate, pre-existing filter) -- a flag-exclusion test with no on-hand mocked passes regardless of whether the flag check works, since the on-hand filter removes the item first. Rewrote the test to give the item real on-hand so only the flag decides the outcome; confirmed red on the pre-fix code (git-stashed the source fix, kept the test) for the right reason -- a wrong VALUE ("Túi rác" present), not a missing function -- then restored the fix and confirmed green.
+
+Figures re-derived live (SQL simulating the exact filter predicates), not trusted from the plan: stocktake's eligible set is identical before/after dropping the group check (69 items, same ids); issue-slips' eligible set drops exactly the 7 named bag/spoon items and adds none, matching the plan's section 1.3/1.7 exactly.
+
+Section 2.3's own claim ("no code reads base_ingredients.is_non_inventory after this") holds for the two screens themselves but not app-wide -- app/admin/inventory/actions.ts's loadRealtimeStock (a live, non-test screen) and six scripts/ audit/rebuild tools still read it. Correctly out of this task's scope (deferred to the group-deletion task) but stated precisely rather than left implied by the plan's broader wording.
+
+Added the plan's section 3 empty-groups invariant as a real regression test in stocktake, not just a one-off measurement: eligibility now stays unaffected even when Base_Ingredients still carries a flagged group linked to an unflagged item.
+
+No data written, no migration, no group deleted, not pushed. Gates: tsc 0 errors, vitest 217 files / 1537 tests green, check-rules-current clean, npm run build succeeds.
+
+---
+
 ## 2026-08-31 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Move the non-inventory flag from ingredient groups onto the items (code shipped, backfill not run)
 
 Implements docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md (OPEN-ITEMS 50/75). Two changes: opened the "Không quản lý tồn kho" checkbox for RAW (Nguyên liệu) in PurchasedItemForm.tsx, and wrote scripts/flag-non-inventory-purchased-items.ts to set purchased_items.is_non_inventory=true on the two items (SPM-005 Đá viên, SPM-052 Khoai lang) currently excluded from stocktake only through their ingredient group. Neither the group flag nor the ingredient groups themselves are touched.
