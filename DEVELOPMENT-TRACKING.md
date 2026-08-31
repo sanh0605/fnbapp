@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Clear the three Phase D blockers (migrations written, not applied)
+
+Implements docs/superpowers/plans/2026-09-01-phase-d-blockers.md (OPEN-ITEMS 80), the three blockers Phase C's own section 5c.4 named as remaining before stock_ledger/inventory_balances can be dropped. Three commits: the daily report's dead negative-stock line removed outright (owner chose section 2.1's option A), then one migration per remaining function (apply_stocktake_session_atomic, save_stocktake_line_atomic).
+
+Answered section 1.6's unread spots before writing anything, per the instruction: getRealtimeStock's only caller is the daily report (confirmed by grep, so it and loadRealtimeStock were removed entirely once that caller went); the trigger backing inventory_balances (stock_ledger_apply_inventory_balance_delta) is a self-contained upsert with no further chain; the six scripts/ tools that read base_ingredients also independently read stock_ledger/inventory_balances directly -- not actionable this task (no data or scripts touched), but relevant for whoever does Phase D itself.
+
+Re-derived section 1.1-1.3's numbers live rather than trusted: stock_ledger 384 rows, inventory_balances 129 (one short of an earlier rebuild mis-run, not fixed here -- the table is about to go). Three of the four remaining read sites have 0 real invocations (every real stocktake line is PURCHASED_ITEM, confirmed on STK-001 and every session on record). The fourth -- apply_stocktake_session_atomic's ingredient-aggregation loop -- does run on every real close and feeds three display fields on the BASE_INGREDIENT rollup rows shown in the confirm-preview screen; those now read 0 instead of a stale post-01/09 ledger sum, the one real owner-visible consequence, named rather than absorbed. count_variance itself is untouched -- proved by diffing the exact lines computing it, copied forward byte-identical from the live functions (fetched via pg_get_functiondef, not the original 0059 migration).
+
+Each of the two function migrations shipped with its own regression test, confirmed red before the fix by temporarily reintroducing the exact stock_ledger read in the new migration file and watching the test fail for the right reason (a wrong value present, not a missing file), then restoring the real fix -- the same procedure used throughout the stock-ledger-retirement work.
+
+Gates: tsc 0 errors, vitest 219 files / 1539 tests green, check-rules-current clean, npm run build succeeds. Neither migration applied; deploy order is code first (already committed), then the owner confirms live that closing a stocktake session and the Daily report still work, then the migration runs -- same discipline as migration 0076. Not pushed. Does not drop any table -- that is Phase D itself, the owner's own separate, irreversible decision; the backup Phase C's original plan required already exists (docs/audits/2026-08-31-stock-ledger-and-balances-backup.json).
+
+---
+
 ## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Move both screens off the ingredient-group flag onto the item's own flag
 
 Implements docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md (OPEN-ITEMS 75, last blocker before the ingredient groups can be deleted). The two filters look alike and are not: stocktake dropped its group-flag check outright (the item's own flag, moved there 2026-08-31, already covers the same ground, additive with the equipment check it keeps); issue-slips REPLACED its group check with an item check, since it never had one -- dropping instead of replacing would have brought Đá viên and Khoai lang back into the picker.
