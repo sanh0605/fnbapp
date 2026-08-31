@@ -124,13 +124,24 @@ hành vi sau khi xoá nhóm thì việc dọn đường chưa xong, và phải d
 
 ## 2. Thay đổi
 
-### 2.1 Sao lưu trước, và chứng minh file đọc lại được
+### 2.1 KHÔNG sao lưu — chủ quán chốt 01/09
 
-Xuất **cả 46 dòng, đủ mọi cột**, cộng **bảng ánh xạ 52 mặt hàng → nhóm** ra
-`docs/audits/2026-09-01-base-ingredients-backup.json`. **Đọc lại từ đĩa và đối
-chiếu từng dòng**, không chỉ đếm — đúng cách bản sao lưu công thức đã làm.
+Tôi đã đề nghị sao lưu 46 nhóm và bản đồ 52 mặt hàng → nhóm trước khi xoá. **Chủ
+quán bác:**
 
-**Không có bản sao lưu đọc lại được thì không được xoá.**
+> *"Anh sẽ tự nối lại và tự định nghĩa lại vào lúc đó, em không cần phải sao lưu
+> lại dữ liệu trong NHÓM NGUYÊN LIỆU."*
+
+**Nên bỏ hẳn bước sao lưu.** Điều đó có nghĩa cụ thể, nói một lần rồi thôi:
+
+| Sau khi xoá | Còn không |
+|---|---|
+| 46 tên nhóm, đủ mọi cột | **Không còn ở đâu cả** |
+| Bản đồ 52 mặt hàng thuộc nhóm nào | **Không còn ở đâu cả** |
+| Tên nguyên liệu từng dùng trong công thức | Còn — trong bản xuất công thức đã gửi chủ quán 31/08 và ba file kiểm toán tháng 7. **Rời rạc, không phải bản đầy đủ** |
+
+**Không đảo ngược được.** Dựng lại sau là **nhập tay từ đầu**, đúng như chủ quán
+nói ông ấy sẽ làm.
 
 ### 2.2 Gỡ mã nguồn trước, xoá dữ liệu sau
 
@@ -150,9 +161,9 @@ dữ liệu.** Xoá trước là màn hình Hàng Mua Vào hỏng ngay (§1.2).
 
 > *"Xóa nó đi và anh sẽ tự nối nó lại nếu sau này có dựng lại."*
 
-**Nên bản đồ ánh xạ 52 mặt hàng → nhóm chỉ còn sống trong file sao lưu ở §2.1.**
-Đó là lý do §2.1 bắt buộc phải chứa bản đồ đó và phải chứng minh đọc lại được —
-nếu file hỏng thì không còn nguồn nào khác.
+**Cộng với §2.1 (không sao lưu), bản đồ ánh xạ 52 mặt hàng → nhóm biến mất
+hoàn toàn.** Không còn bản nào ở đâu. Chủ quán biết và chấp nhận — ông ấy sẽ tự
+nối lại nếu có dựng lại.
 
 ### 2.3b Nhưng xoá cột là việc LỚN HƠN xoá bảng, và nó chạm đường tiền
 
