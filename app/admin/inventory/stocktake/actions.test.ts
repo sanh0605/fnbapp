@@ -205,7 +205,7 @@ describe("startStocktakeSession item list", () => {
     expect(references).toEqual(["SPM-053"]);
   });
 
-  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md
+  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md
   // section 3's last check: a flagged group must no longer change
   // eligibility at all, even for an item still linked to it -- proving the
   // blocker on deleting the ingredient groups is actually gone, not just

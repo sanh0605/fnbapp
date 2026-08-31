@@ -217,7 +217,7 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     // section 3, decision 1). Semi-products carry no stock and no value
     // (BR-INV-006) and were never offered here.
     //
-    // 2026-09-01 (docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md):
+    // 2026-09-01 (docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md):
     // used to also exclude an item whose linked base_ingredient was
     // flagged. Dropped, not replaced -- docs/superpowers/plans/2026-08-31-
     // move-non-inventory-flag-to-items.md already moved that flag onto

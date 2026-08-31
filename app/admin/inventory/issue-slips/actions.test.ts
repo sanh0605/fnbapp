@@ -76,7 +76,7 @@ describe("getIssueSlipFormData", () => {
     expect(items[0].packageLines.map(p => p.sizeLabel)).toEqual(["Túi 100 g", "Túi 500 g"]); // C8: inactive excluded
   });
 
-  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md
+  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md
   // section 1.3/1.7: this screen used to check the linked base_ingredient's
   // own flag, which a bag or a plastic spoon has no way to carry (they have
   // no base_ingredient_id at all) -- so all 7 of them stayed offered here

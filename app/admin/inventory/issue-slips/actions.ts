@@ -39,7 +39,7 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
-  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md:
+  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md:
   // used to check the linked base_ingredient's own flag instead of the
   // item's -- a gap the stocktake screen never had, since it already also
   // checked the item's own flag (Plan D Gap 1 below). That gap let 7 items
