@@ -5,21 +5,20 @@ import { Suspense } from "react";
 export const dynamic = "force-dynamic";
 
 export default async function StockAdjustmentsPage() {
-  const [adjustments, baseIngredients, semiProducts, units] = await Promise.all([
+  const [adjustments, semiProducts, units] = await Promise.all([
     findAll("Stock_Adjustments"),
-    findAll("Base_Ingredients"),
     findAll("Semi_Products"),
     findAll("Units"),
   ]);
 
   // Build a map of item ID -> item details (name, unitName)
+  // base_ingredients dropped 2026-09-01
+  // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md) --
+  // stock_adjustments holds 0 rows in production (OPEN-ITEMS 80: the create
+  // path was never wired to a form), so no adjustment has ever needed a
+  // name resolved through that table.
   const itemMap: Record<string, { name: string; unitName: string }> = {};
-  
-  baseIngredients.forEach((b: any) => {
-    const unitName = units.find((u: any) => u.id === b.base_unit)?.name || b.base_unit;
-    itemMap[b.id] = { name: b.name, unitName };
-  });
-  
+
   semiProducts.forEach((s: any) => {
     const unitName = units.find((u: any) => u.id === s.base_unit)?.name || s.base_unit;
     itemMap[s.id] = { name: s.name, unitName };

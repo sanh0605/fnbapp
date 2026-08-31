@@ -7,7 +7,7 @@ import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { confirm } from "@/lib/dialog";
-import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
+import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 
 // Batch 1, item B: the part of handleSubmit that decides what goes into
 // units_json/base_unit/base_ingredient_id, pulled out as a pure function.
@@ -22,7 +22,6 @@ import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient
 // directly testable without depending on that gap. handleSubmit calls this
 // unchanged; behaviour is identical to before the extraction.
 export type ConversionSubmissionFields = {
-  base_ingredient_id?: string;
   base_unit: string;
   units_json: string;
 };
@@ -31,12 +30,11 @@ export function buildConversionSubmission(params: {
   isRaw: boolean;
   isConsumable: boolean;
   isEquipment: boolean;
-  selectedBaseIngredientId: string;
   baseUnitId: string | undefined;
   unitsState: Array<{ id?: string; name: string; conversion_rate: string }>;
   units: Array<{ id: string; name: string }>;
 }): { ok: true; fields: ConversionSubmissionFields } | { ok: false; error: string } | { ok: true; fields: null } {
-  const { isRaw, isConsumable, isEquipment, selectedBaseIngredientId, baseUnitId, unitsState, units } = params;
+  const { isRaw, isConsumable, isEquipment, baseUnitId, unitsState, units } = params;
 
   // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
   // EQUIPMENT now gets the same base-unit/conversion section as CONSUMABLE --
@@ -72,7 +70,6 @@ export function buildConversionSubmission(params: {
     base_unit: baseUnitId || "",
     units_json: JSON.stringify(processedUnits),
   };
-  if (isRaw) fields.base_ingredient_id = selectedBaseIngredientId;
   return { ok: true, fields };
 }
 
@@ -98,7 +95,6 @@ export function resolveBaseUnitId(params: {
 
 interface PurchasedItemFormProps {
   itemCategories: DBItemCategory[];
-  baseIngredients: DBBaseIngredient[];
   units: DBUnit[];
   initialData?: DBPurchasedItem;
   initialConversions?: DBUOMConversion[];
@@ -111,7 +107,6 @@ interface PurchasedItemFormProps {
 
 export function PurchasedItemForm({
   itemCategories,
-  baseIngredients,
   units,
   initialData,
   initialConversions,
@@ -124,7 +119,6 @@ export function PurchasedItemForm({
   const [error, setError] = useState<string | null>(null);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState(initialData?.item_category_id || "");
-  const [selectedBaseIngredientId, setSelectedBaseIngredientId] = useState(initialData?.base_ingredient_id || "");
 
   const activeCategory = itemCategories.find(c => c.id === selectedCategoryId);
   const isRaw = activeCategory?.system_type === "RAW";
@@ -177,12 +171,11 @@ export function PurchasedItemForm({
       : "",
   );
 
-  const activeBaseIngredient = baseIngredients.find(b => b.id === selectedBaseIngredientId);
-  // The unit belongs to the item, not to its group (same plan, section
-  // 5.1): RAW, CONSUMABLE, and EQUIPMENT all resolve the same way now.
-  // activeBaseIngredient above stays -- RAW still requires linking a group
-  // (that requirement is unchanged, only where the *unit* comes from), it
-  // just no longer supplies base_unit.
+  // The unit belongs to the item, not to a tier-2 group (same plan, section
+  // 5.1): RAW, CONSUMABLE, and EQUIPMENT all resolve the same way now. Tier-2
+  // groups themselves are gone as of 2026-09-01
+  // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md) --
+  // a RAW item no longer links to one at all.
   const baseUnitId = resolveBaseUnitId({ isRaw, isConsumable, isEquipment, selectedBaseUnitName, units });
   const baseUnitName = baseUnitId ? units.find(u => u.id === baseUnitId)?.name : "";
   const showConversionSection = (isRaw || isConsumable || isEquipment) && !!selectedBaseUnitName;
@@ -213,18 +206,11 @@ export function PurchasedItemForm({
       return;
     }
 
-    // Batch 1, item B: the base-ingredient requirement stays RAW-only
-    // (section B3) -- a consumable must not be forced to invent one. This
-    // requirement is separate from, and unchanged by, where the base UNIT
-    // comes from (docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md
-    // section 5.3 -- the owner's own design question, not this task's).
-    if (isRaw && !selectedBaseIngredientId) {
-      setError("Nguyên liệu thô cần được liên kết với một Nhóm Nguyên Liệu");
-      setLoading(false);
-      return;
-    }
-    // 2026-08-29: RAW now needs this too -- it no longer inherits a unit
-    // from its group.
+    // The tier-2 group link requirement was removed 2026-09-01
+    // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md)
+    // along with the base_ingredients table itself.
+    // 2026-08-29: RAW needs its own base unit -- it no longer inherits one
+    // from a group.
     if ((isRaw || isConsumable || isEquipment) && !selectedBaseUnitName) {
       setError("Vui lòng chọn Đơn vị gốc");
       setLoading(false);
@@ -238,7 +224,6 @@ export function PurchasedItemForm({
       isRaw,
       isConsumable,
       isEquipment,
-      selectedBaseIngredientId,
       baseUnitId,
       unitsState,
       units,
@@ -249,9 +234,6 @@ export function PurchasedItemForm({
       return;
     }
     if (submission.fields) {
-      if (submission.fields.base_ingredient_id !== undefined) {
-        formData.append("base_ingredient_id", submission.fields.base_ingredient_id);
-      }
       formData.append("base_unit", submission.fields.base_unit);
       formData.append("units_json", submission.fields.units_json);
     }
@@ -297,7 +279,6 @@ export function PurchasedItemForm({
     } else {
       setIsOpen(false);
       setSelectedCategoryId("");
-      setSelectedBaseIngredientId("");
       setUnitsState([{ name: "", conversion_rate: "" }]);
       setIsNonInventory(false);
     }
@@ -305,7 +286,6 @@ export function PurchasedItemForm({
   }
 
   const categoryOptions = itemCategories.map(c => ({ id: c.id, label: c.name }));
-  const baseIngredientOptions = baseIngredients.map(b => ({ id: b.id, label: b.name }));
   const unitOptions = units.map(u => ({ id: u.name, label: u.name }));
 
   return (
@@ -397,18 +377,7 @@ export function PurchasedItemForm({
           {isRaw && (
             <div className="pt-4 border-t border-border space-y-4">
               <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                Đây là nhóm <strong>Hàng Hóa Chế Biến (RAW)</strong>. Hàng mua vào phải được liên kết với một Nhóm Nguyên Liệu để phân nhóm báo cáo.
-              </div>
-
-              <div>
-                <label htmlFor={`${formId}-baseIngredientId`} className="block text-sm font-medium text-text-secondary mb-1">Liên kết Nhóm Nguyên Liệu</label>
-                <SearchableSelect
-                  id={`${formId}-baseIngredientId`}
-                  options={baseIngredientOptions}
-                  value={selectedBaseIngredientId}
-                  onChange={setSelectedBaseIngredientId}
-                  placeholder="Tìm nhóm nguyên liệu..."
-                />
+                Đây là nhóm <strong>Hàng Hóa Chế Biến (RAW)</strong>.
               </div>
 
               {/* docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md

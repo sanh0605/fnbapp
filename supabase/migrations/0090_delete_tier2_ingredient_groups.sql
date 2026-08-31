@@ -1,0 +1,28 @@
+-- Delete tier-2 ingredient groups, step 1 (table only) -- part 2 of 2.
+-- Must run AFTER 0089 is live (apply_stocktake_session_atomic no longer
+-- joins this table) and AFTER the code that reads base_ingredients is
+-- deployed and confirmed working -- deploy order per
+-- docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
+-- section 2.2, same discipline as the 0076 lesson.
+--
+-- CASCADE is required, not optional: live measurement 2026-09-01 found a
+-- foreign key the plan's own section 1.3 said did not exist --
+-- purchased_items_base_ingredient_id_fkey, FOREIGN KEY (base_ingredient_id)
+-- REFERENCES base_ingredients(id) ON DELETE RESTRICT. A bare DROP TABLE
+-- fails outright ("other objects depend on it") because of this constraint;
+-- it does not silently orphan anything either way. CASCADE drops the table
+-- and this constraint together -- it does NOT touch purchased_items rows or
+-- delete the base_ingredient_id column, which stays with its 52 now-stale
+-- values, orphaned on purpose. That column is step 2
+-- (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
+-- section 2.3), explicitly out of scope for this migration.
+--
+-- trg_base_ingredients_touch (the standard touch_updated_at() trigger) and
+-- base_ingredients_base_unit_fkey (the table's own outgoing FK to units)
+-- are dropped as part of the table, trivially -- neither has any effect
+-- outside this table.
+--
+-- No backup taken -- owner declined one 2026-09-01, plan section 2.1:
+-- "Anh sẽ tự nối lại và tự định nghĩa lại vào lúc đó, em không cần phải sao
+-- lưu lại dữ liệu trong NHÓM NGUYÊN LIỆU." Not reversible.
+drop table public.base_ingredients cascade;

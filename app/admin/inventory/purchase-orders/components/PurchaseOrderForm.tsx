@@ -9,7 +9,7 @@ import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toSaigonIsoString } from "@/lib/datetime";
 import { formatNumber } from "@/lib/format";
-import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBBaseIngredient, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
+import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
 import { alert, confirm } from "@/lib/dialog";
 
 // Batch 3 fix, 2026-08-22 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md,
@@ -64,7 +64,6 @@ interface PurchaseOrderFormProps {
   sources: DBPurchaseSource[];
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
-  baseIngredients: DBBaseIngredient[];
   units: DBUnit[];
   initialData?: {
     po: DBPurchaseOrder;
@@ -72,7 +71,7 @@ interface PurchaseOrderFormProps {
   };
 }
 
-export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, baseIngredients, units = [], initialData }: PurchaseOrderFormProps) {
+export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, units = [], initialData }: PurchaseOrderFormProps) {
   const formId = useId();
   const router = useRouter();
   const isEdit = !!initialData?.po;
@@ -103,14 +102,6 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
       matchedConv = fallbackCandidates.length === 1 ? fallbackCandidates[0] : undefined;
     }
 
-    // Bước 2: Restore base_ingredient_id và base_unit từ Purchased_Items
-    const selectedItem = items.find((i: any) => i.id === line.purchased_item_id);
-    const base_ingredient_id = selectedItem?.base_ingredient_id || "";
-    const baseIng = base_ingredient_id
-      ? baseIngredients.find((b: any) => b.id === base_ingredient_id)
-      : null;
-    const base_unit = baseIng?.base_unit || "";
-
     return {
       purchased_item_id: line.purchased_item_id || "",
       unit: line.unit || "",
@@ -120,9 +111,6 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
       // Restore từ conversion record
       conversion_id: matchedConv?.id || "",
       conversion_rate: matchedConv?.conversion_rate || "",
-      // Restore từ item lookup
-      base_ingredient_id,
-      base_unit,
     };
   });
 
@@ -146,8 +134,6 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
       subtotal: 0,
       is_new_unit: false,
       conversion_rate: "",
-      base_unit: "",
-      base_ingredient_id: ""
     }]);
   };
 
@@ -161,14 +147,6 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
     // Auto-fill logic when item changes
     if (field === "purchased_item_id") {
-      const selectedItem = items.find((i: any) => i.id === value);
-      newLines[index].base_ingredient_id = selectedItem?.base_ingredient_id || "";
-      if (selectedItem?.base_ingredient_id) {
-        const baseIng = baseIngredients.find((b: any) => b.id === selectedItem.base_ingredient_id);
-        newLines[index].base_unit = baseIng?.base_unit || "";
-      } else {
-        newLines[index].base_unit = "";
-      }
       // Reset unit selection
       newLines[index].unit = "";
       newLines[index].is_new_unit = false;

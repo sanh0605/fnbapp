@@ -46,7 +46,7 @@ describe("getItemsData -- the production incident this plan exists to fix", () =
     mocks.findAll.mockResolvedValue([]);
 
     await expect(actions.getItemsData()).resolves.toEqual({
-      categories: [], baseIngredients: [], items: [], conversions: [], units: [], unitLockedItemIds: [],
+      categories: [], items: [], conversions: [], units: [], unitLockedItemIds: [],
     });
   });
 });
@@ -111,6 +111,32 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     );
   });
 
+  // docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
+  // section 3: "tạo thử một mặt hàng nguyên liệu mới sau khi gỡ ô liên kết
+  // -- đây là chỗ vỡ đầu tiên" -- this is that check. The real form no
+  // longer sends base_ingredient_id for a RAW item at all (the field and
+  // its required-ness were removed 2026-09-01); creation must still
+  // succeed, with an empty base_ingredient_id, not fail or invent one.
+  it("creates a RAW item with no base_ingredient_id sent at all -- the group-link field is gone", async () => {
+    const formData = new FormData();
+    formData.set("name", "Trứng gà mới");
+    formData.set("item_category_id", "NHH-001");
+    formData.set("base_unit", "U-QUA");
+    formData.set("units_json", JSON.stringify([{ name: "U-HOP", conversion_rate: "10" }]));
+
+    const res = await actions.addPurchasedItem(formData);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "Purchased_Items",
+      expect.objectContaining({ base_ingredient_id: "" }),
+    );
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "UOM_Conversions",
+      expect.objectContaining({ base_unit: "U-QUA", conversion_rate: "10" }),
+    );
+  });
+
   it("EQUIPMENT with neither field sent creates no conversion at all", async () => {
     const formData = new FormData();
     formData.set("name", "Máy pha cà phê");
@@ -154,6 +180,33 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
       "UOM_Conversions",
       expect.objectContaining({ purchased_item_id: "SPM-043", base_unit: "U-G", conversion_rate: "500" }),
     );
+  });
+
+  // docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
+  // section 2.2: the link field was removed from the form, so every future
+  // edit submits no base_ingredient_id at all. Before this fix, the naive
+  // reading (`formData.get("base_ingredient_id") as string`) would coerce
+  // that absence to "" and write it -- silently blanking an existing RAW
+  // item's group link on every unrelated edit (name, category, unit...).
+  // This proves the update payload never carries that key at all, so the
+  // existing column value is left untouched by this partial update.
+  it("never includes base_ingredient_id in the update payload, even for a RAW item", async () => {
+    const formData = new FormData();
+    formData.set("id", "SPM-EXISTING-RAW");
+    formData.set("name", "Sữa tươi Vinamilk");
+    formData.set("item_category_id", "NHH-001");
+    // No base_ingredient_id field -- the real form no longer sends one.
+
+    const res = await actions.updatePurchasedItem(formData);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith(
+      "Purchased_Items",
+      "SPM-EXISTING-RAW",
+      expect.not.objectContaining({ base_ingredient_id: expect.anything() }),
+    );
+    const [, , payload] = mocks.update.mock.calls[0];
+    expect(Object.prototype.hasOwnProperty.call(payload, "base_ingredient_id")).toBe(false);
   });
 });
 

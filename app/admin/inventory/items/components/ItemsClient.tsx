@@ -10,18 +10,17 @@ import { PurchasedItemForm } from "./PurchasedItemForm";
 import { PurchaseHistoryButton } from "./PurchaseHistoryButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deletePurchasedItemAction } from "../actions";
-import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
+import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 
 interface ItemsClientProps {
   categories: DBItemCategory[];
-  baseIngredients: DBBaseIngredient[];
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
   unitLockedItemIds: string[];
 }
 
-export default function ItemsClient({ categories, baseIngredients, items, conversions, units, unitLockedItemIds }: ItemsClientProps) {
+export default function ItemsClient({ categories, items, conversions, units, unitLockedItemIds }: ItemsClientProps) {
   const unitLockedSet = useMemo(() => new Set(unitLockedItemIds), [unitLockedItemIds]);
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
     q: "",
@@ -42,16 +41,9 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
     return map;
   }, [categories]);
 
-  const baseIngredientMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    baseIngredients.forEach(b => map[b.id] = b.name);
-    return map;
-  }, [baseIngredients]);
-
   const rightContent = (
-    <PurchasedItemForm 
+    <PurchasedItemForm
       itemCategories={categories}
-      baseIngredients={baseIngredients}
       units={units}
     />
   );
@@ -109,14 +101,13 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                 <th className="px-6 py-4 font-bold">ID</th>
                 <th className="px-6 py-4 font-bold">Tên Hàng Hóa</th>
                 <th className="px-6 py-4 font-bold">Phân Loại</th>
-                <th className="px-6 py-4 font-bold">Nguyên Liệu Gốc</th>
                 <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredItems.length === 0 ? (
                 <tr>
-                <td colSpan={5} className="p-0">
+                <td colSpan={4} className="p-0">
                   <EmptyState 
                     icon="📦" 
                     title="Chưa có hàng hóa" 
@@ -151,9 +142,6 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                           {categoryMap[item.item_category_id] || "---"}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-text-secondary font-medium">
-                        {baseIngredientMap[item.base_ingredient_id] || "---"}
-                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end items-center gap-2">
                           <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
@@ -161,7 +149,6 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                             initialData={item}
                             initialConversions={itemConversions}
                             itemCategories={categories}
-                            baseIngredients={baseIngredients}
                             units={units}
                             isUnitLocked={unitLockedSet.has(item.id)}
                           />
@@ -212,12 +199,6 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                     </div>
                   )}
 
-                  {item.base_ingredient_id && (
-                    <div className="text-sm text-text-secondary mt-1">
-                      <span className="text-text-muted">Nguyên liệu gốc:</span> <span className="font-medium">{baseIngredientMap[item.base_ingredient_id] || "---"}</span>
-                    </div>
-                  )}
-
                   <div className="flex justify-end items-center gap-2 pt-3 mt-2 border-t border-border/50">
                     <div className="flex items-center">
                       <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
@@ -227,7 +208,6 @@ export default function ItemsClient({ categories, baseIngredients, items, conver
                         initialData={item}
                         initialConversions={itemConversions}
                         itemCategories={categories}
-                        baseIngredients={baseIngredients}
                         units={units}
                         isUnitLocked={unitLockedSet.has(item.id)}
                       />

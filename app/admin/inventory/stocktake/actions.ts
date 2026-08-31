@@ -57,8 +57,13 @@ export interface RecentConfirmedStocktakeSessionView {
 }
 
 async function loadItemNameMaps() {
-  const [baseIngredients, semiProducts, purchasedItems, units, itemCategories] = await Promise.all([
-    findAll("Base_Ingredients"),
+  // base_ingredients dropped 2026-09-01
+  // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md).
+  // Verified live before removing: every stocktake_lines row in production
+  // is item_type PURCHASED_ITEM (50/50) -- no BASE_INGREDIENT-type line has
+  // ever existed, so there is no historical name this map needs to resolve
+  // through that table.
+  const [semiProducts, purchasedItems, units, itemCategories] = await Promise.all([
     findAll("Semi_Products"),
     findAll("Purchased_Items"),
     findAll("Units"),
@@ -67,7 +72,7 @@ async function loadItemNameMaps() {
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>();
   const unitNameByItemId = new Map<string, string>();
-  for (const item of [...(baseIngredients as any[]), ...(semiProducts as any[])]) {
+  for (const item of semiProducts as any[]) {
     nameById.set(item.id, item.name);
     unitNameByItemId.set(item.id, unitNameById.get(item.base_unit) ?? item.base_unit ?? "");
   }
@@ -79,7 +84,6 @@ async function loadItemNameMaps() {
     nameById,
     unitNameById,
     unitNameByItemId,
-    baseIngredients: baseIngredients as any[],
     semiProducts: semiProducts as any[],
     purchasedItems: purchasedItems as any[],
     itemCategories: itemCategories as any[],

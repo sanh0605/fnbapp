@@ -23,11 +23,10 @@ export default async function PurchaseOrderDetail({
   }
   const role = (session.user as any)?.role || "STAFF";
 
-  const [po, lines, allItems, allBaseIngredients, allUnits, allSuppliers, allConversions, allSources] = await Promise.all([
+  const [po, lines, allItems, allUnits, allSuppliers, allConversions, allSources] = await Promise.all([
     findById("Purchase_Orders", params.id),
     findAll("Purchase_Order_Lines"),
     findAll("Purchased_Items"),
-    findAll("Base_Ingredients"),
     findAll("Units"),
     findAll("Suppliers"),
     findAll("UOM_Conversions"),
@@ -81,7 +80,6 @@ export default async function PurchaseOrderDetail({
             sources={allSources}
             items={allItems}
             conversions={allConversions}
-            baseIngredients={allBaseIngredients}
             units={allUnits}
             initialData={{ po, lines: poLines }}
           />

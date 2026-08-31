@@ -23,7 +23,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Điểm bán", href: "/admin/outlets" },
         { name: "Nhà cung cấp", href: "/admin/suppliers" },
         { name: "Phân loại Hàng", href: "/admin/inventory/categories" },
-        { name: "Nhóm Nguyên Liệu", href: "/admin/inventory/base-ingredients" },
         { name: "Hàng Mua Vào", href: "/admin/inventory/items" },
         { name: "Bảng Quy Đổi", href: "/admin/inventory/conversions" },
         { name: "Quản lý Đơn vị", href: "/admin/inventory/units" },

@@ -16,12 +16,11 @@ const UNITS = [
 ];
 
 describe("buildConversionSubmission -- CONSUMABLE (Batch 1, item B)", () => {
-  it("builds units_json and base_unit from the typed conversion row, with no base_ingredient_id", () => {
+  it("builds units_json and base_unit from the typed conversion row", () => {
     const result = buildConversionSubmission({
       isRaw: false,
       isConsumable: true,
       isEquipment: false,
-      selectedBaseIngredientId: "",
       baseUnitId: "U-G",
       unitsState: [{ name: "Bao", conversion_rate: "500" }],
       units: UNITS,
@@ -31,8 +30,6 @@ describe("buildConversionSubmission -- CONSUMABLE (Batch 1, item B)", () => {
     if (!result.ok || !result.fields) throw new Error("expected fields");
     expect(result.fields.base_unit).toBe("U-G");
     expect(JSON.parse(result.fields.units_json)).toEqual([{ name: "U-BAO", conversion_rate: "500" }]);
-    // Section B3: a consumable must not be forced to invent an ingredient.
-    expect(result.fields.base_ingredient_id).toBeUndefined();
   });
 
   it("resolves the typed unit name (case-insensitively) to its id, the same as the RAW path always did", () => {
@@ -40,7 +37,6 @@ describe("buildConversionSubmission -- CONSUMABLE (Batch 1, item B)", () => {
       isRaw: false,
       isConsumable: true,
       isEquipment: false,
-      selectedBaseIngredientId: "",
       baseUnitId: "U-G",
       unitsState: [{ name: "bao", conversion_rate: "500" }], // typed lowercase
       units: UNITS,
@@ -56,7 +52,6 @@ describe("buildConversionSubmission -- CONSUMABLE (Batch 1, item B)", () => {
       isRaw: false,
       isConsumable: true,
       isEquipment: false,
-      selectedBaseIngredientId: "",
       baseUnitId: "U-G",
       unitsState: [{ name: "Thùng không tồn tại", conversion_rate: "500" }],
       units: UNITS,
@@ -68,13 +63,15 @@ describe("buildConversionSubmission -- CONSUMABLE (Batch 1, item B)", () => {
   });
 });
 
-describe("buildConversionSubmission -- RAW, unaffected by the consumable/equipment change (section B4)", () => {
-  it("still sends base_ingredient_id alongside units_json/base_unit", () => {
+// docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
+// section 2.2: base_ingredient_id is no longer part of this function's
+// output at all -- RAW now builds the same shape as CONSUMABLE/EQUIPMENT.
+describe("buildConversionSubmission -- RAW builds the same shape as CONSUMABLE/EQUIPMENT (2026-09-01)", () => {
+  it("sends only units_json/base_unit, no base_ingredient_id field", () => {
     const result = buildConversionSubmission({
       isRaw: true,
       isConsumable: false,
       isEquipment: false,
-      selectedBaseIngredientId: "ING-032",
       baseUnitId: "U-G",
       unitsState: [{ name: "Bao", conversion_rate: "500" }],
       units: UNITS,
@@ -82,8 +79,8 @@ describe("buildConversionSubmission -- RAW, unaffected by the consumable/equipme
 
     expect(result.ok).toBe(true);
     if (!result.ok || !result.fields) throw new Error("expected fields");
-    expect(result.fields.base_ingredient_id).toBe("ING-032");
     expect(result.fields.base_unit).toBe("U-G");
+    expect(Object.keys(result.fields)).toEqual(["base_unit", "units_json"]);
   });
 });
 
@@ -98,7 +95,6 @@ describe("buildConversionSubmission -- rejects a baseUnitId that is not a real u
       isRaw: false,
       isConsumable: true,
       isEquipment: false,
-      selectedBaseIngredientId: "",
       baseUnitId: "Cái", // a name, not one of UNITS' ids ("U-BAO", "U-G")
       unitsState: [{ name: "Bao", conversion_rate: "500" }],
       units: UNITS,
@@ -114,7 +110,6 @@ describe("buildConversionSubmission -- rejects a baseUnitId that is not a real u
       isRaw: true,
       isConsumable: false,
       isEquipment: false,
-      selectedBaseIngredientId: "ING-032",
       baseUnitId: "Không rõ",
       unitsState: [{ name: "Bao", conversion_rate: "500" }],
       units: UNITS,
@@ -130,12 +125,11 @@ describe("buildConversionSubmission -- rejects a baseUnitId that is not a real u
 // owner into pack-size arithmetic. Replaces the old "neither section"
 // behaviour (batch 1 section B3), which was never argued, only asserted.
 describe("buildConversionSubmission -- EQUIPMENT gets the same section as CONSUMABLE (2026-08-26 fix)", () => {
-  it("builds units_json and base_unit from the typed conversion row, with no base_ingredient_id", () => {
+  it("builds units_json and base_unit from the typed conversion row", () => {
     const result = buildConversionSubmission({
       isRaw: false,
       isConsumable: false,
       isEquipment: true,
-      selectedBaseIngredientId: "",
       baseUnitId: "U-G",
       unitsState: [{ name: "Bao", conversion_rate: "500" }],
       units: UNITS,
@@ -145,7 +139,6 @@ describe("buildConversionSubmission -- EQUIPMENT gets the same section as CONSUM
     if (!result.ok || !result.fields) throw new Error("expected fields");
     expect(result.fields.base_unit).toBe("U-G");
     expect(JSON.parse(result.fields.units_json)).toEqual([{ name: "U-BAO", conversion_rate: "500" }]);
-    expect(result.fields.base_ingredient_id).toBeUndefined();
   });
 
   it("rejects a baseUnitId that is not a real unit id, same as CONSUMABLE/RAW", () => {
@@ -153,7 +146,6 @@ describe("buildConversionSubmission -- EQUIPMENT gets the same section as CONSUM
       isRaw: false,
       isConsumable: false,
       isEquipment: true,
-      selectedBaseIngredientId: "",
       baseUnitId: "Cái",
       unitsState: [{ name: "Bao", conversion_rate: "500" }],
       units: UNITS,
@@ -172,7 +164,6 @@ describe("buildConversionSubmission -- no category selected yet", () => {
       isRaw: false,
       isConsumable: false,
       isEquipment: false,
-      selectedBaseIngredientId: "",
       baseUnitId: undefined,
       unitsState: [{ name: "", conversion_rate: "" }],
       units: UNITS,

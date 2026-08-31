@@ -43,7 +43,7 @@ const STATIC_SHEETS = new Set([
 ]);
 const CATALOG_SHEETS = new Set([
   'Products', 'Product_Variants', 'Modifiers', 'Recipes', 'Promotions',
-  'Base_Ingredients', 'Semi_Products', 'Purchased_Items', 'UOM_Conversions',
+  'Semi_Products', 'Purchased_Items', 'UOM_Conversions',
   'Product_Price_History',
 ]);
 const getRevalidation = (sheetName: string) => {

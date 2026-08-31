@@ -5,11 +5,10 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function NewPurchaseOrderPage() {
-  const [suppliers, items, conversions, baseIngredients, allUnits, sources] = await Promise.all([
+  const [suppliers, items, conversions, allUnits, sources] = await Promise.all([
     findAll("Suppliers"),
     findAll("Purchased_Items"),
     findAll("UOM_Conversions"),
-    findAll("Base_Ingredients"),
     findAll("Units"),
     findAll("Purchase_Sources")
   ]);
@@ -38,7 +37,6 @@ export default async function NewPurchaseOrderPage() {
         sources={sources}
         items={items}
         conversions={conversions}
-        baseIngredients={baseIngredients}
         units={units}
       />
     </div>

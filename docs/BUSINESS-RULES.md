@@ -418,6 +418,18 @@ Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, 
 
 **`units` and `item_categories` carry level 1 only, deliberately.** Neither accumulates its own stock or purchase history — they are labels referenced by other rows, not things bought, counted, or sold, so a near-duplicate there is cosmetic dropdown confusion, not the split-ledger harm level 2 exists to catch. Both populations are also small and do not grow under shelf-pressure (`item_categories` has held exactly 3 rows since 2026-06-28; a new unit is a rare, deliberate, admin-time event). Level 1 already covers the only collision risk either table has ever actually produced.
 
+### BR-CATALOG-002 — The purchased-item catalogue has one tier, not two
+
+**Status:** `APPROVED` — owner decision 2026-09-01 (`docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md`), reversing an earlier reading of the owner's 2026-08-27 words that had this table staying on as a reporting-only label. Asked again directly 2026-09-01; his answer: *"Xóa trước, sau này cần thì dựng lại sau cho đúng chuẩn logic từ bây giờ trở đi."*
+
+**One tier: Nguyên liệu (RAW) / Vật tư tiêu hao (CONSUMABLE) / Dụng cụ (EQUIPMENT)** — `item_categories`, referenced directly by every `purchased_items` row. There is no tier below it grouping several purchased items under one label for report roll-up. `base_ingredients` (`BR-CATALOG-001`'s "seven catalogue tables" is now six) was that lower tier — 46 rows, 52 of 146 purchased items linked to one — and it is gone by owner decision, not merged into `item_categories` or replaced by anything else.
+
+**What this costs, accepted knowingly:** grouped purchase reporting ("tổng chi cho Sữa tươi across every brand of it") and the stocktake close's per-group variance summary (`apply_stocktake_session_atomic`'s aggregation loop) both go away. Neither fed a real money figure — `count_variance` on each counted line, which does drive `stock_issues`, is computed independently of this grouping and is unaffected.
+
+**Not reversible by re-reading old data.** The owner declined a backup of the 46 groups or the 52-item mapping before deletion (his own words, same session): *"Anh sẽ tự nối lại và tự định nghĩa lại vào lúc đó, em không cần phải sao lưu lại dữ liệu trong NHÓM NGUYÊN LIỆU."* A future re-introduction of grouping is a new design, built fresh, not a restore.
+
+**Sequenced in two steps, only the first written as of 2026-09-01.** Step 1 drops the `base_ingredients` table itself (migration written, not yet applied — code deploys first, per the `0076` lesson, `CLAUDE.md` section 2). Step 2, separately approved, drops `purchased_items.base_ingredient_id` — orphaned by step 1, still present on 52 rows, read by no screen after step 1 but still read by four server functions, two of them on the issue-slip cost path. Until step 2 lands, `BR-CATALOG-001`'s uniqueness table above still describes `base_ingredients` as live in the schema; it is not live in any application code path as of this rule.
+
 ### BR-COGS-008 — Equipment is depreciated straight-line, banded by its own unit price, frozen at purchase
 
 **Status:** `APPROVED` — owner decisions 2026-08-19/22 (`docs/superpowers/plans/2026-08-17-expenses-and-pnl.md` §8, `docs/superpowers/plans/2026-08-22-batch-3-asset-register.md`).

@@ -4,7 +4,7 @@ import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewI
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
-import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBBaseIngredient, DBUnit } from "@/types/db";
+import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import {
   computeItemPurchaseHistory,
@@ -26,7 +26,6 @@ const PATH = "/admin/inventory/items";
 
 export async function getItemsData(): Promise<{
   categories: DBItemCategory[];
-  baseIngredients: DBBaseIngredient[];
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
@@ -36,9 +35,8 @@ export async function getItemsData(): Promise<{
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const [categories, baseIngredients, items, conversions, allUnits, poLines, stockIssues] = await Promise.all([
+    const [categories, items, conversions, allUnits, poLines, stockIssues] = await Promise.all([
       findAll("Item_Categories") as Promise<DBItemCategory[]>,
-      findAll("Base_Ingredients") as Promise<DBBaseIngredient[]>,
       findAll(SHEET) as Promise<DBPurchasedItem[]>,
       findAll("UOM_Conversions") as Promise<DBUOMConversion[]>,
       findAll("Units") as Promise<DBUnit[]>,
@@ -54,7 +52,7 @@ export async function getItemsData(): Promise<{
     for (const line of poLines) if (line.purchased_item_id) lockedIds.add(line.purchased_item_id);
     for (const issue of stockIssues) if (issue.purchased_item_id) lockedIds.add(issue.purchased_item_id);
 
-    return { categories, baseIngredients, items, conversions, units, unitLockedItemIds: Array.from(lockedIds) };
+    return { categories, items, conversions, units, unitLockedItemIds: Array.from(lockedIds) };
   } catch (error) {
     // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // this is the exact defect the plan was written to fix -- returning []
@@ -166,7 +164,6 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
-  const base_ingredient_id = formData.get("base_ingredient_id") as string;
   const unitsJson = formData.get("units_json") as string;
   const base_unit = formData.get("base_unit") as string;
   const update_history = formData.get("update_history") === "true";
@@ -216,10 +213,16 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       }
     }
 
+    // base_ingredient_id is intentionally not written here. The tier-2
+    // group link field was removed from the form 2026-09-01
+    // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
+    // section 2.2) but the column itself is untouched this batch (section
+    // 2.3, step 2) -- omitting the key from this partial update leaves
+    // whatever value the row already has, rather than overwriting it with
+    // an empty string on every edit.
     await update("Purchased_Items", id, {
       name,
       item_category_id,
-      base_ingredient_id: base_ingredient_id || "",
       is_non_inventory,
       ...(wasWarningConfirmed
         ? {
