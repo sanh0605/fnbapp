@@ -126,7 +126,21 @@ xoá — cảnh báo này đang đo những thứ sắp không tồn tại. Mu�
 thật thì phải đo trên **hàng mua**, và đó là việc khác, đáng làm riêng chứ không
 nhét vào đây.
 
-**Sonnet không được tự chọn.** Chưa có câu trả lời thì dừng ở đây.
+**Chủ quán chốt 01/09: cách A — bỏ hẳn dòng đó.**
+
+Gỡ dòng cảnh báo khỏi `app/admin/reports/daily/page.tsx`, gỡ `negativeStockItems`
+khỏi kết quả trả về, và gỡ luôn `getRealtimeStock`/`loadRealtimeStock` **nếu sau
+đó không còn ai gọi** — kiểm bằng phép tra, đừng đoán. Còn chỗ gọi nào thì để
+nguyên và nói rõ chỗ đó là gì.
+
+**Đã đối chiếu `BR-INV-004`** (*"tồn âm phải được điều tra, không được xoá lặng
+lẽ"*). **Không xung đột**: quy tắc đó nói về hồ sơ kiểm toán, và cấm xoá **kết
+quả điều tra**, không cấm bỏ một ô màn hình đang báo 0.
+
+**Nhưng phải nói cho hết:** sau khi bỏ, **không màn hình nào còn hiện tồn âm**.
+Hôm nay không mất gì vì con số là 0, nhưng nếu sau này muốn cảnh báo tồn âm thật
+thì phải dựng mới trên **hàng mua** — ghi thành mục việc riêng, đừng để nó biến
+mất cùng dòng code.
 
 ### 2.2 Hai hàm kiểm kê — kỹ thuật, tự quyết
 
