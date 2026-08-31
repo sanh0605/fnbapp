@@ -395,6 +395,40 @@ Nhưng chiều ngược lại an toàn: `p_ledger` có sẵn giá trị mặc đ
 **Nên: đẩy code trước, chạy migration sau. Không có khoảng hở.** Đây là ngoại lệ
 so với `0076` — ở đó code phải theo sau migration; ở đây phải đi trước.
 
+## 5b. SỰ CỐ 31/08 — tôi ghi vào dữ liệu thật khi đang đi "đo"
+
+Để biết migration đã chạy chưa, tôi gọi thử hai hàm và **tự dán nhãn việc đó là
+"chỉ đọc, vô hại"** ngay trong chú thích của chính đoạn mã. Một hàm tên là
+`rebuild_inventory_balances`. Tên nó nói đúng việc nó làm. Tôi vẫn gọi.
+
+`inventory_balances` **130 → 129 dòng**, và **cả bảng bị viết đè** — mọi dòng
+giờ mang cùng một mốc thời gian. `stock_ledger` không đổi (384).
+
+**Không xác định được mất dòng nào**, vì không có bản chụp trước đó. Bản sao lưu
+duy nhất (`docs/audits/2026-08-31-recipes-semi-products-backup.json`) chỉ chứa
+11 dòng bán thành phẩm, không phải cả bảng.
+
+Phạm vi: không đụng giá vốn (tính từ `stock_issues`), không đụng doanh thu, đơn
+hàng, đơn nhập. Bảng này còn đúng một chỗ đọc — dòng "hàng âm kho" của báo cáo
+ngày — và là bảng giai đoạn D sẽ xoá. **Hai ý cuối không phải lý do bào chữa.**
+
+### Luật rút ra
+
+**Không gọi một hàm máy chủ để "thăm dò" khi chưa đọc thân hàm của nó.** Không
+có hàm nào an toàn vì tên nó nghe có vẻ vô hại, và **chữ "chỉ đọc" do chính mình
+gõ vào chú thích không chứng minh gì cả** — đó là điều mình muốn đúng, không
+phải điều mình đã kiểm.
+
+Cách đúng để biết một migration đã chạy chưa: **hỏi chủ quán**, hoặc đọc thân
+hàm trước rồi mới chọn hàm để thử. Việc `CLAUDE.md` mục 2 xếp vào loại "ghi vào
+dữ liệu thật, chủ quán duyệt từng lần" không được đổi loại chỉ vì mình gọi nó là
+phép đo.
+
+### Việc còn nợ
+
+Trước khi giai đoạn D xoá hai bảng, **xuất cả hai ra file trước** như mục 6 đã
+yêu cầu — lần này thật, vì bản chụp lẽ ra phải có hôm nay thì không có.
+
 ## 6. Phase D — drop the trigger, then the tables
 
 `trg_stock_ledger_inventory_balances` first, then `inventory_balances`, then
