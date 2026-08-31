@@ -3,12 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   getSalesDataV2: vi.fn(),
-  getRealtimeStock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("../actions", () => ({ getSalesDataV2: mocks.getSalesDataV2 }));
-vi.mock("@/app/admin/inventory/actions", () => ({ getRealtimeStock: mocks.getRealtimeStock }));
 
 import { getDailyDigest } from "./actions";
 
@@ -25,7 +23,6 @@ describe("getDailyDigest -- default date (docs/superpowers/plans/2026-08-27-asse
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.getSalesDataV2.mockResolvedValue(EMPTY_SALES);
-    mocks.getRealtimeStock.mockResolvedValue([]);
   });
 
   afterEach(() => {

@@ -1,7 +1,6 @@
 "use server";
 
 import { getSalesDataV2 } from "../actions";
-import { getRealtimeStock } from "@/app/admin/inventory/actions";
 import { requireAdmin } from "@/lib/auth";
 import { getDigestDateOffsets, comparePeriods, type PeriodComparison } from "@/lib/daily-digest";
 import { toSaigonIsoString } from "@/lib/datetime";
@@ -19,7 +18,6 @@ export interface DailyDigestResult {
   vsSameWeekdayLastWeek: PeriodComparison;
   topItems: Array<{ product_id: string; name: string; totalQty: number; totalRevenue: number }>;
   paymentBreakdown: Array<{ method: string; orderCount: number; revenue: number }>;
-  negativeStockItems: Array<{ id: string; name: string; current_stock: number; unitName: string }>;
 }
 
 async function getPeriodSummary(dateStr: string): Promise<DailyDigestPeriod> {
@@ -43,13 +41,12 @@ export async function getDailyDigest(dateStr?: string): Promise<DailyDigestResul
   const date = dateStr || toSaigonIsoString(new Date()).slice(0, 10);
   const { today, yesterday, sameWeekdayLastWeek } = getDigestDateOffsets(date);
 
-  const [todayData, todaySummary, yesterdaySummary, lastWeekSummary, realtimeStock] =
+  const [todayData, todaySummary, yesterdaySummary, lastWeekSummary] =
     await Promise.all([
       getSalesDataV2({ startDate: today, endDate: today }),
       getPeriodSummary(today),
       getPeriodSummary(yesterday),
       getPeriodSummary(sameWeekdayLastWeek),
-      getRealtimeStock(),
     ]);
 
   const topItems = [...todayData.bestSellers]
@@ -69,8 +66,5 @@ export async function getDailyDigest(dateStr?: string): Promise<DailyDigestResul
     vsSameWeekdayLastWeek: comparePeriods(todaySummary, lastWeekSummary),
     topItems,
     paymentBreakdown: todayData.paymentBreakdown,
-    negativeStockItems: realtimeStock
-      .filter(item => item.current_stock < 0)
-      .map(item => ({ id: item.id, name: item.name, current_stock: item.current_stock, unitName: item.unitName })),
   };
 }

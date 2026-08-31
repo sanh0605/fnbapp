@@ -5,7 +5,6 @@ import { auditActionExports } from "@/lib/historical/admin-auth-guard-audit";
 
 const adminReadsByFile: Record<string, string[]> = {
   "app/admin/brands/actions.ts": ["getBrands"],
-  "app/admin/inventory/actions.ts": ["getRealtimeStock"],
   "app/admin/inventory/base-ingredients/actions.ts": ["getBaseIngredientsData"],
   "app/admin/inventory/conversions/actions.ts": ["getConversionsData"],
   "app/admin/inventory/items/actions.ts": ["getItemsData"],

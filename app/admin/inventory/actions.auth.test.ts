@@ -11,7 +11,6 @@ const mocks = vi.hoisted(() => ({
   generateNewId: vi.fn(),
   submitStockAdjustmentAtomic: vi.fn(),
   revalidatePath: vi.fn(),
-  unstableCache: vi.fn((fn: unknown) => fn),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -32,10 +31,9 @@ vi.mock("@/lib/stock-adjustment-transaction", () => ({
 }));
 vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePath,
-  unstable_cache: mocks.unstableCache,
 }));
 
-import { getRealtimeStock, submitStockAdjustment } from "./actions";
+import { submitStockAdjustment } from "./actions";
 
 describe("stock adjustment authorization", () => {
   beforeEach(() => {
@@ -91,43 +89,5 @@ describe("stock adjustment authorization", () => {
         approved_by: "Quản lý",
       }),
     );
-  });
-
-  it("rejects an unauthenticated realtime-stock read before loading data", async () => {
-    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
-    mocks.findAll.mockResolvedValue([]);
-    mocks.findAllNoCache.mockResolvedValue([]);
-
-    await expect(getRealtimeStock()).rejects.toThrow("Yêu cầu đăng nhập");
-    expect(mocks.findAll).not.toHaveBeenCalled();
-    expect(mocks.findAllNoCache).not.toHaveBeenCalled();
-  });
-
-  it("reads current stock from the materialized balance table, not a full Stock_Ledger replay", async () => {
-    mocks.requireAdmin.mockResolvedValue({
-      ok: true,
-      actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
-    });
-    mocks.findAllNoCache.mockImplementation(async (sheet: string) => {
-      if (sheet === "Inventory_Balances") return [{ item_reference: "BI-1", quantity: 7 }];
-      throw new Error(`unexpected uncached read: ${sheet}`);
-    });
-    mocks.findAll.mockImplementation(async (sheet: string) => {
-      if (sheet === "Base_Ingredients") return [{ id: "BI-1", name: "Sữa đặc", base_unit: "U-1" }];
-      if (sheet === "Semi_Products") return [{ id: "BTP-1", name: "Hồng trà đậm", base_unit: "U-1" }];
-      if (sheet === "Units") return [{ id: "U-1", name: "g" }];
-      return [];
-    });
-
-    const result = await getRealtimeStock();
-
-    expect(result).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: "BI-1", current_stock: 7 }),
-        expect.objectContaining({ id: "BTP-1", current_stock: 0 }),
-      ]),
-    );
-    expect(mocks.findAllNoCache).toHaveBeenCalledWith("Inventory_Balances");
-    expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Stock_Ledger");
   });
 });

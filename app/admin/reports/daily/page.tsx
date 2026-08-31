@@ -1,7 +1,6 @@
 import { getDailyDigest } from "./actions";
 import { DailyDigestFilter } from "./DailyDigestFilter";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Alert } from "@/components/ui/Alert";
 import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -30,22 +29,10 @@ export default async function DailyDigestPage({
     year: "numeric",
   });
 
-  const hasAttention = digest.negativeStockItems.length > 0;
-
   return (
     <div className="space-y-6">
       <DailyDigestFilter date={digest.date} />
       <p className="text-sm text-text-secondary -mt-4">{dateLabel}</p>
-
-      {hasAttention && (
-        <Alert variant="warning" title="Cần chú ý">
-          <ul className="list-disc list-inside space-y-1">
-            {digest.negativeStockItems.length > 0 && (
-              <li>{digest.negativeStockItems.length} nguyên liệu/bán thành phẩm đang âm tồn kho.</li>
-            )}
-          </ul>
-        </Alert>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">

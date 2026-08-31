@@ -1,7 +1,7 @@
 "use server";
 
 import { findAll, findAllNoCache, insert, update, remove, generateNewId } from "@/lib/sheets_db";
-import { revalidatePath, unstable_cache } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -432,57 +432,6 @@ export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
 }
 
 // --- STOCK (Tồn kho) ---
-const loadRealtimeStock = unstable_cache(
-  async () => {
-    // PERF-2 Phase B: read the trigger-maintained balance instead of
-    // replaying the whole Stock_Ledger. Cache tag stays "sheets-Stock_Ledger"
-    // (not "sheets-Inventory_Balances") because every ledger write already
-    // calls revalidateTag with that name -- the balance table itself is only
-    // ever written by the database trigger, never through this app's own
-    // insert()/touchRevalidate() path, so tagging the new table name would
-    // never actually get invalidated.
-    const [balances, baseIngredients, semiProducts, units] = await Promise.all([
-      findAllNoCache("Inventory_Balances"),
-      findAll("Base_Ingredients"),
-      findAll("Semi_Products"),
-      findAll("Units")
-    ]);
-
-    const stockMap: Record<string, number> = {};
-
-    balances.forEach((row: any) => {
-      stockMap[row.item_reference] = Number(row.quantity) || 0;
-    });
-
-    const allItems = [
-      // Claude code — Phase 5.4: filter non-inventory items to keep stock UI focused.
-      ...baseIngredients
-        .filter((b: any) => b.is_non_inventory !== true && b.is_non_inventory !== "TRUE")
-        .map((b: any) => ({ ...b, item_type: "BASE_INGREDIENT" })),
-      ...semiProducts.map((s: any) => ({ ...s, item_type: "SEMI_PRODUCT" }))
-    ];
-
-    return allItems.map(item => {
-      const unitName = units.find((u:any) => u.id === item.base_unit)?.name || item.base_unit;
-      return {
-        id: item.id,
-        name: item.name,
-        item_type: item.item_type,
-        current_stock: stockMap[item.id] || 0,
-        unitName
-      };
-    });
-  },
-  ["realtime-stock-all"],
-  { revalidate: 60, tags: ["sheets-Stock_Ledger", "sheets-Base_Ingredients", "sheets-Semi_Products", "sheets-Units"] }
-);
-
-export async function getRealtimeStock() {
-  const auth = await requireAdmin();
-  if (!auth.ok) throw new Error(auth.error);
-  return loadRealtimeStock();
-}
-
 export async function submitStockAdjustment(data: any, _clientRole?: string, _clientUsername?: string): Promise<ActionResponse> {
   try {
     // Claude code — Phase 4.3: adjustment reason required for audit traceability.
