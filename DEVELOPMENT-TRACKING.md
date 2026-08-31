@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Make the revenue gate notice when a month has closed
+
+Implements docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md (OPEN-ITEMS 82). The owner found this by asking why the revenue script's monthly table stopped at July when August had already ended -- asked right after being told revenue was safe based on "All structural checks passed" without checking what that actually covers.
+
+Two bugs in scripts/verify-revenue.ts's MONTH_CHECKS: August had a null baseline, so it printed unchecked (visible, if easy to miss); September had no entry at all, and the loop iterated the hardcoded array, not the orders, so it was absent from the table entirely, not merely unchecked -- section 1.3's own distinction between the two, the second one worse.
+
+Fixed: scripts/verify-revenue-core.ts gained deriveSaigonMonthLabels (months now come from the data via saigonBucketKeys, the same helper the sales chart already uses) and buildMonthlyReport, which classifies every data-derived month into matches/mismatch/open/closed_no_baseline -- the third state is new and always fails, since the script must never mint its own baseline. Added August's baseline (17.682.000d / 644 orders, owner-confirmed 2026-09-01, re-measured live before writing it, matching the plan's own figures exactly).
+
+Critique found the same MONTH_CHECKS pattern duplicated verbatim in two more scripts (delete-derived-stock-rows.ts, reset-cost-at-sale.ts) -- both one-off historical scripts already executed, lower stakes than a live gate, not touched this round.
+
+New test confirmed red for the right reason: temporarily made buildMonthlyReport behave like the old script (never distinguish closed from open) and watched the closed-no-baseline test fail on a wrong value, then restored the fix. Ran the live script after: today = 2026-09-01 (Asia/Saigon, confirmed against the database's own now()), April-August all match, September does not appear because it has zero real orders yet -- the fix's actual guarantee is proven by the unit test, not by real September data that doesn't exist.
+
+No data written, no migration, not pushed. tsc 0 errors, vitest 220 files / 1553 tests green, check-rules-current clean, npm run build succeeds.
+
+---
+
 ## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Remove the recipe snapshots from order lines (code shipped, backfill not run)
 
 Implements docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md (OPEN-ITEMS 72). order-cart.ts:405 stops writing the inert no-recipe JSON shell to recipe_snapshot_json -- new lines get an empty string, matching the column's own NOT NULL default ('{}'::jsonb). resolvedRecipes and its typed plumbing removed (0 consumers outside the two files that produced it). base_ingredients removed from ReferenceData and both call sites (app/pos/actions.ts, app/admin/orders/actions.ts) that loaded the whole table on every sale and every edit without ever reading it. scripts/clear-recipe-snapshots.ts backfills the 3.453 existing rows to {} -- dry-run confirmed, --apply not run.
