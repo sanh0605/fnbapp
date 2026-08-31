@@ -179,3 +179,60 @@ kỳ kiểm kê và báo cáo Ngày còn chạy, **rồi mới** chạy migratio
 **Sau đợt này, giai đoạn D mới hết chặn.** Việc xoá hai bảng vẫn là một lần hỏi
 riêng, và mục 6 của kế hoạch gốc đã yêu cầu xuất sao lưu trước — **đã xuất rồi**
 (`docs/audits/2026-08-31-stock-ledger-and-balances-backup.json`, ghi 31/08).
+
+---
+
+## 5. Đo lại 01/09 sau khi chạy `0086`/`0087` — có chỗ chặn THỨ TƯ, và phép quét của tôi hỏng
+
+### 5.1 Kết quả, đo trên máy chủ chứ không trên file
+
+| Hàm | Còn ghi | Còn đọc |
+|---|---|---|
+| `stock_ledger_apply_inventory_balance_delta` (trigger) | Có | Có — giai đoạn D xoá cùng bảng |
+| **`void_order_atomic`** | Không | **Có, 2 chỗ** — dòng 86 và 97 của `0080` |
+
+Việc **ghi** đã dừng thật: không hàm nghiệp vụ nào còn ghi vào hai bảng.
+
+Hai câu đọc trong hàm huỷ đơn là **chốt kiểm trạng thái cũ** — hỏi xem đơn này
+đã từng có dòng đảo `EDIT_REVERSAL` trong sổ chưa. Giai đoạn C cố ý giữ lại
+(chính chú thích của `0085` có nhắc), vì mục 5 chỉ yêu cầu bỏ **ghi**.
+
+**Nhưng giai đoạn D xoá bảng thì hai câu đó thành lỗi lúc chạy — và huỷ đơn là
+đường tiền.** Đây là chỗ chặn thứ tư; mục 5c.4 chỉ liệt kê ba.
+
+### 5.2 Vì sao tôi sót — lỗi nằm trong phép đo của chính tôi
+
+Phép quét tôi dùng suốt đợt này đọc **file migration**, dựng bản mới nhất của
+mỗi hàm, rồi **loại bỏ mọi hàm có tên xuất hiện trong một lệnh `drop function`**
+— coi đó là hàm đã chết.
+
+**Giai đoạn C xoá rồi dựng lại ngay trong cùng một file.** Nên **cả sáu hàm giai
+đoạn C sửa đều lọt khỏi phép quét**: `save_purchase_order_atomic`,
+`void_order_atomic`, hai bản `supersede_order_v2_atomic`, và hai hàm máy bán
+hàng.
+
+Tôi đã dùng đúng phép quét đó để báo **"0 hàm còn đụng hai bảng"** — hai lần.
+Con số 0 đó không sai vì dữ liệu, mà vì **phép đo tự loại bỏ đúng những hàm đáng
+ngờ nhất**.
+
+**Luật rút ra: hỏi máy chủ, đừng phân tích file.** `pg_get_functiondef` cho biết
+hàm đang thật sự là gì; ghép file migration lại là dựng một mô hình, và mô hình
+đó sai đúng ở chỗ khó thấy nhất — thứ tự xoá/tạo trong cùng một file. Cùng họ
+với sự cố `rebuild_inventory_balances` sáng 31/08: cả hai lần tôi tin một thứ do
+mình tự dựng thay vì đi đo.
+
+Và phải **bỏ chú thích trước khi tìm** — không thì mọi dòng giải thích "chỗ này
+từng ghi sổ kho" đều bị đếm là lệnh thật.
+
+### 5.3 Danh sách chặn giai đoạn D — BỐN mục
+
+1. ~~Báo cáo Ngày~~ — **xong 01/09**, đã bỏ dòng cảnh báo theo chủ quán chọn.
+2. ~~`apply_stocktake_session_atomic`~~ — **xong**, migration `0086`.
+3. ~~`save_stocktake_line_atomic`~~ — **xong**, migration `0087`.
+4. **`void_order_atomic` — CHƯA LÀM.** Hai câu đọc chốt trạng thái cũ.
+
+**Trước khi làm mục 4 phải trả lời một câu chưa ai hỏi:** chốt đó đang bảo vệ
+điều gì, và bỏ sổ kho đi thì nó còn ý nghĩa không? Nó đếm dòng `EDIT_REVERSAL`
+— mà sổ đóng băng ở 384 dòng, nên câu trả lời **không bao giờ đổi nữa**. Có thể
+đó là lý do bỏ được, nhưng **phải đo số đơn thật rơi vào chốt đó trước**, không
+suy luận.
