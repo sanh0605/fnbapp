@@ -4,6 +4,20 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Remove the recipe snapshots from order lines (code shipped, backfill not run)
+
+Implements docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md (OPEN-ITEMS 72). order-cart.ts:405 stops writing the inert no-recipe JSON shell to recipe_snapshot_json -- new lines get an empty string, matching the column's own NOT NULL default ('{}'::jsonb). resolvedRecipes and its typed plumbing removed (0 consumers outside the two files that produced it). base_ingredients removed from ReferenceData and both call sites (app/pos/actions.ts, app/admin/orders/actions.ts) that loaded the whole table on every sale and every edit without ever reading it. scripts/clear-recipe-snapshots.ts backfills the 3.453 existing rows to {} -- dry-run confirmed, --apply not run.
+
+Critique before coding found the plan's own section 1.4/3 premise didn't hold: parseLineRecipeSnapshot does not throw on an empty cell today, checked empirically (wrote the exact test asked for, ran it against the unmodified function, it was already green) rather than trusted from the plan's text or the function's own stale doc comment. Also found a real, unstated risk in section 2's own wording ("stop writing" is ambiguous between omitting the key and writing an empty value) -- checked the live SQL of both create_pos_order_atomic_unvalidated_0025 and supersede_order_v2_atomic directly and found both do a bare, un-coalesced insert of this NOT NULL column, so omitting the key would have broken every sale and every order edit. Writing "" (which parseJsonColumns already turns into {}) is the only safe form, verified against the live RPC's exact row-type cast via a read-only query before writing any code.
+
+Re-measured section 1b live before writing anything, since the plan's own 01/09 figures were already nine lines stale when written: 3.454 lines, 3.454 distinct ids, 0 duplicate pairs, 3.453 with content -- unchanged, no drift since the plan was written.
+
+Proved the checkout and order-edit paths both still work against real data, not just green tests: a script loaded real reference data and a real completed order from the live database (read-only) and ran buildOrderFromCart/buildEditedOrderFromCart against them, then ran the exact jsonb_to_recordset cast the live RPC uses against the resulting payload, confirming a real jsonb value rather than NULL.
+
+Gates: tsc 0 errors, vitest 220 files / 1542 tests green, check-rules-current clean, npm run build succeeds. No data written yet -- owner approves the --apply run separately. Not pushed.
+
+---
+
 ## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Clear the three Phase D blockers (migrations written, not applied)
 
 Implements docs/superpowers/plans/2026-09-01-phase-d-blockers.md (OPEN-ITEMS 80), the three blockers Phase C's own section 5c.4 named as remaining before stock_ledger/inventory_balances can be dropped. Three commits: the daily report's dead negative-stock line removed outright (owner chose section 2.1's option A), then one migration per remaining function (apply_stocktake_session_atomic, save_stocktake_line_atomic).
