@@ -429,6 +429,64 @@ phép đo.
 Trước khi giai đoạn D xoá hai bảng, **xuất cả hai ra file trước** như mục 6 đã
 yêu cầu — lần này thật, vì bản chụp lẽ ra phải có hôm nay thì không có.
 
+## 5c. Đo 31/08 sau khi chạy 9 migration — ba thứ chặn giai đoạn D
+
+### 5c.1 Migration đã chạy, đo trên máy chủ chứ không tin dòng chữ "OK"
+
+`0077`–`0085` chạy xong theo thứ tự, sau khi code đã lên web.
+
+| Phép đo trên máy chủ | Kết quả |
+|---|---|
+| 9 hàm chết còn sót | **0** |
+| Hàm còn `insert into stock_ledger` | **0** |
+| Hàm còn nhận tham số `p_ledger` | **0** |
+| Hàm sống còn đủ | **7/7**, cả hai bản `supersede_order_v2_atomic` (5 và 6 tham số) |
+
+`stock_ledger` đóng băng ở **384 dòng**. Không còn đường ghi.
+
+**Đã xuất sao lưu** — `docs/audits/2026-08-31-stock-ledger-and-balances-backup.json`,
+162 kB, 384 dòng sổ + 129 dòng số dư, đã đọc lại để chứng minh file dùng được.
+Đây là món nợ từ mục 5b: bản chụp lẽ ra phải có sáng nay thì không có. **File này
+chụp trạng thái SAU khi tôi dựng lại nhầm**, không phải trước.
+
+### 5c.2 Nỗi lo về đóng kỳ kiểm kê là lo hão — khép lại
+
+Tôi đã nêu ở mục 2d.3 rằng đóng kỳ có thể hỏng sau khi xoá công thức. **Sai.**
+Bốn chỗ nhắc tới công thức trong `0079` đều là **chú thích**, không phải lệnh.
+Vòng quy ngược chạy bằng `purchased_items.base_ingredient_id`, không dùng công
+thức. Nêu ra thì phải khép lại.
+
+### 5c.3 Nhưng hàm đóng kỳ ĐỌC sổ kho ở hai chỗ — chặn giai đoạn D
+
+`0079` dòng **121** và **229** đều `select ... from public.stock_ledger`. Giai
+đoạn D xoá bảng thì **hai câu này thành lỗi cú pháp lúc chạy**, không phải trả
+về 0.
+
+Mức độ khác nhau giữa hai chỗ, và phải nói rõ chứ đừng gộp:
+
+| Dòng | Dùng cho | Có chạy thật không |
+|---|---|---|
+| 121 | Dòng đếm trực tiếp nguyên liệu gốc / bán thành phẩm | **Chưa bao giờ** — cả 50 dòng kiểm kê đều là hàng mua, nên nhánh này không vào |
+| 229 | Cột hiển thị của dòng gộp theo nguyên liệu | **Có chạy** — sinh 38 dòng ở kỳ `STK-001` |
+
+**Nhưng dòng 229 chỉ nuôi cột hiển thị, không nuôi phép tính chênh lệch.** Chênh
+lệch lấy từ `count_variance` đã đóng băng trên từng dòng đếm. Chính chú thích
+trong hàm nói vậy, và đọc mã thì đúng vậy.
+
+**Nên: xoá bảng không làm sai giá vốn, nhưng làm hỏng hàm.** Phải sửa `0079`
+trước giai đoạn D.
+
+### 5c.4 Danh sách chặn giai đoạn D — ba mục, không phải một
+
+1. **Báo cáo ngày** đọc `Inventory_Balances` cho dòng "hàng âm kho"
+   (`app/admin/reports/daily/actions.ts:52` và `:72`) — mục 2c.
+2. **`apply_stocktake_session_atomic`** đọc `stock_ledger` hai chỗ — mục 5c.3.
+3. **`save_stocktake_line_atomic`** đọc `stock_ledger`, đang được dùng thật
+   (`lib/stocktake-transaction.ts:80`) — Sonnet tìm ra ở giai đoạn B.
+
+**Cả ba đều phải xử lý trước khi xoá bảng.** Mỗi cái là một quyết định riêng
+(sửa hay bỏ hẳn), không được gộp thành một việc kỹ thuật.
+
 ## 6. Phase D — drop the trigger, then the tables
 
 `trg_stock_ledger_inventory_balances` first, then `inventory_balances`, then
