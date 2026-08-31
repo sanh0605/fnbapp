@@ -205,6 +205,48 @@ describe("startStocktakeSession item list", () => {
     expect(references).toEqual(["SPM-053"]);
   });
 
+  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md
+  // section 3's last check: a flagged group must no longer change
+  // eligibility at all, even for an item still linked to it -- proving the
+  // blocker on deleting the ingredient groups is actually gone, not just
+  // untested. Base_Ingredients here carries is_non_inventory=true on the
+  // linked group and the item itself carries no flag of its own -- under
+  // the pre-fix code this item would have been excluded; here it must stay
+  // offered, identical to what an empty Base_Ingredients table would
+  // produce (docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md
+  // already moved the real flag onto every affected item, so this
+  // scenario -- item unflagged, group flagged -- no longer exists in
+  // production; this test is about the code path, not today's data).
+  it("a flagged group no longer excludes its item -- only the item's own flag does", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Base_Ingredients") {
+        return Promise.resolve([
+          { id: "NNL-012", name: "Khoai lang", base_unit: "U-KG", is_non_inventory: true },
+        ]);
+      }
+      if (sheet === "Semi_Products") return Promise.resolve([]);
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-052", name: "Khoai lang", base_ingredient_id: "NNL-012", default_unit_id: "U-KG", status: "ACTIVE", is_non_inventory: false },
+        ]);
+      }
+      if (sheet === "Units") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.openStocktakeSessionAtomic.mockResolvedValue({
+      id: "STK-004", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
+      created_at: "2026-09-01T00:00:00Z", notes: "",
+    });
+
+    const result = await stocktakeActions.startStocktakeSession();
+
+    expect(result).toEqual({ success: true });
+    const { items } = mocks.openStocktakeSessionAtomic.mock.calls[0][0];
+    const references = items.map((item: { itemReference: string }) => item.itemReference);
+
+    expect(references).toEqual(["SPM-052"]);
+  });
+
   // docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md: equipment
   // is excluded by CATEGORY (item_categories.system_type = 'EQUIPMENT'), not
   // by the per-item is_non_inventory flag -- that flag also feeds a future

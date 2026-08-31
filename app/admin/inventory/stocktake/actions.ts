@@ -198,12 +198,7 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
   if (!auth.ok) return fail(auth.error);
 
   try {
-    const { baseIngredients, purchasedItems, itemCategories } = await loadItemNameMaps();
-    const nonInventoryBaseIngredientIds = new Set(
-      baseIngredients
-        .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
-        .map(b => b.id as string),
-    );
+    const { purchasedItems, itemCategories } = await loadItemNameMaps();
     // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
     // equipment is never stocktaken -- a fixed property of the EQUIPMENT
     // category (CLAUDE.md section 7), not a per-item judgment. Excluding by
@@ -222,17 +217,18 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     // section 3, decision 1). Semi-products carry no stock and no value
     // (BR-INV-006) and were never offered here.
     //
-    // 2026-08-21 (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md):
-    // a CONSUMABLE item has no base_ingredient_id, so the ingredient-side
-    // flag above can never reach it -- every consumable was offered for
-    // counting regardless of BR-INV-007. Additive, not a replacement: an
-    // item drops out when its ingredient is flagged, its own flag is set, OR
-    // its category is EQUIPMENT.
+    // 2026-09-01 (docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md):
+    // used to also exclude an item whose linked base_ingredient was
+    // flagged. Dropped, not replaced -- docs/superpowers/plans/2026-08-31-
+    // move-non-inventory-flag-to-items.md already moved that flag onto
+    // every affected item directly (SPM-005, SPM-052), so the item's own
+    // flag below covers the same ground the group flag used to. Confirmed
+    // live before removing: the eligible set is identical with or without
+    // the group check, 69 items either way.
     const eligiblePurchasedItems = purchasedItems.filter(p => {
-      const ingredientFlagged = nonInventoryBaseIngredientIds.has(p.base_ingredient_id);
       const ownFlagged = p.is_non_inventory === true || p.is_non_inventory === "TRUE";
       const isEquipment = equipmentCategoryIds.has(p.item_category_id);
-      return !ingredientFlagged && !ownFlagged && !isEquipment;
+      return !ownFlagged && !isEquipment;
     });
     const includedPurchasedItems = await filterByC17(eligiblePurchasedItems);
     const items = includedPurchasedItems.map(p => ({

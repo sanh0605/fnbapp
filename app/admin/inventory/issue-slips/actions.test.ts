@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -74,27 +76,62 @@ describe("getIssueSlipFormData", () => {
     expect(items[0].packageLines.map(p => p.sizeLabel)).toEqual(["Túi 100 g", "Túi 500 g"]); // C8: inactive excluded
   });
 
-  it("excludes daily-expense (is_non_inventory) items, same as the stocktake screen", async () => {
+  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md
+  // section 1.3/1.7: this screen used to check the linked base_ingredient's
+  // own flag, which a bag or a plastic spoon has no way to carry (they have
+  // no base_ingredient_id at all) -- so all 7 of them stayed offered here
+  // despite being excluded from stocktake. On-hand is given deliberately
+  // (matching "drops an item with zero on-hand" below): without it every
+  // item here reads onHand=0 and gets filtered by that unrelated check
+  // regardless of is_non_inventory, which would make this test pass for the
+  // wrong reason. Confirmed red against the pre-fix code before this task
+  // started -- Túi rác appeared in the returned list, a wrong VALUE (the
+  // list already existed and already excluded other things), not a missing
+  // function.
+  it("excludes an item flagged is_non_inventory on itself, with no linked ingredient group at all -- a bag or a spoon", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Purchased_Items") {
         return Promise.resolve([
-          { id: "SPM-ICE", name: "Đá viên", base_ingredient_id: "NNL-012", default_unit_id: "U-G", status: "ACTIVE" },
+          { id: "SPM-BAG", name: "Túi rác", base_ingredient_id: "", default_unit_id: "U-CAI", status: "ACTIVE", is_non_inventory: true },
+          { id: "SPM-CUP", name: "Ly giấy", base_ingredient_id: "", default_unit_id: "U-CAI", status: "ACTIVE", is_non_inventory: false },
         ]);
       }
       if (sheet === "UOM_Conversions") {
         return Promise.resolve([
-          { id: "CONV-ICE", purchased_item_id: "SPM-ICE", purchased_unit: "U-BAO", base_unit: "U-G", conversion_rate: 5000, status: "ACTIVE" },
+          { id: "CONV-BAG", purchased_item_id: "SPM-BAG", purchased_unit: "U-CAI", base_unit: "U-CAI", conversion_rate: 1, status: "ACTIVE" },
+          { id: "CONV-CUP", purchased_item_id: "SPM-CUP", purchased_unit: "U-CAI", base_unit: "U-CAI", conversion_rate: 1, status: "ACTIVE" },
         ]);
       }
-      if (sheet === "Units") return Promise.resolve([{ id: "U-G", name: "g" }, { id: "U-BAO", name: "Bao" }]);
-      if (sheet === "Base_Ingredients") {
-        return Promise.resolve([{ id: "NNL-012", name: "Khoai lang", is_non_inventory: true }]);
+      if (sheet === "Units") return Promise.resolve([{ id: "U-CAI", name: "Cái" }]);
+      if (sheet === "Base_Ingredients") return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+    mocks.findAllNoCache.mockImplementation((sheet: string) => {
+      if (sheet === "Purchase_Order_Lines") {
+        return Promise.resolve([
+          { purchase_order_id: "PO-1", purchased_item_id: "SPM-BAG", base_quantity: 500 },
+          { purchase_order_id: "PO-1", purchased_item_id: "SPM-CUP", base_quantity: 500 },
+        ]);
       }
+      if (sheet === "Purchase_Orders") return Promise.resolve([{ id: "PO-1", status: "COMPLETED" }]);
+      if (sheet === "Stock_Issues") return Promise.resolve([]);
       return Promise.resolve([]);
     });
 
     const items = await issueSlipActions.getIssueSlipFormData();
-    expect(items).toEqual([]);
+
+    expect(items.map(i => i.id)).toEqual(["SPM-CUP"]);
+  });
+
+  // The group flag alone (no item flag, no linked purchased item at all in
+  // this test) is no longer read by this screen -- replaced, not merely
+  // supplemented, per plan section 1.4's own distinction from the stocktake
+  // screen. Base_Ingredients is not even fetched anymore (see
+  // getIssueSlipFormData), so this is really asserting the source read.
+  it("no longer reads Base_Ingredients at all", () => {
+    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    expect(source).not.toContain("Base_Ingredients");
+    expect(source).not.toContain("nonInventoryBaseIngredientIds");
   });
 
   it("drops an item with no active conversion left to select", async () => {

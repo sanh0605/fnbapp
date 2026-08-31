@@ -31,23 +31,23 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [purchasedItems, conversions, units, baseIngredients, itemCategories] = await Promise.all([
+  const [purchasedItems, conversions, units, itemCategories] = await Promise.all([
     findAll("Purchased_Items"),
     findAll("UOM_Conversions"),
     findAll("Units"),
-    findAll("Base_Ingredients"),
     findAll("Item_Categories"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
-  // Same exclusion as the stocktake screen (Plan D Gap 1): daily-expense
-  // ingredients (đá viên, chanh, quất...) carry is_non_inventory and are
-  // never tracked as real stock -- nothing for an issue slip to draw down.
-  const nonInventoryBaseIngredientIds = new Set(
-    (baseIngredients as any[])
-      .filter(b => b.is_non_inventory === true || b.is_non_inventory === "TRUE")
-      .map(b => b.id as string),
-  );
+  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-to-items.md:
+  // used to check the linked base_ingredient's own flag instead of the
+  // item's -- a gap the stocktake screen never had, since it already also
+  // checked the item's own flag (Plan D Gap 1 below). That gap let 7 items
+  // that carry the flag directly, with no linked ingredient at all (the
+  // bags, Muỗng nhựa đen), stay offered here despite being excluded from
+  // stocktake -- daily-expense items (đá viên, chanh, quất...) carry
+  // is_non_inventory and are never tracked as real stock, nothing for an
+  // issue slip to draw down, whichever table the flag happens to sit on.
   // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
   // 3.1: same test the stocktake screen already uses
   // (app/admin/inventory/stocktake/actions.ts) -- equipment leaves through
@@ -77,7 +77,7 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   }
 
   const eligiblePurchasedItems = (purchasedItems as any[]).filter(
-    p => !nonInventoryBaseIngredientIds.has(p.base_ingredient_id) && !equipmentCategoryIds.has(p.item_category_id),
+    p => p.is_non_inventory !== true && p.is_non_inventory !== "TRUE" && !equipmentCategoryIds.has(p.item_category_id),
   );
   // Same C17 shape as the stocktake screen: an inactive item stays offered
   // while it still has stock to issue out; it is dropped only once it has
