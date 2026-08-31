@@ -4,6 +4,27 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Phase D blocker 4/4: void_order_atomic stops reading the stock ledger
+
+Implements docs/superpowers/plans/2026-09-01-void-order-stops-reading-the-ledger.md (OPEN-ITEMS 80). This blocker was missed by the scan behind the "3 remaining blockers" work earlier the same day, per docs/superpowers/plans/2026-09-01-phase-d-blockers.md section 5.2: that scan read migration files and excluded any function ever touched by a `drop function` statement, treating that as proof of death. Phase C dropped-and-recreated six functions (including this one) within the same migration file, so all six fell out of the scan. Corrective method used throughout this task: query `pg_get_functiondef` on the live server, comments stripped before searching, never reconstruct behavior from migration files.
+
+Answered the plan's own two open questions (section 1.6) before writing any code:
+
+1. Does the `order_events` guard (`v_has_void_event`) substitute for the `stock_ledger` guard (`v_has_reversal`)? Yes -- migration 0017's original body (the function's first version) shows the `EDIT_REVERSAL` insert into `stock_ledger` and the `VOIDED` insert into `order_events` always happened in the same transaction. Wherever `v_has_reversal` could ever have been true, `v_has_void_event` was already true for the same order. Confirmed live that `void_order_atomic` is the only function in the public schema that has ever referenced `EDIT_REVERSAL`, and that `stock_ledger` currently holds zero rows of that type (300 `PO_RECEIPT` + 84 `STOCK_ADJUST`, 384 total) -- the read can structurally never return true again.
+2. Is `RECLASSIFICATION_REVERSAL` (the type found in the 2026-07-23 deleted-ledger backup) the same concept as `EDIT_REVERSAL` under an old name? No -- migration 0025's own comment states it was deliberately kept a distinct type: "no order edit actually happened here -- reusing EDIT_REVERSAL would misleadingly imply one did." This settles the plan's section 1.3 conclusion without needing to revise it for that reason. Found a different, real correction along the way instead: 72 real `EDIT_REVERSAL` rows did exist historically (DEVELOPMENT-TRACKING.md's own 2026-08-07 entry), deleted that same day by `delete-derived-stock-rows.ts`. "Zero rows today" is not "never happened" -- it is "happened, and every time it did, `order_events` already knew too," which is the actual reason removing this read is safe.
+
+Migration 0088_phase_d_blocker_void_order.sql removes the two `stock_ledger` reads (`v_has_reversal`, computed once as an old-state guard and once inside the already-voided branch for `v_reversal_count`), replacing them with the hardcoded values the measurements above justify. Return shape unchanged (`order_id`, `reversal_count`, `already_voided`) so `lib/void-order-transaction.ts` needed no edit -- its sole caller (`app/admin/orders/actions.ts`'s `voidOrderV2`) still awaits without capturing the result.
+
+Could not literally void a real order before/after without applying the migration (forbidden this task). Proved equivalence instead: queried every order that could reach either branch today -- 2.456 `COMPLETED` orders, 25 `VOIDED` orders -- and confirmed 0 of them have any `EDIT_REVERSAL` row in either group, so the fix produces byte-identical guard behavior for every real order that exists right now, not a sampled claim.
+
+New regression test lib/void-order-migration.test.ts confirmed red before the fix by temporarily reintroducing the exact two removed `stock_ledger` reads into the migration file and watching the "never reads the table" assertion fail for the right reason (the migration text containing `public.stock_ledger`, not a missing file or function) -- then restored, diff-verified byte-identical to the pre-revert file before re-running green. The assertion checks for `public.stock_ledger` specifically, not the bare word `edit_reversal`, since the migration's own explanatory header comment legitimately mentions it -- the same comments-vs-statements trap section 5.2 names for the live check.
+
+`tsc` 0 errors, `vitest` 221 files / 1556 tests green, `check-rules-current` clean, `npm run build` succeeds (all 39 routes), `verify-revenue.ts` clean, all five gated months unchanged. Migration written, **not applied**. Not pushed. Deploy order: code first, then migration, same as the 0076 lesson. After this, Phase D (drop both tables and the trigger) is purely the owner's call, not a technical blocker.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Make the revenue gate notice when a month has closed
 
 Implements docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md (OPEN-ITEMS 82). The owner found this by asking why the revenue script's monthly table stopped at July when August had already ended -- asked right after being told revenue was safe based on "All structural checks passed" without checking what that actually covers.
