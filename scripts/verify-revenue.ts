@@ -11,6 +11,7 @@ import type {
   RevenueLineDetail,
   RevenuePromoOrder,
   RevenuePromoLine,
+  MonthlyBaseline,
 } from "./verify-revenue-core";
 
 /**
@@ -29,15 +30,22 @@ import type {
  *     required (H3's "unrecomputable" orders are reported, never gated --
  *     see the H3 section below for why)
  *   - row-count sanity (trap #1 below)
- *   - April-July monthly revenue AND order count, exact match against the
- *     frozen figures below -- these months are closed history, per the plan
+ *   - every CLOSED month present in the data (docs/superpowers/plans/
+ *     2026-09-01-revenue-gate-must-notice-closed-months.md): revenue AND
+ *     order count, exact match against KNOWN_MONTHLY_BASELINES. The month
+ *     list is derived from the data itself, not a hardcoded array, so a
+ *     newly-closed month cannot silently go unchecked the way August once
+ *     did -- and a closed month with NO baseline in the table is itself a
+ *     gated failure (the script must never mint its own baseline; see
+ *     that plan's section 1.4). The still-running month is printed only,
+ *     same as before.
  *   - overall COMPLETED order count, floor only (>= EXPECTED_ORDER_COUNT):
  *     it only grows as the shop sells, so a floor is the honest gate, not
  *     an exact match
  *
- * Printed, not gated: overall revenue total, August's monthly figures
- * (still open), H1 check 4's own order-count/amount breakdown beyond "zero
- * violations" (grows as more sales record a payment), the no-payment
+ * Printed, not gated: overall revenue total, the current (still open)
+ * month's figures, H1 check 4's own order-count/amount breakdown beyond
+ * "zero violations" (grows as more sales record a payment), the no-payment
  * bucket (section 2: permanently unverifiable, not a target to shrink),
  * H2's empty-modifier-line count (informational, not a violation), and H3's
  * unrecomputable-order count/reason (a known V1-era data gap, not this
@@ -65,33 +73,36 @@ import type {
 
 const EXPECTED_ORDER_COUNT = 2086;
 
-type MonthCheck = {
-  label: string;
-  startDate: string;
-  endDate: string;
-  knownRevenue: number | null;
-  knownOrderCount: number | null;
+// Owner-verified measurements -- the ONLY source of truth this script is
+// allowed to compare against. Never derived by the script itself (section
+// 1.4, and this task's own instruction): a closed month absent from this
+// table is a failure to fix by measuring and asking the owner to confirm,
+// never by having the script fill in its own number.
+//
+// April-July: 2026-08-14 (plan docs/superpowers/plans/2026-08-14-revenue-audit.md).
+// August: 2026-09-01, after the owner asked why the table stopped at July
+// (docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
+// section 1.7) -- re-measured live before writing this, matching exactly:
+// 17.682.000d / 644 orders (OUT-001 476/10.557.000d, OUT-002 168/7.125.000d,
+// 31/31 sale days).
+const KNOWN_MONTHLY_BASELINES: Record<string, MonthlyBaseline | undefined> = {
+  "2026-04": { revenue: 2_190_000, orderCount: 53 },
+  "2026-05": { revenue: 7_675_000, orderCount: 302 },
+  "2026-06": { revenue: 22_157_000, orderCount: 793 },
+  "2026-07": { revenue: 18_661_000, orderCount: 664 },
+  "2026-08": { revenue: 17_682_000, orderCount: 644 },
 };
-
-// Owner-verified 2026-08-14 measurement (plan section 1). April-July are
-// closed history; August is still open and printed only.
-const MONTH_CHECKS: MonthCheck[] = [
-  { label: "2026-04", startDate: "2026-04-01", endDate: "2026-04-30", knownRevenue: 2_190_000, knownOrderCount: 53 },
-  { label: "2026-05", startDate: "2026-05-01", endDate: "2026-05-31", knownRevenue: 7_675_000, knownOrderCount: 302 },
-  { label: "2026-06", startDate: "2026-06-01", endDate: "2026-06-30", knownRevenue: 22_157_000, knownOrderCount: 793 },
-  { label: "2026-07", startDate: "2026-07-01", endDate: "2026-07-31", knownRevenue: 18_661_000, knownOrderCount: 664 },
-  { label: "2026-08", startDate: "2026-08-01", endDate: "2026-08-31", knownRevenue: null, knownOrderCount: null },
-];
 
 async function main(): Promise<void> {
   const { findAllNoCache } = await import("../lib/sheets_db");
   const { formatNumber } = await import("../lib/format");
+  const { saigonBucketKeys } = await import("../lib/report-time");
   const {
     checkHeaderArithmetic,
     checkLineSum,
     checkNoSupersededCompleted,
     checkPayments,
-    computeMonthlyTotal,
+    buildMonthlyReport,
     meetsMinimumOrderCount,
     checkLineGrossFormula,
     checkLineNetFormula,
@@ -551,24 +562,43 @@ async function main(): Promise<void> {
   if (h3Check4.length > 0) failures.push(`H3 check 4: ${h3Check4.length} line-variant-coverage violation(s).`);
 
   // --- Monthly table -----------------------------------------------------
-  console.log("\nMonthly (Asia/Saigon):");
-  for (const m of MONTH_CHECKS) {
-    const result = computeMonthlyTotal(orders, m.label, m.startDate, m.endDate);
-    if (m.knownRevenue === null) {
-      console.log(`  ${m.label}: ${formatNumber(result.total)}d (${result.orderCount} orders) -- open month, not gated.`);
+  // docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
+  // section 2: the list of months comes from the data (buildMonthlyReport
+  // derives it via saigonBucketKeys), not a hardcoded array -- a month
+  // absent from a hardcoded list used to be invisible, not merely
+  // unchecked. "Today" is Asia/Saigon, the same helper every other
+  // Saigon-calendar-date derivation in this codebase uses.
+  const todaySaigonDateKey = saigonBucketKeys(new Date().toISOString()).dateKey;
+  console.log(`\nMonthly (Asia/Saigon, today = ${todaySaigonDateKey}):`);
+  const monthlyReport = buildMonthlyReport(orders, KNOWN_MONTHLY_BASELINES, todaySaigonDateKey);
+  for (const m of monthlyReport) {
+    if (m.status === "open") {
+      console.log(`  ${m.label}: ${formatNumber(m.total)}d (${m.orderCount} orders) -- open month, not gated.`);
       continue;
     }
-    const revenueMatches = result.total === m.knownRevenue;
-    const countMatches = result.orderCount === m.knownOrderCount;
-    console.log(
-      `  ${m.label}: ${formatNumber(result.total)}d (${result.orderCount} orders) -- known: ${formatNumber(m.knownRevenue)}d ` +
-        `(${m.knownOrderCount} orders)${revenueMatches && countMatches ? ", matches" : ", GATE MISMATCH"}`,
-    );
-    if (!revenueMatches) {
-      failures.push(`Month ${m.label}: revenue ${formatNumber(result.total)}d does not match known ${formatNumber(m.knownRevenue)}d.`);
+    if (m.status === "closed_no_baseline") {
+      console.log(
+        `  ${m.label}: ${formatNumber(m.total)}d (${m.orderCount} orders) -- CLOSED, NO BASELINE.`,
+      );
+      failures.push(
+        `Month ${m.label} has closed (its last day is before ${todaySaigonDateKey}) but carries no known baseline in ` +
+          `KNOWN_MONTHLY_BASELINES. The script must not mint its own baseline -- measure this month's real revenue and ` +
+          `order count, have the owner confirm them against his own records, then add them to KNOWN_MONTHLY_BASELINES ` +
+          `in scripts/verify-revenue.ts.`,
+      );
+      continue;
     }
-    if (!countMatches) {
-      failures.push(`Month ${m.label}: order count ${result.orderCount} does not match known ${m.knownOrderCount}.`);
+    console.log(
+      `  ${m.label}: ${formatNumber(m.total)}d (${m.orderCount} orders) -- known: ${formatNumber(m.knownRevenue!)}d ` +
+        `(${m.knownOrderCount} orders)${m.status === "matches" ? ", matches" : ", GATE MISMATCH"}`,
+    );
+    if (m.status === "mismatch") {
+      if (m.total !== m.knownRevenue) {
+        failures.push(`Month ${m.label}: revenue ${formatNumber(m.total)}d does not match known ${formatNumber(m.knownRevenue!)}d.`);
+      }
+      if (m.orderCount !== m.knownOrderCount) {
+        failures.push(`Month ${m.label}: order count ${m.orderCount} does not match known ${m.knownOrderCount}.`);
+      }
     }
   }
 

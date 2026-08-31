@@ -5,6 +5,9 @@ import {
   checkNoSupersededCompleted,
   checkPayments,
   computeMonthlyTotal,
+  deriveSaigonMonthLabels,
+  isMonthClosed,
+  buildMonthlyReport,
   meetsMinimumOrderCount,
   checkLineGrossFormula,
   checkLineNetFormula,
@@ -194,6 +197,102 @@ describe("computeMonthlyTotal", () => {
     const order = makeOrder({ created_at: "2026-06-30T17:00:00.000Z", net_total: 5000 });
     const result = computeMonthlyTotal([order], "2026-06", "2026-06-01", "2026-06-30");
     expect(result.orderCount).toBe(0);
+  });
+});
+
+// docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
+// section 1.3: the old code iterated a hardcoded array, not the data --
+// September (or any month with no entry in the array) never appeared at
+// all, not even as an unchecked line. deriveSaigonMonthLabels is the fix
+// for that specific bug: the month list now comes from the orders
+// themselves.
+describe("deriveSaigonMonthLabels", () => {
+  it("returns every distinct Asia/Saigon month present in the orders, sorted, with no hardcoded list involved", () => {
+    const orders = [
+      makeOrder({ id: "a", created_at: "2026-04-15T10:00:00Z" }),
+      makeOrder({ id: "b", created_at: "2026-06-15T10:00:00Z" }),
+      makeOrder({ id: "c", created_at: "2026-09-01T01:00:00Z" }), // month a hardcoded array from before September existed could never have named
+      makeOrder({ id: "d", created_at: "2026-06-20T10:00:00Z" }), // duplicate month, must not repeat
+    ];
+    expect(deriveSaigonMonthLabels(orders)).toEqual(["2026-04", "2026-06", "2026-09"]);
+  });
+
+  it("returns an empty list for no orders", () => {
+    expect(deriveSaigonMonthLabels([])).toEqual([]);
+  });
+});
+
+describe("isMonthClosed", () => {
+  it("a month whose last Saigon day is before today is closed", () => {
+    expect(isMonthClosed("2026-08", "2026-09-01")).toBe(true);
+  });
+
+  it("the current month (today falls inside it) is not closed", () => {
+    expect(isMonthClosed("2026-09", "2026-09-01")).toBe(false);
+    expect(isMonthClosed("2026-09", "2026-09-30")).toBe(false);
+  });
+
+  it("a month is not closed on its own last calendar day (still running until the day ends)", () => {
+    expect(isMonthClosed("2026-08", "2026-08-31")).toBe(false);
+  });
+
+  it("handles a real leap-adjacent February boundary correctly (2028 is a leap year)", () => {
+    expect(isMonthClosed("2028-02", "2028-03-01")).toBe(true); // Feb 2028 has 29 days
+    expect(isMonthClosed("2028-02", "2028-02-29")).toBe(false);
+  });
+});
+
+// section 1.4/§3's central requirement: a closed month with no baseline
+// must fail the gate, never silently pass and never have the script
+// invent a number for itself.
+//
+// Confirmed red before the real fix, for the right reason (a wrong VALUE,
+// not a missing function): temporarily replaced buildMonthlyReport's
+// classification with the OLD script's actual behaviour for an
+// unrecognised month -- print only, never gate, the exact shape
+// MONTH_CHECKS's null-baseline branch had -- and this test failed because
+// the returned status was "open" instead of "closed_no_baseline". Restored
+// the real fix afterward.
+describe("buildMonthlyReport", () => {
+  const baselines = { "2026-06": { revenue: 30000, orderCount: 2 } };
+
+  it("a month with a matching baseline is reported as matches", () => {
+    const orders = [
+      makeOrder({ id: "a", created_at: "2026-06-10T10:00:00Z", net_total: 10000 }),
+      makeOrder({ id: "b", created_at: "2026-06-20T10:00:00Z", net_total: 20000 }),
+    ];
+    const report = buildMonthlyReport(orders, baselines, "2026-09-01");
+    expect(report).toEqual([
+      { label: "2026-06", total: 30000, orderCount: 2, status: "matches", knownRevenue: 30000, knownOrderCount: 2 },
+    ]);
+  });
+
+  it("a month with a baseline that disagrees is reported as mismatch, not silently accepted", () => {
+    const orders = [makeOrder({ id: "a", created_at: "2026-06-10T10:00:00Z", net_total: 99999 })];
+    const report = buildMonthlyReport(orders, baselines, "2026-09-01");
+    expect(report[0].status).toBe("mismatch");
+  });
+
+  it("a CLOSED month with no baseline is reported as closed_no_baseline, not open -- the third state the old code had no room for", () => {
+    const orders = [makeOrder({ id: "a", created_at: "2026-08-05T10:00:00Z", net_total: 15000 })];
+    const report = buildMonthlyReport(orders, {}, "2026-09-01"); // no 2026-08 baseline, and August is closed relative to 2026-09-01
+    expect(report).toEqual([
+      { label: "2026-08", total: 15000, orderCount: 1, status: "closed_no_baseline", knownRevenue: null, knownOrderCount: null },
+    ]);
+  });
+
+  it("the CURRENT (still open) month with no baseline is reported as open, not closed_no_baseline", () => {
+    const orders = [makeOrder({ id: "a", created_at: "2026-09-05T10:00:00Z", net_total: 15000 })];
+    const report = buildMonthlyReport(orders, {}, "2026-09-10"); // today is inside September
+    expect(report).toEqual([
+      { label: "2026-09", total: 15000, orderCount: 1, status: "open", knownRevenue: null, knownOrderCount: null },
+    ]);
+  });
+
+  it("a month absent from the data entirely never appears -- no phantom rows for a baseline with nothing sold", () => {
+    const orders = [makeOrder({ id: "a", created_at: "2026-06-10T10:00:00Z", net_total: 10000 })];
+    const report = buildMonthlyReport(orders, { "2026-07": { revenue: 0, orderCount: 0 } }, "2026-09-01");
+    expect(report.map(r => r.label)).toEqual(["2026-06"]);
   });
 });
 

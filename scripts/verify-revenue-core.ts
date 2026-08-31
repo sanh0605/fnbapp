@@ -9,7 +9,7 @@
  * prints the results these functions return.
  */
 
-import { toSaigonUtcRange } from "@/lib/report-time";
+import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/report-time";
 
 export interface RevenueOrder {
   id: string;
@@ -203,6 +203,95 @@ export function computeMonthlyTotal(
     }
   }
   return { label, total, orderCount };
+}
+
+// docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
+// section 2. The list of months to check must come from the data, not a
+// hardcoded array -- a month absent from a hardcoded list is invisible,
+// not merely unchecked (section 1.3's own distinction between the two
+// bugs). Reuses saigonBucketKeys (lib/report-time.ts, already used for
+// the sales chart's own month bucketing) so this cannot independently
+// drift from how every other Saigon-month derivation in the app works.
+export function deriveSaigonMonthLabels(orders: readonly RevenueOrder[]): string[] {
+  const labels = new Set<string>();
+  for (const o of orders) {
+    labels.add(saigonBucketKeys(o.created_at).monthKey);
+  }
+  return [...labels].sort();
+}
+
+// "Closed" (section 1.4): the month's own last calendar day, in Asia/
+// Saigon, is strictly before today's Saigon calendar date. Compared as
+// "YYYY-MM-DD" strings, which sort identically to date order -- no UTC
+// instant arithmetic, so there is no boundary-instant edge case to get
+// wrong the way computeMonthlyTotal's own range conversion has to guard
+// against. todaySaigonDateKey is caller-supplied (from
+// saigonBucketKeys(new Date().toISOString()).dateKey in the live script)
+// so this function stays pure and testable without mocking the clock.
+export function isMonthClosed(monthLabel: string, todaySaigonDateKey: string): boolean {
+  const [year, month] = monthLabel.split("-").map(Number);
+  const lastDay = new Date(year, month, 0).getDate(); // day 0 of next month
+  const lastDayKey = `${monthLabel}-${String(lastDay).padStart(2, "0")}`;
+  return lastDayKey < todaySaigonDateKey;
+}
+
+export interface MonthlyBaseline {
+  revenue: number;
+  orderCount: number;
+}
+
+export interface MonthlyCheckResult {
+  label: string;
+  total: number;
+  orderCount: number;
+  // "matches"/"mismatch": a known baseline exists, gated.
+  // "open": no baseline, month is still running -- printed only, per the
+  //   existing (pre-fix) behaviour for a null-baseline entry.
+  // "closed_no_baseline": the third state section 1.1 says the old code
+  //   had no room for -- a closed month nobody has measured and had the
+  //   owner confirm yet. Gated: the script must never mint its own
+  //   baseline (section 1.4 -- and this task's own instruction), so this
+  //   is always a failure, never a value to fall back on.
+  status: "matches" | "mismatch" | "open" | "closed_no_baseline";
+  knownRevenue: number | null;
+  knownOrderCount: number | null;
+}
+
+// One pass, used by both the live script and its tests: derive which
+// months exist in the data, compute each one's real total, and classify
+// it against the hardcoded baseline table (section 2's own split -- the
+// baselines stay a hardcoded lookup, owner-confirmed numbers with no
+// business deriving themselves from data; only the LIST of months to
+// check is data-driven now).
+export function buildMonthlyReport(
+  orders: readonly RevenueOrder[],
+  knownBaselines: Record<string, MonthlyBaseline | undefined>,
+  todaySaigonDateKey: string,
+): MonthlyCheckResult[] {
+  return deriveSaigonMonthLabels(orders).map((label): MonthlyCheckResult => {
+    const [year, month] = label.split("-");
+    const startDate = `${label}-01`;
+    const lastDay = new Date(Number(year), Number(month), 0).getDate();
+    const endDate = `${label}-${String(lastDay).padStart(2, "0")}`;
+    const { total, orderCount } = computeMonthlyTotal(orders, label, startDate, endDate);
+
+    const known = knownBaselines[label];
+    if (known) {
+      const matches = total === known.revenue && orderCount === known.orderCount;
+      return {
+        label, total, orderCount,
+        status: matches ? "matches" : "mismatch",
+        knownRevenue: known.revenue,
+        knownOrderCount: known.orderCount,
+      };
+    }
+    return {
+      label, total, orderCount,
+      status: isMonthClosed(label, todaySaigonDateKey) ? "closed_no_baseline" : "open",
+      knownRevenue: null,
+      knownOrderCount: null,
+    };
+  });
 }
 
 // Trap #1 (measured 2026-08-14): Supabase caps a select at 1000 rows; a
