@@ -20,7 +20,6 @@ const REF: ReferenceData = {
     code: "", start_date: "2026-05-31T17:00:00.000Z", end_date: "2026-06-30T16:59:00.000Z",
     status: "ACTIVE", brand_id: "", min_order_value: "0",
   }],
-  base_ingredients: [],
 };
 
 beforeAll(() => {

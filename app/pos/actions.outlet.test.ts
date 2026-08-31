@@ -45,7 +45,6 @@ const REF_TABLES: Record<string, any[]> = {
   Modifiers: [],
   Promotions: [],
   Recipes: [],
-  Base_Ingredients: [],
 };
 
 const baseCart = {

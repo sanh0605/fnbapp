@@ -475,19 +475,20 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       categories,
       modifiers,
       promotions,
-      baseIngredients,
     ] = await Promise.all([
       findAll("Brands"), findAll("Products"), findAll("Product_Variants"),
       findAll("Product_Categories"), findAll("Modifiers"), findAll("Promotions"),
-      findAll("Base_Ingredients"),
     ]);
 
     // 4. Build edited order (preserves sale time, increments version). As of
     // Phase 2 (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
-    // this no longer resolves a recipe, so Recipes is not fetched above.
+    // this no longer resolves a recipe, so Recipes is not fetched above. As
+    // of 2026-09-01 (docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md)
+    // Base_Ingredients is not fetched either -- it was loaded and passed in
+    // on every edit but never read inside buildEditedOrderFromCart.
     const built = buildEditedOrderFromCart(
       { ...input.cart, actor },
-      { brands, products, variants, categories, modifiers, promotions, base_ingredients: baseIngredients },
+      { brands, products, variants, categories, modifiers, promotions },
       { order: oldOrderV2, lines: oldLinesV2 },
     );
     const paymentPlan = planEditedOrderPayments(

@@ -31,7 +31,6 @@ const REF: ReferenceData = {
       min_order_value: "0",
     },
   ],
-  base_ingredients: [],
 };
 
 beforeAll(() => {
@@ -384,7 +383,18 @@ describe("buildOrderFromCart", () => {
     expect(result.lines.length).toBe(2);
   });
 
-  it("recipe_snapshot_json is always the inert no-recipe shape (Phase 2, recipes removed from the sale path)", () => {
+  // docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md section 2:
+  // recipe_snapshot_json stopped being written 2026-09-01 -- no longer even
+  // the inert no-recipe shell this test used to assert (Phase 2 had already
+  // emptied its content; this task stops writing it at all). An empty
+  // string, not "{}" or a JSON shell -- it round-trips through
+  // parseJsonColumns (pos-order-transaction.ts/order-edit-transaction.ts)
+  // to {}, matching the column's own NOT NULL default. Confirmed red on
+  // the pre-fix code before this change: the old assertion (JSON.parse
+  // producing the empty-ingredients shell) still passed then, since the
+  // write side hadn't changed -- this replacement asserts the opposite
+  // value on purpose, not a missing function.
+  it("recipe_snapshot_json is an empty string -- no shell, no recipe, nothing written", () => {
     const refWithModifier: ReferenceData = {
       ...REF,
       modifiers: [{ id: "MOD-004", name: "Trân châu trắng", price: "5000", status: "ACTIVE" }],
@@ -404,13 +414,25 @@ describe("buildOrderFromCart", () => {
       actor: { id: "U1", name: "Test" },
     }, refWithModifier);
 
-    const recipeSnap = JSON.parse(result.lines[0].recipe_snapshot_json);
-    expect(recipeSnap.variant).toEqual({
-      target_type: "PRODUCT_VARIANT",
-      target_id: "VAR-031",
-      ingredients: [],
-    });
-    expect(recipeSnap.modifiers).toEqual([]);
+    expect(result.lines[0].recipe_snapshot_json).toBe("");
+  });
+
+  it("no longer returns resolvedRecipes -- nothing consumed it (section 1.3, 0 results outside the two files that produced it)", () => {
+    const result = buildOrderFromCart({
+      brand_id: "BR-002",
+      outlet_id: "OUT-002",
+      items: [{
+        product_id: "PROD-024",
+        variant_id: "VAR-031",
+        qty: 1,
+        modifiers: [],
+        manual_item_discount: { value: 0, type: "VND" },
+      }],
+      payment_method: "CASH",
+      actor: { id: "U1", name: "Test" },
+    }, REF);
+
+    expect(result).not.toHaveProperty("resolvedRecipes");
   });
 
   it("3-discount coexistence: manual item, system promo, and custom order discount all active", () => {

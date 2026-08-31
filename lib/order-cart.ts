@@ -23,11 +23,9 @@ import type {
   OrderV2,
   OrderLineV2,
   PromotionSnapshot,
-  RecipeSnapshot,
   ProductSnapshot,
   VariantSnapshot,
   ModifierSnapshot,
-  ModifierRecipeEntry,
 } from "@/lib/order-types";
 
 export interface CartItemInput {
@@ -93,7 +91,6 @@ export interface ReferenceData {
   categories: any[];
   modifiers: any[];
   promotions: any[];
-  base_ingredients: any[];
 }
 
 interface BuiltLine {
@@ -105,7 +102,6 @@ export interface BuildOrderResult {
   order: OrderV2;
   lines: OrderLineV2[];
   resolvedPromotion: PromotionSnapshot | null;
-  resolvedRecipes: RecipeSnapshot[]; // per line, same order as lines
   payments: BuiltPayment[]; // empty when the order uses a single payment_method
 }
 
@@ -222,7 +218,6 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
     order,
     lines: builtLines.map(l => l.spec),
     resolvedPromotion: promoSnapshot,
-    resolvedRecipes: builtLines.map(l => JSON.parse(l.spec.recipe_snapshot_json) as RecipeSnapshot),
     payments,
   };
 }
@@ -357,18 +352,16 @@ function buildLine(
   const modifierSnap = buildModifierSnapshotsFromCart(item.modifiers, ref.modifiers);
 
   // Recipes were removed from the sale path (Phase 2,
-  // docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md):
-  // no recipe is resolved or looked up any more. recipe_snapshot_json keeps
-  // being written on every new line, always this same inert shape -- the
-  // column and the 3.402 pre-existing values stay exactly as they are.
-  const lineRecipeSnap = {
-    variant: {
-      target_type: "PRODUCT_VARIANT" as const,
-      target_id: item.variant_id,
-      ingredients: [] as RecipeSnapshot["ingredients"],
-    },
-    modifiers: [] as ModifierRecipeEntry[],
-  };
+  // docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md).
+  // recipe_snapshot_json itself stopped being written 2026-09-01
+  // (docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md) -- no
+  // one has read a line's own recipe_snapshot_json since Phase 2
+  // (resolvedRecipes/order-cart.ts:225's old readback had 0 consumers
+  // outside this file), so the inert shell this used to build is gone,
+  // not just left empty. The column itself stays (NOT NULL, default
+  // '{}'::jsonb) -- an empty string here becomes {} once it passes
+  // through parseJsonColumns in pos-order-transaction.ts/
+  // order-edit-transaction.ts, matching the column's own default.
 
   // Gross
   const gross = (variantSnap.price + modifierSnap.reduce((s, m) => s + m.price * m.qty, 0)) * item.qty;
@@ -402,7 +395,7 @@ function buildLine(
     order_discount_allocation: 0, // filled in by caller
     net_line_total: 0, // filled in by caller
     cost_at_sale: 0, // filled in by server action (Task 5)
-    recipe_snapshot_json: JSON.stringify(lineRecipeSnap),
+    recipe_snapshot_json: "",
     promo_discount_reason: promoDiscount > 0 ? (resolvedPromo?.id || "SNAPSHOT") : "",
     manual_discount_reason: manualItem > 0 ? "MANUAL_CASHIER" : "",
   };

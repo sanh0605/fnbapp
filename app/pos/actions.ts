@@ -48,7 +48,7 @@ export async function submitOrderV2(
     const actor = auth.actor;
 
     // 3. Load reference data (cached where possible)
-    const [outlets, brands, products, variants, categories, modifiers, promotions, baseIngredients] = await Promise.all([
+    const [outlets, brands, products, variants, categories, modifiers, promotions] = await Promise.all([
       findAll("Outlets"),
       findAll("Brands"),
       findAll("Products"),
@@ -56,7 +56,6 @@ export async function submitOrderV2(
       findAll("Product_Categories"),
       findAll("Modifiers"),
       findAll("Promotions"),
-      findAll("Base_Ingredients"),
     ]);
 
     // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 5/6:
@@ -71,7 +70,7 @@ export async function submitOrderV2(
 
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
     const built = buildOrderFromCart({ ...resolvedInput, actor }, {
-      brands, products, variants, categories, modifiers, promotions, base_ingredients: baseIngredients,
+      brands, products, variants, categories, modifiers, promotions,
     });
     const saleTime = built.order.created_at;
 
@@ -82,7 +81,10 @@ export async function submitOrderV2(
     // the till for a result nothing reads anymore. As of Phase 2
     // (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
     // the Recipes fetch itself is gone too -- buildOrderFromCart no longer
-    // resolves a recipe at all.
+    // resolves a recipe at all. 2026-09-01
+    // (docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md): the
+    // Base_Ingredients fetch above it is gone too -- it was loaded and
+    // passed in on every sale but never read inside buildOrderFromCart.
 
     // 5. The database allocates order_no under a transaction lock, keyed by
     // outlet+date (section 4), not brand -- outletCode replaces brandCode.

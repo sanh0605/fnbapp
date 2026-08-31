@@ -106,7 +106,6 @@ export function buildEditedOrderFromCart(
     order: editedOrder,
     lines: editedLines,
     resolvedPromotion: built.resolvedPromotion,
-    resolvedRecipes: built.resolvedRecipes,
     payments: built.payments,
   };
 }
