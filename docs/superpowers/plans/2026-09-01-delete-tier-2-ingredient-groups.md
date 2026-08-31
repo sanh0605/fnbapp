@@ -144,17 +144,47 @@ dữ liệu.** Xoá trước là màn hình Hàng Mua Vào hỏng ngay (§1.2).
 4. Sửa `apply_stocktake_session_atomic` — bỏ vòng lặp gộp theo nhóm. **Một
    migration, không chạy.**
 
-### 2.3 Giữ hay xoá cột `base_ingredient_id` — giữ, và đây là lý do
+### 2.3 Xoá luôn cột `base_ingredient_id` — chủ quán chốt 01/09
 
-**Giữ nguyên cột và giá trị trong đó.**
+**Tôi đã đề nghị giữ cột lại làm bản ghi cho lần dựng lại. Chủ quán bác:**
 
-Chủ quán nói *"sau này cần thì dựng lại sau cho đúng chuẩn logic"*. Cột này là
-**bản ghi duy nhất trong dữ liệu sống** về việc mặt hàng nào từng thuộc nhóm
-nào. Xoá nó là vứt đúng thứ cần cho lần dựng lại.
+> *"Xóa nó đi và anh sẽ tự nối nó lại nếu sau này có dựng lại."*
 
-**Nhưng phải thôi coi nó là liên kết**: không màn hình nào được dùng nó để tra
-cứu, và **phải ghi chú ngay tại cột** rằng nó trỏ tới bảng đã xoá. Một mã trỏ
-vào chỗ trống mà không ai giải thích là cái bẫy cho người sau.
+**Nên bản đồ ánh xạ 52 mặt hàng → nhóm chỉ còn sống trong file sao lưu ở §2.1.**
+Đó là lý do §2.1 bắt buộc phải chứa bản đồ đó và phải chứng minh đọc lại được —
+nếu file hỏng thì không còn nguồn nào khác.
+
+### 2.3b Nhưng xoá cột là việc LỚN HƠN xoá bảng, và nó chạm đường tiền
+
+**Đo 01/09 — cột này với xa hơn cái bảng nhiều:**
+
+| | Bảng `base_ingredients` | Cột `base_ingredient_id` |
+|---|---:|---:|
+| File mã nguồn dùng | 11 (2 là chú thích) | **11** |
+| **Hàm máy chủ SỐNG dùng** | **1** | **4** |
+
+Bốn hàm đó: `apply_stocktake_session_atomic`, `save_stocktake_line_atomic`,
+**`create_issue_slip_atomic`**, **`reverse_manual_issue_atomic`**.
+
+**Hai cái sau là phiếu xuất kho — đường duy nhất sinh giá vốn hằng ngày.** Xoá
+cột mà chưa sửa chúng là **mọi phiếu xuất hỏng**, đúng loại sự cố `0076` ngày
+30/08.
+
+**Phía TypeScript thì đỡ hơn:** `lib/manual-issue-transaction.ts` đọc cột này ra
+bằng `|| ""`, nên thiếu thì thành chuỗi rỗng chứ không ném lỗi. **Phải kiểm lại
+điều này**, đừng tin câu vừa viết.
+
+### 2.3c Tách làm hai bước, không gộp
+
+**Bước 1 — xoá bảng** (§2.1, 2.2, 2.4). Một hàm máy chủ phải sửa.
+
+**Bước 2 — xoá cột.** Bốn hàm máy chủ phải sửa, hai trong đó là phiếu xuất kho.
+**Mỗi hàm một lần lưu, phiếu xuất làm sau cùng**, đúng kỷ luật giai đoạn C. Chủ
+quán duyệt riêng, và phải bán/xuất thử thật giữa hai bước.
+
+**Vì sao không gộp:** gộp thì một lần đẩy vừa đụng danh mục vừa đụng đường giá
+vốn, và nếu có gì hỏng thì không biết tại nửa nào. Tách ra thì mỗi bước tự đứng
+được, và bước 1 không đụng tiền chút nào.
 
 ### 2.4 Xoá dữ liệu
 
