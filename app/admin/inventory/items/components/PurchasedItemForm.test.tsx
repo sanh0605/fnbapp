@@ -381,11 +381,17 @@ describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-2
     expect(document.body.textContent).not.toContain("Không quản lý tồn kho");
   });
 
-  it("does not appear for Nguyên liệu (RAW) -- inherits the decision from its ingredient instead", async () => {
+  // docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md
+  // section 1.2/2: the tier-2 ingredient groups (base_ingredients) are
+  // going away, so RAW can no longer only inherit this decision from its
+  // group -- it needs its own checkbox, the same as CONSUMABLE. Confirmed
+  // red against the pre-fix code before this task started (the checkbox
+  // was absent, not merely differently labelled).
+  it("appears for Nguyên liệu (RAW) -- the group it used to inherit from is going away", async () => {
     await openForm();
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
     await setSelectValue(categorySelect, "NHH-001");
 
-    expect(document.body.textContent).not.toContain("Không quản lý tồn kho");
+    expect(document.body.textContent).toContain("Không quản lý tồn kho");
   });
 });

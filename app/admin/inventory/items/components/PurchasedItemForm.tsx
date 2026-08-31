@@ -480,9 +480,9 @@ export function PurchasedItemForm({
             </div>
           )}
 
-          {/* 2026-08-21: CONSUMABLE only. RAW inherits the decision from its
-              ingredient's own is_non_inventory (BR-COGS-007), and two
-              sources for one answer is how they drift apart. Narrowed from
+          {/* 2026-08-21: originally CONSUMABLE only -- RAW inherited the
+              decision from its ingredient's own is_non_inventory
+              (BR-COGS-007) instead of setting it here. Narrowed from
               CONSUMABLE-or-EQUIPMENT to CONSUMABLE-only on 2026-08-26
               (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
               once equipment is excluded from stocktake by category, this
@@ -493,8 +493,19 @@ export function PurchasedItemForm({
               equipment must always be depreciated, never expensed on
               purchase. handleSubmit forces is_non_inventory to false for
               equipment regardless, but hiding the control here is what
-              keeps that forcing from ever being a surprise. */}
-          {isConsumable && (
+              keeps that forcing from ever being a surprise. That reasoning
+              is unchanged for EQUIPMENT.
+
+              Reopened for RAW on 2026-08-31
+              (docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md):
+              the owner decided 2026-08-29 to remove the tier-2 ingredient
+              groups, so a RAW item will soon have no group left to inherit
+              this decision from. The stocktake/issue-slip exclusion checks
+              are additive (item flag OR group flag), so both sources can
+              coexist safely until the groups are actually removed -- this
+              does not yet retire the group-level flag, only adds the
+              item-level one RAW was missing. */}
+          {(isConsumable || isRaw) && (
             <label
               htmlFor={`${formId}-isNonInventory`}
               className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px]"
