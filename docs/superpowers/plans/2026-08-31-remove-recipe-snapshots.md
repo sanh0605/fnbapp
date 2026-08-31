@@ -80,16 +80,71 @@ xoá. Trước là máy trả lời ngay; sau là tra tay hai bước.
 - **Có ai xuất báo cáo nào đọc cột này qua đường khác không** — mới tra trong
   `app/` và `lib/`, chưa tra `scripts/`.
 
+## 1b. Đo lại 01/09 — số đã đổi, và có thêm một thứ cùng họ
+
+**Con số trong §1.6 là của 31/08 và đã cũ. Đừng dùng lại.**
+
+| | 31/08 | **01/09** |
+|---|---:|---:|
+| Dòng đơn | 3.445 | **3.454** |
+| Có bản sao công thức | 3.444 | **3.453** |
+| Mã dòng khác nhau | 3.445 | **3.454** |
+| Cặp trùng trong cùng đơn | 0 | **0** |
+
+Chênh 9 dòng vì chủ quán vẫn bán. **Người thực thi phải đo lại lần nữa** — mấy
+con số này cũng sẽ cũ.
+
+### 1b.1 Trong 3.453 bản sao, chỉ 3.182 có nội dung thật
+
+| Loại | Số dòng |
+|---|---:|
+| Có danh sách nguyên liệu thật | **3.182** |
+| **Vỏ rỗng** (`ingredients: []`) | **271** |
+
+**271 vỏ rỗng trải từ 28/06 đến 31/08**, không dồn vào một ngày — nên chúng là
+các món **vốn chưa từng có công thức**, không phải hậu quả của việc xoá công
+thức hôm 31/08. Nói rõ để không ai tưởng đây là hỏng hóc mới.
+
+### 1b.2 Một trường chết cùng họ, cùng file, trên cùng đường tiền
+
+`lib/order-cart.ts:96` khai báo `base_ingredients: any[]` trong hình dạng dữ
+liệu đầu vào. **Không dòng nào trong file đọc nó** — tra cả file ra đúng một kết
+quả, chính dòng khai báo.
+
+Nhưng hai chỗ gọi **vẫn nạp cả bảng và truyền vào**:
+
+| Chỗ gọi | Chạy khi nào |
+|---|---|
+| `app/pos/actions.ts` | **Mỗi lần bán một ly** |
+| `app/admin/orders/actions.ts` | **Mỗi lần sửa một đơn** |
+
+Nghĩa là mỗi lần thu tiền, máy tải cả bảng nhóm nguyên liệu rồi vứt đi.
+
+**Vì sao gộp vào đợt này thay vì làm riêng:** cùng một file, cùng một loại rác
+(máy móc công thức đã chết), và cùng đường tiền — tách ra là phải thử đường bán
+hàng hai lần cho hai thay đổi một dòng. **Và nó là chỗ chặn cuối cùng của việc
+xoá nhóm nguyên liệu trên đường tiền.**
+
+**Vẫn còn 10 file khác đọc bảng nhóm** — đợt này không đụng. Xoá nhóm là việc
+riêng, và còn chặn.
+
 ## 2. Thay đổi
 
 1. **Xoá nội dung cột trên 3.444 dòng.** Đặt về rỗng, **giữ nguyên cột** — xoá
    cột là việc khác và không cần thiết.
 2. **Thôi ghi tiếp**: `order-cart.ts:405` không ghi nữa, và gỡ `resolvedRecipes`
    cùng chuỗi chuyền của nó, vì không ai tiêu thụ.
-3. **Không đụng cột nào khác** của dòng đơn.
+3. **Gỡ trường chết `base_ingredients`** khỏi `lib/order-cart.ts:96` và khỏi
+   hai chỗ gọi ở `app/pos/actions.ts` và `app/admin/orders/actions.ts` — thôi
+   nạp cả bảng trên mỗi lần bán và mỗi lần sửa đơn (§1b.2).
+4. **Không đụng cột nào khác** của dòng đơn.
 
 ## 3. Kiểm chứng
 
+- **Đo lại §1b TRƯỚC khi chạy.** Con số 01/09 cũng sẽ cũ; quán vẫn bán.
+- **Đường bán và đường sửa đơn phải chạy được sau khi gỡ trường chết** — hai
+  chỗ gọi ở §1b.2 đều nằm trên đường tiền. Bán thử một ly và sửa thử một đơn
+  bằng script trên dữ liệu thật, không chỉ chạy phép kiểm.
 - **Ba con số phải đứng yên** — chủ quán hỏi thẳng chuyện này: **3.445 dòng,
   3.445 mã khác nhau, 0 cặp trùng**. Đo trước và sau.
 - **Doanh thu đứng yên**, bốn tháng đã chốt khớp từng đồng.
