@@ -4,6 +4,22 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-08-31 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Move the non-inventory flag from ingredient groups onto the items (code shipped, backfill not run)
+
+Implements docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md (OPEN-ITEMS 50/75). Two changes: opened the "Không quản lý tồn kho" checkbox for RAW (Nguyên liệu) in PurchasedItemForm.tsx, and wrote scripts/flag-non-inventory-purchased-items.ts to set purchased_items.is_non_inventory=true on the two items (SPM-005 Đá viên, SPM-052 Khoai lang) currently excluded from stocktake only through their ingredient group. Neither the group flag nor the ingredient groups themselves are touched.
+
+**Critique before coding resolved section 1.6's open questions rather than finding new gaps in the plan.** The P&L's "Nguyên liệu mua dùng ngay" line -- the plan's own biggest named risk -- does not exist yet: Plan J batch 5 (the P&L itself) has never shipped, confirmed against this file's own earlier entries stating nothing reads that column for money. Today the flag only controls stocktake eligibility, so this change has zero monetary effect right now. app/admin/inventory/actions.ts's is_non_inventory filter (loadRealtimeStock) only reads base_ingredients' own flag for the realtime-stock display, never purchased_items -- unaffected. lib/historical/history-ops/negative-stock-resolution.ts has zero callers outside its own test -- dead, not a live concern. The 5 empty-of-items flagged groups remain a real open question for the owner, correctly left untouched (out of this task's stated scope).
+
+Figures re-measured live, not trusted from the plan (which itself already flagged its own numbers as hours old): SPM-052 Khoai lang -- 23 completed purchase lines, 2.126.000đ, unchanged from the plan's own figure. SPM-005 Đá viên -- 0 lines. The additive union of non-inventory items (item flag OR group flag) is exactly 9 both today and, per the backfill script's own before/after check, will still be the same 9 ids after the write.
+
+Test-driven per plan section 3: the existing "does not appear for Nguyên liệu (RAW)" test asserted the wrong behavior going forward -- flipped to assert presence, confirmed red on the pre-fix component (the checkbox was entirely absent, not misvalued), then green after the render-condition fix.
+
+**Backfill script written and dry-run verified, --apply not run** -- the owner approves the write separately (CLAUDE.md section 2). Checked purchased_items' only trigger first (touch_updated_at, no queue, no cascade) per the bulk-data-change discipline.
+
+Gates: tsc 0 errors, vitest 217 files / 1535 tests green, check-rules-current clean, npm run build succeeds. Not pushed.
+
+---
+
 ## 2026-08-31 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Retire the stock ledger, Phase C (8 migrations written, not applied)
 
 Implements docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase C (OPEN-ITEMS 80). Eight functions, one commit each, POS last per instruction: save_purchase_order_atomic, apply_stocktake_session_atomic, void_order_atomic, supersede_order_v2_atomic, reverse_stocktake_session_atomic, submit_stock_adjustment_atomic, approve_stock_adjustment_atomic, create_pos_order_atomic (+ create_pos_order_atomic_unvalidated_0025). Migrations 0078-0085, written and committed, none applied -- applying to production is the owner's own separate approval, and code has to deploy before any of these migrations per section 5.7 (the opposite ordering from migration 0076's incident: the removed parameter has a default on the old signature, so new code that stops sending it still resolves against the still-live old function).
