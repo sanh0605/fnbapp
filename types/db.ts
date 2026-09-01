@@ -152,7 +152,6 @@ export interface DBPurchasedItem {
   id: string;
   name: string;
   item_category_id: string;
-  base_ingredient_id: string;
   default_unit_id: string;
   status: string;
   created_at: string;

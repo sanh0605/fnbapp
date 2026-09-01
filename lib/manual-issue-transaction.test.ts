@@ -64,7 +64,7 @@ describe("createIssueSlipAtomic", () => {
     expect(result.lines).toHaveLength(2);
     expect(result.lines[0]).toEqual({
       issueId: "ISS-00001",
-      purchasedItemId: "SPM-033", baseIngredientId: "ING-028",
+      purchasedItemId: "SPM-033",
       baseQuantity: 1000, onHandAfter: 3100,
     });
   });
@@ -105,7 +105,7 @@ describe("createIssueSlipAtomic", () => {
 
     expect(result.lines[0]).toEqual({
       issueId: "ISS-00003",
-      purchasedItemId: "SPM-CUP", baseIngredientId: "",
+      purchasedItemId: "SPM-CUP",
       baseQuantity: 50, onHandAfter: 450,
     });
   });
@@ -194,7 +194,6 @@ describe("reverseManualIssueAtomic", () => {
       reversalIssueId: "ISS-00002",
       reversesIssueId: "ISS-00001",
       purchasedItemId: "SPM-033",
-      baseIngredientId: "ING-028",
       baseQuantity: -500,
       issuedAt: "2026-08-08T11:21:17+07:00",
       createdById: "admin-1",
@@ -231,7 +230,6 @@ describe("reverseManualIssueAtomic", () => {
       reversalIssueId: "ISS-00004",
       reversesIssueId: "ISS-00003",
       purchasedItemId: "SPM-CUP",
-      baseIngredientId: "",
       baseQuantity: -50,
       issuedAt: "2026-08-30T10:00:00+07:00",
       createdById: "admin-1",

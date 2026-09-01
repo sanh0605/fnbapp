@@ -83,7 +83,6 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
 
   const name = formData.get("name") as string;
   const item_category_id = formData.get("item_category_id") as string;
-  const base_ingredient_id = formData.get("base_ingredient_id") as string;
   const unitsJson = formData.get("units_json") as string;
   const base_unit = formData.get("base_unit") as string;
   const is_non_inventory = formData.get("is_non_inventory") === "true";
@@ -121,7 +120,6 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
       id,
       name,
       item_category_id,
-      base_ingredient_id: base_ingredient_id || "",
       is_non_inventory,
       duplicate_warning_confirmed: wasWarningConfirmed,
       duplicate_warning_confirmed_by: wasWarningConfirmed ? auth.actor.name : null,

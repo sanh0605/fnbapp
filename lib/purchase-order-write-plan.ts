@@ -30,7 +30,6 @@ type PurchaseOrderLineWriteInput = {
 
 type PurchasedItemWriteInput = {
   id: string;
-  base_ingredient_id?: string;
 };
 
 type ConversionWriteInput = {

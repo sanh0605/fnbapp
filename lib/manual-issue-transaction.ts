@@ -3,7 +3,6 @@ import { getSupabaseClient } from "@/lib/supabase";
 export type IssueSlipLineResult = {
   issueId: string;
   purchasedItemId: string;
-  baseIngredientId: string;
   baseQuantity: number;
   onHandAfter: number;
 };
@@ -54,7 +53,6 @@ function parseIssueSlipResult(data: unknown): IssueSlipResult {
     lines?: Array<{
       issue_id?: string;
       purchased_item_id?: string;
-      base_ingredient_id?: string;
       base_quantity?: number;
       on_hand_after?: number;
     }>;
@@ -75,7 +73,6 @@ function parseIssueSlipResult(data: unknown): IssueSlipResult {
     return {
       issueId: line.issue_id,
       purchasedItemId: line.purchased_item_id || "",
-      baseIngredientId: line.base_ingredient_id || "",
       baseQuantity: Number(line.base_quantity) || 0,
       onHandAfter: Number(line.on_hand_after) || 0,
     };
@@ -94,7 +91,6 @@ export type ReversalResult = {
   reversalIssueId: string;
   reversesIssueId: string;
   purchasedItemId: string;
-  baseIngredientId: string;
   baseQuantity: number;
   issuedAt: string;
   createdById: string;
@@ -181,7 +177,6 @@ function parseReversalResult(data: unknown): ReversalResult {
     reversal_issue_id?: string;
     reverses_issue_id?: string;
     purchased_item_id?: string;
-    base_ingredient_id?: string;
     base_quantity?: number;
     issued_at?: string;
     created_by_id?: string;
@@ -197,7 +192,6 @@ function parseReversalResult(data: unknown): ReversalResult {
     reversalIssueId: result.reversal_issue_id,
     reversesIssueId: result.reverses_issue_id,
     purchasedItemId: result.purchased_item_id || "",
-    baseIngredientId: result.base_ingredient_id || "",
     baseQuantity: Number(result.base_quantity) || 0,
     issuedAt: result.issued_at || "",
     createdById: result.created_by_id || "",

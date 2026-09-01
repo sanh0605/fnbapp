@@ -101,11 +101,10 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     );
   });
 
-  it("still creates the conversion for a RAW item carrying base_ingredient_id, unaffected by the relaxed gate", async () => {
+  it("still creates the conversion for a RAW item, unaffected by the relaxed gate", async () => {
     const formData = new FormData();
     formData.set("name", "Sữa tươi Vinamilk");
     formData.set("item_category_id", "NHH-001");
-    formData.set("base_ingredient_id", "ING-020");
     formData.set("base_unit", "U-ML");
     formData.set("units_json", JSON.stringify([{ name: "U-HOP", conversion_rate: "1000" }]));
 
@@ -113,25 +112,22 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
 
     expect(res.error).toBeUndefined();
     expect(mocks.insert).toHaveBeenCalledWith(
-      "Purchased_Items",
-      expect.objectContaining({ base_ingredient_id: "ING-020" }),
-    );
-    expect(mocks.insert).toHaveBeenCalledWith(
       "UOM_Conversions",
       expect.objectContaining({ base_unit: "U-ML", conversion_rate: "1000" }),
     );
   });
 
-  // docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
-  // section 3: "tạo thử một mặt hàng nguyên liệu mới sau khi gỡ ô liên kết
-  // -- đây là chỗ vỡ đầu tiên" -- this is that check. The real form no
-  // longer sends base_ingredient_id for a RAW item at all (the field and
-  // its required-ness were removed 2026-09-01); creation must still
-  // succeed, with an empty base_ingredient_id, not fail or invent one.
-  it("creates a RAW item with no base_ingredient_id sent at all -- the group-link field is gone", async () => {
+  // docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md
+  // section 2.1: base_ingredient_id is no longer read from the form or
+  // written to the insert payload at all -- the group-link field was
+  // removed from the UI in step 1 (2026-09-01), and the column itself is
+  // dropped by this task's migration (not yet applied). Creation must
+  // still succeed, and never carry the key.
+  it("creates a RAW item and never writes base_ingredient_id, even if a stray field is submitted", async () => {
     const formData = new FormData();
     formData.set("name", "Trứng gà mới");
     formData.set("item_category_id", "NHH-001");
+    formData.set("base_ingredient_id", "ING-STRAY"); // ignored -- no live form sends this anymore
     formData.set("base_unit", "U-QUA");
     formData.set("units_json", JSON.stringify([{ name: "U-HOP", conversion_rate: "10" }]));
 
@@ -140,8 +136,10 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     expect(res.error).toBeUndefined();
     expect(mocks.insert).toHaveBeenCalledWith(
       "Purchased_Items",
-      expect.objectContaining({ base_ingredient_id: "" }),
+      expect.not.objectContaining({ base_ingredient_id: expect.anything() }),
     );
+    const [, payload] = mocks.insert.mock.calls.find(([sheet]) => sheet === "Purchased_Items")!;
+    expect(Object.prototype.hasOwnProperty.call(payload, "base_ingredient_id")).toBe(false);
     expect(mocks.insert).toHaveBeenCalledWith(
       "UOM_Conversions",
       expect.objectContaining({ base_unit: "U-QUA", conversion_rate: "10" }),

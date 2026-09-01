@@ -37,7 +37,7 @@ describe("buildPurchaseOrderWritePlan", () => {
       order,
       lines,
       purchasedItems: [
-        { id: "SPM-001", base_ingredient_id: "ING-001" },
+        { id: "SPM-001" },
       ],
       conversions: [
         {
@@ -70,7 +70,7 @@ describe("buildPurchaseOrderWritePlan", () => {
       order: { ...order, status: "DRAFT" },
       lines,
       purchasedItems: [
-        { id: "SPM-001", base_ingredient_id: "ING-001" },
+        { id: "SPM-001" },
       ],
       conversions: [
         {
@@ -149,7 +149,7 @@ describe("buildPurchaseOrderWritePlan", () => {
           },
         ],
         purchasedItems: [
-          { id: "SPM-001", base_ingredient_id: "ING-001" },
+          { id: "SPM-001" },
         ],
         conversions: [
           {
@@ -180,7 +180,7 @@ describe("buildPurchaseOrderWritePlan", () => {
           },
         ],
         purchasedItems: [
-          { id: "SPM-001", base_ingredient_id: "ING-001" },
+          { id: "SPM-001" },
         ],
         conversions: [],
         createdAt: "2026-07-01T04:00:00.000Z",
