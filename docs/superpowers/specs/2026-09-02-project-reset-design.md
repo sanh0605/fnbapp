@@ -184,6 +184,28 @@ Chủ quán nói không hiểu câu hỏi. Giải thích lại bằng ví dụ t
 quyết vì đây là việc kỹ thuật**: đợt 5 gỡ dòng địa chỉ chết, giữ nguyên lý do,
 không đụng một dòng code chạy nào. Chủ quán duyệt cùng lúc với duyệt xoá.
 
+### Vòng 5 — tự soát và câu hỏi kế toán
+
+**2.20 Chủ quán yêu cầu tự soát bản thiết kế, và hỏi: sau này thêm kế toán thì
+xử lý thế nào — dòng tiền thì anh đã yêu cầu rồi.** Tự soát ra bốn chỗ:
+
+1. Câu "bỏ kế toán, nhân sự" ở vòng 4 **sai** — có bản thiết kế dòng tiền đang
+   tạm gác (31/08) và nhóm chi phí đã chốt (19/08). Sửa ở §3.1b, trả lời đầy đủ
+   ở §3.9.
+2. Trần 200 dòng **đá chính `BUSINESS-RULES.md`** (478 dòng). Tách theo lĩnh vực
+   (§3.3).
+3. `EDGE-CASES.generated.md` **hứa quá** — máy chỉ trích được tên phép kiểm
+   (§5.4).
+4. Mô hình 10 luồng phẳng **không chứa được kế toán kép** vì nó là lớp vắt
+   ngang, không phải luồng song song (§3.9).
+
+**2.21 Bản thiết kế dòng tiền (31/08) — chủ quán chốt: xoá luôn, sau này tra lại
+từ đầu.** Đã nói trước là bản đó dẫn nguồn 10 lần và ông ấy từng ghi "giữ lại để
+khỏi tra lại"; hỏi lại, ông ấy chọn xoá. **Giữ một dòng breadcrumb trong
+`OPEN-ITEMS`** — không phải nội dung spec, chỉ là mục việc treo *"làm báo cáo
+dòng tiền; mở lại phải tra lại Thông tư 200/88 từ đầu"*. Việc đó đang sống (chủ
+quán đã yêu cầu), khác với bản thiết kế đã chết.
+
 ---
 
 ## 3. Thiết kế bộ tài liệu mới
@@ -211,9 +233,14 @@ thể mà hôm nay **không ai trả lời nhanh được**.
 (`EDGE-CASES`) — nhưng **máy sinh từ phép kiểm nghiệp vụ**, không viết tay; và
 ghi rõ một cái bẫy tên gọi (§3.2c).
 
-**Bỏ hai thứ:** phân hệ không tồn tại (kế toán, nhân sự) — viết tài liệu cho thứ
-không có là tạo ra thứ chắc chắn sai; và cặp `workflows.md` + `03_modules/*.md`,
-**hai chỗ tả cùng một thứ** — đúng cơ chế đã hỏng bảy lần ở §1.2.
+**Bỏ một thứ:** cặp `workflows.md` + `03_modules/*.md`, **hai chỗ tả cùng một
+thứ** — đúng cơ chế đã hỏng bảy lần ở §1.2.
+
+**Không "bỏ kế toán" — sửa lại câu tôi viết sai ở vòng 4 (§2.20).** Kế toán và
+nhân sự **chưa được xây**, khác hẳn với "không có và không cần". Chủ quán đã có
+một bản thiết kế báo cáo dòng tiền đang tạm gác, và đã chốt nhóm chi phí / khoản
+chi định kỳ (19/08). Cách bộ tài liệu này hấp thụ việc mới nằm ở §3.9 — đánh số
+thư mục chính là để chừa chỗ đó.
 
 **Chỗ bên tư vấn thiếu, và là chỗ quyết định:** không một dòng nào về phép kiểm
 tự động. Đó là sơ đồ tủ hồ sơ. Vấn đề ở đây chưa bao giờ là xếp hồ sơ ở đâu — mà
@@ -231,7 +258,11 @@ docs/
 │   └── SYSTEM-MAP.generated.md    bảng, cột, ràng buộc, server action [EN]
 ├── 02-rules/
 │   ├── GLOSSARY.md                từ này nghĩa là gì                 [VI]
-│   ├── BUSINESS-RULES.md          tiền tính thế nào, vì sao          [VI]
+│   ├── business-rules/            tiền tính thế nào, vì sao          [VI]
+│   │   ├── cogs.md                giá vốn
+│   │   ├── inventory.md           tồn kho, kiểm kê
+│   │   ├── revenue.md             doanh thu
+│   │   └── assets.md              tài sản, khấu hao
 │   └── EDGE-CASES.generated.md    trường hợp biên                    [VI]
 ├── 03-workflows/                                                     [EN]
 │   ├── sales.md               purchasing.md        stock-issue.md
@@ -282,6 +313,11 @@ liệu nào nói điều này. `SYSTEM-OVERVIEW.md` và `SYSTEM-MAP.md` phải n
 
 Trần 200 dòng có căn cứ: `CLAUDE.md` hôm nay **524 dòng** và sai suốt 19 ngày mà
 không ai thấy. **File càng dài thì chỗ sai càng dễ nấp.**
+
+**Trần này không miễn trừ cho ai — kể cả `BUSINESS-RULES.md`.** Đo 02/09 nó
+**478 dòng**, tức bật phép kiểm là chính nó đỏ ngay. Nên nó tách theo lĩnh vực
+thành `02-rules/business-rules/` (giá vốn, tồn kho, doanh thu, tài sản), mỗi file
+dưới trần. Mã luật `BR-*` giữ nguyên để mọi chỗ trỏ tới không gãy.
 
 ### 3.4 `CLAUDE.md` — vai trò đổi hẳn
 
@@ -375,6 +411,37 @@ thì ghi một dòng *"đã xem lại, không đổi hành vi — ngày"*. Chủ
 *"chưa chạy"* trong khi đã chạy — một câu truy vấn là bắt được. **Trạng thái
 phải đo được, không được nhớ.**
 
+### 3.9 Bộ tài liệu này hấp thụ việc mới thế nào — nhất là kế toán và dòng tiền
+
+**Đây là câu chủ quán hỏi 02/09 (§2.20), và là phát hiện thật, không phải trấn
+an.**
+
+**Thêm một luồng bình thường** = thêm một file trong `03-workflows/` + máy tự
+thêm bảng mới vào bản đồ sinh + thêm mã luật vào `02-rules/business-rules/`. Đánh
+số thư mục chính là để việc này không phải xếp lại từ đầu.
+
+**Nhưng kế toán không phải một luồng bình thường.** Chín luồng hiện tại mỗi cái
+là một nhóm màn hình đứng riêng. Kế toán kép thì ngược lại: **mỗi lần bán, mua,
+trả tiền, thanh lý đều đẻ ra một bút toán.** Nó là một **lớp nằm vắt ngang** đọc
+từ mọi luồng, không phải một ngăn kéo song song. Khi xây, nó vào một thư mục mới
+`05-accounting/` như một lớp, **không nhét vào `03-workflows/`** — nếu nhét vào
+đó thì đúng lỗi "một chỗ tả nhiều thứ" mà cả đợt này dẹp.
+
+**Dòng tiền thì KHÁC kế toán, và tôi từng gộp nhầm hai thứ:**
+
+| | Là gì | Xây được chưa |
+|---|---|---|
+| **Dòng tiền** | Tiền vào (`order_payments` đã có) trừ tiền ra (chi phí — chưa có bảng) theo thời gian | Gần được. Thiếu bảng chi phí |
+| **Kế toán kép** | Định khoản Nợ/Có, sổ cái, khoá sổ | Chưa có gì; là lớp vắt ngang |
+
+**Nên dòng tiền có thể là luồng thứ 11** (một báo cáo, giống `reports.md`), làm
+được sớm mà **không cần** dựng kế toán kép trước. Chủ quán đã có bản thiết kế
+dòng tiền (31/08) và đã chốt nhóm chi phí (19/08) — hai mảnh của đúng luồng này.
+
+**Kết luận cho câu hỏi:** cấu trúc **chịu được** cả hai — luồng thường vào
+`03-`, lớp vắt ngang vào `05-`. Chỗ tôi sai chỉ là **câu chữ "bỏ kế toán"** ở
+vòng 4; đã sửa ở §3.1b.
+
 ---
 
 ## 4. Cái gì bị xoá
@@ -408,6 +475,15 @@ nào đọc hiểu.
 
 **Giảm nhẹ:** mỗi tài liệu luồng có dòng *"đo lần cuối: ngày — bằng lệnh nào"*.
 Đây là giảm nhẹ, không phải lời giải.
+
+### 5.4 `EDGE-CASES.generated.md` chỉ trích được TÊN, không dịch được
+
+Tôi từng viết "máy sinh trường hợp biên từ phép kiểm nghiệp vụ". Nói cho đúng:
+máy trích được **tên** các phép kiểm (`it("phải từ chối khi ngày thanh lý trước
+ngày mua")`), nhưng **không tự dịch sang tiếng Việt trơn tru cho chủ quán đọc**.
+Kết quả thô là một danh sách tên hàm. Muốn nó đọc được thì tên phép kiểm phải
+viết bằng tiếng Việt ngay từ đầu — đó là một luật viết test, không phải phép màu
+của công cụ sinh. Ghi ra để không hứa quá.
 
 ### 5.2 Việc chờ người thật vẫn phụ thuộc người
 
@@ -469,7 +545,8 @@ chuyện xoá nhóm nguyên liệu) là lần hồ sơ của tôi mâu thuẫn v
 
 ### 7.3 Việc chưa xong, kèm cái gì đang chặn
 
-`OPEN-ITEMS.md`, canh theo §3.8.
+`OPEN-ITEMS.md`, canh theo §3.8. **Mục đầu tiên ghi vào là dòng breadcrumb dòng
+tiền ở §2.21** — một việc đang treo, không phải hồ sơ chết.
 
 ### Cố ý KHÔNG lưu
 
