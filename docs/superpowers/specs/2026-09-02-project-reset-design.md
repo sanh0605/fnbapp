@@ -1,14 +1,14 @@
 # Dựng lại nền tài liệu và quy trình cho toàn dự án
 
-**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau vòng phỏng vấn thứ hai.**
+**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau ba vòng phỏng vấn.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển
 khai.**
 
 **Status: chờ chủ quán duyệt.** Chưa duyệt thì chưa ai được bắt tay làm.
 
 **Chủ quán yêu cầu 02/09**, và nói rõ đây là việc ưu tiên cao nhất, gác mọi thứ
-khác. Ông ấy yêu cầu **phỏng vấn trước khi lập kế hoạch** — đã phỏng vấn hai
-vòng, tổng 10 câu, kết quả ở §2.
+khác. Ông ấy yêu cầu **phỏng vấn trước khi lập kế hoạch** — đã phỏng vấn ba
+vòng, kết quả ở §2.
 
 ---
 
@@ -69,10 +69,8 @@ Trong cùng tháng đó, **những luật do máy canh chưa hỏng lần nào**
 
 #### 2.1 Xoá sạch `docs/audits/` — 100 file, 12 MB
 
-**Đã nói trước hậu quả và chủ quán vẫn chọn:** trong đó có **bản sao lưu duy
-nhất** của sổ kho cũ (5,2 MB, 10.734 dòng), công thức, và bảng số dư.
-
-**Sau việc này chúng không còn ở đâu nữa. Đây là chủ ý, không phải sơ suất.**
+**Đã nói trước hậu quả và chủ quán vẫn chọn.** Xem thêm §2.13: vòng 3 đo ra chi
+tiết mới, đưa lại cho chủ quán quyết lần nữa, và ông ấy **giữ nguyên quyết định**.
 
 #### 2.2 Xoá thẳng hồ sơ cũ, không gộp nội dung
 
@@ -136,7 +134,7 @@ cũ.** Kết quả giống ý chủ quán, chỉ khác thứ tự, và không c�
 **Một chỗ phải cẩn thận, đã báo chủ quán:** `docs/runbooks/restore-from-backup.md`
 là cách khôi phục dữ liệu khi hỏng. Nội dung đó **dựng lại từ công cụ sao lưu
 thật đang chạy** rồi mới xoá bản cũ — cùng nguyên tắc §2.7, không để trống một
-quãng.
+quãng. Nơi ở mới của nó là `docs/KHI-HONG.md` (§3.2).
 
 #### 2.9 Mười luồng việc, phủ hết 35 màn hình
 
@@ -162,17 +160,44 @@ cũng bị bắt chạm tài liệu — lúc đó phải ghi một dòng đã xe
 > *"Mỗi việc treo là một phép kiểm đang đỏ."*
 
 Việc thuộc về code: viết trước một phép kiểm mô tả điều phải đúng khi xong; làm
-xong thì nó tự xanh và mục tự rụng — **không ai phải nhớ xoá**. Việc không phải
-code (chờ chủ quán quyết, chờ đẩy lên máy chủ) thì ghi kèm ngày, quá hạn máy
-nhắc.
-
-**Cái giá:** mỗi việc treo tốn thêm công viết phép kiểm trước khi làm.
+xong thì nó tự xanh và mục tự rụng — **không ai phải nhớ xoá**.
 
 #### 2.12 Năm đợt, chủ quán duyệt sau mỗi đợt
 
 > *"5 đợt, anh duyệt sau mỗi đợt."*
 
 Đợt 5 (xoá) duyệt riêng một lần nữa vì không quay đầu được.
+
+### Vòng 3
+
+#### 2.13 Xoá cả 5 file dữ liệu sao lưu — hỏi lại lần hai, chủ quán giữ nguyên
+
+Vòng 3 đo ra `docs/audits/` **không đồng nhất**:
+
+| | Số lượng | Dung lượng |
+|---|---:|---:|
+| Kết quả điều tra đã kết luận | 94 file | ~6,5 MB |
+| **Dữ liệu sao lưu thật** | **5 file** | **5,4 MB** |
+
+Năm file đó: sổ kho đã xoá (`2026-07-23`, 5,09 MB), công thức và bán thành phẩm
+(`2026-08-27` và `2026-08-31`), sổ kho và bảng số dư trước lúc xoá
+(`2026-08-31`), và một ảnh chụp trước khi ghi (`2026-06-27`).
+
+**Đã đề xuất chuyển 5 file đó lên chỗ sao lưu rồi mới xoá. Chủ quán chọn: xoá
+hết, kể cả 5 file dữ liệu.**
+
+**Hậu quả đã nói trước và ông ấy chấp nhận:** sau đợt này không còn cách trả lời
+*"công thức món X hồi tháng 6 là gì"* hay *"sổ kho cũ ghi gì"* — kể cả từ lịch sử
+git cũng phải đi đào. **Đây là chủ ý, không phải sơ suất.**
+
+#### 2.14 Tiêu chí "đáng lưu"
+
+> *"Quan trọng nhất là đúng hiện trạng và luôn được cập nhật theo thông tin mới
+> nhất thì mới là thứ đáng lưu, còn lại là đáng xóa nếu đã không còn tác dụng gì
+> nữa hoặc đã chết."*
+
+Tiêu chí này **thay thế** danh sách bốn thứ đáng lưu ở bản trước. Hệ quả viết
+lại ở §7 — và nó loại bỏ chính một mục tôi từng đề xuất.
 
 ---
 
@@ -183,23 +208,41 @@ nhắc.
 Không viết tài liệu vì "nên có". Mỗi file dưới đây tồn tại vì có một câu hỏi cụ
 thể mà hôm nay **không ai trả lời nhanh được**.
 
-### 3.2 Tám chỗ, không hơn
+### 3.2 Chín chỗ, không hơn
 
 | File | Trả lời câu hỏi | Ai đọc |
 |---|---|---|
 | `CLAUDE.md` | *"Tôi phải làm việc thế nào, và đi đâu tiếp?"* | AI, mỗi phiên |
 | `README.md` | *"Máy này chạy bằng gì, tôi khởi động nó ra sao?"* | DEV mới |
-| `docs/HE-THONG.md` | *"Quán này là gì, hệ thống làm gì cho nó?"* | Người mới — DEV, BA, BM |
+| `docs/HE-THONG.md` | *"Quán này là gì?"* | Người mới — DEV, BA, BM |
 | `docs/BAN-DO.md` | *"Sửa chỗ này thì đụng những đâu?"* | AI và DEV, trước mỗi lần sửa |
 | `docs/TU-DIEN.md` | *"Từ này nghĩa là gì trong quán này?"* | Tất cả |
 | `docs/BUSINESS-RULES.md` | *"Tiền tính thế nào, vì sao?"* | Chủ quán, BA |
 | `docs/luong/*.md` (10 file) | *"Việc này chạy từ đầu tới cuối ra sao?"* | Tất cả |
 | `docs/VIEC-DANG-LAM.md` | *"Cái gì chưa xong?"* | Chủ quán, AI |
+| `docs/KHI-HONG.md` | *"Hỏng rồi thì làm gì?"* | Người đang cuống |
 
 Cộng một file máy sinh, `docs/BAN-DO-SINH.md` (§3.5) — **không ai viết tay,
 chạy lại là đúng**, nên nó không tính là một chỗ phải bảo trì.
 
-**Mỗi chỗ thêm là một chỗ nữa có thể cũ đi.**
+**`docs/KHI-HONG.md` là chỗ thứ chín, thêm ở vòng 3.** Khôi phục dữ liệu, máy POS
+không đồng bộ được, migration chạy sai, web không dựng được. Đây là thứ đọc lúc
+đang cuống — chôn nó trong một tài liệu mô tả màn hình thì lúc cần không ai tìm
+ra.
+
+### 3.2b Ba ranh giới cứng — nếu không đặt thì ba chỗ sẽ thành bản sao của nhau
+
+**Đây là cách `CLAUDE.md` đã hỏng: một tài liệu tóm tắt một tài liệu khác, rồi
+bản tóm tắt cũ đi trước.**
+
+1. **`docs/HE-THONG.md` chỉ được nói về quán** — hai điểm bán, hai thương hiệu,
+   bán mang đi, kho dùng chung, tiền vào tiền ra ở mức khái niệm. **Cấm liệt kê
+   tính năng.** Liệt kê tính năng là biến nó thành bản tóm tắt của 10 luồng.
+2. **`docs/BUSINESS-RULES.md` giữ công thức và lý do; tài liệu luồng chỉ được
+   trỏ tới mã luật** (`BR-COGS-005`), **cấm chép lại công thức.** Máy kiểm được:
+   mã luật nhắc trong luồng phải có thật trong `docs/BUSINESS-RULES.md`.
+3. **Cấu trúc dữ liệu không có tài liệu tay.** Bảng nào, cột nào, ràng buộc gì —
+   lấy thẳng từ máy chủ vào `docs/BAN-DO-SINH.md`.
 
 ### 3.3 `CLAUDE.md` — vai trò đổi hẳn
 
@@ -238,13 +281,34 @@ cố ý không phục vụ gì.
 — màn hình POS mời bấm vào món không bán được, phiếu xuất cắt giữa phiếu, nút xoá
 từ chối trong im lặng.
 
-**Mỗi file mở đầu bằng một khối khai báo máy đọc được:** danh sách route và danh
-sách file mã nguồn nó mô tả. Khối đó là thứ §3.6 dùng để chặn.
+### 3.4b Hình dạng bắt buộc: bảng khai báo trước, văn xuôi sau
+
+**Đây là lời giải cho chỗ hở lớn nhất của bản trước** (§5.1 cũ: phép kiểm chỉ
+chứng minh tài liệu được chạm, không chứng minh nội dung đúng).
+
+Chỗ phải đổi **không phải phép kiểm — mà là hình dạng tài liệu.** Mỗi file luồng
+mở đầu bằng một khối khai báo máy đọc được; văn xuôi chỉ còn phần *"vì sao"*.
+
+| Khai báo | Máy đối chiếu với |
+|---|---|
+| Màn hình thuộc luồng này | `app/` — route có tồn tại |
+| File mã nguồn | Có tồn tại |
+| **Bảng dữ liệu luồng này ghi vào** | **Bảng mà những file đó ghi thật**, lấy từ `docs/BAN-DO-SINH.md` |
+| Các trạng thái | Ràng buộc thật trên máy chủ — hệ thống dùng `check (status in (...))`, đo 02/09 |
+| Mã luật `BR-*` nhắc tới | `docs/BUSINESS-RULES.md` |
+
+**Dòng thứ ba là dòng có răng nhất:** nó bắt được **tài liệu mô tả sai đường đi
+của dữ liệu**, chứ không chỉ bắt tài liệu nhắc tới thứ đã xoá. Đây đúng là loại
+lỗi đã xảy ra bảy lần ở §1.2.
+
+Ước lượng: **4 trên 5 câu** của khung năm câu thành kiểm được bằng máy. Chỗ hở
+còn lại ở §5.1.
 
 ### 3.5 Bản đồ — hai lớp, một phép kiểm
 
-**Lớp máy sinh** (`docs/BAN-DO-SINH.md`): công cụ đọc mã nguồn và vẽ ra màn hình
-nào gọi hàm nào, hàm nào đụng bảng nào, bảng nào có ai đọc. **Chạy lại là đúng.**
+**Lớp máy sinh** (`docs/BAN-DO-SINH.md`): công cụ đọc mã nguồn và máy chủ, vẽ ra
+màn hình nào gọi hàm nào, hàm nào đụng bảng nào, bảng nào có ai đọc, và bảng nào
+có cột gì kèm ràng buộc gì. **Chạy lại là đúng.**
 
 **Lớp người vẽ** (`docs/BAN-DO.md`): sơ đồ gọn cho người hiểu toàn cảnh.
 
@@ -261,7 +325,7 @@ có" mà có thật; ba nơi đọc bảng số dư mà kế hoạch chỉ liệ
 
 | Đổi cái gì | Bắt buộc kèm | Máy canh bằng |
 |---|---|---|
-| Sửa file thuộc một luồng | Sửa `docs/luong/<luồng>.md` | Đối chiếu khối khai báo §3.4 với file bị đụng |
+| Sửa file thuộc một luồng | Sửa `docs/luong/<luồng>.md` | Đối chiếu khối khai báo §3.4b với file bị đụng |
 | Thêm/xoá màn hình | Sửa luồng tương ứng | Đối chiếu danh sách route |
 | Đổi cách tính tiền | Sửa `docs/BUSINESS-RULES.md` | Quy tắc ↔ phép kiểm mã |
 | Thêm/xoá bảng dữ liệu | Sửa `docs/BAN-DO.md` | Phép kiểm lệch bản đồ (§3.5) |
@@ -277,18 +341,21 @@ chấp nhận dòng đó, và **chủ quán đọc được ai đã dùng đư�
 
 ### 3.7 Việc treo là phép kiểm, không phải gạch đầu dòng (§2.11)
 
-`docs/VIEC-DANG-LAM.md` không còn là danh sách người tự cập nhật.
+`docs/VIEC-DANG-LAM.md` không còn là danh sách người tự cập nhật. Ba loại việc,
+ba cách canh:
 
-**Việc thuộc về code:** trước khi bắt đầu, viết một phép kiểm mô tả điều phải
-đúng khi xong, đánh dấu là đang nợ. Máy sinh danh sách việc treo **từ chính
-những phép kiểm đó**. Làm xong, phép kiểm xanh, mục tự rụng.
+| Loại việc | Cách canh | Ví dụ |
+|---|---|---|
+| **Thuộc về code** | Viết trước một phép kiểm mô tả điều phải đúng khi xong, đánh dấu đang nợ. Danh sách việc treo **sinh ra từ chính những phép kiểm đó**. Xong thì nó xanh và mục tự rụng | Thêm nút ngừng bán |
+| **Không phải code nhưng ĐO ĐƯỢC** | Phép kiểm truy vấn thật trạng thái | Migration đã chạy chưa; web có đang chạy ở Singapore không; dữ liệu đã thoả điều kiện chưa |
+| **Chờ người thật** | Ghi tay kèm ngày hẹn. Quá hạn thì đỏ, buộc đóng hoặc gia hạn | Chờ chủ quán quyết; phải mở trang xem tận mắt |
 
-**Việc không phải code** (chờ chủ quán quyết, chờ đẩy lên máy chủ, chờ mở trang
-xem tận mắt): ghi tay kèm ngày hẹn. Quá hạn thì đỏ, buộc phải đóng hoặc gia hạn.
+**Loại thứ hai là chỗ tôi nghĩ thiếu ở bản trước, và nó là loại đã cắn tôi.** Ba
+lần trong ngày 02/09 tôi báo migration *"chưa chạy"* trong khi đã chạy — một câu
+truy vấn là bắt được. Trạng thái phải đo được, không được nhớ.
 
-**Việc này cũng chữa luôn một lỗi của riêng tôi:** ba lần trong ngày 02/09 tôi
-báo migration *"chưa chạy"* trong khi đã chạy. Trạng thái phải đo được, không
-được nhớ.
+Phần thật sự không tự động được co lại còn loại thứ ba, và loại đó **theo thiết
+kế là phải chờ người** — không phải lỗi.
 
 ---
 
@@ -296,7 +363,7 @@ báo migration *"chưa chạy"* trong khi đã chạy. Trạng thái phải đo 
 
 | Xoá | Số lượng | Ghi chú |
 |---|---:|---|
-| `docs/audits/` | 100 file, 12 MB | **Gồm bản sao lưu duy nhất** (§2.1) |
+| `docs/audits/` | 100 file, 12 MB | **Gồm 5 file dữ liệu sao lưu, 5,4 MB** (§2.13) |
 | `docs/superpowers/plans/` | 101 file | |
 | `docs/superpowers/specs/` | 34 file | **Trừ chính file này** cho tới khi xong đợt 5 |
 | `docs/handoffs/` | 3 file | |
@@ -311,28 +378,29 @@ sau khi xoá thì chỉ còn trong lịch sử git — không còn trên đĩa.
 
 ## 5. Chỗ tôi CHƯA giải được — nói ra để chủ quán biết
 
-Hai chỗ ở bản trước (tài liệu luồng cũ đi, danh sách việc treo nói dối) đã có
-lời giải ở §3.6 và §3.7. **Ba chỗ dưới đây thì chưa.**
+Vòng 3 giải được phần lớn hai chỗ đầu (§3.4b và §3.7). **Đây là phần còn lại,
+không giấu.**
 
-### 5.1 Chặn cứng chứng minh tài liệu ĐƯỢC CHẠM, không chứng minh nội dung ĐÚNG
+### 5.1 Hai câu trong khung năm câu vẫn là văn xuôi
 
-Máy biết file `docs/luong/xuat-kho.md` có được sửa cùng lần lưu hay không. Máy
-**không biết** câu vừa sửa có đúng với code hay không — sửa một dấu chấm vẫn qua.
+**Câu 4 — "ô nhập nhận giá trị nào là hợp lệ":** hệ thống **không dùng zod** (đo
+02/09: 0 file). Nên máy chỉ kiểm được tới mức ràng buộc trong cơ sở dữ liệu
+(`NOT NULL`, `check`), **không kiểm được luật kiểm tra viết tay trong màn hình**.
 
-**Không có cách máy nào chứng minh văn xuôi đúng.** Cách giảm nhẹ: mỗi tài liệu
-luồng có một dòng *"đo lần cuối: ngày — bằng truy vấn/lệnh nào"*, để người đọc
-biết câu trong đó cũ tới đâu. Đây là giảm nhẹ, không phải lời giải.
+**Câu 2 — nhãn nút — và câu 5 — "cố ý không phục vụ loại nào":** không có cách
+máy nào đọc hiểu.
 
-### 5.2 Việc treo không phải code vẫn phụ thuộc người ghi
+**Giảm nhẹ:** mỗi tài liệu luồng có dòng *"đo lần cuối: ngày — bằng lệnh nào"*,
+để người đọc biết câu trong đó cũ tới đâu. Đây là giảm nhẹ, không phải lời giải.
 
-§3.7 chỉ tự động được với việc thuộc về code. Việc dạng *"chờ chủ quán quyết"*
-thì máy chỉ canh được hạn, không canh được nội dung.
+### 5.2 Việc chờ người thật vẫn phụ thuộc người
+
+§3.7 loại ba. Máy canh được hạn, không canh được nội dung. Theo thiết kế là vậy.
 
 ### 5.3 Xoá `docs/audits/` là mất khả năng dựng lại
 
-Sau §2.1, nếu sau này chủ quán hỏi *"công thức món X hồi tháng 6 là gì"* thì
-**không trả lời được nữa** — kể cả từ git, vì file đó sẽ không còn trên đĩa và
-phải đi đào lịch sử.
+Đã hỏi lại lần hai ở vòng 3 với số đo cụ thể, chủ quán giữ nguyên (§2.13). Sau
+đợt này không trả lời được *"công thức món X hồi tháng 6 là gì"* nữa.
 
 Chủ quán đã biết và vẫn chọn. Ghi lại để sau này không ai ngạc nhiên.
 
@@ -346,7 +414,7 @@ nguyên vẹn, không có quãng nào trống.
 | Đợt | Làm gì | Xong nghĩa là | Nặng |
 |---|---|---|---|
 | **1** | Công cụ sinh bản đồ + các phép kiểm chặn cứng (§3.5, §3.6, §3.7) | Phép kiểm chạy được, và **đã chứng minh bắt được một lỗi thật** | Nặng |
-| **2** | 10 luồng việc + `docs/TU-DIEN.md` + `docs/HE-THONG.md` + `docs/BAN-DO.md` | Viết từ mã nguồn, phép kiểm đợt 1 xanh | Nặng |
+| **2** | 10 luồng việc + `docs/TU-DIEN.md` + `docs/HE-THONG.md` + `docs/BAN-DO.md` + `docs/KHI-HONG.md` | Viết từ mã nguồn, phép kiểm đợt 1 xanh | Nặng |
 | **3** | Viết lại `CLAUDE.md` + `README.md`, cập nhật `docs/BUSINESS-RULES.md` | Bốn cửa `CLAUDE.md` §9 xanh | Vừa |
 | **4** | Dựng lại bộ script | `verify-revenue` và `check-rules-current` bản mới chạy được và bắt được lỗi | Vừa |
 | **5** | Xoá (§4) | **Duyệt riêng một lần nữa** | Nhẹ, không quay đầu |
@@ -360,34 +428,52 @@ trước khi làm đợt đó — không viết trước cả năm, vì đợt 1
 
 ---
 
-## 7. Đề nghị của tôi cho mục 9 — cái gì đáng lưu để chủ quán duyệt
+## 7. Cái gì đáng lưu — viết lại theo tiêu chí §2.14
 
-Chủ quán hỏi tôi nên đề xuất lưu lại những gì. **Bốn thứ, và chỉ bốn:**
+**Bản trước tôi đề xuất bốn thứ. Tiêu chí của chủ quán loại bớt một, và sửa
+cách hiểu một cái khác.** Còn ba:
 
-1. **Quyết định kinh doanh kèm nguyên văn lời chủ quán.** Đây là thứ đã cứu
-   nhiều lần tháng này — và lần tôi *không* ghi nguyên văn (29/08, chuyện xoá
-   nhóm nguyên liệu) là lần hồ sơ của tôi mâu thuẫn với chính nó suốt ba ngày.
-2. **Số đo tại thời điểm quyết định**, kèm ngày. Không phải để tra sau, mà để
-   biết con số đã cũ tới đâu.
-3. **Việc chưa xong, kèm cái gì đang chặn.** Danh sách không có chỗ chặn thì
-   không dùng được.
-4. **Sự cố và luật sinh ra từ nó.** Mỗi luật trong `CLAUDE.md` phải nói được nó
-   sinh ra vì chuyện gì — luật không có lý do thì sớm muộn bị bỏ qua.
+### 7.1 Lưu CÁCH ĐO, đừng lưu CON SỐ
 
-**Cố ý KHÔNG lưu:** nhật ký ai làm gì ngày nào, kế hoạch đã thực hiện xong, báo
-cáo điều tra đã kết luận. Ba thứ này chiếm phần lớn 12 MB sắp xoá, và **không
-thứ nào trả lời được câu hỏi nào của hôm nay**.
+**Đây là chỗ tôi sửa chính mình.** Bản trước tôi đề xuất lưu *"số đo tại thời
+điểm quyết định, kèm ngày"*. Theo tiêu chí §2.14 thì một con số đã đo là thứ
+**chắc chắn sẽ lệch khỏi hiện trạng** — đúng loại đáng xoá.
+
+**Cái không cũ đi là câu lệnh đo.** Nên mỗi chỗ cần số thì ghi lệnh tái đo, cộng
+một dòng *"đo lần cuối: ngày"*. Ai cần số thì chạy lại.
+
+Chính `CLAUDE.md` §4 đã nói điều này (*"đi đếm, đừng đi đọc"*) — nhưng chưa có
+chỗ nào bắt buộc kèm lệnh đo, nên vẫn có người đọc số cũ.
+
+### 7.2 Luật, và nguyên văn lý do sinh ra nó — gắn vào chính luật
+
+Không có sổ sự cố riêng. Luật về tiền thì lý do nằm ngay dưới luật trong
+`docs/BUSINESS-RULES.md`; luật về cách làm việc thì nằm dưới luật trong
+`CLAUDE.md`. **Cả hai file đã làm đúng vậy hôm nay** — giữ, không tạo chỗ mới.
+
+Lý do phải có **nguyên văn lời chủ quán**. Lần tôi *không* ghi nguyên văn (29/08,
+chuyện xoá nhóm nguyên liệu) là lần hồ sơ của tôi mâu thuẫn với chính nó ba ngày.
+
+Luật không có lý do thì sớm muộn bị bỏ qua — và một luật vẫn đang có hiệu lực
+thì **luôn đúng hiện trạng**, nên nó qua được tiêu chí §2.14.
+
+### 7.3 Việc chưa xong, kèm cái gì đang chặn
+
+`docs/VIEC-DANG-LAM.md`, canh theo §3.7. Danh sách không nói rõ chỗ chặn thì
+không dùng được.
+
+### Cố ý KHÔNG lưu
+
+Nhật ký ai làm gì ngày nào; kế hoạch đã thực hiện xong; báo cáo điều tra đã kết
+luận; **và mọi con số đo rời khỏi lệnh đã sinh ra nó**. Ba thứ đầu chiếm phần lớn
+12 MB sắp xoá, và không thứ nào trả lời được câu hỏi nào của hôm nay.
 
 ---
 
 ## 8. Cần chủ quán duyệt gì
 
-Bốn câu hỏi của bản trước đã được trả lời ở §2.8–§2.12. **Còn ba chỗ:**
+Mọi câu hỏi của hai bản trước đã được trả lời ở §2.8–§2.14. **Còn một việc: chủ
+quán duyệt toàn bộ bản này.**
 
-1. **Tám chỗ tài liệu ở §3.2 và mười luồng ở §3.4** — đủ chưa, thừa chỗ nào không?
-2. **Ba chỗ chưa giải được ở §5** — chấp nhận, hay muốn tôi nghĩ tiếp trước khi
-   bắt đầu?
-3. **Bốn thứ đáng lưu ở §7** — đúng ý chủ quán chưa?
-
-**Duyệt xong tôi mới viết kế hoạch triển khai cho đợt 1** (bước 3 của
+Duyệt xong tôi mới viết kế hoạch triển khai cho **đợt 1** (bước 3 của
 `CLAUDE.md` §1b).
