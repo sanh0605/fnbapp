@@ -51,15 +51,48 @@ chỉ lời báo là sai.** Và ông ấy gỡ được là vì tôi nói cho ô
 **Đây là lớp bảo vệ làm đúng việc** — giống hệt cách `CLAUDE.md` mục 2 mô tả cho
 món ăn: *"cứ thử xoá rồi dịch lời từ chối sang tiếng Việt"*.
 
-## A4. Lời từ chối hiện ra thế nào — đây mới là lỗi
+## A4. Lời từ chối KHÔNG hiện ra gì cả — và tôi viết sai chỗ này lúc đầu
 
-`deleteUnit` bắt lỗi rồi trả về **nguyên văn lời máy chủ**: `return fail(error.message)`.
+**Bản đầu của mục này viết rằng chủ quán nhận một câu tiếng Anh khó hiểu. Sai.**
+Ông ấy nói rõ 01/09:
 
-Nghĩa là chủ quán nhận một câu **tiếng Anh**, kèm tên ràng buộc kỹ thuật kiểu
-`uom_conversions_purchased_unit_fkey`. Câu đó **không nói cái gì đang dùng đơn vị
-này**, mà đó chính là điều duy nhất ông ấy cần biết để xử lý.
+> *"Khi anh bấm xóa thử combo 2 trước lúc em chẩn đoán thì nó đã không hiển thị
+> ra lỗi gì cả."*
 
-**Lỗi không nằm ở việc chặn. Lỗi nằm ở việc không giải thích.**
+**Không có câu nào hết.** Bấm Xoá, không có gì xảy ra, không có gì giải thích.
+
+**Chỗ nuốt mất lời báo:** `app/admin/inventory/units/UnitForm.tsx` dòng 70 viết
+`await deleteUnit(fd);` — **vứt luôn kết quả trả về**. Máy chủ từ chối,
+`deleteUnit` trả về lời từ chối đàng hoàng, và màn hình **không đọc**.
+
+**Đây là kiểu hỏng tệ hơn hẳn câu tiếng Anh.** Câu khó hiểu ít nhất còn cho biết
+có chuyện; im lặng thì chủ quán không biết mình vừa bấm có tác dụng hay không —
+và dễ bấm lại nhiều lần.
+
+## A4b. Không phải một chỗ — 16 lần gọi trong 12 file
+
+**Đo 01/09.** Gần như **toàn bộ là nút Xoá** — đúng loại thao tác hay bị khoá
+ngoại từ chối nhất:
+
+| Màn hình | Hành động bị vứt kết quả |
+|---|---|
+| Đơn vị | thêm, sửa, **xoá** |
+| Phân loại hàng | thêm, sửa |
+| Thương hiệu, Nhà cung cấp, Người dùng, Khuyến mãi, Topping, Nhóm món | **xoá** |
+| Quy đổi đơn vị, Hàng mua vào | **xoá** |
+| Kiểm kê | huỷ kỳ |
+| Máy POS | bỏ đơn chờ |
+
+**Nghĩa là mọi nút Xoá trong khu quản trị đều có thể từ chối trong im lặng.**
+Chủ quán mới gặp một cái, vì mới thử một cái.
+
+**Con số 16 này đáng tin hơn con số 21 ở §B3**, vì nó tìm đúng một hình dạng
+(`await <hành động>(...)` không hứng kết quả) chứ không suy đoán. Nhưng **vẫn
+phải kiểm từng cái** — có thể vài chỗ cố ý bỏ qua kết quả vì lý do riêng.
+
+**Có sẵn công cụ để báo:** `UnitForm.tsx` đã nhập `alert` và `confirm` từ
+`lib/dialog` và **đang dùng `confirm`** để hỏi trước khi xoá. Chỉ là không dùng
+`alert` để báo kết quả. **Dùng lại thứ đã có, đừng viết mới.**
 
 ## A5. Phục vụ gì, cố ý không phục vụ gì
 
@@ -86,7 +119,7 @@ Chủ quán bấm Xoá trên **Combo 2**:
 | | Hôm nay | Sau khi sửa |
 |---|---|---|
 | Có xoá được không | không | **không** (đúng) |
-| Câu báo | tiếng Anh, tên ràng buộc | *"Không xoá được đơn vị Combo 2 vì đang được dùng trong 1 dòng quy đổi của Bột cà phê MR.PHIN Robusta Đắk Mil. Xoá dòng quy đổi đó trước."* |
+| Câu báo | **không có gì cả** | *"Không xoá được đơn vị Combo 2 vì đang được dùng trong 1 dòng quy đổi của Bột cà phê MR.PHIN Robusta Đắk Mil. Xoá dòng quy đổi đó trước."* |
 
 **Câu báo phải gọi tên thật** (`CLAUDE.md` mục 6), không đọc mã `QD-015`.
 
@@ -168,8 +201,12 @@ Chủ quán sửa tên phân loại `Nguyên liệu` thành `Nguyên vật liệ
 **Phần A:**
 
 - **Phép kiểm mới, viết trước, phải ĐỎ trên bản chưa sửa:** xoá một đơn vị đang
-  bị dùng phải trả câu tiếng Việt có **tên đơn vị** và **tên mặt hàng đang dùng**.
-  Hôm nay nó trả tiếng Anh. Nói rõ đỏ vì **giá trị sai** hay **thiếu hàm**.
+  bị dùng phải **hiện một câu** cho người dùng. Hôm nay **không hiện gì** — nên
+  phép kiểm này đỏ vì **thiếu hẳn hành vi**, không phải vì chữ sai. Nói rõ.
+- **Phép kiểm thứ hai, tách riêng:** câu đó phải chứa **tên đơn vị** và **tên
+  mặt hàng đang dùng**, gọi tên thật. Tách ra vì hai thứ này hỏng độc lập —
+  gộp lại thì không biết cái nào chưa xong.
+- **Đếm lại §A4b sau khi sửa**, nói rõ còn bao nhiêu chỗ vứt kết quả.
 - **Vẫn phải chặn**: đơn vị đang dùng thì tuyệt đối không được xoá thành công.
 - **Xoá một đơn vị KHÔNG ai dùng vẫn phải chạy được** — đừng chặn nhầm.
 - **Trả lời A6 trước**: có mẫu dịch lỗi sẵn thì dùng lại.
