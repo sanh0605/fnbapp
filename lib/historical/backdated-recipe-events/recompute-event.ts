@@ -1,3 +1,14 @@
+// HISTORICAL, WILL FAIL IF RUN
+// (docs/superpowers/plans/2026-09-02-clean-up-after-the-ledger.md section
+// 2.1, 2026-09-02). loadRecoveryData below queries backdated_recipe_events
+// first -- that table was already dropped (migration 0054, unrelated to
+// Phase D, well before this note) -- so this fails there, before it ever
+// reaches its own findAllNoCache("Stock_Ledger") call, which would also
+// fail now that Phase D (migration 0096, applied) dropped that table too.
+// Kept, not deleted, per CLAUDE.md section 3: the only surviving record of
+// how a backdated-recipe-event recovery was computed, not currently
+// callable by anything (no live caller from app/, only 1 one-off script:
+// scripts/apply-backfill-recipe-backdated-events.ts).
 import { createHash } from "node:crypto";
 import { getSupabaseClient } from "../../supabase";
 import { computeSaleTimeCogs } from "../backdated-ledger/compute-sale-time-cogs";

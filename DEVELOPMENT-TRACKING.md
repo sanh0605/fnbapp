@@ -4,6 +4,29 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Clean up after the ledger removal
+
+Implements docs/superpowers/plans/2026-09-02-clean-up-after-the-ledger.md, the tidy-up pass after Phase D (OPEN-ITEMS 80). No screen changes, no server function changes, no data writes, no migration.
+
+Critique before coding found one thing worth reporting immediately, not just noting in the sweep: Phase D had actually been applied since my last report, and so had two other migrations I had reported as "not applied" -- 0091 (close the POS function grants, OPEN-ITEMS 81) and 0092-0095 (drop base_ingredient_id, OPEN-ITEMS 75). Confirmed live, not assumed from the plan's own "chạy xong 02/09" claim: stock_ledger, inventory_balances, and the trigger function are all gone; purchased_items.base_ingredient_id is gone; the three affected functions and get_my_role no longer mention it; and the three POS-path functions' proacl no longer lists public/anon/authenticated. All three OPEN-ITEMS entries updated with this live confirmation.
+
+Section 1.3's four broken-if-run files re-examined, not just annotated as the plan's own table described them -- and two of the four fail for a different reason than the plan attributed:
+- lib/historical/sheets-db-v2.ts: accurately fails on Phase D's stock_ledger drop, exactly as described. Noted.
+- lib/historical/backdated-ledger/recompute-event.ts and lib/historical/backdated-recipe-events/recompute-event.ts: both query backdated_ledger_events/backdated_recipe_events FIRST -- tables already dropped by migration 0054, back in Plan C Task 6, unrelated to Phase D -- so they fail there, before ever reaching their own Stock_Ledger read. Noted accurately, not copied from the plan's Stock_Ledger framing. Also corrected the plan's own "3 scripts" caller count for each: re-measured live, 2 callers for the ledger-event file, 1 for the recipe-event file.
+- lib/historical/history-ops/task-3-recovery.ts: makes no live database query at all -- it parses "stock_ledger" and "audit_baseline_locks" out of an already-captured snapshot bundle passed in as a file map, not the live tables. Its two script callers do fail if run, but because audit_baseline_locks (migration 0054, same unrelated retirement) is gone, not because of Phase D. Noted with the corrected attribution.
+
+None of the four files deleted, per CLAUDE.md section 3 and the plan's own section 1.4 -- each is the only surviving record of how a piece of historical recovery tooling worked.
+
+Section 1.6 answered: types/db.ts's DBStockLedger interface confirmed to have zero readers anywhere (only its own declaration) -- removed, since (unlike the four historical files) it carries no investigative record value and its continued presence implies a queryable table that no longer exists. The revalidateTag("sheets-Stock_Ledger") line in app/admin/inventory/purchase-orders/actions.ts:262 removed -- the only live-code change this task makes -- plus its own test (lib/purchase-order-action-integration.test.ts), which explicitly asserted the tag's presence and needed updating to assert its absence instead.
+
+Sweep of the full OPEN-ITEMS.md list (all 79 numbered rows read, not filtered): item 36 (STK- prefix naming two id spaces) closed -- moot by construction now that stock_ledger itself is gone, not by the rename the item always said it would need. Item 18 (periodic stocktake "never once used") closed as false -- re-measured live, stocktake_sessions holds 2 rows (STK-001 CONFIRMED, STK-002 CANCELLED), not 0, confirming the plan's own section 1.6 claim exactly.
+
+Proved the one live-code change is safe without writing data, per instruction ("no data writes"): save_purchase_order_atomic (the actual RPC the purchase-order save path calls) confirmed live to have zero mention of stock_ledger or inventory_balances in its current definition: removing a cache-bust for a table that no longer exists cannot affect a write path that never referenced the table either. All 5 purchase-order test files (28 tests) green, full suite green, build succeeds.
+
+Verification: tsc 0 errors, vitest 233 files / 1605 tests green (one test added), check-rules-current PASS, npm run build succeeds.
+
+No data writes, no migration. Not pushed.
+
 ## 2026-09-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Phase D: drop the two ledger tables (OPEN-ITEMS 80)
 
 Implements docs/superpowers/plans/2026-09-02-phase-d-drop-the-ledger-tables.md, the final phase of docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md. Owner approved retiring the ledger 2026-08-28 and approved running this phase 2026-09-02. Irreversible once applied -- this task writes the migration only, per instruction, does not apply it.

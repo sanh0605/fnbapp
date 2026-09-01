@@ -228,18 +228,6 @@ export interface DBRecipe {
   created_at: string;
 }
 
-export interface DBStockLedger {
-  id: string;
-  item_type: string;
-  item_id: string;
-  transaction_type: string;
-  quantity: string;
-  unit_cost: string;
-  reference_id: string;
-  notes: string;
-  created_at: string;
-}
-
 export interface DBPurchaseSource {
   id: string;
   name: string;

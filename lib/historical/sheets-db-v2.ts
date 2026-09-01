@@ -5,6 +5,15 @@
  * pass); superseded before this measurement by the current checkout write
  * path. Not imported anywhere live.
  *
+ * WILL FAIL IF RUN (docs/superpowers/plans/2026-09-02-clean-up-after-the-ledger.md
+ * section 2.1, 2026-09-02): step 4 below, insertMany("Stock_Ledger", ...),
+ * reads/writes a table Phase D dropped (migration 0096, applied). Kept, not
+ * deleted, per CLAUDE.md section 3 -- this is the only surviving record of
+ * how the early orders-v2 write path batched order + lines + event + ledger
+ * as one logical unit. Confirmed zero live callers as of 2026-09-02 (only
+ * insertOrderV2Records's own test imports it) -- kept for the historical
+ * record, not because anything still calls it.
+ *
  * Batched write helpers for V2 sheets.
  *
  * Writes OrderV2 + lines + event + ledger as a logical unit.

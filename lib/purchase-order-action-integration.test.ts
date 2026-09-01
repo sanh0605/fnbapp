@@ -24,6 +24,13 @@ describe("purchase order action integration", () => {
   it("invalidates purchase and inventory caches after a successful save", () => {
     expect(source).toContain('revalidateTag("sheets-Purchase_Orders")');
     expect(source).toContain('revalidateTag("sheets-Purchase_Order_Lines")');
-    expect(source).toContain('revalidateTag("sheets-Stock_Ledger")');
+  });
+
+  // docs/superpowers/plans/2026-09-02-clean-up-after-the-ledger.md section 2,
+  // point 2: stock_ledger was dropped by Phase D (migration 0096, applied).
+  // Busting the cache tag for a table that no longer exists is meaningless,
+  // not merely harmless -- removed rather than left as dead noise.
+  it("no longer revalidates the retired stock_ledger cache tag", () => {
+    expect(source).not.toContain("sheets-Stock_Ledger");
   });
 });

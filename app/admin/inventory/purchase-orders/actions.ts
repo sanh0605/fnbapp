@@ -259,7 +259,6 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
 
     revalidateTag("sheets-Purchase_Orders");
     revalidateTag("sheets-Purchase_Order_Lines");
-    revalidateTag("sheets-Stock_Ledger");
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
     return ok({ po_id, ...(assetWarning ? { assetWarning } : {}) });

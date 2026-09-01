@@ -1,3 +1,18 @@
+// HISTORICAL, ITS CALLERS WILL FAIL IF RUN
+// (docs/superpowers/plans/2026-09-02-clean-up-after-the-ledger.md section
+// 2.1, 2026-09-02, correcting the plan's own section 1.3 framing): this
+// file makes no live database query at all -- verifyTask3SnapshotFiles
+// below parses "stock_ledger" and "audit_baseline_locks" out of an
+// already-captured snapshot bundle (files: Record<string,string>, e.g.
+// from Google Drive), not the live tables, so Phase D's stock_ledger drop
+// (migration 0096) does not touch this file's own behaviour. Its two
+// script callers (scripts/recover-task-3.ts,
+// scripts/revert-prior-lock-violations-2026-07-20-21.ts) DO fail if run,
+// but for an unrelated, earlier reason: both write to/read from
+// audit_baseline_locks, dropped by migration 0054 back in Plan C Task 6 --
+// well before Phase D, nothing to do with the ledger removal this note is
+// otherwise about. Kept, not deleted, per CLAUDE.md section 3: the only
+// surviving record of how the Task 3 MAC-drift recovery was computed.
 import { createHash } from "node:crypto";
 import { isRecoveryRunId, verifySnapshotBundleFiles } from "./recovery-snapshot";
 
