@@ -48,6 +48,31 @@ Còn đúng một chỗ người dùng nhìn thấy: **câu báo lỗi khi đế
 **Hai hàm phiếu xuất chỉ chuyền tay, không dùng để quyết định gì.** Đó là tin
 tốt: đường giá vốn không đổi hành vi, chỉ bớt một khoá trong kết quả trả về.
 
+### 1.3b Đo lại 02/09, sau khi bước 1 đã chạy — số đã đổi
+
+`0089`/`0090` chạy xong 02/09, chủ quán xác nhận trên web. **Bước 2 hết chặn.**
+
+| | Kế hoạch viết 01/09 | **Đo lại 02/09** |
+|---|---:|---:|
+| Hàm máy chủ dùng cột | 4 | **3** |
+| File mã nguồn dùng cột | 11 | **9** |
+
+**`apply_stocktake_session_atomic` đã tự rơi ra** — đúng như §1.3 dự đoán, vì
+`0089` gỡ cả vòng gộp theo nhóm. Không cần làm gì thêm cho nó.
+
+**Ba hàm còn lại**, đúng như đã phân loại:
+
+| Hàm | Kiểu dùng |
+|---|---|
+| `create_issue_slip_atomic` | Đọc rồi trả về — chuyền tay |
+| `reverse_manual_issue_atomic` | Đọc rồi trả về — chuyền tay |
+| `save_stocktake_line_atomic` | **Dùng trong điều kiện tra cứu** — §1.4 |
+
+**Chín file mã nguồn**, người thực thi phải tự phân loại sống/chết: bốn file
+trong `app/`, năm file trong `lib/` — trong đó **ba file thuộc `lib/historical/`
+hoặc dựng lại sổ kho cũ**, nhiều khả năng đã chết cùng sổ kho. **Chưa xác minh,
+đừng cho là chết.**
+
 ### 1.4 Cái mất thật — một câu báo lỗi bớt hữu ích
 
 `save_stocktake_line_atomic` dùng cột này để **dựng câu gợi ý trong lời báo lỗi**.
