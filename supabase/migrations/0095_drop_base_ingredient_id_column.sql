@@ -1,0 +1,29 @@
+-- Step 2 of the ingredient-group removal, final migration (OPEN-ITEMS 75)
+-- -- docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md
+-- section 2, point 3. Drops purchased_items.base_ingredient_id itself.
+--
+-- Owner's own words, 2026-09-01: "Xóa nó đi và anh sẽ tự nối nó lại nếu sau
+-- này có dựng lại."
+--
+-- Must run after -- and only after -- every migration that reads or writes
+-- this column has already deployed: 0092 (save_stocktake_line_atomic),
+-- 0093 (reverse_manual_issue_atomic), 0094 (create_issue_slip_atomic), and
+-- this task's own TypeScript commit (app/admin/inventory/items/actions.ts,
+-- lib/manual-issue-transaction.ts, lib/purchase-order-write-plan.ts,
+-- types/db.ts). Running this migration first would break every purchased-
+-- item create and every issue-slip/reversal/stocktake-overcount write on
+-- the spot -- the 0076 lesson.
+--
+-- Confirmed live 2026-09-02, before writing this migration: nullable text
+-- column, no default, no FK/check/unique constraint, no index, no
+-- dependent view. The base_ingredients table itself and its own FK from
+-- this column were already removed by 0090 (2026-09-02, DROP TABLE
+-- CASCADE) -- this migration only drops the now-orphaned column that FK
+-- used to point from.
+--
+-- The tier-2 group table was already dropped without a backup (owner's own
+-- decision, 0090's header). This column carries no additional data beyond
+-- which group a purchased item belonged to -- dropping it loses nothing
+-- that 0090 had not already made unrecoverable.
+alter table public.purchased_items
+  drop column if exists base_ingredient_id;

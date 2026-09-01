@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Drop base_ingredient_id, step 2 of the ingredient-group removal (OPEN-ITEMS 75)
+
+Implements docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md. Step 1 (dropping the base_ingredients table, migrations 0089/0090) had already run and been confirmed by the owner on the web -- live-verified before starting: base_ingredients table gone, apply_stocktake_session_atomic mentions it only in a comment now (not real code), matching the plan's own section 1.3b claim that it fell out on its own.
+
+Critique before coding found one gap the plan's own section 1.6 flagged as unverified and left unresolved: app/admin/inventory/items/actions.ts's addPurchasedItem -- the live create action (confirmed via import trace, not the dead duplicate in app/admin/inventory/actions.ts) -- still wrote base_ingredient_id into every new purchased item's INSERT payload. updatePurchasedItem was already fixed in step 1; addPurchasedItem was not. Left alone, dropping the column would have broken creating any new purchased item on the spot. Fixed as part of the TypeScript commit, ahead of any server-function change, per the required ordering.
+
+Four commits, in the required order (code first, then one server function per commit, issue slips last -- the 0076 lesson run in this direction):
+
+1. TypeScript: removed base_ingredient_id from types/db.ts's DBPurchasedItem, app/admin/inventory/items/actions.ts's addPurchasedItem insert, lib/manual-issue-transaction.ts's IssueSlipLineResult/ReversalResult (confirmed dead beyond this file -- only test fixtures ever read it), and lib/purchase-order-write-plan.ts's unused PurchasedItemWriteInput field. Left untouched, confirmed safe: app/admin/inventory/actions.ts's dead duplicate addPurchasedItem/updatePurchasedItem (no importer); lib/purchase-ledger-rebuild.ts, lib/historical/purchase-ledger-audit.ts, lib/historical/full-history-recompute.ts (reachable only from scripts/*, Phase D stock-ledger territory explicitly out of scope per the plan's section 1.5, each already degrades gracefully via || fallback).
+2. Migration 0092_save_stocktake_line_drop_sibling_hint.sql -- the one function using base_ingredient_id in a lookup condition, not just a pass-through: the sibling-item suggestion inside BR-INV-005's over-count refusal. The refusal itself is unchanged (same first two sentences); only the third sentence, which listed other purchased items sharing the same tier-2 group, is removed -- nothing left in the data can answer that question correctly after the group table is gone, and a wrong guess inside a refusal message is worse than none (plan section 1.4).
+3. Migration 0093_reverse_manual_issue_drop_base_ingredient_id.sql -- pure pass-through removal, all refusal checks and the reversal math are keyed on purchased_item_id, untouched.
+4. Migration 0094_create_issue_slip_drop_base_ingredient_id.sql -- same pass-through removal; the purchase-before-issue check, over-issue check, and cumulative running-balance math are all keyed on purchased_item_id, untouched.
+5. Migration 0095_drop_base_ingredient_id_column.sql -- alter table purchased_items drop column if exists base_ingredient_id. Live-verified before writing: nullable text, no default, no FK/check/unique constraint, no index, no dependent view -- a bare drop is sufficient, no CASCADE needed (unlike 0090's table drop).
+
+Four new migration-content tests (lib/save-stocktake-line-drop-sibling-hint-migration.test.ts, lib/reverse-manual-issue-drop-base-ingredient-id-migration.test.ts, lib/create-issue-slip-drop-base-ingredient-id-migration.test.ts, lib/drop-base-ingredient-id-column-migration.test.ts), each confirmed red before its fix by temporarily reintroducing the removed SQL into a working copy of its migration and re-running -- every failure traced to a missing statement or a wrong value still present, never a missing file or function. Comments stripped before "no longer mentions" searches, since each migration's own header comment legitimately names base_ingredient_id while explaining its removal.
+
+Verification after each commit: tsc 0 errors, vitest green (232 files / 1600 tests after the final commit), check-rules-current PASS, npm run build succeeds. verify-revenue.ts clean across all five gated months after the final commit (expected -- no application code or data touched by these migrations).
+
+Deferred to the owner's own post-approval run, since none of the five migrations were applied: save an issue slip, reverse one, and count an item over its total purchased to confirm BR-INV-005's refusal still fires (plan section 4).
+
+All four migrations written, none applied. Not pushed.
+
 ## 2026-09-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Close the POS function grants (OPEN-ITEMS 81)
 
 Implements docs/superpowers/plans/2026-09-02-close-the-pos-function-grants.md. `create_pos_order_atomic` and `create_pos_order_atomic_unvalidated_0025` were created without the revoke/grant block the other 52 write-path migrations carry, leaving Postgres's default EXECUTE grant to `public`/`anon`/`authenticated` intact.
