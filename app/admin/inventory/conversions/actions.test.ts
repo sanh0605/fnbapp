@@ -9,20 +9,30 @@ const mocks = vi.hoisted(() => ({
   remove: vi.fn(),
   generateNewId: vi.fn(),
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", () => ({
-  findAll: mocks.findAll,
-  findAllWhere: mocks.findAllWhere,
-  insert: mocks.insert,
-  update: mocks.update,
-  remove: mocks.remove,
-  generateNewId: mocks.generateNewId,
-}));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("@/lib/sheets_db", async () => {
+  // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+  // section 1.4: getCacheTag is the REAL, unmocked function here (via
+  // importActual), so this file's own assertions can never silently drift
+  // from what the source under test actually calls.
+  const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
+  return {
+    findAll: mocks.findAll,
+    findAllWhere: mocks.findAllWhere,
+    insert: mocks.insert,
+    update: mocks.update,
+    remove: mocks.remove,
+    generateNewId: mocks.generateNewId,
+    getCacheTag: actual.getCacheTag,
+  };
+});
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
-import { addConversion, updateConversion, getConversionsData } from "./actions";
+import { addConversion, updateConversion, deleteConversionAction, getConversionsData } from "./actions";
+import { getCacheTag } from "@/lib/sheets_db";
 
 function formData(fields: Record<string, string>): FormData {
   const fd = new FormData();
@@ -181,5 +191,62 @@ describe("updateConversion -- the unit lock", () => {
 
     expect(res.error).toBeUndefined();
     expect(mocks.update).toHaveBeenCalledWith("UOM_Conversions", "QD-1", expect.objectContaining({ conversion_rate: "20", base_unit: "U-KG" }));
+  });
+});
+
+// docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+// section 1.3/2: this file is the real, live UOM_Conversions writer --
+// PurchasedItemForm.tsx (a different screen) reads UOM_Conversions too, so
+// an edit here left that screen stale for up to 10 minutes. This file was
+// missed by that plan's own section 1.3 measurement (a dead, unreferenced
+// duplicate of addConversion/updateConversion in
+// app/admin/inventory/actions.ts was counted in its place); fixed here as
+// the same class of bug. Confirmed red against the pre-fix code (before
+// revalidateTag was added) on "0 calls" -- a missing call, not a wrong
+// value -- then restored.
+describe("addConversion/updateConversion/deleteConversionAction -- revalidate sheets-UOM_Conversions, not just the path", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.generateNewId.mockResolvedValue("QD-NEW");
+    mocks.findAllWhere.mockResolvedValue([]);
+    mocks.findAll.mockResolvedValue([]);
+  });
+
+  it("addConversion revalidates sheets-UOM_Conversions", async () => {
+    const res = await addConversion(formData({
+      purchased_item_id: "SPM-TRAITAC",
+      purchased_unit: "U-BAO",
+      conversion_rate: "10",
+      base_unit: "U-KG",
+    }));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+  });
+
+  it("updateConversion revalidates sheets-UOM_Conversions", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve([{ id: "QD-1", purchased_item_id: "SPM-TRAITAC", purchased_unit: "U-BAO", conversion_rate: "10", base_unit: "U-KG" }]);
+      return Promise.resolve([]);
+    });
+
+    const res = await updateConversion(formData({
+      id: "QD-1",
+      purchased_item_id: "SPM-TRAITAC",
+      purchased_unit: "U-BAO",
+      conversion_rate: "20",
+      base_unit: "U-KG",
+    }));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+  });
+
+  it("deleteConversionAction revalidates sheets-UOM_Conversions", async () => {
+    const res = await deleteConversionAction(formData({ id: "QD-1" }));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
   });
 });

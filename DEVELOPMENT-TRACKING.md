@@ -4,6 +4,28 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Stale-screen bug fixed at its three remaining sites -- plus a fourth the plan's own measurement missed
+
+Implements docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md (OPEN-ITEMS 79). Section 1.3 claimed 7 stale-cache pairs across 3 files (Units and Item_Categories writes in app/admin/inventory/actions.ts; Purchased_Items/UOM_Conversions writes there and in app/admin/inventory/items/actions.ts). Re-derived live rather than trusted, per the standing rule.
+
+Two of the seven pairs point at dead code: addPurchasedItem/updatePurchasedItem/deletePurchasedItem and addConversion/updateConversion/deleteConversion in app/admin/inventory/actions.ts are never imported anywhere (grepped app/ and components/ for real usages, none found) -- the real, live screens import the same-named functions from app/admin/inventory/items/actions.ts and app/admin/inventory/conversions/actions.ts instead. Adding revalidateTag to a function that never executes fixes nothing; left alone, flagged in a comment rather than silently ignored.
+
+More importantly, a real, live file was entirely absent from the plan's file list: app/admin/inventory/conversions/actions.ts, the actual UOM_Conversions writer for the Bảng Quy Đổi screen. Root cause of the miss: the plan's own measurement script (scratchpad/stale-cache-risk.ts) matches table names only when passed as a literal string directly to insert/update/remove -- this file assigns the name to a const SHEET first, which the regex can't see through. The dead duplicate in app/admin/inventory/actions.ts happens to use literal strings, so it matched in this file's place. Fixed the real file too -- leaving it out under the letter of "3 files" would have left the actual bug (editing a conversion here, PurchasedItemForm.tsx elsewhere staying stale up to 10 minutes) unfixed.
+
+Net: 4 files, 13 write-actions across 8 real (file, table) pairs. getCacheTag exported from lib/sheets_db.ts (was module-private) so every call site derives the tag from the one real function instead of retyping "sheets-<Table>" -- section 1.4's own warning that a mismatched tag fails silently, the same shape as the bug being fixed. Every new test asserts against getCacheTag's live, unmocked output (vi.importActual in each test file's own vi.mock("@/lib/sheets_db") factory), not a second hardcoded copy of the string.
+
+Confirmed red twice per touched file: with the revalidateTag calls stripped entirely, every new test failed on "0 calls" (missing call, not a wrong value); with one call changed to a hardcoded, misspelled literal ("sheets-Unit" for "sheets-Units"), exactly that one test failed on a wrong VALUE while its siblings stayed green -- proving the assertion catches the silent-typo failure mode section 1.4 names, not just "was revalidateTag called." Both reverted and diff-verified byte-identical before restoring. Existing test files for these 4 action files needed their vi.mock("@/lib/sheets_db")/vi.mock("next/cache") factories updated to provide getCacheTag/revalidateTag -- without this the pre-existing tests in those files broke immediately (a thrown TypeError caught and reworded by describeActionError), caught and fixed before writing any new test.
+
+scratchpad/stale-cache-risk.ts copied to scripts/stale-cache-risk.ts per section 3, with both blind spots found while using it (the SHEET-constant miss above, and no notion of whether an exported function is ever actually called) recorded in its own header comment. Re-run after the fix: 0 pairs -- not trusted by itself, since the script excludes an entire file the instant it contains any revalidateTag call rather than checking per write-site; backed instead by the 13 per-action tests, each asserting the specific tag its own call site produces.
+
+Section 1.6's three open questions: whether the manual "Xoá Cache" button covers all 16 long-cached tables, and whether any screen auto-refreshes on tab focus, both explicitly not checked (out of this task's stated scope, not silently dropped). Whether any automated check already guards this class of bug: no, confirmed by grep -- scripts/stale-cache-risk.ts living in scripts/ now (not scratchpad/) is the direct answer going forward.
+
+tsc 0 errors, vitest 224/1565 green, check-rules-current clean, npm run build succeeds (38 routes). No data written, no migration. Not pushed.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+---
+
 ## 2026-09-01 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Delete tier-2 ingredient groups, step 1: the base_ingredients table
 
 Implements docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md (OPEN-ITEMS 75). Owner confirmed the deletion itself 2026-09-01 (plan section 0 records an earlier, wrongly-recorded 2026-08-29 note and the direct re-ask): "Xoa truoc, sau nay can thi dung lai sau cho dung chuan logic tu bay gio tro di." Declined a backup of the 46 groups / 52-item mapping.

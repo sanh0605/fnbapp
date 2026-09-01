@@ -10,21 +10,32 @@ const mocks = vi.hoisted(() => ({
   remove: vi.fn(),
   generateNewId: vi.fn(),
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", () => ({
-  findAll: mocks.findAll,
-  findAllWhere: mocks.findAllWhere,
-  insert: mocks.insert,
-  update: mocks.update,
-  updateMany: mocks.updateMany,
-  remove: mocks.remove,
-  generateNewId: mocks.generateNewId,
-}));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("@/lib/sheets_db", async () => {
+  // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+  // section 1.4: getCacheTag is the REAL, unmocked function here (via
+  // importActual), not a re-typed stand-in -- the source under test and
+  // this test file's own assertions both call the one real implementation,
+  // so a typo in either can never silently agree with the other.
+  const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
+  return {
+    findAll: mocks.findAll,
+    findAllWhere: mocks.findAllWhere,
+    insert: mocks.insert,
+    update: mocks.update,
+    updateMany: mocks.updateMany,
+    remove: mocks.remove,
+    generateNewId: mocks.generateNewId,
+    getCacheTag: actual.getCacheTag,
+  };
+});
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import * as actions from "./actions";
+import { getCacheTag } from "@/lib/sheets_db";
 
 // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md,
 // OPEN-ITEMS 69: this is the exact production incident that started the
@@ -371,5 +382,68 @@ describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follo
 
     expect(res.error).toBeTruthy();
     expect(res.needsDuplicateWarning).toBeUndefined();
+  });
+});
+
+// docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+// section 1.3 (rows 5, 7) / section 3: Purchased_Items and UOM_Conversions
+// are cached 10 min, keyed by table -- revalidatePath alone only refreshes
+// this screen's own path, not the tag other screens (Đơn nhập, Phiếu xuất
+// kho, Kiểm kê) read through. Asserted against getCacheTag's real output
+// (imported above, unmocked), not a re-typed string -- see the vi.mock
+// factory's own comment for why.
+//
+// Confirmed red twice against the pre-fix code, for the two different
+// reasons section 3 asks to distinguish: (1) with the revalidateTag calls
+// removed entirely, all three tests below failed on "0 calls" -- a missing
+// call, not a wrong value; (2) with deletePurchasedItemAction's call
+// changed to the hardcoded, misspelled literal "sheets-Purchased_Item" (one
+// letter short of getCacheTag("Purchased_Items")'s real output), that same
+// test failed on a wrong VALUE -- proving this assertion style catches
+// exactly the silent-typo failure mode section 1.4 warns about, not just
+// "was revalidateTag called." Both reverted and diff-verified byte-identical
+// before restoring.
+describe("addPurchasedItem/updatePurchasedItem/deletePurchasedItemAction -- revalidate the table tag, not just the path", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findAll.mockResolvedValue([]);
+    mocks.findAllWhere.mockResolvedValue([]);
+    mocks.generateNewId.mockResolvedValue("SPM-999");
+  });
+
+  it("addPurchasedItem revalidates sheets-Purchased_Items and sheets-UOM_Conversions", async () => {
+    const formData = new FormData();
+    formData.set("name", "Trứng gà mới");
+    formData.set("item_category_id", "NHH-001");
+
+    const res = await actions.addPurchasedItem(formData);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+  });
+
+  it("updatePurchasedItem revalidates sheets-Purchased_Items and sheets-UOM_Conversions", async () => {
+    const formData = new FormData();
+    formData.set("id", "SPM-100");
+    formData.set("name", "Trứng gà");
+    formData.set("item_category_id", "NHH-001");
+
+    const res = await actions.updatePurchasedItem(formData);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+  });
+
+  it("deletePurchasedItemAction revalidates sheets-Purchased_Items", async () => {
+    const formData = new FormData();
+    formData.set("id", "SPM-100");
+
+    const res = await actions.deletePurchasedItemAction(formData);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"));
   });
 });

@@ -1,7 +1,7 @@
 "use server";
 
-import { findAll, findAllWhere, insert, update, remove, generateNewId } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { findAll, findAllWhere, insert, update, remove, generateNewId, getCacheTag } from "@/lib/sheets_db";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
@@ -150,6 +150,14 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
       purchase_only,
       created_at: new Date().toISOString(),
     });
+    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+    // section 1.3/2: UOM_Conversions is cached 10 min, keyed by table --
+    // Hàng Mua Vào, Đơn nhập, Kiểm kê all read it through that cache. This
+    // file was missed by that plan's own file-list measurement (the dead
+    // duplicate addConversion/updateConversion in
+    // app/admin/inventory/actions.ts was counted instead of this, the real,
+    // live one) -- fixed here as the same class of bug, not a new one.
+    revalidateTag(getCacheTag("UOM_Conversions"));
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -214,6 +222,7 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
     }
 
     await update(SHEET, id, { purchased_item_id, purchased_unit, conversion_rate, base_unit, purchase_only });
+    revalidateTag(getCacheTag("UOM_Conversions"));
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -236,6 +245,7 @@ export async function deleteConversionAction(formData: FormData): Promise<Action
     } else {
       await remove(SHEET, id);
     }
+    revalidateTag(getCacheTag("UOM_Conversions"));
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

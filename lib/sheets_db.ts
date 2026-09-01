@@ -31,7 +31,12 @@ function normalizeTableName(sheetName: string): string {
 // Cache helpers (preserved from Sheets impl)
 // ============================================================================
 
-const getCacheTag = (sheetName: string) => `sheets-${sheetName}`;
+// Exported so callers outside this file that need to invalidate a table's
+// cache directly (docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+// section 1.4/2) derive the tag from this one function instead of retyping
+// the "sheets-<TableName>" string -- a typo there fails silently, the exact
+// shape of the bug that plan exists to fix.
+export const getCacheTag = (sheetName: string) => `sheets-${sheetName}`;
 
 // Claude code — Supabase migration perf: cache TTL bumped.
 // Postgres data changes less often than Sheets did. Writes call

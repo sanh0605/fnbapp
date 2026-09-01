@@ -1,7 +1,7 @@
 "use server";
 
-import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewId } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewId, getCacheTag } from "@/lib/sheets_db";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
@@ -149,6 +149,12 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
       }
     }
 
+    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+    // section 2: Purchased_Items and UOM_Conversions are cached 10 min,
+    // keyed by table -- Đơn nhập, Phiếu xuất kho, Kiểm kê all read them
+    // through that cache, not this screen's path.
+    revalidateTag(getCacheTag("Purchased_Items"));
+    revalidateTag(getCacheTag("UOM_Conversions"));
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
     return ok();
@@ -308,6 +314,8 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       }
     }
 
+    revalidateTag(getCacheTag("Purchased_Items"));
+    revalidateTag(getCacheTag("UOM_Conversions"));
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
     return ok();
@@ -323,6 +331,7 @@ export async function deletePurchasedItemAction(formData: FormData): Promise<Act
   const id = formData.get("id") as string;
   try {
     await remove(SHEET, id);
+    revalidateTag(getCacheTag("Purchased_Items"));
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

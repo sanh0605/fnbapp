@@ -1,7 +1,7 @@
 "use server";
 
-import { findAll, findAllNoCache, insert, update, remove, generateNewId } from "@/lib/sheets_db";
-import { revalidatePath } from "next/cache";
+import { findAll, findAllNoCache, insert, update, remove, generateNewId, getCacheTag } from "@/lib/sheets_db";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -27,6 +27,11 @@ export async function addItemCategory(formData: FormData): Promise<ActionRespons
 
     const id = await generateNewId("Item_Categories", "NHH");
     await insert("Item_Categories", { id, name, system_type });
+    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+    // section 2: Item_Categories is cached 30 min, keyed by table, and other
+    // screens (Hàng Mua Vào, Kiểm kê...) read it through that cache.
+    // revalidatePath below only refreshes this screen.
+    revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
   } catch (error: any) {
@@ -48,6 +53,7 @@ export async function updateItemCategory(formData: FormData): Promise<ActionResp
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     await update("Item_Categories", id, { name, system_type });
+    revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
   } catch (error: any) {
@@ -62,6 +68,7 @@ export async function deleteItemCategory(formData: FormData): Promise<ActionResp
   const id = formData.get("id") as string;
   try {
     await remove("Item_Categories", id);
+    revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
   } catch (error: any) {
@@ -70,6 +77,13 @@ export async function deleteItemCategory(formData: FormData): Promise<ActionResp
 }
 
 // --- PURCHASED ITEMS (Hàng Hoá Mua Vào) ---
+// Not touched by docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md:
+// confirmed dead (grep across app/ and components/, no import found anywhere)
+// -- the real, live screen imports addPurchasedItem/updatePurchasedItem from
+// app/admin/inventory/items/actions.ts instead, which is what the plan's own
+// section 1.3 also names separately. Adding revalidateTag to a function that
+// never runs would fix nothing; noted here rather than silently ignored or
+// deleted (out of this task's scope).
 export async function addPurchasedItem(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
@@ -209,6 +223,10 @@ export async function deletePurchasedItem(formData: FormData): Promise<ActionRes
 }
 
 // --- UOM CONVERSIONS (Bảng Quy Đổi) ---
+// Same as above: dead, unreferenced anywhere. The real, live screen imports
+// addConversion/updateConversion from app/admin/inventory/conversions/actions.ts
+// (a DIFFERENT file the plan's own section 1.3 measurement missed entirely
+// -- fixed there instead, see that file's own note).
 export async function addConversion(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
@@ -309,6 +327,10 @@ export async function addUnit(formData: FormData): Promise<ActionResponse> {
       description,
       created_at: new Date().toISOString()
     });
+    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
+    // section 2: Units is cached 30 min, keyed by table -- Hàng Mua Vào,
+    // Phiếu xuất kho, Kiểm kê all read it through that cache, not this path.
+    revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
   } catch (error: any) {
@@ -331,6 +353,7 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     await update("Units", id, { name, description });
+    revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
   } catch (error: any) {
@@ -345,6 +368,7 @@ export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   try {
     await remove("Units", id);
+    revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
   } catch (error: any) {
