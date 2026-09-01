@@ -128,11 +128,26 @@ chọn cách nào và vì sao.**
 | **A. Nút "Xem thêm"** | Đơn giản, hợp điện thoại, không cần ô nhập mới | Bấm nhiều lần nếu tìm phiếu xa |
 | **B. Lọc theo khoảng ngày** | Tới thẳng ngày cần | Thêm hai ô nhập, thêm bố cục cho điện thoại |
 
-**Khuyến nghị A**, và lý do nằm ở việc thật: chủ quán ghi phiếu **khi đứng trước
-kệ, bằng điện thoại**. Cái ông ấy cần là *"tuần trước tôi xuất bao nhiêu"*, tức
-lùi vài bước — không phải tra một ngày cụ thể ba tháng trước.
+**Chủ quán chốt 01/09 — và câu trả lời không nằm trong A hay B:**
 
-**Sonnet không được tự chọn phần 2.2. Làm 2.1 trước, hỏi rồi làm tiếp.**
+> *"Nếu là chỗ xuất kho thì anh muốn nó sẽ có giao diện tương tự với trang quản
+> lý nhập hàng. Chỉ xem chi tiết sản phẩm xuất ra khi bấm vào xem chi tiết phiếu
+> xuất."*
+
+Tức là **dựng lại màn hình theo lối màn hình Đơn Nhập Hàng**: danh sách chỉ hiện
+từng phiếu một dòng, muốn xem xuất những gì thì bấm vào phiếu.
+
+**Điều đó làm chuyện cắt giữa phiếu tự biến mất** — danh sách lấy theo phiếu chứ
+không theo dòng, nên không còn vết cắt nào rơi vào giữa. §2.1 trở thành một phần
+của việc dựng lại, không phải bản vá riêng.
+
+**Chủ quán nói rõ đây là việc để sau**, không làm bây giờ. Nên:
+
+- **Không giao Sonnet đợt này.**
+- Khi làm, đây là **dựng màn hình theo mẫu đã có**, phải đọc màn hình Đơn Nhập
+  Hàng trước rồi mới thiết kế — đừng nghĩ ra bố cục mới.
+- §1.7 còn ba câu chưa trả lời, và câu về điện thoại (`CLAUDE.md` §7) thành
+  quan trọng nhất, vì đây là màn hình dùng khi đứng trước kệ.
 
 ## 3. Kiểm chứng
 
