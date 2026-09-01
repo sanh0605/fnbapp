@@ -1,25 +1,40 @@
 "use client";
 
 import { useState, useId } from "react";
+import { useRouter } from "next/navigation";
 import { addUnit, updateUnit, deleteUnit } from "@/app/admin/inventory/actions";
 import { alert, confirm } from "@/lib/dialog";
 
 export function UnitForm({ initialData }: { initialData?: any }) {
   const formId = useId();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const isEdit = !!initialData;
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4/B: both defects lived in this same handler -- the action's
+  // result was discarded (silent refusal) and nothing told the browser to
+  // redraw this screen after a real save (section B2: revalidatePath alone
+  // only marks the server cache stale, it does not repaint an already-open
+  // page). router.refresh() re-renders the current route with fresh data,
+  // in place -- not a full reload (section B4).
   async function handleSubmit(formData: FormData) {
     setLoading(true);
+    let res;
     if (isEdit) {
       formData.append("id", initialData.id);
-      await updateUnit(formData);
+      res = await updateUnit(formData);
     } else {
-      await addUnit(formData);
+      res = await addUnit(formData);
     }
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Lỗi", message: res.error, variant: "danger" });
+      return;
+    }
     setIsOpen(false);
+    router.refresh();
   }
 
   return (
@@ -60,15 +75,27 @@ export function UnitForm({ initialData }: { initialData?: any }) {
 }
 
 export function DeleteBtn({ id }: { id: string }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  
+
   const handleDelete = async () => {
     if (await confirm({ title: "Xác nhận xóa", message: "Xác nhận xoá đơn vị này?", variant: "danger" })) {
       setLoading(true);
       const fd = new FormData();
       fd.append("id", id);
-      await deleteUnit(fd);
+      const res = await deleteUnit(fd);
       setLoading(false);
+      // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+      // section A4: this is the exact site the owner hit -- Combo 2's
+      // delete was refused server-side and nothing here ever read the
+      // result. res.error is now a real Vietnamese sentence naming the
+      // unit and what is using it (app/admin/inventory/actions.ts's
+      // deleteUnit, section A3/A7), not a raw code or silence.
+      if (res?.error) {
+        await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+        return;
+      }
+      router.refresh();
     }
   };
 

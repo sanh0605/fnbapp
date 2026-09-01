@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
+import { useRouter } from "next/navigation";
 import { addOutlet, editOutlet, retireOutlet } from "../actions";
 import { nextOutletCode } from "@/lib/outlet-code";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
@@ -44,6 +45,7 @@ interface OutletFormProps {
 export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
   const isEdit = !!initialData;
   const formId = useId();
+  const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,6 +70,9 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
     resetForNextOpen();
   }
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: revalidatePath (in editOutlet/addOutlet) marks the server
+  // cache stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
@@ -83,6 +88,7 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
         return;
       }
       setIsOpen(false);
+      router.refresh();
       return;
     }
 
@@ -95,6 +101,7 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
     setIsOpen(false);
     setSelectedDate(null);
     setBrandId("");
+    router.refresh();
   }
 
   return (
@@ -259,10 +266,15 @@ interface RetireOutletButtonProps {
 // is surfaced here rather than pre-checked client-side, so the rule lives
 // in exactly one place.
 export function RetireOutletButton({ outlet }: RetireOutletButtonProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   if (outlet.status !== "ACTIVE") return null;
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: outlet is a server-fetched prop -- without this, the button
+  // above stays visible (still reading the stale ACTIVE status) after a
+  // successful retire, until the owner navigates away and back.
   async function handleRetire() {
     const approved = await confirm({
       title: "Ngừng hoạt động điểm bán",
@@ -281,7 +293,9 @@ export function RetireOutletButton({ outlet }: RetireOutletButtonProps) {
 
     if (res.error) {
       await alert({ title: "Không thể ngừng hoạt động", message: res.error, variant: "danger" });
+      return;
     }
+    router.refresh();
   }
 
   return (

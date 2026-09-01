@@ -17,11 +17,17 @@ import { DisposeAssetForm } from "./DisposeAssetForm";
 const mocks = vi.hoisted(() => ({
   disposeAsset: vi.fn(),
   previewDisposalCharge: vi.fn(),
+  routerRefresh: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
   disposeAsset: mocks.disposeAsset,
   previewDisposalCharge: mocks.previewDisposalCharge,
+}));
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section B: this component now calls useRouter().refresh() on save.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: mocks.routerRefresh }),
 }));
 
 const roots: Root[] = [];

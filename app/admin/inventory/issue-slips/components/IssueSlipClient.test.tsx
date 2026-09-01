@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   reverseIssueSlip: vi.fn(),
   cancelIssueSlip: vi.fn(),
   confirmDialog: vi.fn(),
+  routerRefresh: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
@@ -40,6 +41,11 @@ vi.mock("../actions", () => ({
 // need to prove the declined path override this per-test.
 vi.mock("@/lib/dialog", () => ({
   confirm: mocks.confirmDialog,
+}));
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section B: this component now calls useRouter().refresh() on save.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: mocks.routerRefresh }),
 }));
 
 beforeEach(() => {

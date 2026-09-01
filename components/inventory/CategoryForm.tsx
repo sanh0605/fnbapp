@@ -1,24 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { addItemCategory, updateItemCategory } from "@/app/admin/inventory/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { alert } from "@/lib/dialog";
 
 export function CategoryForm({ initialData }: { initialData?: any }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const isEdit = !!initialData;
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B2/B7: the exact case the owner hit -- renaming a category here
+  // used to leave this screen showing the old name until he navigated away
+  // and back (revalidatePath alone marks the server cache stale, it does
+  // not repaint an already-open page). router.refresh() re-renders the
+  // current route in place. Also section A4b: the action's result was
+  // discarded outright, so a failed save showed nothing at all.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
+    let res;
     if (isEdit) {
       formData.append("id", initialData.id);
-      await updateItemCategory(formData);
+      res = await updateItemCategory(formData);
     } else {
-      await addItemCategory(formData);
+      res = await addItemCategory(formData);
     }
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Lỗi", message: res.error, variant: "danger" });
+      return;
+    }
     setIsOpen(false);
+    router.refresh();
   }
 
   return (

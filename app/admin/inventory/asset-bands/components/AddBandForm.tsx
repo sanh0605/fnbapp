@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +14,7 @@ import { createAssetBand } from "../actions";
 // band that overlaps or gaps another).
 export function AddBandForm() {
   const formId = useId();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +22,10 @@ export function AddBandForm() {
   const [maxPrice, setMaxPrice] = useState("");
   const [termMonths, setTermMonths] = useState("");
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: revalidatePath (in createAssetBand) marks the server cache
+  // stale but does not repaint this already-open page -- router.refresh()
+  // does, in place.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
@@ -32,6 +38,7 @@ export function AddBandForm() {
       setMinPrice("");
       setMaxPrice("");
       setTermMonths("");
+      router.refresh();
     }
   }
 

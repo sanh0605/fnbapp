@@ -8,6 +8,7 @@ import { deletePromotionAction } from "../actions";
 import { PromotionForm } from "./PromotionForm";
 import { formatNumber } from "@/lib/format";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { alert } from "@/lib/dialog";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 
 interface PromotionsClientProps {
@@ -35,10 +36,18 @@ export default function PromotionsClient({
   const [editingPromo, setEditingPromo] = useState<DBPromotion | undefined>(undefined);
   const [deleteId, setDeleteConfirmId] = useState<string | null>(null);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b: the action's result was discarded -- a refusal failed in
+  // total silence (router.refresh() below was already correct, only the
+  // missing error check was the defect here).
   const handleDelete = async () => {
     if (deleteId) {
-      await deletePromotionAction(deleteId);
+      const res = await deletePromotionAction(deleteId);
       setDeleteConfirmId(null);
+      if (res?.error) {
+        await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+        return;
+      }
       router.refresh();
     }
   };

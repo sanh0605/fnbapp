@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useId } from "react";
+import { useRouter } from "next/navigation";
 import { addBrand, deleteBrand, editBrand } from "../actions";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
+import { alert } from "@/lib/dialog";
 import type { DBBrand } from "@/types/db";
 
 interface BrandFormProps {
@@ -21,6 +23,7 @@ function formatDateToYYYYMMDD(date: Date): string {
 export function BrandForm({ initialData }: BrandFormProps) {
   const isEdit = !!initialData;
   const formId = useId();
+  const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,6 +31,11 @@ export function BrandForm({ initialData }: BrandFormProps) {
     initialData?.start_date ? new Date(initialData.start_date) : null
   );
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b/B: found while fixing this file's delete button -- this
+  // add/edit handler discarded its result too (via `fn`, not a literal
+  // function name, which is why the plan's own grep-based section A4b
+  // count missed it), and never told the browser to redraw after a save.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     if (isEdit && initialData) {
@@ -39,10 +47,15 @@ export function BrandForm({ initialData }: BrandFormProps) {
       formData.delete("start_date");
     }
     const fn = isEdit ? editBrand : addBrand;
-    await fn(formData);
+    const res = await fn(formData);
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Lỗi", message: res.error, variant: "danger" });
+      return;
+    }
     setIsOpen(false);
     if (!isEdit) setSelectedDate(null);
+    router.refresh();
   }
 
   return (
@@ -148,15 +161,25 @@ interface DeleteBrandButtonProps {
 }
 
 export function DeleteBrandButton({ id }: DeleteBrandButtonProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b/B: the action's result was discarded -- a refusal (e.g. a
+  // brand still in use) failed in total silence, and a successful delete
+  // never told the browser to redraw.
   async function handleDelete() {
     setLoading(true);
     const formData = new FormData();
     formData.append("id", id);
-    await deleteBrand(formData);
+    const res = await deleteBrand(formData);
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+      return;
+    }
+    router.refresh();
   }
 
   return (

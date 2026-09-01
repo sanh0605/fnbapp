@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
+import { useRouter } from "next/navigation";
 import { addPurchasedItem, updatePurchasedItem } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -113,6 +114,7 @@ export function PurchasedItemForm({
   isUnitLocked = false,
 }: PurchasedItemFormProps) {
   const formId = useId();
+  const router = useRouter();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -273,14 +275,20 @@ export function PurchasedItemForm({
         return;
       }
     }
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section B: revalidatePath (in addPurchasedItem/updatePurchasedItem)
+    // marks the server cache stale but does not repaint this already-open
+    // page.
     if (res.error) setError(res.error);
     else if (isEdit) {
       setIsOpen(false);
+      router.refresh();
     } else {
       setIsOpen(false);
       setSelectedCategoryId("");
       setUnitsState([{ name: "", conversion_rate: "" }]);
       setIsNonInventory(false);
+      router.refresh();
     }
     setLoading(false);
   }

@@ -20,6 +20,11 @@ vi.mock("@/lib/dialog", () => ({
   confirm: vi.fn(),
   alert: vi.fn(),
 }));
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section B: this component now calls useRouter().refresh() on save.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 // OutletForm renders CustomDatePicker (react-datepicker) unconditionally;
 // that component calls window.matchMedia in a mount effect, which jsdom

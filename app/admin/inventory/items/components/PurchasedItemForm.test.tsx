@@ -34,11 +34,17 @@ import { PurchasedItemForm } from "./PurchasedItemForm";
 const mocks = vi.hoisted(() => ({
   addPurchasedItem: vi.fn(),
   updatePurchasedItem: vi.fn(),
+  routerRefresh: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
   addPurchasedItem: mocks.addPurchasedItem,
   updatePurchasedItem: mocks.updatePurchasedItem,
+}));
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section B: this component now calls useRouter().refresh() on save.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: mocks.routerRefresh }),
 }));
 
 // SearchableSelect scrolls the highlighted option into view when the

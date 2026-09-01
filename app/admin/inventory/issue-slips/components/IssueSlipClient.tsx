@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
@@ -60,11 +61,24 @@ export function IssueSlipClient({
   items: IssueSlipItemView[];
   recentSlips: IssueSlipRow[];
 }) {
+  const router = useRouter();
   const [result, setResult] = useState<IssueSlipResult | null>(null);
 
   if (result) {
     return (
-      <SubmittedView result={result} items={items} recentSlips={recentSlips} onNew={() => setResult(null)} />
+      <SubmittedView
+        result={result}
+        items={items}
+        recentSlips={recentSlips}
+        // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+        // section B: recentSlips is a server-fetched prop -- without this,
+        // the slip just submitted (visible in `result` above) would not yet
+        // appear in "Phiếu xuất gần đây" after going back to the form.
+        onNew={() => {
+          setResult(null);
+          router.refresh();
+        }}
+      />
     );
   }
   if (items.length === 0) {
@@ -391,6 +405,7 @@ function SubmittedView({
  * nothing. Now it always renders, with an explicit empty state.
  */
 function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [reversingId, setReversingId] = useState<string | null>(null);
   const [reasonById, setReasonById] = useState<Record<string, string>>({});
@@ -420,12 +435,20 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
     });
     if (!approved) return;
 
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section B: recentSlips is a server-fetched prop -- without this, a
+    // reversed row keeps showing its pre-reversal state until the owner
+    // navigates away and back.
     setError(null);
     setReversingId(row.id);
     startTransition(async () => {
       const res = await reverseIssueSlip({ issueId: row.id, note });
       setReversingId(null);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      router.refresh();
     });
   }
 
@@ -449,12 +472,19 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
     });
     if (!approved) return;
 
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section B: same as handleReverse above -- recentSlips is a
+    // server-fetched prop.
     setError(null);
     setCancellingSlipId(slipId);
     startTransition(async () => {
       const res = await cancelIssueSlip({ slipId, reason });
       setCancellingSlipId(null);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      router.refresh();
     });
   }
 

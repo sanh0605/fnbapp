@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useFilterForm } from "@/lib/use-filter-form";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -10,6 +11,7 @@ import { PurchasedItemForm } from "./PurchasedItemForm";
 import { PurchaseHistoryButton } from "./PurchaseHistoryButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deletePurchasedItemAction } from "../actions";
+import { alert } from "@/lib/dialog";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 
 interface ItemsClientProps {
@@ -227,15 +229,25 @@ export default function ItemsClient({ categories, items, conversions, units, uni
 }
 
 function DeleteItemButton({ id, name }: { id: string; name: string }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b/B: the action's result was discarded -- a refusal (e.g. a
+  // purchased item referenced by purchase/issue history) failed in total
+  // silence, and a successful delete never told the browser to redraw.
   async function handleDelete() {
     setLoading(true);
     const fd = new FormData();
     fd.append("id", id);
-    await deletePurchasedItemAction(fd);
+    const res = await deletePurchasedItemAction(fd);
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+      return;
+    }
+    router.refresh();
   }
 
   return (

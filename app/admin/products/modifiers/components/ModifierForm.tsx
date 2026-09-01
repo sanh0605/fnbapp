@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useId } from "react";
+import { useRouter } from "next/navigation";
 import { saveModifierAction } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -14,6 +15,7 @@ interface ModifierFormProps {
 
 export function ModifierForm({ initialData }: ModifierFormProps) {
   const formId = useId();
+  const router = useRouter();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,6 +41,9 @@ export function ModifierForm({ initialData }: ModifierFormProps) {
     formData.append("group_name", groupName);
     formData.append("price", price);
 
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section B: revalidatePath (in saveModifierAction) marks the server
+    // cache stale but does not repaint this already-open page.
     const res = await saveModifierAction(formData);
     setLoading(false);
     if (res.error) {
@@ -49,6 +54,7 @@ export function ModifierForm({ initialData }: ModifierFormProps) {
         setName("");
         setPrice("0");
       }
+      router.refresh();
     }
   }
 

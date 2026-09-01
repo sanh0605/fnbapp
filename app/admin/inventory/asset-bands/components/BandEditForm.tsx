@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { updateAssetBand } from "../actions";
@@ -13,6 +14,7 @@ import type { DBAssetDepreciationBand } from "@/types/db";
 // number field.
 export function BandEditForm({ band }: { band: DBAssetDepreciationBand }) {
   const formId = useId();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +22,9 @@ export function BandEditForm({ band }: { band: DBAssetDepreciationBand }) {
   const [maxPrice, setMaxPrice] = useState(band.max_unit_price === null ? "" : String(band.max_unit_price));
   const [termMonths, setTermMonths] = useState(String(band.term_months));
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: revalidatePath (in updateAssetBand) marks the server cache
+  // stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
@@ -30,6 +35,7 @@ export function BandEditForm({ band }: { band: DBAssetDepreciationBand }) {
       setError(res.error);
     } else {
       setIsOpen(false);
+      router.refresh();
     }
   }
 

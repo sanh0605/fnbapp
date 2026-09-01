@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deleteAssetBand } from "../actions";
 import { formatBandRange } from "@/lib/asset-depreciation";
@@ -13,15 +14,23 @@ import type { DBAssetDepreciationBand } from "@/types/db";
 // open a gap or leave the low/high end of the price line uncovered; this
 // component just surfaces whatever it says.
 export function DeleteBandButton({ band }: { band: DBAssetDepreciationBand }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: revalidatePath (in deleteAssetBand) marks the server cache
+  // stale but does not repaint this already-open page.
   async function handleDelete() {
     setError(null);
     const formData = new FormData();
     formData.set("id", band.id);
     const res = await deleteAssetBand(formData);
-    if (res.error) setError(res.error);
+    if (res.error) {
+      setError(res.error);
+    } else {
+      router.refresh();
+    }
   }
 
   return (

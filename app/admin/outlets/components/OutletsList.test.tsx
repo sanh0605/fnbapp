@@ -28,6 +28,11 @@ vi.mock("@/lib/dialog", () => ({
   confirm: vi.fn(),
   alert: vi.fn(),
 }));
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section B: OutletForm/RetireOutletButton now call useRouter().refresh().
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 const roots: Root[] = [];
 const containers: HTMLElement[] = [];

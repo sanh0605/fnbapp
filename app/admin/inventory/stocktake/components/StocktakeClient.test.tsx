@@ -28,6 +28,8 @@ const mocks = vi.hoisted(() => ({
   confirmStocktakeSession: vi.fn(),
   reverseConfirmedStocktakeSession: vi.fn(),
   confirmDialog: vi.fn(),
+  alertDialog: vi.fn(),
+  routerRefresh: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
@@ -45,6 +47,12 @@ vi.mock("../actions", () => ({
 // the shelf when handleApply's own confirm fires.
 vi.mock("@/lib/dialog", () => ({
   confirm: mocks.confirmDialog,
+  alert: mocks.alertDialog,
+}));
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section B: this component now calls useRouter().refresh() on save/cancel.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: mocks.routerRefresh }),
 }));
 
 beforeEach(() => {

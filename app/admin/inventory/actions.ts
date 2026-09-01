@@ -1,14 +1,16 @@
 "use server";
 
-import { findAll, findAllNoCache, insert, update, remove, generateNewId, getCacheTag } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, findAllWhere, insert, update, remove, generateNewId, getCacheTag } from "@/lib/sheets_db";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { describeActionError } from "@/lib/action-error";
 import { requireAdmin } from "@/lib/auth";
 import {
   approveStockAdjustmentAtomic,
   submitStockAdjustmentAtomic,
 } from "@/lib/stock-adjustment-transaction";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
+import { buildUnitDeleteRestrictionMessage, type UnitBlockerFinding } from "@/lib/unit-delete-restriction";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
 export async function addItemCategory(formData: FormData): Promise<ActionResponse> {
@@ -361,18 +363,96 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
   }
 }
 
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section A3: 7 RESTRICT foreign keys reference units.id (measured live
+// 2026-09-01) -- checked in this order, stopping at the first match, so a
+// unit blocked by more than one source still gets one clear sentence rather
+// than a merged one. purchase_order_lines and production_items are checked
+// last -- historical/production rows are the least likely real-world cause
+// today (0 production_items rows exist at all).
+async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding | null> {
+  const conversionsByPurchasedUnit = await findAllWhere<{ purchased_item_id: string }>(
+    "UOM_Conversions", { eq: { purchased_unit: unitId }, limit: 1 },
+  );
+  const conversionsByBaseUnit = conversionsByPurchasedUnit.length > 0
+    ? []
+    : await findAllWhere<{ purchased_item_id: string }>(
+        "UOM_Conversions", { eq: { base_unit: unitId }, limit: 1 },
+      );
+  const blockingConversion = conversionsByPurchasedUnit[0] || conversionsByBaseUnit[0];
+  if (blockingConversion) {
+    const items = await findAllWhere<{ name: string }>(
+      "Purchased_Items", { eq: { id: blockingConversion.purchased_item_id }, limit: 1 },
+    );
+    return { kind: "uom_conversions", count: 1, ownerName: items[0]?.name || blockingConversion.purchased_item_id };
+  }
+
+  const purchasedItems = await findAllWhere<{ name: string }>(
+    "Purchased_Items", { eq: { default_unit_id: unitId }, limit: 1 },
+  );
+  if (purchasedItems[0]) {
+    return { kind: "purchased_items", count: 1, ownerName: purchasedItems[0].name };
+  }
+
+  const baseIngredients = await findAllWhere<{ name: string }>(
+    "Base_Ingredients", { eq: { base_unit: unitId }, limit: 1 },
+  );
+  if (baseIngredients[0]) {
+    return { kind: "base_ingredients", count: 1, ownerName: baseIngredients[0].name };
+  }
+
+  const semiProducts = await findAllWhere<{ name: string }>(
+    "Semi_Products", { eq: { base_unit: unitId }, limit: 1 },
+  );
+  if (semiProducts[0]) {
+    return { kind: "semi_products", count: 1, ownerName: semiProducts[0].name };
+  }
+
+  const poLines = await findAllWhere<{ purchased_item_id: string }>(
+    "Purchase_Order_Lines", { eq: { base_unit: unitId } },
+  );
+  if (poLines.length > 0) {
+    const items = await findAllWhere<{ name: string }>(
+      "Purchased_Items", { eq: { id: poLines[0].purchased_item_id }, limit: 1 },
+    );
+    return { kind: "purchase_order_lines", count: poLines.length, ownerName: items[0]?.name || poLines[0].purchased_item_id };
+  }
+
+  const productionItems = await findAllWhere(
+    "Production_Items", { eq: { unit_id: unitId } },
+  );
+  if (productionItems.length > 0) {
+    return { kind: "production_items", count: productionItems.length, ownerName: "" };
+  }
+
+  return null;
+}
+
 export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;
   try {
+    const units = await findAllWhere<{ name: string }>("Units", { eq: { id }, limit: 1 });
+    const unitName = units[0]?.name || id;
+
+    const blocker = await findUnitDeleteBlocker(id);
+    if (blocker) {
+      return fail(buildUnitDeleteRestrictionMessage(unitName, blocker));
+    }
+
     await remove("Units", id);
     revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    // Falls back to describeActionError (not a raw fail(error.message)) for
+    // whatever findUnitDeleteBlocker's checks above did not anticipate --
+    // e.g. a reference added in the instant between the check and the
+    // delete -- so the owner is never shown a raw Postgres string even in
+    // that race.
+    return describeActionError(error);
   }
 }
 

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/format";
 import { formatDateTime } from "@/lib/datetime";
-import { confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/dialog";
 import type { StocktakeApplyResult } from "@/lib/stocktake-transaction";
 import {
   startStocktakeSession,
@@ -101,16 +102,26 @@ function LastConfirmedSessionPanel({ session }: { session: RecentConfirmedStockt
 }
 
 function StartSessionView() {
+  const router = useRouter();
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: found while checking this screen for the same bug the owner
+  // hit elsewhere -- session is a server-fetched prop, so a successful
+  // start left this view showing "Bắt đầu kiểm kê" instead of switching to
+  // the new session, until the owner navigated away and back.
   async function handleStart() {
     setLoading(true);
     setError(null);
     const res = await startStocktakeSession(notes);
     setLoading(false);
-    if (res.error) setError(res.error);
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    router.refresh();
   }
 
   return (
@@ -138,6 +149,7 @@ function StartSessionView() {
 }
 
 function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
+  const router = useRouter();
   const [cancelling, setCancelling] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -191,8 +203,20 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
     });
     if (!confirmed) return;
     setCancelling(true);
-    await cancelStocktakeSession(session.id);
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section A4b: the action's result was discarded -- a refusal failed in
+    // total silence.
+    const res = await cancelStocktakeSession(session.id);
     setCancelling(false);
+    if (res?.error) {
+      await alert({ title: "Không huỷ được", message: res.error, variant: "danger" });
+      return;
+    }
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section B: session is a server-fetched prop -- without this, the
+    // cancelled session's "in progress" view stays on screen until the
+    // owner navigates away and back.
+    router.refresh();
   }
 
   if (applied) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useId } from "react";
+import { useRouter } from "next/navigation";
 import { addConversion, updateConversion } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
@@ -16,6 +17,7 @@ interface ConversionFormProps {
 
 export function ConversionForm({ items, conversions, units, initialData }: ConversionFormProps) {
   const formId = useId();
+  const router = useRouter();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -80,12 +82,18 @@ export function ConversionForm({ items, conversions, units, initialData }: Conve
     formData.append("base_unit", baseUnit.id);
     formData.append("purchase_only", String(purchaseOnly));
 
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section B: revalidatePath (in addConversion/updateConversion) marks
+    // the server cache stale but does not repaint this already-open page.
     if (isEdit) {
       formData.append("id", initialData!.id);
       formData.append("update_history", String(updateHistory));
       const res = await updateConversion(formData);
       if (res.error) setError(res.error);
-      else setIsOpen(false);
+      else {
+        setIsOpen(false);
+        router.refresh();
+      }
     } else {
       const res = await addConversion(formData);
       if (res.error) setError(res.error);
@@ -95,6 +103,7 @@ export function ConversionForm({ items, conversions, units, initialData }: Conve
         setSelectedUnitName("");
         setConversionRate("");
         setPurchaseOnly(false);
+        router.refresh();
       }
     }
     setLoading(false);

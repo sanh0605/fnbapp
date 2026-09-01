@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useFilterForm } from "@/lib/use-filter-form";
 import { formatDateTime } from "@/lib/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
@@ -31,6 +32,7 @@ interface StockAdjustmentsClientProps {
 }
 
 export default function StockAdjustmentsClient({ adjustments }: StockAdjustmentsClientProps) {
+  const router = useRouter();
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
     status: "PENDING",
     q: "",
@@ -51,6 +53,10 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
     });
   }, [adjustments, draft.status, draft.q]);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: adjustments is a server-fetched prop -- without this, an
+  // approved/rejected row keeps showing PENDING (and stays in the default
+  // PENDING filter) until the owner navigates away and back.
   const handleApprove = async (id: string) => {
     if (await confirm({ title: "Xác nhận", message: "Bạn có chắc chắn muốn DUYỆT phiếu điều chỉnh tồn kho này?", variant: "warning" })) {
       setErrorMsg(null);
@@ -59,6 +65,7 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
         const res = await approveStockAdjustment(id);
         if (res.success) {
           setSuccessMsg("Duyệt phiếu điều chỉnh thành công!");
+          router.refresh();
         } else {
           setErrorMsg(res.error || "Có lỗi xảy ra khi duyệt phiếu.");
         }
@@ -74,6 +81,7 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
         const res = await rejectStockAdjustment(id);
         if (res.success) {
           setSuccessMsg("Đã từ chối phiếu điều chỉnh.");
+          router.refresh();
         } else {
           setErrorMsg(res.error || "Có lỗi xảy ra khi từ chối phiếu.");
         }

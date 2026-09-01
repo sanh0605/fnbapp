@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useId } from "react";
+import { useRouter } from "next/navigation";
 import { addSupplier, editSupplier, deleteSupplierAction } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
-import { confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/dialog";
 import type { DBSupplier } from "@/types/db";
 
 interface SupplierFormProps {
@@ -15,10 +16,14 @@ interface SupplierFormProps {
 export function SupplierForm({ initialData }: SupplierFormProps) {
   const isEdit = !!initialData;
   const formId = useId();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: revalidatePath (in addSupplier/editSupplier) marks the
+  // server cache stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
@@ -48,6 +53,7 @@ export function SupplierForm({ initialData }: SupplierFormProps) {
       setError(res.error);
     } else {
       setIsOpen(false);
+      router.refresh();
     }
   }
 
@@ -179,15 +185,25 @@ interface DeleteSupplierButtonProps {
 }
 
 export function DeleteSupplierButton({ id }: DeleteSupplierButtonProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b/B: the action's result was discarded -- a refusal failed in
+  // total silence, and a successful delete never told the browser to
+  // redraw.
   async function handleDelete() {
     setLoading(true);
     const formData = new FormData();
     formData.append("id", id);
-    await deleteSupplierAction(formData);
+    const res = await deleteSupplierAction(formData);
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+      return;
+    }
+    router.refresh();
   }
 
   return (

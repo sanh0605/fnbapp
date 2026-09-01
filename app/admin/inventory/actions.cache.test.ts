@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
+  findAllWhere: vi.fn(),
   insert: vi.fn(),
   update: vi.fn(),
   remove: vi.fn(),
@@ -20,6 +21,13 @@ vi.mock("@/lib/sheets_db", async () => {
   const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
   return {
     findAll: mocks.findAll,
+    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+    // section A3: deleteUnit now checks findAllWhere before deleting --
+    // see app/admin/inventory/actions.delete-unit.test.ts for that
+    // behaviour's own dedicated tests; this file only needs a harmless
+    // default so its unrelated cache-tag assertions still exercise the
+    // real (unblocked) delete path.
+    findAllWhere: mocks.findAllWhere,
     findAllNoCache: vi.fn(),
     insert: mocks.insert,
     update: mocks.update,
@@ -65,6 +73,7 @@ describe("Units/Item_Categories actions -- revalidate the table tag, not just th
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findAll.mockResolvedValue([]);
+    mocks.findAllWhere.mockResolvedValue([]);
     mocks.generateNewId.mockResolvedValue("U-999");
   });
 

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { ConversionForm } from "./ConversionForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteConversionAction } from "../actions";
+import { alert } from "@/lib/dialog";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 
 interface ConversionsClientProps {
@@ -195,15 +197,25 @@ export default function ConversionsClient({ items, conversions, units }: Convers
 }
 
 function DeleteConversionButton({ id, itemName }: { id: string; itemName: string }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b/B: the action's result was discarded -- a refusal (e.g.
+  // this conversion referenced by purchase history) failed in total
+  // silence, and a successful delete never told the browser to redraw.
   async function handleDelete() {
     setLoading(true);
     const fd = new FormData();
     fd.append("id", id);
-    await deleteConversionAction(fd);
+    const res = await deleteConversionAction(fd);
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+      return;
+    }
+    router.refresh();
   }
 
   return (

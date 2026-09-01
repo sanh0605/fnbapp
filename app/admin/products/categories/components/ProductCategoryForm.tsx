@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useId } from "react";
+import { useRouter } from "next/navigation";
 import { saveCategory, updateCategory, deleteCategory } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { alert } from "@/lib/dialog";
 import type { DBProductCategory } from "@/types/db";
 
 interface ProductCategoryFormProps {
@@ -13,12 +15,16 @@ interface ProductCategoryFormProps {
 
 export function ProductCategoryForm({ initialData }: ProductCategoryFormProps) {
   const formId = useId();
+  const router = useRouter();
   const isEdit = !!initialData;
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: revalidatePath (in saveCategory/updateCategory) marks the
+  // server cache stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
@@ -32,15 +38,24 @@ export function ProductCategoryForm({ initialData }: ProductCategoryFormProps) {
       setError(res.error);
     } else {
       setIsOpen(false);
+      router.refresh();
     }
   }
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b/B: the action's result was discarded -- a refusal failed in
+  // total silence, and a successful delete never told the browser to
+  // redraw.
   async function handleDelete() {
+    if (!initialData) return;
     const formData = new FormData();
-    if (initialData) {
-      formData.append("id", initialData.id);
-      await deleteCategory(formData);
+    formData.append("id", initialData.id);
+    const res = await deleteCategory(formData);
+    if (res?.error) {
+      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+      return;
     }
+    router.refresh();
   }
 
   return (

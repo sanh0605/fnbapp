@@ -8,6 +8,7 @@ import { deleteModifierAction } from "../actions";
 import { ModifierForm } from "./ModifierForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";
+import { alert } from "@/lib/dialog";
 import type { DBModifier } from "@/types/db";
 import ToppingsManager from "@/components/ToppingsManager";
 
@@ -132,12 +133,20 @@ function DeleteModifierButton({ id, name, onDeleted }: { id: string; name: strin
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section A4b: the action's result was discarded -- a refusal failed in
+  // total silence (onDeleted, which calls router.refresh(), was already
+  // correct; it just ran unconditionally, even on failure).
   async function handleDelete() {
     setLoading(true);
     const fd = new FormData();
     fd.append("id", id);
-    await deleteModifierAction(fd);
+    const res = await deleteModifierAction(fd);
     setLoading(false);
+    if (res?.error) {
+      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
+      return;
+    }
     onDeleted();
   }
 

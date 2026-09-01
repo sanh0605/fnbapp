@@ -14,6 +14,12 @@ vi.mock("../actions", () => ({
   disposeAsset: vi.fn(),
   previewDisposalCharge: vi.fn(),
 }));
+// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+// section B: DisposeAssetForm (rendered inside AssetCard) now calls
+// useRouter().refresh() on save.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 const roots: Root[] = [];
 const containers: HTMLElement[] = [];

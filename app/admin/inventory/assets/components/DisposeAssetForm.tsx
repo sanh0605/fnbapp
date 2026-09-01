@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { formatNumber } from "@/lib/format";
@@ -14,6 +15,7 @@ import type { AssetView } from "../actions";
 // -- rather than a silent write.
 export function DisposeAssetForm({ asset }: { asset: AssetView }) {
   const formId = useId();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +44,9 @@ export function DisposeAssetForm({ asset }: { asset: AssetView }) {
     }
   }
 
+  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
+  // section B: revalidatePath (in disposeAsset) marks the server cache
+  // stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
@@ -53,6 +58,7 @@ export function DisposeAssetForm({ asset }: { asset: AssetView }) {
     } else {
       setIsOpen(false);
       setPreview(null);
+      router.refresh();
     }
   }
 
