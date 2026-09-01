@@ -1,0 +1,51 @@
+-- Phase D, final step: drop the two retired stock-ledger tables --
+-- docs/superpowers/plans/2026-09-02-phase-d-drop-the-ledger-tables.md,
+-- root plan docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md.
+-- Owner approved 2026-08-28 (retire the ledger) and 2026-09-02 (run this
+-- phase). IRREVERSIBLE ONCE APPLIED.
+--
+-- Backup verified 2026-09-02, per plan section 2.1, before writing this
+-- migration: docs/audits/2026-08-31-stock-ledger-and-balances-backup.json
+-- read back from disk and compared row-by-row against the live server, all
+-- columns, not just counts -- 384/384 stock_ledger rows and 129/129
+-- inventory_balances rows matched exactly (surface differences were
+-- serialization only -- Postgres numeric-as-text vs JSON number, e.g.
+-- "4800.000000" vs 4800; timestamptz-as-text vs ISO string -- resolved by
+-- comparing parsed values, not raw strings; zero real mismatches on any
+-- column). Supabase's own automatic recovery checked directly via the
+-- Management API: pitr_enabled=false, backups=[] -- no platform-level
+-- recovery point exists at all. The Drive daily/monthly operational
+-- backup (BR-BACKUP-001/002) is live and running (most recent capture
+-- 2026-09-01, confirmed via Drive search) and does include stock_ledger
+-- in its table allowlist, but inventory_balances is not in that allowlist
+-- at all -- so for inventory_balances specifically, this JSON file is
+-- confirmed to be the only copy anywhere.
+--
+-- Live-verified 2026-09-02, matching plan section 1.3 exactly: 0 foreign
+-- keys reference either table in either direction, 0 views or materialized
+-- views depend on either table, exactly 1 function
+-- (stock_ledger_apply_inventory_balance_delta, the trigger function
+-- itself) still mentions either table in real code (comments stripped
+-- before searching), exactly 1 trigger
+-- (trg_stock_ledger_inventory_balances, on stock_ledger). No other server
+-- function -- including apply_stocktake_session_atomic,
+-- save_stocktake_line_atomic, void_order_atomic,
+-- create_issue_slip_atomic, reverse_manual_issue_atomic -- references
+-- either table, confirming the stocktake-close and issue-slip paths
+-- section 3 requires re-testing after this runs do not read either table
+-- today.
+--
+-- No CASCADE, no IF EXISTS, deliberately (plan section 2.2): a refused
+-- statement here means something depends on these tables that the
+-- measurements above missed, and that must stop this migration and be
+-- investigated, not be silenced by CASCADE or IF EXISTS.
+--
+-- Order matters (plan section 1.4): the trigger must go before the table
+-- it fires on; inventory_balances (fed by the trigger) before
+-- stock_ledger (the table the trigger is defined on); the trigger
+-- function last among the first three since dropping it before the
+-- trigger that uses it would fail on its own dependency.
+drop trigger trg_stock_ledger_inventory_balances on public.stock_ledger;
+drop function public.stock_ledger_apply_inventory_balance_delta();
+drop table public.inventory_balances;
+drop table public.stock_ledger;

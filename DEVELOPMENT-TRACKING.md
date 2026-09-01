@@ -4,6 +4,32 @@ Auto-maintained log of completed work. Newest first.
 
 ---
 
+## 2026-09-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Phase D: drop the two ledger tables (OPEN-ITEMS 80)
+
+Implements docs/superpowers/plans/2026-09-02-phase-d-drop-the-ledger-tables.md, the final phase of docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md. Owner approved retiring the ledger 2026-08-28 and approved running this phase 2026-09-02. Irreversible once applied -- this task writes the migration only, per instruction, does not apply it.
+
+Critique before coding found nothing wrong with the plan's own claims -- every one re-measured live and matched exactly -- but did surface context the plan's section 1.6 had explicitly left open:
+
+Section 2.1's two required gates, done first, before writing anything:
+1. Supabase's own automatic recovery checked directly via the Management API (`GET /v1/projects/{ref}/database/backups`): `pitr_enabled=false`, `backups=[]` -- no platform-level recovery point exists at all, answering the plan's own open question. Separately, live-verified the operational Google Drive daily/monthly backup (BR-BACKUP-001/002) is actually running (most recent capture 2026-09-01, confirmed via Drive search) and does include `stock_ledger` in its table allowlist -- but `inventory_balances` is not in that allowlist at all. So for `inventory_balances` specifically, `docs/audits/2026-08-31-stock-ledger-and-balances-backup.json` is confirmed the only copy anywhere; for `stock_ledger`, a second independent copy plausibly exists in Drive.
+2. The backup file read back from disk and compared row-by-row against the live server, all columns, not just counts: 384/384 `stock_ledger` rows and 129/129 `inventory_balances` rows matched exactly. Apparent mismatches on the first pass were pure serialization differences (Postgres numeric-as-text "4800.000000" vs the backup's JSON number 4800; timestamptz-as-text "2026-06-06 17:00:00+00" vs the backup's ISO string) -- resolved by comparing parsed numeric/date values rather than raw strings, at which point zero real mismatches remained on any column, either direction.
+
+Section 1.3 re-measured live, matched the plan exactly: 0 foreign keys reference either table in either direction, 0 views or materialized views depend on either table, exactly 1 function (`stock_ledger_apply_inventory_balance_delta`, the trigger function itself) still mentions either table in real code (comments stripped before searching), exactly 1 trigger (`trg_stock_ledger_inventory_balances`, on `stock_ledger`). Confirmed no other server function -- including `apply_stocktake_session_atomic`, `save_stocktake_line_atomic`, `void_order_atomic`, `create_issue_slip_atomic`, `reverse_manual_issue_atomic` -- references either table, meaning the stocktake-close and issue-slip paths section 3 requires re-testing after this runs do not touch either table today.
+
+One correction to my own earlier claim: section 1.6 cited "six scripts/ tools" reading either table (my own count from 2026-09-01). Re-measured: 101 files under `scripts/` match. Does not change the go/no-go decision -- these are all one-off historical scripts, none scheduled (confirmed: `app/api/cron/` is empty, `vercel.json` is `{}`), so any that are ever re-run after this migration will fail loudly, not silently, per the plan's own reasoning. Reported as a correction, not acted on.
+
+Migration 0096_phase_d_drop_ledger_tables.sql: four statements, exact order (trigger, trigger function, inventory_balances, stock_ledger), no CASCADE, no IF EXISTS -- both deliberately, per instruction: a refused drop is information about something the measurements above missed, not an obstacle to route around. New test lib/phase-d-drop-ledger-tables-migration.test.ts (4 tests). Confirmed red before the fix by temporarily reordering the statements and adding CASCADE/IF EXISTS to a working copy of the migration and re-running: 3 of 4 assertions failed for the right reasons (wrong order, CASCADE/IF EXISTS present, statement text mismatched). Restored, confirmed byte-identical, confirmed green.
+
+docs/BUSINESS-RULES.md: BR-INV-001 ("quantity movement belongs in the stock ledger") retired, successor BR-COGS-005 -- it was already factually stale (superseded in practice since the 2026-08-07 cost cutover, frozen since 2026-09-01) independent of whether this migration has run yet.
+
+Captured as the pre-migration baseline for section 1.7's worked example (cannot be re-checked post-apply this task, since the migration was not applied): `stock_issues` 122 rows, sum(base_quantity) 486209.000000; both named examples (STK-001, ISS-00103) confirmed present.
+
+Verification: tsc 0 errors, vitest 233 files / 1604 tests green, check-rules-current PASS, npm run build succeeds, verify-revenue.ts clean across all five gated months (expected -- this migration touches neither orders nor revenue).
+
+Deferred to the owner's own post-approval run, since the migration was not applied: re-query the two tables/trigger/function (all four must be gone), confirm no function still mentions either table, close a stocktake session (dry run), save a real issue slip, re-check stock_issues against the baseline above, re-check revenue.
+
+Migration NOT applied. NOT pushed.
+
 ## 2026-09-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Drop base_ingredient_id, step 2 of the ingredient-group removal (OPEN-ITEMS 75)
 
 Implements docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md. Step 1 (dropping the base_ingredients table, migrations 0089/0090) had already run and been confirmed by the owner on the web -- live-verified before starting: base_ingredients table gone, apply_stocktake_session_atomic mentions it only in a comment now (not real code), matching the plan's own section 1.3b claim that it fell out on its own.

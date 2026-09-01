@@ -142,9 +142,11 @@ Audit output distinguishes locked matches, stored-value violations, informationa
 
 ### BR-INV-001 — Quantity movement belongs in the stock ledger
 
-**Status:** `APPROVED`
+**Status:** `RETIRED`, effective 2026-09-02 — successor `BR-COGS-005`
 
 Purchase receipts, sale consumption, adjustments, production input, production yield, and reversals must be explainable through `stock_ledger` records and their business references.
+
+Superseded by `BR-COGS-005` (owner decision 2026-08-04, cutover 2026-08-07) in practice well before this retirement was recorded: once cost moved to the issue-based figure, no report or screen read `stock_ledger` for money, and by 2026-09-01 nothing wrote to it either — the table sat frozen, explaining nothing new. Phase D (`docs/superpowers/plans/2026-09-02-phase-d-drop-the-ledger-tables.md`, owner-approved 2026-08-28/2026-09-02) drops `stock_ledger` and `inventory_balances` outright, along with their trigger and trigger function — **migration written, not yet applied** as of this entry. Quantity movement for cost purposes now runs on exactly one path: `stock_issues` (`BR-COGS-005`). This rule is retired regardless of whether the drop has run yet, since the table already explains nothing live either way.
 
 ### BR-INV-002 — Critical multi-row writes are atomic
 
