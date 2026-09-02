@@ -201,10 +201,19 @@ xử lý thế nào — dòng tiền thì anh đã yêu cầu rồi.** Tự soá
 
 **2.21 Bản thiết kế dòng tiền (31/08) — chủ quán chốt: xoá luôn, sau này tra lại
 từ đầu.** Đã nói trước là bản đó dẫn nguồn 10 lần và ông ấy từng ghi "giữ lại để
-khỏi tra lại"; hỏi lại, ông ấy chọn xoá. **Giữ một dòng breadcrumb trong
-`OPEN-ITEMS`** — không phải nội dung spec, chỉ là mục việc treo *"làm báo cáo
-dòng tiền; mở lại phải tra lại Thông tư 200/88 từ đầu"*. Việc đó đang sống (chủ
-quán đã yêu cầu), khác với bản thiết kế đã chết.
+khỏi tra lại"; hỏi lại, ông ấy chọn xoá.
+
+**2.22 Xoá luôn cả việc đang treo — không giữ breadcrumb.**
+
+> *"Xoá luôn cả những việc đang treo đi em, anh sẽ lập lại các công việc cần làm
+> sau. Ưu tiên hiện tại là theo yêu cầu của anh và theo sát được hiện trạng của
+> mã nguồn."*
+
+Bỏ dòng breadcrumb dòng tiền tôi vừa đề xuất ở §2.21. `OPEN-ITEMS` khởi đầu
+**rỗng**; chủ quán tự lập lại. Đây là kim chỉ nam của cả đợt, mạnh hơn mọi chi
+tiết: **tài liệu bám hiện trạng mã nguồn, không mang theo lịch sử.** Bất cứ thứ
+gì "giữ cho khỏi mất" mà không đo lại được từ mã nguồn hay dữ liệu hôm nay đều
+thuộc diện xoá — kể cả khi tôi thấy tiếc.
 
 ---
 
@@ -435,8 +444,9 @@ từ mọi luồng, không phải một ngăn kéo song song. Khi xây, nó vào
 | **Kế toán kép** | Định khoản Nợ/Có, sổ cái, khoá sổ | Chưa có gì; là lớp vắt ngang |
 
 **Nên dòng tiền có thể là luồng thứ 11** (một báo cáo, giống `reports.md`), làm
-được sớm mà **không cần** dựng kế toán kép trước. Chủ quán đã có bản thiết kế
-dòng tiền (31/08) và đã chốt nhóm chi phí (19/08) — hai mảnh của đúng luồng này.
+được sớm mà **không cần** dựng kế toán kép trước. Bản thiết kế dòng tiền (31/08)
+đã bị xoá theo §2.21 — khi mở lại phải tra nguồn từ đầu; đây chỉ là ví dụ cho
+thấy cấu trúc chừa được chỗ, không phải một việc đang treo.
 
 **Kết luận cho câu hỏi:** cấu trúc **chịu được** cả hai — luồng thường vào
 `03-`, lớp vắt ngang vào `05-`. Chỗ tôi sai chỉ là **câu chữ "bỏ kế toán"** ở
@@ -545,8 +555,8 @@ chuyện xoá nhóm nguyên liệu) là lần hồ sơ của tôi mâu thuẫn v
 
 ### 7.3 Việc chưa xong, kèm cái gì đang chặn
 
-`OPEN-ITEMS.md`, canh theo §3.8. **Mục đầu tiên ghi vào là dòng breadcrumb dòng
-tiền ở §2.21** — một việc đang treo, không phải hồ sơ chết.
+`OPEN-ITEMS.md`, canh theo §3.8. **Khởi đầu rỗng** (§2.22) — chủ quán tự lập lại
+danh sách việc. Không mang mục nào từ hồ sơ cũ sang.
 
 ### Cố ý KHÔNG lưu
 
