@@ -1,6 +1,6 @@
 # Dựng lại nền tài liệu và quy trình cho toàn dự án
 
-**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau sáu vòng phỏng vấn và một
+**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau sáu vòng phỏng vấn và hai
 vòng Sonnet phản biện.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển
 khai.**
@@ -236,6 +236,36 @@ không đẩy về chủ quán — và đã sửa ngay trong bản này:
 **Con số sai là bài học đắt nhất:** bản thiết kế *về chuyện tài liệu nói sai số*
 lại tự ghi một con số sai. Đúng §7.1 — lưu lệnh đo, đừng lưu con số.
 
+### Vòng 7 — Sonnet phản biện lần hai, soi chính các bản vá
+
+**2.24 Chủ quán yêu cầu kiểm và phản biện thêm một lần nữa cho chắc.** Lần này
+Sonnet không soi lại thiết kế gốc mà soi **bảy bản vá của vòng 6 có thật sự chạy
+trên kho này không** — và **chạy thử thật** (tạo file `it.todo` chạy vitest xem
+mã thoát, thử `git diff --cached`, rồi dọn sạch).
+
+Kết quả: **cả bảy bản vá là thật, không rỗng.** Nhưng soi bằng mắt mới lại lòi ra
+**hai lỗ hổng mới**, cả hai tôi tự kiểm lại và đúng:
+
+| Lỗ mới | Sửa ở |
+|---|---|
+| `app/actions/auth.ts` ghi **thẳng vào `users`** qua `supabase.from(...)`, bỏ qua `sheets_db` → §3.5b soi thiếu **trong im lặng** | §3.5b — quét thêm đường trực tiếp |
+| Tách `BUSINESS-RULES.md` thành 4 file **vừa thiếu vừa lệch** — mã `BR-*` trải 9 họ, không có `BR-ASSET`; file gốc đã có 7 header đúng | §3.3 — bám 7 header sẵn có |
+
+**Bốn việc Sonnet dặn phải chốt TRONG kế hoạch đợt 1** (không chặn duyệt thiết
+kế, nhưng chặn viết kế hoạch sạch):
+
+1. Quét bảng phải bắt cả `supabase.from(...)` trực tiếp, không chỉ `sheets_db`.
+2. Chốt chỗ ở cho `BR-BACKDATE/DATA/BACKUP/CATALOG` và sửa header gán nhầm.
+3. Ghi rõ thứ tự bước trong đợt 1: dựng công cụ → sinh bản đồ → viết lát mồi →
+   nối phép kiểm → chứng minh bắt lỗi (§6 gộp chung một ô, chưa nói thứ tự).
+4. Định nghĩa vi-định-dạng khối quan hệ cho `SYSTEM-MAP.md` từ đầu — không có
+   sẵn thứ gì trong kho để tái dùng.
+
+**Một việc thứ năm tôi tự thêm:** thứ tự bật phép kiểm trần dòng so với lúc tách
+`BUSINESS-RULES.md` (ghi ở §3.3).
+
+**Phán quyết của Sonnet: SẴN SÀNG, kèm năm việc chốt-trong-kế-hoạch ở trên.**
+
 ---
 
 ## 3. Thiết kế bộ tài liệu mới
@@ -289,10 +319,7 @@ docs/
 ├── 02-rules/
 │   ├── GLOSSARY.md                từ này nghĩa là gì                 [VI]
 │   ├── business-rules/            tiền tính thế nào, vì sao          [VI]
-│   │   ├── cogs.md                giá vốn
-│   │   ├── inventory.md           tồn kho, kiểm kê
-│   │   ├── revenue.md             doanh thu
-│   │   └── assets.md              tài sản, khấu hao
+│   │   └── (tách theo 7 header sẵn có của file gốc — xem §3.3)
 │   └── EDGE-CASES.generated.md    trường hợp biên                    [VI]
 ├── 03-workflows/                                                     [EN]
 │   ├── sales.md               purchasing.md        stock-issue.md
@@ -348,9 +375,23 @@ Trần 200 dòng có căn cứ: `CLAUDE.md` hôm nay **524 dòng** và sai suố
 không ai thấy. **File càng dài thì chỗ sai càng dễ nấp.**
 
 **Trần này không miễn trừ cho ai — kể cả `BUSINESS-RULES.md`.** Đo 02/09 nó
-**478 dòng**, tức bật phép kiểm là chính nó đỏ ngay. Nên nó tách theo lĩnh vực
-thành `02-rules/business-rules/` (giá vốn, tồn kho, doanh thu, tài sản), mỗi file
-dưới trần. Mã luật `BR-*` giữ nguyên để mọi chỗ trỏ tới không gãy.
+**478 dòng**, tức bật phép kiểm là chính nó đỏ ngay. Nên nó tách vào
+`02-rules/business-rules/`, mỗi file dưới trần. Mã luật `BR-*` giữ nguyên để mọi
+chỗ trỏ tới không gãy.
+
+**Tách theo 7 header sẵn có của file, KHÔNG bịa ra 4 file — sửa sau phản biện
+Sonnet vòng 2 (§2.24).** Bản trước tôi ghi "giá vốn, tồn kho, doanh thu, tài
+sản". Sai: các mã `BR-*` trải **9 họ** (SALE, COGS, INV, CATALOG, BACKDATE, DATA,
+BACKUP, ACCESS, USER), và **không có họ `BR-ASSET`** — bốn file tôi bịa vừa
+thiếu vừa lệch. File gốc đã có sẵn 7 header đúng lĩnh vực (Sales, COGS,
+Inventory, Backdated, Audit-recovery, Backup, Access) — tách bám theo đó. Ranh
+giới file chính xác và cách xử lý `## Access and security rules` (header này đang
+gán nhầm 168/182 dòng dưới nó) là việc của kế hoạch đợt 3.
+
+**Một chỗ thứ tự phải chốt trong kế hoạch đợt 1:** phép kiểm trần dòng bật ở đợt
+1, nhưng `BUSINESS-RULES.md` chưa tách tới tận đợt 3. Nên hoặc phép kiểm chỉ bắt
+đầu *cưỡng chế* sau khi tách xong, hoặc việc tách kéo lên sớm. Không để một quãng
+phép kiểm bật mà file bắt buộc đang vi phạm.
 
 **Một ngoại lệ có lý do: `CLAUDE.md`.** Sonnet đo (§2.23): riêng Phần A (luật làm
 việc) đã **316 dòng**, vượt trần 58% ngay cả sau khi bỏ hết Phần B. Nhưng
@@ -414,6 +455,16 @@ thứ tư — tên tính động, nhiều chặng hơn — thì KHÔNG được 
 "không phân giải được, cần người xem".** Cho qua trong im lặng đúng là cái bẫy
 §2.3 tồn tại để chặn.
 
+**Và phải quét thêm một đường thứ hai — ghi THẲNG vào Supabase, bỏ qua
+`sheets_db` — phát hiện ở phản biện Sonnet vòng 2 (§2.24).** `app/actions/auth.ts`
+ghi vào bảng `users` bằng `supabase.from("users").update(...)`, không qua
+`sheets_db` chút nào. Công cụ chỉ soi đường `sheets_db` sẽ **mù chỗ này trong im
+lặng** — nguy hơn "không phân giải được", vì nó còn không thấy để mà báo. Nên
+công cụ quét **cả hai**: lời gọi qua `sheets_db`, và chuỗi
+`.from("bảng").{insert,update,upsert,delete}(...)` trực tiếp. Đo 02/09 chỉ có
+đúng một chỗ dạng này còn sống, nhưng một chỗ đủ để `users.md` khai báo thiếu
+ngay ngày đầu.
+
 Ước lượng: **4 trên 5 câu** thành kiểm được bằng máy. Chỗ hở còn lại ở §5.1.
 
 ### 3.6 Bản đồ — hai lớp, một phép kiểm
@@ -471,11 +522,14 @@ thì ghi một dòng *"đã xem lại, không đổi hành vi — ngày"*. Chủ
 | **Không phải code nhưng ĐO ĐƯỢC** | Phép kiểm truy vấn thật: migration đã chạy chưa, web có chạy ở Singapore không, dữ liệu đã thoả điều kiện chưa |
 | **Chờ người thật** | Ghi tay kèm ngày hẹn. Quá hạn thì đỏ, buộc đóng hoặc gia hạn |
 
-**Danh sách `OPEN-ITEMS.md` sinh ra bằng một script quét `it.todo`/`@open-item`,
-KHÔNG phải bằng test đỏ.** Đây là sửa sau phản biện Sonnet (§2.23): nếu mỗi việc
-treo là một test đỏ thật thì `npx vitest run` **không bao giờ xanh trọn** khi
-danh sách còn mục nào — đá thẳng `CLAUDE.md` §9. `it.todo` được vitest đếm riêng,
-**không tính là hỏng**, nên §9 vẫn thoả mà việc treo vẫn hiện.
+**Danh sách `OPEN-ITEMS.md` sinh ra từ `npx vitest run --reporter=json`, lọc
+`status === "todo"`, KHÔNG phải bằng test đỏ.** Đây là sửa sau phản biện Sonnet
+(§2.23), và vòng 2 đã **chạy thử thật** (§2.24): với vitest 4.1.10 của kho này,
+một file chỉ có `it.todo` cho `vitest run` **thoát mã 0** — không tính là hỏng,
+nên `CLAUDE.md` §9 vẫn thoả. Reporter JSON trả thẳng tên test + trạng thái, khỏi
+tự viết bộ phân tích `it.todo` riêng (bộ riêng dễ lệch khỏi cách vitest thật sự
+gom test). Nếu mỗi việc treo là một test đỏ thật thì `vitest run` không bao giờ
+xanh trọn khi danh sách còn mục — đá thẳng §9.
 
 **Loại thứ hai là loại đã cắn tôi:** ba lần trong ngày 02/09 tôi báo migration
 *"chưa chạy"* trong khi đã chạy — một câu truy vấn là bắt được. **Trạng thái
@@ -628,8 +682,10 @@ luận; **và mọi con số đo rời khỏi lệnh đã sinh ra nó**.
 
 ## 8. Cần chủ quán duyệt gì
 
-Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.23, và sáu vấn đề Sonnet
-phản biện đã sửa xong (§2.23). **Còn một việc: chủ quán duyệt toàn bộ bản này.**
+Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.24. Hai vòng Sonnet
+phản biện đã sửa xong tám vấn đề (§2.23, §2.24), và Sonnet phán quyết **sẵn
+sàng** cho kế hoạch đợt 1, kèm năm việc phải chốt trong chính kế hoạch đó
+(§2.24). **Còn một việc: chủ quán duyệt toàn bộ bản này.**
 
 Duyệt xong tôi mới viết kế hoạch triển khai cho **đợt 1** (bước 3 của
-`CLAUDE.md` §1b).
+`CLAUDE.md` §1b), và kế hoạch đó phải trả lời năm việc chốt ở §2.24.
