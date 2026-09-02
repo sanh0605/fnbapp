@@ -305,6 +305,26 @@ Tìm được, đều sửa trong bản này:
 Và sửa một chỗ **tôi nói sai** với chủ quán ở tin trước: `BR-U` là *Unresolved*,
 không phải *User*.
 
+### Vòng 10 — Sonnet phản biện KẾ HOẠCH đợt 1 (không phải thiết kế)
+
+**2.27 Sau khi chủ quán duyệt thiết kế và tôi viết kế hoạch đợt 1, Sonnet phản
+biện kế hoạch trước khi code (CLAUDE.md §1).** Nó chạy thử regex trên migration
+và mã thật, tìm ra một lỗi **cấp thiết kế** tôi bỏ sót, cộng bốn lỗi cấp kế hoạch.
+
+**Lỗi cấp thiết kế — sửa §3.5b:** §3.5b chỉ liệt kê hai đường ghi (`sheets_db`,
+`supabase.from` trực tiếp), **bỏ sót đường RPC Postgres — đường ghi chính**. Đo:
+14 file, 16 hàm atomic. Nếu không bắt, bản đồ sinh trống ở mọi luồng lõi và cửa
+xong đợt 1 (nhiệm vụ 6) không đạt được. Đã thêm đường thứ ba vào §3.5b.
+
+**Bốn lỗi cấp kế hoạch — sửa trong kế hoạch, không đụng thiết kế:** `generate.ts`
+phải loại thêm `lib/shared-actions.ts` (cùng vai adapter như `sheets_db`); lệnh
+kiểm dùng `glob` rò 50 file `lib/historical` trên Windows, thay bằng `walk`; thiếu
+bước tạo `scripts/check-result.ts`; đường dẫn file trong `OPEN-ITEMS` phải đổi
+sang tương đối. Chi tiết trong nhật ký kế hoạch.
+
+**Đây là lý do bắt phản biện kế hoạch, không chỉ phản biện thiết kế:** lỗi RPC
+chỉ lộ ra khi chạy regex trên mã thật — đọc thiết kế suông không thấy.
+
 ---
 
 ## 3. Thiết kế bộ tài liệu mới
@@ -563,6 +583,18 @@ công cụ quét **cả hai**: lời gọi qua `sheets_db`, và chuỗi
 `.from("bảng").{insert,update,upsert,delete}(...)` trực tiếp. Đo 02/09 chỉ có
 đúng một chỗ dạng này còn sống, nhưng một chỗ đủ để `users.md` khai báo thiếu
 ngay ngày đầu.
+
+**Và đường thứ BA — hàm RPC Postgres — là đường ghi CHÍNH, không phải ngoại lệ.
+Phát hiện ở phản biện kế hoạch, Sonnet vòng 4 (§2.27).** Đo 02/09: **14 file, 16
+hàm** `.rpc("...")` gánh gần hết ghi dữ liệu lõi — `create_issue_slip_atomic`,
+`void_order_atomic`, `save_purchase_order_atomic`, `save_product_atomic`, các hàm
+kiểm kê. Bảng mà một RPC ghi **không** nằm ở chỗ gọi TypeScript, mà nằm trong
+**thân hàm SQL** ở migration (`create_issue_slip_atomic` ghi `issue_slips`,
+`stock_issues`). Nên công cụ phải: (1) bắt `.rpc("tên", ...)` ở chỗ gọi → file →
+tên hàm; (2) đọc **bản định nghĩa MỚI NHẤT** của hàm đó trong migration
+(`create or replace function` bị ghi đè nhiều lần — lần cuối thắng) → các bảng nó
+`insert into / update / delete from`; (3) ghép file → rpc → bảng. Thiếu đường này
+là bản đồ **trống ở mọi luồng lõi** — đúng lỗi làm cửa xong đợt 1 vỡ.
 
 Ước lượng: **4 trên 5 câu** thành kiểm được bằng máy. Chỗ hở còn lại ở §5.1.
 
