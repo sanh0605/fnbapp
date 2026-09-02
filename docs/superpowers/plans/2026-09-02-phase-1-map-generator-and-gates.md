@@ -357,8 +357,26 @@ function firstArg(callBody: string): string {
   return callBody;
 }
 
-const CALL = /(\w+)\s*\(([^;]*?)\)/g;
+// A single regex cannot match a balanced call — insert(computeName(x), data)
+// would stop at the inner ")". Scan forward from each verb name, tracking paren
+// depth, to capture the whole argument list. The `(?<![.\w])` lookbehind skips
+// method calls (supabase's `.update(...)`, `.insert(...)`) and identifiers that
+// merely end in a verb name; sheets_db verbs and shared-actions wrappers are
+// always called as bare functions.
+const VERB_CALL = /(?<![.\w])(\w+)\s*\(/g;
 const SUPABASE_WRITE = /\.from\(\s*"([^"]+)"\s*\)\s*\.\s*(insert|update|upsert|delete)\b/g;
+
+function callArgs(source: string, openParenIndex: number): string | null {
+  let depth = 1;
+  let i = openParenIndex + 1;
+  const start = i;
+  for (; i < source.length && depth > 0; i++) {
+    const c = source[i];
+    if (c === "(") depth++;
+    else if (c === ")") depth--;
+  }
+  return depth === 0 ? source.slice(start, i - 1) : null;
+}
 
 export function extractWrites(files: { path: string; source: string }[]) {
   const writes: WriteSite[] = [];
@@ -371,10 +389,12 @@ export function extractWrites(files: { path: string; source: string }[]) {
       writes.push({ file: path, table: sm[1] });
     }
 
-    for (const m of source.matchAll(CALL)) {
+    for (const m of source.matchAll(VERB_CALL)) {
       const fn = m[1];
       if (!SHEETS_VERBS.includes(fn) && !WRAPPERS.includes(fn)) continue;
-      const arg = firstArg(m[2]);
+      const argsBody = callArgs(source, m.index + m[0].length - 1);
+      if (argsBody === null) continue;
+      const arg = firstArg(argsBody);
       const table = resolveArg(arg, consts);
       if (table) writes.push({ file: path, table });
       else unresolved.push({ file: path, reason: `${fn}(...) with a non-literal table argument: ${arg.trim()}` });
