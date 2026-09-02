@@ -1242,14 +1242,33 @@ git commit -m "feat(docchecks): generate OPEN-ITEMS.md from vitest todos"
 **Interfaces:**
 - Consumes: every core check (Tasks 5, 7, 8), the generator (Task 4), `git diff --cached --name-only` for staged paths.
 
+**CRITICAL — scope map-drift to COVERED flows, or it blocks every commit until Phase 2.** The hand map `docs/01-system/SYSTEM-MAP.md` is a Phase-1 seed covering ONE flow (2 relations); the generated map has ~50. Comparing the full generated map against the seed hand map would report ~48 "missing" relations and fail the gate on every commit until Phase 2 documents all flows. That is wrong for Phase 1. Instead: build the set of **covered files** = the union of every `files:` entry across all `docs/03-workflows/*.md` flow-decl blocks, and run `checkMapDrift` only on the generated relations whose `from` is a covered file. In Phase 1 only `lib/manual-issue-transaction.ts` is covered, so only its 2 relations are checked → PASS. As Phase 2 adds flow docs, coverage grows automatically with no code change — forward-safe.
+
 - [ ] **Step 1: Write `scripts/doc-checks/run-blocking.ts`**
 
-It: (a) runs the generator to refresh `docs/generated/system-map.md`; (b) loads generated relations, the hand map, all `docs/03-workflows/*.md` decls, the route/file/BR worlds; (c) runs `checkMapDrift`, `checkFlowFacts` per decl, `checkFlowStagedCoupling` against `execSync("git diff --cached --name-only")`, `checkLineCeiling`; (d) prints `[docs] PASS/FAIL <check>` like `check-rules-current.ts` and sets `process.exitCode = 1` on any failure.
+It does the following, printing `[docs] PASS/FAIL <check>` for each (like `check-rules-current.ts`) and setting `process.exitCode = 1` on any failure:
+
+(a) Regenerate the map by importing and running the same logic as `scripts/system-map/generate.ts` (or shell out to it via `execSync("npx vite-node scripts/system-map/generate.ts")`), so `docs/generated/system-map.md` is fresh.
+
+(b) Build the worlds from real sources:
+- `generatedMd` = read `docs/generated/system-map.md`; `handMd` = read `docs/01-system/SYSTEM-MAP.md`.
+- `decls` = for each `docs/03-workflows/*.md`, `parseFlowDecl(read(file), file)`, dropping nulls.
+- `coveredFiles` = new Set of every `f` in every `decl.files`.
+- `routes` = new Set(`listAdminPageRoutes(process.cwd())` from `lib/nav-completeness.ts`, reused).
+- `files` = new Set of every repo-relative `.ts`/`.tsx` path under `app/` and `lib/` (walk, same as generate.ts).
+- `writesByFile` = Map built from `parseRelationBlock(generatedMd)` (write relations): file → Set of tables.
+- `brCodes` = new Set of every `BR-[A-Z]+-\d+` found in `docs/BUSINESS-RULES.md`.
+
+(c) Run the checks:
+- **map-drift, scoped:** filter `generatedMd`'s relations to those whose `from` ∈ `coveredFiles`, re-serialize with `serializeRelations`, and pass THAT to `checkMapDrift(coveredGeneratedMd, handMd)`. (Reuse `serializeRelations`/`parseRelationBlock` from Task 1.)
+- **flow-doc-facts:** `checkFlowFacts(decl, { routes, files, writesByFile, brCodes })` for each decl; merge problems.
+- **flow-doc-staged:** `checkFlowStagedCoupling(decls, execSync("git diff --cached --name-only").toString().split("\n").filter(Boolean))`.
+- **line-ceiling:** reuse the Task 8 CLI's allowlist scan → `checkLineCeiling(...)`.
 
 - [ ] **Step 2: Run it on the clean tree**
 
 Run: `npx vite-node scripts/doc-checks/run-blocking.ts`
-Expected: all `[docs] PASS`. Exit 0.
+Expected: all `[docs] PASS`. Exit 0. (map-drift passes because only the covered stock-issue flow's 2 relations are compared, and the seed hand map lists exactly those.)
 
 - [ ] **Step 3: Prove it blocks a real drift (manual, then revert)**
 
