@@ -23,7 +23,7 @@ import { parseRelationBlock, serializeRelations } from "../doc-map/relation-bloc
 import { checkMapDrift } from "./map-drift-core";
 import { parseFlowDecl, checkFlowFacts, checkFlowStagedCoupling, type FlowDecl } from "./flow-doc-core";
 import { checkLineCeiling } from "./line-ceiling-core";
-import { listAdminPageRoutes } from "../../lib/nav-completeness";
+import { listAllPageRoutes } from "../../lib/nav-completeness";
 import type { CheckResult } from "../check-result";
 
 const root = process.cwd();
@@ -63,7 +63,7 @@ if (existsSync(workflowsDir)) {
 const coveredFiles = new Set<string>();
 for (const decl of decls) for (const f of decl.files) coveredFiles.add(f);
 
-const routes = new Set(listAdminPageRoutes(root));
+const routes = new Set(listAllPageRoutes(root));
 
 // Every .ts/.tsx path under app/ and lib/, repo-relative -- the file-existence
 // world for the declaration check.

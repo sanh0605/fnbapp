@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkNavCompleteness, extractNavHrefs } from "./nav-completeness";
+import { checkNavCompleteness, extractNavHrefs, listAllPageRoutes } from "./nav-completeness";
 
 describe("checkNavCompleteness", () => {
   it("passes when every page has a nav entry and every nav entry has a page", () => {
@@ -79,5 +79,16 @@ describe("extractNavHrefs", () => {
   it("ignores href-shaped strings that are not admin routes", () => {
     const source = `<Link href="/pos">POS</Link> const x = { href: "/admin/real" };`;
     expect(extractNavHrefs(source)).toEqual(["/admin/real"]);
+  });
+});
+
+describe("listAllPageRoutes", () => {
+  it("covers non-admin routes and admin routes across the whole app tree", () => {
+    const routes = listAllPageRoutes(process.cwd());
+    // Non-admin routes that listAdminPageRoutes cannot see.
+    expect(routes).toContain("/pos");
+    expect(routes).toContain("/login");
+    // At least one admin route is still included.
+    expect(routes).toContain("/admin/orders");
   });
 });

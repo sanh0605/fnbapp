@@ -80,6 +80,34 @@ export function listAdminPageRoutes(repoRoot: string): string[] {
   return routes;
 }
 
+// Walks ALL of app/**/page.tsx and returns each one as its route path, with
+// segments joined from the app/ dir. Unlike listAdminPageRoutes, this covers
+// non-admin routes (/pos, /login, /settings/password) and keeps dynamic
+// segments literally (e.g. /admin/users/edit/[id]) instead of skipping the
+// subtree -- the flow-doc route check needs to resolve every declared route,
+// dynamic ones included.
+export function listAllPageRoutes(repoRoot: string): string[] {
+  const appDir = join(repoRoot, "app");
+  const routes: string[] = [];
+
+  function walk(dir: string) {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (entry === "page.tsx") {
+        const rel = relative(appDir, dir).split(sep).join("/");
+        routes.push(rel === "" ? "/" : `/${rel}`);
+      }
+    }
+  }
+
+  walk(appDir);
+  return routes;
+}
+
 // Extracts every `href: "/admin/..."` literal out of layout.tsx's navItems
 // array. navItems is a plain array built inside the component function, not
 // a module-level export, so this reads the source text rather than
