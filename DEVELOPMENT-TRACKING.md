@@ -2,6 +2,10 @@
 
 Auto-maintained log of completed work. Newest first.
 
+## 2026-09-03 — Documentation reset Phase 1: map generator + hard-blocking gates
+
+Implemented the approved plan `docs/superpowers/plans/2026-09-02-phase-1-map-generator-and-gates.md` (spec `docs/superpowers/specs/2026-09-02-project-reset-design.md`), 11 tasks, Sonnet-driven with review between each. Delivered: a generator that derives `docs/generated/system-map.md` from live source — tables/columns/status-enums from migrations, write-sites via sheets_db calls, direct `supabase.from`, and RPC function bodies (the dominant write path, 36 RPC writes) — plus four checks wired into `.husky/pre-commit`: map-drift (scoped to documented flows), flow-doc declaration + staged-coupling, 200-line ceiling (allowlisted to the new doc set), and `OPEN-ITEMS.md` generated from `it.todo`. Phase-1 exit bar met: the drift check catches a real removed relation on the stock-issue seed. Gates: tsc 0 errors, 1631 tests green, rules PASS, doc-gate PASS. Commits b314c96..943e05d. Finding surfaced by the map: `save_purchase_order_atomic` still writes the dropped `stock_ledger` table (pre-existing, "broken tooling on purpose" per git history) — flagged for later, not fixed here.
+
 ---
 
 ## 2026-09-02 (Claude Sonnet 5 implementing, Opus 5 coordinating) - Clean up after the ledger removal
