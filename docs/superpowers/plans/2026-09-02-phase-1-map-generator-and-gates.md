@@ -1124,9 +1124,21 @@ export function checkLineCeiling(
 Run: `npx vitest run scripts/doc-checks/line-ceiling-core.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Write the CLI with the documented exemption list**
+- [ ] **Step 5: Write the CLI scoped to the governed doc set only**
 
-Create `scripts/doc-checks/line-ceiling.ts` that scans `docs/**/*.md` (excluding `docs/generated/`) plus `CLAUDE.md`/`README.md`, and passes this exemption set with reasons in comments:
+**Scope by ALLOWLIST, not blocklist.** The ceiling governs the new doc set, not
+process artifacts. Scanning all of `docs/**` sweeps in ~72 files under
+`docs/superpowers/`, `docs/audits/`, `docs/handoffs/` and legacy top-level docs —
+all history/process artifacts (CLAUDE.md §11) or files Phase 5 deletes, none of
+them the doc set. An allowlist is also forward-safe: a new plan file under
+`docs/superpowers/` will never trip the gate.
+
+Create `scripts/doc-checks/line-ceiling.ts` that scans ONLY these governed
+locations for `*.md`: `docs/01-system/`, `docs/02-rules/`, `docs/03-workflows/`,
+`docs/04-operations/` (recursively; skip any that don't exist yet — `02-rules`
+and `04-operations` arrive in later phases), plus the two root files `CLAUDE.md`
+and `README.md`. **Never** scan `docs/generated/` (machine output). Pass this
+exemption set with reasons in comments:
 
 ```ts
 // CLAUDE.md: the one file the machine auto-loads every session; splitting it
@@ -1137,6 +1149,13 @@ Create `scripts/doc-checks/line-ceiling.ts` that scans `docs/**/*.md` (excluding
 // Phase 3 plan once business-rules/ exists.
 const EXEMPT = new Set(["CLAUDE.md", "docs/BUSINESS-RULES.md"]);
 ```
+
+Run it and confirm it reports GREEN (the current governed doc set —
+`docs/01-system/SYSTEM-MAP.md`, `docs/03-workflows/stock-issue.md`, `README.md`,
+and exempt `CLAUDE.md` — is all under the ceiling). Note: `docs/BUSINESS-RULES.md`
+sits at the repo `docs/` root, not inside the four governed subfolders, so it is
+not scanned yet anyway; keep it in EXEMPT so that when Phase 3 moves rules under
+`docs/02-rules/` the exemption is already documented for removal.
 
 - [ ] **Step 6: Commit**
 
