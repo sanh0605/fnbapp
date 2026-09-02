@@ -1,6 +1,6 @@
 # Dựng lại nền tài liệu và quy trình cho toàn dự án
 
-**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau bảy vòng phỏng vấn và hai
+**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau bảy vòng phỏng vấn và ba
 vòng Sonnet phản biện.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển
 khai.**
@@ -283,6 +283,27 @@ cấu trúc (đã tích tụ qua bảy vòng) ra **ba chỗ chắp vá thật**,
 theo tiêu chí "ranh giới cấm-sửa-tay khó bỏ sót nhất" (§3.2d), chọn **thư mục
 `docs/generated/` riêng** — chủ quán duyệt.
 
+### Vòng 9 — Sonnet phản biện lần ba, soi cấu trúc vòng 8
+
+**2.26 Chủ quán yêu cầu thêm một vòng phản biện.** Sonnet soi các quyết định vòng
+8 và quét nhất quán toàn văn. Phán quyết: **sẵn sàng, kèm điều kiện** — không có
+lỗi chặn.
+
+Xác nhận lành mạnh: cách gộp 6 file `business-rules` đúng với nội dung luật thật
+(đọc từng dòng, không tin suông); `docs/generated/` không sót tham chiếu cũ; 43
+tham chiếu `§X.Y` đều trỏ đúng chỗ; con số "chín chỗ người viết" vẫn khớp.
+
+Tìm được, đều sửa trong bản này:
+
+| Vấn đề | Sửa ở |
+|---|---|
+| Bảng tách bỏ quên **~55 dòng khung** (đầu file, Unresolved items, Change procedure), lại đầy link chết | §3.3 — thêm mục Phase 3 xử lý |
+| Nguyên tắc §3.3b có thể bị đọc là **cớ tách `sales.md`** ngược ý chủ quán | §3.3b — thêm điều khoản không truy hồi |
+| Câu §8 "kế hoạch đợt 1 trả lời năm việc" — nhưng việc tách `BR` thuộc **đợt 3** | §8 + §6b — tách danh sách theo đợt |
+
+Và sửa một chỗ **tôi nói sai** với chủ quán ở tin trước: `BR-U` là *Unresolved*,
+không phải *User*.
+
 ---
 
 ## 3. Thiết kế bộ tài liệu mới
@@ -434,6 +455,18 @@ vì không hề có họ `BR-ASSET`.
 đầu *cưỡng chế* sau khi tách xong, hoặc việc tách kéo lên sớm. Không để một quãng
 phép kiểm bật mà file bắt buộc đang vi phạm.
 
+**Không chỉ có luật `BR-*` — còn ~55 dòng khung mồ côi, phát hiện vòng 9
+(§2.26).** Bảng trên chỉ sắp các mã `BR-*`. File còn ba khối không mang mã luật
+mà bảng bỏ quên: đầu file (tiêu đề, tóm tắt, bảng chú giải trạng thái, "Authority
+hierarchy"), "Unresolved items" (5 dòng `BR-U-*` — `BR-U` là *Unresolved*, không
+phải *User*), và "Change procedure". **Hai khối đầu-cuối này trỏ tới toàn file
+đợt này xoá** (`domain-dictionary.md`, spec cũ, `audits/`, `operations/`,
+`DEVELOPMENT-TRACKING.md`, `COMPLETED.md`) — sau khi xoá là link chết. Kế hoạch
+đợt 3 phải: chọn nhà cho ba khối này, viết lại các link chết, và quyết 5 mục
+`BR-U-*` đi đâu (rải về file lĩnh vực của nó, hay dựng lại từ hiện trạng — lưu ý
+mâu thuẫn với §2.22 "OPEN-ITEMS khởi đầu rỗng"; đây là micro-quyết định của chủ
+quán lúc làm đợt 3, không phải bây giờ).
+
 **Một ngoại lệ có lý do: `CLAUDE.md`.** Sonnet đo (§2.23): riêng Phần A (luật làm
 việc) đã **316 dòng**, vượt trần 58% ngay cả sau khi bỏ hết Phần B. Nhưng
 `CLAUDE.md` là **file duy nhất máy tự nạp mỗi phiên** — tách nó thành file con là
@@ -458,7 +491,12 @@ sau, không chỉ lần này:
 >   ra nhanh khi cần.
 
 Nguyên tắc này áp cho `business-rules/` (§3.3), và là thước đo cho mọi lần
-thêm/bớt tài liệu về sau.
+thêm/bớt tài liệu **về sau**.
+
+**Nó không truy hồi ranh giới đã chốt** (thêm vòng 9, §2.26): danh sách 10 luồng
+(§2.5/§2.9) là quyết định của chủ quán, nguyên tắc này không phải cái cớ để tách
+`sales.md` ngược lại ý ông ấy. Nguyên tắc soi tài liệu *mới*, không mở lại ranh
+giới *cũ đã duyệt*.
 
 ### 3.4 `CLAUDE.md` — vai trò đổi hẳn
 
@@ -700,6 +738,30 @@ duyệt.
 trước khi làm đợt đó — không viết trước cả năm, vì đợt 1 có thể đổi hiểu biết cho
 đợt 2.
 
+### 6b. Danh sách việc-phải-chốt — hợp nhất sau ba vòng phản biện
+
+**Đây là danh sách chuẩn duy nhất, thay cho bản năm mục ở §2.24.** Sonnet hợp
+nhất qua ba vòng: hai mục cũ đã xong (quét `supabase.from` trực tiếp → đã viết
+vào §3.5b; quyết định gộp `BR` → đã chốt ở §3.3), phần còn lại chia theo đợt.
+
+**Phải chốt trong kế hoạch ĐỢT 1:**
+
+1. Thứ tự bước bên trong đợt 1: dựng công cụ → sinh `docs/generated/system-map.md`
+   → viết lát mồi (một luồng + mảnh bản đồ tay) → nối phép kiểm §3.6/§3.7 →
+   chứng minh bắt lỗi thật.
+2. Định nghĩa vi-định-dạng khối quan hệ cho `SYSTEM-MAP.md` từ đầu — kho không có
+   sẵn gì tái dùng.
+3. Nêu rõ **cửa của phép kiểm trần dòng** (nối vào pre-commit như §3.7, hay chạy
+   riêng) — phải quyết trước mục 4.
+4. Thứ tự: phép kiểm trần dòng bật (đợt 1) so với lúc `BUSINESS-RULES.md` tách
+   xong (đợt 3) — không để quãng phép kiểm bật mà file đang vi phạm.
+
+**Phải chốt trong kế hoạch ĐỢT 3:**
+
+5. Nhà cho ~55 dòng khung của `BUSINESS-RULES.md` (đầu file, Unresolved items,
+   Change procedure), viết lại 6 link chết, và quyết 5 mục `BR-U-*` đi đâu
+   (§3.3).
+
 ---
 
 ## 7. Cái gì đáng lưu — theo tiêu chí §2.14
@@ -742,11 +804,11 @@ luận; **và mọi con số đo rời khỏi lệnh đã sinh ra nó**.
 
 ## 8. Cần chủ quán duyệt gì
 
-Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.25. Hai vòng Sonnet
-phản biện đã sửa xong tám vấn đề (§2.23, §2.24), vòng 8 dọn cấu trúc cho có trật
-tự (§2.25), và Sonnet phán quyết **sẵn sàng** cho kế hoạch đợt 1, kèm năm việc
-phải chốt trong chính kế hoạch đó (§2.24). **Còn một việc: chủ quán duyệt toàn bộ
-bản này.**
+Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.26. Ba vòng Sonnet phản
+biện đã sửa xong chín vấn đề (§2.23, §2.24, §2.26), vòng 8 dọn cấu trúc cho có
+trật tự (§2.25), và Sonnet phán quyết **sẵn sàng** cho kế hoạch đợt 1. **Còn một
+việc: chủ quán duyệt toàn bộ bản này.**
 
 Duyệt xong tôi mới viết kế hoạch triển khai cho **đợt 1** (bước 3 của
-`CLAUDE.md` §1b), và kế hoạch đó phải trả lời năm việc chốt ở §2.24.
+`CLAUDE.md` §1b), và kế hoạch đó phải trả lời **bốn việc chốt-đợt-1 ở §6b** (việc
+thứ năm thuộc kế hoạch đợt 3).
