@@ -1,6 +1,7 @@
 # Dựng lại nền tài liệu và quy trình cho toàn dự án
 
-**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau sáu vòng phỏng vấn.**
+**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau sáu vòng phỏng vấn và một
+vòng Sonnet phản biện.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển
 khai.**
 
@@ -215,6 +216,26 @@ tiết: **tài liệu bám hiện trạng mã nguồn, không mang theo lịch s
 gì "giữ cho khỏi mất" mà không đo lại được từ mã nguồn hay dữ liệu hôm nay đều
 thuộc diện xoá — kể cả khi tôi thấy tiếc.
 
+### Vòng 6 — Sonnet phản biện (bắt buộc theo `CLAUDE.md` §1)
+
+**2.23 Chủ quán yêu cầu Sonnet phản biện trước khi lập kế hoạch.** Sonnet kiểm
+sáu khẳng định khả thi kỹ thuật bằng mã nguồn thật, tìm ra **sáu vấn đề**, bốn
+cái "phải giải trước khi lập kế hoạch". Tất cả là việc kỹ thuật — tôi tự giải,
+không đẩy về chủ quán — và đã sửa ngay trong bản này:
+
+| Sonnet chỉ ra | Sửa ở |
+|---|---|
+| Cửa chặn thật là **pre-commit**, không phải `vitest`; cả bản viết sai | §3.7 |
+| Việc treo là test đỏ sẽ **đá `CLAUDE.md` §9** (mọi test phải xanh) | §3.8 — dùng `it.todo`, không đỏ |
+| Bản đồ vẽ tay là văn xuôi, **không đối chiếu được** với đồ thị máy | §3.6 — thêm khối cấu trúc |
+| Trích tên bảng là **phân tích cú pháp**, không phải tra bảng, và cần lối thoát khi bí | §3.5b |
+| `CLAUDE.md` (Phần A **316 dòng**) tự vi phạm trần 200 dòng | §3.3 — miễn trừ có lý do |
+| Đợt 1 **không có gì thật để bắt lỗi** vì tài liệu luồng ở đợt 2 | §6 — kèm lát mồi |
+| Con số "**86 file**" gọi `sheets_db` trong bản này **sai** (thật ~37-45) | §3.2c — bỏ số, ghi lệnh đo |
+
+**Con số sai là bài học đắt nhất:** bản thiết kế *về chuyện tài liệu nói sai số*
+lại tự ghi một con số sai. Đúng §7.1 — lưu lệnh đo, đừng lưu con số.
+
 ---
 
 ## 3. Thiết kế bộ tài liệu mới
@@ -306,9 +327,12 @@ hỏng.**
 
 ### 3.2c Một cái bẫy tên gọi phải ghi rõ
 
-`lib/sheets_db.ts` — **tên nói Google Sheets, ruột là Supabase**, và **86 file
-đang gọi nó**. Người mới đọc tên file sẽ hiểu sai ngay ngày đầu. Hiện không tài
-liệu nào nói điều này. `SYSTEM-OVERVIEW.md` và `SYSTEM-MAP.md` phải nói.
+`lib/sheets_db.ts` — **tên nói Google Sheets, ruột là Supabase**, và **hàng chục
+file đang import nó** (đo lại bằng `grep -rl "from ['\"].*sheets_db" app lib
+components`; đừng chép con số vào đây — chính bản này từng ghi "86 file" sai, đó
+là số grep khớp mọi thứ, Sonnet bắt được ở §2.23). Người mới đọc tên file sẽ hiểu
+sai ngay ngày đầu. Hiện không tài liệu nào nói điều này. `SYSTEM-OVERVIEW.md` và
+`SYSTEM-MAP.md` phải nói.
 
 ### 3.3 Năm luật viết (§2.18)
 
@@ -327,6 +351,13 @@ không ai thấy. **File càng dài thì chỗ sai càng dễ nấp.**
 **478 dòng**, tức bật phép kiểm là chính nó đỏ ngay. Nên nó tách theo lĩnh vực
 thành `02-rules/business-rules/` (giá vốn, tồn kho, doanh thu, tài sản), mỗi file
 dưới trần. Mã luật `BR-*` giữ nguyên để mọi chỗ trỏ tới không gãy.
+
+**Một ngoại lệ có lý do: `CLAUDE.md`.** Sonnet đo (§2.23): riêng Phần A (luật làm
+việc) đã **316 dòng**, vượt trần 58% ngay cả sau khi bỏ hết Phần B. Nhưng
+`CLAUDE.md` là **file duy nhất máy tự nạp mỗi phiên** — tách nó thành file con là
+tạo ra đúng thứ §1b cấm: "luật nằm ở file phải nhớ mở". Nên nó **được miễn trần,
+lý do ghi thẳng vào phép kiểm**. Đợt 3 vẫn cố rút gọn Phần A, nhưng miễn trừ là
+chủ ý, không phải quên.
 
 ### 3.4 `CLAUDE.md` — vai trò đổi hẳn
 
@@ -374,6 +405,15 @@ kiểm — mà là hình dạng tài liệu.**
 **Dòng thứ ba là dòng có răng nhất:** nó bắt được **tài liệu mô tả sai đường đi
 của dữ liệu**, chứ không chỉ bắt tài liệu nhắc tới thứ đã xoá.
 
+**Nhưng dòng đó là việc phân tích cú pháp, không phải tra bảng** — sửa sau phản
+biện Sonnet (§2.23). Tên bảng ở đây là **chuỗi truyền qua `lib/sheets_db.ts`**,
+có ba dạng: chuỗi thẳng `findAll("Recipes")`; hằng trong cùng file `const SHEET =
+"Users"`; và hai chặng qua `lib/shared-actions.ts` (`createEntity(SHEET, ...)`).
+Công cụ phải phân giải được cả ba, giới hạn trong đúng bộ hàm bọc đó. **Gặp dạng
+thứ tư — tên tính động, nhiều chặng hơn — thì KHÔNG được lặng lẽ cho qua, mà báo
+"không phân giải được, cần người xem".** Cho qua trong im lặng đúng là cái bẫy
+§2.3 tồn tại để chặn.
+
 Ước lượng: **4 trên 5 câu** thành kiểm được bằng máy. Chỗ hở còn lại ở §5.1.
 
 ### 3.6 Bản đồ — hai lớp, một phép kiểm
@@ -382,10 +422,14 @@ của dữ liệu**, chứ không chỉ bắt tài liệu nhắc tới thứ đ�
 bảng nào, bảng nào có ai đọc, bảng nào có cột gì kèm ràng buộc gì. **Chạy lại là
 đúng.**
 
-**Lớp người vẽ** là sơ đồ gọn để hiểu toàn cảnh.
+**Lớp người vẽ** là sơ đồ gọn để hiểu toàn cảnh — **nhưng phải có một khối cấu
+trúc máy đọc được**. Sửa sau phản biện Sonnet (§2.23): không thể đối chiếu đồ thị
+máy sinh với văn xuôi thuần. Nên `SYSTEM-MAP.md` gồm hai phần: một khối liệt kê
+quan hệ trong hàng rào mã (máy phân giải), và văn xuôi giải thích bên cạnh (người
+đọc). Máy chỉ đọc khối cấu trúc.
 
-**Phép kiểm nối hai lớp:** bản máy sinh có một quan hệ mà bản vẽ tay không nhắc
-tới → **đỏ**.
+**Phép kiểm nối hai lớp:** bản máy sinh có một quan hệ mà **khối cấu trúc** của
+bản vẽ tay không nhắc tới → **đỏ** ở cửa pre-commit.
 
 Việc này giải quyết đúng thứ đã làm tôi sai nhiều nhất tháng này: không thấy chỗ
 liên đới. Hàm huỷ đơn ẩn khỏi phép quét 6 ngày; khoá ngoại tôi báo "không có" mà
@@ -402,7 +446,18 @@ có thật; ba nơi đọc bảng số dư mà kế hoạch chỉ liệt kê m�
 | Đổi thuật ngữ | Sửa `GLOSSARY.md` | Từ dùng trong màn hình |
 | Xong một việc | — | Phép kiểm của việc đó tự xanh (§3.8) |
 
-**Tất cả đều đỏ ở cửa `npx vitest run`.** Không có mức cảnh báo vàng.
+**Tất cả đều đỏ ở cửa PRE-COMMIT, không phải trong `npx vitest run`.** Đây là
+sửa lớn sau phản biện Sonnet (§2.23): tấm gương thành công duy nhất của hệ thống
+— `check-rules-current.ts` — chạy ở `.husky/pre-commit`, không phải là một test
+vitest. Các phép kiểm tài liệu-lệch-mã cùng loại đó, nên chúng nối vào **cùng
+cửa pre-commit**, chạy sau `tsc` và sau `check-rules-current` hiện có. `vitest`
+để dành cho test hành vi thật (§3.8). Không có mức cảnh báo vàng.
+
+**Vì sao KHÔNG nhét vào vitest:** `CLAUDE.md` §9 đòi `npx vitest run` **toàn bộ
+xanh** mới được báo xong việc. Nếu phép kiểm chặn-cứng là test vitest thì mỗi
+lần một tài liệu lệch, cả bộ test đỏ cho **mọi** việc không liên quan — và §9
+không còn thoả được nữa. Tách ra cửa pre-commit giữ được cả hai: chặn cứng vẫn
+chặn, mà §9 vẫn nguyên nghĩa.
 
 **Đường thoát duy nhất, và nó để lại dấu vết:** sửa đổi thật sự không đổi hành vi
 thì ghi một dòng *"đã xem lại, không đổi hành vi — ngày"*. Chủ quán đọc được ai
@@ -412,13 +467,19 @@ thì ghi một dòng *"đã xem lại, không đổi hành vi — ngày"*. Chủ
 
 | Loại việc | Cách canh |
 |---|---|
-| **Thuộc về code** | Viết trước một phép kiểm mô tả điều phải đúng khi xong. Danh sách sinh ra từ chính những phép kiểm đó; xong thì nó xanh và mục tự rụng |
+| **Thuộc về code** | Viết trước một phép kiểm mô tả điều phải đúng khi xong, đánh dấu `it.todo` hoặc gắn nhãn `@open-item`. Xong thì đổi thành test thật và nó xanh |
 | **Không phải code nhưng ĐO ĐƯỢC** | Phép kiểm truy vấn thật: migration đã chạy chưa, web có chạy ở Singapore không, dữ liệu đã thoả điều kiện chưa |
 | **Chờ người thật** | Ghi tay kèm ngày hẹn. Quá hạn thì đỏ, buộc đóng hoặc gia hạn |
 
+**Danh sách `OPEN-ITEMS.md` sinh ra bằng một script quét `it.todo`/`@open-item`,
+KHÔNG phải bằng test đỏ.** Đây là sửa sau phản biện Sonnet (§2.23): nếu mỗi việc
+treo là một test đỏ thật thì `npx vitest run` **không bao giờ xanh trọn** khi
+danh sách còn mục nào — đá thẳng `CLAUDE.md` §9. `it.todo` được vitest đếm riêng,
+**không tính là hỏng**, nên §9 vẫn thoả mà việc treo vẫn hiện.
+
 **Loại thứ hai là loại đã cắn tôi:** ba lần trong ngày 02/09 tôi báo migration
 *"chưa chạy"* trong khi đã chạy — một câu truy vấn là bắt được. **Trạng thái
-phải đo được, không được nhớ.**
+phải đo được, không được nhớ.** Loại này chạy ở pre-commit cùng chỗ §3.7.
 
 ### 3.9 Bộ tài liệu này hấp thụ việc mới thế nào — nhất là kế toán và dòng tiền
 
@@ -512,7 +573,7 @@ nguyên vẹn, không có quãng nào trống.
 
 | Đợt | Làm gì | Xong nghĩa là |
 |---|---|---|
-| **1** | Công cụ sinh bản đồ + các phép kiểm chặn cứng (§3.6, §3.7, §3.8) | Phép kiểm chạy được, và **đã chứng minh bắt được một lỗi thật** |
+| **1** | Công cụ sinh bản đồ + các phép kiểm chặn cứng (§3.6, §3.7, §3.8), **kèm một lát mỏng của đợt 2** làm mồi: một tài liệu luồng thật + một mảnh bản đồ vẽ tay | Phép kiểm chạy được, và **bắt được một lỗi thật trên lát mồi đó** — không phải trên fixture giả |
 | **2** | 10 luồng + `GLOSSARY` + `SYSTEM-OVERVIEW` + `SYSTEM-MAP` + `INCIDENT-RESPONSE` | Viết từ mã nguồn, phép kiểm đợt 1 xanh |
 | **3** | Viết lại `CLAUDE.md` + `README.md`, cập nhật `BUSINESS-RULES.md` | Bốn cửa `CLAUDE.md` §9 xanh |
 | **4** | Dựng lại bộ script | `verify-revenue` và `check-rules-current` bản mới chạy được và bắt được lỗi |
@@ -567,8 +628,8 @@ luận; **và mọi con số đo rời khỏi lệnh đã sinh ra nó**.
 
 ## 8. Cần chủ quán duyệt gì
 
-Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.22. **Còn một việc: chủ
-quán duyệt toàn bộ bản này.**
+Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.23, và sáu vấn đề Sonnet
+phản biện đã sửa xong (§2.23). **Còn một việc: chủ quán duyệt toàn bộ bản này.**
 
 Duyệt xong tôi mới viết kế hoạch triển khai cho **đợt 1** (bước 3 của
 `CLAUDE.md` §1b).
