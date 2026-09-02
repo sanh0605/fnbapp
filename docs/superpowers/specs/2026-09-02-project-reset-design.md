@@ -5,7 +5,8 @@ vòng Sonnet phản biện.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển
 khai.**
 
-**Status: chờ chủ quán duyệt.** Chưa duyệt thì chưa ai được bắt tay làm.
+**Status: chủ quán DUYỆT 2026-09-02.** Kế hoạch triển khai đợt 1 viết tại
+`docs/superpowers/plans/`.
 
 **Chủ quán yêu cầu 02/09**, ưu tiên cao nhất, gác mọi việc khác. Ông ấy yêu cầu
 **phỏng vấn trước khi lập kế hoạch** — bảy vòng, kết quả ở §2.
