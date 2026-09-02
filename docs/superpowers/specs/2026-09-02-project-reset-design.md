@@ -1,13 +1,13 @@
 # Dựng lại nền tài liệu và quy trình cho toàn dự án
 
-**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau bốn vòng phỏng vấn.**
+**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau sáu vòng phỏng vấn.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển
 khai.**
 
 **Status: chờ chủ quán duyệt.** Chưa duyệt thì chưa ai được bắt tay làm.
 
 **Chủ quán yêu cầu 02/09**, ưu tiên cao nhất, gác mọi việc khác. Ông ấy yêu cầu
-**phỏng vấn trước khi lập kế hoạch** — bốn vòng, kết quả ở §2.
+**phỏng vấn trước khi lập kế hoạch** — sáu vòng, kết quả ở §2.
 
 ---
 
@@ -195,7 +195,7 @@ xử lý thế nào — dòng tiền thì anh đã yêu cầu rồi.** Tự soá
 2. Trần 200 dòng **đá chính `BUSINESS-RULES.md`** (478 dòng). Tách theo lĩnh vực
    (§3.3).
 3. `EDGE-CASES.generated.md` **hứa quá** — máy chỉ trích được tên phép kiểm
-   (§5.4).
+   (§5.2).
 4. Mô hình 10 luồng phẳng **không chứa được kế toán kép** vì nó là lớp vắt
    ngang, không phải luồng song song (§3.9).
 
@@ -486,7 +486,7 @@ nào đọc hiểu.
 **Giảm nhẹ:** mỗi tài liệu luồng có dòng *"đo lần cuối: ngày — bằng lệnh nào"*.
 Đây là giảm nhẹ, không phải lời giải.
 
-### 5.4 `EDGE-CASES.generated.md` chỉ trích được TÊN, không dịch được
+### 5.2 `EDGE-CASES.generated.md` chỉ trích được TÊN, không dịch được
 
 Tôi từng viết "máy sinh trường hợp biên từ phép kiểm nghiệp vụ". Nói cho đúng:
 máy trích được **tên** các phép kiểm (`it("phải từ chối khi ngày thanh lý trước
@@ -495,11 +495,11 @@ Kết quả thô là một danh sách tên hàm. Muốn nó đọc được thì
 viết bằng tiếng Việt ngay từ đầu — đó là một luật viết test, không phải phép màu
 của công cụ sinh. Ghi ra để không hứa quá.
 
-### 5.2 Việc chờ người thật vẫn phụ thuộc người
+### 5.3 Việc chờ người thật vẫn phụ thuộc người
 
 §3.8 loại ba. Máy canh được hạn, không canh được nội dung. Theo thiết kế là vậy.
 
-### 5.3 Xoá `docs/audits/` là mất khả năng dựng lại
+### 5.4 Xoá `docs/audits/` là mất khả năng dựng lại
 
 Đã hỏi lại lần hai với số đo cụ thể, chủ quán giữ nguyên (§2.13).
 
@@ -567,7 +567,7 @@ luận; **và mọi con số đo rời khỏi lệnh đã sinh ra nó**.
 
 ## 8. Cần chủ quán duyệt gì
 
-Mọi câu hỏi của ba bản trước đã được trả lời ở §2.8–§2.19. **Còn một việc: chủ
+Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.22. **Còn một việc: chủ
 quán duyệt toàn bộ bản này.**
 
 Duyệt xong tôi mới viết kế hoạch triển khai cho **đợt 1** (bước 3 của
