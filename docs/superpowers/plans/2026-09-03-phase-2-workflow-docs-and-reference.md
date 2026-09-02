@@ -142,6 +142,22 @@ git commit -m "docs(flow): complete stock-issue flow (issue slips + adjustments)
 
 ---
 
+## Task 2b: Tooling fix — validate ALL app routes, not just admin (discovered during Task 3)
+
+The flow-doc-facts gate validates declared routes against `listAdminPageRoutes` (`lib/nav-completeness.ts`), which walks only `app/admin`. Non-admin routes — `/pos`, `/login`, `/settings/password` — can never resolve, so `sales.md` and `users.md` would falsely fail. This is a defect in the Phase-1 route world, not a doc error. Fix the tooling (a technical fix; the "no code changes" constraint was about not moving app code, not about leaving a broken check).
+
+**Files:**
+- Modify: `lib/nav-completeness.ts` (ADD a function; leave `listAdminPageRoutes` untouched so the nav check is unaffected)
+- Modify: `scripts/doc-checks/run-blocking.ts` (use the new function for the routes world)
+- Test: `lib/nav-completeness.test.ts` (add a case)
+
+- [ ] **Step 1:** Add `listAllPageRoutes(repoRoot)` to `lib/nav-completeness.ts`: walk ALL of `app/` for `page.tsx` (not just `app/admin`), returning each as its route with segments joined from `app/`, INCLUDING dynamic segments literally (e.g. `/admin/users/edit/[id]`) and NOT skipping dynamic subtrees. Add a focused test that it includes `/pos`, `/login`, and an admin route.
+- [ ] **Step 2:** In `scripts/doc-checks/run-blocking.ts`, change the routes world from `listAdminPageRoutes` to `listAllPageRoutes`.
+- [ ] **Step 3:** Verify `npx tsc --noEmit`, `npx vitest run` (all green), `npx vite-node scripts/doc-checks/run-blocking.ts` (still all PASS on current committed docs).
+- [ ] **Step 4:** Commit as `fix(docchecks): validate flow-doc routes against all app pages`.
+
+After this lands, Task 3 (sales) and Task 10 (users) can declare their non-admin routes and pass.
+
 ## Tasks 3–11: The remaining nine workflow docs
 
 Each follows the Task 2 procedure exactly, with its own row from the flows table. One task per doc. For each: derive tables via grep, confirm routes, pick existing BR codes, write flow-decl + five-question prose in English, add the measured-last line, verify both gates, commit as `docs(flow): <name>`.
