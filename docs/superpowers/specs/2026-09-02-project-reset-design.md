@@ -1,6 +1,6 @@
 # Dựng lại nền tài liệu và quy trình cho toàn dự án
 
-**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau sáu vòng phỏng vấn và hai
+**Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau bảy vòng phỏng vấn và hai
 vòng Sonnet phản biện.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển
 khai.**
@@ -8,7 +8,7 @@ khai.**
 **Status: chờ chủ quán duyệt.** Chưa duyệt thì chưa ai được bắt tay làm.
 
 **Chủ quán yêu cầu 02/09**, ưu tiên cao nhất, gác mọi việc khác. Ông ấy yêu cầu
-**phỏng vấn trước khi lập kế hoạch** — sáu vòng, kết quả ở §2.
+**phỏng vấn trước khi lập kế hoạch** — bảy vòng, kết quả ở §2.
 
 ---
 
@@ -195,7 +195,7 @@ xử lý thế nào — dòng tiền thì anh đã yêu cầu rồi.** Tự soá
    ở §3.9.
 2. Trần 200 dòng **đá chính `BUSINESS-RULES.md`** (478 dòng). Tách theo lĩnh vực
    (§3.3).
-3. `EDGE-CASES.generated.md` **hứa quá** — máy chỉ trích được tên phép kiểm
+3. `docs/generated/edge-cases.md` **hứa quá** — máy chỉ trích được tên phép kiểm
    (§5.2).
 4. Mô hình 10 luồng phẳng **không chứa được kế toán kép** vì nó là lớp vắt
    ngang, không phải luồng song song (§3.9).
@@ -266,6 +266,23 @@ kế, nhưng chặn viết kế hoạch sạch):
 
 **Phán quyết của Sonnet: SẴN SÀNG, kèm năm việc chốt-trong-kế-hoạch ở trên.**
 
+### Vòng 8 — soi lại chính cấu trúc, tách/gộp cho có trật tự
+
+**2.25 Chủ quán muốn thêm một vòng trước khi lập kế hoạch: cần gọn gàng, có trật
+tự — "nên tách thì tách, nên gộp thì gộp chứ không làm chắp vá".** Soi toàn bộ
+cấu trúc (đã tích tụ qua bảy vòng) ra **ba chỗ chắp vá thật**, đều sửa:
+
+| Chỗ chắp vá | Sửa ở |
+|---|---|
+| Tách `BUSINESS-RULES` theo 7 header cơ học → sinh file 20 dòng | §3.3 — gộp theo lĩnh vực, ~6 file |
+| Chưa có nguyên tắc tách/gộp thành văn | §3.3b — viết ra |
+| Hai file máy sinh rải hai thư mục | §3.2d — gom vào `docs/generated/` |
+
+**Cách xếp file máy sinh — hỏi chủ quán vì ảnh hưởng cảm giác trật tự của cây.**
+Đưa hai lối, chủ quán hỏi *"có cách nào tốt hơn không?"*. Nghĩ lại, so ba lối
+theo tiêu chí "ranh giới cấm-sửa-tay khó bỏ sót nhất" (§3.2d), chọn **thư mục
+`docs/generated/` riêng** — chủ quán duyệt.
+
 ---
 
 ## 3. Thiết kế bộ tài liệu mới
@@ -314,25 +331,24 @@ README.md                          chạy máy thế nào                   [EN]
 docs/
 ├── 01-system/
 │   ├── SYSTEM-OVERVIEW.md         quán là gì                         [VI]
-│   ├── SYSTEM-MAP.md              sửa đâu đụng đâu                   [EN]
-│   └── SYSTEM-MAP.generated.md    bảng, cột, ràng buộc, server action [EN]
+│   └── SYSTEM-MAP.md              sửa đâu đụng đâu (bản vẽ tay)       [EN]
 ├── 02-rules/
 │   ├── GLOSSARY.md                từ này nghĩa là gì                 [VI]
-│   ├── business-rules/            tiền tính thế nào, vì sao          [VI]
-│   │   └── (tách theo 7 header sẵn có của file gốc — xem §3.3)
-│   └── EDGE-CASES.generated.md    trường hợp biên                    [VI]
+│   └── business-rules/            tiền tính thế nào, vì sao          [VI]
+│       └── (tách theo lĩnh vực mạch lạc, ~6 file — xem §3.3)
 ├── 03-workflows/                                                     [EN]
 │   ├── sales.md               purchasing.md        stock-issue.md
 │   ├── stocktake.md           assets.md            reports.md
 │   ├── product-catalog.md     inventory-catalog.md
 │   └── users.md               operations.md
-└── 04-operations/
-    ├── INCIDENT-RESPONSE.md       hỏng rồi làm gì                    [EN]
-    └── OPEN-ITEMS.md              cái gì chưa xong                   [VI]
+├── 04-operations/
+│   ├── INCIDENT-RESPONSE.md       hỏng rồi làm gì                    [EN]
+│   └── OPEN-ITEMS.md              cái gì chưa xong                   [VI]
+└── generated/                     VÙNG CẤM SỬA TAY (§3.2d)
+    ├── README.md                  "máy sinh, chạy lại là đúng"
+    ├── system-map.md              bảng, cột, ràng buộc, server action [EN]
+    └── edge-cases.md              trường hợp biên                    [VI]
 ```
-
-Đuôi `.generated.md` là cố ý: **nhìn tên là biết không được sửa tay.** Hai file
-đó không tính là chỗ phải bảo trì.
 
 `docs/04-operations/INCIDENT-RESPONSE.md` là chỗ thứ chín, thêm ở vòng 3: khôi
 phục dữ liệu, máy POS không đồng bộ, migration chạy sai, web không dựng được.
@@ -350,7 +366,7 @@ hỏng.**
 2. **`BUSINESS-RULES.md` giữ công thức và lý do; tài liệu luồng chỉ được trỏ tới
    mã luật** (`BR-COGS-005`), **cấm chép lại công thức.** Máy kiểm được.
 3. **Cấu trúc dữ liệu không có tài liệu tay** — lấy thẳng từ máy chủ vào
-   `SYSTEM-MAP.generated.md`.
+   `docs/generated/system-map.md`.
 
 ### 3.2c Một cái bẫy tên gọi phải ghi rõ
 
@@ -360,6 +376,25 @@ components`; đừng chép con số vào đây — chính bản này từng ghi 
 là số grep khớp mọi thứ, Sonnet bắt được ở §2.23). Người mới đọc tên file sẽ hiểu
 sai ngay ngày đầu. Hiện không tài liệu nào nói điều này. `SYSTEM-OVERVIEW.md` và
 `SYSTEM-MAP.md` phải nói.
+
+### 3.2d Thư mục `docs/generated/` — một vùng cấm sửa tay duy nhất (§2.25)
+
+Sửa sau vòng 8. Bản trước rải hai file máy sinh vào hai thư mục khác nhau kèm
+đuôi `.generated.md`. Chủ quán hỏi có cách gọn hơn không, và có: **gom tất cả
+file máy sinh vào một thư mục `docs/generated/`.**
+
+Lý do chọn lối này, không phải hai lối kia: cả dự án dựng trên nguyên tắc *đừng
+sửa tay thứ máy làm ra*, nên ranh giới đó phải **khó bỏ sót nhất**. So ba lối
+bằng chỗ đặt ranh giới:
+
+| Lối | Ranh giới ở đâu | Rủi ro sửa nhầm |
+|---|---|---|
+| Cạnh bản tay, đuôi `.generated` | Đuôi tên file | Cao — đuôi dễ lướt qua |
+| Nhét chung file, vùng có rào | Giữa file | Cao nhất, và cãi §2.6 (hai lớp) |
+| **Thư mục `generated/` riêng** | **Đường dẫn** | **Thấp nhất** |
+
+Thư mục có `README.md` một dòng cảnh báo; mỗi bản vẽ tay tương ứng có một dòng
+trỏ tới bản sinh. Đây vẫn là chỗ chủ quán tra bản đồ đầy đủ (đúng §2.6).
 
 ### 3.3 Năm luật viết (§2.18)
 
@@ -379,14 +414,20 @@ không ai thấy. **File càng dài thì chỗ sai càng dễ nấp.**
 `02-rules/business-rules/`, mỗi file dưới trần. Mã luật `BR-*` giữ nguyên để mọi
 chỗ trỏ tới không gãy.
 
-**Tách theo 7 header sẵn có của file, KHÔNG bịa ra 4 file — sửa sau phản biện
-Sonnet vòng 2 (§2.24).** Bản trước tôi ghi "giá vốn, tồn kho, doanh thu, tài
-sản". Sai: các mã `BR-*` trải **9 họ** (SALE, COGS, INV, CATALOG, BACKDATE, DATA,
-BACKUP, ACCESS, USER), và **không có họ `BR-ASSET`** — bốn file tôi bịa vừa
-thiếu vừa lệch. File gốc đã có sẵn 7 header đúng lĩnh vực (Sales, COGS,
-Inventory, Backdated, Audit-recovery, Backup, Access) — tách bám theo đó. Ranh
-giới file chính xác và cách xử lý `## Access and security rules` (header này đang
-gán nhầm 168/182 dòng dưới nó) là việc của kế hoạch đợt 3.
+**Tách theo LĨNH VỰC MẠCH LẠC, không theo header cơ học cũng không bịa 4 file —
+sửa sau vòng 8 (§2.25).** Áp nguyên tắc tách/gộp (§3.3b) vào kích thước đo được:
+
+| Mục gốc | Dòng | Xử lý |
+|---|---:|---|
+| Sales, COGS, Inventory | 53, 49, 57 | **Tách riêng** — mỗi cái một lĩnh vực đủ đứng |
+| Backdated, Audit-recovery, Backup | 19, 25, 31 | **Gộp** thành `data-integrity.md` (~75 dòng) — ba mảnh nhỏ cùng họ "bảo toàn và sửa dữ liệu". Ba file 20 dòng mới là chắp vá |
+| Catalog (đang lẫn trong "Access") | ~ | **Tách** ra `catalog.md` |
+| Access thật | ~14 | File riêng dù ngắn — ngoại lệ luật an toàn (§3.3b) |
+
+Ra **~6 file mạch lạc**, không phải 4 (thiếu) cũng không phải 7 (vụn). Header
+`## Access and security rules` đang gán nhầm 168/182 dòng — gỡ về đúng nhà là
+việc kế hoạch đợt 3. Bản trước tôi ghi "giá vốn, tồn, doanh thu, tài sản": sai,
+vì không hề có họ `BR-ASSET`.
 
 **Một chỗ thứ tự phải chốt trong kế hoạch đợt 1:** phép kiểm trần dòng bật ở đợt
 1, nhưng `BUSINESS-RULES.md` chưa tách tới tận đợt 3. Nên hoặc phép kiểm chỉ bắt
@@ -399,6 +440,25 @@ việc) đã **316 dòng**, vượt trần 58% ngay cả sau khi bỏ hết Ph�
 tạo ra đúng thứ §1b cấm: "luật nằm ở file phải nhớ mở". Nên nó **được miễn trần,
 lý do ghi thẳng vào phép kiểm**. Đợt 3 vẫn cố rút gọn Phần A, nhưng miễn trừ là
 chủ ý, không phải quên.
+
+### 3.3b Nguyên tắc tách/gộp — thành văn, để lần sau cũng gọn (§2.25)
+
+**Chủ quán đòi tách/gộp có nguyên tắc, không chắp vá.** Suốt bảy vòng trước tôi
+quyết từng chỗ theo cảm tính — thiếu đúng thứ này. Viết ra để nó áp được cả về
+sau, không chỉ lần này:
+
+> **Một file = một câu hỏi người đọc thật sự hỏi.**
+> - **Tách** khi file vượt trần 200 dòng **và** chứa hai mối bận tâm người ta
+>   tìm riêng nhau.
+> - **Gộp** khi hai file luôn đọc cùng nhau, hoặc một file dưới ~40 dòng mà cùng
+>   lĩnh vực với file bên cạnh.
+> - **Không** tách cơ học theo header; **không** gộp hai lĩnh vực khác nhau chỉ
+>   để bớt số file.
+> - **Ngoại lệ:** luật an toàn (access/security) giữ file riêng dù ngắn, để tìm
+>   ra nhanh khi cần.
+
+Nguyên tắc này áp cho `business-rules/` (§3.3), và là thước đo cho mọi lần
+thêm/bớt tài liệu về sau.
 
 ### 3.4 `CLAUDE.md` — vai trò đổi hẳn
 
@@ -439,7 +499,7 @@ kiểm — mà là hình dạng tài liệu.**
 |---|---|
 | Màn hình thuộc luồng này | `app/` — route có tồn tại |
 | File mã nguồn | Có tồn tại |
-| **Bảng dữ liệu luồng này ghi vào** | **Bảng mà những file đó ghi thật**, lấy từ `SYSTEM-MAP.generated.md` |
+| **Bảng dữ liệu luồng này ghi vào** | **Bảng mà những file đó ghi thật**, lấy từ `docs/generated/system-map.md` |
 | Các trạng thái | Ràng buộc thật trên máy chủ — hệ thống dùng `check (status in (...))`, đo 02/09 |
 | Mã luật `BR-*` nhắc tới | `BUSINESS-RULES.md` |
 
@@ -601,7 +661,7 @@ nào đọc hiểu.
 **Giảm nhẹ:** mỗi tài liệu luồng có dòng *"đo lần cuối: ngày — bằng lệnh nào"*.
 Đây là giảm nhẹ, không phải lời giải.
 
-### 5.2 `EDGE-CASES.generated.md` chỉ trích được TÊN, không dịch được
+### 5.2 `docs/generated/edge-cases.md` chỉ trích được TÊN, không dịch được
 
 Tôi từng viết "máy sinh trường hợp biên từ phép kiểm nghiệp vụ". Nói cho đúng:
 máy trích được **tên** các phép kiểm (`it("phải từ chối khi ngày thanh lý trước
@@ -682,10 +742,11 @@ luận; **và mọi con số đo rời khỏi lệnh đã sinh ra nó**.
 
 ## 8. Cần chủ quán duyệt gì
 
-Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.24. Hai vòng Sonnet
-phản biện đã sửa xong tám vấn đề (§2.23, §2.24), và Sonnet phán quyết **sẵn
-sàng** cho kế hoạch đợt 1, kèm năm việc phải chốt trong chính kế hoạch đó
-(§2.24). **Còn một việc: chủ quán duyệt toàn bộ bản này.**
+Mọi câu hỏi của các vòng trước đã được trả lời ở §2.1–§2.25. Hai vòng Sonnet
+phản biện đã sửa xong tám vấn đề (§2.23, §2.24), vòng 8 dọn cấu trúc cho có trật
+tự (§2.25), và Sonnet phán quyết **sẵn sàng** cho kế hoạch đợt 1, kèm năm việc
+phải chốt trong chính kế hoạch đó (§2.24). **Còn một việc: chủ quán duyệt toàn bộ
+bản này.**
 
 Duyệt xong tôi mới viết kế hoạch triển khai cho **đợt 1** (bước 3 của
 `CLAUDE.md` §1b), và kế hoạch đó phải trả lời năm việc chốt ở §2.24.
