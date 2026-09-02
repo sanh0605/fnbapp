@@ -21,3 +21,11 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "[pre-commit] PASS: rules current."
+
+echo "[pre-commit] Running documentation gates..."
+npx vite-node scripts/doc-checks/run-blocking.ts
+if [ $? -ne 0 ]; then
+  echo "[pre-commit] FAIL: a document disagrees with the code. Fix the doc, or add a reviewed-no-change line."
+  exit 1
+fi
+echo "[pre-commit] PASS: docs current."
