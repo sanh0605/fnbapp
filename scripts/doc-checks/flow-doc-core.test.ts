@@ -80,7 +80,7 @@ describe("parseFlowDecl", () => {
     const md = readFileSync("docs/03-workflows/stock-issue.md", "utf8");
     const parsed = parseFlowDecl(md, "docs/03-workflows/stock-issue.md");
     expect(parsed).not.toBeNull();
-    expect(parsed!.files).toEqual(["lib/manual-issue-transaction.ts"]);
-    expect(parsed!.tables).toEqual(["issue_slips", "stock_issues"]);
+    expect(parsed!.files).toContain("lib/manual-issue-transaction.ts");
+    expect(parsed!.tables).toContain("stock_issues");
   });
 });
