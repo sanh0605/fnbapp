@@ -52,7 +52,7 @@ describe("voidOrderV2 atomic failure handling", () => {
         net_total: 25_000,
       };
     });
-    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+    // Phase A:
     // voidOrderV2 no longer reads Stock_Ledger at all -- this mock used to
     // return three fabricated ledger rows to prove they got reversed. Real
     // stock_ledger has carried zero sales-driven rows since the 2026-08-07
@@ -96,7 +96,7 @@ describe("voidOrderV2 atomic failure handling", () => {
     expect(mocks.voidOrderAtomic).toHaveBeenCalledOnce();
   });
 
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+  // Phase A
   // replaces this test's own prior claim -- it used to prove three
   // fabricated ledger rows (a sale plus its implicit-production pair) got
   // reversed. That reversal machinery is gone: proved live first that it

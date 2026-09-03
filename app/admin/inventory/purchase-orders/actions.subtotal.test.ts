@@ -37,7 +37,6 @@ import { savePurchaseOrder } from "./actions";
 function buildFormData(fields: Record<string, string>): FormData {
   const formData = new FormData();
   formData.set("supplier_id", "SUP-1");
-  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md
   // section 3: savePurchaseOrder now also requires source_id for a
   // COMPLETED order, mirroring supplier_id -- defaulted here the same way,
   // so every test in this file keeps exercising its own actual subject
@@ -136,7 +135,7 @@ describe("savePurchaseOrder header/lines subtotal guard", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md section 3:
+// section 3:
 // PurchaseOrderForm.tsx's client-side check is the fix for the form, this
 // is its server-side neighbour -- a request that reaches savePurchaseOrder
 // without going through that form (or a future caller that forgets to)

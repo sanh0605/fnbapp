@@ -1,5 +1,5 @@
 // Dev-only API route backing the point-and-comment tool.
-// docs/superpowers/plans/2026-08-26-ui-feedback-tool.md sections 6, 7.
+// sections 6, 7.
 //
 // Second of the plan's two independent production guards -- refuses
 // outside development regardless of whether the client bundle somehow

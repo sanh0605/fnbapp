@@ -20,7 +20,7 @@ import {
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
-const TASK_38_PATH = "docs/audits/2026-07-16-task-3.8-backdated-events-surface.json";
+const TASK_38_PATH = "docs/audits/2026-07-16-task-3.8-backdated-events-surface.json"; // docs-ref-allow: history-only backup removed by the reset (spec section 2.13)
 const QUERY_CHUNK_SIZE = 100;
 
 async function main(): Promise<void> {

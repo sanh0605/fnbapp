@@ -8,8 +8,7 @@ export type PosOrderPaymentInput = {
 };
 
 export type PosOrderAtomicInput = {
-  // 2026-08-25 (docs/superpowers/plans/2026-08-24-outlets-and-order-code.md
-  // section 4/objective 1): order numbers are now minted per outlet+date,
+  // 2026-08-25 (section 4/objective 1): order numbers are now minted per outlet+date,
   // not per brand -- outletCode replaces brandCode as the RPC's locking
   // and sequencing key.
   outletCode: string;

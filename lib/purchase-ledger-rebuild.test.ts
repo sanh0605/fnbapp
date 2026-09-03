@@ -86,7 +86,7 @@ describe("buildPurchaseReceipt", () => {
   });
 });
 
-// OPEN-ITEMS 56 (docs/superpowers/plans/2026-08-22-consumable-purchase-base-quantity.md):
+// OPEN-ITEMS 56:
 // base_ingredient_id used to be the same question as "does this item have a
 // conversion" -- true until batch 1 gave CONSUMABLE items their own
 // conversions too. A CONSUMABLE item has no base_ingredient_id, so it used

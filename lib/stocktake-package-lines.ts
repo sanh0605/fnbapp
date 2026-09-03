@@ -31,7 +31,6 @@ export type PackageLine = {
   sizeLabel: string;
   conversionRate: number;
   baseUnitName: string;
-  // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md:
   // the issue-slip screen needs the purchased unit's own name (not just the
   // composed sizeLabel string) to show on-hand converted into the unit
   // being typed, e.g. "20 Cây" for a "Cây 50 Cái" conversion.

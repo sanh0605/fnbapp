@@ -36,7 +36,6 @@ export default function PromotionsClient({
   const [editingPromo, setEditingPromo] = useState<DBPromotion | undefined>(undefined);
   const [deleteId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4b: the action's result was discarded -- a refusal failed in
   // total silence (router.refresh() below was already correct, only the
   // missing error check was the defect here).

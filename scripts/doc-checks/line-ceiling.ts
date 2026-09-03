@@ -31,9 +31,9 @@ const GOVERNED_ROOT_FILES = ["CLAUDE.md", "README.md"];
 
 // CLAUDE.md: the one file the machine auto-loads every session; splitting it
 // into must-open files is the exact anti-pattern spec section 1b forbids (section 3.3).
-// docs/BUSINESS-RULES.md was exempt until its Phase 3 by-domain split; now that
-// docs/02-rules/business-rules/ exists, each domain file is ceiling-checked and
-// the exemption is gone.
+// The former single business-rules file was exempt until its Phase 3 by-domain
+// split; now that docs/02-rules/business-rules/ exists, each domain file is
+// ceiling-checked and the exemption is gone.
 const EXEMPT = new Set(["CLAUDE.md"]);
 
 function toRepoPath(fullPath: string): string {

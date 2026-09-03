@@ -47,7 +47,7 @@ describe("validatePurchaseOrderLine", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md section 3.
+// section 3.
 // The owner's real case: he pressed save with a supplier and lines chosen
 // but no source, and was shown a raw technical string instead of an
 // instruction. source_id was read into state and appended to the payload

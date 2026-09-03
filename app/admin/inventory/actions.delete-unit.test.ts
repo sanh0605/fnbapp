@@ -41,7 +41,6 @@ function formData(fields: Record<string, string>): FormData {
   return fd;
 }
 
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section A3/A7: the FK block itself is correct and stays -- this proves
 // two independent things, per section 3's own instruction to keep them
 // separate: (1) a used unit is still refused (never deleted), (2) the

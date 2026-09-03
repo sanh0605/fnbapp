@@ -7,6 +7,8 @@ tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers the equipment register — the durable tools the shop owns — and
 the two things the owner does with it after acquisition: **dispose** of a tool
 that is broken or retired, and **maintain the depreciation bands** that decide how

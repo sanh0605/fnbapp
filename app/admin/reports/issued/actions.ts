@@ -57,7 +57,6 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
   ]);
 
   const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
-  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
   // section 3.2: same exclusion as getPnLDataV2 (app/admin/reports/actions.ts)
   // -- this report reuses the same issue-costing engine, so it inherited
   // the same gap and gets the same fix, from the one shared function.

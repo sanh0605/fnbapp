@@ -12,7 +12,6 @@ export function UnitForm({ initialData }: { initialData?: any }) {
   const [loading, setLoading] = useState(false);
   const isEdit = !!initialData;
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4/B: both defects lived in this same handler -- the action's
   // result was discarded (silent refusal) and nothing told the browser to
   // redraw this screen after a real save (section B2: revalidatePath alone
@@ -85,7 +84,6 @@ export function DeleteBtn({ id }: { id: string }) {
       fd.append("id", id);
       const res = await deleteUnit(fd);
       setLoading(false);
-      // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
       // section A4: this is the exact site the owner hit -- Combo 2's
       // delete was refused server-side and nothing here ever read the
       // result. res.error is now a real Vietnamese sentence naming the

@@ -41,7 +41,7 @@ export function ConversionForm({ items, conversions, units, initialData }: Conve
     [items, selectedItemId]
   );
 
-  // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section
+  // section
   // 5.2: the base unit belongs to the item, not to its tier-2 group -- take
   // it from the item's own existing conversions (they all agree, verified
   // 2026-08-29 across all 146 real items, 0 disagree), the same way this
@@ -82,7 +82,6 @@ export function ConversionForm({ items, conversions, units, initialData }: Conve
     formData.append("base_unit", baseUnit.id);
     formData.append("purchase_only", String(purchaseOnly));
 
-    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
     // section B: revalidatePath (in addConversion/updateConversion) marks
     // the server cache stale but does not repaint this already-open page.
     if (isEdit) {

@@ -7,6 +7,8 @@ tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers selling: the till screen at `/pos` where an order is built and
 sent, the order history at `/admin/orders`, and the promotion catalog at
 `/admin/promotions`. The key thing to understand is that **the web app is not

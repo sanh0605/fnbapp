@@ -7,6 +7,8 @@ tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_So
 brCodes: BR-INV-002
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers buying goods into the shared warehouse: recording a **purchase
 order** (what was bought, from whom, at what price) and maintaining the
 **suppliers** the shop buys from. A purchase order is entered from

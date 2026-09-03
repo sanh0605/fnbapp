@@ -3,8 +3,7 @@ dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
 /**
- * Phase 3 restore drill (docs/superpowers/plans/2026-07-29-phase3-backup-coverage-and-restore-drill.md,
- * Task 4). Takes a fresh, read-only snapshot of production and inserts it
+ * Phase 3 restore drill (Task 4). Takes a fresh, read-only snapshot of production and inserts it
  * into an explicitly declared scratch target -- never production. The
  * safety check (assertSafeRestoreTarget) runs before any client, production
  * or target, is opened.

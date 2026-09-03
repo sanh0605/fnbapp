@@ -230,9 +230,9 @@ export default async function SalesReportPage({
         </div>
       </div>
 
-      {/* Outlet breakdown (docs/superpowers/plans/2026-08-24-outlets-and-order-code.md
+ {/* Outlet breakdown (
           section 6b). One dataset, two shapes -- cards below md, a table
-          from md up (docs/superpowers/plans/2026-08-25-outlet-breakdown-table.md):
+ from md up:
           CLAUDE.md section 8 forbids a horizontal table on a phone, not on
           a desktop. */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">

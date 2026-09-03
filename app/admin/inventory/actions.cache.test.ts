@@ -14,14 +14,12 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", async () => {
-  // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), so this file's own assertions can never silently drift
   // from what the source under test actually calls.
   const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
   return {
     findAll: mocks.findAll,
-    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
     // section A3: deleteUnit now checks findAllWhere before deleting --
     // see app/admin/inventory/actions.delete-unit.test.ts for that
     // behaviour's own dedicated tests; this file only needs a harmless
@@ -51,7 +49,6 @@ function formData(fields: Record<string, string>): FormData {
   return fd;
 }
 
-// docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
 // section 1.3 (rows 1, 2) / section 1.7's own worked example / section 3:
 // Units and Item_Categories are cached 30 min, keyed by table --
 // revalidatePath alone only refreshes this screen's own path, not the tag

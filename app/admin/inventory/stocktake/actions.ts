@@ -58,7 +58,6 @@ export interface RecentConfirmedStocktakeSessionView {
 
 async function loadItemNameMaps() {
   // base_ingredients dropped 2026-09-01
-  // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md).
   // Verified live before removing: every stocktake_lines row in production
   // is item_type PURCHASED_ITEM (50/50) -- no BASE_INGREDIENT-type line has
   // ever existed, so there is no historical name this map needs to resolve
@@ -203,7 +202,7 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
 
   try {
     const { purchasedItems, itemCategories } = await loadItemNameMaps();
-    // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
+    // 2026-08-26:
     // equipment is never stocktaken -- a fixed property of the EQUIPMENT
     // category (CLAUDE.md section 7), not a per-item judgment. Excluding by
     // category rather than by is_non_inventory keeps that flag free for its
@@ -221,7 +220,7 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     // section 3, decision 1). Semi-products carry no stock and no value
     // (BR-INV-006) and were never offered here.
     //
-    // 2026-09-01 (docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md):
+    // 2026-09-01:
     // used to also exclude an item whose linked base_ingredient was
     // flagged. Dropped, not replaced -- docs/superpowers/plans/2026-08-31-
     // move-non-inventory-flag-to-items.md already moved that flag onto

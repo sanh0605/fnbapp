@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
 // section 2.4/2.1: drop the base_ingredients table, not just its rows.
 // CASCADE is required and is the one easy way to get this migration wrong
 // silently -- live measurement 2026-09-01 found

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// Render test per docs/superpowers/plans/2026-08-26-outlet-done-properly.md
+// Render test per 
 // section 5: "the closed-outlet confirmation appears and can be accepted,
 // and accepting it still opens the till -- a guard that blocks would be
 // worse than none." Extracted from app/admin/layout.tsx specifically so

@@ -73,7 +73,7 @@ describe("parseFlowDecl", () => {
   });
 
   it("returns null when the markdown has no flow-decl fence", () => {
-    expect(parseFlowDecl("# Just prose\n\nNo declaration here.", "docs/x.md")).toBeNull();
+    expect(parseFlowDecl("# Just prose\n\nNo declaration here.", "docs/x.md")).toBeNull(); // docs-ref-allow: test fixture, path is test data not a real reference
   });
 
   it("parses the real seed workflow doc", () => {

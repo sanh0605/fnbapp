@@ -12,7 +12,7 @@ interface OutletBreakdownSectionProps {
   outletBreakdown: OutletBreakdownRow[];
 }
 
-// docs/superpowers/plans/2026-08-25-outlet-breakdown-table.md: one dataset,
+// Per that plan: one dataset,
 // two shapes. CLAUDE.md section 8 forbids a horizontal table on a phone,
 // not on a desktop -- the cards this replaced were a misreading of that
 // rule. Below md: the original stacked cards, unchanged. From md up: a

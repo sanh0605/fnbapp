@@ -33,7 +33,6 @@ export async function getPurchaseOrdersData(): Promise<{
     ]);
     return { orders, suppliers, lines, items };
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getPurchaseOrdersData:", error);
     throw error;
@@ -64,7 +63,6 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
 
   const effectiveDate = transaction_date ? new Date(transaction_date).toISOString() : new Date().toISOString();
 
-  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md
   // section 3: the client-side form validates this same field beside
   // supplier_id (PurchaseOrderForm.tsx's validatePurchaseOrderHeader) --
   // mirrored here so a request that reaches the server without going
@@ -147,7 +145,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     });
     const po_id = saved.purchaseOrderId;
 
-    // Batch 3, section 3.2 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md):
+    // Batch 3, section 3.2:
     // completing a NEW purchase order with an EQUIPMENT line creates the
     // corresponding assets row. purchase_order_line_id (nullable) plus the
     // complete absence of any "add asset" screen anywhere in the plan's
@@ -183,7 +181,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
               purchasedItemId: line.purchased_item_id as string,
               itemName: item?.name || line.purchased_item_id,
               subtotal: Number(line.subtotal),
-              // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+              // 2026-08-26:
               // base_quantity, not quantity -- quantity is in PURCHASE units
               // (e.g. "1 Combo 10"), base_quantity is already correctly
               // computed by buildPurchaseOrderWritePlan/buildPurchaseReceipt

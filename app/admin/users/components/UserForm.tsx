@@ -15,7 +15,6 @@ export function UserForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B: revalidatePath (in addUser) marks the server cache stale
   // but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {
@@ -130,7 +129,6 @@ export function DeleteUserButton({ id, username }: DeleteUserButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4b/B: the action's result was discarded -- a refusal failed in
   // total silence, and a successful delete never told the browser to
   // redraw.

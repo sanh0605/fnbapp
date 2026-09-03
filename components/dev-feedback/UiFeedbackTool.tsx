@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { buildFingerprint, type ElementFingerprint } from "@/lib/ui-feedback-fingerprint";
 import type { FeedbackEntry } from "@/lib/ui-feedback-store";
 
-// docs/superpowers/plans/2026-08-26-ui-feedback-tool.md sections 2, 5.
+// sections 2, 5.
 //
 // "The comment UI must not touch the page" -- the owner's own condition,
 // requirements not suggestions:

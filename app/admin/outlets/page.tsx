@@ -7,7 +7,7 @@ import type { DBOutlet, DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-// docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md section 2:
+// section 2:
 // one card per outlet, no horizontal table -- phone-first (CLAUDE.md
 // section 8). Owner has no other way to rename or retire an outlet; this
 // screen is the whole point of the plan.

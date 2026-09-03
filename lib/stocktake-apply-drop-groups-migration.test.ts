@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
 // section 3's second check, for apply_stocktake_session_atomic: no function
 // still mentions base_ingredients, checked against the server via
 // pg_get_functiondef with comments stripped -- this file pins the same

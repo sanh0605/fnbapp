@@ -12,8 +12,7 @@ export default async function StockAdjustmentsPage() {
   ]);
 
   // Build a map of item ID -> item details (name, unitName)
-  // base_ingredients dropped 2026-09-01
-  // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md) --
+  // base_ingredients dropped 2026-09-01 --
   // stock_adjustments holds 0 rows in production (OPEN-ITEMS 80: the create
   // path was never wired to a form), so no adjustment has ever needed a
   // name resolved through that table.

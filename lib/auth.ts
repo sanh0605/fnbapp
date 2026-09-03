@@ -72,8 +72,7 @@ export async function requireAdmin(): Promise<AuthResult> {
  * function rather than editing requireAdmin(), which stays correct for
  * every other call site.
  *
- * ADMIN is not a distinct "owner" role today (docs/ACCESS-MODEL.md: "Owner
- * and admin are not technically distinct"), only accidentally equivalent to
+ * ADMIN is not a distinct "owner" role today, only accidentally equivalent to
  * it -- checked live 2026-08-09, exactly one ADMIN account exists. SYSTEM is
  * kept for CLI scripts under CLAUDE.md section 2's own dry-run/--apply/
  * owner-approval protocol, the same allowance requireAdmin() already makes.

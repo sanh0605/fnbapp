@@ -45,7 +45,7 @@ export async function getItemsData(): Promise<{
     ]);
     const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
 
-    // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+    // section 4:
     // both tables checked, not only purchase_order_lines -- see
     // lib/unit-lock.ts for why.
     const lockedIds = new Set<string>();
@@ -54,7 +54,6 @@ export async function getItemsData(): Promise<{
 
     return { categories, items, conversions, units, unitLockedItemIds: Array.from(lockedIds) };
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // this is the exact defect the plan was written to fix -- returning []
     // here is how the owner's real 145-row catalogue rendered as "Chưa có
     // hàng hóa" in production. Rethrow instead; app/error.tsx handles it.
@@ -147,7 +146,6 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
       }
     }
 
-    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
     // section 2: Purchased_Items and UOM_Conversions are cached 10 min,
     // keyed by table -- Đơn nhập, Phiếu xuất kho, Kiểm kê all read them
     // through that cache, not this screen's path.
@@ -191,7 +189,7 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
     }
     const wasWarningConfirmed = !!warning && warningConfirmed;
 
-    // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+    // section 4:
     // the base unit is free to choose until the item has real history --
     // purchase_order_lines.base_quantity and stock_issues.base_quantity are
     // both stored in it, so changing it silently reinterprets every
@@ -219,8 +217,7 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
 
     // base_ingredient_id is intentionally not written here. The tier-2
     // group link field was removed from the form 2026-09-01
-    // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
-    // section 2.2) but the column itself is untouched this batch (section
+    // (section 2.2) but the column itself is untouched this batch (section
     // 2.3, step 2) -- omitting the key from this partial update leaves
     // whatever value the row already has, rather than overwriting it with
     // an empty string on every edit.

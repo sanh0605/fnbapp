@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-// docs/superpowers/plans/2026-08-26-ui-feedback-tool.md section 3.
+// section 3.
 //
 // Fast Refresh already preserves scroll position for a component edit; only
 // a full reload does not. Persists scrollY to sessionStorage on unload and

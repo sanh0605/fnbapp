@@ -61,7 +61,6 @@ function parseIssueSlipResult(data: unknown): IssueSlipResult {
     throw new Error("create_issue_slip_atomic returned an invalid result");
   }
   const lines = result.lines.map(line => {
-    // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md:
     // ledger_id used to be required here, back when the RPC still wrote a
     // stock_ledger row and returned its id. The migration stops writing
     // that row for every line, raw ingredient or consumable, so ledger_id
@@ -182,7 +181,7 @@ function parseReversalResult(data: unknown): ReversalResult {
     created_by_id?: string;
     created_by_name?: string;
   } | null;
-  // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md: same
+  // Per that plan: same
   // ledger_id retirement as parseIssueSlipResult above -- the RPC no longer
   // writes or returns one, for a raw-ingredient reversal or a consumable's.
   if (!result?.reversal_issue_id || !result.reverses_issue_id) {

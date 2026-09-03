@@ -1,5 +1,4 @@
-// Batch 1, item A (docs/superpowers/plans/2026-08-19-batch-1-foundations.md
-// section A). The application-layer half of the two-layer guard -- the
+// Batch 1, item A (section A). The application-layer half of the two-layer guard -- the
 // database partial expression index (see the matching migration) is the
 // part that cannot be bypassed; this is the part that turns its raw
 // unique-violation into a Vietnamese message the owner can act on, naming

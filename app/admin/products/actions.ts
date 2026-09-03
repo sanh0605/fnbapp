@@ -97,7 +97,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
         throw new Error("Dữ liệu biến thể không hợp lệ");
       }
       // The product editor no longer offers a recipe/ingredient picker
-      // (Phase 2, docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+      // (Phase 2)
       // -- the form never sends ingredients. save_product_atomic still
       // requires a valid recipe_decision per variant, so feed planRecipeSave
       // the variant's own current active-recipe ingredients back as a
@@ -170,7 +170,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       });
     }
 
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // section 2:
     // revalidatePath only refreshes this exact screen. lib/sheets_db.ts's
     // findAll cache is keyed by TABLE (tag `sheets-<SheetName>`), and POS
     // reads the same tables through a different path -- so without this,
@@ -187,7 +187,6 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md,
 // CLAUDE.md section 2 exception recorded 2026-08-29: pauseProduct/resumeProduct
 // replace the old deleteProduct's soft-hide (status = 'DELETED'), which
 // announced "Xoá" while doing something reversible -- INACTIVE is now the
@@ -224,7 +223,7 @@ export async function pauseProduct(formData: FormData): Promise<ActionResponse> 
         await update(VARIANT_SHEET, variant.id, { status: "INACTIVE" });
       }
     }
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // section 2:
     // same fix as saveProduct above -- POS reads these two tables through a
     // cache tag, not this screen's path.
     revalidateTag("sheets-Products");
@@ -262,7 +261,7 @@ export async function resumeProduct(formData: FormData): Promise<ActionResponse>
         await update(VARIANT_SHEET, variant.id, { status: "ACTIVE" });
       }
     }
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // section 2:
     // this is the exact case the owner hit -- resumeProduct fixed the data
     // at 02:24:58, POS at 02:25 still read the pre-resume cache.
     revalidateTag("sheets-Products");
@@ -282,7 +281,7 @@ export async function eraseProduct(formData: FormData): Promise<ActionResponse> 
   if (!id) return fail("ID không hợp lệ");
   try {
     await eraseProductAtomic(id);
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 2:
+    // section 2:
     // same fix as the other three actions above -- an erased (never-sold)
     // product must stop being offered on POS without waiting on the cache
     // TTL, same as a paused or resumed one.

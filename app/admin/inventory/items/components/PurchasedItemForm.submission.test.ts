@@ -63,7 +63,6 @@ describe("buildConversionSubmission -- CONSUMABLE (Batch 1, item B)", () => {
   });
 });
 
-// docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
 // section 2.2: base_ingredient_id is no longer part of this function's
 // output at all -- RAW now builds the same shape as CONSUMABLE/EQUIPMENT.
 describe("buildConversionSubmission -- RAW builds the same shape as CONSUMABLE/EQUIPMENT (2026-09-01)", () => {
@@ -84,8 +83,7 @@ describe("buildConversionSubmission -- RAW builds the same shape as CONSUMABLE/E
   });
 });
 
-// 2026-08-20 fix (docs/superpowers/plans/2026-08-20-consumable-base-unit-mismatch.md
-// section 3): "close the hole rather than only the instance." baseUnitId
+// 2026-08-20 fix (section 3): "close the hole rather than only the instance." baseUnitId
 // must already be a real unit id by the time it reaches here -- a name (the
 // exact shape of the original defect) fails visibly instead of writing a
 // corrupt uom_conversions.base_unit row.
@@ -119,7 +117,7 @@ describe("buildConversionSubmission -- rejects a baseUnitId that is not a real u
   });
 });
 
-// 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+// 2026-08-26:
 // EQUIPMENT now gets the same treatment as CONSUMABLE -- a purchase line
 // should record what the invoice says (e.g. "1 Combo 10"), not force the
 // owner into pack-size arithmetic. Replaces the old "neither section"
@@ -175,7 +173,7 @@ describe("buildConversionSubmission -- no category selected yet", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 5.1:
+// section 5.1:
 // the base unit belongs to the item, not its tier-2 group. Before this
 // task, a RAW item's baseUnitId was computed inline in the component as
 // `activeBaseIngredient?.base_unit` -- extracted here specifically so the

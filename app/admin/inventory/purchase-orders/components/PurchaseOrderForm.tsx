@@ -12,8 +12,7 @@ import { formatNumber } from "@/lib/format";
 import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
 import { alert, confirm } from "@/lib/dialog";
 
-// Batch 3 fix, 2026-08-22 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md,
-// found while critiquing section 6's reconciliation, which needs equipment
+// Batch 3 fix, 2026-08-22 (found while critiquing section 6's reconciliation, which needs equipment
 // purchase orders to be completable at all): a Dụng cụ (EQUIPMENT) item
 // structurally has no UOM_Conversions row (batch 1 item B section B3 --
 // equipment gets no conversion-rows UI, unlike RAW/CONSUMABLE, which are
@@ -40,7 +39,7 @@ export function validatePurchaseOrderLine(
   return null;
 }
 
-// docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md section 3:
+// section 3:
 // source_id was read into state and appended to the payload but never
 // checked here -- an empty source reached the server and failed
 // downstream, far from the cause, and the owner was shown the raw

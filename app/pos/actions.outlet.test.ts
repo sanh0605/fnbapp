@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 5/6:
+// section 5/6:
 // the brand must not be user-suppliable -- these tests prove submitOrderV2
 // resolves it server-side from outlet_id and ignores whatever brand_id the
 // caller sent, and that an unknown outlet_id is rejected before any write.

@@ -112,7 +112,6 @@ export async function getPromotionsData(): Promise<{
     ]);
     return { promotions, brands, products, variants, categories };
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getPromotionsData:", error);
     throw error;

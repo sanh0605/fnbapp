@@ -39,7 +39,6 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
-  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md:
   // used to check the linked base_ingredient's own flag instead of the
   // item's -- a gap the stocktake screen never had, since it already also
   // checked the item's own flag (Plan D Gap 1 below). That gap let 7 items
@@ -48,7 +47,7 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   // stocktake -- daily-expense items (đá viên, chanh, quất...) carry
   // is_non_inventory and are never tracked as real stock, nothing for an
   // issue slip to draw down, whichever table the flag happens to sit on.
-  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+  // section
   // 3.1: same test the stocktake screen already uses
   // (app/admin/inventory/stocktake/actions.ts) -- equipment leaves through
   // the asset register (docs/superpowers/plans/2026-08-22-batch-3-asset-
@@ -110,7 +109,6 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
       packageLines: packageLinesByPurchasedItem.get(p.id) ?? [],
     }))
     .filter(item => item.packageLines.length > 0) // nothing to select without at least one active conversion
-    // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
     // section 4: offering a zero-stock item offers something the RPC will
     // always refuse (I4/I5). Filtered HERE, not in filterByC17 -- that
     // helper is shared with the stocktake screen, which must keep showing

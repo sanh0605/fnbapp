@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatConvertedOnHand } from "./issue-slip-onhand-display";
 
-// docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
 // section 5. Pre-fix, IssueSlipClient always rendered the base figure
 // alone, regardless of the selected package -- so every case below that
 // selects a non-1 rate is a wrong VALUE pre-fix, not a missing element:

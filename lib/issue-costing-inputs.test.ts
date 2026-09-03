@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { filterOutEquipmentIssues } from "./issue-costing-inputs";
 
-// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// section
 // 4: the costing-engine block has its own test, not dependent on the
 // issue-slip picker having already filtered equipment out. Feeds
 // filterOutEquipmentIssues an equipment-tagged row directly -- exactly the

@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md
 // section 2, point 3: the final migration of step 2 -- drops
 // purchased_items.base_ingredient_id itself, after every reader/writer
 // (0092, 0093, 0094, and this task's TypeScript commit) has already

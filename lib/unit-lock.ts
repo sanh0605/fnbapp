@@ -1,5 +1,5 @@
 /**
- * docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+ * section 4:
  * a purchased item's base unit is free to choose until the item has real
  * history recorded in it -- purchase_order_lines.base_quantity and
  * stock_issues.base_quantity are both stored in base units, so re-pointing

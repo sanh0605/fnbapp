@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-02-phase-d-drop-the-ledger-tables.md
 // section 2.2: exactly four statements, in order (trigger, trigger
 // function, inventory_balances, stock_ledger), no CASCADE, no IF EXISTS
 // -- both deliberately, per the plan's own reasoning: a refused drop is

@@ -23,11 +23,10 @@ export async function toggleToppingStandalone(
   const newStatus = enabled ? "ACTIVE" : "INACTIVE";
   await update("Products", productId, { status: newStatus });
 
-  // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
   // section 2: Products is cached 10 min, keyed by table. The
   // revalidatePath("/pos") call below has never actually helped -- a path
   // revalidation never touches the tag-keyed findAll cache POS reads
-  // through (docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md's
+  // through (that plan's
   // own finding, left unfixed there as OPEN-ITEMS 79).
   revalidateTag(getCacheTag("Products"));
   revalidatePath("/pos");

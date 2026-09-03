@@ -36,7 +36,7 @@ interface OutletFormProps {
   outlets: DBOutlet[];
 }
 
-// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 4: the
+// section 4: the
 // edit form shows brand, address, start date and hours, not the name
 // alone -- the owner's own verdict on the name-only version was "built to
 // look finished rather than to be used". Add and edit share every field
@@ -70,7 +70,6 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
     resetForNextOpen();
   }
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B: revalidatePath (in editOutlet/addOutlet) marks the server
   // cache stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {
@@ -271,7 +270,6 @@ export function RetireOutletButton({ outlet }: RetireOutletButtonProps) {
 
   if (outlet.status !== "ACTIVE") return null;
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B: outlet is a server-fetched prop -- without this, the button
   // above stays visible (still reading the stale ACTIVE status) after a
   // successful retire, until the owner navigates away and back.

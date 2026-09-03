@@ -100,7 +100,6 @@ describe("findAllNoCache legacy compatibility", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-27-survive-transient-supabase-errors.md
 // (OPEN-ITEMS 64's neighbour, OPEN-ITEMS 66). A JWT clock-skew between two
 // of Supabase's own components -- not a bug in this repository, not
 // reproducible on demand -- surfaces as PGRST303 and throws a bare Error,

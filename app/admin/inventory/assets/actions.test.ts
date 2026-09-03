@@ -60,7 +60,6 @@ describe("getAssetsData", () => {
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
-  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
   // section 5: both required tests. The second guards against the fix
   // becoming "throw on empty" -- a different bug wearing the same diff.
   it("propagates the failure instead of returning a fabricated empty list", async () => {
@@ -122,7 +121,6 @@ describe("previewDisposalCharge -- section 5.2", () => {
     expect("error" in result).toBe(true);
   });
 
-  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
   // section 3.3: the preview endpoint gets the same server-side date check
   // as the real submit -- it is called on every keystroke
   // (DisposeAssetForm's onChange), so a clear refusal here is what the
@@ -203,7 +201,6 @@ describe("disposeAsset -- section 3.3", () => {
     expect(mocks.findAll).not.toHaveBeenCalled();
   });
 
-  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
   // section 3.3/4. Today (pre-fix), buildAssetSchedule silently clamps a
   // future date to the term's last month and writes the row anyway -- this
   // is a wrong VALUE (the insert happens, res.error is undefined), not a

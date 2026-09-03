@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// Render test per docs/superpowers/plans/2026-08-26-outlet-done-properly.md
+// Render test per 
 // section 5: "the edit form shows brand, address, start date and both hour
 // fields; today it shows only the name." Same createRoot + act pattern as
 // components/POSScreen.itemModal.test.tsx.
@@ -20,7 +20,6 @@ vi.mock("@/lib/dialog", () => ({
   confirm: vi.fn(),
   alert: vi.fn(),
 }));
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section B: this component now calls useRouter().refresh() on save.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),

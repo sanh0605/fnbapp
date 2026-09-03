@@ -12,7 +12,7 @@ describe("admin order edit COGS calculation", () => {
   // version's real ledger rows is unchanged -- see "reverses the complete
   // original checkout effect on edit" below, which still passes untouched.
   //
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase C:
+  // Phase C:
   // this test used to assert `consumeEntries: []` was still being sent --
   // Phase C removed supersede_order_v2_atomic's stock_ledger write
   // entirely, so there is no longer a consumeEntries field to send at all.
@@ -46,7 +46,7 @@ describe("admin order edit COGS calculation", () => {
     expect(editOrderSource).toContain('findAllWhere("Order_Lines_V2"');
     expect(editOrderSource).not.toContain('findAllNoCache("Orders_V2")');
     expect(editOrderSource).not.toContain('findAllNoCache("Order_Lines_V2")');
-    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+    // Phase A:
     // editOrderV2 no longer reads Stock_Ledger through any call shape --
     // proved live before removal that it always returned zero rows anyway
     // (53 real voided/edited order ids checked, 0 stock_ledger rows).
@@ -58,7 +58,7 @@ describe("admin order edit COGS calculation", () => {
     expect(source).not.toContain("in: { item_reference: batch }");
   });
 
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+  // Phase A
   // replaces this test's own prior claim. It used to assert editOrderV2
   // called buildVoidReversalRows to reverse the old order's real ledger
   // rows (same gap voidOrderV2 fixed before commit 4f6ba40: reversing only
@@ -68,7 +68,7 @@ describe("admin order edit COGS calculation", () => {
   // cutover, confirmed for every real voided/edited order in production
   // before this code was deleted, not assumed from that fact alone.
   //
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase C:
+  // Phase C:
   // this test used to assert `const reversalEntries: never[] = [];` was
   // still constructed -- Phase C removed supersede_order_v2_atomic's
   // stock_ledger write entirely, so there is no longer a reversalEntries
@@ -86,7 +86,6 @@ describe("admin order edit COGS calculation", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
 // getOrdersV2 was not in the plan's own list -- found while re-deriving it.
 // Source-grep, matching this file's own convention for actions.ts (the
 // function builds a raw Supabase query-builder chain, not the findAll/

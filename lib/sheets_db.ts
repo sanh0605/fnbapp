@@ -32,8 +32,7 @@ function normalizeTableName(sheetName: string): string {
 // ============================================================================
 
 // Exported so callers outside this file that need to invalidate a table's
-// cache directly (docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
-// section 1.4/2) derive the tag from this one function instead of retyping
+// cache directly (section 1.4/2) derive the tag from this one function instead of retyping
 // the "sheets-<TableName>" string -- a typo there fails silently, the exact
 // shape of the bug that plan exists to fix.
 export const getCacheTag = (sheetName: string) => `sheets-${sheetName}`;
@@ -157,8 +156,7 @@ function getBooleanColumns(tableName: string): Set<string> {
 }
 
 // ============================================================================
-// Transient-error retry (docs/superpowers/plans/2026-08-27-survive-transient-supabase-errors.md,
-// OPEN-ITEMS 66)
+// Transient-error retry (OPEN-ITEMS 66)
 // ============================================================================
 //
 // A clock skew between two of Supabase's own components (the gateway that

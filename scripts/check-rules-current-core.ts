@@ -24,9 +24,8 @@ const PATH_PREFIXES = [
 
 // A backticked token is a path when it names a known top-level directory or is
 // a bare document filename. Prefix matching alone silently skipped every
-// root-level file -- README.md, CONTEXT.md, DEVELOPMENT-TRACKING.md -- so the
-// three of them that CLAUDE.md section 10 depends on were never verified at
-// all. A token containing a space is prose or a shell command, never a path.
+// root-level file -- README.md among them -- so root-level filenames were
+// never verified at all. A token containing a space is prose or a shell command, never a path.
 function looksLikePath(token: string): boolean {
   if (token.includes("*") || token.includes(" ") || token.includes("{")) {
     return false;
@@ -111,7 +110,7 @@ function checkBusinessRuleTests(docs: string[], repoRoot: string): CheckResult {
   return { check: "business-rule-tests", ok: problems.length === 0, problems };
 }
 
-// docs/superpowers/plans/2026-08-26-undated-data-claims.md. CLAUDE.md's own
+//. CLAUDE.md's own
 // Rule 0 (top of file): a claim is only true at the moment it was written --
 // a date next to a number is what lets a reader judge how stale it might be.
 // A number with a data unit and no date nearby is exactly the shape of the

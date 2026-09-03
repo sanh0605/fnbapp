@@ -67,7 +67,7 @@ describe("buildEditedOrderFromCart", () => {
   });
 
   it("preserves outlet_id from original, ignoring whatever the editor's input carries", () => {
-    // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 3.2:
+    // section 3.2:
     // outlet_id is set once at sale and never revisited, the same guarantee
     // created_at already has. Input deliberately uses a DIFFERENT outlet than
     // the original order's own (OUT-002) to prove this isn't a coincidental match.

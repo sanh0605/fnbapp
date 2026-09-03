@@ -2,13 +2,13 @@
 // Checked by app/admin/nav-guard.test.ts: a route with a page but no
 // navItems entry and no allowlist entry fails that test.
 //
-// docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md section 3.
+// section 3.
 // Measured 2026-08-25. The two TODO entries below are pre-existing, not new
 // regressions -- deliberately left unlinked rather than quietly wired into
 // the menu, because linking a possibly-dead screen is worse than leaving it
 // unreachable. Owner decision needed on each. (A third, /admin/reports/stock,
 // was here too -- removed 2026-08-31 when the screen itself was deleted,
-// docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A.)
+// Phase A.)
 import type { AllowlistEntry } from "@/lib/nav-completeness";
 
 export const NAV_ALLOWLIST: AllowlistEntry[] = [

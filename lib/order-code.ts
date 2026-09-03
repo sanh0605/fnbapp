@@ -1,7 +1,7 @@
 // Order code derivation, pure and testable without a database, mirroring
 // how lib/asset-depreciation.ts and lib/issue-costing.ts are structured.
 //
-// docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 4.
+// section 4.
 // New format: YY MM DD (Asia/Ho_Chi_Minh) + outlet code (3 digits) +
 // sequence (3 digits) = 12 digits total, e.g. "260824001001". Date first
 // so the all-digit code sorts chronologically as plain text and has no

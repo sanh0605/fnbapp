@@ -22,7 +22,6 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
 import { updateAssetBand, createAssetBand, deleteAssetBand, getAssetBands } from "./actions";
 
-// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
 // section 5: both required tests. The second guards against the fix
 // becoming "throw on empty" -- a different bug wearing the same diff.
 describe("getAssetBands", () => {

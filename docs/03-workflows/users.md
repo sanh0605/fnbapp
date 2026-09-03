@@ -7,6 +7,8 @@ tables: users, Users
 brCodes: BR-ACCESS-001, BR-ACCESS-002, BR-U-003
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers who can sign in and what account each person holds: logging in at
 `/login`, an administrator creating and editing accounts under `/admin/users`, and
 any signed-in person changing their own password at `/settings/password`. Two

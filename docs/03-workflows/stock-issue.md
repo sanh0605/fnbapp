@@ -7,6 +7,8 @@ tables: issue_slips, stock_issues, stock_adjustments
 brCodes: BR-COGS-005
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers the two ways stock leaves the warehouse by hand: an **issue slip**
 (a worker records materials going out of stock) and a **stock adjustment** (a
 manual correction to an on-hand quantity). Both are entered from the admin

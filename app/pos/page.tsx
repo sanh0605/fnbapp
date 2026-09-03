@@ -21,7 +21,7 @@ export default async function POSPage({
 
   const now = new Date();
   const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 5:
+  // section 5:
   // the till opens by outlet. Any brandId in the query string is ignored --
   // brand is resolved below, server-side, from the outlet's own brand_id.
   const outletId = Array.isArray(searchParams?.outletId) ? searchParams.outletId[0] : searchParams?.outletId;
@@ -48,13 +48,13 @@ export default async function POSPage({
     })
   ]);
 
-  // Per docs/domain-dictionary.md: ACTIVE = available for new transactions,
+  // Per docs/02-rules/GLOSSARY.md: ACTIVE = available for new transactions,
   // INACTIVE = hidden from new transactions, DELETED = soft-deleted.
   // POS must show ACTIVE only so the admin toggle (Product.status ACTIVE/INACTIVE)
   // actually hides toppings from the catalog.
   const activeCategories = categories.filter(c => c.status === "ACTIVE");
   const activeVariants = variants.filter(v => v.status === "ACTIVE");
-  // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section
+  // section
   // 1.4 (Bug B), independent of the cache fix in ../admin/products/actions.ts:
   // an ACTIVE product with every variant DELETED/INACTIVE was still offered
   // here, and only refused after a tap (POSScreen.tsx's openProductModal),
@@ -68,8 +68,7 @@ export default async function POSPage({
   const activePromotions = promotions.filter(p => p.status === "ACTIVE");
 
   // Out-of-stock badges remain owner-disabled -- decided again, explicitly,
-  // 2026-08-31 (docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md
-  // Phase A): getPOSStockStatus/loadPOSStockStatus (app/pos/actions.ts) had
+  // 2026-08-31 (Phase A): getPOSStockStatus/loadPOSStockStatus (app/pos/actions.ts) had
   // no live caller left anywhere by then, only the function itself, reading
   // Inventory_Balances -- the known-incomplete copy of stock_ledger (38 of
   // 49 adjustments from the first stocktake). A wrong stock-out badge is

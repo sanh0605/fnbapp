@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 //
-// docs/superpowers/plans/2026-08-27-asset-acquired-date-off-by-one.md
 // section 7 (OPEN-ITEMS 64): the default disposal date is
 // `new Date().toISOString().slice(0, 10)` -- the browser's UTC calendar
 // day, sliced before any Saigon conversion. A disposal recorded between
@@ -24,7 +23,6 @@ vi.mock("../actions", () => ({
   disposeAsset: mocks.disposeAsset,
   previewDisposalCharge: mocks.previewDisposalCharge,
 }));
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section B: this component now calls useRouter().refresh() on save.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.routerRefresh }),

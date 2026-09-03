@@ -1,11 +1,10 @@
 import { allocatePurchaseOrderCost } from "@/lib/purchase-order-cost-allocation";
 import { findBandForUnitPrice, type Band } from "@/lib/asset-depreciation";
 
-// Batch 3 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md
-// section 3.2): "unit_cost is the allocated cost per unit ... Take it from
+// Batch 3 (section 3.2): "unit_cost is the allocated cost per unit ... Take it from
 // what the purchase flow already computes; do not re-implement the
 // allocation here." BR-COGS-006's own authoritative implementation is
-// allocatePurchaseOrderCost (docs/BUSINESS-RULES.md: "Implemented
+// allocatePurchaseOrderCost (docs/02-rules/business-rules/cogs.md: "Implemented
 // 2026-08-09 (Plan D D11, lib/purchase-order-cost-allocation.ts)") -- the
 // same primitive lib/issue-costing-inputs.ts uses to feed the COGS report.
 // Reused directly here, not re-derived.
@@ -24,7 +23,7 @@ export type EquipmentPurchaseLine = {
   purchasedItemId: string;
   itemName: string;
   subtotal: number;
-  // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+  // 2026-08-26:
   // renamed from `quantity` to force every caller to decide explicitly.
   // Must be the BASE quantity (e.g. 10 bottles), not the purchase-unit
   // quantity (e.g. 1 box) -- a purchase of "1 Combo 10" at 108.000d must

@@ -245,7 +245,6 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
       categories: (categories as any[]).filter(c => c.status !== "DELETED"),
     };
   } catch (err: any) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // not in the plan's own list (found while re-deriving it) -- same
     // defect: a real orders-history read failure must not render as "no
     // orders". Rethrow instead; app/error.tsx handles it.
@@ -407,7 +406,7 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       reason,
     };
 
-    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+    // Phase A:
     // this used to reverse stock_ledger rows for the order's checkout, but
     // selling has never written one since the 2026-08-07 cutover -- proved
     // live before this code was removed, not assumed: 0 stock_ledger rows
@@ -481,9 +480,9 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     ]);
 
     // 4. Build edited order (preserves sale time, increments version). As of
-    // Phase 2 (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+    // Phase 2 
     // this no longer resolves a recipe, so Recipes is not fetched above. As
-    // of 2026-09-01 (docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md)
+    // of 2026-09-01 
     // Base_Ingredients is not fetched either -- it was loaded and passed in
     // on every edit but never read inside buildEditedOrderFromCart.
     const built = buildEditedOrderFromCart(
@@ -547,7 +546,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       reason: input.reason,
     };
 
-    // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+    // Phase A
     // proved the old reversal always wrote 0 stock_ledger rows (see
     // voidOrderV2's own comment above for the exact count: 0 rows across
     // all 53 real voided/edited order ids checked). Phase C removed

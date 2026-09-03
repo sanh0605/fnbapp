@@ -1,5 +1,5 @@
 // Element identification for the point-and-comment dev tool.
-// docs/superpowers/plans/2026-08-26-ui-feedback-tool.md section 4.
+// section 4.
 //
 // Two independent signals, captured together:
 //

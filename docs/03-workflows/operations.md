@@ -7,6 +7,8 @@ tables: Pos_Sync_Failures, Outlets, Brands
 brCodes: BR-SALE-006
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers the operational back-office screens: the two **outlets** (`001`
 and `002`), the two **brands** they carry, the **POS sync failure** log, the
 **activity log**, and the **cache** tool. The shop runs two outlets, each bound

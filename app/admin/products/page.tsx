@@ -27,7 +27,6 @@ export default async function ProductsPage() {
   const visibleProducts = products;
   const activeVariants = variants.filter(v => v.status !== "DELETED");
 
-  // docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md
   // section 5.2: "Xoá vĩnh viễn" is offered only when it is possible --
   // computed the same way Postgres's own RESTRICT foreign keys decide it
   // (any order_lines_v2 row referencing the product or one of its variants,

@@ -19,7 +19,7 @@ interface PosOutletPickerProps {
   onOpenTill: (outletId: string) => void;
 }
 
-// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 2:
+// section 2:
 // confirms before opening a till at an outlet outside its stated hours --
 // does not block it, since the shop may genuinely trade late. Picking the
 // wrong outlet books revenue against the wrong one, which the per-outlet

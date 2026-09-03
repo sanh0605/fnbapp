@@ -26,7 +26,7 @@ describe("purchase order action integration", () => {
     expect(source).toContain('revalidateTag("sheets-Purchase_Order_Lines")');
   });
 
-  // docs/superpowers/plans/2026-09-02-clean-up-after-the-ledger.md section 2,
+  // section 2,
   // point 2: stock_ledger was dropped by Phase D (migration 0096, applied).
   // Busting the cache tag for a table that no longer exists is meaningless,
   // not merely harmless -- removed rather than left as dead noise.

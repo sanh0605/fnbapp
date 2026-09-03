@@ -1,5 +1,4 @@
 // WF-1a: per-item purchase history viewer.
-// Design: docs/handoffs/2026-07-24-wf1-purchase-history-and-search.md
 //
 // Pure computation over already-fetched data, matching lib/reorder-suggestion.ts's
 // convention: data access lives in the caller (server action), not in this module.

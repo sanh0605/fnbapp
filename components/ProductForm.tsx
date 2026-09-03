@@ -42,7 +42,7 @@ export default function ProductForm({ categories, initialData }: any) {
     formData.append("effective_date", effectiveDateStr);
 
     let res = await saveProduct(formData);
-    // Batch 1 follow-up, level 2 (docs/BUSINESS-RULES.md BR-CATALOG-001): a
+    // Batch 1 follow-up, level 2 (docs/02-rules/business-rules/catalog.md BR-CATALOG-001): a
     // near-match warning, not a refusal -- ask whether it is really a
     // different item, resubmit once on "món khác", stay on the form with
     // nothing saved on "tôi gõ nhầm".

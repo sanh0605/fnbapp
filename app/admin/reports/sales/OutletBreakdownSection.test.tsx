@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// Render test per docs/superpowers/plans/2026-08-25-outlet-breakdown-table.md
+// Render test per 
 // section 4. OPEN-ITEMS 38: jsdom cannot evaluate Tailwind breakpoint
 // classes, so tests here that check which layout would actually be visible
 // at a given width can only check that the right classes are present on

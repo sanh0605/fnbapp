@@ -5,7 +5,7 @@
  * confirmation, so historical orders are immune to later edits of
  * products, variants, modifiers, promotions, and recipes.
  *
- * Spec: docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md (section 5)
+ * (section 5)
  */
 
 import type {

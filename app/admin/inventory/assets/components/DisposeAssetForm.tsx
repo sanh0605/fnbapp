@@ -44,7 +44,6 @@ export function DisposeAssetForm({ asset }: { asset: AssetView }) {
     }
   }
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B: revalidatePath (in disposeAsset) marks the server cache
   // stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {

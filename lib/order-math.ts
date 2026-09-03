@@ -1,7 +1,7 @@
 /**
  * Orders V2 — pure math functions.
  *
- * Spec: docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md (section 6)
+ * (section 6)
  *
  * No I/O. No side effects. Deterministic.
  */
@@ -96,7 +96,7 @@ export function allocateOrderDiscount(
  *
  * The `lineRevenue` returned equals the stored net (gross - all discounts).
  *
- * Spec: docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md (section 6.1)
+ * (section 6.1)
  */
 export function allocateLineRevenue(line: LineForAllocation): AllocatedRevenue {
   const grossVariant = line.unit_price * line.qty;

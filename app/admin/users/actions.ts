@@ -31,7 +31,6 @@ export async function getUsers(): Promise<DBUser[]> {
     const users = await findAll(SHEET) as DBUserRow[];
     return users.map(toClientUser);
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getUsers:", error);
     throw error;

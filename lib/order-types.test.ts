@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseLineRecipeSnapshot } from "@/lib/order-types";
 
-// docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md section 1.4
+// section 1.4
 // named this "the fragile part": recipe_snapshot_json stops being written
 // with real content (2026-09-01), so the parser must tolerate an empty
 // cell without throwing.

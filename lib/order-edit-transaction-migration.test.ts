@@ -34,7 +34,6 @@ describe("0020 atomic supersede order migration", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-27-fix-order-edit-outlet-id.md.
 // Production defect: 0072 tightened orders_v2.outlet_id to NOT NULL, but
 // supersede_order_v2_atomic was last (re)defined in 0046, before that
 // column existed -- its insert never named outlet_id, so every edit since

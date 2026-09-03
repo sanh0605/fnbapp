@@ -1,5 +1,5 @@
 // RPT-DIGEST-1 D1: daily summary date math + comparison deltas.
-// Design: docs/superpowers/plans/2026-07-24-stocktake-and-daily-digest-plan.md feature 2.
+// feature 2.
 //
 // Pure computation, matching lib/reorder-suggestion.ts's convention: data
 // fetching (getSalesDataV2 for each period) lives in the caller.

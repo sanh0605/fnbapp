@@ -28,7 +28,7 @@ function currentSaigonMonth(): string {
   return saigonNow.toISOString().slice(0, 7);
 }
 
-// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// section
 // 3.3: same Saigon-offset computation as currentSaigonMonth above, day
 // granularity instead of month -- the server's own "today", never the
 // client's clock, for validateDisposalDate's upper bound.
@@ -82,7 +82,6 @@ export async function getAssetsData(): Promise<AssetView[]> {
       )
       .sort((a, b) => a.name.localeCompare(b.name, "vi"));
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getAssetsData:", error);
     throw error;
@@ -170,7 +169,6 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
       return fail(`Số lượng thanh lý (${quantity}) vượt quá số lượng còn lại (${remaining})`);
     }
 
-    // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
     // section 3.3: server-side, day-granular, before buildAssetSchedule's
     // own opaque month-level guard can fire -- see validateDisposalDate's
     // own comment for why a second check is needed here at all.

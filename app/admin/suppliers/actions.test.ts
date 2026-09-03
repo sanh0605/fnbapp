@@ -28,7 +28,6 @@ function baseFormData(name: string): FormData {
   return formData;
 }
 
-// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
 // section 5: both required tests. The second guards against the fix
 // becoming "throw on empty" -- a different bug wearing the same diff.
 describe("getSuppliers", () => {

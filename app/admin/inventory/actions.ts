@@ -29,7 +29,6 @@ export async function addItemCategory(formData: FormData): Promise<ActionRespons
 
     const id = await generateNewId("Item_Categories", "NHH");
     await insert("Item_Categories", { id, name, system_type });
-    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
     // section 2: Item_Categories is cached 30 min, keyed by table, and other
     // screens (Hàng Mua Vào, Kiểm kê...) read it through that cache.
     // revalidatePath below only refreshes this screen.
@@ -79,7 +78,7 @@ export async function deleteItemCategory(formData: FormData): Promise<ActionResp
 }
 
 // --- PURCHASED ITEMS (Hàng Hoá Mua Vào) ---
-// Not touched by docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md:
+// Not touched by:
 // confirmed dead (grep across app/ and components/, no import found anywhere)
 // -- the real, live screen imports addPurchasedItem/updatePurchasedItem from
 // app/admin/inventory/items/actions.ts instead, which is what the plan's own
@@ -329,7 +328,6 @@ export async function addUnit(formData: FormData): Promise<ActionResponse> {
       description,
       created_at: new Date().toISOString()
     });
-    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
     // section 2: Units is cached 30 min, keyed by table -- Hàng Mua Vào,
     // Phiếu xuất kho, Kiểm kê all read it through that cache, not this path.
     revalidateTag(getCacheTag("Units"));
@@ -363,7 +361,6 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section A3: 7 RESTRICT foreign keys reference units.id (measured live
 // 2026-09-01) -- checked in this order, stopping at the first match, so a
 // unit blocked by more than one source still gets one clear sentence rather

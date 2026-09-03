@@ -51,24 +51,24 @@ describe("check 1: every path named in a rule doc exists", () => {
   // Prefix matching alone skipped every root-level file, so CLAUDE.md could
   // point at a deleted README.md forever without the checker noticing.
   it("checks root-level documents that carry no directory prefix", () => {
-    write("CLAUDE.md", "Bối cảnh nằm ở `CONTEXT.md`.");
+    write("CLAUDE.md", "Bối cảnh nằm ở `CONTEXT.md`."); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
     const result = resultFor("paths-exist", ["CLAUDE.md"]);
     expect(result.ok).toBe(false);
-    expect(result.problems.join(" ")).toContain("CONTEXT.md");
+    expect(result.problems.join(" ")).toContain("CONTEXT.md"); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
   });
 
   it("passes a root-level document that exists", () => {
-    write("CONTEXT.md", "bối cảnh");
-    write("CLAUDE.md", "Bối cảnh nằm ở `CONTEXT.md`.");
+    write("CONTEXT.md", "bối cảnh"); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
+    write("CLAUDE.md", "Bối cảnh nằm ở `CONTEXT.md`."); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
     expect(resultFor("paths-exist", ["CLAUDE.md"]).ok).toBe(true);
   });
 
   // Documents under docs/ cite their siblings relatively. Resolving only from
   // the repo root would fail every one of them.
   it("resolves a sibling reference relative to the citing document", () => {
-    write("docs/ACCESS-MODEL.md", "roles");
-    write("docs/BUSINESS-RULES.md", "Xem `ACCESS-MODEL.md`.");
-    expect(resultFor("paths-exist", ["docs/BUSINESS-RULES.md"]).ok).toBe(true);
+    write("docs/ACCESS-MODEL.md", "roles"); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
+    write("docs/BUSINESS-RULES.md", "Xem `ACCESS-MODEL.md`."); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
+    expect(resultFor("paths-exist", ["docs/BUSINESS-RULES.md"]).ok).toBe(true); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
   });
 });
 
@@ -89,8 +89,8 @@ describe("check 2: no retired agent is named as current", () => {
   // Policing history out of the backlog would destroy the very record that
   // makes stranded work findable.
   it("polices only the rulebook, not the backlog", () => {
-    write("docs/OPEN-ITEMS.md", "Việc này từng giao cho Codex, agent đã ngừng.");
-    expect(resultFor("no-retired-agents", ["docs/OPEN-ITEMS.md"]).ok).toBe(true);
+    write("docs/OPEN-ITEMS.md", "Việc này từng giao cho Codex, agent đã ngừng."); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
+    expect(resultFor("no-retired-agents", ["docs/OPEN-ITEMS.md"]).ok).toBe(true); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
   });
 });
 
@@ -98,35 +98,34 @@ describe("check 3: a declared test link points at a test that exists", () => {
   it("passes when the test file and the test name are both present", () => {
     write("lib/rounding.test.ts", `it("tiền luôn làm tròn lên", () => {});`);
     write(
-      "docs/BUSINESS-RULES.md",
+      "docs/BUSINESS-RULES.md", // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
       'Test: `lib/rounding.test.ts` — "tiền luôn làm tròn lên"',
     );
-    expect(resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]).ok).toBe(true);
+    expect(resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]).ok).toBe(true); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
   });
 
   it("fails when the test file is missing", () => {
-    write("docs/BUSINESS-RULES.md", 'Test: `lib/gone.test.ts` — "một luật nào đó"');
-    expect(resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]).ok).toBe(false);
+    write("docs/BUSINESS-RULES.md", 'Test: `lib/gone.test.ts` — "một luật nào đó"'); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
+    expect(resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]).ok).toBe(false); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
   });
 
   it("fails when the file exists but no longer contains the named test", () => {
     write("lib/rounding.test.ts", `it("một tên khác hẳn", () => {});`);
     write(
-      "docs/BUSINESS-RULES.md",
+      "docs/BUSINESS-RULES.md", // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
       'Test: `lib/rounding.test.ts` — "tiền luôn làm tròn lên"',
     );
-    const result = resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]);
+    const result = resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
     expect(result.ok).toBe(false);
     expect(result.problems.join(" ")).toContain("tiền luôn làm tròn lên");
   });
 
   it("passes a rule that declares no test link at all", () => {
-    write("docs/BUSINESS-RULES.md", "Một luật chưa có test.");
-    expect(resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]).ok).toBe(true);
+    write("docs/BUSINESS-RULES.md", "Một luật chưa có test."); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
+    expect(resultFor("business-rule-tests", ["docs/BUSINESS-RULES.md"]).ok).toBe(true); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
   });
 });
 
-// docs/superpowers/plans/2026-08-26-undated-data-claims.md.
 describe("check 4: a number with a data unit must have a date nearby", () => {
   it("fails and names a line carrying a number-plus-unit with no date anywhere nearby", () => {
     write("CLAUDE.md", "Kho hiện có 0đ giá trị hàng tồn.");
@@ -188,7 +187,7 @@ describe("check 4: a number with a data unit must have a date nearby", () => {
   // has no internal allow-list of its own, unlike check 2's
   // AGENT_CURRENT_DOCS) -- proven here by simply not passing the file in.
   it("never reads a document that was not passed in the docs list", () => {
-    write("DEVELOPMENT-TRACKING.md", "Ngày xong: đã xử lý 900 đơn không ghi ngày lại lần nữa.");
+    write("DEVELOPMENT-TRACKING.md", "Ngày xong: đã xử lý 900 đơn không ghi ngày lại lần nữa."); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
     expect(resultFor("undated-data-claims", []).ok).toBe(true);
   });
 });

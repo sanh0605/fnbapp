@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ComponentType } from "react";
 
-// docs/superpowers/plans/2026-08-26-ui-feedback-tool.md section 6: "the
+// section 6: "the
 // import is conditional... Next tree-shakes the branch." The plan itself
 // distrusts that claim enough to demand build evidence (section 6's own
 // verification instruction), and rightly so -- app/layout.tsx is a Server

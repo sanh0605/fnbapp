@@ -164,7 +164,7 @@ describe("POS action authentication", () => {
     expect(result.every((value: unknown) => typeof value === "string")).toBe(true);
   });
 
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+  // Phase A:
   // getPOSStockStatus/loadPOSStockStatus deleted outright (owner decision
   // 2026-08-31) -- had no live caller left, only read Inventory_Balances,
   // the known-incomplete copy of stock_ledger (38 of 49 adjustments from

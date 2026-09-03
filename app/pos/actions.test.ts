@@ -10,7 +10,7 @@ describe("POS order COGS calculation", () => {
   // the opposite assertion rather than deleted silently, since "checkout
   // stops doing the work" is exactly the regression worth locking in now.
   //
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase C
+  // Phase C
   // (8/8, POS): this test used to assert `ledgerRows: []` was still being
   // sent -- Phase C removed create_pos_order_atomic's stock_ledger write
   // entirely, so there is no longer a ledgerRows field to send at all.
@@ -70,7 +70,7 @@ describe("POS order COGS calculation", () => {
     );
   });
 
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A:
+  // Phase A:
   // getPOSStockStatus is gone from the module entirely now (owner decision
   // 2026-08-31, see app/pos/actions.auth.test.ts's "no longer exports"
   // proof), not merely uncalled -- the not.toContain check below is on the

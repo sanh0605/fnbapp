@@ -14,7 +14,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", async () => {
-  // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), so this file's own assertions can never silently drift
   // from what the source under test actually calls.
@@ -40,7 +39,6 @@ function formData(fields: Record<string, string>): FormData {
   return fd;
 }
 
-// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
 // section 5: both required tests. The second guards against the fix
 // becoming "throw on empty" -- a different bug wearing the same diff.
 describe("getConversionsData", () => {
@@ -62,7 +60,7 @@ describe("getConversionsData", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+// section 4:
 // "addConversion is safe today only because the unit is derived from the
 // group, so every row agrees by construction. Removing that derivation
 // removes the thing holding it together." addConversion had zero base-unit
@@ -194,7 +192,6 @@ describe("updateConversion -- the unit lock", () => {
   });
 });
 
-// docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
 // section 1.3/2: this file is the real, live UOM_Conversions writer --
 // PurchasedItemForm.tsx (a different screen) reads UOM_Conversions too, so
 // an edit here left that screen stale for up to 10 minutes. This file was

@@ -7,6 +7,8 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers the reference data behind everything the shop buys and stores:
 the purchased items (ingredients, consumables, tools), the categories that group
 them, the units of measure, and the unit-of-measure conversions that translate a

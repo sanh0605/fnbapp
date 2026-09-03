@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md
 // section 1.4/3: save_stocktake_line_atomic is the one function that used
 // base_ingredient_id in a lookup condition (the sibling-item query), not
 // just a pass-through. BR-INV-005's refusal itself must survive

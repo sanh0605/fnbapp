@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 3: a
+// section 3: a
 // draft belongs to the till it was started at, not whatever brand happened
 // to be stamped at that moment. These tests prove getPOSDrafts filters by
 // outlet_id and that a draft created at one outlet is not listed at
@@ -55,7 +55,6 @@ describe("getPOSDrafts", () => {
     expect(result).toEqual([]);
   });
 
-  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
   // not in the plan's own list (found while re-deriving it). Both required
   // tests -- the second guards against the fix becoming "throw on empty",
   // a different bug wearing the same diff, and is distinct from "returns

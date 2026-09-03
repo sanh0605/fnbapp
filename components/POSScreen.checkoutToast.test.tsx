@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 //
-// Render test for docs/superpowers/plans/2026-08-25-pos-success-message.md.
+// Render test for.
 // Owner instruction (recorded in
-// docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 1):
+// section 1):
 // "khi nhan vien bam tao don thanh cong se khong thong bao ma don ma chi
 // thong bao thanh cong." Follows the createRoot + act pattern from
 // components/POSScreen.itemModal.test.tsx. Per OPEN-ITEMS 46, submitOrderV2

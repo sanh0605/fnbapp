@@ -4,7 +4,7 @@
 // caused by breaking that rule) so the derivation is directly unit-testable
 // without mocking the database.
 //
-// docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md section 2:
+// section 2:
 // the code is assigned as max(code) + 1, never chosen by the user and never
 // taken from a freed gap -- a retired outlet's code stays counted forever
 // because the caller passes every outlet's code, active or not.

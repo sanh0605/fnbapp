@@ -70,7 +70,7 @@ function findCompletedOrders(
 }
 
 // No page renders this anymore -- app/admin/reports/pnl/page.tsx was deleted
-// 2026-08-05 (Plan C Task 2b, owner decision, docs/OPEN-ITEMS.md item 31).
+// 2026-08-05 (Plan C Task 2b, owner decision).
 // The report is being redesigned as a real financial statement; this function
 // is kept on purpose, not orphaned:
 //   1. It is Plan C's own revenue gate -- June (22.157.000d) and July
@@ -164,7 +164,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // stock_issues do. See computePeriodIssuedValue in lib/issue-costing.ts
     // for why this is two full replays and a subtraction, not a single pass.
     const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
-    // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
     // section 3.2: an issue slip line naming equipment must never enter
     // COGS -- it already depreciates through the asset register, and
     // counting it here too would charge its full price twice.
@@ -274,7 +273,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       v2OrderCount: typedOrders.length,
     };
   } catch (err: any) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // not in the plan's own list (found while re-deriving it), and arguably
     // worse than an empty list -- an all-zero P&L reads as "no sales this
     // period", not "we don't know". Rethrow instead; app/error.tsx handles it.
@@ -318,7 +316,7 @@ export interface SalesReportResult {
   salesByMonth: Array<{ label: string; amount: number }>;
   salesByDayOfWeek: Array<{ label: string; amount: number }>;
   salesByHour: Array<{ label: string; amount: number }>;
-  // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 6b.
+  // section 6b.
   // Sums to totalRevenue/totalOrders for the same period -- orders with no
   // outlet_id (pre-backfill history) land under outlet_id: "" rather than
   // being dropped silently.
@@ -522,7 +520,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     const byDayOfWeek = new Map<string, number>();
     const byHour = new Map<string, number>();
 
-    // docs/superpowers/plans/2026-08-26-sales-chart-timezone.md: all four
+    // Per that plan: all four
     // series bucket by the Saigon calendar date/hour, not toISOString()
     // (always UTC) or getDay()/getHours() (the runtime's local zone -- UTC
     // on Vercel, which is why this was wrong there but not on a machine
@@ -540,7 +538,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       byHour.set(hourKey, (byHour.get(hourKey) || 0) + rev);
     }
 
-    // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 6b.
+    // section 6b.
     // Same order set and per-order revenue as the time series above, so this
     // sums to totalRevenue/totalOrders for the same period. Orders with no
     // outlet_id (pre-backfill history) are kept under key "" rather than
@@ -599,7 +597,6 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       v2OrderCount: typedOrders.length,
     };
   } catch (err: any) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // not in the plan's own list (found while re-deriving it). Rethrow
     // instead of a fabricated zero-revenue report; app/error.tsx handles it.
     console.error("[getSalesDataV2]", err);
@@ -647,7 +644,6 @@ type CanonicalModifier = { id: string; name: string };
  * `topping-standalone::mod_id=MOD-XXX` linking back to its modifier.
  * Used to route standalone topping sales into topping sections of reports.
  *
- * Spec: docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md
  */
 function buildStandaloneToppingMap(products: any[]): Map<string, string> {
   const map = new Map<string, string>();
@@ -657,7 +653,7 @@ function buildStandaloneToppingMap(products: any[]): Map<string, string> {
     // A CAT-007 product with no migration_notes link still belongs in
     // bestToppings, not bestSellers -- fall back to bucketing under its own
     // product ID rather than dropping it out of the map entirely. Matches
-    // docs/superpowers/specs/2026-06-27-standalone-topping-report-classification-design.md.
+    // the classification convention in this function's own doc comment above.
     map.set(String(p.id), match ? match[1] : String(p.id));
   }
   return map;
@@ -781,7 +777,6 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
 
     return Array.from(cellsMap.values());
   } catch (err: any) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // not in the plan's own list (found while re-deriving it). Rethrow
     // instead of a fabricated empty heatmap; app/error.tsx handles it.
     console.error("[getHourlyHeatmapV2]", err);
@@ -865,7 +860,6 @@ export async function getPromotionPerformanceV2(filters: PnLReportFilters = {}):
 
     return Array.from(perfMap.values()).filter(r => r.appliedCount > 0);
   } catch (err: any) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // not in the plan's own list (found while re-deriving it). Rethrow
     // instead of a fabricated empty result; app/error.tsx handles it.
     console.error("[getPromotionPerformanceV2]", err);

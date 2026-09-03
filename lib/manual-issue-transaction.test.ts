@@ -69,7 +69,7 @@ describe("createIssueSlipAtomic", () => {
     });
   });
 
-  // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md section 5:
+  // section 5:
   // an issue slip naming a consumable succeeds. Today (pre-fix) the RPC
   // itself raises "chưa gắn với nguyên liệu gốc, không thể ghi phiếu xuất"
   // before ever returning -- this test is at the parser boundary, one layer
@@ -201,7 +201,7 @@ describe("reverseManualIssueAtomic", () => {
     });
   });
 
-  // docs/superpowers/plans/2026-08-30-issue-slips-for-consumables.md section 5:
+  // section 5:
   // reversal tested on a consumable, not only creation -- and its RPC
   // response no longer carries ledger_id either.
   it("parses a consumable's reversal -- no base_ingredient_id, no ledger_id, RPC succeeds", async () => {

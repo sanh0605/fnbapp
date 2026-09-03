@@ -15,7 +15,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", async () => {
-  // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), not a re-typed stand-in -- the source under test and
   // this test file's own assertions both call the one real implementation,
@@ -37,7 +36,6 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateT
 import * as actions from "./actions";
 import { getCacheTag } from "@/lib/sheets_db";
 
-// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md,
 // OPEN-ITEMS 69: this is the exact production incident that started the
 // plan -- the owner opened Hàng Mua Vào and it said "Chưa có hàng hóa" while
 // 145 rows sat untouched. Both required tests from section 5.
@@ -117,7 +115,6 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     );
   });
 
-  // docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md
   // section 2.1: base_ingredient_id is no longer read from the form or
   // written to the insert payload at all -- the group-link field was
   // removed from the UI in step 1 (2026-09-01), and the column itself is
@@ -191,7 +188,6 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
     );
   });
 
-  // docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
   // section 2.2: the link field was removed from the form, so every future
   // edit submits no base_ingredient_id at all. Before this fix, the naive
   // reading (`formData.get("base_ingredient_id") as string`) would coerce
@@ -219,7 +215,7 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
   });
 });
 
-// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+// section 4:
 // "the lock is tested, not just the freedom -- a guard nobody tested is a
 // guard that will not hold, and this one has no database backstop." Every
 // case here is the server-side check, not the client's own derivation --
@@ -383,7 +379,6 @@ describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follo
   });
 });
 
-// docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
 // section 1.3 (rows 5, 7) / section 3: Purchased_Items and UOM_Conversions
 // are cached 10 min, keyed by table -- revalidatePath alone only refreshes
 // this screen's own path, not the tag other screens (Đơn nhập, Phiếu xuất

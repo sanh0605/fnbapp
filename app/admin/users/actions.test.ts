@@ -79,7 +79,6 @@ describe("admin user client payloads", () => {
     });
   });
 
-  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
   // section 5: both required tests, for both loaders in this file. The
   // second guards against the fix becoming "throw on empty" -- a different
   // bug wearing the same diff. getUserById is the one loader in this whole

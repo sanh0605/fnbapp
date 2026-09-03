@@ -53,7 +53,6 @@ export default function StockAdjustmentsClient({ adjustments }: StockAdjustments
     });
   }, [adjustments, draft.status, draft.q]);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B: adjustments is a server-fetched prop -- without this, an
   // approved/rejected row keeps showing PENDING (and stays in the default
   // PENDING filter) until the owner navigates away and back.

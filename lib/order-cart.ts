@@ -6,7 +6,7 @@
  * caller of buildOrderFromCart is guaranteed to get an order+lines
  * pair that satisfies all 7 financial invariants.
  *
- * Spec: docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md (sections 5, 6)
+ * (sections 5, 6)
  */
 
 import crypto from "node:crypto";
@@ -51,8 +51,7 @@ export interface CartPaymentInput {
 
 export interface CartInput {
   brand_id: string;
-  // 2026-08-25 (docs/superpowers/plans/2026-08-24-outlets-and-order-code.md
-  // section 3.2/6): set once at sale, never revisited (order-edit-cart.ts
+  // 2026-08-25 (section 3.2/6): set once at sale, never revisited (order-edit-cart.ts
   // preserves it explicitly, the same way created_at already is). The
   // server derives and trusts brand_id from this, not the reverse --
   // submitOrderV2 overwrites whatever brand_id the client sent with the
@@ -325,7 +324,6 @@ function buildLine(
   const variant = ref.variants.find(v => v.id === item.variant_id);
   if (!variant) throw new InvariantError(`Unknown variant: ${item.variant_id}`);
 
-  // docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md
   // section 5.4/5b: this is the one choke point shared by POS checkout and
   // order-edit, so the "must not sell a paused product" guarantee belongs
   // here -- app/pos/page.tsx filtering status === "ACTIVE" only secures
@@ -351,10 +349,9 @@ function buildLine(
   });
   const modifierSnap = buildModifierSnapshotsFromCart(item.modifiers, ref.modifiers);
 
-  // Recipes were removed from the sale path (Phase 2,
-  // docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md).
+  // Recipes were removed from the sale path (Phase 2).
   // recipe_snapshot_json itself stopped being written 2026-09-01
-  // (docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md) -- no
+  // -- no
   // one has read a line's own recipe_snapshot_json since Phase 2
   // (resolvedRecipes/order-cart.ts:225's old readback had 0 consumers
   // outside this file), so the inert shell this used to build is gone,

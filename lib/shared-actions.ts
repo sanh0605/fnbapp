@@ -7,7 +7,6 @@ export interface ActionResponse {
   error?: string;
   // Set only when error is the generic fallback sentence -- the raw
   // exception text an engineer needs, never shown to the owner by default.
-  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md.
   errorDetail?: string;
   [key: string]: unknown;
 }

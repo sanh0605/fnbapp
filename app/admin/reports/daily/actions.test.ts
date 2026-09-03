@@ -18,7 +18,7 @@ const EMPTY_SALES = {
   paymentBreakdown: [],
 };
 
-describe("getDailyDigest -- default date (docs/superpowers/plans/2026-08-27-asset-acquired-date-off-by-one.md section 7, OPEN-ITEMS 64)", () => {
+describe("getDailyDigest -- default date (section 7, OPEN-ITEMS 64)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });

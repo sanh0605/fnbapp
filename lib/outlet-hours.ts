@@ -1,5 +1,5 @@
 // Pure logic for whether an outlet is open at a given Saigon time.
-// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 2.
+// section 2.
 //
 // Deliberately takes "now" as a plain "HH:MM" string rather than reading
 // the clock itself, so it is testable with a fixed clock instead of the

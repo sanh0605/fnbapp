@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md
 // section 1.3/2.2: create_issue_slip_atomic only ever read
 // base_ingredient_id to relay it per line in the return payload -- a
 // pass-through, never used in the purchase-before-issue check, the

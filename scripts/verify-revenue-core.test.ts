@@ -200,7 +200,6 @@ describe("computeMonthlyTotal", () => {
   });
 });
 
-// docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
 // section 1.3: the old code iterated a hardcoded array, not the data --
 // September (or any month with no entry in the array) never appeared at
 // all, not even as an unchecked line. deriveSaigonMonthLabels is the fix

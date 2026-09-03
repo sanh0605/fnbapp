@@ -117,7 +117,7 @@ export default function POSScreen({
     };
   }, []);
 
-  // docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 3: a
+  // section 3: a
   // draft belongs to the till it was started at, not whatever brand
   // happened to be stamped at that moment.
   const refreshDrafts = async () => {

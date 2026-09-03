@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildUnitDeleteRestrictionMessage } from "./unit-delete-restriction";
 
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section A7's own worked example, verbatim.
 describe("buildUnitDeleteRestrictionMessage", () => {
   it("matches A7's exact worked example (Combo 2 / uom_conversions)", () => {

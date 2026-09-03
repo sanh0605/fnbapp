@@ -1,7 +1,7 @@
 // Turns a caught exception into what a server action returns, so the
 // owner is never shown a raw technical string with no relation to what he
 // did wrong.
-// docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md section 3.
+// section 3.
 import type { ActionResponse } from "@/lib/shared-actions";
 
 const GENERIC_MESSAGE =

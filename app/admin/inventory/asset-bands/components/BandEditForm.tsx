@@ -22,7 +22,6 @@ export function BandEditForm({ band }: { band: DBAssetDepreciationBand }) {
   const [maxPrice, setMaxPrice] = useState(band.max_unit_price === null ? "" : String(band.max_unit_price));
   const [termMonths, setTermMonths] = useState(String(band.term_months));
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B: revalidatePath (in updateAssetBand) marks the server cache
   // stale but does not repaint this already-open page.
   async function handleSubmit(formData: FormData) {

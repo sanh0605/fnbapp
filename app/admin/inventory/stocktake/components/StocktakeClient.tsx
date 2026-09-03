@@ -107,7 +107,6 @@ function StartSessionView() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B: found while checking this screen for the same bug the owner
   // hit elsewhere -- session is a server-fetched prop, so a successful
   // start left this view showing "Bắt đầu kiểm kê" instead of switching to
@@ -203,7 +202,6 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
     });
     if (!confirmed) return;
     setCancelling(true);
-    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
     // section A4b: the action's result was discarded -- a refusal failed in
     // total silence.
     const res = await cancelStocktakeSession(session.id);
@@ -212,7 +210,6 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
       await alert({ title: "Không huỷ được", message: res.error, variant: "danger" });
       return;
     }
-    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
     // section B: session is a server-fetched prop -- without this, the
     // cancelled session's "in progress" view stays on screen until the
     // owner navigates away and back.

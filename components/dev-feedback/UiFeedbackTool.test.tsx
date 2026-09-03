@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// Render tests per docs/superpowers/plans/2026-08-26-ui-feedback-tool.md
+// Render tests per 
 // section 8: the toolbar mounts, picking mode records a selector, a
 // general comment saves with no element, an entry can be deleted, and the
 // overlay is portalled outside the app tree -- the owner's own

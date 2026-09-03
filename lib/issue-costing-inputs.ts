@@ -67,7 +67,7 @@ export function buildIssueCostingIssues(stockIssues: any[]): Issue[] {
   }));
 }
 
-// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// section
 // 3.2: equipment leaves through the asset register (depreciation), not
 // through cost of goods sold -- a stock_issues row naming a piece of
 // equipment must never reach computeIssueCosting, or it is charged twice

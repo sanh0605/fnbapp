@@ -70,7 +70,6 @@ export function IssueSlipClient({
         result={result}
         items={items}
         recentSlips={recentSlips}
-        // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
         // section B: recentSlips is a server-fetched prop -- without this,
         // the slip just submitted (visible in `result` above) would not yet
         // appear in "Phiếu xuất gần đây" after going back to the form.
@@ -435,7 +434,6 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
     });
     if (!approved) return;
 
-    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
     // section B: recentSlips is a server-fetched prop -- without this, a
     // reversed row keeps showing its pre-reversal state until the owner
     // navigates away and back.
@@ -472,7 +470,6 @@ function RecentSlipsSection({ recentSlips }: { recentSlips: IssueSlipRow[] }) {
     });
     if (!approved) return;
 
-    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
     // section B: same as handleReverse above -- recentSlips is a
     // server-fetched prop.
     setError(null);

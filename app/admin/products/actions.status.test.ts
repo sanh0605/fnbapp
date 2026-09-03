@@ -27,7 +27,7 @@ function formDataWithId(id: string): FormData {
   return fd;
 }
 
-describe("pauseProduct / resumeProduct -- docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md section 5.1", () => {
+describe("pauseProduct / resumeProduct -- section 5.1", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({
@@ -55,7 +55,7 @@ describe("pauseProduct / resumeProduct -- docs/superpowers/plans/2026-08-29-prod
     expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-DELETED", expect.anything());
     // A different product's variant must not be touched.
     expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-OTHER", expect.anything());
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 3:
+    // section 3:
     // all four actions, not just resumeProduct -- pauseProduct fails
     // identically (POS keeps offering a just-paused product for up to the
     // cache TTL), the owner has just never hit this direction of it yet.
@@ -81,7 +81,7 @@ describe("pauseProduct / resumeProduct -- docs/superpowers/plans/2026-08-29-prod
     // No curated size exists to protect -- there is nothing sellable to
     // leave the product without, so this DELETED size comes back too.
     expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-DELETED", { status: "ACTIVE" });
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section
+    // section
     // 3: this is the exact case the owner hit in production (Test1,
     // 2026-08-31 02:24:58/02:25) -- the data was already correct, POS was
     // still serving the pre-resume cache.
@@ -147,7 +147,7 @@ describe("eraseProduct -- section 5.3/3, refusal tested with the Test1 fixture s
     expect(res.error).toBeUndefined();
     expect(mocks.eraseProductAtomic).toHaveBeenCalledWith("PROD-037");
     expect(mocks.revalidatePath).toHaveBeenCalled();
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 3:
+    // section 3:
     // the fourth and last of the four actions -- same fix, same reason.
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");

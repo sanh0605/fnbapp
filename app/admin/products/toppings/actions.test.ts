@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/sheets_db", async () => {
-  // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), so this file's own assertions can never silently drift
   // from what the source under test actually calls.
@@ -26,11 +25,10 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateT
 import { toggleToppingStandalone } from "./actions";
 import { getCacheTag } from "@/lib/sheets_db";
 
-// docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
 // section 1.3 row 3 / section 3: Products is cached 10 min, keyed by table
 // -- POS reads it through that cache, and revalidatePath("/pos") here has
 // never actually helped (a path revalidation never touches the tag-keyed
-// findAll cache -- docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md's
+// findAll cache -- that plan's
 // own finding, left as OPEN-ITEMS 79 there). Asserted against getCacheTag's
 // real output (imported above, unmocked), not a re-typed string.
 //

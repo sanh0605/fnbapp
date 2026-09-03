@@ -1,5 +1,4 @@
-// Batch 3 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md
-// section 4): the monthly depreciation charge, pure and testable without a
+// Batch 3 (section 4): the monthly depreciation charge, pure and testable without a
 // database, mirroring how lib/issue-costing.ts is structured.
 //
 // Dates are plain "YYYY-MM-DD" calendar dates (Postgres `date` columns, no
@@ -63,8 +62,7 @@ function monthKey(ym: YearMonth): string {
   return `${ym.year}-${String(ym.month).padStart(2, "0")}`;
 }
 
-// 2026-08-23 fix (docs/superpowers/plans/2026-08-23-band-bounds-and-crud.md
-// section 1): min_unit_price is inclusive, max_unit_price is EXCLUSIVE (null
+// 2026-08-23 fix (section 1): min_unit_price is inclusive, max_unit_price is EXCLUSIVE (null
 // still means unbounded). The previous inclusive-inclusive design plus
 // integer-adjacency validation only closed the number line when every price
 // was a whole đồng -- 199.999,05đ and 500.000,50đ matched no band at all,
@@ -265,7 +263,7 @@ export function buildAssetSchedule(asset: AssetInput, disposals: DisposalInput[]
   }));
 }
 
-// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// section
 // 3.3: today the only date check anywhere is buildAssetSchedule's own
 // month-granularity "disposal dated before the asset was acquired" guard
 // (line ~217 above) -- real, tested, but two gaps a critique of this plan

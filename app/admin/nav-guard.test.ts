@@ -1,5 +1,5 @@
 // The guard itself, run against the real repository tree.
-// docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md section 3.
+// section 3.
 //
 // This is deliberately a thin wrapper: the decision logic and both failure
 // modes are unit-tested with synthetic fixtures in lib/nav-completeness.test.ts.

@@ -7,6 +7,8 @@ tables: Products, products, Product_Variants, product_variants, product_price_hi
 brCodes: BR-CATALOG-001
 ```
 
+**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+
 This flow covers the sellable catalogue: the products the POS offers, their
 variants (sizes), the categories that group them, the modifiers a customer can
 pick, and the toppings that add to a drink. A product is created and edited from

@@ -2,7 +2,6 @@
  * Pure comparison logic for scripts/verify-revenue.ts, split out so it is
  * testable without a live Supabase client (repo's existing -core.ts
  * convention, e.g. scripts/reset-cost-at-sale-core.ts). Plan H, task H1
- * (docs/superpowers/plans/2026-08-14-revenue-audit.md).
  *
  * Every function here is a pure comparison over already-fetched rows -- no
  * I/O, no Supabase client, no dotenv. The script does the fetching and
@@ -205,7 +204,6 @@ export function computeMonthlyTotal(
   return { label, total, orderCount };
 }
 
-// docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
 // section 2. The list of months to check must come from the data, not a
 // hardcoded array -- a month absent from a hardcoded list is invisible,
 // not merely unchecked (section 1.3's own distinction between the two

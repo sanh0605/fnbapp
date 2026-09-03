@@ -69,7 +69,7 @@ describe("buildOrderFromCart", () => {
     ).toThrow(/variant/i);
   });
 
-  describe("does not sell a paused product (docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md section 5.4/5b)", () => {
+  describe("does not sell a paused product (section 5.4/5b)", () => {
     it("refuses when the product is INACTIVE, naming the product in the message", () => {
       const refWithPausedProduct: ReferenceData = {
         ...REF,
@@ -383,7 +383,7 @@ describe("buildOrderFromCart", () => {
     expect(result.lines.length).toBe(2);
   });
 
-  // docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md section 2:
+  // section 2:
   // recipe_snapshot_json stopped being written 2026-09-01 -- no longer even
   // the inert no-recipe shell this test used to assert (Phase 2 had already
   // emptied its content; this task stops writing it at all). An empty

@@ -2,7 +2,7 @@
  * `npm run preview` -- starts `next dev` bound to 0.0.0.0 and prints an
  * address a phone on the same wifi can actually type in.
  *
- * docs/superpowers/plans/2026-08-26-ui-feedback-tool.md section 3.
+ * section 3.
  * `next dev -H 0.0.0.0` alone is not enough: checked directly against a
  * real server, its own "Network:" banner line prints
  * "http://0.0.0.0:<port>" verbatim -- a phone cannot connect to 0.0.0.0.

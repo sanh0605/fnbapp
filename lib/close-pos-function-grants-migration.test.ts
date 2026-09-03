@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-02-close-the-pos-function-grants.md section
+// section
 // 1.4's trap: the two-line pattern recent migrations use (revoke from
 // authenticated, grant to service_role) is not enough here, because these
 // functions were never revoked from anything -- `from public` is the line

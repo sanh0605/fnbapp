@@ -201,7 +201,6 @@ function DeleteConversionButton({ id, itemName }: { id: string; itemName: string
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4b/B: the action's result was discarded -- a refusal (e.g.
   // this conversion referenced by purchase history) failed in total
   // silence, and a successful delete never told the browser to redraw.

@@ -31,7 +31,7 @@ function collectMarkdown(dir: string): string[] {
 // these files is checked for dead links. docs/generated/ (machine-generated,
 // regenerated on demand) and docs/superpowers/ (process artifacts and plans
 // that intentionally cross-reference each other) are deliberately excluded.
-// Chronicles are also absent: DEVELOPMENT-TRACKING.md cites hundreds of paths
+// Chronicles are also absent: a dated tracking log cites hundreds of paths
 // inside dated entries, many pointing at files correctly deleted since, and a
 // chronicle entry is a record of what was true then -- not a claim about now.
 const GOVERNED_DOC_DIRS = [
@@ -47,10 +47,10 @@ const RULE_DOCS = [
   ...GOVERNED_DOC_DIRS.flatMap(collectMarkdown),
 ];
 
-// docs/superpowers/plans/2026-08-26-undated-data-claims.md section 3 measured
+// section 3 measured
 // its false-positive budget (3 lines) against CLAUDE.md alone, but section 4
 // scopes the check to all of RULE_DOCS. Run for real: 16 lines, not 3 --
-// almost all of them in docs/BUSINESS-RULES.md and docs/operations/*.md,
+// almost all of them in the rules documents and docs/operations/*.md,
 // neither of which the measurement looked at. Two real patterns account for
 // most of them and were not in the original three: a runbook's own pass/fail
 // thresholds ("Stop if drift > 5d/order" in orders-v2-cutover.md), and a

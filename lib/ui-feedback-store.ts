@@ -1,5 +1,5 @@
 // Reads and writes UI-FEEDBACK.md's plain-text format.
-// docs/superpowers/plans/2026-08-26-ui-feedback-tool.md section 7.
+// section 7.
 //
 // Pure string functions only -- the API route (app/api/dev-feedback/
 // route.ts) does the actual file I/O and the dev-only gate; this file only

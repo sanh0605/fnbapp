@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 //
 // Render tests for Batch 1, item B (conversions for consumables):
-// docs/superpowers/plans/2026-08-19-batch-1-foundations.md section B.
+// section B.
 //
 // Section B4's own instruction: "choose Vat tu tieu hao, fill a conversion,
 // submit against a mocked action, and assert units_json is present in the
@@ -41,7 +41,6 @@ vi.mock("../actions", () => ({
   addPurchasedItem: mocks.addPurchasedItem,
   updatePurchasedItem: mocks.updatePurchasedItem,
 }));
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section B: this component now calls useRouter().refresh() on save.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.routerRefresh }),
@@ -173,7 +172,7 @@ async function openEditForm(initialData: any, initialConversions: any[]) {
 }
 
 describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1, item B)", () => {
-  // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+  // 2026-08-26:
   // replaces the old "EQUIPMENT gets neither section" test -- a purchase
   // line should record what the invoice says (e.g. "1 Combo 10"), the same
   // as CONSUMABLE, not force the owner into pack-size arithmetic.
@@ -235,7 +234,6 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
     expect(document.body.textContent).toContain("g");
   });
 
-  // docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md
   // section 2.2: the group-link field and its requirement are gone along
   // with base_ingredients itself -- confirmed to fail on the VALUE against
   // the pre-fix code (the text was present, not missing), which is the
@@ -298,7 +296,7 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
   });
 });
 
-// 2026-08-20 fix: docs/superpowers/plans/2026-08-20-consumable-base-unit-mismatch.md.
+// 2026-08-20 fix:.
 // unitOptions is keyed by unit *name*; the consumable base-unit state used to
 // hold the id SearchableSelect never emits for this field, so it matched
 // nothing. These assert the rendered text a user actually sees, not the
@@ -344,12 +342,11 @@ describe("PurchasedItemForm -- consumable base unit renders correctly, not as an
   });
 });
 
-// 2026-08-21: docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md
+// 2026-08-21: 
 // section 3.2 / 5. Render assertion only (OPEN-ITEMS 46's limit) -- no
 // submission needed to check whether the checkbox appears.
 //
-// Narrowed to CONSUMABLE-only on 2026-08-26
-// (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md): once
+// Narrowed to CONSUMABLE-only on 2026-08-26: once
 // equipment is excluded from stocktake by category, this flag no longer
 // controls that for equipment, and leaving it settable would reopen the
 // double-count OPEN-ITEMS 59 warns about (equipment must always be
@@ -371,7 +368,6 @@ describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-2
     expect(document.body.textContent).not.toContain("Không quản lý tồn kho");
   });
 
-  // docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md
   // section 1.2/2: the tier-2 ingredient groups (base_ingredients) are
   // going away, so RAW can no longer only inherit this decision from its
   // group -- it needs its own checkbox, the same as CONSUMABLE. Confirmed

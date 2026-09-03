@@ -16,7 +16,6 @@ vi.mock("@/lib/sheets_db", () => ({
 
 import { getPromotionsData } from "./actions";
 
-// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
 // section 5: both required tests. The second guards against the fix
 // becoming "throw on empty" -- a different bug wearing the same diff.
 describe("getPromotionsData", () => {

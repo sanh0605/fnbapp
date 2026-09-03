@@ -51,7 +51,6 @@ const BANDS = [
 function buildFormData(status = "COMPLETED", id = ""): FormData {
   const formData = new FormData();
   formData.set("supplier_id", "SUP-1");
-  // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md
   // section 3: savePurchaseOrder now also requires source_id for a
   // COMPLETED order.
   formData.set("source_id", "SRC-1");
@@ -158,7 +157,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
   });
 
-  // docs/superpowers/plans/2026-08-26-equipment-needs-units.md section 6,
+  // section 6,
   // the owner's own numbers: 1 line, 1 "Combo 10", 108.000d, conversion
   // 1 Combo 10 = 10 Chai -> asset quantity 10, unit_cost 10.800d. Against
   // the pre-fix code (equipmentLines.baseQuantity read from line.quantity,
@@ -195,7 +194,6 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     );
   });
 
-  // docs/superpowers/plans/2026-08-27-asset-acquired-date-off-by-one.md
   // (OPEN-ITEMS 64): acquired_date is sliced from effectiveDate, a UTC
   // string, while the purchase's real date is Saigon wall-clock -- a
   // purchase made at Saigon midnight on the 1st slices to the last UTC

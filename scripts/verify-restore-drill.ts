@@ -4,7 +4,6 @@ process.env.CLI_MODE = "true";
 
 /**
  * Phase 3 restore drill, Task 5
- * (docs/superpowers/plans/2026-07-29-phase3-backup-coverage-and-restore-drill.md).
  * Compares the restored scratch database against production: row counts for
  * every table, plus content spot-checks (not just counts) for PO-037, one
  * split-payment order, and Sữa đặc's stock_ledger row count. Read-only against
@@ -29,17 +28,15 @@ async function main(): Promise<void> {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  const baselinePath = path.resolve(process.cwd(), "docs/audits/2026-07-29-backup-coverage-baseline.json");
-  const baseline = JSON.parse(fs.readFileSync(baselinePath, "utf8"));
-
   // ---- Step 1: row counts, all 40 tables ----
-  // Compared against LIVE production, not the Task 2 baseline file: the
-  // restore script re-fetches a fresh snapshot from production immediately
-  // before restoring, and production is a live system -- real sales happen
-  // between the baseline capture and the restore run. Comparing against a
-  // stale baseline would misreport ordinary new activity as a restore
-  // failure. The baseline is still recorded per-table for reference, to show
-  // how much production grew since Task 2.
+  // Compared against LIVE production, not a fixed baseline: the restore
+  // script re-fetches a fresh snapshot from production immediately before
+  // restoring, and production is a live system -- real sales happen between
+  // any baseline capture and the restore run. Comparing against a stale
+  // baseline would misreport ordinary new activity as a restore failure.
+  // The Task 2 baseline file this once read no longer exists (removed by
+  // the 2026-09 reset); the reference column below reads 0 for every table
+  // as a result, which does not affect the verdict.
   console.log("=== STEP 1: ROW COUNTS (restored scratch DB vs LIVE production) ===");
   const rowCountDiffs: RowCountDiff[] = [];
   for (const table of BACKUP_TABLES) {
@@ -57,11 +54,11 @@ async function main(): Promise<void> {
     }
     const restored = restoredResult.count || 0;
     const productionNow = prodResult.count || 0;
-    const base = baseline.table_counts[table] ?? 0;
+    const base = 0;
     const delta = restored - productionNow;
     rowCountDiffs.push({ table, baseline: base, production_now: productionNow, restored, delta_vs_production: delta });
     if (delta !== 0) {
-      console.log(`  ${table}: baseline(Task 2)=${base} production_now=${productionNow} restored=${restored} delta_vs_production=${delta}`);
+      console.log(`  ${table}: production_now=${productionNow} restored=${restored} delta_vs_production=${delta}`);
     }
   }
   const exactMatches = rowCountDiffs.filter(d => d.delta_vs_production === 0).length;
@@ -149,7 +146,8 @@ async function main(): Promise<void> {
     },
     findings,
   };
-  const outPath = path.resolve(process.cwd(), "docs/audits/2026-07-29-phase3-restore-drill-result.json");
+  const os = await import("node:os");
+  const outPath = path.join(os.tmpdir(), `fnbapp-restore-drill-${new Date().toISOString().slice(0, 10)}.json`);
   fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
   console.log(`\nFull report written to ${outPath}`);
 }

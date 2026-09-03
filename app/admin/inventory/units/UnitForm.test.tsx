@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 //
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section 3 (Part A and Part B, both required, not just one): the owner's
 // own case -- clicking Xoá on Combo 2 -- covered end to end at the
 // component level: the action's result is read (not discarded), an error

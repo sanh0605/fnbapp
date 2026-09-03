@@ -36,8 +36,7 @@ describe("saveProduct atomic persistence", () => {
   });
 
   it("creates product, variant, and initial price history through one RPC; the recipe stays empty", async () => {
-    // The product editor no longer offers a recipe/ingredient picker (Phase 2,
-    // docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+    // The product editor no longer offers a recipe/ingredient picker (Phase 2)
     // -- a brand-new variant has no existing active recipe to feed back as a
     // no-op, so ingredients_json stays [] and save_product_atomic still gets
     // a valid CREATE_INITIAL decision (its own hard requirement, unchanged).
@@ -68,7 +67,7 @@ describe("saveProduct atomic persistence", () => {
       expectedPriceHistoryCount: 1,
       expectedRecipeCount: 1,
     });
-    // docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 3:
+    // section 3:
     // revalidatePath alone only refreshes /admin/products -- POS reads the
     // same tables through lib/sheets_db.ts's tag-keyed cache, which
     // revalidatePath never touches. Today (pre-fix) this is a wrong VALUE,
@@ -79,7 +78,7 @@ describe("saveProduct atomic persistence", () => {
   });
 
   it("leaves no partial create state after rollback and permits retry", async () => {
-    // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md: a
+    // Per that plan: a
     // raw ASCII exception is replaced with the generic Vietnamese sentence;
     // the raw text survives as errorDetail, not shown to the owner.
     mocks.saveProductAtomic
@@ -120,7 +119,7 @@ describe("saveProduct atomic persistence", () => {
   });
 
   it("never creates a new recipe version -- the editor no longer offers a picker, so an edit is always a no-op against the variant's own current recipe", async () => {
-    // Phase 2 (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
+    // Phase 2 
     // removed the ingredient picker; saveProduct no longer reads client-
     // submitted ingredients at all. Even a stale/forged payload that still
     // carries a different ingredientId (as a pre-Phase-2 client might) must

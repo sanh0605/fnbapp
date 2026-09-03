@@ -14,7 +14,6 @@ export async function getBrands() {
   try {
     return await findAll(SHEET);
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // a real findAll failure must not look like "no brands exist" -- an
     // empty table never reaches this branch (findAll resolves []
     // without throwing), so returning [] here was always a lie. Log for

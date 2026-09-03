@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// docs/superpowers/plans/2026-08-29-product-stop-selling-and-real-delete.md
 // section 5.4/5b, established by re-derivation, not assumed: app/pos/page.tsx
 // already filters products/variants on status === "ACTIVE" (not != "DELETED"),
 // so an INACTIVE (paused) product is already excluded from what reaches
@@ -77,7 +76,7 @@ describe("POSPage does not offer a paused (INACTIVE) product", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-31-pos-shows-stale-products.md section 1.4
+// section 1.4
 // (Bug B), independent of the cache fix (Bug A) covered by
 // app/admin/products/actions.status.test.ts and actions.failure.test.ts. An
 // ACTIVE product with every variant DELETED/INACTIVE was still handed to

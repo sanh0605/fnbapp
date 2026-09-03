@@ -233,7 +233,6 @@ function DeleteItemButton({ id, name }: { id: string; name: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4b/B: the action's result was discarded -- a refusal (e.g. a
   // purchased item referenced by purchase/issue history) failed in total
   // silence, and a successful delete never told the browser to redraw.

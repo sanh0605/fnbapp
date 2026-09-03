@@ -12,7 +12,6 @@ export function CategoryForm({ initialData }: { initialData?: any }) {
   const [loading, setLoading] = useState(false);
   const isEdit = !!initialData;
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section B2/B7: the exact case the owner hit -- renaming a category here
   // used to leave this screen showing the old name until he navigated away
   // and back (revalidatePath alone marks the server cache stale, it does

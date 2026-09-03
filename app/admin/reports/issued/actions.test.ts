@@ -25,8 +25,7 @@ beforeEach(() => {
 // snapshot (app/admin/reports/issued/__fixtures__/2026-08-13-live-
 // snapshot.json), not a hand-built fixture engineered to match. If
 // getIssuedValueReport ever computes something else from this exact data,
-// it disagrees with docs/superpowers/plans/2026-08-13-issued-value-page.md
-// section 2, and that disagreement is the bug.
+// it disagrees with section 2, and that disagreement is the bug.
 describe("getIssuedValueReport", () => {
   function mockLiveSnapshot() {
     (findAllNoCache as any).mockImplementation((sheet: string) => {
@@ -39,7 +38,6 @@ describe("getIssuedValueReport", () => {
       if (sheet === "Purchased_Items") return liveSnapshot.purchasedItems;
       if (sheet === "Units") return liveSnapshot.units;
       if (sheet === "UOM_Conversions") return liveSnapshot.uomConversions;
-      // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md
       // section 3.2: this 2026-08-13 snapshot predates item_category_id
       // being relevant here, and does not carry one. Empty is the honest
       // answer, not a guess -- filterOutEquipmentIssues then excludes

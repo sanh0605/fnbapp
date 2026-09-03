@@ -15,7 +15,7 @@ import type {
 } from "./verify-revenue-core";
 
 /**
- * Plan H, tasks H1, H2 and H3 (docs/superpowers/plans/2026-08-14-revenue-audit.md).
+ * Plan H, tasks H1, H2 and H3.
  * Re-runnable revenue verification: every check in section 1 (H1), line-
  * level arithmetic (H2, section 3 first bullet), and promotion discount
  * recomputation (H3, section 3 second bullet), against live data. Prints
@@ -79,10 +79,9 @@ const EXPECTED_ORDER_COUNT = 2086;
 // table is a failure to fix by measuring and asking the owner to confirm,
 // never by having the script fill in its own number.
 //
-// April-July: 2026-08-14 (plan docs/superpowers/plans/2026-08-14-revenue-audit.md).
+// April-July: 2026-08-14.
 // August: 2026-09-01, after the owner asked why the table stopped at July
-// (docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
-// section 1.7) -- re-measured live before writing this, matching exactly:
+// (section 1.7) -- re-measured live before writing this, matching exactly:
 // 17.682.000d / 644 orders (OUT-001 476/10.557.000d, OUT-002 168/7.125.000d,
 // 31/31 sale days).
 const KNOWN_MONTHLY_BASELINES: Record<string, MonthlyBaseline | undefined> = {
@@ -298,7 +297,7 @@ async function main(): Promise<void> {
 
   // --- H2: line-level arithmetic -----------------------------------------
   console.log(
-    "\n=== H2: line-level arithmetic (docs/superpowers/plans/2026-08-14-revenue-audit.md section 3) ===",
+    "\n=== H2: line-level arithmetic (section 3) ===",
   );
 
   function reportLineMismatches<T extends { order_id: string; line_no: number; order_no: string; product_name: string }>(
@@ -379,7 +378,7 @@ async function main(): Promise<void> {
 
   // --- H3: promotion discount recomputation -------------------------------
   console.log(
-    "\n=== H3: promotion discount recomputation (docs/superpowers/plans/2026-08-14-revenue-audit.md section 3) ===",
+    "\n=== H3: promotion discount recomputation (section 3) ===",
   );
   console.log(
     "WHAT THIS CANNOT SEE (OPEN-ITEMS 39): the POS previews a promo price with one calculation and charges with " +
@@ -562,7 +561,6 @@ async function main(): Promise<void> {
   if (h3Check4.length > 0) failures.push(`H3 check 4: ${h3Check4.length} line-variant-coverage violation(s).`);
 
   // --- Monthly table -----------------------------------------------------
-  // docs/superpowers/plans/2026-09-01-revenue-gate-must-notice-closed-months.md
   // section 2: the list of months comes from the data (buildMonthlyReport
   // derives it via saigonBucketKeys), not a hardcoded array -- a month
   // absent from a hardcoded list used to be invisible, not merely

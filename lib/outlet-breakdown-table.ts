@@ -1,5 +1,5 @@
 // Pure derived-column logic for the outlet breakdown table.
-// docs/superpowers/plans/2026-08-25-outlet-breakdown-table.md section 2.
+// section 2.
 // Presentation only -- orders and revenue themselves are untouched, both
 // already computed by app/admin/reports/actions.ts's getSalesDataV2. These
 // two columns are new; extracted so the division-by-zero guards are

@@ -20,8 +20,8 @@ import {
 dotenv.config({ path: ".env.local" });
 process.env.CLI_MODE = "true";
 
-const TASK_34_PATH = "docs/audits/2026-07-15-task-3.4-outside-cohort-investigation.json";
-const TASK_36_PATH = "docs/audits/2026-07-15-task-3.6-forward-drift-investigation.json";
+const TASK_34_PATH = "docs/audits/2026-07-15-task-3.4-outside-cohort-investigation.json"; // docs-ref-allow: history-only backup removed by the reset (spec section 2.13)
+const TASK_36_PATH = "docs/audits/2026-07-15-task-3.6-forward-drift-investigation.json"; // docs-ref-allow: history-only backup removed by the reset (spec section 2.13)
 const QUERY_CHUNK_SIZE = 100;
 
 async function main(): Promise<void> {

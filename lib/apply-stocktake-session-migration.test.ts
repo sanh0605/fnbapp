@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-phase-d-blockers.md section 3's first
+// section 3's first
 // check: "no function still mentions stock_ledger or inventory_balances --
 // checked against the latest body of every function, not by name." This
 // migration is that check made permanent for apply_stocktake_session_atomic,

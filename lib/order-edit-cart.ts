@@ -9,7 +9,7 @@
  *
  * Internally calls assertOrderInvariants before returning.
  *
- * Spec: docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md (section 5.5)
+ * (section 5.5)
  */
 
 import crypto from "node:crypto";

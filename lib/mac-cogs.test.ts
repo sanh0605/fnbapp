@@ -161,7 +161,7 @@ describe("MAC COGS", () => {
 
   it("costs the same total whether a semi-product shortfall is split (available + exploded raw row) or folded into one row -- matching the real system's convention that PRODUCTION_YIELD always carries unit_cost 0", () => {
     // This is the equivalence the implicit-production-on-shortfall fix
-    // depends on (docs/superpowers/plans/2026-07-20-implicit-production-shortfall-design.md):
+    // depends on:
     // costing "30 BTP + 20 raw-equivalent" must equal costing "50 BTP",
     // given BTP's own PRODUCTION_YIELD entries never carry a direct cost
     // (confirmed in app/admin/production/actions.ts and this fix's own new

@@ -37,7 +37,7 @@ export function buildConversionSubmission(params: {
 }): { ok: true; fields: ConversionSubmissionFields } | { ok: false; error: string } | { ok: true; fields: null } {
   const { isRaw, isConsumable, isEquipment, baseUnitId, unitsState, units } = params;
 
-  // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
+  // 2026-08-26:
   // EQUIPMENT now gets the same base-unit/conversion section as CONSUMABLE --
   // a purchase line should record what the invoice says (e.g. "1 Combo 10"),
   // not force the owner to do pack-size arithmetic in his head. This branch
@@ -74,7 +74,7 @@ export function buildConversionSubmission(params: {
   return { ok: true, fields };
 }
 
-// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 5.1:
+// section 5.1:
 // the base unit belongs to the item, not to its tier-2 group. Before this,
 // a RAW item's baseUnitId was derived inline as
 // `activeBaseIngredient?.base_unit` -- always the group's unit, with no way
@@ -144,7 +144,7 @@ export function PurchasedItemForm({
 
   const [updateHistory, setUpdateHistory] = useState(true);
 
-  // 2026-08-21 (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md):
+  // 2026-08-21:
   // the discriminator is BR-INV-007 -- does a sealed pack of it sit on the
   // shelf to be counted -- not the category itself, so this is offered for
   // CONSUMABLE and EQUIPMENT alike, never RAW (a RAW item inherits the
@@ -163,8 +163,7 @@ export function PurchasedItemForm({
   // nothing in a name-keyed select (created rows: name saved as base_unit
   // instead of id; edited rows: selector rendered empty).
   //
-  // Renamed 2026-08-29 (docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md
-  // section 5.1) from selectedConsumableBaseUnitName -- the old name was
+  // Renamed 2026-08-29 (section 5.1) from selectedConsumableBaseUnitName -- the old name was
   // the bug's fingerprint, since RAW now uses this same state instead of
   // deriving its unit from the linked ingredient's group.
   const [selectedBaseUnitName, setSelectedBaseUnitName] = useState(
@@ -175,8 +174,7 @@ export function PurchasedItemForm({
 
   // The unit belongs to the item, not to a tier-2 group (same plan, section
   // 5.1): RAW, CONSUMABLE, and EQUIPMENT all resolve the same way now. Tier-2
-  // groups themselves are gone as of 2026-09-01
-  // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md) --
+  // groups themselves are gone as of 2026-09-01 --
   // a RAW item no longer links to one at all.
   const baseUnitId = resolveBaseUnitId({ isRaw, isConsumable, isEquipment, selectedBaseUnitName, units });
   const baseUnitName = baseUnitId ? units.find(u => u.id === baseUnitId)?.name : "";
@@ -209,7 +207,6 @@ export function PurchasedItemForm({
     }
 
     // The tier-2 group link requirement was removed 2026-09-01
-    // (docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md)
     // along with the base_ingredients table itself.
     // 2026-08-29: RAW needs its own base unit -- it no longer inherits one
     // from a group.
@@ -241,7 +238,7 @@ export function PurchasedItemForm({
     }
 
     formData.append("item_category_id", selectedCategoryId);
-    // 2026-08-26 (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
+    // 2026-08-26:
     // equipment's stocktake exclusion is now category-based, so this flag no
     // longer controls that for equipment -- only its other meaning remains
     // (the future batch-5 expense line), which equipment must never opt
@@ -275,7 +272,6 @@ export function PurchasedItemForm({
         return;
       }
     }
-    // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
     // section B: revalidatePath (in addPurchasedItem/updatePurchasedItem)
     // marks the server cache stale but does not repaint this already-open
     // page.
@@ -388,7 +384,7 @@ export function PurchasedItemForm({
                 Đây là nhóm <strong>Hàng Hóa Chế Biến (RAW)</strong>.
               </div>
 
-              {/* docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md
+ {/* 
                   section 5.1: the base unit belongs to the item, not to
                   this group -- it no longer comes from the ingredient
                   above, it is chosen here, the same way CONSUMABLE and
@@ -419,7 +415,6 @@ export function PurchasedItemForm({
           )}
 
           {/* Batch 1, item B (section B2), extended 2026-08-26 to EQUIPMENT
-              (docs/superpowers/plans/2026-08-26-equipment-needs-units.md):
               neither category has an ingredient to derive a base unit from,
               so both get this selector. RAW gets its own block above. */}
           {(isConsumable || isEquipment) && (
@@ -461,7 +456,6 @@ export function PurchasedItemForm({
               decision from its ingredient's own is_non_inventory
               (BR-COGS-007) instead of setting it here. Narrowed from
               CONSUMABLE-or-EQUIPMENT to CONSUMABLE-only on 2026-08-26
-              (docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md):
               once equipment is excluded from stocktake by category, this
               flag no longer affects equipment's stocktake eligibility at
               all, and leaving it settable would let the owner re-open the
@@ -474,7 +468,6 @@ export function PurchasedItemForm({
               is unchanged for EQUIPMENT.
 
               Reopened for RAW on 2026-08-31
-              (docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md):
               the owner decided 2026-08-29 to remove the tier-2 ingredient
               groups, so a RAW item will soon have no group left to inherit
               this decision from. The stocktake/issue-slip exclusion checks
@@ -506,7 +499,7 @@ export function PurchasedItemForm({
   );
 }
 
-// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4/5.1:
+// section 4/5.1:
 // one implementation shared by RAW, CONSUMABLE and EQUIPMENT, so the locked
 // (read-only) rendering can never drift between them the way two separate
 // copies could. When isUnitLocked, this is display-only text, not an input

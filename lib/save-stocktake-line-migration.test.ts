@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-phase-d-blockers.md section 3's first
+// section 3's first
 // check, for save_stocktake_line_atomic: no function still mentions
 // stock_ledger or inventory_balances. Confirmed red before the fix,
 // against this exact file: temporarily reintroduced the

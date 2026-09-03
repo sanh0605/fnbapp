@@ -146,7 +146,7 @@ describe("getOrderDetailV2 query scope", () => {
     });
   });
 
-  // docs/superpowers/plans/2026-08-28-retire-the-stock-ledger.md Phase A
+  // Phase A
   // replaces this test's own prior claim -- it used to prove the ledger
   // read was bounded to the one order being voided. There is no ledger
   // read left to bound: proved live first that it always returned zero

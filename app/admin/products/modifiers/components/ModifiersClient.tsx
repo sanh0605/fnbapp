@@ -133,7 +133,6 @@ function DeleteModifierButton({ id, name, onDeleted }: { id: string; name: strin
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4b: the action's result was discarded -- a refusal failed in
   // total silence (onDeleted, which calls router.refresh(), was already
   // correct; it just ran unconditionally, even on failure).

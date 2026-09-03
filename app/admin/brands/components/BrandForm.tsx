@@ -31,7 +31,6 @@ export function BrandForm({ initialData }: BrandFormProps) {
     initialData?.start_date ? new Date(initialData.start_date) : null
   );
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4b/B: found while fixing this file's delete button -- this
   // add/edit handler discarded its result too (via `fn`, not a literal
   // function name, which is why the plan's own grep-based section A4b
@@ -165,7 +164,6 @@ export function DeleteBrandButton({ id }: DeleteBrandButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
   // section A4b/B: the action's result was discarded -- a refusal (e.g. a
   // brand still in use) failed in total silence, and a successful delete
   // never told the browser to redraw.

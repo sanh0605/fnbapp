@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-drop-base-ingredient-id-column.md
 // section 1.3/2.2: reverse_manual_issue_atomic only ever read
 // base_ingredient_id to relay it in the return payload -- a pass-through,
 // never used to decide anything. This migration removes the read and the
@@ -27,8 +26,7 @@ function readMigration(): string {
 
 // Strip `--` line comments before searching -- the migration's own header
 // comment legitimately names base_ingredient_id while explaining the
-// removal, same trap docs/superpowers/plans/2026-09-01-phase-d-blockers.md
-// section 5.2 names for the live pg_get_functiondef check.
+// removal, same trap that section 5.2 names for the live pg_get_functiondef check.
 function readMigrationCodeOnly(): string {
   return readMigration()
     .split("\n")

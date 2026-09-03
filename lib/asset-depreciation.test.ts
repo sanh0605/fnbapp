@@ -367,7 +367,7 @@ describe("validateBands", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md section
+// section
 // 3.3/4: three required cases, the third load-bearing -- a guard that
 // blocks a valid backdate is worse than no guard, since backdating is what
 // the owner actually does (see every other date field in this app: issue

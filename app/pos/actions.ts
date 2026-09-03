@@ -58,7 +58,7 @@ export async function submitOrderV2(
       findAll("Promotions"),
     ]);
 
-    // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 5/6:
+    // section 5/6:
     // the brand must not be user-suppliable -- resolve it server-side from
     // the outlet and overwrite whatever brand_id the client sent, before
     // buildOrderFromCart (and its promotion filtering) ever sees it.
@@ -79,10 +79,8 @@ export async function submitOrderV2(
     // is written here. Recipes and inventory-consumption lookups are gone
     // from checkout entirely, not merely ignored: that lookup was latency on
     // the till for a result nothing reads anymore. As of Phase 2
-    // (docs/superpowers/plans/2026-08-27-remove-recipes-and-semi-products.md)
     // the Recipes fetch itself is gone too -- buildOrderFromCart no longer
-    // resolves a recipe at all. 2026-09-01
-    // (docs/superpowers/plans/2026-08-31-remove-recipe-snapshots.md): the
+    // resolves a recipe at all. 2026-09-01: the
     // Base_Ingredients fetch above it is gone too -- it was loaded and
     // passed in on every sale but never read inside buildOrderFromCart.
 
@@ -211,7 +209,7 @@ export async function getPOSBestSellerProductIds(
     .map(([productId]) => productId);
 }
 
-// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 3: a
+// section 3: a
 // draft belongs to the till it was started at, not whatever brand happened
 // to be stamped at that moment -- filtered by outlet_id, not brand_id.
 export async function getPOSDrafts(outletId: string) {
@@ -222,7 +220,6 @@ export async function getPOSDrafts(outletId: string) {
     const allDrafts = await findAllNoCache("POS_Drafts");
     return allDrafts.filter((d: any) => d.outlet_id === outletId);
   } catch (err: any) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // not in the plan's own list (found while re-deriving it). Rethrow so
     // the failure is real, not a fabricated "no drafts" -- the caller
     // (components/POSScreen.tsx's refreshDrafts) already has its own

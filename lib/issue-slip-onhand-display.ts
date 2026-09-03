@@ -1,6 +1,5 @@
 import { formatNumber } from "@/lib/format";
 
-// docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
 // section 3: this is a mistake guard, not a convenience. IssueSlipClient's
 // own submit multiplies the typed quantity by the selected conversion's
 // rate (parsedQty * pkg.conversionRate) -- so with "Cay 50 Cai" selected,

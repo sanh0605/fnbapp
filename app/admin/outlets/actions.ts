@@ -12,7 +12,7 @@ import type { DBOutlet } from "@/types/db";
 const SHEET = "Outlets";
 const PATH = "/admin/outlets";
 
-// docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 5: the
+// section 5: the
 // till modal picks an outlet, not a brand. The two seeded by
 // supabase/migrations/0071_outlets.sql are all that exist until the screen
 // below is used to add a third.
@@ -23,7 +23,6 @@ export async function getOutlets() {
   try {
     return await findAll(SHEET);
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getOutlets:", error);
     throw error;
@@ -38,9 +37,9 @@ function readTime(formData: FormData, key: string): string | null {
   return value || null;
 }
 
-// docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md section 2:
+// section 2:
 // the code is assigned by the system, never chosen, never a freed gap.
-// Hours (docs/superpowers/plans/2026-08-26-outlet-done-properly.md section
+// Hours ( section
 // 2) are never seeded with a guessed value -- null unless the owner enters
 // one.
 export async function addOutlet(formData: FormData): Promise<ActionResponse> {
@@ -80,7 +79,7 @@ export async function addOutlet(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// docs/superpowers/plans/2026-08-26-outlet-done-properly.md section 4: the
+// section 4: the
 // edit form covers brand, address, start date and hours, not the name
 // alone -- "built to look finished rather than to be used" was the
 // owner's own verdict on the name-only version. code is deliberately never

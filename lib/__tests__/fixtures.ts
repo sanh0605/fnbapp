@@ -9,7 +9,7 @@
  *   - Raw:      as-it-is in the live database (with whatever corruption exists)
  *   - Migrated: the form WS-5 migration will produce (invariants satisfied)
  *
- * Spec: docs/superpowers/specs/2026-06-18-orders-reports-rebuild.md (sections 5, 6, 7)
+ * (sections 5, 6, 7)
  */
 
 import type { OrderV2, OrderLineV2, LineForAllocation, ModifierSnapshot } from "@/lib/order-types";

@@ -2,7 +2,7 @@
 // navItems entry in app/admin/layout.tsx, or an explicit allowlist entry
 // with a reason.
 //
-// docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-guard.md section 3:
+// section 3:
 // "nothing mechanical checks whether a screen the plan promised exists and
 // is reachable, so the only detector is the owner." This is that check.
 // Not folded into scripts/check-rules-current.ts -- that script verifies a

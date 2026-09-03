@@ -46,7 +46,6 @@ describe("getOutlets", () => {
     expect(mocks.findAll).not.toHaveBeenCalled();
   });
 
-  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
   // this test previously asserted the defect itself -- "returns an empty
   // list instead of throwing when the read fails" was the bug, codified as
   // the expected behaviour. Found by running the suite after the fix: this

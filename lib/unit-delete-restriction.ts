@@ -1,4 +1,3 @@
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section A3/A7: the RESTRICT foreign keys blocking a unit delete are
 // correct and stay -- CLAUDE.md section 2 depends on this exact layer for
 // products, and this is the same protection for units. The defect was that

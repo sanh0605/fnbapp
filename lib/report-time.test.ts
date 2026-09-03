@@ -43,7 +43,6 @@ describe("toSaigonUtcRange", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-26-sales-chart-timezone.md.
 describe("saigonBucketKeys", () => {
   it("crosses the UTC date/month boundary correctly -- the owner's real case", () => {
     // 2026-08-01T06:22:53+07:00 (Saigon) is 2026-07-31T23:22:53.000Z in UTC.

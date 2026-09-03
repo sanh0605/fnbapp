@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// docs/superpowers/plans/2026-09-01-void-order-stops-reading-the-ledger.md
 // section 3's first check, for void_order_atomic: no function still mentions
 // stock_ledger. Confirmed red before the fix, against this exact file:
 // temporarily reintroduced the two `select ... from public.stock_ledger`

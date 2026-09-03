@@ -64,7 +64,6 @@ describe("getPnLDataV2", () => {
     });
   });
 
-  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
   // not in the plan's own list (found while re-deriving it), and arguably
   // worse than an empty list -- an all-zero P&L reads as "no sales this
   // period", not "we don't know". "returns empty result when no orders
@@ -729,7 +728,6 @@ describe("getSalesDataV2", () => {
     ));
   });
 
-  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
   // section 5: both required tests. The second guards against the fix
   // becoming "throw on empty" -- a different bug wearing the same diff.
   it("propagates the failure instead of returning a fabricated zero-revenue report", async () => {
@@ -1006,7 +1004,7 @@ describe("getSalesDataV2", () => {
     });
   });
 
-  // docs/superpowers/plans/2026-08-24-outlets-and-order-code.md section 6b:
+  // section 6b:
   // the check that can fail is the sum, and orders with no outlet_id must
   // land in an explicit bucket rather than being dropped silently.
   it("breaks revenue down by outlet, summing to the report total, with unassigned orders in their own bucket", async () => {
@@ -1058,7 +1056,7 @@ describe("getSalesDataV2", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-26-sales-chart-timezone.md. Chart buckets
+//. Chart buckets
 // (Theo Ngay/Thang/Thu/Gio) must key off the Saigon calendar date, not the
 // UTC one toISOString()/getDay()/getHours() produced before this fix.
 describe("getSalesDataV2 chart bucketing (Asia/Ho_Chi_Minh)", () => {
@@ -1177,7 +1175,6 @@ describe("getHourlyHeatmapV2", () => {
     });
   });
 
-  // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
   // section 5, the other required test -- "pushes the completed-status..."
   // above already covers the genuinely-empty half (a real, zero-order
   // result returns the full 7*24 zeroed grid, not []; on failure the old
@@ -1190,7 +1187,6 @@ describe("getHourlyHeatmapV2", () => {
   });
 });
 
-// docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md
 // section 5: both required tests. The second guards against the fix
 // becoming "throw on empty" -- a different bug wearing the same diff.
 describe("getPromotionPerformanceV2", () => {

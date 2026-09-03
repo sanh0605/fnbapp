@@ -42,7 +42,6 @@ vi.mock("../actions", () => ({
 vi.mock("@/lib/dialog", () => ({
   confirm: mocks.confirmDialog,
 }));
-// docs/superpowers/plans/2026-09-01-two-defects-the-owner-found-testing.md
 // section B: this component now calls useRouter().refresh() on save.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.routerRefresh }),
@@ -238,7 +237,6 @@ const itemFormerlyMismatched: IssueSlipItemView = {
 };
 
 describe("IssueSlipClient onHand unit label (OPEN-ITEMS 41)", () => {
-  // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
   // section 3 superseded this test's own original claim: selecting an item
   // auto-selects its first package (handleItemChange), so the base-unit
   // figure alone is no longer what this shows once a conversion with a

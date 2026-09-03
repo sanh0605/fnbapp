@@ -9,7 +9,7 @@ import { requireAdmin } from "@/lib/auth";
 import { wouldLeaveNoCountableConversion } from "@/lib/conversion-countability";
 import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/unit-lock";
 
-// docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section 4:
+// section 4:
 // the same check as app/admin/inventory/items/actions.ts's
 // updatePurchasedItem -- this screen used to be "safe" only because the
 // base unit here was always derived from the item's tier-2 group, so every
@@ -93,7 +93,7 @@ export async function getConversionsData(): Promise<{
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    // docs/superpowers/plans/2026-08-29-unit-belongs-to-the-item.md section
+    // section
     // 5.2: Base_Ingredients is no longer fetched here -- ConversionForm.tsx
     // used to derive base_unit from an item's linked group; now it reads
     // the item's own conversions instead, so this screen has no remaining
@@ -106,7 +106,6 @@ export async function getConversionsData(): Promise<{
     const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
     return { items, conversions, units };
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getConversionsData:", error);
     throw error;
@@ -150,7 +149,6 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
       purchase_only,
       created_at: new Date().toISOString(),
     });
-    // docs/superpowers/plans/2026-09-01-stale-screens-after-editing-a-unit.md
     // section 1.3/2: UOM_Conversions is cached 10 min, keyed by table --
     // Hàng Mua Vào, Đơn nhập, Kiểm kê all read it through that cache. This
     // file was missed by that plan's own file-list measurement (the dead

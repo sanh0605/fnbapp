@@ -87,8 +87,8 @@ for (const rel of parseRelationBlock(generatedMd)) {
   writesByFile.set(rel.from, set);
 }
 
-// Every BR-XXX-NNN code declared in the rules documents. The single
-// docs/BUSINESS-RULES.md was split by domain (Phase 3), so read and
+// Every BR-XXX-NNN code declared in the rules documents. The former single
+// business-rules file was split by domain (Phase 3), so read and
 // concatenate every file under docs/02-rules/business-rules.
 const brCodes = new Set<string>();
 const businessRulesDir = join(root, "docs/02-rules/business-rules");
@@ -126,8 +126,8 @@ const CEILING = 200;
 const GOVERNED_DIRS = ["docs/01-system", "docs/02-rules", "docs/03-workflows", "docs/04-operations"];
 const GOVERNED_ROOT_FILES = ["CLAUDE.md", "README.md"];
 // CLAUDE.md is the auto-loaded session file (splitting it is the anti-pattern
-// spec section 3.3 forbids). The docs/BUSINESS-RULES.md exemption ended with the
-// Phase 3 by-domain split -- kept in lockstep with line-ceiling.ts.
+// spec section 3.3 forbids). The former business-rules file's exemption ended
+// with the Phase 3 by-domain split -- kept in lockstep with line-ceiling.ts.
 const EXEMPT = new Set(["CLAUDE.md"]);
 
 function countLines(content: string): number {

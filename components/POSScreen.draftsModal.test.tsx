@@ -3,8 +3,7 @@
 // Characterisation tests for the drafts modal inside components/POSScreen.tsx
 // (JSX at lines 1104-1171, opened from the "Nháp" button at line 998, backed
 // by refreshDrafts/saveDraft/loadDraft/deleteDraft and the three drafts
-// state vars). Plan F, task F3a
-// (docs/superpowers/plans/2026-08-11-split-pos-screen.md).
+// state vars). Plan F, task F3a.
 //
 // Same rendering pattern as POSScreen.itemModal.test.tsx: the modal has no
 // standalone export, reachable only by rendering the real POSScreen and

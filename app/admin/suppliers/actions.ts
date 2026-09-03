@@ -51,7 +51,6 @@ export async function getSuppliers(): Promise<DBSupplier[]> {
   try {
     return await findAll(SHEET) as DBSupplier[];
   } catch (error) {
-    // docs/superpowers/plans/2026-08-27-stop-reporting-failures-as-empty.md:
     // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getSuppliers:", error);
     throw error;

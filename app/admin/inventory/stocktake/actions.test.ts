@@ -55,7 +55,7 @@ describe("stocktake confirmation actions", () => {
       ledgerIds: [],
     });
 
-    // docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md: an
+    // Per that plan: an
     // internal English assertion is not written for the owner either --
     // wrapped the same as a raw technical exception, detail preserved.
     const result = await stocktakeActions.getStocktakeConfirmPreview("STK-001");
@@ -81,7 +81,7 @@ describe("startStocktakeSession item list", () => {
     });
   });
 
-  // Plan C Task 3, BR-INV-006 (docs/BUSINESS-RULES.md): semi-products carry
+  // Plan C Task 3, BR-INV-006 (docs/02-rules/business-rules/inventory.md): semi-products carry
   // no stock and no value, so the count list must not offer them, even
   // though SEMI_PRODUCT stays a legal item_type at the database level
   // (Plan B migration 0052) -- checked by count here, not by eye.
@@ -135,7 +135,6 @@ describe("startStocktakeSession item list", () => {
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 
-  // docs/superpowers/plans/2026-08-30-issue-slip-picker-and-unit-display.md
   // section 4: the issue-slip screen was given a zero-stock filter, but
   // deliberately NOT here -- this is the "one test each side" the plan
   // asks for, guarding against that filter being copied into filterByC17
@@ -171,7 +170,7 @@ describe("startStocktakeSession item list", () => {
     expect(items).toEqual([{ itemReference: "SPM-EMPTY", itemType: "PURCHASED_ITEM" }]);
   });
 
-  // 2026-08-21 (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md):
+  // 2026-08-21:
   // a CONSUMABLE item has no base_ingredient_id, so the ingredient-side
   // is_non_inventory flag can never reach it -- every consumable was
   // offered for counting regardless of BR-INV-007. This is the item's own
@@ -205,7 +204,6 @@ describe("startStocktakeSession item list", () => {
     expect(references).toEqual(["SPM-053"]);
   });
 
-  // docs/superpowers/plans/2026-09-01-read-non-inventory-flag-from-items.md
   // section 3's last check: a flagged group must no longer change
   // eligibility at all, even for an item still linked to it -- proving the
   // blocker on deleting the ingredient groups is actually gone, not just
@@ -213,8 +211,7 @@ describe("startStocktakeSession item list", () => {
   // linked group and the item itself carries no flag of its own -- under
   // the pre-fix code this item would have been excluded; here it must stay
   // offered, identical to what an empty Base_Ingredients table would
-  // produce (docs/superpowers/plans/2026-08-31-move-non-inventory-flag-to-items.md
-  // already moved the real flag onto every affected item, so this
+  // produce (the flag-move plan already moved the real flag onto every affected item, so this
   // scenario -- item unflagged, group flagged -- no longer exists in
   // production; this test is about the code path, not today's data).
   it("a flagged group no longer excludes its item -- only the item's own flag does", async () => {
@@ -247,15 +244,14 @@ describe("startStocktakeSession item list", () => {
     expect(references).toEqual(["SPM-052"]);
   });
 
-  // docs/superpowers/plans/2026-08-26-equipment-out-of-stocktake.md: equipment
+  // Per that plan: equipment
   // is excluded by CATEGORY (item_categories.system_type = 'EQUIPMENT'), not
   // by the per-item is_non_inventory flag -- that flag also feeds a future
   // batch-5 expense line (OPEN-ITEMS 59), so ticking it on equipment would
   // double-count. This item's own flag is left false on purpose: the
   // category exclusion must work even when nobody ticked anything.
   //
-  // This test is also the stocktake half of
-  // docs/superpowers/plans/2026-08-31-equipment-out-of-issue-slips.md's
+  // This test is also the stocktake half of that plan's
   // section 4 requirement: the issue-slip picker was given the identical
   // system_type === "EQUIPMENT" test (deliberately, not a second
   // definition), and this screen's own exclusion must stay unmoved by that
@@ -497,7 +493,7 @@ describe("reverseConfirmedStocktakeSession (Plan D D14, U1-U6)", () => {
     mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
     // Current RAISE EXCEPTION wording, post-0063 (0062's original was
     // diacritic-free -- fixed by 0063_fix_d14_vietnamese_diacritics.sql).
-    // Also exercises docs/superpowers/plans/2026-08-26-errors-the-owner-can-act-on.md's
+    // Also exercises that plan's
     // wrapper: a message with real Vietnamese diacritics must relay
     // verbatim, not collapse into the generic sentence.
     mocks.reverseStocktakeSessionAtomic.mockRejectedValue(
