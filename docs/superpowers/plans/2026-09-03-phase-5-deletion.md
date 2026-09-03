@@ -46,7 +46,11 @@
 
 ---
 
-## Task 2: Delete the one-off scripts (215) — IRREVERSIBLE, owner go required
+## ORDER CORRECTION (found during execution 2026-09-03)
+
+Task-2-then-Task-3 was wrong: a doc in `docs/operations/` (deleted in Task 3) cites scripts deleted in Task 2, so deleting scripts first reds `paths-exist`. Docs reference scripts, not the reverse — so **delete docs FIRST (Task 3), then scripts (Task 2)**. Also the inventory over-listed 6 live keepers; the corrected delete count is **209 scripts** and the KEEP set gains `check-result.ts`, `lan-address.ts` (+test), and the 3 lock/migrate scripts (see the inventory's corrections block). Execute Task 3 before Task 2. Task 3's doc-deletion step must also repoint `CLAUDE.md` §4's remaining `docs/OPEN-ITEMS.md` navigation row to `docs/04-operations/OPEN-ITEMS.md` before deleting the legacy file.
+
+## Task 2: Delete the one-off scripts (209) — IRREVERSIBLE, owner go required
 
 - [ ] **Step 1:** From the inventory's DELETE list, `git rm` the 207 one-off `.ts` scripts and the 8 legacy `.js`/`.json` (`init-*.js`, `migrate*.js` except none — migrate-to-sheets.js is KEEP-flagged, leave it; `reconcile-migrated-dates.js`, `recover-uck000002.json`). Do NOT remove any KEEP file (gates, `system-map/`, `doc-checks/`, `doc-map/`, backup/restore, `apps-script/`, `preview.ts`, `migrate-to-sheets.js`).
 - [ ] **Step 2:** Verify: `npx tsc --noEmit` (0 errors — no living import breaks), `npx vitest run` (all green — the keeper tests remain), gates PASS. If tsc or a test fails, a deleted script WAS a dependency — restore it and re-check the inventory.

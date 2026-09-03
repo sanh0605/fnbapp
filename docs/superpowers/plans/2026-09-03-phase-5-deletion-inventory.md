@@ -29,8 +29,15 @@ irreversible (spec §2.1).
 - `scripts/apps-script/backup-to-drive.gs`
 
 **Referenced by `package.json` — KEEP but FLAG (may be legacy, owner may retire the npm script too):**
-- `scripts/preview.ts` (`npm run preview`)
+- `scripts/preview.ts` (`npm run preview`) — imports `scripts/lan-address.ts`
 - `scripts/migrate-to-sheets.js` (`npm run migrate` — Google-Sheets-era migration, almost certainly dead; keep the file only because the npm script points at it, flag for removal-with-the-script)
+
+**KEEP — corrections found during Phase-5 Task 2 execution (these were wrongly on the DELETE list; deleting them broke tsc/vitest):**
+- `scripts/check-result.ts` — the shared `CheckResult` re-export imported by every `scripts/doc-checks/*` (a bare top-level file the keeper regex missed).
+- `scripts/lan-address.ts` + `scripts/lan-address.test.ts` — imported by the keeper `scripts/preview.ts`.
+- `scripts/lock-backdated-historical-gap-cohort.ts`, `scripts/lock-btp-recipe-replay-drift-cohort.ts`, `scripts/migrate-hong-tra-to-luc-tra.ts` — one-off scripts, BUT living `lib/*.test.ts` files `readFileSync` them, so deleting the script reds vitest. Kept to avoid touching `lib/` tests (design §2.4: no code changes this reset). Flag for a later cleanup that removes script + its lib test together.
+
+**Corrected keeper count: 44. Corrected delete count: 209.**
 
 ## 2. DELETE — one-off scripts already executed (215)
 
