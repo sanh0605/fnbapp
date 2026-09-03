@@ -1,7 +1,7 @@
 # CLAUDE.md — FNB App
 
 Bộ quy tắc duy nhất phải đọc mỗi phiên. Hai phần: **nguyên tắc làm việc**, và
-**sơ đồ hệ thống** để biết mở gì trước khi trả lời.
+**điều hướng tài liệu** để biết mở gì trước khi trả lời.
 
 **Quy ước bắt buộc trong mọi tài liệu và skill: viết đường dẫn theo lối kho mã**
 — bắt đầu bằng `app/`, `lib/`, `scripts/`, `docs/`, `supabase/`, `types/`,
@@ -309,16 +309,19 @@ Chủ quán là người kinh doanh, không phải người viết phần mềm.
 ## 8. Quy tắc kinh doanh mới sinh ra thế nào
 
 Khi chủ quán chốt điều gì thay đổi **cách tính**, **cách hiển thị số**, hoặc
-**cách vận hành**, ghi ngay vào `docs/02-rules/business-rules/` trong cùng phiên đó,
-kèm ngày. Thứ làm mất một quy tắc không phải là thiếu chỗ ghi — mà là nó được
-chốt trong lúc trao đổi rồi trôi đi.
+**cách vận hành**, ghi ngay vào `docs/02-rules/business-rules/` trong cùng phiên
+đó, kèm ngày. Thứ làm mất một quy tắc không phải là thiếu chỗ ghi — mà là nó
+được chốt trong lúc trao đổi rồi trôi đi.
 
 ## 9. Xong việc nghĩa là gì
 
 - `npx tsc --noEmit` — 0 lỗi.
 - `npx vitest run` — toàn bộ xanh. Không xoá test mà không nêu lý do.
 - `npx vite-node scripts/check-rules-current.ts` — sạch.
-- `npm run build` — dựng được. **Ba cửa trên không thay được cửa này.** Ngày
+- `npx vite-node scripts/doc-checks/run-blocking.ts` — sạch. Cửa canh tính đúng
+  của tài liệu: sơ đồ hệ thống sinh tự động khớp bản viết tay, mọi mã `BR-*` và
+  route trong tài liệu luồng đều tra được, và tài liệu không vượt trần dòng.
+- `npm run build` — dựng được. **Các cửa trên không thay được cửa này.** Ngày
   2026-08-05 một hàm đồng bộ export từ file `"use server"` làm web không dựng
   nổi, trong khi cả ba cửa kia xanh suốt 123 lần lưu.
 - Việc đụng giá vốn hoặc tồn kho: chạy script kiểm tra tương ứng, 0 sai lệch.
@@ -338,187 +341,23 @@ hiện. Khi giao việc, nói rõ chỗ nào cần chủ quán mở ra xem tận
 
 ---
 
-# PHẦN B — SƠ ĐỒ HỆ THỐNG
+# PHẦN B — ĐIỀU HƯỚNG TÀI LIỆU
 
-## 10. Hệ thống này là gì
+Phần mô tả hệ thống đã dời ra bộ tài liệu riêng. Tra theo **loại câu hỏi**, mở
+đúng một chỗ:
 
-Một quán đồ uống, **hai điểm bán** (`001`, `002`), mỗi điểm gắn một thương hiệu
-(Phin Đi, Uchako). Bán mang đi, xe/quầy. **Kho dùng chung**, không tách theo
-điểm bán.
-
-**Đường đi của tiền vào:** máy POS → `orders_v2` + `order_lines_v2` → báo cáo
-bán hàng. Mã đơn dạng `YYMMDD` + điểm bán(3) + số thứ tự trong ngày(3).
-
-**Một đơn có thể có nhiều dòng dữ liệu.** Sửa một đơn không ghi đè bản cũ mà
-tạo bản mới: bản cũ thành `SUPERSEDED`, bản mới `COMPLETED`, **cả hai giữ chung
-một mã đơn**. Đo 26/08: 2.376 dòng cho 2.360 đơn. Hệ quả bắt buộc nhớ:
-
-- Đếm doanh thu phải lọc `status='COMPLETED'` **và** `superseded_by` rỗng —
-  thiếu một trong hai là đếm đôi.
-- Xử lý theo mã đơn, đừng theo dòng. Đổi mã theo dòng sẽ xé một đơn làm ba.
-- **Thời điểm bán được đóng băng khi sửa:** bản mới chép nguyên `created_at`
-  của bản gốc (`lib/order-edit-cart.ts`). Nên ngày trên mã đơn và ngày trong
-  báo cáo không bao giờ lệch nhau.
-
-**Đường đi của tiền ra — đây là chỗ dễ hiểu sai nhất:**
-
-1. **Bán hàng không trừ tồn, không tính giá vốn tại lúc bán.** Cutover
-   2026-08-07. `cost_at_sale` vẫn còn cột nhưng luôn 0.
-2. **Giá vốn tính theo hàng RỜI KHO**, không theo lần bán (`BR-COGS-005`).
-   Hàng rời kho qua hai đường: **phiếu xuất kho** nhân viên bấm, và **chênh
-   lệch kiểm kê** khi đóng một kỳ đếm.
-3. **Định giá theo bình quân gia quyền** nguyên liệu mua vào
-   (`lib/issue-costing.ts`), tính bằng cách phát lại toàn bộ lịch sử.
-4. **Kiểm kê chỉ đếm gói còn nguyên** (`BR-INV-007`). Gói đã bóc không đếm,
-   không ước lượng.
-5. **Chênh lệch kiểm kê chỉ là thất thoát nếu kỳ đó có ghi phiếu xuất**
-   (`BR-COGS-007`). Không có phiếu thì không có mốc để so.
-
-**Web chạy ở đâu, dữ liệu nằm ở đâu — phải cùng một chỗ.** Máy chủ dữ liệu
-đặt tại Singapore. Máy chạy web phải đặt ở Singapore (`sin1`) chứ không để
-Vercel tự chọn — mặc định của nó là Washington, và ngày 27/08 chính chỗ đó làm
-trang Hàng Mua Vào hỏng suốt cả buổi, đồng thời mỗi lần mở trang mất 3,5 giây
-thay vì dưới 1 giây. Đây là một dòng cài đặt trong dự án, **không nằm trong mã
-nguồn** — nên đổi chỗ chạy hay dựng lại dự án là mất, và không cửa kiểm nào
-bắt được.
-
-**Muốn biết giá vốn hiện là bao nhiêu thì đo, đừng đọc** (mục 4). Bảng
-`stock_issues`, tách theo cột `source`: `MANUAL` là phiếu xuất, `STOCKTAKE` là
-chênh lệch kiểm kê. **Không được cộng hai cái rồi gọi là giá vốn tháng đó** —
-kỳ kiểm kê đầu tiên gánh nhiều tháng dồn lại.
-
-## 11. Tra ở đâu — và tra thế nào cho khỏi làm trùng
-
-**Luật này thay cho câu "trước khi thiết kế việc lớn thì mở `specs/`".** Câu đó
-hỏng ba lần trong một tháng, và hỏng cùng một kiểu, nên đừng khôi phục nó.
-
-### Cửa mở lúc nào
-
-**Bất cứ khi nào sắp đề xuất, lên kế hoạch, hay thiết kế một việc — kể cả việc
-một dòng.** Không hỏi "việc này có lớn không".
-
-Chữ "lớn" là chỗ hỏng: người tự đánh giá là người sắp làm, và cả ba lần đều tự
-chấm là nhỏ. Ngày 27/08 việc bị chấm nhỏ là "cho máy bán hàng tự gửi lại" —
-nghe như một chi tiết nối theo bản vá, thật ra đã có bản thiết kế chủ quán
-duyệt từ 27/07.
-
-### Một lệnh. Đọc hết danh sách nó in ra.
-
-```
-for f in docs/superpowers/specs/*.md; do
-  printf "%-50s | %s
-" "$(basename "$f" .md)"     "$(grep -im1 status "$f" | sed 's/[*_#]//g' | cut -c1-58)"
-done
-```
-
-In ra **mọi** file kèm dòng trạng thái của nó. Đọc hết — **đừng lọc, đừng tìm
-kiếm, đừng nhờ lệnh phân loại hộ.**
-
-**Vì sao không lọc — đo 27/08, hai lần liên tiếp cùng ngày.** Bản đầu của luật
-này bảo tra bằng danh từ lĩnh vực: gõ "pos" ra **12 trên 13 bản**, lọc mà ra
-gần hết thì không lọc gì cả. Tra theo tên file thì chính xác nhưng "stocktake",
-"asset", "purchase" ra **0** dù cả ba đều có tài liệu. Và chỗ hỏng thật ngày
-hôm đó là **đoán sai chữ**: chữ nghĩ trong đầu là "thử lại", tài liệu tên là
-*POS Offline Resilience*.
-
-**Rồi bản thứ hai của luật này cũng sai, theo chiều nguy hiểm hơn.** Nó dùng
-`grep -il "status.*approv"` — mà `approv` khớp cả *"approved by owner"* lẫn
-*"awaiting owner **approval**"*, hai thứ ngược nhau. Danh sách nó in ra gọi **5
-bản chủ quán chưa đồng ý** là đã chốt, đồng thời bỏ sót vài bản duyệt thật vì
-chúng viết trạng thái kiểu khác. Đem một bản chưa duyệt ra làm căn cứ còn tệ
-hơn không tra.
-
-Dòng trạng thái trong `specs/` viết mỗi file một kiểu — "Approved", "Approved
-by user", "approved by owner", "Draft — awaiting user approval", "proposed,
-awaiting owner approval", "design, pending owner review", "ACTIVE" — và nhiều
-file tháng 6 không có dòng nào (phần lớn là bảng phân việc cũ, không phải thiết
-kế). **Không có mẫu chung nào để lệnh tự phân loại đúng.** Nên lệnh chỉ được
-phép in ra, còn phân loại là việc của người đọc.
-
-**Đọc hết thì không cần đoán gì cả** — và nhìn thấy chữ "awaiting" tận mắt thì
-không nhầm nó thành "approved" được.
-
-**Có tên trong danh sách mà chạm vào vùng mình định làm thì mở ra đọc, đừng
-thiết kế lại. Nhưng đọc xong phải nhìn đúng dòng trạng thái**: chưa duyệt thì
-đó là đề xuất đang chờ chủ quán, không phải quyết định đã có.
-
-### Rồi tra thứ liên đới
-
-Danh sách trên cho biết *đã chốt cái gì*. Còn hai chỗ cho biết *việc này đụng
-vào ai*:
-
-```
-grep -in "<danh-từ>" docs/OPEN-ITEMS.md docs/02-rules/business-rules/
-```
-
-Ở đây tìm kiếm dùng được, vì hai file này là danh sách dài chứ không phải kho
-file, và trả về nhiều dòng cũng vẫn đọc được.
-
-### Dừng khi nào
-
-Trả lời được hai câu này thì dừng:
-
-1. **Bản thiết kế đã duyệt nào chạm vào vùng này?** (kể cả câu trả lời "không
-   có" — nhưng phải là sau khi đọc hết 13 dòng)
-2. **Mục nào trong `docs/OPEN-ITEMS.md` sẽ đổi nghĩa nếu làm việc này?**
-
-Không trả lời được thì chưa tra xong. Đọc đủ để bắt đầu viết **không phải** là
-điều kiện dừng.
-
-### Tra tài liệu KHÔNG thay được việc đo
-
-Ba lần trên là lỗi tra thiếu. Có một lỗi khác ngược hẳn: **tra ra rồi tin luôn
-con số trong đó** (Luật số 0, mục 4). Tài liệu cho biết *đã quyết cái gì*; chỉ
-truy vấn mới cho biết *hiện đang thế nào*. Ngày 27/08 việc được đề xuất vì
-tưởng có rủi ro, đo ra **0 đơn hỏng trên 689 đơn** — thứ chặn được nó cuối cùng
-là phép đếm, không phải bản thiết kế.
-
----
-
-**Tài liệu hiện hành — đọc để biết trạng thái:**
-
-| Cần gì | Ở đâu |
+| Cần gì | Mở |
 |---|---|
-| Việc chưa xong | `docs/OPEN-ITEMS.md` |
-| Cách tính, nguyên tắc hiển thị số | `docs/02-rules/business-rules/` |
-| **Thiết kế đã duyệt — đọc TRƯỚC khi đề xuất bất cứ việc gì** | **`docs/superpowers/specs/`** |
+| Hệ thống/quán này là gì, phạm vi tới đâu | `docs/01-system/SYSTEM-OVERVIEW.md` |
+| Một thay đổi lan tới đâu, đụng vào file/route/bảng nào | `docs/01-system/SYSTEM-MAP.md` (bản sinh tự động: `docs/generated/system-map.md`) |
+| Một luồng chạy đầu-cuối thế nào | `docs/03-workflows/` |
+| Giá vốn, tồn kho, báo cáo tính ra sao và vì sao | `docs/02-rules/business-rules/` |
+| Thuật ngữ | `docs/02-rules/GLOSSARY.md` |
+| Việc chưa xong | `docs/04-operations/OPEN-ITEMS.md` |
+| Khi có sự cố | `docs/04-operations/INCIDENT-RESPONSE.md` |
+| Thiết kế đã duyệt — đọc TRƯỚC khi đề xuất bất cứ việc gì | `docs/superpowers/specs/` |
 | Kế hoạch triển khai từng đợt | `docs/superpowers/plans/` |
-| Quán là gì, phạm vi tới đâu | `CONTEXT.md` |
-| Thuật ngữ | `docs/domain-dictionary.md` |
-| Cách chạy máy, công nghệ dùng gì | `README.md` |
-| File mới đặt ở đâu | `docs/FILE-ORGANIZATION.md` |
-| Tính năng nào đã có | `docs/FEATURE-CATALOG.md` |
 
-**Dòng in đậm là dòng đã gây ba lần làm trùng.** Ngày 24/08 nó còn chưa có
-trong bảng, và hôm đó một bản thiết kế chủ quán duyệt từ 28/07 bị viết lại từ
-đầu. Thêm dòng vào bảng vẫn chưa đủ: 27/08 lại suýt viết lại bản duyệt từ
-27/07, lần này vì tra bằng tên cách chữa thay vì tên lĩnh vực. **Quy trình tra
-ở đầu mục này mới là thứ chặn được, không phải bảng này.**
-
-**`specs/` không có mục lục — và sẽ không bao giờ có**, vì một mục lục viết tay
-sẽ cũ đi đúng như câu giá vốn ở đầu file này. Liệt kê lại bằng lệnh ở đầu mục
-này, và **đọc cả dòng trạng thái**.
-
-**Câu "đo 26/08 ra 13 bản đã được chủ quán duyệt" từng nằm ở đây và nó sai** —
-con số đó do một lệnh lọc nhầm sinh ra, gộp cả những bản đang chờ chủ quán
-duyệt vào cùng một rổ với bản đã duyệt. Đó là lý do lệnh bây giờ chỉ in ra chứ
-không phân loại.
-
-**Lịch sử — KHÔNG đọc để biết trạng thái hiện tại:**
-
-| Thư mục | Là gì |
-|---|---|
-| `docs/handoffs/` | Bản giao việc tháng 6–7 cho **hai agent đã nghỉ hẳn từ 31/07**. Dọn 26/08: chỉ giữ lại thứ có mã nguồn hoặc migration trỏ tới. Không còn hiệu lực |
-| `docs/audits/` | Kết quả điều tra tháng 6–7, phần lớn đã kết luận vào `docs/02-rules/business-rules/`. Dọn 26/08 cùng lúc. File `.json` trong đó là **dữ liệu**, có cái là bản sao lưu duy nhất của dữ liệu đã xoá — không đụng vào |
-| `DEVELOPMENT-TRACKING.md` | Nhật ký, ~8.300 dòng, mới nhất ở trên. Tra "đã làm gì khi nào", không tra "hiện đang thế nào" |
-| git log | Vì sao có một luật |
-
-**Mã nguồn:**
-
-| Cần gì | Ở đâu |
-|---|---|
-| Màn hình, hành động phía máy chủ | `app/` |
-| Bộ máy tính: giá vốn, tồn kho, báo cáo | `lib/` |
-| Giao diện dùng chung | `components/` |
-| Cập nhật cấu trúc dữ liệu | `supabase/migrations/` |
-| Script chạy tay (backfill, kiểm tra) | `scripts/` |
+**Tài liệu cho biết *đã quyết cái gì*; chỉ truy vấn mới cho biết *hiện đang thế
+nào* (Luật số 0, mục 4).** Mở tài liệu để biết một luật hay một thiết kế, không
+phải để biết một con số.
