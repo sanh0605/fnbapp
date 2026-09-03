@@ -4,7 +4,7 @@
 
 **Status:** `APPROVED`
 
-Business roles and intended permissions are documented in [`docs/ACCESS-MODEL.md`](../../ACCESS-MODEL.md). Only a security review can label a path verified; a menu item or route guard alone is insufficient.
+Business roles and their intended permissions form a documented role matrix, but that intent is not proof of enforcement. Only a security review can label a path verified; a menu item or route guard alone is insufficient.
 
 ### BR-ACCESS-002 — Secrets and password hashes stay server-side
 

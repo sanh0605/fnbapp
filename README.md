@@ -4,9 +4,9 @@ Point-of-sale and back-office system for a small takeaway drinks shop with two
 points of sale and a shared inventory. This file covers only how to run the app
 and the gates a change must pass.
 
-New to the codebase? Start with [`docs/01-system/SYSTEM-OVERVIEW.md`](docs/01-system/SYSTEM-OVERVIEW.md).
-Business context and scope live in [`CONTEXT.md`](CONTEXT.md); team protocol is
-in [`CLAUDE.md`](CLAUDE.md).
+New to the codebase? Start with [`docs/01-system/SYSTEM-OVERVIEW.md`](docs/01-system/SYSTEM-OVERVIEW.md),
+which covers the shop, its scope, and how the system works conceptually. Team
+protocol is in [`CLAUDE.md`](CLAUDE.md).
 
 ## Stack
 
@@ -118,5 +118,6 @@ The docs tree is organized by purpose:
 | [`docs/03-workflows/`](docs/03-workflows/) | How each workflow works (sales, purchasing, stocktake, etc.) |
 | [`docs/04-operations/`](docs/04-operations/) | Open items and incident response |
 
-See also [`ARCHITECTURE.md`](ARCHITECTURE.md) for boundaries and
-[`docs/ACCESS-MODEL.md`](docs/ACCESS-MODEL.md) for access rules.
+See [`docs/01-system/SYSTEM-MAP.md`](docs/01-system/SYSTEM-MAP.md) for runtime
+components and trust boundaries, and [`docs/02-rules/`](docs/02-rules/) for
+business and access rules.

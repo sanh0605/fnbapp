@@ -38,9 +38,9 @@ phân biệt được với bỏ qua.
 Không ai vừa làm vừa tự duyệt việc của mình.
 
 **Hai agent sửa cùng một file tài liệu thì phải xem `git status` trước khi
-lưu** (chốt sau sự cố 2026-08-17). `docs/OPEN-ITEMS.md`, `CLAUDE.md`,
-`DEVELOPMENT-TRACKING.md` là chỗ cả hai cùng ghi. Hôm đó một lần lưu đã **nuốt
-luôn** thay đổi đang dở của agent kia.
+lưu** (chốt sau sự cố 2026-08-17). `docs/04-operations/OPEN-ITEMS.md` và
+`CLAUDE.md` là chỗ cả hai cùng ghi. Hôm đó một lần lưu đã **nuốt luôn** thay
+đổi đang dở của agent kia.
 
 **Hai agent nói chuyện với nhau bằng tiếng Anh** (chủ quán chốt 2026-08-10):
 prompt giao việc, phản biện, báo cáo kỹ thuật — tiếng Anh, vì tốn ít token hơn
@@ -325,7 +325,9 @@ Khi chủ quán chốt điều gì thay đổi **cách tính**, **cách hiển t
   2026-08-05 một hàm đồng bộ export từ file `"use server"` làm web không dựng
   nổi, trong khi cả ba cửa kia xanh suốt 123 lần lưu.
 - Việc đụng giá vốn hoặc tồn kho: chạy script kiểm tra tương ứng, 0 sai lệch.
-- Ghi một mục vào `DEVELOPMENT-TRACKING.md`, cập nhật `docs/OPEN-ITEMS.md`.
+- Đánh dấu `it.todo` của mục là xong — nó thành một test xanh, và
+  `docs/04-operations/OPEN-ITEMS.md` sinh lại từ đó. (Nhật ký ai-làm-gì đã bỏ;
+  git log là bản ghi.)
 - **Không tự push.** Đẩy ra ngoài repo là việc riêng, chủ quán duyệt từng lần.
 - **Deploy xong: phải có người MỞ TRANG SAU KHI ĐĂNG NHẬP.** `curl` trả 307
   không chứng minh gì. Ngày 2026-08-09 trang Kiểm Kê hỏng ở mọi lần mở mà cả

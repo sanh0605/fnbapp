@@ -605,7 +605,7 @@ async function main(): Promise<void> {
   console.log(
     "\nNOTE (plan section 2): revenue before 2026-07-19 has no independent payment record to verify against -- " +
       "internally self-consistent at every level this script checks, never compared to money that actually arrived, " +
-      "and permanently unverifiable, not verified. See docs/BUSINESS-RULES.md.",
+      "and permanently unverifiable, not verified. See docs/02-rules/business-rules/.",
   );
 
   if (failures.length > 0) {

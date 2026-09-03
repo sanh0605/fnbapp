@@ -2,17 +2,22 @@
  * CLI for the rule drift checks. Logic and tests live in
  * check-rules-current-core.ts; this file only runs it and reports.
  */
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { checkRulesCurrent } from "./check-rules-current-core";
 
 // Living runbooks join the fixed set. Read from disk rather than listed, so a
 // new one is covered the day it appears -- this directory was missed three
-// times in two days precisely because it lived in nobody's list.
+// times in two days precisely because it lived in nobody's list. The directory
+// is deleted in Phase 5 (its content moved to
+// docs/04-operations/INCIDENT-RESPONSE.md), so tolerate it being absent.
 const OPERATIONS_DIR = "docs/operations";
-const operationsDocs = readdirSync(join(process.cwd(), OPERATIONS_DIR))
-  .filter(name => name.endsWith(".md"))
-  .map(name => `${OPERATIONS_DIR}/${name}`);
+const operationsPath = join(process.cwd(), OPERATIONS_DIR);
+const operationsDocs = existsSync(operationsPath)
+  ? readdirSync(operationsPath)
+      .filter(name => name.endsWith(".md"))
+      .map(name => `${OPERATIONS_DIR}/${name}`)
+  : [];
 
 // The by-domain business rules replaced the single docs/BUSINESS-RULES.md
 // (Phase 3 split). Read the directory the same way as docs/operations so a new

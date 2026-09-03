@@ -120,3 +120,66 @@ Known stale tooling: `stock_ledger` was dropped, but three RPCs
 (`lib/purchase-order-transaction.ts`, `lib/stock-adjustment-transaction.ts`,
 `lib/stocktake-transaction.ts`) still name it as a write target. Left as-is in
 the map because the generated map (the authority) still records those writes.
+
+## Runtime components
+
+Folded here from the former `ARCHITECTURE.md`. Conceptual "what the shop is"
+lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
+
+- **Browser.** Next.js 14 and React 18 render the POS, login, settings, and
+  admin surfaces. Client Components handle interaction and receive data from
+  Server Components or Server Actions. The browser is untrusted: service-role
+  keys and backup tokens must never cross it.
+- **Next.js server.** Runs through `next dev` locally and on Vercel in
+  production (region `sin1`, the same region as the database). Hosts Server
+  Components, Server Actions, and the NextAuth route. `lib/supabase.ts` makes a
+  server-only Supabase client with the service key. The `Asia/Ho_Chi_Minh`
+  timezone is set in `next.config.js` and the root layout.
+- **Supabase.** Postgres is the operational database; migrations under
+  `supabase/migrations/` define schema and RPCs. Critical multi-row writes go
+  through RPC transactions. Edge Functions provide integration surfaces (backup
+  snapshots, notifications, user administration). There is no Supabase Auth or
+  Supabase Storage consumer — authentication is NextAuth Credentials.
+- **External services.** Vercel hosts the app; Google Apps Script runs the
+  scheduled backup trigger (~02:30 Asia/Ho_Chi_Minh daily); Google Drive stores
+  the snapshots; Google Sheets holds legacy migration paths only.
+
+## Request and data flows
+
+- **Auth.** NextAuth Credentials takes username/password, compares the bcrypt
+  hash on the matching Supabase user row, and issues a signed session carrying
+  identity and technical role. `middleware.ts` protects `/admin/**` and
+  `/pos/**`; STAFF users are redirected away from admin.
+- **Read.** A Server Component or Server Action calls Supabase with server
+  credentials, shapes the data for the UI, and must strip sensitive fields
+  before serializing to a Client Component.
+- **Write.** UI input reaches a Server Action, which validates and resolves the
+  actor; simple writes use data helpers, critical multi-row writes use reviewed
+  RPC/transaction paths.
+
+## Major modules
+
+| Module | Primary surfaces | Main responsibility |
+|---|---|---|
+| Authentication | `app/login`, `app/api/auth`, `lib/auth.ts` | Credentials login, sessions, technical-role propagation |
+| POS | `app/pos` | Cart, pricing, checkout, drafts, order submission |
+| Orders | `app/admin/orders` | Order review, edit, void, snapshots, event history |
+| Catalog | `app/admin/products`, `app/admin/brands`, `app/admin/promotions` | Products, variants, modifiers, recipes, pricing, promotions |
+| Purchasing and inventory | `app/admin/inventory` | Purchase orders, stock adjustments, current stock |
+| Reports | `app/admin/reports` | Revenue, COGS, profit, consistency checks |
+| Users | `app/admin/users` | User lifecycle and role data |
+| Backup | Edge Function, Apps Script, Drive | Full snapshots, validation, retention, restore inputs |
+
+## Boundaries and non-claims
+
+- The server client uses a privileged key that can bypass RLS, so
+  application-side authorization and response shaping are critical boundaries
+  even where RLS policies exist. Route protection is observed; action-level
+  authorization and RLS enforcement are not certified here (security review owns
+  that). Intended roles are covered by `BR-ACCESS-001`.
+- No script or admin workflow may rewrite production history merely because it
+  can connect to the database. Historical correction requires a separate
+  approved dry-run/apply/rollback plan.
+- Non-claims: offline POS capability is UNVERIFIED; multi-brand/outlet/franchise
+  is future scope, not the current operating model; Supabase Auth and Supabase
+  Storage are not active components.
