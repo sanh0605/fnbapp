@@ -199,7 +199,7 @@ chặn.
 | Câu hỏi kiểu | Làm gì |
 |---|---|
 | "hiện có bao nhiêu", "đã có chưa", "còn không" | **Truy vấn máy chủ.** Không đọc file |
-| "vì sao con số này" | Truy vấn, rồi đối chiếu `docs/BUSINESS-RULES.md` |
+| "vì sao con số này" | Truy vấn, rồi đối chiếu `docs/02-rules/business-rules/README.md` |
 | "cái này đã làm chưa" | `docs/OPEN-ITEMS.md`, rồi kiểm bằng mã nguồn hoặc dữ liệu |
 
 Con số trong plan cũ **luôn phải đo lại trước khi dùng**. Đã xảy ra hai lần:
@@ -246,7 +246,7 @@ Chủ quán là người kinh doanh, không phải người viết phần mềm.
   thứ gì đụng tiền thật hoặc không thể quay đầu. Việc kỹ thuật thì tự quyết, làm
   xong báo lại.
 - Mỗi lần chỉ hỏi **một** vấn đề. Liệt kê lựa chọn, nêu khuyến nghị, chờ chọn.
-- **Đừng hỏi lại thứ đã chốt.** Tra `docs/superpowers/specs/`, `docs/BUSINESS-RULES.md`
+- **Đừng hỏi lại thứ đã chốt.** Tra `docs/superpowers/specs/`, `docs/02-rules/business-rules/`
   và git log trước. Hỏi lại điều chủ quán đã trả lời là bắt ông ấy làm việc hai lần.
 - **Chủ động cảnh báo ảnh hưởng chéo**, kể cả khi chưa được hỏi. Im lặng bị hiểu
   là "đã kiểm tra và ổn".
@@ -309,7 +309,7 @@ Chủ quán là người kinh doanh, không phải người viết phần mềm.
 ## 8. Quy tắc kinh doanh mới sinh ra thế nào
 
 Khi chủ quán chốt điều gì thay đổi **cách tính**, **cách hiển thị số**, hoặc
-**cách vận hành**, ghi ngay vào `docs/BUSINESS-RULES.md` trong cùng phiên đó,
+**cách vận hành**, ghi ngay vào `docs/02-rules/business-rules/` trong cùng phiên đó,
 kèm ngày. Thứ làm mất một quy tắc không phải là thiếu chỗ ghi — mà là nó được
 chốt trong lúc trao đổi rồi trôi đi.
 
@@ -448,7 +448,7 @@ Danh sách trên cho biết *đã chốt cái gì*. Còn hai chỗ cho biết *v
 vào ai*:
 
 ```
-grep -in "<danh-từ>" docs/OPEN-ITEMS.md docs/BUSINESS-RULES.md
+grep -in "<danh-từ>" docs/OPEN-ITEMS.md docs/02-rules/business-rules/
 ```
 
 Ở đây tìm kiếm dùng được, vì hai file này là danh sách dài chứ không phải kho
@@ -480,7 +480,7 @@ là phép đếm, không phải bản thiết kế.
 | Cần gì | Ở đâu |
 |---|---|
 | Việc chưa xong | `docs/OPEN-ITEMS.md` |
-| Cách tính, nguyên tắc hiển thị số | `docs/BUSINESS-RULES.md` |
+| Cách tính, nguyên tắc hiển thị số | `docs/02-rules/business-rules/` |
 | **Thiết kế đã duyệt — đọc TRƯỚC khi đề xuất bất cứ việc gì** | **`docs/superpowers/specs/`** |
 | Kế hoạch triển khai từng đợt | `docs/superpowers/plans/` |
 | Quán là gì, phạm vi tới đâu | `CONTEXT.md` |
@@ -509,7 +509,7 @@ không phân loại.
 | Thư mục | Là gì |
 |---|---|
 | `docs/handoffs/` | Bản giao việc tháng 6–7 cho **hai agent đã nghỉ hẳn từ 31/07**. Dọn 26/08: chỉ giữ lại thứ có mã nguồn hoặc migration trỏ tới. Không còn hiệu lực |
-| `docs/audits/` | Kết quả điều tra tháng 6–7, phần lớn đã kết luận vào `docs/BUSINESS-RULES.md`. Dọn 26/08 cùng lúc. File `.json` trong đó là **dữ liệu**, có cái là bản sao lưu duy nhất của dữ liệu đã xoá — không đụng vào |
+| `docs/audits/` | Kết quả điều tra tháng 6–7, phần lớn đã kết luận vào `docs/02-rules/business-rules/`. Dọn 26/08 cùng lúc. File `.json` trong đó là **dữ liệu**, có cái là bản sao lưu duy nhất của dữ liệu đã xoá — không đụng vào |
 | `DEVELOPMENT-TRACKING.md` | Nhật ký, ~8.300 dòng, mới nhất ở trên. Tra "đã làm gì khi nào", không tra "hiện đang thế nào" |
 | git log | Vì sao có một luật |
 

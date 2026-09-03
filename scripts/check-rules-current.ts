@@ -14,6 +14,14 @@ const operationsDocs = readdirSync(join(process.cwd(), OPERATIONS_DIR))
   .filter(name => name.endsWith(".md"))
   .map(name => `${OPERATIONS_DIR}/${name}`);
 
+// The by-domain business rules replaced the single docs/BUSINESS-RULES.md
+// (Phase 3 split). Read the directory the same way as docs/operations so a new
+// domain file is covered the day it appears.
+const BUSINESS_RULES_DIR = "docs/02-rules/business-rules";
+const businessRulesDocs = readdirSync(join(process.cwd(), BUSINESS_RULES_DIR))
+  .filter(name => name.endsWith(".md"))
+  .map(name => `${BUSINESS_RULES_DIR}/${name}`);
+
 // Documents that make claims about the present. Chronicles are deliberately
 // absent: DEVELOPMENT-TRACKING.md cites hundreds of paths inside dated entries,
 // many pointing at files correctly deleted since, and a chronicle entry is a
@@ -21,8 +29,9 @@ const operationsDocs = readdirSync(join(process.cwd(), OPERATIONS_DIR))
 // checking it would fire on ~230 paths, essentially none of them defects.
 const RULE_DOCS = [
   "CLAUDE.md",
-  "docs/BUSINESS-RULES.md",
-  "docs/OPEN-ITEMS.md",
+  // docs/OPEN-ITEMS.md dropped: superseded by docs/04-operations/OPEN-ITEMS.md
+  // and slated for Phase-5 deletion, so it is no longer a governed rule doc.
+  ...businessRulesDocs,
   ...operationsDocs,
 ];
 
