@@ -54,8 +54,8 @@ import type {
  * H2's formula (gross_line_total = (unit_price + sum(modifier.price *
  * modifier.qty)) * qty) was derived BEFORE touching any data, from the
  * write path itself: lib/order-cart.ts's buildLine (live checkout and
- * order-edit, which reuses the same function) and lib/historical/
- * history-ops/migrate-v1-to-v2.ts's line builder (the V1->V2 migration)
+ * order-edit, which reuses the same function) and the removed V1->V2
+ * migration's line builder (now deleted with lib/historical)
  * compute it independently and agree exactly. Neither was read after
  * getting a result from live data -- both were read first.
  *
@@ -448,7 +448,7 @@ async function main(): Promise<void> {
     const groups = groupByPromotion(h3Check1.unrecomputable);
     console.log(
       `  Unrecomputable orders (applied_promotion_id set, applied_promotion_snapshot_json empty) -- known V1-era gap, ` +
-        `not this script's failure to check (see lib/historical/history-ops/migrate-v1-to-v2.ts's own "legacy E.1 bug ` +
+        `not this script's failure to check (see the removed V1->V2 migration script's own "legacy E.1 bug ` +
         `pattern" note; migration copied V1's snapshot verbatim, and V1 sometimes never wrote one):`,
     );
     for (const [promoId, group] of groups) {
@@ -542,8 +542,8 @@ async function main(): Promise<void> {
       `  Total: ${formatNumber(totalNoPromoDiscount)}d. Confirmed in code, not inferred: lib/order-cart.ts:420 sets ` +
         `promo_discount_reason to "SNAPSHOT" when a line's charged discount came directly from the client-supplied ` +
         `item.promo_discount_snapshot -- used verbatim even when the SERVER's own promotion resolution (resolvedPromo) ` +
-        `came back null, which is exactly why applied_promotion_id stays empty. lib/historical/history-ops/` +
-        `migrate-v1-to-v2.ts:366 has the same shape for migrated orders, marked "MIGRATED_PROMO". This is OPEN-ITEMS 39's ` +
+        `came back null, which is exactly why applied_promotion_id stays empty. The removed V1->V2 migration ` +
+        `script had the same shape for migrated orders, marked "MIGRATED_PROMO". This is OPEN-ITEMS 39's ` +
         `own territory but a different angle on it -- not "preview differs from what was charged" but "the previewed ` +
         `value WAS what was charged, with no server-side record of which promotion (if any) justified it." If this ` +
         `discount should not have been honoured without a resolvable promotion, revenue would move UP by ` +

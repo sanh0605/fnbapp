@@ -345,8 +345,8 @@ export interface GrossFormulaCheckResult {
 // Check 1: gross_line_total == (unit_price + sum(modifier.price *
 // modifier.qty)) * qty. Derived from the write path BEFORE testing against
 // any data -- lib/order-cart.ts's buildLine (the live checkout and order-
-// edit path, both call the same function) and lib/historical/history-ops/
-// migrate-v1-to-v2.ts's line builder (the V1->V2 migration path) compute
+// edit path, both call the same function) and the removed V1->V2 migration's
+// line builder (the migration path, now deleted with lib/historical) compute
 // this formula independently of each other and agree on it exactly. Neither
 // was consulted to build this check after the fact; both were read before
 // writing it. Not enforced by lib/order-math.ts's assertOrderInvariants --

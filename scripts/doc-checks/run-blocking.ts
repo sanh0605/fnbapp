@@ -15,8 +15,8 @@
  *  - flow-doc-facts: each flow doc's declaration block matches reality.
  *  - flow-doc-staged: a staged source file forces its flow doc to be staged too.
  *  - line-ceiling: governed docs stay under the 200-line ceiling.
- *  - docs-refs: every docs/... token in app/, lib/ (excluding lib/historical/),
- *    components/, scripts/ must point at a file that still exists, or carry an
+ *  - docs-refs: every docs/... token in app/, lib/, components/, scripts/
+ *    must point at a file that still exists, or carry an
  *    inline docs-ref-allow marker. No dead documentation pointer in code.
  */
 import { execSync } from "node:child_process";
@@ -151,13 +151,12 @@ const governedFiles = governedTargets.map(full => ({
 results.push(checkLineCeiling(governedFiles, CEILING, EXEMPT));
 
 // docs-refs: every docs/... token in code must point at a surviving file.
-// Scans app/, lib/ (skipping the frozen lib/historical/ record), components/,
-// scripts/ -- everywhere a comment or a string literal could cite a doc.
+// Scans app/, lib/, components/, scripts/ -- everywhere a comment or a
+// string literal could cite a doc.
 const docsRefFiles: { path: string; content: string }[] = [];
 for (const base of ["app", "lib", "components", "scripts"]) {
   walk(join(root, base), p => {
     const repoPath = toRepoPath(p);
-    if (repoPath.includes("lib/historical/")) return;
     if (!p.endsWith(".ts") && !p.endsWith(".tsx") && !p.endsWith(".js")) return;
     docsRefFiles.push({ path: repoPath, content: readFileSync(p, "utf8") });
   });

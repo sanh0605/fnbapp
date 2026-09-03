@@ -23,13 +23,12 @@ for (const base of ["app", "lib"]) {
     // Exclude the adapter files that call the DB verbs with a parameter, not a
     // real table name: sheets_db (the adapter) and shared-actions (the generic
     // wrapper). Including them only produces permanent, meaningless "unresolved"
-    // noise (Sonnet round-4 review). lib/historical is dead code. backup-restore.ts
-    // writes only to an explicitly-declared scratch restore target, never a
-    // production flow, so it is excluded the same way.
+    // noise (Sonnet round-4 review). backup-restore.ts writes only to an
+    // explicitly-declared scratch restore target, never a production flow, so
+    // it is excluded the same way.
     if (
       p.includes("sheets_db") ||
       p.includes(join("lib", "shared-actions")) ||
-      p.includes(join("lib", "historical")) ||
       p.endsWith(join("lib", "backup-restore.ts"))
     ) return;
     codeFiles.push({ path: relative(root, p).split(sep).join("/"), source: readFileSync(p, "utf8") });
