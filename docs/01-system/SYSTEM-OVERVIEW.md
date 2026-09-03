@@ -22,7 +22,7 @@ thành một **đơn hàng** trong hệ thống. Đây là nền của mọi bá
 
 Cần biết một đơn được ghi qua những bước nào, ai ghi bản đơn hoàn tất, và cách
 sửa đơn tạo ra bản mới thay vì đè bản cũ — đọc luồng bán hàng trong
-`docs/03-workflows/`, và cách tính doanh thu trong `docs/BUSINESS-RULES.md`.
+`docs/03-workflows/`, và cách tính doanh thu trong `docs/02-rules/business-rules/`.
 
 ## Đường đi của tiền ra — chỗ dễ hiểu sai nhất
 
@@ -35,7 +35,7 @@ kê.
 Giá vốn của nguyên liệu tính theo **bình quân gia quyền** của các lần mua vào.
 
 Đây chỉ là bức tranh khái niệm. Công thức chính xác, các mã luật, và lý do chọn
-cách này nằm trong `docs/BUSINESS-RULES.md`; các bước thao tác thật nằm trong
+cách này nằm trong `docs/02-rules/business-rules/`; các bước thao tác thật nằm trong
 `docs/03-workflows/`. Tài liệu này cố ý không chép lại công thức.
 
 ## Hai cái bẫy khi đọc mã nguồn
@@ -68,4 +68,4 @@ nguồn, nên dựng lại hay đổi chỗ chạy là dễ mất — cần nh�
 | Từng khu vực màn hình thật sự làm gì | `docs/03-workflows/` |
 | Bản đồ file nào ghi vào bảng nào | `docs/01-system/SYSTEM-MAP.md` |
 | Nghĩa của các từ hay gặp | `docs/02-rules/GLOSSARY.md` |
-| Công thức tính, mã luật, lý do | `docs/BUSINESS-RULES.md` |
+| Công thức tính, mã luật, lý do | `docs/02-rules/business-rules/` |

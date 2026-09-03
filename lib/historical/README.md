@@ -21,11 +21,12 @@ three reasons, all of which must hold before anything is added here:
 
 ## How this list was built
 
-`docs/audits/2026-08-10-lib-reachability-classification.md` — a full
-breadth-first walk from every real entry point in this repo (Next.js
+A full breadth-first walk from every real entry point in this repo (Next.js
 special files, the three Supabase Edge Functions, the one script wired into
 `.husky/pre-commit`), distinguishing type-only edges (erased at compile
-time) from real value edges. Everything moved here was `spent` (still
+time) from real value edges. (The original written classification lived in
+`docs/audits/`, removed in the 2026-09 documentation reset; the method is
+recorded here so it can be re-run.) Everything moved here was `spent` (still
 imported by something, almost always a `scripts/` file, but reachable from
 no root) or `orphan` (imported by nothing at all) in that classification —
 never `live` or `type-only`.
