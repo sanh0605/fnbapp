@@ -1,3 +1,4 @@
+// orphan-allow: shared test fixture, imported by tests only, no production caller by design
 /**
  * Golden case fixtures for order-math tests — built from REAL data.
  *

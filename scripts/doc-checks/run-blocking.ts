@@ -1,7 +1,7 @@
 /**
  * The single entry the pre-commit hook calls for the documentation gates.
  *
- * It regenerates the machine map from live source, then runs six blocking
+ * It regenerates the machine map from live source, then runs seven blocking
  * checks and reports each as `[docs] PASS/FAIL <check>` (same shape as
  * check-rules-current.ts). Any failure sets process.exitCode = 1.
  *
@@ -22,6 +22,11 @@
  *    in some flow doc's routes: block, unless its page.tsx is a pure redirect
  *    (detected from source -- no hand-maintained exempt list). Catches a new
  *    screen shipped with no flow doc.
+ *  - orphan-modules: every lib/*.ts module (excluding *.test.ts) must be
+ *    imported by some non-test file under app/, lib/, components/, scripts/,
+ *    or supabase/, or carry an inline orphan-allow marker. A module reached
+ *    only by its own test reds the build -- the machine check for "no dead
+ *    points" in code.
  */
 import { execSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -32,6 +37,7 @@ import { parseFlowDecl, checkFlowFacts, checkFlowStagedCoupling, type FlowDecl }
 import { checkLineCeiling } from "./line-ceiling-core";
 import { checkDocsRefs } from "./docs-refs-core";
 import { checkRouteCoverage } from "./route-coverage-core";
+import { checkOrphanModules } from "./orphan-modules-core";
 import { listAllPageRoutes } from "../../lib/nav-completeness";
 import type { CheckResult } from "../check-result";
 
@@ -44,6 +50,9 @@ function toRepoPath(fullPath: string): string {
 function walk(dir: string, hit: (fullPath: string) => void): void {
   if (!existsSync(dir)) return;
   for (const entry of readdirSync(dir)) {
+    // orphan-modules scans supabase/, which vendors a Deno function's
+    // node_modules -- skip it everywhere so no walk pays that cost.
+    if (entry === "node_modules") continue;
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) walk(full, hit);
     else hit(full);
@@ -194,6 +203,69 @@ function isRedirectOnly(route: string): boolean {
 }
 
 results.push(checkRouteCoverage(allRoutes, coveredRoutes, isRedirectOnly));
+
+// orphan-modules: every lib/*.ts module must be reachable from a non-test
+// file (import/require/dynamic import()/vi.mock), or carry an inline
+// orphan-allow marker. Resolution handles the "@/" alias, relative ./ and
+// ../ specifiers, extension-less specifiers, and index.ts re-exports --
+// each resolved against the real filesystem so a false positive means the
+// resolver is wrong, not that the module is actually dead.
+const IMPORT_SPECIFIER = /(?:\bfrom\s+|\bimport\(\s*|\brequire\(\s*|vi\.mock\(\s*|\bimport\s+)['"]([^'"]+)['"]/g;
+
+function dirOf(repoPath: string): string {
+  const idx = repoPath.lastIndexOf("/");
+  return idx === -1 ? "" : repoPath.slice(0, idx);
+}
+
+function resolveRelativeSpecifier(fromDir: string, spec: string): string {
+  const parts = fromDir.split("/").filter(Boolean);
+  for (const seg of spec.split("/")) {
+    if (seg === "" || seg === ".") continue;
+    if (seg === "..") parts.pop();
+    else parts.push(seg);
+  }
+  return parts.join("/");
+}
+
+// Resolve one import specifier seen inside `fromFile` to a repo-relative
+// lib/*.ts path, or null if it is external or does not land in lib/.
+function resolveToLibModule(fromFile: string, spec: string): string | null {
+  let raw: string;
+  if (spec.startsWith("@/")) {
+    raw = spec.slice(2);
+  } else if (spec.startsWith(".")) {
+    raw = resolveRelativeSpecifier(dirOf(fromFile), spec);
+  } else {
+    return null; // external package specifier, not a repo-local module
+  }
+  if (!raw.startsWith("lib/")) return null;
+  for (const candidate of [raw, `${raw}.ts`, `${raw}.tsx`, `${raw}/index.ts`, `${raw}/index.tsx`]) {
+    if (existsSync(join(root, candidate))) return candidate;
+  }
+  return null;
+}
+
+const libModules: { path: string; content: string }[] = [];
+walk(join(root, "lib"), p => {
+  if (!p.endsWith(".ts") || p.endsWith(".test.ts")) return;
+  libModules.push({ path: toRepoPath(p), content: readFileSync(p, "utf8") });
+});
+
+const importedModules = new Set<string>();
+for (const base of ["app", "lib", "components", "scripts", "supabase"]) {
+  walk(join(root, base), p => {
+    if (!p.endsWith(".ts") && !p.endsWith(".tsx")) return;
+    const repoPath = toRepoPath(p);
+    if (repoPath.endsWith(".test.ts") || repoPath.endsWith(".test.tsx")) return;
+    const content = readFileSync(p, "utf8");
+    for (const m of content.matchAll(IMPORT_SPECIFIER)) {
+      const resolved = resolveToLibModule(repoPath, m[1]);
+      if (resolved) importedModules.add(resolved);
+    }
+  });
+}
+
+results.push(checkOrphanModules(libModules, importedModules));
 
 // Report and set the exit code.
 let failed = false;
