@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "migrate": "node scripts/migrate-to-sheets.js",
+    "gen:docs": "vite-node scripts/system-map/generate.ts && vite-node scripts/system-map/generate-diagram.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
