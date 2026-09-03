@@ -10,5 +10,7 @@ Business roles and intended permissions are documented in [`docs/ACCESS-MODEL.md
 
 **Status:** `APPROVED`
 
-Credentials, service keys, backup tokens, and password hashes must not be serialized to the browser or recorded in documentation/logs. SEC-1 tracks the known admin user-payload gap.
+Credentials, service keys, backup tokens, and password hashes must not be serialized to the browser or recorded in documentation/logs.
+
+**Extended 2026-09-03 (owner):** committed/public docs must not even **enumerate the names** of secret environment variables — not only their values. The authoritative list of variable names lives in the secret manager. **Why:** the owner flagged that a README listing exact variable names is "a map for an attacker" — it tells a reader precisely what to target. Naming secrets publicly is itself the exposure, values or not. Application code may reference the names it needs (unavoidable); prose docs must not shopping-list them.
 

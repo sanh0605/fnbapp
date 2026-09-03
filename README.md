@@ -53,16 +53,14 @@ npm run lint       # next lint
 
 ### Environment variables
 
-The server needs these names for its primary runtime paths:
+The app needs runtime configuration for the database (Supabase), authentication,
+and the scheduled backup. The authoritative list of variable names and their
+values lives in the approved secret manager and in a local `.env.local` (never
+committed) — not in this file.
 
-- `SUPABASE_URL`
-- `SUPABASE_SECRET_KEY` (legacy fallback: `SUPABASE_SERVICE_ROLE_KEY`)
-- `NEXTAUTH_SECRET`
-
-Integration and maintenance paths may also require `SUPABASE_ANON_KEY`,
-`GOOGLE_SPREADSHEET_ID`, `GOOGLE_CREDENTIALS_BASE64`, and the backup Edge
-Function's `BACKUP_PULL_TOKEN`. Use the approved secret manager or a local
-`.env.local`. Do not put secret values in issues, docs, screenshots, or commits.
+Get the current set from the secret manager or the project owner. Do not list
+secret variable names or values in this repo, issues, docs, screenshots, or
+commits — naming them publicly is a map for an attacker.
 
 ## Gates a change must pass
 

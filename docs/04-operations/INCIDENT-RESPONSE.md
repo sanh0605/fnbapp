@@ -35,8 +35,9 @@ editing cannot explain it.
 **Action.**
 - Never restore into production directly. The restore path targets an explicitly
   declared scratch database. `scripts/restore-backup-to-target.ts` refuses to run
-  unless `RESTORE_TARGET_SUPABASE_URL` differs from `SUPABASE_URL`
-  (`assertSafeRestoreTarget` in `lib/historical/backup-restore.ts`).
+  unless the restore-target connection is a scratch database distinct from
+  production (`assertSafeRestoreTarget` in `lib/historical/backup-restore.ts`);
+  the exact variable names live in the secret manager, not here.
 - Restore into the scratch target, then compare it against production with
   `scripts/verify-restore-drill.ts`, which diffs row counts for every backed-up
   table plus content spot-checks.
