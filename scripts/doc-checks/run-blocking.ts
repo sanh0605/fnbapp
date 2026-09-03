@@ -1,7 +1,7 @@
 /**
  * The single entry the pre-commit hook calls for the documentation gates.
  *
- * It regenerates the machine map from live source, then runs four blocking
+ * It regenerates the machine map from live source, then runs five blocking
  * checks and reports each as `[docs] PASS/FAIL <check>` (same shape as
  * check-rules-current.ts). Any failure sets process.exitCode = 1.
  *
@@ -15,6 +15,9 @@
  *  - flow-doc-facts: each flow doc's declaration block matches reality.
  *  - flow-doc-staged: a staged source file forces its flow doc to be staged too.
  *  - line-ceiling: governed docs stay under the 200-line ceiling.
+ *  - docs-refs: every docs/... token in app/, lib/ (excluding lib/historical/),
+ *    components/, scripts/ must point at a file that still exists, or carry an
+ *    inline docs-ref-allow marker. No dead documentation pointer in code.
  */
 import { execSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -23,6 +26,7 @@ import { parseRelationBlock, serializeRelations } from "../doc-map/relation-bloc
 import { checkMapDrift } from "./map-drift-core";
 import { parseFlowDecl, checkFlowFacts, checkFlowStagedCoupling, type FlowDecl } from "./flow-doc-core";
 import { checkLineCeiling } from "./line-ceiling-core";
+import { checkDocsRefs } from "./docs-refs-core";
 import { listAllPageRoutes } from "../../lib/nav-completeness";
 import type { CheckResult } from "../check-result";
 
@@ -145,6 +149,20 @@ const governedFiles = governedTargets.map(full => ({
   lineCount: countLines(readFileSync(full, "utf8")),
 }));
 results.push(checkLineCeiling(governedFiles, CEILING, EXEMPT));
+
+// docs-refs: every docs/... token in code must point at a surviving file.
+// Scans app/, lib/ (skipping the frozen lib/historical/ record), components/,
+// scripts/ -- everywhere a comment or a string literal could cite a doc.
+const docsRefFiles: { path: string; content: string }[] = [];
+for (const base of ["app", "lib", "components", "scripts"]) {
+  walk(join(root, base), p => {
+    const repoPath = toRepoPath(p);
+    if (repoPath.includes("lib/historical/")) return;
+    if (!p.endsWith(".ts") && !p.endsWith(".tsx") && !p.endsWith(".js")) return;
+    docsRefFiles.push({ path: repoPath, content: readFileSync(p, "utf8") });
+  });
+}
+results.push(checkDocsRefs(docsRefFiles, token => existsSync(join(root, token))));
 
 // Report and set the exit code.
 let failed = false;
