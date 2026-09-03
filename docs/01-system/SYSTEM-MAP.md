@@ -123,7 +123,7 @@ the map because the generated map (the authority) still records those writes.
 
 ## Runtime components
 
-Folded here from the former `ARCHITECTURE.md`. Conceptual "what the shop is"
+Folded here from the former ARCHITECTURE.md. Conceptual "what the shop is"
 lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
 
 - **Browser.** Next.js 14 and React 18 render the POS, login, settings, and

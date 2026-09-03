@@ -34,7 +34,7 @@ The decision stands: it turned on those months having no count and no way to acq
 
 **Reaffirmed 2026-08-05 on changed grounds.** Once the report was switched to the issue-based figure, no screen or calculation read the stored `cost_at_sale` any longer, so erasing it no longer changed anything visible — its only remaining effect was destroying the record, irreversibly once the ledger goes. The owner was told this and chose deletion again.
 
-Supersedes `BR-SALE-001` and `BR-COGS-002`, both `RETIRED` effective 2026-08-07 — the cutover described in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` (Task 4) applied that day.
+Supersedes `BR-SALE-001` and `BR-COGS-002`, both `RETIRED` effective 2026-08-07 — the cutover applied that day (Plan C, Task 4).
 
 ### BR-COGS-003 — Rounding and allocation must reconcile
 
@@ -50,7 +50,7 @@ Audit output distinguishes locked matches, stored-value violations, informationa
 
 ### BR-COGS-007 — Cost of sales, direct materials and shrinkage are three separate lines, and shrinkage has a precondition
 
-**Status:** `APPROVED` — owner decision 2026-08-19 (Plan J, `docs/superpowers/plans/2026-08-17-expenses-and-pnl.md`).
+**Status:** `APPROVED` — owner decision 2026-08-19 (Plan J).
 
 The P&L separates three things that were previously one:
 
@@ -102,7 +102,7 @@ What is true is narrower: a count taken first would have been *reviewed* against
 
 ### BR-COGS-008 — Equipment is depreciated straight-line, banded by its own unit price, frozen at purchase
 
-**Status:** `APPROVED` — owner decisions 2026-08-19/22 (`docs/superpowers/plans/2026-08-17-expenses-and-pnl.md` §8, `docs/superpowers/plans/2026-08-22-batch-3-asset-register.md`).
+**Status:** `APPROVED` — owner decisions 2026-08-19/22 (Plan J §8; Plan batch 3, asset register).
 
 **No minimum threshold.** *"cái nào cứ cầm nắm để sử dụng được thì đều phải có tính khấu hao"* — everything purchased under an `EQUIPMENT` category is depreciated; there is no expense-it-outright tier.
 

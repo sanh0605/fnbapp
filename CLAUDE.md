@@ -200,7 +200,7 @@ chặn.
 |---|---|
 | "hiện có bao nhiêu", "đã có chưa", "còn không" | **Truy vấn máy chủ.** Không đọc file |
 | "vì sao con số này" | Truy vấn, rồi đối chiếu `docs/02-rules/business-rules/README.md` |
-| "cái này đã làm chưa" | `docs/OPEN-ITEMS.md`, rồi kiểm bằng mã nguồn hoặc dữ liệu |
+| "cái này đã làm chưa" | `docs/04-operations/OPEN-ITEMS.md`, rồi kiểm bằng mã nguồn hoặc dữ liệu |
 
 Con số trong plan cũ **luôn phải đo lại trước khi dùng**. Đã xảy ra hai lần:
 plan ghi 52 món khi thật ra là 70, ghi 2.355 đơn khi thật ra là 2.376. Quán vẫn

@@ -6,7 +6,7 @@
 
 Purchase receipts, sale consumption, adjustments, production input, production yield, and reversals must be explainable through `stock_ledger` records and their business references.
 
-Superseded by `BR-COGS-005` (owner decision 2026-08-04, cutover 2026-08-07) in practice well before this retirement was recorded: once cost moved to the issue-based figure, no report or screen read `stock_ledger` for money, and by 2026-09-01 nothing wrote to it either — the table sat frozen, explaining nothing new. Phase D (`docs/superpowers/plans/2026-09-02-phase-d-drop-the-ledger-tables.md`, owner-approved 2026-08-28/2026-09-02) drops `stock_ledger` and `inventory_balances` outright, along with their trigger and trigger function — **migration written, not yet applied** as of this entry. Quantity movement for cost purposes now runs on exactly one path: `stock_issues` (`BR-COGS-005`). This rule is retired regardless of whether the drop has run yet, since the table already explains nothing live either way.
+Superseded by `BR-COGS-005` (owner decision 2026-08-04, cutover 2026-08-07) in practice well before this retirement was recorded: once cost moved to the issue-based figure, no report or screen read `stock_ledger` for money, and by 2026-09-01 nothing wrote to it either — the table sat frozen, explaining nothing new. Phase D (owner-approved 2026-08-28/2026-09-02) drops `stock_ledger` and `inventory_balances` outright, along with their trigger and trigger function — **migration written, not yet applied** as of this entry. Quantity movement for cost purposes now runs on exactly one path: `stock_issues` (`BR-COGS-005`). This rule is retired regardless of whether the drop has run yet, since the table already explains nothing live either way.
 
 ### BR-INV-002 — Critical multi-row writes are atomic
 
@@ -20,7 +20,7 @@ Purchase orders, reviewed recoveries, and other critical flows that change multi
 
 Semi-product production and consumption must retain the recipe/yield evidence needed to explain sale-time COGS. Later recipe replay can differ from the pinned transaction without authorizing historical mutation.
 
-Superseded by `BR-INV-006` (owner decision 2026-08-05). Plan C Task 5 applied the cutover on 2026-08-07 (`docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`): every `PRODUCTION_CONSUME`/`PRODUCTION_YIELD` `stock_ledger` row deleted, semi-product balances fell to `0`. Measured: of 16 active semi-products, 11 carry an `inventory_balances` row and every one reads exactly `0.000000`; the other 5 never had `stock_ledger` activity, so no row exists for them either — also zero by absence. There is no recipe/yield evidence left for this rule to protect — semi-products carry no stock to explain.
+Superseded by `BR-INV-006` (owner decision 2026-08-05). Plan C Task 5 applied the cutover on 2026-08-07: every `PRODUCTION_CONSUME`/`PRODUCTION_YIELD` `stock_ledger` row deleted, semi-product balances fell to `0`. Measured: of 16 active semi-products, 11 carry an `inventory_balances` row and every one reads exactly `0.000000`; the other 5 never had `stock_ledger` activity, so no row exists for them either — also zero by absence. There is no recipe/yield evidence left for this rule to protect — semi-products carry no stock to explain.
 
 ### BR-INV-006 — Semi-products carry no stock and no value
 
@@ -36,7 +36,7 @@ Raw ingredients survive deletion because purchases remain underneath them: stock
 
 The owner was shown both directions before deciding — Sữa tươi rising from 50.750 g to 134.450 g against semi-products falling from 40.550 to 0 — and chose to drop the tracking rather than rebuild a mechanism for it.
 
-Supersedes `BR-INV-003`, effective on the cutover in `docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`.
+Supersedes `BR-INV-003`, effective on the Plan C cutover.
 
 ### BR-INV-004 — Negative stock is investigated, not silently fabricated away
 
@@ -54,11 +54,11 @@ A count that exceeds the item's total ever purchased is different in kind. No ha
 
 The refusal presents every other purchased item sharing the same base ingredient, with each one's purchased total and counted quantity, because a mis-recorded purchase almost always lands on a sibling brand. The refusal is scoped to the single line; the rest of the session saves.
 
-Applies from the issue-based COGS path (`docs/superpowers/plans/2026-08-04-cogs-plan-b-parallel-path.md`).
+Applies from the issue-based COGS path (Plan B, parallel path).
 
 ### BR-INV-007 — Count sealed packages only; cost is recognised when a package is opened
 
-**Status:** `APPROVED` — owner decision 2026-08-07. **Not yet implemented** — Plan D (`docs/superpowers/plans/2026-08-07-stocktake-and-issue-slips.md`) builds it. Recorded here on decision, per `CLAUDE.md` section 6, not on delivery.
+**Status:** `APPROVED` — owner decision 2026-08-07. **Not yet implemented** — Plan D builds it. Recorded here on decision, per `CLAUDE.md` section 6, not on delivery.
 
 A stocktake counts only packages that are still sealed. An opened package is not counted and not estimated. The owner's own example: the 100 g bag of `Dâu sấy` is finished, the 500 g bag is open and in use, the 1 kg bag is sealed — only the 1 kg line gets a number.
 
@@ -100,7 +100,7 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 A manual issue slip entered by mistake is never deleted and never edited. It is marked reversed and answered with a compensating entry: quantity `-`original, dated **today**, valued at **today's running average** — not the rate that was in effect at the moment of the mistake, and not backdated to that moment. Both rows stay visible and linked.
 
-**Why today, not the original moment — this was the open question, and it was already decided once.** `BR-INV-008` puts goods found during a count back in the period they are *found*, not the period the shortfall happened in, and the owner accepted that shape knowingly. A mistaken slip is the same kind of event — quantity recorded as having left that never actually left — so it is corrected the same way. Two more reasons: Plan C spent a week removing the machinery that silently rewrote closed periods (`docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md` Task 6), and reversing at the original moment would rebuild that by hand; and the replay in `lib/issue-costing.ts` is chronological, so an event inserted into the past would revalue the running average for every issue after it, not just the one being corrected.
+**Why today, not the original moment — this was the open question, and it was already decided once.** `BR-INV-008` puts goods found during a count back in the period they are *found*, not the period the shortfall happened in, and the owner accepted that shape knowingly. A mistaken slip is the same kind of event — quantity recorded as having left that never actually left — so it is corrected the same way. Two more reasons: Plan C spent a week removing the machinery that silently rewrote closed periods (Plan C, Task 6), and reversing at the original moment would rebuild that by hand; and the replay in `lib/issue-costing.ts` is chronological, so an event inserted into the past would revalue the running average for every issue after it, not just the one being corrected.
 
 **Mechanically, a reversal *is* a `BR-INV-008` found-stock event** — same code path, same sign (negative `base_quantity`), same live-average valuation — carrying a link to the slip it reverses and a note naming it. No second mechanism is built for this.
 
@@ -111,7 +111,7 @@ A manual issue slip entered by mistake is never deleted and never edited. It is 
 **Extended 2026-08-09 (Plan D D14) to two whole-event forms of the same mechanism, not a new valuation rule:**
 
 - **Undoing a whole confirmed stocktake session.** Owner reason: *"không có gì chắc chắn nhân viên đúng 100% cả. Nếu sai thì phải hủy phiếu cũ tạo phiếu mới chứ."* Compensating rows only (one per `stock_issues` line the session wrote, one per `stock_ledger` ingredient correction it wrote), same today's-average valuation, original rows never touched. **Owner-only** — `requireOwner()` (`lib/auth.ts`), stricter than every other action in the system, because a stocktake checks the person counting and the person being checked cannot be the one who can erase the check. Only the most recently confirmed session may be reversed, refused while any session is `OPEN`, a reason is required. The session gets a new status, `REVERSED` — never `CANCELLED`, which already means "abandoned before apply" and is what `cancel_stocktake_session_atomic` (D12) deletes when blank.
-- **Cancelling a whole issue slip**, beside the existing per-line reversal — settles I11 (`docs/superpowers/plans/2026-08-07-stocktake-and-issue-slips.md` §5 I11). Reverses every not-yet-reversed line of a slip in one call, one reason. Same `requireAdmin()` level as the existing per-line reversal, deliberately not raised to owner-only — an issue slip records waste or internal use, not a check on the person who counted.
+- **Cancelling a whole issue slip**, beside the existing per-line reversal — settles I11 (Plan D §5 I11). Reverses every not-yet-reversed line of a slip in one call, one reason. Same `requireAdmin()` level as the existing per-line reversal, deliberately not raised to owner-only — an issue slip records waste or internal use, not a check on the person who counted.
 
 Implemented `supabase/migrations/0062_reverse_confirmed_stocktake_and_issue_slip.sql`; full case list in the plan's §5 "Undoing a confirmed count or a whole issue slip" (U1-U13).
 

@@ -17,8 +17,7 @@ reviewed, explicit data operation approved by the owner one run at a time.
 editing cannot explain it.
 
 **First check.**
-- Confirm a good backup exists. The nightly Drive backup is configured per
-  `docs/operations/apps-script-drive-backup.md`; the snapshot logic lives in
+- Confirm a good backup exists. The nightly Drive backup snapshot logic lives in
   `supabase/functions/backup-to-drive/core.ts` and the Apps Script client is
   `scripts/apps-script/backup-to-drive.gs`. The daily file is named
   `fnbapp-backup-YYYY-MM-DD.json` inside the Drive `daily/` folder.

@@ -2,7 +2,7 @@
 
 ### BR-CATALOG-001 — A catalogue name is unique among live rows; a near-match warns instead of refusing
 
-**Status:** `APPROVED` — owner decision 2026-08-19 (Plan J batch 1, `docs/superpowers/plans/2026-08-19-batch-1-foundations.md` section A).
+**Status:** `APPROVED` — owner decision 2026-08-19.
 
 Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, `products`, `item_categories`, `units`, `suppliers`) each enforce their own name uniqueness, scoped **within the table only, never across tables** — a purchased item and the ingredient it becomes legitimately share a name (e.g. `SPM-005`/`ING-001`, both "Đá viên"). Uniqueness is scoped to `ACTIVE` rows: retiring a row (mark-inactive, never delete — `CLAUDE.md` section 2) makes its name reusable.
 
@@ -23,7 +23,7 @@ Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, 
 
 ### BR-CATALOG-002 — The purchased-item catalogue has one tier, not two
 
-**Status:** `APPROVED` — owner decision 2026-09-01 (`docs/superpowers/plans/2026-09-01-delete-tier-2-ingredient-groups.md`), reversing an earlier reading of the owner's 2026-08-27 words that had this table staying on as a reporting-only label. Asked again directly 2026-09-01; his answer: *"Xóa trước, sau này cần thì dựng lại sau cho đúng chuẩn logic từ bây giờ trở đi."*
+**Status:** `APPROVED` — owner decision 2026-09-01, reversing an earlier reading of the owner's 2026-08-27 words that had this table staying on as a reporting-only label. Asked again directly 2026-09-01; his answer: *"Xóa trước, sau này cần thì dựng lại sau cho đúng chuẩn logic từ bây giờ trở đi."*
 
 **One tier: Nguyên liệu (RAW) / Vật tư tiêu hao (CONSUMABLE) / Dụng cụ (EQUIPMENT)** — `item_categories`, referenced directly by every `purchased_items` row. There is no tier below it grouping several purchased items under one label for report roll-up. `base_ingredients` (`BR-CATALOG-001`'s "seven catalogue tables" is now six) was that lower tier — 46 rows, 52 of 146 purchased items linked to one — and it is gone by owner decision, not merged into `item_categories` or replaced by anything else.
 

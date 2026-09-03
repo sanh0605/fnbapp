@@ -6,7 +6,7 @@
 
 Order lines store the cost used at sale time in `cost_at_sale`. Historical reporting must use the pinned value rather than silently replacing it with a later recipe or purchase-cost replay.
 
-Superseded by `BR-COGS-005` (owner decision 2026-08-04). Plan C Task 4 applied the cutover on 2026-08-07 (`docs/superpowers/plans/2026-08-05-cogs-plan-c-cutover.md`): `order_lines_v2.cost_at_sale` reset to `0` for every row, 2.590 lines. There is no longer a pinned value for this rule to protect.
+Superseded by `BR-COGS-005` (owner decision 2026-08-04). Plan C Task 4 applied the cutover on 2026-08-07: `order_lines_v2.cost_at_sale` reset to `0` for every row, 2.590 lines. There is no longer a pinned value for this rule to protect.
 
 ### BR-SALE-002 — Transaction snapshots preserve write-time inputs
 
@@ -28,7 +28,7 @@ Reports and audits apply status/supersede filters to decide which orders count. 
 
 ### BR-SALE-005 — Revenue before 2026-07-19 is permanently unverifiable, not verified
 
-**Status:** `APPROVED` — owner decision 2026-08-14 (Plan H, `docs/superpowers/plans/2026-08-14-revenue-audit.md` §2).
+**Status:** `APPROVED` — owner decision 2026-08-14 (Plan H §2).
 
 The system records payments in `order_payments`, and **that table begins 2026-07-19**. Before that date no independent record of money received exists: the feature did not exist. Revenue for that period can only ever be checked against itself.
 
@@ -44,10 +44,10 @@ The system records payments in `order_payments`, and **that table begins 2026-07
 
 ### BR-SALE-006 — Order code is outlet+date+sequence; brand always follows the outlet, never the reverse
 
-**Status:** `APPROVED` — owner decision 2026-08-25 (`docs/superpowers/plans/2026-08-24-outlets-and-order-code.md`). **Not yet applied** — migrations `0071`/`0072` and the rename script are built and verified but await the owner's separate approval to run against production (`CLAUDE.md` section 2). Recorded here on decision, per `CLAUDE.md` section 6, not on delivery. Until then, existing orders keep their pre-2026-08-25 codes and new orders keep minting under the old brand-keyed scheme.
+**Status:** `APPROVED` — owner decision 2026-08-25 (Plan, outlets and order code). **Not yet applied** — migrations `0071`/`0072` and the rename script are built and verified but await the owner's separate approval to run against production (`CLAUDE.md` section 2). Recorded here on decision, per `CLAUDE.md` section 6, not on delivery. Until then, existing orders keep their pre-2026-08-25 codes and new orders keep minting under the old brand-keyed scheme.
 
 `order_no` is 12 digits, `YYMMDD` (`Asia/Ho_Chi_Minh`) + 3-digit outlet code + 3-digit sequence — e.g. `260825001001` is 2026-08-25, outlet `001`, first order that outlet-day. The sequence resets per (outlet, date), minted under a Postgres advisory lock keyed the same way. An edited order **keeps its original code across every version** — the rename groups by `order_no`, not by row, and the date/outlet come from the group's earliest row, matching `BR-SALE-002`'s existing snapshot-freeze pattern for `created_at`.
 
 `orders_v2.brand_id` is derived server-side from `orders_v2.outlet_id` at the moment of sale, **never accepted from the client.** The till (`/pos`) opens by picking an outlet, not a brand; a `brandId` present in the URL is ignored by both the page and `submitOrderV2`. `outlet_id` itself is frozen at sale time the same way `created_at` is — an order edit preserves the original outlet, not the editor's own.
 
-This is a **thin slice** of the approved multi-outlet design (`docs/superpowers/specs/2026-07-28-multi-outlet-design.md`, ARCH-1): one `brand_id` per outlet, no time-windowed brand slots, no staff-to-outlet assignment, manual outlet picker only. See `docs/OPEN-ITEMS.md` item 5.
+This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `brand_id` per outlet, no time-windowed brand slots, no staff-to-outlet assignment, manual outlet picker only. See `docs/04-operations/OPEN-ITEMS.md` item 5.
