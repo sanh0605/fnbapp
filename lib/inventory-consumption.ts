@@ -38,8 +38,9 @@ export type SemiProductConsumptionMaps = {
 
 /**
  * Build consumption rows from a parsed line recipe (variant + modifiers).
- * Shared by cogs-drift-audit, mac-cogs-audit, btp-shortfall-reprocess,
- * POS write path, admin edit write path.
+ * Used by the POS write path (cogs-drift-audit, mac-cogs-audit,
+ * btp-shortfall-reprocess, and the admin edit write path's call have all
+ * been removed in earlier phases).
  *
  * Claude code — R12/CODE-18: extract duplicated logic (was 4 copies).
  */
