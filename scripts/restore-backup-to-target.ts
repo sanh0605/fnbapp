@@ -10,7 +10,7 @@ process.env.CLI_MODE = "true";
  */
 
 async function main(): Promise<void> {
-  const { assertSafeRestoreTarget, restoreBundleToTarget, JSONB_NULL_LITERAL_SENTINEL } = await import("../lib/historical/backup-restore");
+  const { assertSafeRestoreTarget, restoreBundleToTarget, JSONB_NULL_LITERAL_SENTINEL } = await import("../lib/backup-restore");
 
   const productionUrl = process.env.SUPABASE_URL || "";
   const targetUrl = process.env.RESTORE_TARGET_SUPABASE_URL || "";

@@ -35,7 +35,7 @@ editing cannot explain it.
 - Never restore into production directly. The restore path targets an explicitly
   declared scratch database. `scripts/restore-backup-to-target.ts` refuses to run
   unless the restore-target connection is a scratch database distinct from
-  production (`assertSafeRestoreTarget` in `lib/historical/backup-restore.ts`);
+  production (`assertSafeRestoreTarget` in `lib/backup-restore.ts`);
   the exact variable names live in the secret manager, not here.
 - Restore into the scratch target, then compare it against production with
   `scripts/verify-restore-drill.ts`, which diffs row counts for every backed-up
