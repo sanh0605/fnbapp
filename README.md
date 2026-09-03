@@ -1,24 +1,32 @@
 # FNB App
 
-## Tổng quan
+Point-of-sale and back-office system for a small takeaway drinks shop with two
+points of sale and a shared inventory. This file covers only how to run the app
+and the gates a change must pass.
 
-FNB App là hệ thống bán hàng và quản lý vận hành cho một quán đồ uống bán mang
-đi. Bối cảnh kinh doanh, mô hình đang vận hành và phạm vi hiện tại — kể cả
-những gì **chưa** thuộc phạm vi — nằm ở [`CONTEXT.md`](CONTEXT.md), là tài liệu
-chính thống cho phần đó.
+New to the codebase? Start with [`docs/01-system/SYSTEM-OVERVIEW.md`](docs/01-system/SYSTEM-OVERVIEW.md).
+Business context and scope live in [`CONTEXT.md`](CONTEXT.md); team protocol is
+in [`CLAUDE.md`](CLAUDE.md).
 
-Tài liệu này chỉ nói cách chạy và vận hành hệ thống.
+## Stack
 
-## Technical stack
+Verified against `package.json`:
 
-- Next.js 14, React 18, TypeScript, and Tailwind CSS.
-- NextAuth Credentials for application sessions; credentials are checked against user data stored in Supabase Postgres.
-- Supabase Postgres, RPCs, migrations, and Edge Functions. The current repository does not establish active Supabase Auth or Supabase Storage usage.
-- Vercel production deployment.
-- Google Apps Script and Google Drive for scheduled full-database snapshots.
-- Vitest, fast-check, and jsdom for automated tests.
-
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for boundaries and [`docs/ACCESS-MODEL.md`](docs/ACCESS-MODEL.md) for intended versus verified access rules.
+- **Next.js** `^14.2.3` (App Router), **React** `^18`, **TypeScript** `^5`,
+  **Tailwind CSS** `^3.4.1`.
+- **NextAuth** `^4.24.14` (Credentials provider); credentials are checked
+  against user data in Supabase Postgres.
+- **Supabase Postgres** via `@supabase/supabase-js` `^2.108.2` — RPCs,
+  migrations under `supabase/migrations/`, and Edge Functions. No Supabase Auth
+  or Supabase Storage is wired up.
+- **Vitest** `^4.1.10` with **fast-check** `^3.23.2`, **jsdom**, and
+  **fake-indexeddb** for tests; `@vitest/coverage-v8` for coverage.
+- **vite-node** `^6` runs the TypeScript maintenance scripts and doc gates.
+- **husky** `^9.1.7` installs the pre-commit hook.
+- **googleapis** `^137` drives scheduled full-database snapshots to Google
+  Sheets/Drive.
+- Utility libraries: `date-fns`, `lucide-react`, `react-datepicker`,
+  `bcryptjs`.
 
 ## Local setup
 
@@ -26,48 +34,86 @@ See [`ARCHITECTURE.md`](ARCHITECTURE.md) for boundaries and [`docs/ACCESS-MODEL.
 
 - Node.js compatible with Next.js 14.
 - npm.
-- Access to the approved development environment values. Never copy production secrets into documentation or commit them to Git.
+- Access to approved development environment values. Never copy production
+  secrets into documentation or commit them.
 
 ### Commands
 
+All from `package.json`:
+
 ```bash
-npm install
-npm run dev
-npm test
-npx tsc --noEmit
-npm run build
+npm install        # install dependencies (runs husky "prepare")
+npm run dev        # next dev  — local development server
+npm run build      # next build — production build
+npm start          # next start — serve a production build
+npm test           # vitest run — full test suite once
+npm run test:watch # vitest — watch mode
+npm run lint       # next lint
 ```
 
-### Environment variable names
+### Environment variables
 
-The application server requires these names for its primary runtime paths:
+The server needs these names for its primary runtime paths:
 
 - `SUPABASE_URL`
-- `SUPABASE_SECRET_KEY` or the legacy fallback `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_SECRET_KEY` (legacy fallback: `SUPABASE_SERVICE_ROLE_KEY`)
 - `NEXTAUTH_SECRET`
 
-Additional integration or maintenance paths may require:
+Integration and maintenance paths may also require `SUPABASE_ANON_KEY`,
+`GOOGLE_SPREADSHEET_ID`, `GOOGLE_CREDENTIALS_BASE64`, and the backup Edge
+Function's `BACKUP_PULL_TOKEN`. Use the approved secret manager or a local
+`.env.local`. Do not put secret values in issues, docs, screenshots, or commits.
 
-- `SUPABASE_ANON_KEY`
-- `GOOGLE_SPREADSHEET_ID`
-- `GOOGLE_CREDENTIALS_BASE64`
-- `BACKUP_PULL_TOKEN` in the deployed backup Edge Function
-- Apps Script properties documented in the backup runbook
+## Gates a change must pass
 
-Use the current secret manager or approved local `.env.local`. Do not place secret values in issues, audit documents, screenshots, or commits.
+A change is not done until all of these are clean (see `CLAUDE.md` section 9):
+
+```bash
+npx tsc --noEmit                              # 0 type errors
+npx vitest run                                # all tests green
+npx vite-node scripts/check-rules-current.ts  # no rule/doc path drift
+npx vite-node scripts/doc-checks/run-blocking.ts  # doc gates agree with code
+npm run build                                 # production build succeeds
+```
+
+`npm run build` is not replaceable by the other gates: a broken build can slip
+past a green tsc/vitest run.
+
+The **pre-commit hook** (`.husky/pre-commit`) automatically runs, in order,
+`tsc --noEmit`, `check-rules-current.ts`, and the doc gates
+(`scripts/doc-checks/run-blocking.ts`), and blocks the commit on any failure. It
+does **not** run the test suite or the build — run those yourself before
+committing.
+
+## Deployment
+
+- Deploy region is **Singapore (`sin1`)** — the same region as the Supabase
+  Postgres database, which is in Singapore. This is a Vercel project setting,
+  **not** in source: it survives no code check, so a re-link or re-create of the
+  project can silently lose it. Vercel's default region is Washington; running
+  the app there makes DB round-trips slow and has caused page failures.
+- Do not push local commits or deploy unless the owner explicitly asks.
 
 ## Safety and production operations
 
 - Read-only inspection does not authorize production writes.
-- Any historical data correction requires an approved plan, dry-run, atomic apply path, verification, and rollback evidence.
-- Database schema changes use reviewed Supabase migrations; do not edit production structure manually.
-- Backup success does not authorize a restore. Restore operations require a separate reviewed plan and verification.
-- Do not push local commits unless the owner explicitly asks.
+- Any historical data correction requires an approved plan, a dry-run, an atomic
+  apply path, verification, and rollback evidence.
+- Schema changes go through reviewed Supabase migrations; never edit production
+  structure by hand.
+- A successful backup does not authorize a restore; restores need their own
+  reviewed plan.
 
-Operational rules are defined in [`docs/BUSINESS-RULES.md`](docs/BUSINESS-RULES.md). Team protocol is defined in [`CLAUDE.md`](CLAUDE.md).
+## Documentation map
 
-## Canonical documentation
+The docs tree is organized by purpose:
 
-`CLAUDE.md` section 10 is the map — it lists every living document and what each
-one is for. It is kept honest by `scripts/check-rules-current.ts`, which fails
-the commit if it names a path that no longer exists.
+| Directory | Contents |
+|---|---|
+| [`docs/01-system/`](docs/01-system/) | System overview and map — start here |
+| [`docs/02-rules/`](docs/02-rules/) | Business rules (by domain) and glossary |
+| [`docs/03-workflows/`](docs/03-workflows/) | How each workflow works (sales, purchasing, stocktake, etc.) |
+| [`docs/04-operations/`](docs/04-operations/) | Open items and incident response |
+
+See also [`ARCHITECTURE.md`](ARCHITECTURE.md) for boundaries and
+[`docs/ACCESS-MODEL.md`](docs/ACCESS-MODEL.md) for access rules.
