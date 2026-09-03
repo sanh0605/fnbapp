@@ -3,41 +3,48 @@
  * check-rules-current-core.ts; this file only runs it and reports.
  */
 import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { checkRulesCurrent } from "./check-rules-current-core";
 
-// Living runbooks join the fixed set. Read from disk rather than listed, so a
-// new one is covered the day it appears -- this directory was missed three
-// times in two days precisely because it lived in nobody's list. The directory
-// is deleted in Phase 5 (its content moved to
-// docs/04-operations/INCIDENT-RESPONSE.md), so tolerate it being absent.
-const OPERATIONS_DIR = "docs/operations";
-const operationsPath = join(process.cwd(), OPERATIONS_DIR);
-const operationsDocs = existsSync(operationsPath)
-  ? readdirSync(operationsPath)
-      .filter(name => name.endsWith(".md"))
-      .map(name => `${OPERATIONS_DIR}/${name}`)
-  : [];
+// Collect every *.md under a directory tree, returned as repo-root-relative
+// paths with forward slashes. Read from disk rather than listed, so a new file
+// is covered the day it appears -- the governed doc set was missed this way
+// before, which is how SYSTEM-OVERVIEW.md carried three dead links unnoticed.
+// Guarded with existsSync so a directory removed by a future phase does not
+// throw the whole gate.
+function collectMarkdown(dir: string): string[] {
+  const abs = join(process.cwd(), dir);
+  if (!existsSync(abs)) return [];
+  const out: string[] = [];
+  for (const entry of readdirSync(abs, { withFileTypes: true })) {
+    const child = join(abs, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...collectMarkdown(relative(process.cwd(), child).split("\\").join("/")));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      out.push(relative(process.cwd(), child).split("\\").join("/"));
+    }
+  }
+  return out;
+}
 
-// The by-domain business rules replaced the single docs/BUSINESS-RULES.md
-// (Phase 3 split). Read the directory the same way as docs/operations so a new
-// domain file is covered the day it appears.
-const BUSINESS_RULES_DIR = "docs/02-rules/business-rules";
-const businessRulesDocs = readdirSync(join(process.cwd(), BUSINESS_RULES_DIR))
-  .filter(name => name.endsWith(".md"))
-  .map(name => `${BUSINESS_RULES_DIR}/${name}`);
+// The whole governed doc set makes claims about the present, so every one of
+// these files is checked for dead links. docs/generated/ (machine-generated,
+// regenerated on demand) and docs/superpowers/ (process artifacts and plans
+// that intentionally cross-reference each other) are deliberately excluded.
+// Chronicles are also absent: DEVELOPMENT-TRACKING.md cites hundreds of paths
+// inside dated entries, many pointing at files correctly deleted since, and a
+// chronicle entry is a record of what was true then -- not a claim about now.
+const GOVERNED_DOC_DIRS = [
+  "docs/01-system",
+  "docs/02-rules", // recursive: includes GLOSSARY.md and business-rules/
+  "docs/03-workflows",
+  "docs/04-operations",
+];
 
-// Documents that make claims about the present. Chronicles are deliberately
-// absent: DEVELOPMENT-TRACKING.md cites hundreds of paths inside dated entries,
-// many pointing at files correctly deleted since, and a chronicle entry is a
-// record of what was true then -- not a claim about now. Measured 2026-08-01:
-// checking it would fire on ~230 paths, essentially none of them defects.
 const RULE_DOCS = [
   "CLAUDE.md",
-  // docs/OPEN-ITEMS.md dropped: superseded by docs/04-operations/OPEN-ITEMS.md
-  // and slated for Phase-5 deletion, so it is no longer a governed rule doc.
-  ...businessRulesDocs,
-  ...operationsDocs,
+  "README.md",
+  ...GOVERNED_DOC_DIRS.flatMap(collectMarkdown),
 ];
 
 // docs/superpowers/plans/2026-08-26-undated-data-claims.md section 3 measured
