@@ -1,7 +1,7 @@
 /**
  * The single entry the pre-commit hook calls for the documentation gates.
  *
- * It regenerates the machine map from live source, then runs five blocking
+ * It regenerates the machine map from live source, then runs six blocking
  * checks and reports each as `[docs] PASS/FAIL <check>` (same shape as
  * check-rules-current.ts). Any failure sets process.exitCode = 1.
  *
@@ -18,6 +18,10 @@
  *  - docs-refs: every docs/... token in app/, lib/, components/, scripts/
  *    must point at a file that still exists, or carry an
  *    inline docs-ref-allow marker. No dead documentation pointer in code.
+ *  - route-coverage: every page route from listAllPageRoutes must be declared
+ *    in some flow doc's routes: block, unless its page.tsx is a pure redirect
+ *    (detected from source -- no hand-maintained exempt list). Catches a new
+ *    screen shipped with no flow doc.
  */
 import { execSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -27,6 +31,7 @@ import { checkMapDrift } from "./map-drift-core";
 import { parseFlowDecl, checkFlowFacts, checkFlowStagedCoupling, type FlowDecl } from "./flow-doc-core";
 import { checkLineCeiling } from "./line-ceiling-core";
 import { checkDocsRefs } from "./docs-refs-core";
+import { checkRouteCoverage } from "./route-coverage-core";
 import { listAllPageRoutes } from "../../lib/nav-completeness";
 import type { CheckResult } from "../check-result";
 
@@ -162,6 +167,33 @@ for (const base of ["app", "lib", "components", "scripts"]) {
   });
 }
 results.push(checkDocsRefs(docsRefFiles, token => existsSync(join(root, token))));
+
+// route-coverage: every page route must be declared in some flow doc's
+// routes: block, unless its page.tsx is a pure redirect (detected from
+// source, not a hand-maintained exempt list).
+const coveredRoutes = new Set<string>();
+for (const decl of decls) for (const r of decl.routes) coveredRoutes.add(r);
+
+const allRoutes = listAllPageRoutes(root);
+
+// route -> page.tsx file, built the same way listAllPageRoutes walks app/.
+const routeToPageFile = new Map<string, string>();
+walk(join(root, "app"), p => {
+  if (!p.endsWith("page.tsx")) return;
+  const route = toRepoPath(p).replace(/^app/, "").replace(/\/page\.tsx$/, "") || "/";
+  routeToPageFile.set(route, p);
+});
+
+function isRedirectOnly(route: string): boolean {
+  const file = routeToPageFile.get(route);
+  if (!file) return false;
+  const source = readFileSync(file, "utf8");
+  const hasRedirect = source.includes("redirect(");
+  const hasJsxReturn = source.includes("return (") || source.includes("return <");
+  return hasRedirect && !hasJsxReturn;
+}
+
+results.push(checkRouteCoverage(allRoutes, coveredRoutes, isRedirectOnly));
 
 // Report and set the exit code.
 let failed = false;
