@@ -7,6 +7,9 @@ Chú thích cách viết: chữ trong ô nền xám như `orders_v2` là **tên 
 liệu** máy dùng, đặt ở đây để khi cần tra sâu thì biết mở đúng chỗ. Người
 dùng bình thường không cần nhớ tên này.
 
+Tra toàn bộ tên bảng dữ liệu (kể cả bảng chưa có mặt ở đây) ->
+`docs/01-system/TABLE-DICTIONARY.md`.
+
 | Thuật ngữ | Nghĩa nói cho dễ hiểu | Gặp ở đâu |
 |---|---|---|
 | Đơn hàng (`orders_v2`) | Phần đầu của một đơn: mã đơn, điểm bán, tổng tiền, trạng thái. Một đơn là một dòng ở đây. | Màn hình Đơn hàng, mọi báo cáo bán hàng |
