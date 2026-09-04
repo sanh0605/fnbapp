@@ -55,9 +55,9 @@ atomic function writes `stock_adjustments`. The generated map at
 `docs/generated/system-map.md` confirms exactly these write relations for the two
 declared files.
 
-**Known stale tooling:** `lib/stock-adjustment-transaction.ts` also still writes
-`stock_ledger`, which is a dropped table (Phase D removed `stock_ledger` and
-`inventory_balances`). That write no longer feeds any live figure and is left in
-the RPC as leftover tooling; it is not part of this flow's declared tables.
+`lib/stock-adjustment-transaction.ts` calls `submit_stock_adjustment_atomic` and
+`approve_stock_adjustment_atomic`. Migrations 0083 and 0084 (Phase C) removed
+their `stock_ledger` writes before Phase D dropped the table itself (migration
+0096); the current function bodies do not reference `stock_ledger`.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md

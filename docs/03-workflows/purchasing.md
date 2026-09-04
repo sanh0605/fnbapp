@@ -91,12 +91,11 @@ suppliers action writes `Suppliers`. The generated map at
 `docs/generated/system-map.md` confirms exactly these write relations for the
 three declared files.
 
-**Known stale tooling:** `lib/purchase-order-transaction.ts` runs the RPC
-`save_purchase_order_atomic`, which still writes `stock_ledger` — a dropped table.
-`BR-INV-001` (the old "quantity movement belongs in the stock ledger" rule) was
-retired in favour of the issue-based cost path (`BR-COGS-005`), and Phase D
-removed `stock_ledger` and `inventory_balances`. That write no longer feeds any
-live figure and is left in the RPC as leftover tooling; it is not part of this
-flow's declared tables.
+`lib/purchase-order-transaction.ts` runs the RPC `save_purchase_order_atomic`.
+Migration 0078 (Phase C) removed that function's `stock_ledger` write before
+Phase D dropped the table itself (migration 0096); the current function body
+does not reference `stock_ledger`. `BR-INV-001` (the old "quantity movement
+belongs in the stock ledger" rule) was retired in favour of the issue-based
+cost path (`BR-COGS-005`).
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md

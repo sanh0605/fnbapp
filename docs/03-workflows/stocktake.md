@@ -77,9 +77,9 @@ many months of accumulated difference rather than the loss of one period; see
 `docs/superpowers/specs/2026-09-02-project-reset-design.md` (§10). Later periods
 compare against the previous close and reflect only their own interval.
 
-**Known stale tooling:** `lib/stocktake-transaction.ts` also still writes
-`stock_ledger`, which is a dropped table (Phase D removed `stock_ledger` and
-`inventory_balances`). That write no longer feeds any live figure and is left in
-the RPC as leftover tooling; it is not part of this flow's declared tables.
+`lib/stocktake-transaction.ts` calls `reverse_stocktake_session_atomic` among
+others. Migration 0082 (Phase C) removed that function's `stock_ledger` write
+before Phase D dropped the table itself (migration 0096); the current function
+body does not reference `stock_ledger`.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md
