@@ -100,3 +100,4 @@ mã nguồn trực tiếp nếu cần chi tiết.
 | Bản đồ file nào ghi vào bảng nào | `docs/01-system/SYSTEM-MAP.md` |
 | Nghĩa của các từ hay gặp | `docs/02-rules/GLOSSARY.md` |
 | Công thức tính, mã luật, lý do | `docs/02-rules/business-rules/` |
+| Thêm chi nhánh đụng tới đâu (hiện trạng, chưa phải thiết kế) | `docs/01-system/MULTI-BRANCH-IMPACT.md` |
