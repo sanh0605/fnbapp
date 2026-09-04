@@ -11,7 +11,10 @@ export function rpcCallSites(files: { path: string; source: string }[]): { file:
 }
 
 // Latest definition wins: iterate sqlSources in order, overwrite the map.
-const FN_DEF = /create\s+(?:or replace\s+)?function\s+(?:public\.)?(\w+)\b([\s\S]*?)\$\$([\s\S]*?)\$\$/gi;
+// The body is wrapped in a dollar-quoted string whose tag can be empty ($$)
+// or named (e.g. $function$); the backreference (\2) matches whichever tag
+// opened the body, so both styles are read instead of only the untagged one.
+const FN_DEF = /create\s+(?:or replace\s+)?function\s+(?:public\.)?(\w+)\b[\s\S]*?\bas\s+\$(\w*)\$([\s\S]*?)\$\2\$/gi;
 const WRITE_TARGET = /(?:insert\s+into|update|delete\s+from)\s+(?:public\.)?(\w+)/gi;
 
 export function rpcWriteTargets(sqlSources: string[]): Map<string, string[]> {

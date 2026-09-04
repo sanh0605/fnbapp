@@ -17,6 +17,15 @@ describe("extract-rpc", () => {
     expect(targets.get("create_issue_slip_atomic")).toEqual(["issue_slips", "stock_issues"]);
   });
 
+  it("reads a dollar-quote-tagged latest definition, not a stale $$ one", () => {
+    const older = `create or replace function public.f() returns void as $$ begin
+      insert into public.stock_ledger (id) values ('x'); end; $$ language plpgsql;`;
+    const newer = `create or replace function public.f() returns void as $function$ begin
+      insert into public.x (id) values ('x'); end; $function$ language plpgsql;`;
+    const targets = rpcWriteTargets([older, newer]);
+    expect(targets.get("f")).toEqual(["x"]);
+  });
+
   it("resolves call site to tables, and flags an unknown function", () => {
     const callSites = [
       { file: "lib/x.ts", fn: "create_issue_slip_atomic" },
