@@ -61,6 +61,37 @@ Máy chủ dữ liệu đặt tại Singapore, nên máy chạy web cũng **ph�
 chậm hẳn và có trang hỏng. Đây là một dòng cài đặt của dự án, không nằm trong mã
 nguồn, nên dựng lại hay đổi chỗ chạy là dễ mất — cần nhớ đặt lại.
 
+## Thành phần chạy ngoài luồng màn hình
+
+Ba Supabase Edge Function và bốn route API của Next.js không thuộc một màn
+hình nào — chạy nền hoặc phục vụ máy khác gọi tới. Liệt kê ở đây cho đủ, đọc
+mã nguồn trực tiếp nếu cần chi tiết.
+
+**Edge Function** (`supabase/functions/`):
+
+- `backup-to-drive` — dựng một bản chụp toàn bộ dữ liệu (theo danh sách bảng
+  cho phép) khi có request kèm token đúng, dùng cho sao lưu định kỳ lên Google
+  Drive. Chi tiết vận hành: `docs/04-operations/INCIDENT-RESPONSE.md`.
+- `backup-to-sheets` — mỗi ngày đồng bộ một chiều `orders_v2` +
+  `order_lines_v2` sang Google Sheets để xem/đối chiếu bằng mắt, chạy tiếp từ
+  mốc đã lưu trong `sync_state`.
+- `user-admin` — tạo/sửa/xoá tài khoản đăng nhập, cầu nối giữa Supabase Auth
+  và bảng `users`; chỉ vai trò `owner` gọi được, trừ nhánh `/migrate` một lần
+  dùng khoá service-role để đưa tài khoản cũ sang Supabase Auth.
+
+**Route API** (`app/api/`):
+
+- `app/api/auth/[...nextauth]/route.ts` — cổng đăng nhập/phiên làm việc của
+  chính ứng dụng (NextAuth), tách biệt với Supabase Auth mà `user-admin` dùng.
+- `app/api/client-errors/route.ts` — nhận lỗi JavaScript xảy ra trên trình
+  duyệt của người dùng đã đăng nhập, ghi vào log server để theo dõi.
+- `app/api/dev-feedback/route.ts` — chỉ chạy khi phát triển (chặn hẳn ở môi
+  trường production), lưu góp ý "trỏ và ghi chú" của chủ quán vào một tệp
+  Markdown ở gốc repo, không nằm trong git (`lib/ui-feedback-store.ts` đọc/ghi
+  tệp này).
+- `app/api/revalidate/route.ts` — chỉ admin gọi được, buộc Next.js tính lại
+  cache của các trang đọc dữ liệu Sheets khi cache cũ.
+
 ## Đọc tiếp ở đâu
 
 | Cần gì | Mở file nào |
