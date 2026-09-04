@@ -11,7 +11,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   const supabaseUrl  = Deno.env.get('SUPABASE_URL')!
-  const serviceKey   = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const serviceKey   = (Deno.env.get('SUPABASE_SECRET_KEY') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))!
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
 
   const url        = new URL(req.url)

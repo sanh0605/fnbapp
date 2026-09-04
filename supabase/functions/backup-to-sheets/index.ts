@@ -10,7 +10,7 @@
 //   - GOOGLE_CREDENTIALS_BASE64: base64 service account JSON.
 //   - GOOGLE_SPREADSHEET_ID: target spreadsheet id.
 //   - SUPABASE_URL: project URL.
-//   - SUPABASE_SERVICE_ROLE_KEY: service role key.
+//   - SUPABASE_SECRET_KEY (preferred) or SUPABASE_SERVICE_ROLE_KEY (legacy): service role key.
 //
 // Trigger: Supabase scheduled function (cron daily, e.g., 02:00 UTC+7).
 // Configure in Supabase dashboard → Database → Cron (pg_cron extension).
@@ -207,8 +207,8 @@ async function appendRows(
 
 function getSupabaseClient() {
   const url = Deno.env.get('SUPABASE_URL');
-  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  const key = Deno.env.get('SUPABASE_SECRET_KEY') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SECRET_KEY/SUPABASE_SERVICE_ROLE_KEY');
   return createClient(url, key);
 }
 
