@@ -20,4 +20,26 @@ describe("extractTables", () => {
     const alter = `alter table public.assets add column note text;`;
     expect(extractTables([create, alter])[0].columns).toEqual(["id", "note"]);
   });
+
+  it("drops a table removed by a later DROP TABLE", () => {
+    const sources = [
+      "create table public.a (id text);",
+      "create table public.b (id text);",
+      "drop table public.a;",
+    ];
+    expect(extractTables(sources).map(t => t.name)).toEqual(["b"]);
+  });
+
+  it("keeps a table that is dropped then re-created later", () => {
+    const sources = [
+      "create table public.a (id text);",
+      "drop table public.a;",
+      `create table public.a (
+        id text,
+        name text
+      );`,
+    ];
+    expect(extractTables(sources).map(t => t.name)).toEqual(["a"]);
+    expect(extractTables(sources)[0].columns).toEqual(["id", "name"]);
+  });
 });
