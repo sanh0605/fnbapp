@@ -58,11 +58,8 @@ lib/product-save-transaction.ts -> products (write)
 lib/product-save-transaction.ts -> recipes (write)
 lib/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchase-order-transaction.ts -> purchase_orders (write)
-lib/purchase-order-transaction.ts -> stock_ledger (write)
 lib/stock-adjustment-transaction.ts -> stock_adjustments (write)
-lib/stock-adjustment-transaction.ts -> stock_ledger (write)
 lib/stocktake-transaction.ts -> stock_issues (write)
-lib/stocktake-transaction.ts -> stock_ledger (write)
 lib/stocktake-transaction.ts -> stocktake_lines (write)
 lib/stocktake-transaction.ts -> stocktake_sessions (write)
 lib/void-order-transaction.ts -> order_events (write)
@@ -76,19 +73,19 @@ POS device sync writes the completed sale itself). `lib/void-order-transaction.t
 writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 `Promotions`.
 
-**Purchasing.** `lib/purchase-order-transaction.ts` writes `purchase_orders`,
-`purchase_order_lines`, and `stock_ledger`. `app/admin/inventory/purchase-orders/actions.ts`
+**Purchasing.** `lib/purchase-order-transaction.ts` writes `purchase_orders` and
+`purchase_order_lines`. `app/admin/inventory/purchase-orders/actions.ts`
 writes `assets`, `purchase_order_edits`, and `Purchase_Sources`.
 `app/admin/suppliers/actions.ts` writes `Suppliers`.
 
 **Stock issue and adjustment.** `lib/manual-issue-transaction.ts` writes
 `issue_slips` and `stock_issues`. `lib/stock-adjustment-transaction.ts` writes
-`stock_adjustments` and `stock_ledger`. `app/admin/inventory/actions.ts` also
+`stock_adjustments`. `app/admin/inventory/actions.ts` also
 writes `Stock_Adjustments` (this file spans inventory-catalog and stock-issue).
 
 **Stocktake.** `lib/stocktake-transaction.ts` writes `stocktake_sessions`,
-`stocktake_lines`, `stock_issues` (a closed count books its shortfall as an
-issue), and `stock_ledger`.
+`stocktake_lines`, and `stock_issues` (a closed count books its shortfall as an
+issue).
 
 **Products.** `app/admin/products/actions.ts` writes `Products` and
 `Product_Variants`. `lib/product-save-transaction.ts` writes `products`,
@@ -115,11 +112,6 @@ writes `Users`.
 **Operations.** `app/admin/pos-sync/actions.ts` writes `Pos_Sync_Failures`;
 `app/admin/outlets/actions.ts` writes `Outlets`;
 `app/admin/brands/actions.ts` writes `Brands`.
-
-Known stale tooling: `stock_ledger` was dropped, but three RPCs
-(`lib/purchase-order-transaction.ts`, `lib/stock-adjustment-transaction.ts`,
-`lib/stocktake-transaction.ts`) still name it as a write target. Left as-is in
-the map because the generated map (the authority) still records those writes.
 
 ## Runtime components
 

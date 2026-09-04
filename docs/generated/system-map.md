@@ -45,11 +45,8 @@ lib/product-save-transaction.ts -> products (write)
 lib/product-save-transaction.ts -> recipes (write)
 lib/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchase-order-transaction.ts -> purchase_orders (write)
-lib/purchase-order-transaction.ts -> stock_ledger (write)
 lib/stock-adjustment-transaction.ts -> stock_adjustments (write)
-lib/stock-adjustment-transaction.ts -> stock_ledger (write)
 lib/stocktake-transaction.ts -> stock_issues (write)
-lib/stocktake-transaction.ts -> stock_ledger (write)
 lib/stocktake-transaction.ts -> stocktake_lines (write)
 lib/stocktake-transaction.ts -> stocktake_sessions (write)
 lib/void-order-transaction.ts -> order_events (write)
@@ -60,14 +57,9 @@ lib/void-order-transaction.ts -> orders_v2 (write)
 - asset_depreciation_bands (id, min_unit_price, max_unit_price, term_months, status, created_at, updated_at)
 - asset_disposals (id, asset_id, quantity, disposed_date, reason, created_by_id, created_by_name, created_at)
 - assets (id, purchased_item_id, purchase_order_line_id, name_snapshot, acquired_date, unit_cost, quantity, term_months, status, created_at, updated_at, total_cost)
-- audit_baseline_locks (order_line_id, locked_at, locked_by, reason, source_hash, stored_cost_at_sale, expected_cost_at_sale, delta_vnd)
-- backdated_ledger_events (id, stock_ledger_id, detected_at, effective_timestamp, visibility_timestamp, source_table, source_id, item_reference, quantity_change, unit_cost, status, reviewed_by, reviewed_at, recompute_run_id, notes, is_anomalous) status: PENDING, APPROVED, RECOMPUTED, REJECTED
-- backdated_recipe_events (id, recipe_id, target_type, target_id, effective_timestamp, visibility_timestamp, detected_at, status, is_anomalous, anomaly_reason, reviewed_by, reviewed_at, recompute_run_id, notes) status: PENDING, RECOMPUTED, REJECTED
-- base_ingredients (id, name, base_unit, is_non_inventory, status, created_at, updated_at, duplicate_warning_confirmed) status: ACTIVE, INACTIVE, DELETED
 - brands (id, name, code, start_date, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 - data_migration_runs (migration_key, source_hash, snapshot_id, manifest_sha256, before_image, write_set, applied_at)
 - data_recovery_changes (run_id, table_name, row_id, column_name, old_value, new_value, source_hash, applied_at, rolled_back_at)
-- inventory_balances (item_reference, quantity, updated_at, id)
 - issue_slips (id, issued_at, note, created_by_id, created_by_name, created_at)
 - item_categories (id, name, system_type, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - modifiers (id, name, group_name, price, status, sort_order, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
@@ -96,7 +88,6 @@ lib/void-order-transaction.ts -> orders_v2 (write)
 - shifts (id, status, opened_by_id, opened_by_name, opened_at, closed_by_id, closed_by_name, closed_at, notes, created_at, updated_at) status: OPEN, CLOSED
 - stock_adjustments (id, reason, created_by_id, created_by_name, status, created_at, approved_at, notes, item_reference) status: PENDING, APPROVED, REJECTED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)
-- stock_ledger (id, item_reference, transaction_type, quantity_change, unit_cost, reference_id, source, notes, created_at, order_event_id, cost_at_sale)
 - stocktake_lines (id, session_id, item_reference, item_type, counted_qty, theoretical_at_count, counted_at, and)
 - stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, notes, updated_at, reversed_by_id) status: OPEN, CONFIRMED, CANCELLED
 - suppliers (id, name, tax_id, address, links, status, created_at, phone, duplicate_warning_confirmed) status: ACTIVE, INACTIVE, DELETED
