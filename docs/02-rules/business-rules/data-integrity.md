@@ -80,5 +80,11 @@ Backup success does not authorize restoration. A restore needs a reviewed mappin
 
 ## Migration state is measured on the database, not read from the CLI
 
-Observed 2026-09-07. `npx supabase migration list` records only migrations applied through the CLI. On this project its remote column stops at `0064` while `0065`–`0096` are live — verified by probing `outlets` (exists, 2 rows), `base_ingredients` (gone), `stock_ledger` (gone). To know whether a migration has run, query the table or column it creates or drops; never read the CLI list or a document. The 2026-09-02 reset spec recorded three batches as "not run" that had run — the same trap.
+`npx supabase migration list` records only migrations applied through the CLI. A migration pasted into the dashboard runs but writes no history row, so the list drifts, and each manual fix widens the gap that made the next fix manual. The 2026-09-02 reset spec recorded three batches as "not run" that had run — the same trap.
+
+**The drift observed 2026-09-07:** the remote column stopped at `0064` while `0065`–`0096` were live — verified by probing `outlets` (exists, 2 rows), `base_ingredients` (gone), `stock_ledger` (gone). `supabase db push` was unusable: it would have replayed 32 migrations including `drop table` statements.
+
+**Repaired the same day.** Each of the 32 was proved before being marked: 25 by a directly observable artifact, 7 inferred because a later proven migration overwrote the function they wrote, 0 unproven. `supabase migration repair --status applied` then wrote the history rows without executing any SQL, and `0097` went out through `supabase db push` as one migration. As of 2026-09-07 the list is trustworthy: 96 applied, `0097` applied, nothing pending.
+
+**The rule survives the repair, because the drift can recur.** Any migration applied by hand from here starts the gap again. To know whether a migration has run, query the table, column or function it creates or drops; do not read the CLI list or a document, this one included. Two traps met while proving the 32, both worth knowing before trusting a probe: `information_schema` is privilege-filtered, so a role without `SELECT` on a table sees zero columns and "no permission" looks exactly like "never ran" — read `pg_catalog` instead; and an absence marker ("the new body no longer mentions X") false-fails when the new body carries a *comment* explaining why X was removed, so prefer a positive marker unique to the version you are testing for.
 

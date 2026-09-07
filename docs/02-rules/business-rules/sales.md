@@ -44,7 +44,7 @@ The system records payments in `order_payments`, and **that table begins 2026-07
 
 ### BR-SALE-006 — Order code is outlet+date+sequence; brand always follows the outlet, never the reverse
 
-**Status:** `APPROVED` — owner decision 2026-08-25 (Plan, outlets and order code). **Applied** — measured 2026-09-07 against the live database: `outlets` holds 2 rows and `orders_v2.outlet_id` is populated, so migrations `0071`/`0072` have run. `npx supabase migration list` still lists them as unapplied because its tracking stops at `0064` (see `data-integrity.md`, "Migration state is measured on the database").
+**Status:** `APPROVED` — owner decision 2026-08-25 (Plan, outlets and order code). **Applied** — measured 2026-09-07 against the live database: `outlets` holds 2 rows and `orders_v2.outlet_id` is populated, so migrations `0071`/`0072` have run. `npx supabase migration list` listed them as unapplied at the time because its tracking stopped at `0064`; that history was repaired later the same day and now records them correctly (see `data-integrity.md`, "Migration state is measured on the database").
 
 `order_no` is 12 digits, `YYMMDD` (`Asia/Ho_Chi_Minh`) + 3-digit outlet code + 3-digit sequence — e.g. `260825001001` is 2026-08-25, outlet `001`, first order that outlet-day. The sequence resets per (outlet, date), minted under a Postgres advisory lock keyed the same way. An edited order **keeps its original code across every version** — the rename groups by `order_no`, not by row, and the date/outlet come from the group's earliest row, matching `BR-SALE-002`'s existing snapshot-freeze pattern for `created_at`.
 
