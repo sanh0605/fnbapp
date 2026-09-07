@@ -10,11 +10,12 @@ interface PriceHistory {
 }
 
 export default async function ProductsPage() {
-  const [categories, products, variants, allPriceHistory, orderLineIds]: [any[], any[], any[], PriceHistory[], { productIds: string[]; variantIds: string[] }] = await Promise.all([
+  const [categories, products, variants, allPriceHistory, modifiers, orderLineIds]: [any[], any[], any[], PriceHistory[], any[], { productIds: string[]; variantIds: string[]; modifierIds: string[] }] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Product_Price_History"),
+    findAll("Modifiers"),
     findOrderLineProductAndVariantIds(),
   ]);
 
@@ -31,6 +32,10 @@ export default async function ProductsPage() {
   // computed the same way Postgres's own RESTRICT foreign keys decide it
   // (any order_lines_v2 row referencing the product or one of its variants,
   // regardless of that order's own status), not re-derived differently.
+  // BR-CATALOG-003: a topping sold as an add-on is invisible to
+  // order_lines_v2.product_id/variant_id -- it lives only in the parent
+  // line's modifiers_snapshot_json -- so a third loop resolves each sold
+  // modifier to the CAT-007 product it is linked to (migration 0097).
   const soldProductIds = new Set<string>();
   for (const productId of orderLineIds.productIds) {
     soldProductIds.add(productId);
@@ -38,6 +43,13 @@ export default async function ProductsPage() {
   const variantProductId = new Map<string, string>(activeVariants.map(v => [v.id, v.product_id]));
   for (const variantId of orderLineIds.variantIds) {
     const pid = variantProductId.get(variantId);
+    if (pid) soldProductIds.add(pid);
+  }
+  const modifierProductId = new Map<string, string>(
+    modifiers.filter(m => m.product_id).map(m => [m.id, m.product_id]),
+  );
+  for (const modifierId of orderLineIds.modifierIds) {
+    const pid = modifierProductId.get(modifierId);
     if (pid) soldProductIds.add(pid);
   }
 
