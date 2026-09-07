@@ -30,7 +30,7 @@ gọi một thứ không tồn tại trong máy này thì dùng bản thay thế
 | kiểm `Nest application successfully started` | `npm run build` xanh | dự án là Next.js, không phải NestJS |
 | "Always try to use Lodash" | hàm mảng và đối tượng có sẵn của JavaScript | kho không cài Lodash; thêm thư viện là ngoài yêu cầu |
 | tên "CamelCase" | camelCase cho biến và hàm, PascalCase cho component và kiểu — theo code hiện có | luật toàn máy viết mơ hồ |
-| dòng "will review your output" ở cuối file | `/code-review`, hoặc subagent review trong ngữ cảnh sạch | agent được nhắc đã bỏ 2026-07-31 |
+| dòng "will review your output" ở cuối file | `/code-review`, hoặc subagent `reviewer` trong `.claude/agents/` | agent được nhắc đã bỏ 2026-07-31 |
 
 ## Việc nào gọi skill nào
 
@@ -161,10 +161,19 @@ Chủ quán là người kinh doanh, nghiệm thu bằng cách bấm thử, khô
 - Phép kiểm mới phải chạy đỏ trên bản chưa sửa trước, và nói rõ đỏ vì giá trị sai hay vì thiếu hàm.
 - Deploy xong phải có người mở trang sau khi đăng nhập; `curl` trả 307 không chứng minh gì.
 
-## Quy ước đường dẫn
+## Cấu trúc và đường dẫn
 
-Viết đường dẫn bắt đầu bằng tên thư mục gốc trong kho mã: app, lib, scripts, docs, supabase, types. Không mở đầu bằng dấu gạch chéo.
-Phép kiểm chỉ nhận dạng lối này, nên đừng lấy đường dẫn không có thật ra làm ví dụ.
+| Thư mục | Chứa |
+|---|---|
+| `app/` | route Next.js; component riêng của một màn hình nằm trong thư mục `components/` cạnh màn hình đó |
+| `lib/` | logic theo vùng, mỗi vùng một thư mục con: `db`, `shared`, `auth`, `sales`, `pos`, `purchasing`, `costing`, `stock`, `assets`, `products`, `catalog`, `reports`, `dev-feedback` |
+| `components/` | chỉ thứ dùng chung: `ui/`, `providers/`, `dev-feedback/` |
+| `tests/` | test không có module bên cạnh: chữ migration, edge function, service worker |
+| `scripts/`, `supabase/`, `app/pos/`, `lib/costing/` | có `CLAUDE.md` riêng, máy nạp khi mở file trong đó |
+
+Module mới đặt vào đúng vùng; không có vùng hợp thì hỏi trước khi tạo vùng mới. Gốc `lib/` không chứa file — có phép kiểm canh.
+Import cùng thư mục viết tương đối (`./TenFile`); import khác thư mục viết bằng alias `@/...`. Ví dụ có sẵn: `app/admin/inventory/assets/components/AssetCard.tsx` import `./DisposeAssetForm`.
+Đường dẫn viết bắt đầu bằng tên thư mục gốc (`app`, `lib`, `components`, `tests`, `scripts`, `docs`, `supabase`, `types`, `.claude`), không mở đầu bằng dấu gạch chéo. Phép kiểm chỉ nhận dạng lối này, nên đừng lấy đường dẫn không có thật ra làm ví dụ.
 
 ## Tài liệu
 

@@ -28,6 +28,20 @@ Verified against `package.json`:
 - Utility libraries: `date-fns`, `lucide-react`, `react-datepicker`,
   `bcryptjs`.
 
+## Repository layout
+
+| Directory | Holds |
+|---|---|
+| `app/` | Next.js routes; a screen's own components sit in a `components/` folder beside it |
+| `lib/` | domain logic, one subfolder per domain: `db`, `shared`, `auth`, `sales`, `pos`, `purchasing`, `costing`, `stock`, `assets`, `products`, `catalog`, `reports`, `dev-feedback` |
+| `components/` | shared only: `ui/`, `providers/`, `dev-feedback/` |
+| `tests/` | tests with no module beside them (migration text, edge functions, service worker) |
+| `scripts/` | maintenance scripts and the doc gates |
+| `supabase/` | migrations and edge functions |
+| `docs/` | see the documentation map below |
+
+`lib/costing/`, `app/pos/`, `scripts/`, and `supabase/` carry their own `CLAUDE.md` with the rules specific to that area.
+
 ## Local setup
 
 ### Prerequisites

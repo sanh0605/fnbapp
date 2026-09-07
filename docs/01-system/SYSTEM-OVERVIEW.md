@@ -94,6 +94,16 @@ mã nguồn trực tiếp nếu cần chi tiết.
 - `app/api/revalidate/route.ts` — chỉ admin gọi được, buộc Next.js tính lại
   cache của các trang đọc dữ liệu Sheets khi cache cũ.
 
+## Kho mã chia theo vùng
+
+Từ 2026-09-07, logic trong `lib/` xếp theo vùng nghiệp vụ trùng với menu quản
+trị: `sales` (bán hàng, đơn), `pos` (máy bán hàng), `purchasing` (mua vào),
+`costing` (giá vốn), `stock` (xuất kho, điều chỉnh, kiểm kê), `assets` (tài
+sản), `products` (món), `catalog` (danh mục), `reports` (báo cáo); `db`,
+`shared`, `auth` là nền dùng chung. Component riêng của một màn hình nằm cạnh
+màn hình đó trong `app/`. Bốn vùng có luật riêng trong `CLAUDE.md` của chính
+thư mục: `lib/costing/`, `app/pos/`, `scripts/`, `supabase/`.
+
 ## Đọc tiếp ở đâu
 
 | Cần gì | Mở file nào |
