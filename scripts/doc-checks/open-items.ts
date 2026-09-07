@@ -2,7 +2,7 @@
  * Open-items generator (spec section 3.8). OPEN-ITEMS.md is machine-owned: it is
  * derived from `it.todo(...)` tests via `vitest run --reporter=json`, filtered to
  * assertions whose status is "todo". A .todo test does NOT fail `vitest run`
- * (exit 0), so CLAUDE.md section 9's all-green bar survives.
+ * (exit 0), so the all-green bar in CLAUDE.md "Lệnh" survives.
  *
  * The pure renderer is unit-tested in open-items-core.test.ts; the JSON parsing
  * and child-process work live in the CLI at the bottom, guarded so importing this

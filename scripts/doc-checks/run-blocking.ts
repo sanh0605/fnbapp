@@ -36,6 +36,7 @@ import { checkMapDrift } from "./map-drift-core";
 import { parseFlowDecl, checkFlowFacts, checkFlowStagedCoupling, type FlowDecl } from "./flow-doc-core";
 import { checkLineCeiling } from "./line-ceiling-core";
 import { checkDocsRefs } from "./docs-refs-core";
+import { checkClaudeSectionRefs } from "./claude-section-refs-core";
 import { checkRouteCoverage } from "./route-coverage-core";
 import { checkOrphanModules } from "./orphan-modules-core";
 import { listAllPageRoutes } from "../../lib/nav-completeness";
@@ -165,17 +166,39 @@ const governedFiles = governedTargets.map(full => ({
 results.push(checkLineCeiling(governedFiles, CEILING, EXEMPT));
 
 // docs-refs: every docs/... token in code must point at a surviving file.
-// Scans app/, lib/, components/, scripts/ -- everywhere a comment or a
+// Scans app/, lib/, components/, scripts/, types/ -- everywhere a comment or a
 // string literal could cite a doc.
 const docsRefFiles: { path: string; content: string }[] = [];
-for (const base of ["app", "lib", "components", "scripts"]) {
+for (const base of ["app", "lib", "components", "scripts", "types"]) {
   walk(join(root, base), p => {
     const repoPath = toRepoPath(p);
     if (!p.endsWith(".ts") && !p.endsWith(".tsx") && !p.endsWith(".js")) return;
     docsRefFiles.push({ path: repoPath, content: readFileSync(p, "utf8") });
   });
 }
+// Slash commands and rules under .claude/ cite documents too, and they are read
+// by the agent the same way code comments are.
+walk(join(root, ".claude"), p => {
+  if (p.endsWith(".md")) docsRefFiles.push({ path: toRepoPath(p), content: readFileSync(p, "utf8") });
+});
 results.push(checkDocsRefs(docsRefFiles, token => existsSync(join(root, token))));
+
+// claude-section-refs: a pointer into CLAUDE.md must name a heading that is
+// still there. Section numbers died with the 2026-09-07 trim; 37 pointers in
+// code and documents outlived the sections they named.
+const claudeHeadings = new Set(
+  readFileSync(join(root, "CLAUDE.md"), "utf8")
+    .split("\n")
+    .flatMap(line => {
+      const m = line.match(/^#{2,3}\s+(.+?)\s*$/);
+      return m ? [m[1]] : [];
+    }),
+);
+const claudeRefFiles = [...docsRefFiles];
+for (const full of governedTargets) {
+  claudeRefFiles.push({ path: toRepoPath(full), content: readFileSync(full, "utf8") });
+}
+results.push(checkClaudeSectionRefs(claudeRefFiles, claudeHeadings));
 
 // route-coverage: every page route must be declared in some flow doc's
 // routes: block, unless its page.tsx is a pure redirect (detected from

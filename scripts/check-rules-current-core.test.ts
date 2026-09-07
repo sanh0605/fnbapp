@@ -135,7 +135,7 @@ describe("check 4: a number with a data unit must have a date nearby", () => {
   });
 
   it("passes the identical claim once a date sits on the same line", () => {
-    // The original defect this gate exists to catch: CLAUDE.md section 7
+    // The original defect this gate exists to catch: CLAUDE.md once
     // carried "stock_issues rong, gia von 0d" with no date at all.
     write("CLAUDE.md", "Đo 2026-08-07: kho hiện có 0đ giá trị hàng tồn.");
     expect(resultFor("undated-data-claims", ["CLAUDE.md"]).ok).toBe(true);

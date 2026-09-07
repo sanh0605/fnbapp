@@ -30,8 +30,8 @@ import type {
  *     required (H3's "unrecomputable" orders are reported, never gated --
  *     see the H3 section below for why)
  *   - row-count sanity (trap #1 below)
- *   - every CLOSED month present in the data (docs/superpowers/plans/
- *     2026-09-01-revenue-gate-must-notice-closed-months.md): revenue AND
+ *   - every CLOSED month present in the data (2026-09-01, after the gate
+ *     failed to notice a closed month): revenue AND
  *     order count, exact match against KNOWN_MONTHLY_BASELINES. The month
  *     list is derived from the data itself, not a hardcoded array, so a
  *     newly-closed month cannot silently go unchecked the way August once

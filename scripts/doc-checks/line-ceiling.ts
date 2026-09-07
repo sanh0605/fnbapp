@@ -4,7 +4,7 @@
  * and reports.
  *
  * Scope by ALLOWLIST, not blocklist: the ceiling governs the new doc set only,
- * not history/process artifacts (CLAUDE.md section 11) under docs/superpowers/,
+ * not history/process artifacts (CLAUDE.md "Tài liệu") under docs/superpowers/,
  * docs/audits/, docs/handoffs/, nor the machine output in docs/generated/. An
  * allowlist is also forward-safe -- a new plan file under docs/superpowers/ can
  * never trip the gate.

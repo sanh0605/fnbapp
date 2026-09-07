@@ -49,12 +49,12 @@ npm start          # next start — serve a production build
 npm test           # vitest run — full test suite once
 npm run test:watch # vitest — watch mode
 npm run lint       # next lint
-npm run gen:docs   # regenerate docs/generated/ (system map + architecture diagram)
+npm run gen:docs   # regenerate docs/generated/system-map.md
 ```
 
 Run `npm run gen:docs` after changing a flow doc or the code it maps, so the
-generated system map and the Mermaid architecture diagram stay in step with the
-code. It is deliberately kept out of the pre-commit hook to keep the hook fast.
+generated system map stays in step with the code. It is deliberately kept out
+of the pre-commit hook to keep the hook fast.
 
 ### Environment variables
 
@@ -69,7 +69,7 @@ commits — naming them publicly is a map for an attacker.
 
 ## Gates a change must pass
 
-A change is not done until all of these are clean (see `CLAUDE.md` section 9):
+A change is not done until all of these are clean (see `CLAUDE.md` "Lệnh"):
 
 ```bash
 npx tsc --noEmit                              # 0 type errors
