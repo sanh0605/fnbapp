@@ -1,5 +1,5 @@
 import { allocatePurchaseOrderCost } from "@/lib/costing/purchase-order-cost-allocation";
-import { findBandForUnitPrice, type Band } from "@/lib/asset-depreciation";
+import { findBandForUnitPrice, type Band } from "@/lib/assets/asset-depreciation";
 
 // Batch 3 (section 3.2): "unit_cost is the allocated cost per unit ... Take it from
 // what the purchase flow already computes; do not re-implement the

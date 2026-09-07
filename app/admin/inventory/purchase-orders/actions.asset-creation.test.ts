@@ -198,7 +198,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
   // string, while the purchase's real date is Saigon wall-clock -- a
   // purchase made at Saigon midnight on the 1st slices to the last UTC
   // hour of the PREVIOUS day, one calendar day early. Financially inert
-  // most of the time (lib/asset-depreciation.ts's parseYearMonth reads
+  // most of the time (lib/assets/asset-depreciation.ts's parseYearMonth reads
   // only the month), but not when the shift crosses a month boundary,
   // which this fixture deliberately does. An explicit +07:00 offset is
   // used (not toSaigonIsoString's bare local-time string) so this test's

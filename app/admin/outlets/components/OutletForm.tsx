@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addOutlet, editOutlet, retireOutlet } from "../actions";
-import { nextOutletCode } from "@/lib/outlet-code";
+import { nextOutletCode } from "@/lib/catalog/outlet-code";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";

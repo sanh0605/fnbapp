@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useId } from "react";
 import { getOutlets } from "@/app/admin/outlets/actions";
-import { getSaigonNowHHMM } from "@/lib/outlet-hours";
+import { getSaigonNowHHMM } from "@/lib/catalog/outlet-hours";
 import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
 import { LayoutDashboard, Package, Truck, Coffee, Receipt, TrendingUp, Settings, LogOut, Store } from "lucide-react";
 

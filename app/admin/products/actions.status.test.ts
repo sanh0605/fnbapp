@@ -14,7 +14,7 @@ vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   update: mocks.update,
 }));
-vi.mock("@/lib/product-erase-transaction", () => ({
+vi.mock("@/lib/products/product-erase-transaction", () => ({
   eraseProductAtomic: mocks.eraseProductAtomic,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));

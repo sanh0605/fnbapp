@@ -1,6 +1,6 @@
 "use client";
 
-import { isOutletOpenAt } from "@/lib/outlet-hours";
+import { isOutletOpenAt } from "@/lib/catalog/outlet-hours";
 import { confirm } from "@/lib/shared/dialog";
 import { Store } from "lucide-react";
 
@@ -14,7 +14,7 @@ interface PickerOutlet {
 interface PosOutletPickerProps {
   outlets: PickerOutlet[];
   // The Saigon "HH:MM" snapshotted when the picker opened -- see
-  // lib/outlet-hours.ts's getSaigonNowHHMM.
+  // lib/catalog/outlet-hours.ts's getSaigonNowHHMM.
   nowHHMM: string;
   onOpenTill: (outletId: string) => void;
 }

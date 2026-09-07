@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
-import { buildPriceHistoryTimeline } from "@/lib/price-history";
+import { buildPriceHistoryTimeline } from "@/lib/products/price-history";
 import { formatNumber } from "@/lib/shared/format";
 import { History, X } from "lucide-react";
 

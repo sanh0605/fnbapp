@@ -40,7 +40,7 @@ than waiting on a code change. The writes run through the server actions in
    a conversion. A delete button that would strand referencing data must not
    succeed silently: deletion of a unit is checked first and refused with a
    plain-language reason when something still uses it
-   (`lib/unit-delete-restriction.ts`).
+   (`lib/catalog/unit-delete-restriction.ts`).
 3. **What each list contains, and what is excluded.** The item list shows the
    purchased-item catalogue. The duplicate-name guard only compares against
    `ACTIVE` rows, so an `INACTIVE` item does not block reusing a name

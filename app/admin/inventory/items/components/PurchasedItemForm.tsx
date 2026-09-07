@@ -504,7 +504,7 @@ export function PurchasedItemForm({
 // (read-only) rendering can never drift between them the way two separate
 // copies could. When isUnitLocked, this is display-only text, not an input
 // -- there is no client-side path that can submit a different value, and
-// the server-side check (lib/unit-lock.ts, called from
+// the server-side check (lib/catalog/unit-lock.ts, called from
 // app/admin/inventory/items/actions.ts) is what actually enforces it.
 function BaseUnitSelector({
   formId,

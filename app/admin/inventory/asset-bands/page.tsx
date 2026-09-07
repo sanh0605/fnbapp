@@ -3,7 +3,7 @@ import { BandEditForm } from "./components/BandEditForm";
 import { AddBandForm } from "./components/AddBandForm";
 import { DeleteBandButton } from "./components/DeleteBandButton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatBandRange } from "@/lib/asset-depreciation";
+import { formatBandRange } from "@/lib/assets/asset-depreciation";
 
 export const dynamic = "force-dynamic";
 

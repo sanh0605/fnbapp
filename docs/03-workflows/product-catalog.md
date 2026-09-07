@@ -2,7 +2,7 @@
 
 ```flow-decl
 routes: /admin/products, /admin/products/categories, /admin/products/modifiers, /admin/products/toppings
-files: app/admin/products/actions.ts, lib/product-save-transaction.ts, lib/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts
+files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts
 tables: Products, products, Product_Variants, product_variants, product_price_history, recipes, Product_Categories, Modifiers
 brCodes: BR-CATALOG-001
 ```
@@ -16,7 +16,7 @@ This flow covers the sellable catalogue: the products the POS offers, their
 variants (sizes), the categories that group them, the modifiers a customer can
 pick, and the toppings that add to a drink. A product is created and edited from
 `/admin/products`; its save runs through the atomic function in
-`lib/product-save-transaction.ts`. Categories, modifiers, and toppings each have
+`lib/products/product-save-transaction.ts`. Categories, modifiers, and toppings each have
 their own screen and server action. Names must be unique among live rows, with a
 near-match warning rather than a hard refusal (`BR-CATALOG-001`).
 
@@ -32,7 +32,7 @@ Toppings are themselves stored as products, which is why
 1. **States, and how each is set.** A product is either **live** or **hidden**,
    set by an active flag on its row; hiding keeps it out of the POS without
    removing it. A **never-sold** product can additionally be **erased for real**
-   through `lib/product-erase-transaction.ts`, which deletes its price history,
+   through `lib/products/product-erase-transaction.ts`, which deletes its price history,
    then its variants, then the product itself, atomically. Whether a product has
    ever been sold is decided by Postgres RESTRICT foreign keys, not by
    application code: a product referenced by any order line cannot be deleted, so
@@ -74,8 +74,8 @@ Toppings are themselves stored as products, which is why
 Per the generated map, the six declared files write: `Products` and
 `Product_Variants` (`app/admin/products/actions.ts`); `products`,
 `product_variants`, `product_price_history`, and `recipes`
-(`lib/product-save-transaction.ts`); `products`, `product_variants`, and
-`product_price_history` (`lib/product-erase-transaction.ts`);
+(`lib/products/product-save-transaction.ts`); `products`, `product_variants`, and
+`product_price_history` (`lib/products/product-erase-transaction.ts`);
 `Product_Categories` (`app/admin/products/categories/actions.ts`); `Modifiers`
 (`app/admin/products/modifiers/actions.ts`); and `Products`
 (`app/admin/products/toppings/actions.ts`).

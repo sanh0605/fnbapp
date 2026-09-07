@@ -19,7 +19,7 @@ import {
   findDiacriticStrippedMatch,
   duplicateWarningMessage,
 } from "@/lib/shared/duplicate-name-guard";
-import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/unit-lock";
+import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/catalog/unit-lock";
 
 const SHEET = "Purchased_Items";
 const PATH = "/admin/inventory/items";
@@ -47,7 +47,7 @@ export async function getItemsData(): Promise<{
 
     // section 4:
     // both tables checked, not only purchase_order_lines -- see
-    // lib/unit-lock.ts for why.
+    // lib/catalog/unit-lock.ts for why.
     const lockedIds = new Set<string>();
     for (const line of poLines) if (line.purchased_item_id) lockedIds.add(line.purchased_item_id);
     for (const issue of stockIssues) if (issue.purchased_item_id) lockedIds.add(issue.purchased_item_id);

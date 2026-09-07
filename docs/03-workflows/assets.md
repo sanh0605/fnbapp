@@ -25,7 +25,7 @@ from `app/admin/inventory/purchase-orders/actions.ts`) — see
 `docs/03-workflows/purchasing.md`. That is why `assets` is not in this flow's
 declared `tables:`: the two files here only write `asset_disposals` and
 `asset_depreciation_bands`. Depreciation itself is a pure calculation over the
-frozen asset fields plus its disposals (`lib/asset-depreciation.ts`); it books no
+frozen asset fields plus its disposals (`lib/assets/asset-depreciation.ts`); it books no
 table of its own.
 
 ## Five-question current-state description

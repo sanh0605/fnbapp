@@ -10,7 +10,7 @@ import {
   submitStockAdjustmentAtomic,
 } from "@/lib/stock/stock-adjustment-transaction";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
-import { buildUnitDeleteRestrictionMessage, type UnitBlockerFinding } from "@/lib/unit-delete-restriction";
+import { buildUnitDeleteRestrictionMessage, type UnitBlockerFinding } from "@/lib/catalog/unit-delete-restriction";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---
 export async function addItemCategory(formData: FormData): Promise<ActionResponse> {

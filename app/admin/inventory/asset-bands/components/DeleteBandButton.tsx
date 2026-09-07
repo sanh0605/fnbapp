@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deleteAssetBand } from "../actions";
-import { formatBandRange } from "@/lib/asset-depreciation";
+import { formatBandRange } from "@/lib/assets/asset-depreciation";
 import type { DBAssetDepreciationBand } from "@/types/db";
 
 // 2026-08-23, section 2: hard delete, not soft -- assets.term_months is

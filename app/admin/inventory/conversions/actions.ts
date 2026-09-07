@@ -7,7 +7,7 @@ import { describeActionError } from "@/lib/shared/action-error";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
 import { wouldLeaveNoCountableConversion } from "@/lib/stock/conversion-countability";
-import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/unit-lock";
+import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/catalog/unit-lock";
 
 // section 4:
 // the same check as app/admin/inventory/items/actions.ts's

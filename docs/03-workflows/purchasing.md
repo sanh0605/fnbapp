@@ -35,7 +35,7 @@ goods later leave stock is driven by these purchase prices.
 
 **Durable tools bought on a purchase order create `assets` rows.** When a new
 order is completed, its equipment lines are turned into asset records: the action
-plans the assets (`lib/asset-purchase-allocation.ts`) and inserts one `assets`
+plans the assets (`lib/assets/asset-purchase-allocation.ts`) and inserts one `assets`
 row per durable tool. This happens only when a **new** order is completed, not
 when an existing order is edited — see question 5.
 

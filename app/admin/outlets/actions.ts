@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import { nextOutletCode } from "@/lib/outlet-code";
+import { nextOutletCode } from "@/lib/catalog/outlet-code";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import type { DBOutlet } from "@/types/db";
 

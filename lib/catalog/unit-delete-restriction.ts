@@ -4,7 +4,7 @@
 // nothing ever named which one fired, or what real row it was protecting.
 // This is pure (no DB access) -- the caller (app/admin/inventory/actions.ts)
 // runs the actual lookups and passes in only what was found, following the
-// same split as lib/shared/duplicate-name-guard.ts and lib/unit-lock.ts.
+// same split as lib/shared/duplicate-name-guard.ts and lib/catalog/unit-lock.ts.
 //
 // Measured live 2026-09-01: exactly 7 foreign keys reference units.id, all
 // ON DELETE RESTRICT -- uom_conversions (two columns), purchased_items,
@@ -57,7 +57,7 @@ function hintFor(finding: UnitBlockerFinding): string {
     case "purchase_order_lines":
       // Unlike the other sources, this one is never freeable -- a purchase
       // order line's unit is frozen history (same reasoning as
-      // lib/unit-lock.ts), not something the owner can go edit away.
+      // lib/catalog/unit-lock.ts), not something the owner can go edit away.
       return "Đây là lịch sử đơn nhập đã ghi nhận, đơn vị này không thể xoá được nữa.";
     case "production_items":
       return "Xoá dòng kế hoạch sản xuất đó trước.";

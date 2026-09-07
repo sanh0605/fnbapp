@@ -9,9 +9,9 @@ import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-wri
 import { savePurchaseOrderAtomic } from "@/lib/purchasing/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth/auth";
 import type { RawPurchaseOrderLine } from "@/lib/purchasing/item-purchase-history";
-import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/asset-purchase-allocation";
+import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/assets/asset-purchase-allocation";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
-import type { Band } from "@/lib/asset-depreciation";
+import type { Band } from "@/lib/assets/asset-depreciation";
 
 const PATH = "/admin/inventory/purchase-orders";
 

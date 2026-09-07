@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { planAssetsFromCompletedOrder } from "./asset-purchase-allocation";
-import type { Band } from "./asset-depreciation";
+import type { Band } from "@/lib/assets/asset-depreciation";
 
 const BANDS: Band[] = [
   { min_unit_price: 0, max_unit_price: 199_999, term_months: 12 },

@@ -3,7 +3,7 @@ import {
   findLatestActiveRecipe,
   planRecipeSave,
   selectEffectiveRecipe,
-} from "@/lib/recipe-selection";
+} from "@/lib/products/recipe-selection";
 
 const asOf = "2026-07-01T00:00:00.000Z";
 

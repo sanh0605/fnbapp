@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPriceHistoryTimeline } from "@/lib/price-history";
+import { buildPriceHistoryTimeline } from "@/lib/products/price-history";
 
 describe("buildPriceHistoryTimeline", () => {
   it("sorts by effective time and derives validity windows", () => {

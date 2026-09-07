@@ -88,7 +88,7 @@ export interface DBOutlet {
   start_date: string | null;
   end_date: string | null;
   // "HH:MM" or "HH:MM:SS" (Postgres time's own serialization). Null on
-  // both means no stated hours -- see lib/outlet-hours.ts.
+  // both means no stated hours -- see lib/catalog/outlet-hours.ts.
   open_time: string | null;
   close_time: string | null;
   created_at: string;

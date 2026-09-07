@@ -12,7 +12,7 @@ import {
   validateDisposalDate,
   type AssetSummary,
   type DisposalInput,
-} from "@/lib/asset-depreciation";
+} from "@/lib/assets/asset-depreciation";
 import type { DBAsset, DBAssetDisposal } from "@/types/db";
 
 const ASSETS_SHEET = "assets";

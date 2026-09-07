@@ -49,13 +49,13 @@ app/pos/actions.ts -> POS_Drafts (write)
 app/pos/actions.ts -> Pos_Sync_Failures (write)
 lib/stock/manual-issue-transaction.ts -> issue_slips (write)
 lib/stock/manual-issue-transaction.ts -> stock_issues (write)
-lib/product-erase-transaction.ts -> product_price_history (write)
-lib/product-erase-transaction.ts -> product_variants (write)
-lib/product-erase-transaction.ts -> products (write)
-lib/product-save-transaction.ts -> product_price_history (write)
-lib/product-save-transaction.ts -> product_variants (write)
-lib/product-save-transaction.ts -> products (write)
-lib/product-save-transaction.ts -> recipes (write)
+lib/products/product-erase-transaction.ts -> product_price_history (write)
+lib/products/product-erase-transaction.ts -> product_variants (write)
+lib/products/product-erase-transaction.ts -> products (write)
+lib/products/product-save-transaction.ts -> product_price_history (write)
+lib/products/product-save-transaction.ts -> product_variants (write)
+lib/products/product-save-transaction.ts -> products (write)
+lib/products/product-save-transaction.ts -> recipes (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
 lib/stock/stock-adjustment-transaction.ts -> stock_adjustments (write)
@@ -88,9 +88,9 @@ writes `Stock_Adjustments` (this file spans inventory-catalog and stock-issue).
 issue).
 
 **Products.** `app/admin/products/actions.ts` writes `Products` and
-`Product_Variants`. `lib/product-save-transaction.ts` writes `products`,
+`Product_Variants`. `lib/products/product-save-transaction.ts` writes `products`,
 `product_variants`, `product_price_history`, and `recipes`.
-`lib/product-erase-transaction.ts` writes `products`, `product_variants`, and
+`lib/products/product-erase-transaction.ts` writes `products`, `product_variants`, and
 `product_price_history`. `app/admin/products/categories/actions.ts` writes
 `Product_Categories`; `app/admin/products/modifiers/actions.ts` writes
 `Modifiers`; `app/admin/products/toppings/actions.ts` writes `Products`.
