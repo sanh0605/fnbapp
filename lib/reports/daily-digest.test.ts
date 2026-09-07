@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shiftDateOnly, getDigestDateOffsets, comparePeriods } from "@/lib/daily-digest";
+import { shiftDateOnly, getDigestDateOffsets, comparePeriods } from "@/lib/reports/daily-digest";
 
 describe("shiftDateOnly", () => {
   it("shifts backward across a day boundary", () => {

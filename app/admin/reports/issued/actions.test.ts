@@ -74,7 +74,7 @@ describe("getIssuedValueReport", () => {
     const [largest] = report.items;
     expect(largest.name).toBe("Bột cà phê MR.PHIN Robusta Dak Mil");
     // Rounded UP at the display boundary (owner rule 2026-07-30,
-    // lib/display-rounding.ts) -- one đồng above the plan's own figures
+    // lib/reports/display-rounding.ts) -- one đồng above the plan's own figures
     // (6.179.657 / 2.101.083), which were computed with plain rounding
     // rather than the project's ceiling rule. Verified 2026-08-13: the
     // grand total matches either way, only the per-item split differs.

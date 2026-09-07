@@ -64,7 +64,7 @@ export type IssuedEventFigure = {
 // Returns exact (pre-rounding) values. Summed, they equal the exact grand
 // total exactly (a telescoping sum) -- rounding each one independently for
 // display, as the page does, does not preserve that; see
-// lib/display-rounding.ts.
+// lib/reports/display-rounding.ts.
 export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchase[]): IssuedEventFigure[] {
   type Group = {
     key: string;

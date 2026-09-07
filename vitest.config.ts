@@ -26,7 +26,7 @@ export default defineConfig({
         "lib/sales/order-cart.ts",
         "lib/sales/order-edit-cart.ts",
         "lib/sales/sheets-db-v2-edit.ts",
-        "lib/report-v2-allocators.ts",
+        "lib/reports/report-v2-allocators.ts",
       ],
     },
   },

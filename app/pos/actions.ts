@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import { buildOrderFromCart } from "@/lib/sales/order-cart";
 import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/sales/order-types";
 import { savePosOrderAtomic } from "@/lib/sales/pos-order-transaction";
-import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
+import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
 import type { CartInput } from "@/lib/sales/order-cart";
 

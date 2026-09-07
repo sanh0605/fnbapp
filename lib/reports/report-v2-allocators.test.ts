@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
+import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder, makePHD000540MigratedOrder } from "@/lib/__tests__/fixtures";
 
 describe("breakdownRevenueByProduct", () => {

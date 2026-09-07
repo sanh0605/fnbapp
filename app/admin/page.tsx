@@ -1,7 +1,7 @@
 import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
 import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/sales/order-types";
-import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
+import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
 import { formatNumber } from "@/lib/shared/format";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";

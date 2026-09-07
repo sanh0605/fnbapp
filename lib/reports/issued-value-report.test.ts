@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/issued-value-report";
+import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/reports/issued-value-report";
 import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/costing/issue-costing-inputs";
 import type { Purchase, Issue } from "@/lib/costing/issue-costing";
 import liveSnapshot from "@/app/admin/reports/issued/__fixtures__/2026-08-13-live-snapshot.json";
@@ -23,7 +23,7 @@ describe("computeIssuedEventFigures: the section 5 sum gate", () => {
     const sumOfEventValuesExact = eventFigures.reduce((sum, f) => sum + f.valueExact, 0);
 
     // Telescoping sum in floating point -- exact to within FP noise, not
-    // display rounding (lib/display-rounding.ts rounds each part
+    // display rounding (lib/reports/display-rounding.ts rounds each part
     // independently for the page, which is a separate, accepted trade-off
     // this test does not exercise).
     expect(sumOfEventValuesExact).toBeCloseTo(grandTotalExact, 6);

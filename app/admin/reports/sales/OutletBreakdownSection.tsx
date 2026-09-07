@@ -1,5 +1,5 @@
 import { formatNumber } from "@/lib/shared/format";
-import { avgPerOrder, percentOfTotal, formatPercent } from "@/lib/outlet-breakdown-table";
+import { avgPerOrder, percentOfTotal, formatPercent } from "@/lib/reports/outlet-breakdown-table";
 
 interface OutletBreakdownRow {
   outlet_id: string;

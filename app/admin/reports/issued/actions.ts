@@ -3,8 +3,8 @@
 import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { requireAdmin } from "@/lib/auth/auth";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
-import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/issued-value-report";
-import { displayMoney } from "@/lib/display-rounding";
+import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/reports/issued-value-report";
+import { displayMoney } from "@/lib/reports/display-rounding";
 
 export interface IssuedItemRow {
   purchasedItemId: string;
@@ -38,7 +38,7 @@ export interface IssuedValueReport {
 
 // Plan G: a read-only monitoring page for the value of goods issued so far.
 // Reuses lib/costing/issue-costing.ts, the buildIssueCosting* input builders (Plan G
-// G1), and lib/issued-value-report.ts's per-event derivation -- the same
+// G1), and lib/reports/issued-value-report.ts's per-event derivation -- the same
 // functions app/admin/reports/actions.ts uses for totalCOGS. No second cost
 // definition lives here; this file only fetches, names, and rounds for
 // display.

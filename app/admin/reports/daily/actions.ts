@@ -2,7 +2,7 @@
 
 import { getSalesDataV2 } from "../actions";
 import { requireAdmin } from "@/lib/auth/auth";
-import { getDigestDateOffsets, comparePeriods, type PeriodComparison } from "@/lib/daily-digest";
+import { getDigestDateOffsets, comparePeriods, type PeriodComparison } from "@/lib/reports/daily-digest";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 
 export interface DailyDigestPeriod {

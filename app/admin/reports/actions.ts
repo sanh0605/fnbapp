@@ -12,9 +12,9 @@ import type { OrderV2, OrderLineV2 } from "@/lib/sales/order-types";
 import {
   breakdownRevenueByProduct,
   type ProductRevenueRow,
-} from "@/lib/report-v2-allocators";
+} from "@/lib/reports/report-v2-allocators";
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
-import { displayMoney } from "@/lib/display-rounding";
+import { displayMoney } from "@/lib/reports/display-rounding";
 import { computePeriodIssuedValue } from "@/lib/costing/issue-costing";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
 import { requireAdmin } from "@/lib/auth/auth";
