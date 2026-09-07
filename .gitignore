@@ -80,6 +80,9 @@ vite.config.ts.timestamp-*
 !.claude/settings.json
 !.claude/skills/
 !.claude/commands/
+!.claude/rules/
+!.claude/hooks/
+!.claude/agents/
 
 # WS-1 cleanup: scratch files, generated output, test caches
 scratch/
