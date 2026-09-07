@@ -11,6 +11,11 @@ import { alert, confirm } from "@/lib/shared/dialog";
 
 export default function ProductForm({ categories, initialData }: any) {
   const isEdit = !!initialData;
+  // docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 2:
+  // BR-CATALOG-003's price sync (migration 0098) makes the Topping & Tuỳ
+  // chọn screen the one edit point for a topping linked to an ACTIVE
+  // modifier -- this form must stop being a second editor for that price.
+  const priceReadOnly = isEdit && !!initialData?.isLinkedTopping;
   const formId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [isEraseOpen, setIsEraseOpen] = useState(false);
@@ -222,7 +227,10 @@ export default function ProductForm({ categories, initialData }: any) {
                           </div>
                           <div className="flex-1">
                             <label htmlFor={`${variantRowId}-price`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Giá bán (VNĐ)</label>
-                            <input id={`${variantRowId}-price`} type="number" required min="0" value={variant.price} onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)} className="w-full border border-border rounded-md px-3 py-2 text-sm font-bold text-primary focus:ring-focus-ring bg-surface-card" />
+                            <input id={`${variantRowId}-price`} type="number" required min="0" value={variant.price} readOnly={priceReadOnly} onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)} className={`w-full border border-border rounded-md px-3 py-2 text-sm font-bold text-primary focus:ring-focus-ring ${priceReadOnly ? "bg-surface-secondary cursor-not-allowed" : "bg-surface-card"}`} />
+                            {priceReadOnly && (
+                              <p className="text-xs text-text-secondary mt-1">Giá này đặt ở màn hình Topping &amp; Tuỳ chọn.</p>
+                            )}
                           </div>
                           {variants.length > 1 && (
                             <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => removeVariant(vIdx)}>Xoá Size</Button>

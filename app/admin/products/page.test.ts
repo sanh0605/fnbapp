@@ -76,4 +76,19 @@ describe("ProductsPage marks a topping sold via its linked modifier", () => {
     expect(byId.get("PROD-B").neverSold).toBe(true);
     expect(byId.get("PROD-C").neverSold).toBe(false);
   });
+
+  // docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 2: the
+  // product form must know which product is a second price editor to shut
+  // off. PROD-A has an ACTIVE modifier (MOD-A) -- linked. PROD-B and PROD-C
+  // have no modifier pointing at them at all -- not linked, even though
+  // PROD-C is sold (via its own order line, unrelated to any modifier).
+  it("flags isLinkedTopping only for a product with an ACTIVE modifier pointing at it", async () => {
+    const element: any = await ProductsPage();
+    const clientProps = element.props.children.props;
+    const byId = new Map<string, any>(clientProps.enhancedProducts.map((p: any) => [p.id, p]));
+
+    expect(byId.get("PROD-A").isLinkedTopping).toBe(true);
+    expect(byId.get("PROD-B").isLinkedTopping).toBe(false);
+    expect(byId.get("PROD-C").isLinkedTopping).toBe(false);
+  });
 });

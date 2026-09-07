@@ -53,6 +53,13 @@ export default async function ProductsPage() {
     if (pid) soldProductIds.add(pid);
   }
 
+  // Task 2: a product linked to an ACTIVE modifier has its price set on
+  // the Topping & Tuỳ chọn screen (migration 0098's sync) -- this form
+  // must not let it be edited a second place here.
+  const linkedToppingProductIds = new Set<string>(
+    modifiers.filter(m => m.status === "ACTIVE" && m.product_id).map(m => m.product_id as string),
+  );
+
   // Build the rich data for the form
   const enhancedProducts = visibleProducts.map(p => {
     const productVariants = activeVariants.filter(v => v.product_id === p.id);
@@ -76,6 +83,7 @@ export default async function ProductsPage() {
       priceHistory: pPriceHistory,
       neverSold: !soldProductIds.has(p.id),
       hasNoSellableVariant,
+      isLinkedTopping: linkedToppingProductIds.has(p.id),
     };
   });
 
