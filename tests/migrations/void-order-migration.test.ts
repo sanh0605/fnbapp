@@ -43,7 +43,7 @@ describe("void_order_atomic (0088): no longer reads stock_ledger", () => {
     );
   });
 
-  // reversal_count stays in the return shape (lib/void-order-transaction.ts
+  // reversal_count stays in the return shape (lib/sales/void-order-transaction.ts
   // is not touched by this migration) but is always 0 now.
   it("still returns reversal_count and already_voided in both branches", () => {
     const migration = readMigration();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseLineRecipeSnapshot } from "@/lib/order-types";
+import { parseLineRecipeSnapshot } from "@/lib/sales/order-types";
 
 // section 1.4
 // named this "the fragile part": recipe_snapshot_json stops being written

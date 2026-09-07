@@ -7,8 +7,8 @@ import {
   findAllWhereInBatches,
 } from "@/lib/db/tables";
 import type { SheetFilter } from "@/lib/db/tables";
-import { ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
-import type { OrderV2, OrderLineV2 } from "@/lib/order-types";
+import { ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/sales/order-types";
+import type { OrderV2, OrderLineV2 } from "@/lib/sales/order-types";
 import {
   breakdownRevenueByProduct,
   type ProductRevenueRow,

@@ -1,5 +1,5 @@
-import { allocateLineRevenue } from "@/lib/order-math";
-import type { OrderV2, OrderLineV2, LineForAllocation } from "@/lib/order-types";
+import { allocateLineRevenue } from "@/lib/sales/order-math";
+import type { OrderV2, OrderLineV2, LineForAllocation } from "@/lib/sales/order-types";
 
 export interface ProductRevenueRow {
   product_id: string;

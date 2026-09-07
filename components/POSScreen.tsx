@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { formatNumber } from "@/lib/shared/format";
 import { submitOrderV2, getPOSDrafts, savePOSDraft, deletePOSDraft } from "@/app/pos/actions";
-import type { CartInput } from "@/lib/order-cart";
+import type { CartInput } from "@/lib/sales/order-cart";
 import Link from "next/link";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { CartPanel } from "@/components/pos/CartPanel";

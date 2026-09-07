@@ -551,7 +551,7 @@ describe("parsePromotionSnapshot", () => {
     expect(parsed.applicable.get("VAR-050")).toBe(0);
   });
 
-  it("a malformed applicable_products_json degrades to an empty map, not null -- matches lib/order-cart.ts's own parseApplicable leniency", () => {
+  it("a malformed applicable_products_json degrades to an empty map, not null -- matches lib/sales/order-cart.ts's own parseApplicable leniency", () => {
     const parsed = parsePromotionSnapshot({ ...FLAT_PRICE_SNAPSHOT_RAW, applicable_products_json: "{not valid json" })!;
     expect(parsed).not.toBeNull();
     expect(parsed.applicable.size).toBe(0);
@@ -598,7 +598,7 @@ describe("computeExpectedPromoDiscountForLine", () => {
     const snapshot = parsePromotionSnapshot(FLAT_PRICE_SNAPSHOT_RAW)!;
     snapshot.applicable.set("VAR-ZERO", 0); // a hypothetical genuine free-target override
     // targetPrice = 0 || 15000 = 15000 (discount_value), not 0 -- matching
-    // lib/order-cart.ts's computePromoForLine exactly, not fixed here.
+    // lib/sales/order-cart.ts's computePromoForLine exactly, not fixed here.
     const discount = computeExpectedPromoDiscountForLine(snapshot, "VAR-ZERO", 18000, 1, 18000);
     expect(discount).toBe(3000); // (18000 - 15000) * 1, NOT (18000 - 0) * 1 = 18000
   });

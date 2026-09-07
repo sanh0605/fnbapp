@@ -7,7 +7,7 @@ import {
   removePendingOrder,
   type PendingOrderRecord,
 } from "./pos-offline-queue";
-import type { CartInput } from "./order-cart";
+import type { CartInput } from "@/lib/sales/order-cart";
 
 const cartInput: CartInput = {
   brand_id: "BR-001",

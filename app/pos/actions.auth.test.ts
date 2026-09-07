@@ -27,7 +27,7 @@ vi.mock("@/lib/db/tables", () => ({
   update: mocks.update,
   remove: mocks.remove,
 }));
-vi.mock("@/lib/pos-order-transaction", () => ({
+vi.mock("@/lib/sales/pos-order-transaction", () => ({
   savePosOrderAtomic: mocks.savePosOrderAtomic,
 }));
 vi.mock("next/cache", () => ({

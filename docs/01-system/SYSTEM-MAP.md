@@ -62,14 +62,14 @@ lib/stock-adjustment-transaction.ts -> stock_adjustments (write)
 lib/stocktake-transaction.ts -> stock_issues (write)
 lib/stocktake-transaction.ts -> stocktake_lines (write)
 lib/stocktake-transaction.ts -> stocktake_sessions (write)
-lib/void-order-transaction.ts -> order_events (write)
-lib/void-order-transaction.ts -> orders_v2 (write)
+lib/sales/void-order-transaction.ts -> order_events (write)
+lib/sales/void-order-transaction.ts -> orders_v2 (write)
 ```
 
 ## The same relations, grouped by area
 
 **Sales.** `app/pos/actions.ts` writes `POS_Drafts` and `Pos_Sync_Failures` (the
-POS device sync writes the completed sale itself). `lib/void-order-transaction.ts`
+POS device sync writes the completed sale itself). `lib/sales/void-order-transaction.ts`
 writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 `Promotions`.
 

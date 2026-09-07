@@ -2,7 +2,7 @@
 
 ```flow-decl
 routes: /pos, /admin/orders, /admin/promotions
-files: app/pos/actions.ts, lib/void-order-transaction.ts, app/admin/promotions/actions.ts
+files: app/pos/actions.ts, lib/sales/void-order-transaction.ts, app/admin/promotions/actions.ts
 tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
@@ -20,7 +20,7 @@ records a failure marker when a submit does not go through; the finished,
 `COMPLETED` order arrives in `orders_v2` through the POS device sync, not through
 these server actions. Voids are the one order-lifecycle write the web app makes,
 and they run through the `void_order_atomic` database function called from
-`lib/void-order-transaction.ts`.
+`lib/sales/void-order-transaction.ts`.
 
 ## Five-question current-state description
 
@@ -75,7 +75,7 @@ and they run through the `void_order_atomic` database function called from
 - `app/pos/actions.ts` writes only `POS_Drafts` (insert/update/remove of the
   in-progress cart) and `Pos_Sync_Failures` (a marker when a submit does not sync).
   It does not write `orders_v2`.
-- `lib/void-order-transaction.ts` calls the `void_order_atomic` RPC, whose body
+- `lib/sales/void-order-transaction.ts` calls the `void_order_atomic` RPC, whose body
   writes `orders_v2` and `order_events` — the two write relations the generated
   map attributes to this file.
 - `app/admin/promotions/actions.ts` writes `Promotions`.

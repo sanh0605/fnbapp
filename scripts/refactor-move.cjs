@@ -6,8 +6,8 @@
 //
 // 1. git-mv the module and its sibling tests (<old>.test.ts, <old>.<x>.test.ts, .tsx variants)
 // 2. rewrite every reference to the old path across the repo:
-//    - alias form         @/lib/order-math
-//    - repo-path form     lib/order-math.ts   (docs, comments, config strings)
+//    - alias form         @/lib/sales/order-math
+//    - repo-path form     lib/sales/order-math.ts   (docs, comments, config strings)
 //    - relative form      ./order-math, ../lib/order-math  (resolved against the importing file)
 const fs = require("fs");
 const path = require("path");

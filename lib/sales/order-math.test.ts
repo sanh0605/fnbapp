@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { allocateOrderDiscount, allocateLineRevenue, assertOrderInvariants } from "@/lib/order-math";
-import { InvariantError, type AllocatableLine, type LineForAllocation } from "@/lib/order-types";
+import { allocateOrderDiscount, allocateLineRevenue, assertOrderInvariants } from "@/lib/sales/order-math";
+import { InvariantError, type AllocatableLine, type LineForAllocation } from "@/lib/sales/order-types";
 import {
   makeSuaDauStandaloneOrder,
   makeUCK000094MigratedOrder,

@@ -23,7 +23,7 @@ vi.mock("@/lib/db/tables", () => ({
   insertMany: mocks.insertMany,
   update: mocks.update,
 }));
-vi.mock("@/lib/void-order-transaction", () => ({
+vi.mock("@/lib/sales/void-order-transaction", () => ({
   voidOrderAtomic: mocks.voidOrderAtomic,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));

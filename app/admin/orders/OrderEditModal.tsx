@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { formatNumber } from "@/lib/shared/format";
 import { editOrderV2 } from "./actions";
-import type { CartInput } from "@/lib/order-cart";
+import type { CartInput } from "@/lib/sales/order-cart";
 import type { OrderListItem } from "./actions";
 import { LineItemEditor } from "./components/LineItemEditor";
 import { DiscountEditor } from "./components/DiscountEditor";

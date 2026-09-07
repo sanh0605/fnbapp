@@ -344,12 +344,12 @@ export interface GrossFormulaCheckResult {
 
 // Check 1: gross_line_total == (unit_price + sum(modifier.price *
 // modifier.qty)) * qty. Derived from the write path BEFORE testing against
-// any data -- lib/order-cart.ts's buildLine (the live checkout and order-
+// any data -- lib/sales/order-cart.ts's buildLine (the live checkout and order-
 // edit path, both call the same function) and the removed V1->V2 migration's
 // line builder (the migration path, now deleted with lib/historical) compute
 // this formula independently of each other and agree on it exactly. Neither
 // was consulted to build this check after the fact; both were read before
-// writing it. Not enforced by lib/order-math.ts's assertOrderInvariants --
+// writing it. Not enforced by lib/sales/order-math.ts's assertOrderInvariants --
 // that function takes gross_line_total as given and checks relationships
 // between already-computed columns, never its own derivation from
 // unit_price/qty/modifiers. This is the one layer nothing else checks.
@@ -376,7 +376,7 @@ export function checkLineGrossFormula(lines: readonly RevenueLineDetail[]): Gros
 
 // Check 2: net_line_total == gross_line_total - promo_discount -
 // manual_item_discount - order_discount_allocation. Same formula
-// lib/order-math.ts's assertOrderInvariants (I6) already asserts at write
+// lib/sales/order-math.ts's assertOrderInvariants (I6) already asserts at write
 // time for every order built through buildOrderFromCart or the V1->V2
 // migration -- this is the first time anyone has actually looked again
 // after the fact, not a new formula.
@@ -413,7 +413,7 @@ export interface OrderSumMismatch {
 // too low by the same X) would pass H1's net-total check and will not pass
 // this one. Confirmed from the write path, not assumed: promo_discount_total
 // is built as builtLines.reduce(sum + line.promo_discount, 0)
-// (lib/order-cart.ts) with no independent order-level contribution -- a
+// (lib/sales/order-cart.ts) with no independent order-level contribution -- a
 // line's promo_discount and the header's promo_discount_total are defined
 // to be the same thing (a sum relationship), not two figures that may
 // legitimately diverge. Orders with zero lines are skipped (nothing to
@@ -499,7 +499,7 @@ export function checkLineSanity(lines: readonly RevenueLineDetail[]): LineSanity
 // CHARGED discount agrees with the terms of the promotion recorded on the
 // order at the time.
 //
-// The three discount_type formulas are derived from lib/order-cart.ts's
+// The three discount_type formulas are derived from lib/sales/order-cart.ts's
 // computePromoForLine (the function that actually decided what got charged),
 // not from data and not reverse-engineered after the fact:
 //   FLAT_PRICE: perUnitDiscount = max(0, unit_price - targetPrice);
@@ -527,7 +527,7 @@ export interface PromoSnapshotParsed {
   startDate: string;
   endDate: string;
   // null when the snapshot shape does not carry this field at all -- native
-  // V2 orders (built via lib/order-snapshot.ts's buildPromotionSnapshot)
+  // V2 orders (built via lib/sales/order-snapshot.ts's buildPromotionSnapshot)
   // never captured min_order_value. Migrated (V1-origin) orders copied V1's
   // own snapshot verbatim, which does carry it (as a string). Two real
   // snapshot shapes exist in live data, confirmed by reading actual rows,
@@ -546,7 +546,7 @@ export interface PromoSnapshotParsed {
 // Returns null only when the snapshot itself is absent -- an order in that
 // state is unrecomputable, reported separately, never silently skipped.
 // A malformed inner applicable_products_json does NOT return null here --
-// it degrades to an empty map, deliberately mirroring lib/order-cart.ts's
+// it degrades to an empty map, deliberately mirroring lib/sales/order-cart.ts's
 // own parseApplicable, which is exactly as lenient. Recomputing with a
 // STRICTER parser than the one that actually ran would manufacture
 // mismatches that never really happened.

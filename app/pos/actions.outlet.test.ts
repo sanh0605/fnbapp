@@ -23,7 +23,7 @@ vi.mock("@/lib/db/tables", () => ({
   update: vi.fn(),
   remove: vi.fn(),
 }));
-vi.mock("@/lib/pos-order-transaction", () => ({
+vi.mock("@/lib/sales/pos-order-transaction", () => ({
   savePosOrderAtomic: mocks.savePosOrderAtomic,
 }));
 vi.mock("next/cache", () => ({

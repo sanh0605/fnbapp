@@ -2,10 +2,10 @@ import { afterAll, beforeAll, describe, it, expect, vi } from "vitest";
 import {
   buildEditedOrderFromCart,
   planEditedOrderPayments,
-} from "@/lib/order-edit-cart";
+} from "@/lib/sales/order-edit-cart";
 import { makeSuaDauStandaloneOrder } from "@/lib/__tests__/fixtures";
-import type { CartInput, ReferenceData } from "@/lib/order-cart";
-import type { OrderV2 } from "@/lib/order-types";
+import type { CartInput, ReferenceData } from "@/lib/sales/order-cart";
+import type { OrderV2 } from "@/lib/sales/order-types";
 
 const REF: ReferenceData = {
   brands: [{ id: "BR-002", code: "UCK", name: "UCK" }],

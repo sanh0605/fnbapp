@@ -15,10 +15,10 @@ import {
   buildVariantSnapshot,
   buildModifierSnapshotsFromCart,
   buildPromotionSnapshot,
-} from "@/lib/order-snapshot";
-import { allocateOrderDiscount, assertOrderInvariants } from "@/lib/order-math";
-import { InvariantError, ORDER_STATUS, PAYMENT_METHOD } from "@/lib/order-types";
-import { resolveCapturedAt } from "@/lib/pos-captured-at";
+} from "@/lib/sales/order-snapshot";
+import { allocateOrderDiscount, assertOrderInvariants } from "@/lib/sales/order-math";
+import { InvariantError, ORDER_STATUS, PAYMENT_METHOD } from "@/lib/sales/order-types";
+import { resolveCapturedAt } from "@/lib/sales/pos-captured-at";
 import type {
   OrderV2,
   OrderLineV2,
@@ -26,7 +26,7 @@ import type {
   ProductSnapshot,
   VariantSnapshot,
   ModifierSnapshot,
-} from "@/lib/order-types";
+} from "@/lib/sales/order-types";
 
 export interface CartItemInput {
   product_id: string;

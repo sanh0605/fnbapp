@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, it, expect, vi } from "vitest";
-import { buildOrderFromCart } from "@/lib/order-cart";
-import type { CartInput, ReferenceData } from "@/lib/order-cart";
+import { buildOrderFromCart } from "@/lib/sales/order-cart";
+import type { CartInput, ReferenceData } from "@/lib/sales/order-cart";
 
 // Real reference data (subset matching WS-1 fixtures)
 const REF: ReferenceData = {

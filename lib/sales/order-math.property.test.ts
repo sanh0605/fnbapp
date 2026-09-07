@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fc from "fast-check";
-import { assertOrderInvariants, allocateLineRevenue, allocateOrderDiscount } from "@/lib/order-math";
-import type { OrderV2, OrderLineV2, AllocatableLine, LineForAllocation } from "@/lib/order-types";
+import { assertOrderInvariants, allocateLineRevenue, allocateOrderDiscount } from "@/lib/sales/order-math";
+import type { OrderV2, OrderLineV2, AllocatableLine, LineForAllocation } from "@/lib/sales/order-types";
 
 describe("Property tests", () => {
   it("Invariants always hold for random valid orders", () => {

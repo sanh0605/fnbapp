@@ -6,12 +6,12 @@ import { revalidatePath } from "next/cache";
 import { resolveActor } from "@/lib/auth/auth";
 import crypto from "node:crypto";
 
-import { buildOrderFromCart } from "@/lib/order-cart";
-import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
-import { savePosOrderAtomic } from "@/lib/pos-order-transaction";
+import { buildOrderFromCart } from "@/lib/sales/order-cart";
+import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/sales/order-types";
+import { savePosOrderAtomic } from "@/lib/sales/pos-order-transaction";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
-import type { CartInput } from "@/lib/order-cart";
+import type { CartInput } from "@/lib/sales/order-cart";
 
 export type SubmitOrderV2Result = {
   success: true;

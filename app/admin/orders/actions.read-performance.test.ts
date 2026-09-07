@@ -22,7 +22,7 @@ vi.mock("@/lib/db/tables", () => ({
   insertMany: vi.fn(),
   update: vi.fn(),
 }));
-vi.mock("@/lib/void-order-transaction", () => ({
+vi.mock("@/lib/sales/void-order-transaction", () => ({
   voidOrderAtomic: mocks.voidOrderAtomic,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));

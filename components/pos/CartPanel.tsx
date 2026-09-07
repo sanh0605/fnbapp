@@ -120,7 +120,7 @@ export function CartPanel({
     return Math.max(0, subtotal - orderLevelDiscount - productLevelDiscount);
   };
 
-  // Rounded to match lib/order-cart.ts's net_total (Math.round on every discount
+  // Rounded to match lib/sales/order-cart.ts's net_total (Math.round on every discount
   // step) -- without this, a PERCENT order discount can leave a fractional VND
   // amount here that no whole-number split-payment entry could ever equal exactly.
   const totalAmount = Math.round(calculateTotalAmount());

@@ -14,15 +14,15 @@ import { requireAdmin } from "@/lib/auth/auth";
 import { getSupabaseClient } from "@/lib/db/supabase";
 import crypto from "node:crypto";
 
-import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";
-import type { OrderV2, OrderLineV2, OrderEvent } from "@/lib/order-types";
+import { EVENT_TYPE, ORDER_STATUS } from "@/lib/sales/order-types";
+import type { OrderV2, OrderLineV2, OrderEvent } from "@/lib/sales/order-types";
 import {
   buildEditedOrderFromCart,
   planEditedOrderPayments,
-} from "@/lib/order-edit-cart";
-import { supersedeOrderV2 } from "@/lib/sheets-db-v2-edit";
-import type { CartInput } from "@/lib/order-cart";
-import { voidOrderAtomic } from "@/lib/void-order-transaction";
+} from "@/lib/sales/order-edit-cart";
+import { supersedeOrderV2 } from "@/lib/sales/sheets-db-v2-edit";
+import type { CartInput } from "@/lib/sales/order-cart";
+import { voidOrderAtomic } from "@/lib/sales/void-order-transaction";
 
 function parseObject(value: any): any {
   if (!value) return {};

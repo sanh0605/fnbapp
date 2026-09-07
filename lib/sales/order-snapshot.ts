@@ -15,7 +15,7 @@ import type {
   PromotionSnapshot,
   RecipeSnapshot,
   RecipeIngredientSnapshot,
-} from "@/lib/order-types";
+} from "@/lib/sales/order-types";
 
 export function buildProductSnapshot(product: any, category: any | null): ProductSnapshot {
   return {

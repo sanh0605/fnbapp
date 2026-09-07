@@ -53,7 +53,7 @@ import type {
  *
  * H2's formula (gross_line_total = (unit_price + sum(modifier.price *
  * modifier.qty)) * qty) was derived BEFORE touching any data, from the
- * write path itself: lib/order-cart.ts's buildLine (live checkout and
+ * write path itself: lib/sales/order-cart.ts's buildLine (live checkout and
  * order-edit, which reuses the same function) and the removed V1->V2
  * migration's line builder (now deleted with lib/historical)
  * compute it independently and agree exactly. Neither was read after
@@ -65,7 +65,7 @@ import type {
  * so nothing below confirms or refutes what the cashier was shown -- that
  * data does not exist to recover. H3 only checks whether the CHARGED
  * discount agrees with the terms of the promotion recorded on the order at
- * the time, recomputed from lib/order-cart.ts's computePromoForLine (the
+ * the time, recomputed from lib/sales/order-cart.ts's computePromoForLine (the
  * function that actually decided what got charged), derived before touching
  * any data. See scripts/verify-revenue-core.ts's own H3 section comment for
  * the three discount_type formulas and how they were derived.
@@ -337,7 +337,7 @@ async function main(): Promise<void> {
     `\nH2 check 2 (net_line_total == gross_line_total - promo_discount - manual_item_discount - order_discount_allocation): ` +
       `${h2Check2.length} violation(s) / ${lineDetails.length}.`,
   );
-  console.log("  Same formula lib/order-math.ts's assertOrderInvariants (I6) already asserts at write time -- not a new formula, the first re-check since.");
+  console.log("  Same formula lib/sales/order-math.ts's assertOrderInvariants (I6) already asserts at write time -- not a new formula, the first re-check since.");
   reportLineMismatches("h2c2", h2Check2, m => `expected ${m.expected}, actual ${m.actual}, diff ${m.actual - m.expected}`);
   if (h2Check2.length > 0) failures.push(`H2 check 2: ${h2Check2.length} net_line_total violation(s).`);
 
@@ -493,7 +493,7 @@ async function main(): Promise<void> {
   console.log(`\nH3 check 2 (promotion was actually eligible: date window, min_order_value where recorded): ${h3Check2.length} violation(s).`);
   console.log(
     "  min_order_value is only checked where the snapshot shape carries it -- migrated (V1-origin) snapshots do, " +
-      "native V2 snapshots (built via lib/order-snapshot.ts's buildPromotionSnapshot) never captured this field at " +
+      "native V2 snapshots (built via lib/sales/order-snapshot.ts's buildPromotionSnapshot) never captured this field at " +
       "all. Both live promotions (PRM-003, PRM-004) have min_order_value 0, so this has never mattered in practice.",
   );
   for (const v of h3Check2.slice(0, 20)) {
@@ -539,7 +539,7 @@ async function main(): Promise<void> {
       console.log(`    ${c.order_no} (${c.order_id}): promo_discount_total ${c.promo_discount_total}, line reason(s): ${reasons}`);
     }
     console.log(
-      `  Total: ${formatNumber(totalNoPromoDiscount)}d. Confirmed in code, not inferred: lib/order-cart.ts:420 sets ` +
+      `  Total: ${formatNumber(totalNoPromoDiscount)}d. Confirmed in code, not inferred: lib/sales/order-cart.ts:420 sets ` +
         `promo_discount_reason to "SNAPSHOT" when a line's charged discount came directly from the client-supplied ` +
         `item.promo_discount_snapshot -- used verbatim even when the SERVER's own promotion resolution (resolvedPromo) ` +
         `came back null, which is exactly why applied_promotion_id stays empty. The removed V1->V2 migration ` +

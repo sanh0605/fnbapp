@@ -49,8 +49,8 @@ lib/stock-adjustment-transaction.ts -> stock_adjustments (write)
 lib/stocktake-transaction.ts -> stock_issues (write)
 lib/stocktake-transaction.ts -> stocktake_lines (write)
 lib/stocktake-transaction.ts -> stocktake_sessions (write)
-lib/void-order-transaction.ts -> order_events (write)
-lib/void-order-transaction.ts -> orders_v2 (write)
+lib/sales/void-order-transaction.ts -> order_events (write)
+lib/sales/void-order-transaction.ts -> orders_v2 (write)
 ```
 
 ## Tables

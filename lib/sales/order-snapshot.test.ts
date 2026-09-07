@@ -6,7 +6,7 @@ import {
   buildPromotionSnapshot,
   buildRecipeSnapshot,
   buildModifierSnapshotsFromCart,
-} from "@/lib/order-snapshot";
+} from "@/lib/sales/order-snapshot";
 
 describe("buildProductSnapshot", () => {
   it("builds snapshot from raw product + category rows", () => {

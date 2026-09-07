@@ -13,7 +13,7 @@
  * (sections 5, 6, 7)
  */
 
-import type { OrderV2, OrderLineV2, LineForAllocation, ModifierSnapshot } from "@/lib/order-types";
+import type { OrderV2, OrderLineV2, LineForAllocation, ModifierSnapshot } from "@/lib/sales/order-types";
 
 // ============================================================================
 // PRM-003 — real promotion snapshot (from live Promotions sheet)

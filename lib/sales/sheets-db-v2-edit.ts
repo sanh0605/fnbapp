@@ -8,9 +8,9 @@
 
 "use server";
 
-import { supersedeOrderAtomic } from "@/lib/order-edit-transaction";
-import type { OrderEditPaymentInput } from "@/lib/order-edit-transaction";
-import type { OrderEvent, OrderLineV2, OrderV2 } from "@/lib/order-types";
+import { supersedeOrderAtomic } from "@/lib/sales/order-edit-transaction";
+import type { OrderEditPaymentInput } from "@/lib/sales/order-edit-transaction";
+import type { OrderEvent, OrderLineV2, OrderV2 } from "@/lib/sales/order-types";
 
 export interface SupersedeOrderV2Input {
   oldOrderId: string;

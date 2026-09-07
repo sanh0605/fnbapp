@@ -13,21 +13,21 @@
  */
 
 import crypto from "node:crypto";
-import { buildOrderFromCart } from "@/lib/order-cart";
+import { buildOrderFromCart } from "@/lib/sales/order-cart";
 import type {
   BuildOrderResult,
   CartInput,
   CartPaymentInput,
   ReferenceData,
-} from "@/lib/order-cart";
-import type { OrderV2, OrderLineV2 } from "@/lib/order-types";
+} from "@/lib/sales/order-cart";
+import type { OrderV2, OrderLineV2 } from "@/lib/sales/order-types";
 
 interface OriginalOrder {
   order: OrderV2;
   lines: OrderLineV2[];
 }
 
-import { assertOrderInvariants } from "@/lib/order-math";
+import { assertOrderInvariants } from "@/lib/sales/order-math";
 
 export function planEditedOrderPayments(
   existingPayments: CartPaymentInput[],

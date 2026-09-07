@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ supersedeOrderAtomic: vi.fn() }));
-vi.mock("@/lib/order-edit-transaction", () => ({
+vi.mock("@/lib/sales/order-edit-transaction", () => ({
   supersedeOrderAtomic: mocks.supersedeOrderAtomic,
 }));
 

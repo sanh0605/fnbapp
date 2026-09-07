@@ -6,7 +6,7 @@
  * has no business knowing about.
  */
 
-import type { CartInput } from "@/lib/order-cart";
+import type { CartInput } from "@/lib/sales/order-cart";
 
 const DB_NAME = "pos-offline";
 const DB_VERSION = 1;
