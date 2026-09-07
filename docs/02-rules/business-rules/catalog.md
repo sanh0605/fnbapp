@@ -33,3 +33,59 @@ Six catalogue tables (`purchased_items`, `semi_products`, `products`, `item_cate
 
 **Both steps applied** — measured 2026-09-07 against the live database: the `base_ingredients` table (dropped by migration `0090`) and the `purchased_items.base_ingredient_id` column (dropped by `0095`) both answer "does not exist". Nothing in the schema or in any code path refers to the lower tier any more.
 
+
+---
+
+### BR-CATALOG-003 — A topping is one thing the shop sells two ways, and the two records must know each other
+
+**Status:** `APPROVED` — owner decision 2026-09-07, asked and answered twice in the
+same session. Asked whether topping-as-menu-item and topping-as-add-on are one
+thing or two, he sent it back for evidence; shown the evidence, he chose to keep
+both sale paths and link the records: *"Có, giữ cả hai đường."* **Not yet applied**
+— the link does not exist in the schema as of 2026-09-07.
+
+**The shop sells a topping two ways.** Added to a drink, it is a row in
+`modifiers` and is written into `order_lines_v2.modifiers_snapshot_json` on the
+parent line. Bought on its own, it is a row in `products` under category
+`CAT-007` with its own variant and price, and becomes an ordinary order line.
+Both paths are live and intended: `app/admin/products/toppings/actions.ts`
+already carries `toggleToppingStandalone`, which turns the second path on and off
+per topping by flipping the product's status.
+
+**Measured 2026-09-07, the whole trading history:** 278 topping units sold as
+add-ons for 1.385.000đ, against 2 sold standalone for 16.000đ — one *Kem muối
+phô mai* at 6.000đ on 2026-07-14 and one *Đào miếng* at 10.000đ on 2026-07-24.
+The rare path is real, not a mis-tap: both were rung at the listed price, ten
+days apart. `modifiers` was populated 2026-06-01; the seven `CAT-007` products
+were created 2026-06-26, twenty-five days later.
+
+**The two records do not know each other, and that is the defect.** `modifiers`
+has no `product_id` (schema `0001_init_schema.sql`). Nothing joins *Kem muối*
+`MOD-002` to *Kem muối* `PROD-030` but the spelling of the name. The visible
+consequence: the product list decides "never sold" from `order_lines_v2.product_id`
+and `variant_id` alone, so five toppings that have really sold — *20ml cốt cà phê*
+136 times, *Trân châu trắng* 75, *Kem muối* 17, *Dâu sấy* 6, *Kem dẻo* 1 — are
+offered for permanent deletion. The two that are not offered escaped only by
+having been sold standalone once each.
+
+**What deletion would actually cost, measured, not assumed:** the erase RPC
+(`0075_erase_never_sold_product.sql`) removes the product, its variants and its
+price history. Past orders keep their own snapshot of name and price, and the
+`modifiers` row survives, so no sale, no revenue figure and no add-on stops
+working. What is lost is the catalogue record and the price history of a topping
+the shop genuinely sells. The error is a screen stating a falsehood about
+trading history, not money going missing.
+
+**Not a costing gap.** Toppings carry no recipe and every `order_lines_v2` row
+has `cost_at_sale = 0`, but that is `BR-COGS-005` working as decided on
+2026-08-07, not an omission: cost is measured by counting stock at a stocktake,
+not per cup. Topping revenue is inside `gross_line_total` — a 22.000đ drink with
+a 5.000đ topping stores 27.000đ — which is why `verify-revenue` reconciles.
+
+**Open, deliberately not decided here:** *Hộp sữa chua* (`MOD-009`, created
+2026-08-28) has no `CAT-007` product, so it cannot be sold standalone and has
+nothing to link to. `Dâu sấy` has two modifier rows, `MOD-007` (DELETED) and
+`MOD-008` (ACTIVE), which must both point at `PROD-035`. And `CAT-007` is
+hard-coded in `toggleToppingStandalone` rather than being a column a screen can
+edit, against the rule that anything the owner may want to change belongs in
+data.

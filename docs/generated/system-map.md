@@ -62,7 +62,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - data_recovery_changes (run_id, table_name, row_id, column_name, old_value, new_value, source_hash, applied_at, rolled_back_at)
 - issue_slips (id, issued_at, note, created_by_id, created_by_name, created_at)
 - item_categories (id, name, system_type, status, created_at) status: ACTIVE, INACTIVE, DELETED
-- modifiers (id, name, group_name, price, status, sort_order, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
+- modifiers (id, name, group_name, price, status, sort_order, created_at, updated_at, product_id) status: ACTIVE, INACTIVE, DELETED
 - order_events (id, order_id, event_type, event_at, actor_id, actor_name, from_version, to_version, previous_order_id, delta_json, reason)
 - order_lines_v2 (id, order_id, line_no, product_id, product_snapshot_json, variant_id, variant_snapshot_json, qty, unit_price, modifiers_snapshot_json, gross_line_total, promo_discount, manual_item_discount, order_discount_allocation, net_line_total, cost_at_sale, recipe_snapshot_json, promo_discount_reason, manual_discount_reason, created_at)
 - order_payments (id, order_id, method, amount, reference, created_at)
