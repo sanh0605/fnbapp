@@ -7,7 +7,7 @@ Note: `lib/db/tables.ts` is the DB adapter — the name says Google Sheets but t
 implementation is Supabase (spec §3.2c).
 
 Two casings of a name (e.g. `Products`/`products`) are the same table — one comes
-from a `sheets_db` call, the other from an RPC body. See `SYSTEM-OVERVIEW.md`.
+from a `lib/db/tables.ts` call, the other from an RPC body. See `SYSTEM-OVERVIEW.md`.
 
 ## Every write relation
 

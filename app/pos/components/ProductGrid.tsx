@@ -1,7 +1,7 @@
 "use client";
  
 import { useRef } from "react";
-import { ProductCard } from "@/app/pos/components/ProductCard";
+import { ProductCard } from "./ProductCard";
 import { Search } from "lucide-react";
  
 interface ProductGridProps {

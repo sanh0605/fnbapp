@@ -35,7 +35,7 @@ function firstArg(callBody: string): string {
 // would stop at the inner ")". Scan forward from each verb name, tracking paren
 // depth, to capture the whole argument list. The `(?<![.\w])` lookbehind skips
 // method calls (supabase's `.update(...)`, `.insert(...)`) and identifiers that
-// merely end in a verb name; sheets_db verbs and shared-actions wrappers are
+// merely end in a verb name; lib/db/tables.ts verbs and shared-actions wrappers are
 // always called as bare functions.
 const VERB_CALL = /(?<![.\w])(\w+)\s*\(/g;
 const SUPABASE_WRITE = /\.from\(\s*"([^"]+)"\s*\)\s*\.\s*(insert|update|upsert|delete)\b/g;

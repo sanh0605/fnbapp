@@ -82,7 +82,7 @@ Per the generated map, the six declared files write: `Products` and
 
 **Two casings, one table.** `Products`/`products` and
 `Product_Variants`/`product_variants` are each the same physical table seen
-through two code paths — the `sheets_db` adapter emits the capitalised name while
+through two code paths — the `lib/db/tables.ts` adapter emits the capitalised name while
 the RPC body uses the lowercase name. Both casings are listed above verbatim
 because the map emits both; see `docs/01-system/SYSTEM-MAP.md` (and SYSTEM-OVERVIEW)
 for the naming trap explained once.

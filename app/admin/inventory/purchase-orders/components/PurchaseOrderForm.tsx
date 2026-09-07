@@ -4,7 +4,7 @@ import { useState, useId } from "react";
 import { savePurchaseOrder, addPurchaseSource } from "../actions";
 import { useRouter } from "next/navigation";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { SupplierModal } from "@/app/admin/inventory/purchase-orders/components/SupplierQuickAddModal";
+import { SupplierModal } from "./SupplierQuickAddModal";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toSaigonIsoString } from "@/lib/shared/datetime";

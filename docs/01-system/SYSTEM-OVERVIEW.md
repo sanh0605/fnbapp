@@ -51,6 +51,11 @@ khoá cache dạng `sheets-<Tên bảng>`. Chữ "sheets" là dấu vết thời
 Sheets; ruột đã là Supabase từ lâu. Khoá giữ nguyên vì mọi lệnh làm mới cache
 đang dùng nó — đổi tên khoá là đổi hành vi, không phải dọn dẹp.
 
+Dấu vết thứ hai, cùng lý do giữ nguyên: dòng log báo lỗi tạm thời khi gọi
+Supabase (`lib/db/tables.ts`) vẫn in tiền tố `[sheets_db]`. Đổi chữ log không
+miễn phí — công cụ đọc log sản xuất có thể đang lọc theo tiền tố này — nên để
+nguyên, không phải việc dọn dẹp thuộc phạm vi lần dời này.
+
 ## Web chạy ở đâu
 
 Máy chủ dữ liệu đặt tại Singapore, nên máy chạy web cũng **phải đặt ở Singapore**

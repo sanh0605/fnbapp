@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { DiscountBadge, DISCOUNT_KIND } from "@/app/pos/components/DiscountBadge";
+import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { formatNumber } from "@/lib/shared/format";
 
 interface CartItemRowProps {

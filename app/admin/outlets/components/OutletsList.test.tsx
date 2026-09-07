@@ -15,9 +15,9 @@ import React from "react";
 import { OutletsList } from "./OutletsList";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
-// OutletForm/RetireOutletButton call server actions and lib/dialog -- mocked
-// for the same reason as components/POSScreen.itemModal.test.tsx: these
-// modules transitively pull in next/cache, lib/sheets_db and lib/auth,
+// OutletForm/RetireOutletButton call server actions and lib/shared/dialog -- mocked
+// for the same reason as app/pos/components/POSScreen.itemModal.test.tsx: these
+// modules transitively pull in next/cache, lib/db/tables.ts and lib/auth/auth.ts,
 // none of which are needed to check that the list renders.
 vi.mock("../actions", () => ({
   addOutlet: vi.fn(),

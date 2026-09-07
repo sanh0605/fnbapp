@@ -23,7 +23,7 @@ import POSScreen from "./POSScreen";
 import { formatNumber } from "@/lib/shared/format";
 
 // POSScreen imports these from "@/app/pos/actions" (a "use server" file that
-// transitively pulls in next/cache, lib/sheets_db, lib/auth, etc.). None of
+// transitively pulls in next/cache, lib/db/tables.ts, lib/auth/auth.ts, etc.). None of
 // them run during these tests -- brandId is omitted below so the drafts
 // effect (refreshDrafts -> getPOSDrafts) short-circuits before it would call
 // out -- but the module is still imported and evaluated when POSScreen.tsx

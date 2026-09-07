@@ -17,7 +17,7 @@ This flow covers who can sign in and what account each person holds: logging in 
 any signed-in person changing their own password at `/settings/password`. Two
 files write the account record. Account management (create, change role, reset
 password, delete) goes through `app/admin/users/actions.ts`, which uses the
-`sheets_db` adapter and therefore writes the `Users` table. The self-service
+`lib/db/tables.ts` adapter and therefore writes the `Users` table. The self-service
 password change goes through `app/actions/auth.ts`, which writes the same account
 record directly via `supabase.from("users").update(...)` — the lowercase `users`
 table. The two casings are the same physical table reached two different ways;
@@ -66,11 +66,11 @@ see SYSTEM-OVERVIEW for the naming trap.
 
 ## Where it writes
 
-`app/admin/users/actions.ts` writes the `Users` table through the `sheets_db`
+`app/admin/users/actions.ts` writes the `Users` table through the `lib/db/tables.ts`
 adapter for all account create, role/password update, and delete operations.
 `app/actions/auth.ts` writes the same account record directly through
 `supabase.from("users").update(...)` when a person changes their own password —
-the one place in this flow that bypasses the `sheets_db` adapter and reaches the
+the one place in this flow that bypasses the `lib/db/tables.ts` adapter and reaches the
 table by its lowercase `users` name. The generated map at
 `docs/generated/system-map.md` confirms both write relations.
 

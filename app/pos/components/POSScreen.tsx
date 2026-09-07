@@ -5,10 +5,10 @@ import { formatNumber } from "@/lib/shared/format";
 import { submitOrderV2, getPOSDrafts, savePOSDraft, deletePOSDraft } from "@/app/pos/actions";
 import type { CartInput } from "@/lib/sales/order-cart";
 import Link from "next/link";
-import { ProductGrid } from "@/app/pos/components/ProductGrid";
-import { CartPanel } from "@/app/pos/components/CartPanel";
-import { ItemConfigModal, type ItemConfigSubmission } from "@/app/pos/components/ItemConfigModal";
-import { DraftsModal } from "@/app/pos/components/DraftsModal";
+import { ProductGrid } from "./ProductGrid";
+import { CartPanel } from "./CartPanel";
+import { ItemConfigModal, type ItemConfigSubmission } from "./ItemConfigModal";
+import { DraftsModal } from "./DraftsModal";
 import { alert, confirm } from "@/lib/shared/dialog";
 import {
   resolvePosCheckoutAttempt,
