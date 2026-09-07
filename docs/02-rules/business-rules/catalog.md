@@ -89,3 +89,17 @@ nothing to link to. `Dâu sấy` has two modifier rows, `MOD-007` (DELETED) and
 hard-coded in `toggleToppingStandalone` rather than being a column a screen can
 edit, against the rule that anything the owner may want to change belongs in
 data.
+
+**A linked topping's price has one edit point.** Owner decision 2026-09-07,
+asked with the concrete case — *Kem muối* at 4.000đ on both sides, raising it
+currently means remembering two screens: *"Luôn cùng giá, sửa một chỗ."*
+`sync_topping_price_atomic` (migration `0098`, not yet run against
+production) writes `modifiers.price` and the linked product's single ACTIVE
+variant's price, plus a `product_price_history` row, in one transaction.
+Refuses rather than guesses on the two conditions that would make "the
+standalone price" ambiguous: more than one ACTIVE modifier pointing at the
+same product, and a product with other than exactly one ACTIVE variant.
+Measured 2026-09-07: 0 products violate either condition today; all 8
+linked toppings already agree. A modifier with no linked product (`MOD-009`)
+updates only itself. Order history, the POS, and the two names (renaming a
+modifier does not rename its product) are untouched.

@@ -41,6 +41,9 @@ lib/products/product-save-transaction.ts -> product_price_history (write)
 lib/products/product-save-transaction.ts -> product_variants (write)
 lib/products/product-save-transaction.ts -> products (write)
 lib/products/product-save-transaction.ts -> recipes (write)
+lib/products/topping-price-sync.ts -> modifiers (write)
+lib/products/topping-price-sync.ts -> product_price_history (write)
+lib/products/topping-price-sync.ts -> product_variants (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
 lib/sales/void-order-transaction.ts -> order_events (write)
@@ -97,4 +100,5 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - users (id, username, password_hash, name, role, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 
 ## UNRESOLVED write-sites (need a human)
+- app/admin/products/modifiers/actions.ts: update(...) with a non-literal table argument: 
 - app/admin/users/actions.ts: update(...) with a non-literal table argument: only if non-blank

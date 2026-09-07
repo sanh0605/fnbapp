@@ -2,9 +2,9 @@
 
 ```flow-decl
 routes: /admin/products, /admin/products/categories, /admin/products/modifiers, /admin/products/toppings
-files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts
+files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts
 tables: Products, products, Product_Variants, product_variants, product_price_history, recipes, Product_Categories, Modifiers
-brCodes: BR-CATALOG-001
+brCodes: BR-CATALOG-001, BR-CATALOG-003
 ```
 
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
@@ -26,6 +26,16 @@ product row and its variants, and as a side effect it also writes the product's
 (`product_price_history`) so the price in force at each moment is preserved.
 Toppings are themselves stored as products, which is why
 `app/admin/products/toppings/actions.ts` writes the `Products` table too.
+
+**A topping's price has one edit point (`BR-CATALOG-003`, added 2026-09-07,
+migration `0098`, not yet run against production).** A topping is sold two
+ways — as an add-on (`modifiers.price`) and, if linked, standalone as a
+`CAT-007` product's own variant (`product_variants.price`). Editing the
+price on the Topping & Tuỳ chọn screen now writes both, plus a
+`product_price_history` row, in one transaction
+(`lib/products/topping-price-sync.ts` calling `sync_topping_price_atomic`) —
+the owner can no longer forget the second screen. A modifier with no linked
+product (`MOD-009` today) updates only itself.
 
 ## Five-question current-state description
 
@@ -71,14 +81,18 @@ Toppings are themselves stored as products, which is why
 
 ## Where it writes
 
-Per the generated map, the six declared files write: `Products` and
+Per the generated map, the seven declared files write: `Products` and
 `Product_Variants` (`app/admin/products/actions.ts`); `products`,
 `product_variants`, `product_price_history`, and `recipes`
 (`lib/products/product-save-transaction.ts`); `products`, `product_variants`, and
 `product_price_history` (`lib/products/product-erase-transaction.ts`);
 `Product_Categories` (`app/admin/products/categories/actions.ts`); `Modifiers`
-(`app/admin/products/modifiers/actions.ts`); and `Products`
-(`app/admin/products/toppings/actions.ts`).
+(`app/admin/products/modifiers/actions.ts`, when creating or deleting a
+modifier); `Products` (`app/admin/products/toppings/actions.ts`); and
+`modifiers`, `product_variants`, `product_price_history`
+(`lib/products/topping-price-sync.ts`, called by
+`app/admin/products/modifiers/actions.ts` on an edit — the price sync
+described above).
 
 **Two casings, one table.** `Products`/`products` and
 `Product_Variants`/`product_variants` are each the same physical table seen

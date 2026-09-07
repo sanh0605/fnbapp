@@ -56,6 +56,9 @@ lib/products/product-save-transaction.ts -> product_price_history (write)
 lib/products/product-save-transaction.ts -> product_variants (write)
 lib/products/product-save-transaction.ts -> products (write)
 lib/products/product-save-transaction.ts -> recipes (write)
+lib/products/topping-price-sync.ts -> modifiers (write)
+lib/products/topping-price-sync.ts -> product_price_history (write)
+lib/products/topping-price-sync.ts -> product_variants (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
 lib/stock/stock-adjustment-transaction.ts -> stock_adjustments (write)
@@ -94,6 +97,9 @@ issue).
 `product_price_history`. `app/admin/products/categories/actions.ts` writes
 `Product_Categories`; `app/admin/products/modifiers/actions.ts` writes
 `Modifiers`; `app/admin/products/toppings/actions.ts` writes `Products`.
+`lib/products/topping-price-sync.ts` writes `modifiers`, `product_variants`,
+and `product_price_history` (a topping's price, synced to its linked
+product in one transaction, `BR-CATALOG-003`).
 
 **Inventory catalog.** `app/admin/inventory/actions.ts` writes `Purchased_Items`,
 `Item_Categories`, `Units`, `UOM_Conversions`, and `Purchase_Order_Lines`.

@@ -1,11 +1,12 @@
 "use server";
 
 import { findAll, insert, update, generateNewId } from "@/lib/db/tables";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBModifier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
+import { syncToppingPriceAtomic } from "@/lib/products/topping-price-sync";
 
 const MODIFIER_SHEET = "Modifiers";
 const PATH = "/admin/products/modifiers";
@@ -41,7 +42,19 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
 
   try {
     if (isEdit && modifier_id) {
-      await update(MODIFIER_SHEET, modifier_id, { name, group_name, price });
+      // docs/superpowers/plans/2026-09-07-one-price-per-topping.md: price
+      // goes through the atomic sync RPC, one write, not a plain update()
+      // for price plus a second call for name/group_name -- it carries
+      // those two along on the same call. A synced price also moves the
+      // linked product's variant, so the product caches must not sit stale.
+      await syncToppingPriceAtomic({
+        modifierId: modifier_id,
+        price: Number(price),
+        name,
+        groupName: group_name,
+      });
+      revalidateTag("sheets-Products");
+      revalidateTag("sheets-Product_Variants");
     } else {
       const finalId = await generateNewId(MODIFIER_SHEET, "MOD");
       await insert(MODIFIER_SHEET, {
