@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { alert, confirm } from "@/lib/shared/dialog";
-import type { StocktakeApplyResult } from "@/lib/stocktake-transaction";
+import type { StocktakeApplyResult } from "@/lib/stock/stocktake-transaction";
 import {
   startStocktakeSession,
   saveStocktakeLine,
@@ -396,7 +396,7 @@ function AppliedSessionView({ sessionId, result }: { sessionId: string; result: 
 
 /**
  * Plan D D6 -- one purchased item, one integer input per ACTIVE package
- * size (lib/stocktake-package-lines.ts, reused from D3, not regenerated
+ * size (lib/stock/stocktake-package-lines.ts, reused from D3, not regenerated
  * here). C6: confirmation happens once per purchased item, not per
  * conversion line and not per ingredient -- a single "Xác nhận" commits
  * every conversion's value as one summed base-unit count.

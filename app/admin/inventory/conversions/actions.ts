@@ -6,7 +6,7 @@ import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
-import { wouldLeaveNoCountableConversion } from "@/lib/conversion-countability";
+import { wouldLeaveNoCountableConversion } from "@/lib/stock/conversion-countability";
 import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/unit-lock";
 
 // section 4:

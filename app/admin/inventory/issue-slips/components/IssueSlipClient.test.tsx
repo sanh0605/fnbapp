@@ -18,8 +18,8 @@ import { act } from "react";
 import React from "react";
 import { IssueSlipClient } from "./IssueSlipClient";
 import type { IssueSlipItemView, IssueSlipRow } from "../actions";
-import type { PackageLine } from "@/lib/stocktake-package-lines";
-import type { IssueSlipResult } from "@/lib/manual-issue-transaction";
+import type { PackageLine } from "@/lib/stock/stocktake-package-lines";
+import type { IssueSlipResult } from "@/lib/stock/manual-issue-transaction";
 
 const mocks = vi.hoisted(() => ({
   createIssueSlip: vi.fn(),

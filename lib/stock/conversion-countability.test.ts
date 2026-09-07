@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { wouldLeaveNoCountableConversion } from "@/lib/conversion-countability";
+import { wouldLeaveNoCountableConversion } from "@/lib/stock/conversion-countability";
 
 describe("wouldLeaveNoCountableConversion (Plan D D15, P4-P7)", () => {
   // P4: Robusta Dak Mil's real shape -- the only ACTIVE conversion, no others.

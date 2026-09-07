@@ -2,7 +2,7 @@
 
 ```flow-decl
 routes: /admin/inventory/stocktake
-files: lib/stocktake-transaction.ts
+files: lib/stock/stocktake-transaction.ts
 tables: stocktake_sessions, stocktake_lines, stock_issues
 brCodes: BR-INV-007, BR-COGS-007
 ```
@@ -18,7 +18,7 @@ estimated — its contents are treated as already expensed. When a session is
 closed, the difference between what the count found and what stock records expected
 is booked as cost of goods: a shortfall becomes one or more rows in `stock_issues`
 with `source` set to `STOCKTAKE`. Every write runs through an atomic database
-function called from `lib/stocktake-transaction.ts`.
+function called from `lib/stock/stocktake-transaction.ts`.
 
 ## Five-question current-state description
 
@@ -80,7 +80,7 @@ many months of accumulated difference rather than the loss of one period; see
 `BR-COGS-007` (the first count, 2026-08-09). Later periods
 compare against the previous close and reflect only their own interval.
 
-`lib/stocktake-transaction.ts` calls `reverse_stocktake_session_atomic` among
+`lib/stock/stocktake-transaction.ts` calls `reverse_stocktake_session_atomic` among
 others. Migration 0082 (Phase C) removed that function's `stock_ledger` write
 before Phase D dropped the table itself (migration 0096); the current function
 body does not reference `stock_ledger`.

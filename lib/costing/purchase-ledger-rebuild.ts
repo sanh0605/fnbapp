@@ -31,7 +31,7 @@ type ConversionInput = {
   purchased_unit?: string;
   // Deliberately unread by resolveConversion (2026-08-22 fix, OPEN-ITEMS 56):
   // an old line pointing at a since-deactivated conversion must still
-  // resolve it, matching lib/purchased-item-onhand.ts's C17 spirit. Typed
+  // resolve it, matching lib/stock/purchased-item-onhand.ts's C17 spirit. Typed
   // here only so a real DB row (which does carry this column) type-checks.
   status?: string;
   conversion_rate?: string | number;
@@ -69,7 +69,7 @@ export function buildPurchaseReceipt(input: {
   // Gated on existence, not on status: an item with a conversion that has
   // since gone INACTIVE must still resolve it (resolveConversion looks up
   // without a status filter, same C17 spirit as
-  // lib/purchased-item-onhand.ts), or an old line silently falls back to
+  // lib/stock/purchased-item-onhand.ts), or an old line silently falls back to
   // rate 1 the moment its conversion is retired. EQUIPMENT items have
   // literally zero conversion rows -- that absence, not RAW-ness, is the
   // real discriminator for "this purchase is already in base units."

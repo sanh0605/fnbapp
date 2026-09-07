@@ -20,7 +20,7 @@ vi.mock("@/lib/db/tables", () => ({
   findAllWhere: mocks.findAllWhere,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
-vi.mock("@/lib/manual-issue-transaction", () => ({
+vi.mock("@/lib/stock/manual-issue-transaction", () => ({
   createIssueSlipAtomic: mocks.createIssueSlipAtomic,
   reverseManualIssueAtomic: mocks.reverseManualIssueAtomic,
   cancelIssueSlipAtomic: mocks.cancelIssueSlipAtomic,

@@ -25,7 +25,7 @@ vi.mock("@/lib/db/tables", () => ({
   remove: mocks.remove,
   generateNewId: mocks.generateNewId,
 }));
-vi.mock("@/lib/stock-adjustment-transaction", () => ({
+vi.mock("@/lib/stock/stock-adjustment-transaction", () => ({
   submitStockAdjustmentAtomic: mocks.submitStockAdjustmentAtomic,
   approveStockAdjustmentAtomic: vi.fn(),
 }));

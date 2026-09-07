@@ -27,7 +27,7 @@ vi.mock("@/lib/db/tables", async () => {
     getCacheTag: actual.getCacheTag,
   };
 });
-vi.mock("@/lib/stock-adjustment-transaction", () => ({
+vi.mock("@/lib/stock/stock-adjustment-transaction", () => ({
   submitStockAdjustmentAtomic: vi.fn(),
   approveStockAdjustmentAtomic: vi.fn(),
 }));

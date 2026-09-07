@@ -3,8 +3,8 @@ import { rpcCallSites, rpcWriteTargets, resolveRpcWrites } from "./extract-rpc";
 
 describe("extract-rpc", () => {
   it("finds .rpc call sites", () => {
-    const files = [{ path: "lib/manual-issue-transaction.ts", source: `await client.rpc("create_issue_slip_atomic", { p });` }];
-    expect(rpcCallSites(files)).toEqual([{ file: "lib/manual-issue-transaction.ts", fn: "create_issue_slip_atomic" }]);
+    const files = [{ path: "lib/stock/manual-issue-transaction.ts", source: `await client.rpc("create_issue_slip_atomic", { p });` }];
+    expect(rpcCallSites(files)).toEqual([{ file: "lib/stock/manual-issue-transaction.ts", fn: "create_issue_slip_atomic" }]);
   });
 
   it("reads write targets from the latest function definition", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPackageLines, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
+import { buildPackageLines, type PurchasedItemConversion } from "@/lib/stock/stocktake-package-lines";
 
 // Real shapes, measured against production 2026-08-07 (Plan D section 4/6).
 const DAU_SAY: PurchasedItemConversion[] = [

@@ -10,10 +10,10 @@ import { SearchableSelect } from "@/components/SearchableSelect";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";
-import { computeAffectedMonths } from "@/lib/issue-slip-warnings";
-import { formatConvertedOnHand } from "@/lib/issue-slip-onhand-display";
+import { computeAffectedMonths } from "@/lib/stock/issue-slip-warnings";
+import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
 import { createIssueSlip, reverseIssueSlip, cancelIssueSlip, type IssueSlipItemView, type IssueSlipRow } from "../actions";
-import type { IssueSlipResult } from "@/lib/manual-issue-transaction";
+import type { IssueSlipResult } from "@/lib/stock/manual-issue-transaction";
 
 // I1/I2: the two reasons the plan names explicitly, plus a free-form escape
 // hatch -- the RPC does not care which is picked, this only shapes the note

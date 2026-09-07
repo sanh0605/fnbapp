@@ -7,6 +7,7 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
 ```
 
+**Reviewed, no behaviour change — 2026-09-07 (Task 16):** a declared source file's import path only -- stock lib helpers (manual-issue-transaction, stock-adjustment-transaction, stocktake-transaction, stocktake-package-lines, issue-slip-onhand-display, issue-slip-warnings, purchased-item-onhand, conversion-countability) moved to `lib/stock/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 14):** a declared source file's import path only -- purchasing lib helpers (purchase-order-transaction, purchase-order-edit-gate, purchase-order-write-plan, purchase-line-base-quantity, item-purchase-history) moved to `lib/purchasing/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.

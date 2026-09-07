@@ -12,9 +12,9 @@ import {
   type IssueSlipResult,
   type ReversalResult,
   type SlipCancelResult,
-} from "@/lib/manual-issue-transaction";
-import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
-import { computeOnHandByPurchasedItem, filterByC17 } from "@/lib/purchased-item-onhand";
+} from "@/lib/stock/manual-issue-transaction";
+import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stock/stocktake-package-lines";
+import { computeOnHandByPurchasedItem, filterByC17 } from "@/lib/stock/purchased-item-onhand";
 
 const PATH = "/admin/inventory/issue-slips";
 const RECENT_SLIPS_LIMIT = 100;

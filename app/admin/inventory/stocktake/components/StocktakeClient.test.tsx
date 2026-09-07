@@ -17,8 +17,8 @@ import { act } from "react";
 import React from "react";
 import { StocktakeClient } from "./StocktakeClient";
 import type { StocktakeLineView, StocktakeSessionView } from "../actions";
-import type { PackageLine } from "@/lib/stocktake-package-lines";
-import type { StocktakeApplyResult } from "@/lib/stocktake-transaction";
+import type { PackageLine } from "@/lib/stock/stocktake-package-lines";
+import type { StocktakeApplyResult } from "@/lib/stock/stocktake-transaction";
 
 const mocks = vi.hoisted(() => ({
   startStocktakeSession: vi.fn(),

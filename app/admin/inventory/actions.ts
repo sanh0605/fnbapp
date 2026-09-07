@@ -8,7 +8,7 @@ import { requireAdmin } from "@/lib/auth/auth";
 import {
   approveStockAdjustmentAtomic,
   submitStockAdjustmentAtomic,
-} from "@/lib/stock-adjustment-transaction";
+} from "@/lib/stock/stock-adjustment-transaction";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 import { buildUnitDeleteRestrictionMessage, type UnitBlockerFinding } from "@/lib/unit-delete-restriction";
 

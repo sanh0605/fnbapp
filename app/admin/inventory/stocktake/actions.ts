@@ -14,9 +14,9 @@ import {
   type StocktakeItemType,
   type StocktakeApplyResult,
   type StocktakeReversalResult,
-} from "@/lib/stocktake-transaction";
-import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stocktake-package-lines";
-import { filterByC17 } from "@/lib/purchased-item-onhand";
+} from "@/lib/stock/stocktake-transaction";
+import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stock/stocktake-package-lines";
+import { filterByC17 } from "@/lib/stock/purchased-item-onhand";
 
 const PATH = "/admin/inventory/stocktake";
 
@@ -89,7 +89,7 @@ async function loadItemNameMaps() {
   };
 }
 
-// Plan D D6: one input per ACTIVE conversion (lib/stocktake-package-lines.ts,
+// Plan D D6: one input per ACTIVE conversion (lib/stock/stocktake-package-lines.ts,
 // D3), grouped under the purchased item that owns them. Built here, once,
 // from the same UOM_Conversions table -- the screen must reuse this
 // function's labels rather than growing a second label-generator: the same

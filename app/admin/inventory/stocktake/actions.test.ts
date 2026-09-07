@@ -21,7 +21,7 @@ vi.mock("@/lib/db/tables", () => ({
   findAllWhere: mocks.findAllWhere,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
-vi.mock("@/lib/stocktake-transaction", () => ({
+vi.mock("@/lib/stock/stocktake-transaction", () => ({
   openStocktakeSessionAtomic: mocks.openStocktakeSessionAtomic,
   saveStocktakeLineAtomic: mocks.saveStocktakeLineAtomic,
   cancelStocktakeSessionAtomic: mocks.cancelStocktakeSessionAtomic,
@@ -374,7 +374,7 @@ describe("getStocktakeSessionData package lines", () => {
   });
 
   // Plan D D6: a PURCHASED_ITEM line must carry one packageLine per ACTIVE
-  // conversion, built by the same lib/stocktake-package-lines.ts (D3) the
+  // conversion, built by the same lib/stock/stocktake-package-lines.ts (D3) the
   // screen renders from -- not a second label generator. Real Dau say
   // conversion shape (three, all named "Tui"), the case the whole
   // package-line model exists for.

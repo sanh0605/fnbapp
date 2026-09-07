@@ -2,7 +2,7 @@
 
 ```flow-decl
 routes: /admin/inventory/issue-slips, /admin/inventory/stock-adjustments
-files: lib/manual-issue-transaction.ts, lib/stock-adjustment-transaction.ts
+files: lib/stock/manual-issue-transaction.ts, lib/stock/stock-adjustment-transaction.ts
 tables: issue_slips, stock_issues, stock_adjustments
 brCodes: BR-COGS-005
 ```
@@ -16,8 +16,8 @@ manual correction to an on-hand quantity). Both are entered from the admin
 inventory screens. Issue slips are one of the paths that generate cost of goods:
 cost is measured when goods physically leave stock (`BR-COGS-005`), not at the
 moment of sale. Each write runs through an atomic database function, called from
-`lib/manual-issue-transaction.ts` (issue slips) and
-`lib/stock-adjustment-transaction.ts` (adjustments).
+`lib/stock/manual-issue-transaction.ts` (issue slips) and
+`lib/stock/stock-adjustment-transaction.ts` (adjustments).
 
 ## Five-question current-state description
 
@@ -56,7 +56,7 @@ atomic function writes `stock_adjustments`. The generated map at
 `docs/generated/system-map.md` confirms exactly these write relations for the two
 declared files.
 
-`lib/stock-adjustment-transaction.ts` calls `submit_stock_adjustment_atomic` and
+`lib/stock/stock-adjustment-transaction.ts` calls `submit_stock_adjustment_atomic` and
 `approve_stock_adjustment_atomic`. Migrations 0083 and 0084 (Phase C) removed
 their `stock_ledger` writes before Phase D dropped the table itself (migration
 0096); the current function bodies do not reference `stock_ledger`.

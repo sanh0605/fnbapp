@@ -3,10 +3,10 @@ import { readFileSync } from "node:fs";
 import { checkMapDrift } from "./map-drift-core";
 
 // Scope the generated side to the SEED FLOW's file, not to a table name:
-// stock_issues is written by both lib/manual-issue-transaction.ts (this flow)
-// and lib/stocktake-transaction.ts (a different flow). Filtering by table would
+// stock_issues is written by both lib/stock/manual-issue-transaction.ts (this flow)
+// and lib/stock/stocktake-transaction.ts (a different flow). Filtering by table would
 // pull the stocktake relation in and make the seed hand map look incomplete.
-const FLOW_FILE = "lib/manual-issue-transaction.ts";
+const FLOW_FILE = "lib/stock/manual-issue-transaction.ts";
 
 describe("seed proof: drift check catches a real removed relation", () => {
   const generated = readFileSync("docs/generated/system-map.md", "utf8");

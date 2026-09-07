@@ -47,8 +47,8 @@ app/admin/suppliers/actions.ts -> Suppliers (write)
 app/admin/users/actions.ts -> Users (write)
 app/pos/actions.ts -> POS_Drafts (write)
 app/pos/actions.ts -> Pos_Sync_Failures (write)
-lib/manual-issue-transaction.ts -> issue_slips (write)
-lib/manual-issue-transaction.ts -> stock_issues (write)
+lib/stock/manual-issue-transaction.ts -> issue_slips (write)
+lib/stock/manual-issue-transaction.ts -> stock_issues (write)
 lib/product-erase-transaction.ts -> product_price_history (write)
 lib/product-erase-transaction.ts -> product_variants (write)
 lib/product-erase-transaction.ts -> products (write)
@@ -58,10 +58,10 @@ lib/product-save-transaction.ts -> products (write)
 lib/product-save-transaction.ts -> recipes (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
-lib/stock-adjustment-transaction.ts -> stock_adjustments (write)
-lib/stocktake-transaction.ts -> stock_issues (write)
-lib/stocktake-transaction.ts -> stocktake_lines (write)
-lib/stocktake-transaction.ts -> stocktake_sessions (write)
+lib/stock/stock-adjustment-transaction.ts -> stock_adjustments (write)
+lib/stock/stocktake-transaction.ts -> stock_issues (write)
+lib/stock/stocktake-transaction.ts -> stocktake_lines (write)
+lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 lib/sales/void-order-transaction.ts -> order_events (write)
 lib/sales/void-order-transaction.ts -> orders_v2 (write)
 ```
@@ -78,12 +78,12 @@ writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 writes `assets`, `purchase_order_edits`, and `Purchase_Sources`.
 `app/admin/suppliers/actions.ts` writes `Suppliers`.
 
-**Stock issue and adjustment.** `lib/manual-issue-transaction.ts` writes
-`issue_slips` and `stock_issues`. `lib/stock-adjustment-transaction.ts` writes
+**Stock issue and adjustment.** `lib/stock/manual-issue-transaction.ts` writes
+`issue_slips` and `stock_issues`. `lib/stock/stock-adjustment-transaction.ts` writes
 `stock_adjustments`. `app/admin/inventory/actions.ts` also
 writes `Stock_Adjustments` (this file spans inventory-catalog and stock-issue).
 
-**Stocktake.** `lib/stocktake-transaction.ts` writes `stocktake_sessions`,
+**Stocktake.** `lib/stock/stocktake-transaction.ts` writes `stocktake_sessions`,
 `stocktake_lines`, and `stock_issues` (a closed count books its shortfall as an
 issue).
 

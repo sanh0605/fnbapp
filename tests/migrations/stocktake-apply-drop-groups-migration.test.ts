@@ -40,7 +40,7 @@ describe("apply_stocktake_session_atomic (0089): no longer reads base_ingredient
   });
 
   // ledger_count / skipped_ingredients stay in the return shape (read by
-  // lib/stocktake-transaction.ts) -- only their producer (the removed loop)
+  // lib/stock/stocktake-transaction.ts) -- only their producer (the removed loop)
   // is gone, not the keys themselves.
   it("still returns ledger_count and skipped_ingredients in both branches", () => {
     const migration = readMigration();
