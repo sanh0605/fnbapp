@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";
+import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-write-plan";
 
 const order = {
   id: "",

@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { formatNumber } from "@/lib/shared/format";
 import type { DBPurchaseOrder, DBSupplier, DBPurchasedItem } from "@/types/db";
-import type { RawPurchaseOrderLine } from "@/lib/item-purchase-history";
+import type { RawPurchaseOrderLine } from "@/lib/purchasing/item-purchase-history";
 
 interface PurchaseOrdersClientProps {
   orders: DBPurchaseOrder[];

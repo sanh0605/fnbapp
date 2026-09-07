@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeItemPurchaseHistory, getPriceTrend } from "@/lib/item-purchase-history";
+import { computeItemPurchaseHistory, getPriceTrend } from "@/lib/purchasing/item-purchase-history";
 
 const suppliers = [{ id: "NCC-1", name: "Nhà cung cấp A" }, { id: "NCC-2", name: "Nhà cung cấp B" }];
 const units = [{ id: "U-KG", name: "Kg" }];

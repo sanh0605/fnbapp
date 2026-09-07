@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeBaseQuantity } from "@/lib/purchase-line-base-quantity";
+import { computeBaseQuantity } from "@/lib/purchasing/purchase-line-base-quantity";
 
 describe("computeBaseQuantity", () => {
   // The three real lines verified against the ledger on 2026-08-02.

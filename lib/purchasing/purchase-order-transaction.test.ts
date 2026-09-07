@@ -10,7 +10,7 @@ vi.mock("@/lib/db/supabase", () => ({
   }),
 }));
 
-import { savePurchaseOrderAtomic } from "@/lib/purchase-order-transaction";
+import { savePurchaseOrderAtomic } from "@/lib/purchasing/purchase-order-transaction";
 
 describe("savePurchaseOrderAtomic", () => {
   beforeEach(() => {

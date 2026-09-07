@@ -12,7 +12,7 @@ import {
   type RawPurchaseOrder,
   type RawPurchaseOrderLine,
   type RawSupplier,
-} from "@/lib/item-purchase-history";
+} from "@/lib/purchasing/item-purchase-history";
 import {
   findDuplicateActiveName,
   duplicateNameErrorMessage,

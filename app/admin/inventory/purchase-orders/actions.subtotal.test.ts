@@ -21,10 +21,10 @@ vi.mock("@/lib/db/tables", () => ({
   insert: mocks.insert,
   generateNewId: mocks.generateNewId,
 }));
-vi.mock("@/lib/purchase-order-write-plan", () => ({
+vi.mock("@/lib/purchasing/purchase-order-write-plan", () => ({
   buildPurchaseOrderWritePlan: mocks.buildPurchaseOrderWritePlan,
 }));
-vi.mock("@/lib/purchase-order-transaction", () => ({
+vi.mock("@/lib/purchasing/purchase-order-transaction", () => ({
   savePurchaseOrderAtomic: mocks.savePurchaseOrderAtomic,
 }));
 vi.mock("next/cache", () => ({

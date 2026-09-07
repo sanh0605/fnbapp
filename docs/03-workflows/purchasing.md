@@ -2,7 +2,7 @@
 
 ```flow-decl
 routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers
-files: lib/purchase-order-transaction.ts, app/admin/inventory/purchase-orders/actions.ts, app/admin/suppliers/actions.ts
+files: lib/purchasing/purchase-order-transaction.ts, app/admin/inventory/purchase-orders/actions.ts, app/admin/suppliers/actions.ts
 tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_Sources, assets, Suppliers
 brCodes: BR-INV-002
 ```
@@ -22,7 +22,7 @@ order** (what was bought, from whom, at what price) and maintaining the
 
 The header and all its lines are saved together through one atomic database
 function (`save_purchase_order_atomic`), called from
-`lib/purchase-order-transaction.ts`. Purchase orders are exactly the kind of
+`lib/purchasing/purchase-order-transaction.ts`. Purchase orders are exactly the kind of
 critical multi-row write that must never partially succeed (`BR-INV-002`): either
 the order and every line land, or nothing does.
 
@@ -94,7 +94,7 @@ suppliers action writes `Suppliers`. The generated map at
 `docs/generated/system-map.md` confirms exactly these write relations for the
 three declared files.
 
-`lib/purchase-order-transaction.ts` runs the RPC `save_purchase_order_atomic`.
+`lib/purchasing/purchase-order-transaction.ts` runs the RPC `save_purchase_order_atomic`.
 Migration 0078 (Phase C) removed that function's `stock_ledger` write before
 Phase D dropped the table itself (migration 0096); the current function body
 does not reference `stock_ledger`. `BR-INV-001` (the old "quantity movement

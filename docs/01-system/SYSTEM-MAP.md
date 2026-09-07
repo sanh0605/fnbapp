@@ -56,8 +56,8 @@ lib/product-save-transaction.ts -> product_price_history (write)
 lib/product-save-transaction.ts -> product_variants (write)
 lib/product-save-transaction.ts -> products (write)
 lib/product-save-transaction.ts -> recipes (write)
-lib/purchase-order-transaction.ts -> purchase_order_lines (write)
-lib/purchase-order-transaction.ts -> purchase_orders (write)
+lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
+lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
 lib/stock-adjustment-transaction.ts -> stock_adjustments (write)
 lib/stocktake-transaction.ts -> stock_issues (write)
 lib/stocktake-transaction.ts -> stocktake_lines (write)
@@ -73,7 +73,7 @@ POS device sync writes the completed sale itself). `lib/sales/void-order-transac
 writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 `Promotions`.
 
-**Purchasing.** `lib/purchase-order-transaction.ts` writes `purchase_orders` and
+**Purchasing.** `lib/purchasing/purchase-order-transaction.ts` writes `purchase_orders` and
 `purchase_order_lines`. `app/admin/inventory/purchase-orders/actions.ts`
 writes `assets`, `purchase_order_edits`, and `Purchase_Sources`.
 `app/admin/suppliers/actions.ts` writes `Suppliers`.

@@ -20,7 +20,7 @@ band chosen by its own unit price, frozen at purchase (`BR-COGS-008`).
 
 **Where assets come from — the purchasing flow, not this one.** The `assets` row
 itself is never created here. Completing a purchase order with an `EQUIPMENT`
-line inserts the asset automatically (`lib/purchase-order-transaction.ts`, called
+line inserts the asset automatically (`lib/purchasing/purchase-order-transaction.ts`, called
 from `app/admin/inventory/purchase-orders/actions.ts`) — see
 `docs/03-workflows/purchasing.md`. That is why `assets` is not in this flow's
 declared `tables:`: the two files here only write `asset_disposals` and

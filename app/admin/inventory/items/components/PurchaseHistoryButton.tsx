@@ -5,7 +5,7 @@ import { FormModal } from "@/components/ui/FormModal";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { formatNumber } from "@/lib/shared/format";
-import { getPriceTrend, type ItemPurchaseHistoryRow } from "@/lib/item-purchase-history";
+import { getPriceTrend, type ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
 import { getItemPurchaseHistory } from "../actions";
 
 export function PurchaseHistoryButton({ itemId, itemName }: { itemId: string; itemName: string }) {

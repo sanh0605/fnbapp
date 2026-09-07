@@ -1,4 +1,4 @@
-import { computeBaseQuantity } from "@/lib/purchase-line-base-quantity";
+import { computeBaseQuantity } from "@/lib/purchasing/purchase-line-base-quantity";
 
 type PurchaseOrderInput = {
   id: string;
