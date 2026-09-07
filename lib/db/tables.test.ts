@@ -51,7 +51,7 @@ import {
   findAllWhere,
   findAllWhereInBatches,
   updateMany,
-} from "./sheets_db";
+} from "./tables";
 
 describe("findAllNoCache legacy compatibility", () => {
   beforeEach(() => {

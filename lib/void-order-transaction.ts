@@ -52,4 +52,4 @@ function parseJsonColumns(
   }
   return result;
 }
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/db/supabase";

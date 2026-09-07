@@ -10,7 +10,7 @@ process.env.CLI_MODE = "true";
  */
 
 async function main(): Promise<void> {
-  const { assertSafeRestoreTarget, restoreBundleToTarget, JSONB_NULL_LITERAL_SENTINEL } = await import("../lib/backup-restore");
+  const { assertSafeRestoreTarget, restoreBundleToTarget, JSONB_NULL_LITERAL_SENTINEL } = await import("@/lib/db/backup-restore");
 
   const productionUrl = process.env.SUPABASE_URL || "";
   const targetUrl = process.env.RESTORE_TARGET_SUPABASE_URL || "";
@@ -50,7 +50,7 @@ async function main(): Promise<void> {
     totalSubstituted += r.substituted;
   }
   if (totalSubstituted > 0) {
-    console.log(`\n${totalSubstituted} row(s) had a NOT NULL jsonb column's null literal replaced with a documented sentinel (${JSON.stringify(JSONB_NULL_LITERAL_SENTINEL)}) -- see NOT_NULL_JSONB_NULL_LITERAL_COLUMNS in lib/backup-restore.ts.`);
+    console.log(`\n${totalSubstituted} row(s) had a NOT NULL jsonb column's null literal replaced with a documented sentinel (${JSON.stringify(JSONB_NULL_LITERAL_SENTINEL)}) -- see NOT_NULL_JSONB_NULL_LITERAL_COLUMNS in lib/db/backup-restore.ts.`);
   }
 
   if (totalSkipped > 0) {

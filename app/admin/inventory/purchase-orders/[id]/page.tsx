@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { findById, findAll } from "@/lib/sheets_db";
+import { findById, findAll } from "@/lib/db/tables";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";

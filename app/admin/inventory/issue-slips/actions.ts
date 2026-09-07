@@ -1,9 +1,9 @@
 "use server";
 
-import { findAll, findAllWhere } from "@/lib/sheets_db";
+import { findAll, findAllWhere } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
-import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import {
   createIssueSlipAtomic,

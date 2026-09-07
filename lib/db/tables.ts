@@ -1,19 +1,13 @@
 /**
- * Database adapter — Supabase implementation.
+ * Database adapter over Supabase Postgres, keyed by table name.
  *
- * Claude code — Supabase migration Phase B.
+ * Callers pass a PascalCase table name (e.g. "Orders_V2"); Postgres stores it
+ * lowercase, so names are lowercased before querying. Reads go through
+ * unstable_cache with the tag `sheets-<TableName>` -- the prefix is historical
+ * (the first backend was Google Sheets) and is kept because every revalidateTag
+ * call in the app uses it; renaming the tag would be a behaviour change.
  *
- * Replaces Google Sheets implementation. Same exports/signatures as before
- * so callers (server actions, scripts, lib) don't need changes.
- *
- * Sheet name resolution: code uses PascalCase (e.g. "Orders_V2") but
- * Postgres stores as lowercase. We lowercase before querying.
- *
- * Cache layer: unstable_cache with tag `sheets-<SheetName>` preserved
- * so existing revalidateTag calls in app/api/revalidate/route.ts work
- * unchanged.
- *
- * CLI_MODE: scripts bypass cache (same as Sheets impl).
+ * CLI_MODE: scripts bypass the cache.
  */
 
 import { unstable_cache, revalidateTag } from 'next/cache';
@@ -63,12 +57,12 @@ const getRevalidation = (sheetName: string) => {
 
 /**
  * @deprecated Supabase migration Phase B. Use getSupabaseClient() from
- * lib/supabase.ts instead. This throws at runtime; returns `any` so legacy
+ * lib/db/supabase.ts instead. This throws at runtime; returns `any` so legacy
  * bypass callers compile (Phase F cleanup will rewrite them).
  */
 export function getAuth(): any {
   throw new Error(
-    'getAuth() is deprecated after Supabase migration. Update caller to use lib/supabase.ts.'
+    'getAuth() is deprecated after Supabase migration. Update caller to use lib/db/supabase.ts.'
   );
 }
 
@@ -78,7 +72,7 @@ export function getAuth(): any {
  */
 export const getSheetsClient = (): any => {
   throw new Error(
-    'getSheetsClient() is deprecated after Supabase migration. Update caller to use lib/supabase.ts.'
+    'getSheetsClient() is deprecated after Supabase migration. Update caller to use lib/db/supabase.ts.'
   );
 };
 

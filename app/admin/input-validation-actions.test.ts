@@ -7,7 +7,7 @@ const removeMock = vi.hoisted(() => vi.fn());
 const generateNewIdMock = vi.hoisted(() => vi.fn());
 const requireAdminMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAll: findAllMock,
   insert: insertMock,
   update: updateMock,

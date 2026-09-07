@@ -1,4 +1,4 @@
-import { findAll } from "@/lib/sheets_db";
+import { findAll } from "@/lib/db/tables";
 import ProductsClient from "./ProductsClient";
 
 export const dynamic = "force-dynamic";

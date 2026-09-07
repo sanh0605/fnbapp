@@ -1,6 +1,6 @@
 "use server";
 
-import { findAllNoCache, findAllWhere, update } from "@/lib/sheets_db";
+import { findAllNoCache, findAllWhere, update } from "@/lib/db/tables";
 import { requireAdmin } from "@/lib/auth";
 
 export interface PosSyncLateOrder {
@@ -29,7 +29,7 @@ export async function getPosSyncAttentionItems(): Promise<{
 
   const [orders, syncFailures] = await Promise.all([
     // findAllWhere doesn't support a column projection or an explicit
-    // "is not null" filter (see lib/sheets_db.ts), so this scopes the read
+    // "is not null" filter (see lib/db/tables.ts), so this scopes the read
     // the closest way the existing abstraction allows: a `gte` filter on
     // synced_at against the epoch. Postgres/PostgREST evaluates a `gte`
     // comparison against a NULL column as NULL (not true), so rows with no

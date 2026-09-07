@@ -1,4 +1,4 @@
-import { findAll } from "@/lib/sheets_db";
+import { findAll } from "@/lib/db/tables";
 import { BrandForm, DeleteBrandButton } from "./components/BrandForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";

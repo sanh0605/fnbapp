@@ -38,21 +38,18 @@ Giá vốn của nguyên liệu tính theo **bình quân gia quyền** của cá
 cách này nằm trong `docs/02-rules/business-rules/`; các bước thao tác thật nằm trong
 `docs/03-workflows/`. Tài liệu này cố ý không chép lại công thức.
 
-## Hai cái bẫy khi đọc mã nguồn
+## Một cái bẫy khi đọc mã nguồn, và một dấu vết
 
-Người mới đọc mã nguồn sẽ vấp hai chỗ đặt tên, cả hai đều vô hại một khi đã biết:
-
-**Bẫy thứ nhất — tên nói Google Sheets, ruột là Supabase.** Lớp trung gian đọc
-ghi dữ liệu nằm ở `lib/sheets_db.ts`. Cái tên có chữ "sheets" là dấu vết thời
-đầu dùng Google Sheets; thực chất bây giờ nó nói chuyện với cơ sở dữ liệu
-Supabase. Rất nhiều file trong mã nguồn đang gọi tới nó — cứ đọc tên mà tưởng
-đây là Google Sheets là hiểu sai ngay ngày đầu.
-
-**Bẫy thứ hai — một bảng, hai lối viết hoa.** Trong bản đồ hệ thống, cùng một
-bảng dữ liệu có thể hiện ra dưới hai kiểu viết hoa khác nhau, ví dụ `Products`
-và `products`, hay `Stock_Adjustments` và `stock_adjustments`. Đó **vẫn là một
-bảng** — một lối viết đến từ lời gọi qua `lib/sheets_db.ts`, lối kia đến từ thân
+**Bẫy — một bảng, hai lối viết hoa.** Trong bản đồ hệ thống, cùng một bảng dữ
+liệu có thể hiện ra dưới hai kiểu viết hoa khác nhau, ví dụ `Products` và
+`products`, hay `Stock_Adjustments` và `stock_adjustments`. Đó **vẫn là một
+bảng** — một lối viết đến từ lời gọi qua `lib/db/tables.ts`, lối kia đến từ thân
 một hàm RPC. Đừng đếm chúng thành hai bảng.
+
+**Dấu vết — khoá cache mang chữ "sheets".** Lớp đọc ghi `lib/db/tables.ts` đặt
+khoá cache dạng `sheets-<Tên bảng>`. Chữ "sheets" là dấu vết thời đầu dùng Google
+Sheets; ruột đã là Supabase từ lâu. Khoá giữ nguyên vì mọi lệnh làm mới cache
+đang dùng nó — đổi tên khoá là đổi hành vi, không phải dọn dẹp.
 
 ## Web chạy ở đâu
 

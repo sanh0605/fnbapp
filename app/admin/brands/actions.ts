@@ -1,7 +1,7 @@
 "use server";
 
-import { findAll } from "@/lib/sheets_db";
-import { createEntity, updateEntity, deleteEntity, type ActionResponse } from "@/lib/shared-actions";
+import { findAll } from "@/lib/db/tables";
+import { createEntity, updateEntity, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { requireAdmin } from "@/lib/auth";
 
 const SHEET = "Brands";

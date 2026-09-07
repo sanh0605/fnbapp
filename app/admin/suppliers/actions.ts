@@ -1,8 +1,8 @@
 "use server";
 
-import { findAll, insert, update, remove, generateNewId } from "@/lib/sheets_db";
+import { findAll, insert, update, remove, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
-import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/shared-actions";
+import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import type { DBSupplier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";

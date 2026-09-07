@@ -93,8 +93,8 @@ const KNOWN_MONTHLY_BASELINES: Record<string, MonthlyBaseline | undefined> = {
 };
 
 async function main(): Promise<void> {
-  const { findAllNoCache } = await import("../lib/sheets_db");
-  const { formatNumber } = await import("../lib/format");
+  const { findAllNoCache } = await import("@/lib/db/tables");
+  const { formatNumber } = await import("@/lib/shared/format");
   const { saigonBucketKeys } = await import("../lib/report-time");
   const {
     checkHeaderArithmetic,
@@ -130,7 +130,7 @@ async function main(): Promise<void> {
   // Trap #1 (measured 2026-08-14): Supabase caps a select at 1.000 rows;
   // a naive read of orders_v2 (2.118 total rows as of that measurement)
   // silently truncates and produces a confident, wrong breakdown.
-  // findAllNoCache already paginates internally (lib/sheets_db.ts), but
+  // findAllNoCache already paginates internally (lib/db/tables.ts), but
   // this asserts the outcome rather than trusting that silently -- a floor,
   // since the COMPLETED count only grows.
   if (!meetsMinimumOrderCount(completedRaw.length, EXPECTED_ORDER_COUNT)) {
@@ -165,7 +165,7 @@ async function main(): Promise<void> {
     .map(p => ({ order_id: p.order_id, amount: Number(p.amount) || 0 }));
 
   // H2. product_snapshot_json/modifiers_snapshot_json are jsonb columns in
-  // Postgres, but lib/sheets_db.ts's serializeRow (checked, not assumed --
+  // Postgres, but lib/db/tables.ts's serializeRow (checked, not assumed --
   // it lists both under order_lines_v2's JSON_COLUMNS_BY_TABLE) converts
   // them back to JSON strings on the way out, for JSON.parse-based callers
   // like this one -- an empty/null value comes back as "", not "{}"/"[]".

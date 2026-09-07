@@ -17,7 +17,7 @@ vi.mock("@/lib/auth", () => ({
   resolveActor: mocks.resolveActor,
   requireAdmin: mocks.requireAdmin,
 }));
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,
   insert: mocks.insert,

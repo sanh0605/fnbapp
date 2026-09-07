@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ resolveActor: mocks.resolveActor }));
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAll: vi.fn(),
   findAllNoCache: mocks.findAllNoCache,
   findAllWhere: vi.fn(),

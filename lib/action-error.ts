@@ -2,7 +2,7 @@
 // owner is never shown a raw technical string with no relation to what he
 // did wrong.
 // section 3.
-import type { ActionResponse } from "@/lib/shared-actions";
+import type { ActionResponse } from "@/lib/db/shared-actions";
 
 const GENERIC_MESSAGE =
   "Có lỗi xảy ra, vui lòng thử lại. Nếu vẫn còn lỗi, báo cho người quản lý kỹ thuật kèm theo việc anh vừa làm.";

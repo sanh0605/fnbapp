@@ -13,11 +13,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", async () => {
+vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), so this file's own assertions can never silently drift
   // from what the source under test actually calls.
-  const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
+  const actual = await vi.importActual<typeof import("@/lib/db/tables")>("@/lib/db/tables");
   return {
     findAll: mocks.findAll,
     // section A3: deleteUnit now checks findAllWhere before deleting --
@@ -41,7 +41,7 @@ vi.mock("@/lib/stock-adjustment-transaction", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import { addUnit, updateUnit, deleteUnit, addItemCategory, updateItemCategory, deleteItemCategory } from "./actions";
-import { getCacheTag } from "@/lib/sheets_db";
+import { getCacheTag } from "@/lib/db/tables";
 
 function formData(fields: Record<string, string>): FormData {
   const fd = new FormData();

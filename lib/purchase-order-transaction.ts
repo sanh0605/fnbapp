@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/db/supabase";
 
 export type PurchaseOrderAtomicInput = {
   order: Record<string, unknown>;

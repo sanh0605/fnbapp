@@ -35,7 +35,7 @@ export const BACKUP_TABLES = [
   "stocktake_sessions",
   "stocktake_lines",
   // References purchased_items and stocktake_sessions, so it must come after
-  // both for lib/backup-restore.ts's parent-first restore order to resolve.
+  // both for lib/db/backup-restore.ts's parent-first restore order to resolve.
   "stock_issues",
   "purchase_order_edits",
   "pos_sync_failures",

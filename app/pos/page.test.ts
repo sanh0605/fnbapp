@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
   redirect: vi.fn(),
 }));
 
-vi.mock("@/lib/sheets_db", () => ({ findAll: mocks.findAll }));
+vi.mock("@/lib/db/tables", () => ({ findAll: mocks.findAll }));
 vi.mock("next-auth/next", () => ({ getServerSession: mocks.getServerSession }));
 vi.mock("@/lib/auth", () => ({ authOptions: {} }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));

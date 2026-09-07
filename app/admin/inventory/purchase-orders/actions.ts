@@ -1,8 +1,8 @@
 "use server";
 
-import { findAll, findById, insert, generateNewId } from "@/lib/sheets_db";
+import { findAll, findById, insert, generateNewId } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";

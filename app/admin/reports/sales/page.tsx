@@ -1,4 +1,4 @@
-import { findAll } from "@/lib/sheets_db";
+import { findAll } from "@/lib/db/tables";
 import { getSalesDataV2, getHourlyHeatmapV2 } from "../actions";
 import SalesFilter from "@/components/SalesFilter";
 import SalesCharts from "@/components/SalesCharts";

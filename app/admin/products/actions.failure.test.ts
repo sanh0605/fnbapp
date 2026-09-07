@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   update: mocks.update,
 }));
@@ -69,7 +69,7 @@ describe("saveProduct atomic persistence", () => {
     });
     // section 3:
     // revalidatePath alone only refreshes /admin/products -- POS reads the
-    // same tables through lib/sheets_db.ts's tag-keyed cache, which
+    // same tables through lib/db/tables.ts's tag-keyed cache, which
     // revalidatePath never touches. Today (pre-fix) this is a wrong VALUE,
     // not a missing function: saveProduct already existed and already
     // called revalidatePath, it just never called revalidateTag at all.

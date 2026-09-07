@@ -1,9 +1,9 @@
 "use server";
 
-import { findAll, findAllWhere } from "@/lib/sheets_db";
+import { findAll, findAllWhere } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth";
-import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/action-error";
 import {
   openStocktakeSessionAtomic,
@@ -131,7 +131,7 @@ export async function getLastConfirmedStocktakeSession(): Promise<RecentConfirme
   if (!auth.ok) throw new Error(auth.error);
 
   // Production bug 2026-08-09: this used order.column = "confirmed_at".
-  // findAllWhere (lib/sheets_db.ts) only supports 'id' or 'created_at' and
+  // findAllWhere (lib/db/tables.ts) only supports 'id' or 'created_at' and
   // throws on anything else -- every load of this page failed, regardless
   // of data. created_at is not a workaround, it is equivalent here: at most
   // one session can ever be OPEN at a time (idx_stocktake_sessions_one_open,

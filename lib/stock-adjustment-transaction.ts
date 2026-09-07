@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/db/supabase";
 
 export async function submitStockAdjustmentAtomic(
   adjustment: Record<string, unknown>,

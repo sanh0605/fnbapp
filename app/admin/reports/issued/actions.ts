@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllNoCache } from "@/lib/sheets_db";
+import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { requireAdmin } from "@/lib/auth";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/issue-costing-inputs";
 import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/issued-value-report";

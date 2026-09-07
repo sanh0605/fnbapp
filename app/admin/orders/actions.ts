@@ -8,10 +8,10 @@ import {
   insert,
   insertMany,
   update,
-} from "@/lib/sheets_db";
+} from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/db/supabase";
 import crypto from "node:crypto";
 
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/order-types";

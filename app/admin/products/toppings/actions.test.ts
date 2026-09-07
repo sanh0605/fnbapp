@@ -9,11 +9,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", async () => {
+vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), so this file's own assertions can never silently drift
   // from what the source under test actually calls.
-  const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
+  const actual = await vi.importActual<typeof import("@/lib/db/tables")>("@/lib/db/tables");
   return {
     findAll: mocks.findAll,
     update: mocks.update,
@@ -23,7 +23,7 @@ vi.mock("@/lib/sheets_db", async () => {
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import { toggleToppingStandalone } from "./actions";
-import { getCacheTag } from "@/lib/sheets_db";
+import { getCacheTag } from "@/lib/db/tables";
 
 // section 1.3 row 3 / section 3: Products is cached 10 min, keyed by table
 // -- POS reads it through that cache, and revalidatePath("/pos") here has

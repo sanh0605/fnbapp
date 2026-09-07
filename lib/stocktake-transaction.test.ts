@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), getSupabaseClient: vi.fn() }));
 
-vi.mock("@/lib/supabase", () => ({
+vi.mock("@/lib/db/supabase", () => ({
   getSupabaseClient: mocks.getSupabaseClient,
 }));
 

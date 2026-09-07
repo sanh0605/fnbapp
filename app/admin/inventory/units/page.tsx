@@ -1,4 +1,4 @@
-import { findAll } from "@/lib/sheets_db";
+import { findAll } from "@/lib/db/tables";
 import { UnitForm, DeleteBtn } from "./UnitForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";

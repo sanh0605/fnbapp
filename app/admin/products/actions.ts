@@ -4,9 +4,9 @@ import { requireAdmin } from "@/lib/auth";
 import { saveProductAtomic } from "@/lib/product-save-transaction";
 import { eraseProductAtomic } from "@/lib/product-erase-transaction";
 import { planRecipeSave, findLatestActiveRecipe } from "@/lib/recipe-selection";
-import { fail, ok, type ActionResponse } from "@/lib/shared-actions";
+import { fail, ok, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/action-error";
-import { findAll, update } from "@/lib/sheets_db";
+import { findAll, update } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
   findDuplicateActiveName,
@@ -171,7 +171,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     }
 
     // section 2:
-    // revalidatePath only refreshes this exact screen. lib/sheets_db.ts's
+    // revalidatePath only refreshes this exact screen. lib/db/tables.ts's
     // findAll cache is keyed by TABLE (tag `sheets-<SheetName>`), and POS
     // reads the same tables through a different path -- so without this,
     // POS kept serving a stale Products/Product_Variants read for up to the

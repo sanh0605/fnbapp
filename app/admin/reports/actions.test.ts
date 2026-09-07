@@ -4,7 +4,7 @@ const requireAdminMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: requireAdminMock }));
 
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAllNoCache: vi.fn(),
   findAllWhere: vi.fn(),
   findAllWhereInBatches: vi.fn(),
@@ -16,7 +16,7 @@ import {
   findAllNoCache,
   findAllWhere,
   findAllWhereInBatches,
-} from "@/lib/sheets_db";
+} from "@/lib/db/tables";
 import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2, getPromotionPerformanceV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 

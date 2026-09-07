@@ -14,12 +14,12 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", async () => {
+vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), not a re-typed stand-in -- the source under test and
   // this test file's own assertions both call the one real implementation,
   // so a typo in either can never silently agree with the other.
-  const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
+  const actual = await vi.importActual<typeof import("@/lib/db/tables")>("@/lib/db/tables");
   return {
     findAll: mocks.findAll,
     findAllWhere: mocks.findAllWhere,
@@ -34,7 +34,7 @@ vi.mock("@/lib/sheets_db", async () => {
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import * as actions from "./actions";
-import { getCacheTag } from "@/lib/sheets_db";
+import { getCacheTag } from "@/lib/db/tables";
 
 // OPEN-ITEMS 69: this is the exact production incident that started the
 // plan -- the owner opened Hàng Mua Vào and it said "Chưa có hàng hóa" while

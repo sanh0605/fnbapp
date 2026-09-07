@@ -19,7 +19,7 @@ vi.mock("@/lib/auth", () => ({
   authOptions: {},
 }));
 vi.mock("next-auth/next", () => ({ getServerSession: vi.fn().mockResolvedValue(null) }));
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,
   findAllWhere: mocks.findAllWhere,

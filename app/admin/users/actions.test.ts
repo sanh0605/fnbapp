@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const findAllMock = vi.fn();
 const requireAdminMock = vi.fn();
 
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAll: findAllMock,
   insert: vi.fn(),
   update: vi.fn(),

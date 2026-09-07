@@ -1,9 +1,9 @@
 "use server";
 
-import { findAll, update, getCacheTag } from "@/lib/sheets_db";
+import { findAll, update, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
-import { ok, fail, type ActionResponse } from "@/lib/shared-actions";
+import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 
 export async function toggleToppingStandalone(
   productId: string,

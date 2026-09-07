@@ -3,7 +3,7 @@
 Concise map for humans. The full machine-derived map lives in
 `docs/generated/system-map.md` (do not hand-edit that one).
 
-Note: `lib/sheets_db.ts` is the DB adapter — the name says Google Sheets but the
+Note: `lib/db/tables.ts` is the DB adapter — the name says Google Sheets but the
 implementation is Supabase (spec §3.2c).
 
 Two casings of a name (e.g. `Products`/`products`) are the same table — one comes
@@ -124,7 +124,7 @@ lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
   keys and backup tokens must never cross it.
 - **Next.js server.** Runs through `next dev` locally and on Vercel in
   production (region `sin1`, the same region as the database). Hosts Server
-  Components, Server Actions, and the NextAuth route. `lib/supabase.ts` makes a
+  Components, Server Actions, and the NextAuth route. `lib/db/supabase.ts` makes a
   server-only Supabase client with the service key. The `Asia/Ho_Chi_Minh`
   timezone is set in `next.config.js` and the root layout.
 - **Supabase.** Postgres is the operational database; migrations under

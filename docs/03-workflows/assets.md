@@ -7,6 +7,7 @@ tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
 
+**Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07:** a declared source file's comments only — dead `CLAUDE.md` section-number pointers replaced with section headings; no logic changed. (Lands together with the source files in this commit.)
 
 This flow covers the equipment register — the durable tools the shop owns — and

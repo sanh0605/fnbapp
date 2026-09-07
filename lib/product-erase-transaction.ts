@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/db/supabase";
 
 /**
  * Erases a never-sold product for real: price history, then variants, then

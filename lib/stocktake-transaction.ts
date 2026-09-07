@@ -1,4 +1,4 @@
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/db/supabase";
 
 export type StocktakeItemType = "BASE_INGREDIENT" | "SEMI_PRODUCT" | "PURCHASED_ITEM";
 

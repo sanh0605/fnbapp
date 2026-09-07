@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth";
-import { findAllWhereInBatches } from "@/lib/sheets_db";
-import { getSupabaseClient } from "@/lib/supabase";
+import { findAllWhereInBatches } from "@/lib/db/tables";
+import { getSupabaseClient } from "@/lib/db/supabase";
 
 const ACTIVITY_LOG_ITEMS_PER_PAGE = 20;
 

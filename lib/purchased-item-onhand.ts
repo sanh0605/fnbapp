@@ -1,4 +1,4 @@
-import { findAllNoCache } from "@/lib/sheets_db";
+import { findAllNoCache } from "@/lib/db/tables";
 
 // Plan D C17 / D7: the same "on hand" formula appears at every purchased-item
 // write path (save_stocktake_line_atomic, apply_stocktake_session_atomic,

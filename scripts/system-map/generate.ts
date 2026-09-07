@@ -21,15 +21,15 @@ for (const base of ["app", "lib"]) {
   walk(join(root, base), p => {
     if (!p.endsWith(".ts") || p.endsWith(".test.ts")) return;
     // Exclude the adapter files that call the DB verbs with a parameter, not a
-    // real table name: sheets_db (the adapter) and shared-actions (the generic
+    // real table name: lib/db/tables.ts (the adapter) and shared-actions (the generic
     // wrapper). Including them only produces permanent, meaningless "unresolved"
     // noise (Sonnet round-4 review). backup-restore.ts writes only to an
     // explicitly-declared scratch restore target, never a production flow, so
     // it is excluded the same way.
     if (
-      p.includes("sheets_db") ||
-      p.includes(join("lib", "shared-actions")) ||
-      p.endsWith(join("lib", "backup-restore.ts"))
+      p.includes(join("lib", "db", "tables")) ||
+      p.includes(join("lib", "db", "shared-actions")) ||
+      p.endsWith(join("lib", "db", "backup-restore.ts"))
     ) return;
     codeFiles.push({ path: relative(root, p).split(sep).join("/"), source: readFileSync(p, "utf8") });
   });

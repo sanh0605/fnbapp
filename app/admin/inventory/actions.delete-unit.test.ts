@@ -14,8 +14,8 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("@/lib/sheets_db", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/sheets_db")>("@/lib/sheets_db");
+vi.mock("@/lib/db/tables", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/db/tables")>("@/lib/db/tables");
   return {
     findAll: mocks.findAll,
     findAllWhere: mocks.findAllWhere,

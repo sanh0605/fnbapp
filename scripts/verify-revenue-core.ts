@@ -542,7 +542,7 @@ export interface PromoSnapshotParsed {
 // Accepts the ALREADY JSON.parsed outer applied_promotion_snapshot_json
 // value (or null/undefined/{} for a missing one -- the script does the
 // outer JSON.parse, matching how it already handles product_snapshot_json
-// in H2, since lib/sheets_db.ts's serializeRow hands these back as strings).
+// in H2, since lib/db/tables.ts's serializeRow hands these back as strings).
 // Returns null only when the snapshot itself is absent -- an order in that
 // state is unrecomputable, reported separately, never silently skipped.
 // A malformed inner applicable_products_json does NOT return null here --

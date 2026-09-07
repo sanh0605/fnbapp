@@ -1,5 +1,5 @@
 import { getModifiersData } from "./actions";
-import { findAll } from "@/lib/sheets_db";
+import { findAll } from "@/lib/db/tables";
 import ModifiersClient from "./components/ModifiersClient";
 
 export const dynamic = "force-dynamic";

@@ -7,6 +7,8 @@ tables: stocktake_sessions, stocktake_lines, stock_issues
 brCodes: BR-INV-007, BR-COGS-007
 ```
 
+**Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.
+
 This flow covers the periodic physical count. Staff open a count session, walk the
 shelves recording how much of each material is on hand, and close the session.
 Counting follows one strict rule: **only sealed packages are counted**

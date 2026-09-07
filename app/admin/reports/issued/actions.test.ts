@@ -4,12 +4,12 @@ const requireAdminMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: requireAdminMock }));
 
-vi.mock("@/lib/sheets_db", () => ({
+vi.mock("@/lib/db/tables", () => ({
   findAllNoCache: vi.fn(),
   findAll: vi.fn(),
 }));
 
-import { findAll, findAllNoCache } from "@/lib/sheets_db";
+import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { getIssuedValueReport } from "./actions";
 import liveSnapshot from "./__fixtures__/2026-08-13-live-snapshot.json";
 

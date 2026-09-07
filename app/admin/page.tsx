@@ -1,11 +1,11 @@
-import { findAll, findAllNoCache, findAllWhere } from "@/lib/sheets_db";
+import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
 import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/order-types";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
 import { formatNumber } from "@/lib/shared/format";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
-import { getSupabaseClient } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/db/supabase";
 import { Banknote, Receipt, TrendingUp, Coffee, Tag, Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";

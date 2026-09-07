@@ -1,4 +1,4 @@
-import { findAll } from "@/lib/sheets_db";
+import { findAll } from "@/lib/db/tables";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import Link from "next/link";
 

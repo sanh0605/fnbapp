@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 /**
  * Regression test for the 2026-08-09 production outage: getLastConfirmedStocktakeSession
  * called findAllWhere with order.column = "confirmed_at", a column findAllWhere
- * does not support (lib/sheets_db.ts:240 only allows 'id' or 'created_at') --
+ * does not support (lib/db/tables.ts:240 only allows 'id' or 'created_at') --
  * every load of /admin/inventory/stocktake threw. actions.test.ts mocks
- * @/lib/sheets_db entirely, so that test suite could not have caught this: the
+ * @/lib/db/tables entirely, so that test suite could not have caught this: the
  * mock accepts any argument the real function would reject. This file
- * deliberately does NOT mock @/lib/sheets_db -- only @/lib/supabase, with a
+ * deliberately does NOT mock @/lib/db/tables -- only @/lib/supabase, with a
  * fake query builder faithful enough to drive findAllWhere's real code path,
  * including its own order-column validation.
  */
@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({ getSupabaseClient: vi.fn(), requireAdmin: vi.f
 
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 
-vi.mock("@/lib/supabase", () => ({
+vi.mock("@/lib/db/supabase", () => ({
   getSupabaseClient: mocks.getSupabaseClient,
 }));
 

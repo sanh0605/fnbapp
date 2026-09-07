@@ -1,4 +1,4 @@
-import { findAll } from "@/lib/sheets_db";
+import { findAll } from "@/lib/db/tables";
 import StockAdjustmentsClient from "./components/StockAdjustmentsClient";
 import { Suspense } from "react";
 
