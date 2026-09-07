@@ -19,7 +19,7 @@ export type CheckResult = {
 
 const PATH_PREFIXES = [
   "app/", "lib/", "components/", "scripts/", "docs/",
-  "supabase/", "types/", ".claude/", ".husky/",
+  "supabase/", "types/", ".claude/", ".husky/", "tests/",
 ];
 
 // A backticked token is a path when it names a known top-level directory or is

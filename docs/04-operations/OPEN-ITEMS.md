@@ -1,3 +1,3 @@
 # Việc đang làm (sinh tự động từ it.todo — đừng sửa tay)
 
-Không có việc treo.
+- holds no source files -- every module lives in a domain folder (scripts/doc-checks/lib-root-empty.test.ts)
