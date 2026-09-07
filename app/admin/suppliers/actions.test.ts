@@ -57,7 +57,7 @@ describe("addSupplier -- duplicate-name guard (Batch 1 follow-up, level 1)", () 
   });
 
   // Also the plan section 5 requirement that a message already written for
-  // the owner survives lib/action-error.ts's wrapper: this returns via
+  // the owner survives lib/shared/action-error.ts's wrapper: this returns via
   // `return fail(duplicateNameErrorMessage(conflict))` from inside the try
   // block, which exits before the catch that now calls describeActionError
   // could ever touch it -- proven here by the exact message still showing

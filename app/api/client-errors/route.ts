@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { resolveActor } from "@/lib/auth";
-import { normalizeClientErrorPayload } from "@/lib/client-error-report";
+import { normalizeClientErrorPayload } from "@/lib/shared/client-error-report";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

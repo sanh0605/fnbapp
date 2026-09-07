@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useFilterForm } from "@/lib/use-filter-form";
+import { useFilterForm } from "@/lib/shared/use-filter-form";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -11,7 +11,7 @@ import { PurchasedItemForm } from "./PurchasedItemForm";
 import { PurchaseHistoryButton } from "./PurchaseHistoryButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deletePurchasedItemAction } from "../actions";
-import { alert } from "@/lib/dialog";
+import { alert } from "@/lib/shared/dialog";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 
 interface ItemsClientProps {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
-import { alert, confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 
 // Re-export forms from sub-components
 export { ItemCategoryForm, CategoryForm } from "./inventory/CategoryForm";

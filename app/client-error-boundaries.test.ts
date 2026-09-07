@@ -8,7 +8,7 @@ describe("client error boundary reporting", () => {
   ])("reports %s failures through the authenticated client error endpoint", (path, source) => {
     const content = readFileSync(path, "utf8");
 
-    expect(content).toContain('from "@/lib/client-error-report"');
+    expect(content).toContain('from "@/lib/shared/client-error-report"');
     expect(content).toContain(`reportClientError("${source}", error)`);
   });
 });

@@ -39,7 +39,7 @@ vi.mock("../actions", () => ({
 // DialogHost, which is not mounted here) would otherwise hang forever --
 // nothing calls dismiss(). Auto-approves by default; individual tests that
 // need to prove the declined path override this per-test.
-vi.mock("@/lib/dialog", () => ({
+vi.mock("@/lib/shared/dialog", () => ({
   confirm: mocks.confirmDialog,
 }));
 // section B: this component now calls useRouter().refresh() on save.

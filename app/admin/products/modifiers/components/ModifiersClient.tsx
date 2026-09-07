@@ -8,7 +8,7 @@ import { deleteModifierAction } from "../actions";
 import { ModifierForm } from "./ModifierForm";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";
-import { alert } from "@/lib/dialog";
+import { alert } from "@/lib/shared/dialog";
 import type { DBModifier } from "@/types/db";
 import ToppingsManager from "@/components/ToppingsManager";
 

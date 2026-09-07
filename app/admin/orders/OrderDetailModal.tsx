@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getOrderDetailV2, type OrderListItem } from "./actions";
-import { formatDateTime } from "@/lib/datetime";
+import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";

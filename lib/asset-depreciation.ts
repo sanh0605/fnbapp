@@ -5,7 +5,7 @@
 // time-of-day component), so month arithmetic here is done on parsed
 // year/month integers only -- never through a JS Date's own month math,
 // which is timezone-sensitive and is exactly the class of bug
-// lib/report-time.ts exists to guard against for timestamp columns. There
+// lib/shared/report-time.ts exists to guard against for timestamp columns. There
 // is no time-of-day here to misinterpret, so there is nothing to convert.
 
 export type Band = {
@@ -269,7 +269,7 @@ export function buildAssetSchedule(asset: AssetInput, disposals: DisposalInput[]
 // (line ~217 above) -- real, tested, but two gaps a critique of this plan
 // found, not the plan itself: it only compares MONTHS, so a disposal dated
 // earlier in the SAME month as acquisition slips through uncaught; and its
-// exception is plain-ASCII English, which lib/action-error.ts's
+// exception is plain-ASCII English, which lib/shared/action-error.ts's
 // describeActionError demotes to the generic "Co loi xay ra..." message
 // (looksHandWrittenForTheOwner only trusts a message with a Vietnamese
 // character) -- so the owner already sees a refusal today, just one that
@@ -310,7 +310,7 @@ export function validateDisposalDate(
   return { ok: true };
 }
 
-// "YYYY-MM-DD" -> "DD/MM/YYYY", matching lib/datetime.ts's formatDate
+// "YYYY-MM-DD" -> "DD/MM/YYYY", matching lib/shared/datetime.ts's formatDate
 // convention without importing a Saigon-timezone-aware Date parser here --
 // these are already plain calendar dates (see this file's own top comment),
 // so a string split is exact and does not risk formatDate's UTC-midnight
@@ -369,7 +369,7 @@ export type AssetSummary = {
 // it." All derived here from quantity/disposals/term/acquired_date, taking
 // asOfMonth explicitly rather than reading the clock -- keeps this testable
 // without depending on when the test happens to run, mirroring how
-// lib/report-time.ts's callers pass an explicit range rather than "now".
+// lib/shared/report-time.ts's callers pass an explicit range rather than "now".
 export function summarizeAsset(
   asset: AssetSummaryInput,
   disposals: DisposalInput[],

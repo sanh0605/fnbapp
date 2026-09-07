@@ -3,7 +3,7 @@
 import { findAll, insert, update, remove, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 import type { DBSupplier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -11,7 +11,7 @@ import {
   duplicateNameErrorMessage,
   findDiacriticStrippedMatch,
   duplicateWarningMessage,
-} from "@/lib/duplicate-name-guard";
+} from "@/lib/shared/duplicate-name-guard";
 
 const SHEET = "Suppliers";
 const PATH = "/admin/suppliers";

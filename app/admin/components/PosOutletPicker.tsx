@@ -1,7 +1,7 @@
 "use client";
 
 import { isOutletOpenAt } from "@/lib/outlet-hours";
-import { confirm } from "@/lib/dialog";
+import { confirm } from "@/lib/shared/dialog";
 import { Store } from "lucide-react";
 
 interface PickerOutlet {

@@ -6,7 +6,7 @@ import { addUser, deleteUserAction } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
-import { alert } from "@/lib/dialog";
+import { alert } from "@/lib/shared/dialog";
 
 export function UserForm() {
   const formId = useId();

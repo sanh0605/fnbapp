@@ -10,7 +10,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { checkNavCompleteness, extractNavHrefs, listAdminPageRoutes } from "@/lib/nav-completeness";
+import { checkNavCompleteness, extractNavHrefs, listAdminPageRoutes } from "@/lib/shared/nav-completeness";
 import { NAV_ALLOWLIST } from "./nav-allowlist";
 
 describe("app/admin nav completeness", () => {

@@ -50,7 +50,7 @@ const SAIGON_TZ = "Asia/Ho_Chi_Minh";
 // The real current time, explicit Asia/Ho_Chi_Minh -- never the runtime's
 // own local zone, the exact mistake OPEN-ITEMS 57 and the sales-chart
 // timezone bug both made. Not unit-tested itself (it wraps Date.now()),
-// same as lib/report-time.ts's saigonBucketKeys -- callers pass the result
+// same as lib/shared/report-time.ts's saigonBucketKeys -- callers pass the result
 // into isOutletOpenAt above, which is the part proven with a fixed clock.
 export function getSaigonNowHHMM(): string {
   const parts = new Intl.DateTimeFormat("en-CA", {

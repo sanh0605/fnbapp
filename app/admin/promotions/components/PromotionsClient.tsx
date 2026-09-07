@@ -3,12 +3,12 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useFilterForm } from "@/lib/use-filter-form";
+import { useFilterForm } from "@/lib/shared/use-filter-form";
 import { deletePromotionAction } from "../actions";
 import { PromotionForm } from "./PromotionForm";
 import { formatNumber } from "@/lib/shared/format";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
-import { alert } from "@/lib/dialog";
+import { alert } from "@/lib/shared/dialog";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 
 interface PromotionsClientProps {

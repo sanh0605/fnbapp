@@ -7,7 +7,7 @@ import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/SearchableSelect";
-import { confirm } from "@/lib/dialog";
+import { confirm } from "@/lib/shared/dialog";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 
 // Batch 1, item B: the part of handleSubmit that decides what goes into

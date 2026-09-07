@@ -1,6 +1,6 @@
 import { insert, update, remove, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 
 export interface ActionResponse {
   success?: boolean;

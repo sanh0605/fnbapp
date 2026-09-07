@@ -7,8 +7,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/shared/format";
-import { formatDateTime } from "@/lib/datetime";
-import { alert, confirm } from "@/lib/dialog";
+import { formatDateTime } from "@/lib/shared/datetime";
+import { alert, confirm } from "@/lib/shared/dialog";
 import type { StocktakeApplyResult } from "@/lib/stocktake-transaction";
 import {
   startStocktakeSession,

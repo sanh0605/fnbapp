@@ -39,7 +39,7 @@ import { checkDocsRefs } from "./docs-refs-core";
 import { checkClaudeSectionRefs } from "./claude-section-refs-core";
 import { checkRouteCoverage } from "./route-coverage-core";
 import { checkOrphanModules } from "./orphan-modules-core";
-import { listAllPageRoutes } from "../../lib/nav-completeness";
+import { listAllPageRoutes } from "@/lib/shared/nav-completeness";
 import type { CheckResult } from "../check-result";
 
 const root = process.cwd();

@@ -13,7 +13,7 @@ import {
   breakdownRevenueByProduct,
   type ProductRevenueRow,
 } from "@/lib/report-v2-allocators";
-import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/report-time";
+import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { displayMoney } from "@/lib/display-rounding";
 import { computePeriodIssuedValue } from "@/lib/issue-costing";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/issue-costing-inputs";

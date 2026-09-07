@@ -24,7 +24,7 @@ vi.mock("../actions", () => ({
   editOutlet: vi.fn(),
   retireOutlet: vi.fn(),
 }));
-vi.mock("@/lib/dialog", () => ({
+vi.mock("@/lib/shared/dialog", () => ({
   confirm: vi.fn(),
   alert: vi.fn(),
 }));

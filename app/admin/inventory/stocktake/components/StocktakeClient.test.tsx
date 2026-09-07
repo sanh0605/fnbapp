@@ -45,7 +45,7 @@ vi.mock("../actions", () => ({
 // DialogHost, which is not mounted here) would otherwise hang forever --
 // nothing calls dismiss(). Auto-approves, matching what the owner does at
 // the shelf when handleApply's own confirm fires.
-vi.mock("@/lib/dialog", () => ({
+vi.mock("@/lib/shared/dialog", () => ({
   confirm: mocks.confirmDialog,
   alert: mocks.alertDialog,
 }));

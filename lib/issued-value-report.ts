@@ -1,7 +1,7 @@
 import { computeIssueCosting, computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/issue-costing";
 import { buildIssueCostingIssues } from "@/lib/issue-costing-inputs";
-import { toSaigonUtcRange } from "@/lib/report-time";
-import { toSaigonIsoString } from "@/lib/datetime";
+import { toSaigonUtcRange } from "@/lib/shared/report-time";
+import { toSaigonIsoString } from "@/lib/shared/datetime";
 
 // Plan G. Split out of app/admin/reports/issued/actions.ts (not defined
 // there) because that file is "use server" -- every export from a "use

@@ -3,7 +3,7 @@
 import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -18,7 +18,7 @@ import {
   duplicateNameErrorMessage,
   findDiacriticStrippedMatch,
   duplicateWarningMessage,
-} from "@/lib/duplicate-name-guard";
+} from "@/lib/shared/duplicate-name-guard";
 import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/unit-lock";
 
 const SHEET = "Purchased_Items";

@@ -77,7 +77,7 @@ describe("saigonBucketKeys", () => {
 
   it("does not emit hour 24 for Saigon midnight", () => {
     // Some Intl runtimes emit "24" rather than "00" for midnight with
-    // hour12: false -- the same guard lib/datetime.ts's getSaigonParts uses.
+    // hour12: false -- the same guard lib/shared/datetime.ts's getSaigonParts uses.
     expect(saigonBucketKeys("2026-08-01T00:00:00+07:00").hourKey).toBe("00:00");
   });
 });

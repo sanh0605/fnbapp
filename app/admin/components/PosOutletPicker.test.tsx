@@ -13,7 +13,7 @@ import React from "react";
 import { PosOutletPicker } from "./PosOutletPicker";
 
 const mocks = vi.hoisted(() => ({ confirm: vi.fn() }));
-vi.mock("@/lib/dialog", () => ({ confirm: mocks.confirm }));
+vi.mock("@/lib/shared/dialog", () => ({ confirm: mocks.confirm }));
 
 const roots: Root[] = [];
 const containers: HTMLElement[] = [];

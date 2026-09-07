@@ -3,7 +3,7 @@
 import { getSalesDataV2 } from "../actions";
 import { requireAdmin } from "@/lib/auth";
 import { getDigestDateOffsets, comparePeriods, type PeriodComparison } from "@/lib/daily-digest";
-import { toSaigonIsoString } from "@/lib/datetime";
+import { toSaigonIsoString } from "@/lib/shared/datetime";
 
 export interface DailyDigestPeriod {
   revenue: number;

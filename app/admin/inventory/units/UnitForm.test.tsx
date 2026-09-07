@@ -30,7 +30,7 @@ vi.mock("@/app/admin/inventory/actions", () => ({
   updateUnit: vi.fn(),
   deleteUnit: mocks.deleteUnit,
 }));
-vi.mock("@/lib/dialog", () => ({
+vi.mock("@/lib/shared/dialog", () => ({
   confirm: mocks.confirmDialog,
   alert: mocks.alertDialog,
 }));

@@ -4,7 +4,7 @@
 // nothing ever named which one fired, or what real row it was protecting.
 // This is pure (no DB access) -- the caller (app/admin/inventory/actions.ts)
 // runs the actual lookups and passes in only what was found, following the
-// same split as lib/duplicate-name-guard.ts and lib/unit-lock.ts.
+// same split as lib/shared/duplicate-name-guard.ts and lib/unit-lock.ts.
 //
 // Measured live 2026-09-01: exactly 7 foreign keys reference units.id, all
 // ON DELETE RESTRICT -- uom_conversions (two columns), purchased_items,

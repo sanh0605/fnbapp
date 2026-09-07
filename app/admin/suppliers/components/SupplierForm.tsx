@@ -6,7 +6,7 @@ import { addSupplier, editSupplier, deleteSupplierAction } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
-import { alert, confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 import type { DBSupplier } from "@/types/db";
 
 interface SupplierFormProps {

@@ -10,7 +10,7 @@ import { buildOrderFromCart } from "@/lib/order-cart";
 import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/order-types";
 import { savePosOrderAtomic } from "@/lib/pos-order-transaction";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
-import { toSaigonUtcRange } from "@/lib/report-time";
+import { toSaigonUtcRange } from "@/lib/shared/report-time";
 import type { CartInput } from "@/lib/order-cart";
 
 export type SubmitOrderV2Result = {

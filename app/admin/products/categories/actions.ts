@@ -3,7 +3,7 @@
 import { findAll, insert, update, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, softDeleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 import type { DBProductCategory, DBProduct } from "@/types/db";
 import { requireAdmin } from "@/lib/auth";
 

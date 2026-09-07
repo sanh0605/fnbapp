@@ -7,7 +7,7 @@ import { ModalPortal } from "@/components/ui/ModalPortal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";
 import { Plus, X } from "lucide-react";
-import { alert, confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 
 export default function ProductForm({ categories, initialData }: any) {
   const isEdit = !!initialData;

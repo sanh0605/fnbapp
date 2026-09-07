@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toggleToppingStandalone } from "@/app/admin/products/toppings/actions";
 import type { DBProduct } from "@/types/db";
-import { alert, confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 
 interface ToppingsManagerProps {
   products: DBProduct[]; // đã filter CAT-007 + có topping standalone flag

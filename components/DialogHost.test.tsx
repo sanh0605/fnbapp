@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createRoot } from "react-dom/client";
 import { act } from "react";
 import { DialogHost } from "./DialogHost";
-import { alert, dismiss, dialogStore } from "../lib/dialog";
+import { alert, dismiss, dialogStore } from "@/lib/shared/dialog";
 import React from "react";
 
 describe("components/DialogHost", () => {

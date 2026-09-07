@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addItemCategory, updateItemCategory } from "@/app/admin/inventory/actions";
 import { ModalPortal } from "@/components/ui/ModalPortal";
-import { alert } from "@/lib/dialog";
+import { alert } from "@/lib/shared/dialog";
 
 export function CategoryForm({ initialData }: { initialData?: any }) {
   const router = useRouter();

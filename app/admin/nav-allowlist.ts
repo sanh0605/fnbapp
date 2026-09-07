@@ -9,7 +9,7 @@
 // unreachable. Owner decision needed on each. (A third, /admin/reports/stock,
 // was here too -- removed 2026-08-31 when the screen itself was deleted,
 // Phase A.)
-import type { AllowlistEntry } from "@/lib/nav-completeness";
+import type { AllowlistEntry } from "@/lib/shared/nav-completeness";
 
 export const NAV_ALLOWLIST: AllowlistEntry[] = [
   {

@@ -3,13 +3,13 @@
 import { findAll, findAllNoCache, findAllWhere, insert, update, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 import { requireAdmin } from "@/lib/auth";
 import {
   approveStockAdjustmentAtomic,
   submitStockAdjustmentAtomic,
 } from "@/lib/stock-adjustment-transaction";
-import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/duplicate-name-guard";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 import { buildUnitDeleteRestrictionMessage, type UnitBlockerFinding } from "@/lib/unit-delete-restriction";
 
 // --- ITEM CATEGORIES (Nhóm Hàng Hoá) ---

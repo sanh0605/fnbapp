@@ -7,7 +7,7 @@ import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteConversionAction } from "../actions";
-import { alert } from "@/lib/dialog";
+import { alert } from "@/lib/shared/dialog";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 
 interface ConversionsClientProps {

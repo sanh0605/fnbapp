@@ -7,7 +7,7 @@ import { nextOutletCode } from "@/lib/outlet-code";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { confirm, alert } from "@/lib/dialog";
+import { confirm, alert } from "@/lib/shared/dialog";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
 function formatDateToYYYYMMDD(date: Date): string {

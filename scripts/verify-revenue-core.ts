@@ -8,7 +8,7 @@
  * prints the results these functions return.
  */
 
-import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/report-time";
+import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 
 export interface RevenueOrder {
   id: string;
@@ -207,7 +207,7 @@ export function computeMonthlyTotal(
 // section 2. The list of months to check must come from the data, not a
 // hardcoded array -- a month absent from a hardcoded list is invisible,
 // not merely unchecked (section 1.3's own distinction between the two
-// bugs). Reuses saigonBucketKeys (lib/report-time.ts, already used for
+// bugs). Reuses saigonBucketKeys (lib/shared/report-time.ts, already used for
 // the sales chart's own month bucketing) so this cannot independently
 // drift from how every other Saigon-month derivation in the app works.
 export function deriveSaigonMonthLabels(orders: readonly RevenueOrder[]): string[] {

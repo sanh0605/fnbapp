@@ -95,7 +95,7 @@ const KNOWN_MONTHLY_BASELINES: Record<string, MonthlyBaseline | undefined> = {
 async function main(): Promise<void> {
   const { findAllNoCache } = await import("@/lib/db/tables");
   const { formatNumber } = await import("@/lib/shared/format");
-  const { saigonBucketKeys } = await import("../lib/report-time");
+  const { saigonBucketKeys } = await import("@/lib/shared/report-time");
   const {
     checkHeaderArithmetic,
     checkLineSum,

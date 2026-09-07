@@ -3,7 +3,7 @@
 import { findAll, insert, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 import { requireAdmin } from "@/lib/auth";
 import {
   buildAssetSchedule,
@@ -21,7 +21,7 @@ const PATH = "/admin/inventory/assets";
 
 export type AssetView = AssetSummary;
 
-// 7-hour Saigon offset, matching lib/report-time.ts's SAIGON_OFFSET_MS --
+// 7-hour Saigon offset, matching lib/shared/report-time.ts's SAIGON_OFFSET_MS --
 // month-granularity only, no time-of-day precision needed here.
 function currentSaigonMonth(): string {
   const saigonNow = new Date(Date.now() + 7 * 60 * 60 * 1000);

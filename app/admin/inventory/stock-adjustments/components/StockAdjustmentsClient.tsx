@@ -2,12 +2,12 @@
 
 import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useFilterForm } from "@/lib/use-filter-form";
-import { formatDateTime } from "@/lib/datetime";
+import { useFilterForm } from "@/lib/shared/use-filter-form";
+import { formatDateTime } from "@/lib/shared/datetime";
 import { approveStockAdjustment, rejectStockAdjustment } from "../../actions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { alert, confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 
 interface StockAdjustment {
   id: string;

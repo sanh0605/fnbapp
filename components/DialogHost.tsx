@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useSyncExternalStore } from "react";
-import { dialogStore, dismiss, type AlertOptions, type ConfirmOptions } from "@/lib/dialog";
+import { dialogStore, dismiss, type AlertOptions, type ConfirmOptions } from "@/lib/shared/dialog";
 import { Dialog } from "./ui/Dialog";
 import { Button } from "./ui/Button";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";

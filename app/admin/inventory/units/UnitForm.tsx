@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addUnit, updateUnit, deleteUnit } from "@/app/admin/inventory/actions";
-import { alert, confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 
 export function UnitForm({ initialData }: { initialData?: any }) {
   const formId = useId();

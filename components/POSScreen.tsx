@@ -9,7 +9,7 @@ import { ProductGrid } from "@/components/pos/ProductGrid";
 import { CartPanel } from "@/components/pos/CartPanel";
 import { ItemConfigModal, type ItemConfigSubmission } from "@/components/pos/ItemConfigModal";
 import { DraftsModal } from "@/components/pos/DraftsModal";
-import { alert, confirm } from "@/lib/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 import {
   resolvePosCheckoutAttempt,
   type PosCheckoutAttempt,

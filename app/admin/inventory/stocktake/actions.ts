@@ -4,7 +4,7 @@ import { findAll, findAllWhere } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 import {
   openStocktakeSessionAtomic,
   saveStocktakeLineAtomic,

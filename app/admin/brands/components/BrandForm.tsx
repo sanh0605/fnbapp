@@ -7,7 +7,7 @@ import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { alert } from "@/lib/dialog";
+import { alert } from "@/lib/shared/dialog";
 import type { DBBrand } from "@/types/db";
 
 interface BrandFormProps {

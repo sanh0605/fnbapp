@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
-import { reportClientError } from "@/lib/client-error-report";
+import { reportClientError } from "@/lib/shared/client-error-report";
 
 export default function GlobalError({
   error,

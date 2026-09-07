@@ -5,7 +5,7 @@ import { saveProductAtomic } from "@/lib/product-save-transaction";
 import { eraseProductAtomic } from "@/lib/product-erase-transaction";
 import { planRecipeSave, findLatestActiveRecipe } from "@/lib/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/db/shared-actions";
-import { describeActionError } from "@/lib/action-error";
+import { describeActionError } from "@/lib/shared/action-error";
 import { findAll, update } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
@@ -13,7 +13,7 @@ import {
   duplicateNameErrorMessage,
   findDiacriticStrippedMatch,
   duplicateWarningMessage,
-} from "@/lib/duplicate-name-guard";
+} from "@/lib/shared/duplicate-name-guard";
 
 const PRODUCT_SHEET = "Products";
 const VARIANT_SHEET = "Product_Variants";

@@ -96,7 +96,7 @@ export function saigonBucketKeys(iso: string): SaigonBucketKeys {
   const month = Number(get("month"));
   const day = Number(get("day"));
   let hour = Number(get("hour"));
-  if (hour === 24) hour = 0; // some runtimes emit 24 for midnight, same guard as lib/datetime.ts
+  if (hour === 24) hour = 0; // some runtimes emit 24 for midnight, same guard as lib/shared/datetime.ts
 
   const mm = String(month).padStart(2, "0");
   const dd = String(day).padStart(2, "0");
