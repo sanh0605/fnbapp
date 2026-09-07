@@ -7,7 +7,7 @@ tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
 
-**Reviewed, no behaviour change — 2026-09-07:** a declared source file's comments only — dead `CLAUDE.md` section-number pointers replaced with section headings; no logic changed.
+**Reviewed, no behaviour change — 2026-09-07:** a declared source file's comments only — dead `CLAUDE.md` section-number pointers replaced with section headings; no logic changed. (Lands together with the source files in this commit.)
 
 This flow covers the equipment register — the durable tools the shop owns — and
 the two things the owner does with it after acquisition: **dispose** of a tool

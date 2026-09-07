@@ -1,6 +1,6 @@
 /**
- * Owner rule, confirmed 2026-07-30 (docs/superpowers/plans/2026-07-30-exact-
- * cost-precision.md): rounding at the display edge is directional, not
+ * Owner rule, confirmed 2026-07-30: rounding at the display edge is
+ * directional, not
  * Math.round -- never flatter the business.
  *
  *   Stock quantity -> DOWN (floor): never claims more goods than are really

@@ -204,7 +204,7 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     const { purchasedItems, itemCategories } = await loadItemNameMaps();
     // 2026-08-26:
     // equipment is never stocktaken -- a fixed property of the EQUIPMENT
-    // category (CLAUDE.md section 7), not a per-item judgment. Excluding by
+    // category (CLAUDE.md "Viết code"), not a per-item judgment. Excluding by
     // category rather than by is_non_inventory keeps that flag free for its
     // other meaning (the future batch-5 "mua dùng ngay" expense line,
     // OPEN-ITEMS 59): equipment must never be expensed on purchase, since it
@@ -222,8 +222,8 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     //
     // 2026-09-01:
     // used to also exclude an item whose linked base_ingredient was
-    // flagged. Dropped, not replaced -- docs/superpowers/plans/2026-08-31-
-    // move-non-inventory-flag-to-items.md already moved that flag onto
+    // flagged. Dropped, not replaced -- the 2026-08-31 change that moved the
+    // non-inventory flag onto items had already put that flag onto
     // every affected item directly (SPM-005, SPM-052), so the item's own
     // flag below covers the same ground the group flag used to. Confirmed
     // live before removing: the eligible set is identical with or without

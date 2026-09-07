@@ -19,7 +19,7 @@ function tabHref(tab: Tab): string {
 }
 
 // Batch 3, section 5.1: "Sổ tài sản." Phone-first, phone-only for this
-// batch (CLAUDE.md section 8, owner 2026-08-17) -- no horizontal table,
+// batch (CLAUDE.md "Viết code", owner 2026-08-17) -- no horizontal table,
 // filter by còn dùng / đã hết khấu hao / đã thanh lý.
 export default async function AssetsPage({
   searchParams,

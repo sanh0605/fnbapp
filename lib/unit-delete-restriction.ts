@@ -1,5 +1,5 @@
 // section A3/A7: the RESTRICT foreign keys blocking a unit delete are
-// correct and stay -- CLAUDE.md section 2 depends on this exact layer for
+// correct and stay -- CLAUDE.md "Luật dữ liệu" depends on this exact layer for
 // products, and this is the same protection for units. The defect was that
 // nothing ever named which one fired, or what real row it was protecting.
 // This is pure (no DB access) -- the caller (app/admin/inventory/actions.ts)

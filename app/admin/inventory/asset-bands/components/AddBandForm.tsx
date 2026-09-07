@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { createAssetBand } from "../actions";
 
 // 2026-08-23, section 2: "A table the owner cannot add a row to is not the
-// settings screen CLAUDE.md section 8 requires; it is a constant with an
+// settings screen CLAUDE.md "Viết code" requires; it is a constant with an
 // edit box." A new band typically requires narrowing an existing neighbour
 // first (createAssetBand validates the whole resulting set and refuses a
 // band that overlaps or gaps another).

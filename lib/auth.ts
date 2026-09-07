@@ -74,8 +74,9 @@ export async function requireAdmin(): Promise<AuthResult> {
  *
  * ADMIN is not a distinct "owner" role today, only accidentally equivalent to
  * it -- checked live 2026-08-09, exactly one ADMIN account exists. SYSTEM is
- * kept for CLI scripts under CLAUDE.md section 2's own dry-run/--apply/
- * owner-approval protocol, the same allowance requireAdmin() already makes.
+ * kept for CLI scripts under the dry-run/--apply/owner-approval protocol of
+ * CLAUDE.md "Việc phải chủ quán duyệt từng lần", the same allowance
+ * requireAdmin() already makes.
  */
 export async function requireOwner(): Promise<AuthResult> {
   const result = await resolveActor();

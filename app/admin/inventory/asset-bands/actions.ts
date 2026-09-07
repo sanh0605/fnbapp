@@ -76,7 +76,7 @@ export async function updateAssetBand(formData: FormData): Promise<ActionRespons
 }
 
 // 2026-08-23, section 2: "A table the owner cannot add a row to is not the
-// settings screen CLAUDE.md section 8 requires; it is a constant with an
+// settings screen CLAUDE.md "Viết code" requires; it is a constant with an
 // edit box." Validated against the FULL resulting set (existing bands plus
 // this one), same as update -- a new band that overlaps or gaps another is
 // refused before it is ever written.

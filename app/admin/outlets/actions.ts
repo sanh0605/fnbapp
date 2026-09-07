@@ -121,7 +121,7 @@ export async function editOutlet(formData: FormData): Promise<ActionResponse> {
 }
 
 // Never deletes, never frees the code -- sets status/end_date only (plan
-// section 2, and CLAUDE.md section 2's rule on master data generally).
+// section 2, and CLAUDE.md "Luật dữ liệu" on master data generally).
 // Refuses the last active outlet: there would be nothing left to open the
 // till with.
 export async function retireOutlet(formData: FormData): Promise<ActionResponse> {

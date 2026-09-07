@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 //
-// Render test per docs/superpowers/plans/2026-08-25-outlet-screen-and-nav-
-// guard.md section 4: "A rendered test that the outlets page lists the two
+// Render test per the 2026-08-25 outlet-screen and nav-guard plan: "A
+// rendered test that the outlets page lists the two
 // seeded outlets and that the nav contains the entry." OutletsList is what
 // page.tsx renders the two seeded outlets through (see OutletsList.tsx's own
 // comment for why the async page.tsx itself is not the render target). The

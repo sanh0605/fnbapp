@@ -1,6 +1,6 @@
 // Pure logic for assigning the next outlet code, extracted out of
 // app/admin/outlets/actions.ts (a "use server" file, which may only export
-// async functions -- CLAUDE.md section 9 records the 2026-08-05 incident
+// async functions -- docs/04-operations/INCIDENT-RESPONSE.md records the 2026-08-05 incident
 // caused by breaking that rule) so the derivation is directly unit-testable
 // without mocking the database.
 //

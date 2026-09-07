@@ -66,7 +66,7 @@ describe("getItemsData -- the production incident this plan exists to fix", () =
 // prove the server side of the fix directly -- end to end against a
 // mocked UOM_Conversions insert, the same shape section B4's "confirm the
 // uom_conversions row exists with base_unit = g" asks for, without writing
-// to production (CLAUDE.md section 2).
+// to production (CLAUDE.md "Việc phải chủ quán duyệt từng lần").
 describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no longer dropped", () => {
   beforeEach(() => {
     vi.clearAllMocks();

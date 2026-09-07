@@ -26,8 +26,8 @@ function readMigration(): string {
 // The migration's own header comment legitimately names base_ingredient_id
 // and the sibling clause while explaining why they were removed -- a plain
 // substring check would misclassify that explanatory prose as the real
-// statement still being present (the same trap docs/superpowers/plans/
-// 2026-09-01-phase-d-blockers.md section 5.2 names for the live
+// statement still being present (the same trap the 2026-09-01 Phase D
+// blocker work named for the live
 // pg_get_functiondef check). Strip `--` line comments before searching.
 function readMigrationCodeOnly(): string {
   return readMigration()

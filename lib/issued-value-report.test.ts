@@ -46,8 +46,7 @@ describe("computeIssuedEventFigures: the section 5 sum gate", () => {
     const manualGroups = eventFigures.filter(f => f.kind === "MANUAL");
 
     // The live snapshot has 49 STOCKTAKE rows under one session, and 10
-    // MANUAL rows under 6 slips (docs/superpowers/plans/2026-08-13-issued-
-    // value-page.md section 2 / verified live 2026-08-13).
+    // MANUAL rows under 6 slips (verified live 2026-08-13).
     expect(stocktakeGroups).toHaveLength(1);
     expect(manualGroups).toHaveLength(6);
   });

@@ -51,7 +51,7 @@ export async function getAssetsData(): Promise<AssetView[]> {
       findAll(DISPOSALS_SHEET) as Promise<DBAssetDisposal[]>,
     ]);
     // assets.status is the ordinary ACTIVE/INACTIVE administrative flag
-    // (CLAUDE.md section 2 -- mark inactive, never delete), for correcting
+    // (CLAUDE.md "Luật dữ liệu" -- mark inactive, never delete), for correcting
     // a genuine data-entry mistake; it is not how "còn dùng / đã hết khấu
     // hao / đã thanh lý" is decided -- summarizeAsset derives that.
     const activeAssets = assets.filter(a => a.status !== "INACTIVE");

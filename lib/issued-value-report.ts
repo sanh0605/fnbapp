@@ -5,7 +5,7 @@ import { toSaigonIsoString } from "@/lib/datetime";
 
 // Plan G. Split out of app/admin/reports/issued/actions.ts (not defined
 // there) because that file is "use server" -- every export from a "use
-// server" file must be an async server action, and CLAUDE.md section 9
+// server" file must be an async server action, and CLAUDE.md "Lệnh"
 // already records a real incident where a synchronous export from such a
 // file passed every other gate and only broke `npm run build`. These are
 // plain synchronous functions, so they live here; the exact (pre-rounding)
@@ -91,7 +91,7 @@ export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchas
       group = {
         key,
         kind: isStocktake ? "STOCKTAKE" : "MANUAL",
-        // CLAUDE.md section 5: never read a code to the owner. The date is
+        // CLAUDE.md "Nói chuyện với chủ quán": never read a code to the owner. The date is
         // already on the card, so the session id adds nothing a person
         // reading the card needs.
         label: isStocktake ? "Kiểm kê định kỳ" : (row.note?.trim() || "Không có ghi chú"),

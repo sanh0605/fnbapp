@@ -157,11 +157,11 @@ export interface DBPurchasedItem {
   created_at: string;
   // 2026-08-21: same concept as base_ingredients.is_non_inventory, needed
   // here because a CONSUMABLE item has no base_ingredient_id to carry the
-  // flag on (docs/superpowers/plans/2026-08-21-non-inventory-purchased-items.md).
+  // flag on (non-inventory purchased items, 2026-08-21).
   is_non_inventory: boolean;
 }
 
-// Batch 3 (docs/superpowers/plans/2026-08-22-batch-3-asset-register.md).
+// Batch 3 (asset register, 2026-08-22).
 export interface DBAssetDepreciationBand {
   id: string;
   min_unit_price: number;

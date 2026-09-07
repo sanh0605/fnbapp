@@ -30,7 +30,9 @@
       "Bash(npx vite-node scripts/audit-*)",
       "Bash(npx vite-node scripts/verify-*)",
       "Bash(npx supabase migration list *)",
-      "Bash(npx supabase --version)"
+      "Bash(npx supabase --version)",
+      "Edit(.claude/**)",
+      "Write(.claude/**)"
     ],
     "ask": [
       "Bash(git push *)",
@@ -61,7 +63,13 @@
       "Bash(npx tsx scripts/lock-*)",
       "Bash(npx tsx scripts/probe-*)",
       "Bash(npx tsx scripts/capture-*)",
-      "Bash(npx tsx scripts/benchmark-*)"
+      "Bash(npx tsx scripts/benchmark-*)",
+      "Bash(git push *)",
+      "Bash(git push)",
+      "Bash(rm *)",
+      "Bash(npx vercel *)",
+      "Bash(vercel *)",
+      "Bash(supabase db push *)"
     ]
   },
   "hooks": {
@@ -69,6 +77,10 @@
       {
         "matcher": "Bash",
         "hooks": [
+          {
+            "type": "command",
+            "command": "sh .claude/hooks/block-destructive-sql.sh"
+          },
           {
             "type": "command",
             "command": "sh -c 'if grep -q -- \"--apply\" /dev/stdin; then printf \"%s\" \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"additionalContext\\\":\\\"[rule] Ghi vao du lieu that. Bat buoc truoc khi chay: (1) liet ke trigger cua bang dich va noi ro moi cai lam gi voi cac dong bi dung, (2) noi ro tien trinh tu dong nao doc nhung dong trigger sinh ra, (3) chung minh trung tinh tren tung dong va bao ca so luong da so sanh, (4) chu quan duyet lan ghi. Skill: fnbapp-bulk-data-change\\\"}}\"; fi'"

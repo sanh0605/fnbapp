@@ -7,7 +7,7 @@ tables: Pos_Sync_Failures, Outlets, Brands
 brCodes: BR-SALE-006
 ```
 
-**Reviewed, no behaviour change — 2026-09-07:** a declared source file's comments only — dead `CLAUDE.md` section-number pointers replaced with section headings; no logic changed.
+**Reviewed, no behaviour change — 2026-09-07:** a declared source file's comments only — dead `CLAUDE.md` section-number pointers replaced with section headings; no logic changed. (Lands together with the source files in this commit.)
 
 This flow covers the operational back-office screens: the two **outlets** (`001`
 and `002`), the two **brands** they carry, the **POS sync failure** log, the

@@ -16,7 +16,7 @@ import { findBandForUnitPrice, type Band } from "@/lib/asset-depreciation";
 // allocation from the one the COGS report and this business rule actually
 // specify. Found while tracing where BR-COGS-006 lives; not fixed here --
 // out of this plan's scope, and stock_ledger's unit_cost is not read by
-// any report today (CLAUDE.md section 7). Flagged in the handoff report.
+// any report today (CLAUDE.md "Viết code"). Flagged in the handoff report.
 
 export type EquipmentPurchaseLine = {
   lineId: string;

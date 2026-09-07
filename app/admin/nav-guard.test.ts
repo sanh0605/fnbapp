@@ -5,7 +5,7 @@
 // modes are unit-tested with synthetic fixtures in lib/nav-completeness.test.ts.
 // This file only wires that logic to the real filesystem and the real
 // layout.tsx, so a future page added without a nav entry (or a nav entry
-// added without a page) fails an actual CLAUDE.md section 9 gate
+// added without a page) fails an actual CLAUDE.md "Lệnh" gate
 // (`npx vitest run`), not just a fixture.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

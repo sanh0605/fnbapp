@@ -1,5 +1,5 @@
 {
-  "_comment": "Real production snapshot, taken 2026-08-13, for Plan G G3 -- proves getIssuedValueReport reproduces the figures documented in docs/superpowers/plans/2026-08-13-issued-value-page.md section 2 exactly. Not synthetic data.",
+  "_comment": "Real production snapshot, taken 2026-08-13, for Plan G G3 -- proves getIssuedValueReport reproduces the figures documented for the issued-value page on 2026-08-13 exactly. Not synthetic data.",
   "purchaseOrders": [
     {
       "id": "PO-001",

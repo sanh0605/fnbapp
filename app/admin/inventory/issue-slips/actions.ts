@@ -50,8 +50,8 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   // section
   // 3.1: same test the stocktake screen already uses
   // (app/admin/inventory/stocktake/actions.ts) -- equipment leaves through
-  // the asset register (docs/superpowers/plans/2026-08-22-batch-3-asset-
-  // register.md), never through a stock issue. Deliberately not written as
+  // the asset register (batch 3, 2026-08-22), never through a stock issue.
+  // Deliberately not written as
   // a second, independent test: reusing system_type === "EQUIPMENT" means
   // the two screens can only ever agree or both be wrong the same way.
   const equipmentCategoryIds = new Set(

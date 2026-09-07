@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 // No live Postgres connection is available to this session, and the
 // migration itself is deliberately not applied here -- the owner approves
-// that separately (CLAUDE.md section 2). This proves the same fact at the
+// that separately (CLAUDE.md "Luật dữ liệu"). This proves the same fact at the
 // level lib/order-edit-transaction-migration.test.ts already operates at:
 // the function's SQL text, not its executed behaviour.
 const sql = readFileSync(

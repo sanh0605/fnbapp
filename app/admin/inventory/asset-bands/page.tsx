@@ -8,7 +8,7 @@ import { formatBandRange } from "@/lib/asset-depreciation";
 export const dynamic = "force-dynamic";
 
 // Batch 3, section 5.3, extended 2026-08-23 (section 1 bound fix, section 2
-// add/delete). Phone-first, phone-only for this batch (CLAUDE.md section 8,
+// add/delete). Phone-first, phone-only for this batch (CLAUDE.md "Viết code",
 // owner 2026-08-17): one card per band, no horizontal table.
 export default async function AssetBandsPage() {
   const bands = await getAssetBands();

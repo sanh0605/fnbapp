@@ -116,7 +116,7 @@ describe("getIssuedValueReport", () => {
     expect(largest.unitName).toBe("g");
   });
 
-  it("stocktake card label carries no session code (CLAUDE.md section 5: never read a code to the owner)", async () => {
+  it(`stocktake card label carries no session code (CLAUDE.md "Nói chuyện với chủ quán": never read a code to the owner)`, async () => {
     mockLiveSnapshot();
     const report = await getIssuedValueReport();
     const stocktakeEvent = report.events.find(e => e.kind === "STOCKTAKE")!;

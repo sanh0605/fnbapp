@@ -233,7 +233,7 @@ export default async function SalesReportPage({
  {/* Outlet breakdown (
           section 6b). One dataset, two shapes -- cards below md, a table
  from md up:
-          CLAUDE.md section 8 forbids a horizontal table on a phone, not on
+          CLAUDE.md "Viết code" forbids a horizontal table on a phone, not on
           a desktop. */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">
         <h3 className="font-bold text-text-primary text-lg mb-1">Doanh thu theo Điểm bán</h3>

@@ -13,7 +13,7 @@ interface OutletBreakdownSectionProps {
 }
 
 // Per that plan: one dataset,
-// two shapes. CLAUDE.md section 8 forbids a horizontal table on a phone,
+// two shapes. CLAUDE.md "Viết code" forbids a horizontal table on a phone,
 // not on a desktop -- the cards this replaced were a misreading of that
 // rule. Below md: the original stacked cards, unchanged. From md up: a
 // real table, scrolling on its own so the page body never scrolls

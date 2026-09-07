@@ -8,7 +8,7 @@ import { updateAssetBand } from "../actions";
 import type { DBAssetDepreciationBand } from "@/types/db";
 
 // Batch 3, section 5.3: "Bảng thời hạn khấu hao" -- the flexible-thing-
-// needs-a-screen rule (CLAUDE.md section 8), not a later pass. Phone-first
+// needs-a-screen rule (CLAUDE.md "Viết code"), not a later pass. Phone-first
 // and phone-only for this batch (owner 2026-08-17): one card per band, no
 // horizontal table, min-h-[44px] tap targets, inputMode="numeric" on every
 // number field.

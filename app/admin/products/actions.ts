@@ -187,7 +187,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// CLAUDE.md section 2 exception recorded 2026-08-29: pauseProduct/resumeProduct
+// CLAUDE.md "Luật dữ liệu" exception recorded 2026-08-29: pauseProduct/resumeProduct
 // replace the old deleteProduct's soft-hide (status = 'DELETED'), which
 // announced "Xoá" while doing something reversible -- INACTIVE is now the
 // one hidden-but-recoverable state ("Ngừng bán" / "Bán lại", one click,

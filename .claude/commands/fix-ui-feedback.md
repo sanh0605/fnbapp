@@ -3,8 +3,8 @@ description: Read UI-FEEDBACK.md, locate and fix each item, clear only what was 
 ---
 
 Đọc `UI-FEEDBACK.md` ở gốc repo. File này do công cụ "Góp ý" trên bản xem trước
-tạo ra khi chủ quán bấm vào một phần tử trên trang và gõ ghi chú -- xem
-`docs/superpowers/plans/2026-08-26-ui-feedback-tool.md`.
+tạo ra khi chủ quán bấm vào một phần tử trên trang và gõ ghi chú (công cụ
+dựng 2026-08-26; mã nguồn ở `components/dev-feedback/` và `lib/ui-feedback-store.ts`).
 
 Nếu file không tồn tại hoặc không có mục nào, báo ngắn gọn bằng tiếng Việt là
 không có góp ý nào đang chờ, rồi dừng.
@@ -32,7 +32,7 @@ Với **mỗi mục** trong file, theo thứ tự:
      xử lý -- mất lời chủ quán đã gõ là mất luôn, không phục hồi được.
 
 4. **Đừng gộp sửa nhiều mục không liên quan vào một chỗ.** Mỗi mục sửa đúng
-   phạm vi của nó -- theo `CLAUDE.md` mục 7, "chỉ chạm đúng chỗ cần".
+   phạm vi của nó -- theo `CLAUDE.md` mục "Viết code": không thêm gì ngoài yêu cầu.
 
 Sau khi xử lý xong tất cả các mục:
 

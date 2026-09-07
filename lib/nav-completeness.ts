@@ -9,7 +9,7 @@
 // *documentation file's claims* against reality over a fixed list of prose
 // docs; this checks a structural property of the app itself, unrelated to
 // any doc's claims. It runs as an ordinary vitest test instead
-// (app/admin/nav-guard.test.ts), which is already a CLAUDE.md section 9
+// (app/admin/nav-guard.test.ts), which is already a CLAUDE.md "Lệnh"
 // gate, so no coverage is lost either way.
 import { readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
