@@ -250,6 +250,54 @@ export const findAll = (sheetName: string) => {
   )(sheetName);
 };
 
+// docs/superpowers/plans/2026-09-07-products-page-cache-overflow.md: the only
+// caller of findAll("Order_Lines_V2") (app/admin/products/page.tsx) reads
+// nothing but product_id and variant_id from every row, to know which
+// products were ever sold. The full 20-column table pushed the unstable_cache
+// entry to 3.0 MB, over Next's 2 MB ceiling -- every render threw and the
+// cache never populated. This selects only the id columns it actually needs.
+export const findOrderLineProductAndVariantIds = (): Promise<{ productIds: string[]; variantIds: string[] }> => {
+  const sheetName = 'Order_Lines_V2';
+  const tag = getCacheTag(sheetName);
+  const reval = getRevalidation(sheetName);
+  return unstable_cache(
+    async () => {
+      const supabase = getSupabaseClient();
+      const tableName = normalizeTableName(sheetName);
+      const productIds = new Set<string>();
+      const variantIds = new Set<string>();
+      let lastId: string | null = null;
+      while (true) {
+        const currentLastId = lastId;
+        const { data, error } = await withReadRetry(() => {
+          let query: any = supabase
+            .from(tableName)
+            .select('id, product_id, variant_id')
+            .order("id", { ascending: true })
+            .limit(PAGE_SIZE);
+          if (currentLastId !== null) {
+            query = query.gt("id", currentLastId);
+          }
+          return query;
+        }, `findOrderLineProductAndVariantIds`);
+        if (error) {
+          throw new Error(`findOrderLineProductAndVariantIds: ${error.message}`);
+        }
+        if (!data || data.length === 0) break;
+        for (const row of data) {
+          if (row.product_id) productIds.add(row.product_id);
+          if (row.variant_id) variantIds.add(row.variant_id);
+        }
+        if (data.length < PAGE_SIZE) break;
+        lastId = String(data[data.length - 1]?.id ?? "");
+      }
+      return { productIds: [...productIds], variantIds: [...variantIds] };
+    },
+    ['sheets-findall', sheetName, 'ids'],
+    { revalidate: reval, tags: [tag] }
+  )();
+};
+
 export const findAllNoCache = async (sheetName: string) => {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName(sheetName);

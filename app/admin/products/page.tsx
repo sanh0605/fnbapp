@@ -1,4 +1,4 @@
-import { findAll } from "@/lib/db/tables";
+import { findAll, findOrderLineProductAndVariantIds } from "@/lib/db/tables";
 import ProductsClient from "./ProductsClient";
 
 export const dynamic = "force-dynamic";
@@ -10,12 +10,12 @@ interface PriceHistory {
 }
 
 export default async function ProductsPage() {
-  const [categories, products, variants, allPriceHistory, orderLines]: [any[], any[], any[], PriceHistory[], any[]] = await Promise.all([
+  const [categories, products, variants, allPriceHistory, orderLineIds]: [any[], any[], any[], PriceHistory[], { productIds: string[]; variantIds: string[] }] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Product_Price_History"),
-    findAll("Order_Lines_V2"),
+    findOrderLineProductAndVariantIds(),
   ]);
 
   const activeCategories = categories.filter(c => c.status !== "DELETED");
@@ -32,12 +32,12 @@ export default async function ProductsPage() {
   // (any order_lines_v2 row referencing the product or one of its variants,
   // regardless of that order's own status), not re-derived differently.
   const soldProductIds = new Set<string>();
-  for (const line of orderLines) {
-    if (line.product_id) soldProductIds.add(line.product_id);
+  for (const productId of orderLineIds.productIds) {
+    soldProductIds.add(productId);
   }
   const variantProductId = new Map<string, string>(activeVariants.map(v => [v.id, v.product_id]));
-  for (const line of orderLines) {
-    const pid = variantProductId.get(line.variant_id);
+  for (const variantId of orderLineIds.variantIds) {
+    const pid = variantProductId.get(variantId);
     if (pid) soldProductIds.add(pid);
   }
 

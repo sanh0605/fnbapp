@@ -50,6 +50,7 @@ import {
   findAllNoCache,
   findAllWhere,
   findAllWhereInBatches,
+  findOrderLineProductAndVariantIds,
   updateMany,
 } from "./tables";
 
@@ -428,5 +429,43 @@ describe("updateMany", () => {
       2,
       expect.objectContaining({ is_non_inventory: false }),
     );
+  });
+});
+
+// docs/superpowers/plans/2026-09-07-products-page-cache-overflow.md Task 1:
+// app/admin/products/page.tsx only needs the distinct product_id and
+// variant_id values from Order_Lines_V2 (to compute which products were
+// ever sold), not the full 20-column row -- that pushed the unstable_cache
+// entry past Next's 2 MB ceiling.
+describe("findOrderLineProductAndVariantIds", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.supabaseSelect.mockReset();
+    mocks.queryCalls.length = 0;
+  });
+
+  it("returns the distinct non-empty product and variant ids across the rows", async () => {
+    mocks.supabaseSelect.mockResolvedValue({
+      data: [
+        { id: "OL-1", product_id: "PROD-001", variant_id: null },
+        { id: "OL-2", product_id: "PROD-002", variant_id: "VAR-002" },
+        { id: "OL-3", product_id: "PROD-001", variant_id: "VAR-002" },
+      ],
+      error: null,
+    });
+
+    const result = await findOrderLineProductAndVariantIds();
+
+    expect(result.productIds).toEqual(["PROD-001", "PROD-002"]);
+    expect(result.variantIds).toEqual(["VAR-002"]);
+  });
+
+  it("returns empty arrays for an empty table", async () => {
+    mocks.supabaseSelect.mockResolvedValue({ data: [], error: null });
+
+    const result = await findOrderLineProductAndVariantIds();
+
+    expect(result.productIds).toEqual([]);
+    expect(result.variantIds).toEqual([]);
   });
 });
