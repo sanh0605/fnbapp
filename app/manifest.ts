@@ -10,17 +10,9 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#ffffff',
-    icons: [
-      {
-        src: '/icon.png', // Placeholder, you should add an icon to the public folder
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: '/icon.png',
-        sizes: '512x512',
-        type: 'image/png',
-      }
-    ]
+    // No icon file exists yet (owner decision 2026-09-07: remove the dead
+    // /icon.png reference rather than keep a 404 on every page load; add it
+    // back here once a real square PNG is supplied).
+    icons: []
   }
 }
