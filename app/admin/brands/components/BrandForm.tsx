@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addBrand, deleteBrand, editBrand } from "../actions";
-import { CustomDatePicker } from "@/components/CustomDatePicker";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";

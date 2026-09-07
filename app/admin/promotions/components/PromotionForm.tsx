@@ -6,7 +6,7 @@ import { LoadingButton } from "@/components/ui/LoadingButton";
 import { formatNumber } from "@/lib/shared/format";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 import { ModalPortal } from "@/components/ui/ModalPortal";
-import { SearchableSelect } from "@/components/SearchableSelect";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface PromotionFormProps {
   initialData?: DBPromotion;

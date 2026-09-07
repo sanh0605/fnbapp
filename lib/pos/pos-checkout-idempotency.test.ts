@@ -44,7 +44,7 @@ describe("resolvePosCheckoutAttempt", () => {
   });
 
   it("returns the exact same object reference (not just an equal one) across two identical calls", () => {
-    // components/POSScreen.tsx relies on reference equality (`!==`) to tell
+    // app/pos/components/POSScreen.tsx relies on reference equality (`!==`) to tell
     // a genuinely new checkout attempt apart from a retry of the same one
     // (see isNewAttempt in handleConfirmCheckout). This proves the
     // underlying token-reuse mechanism itself still gives a stable

@@ -5,7 +5,7 @@ import { ModalPortal } from "@/components/ui/ModalPortal";
 import { alert, confirm } from "@/lib/shared/dialog";
 
 // Re-export forms from sub-components
-export { ItemCategoryForm, CategoryForm } from "./inventory/CategoryForm";
+export { ItemCategoryForm, CategoryForm } from "@/app/admin/inventory/components/CategoryForm";
 
 // Reusable Action Group (Sửa / Xoá)
 export function ActionGroup({

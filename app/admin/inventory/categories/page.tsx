@@ -1,5 +1,5 @@
 import { findAll } from "@/lib/db/tables";
-import { ItemCategoryForm, DeleteBtn } from "@/components/InventoryForms";
+import { ItemCategoryForm, DeleteBtn } from "@/app/admin/inventory/components/InventoryForms";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteItemCategory } from "@/app/admin/inventory/actions";

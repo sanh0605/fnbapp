@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 //
 // Characterisation tests for the item-configuration modal inside
-// components/POSScreen.tsx (JSX at lines 1133-1283, driven by openProductModal
+// app/pos/components/POSScreen.tsx (JSX at lines 1133-1283, driven by openProductModal
 // at 300, addModifier at 323, removeModifier at 327, addToCart at 336, and the
 // derived price block at 381-406). Plan F, task F1.
 //

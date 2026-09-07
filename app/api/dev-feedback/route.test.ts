@@ -98,14 +98,14 @@ describe("dev-feedback API route", () => {
         selector: "div > button",
         className: "bg-primary",
         textSnippet: "TIỀN MẶT",
-        sourceFile: "components/pos/CartPanel.tsx",
+        sourceFile: "app/pos/components/CartPanel.tsx",
         sourceLine: 508,
         sourceColumn: 7,
       }));
 
       const [, writtenContent] = mocks.writeFile.mock.calls[0];
       expect(writtenContent).toContain("Nút bị che.");
-      expect(writtenContent).toContain("components/pos/CartPanel.tsx:508:7");
+      expect(writtenContent).toContain("app/pos/components/CartPanel.tsx:508:7");
     });
 
     it("DELETE requires an id", async () => {

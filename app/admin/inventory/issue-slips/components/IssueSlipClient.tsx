@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { SearchableSelect } from "@/components/SearchableSelect";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";

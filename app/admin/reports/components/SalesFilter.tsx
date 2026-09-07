@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CustomDatePicker } from "@/components/CustomDatePicker";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 // Claude code — UI-3: encode URL date as YYYY-MM-DD (friendly + shareable).

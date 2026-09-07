@@ -1,11 +1,11 @@
 import { findAll } from "@/lib/db/tables";
 import { getSalesDataV2, getHourlyHeatmapV2 } from "../actions";
-import SalesFilter from "@/components/SalesFilter";
-import SalesCharts from "@/components/SalesCharts";
-import CategoryPieChart from "@/components/CategoryPieChart";
+import SalesFilter from "@/app/admin/reports/components/SalesFilter";
+import SalesCharts from "@/app/admin/reports/components/SalesCharts";
+import CategoryPieChart from "@/app/admin/reports/components/CategoryPieChart";
 import { formatNumber } from "@/lib/shared/format";
 
-import ProductTable from "@/components/ProductTable";
+import ProductTable from "@/app/admin/reports/components/ProductTable";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OutletBreakdownSection } from "./OutletBreakdownSection";
 import { ChevronDown, AlertCircle } from "lucide-react";

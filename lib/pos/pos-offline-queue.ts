@@ -1,7 +1,7 @@
 /**
  * Browser-only local queue for POS orders that could not be submitted
  * immediately (offline or a network failure at submission time). Storage
- * only -- retry orchestration lives in components/POSScreen.tsx, since it
+ * only -- retry orchestration lives in app/pos/components/POSScreen.tsx, since it
  * needs component-scoped state (toasts, draft refresh) the storage layer
  * has no business knowing about.
  */

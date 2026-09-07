@@ -38,7 +38,7 @@ describe("POS order COGS calculation", () => {
 
   it("reuses a checkout token until the same payload succeeds", () => {
     const screenSource = readFileSync(
-      resolve(process.cwd(), "components/POSScreen.tsx"),
+      resolve(process.cwd(), "app/pos/components/POSScreen.tsx"),
       "utf8",
     );
 

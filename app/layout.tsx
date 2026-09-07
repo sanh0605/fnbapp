@@ -4,8 +4,8 @@ if (typeof window === "undefined") {
 
 import type { Metadata } from "next";
 import "./globals.css";
-import NextAuthSessionProvider from "@/components/SessionProvider";
-import { DialogHost } from "@/components/DialogHost";
+import NextAuthSessionProvider from "@/components/providers/SessionProvider";
+import { DialogHost } from "@/components/providers/DialogHost";
 import { DevPreviewToolsLoader } from "@/components/dev-feedback/DevPreviewToolsLoader";
 
 export const metadata: Metadata = {

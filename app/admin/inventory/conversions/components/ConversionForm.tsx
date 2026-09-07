@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { addConversion, updateConversion } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { SearchableSelect } from "@/components/SearchableSelect";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import type { DBPurchasedItem, DBUnit, DBUOMConversion } from "@/types/db";
 
 interface ConversionFormProps {

@@ -1,6 +1,7 @@
 ---
 paths:
   - "app/**/*.tsx"
+  - "components/**/*.tsx"
 ---
 
 # Dựng giao diện: thiết bị nào ra thiết bị đó

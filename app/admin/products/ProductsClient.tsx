@@ -2,8 +2,8 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
-import ProductForm from "@/components/ProductForm";
-import HistoryModal from "@/components/HistoryModal";
+import ProductForm from "@/app/admin/products/components/ProductForm";
+import HistoryModal from "@/app/admin/products/components/HistoryModal";
 import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";

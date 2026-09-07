@@ -9,7 +9,7 @@ const ENTRY_WITH_ELEMENT = {
   selector: "div > section:nth-of-type(2) > button",
   className: "bg-primary text-white rounded-button",
   textSnippet: "TIỀN MẶT",
-  sourceFile: "components/pos/CartPanel.tsx",
+  sourceFile: "app/pos/components/CartPanel.tsx",
   sourceLine: 508,
   sourceColumn: 7,
   note: "Nút này bị che một phần trên iPhone SE.",

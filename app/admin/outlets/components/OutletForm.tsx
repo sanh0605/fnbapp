@@ -4,7 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addOutlet, editOutlet, retireOutlet } from "../actions";
 import { nextOutletCode } from "@/lib/catalog/outlet-code";
-import { CustomDatePicker } from "@/components/CustomDatePicker";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { confirm, alert } from "@/lib/shared/dialog";

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { CustomDatePicker } from "@/components/CustomDatePicker";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 
 function toDateOnly(date: Date): string {
   const y = date.getFullYear();

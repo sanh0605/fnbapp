@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// Characterisation tests for the drafts modal inside components/POSScreen.tsx
+// Characterisation tests for the drafts modal inside app/pos/components/POSScreen.tsx
 // (JSX at lines 1104-1171, opened from the "Nháp" button at line 998, backed
 // by refreshDrafts/saveDraft/loadDraft/deleteDraft and the three drafts
 // state vars). Plan F, task F3a.
@@ -248,7 +248,7 @@ describe("POSScreen drafts modal", () => {
 
   it('"Xóa" calls deletePOSDraft with the draft id and removes the card once the refresh completes', async () => {
     // Default covers both the mount-time refreshDrafts() and the one the
-    // "Nháp" button itself fires on click (components/POSScreen.tsx:993) --
+    // "Nháp" button itself fires on click (app/pos/components/POSScreen.tsx:993) --
     // both need the draft to still be there. Queued after it, the ONE call
     // that follows a successful delete (refreshDrafts() inside
     // deleteDraft's .then) gets the now-empty list.

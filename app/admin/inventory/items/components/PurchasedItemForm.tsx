@@ -6,7 +6,7 @@ import { addPurchasedItem, updatePurchasedItem } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Button } from "@/components/ui/Button";
-import { SearchableSelect } from "@/components/SearchableSelect";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { confirm } from "@/lib/shared/dialog";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 

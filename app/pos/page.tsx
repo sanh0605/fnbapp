@@ -1,5 +1,5 @@
 import { findAll } from "@/lib/db/tables";
-import POSScreen from "@/components/POSScreen";
+import POSScreen from "@/app/pos/components/POSScreen";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth";

@@ -2,7 +2,7 @@
 
 import { useState, useId } from "react";
 import { saveProduct, pauseProduct, resumeProduct, eraseProduct } from "@/app/admin/products/actions";
-import { CustomDatePicker } from "./CustomDatePicker";
+import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";

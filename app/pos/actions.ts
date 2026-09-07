@@ -222,7 +222,7 @@ export async function getPOSDrafts(outletId: string) {
   } catch (err: any) {
     // not in the plan's own list (found while re-deriving it). Rethrow so
     // the failure is real, not a fabricated "no drafts" -- the caller
-    // (components/POSScreen.tsx's refreshDrafts) already has its own
+    // (app/pos/components/POSScreen.tsx's refreshDrafts) already has its own
     // try/catch around this call, so this does not reach app/error.tsx's
     // boundary the way the admin loaders do; that presentation gap is a
     // separate, follow-up concern, not this fix.
@@ -237,7 +237,7 @@ export async function savePOSDraft(draft: {
   cart_json: string;
   brand_id: string;
   // Optional only so existing callers/tests that predate this field keep
-  // compiling; components/POSScreen.tsx always supplies it. brand_id is
+  // compiling; app/pos/components/POSScreen.tsx always supplies it. brand_id is
   // kept alongside it -- the sale-time fact, same as on an order -- outlet_id
   // is what filtering now keys on.
   outlet_id?: string;

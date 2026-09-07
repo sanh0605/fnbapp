@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
-import { CartItemRow } from "./CartItemRow";
+import { DiscountBadge, DISCOUNT_KIND } from "@/app/pos/components/DiscountBadge";
+import { CartItemRow } from "@/app/pos/components/CartItemRow";
 import { formatNumber } from "@/lib/shared/format";
 import { alert, confirm } from "@/lib/shared/dialog";
 
