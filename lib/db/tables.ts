@@ -256,7 +256,7 @@ export const findAll = (sheetName: string) => {
 // products were ever sold. The full 20-column table pushed the unstable_cache
 // entry to 3.0 MB, over Next's 2 MB ceiling -- every render threw and the
 // cache never populated. This selects only the id columns it actually needs.
-async function findOrderLineProductAndVariantIdsNoCache(): Promise<{ productIds: string[]; variantIds: string[] }> {
+async function findOrderLineProductAndVariantIdsNoCache(): Promise<{ productIds: string[]; variantIds: string[]; modifierIds: string[] }> {
   const supabase = getSupabaseClient();
   const tableName = normalizeTableName('Order_Lines_V2');
   const productIds = new Set<string>();
@@ -286,10 +286,24 @@ async function findOrderLineProductAndVariantIdsNoCache(): Promise<{ productIds:
     if (data.length < PAGE_SIZE) break;
     lastId = String(data[data.length - 1]?.id ?? "");
   }
-  return { productIds: [...productIds], variantIds: [...variantIds] };
+
+  // BR-CATALOG-003: a topping sold as an add-on lives only in
+  // modifiers_snapshot_json, invisible to the product_id/variant_id scan
+  // above. find_sold_modifier_ids() does that scan in Postgres and returns
+  // ids only -- pulling the jsonb payload into Node here would reintroduce
+  // the cache-size problem this function exists to fix.
+  const { data: modifierData, error: modifierError } = await withReadRetry(
+    () => supabase.rpc('find_sold_modifier_ids'),
+    'findOrderLineProductAndVariantIds(modifiers)',
+  );
+  if (modifierError) {
+    throw new Error(`findOrderLineProductAndVariantIds(modifiers): ${modifierError.message}`);
+  }
+
+  return { productIds: [...productIds], variantIds: [...variantIds], modifierIds: modifierData ?? [] };
 }
 
-export const findOrderLineProductAndVariantIds = (): Promise<{ productIds: string[]; variantIds: string[] }> => {
+export const findOrderLineProductAndVariantIds = (): Promise<{ productIds: string[]; variantIds: string[]; modifierIds: string[] }> => {
   if (process.env.CLI_MODE === 'true') {
     return findOrderLineProductAndVariantIdsNoCache();
   }

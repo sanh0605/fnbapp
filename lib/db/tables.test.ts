@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   unstableCache: vi.fn((fn: any) => fn),
   supabaseSelect: vi.fn(),
   supabaseUpdate: vi.fn(),
+  supabaseRpc: vi.fn(),
   queryCalls: [] as Array<{ method: string; args: any[] }>,
 }));
 
@@ -44,6 +45,7 @@ vi.mock("./supabase", () => ({
         }),
       }),
     }),
+    rpc: (fnName: string, params?: any) => Promise.resolve(mocks.supabaseRpc(fnName, params)),
   }),
 }));
 
@@ -442,6 +444,8 @@ describe("findOrderLineProductAndVariantIds", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.supabaseSelect.mockReset();
+    mocks.supabaseRpc.mockReset();
+    mocks.supabaseRpc.mockResolvedValue({ data: [], error: null });
     mocks.queryCalls.length = 0;
   });
 
@@ -493,5 +497,20 @@ describe("findOrderLineProductAndVariantIds", () => {
     } finally {
       process.env.CLI_MODE = original;
     }
+  });
+
+  // BR-CATALOG-003 / docs/superpowers/plans/2026-09-07-link-toppings-to-products.md
+  // Task 1 Step 3: the reader also returns which modifiers (toppings sold as
+  // an add-on) were ever sold, via the new find_sold_modifier_ids() RPC --
+  // scanned in Postgres, ids only, so this page's cache entry does not
+  // regrow into the JSON payload that broke it before (commit b954af2).
+  it("returns the sold modifier ids from find_sold_modifier_ids()", async () => {
+    mocks.supabaseSelect.mockResolvedValue({ data: [], error: null });
+    mocks.supabaseRpc.mockResolvedValue({ data: ["MOD-001", "MOD-004"], error: null });
+
+    const result = await findOrderLineProductAndVariantIds();
+
+    expect(result.modifierIds).toEqual(["MOD-001", "MOD-004"]);
+    expect(mocks.supabaseRpc).toHaveBeenCalledWith("find_sold_modifier_ids", undefined);
   });
 });

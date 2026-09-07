@@ -101,6 +101,10 @@ export interface DBModifier {
   name: string;
   price: string;
   status: string;
+  // BR-CATALOG-003 (migration 0097): links this modifier to the CAT-007
+  // product it also sells standalone, if one exists. Nullable -- a
+  // modifier may have no standalone counterpart (e.g. MOD-009).
+  product_id: string | null;
 }
 
 export interface DBSupplier {
