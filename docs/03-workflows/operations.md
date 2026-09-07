@@ -7,14 +7,14 @@ tables: Pos_Sync_Failures, Outlets, Brands
 brCodes: BR-SALE-006
 ```
 
-**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+**Reviewed, no behaviour change — 2026-09-07:** a declared source file's comments only — dead `CLAUDE.md` section-number pointers replaced with section headings; no logic changed.
 
 This flow covers the operational back-office screens: the two **outlets** (`001`
 and `002`), the two **brands** they carry, the **POS sync failure** log, the
 **activity log**, and the **cache** tool. The shop runs two outlets, each bound
 to exactly one brand — outlet `001`/`002` carry Phin Đi and Uchako — over a
-single shared warehouse (`docs/superpowers/specs/2026-09-02-project-reset-design.md`
-§10). A brand always follows the outlet, never the reverse: the order code is
+single shared warehouse (`docs/01-system/SYSTEM-OVERVIEW.md`, "Kho dùng chung").
+A brand always follows the outlet, never the reverse: the order code is
 `YYMMDD` + outlet + sequence and `brand_id` is derived server-side from the
 outlet at the moment of sale (`BR-SALE-006`). Outlet and brand records are
 edited from `app/admin/outlets/actions.ts` and `app/admin/brands/actions.ts`.

@@ -4,7 +4,7 @@
 
 **Status:** `APPROVED` — owner decision 2026-08-19.
 
-Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, `products`, `item_categories`, `units`, `suppliers`) each enforce their own name uniqueness, scoped **within the table only, never across tables** — a purchased item and the ingredient it becomes legitimately share a name (e.g. `SPM-005`/`ING-001`, both "Đá viên"). Uniqueness is scoped to `ACTIVE` rows: retiring a row (mark-inactive, never delete — `CLAUDE.md` section 2) makes its name reusable.
+Six catalogue tables (`purchased_items`, `semi_products`, `products`, `item_categories`, `units`, `suppliers`) each enforce their own name uniqueness, scoped **within the table only, never across tables** — a purchased item and the ingredient it becomes legitimately share a name (e.g. `SPM-005`/`ING-001`, both "Đá viên"). Uniqueness is scoped to `ACTIVE` rows: retiring a row (mark-inactive, never delete — `CLAUDE.md` "Luật dữ liệu") makes its name reusable.
 
 **Two levels, found by asking what stripping diacritics actually costs, not by principle.** The owner asked for "Ca phe" to be caught as a duplicate of "Cà phê." Stripping diacritics does that — and also collapses "Dứa" and "Dừa" (pineapple vs coconut) into one word; this catalogue already holds "Thạch dừa" (`NNL-009`), so a blanket strip would one day refuse "Thạch dứa" on a drinks menu with no way to say "that is a real, different item."
 
@@ -31,5 +31,5 @@ Seven catalogue tables (`purchased_items`, `base_ingredients`, `semi_products`, 
 
 **Not reversible by re-reading old data.** The owner declined a backup of the 46 groups or the 52-item mapping before deletion (his own words, same session): *"Anh sẽ tự nối lại và tự định nghĩa lại vào lúc đó, em không cần phải sao lưu lại dữ liệu trong NHÓM NGUYÊN LIỆU."* A future re-introduction of grouping is a new design, built fresh, not a restore.
 
-**Sequenced in two steps, only the first written as of 2026-09-01.** Step 1 drops the `base_ingredients` table itself (migration written, not yet applied — code deploys first, per the `0076` lesson, `CLAUDE.md` section 2). Step 2, separately approved, drops `purchased_items.base_ingredient_id` — orphaned by step 1, still present on 52 rows, read by no screen after step 1 but still read by four server functions, two of them on the issue-slip cost path. Until step 2 lands, `BR-CATALOG-001`'s uniqueness table above still describes `base_ingredients` as live in the schema; it is not live in any application code path as of this rule.
+**Both steps applied** — measured 2026-09-07 against the live database: the `base_ingredients` table (dropped by migration `0090`) and the `purchased_items.base_ingredient_id` column (dropped by `0095`) both answer "does not exist". Nothing in the schema or in any code path refers to the lower tier any more.
 

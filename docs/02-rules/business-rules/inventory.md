@@ -58,7 +58,7 @@ Applies from the issue-based COGS path (Plan B, parallel path).
 
 ### BR-INV-007 — Count sealed packages only; cost is recognised when a package is opened
 
-**Status:** `APPROVED` — owner decision 2026-08-07. **Not yet implemented** — Plan D builds it. Recorded here on decision, per `CLAUDE.md` section 6, not on delivery.
+**Status:** `APPROVED` — owner decision 2026-08-07. **Not yet implemented** — Plan D builds it. Recorded here on decision, per `CLAUDE.md` "Luật dữ liệu", not on delivery.
 
 A stocktake counts only packages that are still sealed. An opened package is not counted and not estimated. The owner's own example: the 100 g bag of `Dâu sấy` is finished, the 500 g bag is open and in use, the 1 kg bag is sealed — only the 1 kg line gets a number.
 

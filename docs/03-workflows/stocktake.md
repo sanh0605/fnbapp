@@ -74,7 +74,7 @@ proof of loss.
 **The first count carries months of accumulated difference.** The earliest count
 period reconciles everything that happened before it, so its shortfall bundles
 many months of accumulated difference rather than the loss of one period; see
-`docs/superpowers/specs/2026-09-02-project-reset-design.md` (§10). Later periods
+`BR-COGS-007` (the first count, 2026-08-09). Later periods
 compare against the previous close and reflect only their own interval.
 
 `lib/stocktake-transaction.ts` calls `reverse_stocktake_session_atomic` among

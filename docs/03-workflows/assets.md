@@ -7,7 +7,7 @@ tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
 
-**Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
+**Reviewed, no behaviour change — 2026-09-07:** a declared source file's comments only — dead `CLAUDE.md` section-number pointers replaced with section headings; no logic changed.
 
 This flow covers the equipment register — the durable tools the shop owns — and
 the two things the owner does with it after acquisition: **dispose** of a tool
@@ -40,7 +40,7 @@ table of its own.
    a dispose action per asset (with a live preview of the amount that will be
    charged this month before confirming). It offers no delete for the asset row.
    `/admin/inventory/asset-bands` offers add, edit, and delete for bands — a
-   flexible thing the owner controls without a code change (`CLAUDE.md` §8). An
+   flexible thing the owner controls without a code change (`CLAUDE.md` "Viết code"). An
    edit or delete that would leave a gap, an overlap, or an uncovered price range
    is refused, so those actions fail rather than hide.
 3. **What each list contains, and what is excluded.** The asset list shows every

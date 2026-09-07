@@ -78,3 +78,7 @@ Begin migration planning when the serialized bundle reaches the warning threshol
 
 Backup success does not authorize restoration. A restore needs a reviewed mapping, target environment, dry-run/validation, and explicit production approval.
 
+## Migration state is measured on the database, not read from the CLI
+
+Observed 2026-09-07. `npx supabase migration list` records only migrations applied through the CLI. On this project its remote column stops at `0064` while `0065`–`0096` are live — verified by probing `outlets` (exists, 2 rows), `base_ingredients` (gone), `stock_ledger` (gone). To know whether a migration has run, query the table or column it creates or drops; never read the CLI list or a document. The 2026-09-02 reset spec recorded three batches as "not run" that had run — the same trap.
+

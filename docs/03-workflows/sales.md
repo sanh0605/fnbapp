@@ -24,8 +24,8 @@ and they run through the `void_order_atomic` database function called from
 1. **States, and how each is set.** An order in `orders_v2` is versioned, not
    overwritten. A fresh sale is `COMPLETED`. Editing an order does **not** mutate
    the existing row: it writes a **new** `COMPLETED` row and flips the previous
-   one to `SUPERSEDED`, and **both versions keep the same order code** (spec
-   §10; `BR-SALE-006`). So one order code can map to several rows, exactly one of
+   one to `SUPERSEDED`, and **both versions keep the same order code**
+   (`BR-SALE-002`, `BR-SALE-006`). So one order code can map to several rows, exactly one of
    which is the live `COMPLETED` version (its `superseded_by` empty). A void marks
    the order voided and books the matching inventory effect through
    `void_order_atomic`, leaving an event trail rather than a silent status flip
@@ -43,7 +43,7 @@ and they run through the `void_order_atomic` database function called from
 3. **What each list contains, and what is excluded.** `/admin/orders` shows
    orders; revenue and audit views over it must filter to the live version only —
    `status = 'COMPLETED'` **and** `superseded_by` empty — or the same sale is
-   counted once per version (`BR-SALE-004`, spec §10). `SUPERSEDED` and voided rows
+   counted once per version (`BR-SALE-004`, `BR-SALE-002`). `SUPERSEDED` and voided rows
    are kept for traceability but excluded from revenue. `/admin/promotions` lists
    promotion definitions, including deactivated ones, because they are still needed
    to interpret older orders.

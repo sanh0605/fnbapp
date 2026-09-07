@@ -1,5 +1,7 @@
 # Dựng lại nền tài liệu và quy trình cho toàn dự án
 
+**Hồ sơ quyết định.** Số đo trong §1.1 là ảnh chụp 02/09; hiện trạng đo lại trước khi dùng. `docs/generated/edge-cases.md` (§3.2) bỏ khỏi thiết kế 2026-09-07 (chủ quán duyệt, đặc tả `2026-09-07-cau-truc-kho-ma-lau-dai.md` D5) — máy trích được tên phép kiểm nhưng không dịch được sang tiếng Việt.
+
 **Viết 2026-09-02 bởi Opus 5. Cập nhật cùng ngày sau bảy vòng phỏng vấn và ba
 vòng Sonnet phản biện.**
 Bước 1+2 của `CLAUDE.md` §1b — đặc tả và thiết kế. **Chưa phải kế hoạch triển

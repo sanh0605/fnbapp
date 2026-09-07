@@ -4,7 +4,8 @@ Recovery procedures for the four incident classes the project actually has
 tooling for. Each entry is **symptom -> first check -> action**. This runbook is
 rebuilt from the live tooling; it references only scripts, routes, and docs that
 exist in the repository today. When in doubt about a current number, measure it
-(CLAUDE.md, Rule 0) -- do not trust a figure written here in the past.
+(CLAUDE.md, "Trả lời câu hỏi về số liệu") -- do not trust a figure written here
+in the past.
 
 Nothing in this runbook writes to production on its own. Any real restore is a
 reviewed, explicit data operation approved by the owner one run at a time.
@@ -41,7 +42,7 @@ editing cannot explain it.
   `scripts/verify-restore-drill.ts`, which diffs row counts for every backed-up
   table plus content spot-checks.
 - Only after the scratch restore is verified, plan the targeted production fix as
-  a normal reviewed data operation (CLAUDE.md, "write to real data" row): dry-run
+  a normal reviewed data operation (CLAUDE.md "Việc phải chủ quán duyệt từng lần"): dry-run
   by default, `--apply` to write, owner approves each write.
 
 ---
@@ -84,7 +85,7 @@ errors even though the write itself may have succeeded.
   renamed) that application code still reads.
 
 **Action.**
-- The rule (CLAUDE.md, "run a migration on the real server" row): a migration
+- The rule (CLAUDE.md "Luật dữ liệu"): a migration
   that changes what a function returns must ship **together with** the code that
   reads that return value -- push the code first or in the same step, never the
   migration first. Running the migration ahead of the code means every call
@@ -93,7 +94,7 @@ errors even though the write itself may have succeeded.
   close the gap, then check for duplicate rows created by retries during the
   window.
 - When gutting a function's output, list every reader of the result, not just
-  its callers (CLAUDE.md, Section 5).
+  its callers (CLAUDE.md, "Trả lời câu hỏi về số liệu").
 
 ---
 
@@ -112,7 +113,7 @@ gates are green.
   A green `npx tsc --noEmit`, `npx vitest run`, and
   `npx vite-node scripts/check-rules-current.ts` do **not** prove the build
   works. The three gates once stayed green across many commits while a bad
-  `"use server"` export broke the build (CLAUDE.md, Section 9).
+  `"use server"` export broke the build (CLAUDE.md, "Lệnh").
 
 **Action.**
 - Read the first build error and fix it at the source; a `"use server"` file
@@ -120,4 +121,4 @@ gates are green.
 - Re-run `npm run build` until it succeeds before declaring the work done.
 - Deploy is a separate, owner-approved step. After deploy, someone must open a
   real page while logged in -- a `curl` returning a redirect proves nothing
-  (CLAUDE.md, Section 9).
+  (CLAUDE.md, "Viết code").

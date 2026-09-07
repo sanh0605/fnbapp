@@ -37,7 +37,7 @@ and the issued-goods (cost) report at `/admin/reports/issued`.
 3. **What each list contains, and what is excluded.** The **sales report**
    (`/admin/reports/sales`) counts revenue from `orders_v2`, and it includes only
    rows with `status = 'COMPLETED'` **and** an empty `superseded_by`. This is the
-   supersede model from spec §10: editing an order does not overwrite the old row —
+   supersede model from `BR-SALE-002`: editing an order does not overwrite the old row —
    the old row becomes `SUPERSEDED` and a new `COMPLETED` row is written under the
    same order code. Counting without both filters would double-count an edited
    order, so superseded and non-completed rows are deliberately excluded. The
