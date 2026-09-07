@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/issued-value-report";
-import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/issue-costing-inputs";
-import type { Purchase, Issue } from "@/lib/issue-costing";
+import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/costing/issue-costing-inputs";
+import type { Purchase, Issue } from "@/lib/costing/issue-costing";
 import liveSnapshot from "@/app/admin/reports/issued/__fixtures__/2026-08-13-live-snapshot.json";
 
 // Plan G section 5's gate: a stocktake session's or an issue slip's value is

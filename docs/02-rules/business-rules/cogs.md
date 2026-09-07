@@ -76,7 +76,7 @@ The first count (2026-08-09, **34.864.627đ**) falls exactly there: **zero issue
 
 ### BR-COGS-006 — A purchase is valued at what was paid, shipping and discounts included
 
-**Status:** `APPROVED` — owner decision 2026-08-09. **Implemented 2026-08-09** (Plan D D11, `lib/purchase-order-cost-allocation.ts`).
+**Status:** `APPROVED` — owner decision 2026-08-09. **Implemented 2026-08-09** (Plan D D11, `lib/costing/purchase-order-cost-allocation.ts`).
 
 The cost of a purchased item is the line amount **plus its share of shipping and tax, minus its share of vouchers and discounts**, allocated across the order's lines in proportion to line value. An item worth 20% of an order absorbs 20% of its shipping and 20% of its discount.
 
@@ -92,7 +92,7 @@ The cost of a purchased item is the line amount **plus its share of shipping and
 
 **Current method: direct proportional division, one rounding guard.** `share(line) = round(adjustment × line.subtotal ÷ sum_of_line_subtotals)`, computed independently per line; if the rounded shares do not sum to the adjustment, the residue goes on the line with the largest subtotal. Satisfies `BR-COGS-003` (the parts must sum to the whole) for either sign, without a capacity-capped allocator built for a different problem — and is checkable on a calculator, which matters in a system the owner checks by hand.
 
-**A second, separate bug fixed 2026-08-22 (`OPEN-ITEMS 56`), not this rule's allocation itself.** `lib/purchase-ledger-rebuild.ts`'s `buildPurchaseReceipt` decided whether to convert a purchase into base units by checking `base_ingredient_id` ("is this RAW") instead of whether the item actually had a conversion — correct until batch 1 gave CONSUMABLE items their own conversions too. A consumable purchase would have recorded quantity in *purchase* units (e.g. `2` for "2 Bao") while every stocktake and issue slip records *base* units, corrupting on-hand and `unit_cost` by the conversion factor the moment the first consumable purchase was entered. Fixed before that happened — verified against all 164 real purchase lines (all RAW today), 0 changed.
+**A second, separate bug fixed 2026-08-22 (`OPEN-ITEMS 56`), not this rule's allocation itself.** `lib/costing/purchase-ledger-rebuild.ts`'s `buildPurchaseReceipt` decided whether to convert a purchase into base units by checking `base_ingredient_id` ("is this RAW") instead of whether the item actually had a conversion — correct until batch 1 gave CONSUMABLE items their own conversions too. A consumable purchase would have recorded quantity in *purchase* units (e.g. `2` for "2 Bao") while every stocktake and issue slip records *base* units, corrupting on-hand and `unit_cost` by the conversion factor the moment the first consumable purchase was entered. Fixed before that happened — verified against all 164 real purchase lines (all RAW today), 0 changed.
 
 **The adjusted value is derived and is never stored** — it is computed where the engine reads (`buildIssueCostingPurchases`), consistent with the rule that no rounded or derived money is persisted.
 

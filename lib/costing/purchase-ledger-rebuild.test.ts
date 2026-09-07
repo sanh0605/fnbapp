@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPurchaseReceipt,
   buildPurchaseReceiptLedgerEntry,
-} from "@/lib/purchase-ledger-rebuild";
+} from "@/lib/costing/purchase-ledger-rebuild";
 
 describe("buildPurchaseReceipt", () => {
   it("uses conversion_id as the source of truth for raw item ledger quantity", () => {

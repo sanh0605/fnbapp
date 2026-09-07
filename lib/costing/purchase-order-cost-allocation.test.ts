@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { allocatePurchaseOrderCost } from "@/lib/purchase-order-cost-allocation";
+import { allocatePurchaseOrderCost } from "@/lib/costing/purchase-order-cost-allocation";
 
 describe("allocatePurchaseOrderCost", () => {
   // BR-COGS-006's own worked example, PO-031 (2026-06-12): a single line so

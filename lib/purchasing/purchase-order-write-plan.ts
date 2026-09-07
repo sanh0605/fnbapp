@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { buildPurchaseReceipt } from "@/lib/purchase-ledger-rebuild";
+import { buildPurchaseReceipt } from "@/lib/costing/purchase-ledger-rebuild";
 
 type PurchaseOrderWriteInput = {
   id: string;

@@ -1,5 +1,5 @@
-import { allocatePurchaseOrderCost } from "@/lib/purchase-order-cost-allocation";
-import type { Purchase, Issue } from "@/lib/issue-costing";
+import { allocatePurchaseOrderCost } from "@/lib/costing/purchase-order-cost-allocation";
+import type { Purchase, Issue } from "@/lib/costing/issue-costing";
 
 // Plan C Task 2. There is nothing to reuse here -- the loader this plan
 // originally pointed at would have been written by Plan B Task 4, and the

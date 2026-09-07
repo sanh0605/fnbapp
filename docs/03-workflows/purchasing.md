@@ -29,7 +29,7 @@ the order and every line land, or nothing does.
 **Receiving a purchase raises stock.** A completed purchase order is the shop's
 "goods in" event — the quantities on its lines become on-hand stock, and their
 prices are what the weighted-average cost is computed from. Costing replays the
-full purchase history for each item (`lib/issue-costing.ts`): every completed
+full purchase history for each item (`lib/costing/issue-costing.ts`): every completed
 purchase adds its quantity and its money, so the average unit cost used when
 goods later leave stock is driven by these purchase prices.
 

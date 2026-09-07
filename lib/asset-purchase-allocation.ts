@@ -1,15 +1,15 @@
-import { allocatePurchaseOrderCost } from "@/lib/purchase-order-cost-allocation";
+import { allocatePurchaseOrderCost } from "@/lib/costing/purchase-order-cost-allocation";
 import { findBandForUnitPrice, type Band } from "@/lib/asset-depreciation";
 
 // Batch 3 (section 3.2): "unit_cost is the allocated cost per unit ... Take it from
 // what the purchase flow already computes; do not re-implement the
 // allocation here." BR-COGS-006's own authoritative implementation is
 // allocatePurchaseOrderCost (docs/02-rules/business-rules/cogs.md: "Implemented
-// 2026-08-09 (Plan D D11, lib/purchase-order-cost-allocation.ts)") -- the
-// same primitive lib/issue-costing-inputs.ts uses to feed the COGS report.
+// 2026-08-09 (Plan D D11, lib/costing/purchase-order-cost-allocation.ts)") -- the
+// same primitive lib/costing/issue-costing-inputs.ts uses to feed the COGS report.
 // Reused directly here, not re-derived.
 //
-// Deliberately NOT lib/purchase-ledger-rebuild.ts's buildPurchaseReceipt,
+// Deliberately NOT lib/costing/purchase-ledger-rebuild.ts's buildPurchaseReceipt,
 // even though that function already computes a per-line unit_cost too:
 // its internal calculateLineLandedCost is a plain float proportion with no
 // residue correction, a different (and undocumented-as-BR-COGS-006)

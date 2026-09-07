@@ -1,5 +1,5 @@
 // Batch 3 (section 4): the monthly depreciation charge, pure and testable without a
-// database, mirroring how lib/issue-costing.ts is structured.
+// database, mirroring how lib/costing/issue-costing.ts is structured.
 //
 // Dates are plain "YYYY-MM-DD" calendar dates (Postgres `date` columns, no
 // time-of-day component), so month arithmetic here is done on parsed

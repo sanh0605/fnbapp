@@ -15,8 +15,8 @@ import {
 } from "@/lib/report-v2-allocators";
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { displayMoney } from "@/lib/display-rounding";
-import { computePeriodIssuedValue } from "@/lib/issue-costing";
-import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/issue-costing-inputs";
+import { computePeriodIssuedValue } from "@/lib/costing/issue-costing";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
 import { requireAdmin } from "@/lib/auth/auth";
 
 export interface PnLReportFilters {
@@ -161,7 +161,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
 
     // 3. Total COGS = sum of issued_value over the period's issues (Plan C
     // Task 2). Sales no longer determine cost -- purchases and recorded
-    // stock_issues do. See computePeriodIssuedValue in lib/issue-costing.ts
+    // stock_issues do. See computePeriodIssuedValue in lib/costing/issue-costing.ts
     // for why this is two full replays and a subtraction, not a single pass.
     const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
     // section 3.2: an issue slip line naming equipment must never enter

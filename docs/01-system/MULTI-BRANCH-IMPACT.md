@@ -58,7 +58,7 @@ trong `supabase/migrations/`: không bảng nào có cột `outlet_id`.
 | `issue_slips` | `supabase/migrations/0060_issue_slip_multiline.sql` | Phiếu xuất nhiều dòng |
 
 Hai file tính giá vốn cũng không biết tới khái niệm điểm bán/chi nhánh —
-`lib/issue-costing.ts` và `lib/issue-costing-inputs.ts` tính bình quân gia
+`lib/costing/issue-costing.ts` và `lib/costing/issue-costing-inputs.ts` tính bình quân gia
 quyền trên toàn bộ kho, không lọc theo nơi bán.
 
 Muốn tách kho theo chi nhánh, sáu bảng trên và hai file tính giá vốn này đều

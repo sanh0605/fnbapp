@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeIssueCosting, computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/issue-costing";
+import { computeIssueCosting, computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/costing/issue-costing";
 
 describe("computeIssueCosting", () => {
   // Chủ quán chốt 2026-08-02, ví dụ của chính anh, mở rộng ở spec mục 1.

@@ -19,7 +19,7 @@ import { alert, confirm } from "@/lib/shared/dialog";
 // validated at entry to always carry at least one). Requiring conversion_id
 // unconditionally meant no EQUIPMENT line could ever be completed: the
 // dropdown had nothing to offer, so conversion_id could never become
-// truthy. The server (lib/purchase-ledger-rebuild.ts's buildPurchaseReceipt)
+// truthy. The server (lib/costing/purchase-ledger-rebuild.ts's buildPurchaseReceipt)
 // already handles a missing conversion correctly for any non-RAW item --
 // this only relaxes the requirement, and only when the item has zero
 // conversions to choose from in the first place; RAW/CONSUMABLE items,
