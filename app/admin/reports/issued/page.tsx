@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getIssuedValueReport } from "./actions";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ItemCard } from "./ItemCard";
 

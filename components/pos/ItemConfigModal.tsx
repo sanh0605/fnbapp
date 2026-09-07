@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 export type ItemConfigSubmission = {
   variant: any;

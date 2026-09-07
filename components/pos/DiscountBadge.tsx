@@ -33,7 +33,7 @@ const KIND_CLASSES: Record<DiscountKind, { wrapper: string; dot: string; text: s
   },
 };
 
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 export function DiscountBadge({ kind, label, amount }: DiscountBadgeProps) {
   if (amount <= 0) return null;

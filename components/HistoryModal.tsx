@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { buildPriceHistoryTimeline } from "@/lib/price-history";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { History, X } from "lucide-react";
 
 export default function HistoryModal({ title, priceHistory }: any) {

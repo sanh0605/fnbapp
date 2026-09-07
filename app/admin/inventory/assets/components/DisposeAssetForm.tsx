@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { toSaigonIsoString } from "@/lib/datetime";
 import { disposeAsset, previewDisposalCharge } from "../actions";
 import type { AssetView } from "../actions";

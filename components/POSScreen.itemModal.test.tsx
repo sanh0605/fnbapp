@@ -20,7 +20,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
 import POSScreen from "./POSScreen";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 // POSScreen imports these from "@/app/pos/actions" (a "use server" file that
 // transitively pulls in next/cache, lib/sheets_db, lib/auth, etc.). None of

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { CartItemRow } from "./CartItemRow";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { alert, confirm } from "@/lib/dialog";
 
 interface CartPanelProps {

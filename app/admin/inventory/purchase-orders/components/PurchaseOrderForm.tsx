@@ -8,7 +8,7 @@ import { SupplierModal } from "@/components/SupplierForm";
 import { CustomDatePicker } from "@/components/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toSaigonIsoString } from "@/lib/datetime";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
 import { alert, confirm } from "@/lib/dialog";
 

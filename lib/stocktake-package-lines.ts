@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 /**
  * Plan D section 4 -- the package-line count model.
@@ -70,7 +70,7 @@ export function buildPackageLines(conversions: readonly PurchasedItemConversion[
 
 /**
  * "Tui 100 g", "Hop 1.000 ml" -- purchased-unit name, the base-unit quantity
- * it holds (vi-VN thousand separators, matching lib/format.ts convention),
+ * it holds (vi-VN thousand separators, matching lib/shared/format.ts convention),
  * and the base unit. Deliberately does not scale to a larger unit (no
  * "1 kg" / "1 l") -- that needs an explicit per-unit scaling table nothing
  * in the schema defines yet, and Plan D section 4's own mockup used it for

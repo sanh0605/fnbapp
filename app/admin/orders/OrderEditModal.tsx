@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { editOrderV2 } from "./actions";
 import type { CartInput } from "@/lib/order-cart";
 import type { OrderListItem } from "./actions";

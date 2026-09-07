@@ -8,7 +8,7 @@ import { voidOrderV2 } from "./actions";
 import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
 import { formatDateTime } from "@/lib/datetime";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { AlertCircle, X } from "lucide-react";

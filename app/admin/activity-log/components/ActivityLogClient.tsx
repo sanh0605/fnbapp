@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatDateTime } from "@/lib/datetime";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { ActivityLogEvent as OrderEvent } from "../actions";
 

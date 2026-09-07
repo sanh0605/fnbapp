@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 // section 3: this is a mistake guard, not a convenience. IssueSlipClient's
 // own submit multiplies the typed quantity by the selected conversion's

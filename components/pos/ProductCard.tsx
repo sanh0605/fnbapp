@@ -1,7 +1,7 @@
 "use client";
 
 import { categoryIcon } from "@/lib/pos-category-icons";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 interface ProductCardProps {
   product: any;

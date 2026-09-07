@@ -1,7 +1,7 @@
 import { getDailyDigest } from "./actions";
 import { DailyDigestFilter } from "./DailyDigestFilter";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 export const dynamic = "force-dynamic";
 

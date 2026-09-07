@@ -2,7 +2,7 @@ import { findAll, findAllNoCache, findAllWhere } from "@/lib/sheets_db";
 import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/order-types";
 import { breakdownRevenueByProduct } from "@/lib/report-v2-allocators";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import { getSupabaseClient } from "@/lib/supabase";

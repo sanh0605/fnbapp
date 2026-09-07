@@ -6,7 +6,7 @@
 // directly testable without rendering anything.
 
 // revenue / orders, rounded to whole đồng at display time via
-// lib/format.ts's formatNumber. Null (not 0 or NaN) when there were no
+// lib/shared/format.ts's formatNumber. Null (not 0 or NaN) when there were no
 // orders, so the caller renders "-" instead of a fabricated average.
 export function avgPerOrder(revenue: number, orderCount: number): number | null {
   if (orderCount === 0) return null;

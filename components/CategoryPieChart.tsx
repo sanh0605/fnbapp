@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 export default function CategoryPieChart({ data }: { data: { label: string, amount: number }[] }) {
   const total = data.reduce((sum, d) => sum + d.amount, 0);

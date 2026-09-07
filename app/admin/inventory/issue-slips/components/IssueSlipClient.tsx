@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/SearchableSelect";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { formatDateTime } from "@/lib/datetime";
 import { confirm } from "@/lib/dialog";
 import { computeAffectedMonths } from "@/lib/issue-slip-warnings";

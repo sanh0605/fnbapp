@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { DisposeAssetForm } from "./DisposeAssetForm";
 import type { AssetView } from "../actions";
 

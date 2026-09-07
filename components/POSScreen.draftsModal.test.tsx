@@ -13,7 +13,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
 import POSScreen from "./POSScreen";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 // Same two mocks as POSScreen.itemModal.test.tsx, for the same reasons: a
 // "use server" module and a real-IndexedDB module POSScreen touches on every

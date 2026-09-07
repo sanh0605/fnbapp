@@ -3,7 +3,7 @@ import { getSalesDataV2, getHourlyHeatmapV2 } from "../actions";
 import SalesFilter from "@/components/SalesFilter";
 import SalesCharts from "@/components/SalesCharts";
 import CategoryPieChart from "@/components/CategoryPieChart";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 import ProductTable from "@/components/ProductTable";
 import { EmptyState } from "@/components/ui/EmptyState";

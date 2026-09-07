@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 interface CartItemRowProps {
   item: any;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FormModal } from "@/components/ui/FormModal";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { getPriceTrend, type ItemPurchaseHistoryRow } from "@/lib/item-purchase-history";
 import { getItemPurchaseHistory } from "../actions";
 

@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBPurchaseOrder, DBSupplier, DBPurchasedItem } from "@/types/db";
 import type { RawPurchaseOrderLine } from "@/lib/item-purchase-history";
 

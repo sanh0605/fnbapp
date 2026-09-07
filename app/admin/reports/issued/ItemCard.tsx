@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 // Extracted from page.tsx (not left inline) so it can be unit-rendered
 // directly (OPEN-ITEMS 38/41) -- Next.js's route-module type constraint

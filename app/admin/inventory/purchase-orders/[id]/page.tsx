@@ -5,7 +5,7 @@ import { findById, findAll } from "@/lib/sheets_db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { resolvePurchaseOrderEditGate } from "@/lib/purchase-order-edit-gate";
 
 export const dynamic = "force-dynamic";

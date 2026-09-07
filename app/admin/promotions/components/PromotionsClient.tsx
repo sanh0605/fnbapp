@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useFilterForm } from "@/lib/use-filter-form";
 import { deletePromotionAction } from "../actions";
 import { PromotionForm } from "./PromotionForm";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { alert } from "@/lib/dialog";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";

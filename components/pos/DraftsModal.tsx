@@ -1,6 +1,6 @@
 "use client";
 
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 
 interface DraftsModalProps {
   drafts: any[];
