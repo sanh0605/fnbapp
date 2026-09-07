@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 describe("migration 0038: materialize inventory balances", () => {
   const sql = readFileSync(
-    resolve(__dirname, "../supabase/migrations/0038_materialize_inventory_balances.sql"),
+    resolve(__dirname, "../../supabase/migrations/0038_materialize_inventory_balances.sql"),
     "utf8",
   ).toLowerCase();
 

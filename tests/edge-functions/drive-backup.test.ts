@@ -5,7 +5,7 @@ import {
   buildBackupBundle,
   buildBackupFileName,
   validateBackupBundle,
-} from "../supabase/functions/backup-to-drive/core";
+} from "../../supabase/functions/backup-to-drive/core";
 
 describe("Google Drive backup core", () => {
   it("pins the complete 38-table snapshot policy", () => {

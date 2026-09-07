@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 describe("migration 0040: POS sync tracking", () => {
   const sql = readFileSync(
-    resolve(__dirname, "../supabase/migrations/0040_pos_sync_tracking.sql"),
+    resolve(__dirname, "../../supabase/migrations/0040_pos_sync_tracking.sql"),
     "utf8",
   ).toLowerCase();
 

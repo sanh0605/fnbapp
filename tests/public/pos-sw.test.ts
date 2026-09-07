@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 // design requires, the same convention components/POSScreen.offline.test.tsx
 // uses for source it can't easily execute in a unit test either.
 describe("public/pos-sw.js cache-write safety", () => {
-  const source = readFileSync(resolve(__dirname, "../public/pos-sw.js"), "utf8");
+  const source = readFileSync(resolve(__dirname, "../../public/pos-sw.js"), "utf8");
   const cachePutSites = [...source.matchAll(/cache\.put\(/g)];
 
   it("has exactly the two expected cache.put call sites", () => {

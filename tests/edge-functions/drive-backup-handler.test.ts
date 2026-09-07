@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { BACKUP_TABLES, buildBackupBundle } from "../supabase/functions/backup-to-drive/core";
-import { handleSnapshotRequest } from "../supabase/functions/backup-to-drive/handler";
+import { BACKUP_TABLES, buildBackupBundle } from "../../supabase/functions/backup-to-drive/core";
+import { handleSnapshotRequest } from "../../supabase/functions/backup-to-drive/handler";
 
 const token = "a".repeat(48);
 const bundle = buildBackupBundle(

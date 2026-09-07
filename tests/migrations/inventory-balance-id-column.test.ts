@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 describe("migration 0039: hotfix inventory_balances missing id column", () => {
   const sql = readFileSync(
-    resolve(__dirname, "../supabase/migrations/0039_add_id_to_inventory_balances.sql"),
+    resolve(__dirname, "../../supabase/migrations/0039_add_id_to_inventory_balances.sql"),
     "utf8",
   ).toLowerCase();
 
