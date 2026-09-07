@@ -2,7 +2,7 @@
 
 import { findAll, update, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 
 export async function toggleToppingStandalone(

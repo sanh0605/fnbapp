@@ -2,7 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { getSupabaseClient } from "@/lib/db/supabase";
 
 const PASSWORD_SALT_ROUNDS = 10;

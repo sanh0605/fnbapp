@@ -2,7 +2,7 @@
 
 import { findAll } from "@/lib/db/tables";
 import { createEntity, updateEntity, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 
 const SHEET = "Brands";
 const PATH = "/admin/brands";

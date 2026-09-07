@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import { saveProductAtomic } from "@/lib/product-save-transaction";
 import { eraseProductAtomic } from "@/lib/product-erase-transaction";
 import { planRecipeSave, findLatestActiveRecipe } from "@/lib/recipe-selection";

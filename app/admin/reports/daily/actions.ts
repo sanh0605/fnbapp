@@ -1,7 +1,7 @@
 "use server";
 
 import { getSalesDataV2 } from "../actions";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import { getDigestDateOffsets, comparePeriods, type PeriodComparison } from "@/lib/daily-digest";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const requireAdminMock = vi.fn();
 const revalidateTagMock = vi.fn();
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("@/lib/auth/auth", () => ({
   requireAdmin: requireAdminMock,
 }));
 

@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,

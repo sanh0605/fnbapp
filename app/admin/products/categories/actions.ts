@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, softDeleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBProductCategory, DBProduct } from "@/types/db";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 
 const SHEET = "Product_Categories";
 const PATH = "/admin/products/categories";

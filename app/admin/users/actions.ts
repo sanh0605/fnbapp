@@ -6,7 +6,7 @@ import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBUser } from "@/types/db";
 import bcrypt from "bcryptjs";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 
 const SHEET = "Users";
 const PATH = "/admin/users";

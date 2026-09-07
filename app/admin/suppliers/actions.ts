@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBSupplier } from "@/types/db";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import {
   findDuplicateActiveName,
   duplicateNameErrorMessage,

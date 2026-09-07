@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   findAllWhereInBatches: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/supabase", () => ({ getSupabaseClient: mocks.getSupabaseClient }));
 vi.mock("@/lib/db/tables", () => ({
   findAllWhereInBatches: mocks.findAllWhereInBatches,

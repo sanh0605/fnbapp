@@ -3,7 +3,7 @@
 import { findAll, findAllNoCache, findAllWhere, insert, update, remove } from "@/lib/db/tables";
 import type { SheetFilter } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
-import { resolveActor } from "@/lib/auth";
+import { resolveActor } from "@/lib/auth/auth";
 import crypto from "node:crypto";
 
 import { buildOrderFromCart } from "@/lib/order-cart";

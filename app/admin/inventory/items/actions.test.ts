@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), not a re-typed stand-in -- the source under test and

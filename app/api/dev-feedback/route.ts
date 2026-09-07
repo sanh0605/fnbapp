@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import crypto from "node:crypto";
-import { appendEntry, emptyFeedbackFile, parseFeedback, removeEntry, type FeedbackEntry } from "@/lib/ui-feedback-store";
+import { appendEntry, emptyFeedbackFile, parseFeedback, removeEntry, type FeedbackEntry } from "@/lib/dev-feedback/ui-feedback-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

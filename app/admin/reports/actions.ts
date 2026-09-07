@@ -17,7 +17,7 @@ import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { displayMoney } from "@/lib/display-rounding";
 import { computePeriodIssuedValue } from "@/lib/issue-costing";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/issue-costing-inputs";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 
 export interface PnLReportFilters {
   startDate?: string;

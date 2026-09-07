@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   unstableCache: vi.fn((fn: unknown) => fn),
 }));
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("@/lib/auth/auth", () => ({
   resolveActor: mocks.resolveActor,
   authOptions: {},
 }));

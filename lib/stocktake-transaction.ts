@@ -109,7 +109,7 @@ export type StocktakeReversalResult = {
 
 // Plan D D14, U1-U8: undo a confirmed stocktake session. Compensating rows
 // only -- see the migration (0062) and BR-INV-009 for the mechanism. Caller
-// must have already passed requireOwner() (lib/auth.ts) -- this function
+// must have already passed requireOwner() (lib/auth/auth.ts) -- this function
 // does not check role itself, same as every other RPC wrapper here.
 export async function reverseStocktakeSessionAtomic(input: {
   sessionId: string;

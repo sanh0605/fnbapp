@@ -1,7 +1,7 @@
 "use server";
 
 import { findAllNoCache, findAllWhere, update } from "@/lib/db/tables";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 
 export interface PosSyncLateOrder {
   id: string;

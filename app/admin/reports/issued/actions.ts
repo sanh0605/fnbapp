@@ -1,7 +1,7 @@
 "use server";
 
 import { findAll, findAllNoCache } from "@/lib/db/tables";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/issue-costing-inputs";
 import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/issued-value-report";
 import { displayMoney } from "@/lib/display-rounding";

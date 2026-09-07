@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   reverseStocktakeSessionAtomic: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,

@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("@/lib/auth/auth", () => ({
   resolveActor: mocks.resolveActor,
 }));
 vi.mock("@/lib/db/tables", () => ({

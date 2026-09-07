@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   getSalesDataV2: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("../actions", () => ({ getSalesDataV2: mocks.getSalesDataV2 }));
 
 import { getDailyDigest } from "./actions";

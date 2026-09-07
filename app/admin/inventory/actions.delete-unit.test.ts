@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", async () => {
   const actual = await vi.importActual<typeof import("@/lib/db/tables")>("@/lib/db/tables");
   return {

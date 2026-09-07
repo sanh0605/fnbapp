@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", () => ({
   findAllNoCache: mocks.findAllNoCache,
   findAllWhere: mocks.findAllWhere,

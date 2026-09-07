@@ -2,7 +2,7 @@ import { findAll } from "@/lib/db/tables";
 import POSScreen from "@/components/POSScreen";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { getPOSBestSellerProductIds } from "./actions";
 
 export const dynamic = 'force-dynamic';

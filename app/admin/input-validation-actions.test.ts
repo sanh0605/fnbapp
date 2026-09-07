@@ -20,7 +20,7 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: requireAdminMock }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: requireAdminMock }));
 
 import { addSupplier } from "./suppliers/actions";
 import { addConversion } from "./inventory/conversions/actions";

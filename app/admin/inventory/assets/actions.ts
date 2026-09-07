@@ -4,7 +4,7 @@ import { findAll, insert, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import {
   buildAssetSchedule,
   chargeForMonth,

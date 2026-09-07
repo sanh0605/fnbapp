@@ -18,7 +18,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/db/tables", () => ({ findAll: mocks.findAll }));
 vi.mock("next-auth/next", () => ({ getServerSession: mocks.getServerSession }));
-vi.mock("@/lib/auth", () => ({ authOptions: {} }));
+vi.mock("@/lib/auth/auth", () => ({ authOptions: {} }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("./actions", () => ({ getPOSBestSellerProductIds: mocks.getPOSBestSellerProductIds }));
 vi.mock("@/components/POSScreen", () => ({

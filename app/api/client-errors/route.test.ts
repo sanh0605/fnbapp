@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const resolveActorMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/auth", () => ({ resolveActor: resolveActorMock }));
+vi.mock("@/lib/auth/auth", () => ({ resolveActor: resolveActorMock }));
 
 import { POST } from "./route";
 

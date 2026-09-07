@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ getSupabaseClient: vi.fn(), requireAdmin: vi.fn() }));
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 
 vi.mock("@/lib/db/supabase", () => ({
   getSupabaseClient: mocks.getSupabaseClient,

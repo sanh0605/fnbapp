@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { buildFingerprint, type ElementFingerprint } from "@/lib/ui-feedback-fingerprint";
-import type { FeedbackEntry } from "@/lib/ui-feedback-store";
+import { buildFingerprint, type ElementFingerprint } from "@/lib/dev-feedback/ui-feedback-fingerprint";
+import type { FeedbackEntry } from "@/lib/dev-feedback/ui-feedback-store";
 
 // sections 2, 5.
 //

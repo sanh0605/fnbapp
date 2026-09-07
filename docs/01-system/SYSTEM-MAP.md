@@ -153,7 +153,7 @@ lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
 
 | Module | Primary surfaces | Main responsibility |
 |---|---|---|
-| Authentication | `app/login`, `app/api/auth`, `lib/auth.ts` | Credentials login, sessions, technical-role propagation |
+| Authentication | `app/login`, `app/api/auth`, `lib/auth/auth.ts` | Credentials login, sessions, technical-role propagation |
 | POS | `app/pos` | Cart, pricing, checkout, drafts, order submission |
 | Orders | `app/admin/orders` | Order review, edit, void, snapshots, event history |
 | Catalog | `app/admin/products`, `app/admin/brands`, `app/admin/promotions` | Products, variants, modifiers, recipes, pricing, promotions |

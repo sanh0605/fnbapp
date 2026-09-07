@@ -7,7 +7,7 @@ import { describeActionError } from "@/lib/shared/action-error";
 import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchase-order-write-plan";
 import { savePurchaseOrderAtomic } from "@/lib/purchase-order-transaction";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import type { RawPurchaseOrderLine } from "@/lib/item-purchase-history";
 import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/asset-purchase-allocation";
 import { toSaigonIsoString } from "@/lib/shared/datetime";

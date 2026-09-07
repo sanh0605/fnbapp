@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import { findAllWhereInBatches } from "@/lib/db/tables";
 import { getSupabaseClient } from "@/lib/db/supabase";
 

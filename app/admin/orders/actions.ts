@@ -10,7 +10,7 @@ import {
   update,
 } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import { getSupabaseClient } from "@/lib/db/supabase";
 import crypto from "node:crypto";
 

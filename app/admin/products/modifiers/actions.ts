@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBModifier } from "@/types/db";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 
 const MODIFIER_SHEET = "Modifiers";
 const PATH = "/admin/products/modifiers";

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const requireAdminMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/auth", () => ({ requireAdmin: requireAdminMock }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: requireAdminMock }));
 
 vi.mock("@/lib/db/tables", () => ({
   findAllNoCache: vi.fn(),

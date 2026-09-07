@@ -4,7 +4,7 @@ import { findAll, findAllNoCache, findAllWhere, insert, update, remove, generate
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/auth";
 import {
   approveStockAdjustmentAtomic,
   submitStockAdjustmentAtomic,
