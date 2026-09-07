@@ -70,6 +70,12 @@
       "Bash(npx vercel *)",
       "Bash(vercel *)",
       "Bash(supabase db push *)"
+    ],
+    "deny": [
+      "Read(./recovery-snapshots/**)",
+      "Read(./coverage/**)",
+      "Read(./supabase/functions/**/node_modules/**)",
+      "Read(./.next/**)"
     ]
   },
   "hooks": {
@@ -94,6 +100,13 @@
             "type": "command",
             "command": "sh -c 'if grep -q \"supabase/migrations/\" /dev/stdin; then printf \"%s\" \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"additionalContext\\\":\\\"[rule] Sua cau truc du lieu. Bat buoc: liet ke trigger cua bang dich, va kiem tra migration co nham ten trigger voi ten ham khong (loi da xay ra 2026-07-31). Skill: fnbapp-bulk-data-change\\\"}}\"; fi'"
           }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "sh .claude/hooks/session-start.sh" }
         ]
       }
     ]
