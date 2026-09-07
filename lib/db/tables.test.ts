@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
+  unstableCache: vi.fn((fn: any) => fn),
   supabaseSelect: vi.fn(),
   supabaseUpdate: vi.fn(),
   queryCalls: [] as Array<{ method: string; args: any[] }>,
@@ -15,7 +16,7 @@ vi.hoisted(() => {
 
 vi.mock("next/cache", () => ({
   revalidateTag: mocks.revalidateTag,
-  unstable_cache: (fn: any) => fn,
+  unstable_cache: mocks.unstableCache,
 }));
 
 vi.mock("./supabase", () => ({
@@ -458,6 +459,7 @@ describe("findOrderLineProductAndVariantIds", () => {
 
     expect(result.productIds).toEqual(["PROD-001", "PROD-002"]);
     expect(result.variantIds).toEqual(["VAR-002"]);
+    expect(mocks.unstableCache).toHaveBeenCalled();
   });
 
   it("returns empty arrays for an empty table", async () => {
@@ -467,5 +469,29 @@ describe("findOrderLineProductAndVariantIds", () => {
 
     expect(result.productIds).toEqual([]);
     expect(result.variantIds).toEqual([]);
+  });
+
+  // findAll has this same escape hatch (line 238) so CLI scripts -- which
+  // run outside a Next.js request context -- don't hit unstable_cache's
+  // "incrementalCache missing" invariant. This function needs it too: it
+  // has no caller today outside app/admin/products/page.tsx, but the first
+  // verify-* script that needs product sale history would otherwise get an
+  // error that reads like a Next bug instead of a missing branch.
+  it("bypasses unstable_cache when CLI_MODE is set", async () => {
+    const original = process.env.CLI_MODE;
+    process.env.CLI_MODE = "true";
+    mocks.supabaseSelect.mockResolvedValue({
+      data: [{ id: "OL-1", product_id: "PROD-001", variant_id: "VAR-001" }],
+      error: null,
+    });
+
+    try {
+      const result = await findOrderLineProductAndVariantIds();
+      expect(result.productIds).toEqual(["PROD-001"]);
+      expect(result.variantIds).toEqual(["VAR-001"]);
+      expect(mocks.unstableCache).not.toHaveBeenCalled();
+    } finally {
+      process.env.CLI_MODE = original;
+    }
   });
 });
