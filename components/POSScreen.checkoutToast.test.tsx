@@ -28,7 +28,7 @@ vi.mock("@/app/pos/actions", () => ({
   reportPosSyncFailure: vi.fn(),
 }));
 
-vi.mock("@/lib/pos-offline-queue", () => ({
+vi.mock("@/lib/pos/pos-offline-queue", () => ({
   enqueuePendingOrder: mocks.enqueuePendingOrder,
   incrementAttemptCount: vi.fn(),
   listPendingOrders: vi.fn(async () => []),

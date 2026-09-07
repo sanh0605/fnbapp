@@ -19,7 +19,7 @@ describe("POSScreen offline checkout handling", () => {
   });
 
   it("fingerprints the checkout attempt WITHOUT client_captured_at, so a retry's fresh timestamp never mints a new idempotency token", () => {
-    // resolvePosCheckoutAttempt (lib/pos-checkout-idempotency.ts) reuses the
+    // resolvePosCheckoutAttempt (lib/pos/pos-checkout-idempotency.ts) reuses the
     // existing request token only when the serialized payload is identical
     // across calls. If client_captured_at were part of that payload, every
     // retry (which re-derives a fresh Date().toISOString() call site) would

@@ -42,7 +42,7 @@ vi.mock("@/app/pos/actions", () => ({
 // implement; POSScreen's own try/catch would swallow the resulting rejection
 // silently, but relying on that incidental behaviour is fragile. Mocked
 // instead so the sweep is a hermetic no-op.
-vi.mock("@/lib/pos-offline-queue", () => ({
+vi.mock("@/lib/pos/pos-offline-queue", () => ({
   enqueuePendingOrder: vi.fn(),
   incrementAttemptCount: vi.fn(),
   listPendingOrders: vi.fn(async () => []),

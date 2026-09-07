@@ -1,6 +1,6 @@
 "use client";
 
-import { categoryIcon } from "@/lib/pos-category-icons";
+import { categoryIcon } from "@/lib/pos/pos-category-icons";
 import { formatNumber } from "@/lib/shared/format";
 
 interface ProductCardProps {

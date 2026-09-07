@@ -45,12 +45,12 @@ lib/product-save-transaction.ts -> products (write)
 lib/product-save-transaction.ts -> recipes (write)
 lib/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchase-order-transaction.ts -> purchase_orders (write)
+lib/sales/void-order-transaction.ts -> order_events (write)
+lib/sales/void-order-transaction.ts -> orders_v2 (write)
 lib/stock-adjustment-transaction.ts -> stock_adjustments (write)
 lib/stocktake-transaction.ts -> stock_issues (write)
 lib/stocktake-transaction.ts -> stocktake_lines (write)
 lib/stocktake-transaction.ts -> stocktake_sessions (write)
-lib/sales/void-order-transaction.ts -> order_events (write)
-lib/sales/void-order-transaction.ts -> orders_v2 (write)
 ```
 
 ## Tables

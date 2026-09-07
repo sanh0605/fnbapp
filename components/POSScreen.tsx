@@ -13,13 +13,13 @@ import { alert, confirm } from "@/lib/shared/dialog";
 import {
   resolvePosCheckoutAttempt,
   type PosCheckoutAttempt,
-} from "@/lib/pos-checkout-idempotency";
+} from "@/lib/pos/pos-checkout-idempotency";
 import {
   enqueuePendingOrder,
   incrementAttemptCount,
   listPendingOrders,
   removePendingOrder,
-} from "@/lib/pos-offline-queue";
+} from "@/lib/pos/pos-offline-queue";
 import { reportPosSyncFailure } from "@/app/pos/actions";
 
 export default function POSScreen({
