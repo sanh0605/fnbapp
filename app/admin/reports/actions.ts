@@ -17,6 +17,7 @@ import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { computePeriodIssuedValue, computePeriodIssuedValueSplit } from "@/lib/costing/issue-costing";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
+import { buildStandaloneToppingProductLinks } from "@/lib/products/standalone-topping-links";
 import { requireAdmin } from "@/lib/auth/auth";
 
 export interface PnLReportFilters {
@@ -123,9 +124,12 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       findAll("stocktake_sessions"),
     ]);
 
-    // Standalone topping → linked modifier map (CAT-007 products with migration_notes link).
-    // See spec 2026-06-27-standalone-topping-report-classification-design.md.
-    const standaloneToppingToModId = buildStandaloneToppingMap(products as any[]);
+    // Standalone topping -> linked modifier map, via the real join
+    // (modifiers.product_id, migration 0097), not the dead
+    // products.migration_notes regex the old buildStandaloneToppingMap read.
+    // docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 5,
+    // BR-CATALOG-003 ("the link is the join, not the name").
+    const standaloneToppingToModId = buildStandaloneToppingProductLinks(modifiers as any[]);
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
     // Claude code — Phase 5.3: interpret date params as Asia/Saigon to UTC bounds.
@@ -396,10 +400,9 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       findAll("Outlets"),
     ]);
 
-    // Standalone topping products (category_id=CAT-007) mapped to their linked
-    // modifier ID via migration_notes. Used to route standalone topping sales
-    // into bestToppings instead of bestSellers. See spec 2026-06-27.
-    const standaloneToppingToModId = buildStandaloneToppingMap(products as any[]);
+    // Standalone topping -> linked modifier map, via modifiers.product_id
+    // (migration 0097). See the sibling call in getPnLDataV2 above.
+    const standaloneToppingToModId = buildStandaloneToppingProductLinks(modifiers as any[]);
 
     const { startDate, endDate, brandId, staffName, categoryId } = filters;
     // Claude code — Phase 5.3: Asia/Saigon date bounds.
@@ -683,29 +686,6 @@ function mergeModifierRevenueRows(
 }
 
 type CanonicalModifier = { id: string; name: string };
-
-/**
- * Build map: standalone topping product_id -> linked modifier_id.
- *
- * Standalone toppings are Products in category CAT-007 created by
- * scripts/setup-topping-standalone.ts. Each carries migration_notes
- * `topping-standalone::mod_id=MOD-XXX` linking back to its modifier.
- * Used to route standalone topping sales into topping sections of reports.
- *
- */
-function buildStandaloneToppingMap(products: any[]): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const p of products) {
-    if (String(p.category_id) !== "CAT-007") continue;
-    const match = String(p.migration_notes || "").match(/topping-standalone::mod_id=(MOD-\d+)/);
-    // A CAT-007 product with no migration_notes link still belongs in
-    // bestToppings, not bestSellers -- fall back to bucketing under its own
-    // product ID rather than dropping it out of the map entirely. Matches
-    // the classification convention in this function's own doc comment above.
-    map.set(String(p.id), match ? match[1] : String(p.id));
-  }
-  return map;
-}
 
 function buildCanonicalModifierLookup(modifiers: any[]): {
   byId: Map<string, CanonicalModifier>;

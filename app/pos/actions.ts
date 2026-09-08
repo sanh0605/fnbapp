@@ -11,6 +11,7 @@ import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/sal
 import { savePosOrderAtomic } from "@/lib/sales/pos-order-transaction";
 import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
+import { buildStandaloneToppingProductLinks } from "@/lib/products/standalone-topping-links";
 import type { CartInput } from "@/lib/sales/order-cart";
 
 export type SubmitOrderV2Result = {
@@ -163,10 +164,10 @@ export async function getPOSBestSellerProductIds(
     lineQuery.lte = { created_at: dateRange.endUtc };
   }
 
-  const [orders, orderLines, products] = await Promise.all([
+  const [orders, orderLines, modifiers] = await Promise.all([
     findAllWhere("Orders_V2", orderQuery),
     dateRange ? findAllWhere("Order_Lines_V2", lineQuery) : findAllNoCache("Order_Lines_V2"),
-    findAll("Products"),
+    findAll("Modifiers"),
   ]);
   const eligibleOrders = (orders as any[]).filter((order) => {
     if (order.status !== ORDER_STATUS.COMPLETED) return false;
@@ -184,14 +185,15 @@ export async function getPOSBestSellerProductIds(
     eligibleOrders.map(coerceOrderV2),
     eligibleLines.map(coerceLineV2),
   );
-  const standaloneToppingIds = new Set(
-    (products as any[])
-      .filter((product) => (
-        String(product.category_id) === "CAT-007"
-        && /topping-standalone::mod_id=MOD-\d+/.test(String(product.migration_notes || ""))
-      ))
-      .map((product) => String(product.id)),
-  );
+  // Owner decision 2026-09-08 (BR-CATALOG-003): toppings do not appear among
+  // the POS quick-add best-sellers. This exclusion always intended to fire
+  // and never did -- it read products.migration_notes, a column that has
+  // never existed on products, so the regex never matched. Reads the real
+  // join (modifiers.product_id, migration 0097) now, via the same helper
+  // app/admin/reports/actions.ts uses, so the two sites can only ever agree.
+  // docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 5 (extended
+  // here by the 2026-09-08 scope reversal).
+  const standaloneToppingIds = new Set(buildStandaloneToppingProductLinks(modifiers as any[]).keys());
   const quantityByProduct = new Map<string, number>();
   for (const row of productRows) {
     if (row.product_id.startsWith("MOD:") || standaloneToppingIds.has(row.product_id)) continue;

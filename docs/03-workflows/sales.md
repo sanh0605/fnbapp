@@ -7,6 +7,12 @@ tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Reviewed, no behaviour change — 2026-09-08:** `app/pos/actions.ts` changed
+(`getPOSBestSellerProductIds` now excludes standalone toppings from quick-add
+via the real `modifiers.product_id` join, BR-CATALOG-003). Nothing this doc
+describes -- `POS_Drafts`, `Pos_Sync_Failures`, the order write path -- is
+touched; quick-add best-seller ranking is read-only and outside this flow's
+scope.
 **Reviewed, no behaviour change — 2026-09-07 (Task 21):** a declared source file's comment path reference only -- components/POSScreen.tsx moved to `app/pos/components/POSScreen.tsx`, comment updated by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 18):** a declared source file's import path only -- lib/report-v2-allocators.ts moved to `lib/reports/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.

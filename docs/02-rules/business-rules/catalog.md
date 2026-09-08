@@ -93,8 +93,8 @@ data.
 **A linked topping's price has one edit point.** Owner decision 2026-09-07,
 asked with the concrete case — *Kem muối* at 4.000đ on both sides, raising it
 currently means remembering two screens: *"Luôn cùng giá, sửa một chỗ."*
-`sync_topping_price_atomic` (migration `0098`, not yet run against
-production) writes `modifiers.price` and the linked product's single ACTIVE
+`sync_topping_price_atomic` (migration `0098`, applied to production
+2026-09-08) writes `modifiers.price` and the linked product's single ACTIVE
 variant's price, plus a `product_price_history` row, in one transaction.
 Refuses rather than guesses on the two conditions that would make "the
 standalone price" ambiguous: more than one ACTIVE modifier pointing at the
@@ -103,3 +103,34 @@ Measured 2026-09-07: 0 products violate either condition today; all 8
 linked toppings already agree. A modifier with no linked product (`MOD-009`)
 updates only itself. Order history, the POS, and the two names (renaming a
 modifier does not rename its product) are untouched.
+
+**The link is the join, not the name — settled 2026-09-08.** Reports merged a
+topping's add-on revenue with its standalone revenue by **name equality**, not
+by the link: `buildStandaloneToppingMap` matched
+`topping-standalone::mod_id=MOD-\d+` against `products.migration_notes`, a
+column that has never existed on `products` (11 columns in `0001_init_schema.sql`,
+no later `alter` adds it; the `migration_notes` at that file's line 236 belongs
+to `orders_v2`), so the regex never matched and the code fell through to a
+name lookup. Measured 2026-09-08: 7 of 7 linked modifiers name-match their
+product exactly, which is the only reason the Bán hàng report reads correctly.
+Combined with the rule above — renaming a modifier does not rename its product —
+the first rename would have split that topping into two report rows silently.
+`modifiers.product_id` (migration `0097`) is the join from now on. The name is
+a label, never a key.
+
+**Toppings do not appear among the POS quick-add best-sellers, owner decision
+2026-09-08.** `getPOSBestSellerProductIds` always intended to exclude standalone
+toppings and never did, for the same dead-regex reason, so they have been
+eligible for those buttons all along. Asked whether to keep the behaviour the
+shop actually runs on or the one the code intended, the owner chose to exclude
+them: the quick-add strip holds 8 slots and a topping there costs a drink its
+place. This is a visible change for staff from the first shift after deploy.
+
+**A topping with no standalone món can grow one from the Topping screen.**
+Turning *Bán độc lập* on for an unlinked modifier (`MOD-009`, *Hộp sữa chua*, is
+the only one today) asks first, then creates the `CAT-007` product, its single
+ACTIVE variant at the modifier's price, and the link — one transaction, or none
+of it. A product created without its link would be a second place to edit a
+price, which is exactly what the rule above exists to prevent. Only the
+*Thêm Topping* group may do this: *Chọn Size*, *Chọn Đường* and *Chọn Đá* are
+choices inside a drink, and a món called "Size L" on the menu would be a defect.

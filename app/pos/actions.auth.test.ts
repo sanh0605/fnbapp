@@ -146,9 +146,15 @@ describe("POS action authentication", () => {
       }
       return [];
     });
-    mocks.findAll.mockResolvedValue([
-      { id: "TOPPING-1", category_id: "CAT-007", migration_notes: "topping-standalone::mod_id=MOD-001" },
-    ]);
+    // Rewritten 2026-09-08 (Task 5 extended to app/pos/actions.ts, BR-CATALOG-003):
+    // the exclusion reads the real join now (modifiers.product_id, migration
+    // 0097), not products.migration_notes -- a column that has never existed.
+    mocks.findAll.mockImplementation(async (sheet: string) => {
+      if (sheet === "Modifiers") {
+        return [{ id: "MOD-001", status: "ACTIVE", product_id: "TOPPING-1" }];
+      }
+      return [];
+    });
 
     const result = await getBestSellers({
       startDate: "2026-07-01T00:00:00.000Z",

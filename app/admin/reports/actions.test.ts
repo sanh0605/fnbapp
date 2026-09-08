@@ -920,13 +920,16 @@ describe("getSalesDataV2", () => {
     });
   });
 
-  it("routes a standalone topping product (CAT-007) with no modifier link into bestToppings, not bestSellers", async () => {
-    // Production bug 2026-07-27: buildStandaloneToppingMap only added a CAT-007
-    // product to the map when its migration_notes carried a linked modifier id.
-    // Every CAT-007 product created without running that link step (which was
-    // all 7 of them in production) fell through into bestSellers/bestDrinks
-    // instead of bestToppings -- "Kem muối phô mai" and "Đào miếng" showed up
-    // in the "Top sale - Nước" table. Fix: fall back to the product's own id.
+  it("routes a standalone topping product into bestToppings via its modifier's product_id link", async () => {
+    // Rewritten 2026-09-08 (Task 5, BR-CATALOG-003 -- "the link is the join,
+    // not the name"). Until today this test pinned the 2026-07-27 bug fix's
+    // fallback: buildStandaloneToppingMap tried to read
+    // products.migration_notes, a column that has never existed, so the
+    // regex always failed and every CAT-007 product self-mapped to its own
+    // id. That fallback is gone. The real join is modifiers.product_id
+    // (migration 0097) -- this fixture now carries the modifier row that
+    // makes the merge work structurally, the way production data actually
+    // does (measured 2026-09-08: 7 of 7 linked toppings resolve this way).
     const createdAt = "2026-07-01T10:00:00.000Z";
     const order = {
       id: "ord-standalone-topping",
@@ -983,7 +986,10 @@ describe("getSalesDataV2", () => {
       modifiers_snapshot_json: "[]",
     };
     const products = [
-      { id: "PROD-033", name: "Kem muối phô mai", category_id: "CAT-007", migration_notes: "" },
+      { id: "PROD-033", name: "Kem muối phô mai", category_id: "CAT-007" },
+    ];
+    const modifiers = [
+      { id: "MOD-033", name: "Kem muối phô mai", status: "ACTIVE", product_id: "PROD-033", price: 10000, group_name: "Thêm Topping" },
     ];
 
     (findAllNoCache as any).mockImplementation((sheet: string) => {
@@ -993,6 +999,7 @@ describe("getSalesDataV2", () => {
     });
     (findAll as any).mockImplementation((sheet: string) => {
       if (sheet === "Products") return products;
+      if (sheet === "Modifiers") return modifiers;
       return [];
     });
 
@@ -1001,8 +1008,99 @@ describe("getSalesDataV2", () => {
     expect(result.bestSellers.find(p => p.product_id === "PROD-033")).toBeUndefined();
     const toppingRow = result.bestToppings.find(t => t.name === "Kem muối phô mai");
     expect(toppingRow).toBeDefined();
+    expect(toppingRow?.modifier_id).toBe("MOD-033");
     expect(toppingRow?.qty).toBe(1);
     expect(toppingRow?.revenue).toBe(10000);
+  });
+
+  it("an orphan CAT-007 product with no modifier link falls through as an ordinary product, not into bestToppings", async () => {
+    // Deliberate behaviour change, Task 5 / BR-CATALOG-003, 2026-09-08. The
+    // old self-mapping fallback (see the previous test's history note) used
+    // to route every CAT-007 product into bestToppings whether or not a
+    // modifier actually linked to it -- it could not tell the difference,
+    // because migration_notes never worked. Now that the join is
+    // structural, a CAT-007 product no modifier points to is not a linked
+    // standalone topping; it reads as an ordinary product. Task 2's
+    // create-and-link RPC creates the product and the link in one
+    // transaction, so this state should not arise from that flow -- but the
+    // routing must still be correct if it ever does, rather than silently
+    // reusing the old fallback's guess.
+    const createdAt = "2026-07-01T10:00:00.000Z";
+    const order = {
+      id: "ord-orphan-topping",
+      order_no: "TOP-ORPHAN-001",
+      brand_id: "BR-001",
+      status: "COMPLETED",
+      version: 1,
+      parent_order_id: "",
+      superseded_by: "",
+      created_at: createdAt,
+      created_by_id: "U",
+      created_by_name: "Test",
+      completed_at: createdAt,
+      voided_at: "",
+      voided_by_id: "",
+      void_reason: "",
+      currency: "VND",
+      gross_total: 10000,
+      promo_discount_total: 0,
+      manual_item_discount_total: 0,
+      manual_order_discount: 0,
+      net_total: 10000,
+      applied_promotion_id: "",
+      applied_promotion_snapshot_json: "",
+      pos_snapshot_json: "{}",
+      payment_method: "CASH",
+      payment_ref: "",
+      migration_notes: "",
+    };
+    const line = {
+      order_id: order.id,
+      id: "ol-orphan-topping",
+      line_no: 1,
+      product_id: "PROD-099",
+      product_snapshot_json: JSON.stringify({
+        id: "PROD-099",
+        name: "Đào miếng",
+        category_id: "CAT-007",
+        category_name: "Topping",
+      }),
+      variant_id: "VAR-099",
+      variant_snapshot_json: JSON.stringify({ id: "VAR-099", size_name: "1 phần", price: 10000 }),
+      qty: 1,
+      unit_price: 10000,
+      gross_line_total: 10000,
+      promo_discount: 0,
+      manual_item_discount: 0,
+      order_discount_allocation: 0,
+      net_line_total: 10000,
+      cost_at_sale: 0,
+      recipe_snapshot_json: "{}",
+      promo_discount_reason: "",
+      manual_discount_reason: "",
+      modifiers_snapshot_json: "[]",
+    };
+    const products = [
+      { id: "PROD-099", name: "Đào miếng", category_id: "CAT-007" },
+    ];
+
+    (findAllNoCache as any).mockImplementation((sheet: string) => {
+      if (sheet === "Orders_V2") return [order];
+      if (sheet === "Order_Lines_V2") return [line];
+      return [];
+    });
+    (findAll as any).mockImplementation((sheet: string) => {
+      if (sheet === "Products") return products;
+      if (sheet === "Modifiers") return [];
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+
+    expect(result.bestToppings.find(t => t.name === "Đào miếng")).toBeUndefined();
+    const sellerRow = result.bestSellers.find(p => p.product_id === "PROD-099");
+    expect(sellerRow).toBeDefined();
+    expect(sellerRow?.totalQty).toBe(1);
   });
 
   it("loads sales lines only for the server-filtered report orders", async () => {
