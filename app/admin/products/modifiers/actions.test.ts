@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   generateNewId: vi.fn(),
   syncToppingPriceAtomic: vi.fn(),
+  createStandaloneToppingProductAtomic: vi.fn(),
   revalidateTag: vi.fn(),
 }));
 
@@ -19,9 +20,12 @@ vi.mock("@/lib/db/tables", () => ({
   getCacheTag: (sheetName: string) => `sheets-${sheetName}`,
 }));
 vi.mock("@/lib/products/topping-price-sync", () => ({ syncToppingPriceAtomic: mocks.syncToppingPriceAtomic }));
+vi.mock("@/lib/products/create-standalone-topping", () => ({
+  createStandaloneToppingProductAtomic: mocks.createStandaloneToppingProductAtomic,
+}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: mocks.revalidateTag }));
 
-import { getModifiersData, saveModifierAction, deleteModifierAction } from "./actions";
+import { getModifiersData, saveModifierAction, deleteModifierAction, createStandaloneToppingAction } from "./actions";
 
 // section 5: both required tests. The second guards against the fix
 // becoming "throw on empty" -- a different bug wearing the same diff.
@@ -161,5 +165,50 @@ describe("deleteModifierAction", () => {
 
     expect(result.success).toBe(true);
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+  });
+});
+
+// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 2. Turning
+// "Bán độc lập" on for a modifier with no linked product (state c). All the
+// actual guards (already-linked re-check, Thêm Topping group, price > 0)
+// live in the RPC (migration 0100) -- this action only forwards the id,
+// shapes the result, and revalidates the three caches now driven by
+// modifiers.product_id (Products, Product_Variants, Modifiers).
+describe("createStandaloneToppingAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("creates the product+variant+link and revalidates Products, Product_Variants, and Modifiers", async () => {
+    mocks.createStandaloneToppingProductAtomic.mockResolvedValue({
+      productId: "PROD-036", variantId: "VAR-045",
+    });
+
+    const result = await createStandaloneToppingAction("MOD-009");
+
+    expect(result.success).toBe(true);
+    expect(mocks.createStandaloneToppingProductAtomic).toHaveBeenCalledWith({ modifierId: "MOD-009" });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+  });
+
+  it("surfaces the RPC's refusal (e.g. non-Thêm-Topping group) as a plain failure, not a thrown error", async () => {
+    mocks.createStandaloneToppingProductAtomic.mockRejectedValue(
+      new Error("create_standalone_topping_product_atomic: Modifier MOD-005 is not in the Thêm Topping group -- cannot be sold standalone"),
+    );
+
+    const result = await createStandaloneToppingAction("MOD-005");
+
+    expect(result.success).toBeFalsy();
+    expect(result.error).toBeTruthy();
+  });
+
+  it("rejects a missing modifier id before calling the RPC", async () => {
+    const result = await createStandaloneToppingAction("");
+
+    expect(result.success).toBeFalsy();
+    expect(mocks.createStandaloneToppingProductAtomic).not.toHaveBeenCalled();
   });
 });

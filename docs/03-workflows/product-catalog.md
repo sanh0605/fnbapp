@@ -2,10 +2,27 @@
 
 ```flow-decl
 routes: /admin/products, /admin/products/categories, /admin/products/modifiers, /admin/products/toppings
-files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts
+files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
 tables: Products, products, Product_Variants, product_variants, product_price_history, recipes, Product_Categories, Modifiers
 brCodes: BR-CATALOG-001, BR-CATALOG-003
 ```
+
+**A topping with no standalone món can grow one, 2026-09-08 (`BR-CATALOG-003`,
+plan `docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md`, migration
+`0100`, not yet run against production).** The Topping & Tuỳ chọn screen's
+"Bán độc lập" switch used to only toggle an *already-linked* product's
+active flag. On a modifier with no linked product yet (`MOD-009` today), the
+same switch now asks for confirmation and, if confirmed, creates the
+`CAT-007` product, its single `"1 phần"` variant priced at the modifier's own
+price, and the `modifiers.product_id` link — one transaction
+(`lib/products/create-standalone-topping.ts` calling
+`create_standalone_topping_product_atomic`), or none of it. The RPC re-checks
+under the modifier row's own lock that it is `ACTIVE`, still unlinked, in the
+*Thêm Topping* group, and priced above zero, so a stale client render (a
+second tab, a double click) can never create a duplicate product. Editing the
+name/price of an already-standalone topping still goes through
+`sync_topping_price_atomic` (migration `0098`) as described below — this is
+only the *first* link, made once.
 
 **Reviewed, no behaviour change — 2026-09-08:** `app/admin/products/modifiers/actions.ts`
 changed -- its three writers now also call `revalidateTag(getCacheTag("Modifiers"))`
@@ -53,22 +70,32 @@ product (`MOD-009` today) updates only itself.
    application code: a product referenced by any order line cannot be deleted, so
    a **once-sold** product can only be hidden. Attempting to erase a sold product
    makes the database raise a Vietnamese sentence naming the product, which is
-   surfaced to the owner unchanged. Categories, modifiers, and toppings each
-   exist or are removed/hidden through their own screen; a variant has its own
-   price and belongs to one product.
+   surfaced to the owner unchanged. Categories exist or are removed/hidden
+   through their own screen; a variant has its own price and belongs to one
+   product. Modifiers and their "Bán độc lập" state live on one screen since
+   2026-09-08 (plan `docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md`
+   Task 1) — a modifier is either **linked** to a standalone `CAT-007` product
+   (itself live or hidden, toggled by the same switch) or **unlinked**
+   (`MOD-009`'s shape, until the switch is used to create the link — see
+   above). `/admin/products/toppings` no longer has its own list; it redirects
+   to the merged screen for old links/bookmarks.
 2. **Buttons per screen, and when to hide them.** `/admin/products` offers create,
    edit/save, hide, and delete. Delete should be offered only for a never-sold
    product — for a product that has been sold, the RESTRICT foreign key would
-   reject it, so the screen should present hide instead of delete. The category,
-   modifier, and topping screens each offer create, edit, and remove for their
-   own rows; a row still in use by a live product should not be silently deleted.
+   reject it, so the screen should present hide instead of delete. The category
+   screen offers create, edit, and remove for its own rows; a row still in use
+   by a live product should not be silently deleted. The modifier screen offers
+   create, edit, remove, and (only inside the *Thêm Topping* group) the "Bán
+   độc lập" switch — hidden entirely for every other group, since only a
+   topping can be sold standalone.
 3. **What each list contains, and what is excluded.** The product list shows the
    catalogue including hidden products (filterable), one row per product with its
    variants. The category list shows product categories only — it does not show
    the purchased-item categories of the ingredient catalogue, which are a
-   separate flow. The modifier and topping lists show only their own catalogue
-   rows. Purchased materials and ingredients are excluded from every list here;
-   they belong to the inventory catalogue flow.
+   separate flow. The modifier list shows every live modifier, with its
+   standalone-sale state as a column rather than a second list. Purchased
+   materials and ingredients are excluded from every list here; they belong to
+   the inventory catalogue flow.
 4. **Valid inputs, and what happens outside the range.** A product needs a name
    unique among live rows; a near-identical name warns but is allowed
    (`BR-CATALOG-001`). A variant needs a name and a price; the price is stored to
@@ -86,18 +113,20 @@ product (`MOD-009` today) updates only itself.
 
 ## Where it writes
 
-Per the generated map, the seven declared files write: `Products` and
+Per the generated map, the eight declared files write: `Products` and
 `Product_Variants` (`app/admin/products/actions.ts`); `products`,
 `product_variants`, `product_price_history`, and `recipes`
 (`lib/products/product-save-transaction.ts`); `products`, `product_variants`, and
 `product_price_history` (`lib/products/product-erase-transaction.ts`);
 `Product_Categories` (`app/admin/products/categories/actions.ts`); `Modifiers`
 (`app/admin/products/modifiers/actions.ts`, when creating or deleting a
-modifier); `Products` (`app/admin/products/toppings/actions.ts`); and
+modifier); `Products` (`app/admin/products/toppings/actions.ts`);
 `modifiers`, `product_variants`, `product_price_history`
 (`lib/products/topping-price-sync.ts`, called by
 `app/admin/products/modifiers/actions.ts` on an edit — the price sync
-described above).
+described above); and `products`, `product_variants`, `modifiers`
+(`lib/products/create-standalone-topping.ts`, called by the same file's new
+`createStandaloneToppingAction` — the first-link RPC described above).
 
 **Two casings, one table.** `Products`/`products` and
 `Product_Variants`/`product_variants` are each the same physical table seen

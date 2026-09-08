@@ -7,6 +7,7 @@ import { describeActionError } from "@/lib/shared/action-error";
 import type { DBModifier } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
 import { syncToppingPriceAtomic } from "@/lib/products/topping-price-sync";
+import { createStandaloneToppingProductAtomic } from "@/lib/products/create-standalone-topping";
 
 const MODIFIER_SHEET = "Modifiers";
 const PATH = "/admin/products/modifiers";
@@ -89,6 +90,35 @@ export async function deleteModifierAction(formData: FormData): Promise<ActionRe
 
   try {
     await update(MODIFIER_SHEET, id, { status: "DELETED" });
+    revalidateTag(getCacheTag("Modifiers"));
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 2. Turning
+// "Bán độc lập" on for a modifier with no linked product (state c) --
+// confirmed in the UI before this is called. All the real guards (already
+// linked, wrong group, non-positive price) live in the RPC (migration
+// 0100), re-checked under a row lock there rather than trusted from
+// whatever the client last rendered. This action forwards the id, shapes
+// the result, and revalidates every cache the new link now feeds: Products
+// and Product_Variants (the new món must appear immediately, same as
+// syncToppingPriceAtomic's edit path above) and Modifiers (code review
+// finding on 8b96500 -- product_id now drives the report merge and POS
+// quick-add exclusion, Task 5).
+export async function createStandaloneToppingAction(modifierId: string): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  if (!modifierId) return fail("Thiếu mã tùy chọn");
+
+  try {
+    await createStandaloneToppingProductAtomic({ modifierId });
+    revalidateTag("sheets-Products");
+    revalidateTag("sheets-Product_Variants");
     revalidateTag(getCacheTag("Modifiers"));
     revalidatePath(PATH);
     return ok();
