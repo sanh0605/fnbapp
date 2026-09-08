@@ -36,6 +36,7 @@ Trong đợt này:
 - Bảng nhóm thu chi, chủ quán tự thêm sửa.
 - Bảng tài khoản ngân hàng.
 - Bảng sổ thu chi.
+- Siết quyền xoá hẳn còn Admin ở tám chỗ đang có trong khu quản trị.
 - Màn hình nhập sổ, màn hình nhóm thu chi, màn hình tài khoản.
 - Bộ lọc thời gian dùng chung, dựng một lần, dùng ngay ở màn hình mới.
 - Nạp 54 dòng cũ từ Google Sheet.
@@ -139,10 +140,12 @@ Chủ quán chốt ngày 2026-09-08: sổ này không dùng trạng thái "đã 
 - **Xoá**: mất hẳn khỏi máy, không lấy lại được. Chỉ vai `ADMIN` thấy nút
   này, và máy chặn ở phía máy chủ chứ không chỉ giấu nút trên màn hình.
 
-Đây là ngoại lệ so với `CLAUDE.md` mục "Luật dữ liệu" — luật đó cấm xoá
-hẳn nguyên liệu, món, đơn, nhà cung cấp. Sổ thu chi không nằm trong bốn
-thứ đó, và chủ quán quyết định như vậy. Phải ghi vào
-`docs/02-rules/business-rules/` kèm ngày trong cùng đợt code.
+Đây không phải luật riêng của sổ thu chi. Chủ quán đã nâng nó thành luật
+chung ngày 2026-09-08: ghi ở `docs/02-rules/business-rules/access.md`
+(BR-ACCESS-003) và ở `CLAUDE.md` mục "Luật dữ liệu". Tám chỗ đang xoá
+hẳn trong khu quản trị hiện mở cho cả Manager, phải siết lại còn Admin —
+việc đó nằm trong kế hoạch kèm đặc tả này. Đơn nháp máy bán hàng là
+ngoại lệ duy nhất, giữ nguyên như hiện nay.
 
 ## Màn hình
 

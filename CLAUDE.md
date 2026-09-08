@@ -93,6 +93,7 @@ không nhờ phiên khác chạy.
 
 - Không xoá nguyên liệu, món, đơn, nhà cung cấp. Đánh dấu ngừng dùng. Khoá ngoại đặt `RESTRICT` nên máy tự từ chối; dịch lời từ chối sang tiếng Việt.
 - Ngoại lệ: công thức và bán thành phẩm được xoá hẳn. Món chưa bán lần nào được xoá hẳn kèm lịch sử giá; món đã bán chỉ được ẩn.
+- Chỗ nào xoá hẳn được thì chỉ vai `ADMIN` xoá, chặn bằng `requireOwner()` ở máy chủ, không phải giấu nút. Vai khác chỉ thêm, sửa, huỷ. Ngoại lệ duy nhất: đơn nháp máy bán hàng.
 - Migration đổi kiểu trả về của một hàm phải lên cùng lúc với code đọc hàm đó. Không bao giờ chạy migration trước.
 - Sửa dữ liệu hàng loạt: dùng skill `fnbapp-bulk-data-change`.
 - Đổi một quy tắc kinh doanh: sửa luật và sửa test của nó trong cùng một lần lưu.
