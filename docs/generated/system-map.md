@@ -64,7 +64,10 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - asset_depreciation_bands (id, min_unit_price, max_unit_price, term_months, status, created_at, updated_at)
 - asset_disposals (id, asset_id, quantity, disposed_date, reason, created_by_id, created_by_name, created_at)
 - assets (id, purchased_item_id, purchase_order_line_id, name_snapshot, acquired_date, unit_cost, quantity, term_months, status, created_at, updated_at, total_cost)
+- bank_accounts (id, name, bank_name, account_number, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
 - brands (id, name, code, start_date, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
+- cash_categories (id, name, kind, affects_pnl, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
+- cash_entries (id, entry_date, category_id, amount, payment_method, bank_account_id, payer, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, or) status: ACTIVE, CANCELLED
 - data_migration_runs (migration_key, source_hash, snapshot_id, manifest_sha256, before_image, write_set, applied_at)
 - data_recovery_changes (run_id, table_name, row_id, column_name, old_value, new_value, source_hash, applied_at, rolled_back_at)
 - issue_slips (id, issued_at, note, created_by_id, created_by_name, created_at)
