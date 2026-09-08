@@ -3,10 +3,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const migration = readFileSync(
+const raw = readFileSync(
   resolve(process.cwd(), "supabase/migrations/0101_cash_book.sql"),
   "utf8",
-).toLowerCase();
+);
+const migration = raw.toLowerCase();
 
 describe("cash book migration", () => {
   it("creates the three tables", () => {
@@ -86,5 +87,22 @@ describe("cash book migration", () => {
       expect(migration).toContain(`alter table public.${t} enable row level security`);
       expect(migration).toContain(`revoke all on table public.${t} from public, anon, authenticated`);
     }
+  });
+
+  it("pins the exact casing of every value the application will compare against", () => {
+    // Postgres string comparison is case-sensitive, and the checks above
+    // fold everything to lowercase before asserting -- so they cannot see a
+    // future edit that changes case (e.g. 'Expense' instead of 'EXPENSE').
+    // Application code in later tasks writes and reads these exact literals,
+    // so this test reads the file WITHOUT lowercasing to pin the real casing.
+    expect(raw).toContain("check (kind in ('EXPENSE','INCOME'))");
+    expect(raw).toContain("check (payment_method in ('CASH','BANK_TRANSFER'))");
+    expect(raw).toContain("check (status in ('ACTIVE','INACTIVE'))");
+    expect(raw).toContain("check (status in ('ACTIVE','CANCELLED'))");
+    for (const id of ["CFC-001", "CFC-002", "CFC-003", "CFC-004", "CFC-005"]) {
+      expect(raw).toContain(`'${id}'`);
+    }
+    expect(raw).toContain("default 'CASH'");
+    expect(raw).toContain("default 'ACTIVE'");
   });
 });
