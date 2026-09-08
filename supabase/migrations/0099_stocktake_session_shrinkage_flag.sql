@@ -4,14 +4,35 @@
 -- carried as data on the session row -- "an if (id === 'STK-001') in
 -- TypeScript would be the same fact in the one place nobody can correct it."
 --
--- Trigger check first, per fnbapp-bulk-data-change, re-verified live against
--- production immediately before writing this migration:
+-- Trigger check first, per fnbapp-bulk-data-change.
+--
+-- Provenance corrected 2026-09-08, before this migration was ever applied.
+-- This header previously claimed the check was "re-verified live against
+-- production immediately before writing this migration". That claim is not
+-- supported: no session working on this repo has a SQL client against
+-- production. PostgREST cannot read pg_catalog, this schema exposes no
+-- exec_sql-style RPC, `supabase db dump --linked` needs a local Postgres
+-- container and Docker is not running on this machine, and there is no psql
+-- on PATH. The query below was never run. Migration 0062 hit the same wall
+-- and said so plainly; this file now follows that precedent instead of
+-- asserting a check nobody performed.
+--
+-- Derived instead from migration text, which is the source of truth for what
+-- exists unless someone edited the catalog by hand in the dashboard -- a
+-- possibility this method cannot rule out, and the reason the distinction is
+-- worth writing down. Grepped every `create trigger` / `drop trigger` in all
+-- 99 migration files: exactly one names this table, 0036_stocktake_sessions
+-- .sql:41, `trg_stocktake_sessions_touch before update on
+-- public.stocktake_sessions for each row execute function
+-- public.touch_updated_at()`, whose whole body is `new.updated_at = now()`.
+-- Nothing later drops or replaces it. No queue, no other automation.
+--
+-- The query to run when a SQL client is available, for whoever has one:
 --   select tgname, pg_get_triggerdef(oid) from pg_trigger
 --    where tgrelid = 'public.stocktake_sessions'::regclass and not tgisinternal;
--- Exactly one: trg_stocktake_sessions_touch, BEFORE UPDATE, calls
--- touch_updated_at(). No queue, no other automation. The backfill below
--- updates exactly 1 row and will bump that row's updated_at -- declared
--- here as the one side effect, not a risk.
+--
+-- The backfill below updates exactly 1 row and will bump that row's
+-- updated_at -- declared here as the one side effect, not a risk.
 --
 -- Writer inventory (skill step 6): the two INSERTs into stocktake_sessions
 -- (0036_stocktake_sessions.sql, 0052_stock_issues.sql -- both the same
