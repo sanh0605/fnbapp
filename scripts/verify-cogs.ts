@@ -177,10 +177,37 @@ async function main(): Promise<void> {
     console.log(
       `\nManual issues (Giá vốn per BR-COGS-007): ${fmt(split.manualValue)}d across ${split.manualCount} row(s).`,
     );
-    console.log(
-      `Stocktake variance (shrinkage): ${fmt(split.stocktakeValue)}d across ${split.stocktakeCount} row(s), from ${sessions.length} stocktake session(s) -- ` +
-      `a figure resting on ${sessions.length} count(s) is thin; not a trend.`,
+
+    // Peer review (Opus, 2026-09-08), two false claims fixed after 0099 went
+    // live: (1) this line used to call the whole STOCKTAKE-source total
+    // "shrinkage" outright. That is source alone, not BR-COGS-007's real
+    // rule -- getPnLDataV2's own split (buildClassifiedIssues,
+    // lib/costing/issue-costing-inputs.ts) only counts a STOCKTAKE row as
+    // shrinkage if its session's own is_shrinkage flag says so (default
+    // true unless set false, same resolution rule reused here so this
+    // print can never drift from that file's actual logic). STK-001 is
+    // flagged false -- the whole point of BR-COGS-007: a first count is
+    // four months of unrecorded consumption surfacing at once, not a
+    // period loss. (2) "sessions.length" counted every loaded
+    // stocktake_sessions row, including STK-002, which is CANCELLED and
+    // contributed zero stock_issues rows -- overstating how many counts
+    // this figure actually rests on. Now counted as distinct session_id
+    // among the STOCKTAKE-source rows actually summed.
+    const stocktakeSessionIds = new Set(
+      (rawIssues as any[])
+        .filter(i => i.source === "STOCKTAKE" && i.session_id)
+        .map(i => i.session_id as string),
     );
+    console.log(
+      `Stocktake-sourced issues: ${fmt(split.stocktakeValue)}d across ${split.stocktakeCount} row(s), from ${stocktakeSessionIds.size} stocktake session(s) that contributed rows -- ` +
+      `a figure resting on ${stocktakeSessionIds.size} count(s) is thin; not a trend. NOT automatically "shrinkage" -- ` +
+      `that classification is per-session (BR-COGS-007's is_shrinkage flag), not by source alone:`,
+    );
+    for (const sessionId of stocktakeSessionIds) {
+      const session = (sessions as any[]).find(s => s.id === sessionId);
+      const isShrinkage = session ? session.is_shrinkage !== false : true;
+      console.log(`    ${sessionId}: is_shrinkage=${isShrinkage}${session ? "" : " (session not found -- defaulting true, same fallback as buildClassifiedIssues)"}`);
+    }
     if (split.stocktakeValue !== 0) {
       const pct = split.totalValue !== 0 ? (split.stocktakeValue / split.totalValue) * 100 : 0;
       console.log(
