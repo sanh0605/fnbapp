@@ -81,6 +81,26 @@ describe("findAllNoCache legacy compatibility", () => {
     ]);
   });
 
+  // Opus code review on 3945207: lib/costing/issue-costing-inputs.ts's
+  // buildClassifiedIssues reads stocktake_sessions.is_shrinkage as a real
+  // JS boolean (`s.is_shrinkage !== false`). That is only correct because
+  // stocktake_sessions is absent from BOOLEAN_COLUMNS_BY_TABLE above --
+  // adding it would serialize is_shrinkage to the legacy string "FALSE",
+  // and "FALSE" !== false is true, silently flipping every not-shrinkage
+  // session (STK-001, 34.864.627đ) into shrinkage. Nothing else in the
+  // codebase names this coupling, so pin it here where a future edit to
+  // the registry will actually run this test and see why it broke.
+  it("stocktake_sessions.is_shrinkage must stay a real boolean, not the legacy TRUE/FALSE string -- if this goes red, buildClassifiedIssues in lib/costing/issue-costing-inputs.ts needs the string-aware fix first", async () => {
+    mocks.supabaseSelect.mockResolvedValue({
+      data: [{ id: "STK-001", is_shrinkage: false }],
+      error: null,
+    });
+
+    const rows = await findAllNoCache("stocktake_sessions");
+
+    expect(rows).toEqual([{ id: "STK-001", is_shrinkage: false }]);
+  });
+
   it("continues after the Supabase 1000-row response cap", async () => {
     const firstPage = Array.from({ length: 1000 }, (_, index) => ({ id: `ORD-${index}` }));
     mocks.supabaseSelect

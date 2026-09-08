@@ -150,6 +150,17 @@ fixture anchor if you need a MANUAL row that sits before the count.
 - **`verify-cogs` prints a FINDING about this exact gap** (`scripts/verify-cogs.ts:186`).
   Once the split ships, that text is stale. Update it in the same commit; it is
   the script's own claim about the app and must not outlive the thing it claims.
+- **Migration `0099` must reach production at or before this code, never after.**
+  `buildClassifiedIssues` resolves an absent or null `is_shrinkage` to `true`
+  (fixed 2026-09-08, code review on `730bc42`) so that an unknown session fails
+  toward "still shrinkage," the visible direction. Before `0099` runs, the
+  column does not exist on production's `stocktake_sessions` rows at all, which
+  is the same "absent" case — so between this code's deploy and `0099`'s run,
+  `STK-001` would classify as shrinkage, the opposite of the owner's decision.
+  Harmless today only because nothing reads `shrinkageValue` yet. `CLAUDE.md`'s
+  general rule ("migration lên cùng lúc với code đọc hàm đó") already covers
+  this in the abstract; this is the concrete instance for whoever takes up the
+  push to see without rediscovering it.
 - **`BR-COGS-007`'s worked example** cites the 12% issue rate against August
   revenue. Nothing in this change touches it.
 
