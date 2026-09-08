@@ -19,18 +19,17 @@ Không xoá test mà không nêu lý do.
 
 ## Khi luật máy toàn cục gọi thứ không có
 
-`C:\Users\Admin\CLAUDE.md` nạp vào mọi phiên và **không được sửa**. Luật nào ở đó
-gọi một thứ không tồn tại trong máy này thì dùng bản thay thế dưới đây, không bỏ bước.
+`C:\Users\Admin\CLAUDE.md` nạp vào mọi phiên và **không được sửa**. Luật nào ở đó gọi một thứ không có trong máy này thì dùng bản thay thế dưới đây, không bỏ bước.
 
-| Luật toàn máy | Dùng thay | Vì sao |
-|---|---|---|
-| skill `superpowers:code-reviewer` | skill `superpowers:requesting-code-review`, hoặc lệnh `/code-review` | tên cũ không có trong danh sách skill đã cài |
-| lệnh `/final-before-start-dev` | mục "Lệnh" — chạy đủ năm cửa | lệnh này không có |
-| lệnh `/update-dev-tracking` và file nhật ký phát triển nó ghi vào | quyết định kinh doanh ghi `docs/02-rules/business-rules/`; phần còn lại git log giữ | file nhật ký đã xoá 2026-09-02 |
-| kiểm `Nest application successfully started` | `npm run build` xanh | dự án là Next.js, không phải NestJS |
-| "Always try to use Lodash" | hàm mảng và đối tượng có sẵn của JavaScript | kho không cài Lodash; thêm thư viện là ngoài yêu cầu |
-| tên "CamelCase" | camelCase cho biến và hàm, PascalCase cho component và kiểu — theo code hiện có | luật toàn máy viết mơ hồ |
-| dòng "will review your output" ở cuối file | `/code-review`, hoặc subagent `reviewer` trong `.claude/agents/` | agent được nhắc đã bỏ 2026-07-31 |
+| Luật toàn máy | Dùng thay |
+|---|---|
+| skill `superpowers:code-reviewer` | `superpowers:requesting-code-review`, hoặc `/code-review` |
+| lệnh `/final-before-start-dev` | mục "Lệnh" — chạy đủ năm cửa |
+| lệnh `/update-dev-tracking` và file nhật ký của nó | quyết định kinh doanh ghi `docs/02-rules/business-rules/`; phần còn lại git log giữ |
+| kiểm `Nest application successfully started` | `npm run build` xanh |
+| "Always try to use Lodash" | hàm mảng và đối tượng có sẵn của JavaScript |
+| tên "CamelCase" | camelCase cho biến và hàm, PascalCase cho component và kiểu |
+| dòng "will review your output" ở cuối file | `/code-review`, hoặc subagent `reviewer` trong `.claude/agents/` |
 
 ## Việc nào gọi skill nào
 
@@ -169,8 +168,8 @@ Chủ quán là người kinh doanh, nghiệm thu bằng cách bấm thử, khô
 | Thư mục | Chứa |
 |---|---|
 | `app/` | route Next.js; component riêng của một màn hình nằm trong thư mục `components/` cạnh màn hình đó |
-| `lib/` | logic theo vùng, mỗi vùng một thư mục con: `db`, `shared`, `auth`, `sales`, `pos`, `purchasing`, `costing`, `stock`, `assets`, `products`, `catalog`, `reports`, `dev-feedback` |
-| `components/` | chỉ thứ dùng chung: `ui/`, `providers/`, `dev-feedback/` |
+| `lib/` | logic theo vùng, mỗi vùng một thư mục con |
+| `components/` | chỉ thứ dùng chung |
 | `tests/` | test không có module bên cạnh: chữ migration, edge function, service worker |
 | `scripts/`, `supabase/`, `app/pos/`, `lib/costing/` | có `CLAUDE.md` riêng, máy nạp khi mở file trong đó |
 
