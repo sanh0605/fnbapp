@@ -25,6 +25,10 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the cash-book landing screen (/admin/finance, Task 6) -- legitimately unlinked",
   },
   {
+    route: "/admin/finance/bank-accounts",
+    reason: "reached from the cash-book landing screen (/admin/finance, Task 6) -- legitimately unlinked",
+  },
+  {
     route: "/admin/pos-sync",
     reason:
       "TODO: owner decision -- a real, working screen (\"Đơn cần chú ý\": late orders + sync failures via getPosSyncAttentionItems), just never linked; looks like a plain oversight, not a dead page",
