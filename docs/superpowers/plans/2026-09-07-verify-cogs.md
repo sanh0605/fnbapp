@@ -105,11 +105,24 @@ issue into it with no source filter; `PnLReportResult` carries no separate
 shrinkage field at all. So `totalCOGS` today already contains both, contrary
 to the rule that shrinkage stays its own line.
 
-**Measured 2026-09-08 against production, with the system's own costing
-engine:** 139 non-equipment issues, 90 `MANUAL` and 49 `STOCKTAKE`. Reported
-`totalCOGS` 47.885.076đ. `MANUAL` only — what `BR-COGS-007` defines as *Giá
-vốn* — is 12.984.483đ. **34.900.592đ (72,9% of the reported figure) is
-`STOCKTAKE` value sitting inside the cost line.** That figure is the
+**Measured 2026-09-08 against production:** 139 non-equipment issues, 90
+`MANUAL` and 49 `STOCKTAKE`. Reported `totalCOGS` 47.885.076đ. `MANUAL` only —
+what `BR-COGS-007` defines as *Giá vốn* — is 13.020.449đ. **34.864.627đ (72,8%
+of the reported figure) is `STOCKTAKE` value sitting inside the cost line.**
+
+**How that split must be measured, because the obvious way is wrong.** Replay
+the two sources together in one chronological pass — exactly what
+`computePeriodIssuedValue` does — tagging each issue with its own source as it
+is valued, then sum by tag. Do **not** replay each source's subset separately:
+removing the `STOCKTAKE` events from the stream shifts the weighted-average
+pool for every later `MANUAL` event, which answers a different question. The
+supervisor first measured it the subset way and got 12.984.483đ /
+34.900.592đ — wrong by 35.965đ, corrected 2026-09-08. The combined-replay
+figure is confirmed by an independent source: `BR-COGS-007` recorded the
+2026-08-09 count as **34.864.627đ** on 2026-08-19, and the combined replay
+reproduces it to the đồng while the subset replay does not.
+
+That figure is the
 2026-08-09 count: `BR-COGS-007` itself says it is not shrinkage in the
 period-loss sense — no issue slips existed before it, so it is four months of
 unrecorded consumption surfacing at once. The rule says report it where it
