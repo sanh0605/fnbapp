@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { computeIssueCosting, computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/costing/issue-costing";
+import {
+  computeIssueCosting,
+  computePeriodIssuedValue,
+  computeIssueCostingSplit,
+  computePeriodIssuedValueSplit,
+  type Purchase,
+  type Issue,
+  type ClassifiedIssue,
+} from "@/lib/costing/issue-costing";
 
 describe("computeIssueCosting", () => {
   // Chủ quán chốt 2026-08-02, ví dụ của chính anh, mở rộng ở spec mục 1.
@@ -408,5 +416,109 @@ describe("computeIssueCosting -- BR-INV-009, reversing a mistaken issue slip", (
   it("the reversed slip's own quantity nets to zero -- the pair together is invisible to net issued_quantity", () => {
     const [row] = computeIssueCosting(purchases, [mistakenIssue, reversal]);
     expect(row.issued_quantity).toBe(0); // +500 (mistake) then -500 (reversal, counted as a return)
+  });
+});
+
+// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2.
+// New, additive functions -- computeIssueCosting and computePeriodIssuedValue
+// are deliberately untouched (lib/reports/issued-value-report.ts's second,
+// unified caller must not inherit this split). isShrinkage is decided by the
+// caller (source === 'STOCKTAKE' AND the issue's stocktake session is
+// flagged shrinkage) -- these functions only replay and bucket, they never
+// read Issue.source themselves.
+describe("computeIssueCostingSplit -- Task 2, one combined replay tagged, never two replays subtracted", () => {
+  it("a MANUAL issue lands entirely in the cost bucket", () => {
+    const purchases: Purchase[] = [{ purchased_item_id: "SPM-X", at: "2026-08-01T00:00:00Z", base_quantity: 10, subtotal: 100 }];
+    const issues: ClassifiedIssue[] = [{ purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 4, source: "MANUAL", isShrinkage: false }];
+
+    const [row] = computeIssueCostingSplit(purchases, issues);
+    expect(row.issued_value_cost).toBeCloseTo(40, 6);
+    expect(row.issued_value_shrinkage).toBe(0);
+  });
+
+  it("a STOCKTAKE issue flagged isShrinkage lands entirely in the shrinkage bucket", () => {
+    const purchases: Purchase[] = [{ purchased_item_id: "SPM-X", at: "2026-08-01T00:00:00Z", base_quantity: 10, subtotal: 100 }];
+    const issues: ClassifiedIssue[] = [{ purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 4, source: "STOCKTAKE", isShrinkage: true }];
+
+    const [row] = computeIssueCostingSplit(purchases, issues);
+    expect(row.issued_value_shrinkage).toBeCloseTo(40, 6);
+    expect(row.issued_value_cost).toBe(0);
+  });
+
+  it("a STOCKTAKE issue whose session is flagged not-shrinkage (STK-001's shape) lands in the cost bucket, not shrinkage", () => {
+    const purchases: Purchase[] = [{ purchased_item_id: "SPM-X", at: "2026-08-01T00:00:00Z", base_quantity: 10, subtotal: 100 }];
+    const issues: ClassifiedIssue[] = [{ purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 4, source: "STOCKTAKE", isShrinkage: false }];
+
+    const [row] = computeIssueCostingSplit(purchases, issues);
+    expect(row.issued_value_cost).toBeCloseTo(40, 6);
+    expect(row.issued_value_shrinkage).toBe(0);
+  });
+
+  it("one combined replay, not a subset replay: buckets sum to what a single unclassified replay of the same issues would report", () => {
+    const purchases: Purchase[] = [
+      { purchased_item_id: "SPM-X", at: "2026-08-01T00:00:00Z", base_quantity: 10, subtotal: 100 }, // 10/unit
+      { purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 10, subtotal: 200 }, // 20/unit
+    ];
+    // Pool after both purchases: 20 units / 300 -> average 15/unit.
+    const manual: ClassifiedIssue = { purchased_item_id: "SPM-X", at: "2026-08-03T00:00:00Z", base_quantity: 5, source: "MANUAL", isShrinkage: false };
+    const shrinkage: ClassifiedIssue = { purchased_item_id: "SPM-X", at: "2026-08-04T00:00:00Z", base_quantity: 5, source: "STOCKTAKE", isShrinkage: true };
+    const issues = [manual, shrinkage];
+
+    const [row] = computeIssueCostingSplit(purchases, issues);
+    expect(row.issued_value_cost).toBeCloseTo(75, 6); // 5 * 15
+    expect(row.issued_value_shrinkage).toBeCloseTo(75, 6); // 5 * 15
+
+    const plain = computeIssueCosting(
+      purchases,
+      issues.map(({ isShrinkage, ...rest }) => rest as Issue),
+    );
+    expect(row.issued_value_cost + row.issued_value_shrinkage).toBeCloseTo(plain[0].issued_value, 6);
+  });
+});
+
+describe("computePeriodIssuedValueSplit -- Task 2", () => {
+  const purchases: Purchase[] = [
+    { purchased_item_id: "SPM-X", at: "2026-06-01T00:00:00Z", base_quantity: 10, subtotal: 100 },
+    { purchased_item_id: "SPM-X", at: "2026-07-10T00:00:00Z", base_quantity: 10, subtotal: 140 },
+  ];
+
+  it("isolates one period's own contribution per bucket, matching computePeriodIssuedValue's unsplit total", () => {
+    const issues: ClassifiedIssue[] = [
+      { purchased_item_id: "SPM-X", at: "2026-06-15T00:00:00Z", base_quantity: 2, source: "STOCKTAKE", isShrinkage: true },
+      { purchased_item_id: "SPM-X", at: "2026-07-20T00:00:00Z", base_quantity: 3, source: "MANUAL", isShrinkage: false },
+    ];
+
+    const june = computePeriodIssuedValueSplit(purchases, issues, new Date("2026-06-01T00:00:00Z"), new Date("2026-06-30T23:59:59.999Z"));
+    expect(june.shrinkage).toBeCloseTo(20, 6); // 2 * 10.00
+    expect(june.cost).toBe(0);
+
+    const july = computePeriodIssuedValueSplit(purchases, issues, new Date("2026-07-01T00:00:00Z"), new Date("2026-07-31T23:59:59.999Z"));
+    expect(july.cost).toBeCloseTo(36.666667, 4);
+    expect(july.shrinkage).toBe(0);
+
+    // Cross-check against the existing, unsplit function -- same issues,
+    // isShrinkage stripped -- the two paths must agree to the same total.
+    const plainJuly = computePeriodIssuedValue(
+      purchases,
+      issues.map(({ isShrinkage, ...rest }) => rest as Issue),
+      new Date("2026-07-01T00:00:00Z"),
+      new Date("2026-07-31T23:59:59.999Z"),
+    );
+    expect(july.cost + july.shrinkage).toBeCloseTo(plainJuly, 6);
+  });
+
+  it("returns {cost: 0, shrinkage: 0} when no issues exist yet", () => {
+    const result = computePeriodIssuedValueSplit(purchases, [], new Date("2026-06-01T00:00:00Z"), new Date("2026-06-30T23:59:59.999Z"));
+    expect(result).toEqual({ cost: 0, shrinkage: 0 });
+  });
+
+  it("unbounded (startUtc and endUtc both null) sums every issue ever recorded, split by bucket", () => {
+    const issues: ClassifiedIssue[] = [
+      { purchased_item_id: "SPM-X", at: "2026-06-15T00:00:00Z", base_quantity: 2, source: "STOCKTAKE", isShrinkage: true },
+      { purchased_item_id: "SPM-X", at: "2026-07-20T00:00:00Z", base_quantity: 3, source: "MANUAL", isShrinkage: false },
+    ];
+    const result = computePeriodIssuedValueSplit(purchases, issues, null, null);
+    expect(result.shrinkage).toBeCloseTo(20, 6);
+    expect(result.cost).toBeCloseTo(36.666667, 4);
   });
 });

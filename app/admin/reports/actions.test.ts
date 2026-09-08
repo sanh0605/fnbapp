@@ -715,6 +715,90 @@ describe("getPnLDataV2", () => {
     });
     expect(dauSayRows[0]).not.toHaveProperty("cogs");
   });
+
+  // docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 3a,
+  // BR-COGS-007. totalCOGS's own meaning does not change -- verify-cogs.ts's
+  // Gate 2 compares it against a combined recomputation, so it must keep
+  // reporting Giá vốn + Hao hụt together, both before and after this task.
+  // shrinkageValue is the new, additive line, rounded from its own exact
+  // value (owner rule 2026-07-30), never by subtracting from totalCOGS.
+  describe("shrinkageValue (BR-COGS-007)", () => {
+    const purchasesFixture = () => [{ purchase_order_id: "PO-200", purchased_item_id: "SPM-X", base_quantity: 1000, subtotal: 500_000 }];
+    const issuesFixture = () => [
+      // MANUAL: 200 units @500đ = 100.000đ -- never shrinkage, whatever the
+      // session flag says (there is no session_id on a MANUAL row).
+      { purchased_item_id: "SPM-X", issued_at: "2026-06-10T00:00:00Z", base_quantity: 200, source: "MANUAL", issue_slip_id: "ISL-A" },
+      // STOCKTAKE: 100 units @500đ = 50.000đ -- classification depends on
+      // STK-100.is_shrinkage below.
+      { purchased_item_id: "SPM-X", issued_at: "2026-06-20T00:00:00Z", base_quantity: 100, source: "STOCKTAKE", session_id: "STK-100" },
+    ];
+
+    function mockChain(sessions: any[]) {
+      (findAllWhere as any).mockResolvedValue([]);
+      (findAllWhereInBatches as any).mockResolvedValue([]);
+      (findAllNoCache as any).mockImplementation((sheet: string) => {
+        if (sheet === "Purchase_Orders") return [{ id: "PO-200", status: "COMPLETED", transaction_date: "2026-06-01T00:00:00Z" }];
+        if (sheet === "Purchase_Order_Lines") return purchasesFixture();
+        if (sheet === "Stock_Issues") return issuesFixture();
+        return [];
+      });
+      (findAll as any).mockImplementation((sheet: string) => (
+        sheet === "stocktake_sessions" ? sessions : []
+      ));
+    }
+
+    it("STK-100 flagged not-shrinkage: shrinkageValue is 0, totalCOGS stays the combined 150.000đ", async () => {
+      mockChain([{ id: "STK-100", is_shrinkage: false }]);
+
+      const result = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+
+      expect(result.totalCOGS).toBe(150_000);
+      expect(result.shrinkageValue).toBe(0);
+    });
+
+    it("STK-100 flagged shrinkage: shrinkageValue is the STOCKTAKE-sourced 50.000đ, totalCOGS unchanged at 150.000đ", async () => {
+      mockChain([{ id: "STK-100", is_shrinkage: true }]);
+
+      const result = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+
+      expect(result.totalCOGS).toBe(150_000);
+      expect(result.shrinkageValue).toBe(50_000);
+    });
+  });
+
+  // Task 4, BR-COGS-007's own precondition guard: "The report shows the
+  // period's issue-slip count beside the [shrinkage] figure so the reader
+  // can see for themselves whether the number means anything." A STOCKTAKE
+  // session is not a slip of manual recording activity, so it does not
+  // count here -- only MANUAL rows, grouped by issue_slip_id like
+  // computeIssuedEventFigures already does for the issued-value report.
+  describe("manualIssueSlipCount (BR-COGS-007 Task 4)", () => {
+    it("counts distinct MANUAL issue_slip_id groups in the period, not rows and not STOCKTAKE sessions", async () => {
+      (findAllWhere as any).mockResolvedValue([]);
+      (findAllWhereInBatches as any).mockResolvedValue([]);
+      (findAllNoCache as any).mockImplementation((sheet: string) => {
+        if (sheet === "Purchase_Orders") return [{ id: "PO-300", status: "COMPLETED", transaction_date: "2026-06-01T00:00:00Z" }];
+        if (sheet === "Purchase_Order_Lines") return [{ purchase_order_id: "PO-300", purchased_item_id: "SPM-X", base_quantity: 1000, subtotal: 500_000 }];
+        if (sheet === "Stock_Issues") return [
+          // ISL-A: two rows, same slip -- counts once.
+          { purchased_item_id: "SPM-X", issued_at: "2026-06-05T00:00:00Z", base_quantity: 10, source: "MANUAL", issue_slip_id: "ISL-A" },
+          { purchased_item_id: "SPM-X", issued_at: "2026-06-05T00:00:00Z", base_quantity: 5, source: "MANUAL", issue_slip_id: "ISL-A" },
+          // ISL-B: a second, distinct MANUAL slip.
+          { purchased_item_id: "SPM-X", issued_at: "2026-06-15T00:00:00Z", base_quantity: 20, source: "MANUAL", issue_slip_id: "ISL-B" },
+          // STOCKTAKE row -- not a manual slip, must not add to the count.
+          { purchased_item_id: "SPM-X", issued_at: "2026-06-20T00:00:00Z", base_quantity: 100, source: "STOCKTAKE", session_id: "STK-200" },
+        ];
+        return [];
+      });
+      (findAll as any).mockImplementation((sheet: string) => (
+        sheet === "stocktake_sessions" ? [{ id: "STK-200", is_shrinkage: true }] : []
+      ));
+
+      const result = await getPnLDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+
+      expect(result.manualIssueSlipCount).toBe(2);
+    });
+  });
 });
 
 describe("getSalesDataV2", () => {

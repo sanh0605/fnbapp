@@ -24,13 +24,14 @@ import type { PurchaseOrderHeader, PurchaseOrderLineRow } from "./verify-cogs-co
  *     lib/costing, to the đồng.
  *
  * Printed, never gated:
- *   The MANUAL/STOCKTAKE split of Gate 2's total, and the BR-COGS-007 gap
- *   this script found while being written: getPnLDataV2's cost figure
- *   already contains STOCKTAKE-sourced value today, though the rule says
- *   that value should be its own line. This is a finding for the owner,
- *   not something this script corrects -- see the plan's "Reported, never
- *   red: shrinkage" section for the numbers measured 2026-09-08 and why
- *   Gate 2 must not be built to exclude it.
+ *   The MANUAL/STOCKTAKE split of Gate 2's total. This script found the
+ *   BR-COGS-007 gap while being written (totalCOGS combining both with no
+ *   separate shrinkage line) -- that gap is closed as of 2026-09-08
+ *   (docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md):
+ *   getPnLDataV2 now also returns shrinkageValue and manualIssueSlipCount.
+ *   totalCOGS itself still means Giá vốn + Hao hụt combined, on purpose --
+ *   Gate 2 compares it against this script's own combined recomputation,
+ *   so it must never be built to exclude shrinkage.
  */
 
 function fmt(n: number): string {
@@ -183,11 +184,13 @@ async function main(): Promise<void> {
     if (split.stocktakeValue !== 0) {
       const pct = split.totalValue !== 0 ? (split.stocktakeValue / split.totalValue) * 100 : 0;
       console.log(
-        `\nFINDING (not a failure, not fixed by this script): getPnLDataV2's totalCOGS currently contains both the manual ` +
-        `and stocktake figures above combined -- ${fmt(split.stocktakeValue)}d (${pct.toFixed(1)}% of the reported cost line) is ` +
-        `stocktake variance, not a per-cup or per-manual-issue cost. BR-COGS-007 says shrinkage should be its own line, separate ` +
-        `from Giá vốn; the P&L does not implement that split today (computeIssueCosting never reads Issue.source). Whether to change ` +
-        `getPnLDataV2 is the owner's decision -- out of scope here.`,
+        `\nNOTE (not a failure): totalCOGS above is Giá vốn + Hao hụt combined, by design -- ` +
+        `${fmt(split.stocktakeValue)}d (${pct.toFixed(1)}% of it) is stocktake variance. BR-COGS-007's split shipped ` +
+        `2026-09-08 (docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md): getPnLDataV2 now also returns ` +
+        `shrinkageValue and manualIssueSlipCount, computed by a tagged single-replay split ` +
+        `(computePeriodIssuedValueSplit in lib/costing/issue-costing.ts), not by re-reading Issue.source in the ` +
+        `original engine, which still ignores it. No screen reads those two fields yet -- there is no P&L page ` +
+        `(folded into the future financial-reports work, owner decision 2026-09-08); this script does not gate them.`,
       );
     }
   }

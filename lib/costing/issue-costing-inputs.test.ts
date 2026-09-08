@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterOutEquipmentIssues } from "./issue-costing-inputs";
+import { filterOutEquipmentIssues, buildClassifiedIssues } from "./issue-costing-inputs";
 
 // section
 // 4: the costing-engine block has its own test, not dependent on the
@@ -39,5 +39,39 @@ describe("filterOutEquipmentIssues", () => {
 
   it("an empty issues list stays empty", () => {
     expect(filterOutEquipmentIssues([], items, categories)).toEqual([]);
+  });
+});
+
+// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2. Decides
+// isShrinkage per row -- computeIssueCostingSplit never reads Issue.source
+// itself, so this is the one place that classification is made.
+describe("buildClassifiedIssues", () => {
+  const sessions = [
+    { id: "STK-001", is_shrinkage: false },
+    { id: "STK-002", is_shrinkage: true },
+  ];
+
+  it("a MANUAL row is never shrinkage, regardless of session_id", () => {
+    const rows = [{ purchased_item_id: "SPM-X", issued_at: "2026-08-02T00:00:00Z", base_quantity: 4, source: "MANUAL", session_id: null }];
+    const result = buildClassifiedIssues(rows, sessions);
+    expect(result).toEqual([{ purchased_item_id: "SPM-X", at: "2026-08-02T00:00:00Z", base_quantity: 4, source: "MANUAL", isShrinkage: false }]);
+  });
+
+  it("a STOCKTAKE row whose session is flagged not-shrinkage (STK-001's shape) resolves to isShrinkage false", () => {
+    const rows = [{ purchased_item_id: "SPM-X", issued_at: "2026-08-09T15:00:00Z", base_quantity: 4, source: "STOCKTAKE", session_id: "STK-001" }];
+    const result = buildClassifiedIssues(rows, sessions);
+    expect(result[0].isShrinkage).toBe(false);
+  });
+
+  it("a STOCKTAKE row whose session is flagged shrinkage resolves to isShrinkage true", () => {
+    const rows = [{ purchased_item_id: "SPM-X", issued_at: "2026-09-01T00:00:00Z", base_quantity: 4, source: "STOCKTAKE", session_id: "STK-002" }];
+    const result = buildClassifiedIssues(rows, sessions);
+    expect(result[0].isShrinkage).toBe(true);
+  });
+
+  it("a STOCKTAKE row whose session_id does not resolve to any session defaults to isShrinkage true, matching the column's own default", () => {
+    const rows = [{ purchased_item_id: "SPM-X", issued_at: "2026-09-01T00:00:00Z", base_quantity: 4, source: "STOCKTAKE", session_id: "STK-999" }];
+    const result = buildClassifiedIssues(rows, sessions);
+    expect(result[0].isShrinkage).toBe(true);
   });
 });

@@ -15,8 +15,8 @@ import {
 } from "@/lib/reports/report-v2-allocators";
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { displayMoney } from "@/lib/reports/display-rounding";
-import { computePeriodIssuedValue } from "@/lib/costing/issue-costing";
-import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
+import { computePeriodIssuedValue, computePeriodIssuedValueSplit } from "@/lib/costing/issue-costing";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
 import { requireAdmin } from "@/lib/auth/auth";
 
 export interface PnLReportFilters {
@@ -47,6 +47,18 @@ export interface PnLReportResult {
   // Reconciliation indicator
   v2OrderCount: number;
   v1OrderCount?: number; // optional, set by reconciliation script
+  // docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 3a,
+  // BR-COGS-007. totalCOGS's own meaning is unchanged -- it still is Giá
+  // vốn + Hao hụt combined (scripts/verify-cogs.ts Gate 2 compares it
+  // against a combined recomputation). shrinkageValue is the new, additive
+  // Hao hụt line, rounded from its own exact value, never derived by
+  // subtracting from totalCOGS.
+  shrinkageValue: number;
+  // Task 4, BR-COGS-007's own precondition guard: distinct MANUAL issue
+  // slips in the period, shown beside shrinkageValue so a reader can judge
+  // whether the shrinkage figure means anything (a period with few or no
+  // MANUAL slips has no baseline for "variance").
+  manualIssueSlipCount: number;
 }
 
 function findCompletedOrders(
@@ -91,7 +103,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const orders = await findCompletedOrders(queryDateRange, filters);
-    const [orderLines, recipes, modifiers, products, purchaseOrderLines, purchaseOrders, stockIssues, purchasedItems, itemCategories] = await Promise.all([
+    const [orderLines, recipes, modifiers, products, purchaseOrderLines, purchaseOrders, stockIssues, purchasedItems, itemCategories, stocktakeSessions] = await Promise.all([
       findAllWhereInBatches(
         "Order_Lines_V2",
         "order_id",
@@ -105,6 +117,10 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       findAllNoCache("Stock_Issues"),
       findAll("Purchased_Items"),
       findAll("Item_Categories"),
+      // BR-COGS-007 Task 3a: which stocktake sessions count as shrinkage.
+      // Real table name, not a Sheets alias -- matches every other reader
+      // of this table (app/admin/inventory/stocktake/actions.ts, verify-cogs.ts).
+      findAll("stocktake_sessions"),
     ]);
 
     // Standalone topping → linked modifier map (CAT-007 products with migration_notes link).
@@ -175,6 +191,36 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       dateRange?.startUtc ?? null,
       dateRange?.endUtc ?? null,
     );
+
+    // BR-COGS-007 Task 3a. One combined chronological replay, tagged --
+    // never a subset replay of just the STOCKTAKE rows, which would shift
+    // the weighted-average pool for every later event and answer a
+    // different question (see lib/costing/issue-costing.ts). totalCOGS
+    // above stays the combined figure; this is the additive split.
+    const classifiedIssues = buildClassifiedIssues(nonEquipmentIssues, stocktakeSessions as any[]);
+    const issuedValueSplit = computePeriodIssuedValueSplit(
+      purchases,
+      classifiedIssues,
+      dateRange?.startUtc ?? null,
+      dateRange?.endUtc ?? null,
+    );
+
+    // Task 4, BR-COGS-007's own precondition guard: distinct MANUAL issue
+    // slips within the period -- a STOCKTAKE session is not a slip of
+    // manual recording activity, so it is not counted here. Grouped by
+    // issue_slip_id the same way computeIssuedEventFigures groups MANUAL
+    // rows (lib/reports/issued-value-report.ts), falling back to the row's
+    // own id if a slip somehow carries none.
+    const manualIssuesInPeriod = nonEquipmentIssues.filter((row: any) => {
+      if (row.source !== "MANUAL") return false;
+      const at = new Date(row.issued_at);
+      if (dateRange?.startUtc && at < dateRange.startUtc) return false;
+      if (dateRange?.endUtc && at > dateRange.endUtc) return false;
+      return true;
+    });
+    const manualIssueSlipCount = new Set(
+      manualIssuesInPeriod.map((row: any) => row.issue_slip_id ?? row.id),
+    ).size;
 
     // 4. Per-product revenue breakdown
     const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
@@ -271,6 +317,8 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       orderCount: reportOrderCount,
       productProfitAnalysis: displayedProductProfitAnalysis,
       v2OrderCount: typedOrders.length,
+      shrinkageValue: displayMoney(issuedValueSplit.shrinkage),
+      manualIssueSlipCount,
     };
   } catch (err: any) {
     // not in the plan's own list (found while re-deriving it), and arguably

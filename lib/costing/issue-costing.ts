@@ -155,6 +155,154 @@ export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): Ite
 // regardless of period is safe: the replay is chronological, so a purchase
 // dated after the last issue in a run cannot change any issue's value, it
 // only lands in that run's (discarded) closing_value.
+// ============================================================================
+// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2,
+// implementing BR-COGS-007. New, additive functions only -- computeIssueCosting
+// and computePeriodIssuedValue above are deliberately left unchanged.
+// Splitting inside them would mean bucketed accumulation plus teaching the
+// two-replays-and-subtract shape to subtract per bucket, and both functions
+// have a second caller (lib/reports/issued-value-report.ts) that reports a
+// deliberately unified "what physically left the warehouse" figure and must
+// not inherit this split. isShrinkage is decided entirely by the caller
+// (source === 'STOCKTAKE' AND the issue's stocktake session is flagged
+// shrinkage) -- these functions never read Issue.source themselves, and the
+// replay logic itself is otherwise identical to computeIssueCosting's.
+// ============================================================================
+
+export type ClassifiedIssue = Issue & { isShrinkage: boolean };
+
+export type ItemCostSplit = {
+  purchased_item_id: string;
+  issued_quantity: number;
+  issued_value_cost: number;
+  issued_value_shrinkage: number;
+  closing_quantity: number;
+  closing_value: number;
+};
+
+export function computeIssueCostingSplit(purchases: Purchase[], issues: ClassifiedIssue[]): ItemCostSplit[] {
+  const eventsByItem = new Map<string, (Event & { isShrinkage?: boolean })[]>();
+  let seq = 0;
+
+  for (const p of purchases) {
+    if (p.base_quantity <= 0 && p.subtotal > 0) {
+      throw new Error(`${p.purchased_item_id}: purchase has money but no quantity (subtotal ${p.subtotal})`);
+    }
+    const atMs = parseAt(p.purchased_item_id, p.at);
+    const list = eventsByItem.get(p.purchased_item_id) ?? [];
+    list.push({ kind: "purchase", atMs, seq: seq++, base_quantity: p.base_quantity, subtotal: p.subtotal });
+    eventsByItem.set(p.purchased_item_id, list);
+  }
+  for (const i of issues) {
+    const atMs = parseAt(i.purchased_item_id, i.at);
+    const list = eventsByItem.get(i.purchased_item_id) ?? [];
+    list.push({ kind: "issue", atMs, seq: seq++, base_quantity: i.base_quantity, isShrinkage: i.isShrinkage });
+    eventsByItem.set(i.purchased_item_id, list);
+  }
+
+  const results: ItemCostSplit[] = [];
+
+  for (const [purchasedItemId, events] of eventsByItem) {
+    events.sort((a, b) => a.atMs - b.atMs || eventOrder(a) - eventOrder(b) || a.seq - b.seq);
+
+    let quantity = 0;
+    let value = 0;
+    let lastUnitCost: number | null = null;
+    let issuedQuantity = 0;
+    let issuedValueCost = 0;
+    let issuedValueShrinkage = 0;
+
+    for (const event of events) {
+      if (event.kind === "purchase") {
+        quantity += event.base_quantity;
+        value += event.subtotal;
+        continue;
+      }
+
+      if (event.base_quantity > 0) {
+        if (quantity <= 0) {
+          throw new Error(`${purchasedItemId}: issue precedes any purchase`);
+        }
+        if (event.base_quantity > quantity) {
+          throw new Error(`${purchasedItemId}: issue exceeds quantity on hand`);
+        }
+
+        const unitCost = value / quantity;
+        lastUnitCost = unitCost;
+        const thisIssueValue = unitCost * event.base_quantity;
+        quantity -= event.base_quantity;
+        value -= thisIssueValue;
+        if (quantity === 0) value = 0;
+        issuedQuantity += event.base_quantity;
+        if (event.isShrinkage) {
+          issuedValueShrinkage += thisIssueValue;
+        } else {
+          issuedValueCost += thisIssueValue;
+        }
+      } else if (event.base_quantity < 0) {
+        if (quantity <= 0 && lastUnitCost === null) {
+          throw new Error(`${purchasedItemId}: found stock has no purchase to value it against`);
+        }
+        const foundQuantity = -event.base_quantity;
+        const foundUnitCost = quantity > 0 ? value / quantity : lastUnitCost!;
+        quantity += foundQuantity;
+        value += foundQuantity * foundUnitCost;
+        issuedQuantity -= foundQuantity;
+        const reversedValue = foundQuantity * foundUnitCost;
+        if (event.isShrinkage) {
+          issuedValueShrinkage -= reversedValue;
+        } else {
+          issuedValueCost -= reversedValue;
+        }
+      }
+    }
+
+    results.push({
+      purchased_item_id: purchasedItemId,
+      issued_quantity: issuedQuantity,
+      issued_value_cost: issuedValueCost,
+      issued_value_shrinkage: issuedValueShrinkage,
+      closing_quantity: quantity,
+      closing_value: value,
+    });
+  }
+
+  return results;
+}
+
+// Same two-full-replay-and-subtract shape as computePeriodIssuedValue, bucketed.
+export function computePeriodIssuedValueSplit(
+  purchases: Purchase[],
+  allIssues: ClassifiedIssue[],
+  startUtc: Date | null,
+  endUtc: Date | null,
+): { cost: number; shrinkage: number } {
+  const issuesThroughEnd = endUtc
+    ? allIssues.filter(i => new Date(i.at).getTime() <= endUtc.getTime())
+    : allIssues;
+  const throughEnd = computeIssueCostingSplit(purchases, issuesThroughEnd);
+
+  if (!startUtc) {
+    return {
+      cost: throughEnd.reduce((sum, item) => sum + item.issued_value_cost, 0),
+      shrinkage: throughEnd.reduce((sum, item) => sum + item.issued_value_shrinkage, 0),
+    };
+  }
+
+  const issuesBeforeStart = allIssues.filter(i => new Date(i.at).getTime() < startUtc.getTime());
+  const beforeStart = computeIssueCostingSplit(purchases, issuesBeforeStart);
+  const beforeByItem = new Map(beforeStart.map(item => [item.purchased_item_id, item]));
+
+  let cost = 0;
+  let shrinkage = 0;
+  for (const item of throughEnd) {
+    const before = beforeByItem.get(item.purchased_item_id);
+    cost += item.issued_value_cost - (before?.issued_value_cost ?? 0);
+    shrinkage += item.issued_value_shrinkage - (before?.issued_value_shrinkage ?? 0);
+  }
+  return { cost, shrinkage };
+}
+
 export function computePeriodIssuedValue(
   purchases: Purchase[],
   allIssues: Issue[],

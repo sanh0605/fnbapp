@@ -66,13 +66,25 @@ The P&L separates three things that were previously one:
 
 **A count's difference is shrinkage only if issue slips were being recorded through that period.** A variance measures departure from a baseline; with no issues recorded there is no baseline, and the difference is simply consumption nobody wrote down.
 
-The first count (2026-08-09, **34.864.627đ**) falls exactly there: **zero issue slips existed before it**, because the feature had not been used since the shop opened in April. That figure is four months of unrecorded consumption, not loss, and it is reported where it falls (`BR-SALE-005`'s sibling decision in Plan J §3b) rather than as shrinkage.
+The first count (2026-08-09, **34.864.627đ**) falls exactly there: **exactly one issue slip existed before it** — `ISL-00041`, 2026-07-09 21:49 giờ Việt Nam, one line of *Baking Soda Caster*, 48.600đ, 0,37% of all manual issue value and a full month before the count's window opens. This sentence read "zero issue slips" until 2026-09-08, when it was measured rather than recalled; the conclusion is unchanged, because one slip in four months is not a baseline either, but the number is now the measured one. That figure is four months of unrecorded consumption, not loss, and it is reported where it falls (`BR-SALE-005`'s sibling decision in Plan J §3b) rather than as shrinkage.
 
 **The rule carries its own validity check.** Any period whose issue-slip count is zero, or implausibly low against sales, produces a variance that must not be read as shrinkage. The report shows the period's slip count beside the figure so the reader can see this without being told.
 
 **Worked example, real data.** From 2026-08-09 to 2026-08-18 staff issued **1.127.515đ** across 17 slips — whole packages opened (Sữa tươi Mlekovita 1.000 ml, Bột cà phê 500 g, Trân châu 2.000 g), which is `BR-INV-007` working as designed. Against roughly 9,5 million đồng of August revenue that is about 12%, where an F&B norm is 30-40%. **The second count resolves which explanation is right:** either staff are not issuing everything, or goods are being lost. Until it happens, neither can be asserted.
 
 **Recipes are not used to compute any of these figures.** Recipe-based expectation was considered as a way to split consumption from loss and set aside: this system measures cost from goods that physically left stock (`BR-COGS-005`), and a recipe states intent, not fact. Coverage is complete (96 active variant recipes cover 3.988 of 3.988 drinks sold), so the option remains open, but nothing in this rule depends on it.
+
+**Which counts produce shrinkage, settled 2026-09-08.** The precondition above is a judgement ("implausibly low against sales"), and no machine can apply it. The owner settled it as a fact about history instead of a test to evaluate: *"tách ra thì chỉ đáp ứng được đúng lần này, do những lần sau đều đã được ghi chú đầy đủ."*
+
+- **`STK-001` (2026-08-09) is the one exception.** Its 34.864.627đ sits in **Giá vốn** permanently and never moves to Hao hụt.
+- **Every later count is shrinkage** and feeds the Hao hụt line.
+- **There is no fourth line for "hàng đã dùng chưa ghi sổ".** A permanent line for a one-time historical event was rejected on exactly that ground — it describes one count, not a category the shop keeps producing. So the P&L's three lines stay the three this rule already named.
+
+Confirmed 2026-09-08 by worked example before the decision was recorded: a count in October 2026 finding 2.000.000đ missing shows **Hao hụt 2.000.000đ**, while `STK-001`'s 34.864.627đ stays in Giá vốn. Owner: *"Đúng"*.
+
+**Carried as data, not as an id in code.** Which counts are shrinkage lives on the stocktake session row, with `STK-001` set to "not shrinkage" by migration — an `if (id === 'STK-001')` in TypeScript would be the same fact in the one place nobody can correct it. There is no screen for the flag yet, because nothing today can set it wrongly; if a future count ever needs marking, that is a small addition and not this change.
+
+**Rounding across the split.** Each line rounds up from its own exact value (owner rule 2026-07-30), and gross profit is computed from the exact total, never by summing already-rounded lines. Measured 2026-09-08 the two paths agree — 13.020.449 + 34.864.627 = 47.885.076 exactly — but only because `ceil(a) + ceil(b)` happened to equal `ceil(a+b)` for these fractions. That is a coincidence, not a guarantee, and the report must not be built as if it were one.
 
 ### BR-COGS-006 — A purchase is valued at what was paid, shipping and discounts included
 

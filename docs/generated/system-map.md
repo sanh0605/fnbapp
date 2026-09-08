@@ -92,7 +92,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - stock_adjustments (id, reason, created_by_id, created_by_name, status, created_at, approved_at, notes, item_reference) status: PENDING, APPROVED, REJECTED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)
 - stocktake_lines (id, session_id, item_reference, item_type, counted_qty, theoretical_at_count, counted_at, and)
-- stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, notes, updated_at, reversed_by_id) status: OPEN, CONFIRMED, CANCELLED
+- stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, notes, updated_at, reversed_by_id, is_shrinkage) status: OPEN, CONFIRMED, CANCELLED
 - suppliers (id, name, tax_id, address, links, status, created_at, phone, duplicate_warning_confirmed) status: ACTIVE, INACTIVE, DELETED
 - sync_state (sync_key, last_synced_at, notes, updated_at)
 - units (id, name, abbreviation, status, created_at, description) status: ACTIVE, INACTIVE, DELETED

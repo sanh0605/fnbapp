@@ -1,5 +1,5 @@
 import { allocatePurchaseOrderCost } from "@/lib/costing/purchase-order-cost-allocation";
-import type { Purchase, Issue } from "@/lib/costing/issue-costing";
+import type { Purchase, Issue, ClassifiedIssue } from "@/lib/costing/issue-costing";
 
 // Plan C Task 2. There is nothing to reuse here -- the loader this plan
 // originally pointed at would have been written by Plan B Task 4, and the
@@ -64,6 +64,29 @@ export function buildIssueCostingIssues(stockIssues: any[]): Issue[] {
     at: row.issued_at,
     base_quantity: Number(row.base_quantity) || 0,
     source: row.source,
+  }));
+}
+
+// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2,
+// implementing BR-COGS-007. computeIssueCostingSplit never reads Issue.source
+// itself -- this is the one place isShrinkage is decided: a MANUAL row is
+// never shrinkage; a STOCKTAKE row is shrinkage unless its own session is
+// flagged not-shrinkage (STK-001's shape, set by migration 0099). A
+// session_id that resolves to no known session defaults to true, matching
+// the column's own default (stocktake_sessions.is_shrinkage not null default
+// true) -- not reachable today (every STOCKTAKE row's session_id resolves,
+// measured 2026-09-08), but the fallback must not silently misclassify if it
+// ever is.
+export function buildClassifiedIssues(stockIssues: any[], stocktakeSessions: any[]): ClassifiedIssue[] {
+  const isShrinkageBySessionId = new Map<string, boolean>(
+    stocktakeSessions.map(s => [s.id, Boolean(s.is_shrinkage)]),
+  );
+  return stockIssues.map(row => ({
+    purchased_item_id: row.purchased_item_id,
+    at: row.issued_at,
+    base_quantity: Number(row.base_quantity) || 0,
+    source: row.source,
+    isShrinkage: row.source === "STOCKTAKE" ? (isShrinkageBySessionId.get(row.session_id) ?? true) : false,
   }));
 }
 
