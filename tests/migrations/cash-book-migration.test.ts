@@ -124,5 +124,12 @@ describe("cash book migration", () => {
     }
     expect(raw).toContain("default 'CASH'");
     expect(raw).toContain("default 'ACTIVE'");
+    // Every row stores 'ACTIVE' uppercase. If either index's where clause
+    // were ever lower-cased to 'active', that partial index would match
+    // zero rows and both duplicate-name guards would silently stop
+    // guarding anything -- the lower-cased `migration` assertions above
+    // cannot see this, since they fold both sides to lowercase before
+    // comparing. One occurrence per index (cash_categories, bank_accounts).
+    expect(raw.split("where status = 'ACTIVE'").length - 1).toBe(2);
   });
 });
