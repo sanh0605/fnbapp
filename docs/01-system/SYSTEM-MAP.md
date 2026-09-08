@@ -19,6 +19,7 @@ follows groups the same relations by area for human reading only.
 ```relations
 app/actions/auth.ts -> users (write)
 app/admin/brands/actions.ts -> Brands (write)
+app/admin/finance/categories/actions.ts -> Cash_Categories (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/actions.ts -> Purchased_Items (write)
