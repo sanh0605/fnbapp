@@ -69,7 +69,7 @@ bảng này giữ cả hai bên.
 | `kind` | text | `EXPENSE` = Chi, `INCOME` = Thu |
 | `affects_pnl` | boolean | có tính vào lãi lỗ hay không |
 | `status` | text | `ACTIVE` = Đang dùng, `INACTIVE` = Ngừng dùng |
-| `created_at` | timestamptz | |
+| `created_at` `created_by` `updated_at` `updated_by` | | bốn cột dấu vết, xem mục dưới |
 
 `affects_pnl` có mặt vì chủ quán nói rõ: bên Thu sẽ có nhiều khoản không
 phải doanh thu, giờ chưa liệt kê hết được. Vốn góp là khoản đầu tiên như
@@ -100,7 +100,7 @@ nhập mới không còn thấy nó.
 | `bank_name` | text | tên ngân hàng |
 | `account_number` | text | số tài khoản |
 | `status` | text | `ACTIVE` / `INACTIVE` |
-| `created_at` | timestamptz | |
+| `created_at` `created_by` `updated_at` `updated_by` | | bốn cột dấu vết, xem mục dưới |
 
 Là bảng chứ không phải ô gõ tay, vì lý do y hệt nhóm thu chi: gõ tay thì
 "Vietcombank" và "VCB" thành hai tài khoản khác nhau trong báo cáo mà
@@ -119,9 +119,7 @@ không ai thấy.
 | `payer` | text, cho rỗng | người chi; đợt này để trống, chưa dùng tới |
 | `note` | text, cho rỗng | |
 | `status` | text | `ACTIVE` = Đang dùng, `CANCELLED` = Đã huỷ |
-| `created_by` | text | khoá ngoại `users`, người tạo dòng |
-| `created_at` | timestamptz | ngày tạo |
-| `updated_at` | timestamptz | ngày điều chỉnh gần nhất |
+| `created_at` `created_by` `updated_at` `updated_by` | | bốn cột dấu vết, xem mục dưới |
 
 Không có cột "thu hay chi". Nhóm đã biết nó thuộc bên nào, thêm một cột
 nữa là mở đường cho hai chỗ nói ngược nhau.
@@ -130,6 +128,26 @@ Hai ràng buộc máy tự canh:
 
 - `payment_method = 'BANK_TRANSFER'` thì bắt buộc có `bank_account_id`.
 - `payment_method = 'CASH'` thì `bank_account_id` bắt buộc rỗng.
+
+## Bốn cột dấu vết
+
+Chủ quán chốt ngày 2026-09-08: bảng nào cũng phải biết ai tạo lúc nào, ai
+sửa lúc nào. Cả ba bảng mới đều mang đủ bốn cột:
+
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| `created_at` | timestamptz | mặc định `now()`, không bao giờ đổi |
+| `created_by` | text | khoá ngoại `users`, đặt một lần lúc tạo |
+| `updated_at` | timestamptz | mỗi lần sửa máy tự đặt lại |
+| `updated_by` | text | khoá ngoại `users`, mỗi lần sửa đặt lại |
+
+Máy tự đặt bằng trigger, không để code gọi nhớ đặt — quên một chỗ là dấu
+vết thủng một chỗ. Lối này đã có sẵn trong kho: `trg_stocktake_sessions_touch`
+ở `supabase/migrations/0036_stocktake_sessions.sql` làm đúng như vậy cho
+`updated_at`.
+
+Với 54 dòng nạp từ Sheet: người tạo và người sửa đặt là tài khoản `ADMIN`,
+ngày tạo lấy đúng ngày ghi trong Sheet.
 
 ## Huỷ và xoá
 
@@ -221,9 +239,6 @@ Dùng skill `fnbapp-bulk-data-change`. Mặc định chạy thử, in ra đủ 5
 kèm tổng từng tháng để chủ quán soi; có `--apply` mới ghi thật. Ghi thật
 là việc phải chủ quán duyệt riêng.
 
-Người tạo của 54 dòng cũ đặt là tài khoản `ADMIN`; ngày ghi sổ lấy đúng
-ngày trong Sheet.
-
 ## Câu chưa trả lời, để lại cho đợt sau
 
 - Bảng lãi lỗ của chủ quán dồn hết giá vốn vào tháng 8 (46.418.990đ) vì
@@ -233,5 +248,5 @@ ngày trong Sheet.
 - Ngưỡng doanh thu không phải nộp thuế của hộ kinh doanh: một nguồn ghi
   500 triệu/năm, một nguồn ghi 1 tỷ/năm. Chưa tra ra bên nào đúng. Phải
   chốt trước khi làm báo cáo phục vụ khai thuế.
-- Có cần lưu tên người điều chỉnh không. Đợt này lưu ngày điều chỉnh,
-  chưa lưu tên người sửa.
+- Ba mươi chín bảng cũ mới có 6 bảng biết người tạo và 0 bảng biết người
+  sửa. Gắn đủ bốn cột dấu vết cho bảng cũ là một đợt riêng.
