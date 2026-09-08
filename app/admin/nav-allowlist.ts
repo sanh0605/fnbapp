@@ -22,7 +22,7 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
   },
   {
     route: "/admin/finance/categories",
-    reason: "reached from the sổ thu chi screen -- legitimately unlinked",
+    reason: "reached from the cash-book landing screen (/admin/finance, Task 6) -- legitimately unlinked",
   },
   {
     route: "/admin/pos-sync",

@@ -21,8 +21,17 @@ create table if not exists public.cash_categories (
 );
 
 -- Two live categories may not share a name; retired ones keep theirs.
+-- Same normalising expression as migration 0065's catalogue-table indexes
+-- (and lib/shared/duplicate-name-guard.ts's normalizeNameForComparison in
+-- JS): lower-cases, NFC-normalises, folds a non-breaking space to a plain
+-- space, and collapses a run of internal whitespace to one space -- so
+-- "Vận  hành" (two spaces) cannot slip past as a second ACTIVE row that
+-- looks identical to "Vận hành" in every list.
 create unique index if not exists idx_cash_categories_active_name
-  on public.cash_categories (lower(trim(name))) where status = 'ACTIVE';
+  on public.cash_categories (
+    lower(regexp_replace(btrim(normalize(replace(name, chr(160), ' '), NFC)), '\s+', ' ', 'g'))
+  )
+  where status = 'ACTIVE';
 
 create table if not exists public.bank_accounts (
   id text primary key,
@@ -38,8 +47,12 @@ create table if not exists public.bank_accounts (
   updated_by_name text
 );
 
+-- Same normalising expression as idx_cash_categories_active_name above.
 create unique index if not exists idx_bank_accounts_active_name
-  on public.bank_accounts (lower(trim(name))) where status = 'ACTIVE';
+  on public.bank_accounts (
+    lower(regexp_replace(btrim(normalize(replace(name, chr(160), ' '), NFC)), '\s+', ' ', 'g'))
+  )
+  where status = 'ACTIVE';
 
 create table if not exists public.cash_entries (
   id text primary key,

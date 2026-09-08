@@ -82,6 +82,26 @@ describe("cash book migration", () => {
     expect(migration).toContain("cfc-005");
   });
 
+  it("normalises whitespace and NBSP in its uniqueness indexes, same expression as migration 0065 (lib/shared/duplicate-name-guard.ts)", () => {
+    // lower(trim(name)) is strictly weaker: it neither collapses a run of
+    // internal whitespace nor folds a non-breaking space, so "Vận  hành"
+    // (two spaces) would sail past the index as a distinct row while
+    // looking identical to "Vận hành" in every list. This pins the exact
+    // canonical expression -- the same one every catalogue table's index
+    // uses (migration 0065) and the same one
+    // lib/shared/duplicate-name-guard.ts's normalizeNameForComparison
+    // mirrors in JS -- so the DB and the app can never disagree about what
+    // counts as a duplicate.
+    const canonicalExpr =
+      "lower(regexp_replace(btrim(normalize(replace(name, chr(160), ' '), nfc)), '\\s+', ' ', 'g'))";
+    expect(migration).not.toContain("lower(trim(name))");
+    const occurrences = migration.split(canonicalExpr).length - 1;
+    expect(occurrences).toBe(2); // idx_cash_categories_active_name and idx_bank_accounts_active_name
+    expect(migration).toContain("idx_cash_categories_active_name");
+    expect(migration).toContain("idx_bank_accounts_active_name");
+    expect(migration).toContain("where status = 'active'");
+  });
+
   it("exposes the tables only to service_role", () => {
     for (const t of ["cash_categories", "bank_accounts", "cash_entries"]) {
       expect(migration).toContain(`alter table public.${t} enable row level security`);

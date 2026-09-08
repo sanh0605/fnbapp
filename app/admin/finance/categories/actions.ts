@@ -6,6 +6,7 @@ import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { creationAudit, updateAudit } from "@/lib/finance/audit-columns";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 import type { DBCashCategory } from "@/types/db";
 
 const SHEET = "Cash_Categories";
@@ -15,25 +16,6 @@ export async function getCashCategories(): Promise<DBCashCategory[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
   return (await findAll(SHEET)) as DBCashCategory[];
-}
-
-// Ruling 6 -- mirrors migration 0101's own uniqueness rule (the partial
-// unique index on lower(trim(name)) where status = 'ACTIVE') so the app
-// refuses in Vietnamese before Postgres's ASCII-English violation ever
-// reaches describeActionError, which would otherwise genericize it into
-// the generic fallback sentence and tell the owner nothing useful. The
-// index remains the backstop for a race between two concurrent saves.
-function findActiveDuplicate(
-  categories: DBCashCategory[],
-  name: string,
-  excludeId?: string,
-): DBCashCategory | null {
-  const target = name.trim().toLowerCase();
-  return (
-    categories.find(
-      (c) => c.id !== excludeId && c.status === "ACTIVE" && c.name.trim().toLowerCase() === target,
-    ) ?? null
-  );
 }
 
 export async function addCashCategory(formData: FormData): Promise<ActionResponse> {
@@ -46,9 +28,19 @@ export async function addCashCategory(formData: FormData): Promise<ActionRespons
   const affects_pnl = formData.get("affects_pnl") === "on";
 
   try {
+    // Ruling 6 -- level 1 only (an outright refusal): the owner keeps about
+    // five groups here, so the level-2 diacritic-stripped warn-and-confirm
+    // flow (findDiacriticStrippedMatch, used by app/admin/suppliers) is out
+    // of scope. Mirrors migration 0101's own unique index (now updated to
+    // match this same normalisation, migration 0065's expression) so the
+    // app refuses in Vietnamese before Postgres's ASCII-English violation
+    // ever reaches describeActionError, which would otherwise genericize
+    // it into the generic fallback sentence and tell the owner nothing
+    // useful. The index remains the backstop for a race between two
+    // concurrent saves.
     const categories = (await findAll(SHEET)) as DBCashCategory[];
-    const duplicate = findActiveDuplicate(categories, name);
-    if (duplicate) return fail(`Tên nhóm "${duplicate.name}" đã có rồi, hãy chọn tên khác`);
+    const conflict = findDuplicateActiveName(categories, name);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     const id = await generateNewId(SHEET, "CFC");
     await insert(SHEET, {
@@ -74,8 +66,8 @@ export async function updateCashCategory(formData: FormData): Promise<ActionResp
 
   try {
     const categories = (await findAll(SHEET)) as DBCashCategory[];
-    const duplicate = findActiveDuplicate(categories, name, id);
-    if (duplicate) return fail(`Tên nhóm "${duplicate.name}" đã có rồi, hãy chọn tên khác`);
+    const conflict = findDuplicateActiveName(categories, name, id);
+    if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     await update(SHEET, id, { name, kind, affects_pnl, ...updateAudit(auth.actor) });
     revalidatePath(PATH);

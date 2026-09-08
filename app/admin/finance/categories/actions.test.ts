@@ -35,11 +35,14 @@ describe("cash category actions", () => {
 });
 
 // Ruling 6 -- migration 0101's partial unique index refuses two ACTIVE
-// categories sharing a name (lower(trim(name))), but its violation message
-// is plain ASCII English, and describeActionError replaces any all-ASCII
-// exception with the generic Vietnamese fallback -- so the owner retyping
-// a name he already has would learn nothing. The app must catch this
-// itself, in Vietnamese, before the DB round trip.
+// categories sharing a name (migration 0065's normalising expression --
+// lower-cased, NFC-normalised, NBSP-folded, internal whitespace collapsed),
+// but its violation message is plain ASCII English, and describeActionError
+// replaces any all-ASCII exception with the generic Vietnamese fallback --
+// so the owner retyping a name he already has would learn nothing. The app
+// must catch this itself, in Vietnamese, before the DB round trip, using
+// the same lib/shared/duplicate-name-guard.ts already used by
+// app/admin/inventory, app/admin/products and app/admin/suppliers.
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   requireOwner: vi.fn(),
@@ -130,5 +133,24 @@ describe("duplicate name rejection (ruling 6)", () => {
 
     expect(result.error).toBeTruthy();
     expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  // Fix round 1: a plain trim()+toLowerCase() comparison lets a name
+  // differing only by a collapsible run of internal whitespace through --
+  // "Vận  hành" (two spaces) would look identical to "Vận hành" in every
+  // list but be accepted as a second ACTIVE row. findDuplicateActiveName
+  // (lib/shared/duplicate-name-guard.ts) collapses internal whitespace
+  // (and folds NBSP, NFC-normalises) before comparing, matching migration
+  // 0065's own index expression -- so this must be refused too.
+  it("refuses a name that differs from an ACTIVE one only by collapsible internal whitespace", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "CFC-001", name: "Vận hành", status: "ACTIVE" },
+    ]);
+
+    const result = await addCashCategory(formData({ name: "Vận  hành", kind: "EXPENSE" }));
+
+    expect(result.error).toBeTruthy();
+    expect(mocks.insert).not.toHaveBeenCalled();
   });
 });

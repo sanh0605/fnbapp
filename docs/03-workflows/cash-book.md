@@ -40,10 +40,18 @@ until a later task adds the code that writes them.
 4. **Valid inputs, and what happens outside the range.** `name` is required and
    trimmed; `kind` is `EXPENSE` or `INCOME` (anything else posted falls back to
    `EXPENSE`); `affects_pnl` is a checkbox, on by default. Two `ACTIVE`
-   categories may not share a name (case-insensitive, trimmed) — the app checks
-   this itself and returns a Vietnamese message before the row ever reaches
-   Postgres's own partial unique index on `lower(trim(name))`, which stays as
-   the backstop for a race between two concurrent saves.
+   categories may not share a name — compared via `findDuplicateActiveName`
+   (`lib/shared/duplicate-name-guard.ts`, the same helper `app/admin/inventory`,
+   `app/admin/products` and `app/admin/suppliers` already use), which
+   lower-cases, NFC-normalises, folds a non-breaking space and collapses
+   internal whitespace before comparing. The app returns a Vietnamese message
+   naming the conflicting row before the row ever reaches Postgres's own
+   partial unique index (migration `0101`, the same normalising expression as
+   migration `0065`'s catalogue-table indexes), which stays as the backstop
+   for a race between two concurrent saves. Only the level-1 outright refusal
+   applies here — the level-2 diacritic-stripped warn-and-confirm flow
+   (`findDiacriticStrippedMatch`) is out of scope for this screen; the owner
+   keeps about five groups.
 
 5. **Which data it serves, and which it deliberately does not.** This flow
    serves only the grouping the owner files a cash-book line under — it holds
