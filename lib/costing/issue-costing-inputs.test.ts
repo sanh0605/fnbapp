@@ -74,4 +74,24 @@ describe("buildClassifiedIssues", () => {
     const result = buildClassifiedIssues(rows, sessions);
     expect(result[0].isShrinkage).toBe(true);
   });
+
+  // Opus code review on 730bc42, 2026-09-08: Boolean(undefined) === false,
+  // so a session row present in the array but missing (or null) is_shrinkage
+  // -- production today, before migration 0099 runs -- resolved to isShrinkage
+  // false instead of the unresolvable-id fallback's true. Two flavours of
+  // "I don't know" must fail in the same, visible direction (BR-COGS-007
+  // exists precisely so shrinkage is never silently hidden inside Giá vốn).
+  it("a STOCKTAKE row whose session is found but carries no is_shrinkage field resolves to isShrinkage true, same as an unresolvable session_id", () => {
+    const sessionsMissingField = [{ id: "STK-100" }]; // no is_shrinkage key at all
+    const rows = [{ purchased_item_id: "SPM-X", issued_at: "2026-09-01T00:00:00Z", base_quantity: 4, source: "STOCKTAKE", session_id: "STK-100" }];
+    const result = buildClassifiedIssues(rows, sessionsMissingField);
+    expect(result[0].isShrinkage).toBe(true);
+  });
+
+  it("a STOCKTAKE row whose session carries is_shrinkage: null resolves to isShrinkage true", () => {
+    const sessionsNullField = [{ id: "STK-100", is_shrinkage: null }];
+    const rows = [{ purchased_item_id: "SPM-X", issued_at: "2026-09-01T00:00:00Z", base_quantity: 4, source: "STOCKTAKE", session_id: "STK-100" }];
+    const result = buildClassifiedIssues(rows, sessionsNullField);
+    expect(result[0].isShrinkage).toBe(true);
+  });
 });

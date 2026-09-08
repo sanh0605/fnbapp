@@ -78,8 +78,14 @@ export function buildIssueCostingIssues(stockIssues: any[]): Issue[] {
 // measured 2026-09-08), but the fallback must not silently misclassify if it
 // ever is.
 export function buildClassifiedIssues(stockIssues: any[], stocktakeSessions: any[]): ClassifiedIssue[] {
+  // Opus code review on 730bc42, 2026-09-08: Boolean(s.is_shrinkage) resolved
+  // an absent or null field to false, the opposite of an unresolvable
+  // session_id's `?? true` fallback below. Two flavours of "I don't know"
+  // must fail the same, visible way -- only an explicit false turns
+  // shrinkage off; anything else (true, null, missing) stays true, matching
+  // the column's own default.
   const isShrinkageBySessionId = new Map<string, boolean>(
-    stocktakeSessions.map(s => [s.id, Boolean(s.is_shrinkage)]),
+    stocktakeSessions.map(s => [s.id, s.is_shrinkage !== false]),
   );
   return stockIssues.map(row => ({
     purchased_item_id: row.purchased_item_id,
