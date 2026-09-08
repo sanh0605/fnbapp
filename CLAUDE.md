@@ -17,20 +17,6 @@ Bốn lệnh đầu xanh không đảm bảo `npm run build` xanh. Phải chạy
 Việc đụng giá vốn hoặc tồn kho: chạy thêm script `verify-*` tương ứng, yêu cầu 0 sai lệch.
 Không xoá test mà không nêu lý do.
 
-## Khi luật máy toàn cục gọi thứ không có
-
-`C:\Users\Admin\CLAUDE.md` nạp vào mọi phiên và **không được sửa**. Luật nào ở đó gọi một thứ không có trong máy này thì dùng bản thay thế dưới đây, không bỏ bước.
-
-| Luật toàn máy | Dùng thay |
-|---|---|
-| skill `superpowers:code-reviewer` | `superpowers:requesting-code-review`, hoặc `/code-review` |
-| lệnh `/final-before-start-dev` | mục "Lệnh" — chạy đủ năm cửa |
-| lệnh `/update-dev-tracking` và file nhật ký của nó | quyết định kinh doanh ghi `docs/02-rules/business-rules/`; phần còn lại git log giữ |
-| kiểm `Nest application successfully started` | `npm run build` xanh |
-| "Always try to use Lodash" | hàm mảng và đối tượng có sẵn của JavaScript |
-| tên "CamelCase" | camelCase cho biến và hàm, PascalCase cho component và kiểu |
-| dòng "will review your output" ở cuối file | `/code-review`, hoặc subagent `reviewer` trong `.claude/agents/` |
-
 ## Việc nào gọi skill nào
 
 Gọi trước khi làm, không phải sau khi làm hỏng. Tên dưới đây đã kiểm là có trong máy này.
@@ -122,17 +108,6 @@ IMPORTANT: tài liệu không bao giờ là nguồn cho con số hiện tại. T
 - Gỡ một thứ ra thì liệt kê chỗ đọc kết quả của nó, không chỉ chỗ gọi nó.
 - Đo bằng đúng ngôn ngữ sẽ chạy thật; Python và JavaScript làm tròn 0,5 ngược nhau.
 - Báo kết quả kèm mẫu số: "0 lệch trên 3.364 dòng", không nói trống "0 lệch".
-
-## Khẳng định về luật, thuế, chuẩn kế toán
-
-IMPORTANT: tra ra một kết quả không phải là tra xong. Bắt buộc tra ngược xem văn bản đã bị sửa hoặc bãi bỏ chưa.
-
-- Mỗi khẳng định kèm đủ: số hiệu · ngày ban hành · ngày hiệu lực · điều khoản · link gốc. Thiếu một thứ thì ghi "chưa xác minh".
-- Ghi rõ đã đọc văn bản gốc hay chỉ đọc bài tóm tắt.
-- Hai nguồn mâu thuẫn thì phải đào tiếp, không chọn bên nghe hợp lý hơn.
-- Mọi câu trả lời có mục "cái tôi chưa tra". Không để trống.
-- Con số pháp lý không được đọc lại trong file; phải tra lại.
-- Thứ có hậu quả pháp lý cần một người làm kế toán xác nhận trước khi chốt.
 
 ## Nói chuyện với chủ quán
 
