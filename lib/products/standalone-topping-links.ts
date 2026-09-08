@@ -14,12 +14,38 @@
 // one modifier may govern that product's switch (plan question 3). Filtering
 // DELETED out before the map is built makes the result independent of the
 // input array's order.
+//
+// Opus code review, 2026-09-08: two ACTIVE modifiers pointing at one
+// product is exactly the state migration 0098's sync_topping_price_atomic
+// refuses at write time -- unreachable today (measured: 0 products with >1
+// ACTIVE modifier), but this read-side helper must resolve it loudly or
+// deterministically, not by silent first-or-last-wins. Chosen: skip, not
+// refuse. This helper runs on every P&L report and every POS page load
+// (app/pos/CLAUDE.md: the shop must not stop selling over a data anomaly),
+// so a collision drops that product_id from the map entirely -- it falls
+// through as an ordinary product, same as an unlinked orphan -- logged so
+// the anomaly is discoverable, rather than throwing and taking either
+// screen down.
 export function buildStandaloneToppingProductLinks(modifiers: any[]): Map<string, string> {
   const map = new Map<string, string>();
+  const conflictedProductIds = new Set<string>();
   for (const m of modifiers) {
     if (m.status === "DELETED") continue;
     if (!m.product_id) continue;
-    map.set(String(m.product_id), String(m.id));
+    const productId = String(m.product_id);
+    const modifierId = String(m.id);
+    const existing = map.get(productId);
+    if (existing !== undefined && existing !== modifierId) {
+      conflictedProductIds.add(productId);
+      continue;
+    }
+    map.set(productId, modifierId);
+  }
+  for (const productId of conflictedProductIds) {
+    map.delete(productId);
+    console.error(
+      `buildStandaloneToppingProductLinks: more than one ACTIVE modifier links to product ${productId} -- excluding it. This should be impossible (migration 0098 refuses it at write time); check for a direct DB edit or a writer that bypasses the guard.`,
+    );
   }
   return map;
 }

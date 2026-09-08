@@ -48,4 +48,34 @@ describe("buildStandaloneToppingProductLinks", () => {
   it("an empty modifiers list produces an empty map", () => {
     expect(buildStandaloneToppingProductLinks([])).toEqual(new Map());
   });
+
+  // Opus code review, 2026-09-08: two ACTIVE modifiers pointing at one
+  // product is the exact state 0098's sync_topping_price_atomic refuses at
+  // write time ("more than one ACTIVE modifier -- price sync needs exactly
+  // one writer"). Unreachable today (measured: 0 products with >1 ACTIVE
+  // modifier), but this read-side helper must not resolve it by silent
+  // first-or-last-wins the way the DELETED/ACTIVE case above was fixed to
+  // avoid. Chosen here: skip, not refuse -- both getPnLDataV2 and
+  // getPOSBestSellerProductIds call this on every page load / report run,
+  // and app/pos/CLAUDE.md is explicit that POS must not go down over a data
+  // anomaly. A collision drops that product_id from the map entirely
+  // (falls through as an ordinary product, same as an unlinked orphan)
+  // rather than crashing the read path, and is deterministic regardless of
+  // input order -- unlike a thrown exception, which would still be a build
+  // failure either way, this keeps reports and POS quick-add available
+  // while the data anomaly gets fixed.
+  it("two ACTIVE modifiers pointing at one product: the product is excluded from the map, not order-dependent", () => {
+    const conflicted = [
+      { id: "MOD-050", status: "ACTIVE", product_id: "PROD-200" },
+      { id: "MOD-051", status: "ACTIVE", product_id: "PROD-200" },
+      { id: "MOD-052", status: "ACTIVE", product_id: "PROD-201" },
+    ];
+    const reversed = [conflicted[1], conflicted[0], conflicted[2]];
+
+    const resultA = buildStandaloneToppingProductLinks(conflicted);
+    const resultB = buildStandaloneToppingProductLinks(reversed);
+
+    expect(resultA).toEqual(new Map([["PROD-201", "MOD-052"]]));
+    expect(resultB).toEqual(resultA);
+  });
 });

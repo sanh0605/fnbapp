@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, insert, update, generateNewId } from "@/lib/db/tables";
+import { findAll, insert, update, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -67,6 +67,12 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
       });
     }
 
+    // Opus code review, 2026-09-08 (finding 2): Modifiers.product_id now
+    // drives both the P&L/sales report merge and the POS quick-add
+    // exclusion (Task 5) -- a stale Modifiers cache is a stale link, not
+    // just a stale name/price. revalidatePath(PATH) below does not clear
+    // this tag-keyed cache (established fact, see the plan's Caches note).
+    revalidateTag(getCacheTag("Modifiers"));
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -83,6 +89,7 @@ export async function deleteModifierAction(formData: FormData): Promise<ActionRe
 
   try {
     await update(MODIFIER_SHEET, id, { status: "DELETED" });
+    revalidateTag(getCacheTag("Modifiers"));
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

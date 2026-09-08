@@ -16,11 +16,12 @@ vi.mock("@/lib/db/tables", () => ({
   insert: mocks.insert,
   update: mocks.update,
   generateNewId: mocks.generateNewId,
+  getCacheTag: (sheetName: string) => `sheets-${sheetName}`,
 }));
 vi.mock("@/lib/products/topping-price-sync", () => ({ syncToppingPriceAtomic: mocks.syncToppingPriceAtomic }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: mocks.revalidateTag }));
 
-import { getModifiersData, saveModifierAction } from "./actions";
+import { getModifiersData, saveModifierAction, deleteModifierAction } from "./actions";
 
 // section 5: both required tests. The second guards against the fix
 // becoming "throw on empty" -- a different bug wearing the same diff.
@@ -99,5 +100,66 @@ describe("saveModifierAction edit path", () => {
 
     expect(result.success).toBeFalsy();
     expect(result.error).toBeTruthy();
+  });
+
+  // Opus code review, 2026-09-08 (finding 2): nothing in the repo ever
+  // revalidated sheets-Modifiers, which was harmless staleness while
+  // nothing structural read Modifiers.product_id. Task 5 made both the
+  // report merge and POS quick-add exclusion read it, and Task 2's
+  // create-and-link path is about to become a third writer -- so a stale
+  // Modifiers cache now means a stale link, not just a stale name/price.
+  it("revalidates the Modifiers cache tag after a synced edit", async () => {
+    mocks.syncToppingPriceAtomic.mockResolvedValue({
+      modifierId: "MOD-002", variantId: "VAR-030", priceHistory: [],
+    });
+
+    await saveModifierAction(editFormData());
+
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+  });
+});
+
+describe("saveModifierAction new-modifier path", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.generateNewId.mockResolvedValue("MOD-099");
+  });
+
+  function newFormData(overrides: Record<string, string> = {}) {
+    const fd = new FormData();
+    fd.set("is_edit", "false");
+    fd.set("name", "Trân châu đen");
+    fd.set("group_name", "Thêm Topping");
+    fd.set("price", "5000");
+    for (const [k, v] of Object.entries(overrides)) fd.set(k, v);
+    return fd;
+  }
+
+  it("revalidates the Modifiers cache tag after creating a new modifier", async () => {
+    mocks.insert.mockResolvedValue(undefined);
+
+    const result = await saveModifierAction(newFormData());
+
+    expect(result.success).toBe(true);
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+  });
+});
+
+describe("deleteModifierAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("revalidates the Modifiers cache tag after a delete", async () => {
+    mocks.update.mockResolvedValue(undefined);
+    const fd = new FormData();
+    fd.set("id", "MOD-002");
+
+    const result = await deleteModifierAction(fd);
+
+    expect(result.success).toBe(true);
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
   });
 });
