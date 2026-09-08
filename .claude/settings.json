@@ -29,6 +29,8 @@
       "Bash(npx tsx scripts/diagnose-*)",
       "Bash(npx vite-node scripts/audit-*)",
       "Bash(npx vite-node scripts/verify-*)",
+      "Bash(npx vite-node scripts/check-*)",
+      "Bash(npx vite-node scripts/doc-checks/*)",
       "Bash(npx supabase migration list *)",
       "Bash(npx supabase --version)",
       "Edit(.claude/**)",
@@ -64,7 +66,6 @@
       "Bash(npx tsx scripts/probe-*)",
       "Bash(npx tsx scripts/capture-*)",
       "Bash(npx tsx scripts/benchmark-*)",
-      "Bash(git push *)",
       "Bash(git push)",
       "Bash(rm *)",
       "Bash(npx vercel *)",
@@ -107,6 +108,18 @@
       {
         "hooks": [
           { "type": "command", "command": "sh .claude/hooks/session-start.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh .claude/hooks/stop-gates.sh",
+            "timeout": 180,
+            "statusMessage": "Chay cua tsc + vitest..."
+          }
         ]
       }
     ]
