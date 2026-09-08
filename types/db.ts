@@ -305,3 +305,51 @@ export interface DBPriceHistory {
   effective_at: string;
   created_at: string;
 }
+
+export interface DBCashCategory {
+  id: string;
+  name: string;
+  kind: "EXPENSE" | "INCOME";
+  affects_pnl: boolean;
+  status: "ACTIVE" | "INACTIVE";
+  created_at: string;
+  created_by_id: string | null;
+  created_by_name: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
+}
+
+export interface DBBankAccount {
+  id: string;
+  name: string;
+  bank_name: string | null;
+  account_number: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  created_at: string;
+  created_by_id: string | null;
+  created_by_name: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
+}
+
+export interface DBCashEntry {
+  id: string;
+  // "YYYY-MM-DD" -- Postgres date: no time, no zone.
+  entry_date: string;
+  category_id: string;
+  // VND has no minor unit; this is a whole number of dong.
+  amount: number;
+  payment_method: "CASH" | "BANK_TRANSFER";
+  bank_account_id: string | null;
+  payer: string | null;
+  note: string | null;
+  status: "ACTIVE" | "CANCELLED";
+  created_at: string;
+  created_by_id: string | null;
+  created_by_name: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
+}
