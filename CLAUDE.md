@@ -101,9 +101,8 @@ Mọi kế hoạch mở đầu bằng mục hiện trạng, năm câu đánh s�
 
 Một câu trả lời chỉ duyệt một việc. "Chạy migration và đẩy không?" mà nhận "đẩy đi" thì chỉ được đẩy.
 
-**Mấy lệnh trên gõ bằng công cụ Bash, không phải PowerShell** — luật xin phép viết dạng
-`Bash(git push *)` nên chỉ khớp Bash; qua PowerShell là bị từ chối thẳng, chủ quán không
-thấy hộp thoại. Bị từ chối thì đổi công cụ, đừng kết luận máy cấm, đừng nhờ phiên khác chạy.
+Mấy lệnh trên gõ bằng công cụ Bash, không phải PowerShell. Bị từ chối thì đổi công cụ,
+không nhờ phiên khác chạy.
 
 ## Luật dữ liệu
 
