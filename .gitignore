@@ -110,3 +110,10 @@ fnbapp-monthly-*.json
 
 # per-session working files, never part of the repo
 /scratchpad/
+
+# compiled Python bytecode -- the ui-ux-pro-max skill ships .py scripts, and
+# running them leaves machine- and version-specific artifacts (cpython-312)
+# that churn on every run and conflict between machines. The .py sources are
+# tracked; their build output is not.
+__pycache__/
+*.pyc
