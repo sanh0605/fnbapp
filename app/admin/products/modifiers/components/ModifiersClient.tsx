@@ -107,7 +107,10 @@ export default function ModifiersClient({ modifiers, toppings }: ModifiersClient
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end items-center gap-1">
-                        <ModifierForm initialData={m} />
+                        <ModifierForm
+                          initialData={m}
+                          productStatus={m.product_id ? productStatusById.get(m.product_id) : undefined}
+                        />
                         <DeleteModifierButton id={m.id} name={m.name} onDeleted={() => router.refresh()} />
                       </div>
                     </td>

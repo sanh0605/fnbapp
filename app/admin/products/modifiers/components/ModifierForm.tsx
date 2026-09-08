@@ -8,12 +8,16 @@ import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Button } from "@/components/ui/Button";
 import { Plus } from "lucide-react";
 import type { DBModifier } from "@/types/db";
+import { StandaloneToppingSwitch } from "./StandaloneToppingSwitch";
 
 interface ModifierFormProps {
   initialData?: DBModifier;
+  // Current status of initialData.product_id, when linked -- passed down
+  // from ModifiersClient's own toppings lookup rather than re-fetched here.
+  productStatus?: string;
 }
 
-export function ModifierForm({ initialData }: ModifierFormProps) {
+export function ModifierForm({ initialData, productStatus }: ModifierFormProps) {
   const formId = useId();
   const router = useRouter();
   const isEdit = !!initialData;
@@ -133,6 +137,35 @@ export function ModifierForm({ initialData }: ModifierFormProps) {
               placeholder="VD: Trân châu trắng, Size L..."
             />
           </div>
+
+          {/* docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 3.
+              Its own labelled section, visually separated -- this switch
+              fires its own independent action on click, never bundled into
+              the Cập nhật submit above. Hủy below closes the modal but does
+              NOT undo a switch already flipped in this session; the caption
+              says so instead of leaving the owner to find out by clicking
+              Hủy and reopening. Only for an existing modifier in the
+              Thêm Topping group -- StandaloneToppingSwitch itself renders
+              null outside that group (state d), and a modifier not yet
+              saved has no id to link anything to. */}
+          {isEdit && initialData!.group_name === "Thêm Topping" && (
+            <div className="pt-4 mt-2 border-t border-border flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium text-text-primary">Bán độc lập</div>
+                <div className="text-xs text-text-muted mt-0.5">
+                  Bật/tắt áp dụng ngay, không cần bấm Cập nhật. Bấm Hủy không huỷ được thao tác này.
+                </div>
+              </div>
+              <StandaloneToppingSwitch
+                modifierId={initialData!.id}
+                modifierName={initialData!.name}
+                groupName={initialData!.group_name}
+                price={initialData!.price}
+                productId={initialData!.product_id}
+                productStatus={productStatus}
+              />
+            </div>
+          )}
         </form>
       </FormModal>
     </>
