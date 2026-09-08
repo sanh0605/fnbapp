@@ -69,7 +69,7 @@ bảng này giữ cả hai bên.
 | `kind` | text | `EXPENSE` = Chi, `INCOME` = Thu |
 | `affects_pnl` | boolean | có tính vào lãi lỗ hay không |
 | `status` | text | `ACTIVE` = Đang dùng, `INACTIVE` = Ngừng dùng |
-| `created_at` `created_by` `updated_at` `updated_by` | | bốn cột dấu vết, xem mục dưới |
+| dấu vết | | ngày tạo, người tạo, ngày sửa, người sửa — xem mục dưới |
 
 `affects_pnl` có mặt vì chủ quán nói rõ: bên Thu sẽ có nhiều khoản không
 phải doanh thu, giờ chưa liệt kê hết được. Vốn góp là khoản đầu tiên như
@@ -100,7 +100,7 @@ nhập mới không còn thấy nó.
 | `bank_name` | text | tên ngân hàng |
 | `account_number` | text | số tài khoản |
 | `status` | text | `ACTIVE` / `INACTIVE` |
-| `created_at` `created_by` `updated_at` `updated_by` | | bốn cột dấu vết, xem mục dưới |
+| dấu vết | | ngày tạo, người tạo, ngày sửa, người sửa — xem mục dưới |
 
 Là bảng chứ không phải ô gõ tay, vì lý do y hệt nhóm thu chi: gõ tay thì
 "Vietcombank" và "VCB" thành hai tài khoản khác nhau trong báo cáo mà
@@ -119,7 +119,7 @@ không ai thấy.
 | `payer` | text, cho rỗng | người chi; đợt này để trống, chưa dùng tới |
 | `note` | text, cho rỗng | |
 | `status` | text | `ACTIVE` = Đang dùng, `CANCELLED` = Đã huỷ |
-| `created_at` `created_by` `updated_at` `updated_by` | | bốn cột dấu vết, xem mục dưới |
+| dấu vết | | ngày tạo, người tạo, ngày sửa, người sửa — xem mục dưới |
 
 Không có cột "thu hay chi". Nhóm đã biết nó thuộc bên nào, thêm một cột
 nữa là mở đường cho hai chỗ nói ngược nhau.
@@ -129,25 +129,41 @@ Hai ràng buộc máy tự canh:
 - `payment_method = 'BANK_TRANSFER'` thì bắt buộc có `bank_account_id`.
 - `payment_method = 'CASH'` thì `bank_account_id` bắt buộc rỗng.
 
-## Bốn cột dấu vết
+## Dấu vết: ai tạo, ai sửa, lúc nào
 
 Chủ quán chốt ngày 2026-09-08: bảng nào cũng phải biết ai tạo lúc nào, ai
-sửa lúc nào. Cả ba bảng mới đều mang đủ bốn cột:
+sửa lúc nào. Cả ba bảng mới đều mang đủ.
 
-| Cột | Kiểu | Ghi chú |
+Trong máy là sáu cột chứ không phải bốn, vì "người" lưu cả mã lẫn tên —
+đúng lối kho này đã dùng ở đơn nhập hàng và phiếu điều chỉnh kho:
+
+| Cột | Kiểu | Ai đặt |
 |---|---|---|
-| `created_at` | timestamptz | mặc định `now()`, không bao giờ đổi |
-| `created_by` | text | khoá ngoại `users`, đặt một lần lúc tạo |
-| `updated_at` | timestamptz | mỗi lần sửa máy tự đặt lại |
-| `updated_by` | text | khoá ngoại `users`, mỗi lần sửa đặt lại |
+| `created_at` | timestamptz | máy, mặc định `now()`, không bao giờ đổi |
+| `created_by_id` | text | code, lúc tạo |
+| `created_by_name` | text | code, lúc tạo |
+| `updated_at` | timestamptz | máy, trigger đặt lại mỗi lần sửa |
+| `updated_by_id` | text | code, mỗi lần sửa |
+| `updated_by_name` | text | code, mỗi lần sửa |
 
-Máy tự đặt bằng trigger, không để code gọi nhớ đặt — quên một chỗ là dấu
-vết thủng một chỗ. Lối này đã có sẵn trong kho: `trg_stocktake_sessions_touch`
-ở `supabase/migrations/0036_stocktake_sessions.sql` làm đúng như vậy cho
-`updated_at`.
+Lưu thêm tên chứ không chỉ mã vì tài khoản người dùng xoá hẳn được. Xoá
+rồi mà chỉ có mã thì dòng sổ cũ chỉ còn một chuỗi vô nghĩa; có tên thì
+vẫn đọc được ai đã ghi. Cũng vì vậy hai cột mã này **không** đặt khoá
+ngoại sang bảng người dùng — đặt vào là chặn luôn việc xoá tài khoản.
 
-Với 54 dòng nạp từ Sheet: người tạo và người sửa đặt là tài khoản `ADMIN`,
-ngày tạo lấy đúng ngày ghi trong Sheet.
+Ngày thì máy tự đặt: `created_at` mặc định `now()`, `updated_at` do
+trigger `touch_updated_at()` đã có sẵn trong kho đặt lại
+(`supabase/migrations/0001_init_schema.sql`, dùng lại ở
+`0036_stocktake_sessions.sql`).
+
+Người thì code phải tự đặt, trigger làm không được: app nối vào máy chủ
+bằng một khoá dùng chung cho cả hệ thống, nên phía máy chủ không biết ai
+đang thao tác. Chỉ tầng code, sau khi kiểm đăng nhập, mới biết. Vì vậy
+mỗi hàm ghi phải tự lấy người từ `resolveActor()` và có phép kiểm canh
+đúng chỗ đó.
+
+Với 54 dòng nạp từ Sheet: người tạo và người sửa ghi là tài khoản `ADMIN`
+đang có, ngày tạo lấy đúng ngày ghi trong Sheet.
 
 ## Huỷ và xoá
 
@@ -249,4 +265,4 @@ là việc phải chủ quán duyệt riêng.
   500 triệu/năm, một nguồn ghi 1 tỷ/năm. Chưa tra ra bên nào đúng. Phải
   chốt trước khi làm báo cáo phục vụ khai thuế.
 - Ba mươi chín bảng cũ mới có 6 bảng biết người tạo và 0 bảng biết người
-  sửa. Gắn đủ bốn cột dấu vết cho bảng cũ là một đợt riêng.
+  sửa. Gắn đủ dấu vết cho bảng cũ là một đợt riêng.
