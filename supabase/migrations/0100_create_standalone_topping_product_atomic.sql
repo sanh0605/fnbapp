@@ -48,6 +48,38 @@
 -- size_name = '1 phần' for the new variant: the real convention measured
 -- 2026-09-08 across all 7 currently-linked standalone toppings, every one
 -- of which uses that exact string for its single ACTIVE variant.
+--
+-- Peer review (Opus, 2026-09-08), two findings fixed before this migration
+-- was ever run:
+--
+-- 1. The new variant now gets its own product_price_history row (the
+-- launch price), same as save_product_atomic's new-variant path and
+-- sync_topping_price_atomic's every-change path -- both siblings record
+-- price history; this one did not. Without it, the món's very first price
+-- has no record, and 0098's first later edit through it would insert a
+-- history row whose "old price" has nothing before it to compare against.
+--
+-- 2. products carries a table-wide unique index on the ACTIVE name
+-- (`ux_products_active_name`, 0065_duplicate_name_guard.sql) -- BR-CATALOG-001
+-- level 1. Without a guard here, a name collision (not reachable today:
+-- checked, none of the 8 non-DELETED modifier names collide with any of the
+-- 47 products) would raise a raw 23505 instead of a message this function's
+-- caller can translate. Fixed by catching unique_violation on the insert and
+-- re-raising in the same style as the other four guards.
+--
+-- BR-CATALOG-001 level 2 (the diacritic-stripped near-match warning,
+-- `findDiacriticStrippedMatch` + duplicate_warning_confirmed) is
+-- deliberately NOT wired into this path -- flagged as an open question
+-- back to the plan's author rather than silently decided. Reasoning for the
+-- omission: level 2 needs a human answer mid-flow ("đây có phải là một mặt
+-- hàng khác không?"), which on every other products-writing screen is a
+-- second round trip in a multi-field form. This RPC is called from a single
+-- switch-and-confirm interaction with no form to hold a second prompt, and
+-- its input name is not free text -- it is copied verbatim from an already-
+-- named modifier row (8 total today), a far smaller and more curated source
+-- than the free-text product name field level 2 was built to catch. If the
+-- owner wants level 2 here too, that is a UX addition to design, not a
+-- one-line fix, and belongs in its own task.
 
 create or replace function public.create_standalone_topping_product_atomic(
   p_modifier_id text
@@ -65,8 +97,10 @@ declare
   v_existing_product_id text;
   v_next_product integer;
   v_next_variant integer;
+  v_next_history integer;
   v_product_id text;
   v_variant_id text;
+  v_pph_id text;
 begin
   if p_modifier_id is null or btrim(p_modifier_id) = '' then
     raise exception 'p_modifier_id is required';
@@ -99,6 +133,7 @@ begin
 
   perform pg_advisory_xact_lock(hashtext('products:id'));
   perform pg_advisory_xact_lock(hashtext('product_variants:id'));
+  perform pg_advisory_xact_lock(hashtext('product_price_history:id'));
 
   select coalesce(max(substring(id from '^PROD-([0-9]+)$')::integer), 0) + 1
   into v_next_product
@@ -112,16 +147,35 @@ begin
   where id ~ '^VAR-[0-9]+$';
   v_variant_id := 'VAR-' || lpad(v_next_variant::text, 3, '0');
 
-  insert into public.products (
-    id, category_id, name, image_url, status, created_at, updated_at
-  ) values (
-    v_product_id, 'CAT-007', v_name, '', 'ACTIVE', now(), now()
-  );
+  select coalesce(max(substring(id from '^PPH-([0-9]+)$')::integer), 0) + 1
+  into v_next_history
+  from public.product_price_history
+  where id ~ '^PPH-[0-9]+$';
+  v_pph_id := 'PPH-' || lpad(v_next_history::text, 3, '0');
+
+  begin
+    insert into public.products (
+      id, category_id, name, image_url, status, created_at, updated_at
+    ) values (
+      v_product_id, 'CAT-007', v_name, '', 'ACTIVE', now(), now()
+    );
+  exception
+    when unique_violation then
+      raise exception
+        'Product name "%" already exists among ACTIVE products -- refusing to create a duplicate',
+        v_name;
+  end;
 
   insert into public.product_variants (
     id, product_id, size_name, price, status, created_at, updated_at
   ) values (
     v_variant_id, v_product_id, '1 phần', v_price, 'ACTIVE', now(), now()
+  );
+
+  insert into public.product_price_history (
+    id, variant_id, old_price, new_price, effective_at, created_at
+  ) values (
+    v_pph_id, v_variant_id, null, v_price, now(), now()
   );
 
   update public.modifiers

@@ -14,13 +14,20 @@ plan `docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md`, migration
 active flag. On a modifier with no linked product yet (`MOD-009` today), the
 same switch now asks for confirmation and, if confirmed, creates the
 `CAT-007` product, its single `"1 phần"` variant priced at the modifier's own
-price, and the `modifiers.product_id` link — one transaction
+price, that price's launch `product_price_history` row, and the
+`modifiers.product_id` link — one transaction
 (`lib/products/create-standalone-topping.ts` calling
 `create_standalone_topping_product_atomic`), or none of it. The RPC re-checks
 under the modifier row's own lock that it is `ACTIVE`, still unlinked, in the
 *Thêm Topping* group, and priced above zero, so a stale client render (a
-second tab, a double click) can never create a duplicate product. Editing the
-name/price of an already-standalone topping still goes through
+second tab, a double click) can never create a duplicate product; it also
+refuses a name collision with an existing `ACTIVE` product
+(`ux_products_active_name`, `BR-CATALOG-001` level 1) rather than letting a
+raw database error through. Level 1 only — the near-duplicate warning level 2
+uses elsewhere on this flow is deliberately not wired into this single
+switch-and-confirm interaction; see the migration's own header for why, and
+treat it as an open design question if the owner wants it here too. Editing
+the name/price of an already-standalone topping still goes through
 `sync_topping_price_atomic` (migration `0098`) as described below — this is
 only the *first* link, made once.
 
@@ -124,9 +131,10 @@ modifier); `Products` (`app/admin/products/toppings/actions.ts`);
 `modifiers`, `product_variants`, `product_price_history`
 (`lib/products/topping-price-sync.ts`, called by
 `app/admin/products/modifiers/actions.ts` on an edit — the price sync
-described above); and `products`, `product_variants`, `modifiers`
-(`lib/products/create-standalone-topping.ts`, called by the same file's new
-`createStandaloneToppingAction` — the first-link RPC described above).
+described above); and `products`, `product_variants`, `product_price_history`,
+`modifiers` (`lib/products/create-standalone-topping.ts`, called by the same
+file's new `createStandaloneToppingAction` — the first-link RPC described
+above).
 
 **Two casings, one table.** `Products`/`products` and
 `Product_Variants`/`product_variants` are each the same physical table seen

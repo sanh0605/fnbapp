@@ -60,6 +60,7 @@ lib/products/topping-price-sync.ts -> modifiers (write)
 lib/products/topping-price-sync.ts -> product_price_history (write)
 lib/products/topping-price-sync.ts -> product_variants (write)
 lib/products/create-standalone-topping.ts -> modifiers (write)
+lib/products/create-standalone-topping.ts -> product_price_history (write)
 lib/products/create-standalone-topping.ts -> product_variants (write)
 lib/products/create-standalone-topping.ts -> products (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
@@ -104,8 +105,9 @@ issue).
 and `product_price_history` (a topping's price, synced to its linked
 product in one transaction, `BR-CATALOG-003`).
 `lib/products/create-standalone-topping.ts` writes `products`,
-`product_variants`, and `modifiers` (the first link: mints the standalone
-product and variant for an unlinked topping, `BR-CATALOG-003`).
+`product_variants`, `product_price_history`, and `modifiers` (the first
+link: mints the standalone product, its launch-price history row, and the
+variant for an unlinked topping, `BR-CATALOG-003`).
 
 **Inventory catalog.** `app/admin/inventory/actions.ts` writes `Purchased_Items`,
 `Item_Categories`, `Units`, `UOM_Conversions`, and `Purchase_Order_Lines`.
