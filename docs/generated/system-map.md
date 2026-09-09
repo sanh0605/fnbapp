@@ -6,7 +6,8 @@ Do not edit by hand. Regenerate with `vite-node scripts/system-map/generate.ts`.
 ```relations
 app/actions/auth.ts -> users (write)
 app/admin/brands/actions.ts -> Brands (write)
-app/admin/finance/bank-accounts/actions.ts -> bank_accounts (write)
+app/admin/finance/actions.ts -> Cash_Entries (write)
+app/admin/finance/bank-accounts/actions.ts -> Bank_Accounts (write)
 app/admin/finance/categories/actions.ts -> Cash_Categories (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)

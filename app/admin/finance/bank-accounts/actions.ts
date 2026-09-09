@@ -9,7 +9,7 @@ import { creationAudit, updateAudit } from "@/lib/finance/audit-columns";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 import type { DBBankAccount } from "@/types/db";
 
-const SHEET = "bank_accounts";
+const SHEET = "Bank_Accounts";
 const PATH = "/admin/finance/bank-accounts";
 
 export async function getBankAccounts(): Promise<DBBankAccount[]> {

@@ -1,84 +1,83 @@
 # Cash book flow (sổ thu chi)
 
 ```flow-decl
-routes: /admin/finance/categories, /admin/finance/bank-accounts
-files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, lib/finance/audit-columns.ts
-tables: Cash_Categories, bank_accounts
+routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance
+files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts
+tables: Cash_Categories, Bank_Accounts, Cash_Entries
 brCodes: BR-ACCESS-003
 ```
 
-This doc covers the two management screens built so far: the cash-category
-(nhóm thu chi) screen, task 4 of the plan at
-`docs/superpowers/plans/2026-09-08-so-thu-chi.md`, and the bank-account (tài
-khoản ngân hàng) screen, task 5 of the same plan. The full cash book also
-covers the cash-entry ledger itself
-(`docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`); that table
-(`cash_entries`) already exists as of migration `0101` but has no screen yet,
-so this doc's `flow-decl` intentionally does not declare it until a later
-task adds the code that writes it.
+This doc covers all three cash-book screens: the cash-category (nhóm thu chi)
+screen, task 4 of the plan at `docs/superpowers/plans/2026-09-08-so-thu-chi.md`;
+the bank-account (tài khoản ngân hàng) screen, task 5; and the cash-entry
+ledger itself (sổ thu chi, task 6, the main screen the other two feed) — spec
+at `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`. This is
+deliberately not an accounting system: no ledger, no double-entry, no
+running balance.
 
 ## Five-question current-state description
 
-The two screens (cash categories, bank accounts) are structurally identical
-and deliberately not merged into a shared abstraction — categories will grow
-an "affects P&L" flag, accounts a bank name and account number — so each
-question below answers for both screens separately where they differ.
+The three screens are structurally different (two settings screens, one
+ledger), so each question below answers for the ledger screen first, then
+the two settings screens where they still apply.
 
-1. **States, and how each is set.** Both a category and a bank account have
-   one status: `ACTIVE` or `INACTIVE`, set at creation (`ACTIVE`) and changed
-   only by `setCashCategoryStatus` / `setBankAccountStatus`, which the owner
-   reaches through the "Ngừng dùng" / "Dùng lại" button. Neither has a draft
-   or approval step — a row is either in use or retired.
+1. **States, and how each is set.** A cash entry has one status, `ACTIVE` or
+   `CANCELLED`, set at creation (`ACTIVE`) and moved to `CANCELLED` only by
+   `cancelCashEntry` — there is no "un-cancel". A category or bank account
+   has `ACTIVE`/`INACTIVE`, changed by `setCashCategoryStatus` /
+   `setBankAccountStatus`. None of the three has a draft or approval step.
 
-2. **Buttons per screen, and when to hide them.** Both screens offer add,
-   edit, retire/reinstate (all `requireAdmin`, i.e. ADMIN or MANAGER), and a
-   permanent delete button gated on `requireOwner` (ADMIN only,
-   `BR-ACCESS-003`) — the page only renders that button when the signed-in
-   actor's role is `ADMIN`. Retire is the ordinary way to stop using a row;
-   delete is a hard row removal blocked by Postgres (`ON DELETE RESTRICT`
-   from `cash_entries`) the moment any entry already points at it.
+2. **Buttons per screen, and when to hide them.** The ledger offers add,
+   edit and cancel (`requireAdmin`, i.e. ADMIN or MANAGER) and a permanent
+   delete gated on `requireOwner` (ADMIN only, `BR-ACCESS-003`) — rendered
+   only when the signed-in actor's role is `ADMIN`. Edit and cancel are
+   hidden on a row already `CANCELLED` (`updateCashEntry` itself also
+   refuses with "Dòng đã huỷ, không sửa được"); delete stays available on a
+   cancelled row too, so ADMIN can still remove a mistaken entry outright.
+   The two settings screens offer add, edit, retire/reinstate
+   (`requireAdmin`) and the same ADMIN-only permanent delete.
 
-3. **What each list contains, and what is excluded.** Each list shows every
-   row of its own table, both `ACTIVE` and `INACTIVE` — nothing is hidden
-   from the admin screen itself, only from whatever picker a later task
-   builds for entering a cash-book line (which will offer `ACTIVE` rows
-   only).
+3. **What each list contains, and what is excluded.** The ledger reads one
+   date range at a time (`getCashEntries(start, end)`, filtered server-side
+   on `entry_date`, both `ACTIVE` and `CANCELLED` rows shown — a cancelled
+   row stays visible with a badge, it just drops out of the totals). The two
+   settings screens show every row of their own table regardless of status;
+   only the ledger's own add/edit form narrows their pickers to `ACTIVE`
+   rows (plus the row's own category/account if it has since been retired,
+   so opening an old entry to edit never silently drops its group).
 
-4. **Valid inputs, and what happens outside the range.** For categories:
-   `name` is required and trimmed; `kind` is `EXPENSE` or `INCOME` (anything
-   else posted falls back to `EXPENSE`); `affects_pnl` is a checkbox, on by
-   default. For bank accounts: `name` is required and trimmed; `bank_name`
-   and `account_number` are both optional free text, trimmed, and stored as
-   `null` (not an empty string) when left blank. In both tables, two `ACTIVE`
-   rows may not share a `name` — compared via `findDuplicateActiveName`
-   (`lib/shared/duplicate-name-guard.ts`, the same helper `app/admin/inventory`,
-   `app/admin/products` and `app/admin/suppliers` already use), which
-   lower-cases, NFC-normalises, folds a non-breaking space and collapses
-   internal whitespace before comparing. The app returns a Vietnamese message
-   naming the conflicting row before the row ever reaches Postgres's own
-   partial unique index (migration `0101`, the same normalising expression as
-   migration `0065`'s catalogue-table indexes, `idx_cash_categories_active_name`
-   and `idx_bank_accounts_active_name`), which stays as the backstop for a
-   race between two concurrent saves. Only the level-1 outright refusal
-   applies to either screen — the level-2 diacritic-stripped warn-and-confirm
-   flow (`findDiacriticStrippedMatch`) is out of scope; the owner keeps about
-   five categories and a handful of accounts.
+4. **Valid inputs, and what happens outside the range.** The ledger's six
+   fields go through one shared rule, `parseCashEntry`
+   (`lib/finance/cash-entry-rules.ts`): `entry_date` and `category_id`
+   required; `amount` must be a positive whole number of đồng (no minor
+   unit — "1500.5" is refused, not rounded); `payment_method` is `CASH` or
+   `BANK_TRANSFER`; `bank_account_id` is required when `BANK_TRANSFER` and
+   forced to `null` for `CASH` even if a stale value arrives from the form;
+   `note` is optional. The two settings screens' input rules are unchanged
+   from tasks 4 and 5 (see their own history for the duplicate-name guard).
 
-5. **Which data it serves, and which it deliberately does not.** Categories
-   serve only the grouping the owner files a cash-book line under; bank
-   accounts serve only which account a transfer went through. Neither holds
-   an amount and neither is itself money in or out. `getCashCategories()` and
-   `getBankAccounts()` are the read paths a later task's entry-picker calls.
+5. **Which data it serves, and which it deliberately does not.** The ledger
+   serves money the owner physically paid out (chi), other money he
+   received that is not a sale (thu khác), and capital he put in himself
+   (vốn góp) — never a POS sale, which the sales/orders flow already
+   records. `summariseEntries` (also in `cash-entry-rules.ts`) turns a page
+   of entries into `totalExpense`, `totalIncome` and `incomeOutsidePnl`
+   (capital contributions and similar `affects_pnl: false` income) —
+   deliberately three separate numbers, never netted into one, so the
+   screen never implies a false "extra profit" figure by adding money that
+   is not revenue.
 
 ## Where it writes
 
-`app/admin/finance/categories/actions.ts` writes `cash_categories`, and
-`app/admin/finance/bank-accounts/actions.ts` writes `bank_accounts`, both
-through the `lib/db/tables.ts` adapter (`findAll`/`insert`/`update`/`remove`,
-sheet names `Cash_Categories` and `bank_accounts` respectively, lowercased at
-that layer to the real table name). The created/updated person columns come
-from `lib/finance/audit-columns.ts` (`creationAudit`/`updateAudit`), not from
-Postgres — the server holds one shared service-role connection and does not
-know who is acting.
+`app/admin/finance/categories/actions.ts` writes `Cash_Categories`,
+`app/admin/finance/bank-accounts/actions.ts` writes `Bank_Accounts`, and
+`app/admin/finance/actions.ts` writes `Cash_Entries` — all three through the
+`lib/db/tables.ts` adapter (`findAll`/`findAllWhere`/`findById`/`insert`/`update`/`remove`,
+lowercased at that layer to the real table name). The created/updated person
+columns come from `lib/finance/audit-columns.ts` (`creationAudit`/`updateAudit`),
+not from Postgres — the server holds one shared service-role connection and
+does not know who is acting; `addCashEntry`/`updateCashEntry`/`cancelCashEntry`
+spread these in themselves, since the generic `createEntity`/`updateEntity`
+helpers in `lib/db/shared-actions.ts` only stamp `created_at`.
 
 > Measured against source: 2026-09-09.

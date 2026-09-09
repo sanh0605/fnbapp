@@ -1,5 +1,3 @@
-// orphan-allow: pure logic layer for the cash book (so-thu-chi plan, task 2 of 9);
-// server actions in a later task import parseCashEntry/summariseEntries.
 import type { DBCashCategory, DBCashEntry } from "@/types/db";
 
 export interface CashEntryInput {

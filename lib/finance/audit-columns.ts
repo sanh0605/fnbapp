@@ -1,5 +1,3 @@
-// orphan-allow: pure logic layer for the cash book (so-thu-chi plan, task 2 of 9);
-// server actions in a later task import creationAudit/updateAudit.
 import type { AuthActor } from "@/lib/auth/auth";
 
 export interface AuditCreateColumns {
