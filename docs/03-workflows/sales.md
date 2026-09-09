@@ -49,11 +49,17 @@ and they run through the `void_order_atomic` database function called from
    and edit on a live order; void and edit should not be offered on a row that is
    already `SUPERSEDED` or already voided, since acting on a stale version would
    fork the order's history. `/admin/promotions` creates, edits, deactivates, and
-   deletes promotions; a promotion already referenced by historical orders is
-   deactivated, not hard-deleted, so past orders keep explaining their own
-   totals. Delete is ADMIN-only per `BR-ACCESS-003` (owner decision 2026-09-08,
-   `requireOwner`), with the button hidden for anyone else (`canDelete` computed
-   from `resolveActor()` in `page.tsx`).
+   deletes promotions. Delete is ADMIN-only per `BR-ACCESS-003` (owner decision
+   2026-09-08, `requireOwner`), with the button hidden for anyone else
+   (`canDelete` computed from `resolveActor()` in `page.tsx`). Measured
+   2026-09-09: that delete is unconditional — `deletePromotionAction` checks no
+   references first, and no foreign key points at `promotions` from the order
+   tables, so a promotion used by historical orders can be destroyed. Past
+   totals still explain themselves because each order carries its own
+   `applied_promotion_snapshot_json`; what is lost is the ability to look the
+   promotion up by id. An earlier version of this paragraph claimed such a
+   promotion is deactivated rather than deleted. That was never true of the
+   code.
 3. **What each list contains, and what is excluded.** `/admin/orders` shows
    orders; revenue and audit views over it must filter to the live version only —
    `status = 'COMPLETED'` **and** `superseded_by` empty — or the same sale is
