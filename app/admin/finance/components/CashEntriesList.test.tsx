@@ -1,8 +1,14 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { render, screen, cleanup, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { CashEntriesList } from "./CashEntriesList";
 import type { DBCashCategory, DBCashEntry } from "@/types/db";
+
+// CashEntriesList calls useRouter().refresh() after a cancel/delete write --
+// same pattern as app/admin/inventory/assets/components/AssetCard.test.tsx.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 afterEach(cleanup);
 
@@ -28,7 +34,8 @@ const props = { entries, categories, accounts: [], canDelete: false };
 describe("CashEntriesList", () => {
   it("shows a cancelled row rather than hiding it", () => {
     render(<CashEntriesList {...props} />);
-    expect(screen.getAllByText("Đã huỷ").length).toBe(1);
+    const table = within(screen.getByRole("table"));
+    expect(table.getAllByText("Đã huỷ").length).toBe(1);
   });
 
   it("keeps the cancelled amount out of the totals", () => {
@@ -54,8 +61,9 @@ describe("CashEntriesList", () => {
 
   it("shows ADMIN a delete button on every row, and cancel only on live rows", () => {
     render(<CashEntriesList {...props} canDelete={true} />);
-    expect(screen.getAllByRole("button", { name: /xoá hẳn/i }).length).toBe(3);
-    expect(screen.getAllByRole("button", { name: /^huỷ$/i }).length).toBe(2);
+    const table = within(screen.getByRole("table"));
+    expect(table.getAllByRole("button", { name: /xoá hẳn/i }).length).toBe(3);
+    expect(table.getAllByRole("button", { name: /^huỷ$/i }).length).toBe(2);
   });
 
   it("says so plainly when the range holds nothing", () => {

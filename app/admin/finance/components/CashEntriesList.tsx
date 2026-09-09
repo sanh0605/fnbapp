@@ -35,11 +35,6 @@ const KIND_LABEL: Record<DBCashCategory["kind"], string> = {
   INCOME: "Thu",
 };
 
-// Desktop columns line up with this template; mobile ignores it entirely
-// (grid-cols-1) and relies on the per-field `order-*` classes below instead.
-const ROW_GRID =
-  "grid grid-cols-1 gap-1 md:grid-cols-[100px_140px_60px_120px_110px_140px_1fr_110px_110px_170px] md:items-center md:gap-4";
-
 function display(value: string | null): string {
   return value && value.length > 0 ? value : "—";
 }
@@ -62,49 +57,10 @@ function StatusBadge({ status }: { status: DBCashEntry["status"] }) {
   );
 }
 
-// Renders as a real desktop table column (comparable by eye) and as a
-// mobile label-value line, from the SAME element -- not a second copy --
-// so the row's one status badge and one set of action buttons never render
-// twice (.claude/rules/ui-devices.md: two intentional layouts, not one
-// generic stretch, achieved here through per-field order rather than a
-// duplicated subtree).
-// Tailwind's class scanner needs each order-N literal spelled out in source
-// (it cannot see a value built by string interpolation), so `orderClass`
-// takes the whole class name, not a bare number.
-function Field({
-  label,
-  orderClass,
-  className,
-  children,
-}: {
-  label: string;
-  orderClass: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div role="cell" className={`${orderClass} md:order-none ${className ?? ""}`}>
-      <span className="md:hidden text-text-muted">{label}: </span>
-      {children}
-    </div>
-  );
-}
-
 // Extracted out of page.tsx so it is directly render-testable -- same
 // reason as app/admin/finance/categories/components/CategoriesList.tsx.
 export function CashEntriesList({ entries, categories, accounts, canDelete }: CashEntriesListProps) {
-  // useRouter() throws outside an App Router context. This component's own
-  // render test (app/admin/finance/components/CashEntriesList.test.tsx) does
-  // not mount one and does not mock next/navigation, so the fallback keeps
-  // the initial render safe there; router.refresh() is only ever reached
-  // after a real write, and every real render of this screen has the App
-  // Router context the actual admin layout provides.
-  let router: ReturnType<typeof useRouter> | null;
-  try {
-    router = useRouter();
-  } catch {
-    router = null;
-  }
+  const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DBCashEntry | null>(null);
 
@@ -132,7 +88,7 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
       await alert({ title: "Không thể huỷ", message: result.error, variant: "danger" });
       return;
     }
-    router?.refresh();
+    router.refresh();
   }
 
   async function handleDelete() {
@@ -144,7 +100,7 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
       await alert({ title: "Không thể xoá hẳn", message: result.error, variant: "danger" });
       return;
     }
-    router?.refresh();
+    router.refresh();
   }
 
   return (
@@ -179,103 +135,152 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
           />
         </div>
       ) : (
-        <div
-          role="table"
-          className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden divide-y divide-border md:divide-y-0"
-        >
-          {/* Header: desktop only, column names match the grid template above. */}
-          <div
-            role="row"
-            className={`hidden md:grid ${ROW_GRID} bg-page/50 text-text-muted font-medium text-sm px-4 py-3 border-b border-border`}
-          >
-            <div role="columnheader">Ngày</div>
-            <div role="columnheader">Nhóm</div>
-            <div role="columnheader">Bên</div>
-            <div role="columnheader" className="text-right">Số tiền</div>
-            <div role="columnheader">Cách trả</div>
-            <div role="columnheader">Tài khoản</div>
-            <div role="columnheader">Ghi chú</div>
-            <div role="columnheader">Người tạo</div>
-            <div role="columnheader">Trạng thái</div>
-            <div role="columnheader" className="text-right">Thao tác</div>
+        <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
+          {/* Desktop: a real table, columns compared by eye (.claude/rules/ui-devices.md) */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-page/50 text-text-muted font-medium border-b border-border">
+                <tr>
+                  <th className="px-4 py-3">Ngày</th>
+                  <th className="px-4 py-3">Nhóm</th>
+                  <th className="px-4 py-3">Bên</th>
+                  <th className="px-4 py-3 text-right">Số tiền</th>
+                  <th className="px-4 py-3">Cách trả</th>
+                  <th className="px-4 py-3">Tài khoản</th>
+                  <th className="px-4 py-3">Ghi chú</th>
+                  <th className="px-4 py-3">Người tạo</th>
+                  <th className="px-4 py-3">Trạng thái</th>
+                  <th className="px-4 py-3 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {entries.map((entry) => {
+                  const category = categoryById.get(entry.category_id);
+                  const account = entry.bank_account_id ? accountById.get(entry.bank_account_id) : undefined;
+                  const isCancelled = entry.status === "CANCELLED";
+                  return (
+                    <tr key={entry.id} className={`hover:bg-page/40 ${isCancelled ? "opacity-50" : ""}`}>
+                      <td className="px-4 py-3 text-text-secondary">{formatDate(entry.entry_date)}</td>
+                      <td className="px-4 py-3 text-text-primary font-medium">{category?.name ?? "—"}</td>
+                      <td className="px-4 py-3 text-text-secondary">{category ? KIND_LABEL[category.kind] : "—"}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-text-primary">{money(entry.amount)}</td>
+                      <td className="px-4 py-3 text-text-secondary">{PAYMENT_METHOD_LABEL[entry.payment_method]}</td>
+                      <td className="px-4 py-3 text-text-secondary">{account?.name ?? "—"}</td>
+                      <td className="px-4 py-3 text-text-secondary">{display(entry.note)}</td>
+                      <td className="px-4 py-3 text-text-secondary">{display(entry.created_by_name)}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={entry.status} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end items-center gap-4">
+                          {!isCancelled && (
+                            <CashEntryForm entry={entry} categories={categories} accounts={accounts} />
+                          )}
+                          {!isCancelled && (
+                            <button
+                              onClick={() => handleCancel(entry)}
+                              disabled={busyId === entry.id}
+                              className="text-text-secondary hover:text-text-primary font-medium text-sm disabled:opacity-50"
+                            >
+                              {busyId === entry.id ? "…" : "Huỷ"}
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              onClick={() => setDeleteTarget(entry)}
+                              className="text-danger hover:text-danger-active font-medium text-sm"
+                            >
+                              Xoá hẳn
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
 
-          {entries.map((entry) => {
-            const category = categoryById.get(entry.category_id);
-            const account = entry.bank_account_id ? accountById.get(entry.bank_account_id) : undefined;
-            const isCancelled = entry.status === "CANCELLED";
-
-            return (
-              <div
-                key={entry.id}
-                role="row"
-                className={`${ROW_GRID} p-4 md:px-4 md:py-3 ${isCancelled ? "opacity-50" : ""}`}
-              >
-                <Field label="Ngày" orderClass="order-3" className="text-text-secondary text-sm">
-                  {formatDate(entry.entry_date)}
-                </Field>
-                <Field label="Nhóm" orderClass="order-4" className="text-text-primary font-medium text-sm">
-                  {category?.name ?? "—"}
-                </Field>
-                <Field label="Bên" orderClass="order-5" className="text-text-secondary text-sm">
-                  {category ? KIND_LABEL[category.kind] : "—"}
-                </Field>
-                <Field
-                  label="Số tiền"
-                  orderClass="order-1"
-                  className="font-bold text-lg text-text-primary md:font-semibold md:text-sm md:text-right"
-                >
-                  {money(entry.amount)}
-                </Field>
-                <Field label="Cách trả" orderClass="order-6" className="text-text-secondary text-sm">
-                  {PAYMENT_METHOD_LABEL[entry.payment_method]}
-                </Field>
-                <Field label="Tài khoản" orderClass="order-7" className="text-text-secondary text-sm">
-                  {account?.name ?? "—"}
-                </Field>
-                <Field label="Ghi chú" orderClass="order-8" className="text-text-secondary text-sm">
-                  {display(entry.note)}
-                </Field>
-                <Field label="Người tạo" orderClass="order-9" className="text-text-secondary text-sm">
-                  {display(entry.created_by_name)}
-                </Field>
-                <div role="cell" className="order-2 md:order-none">
-                  <StatusBadge status={entry.status} />
-                </div>
+          {/* Phone: one vertical card per line, no horizontal table (.claude/rules/ui-devices.md) */}
+          <div className="md:hidden flex flex-col gap-3 p-4">
+            {entries.map((entry) => {
+              const category = categoryById.get(entry.category_id);
+              const account = entry.bank_account_id ? accountById.get(entry.bank_account_id) : undefined;
+              const isCancelled = entry.status === "CANCELLED";
+              return (
                 <div
-                  role="cell"
-                  className="order-last md:order-none flex items-center gap-4 pt-3 mt-1 border-t border-border md:pt-0 md:mt-0 md:border-t-0 md:justify-end"
+                  key={entry.id}
+                  className={`bg-surface-card rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3 ${isCancelled ? "opacity-50" : ""}`}
                 >
-                  {!isCancelled && (
-                    <div className="flex items-center min-h-[44px] md:min-h-0">
-                      <CashEntryForm entry={entry} categories={categories} accounts={accounts} />
+                  <div className="flex justify-between items-start">
+                    <div className="font-bold text-lg text-text-primary">{money(entry.amount)}</div>
+                    <StatusBadge status={entry.status} />
+                  </div>
+
+                  <div className="text-sm text-text-secondary space-y-1">
+                    <div>
+                      <span className="text-text-muted">Ngày:</span>{" "}
+                      <span className="font-medium">{formatDate(entry.entry_date)}</span>
                     </div>
-                  )}
-                  {!isCancelled && (
-                    <div className="flex items-center min-h-[44px] md:min-h-0">
-                      <button
-                        onClick={() => handleCancel(entry)}
-                        disabled={busyId === entry.id}
-                        className="text-text-secondary hover:text-text-primary font-medium text-sm disabled:opacity-50"
-                      >
-                        {busyId === entry.id ? "…" : "Huỷ"}
-                      </button>
+                    <div>
+                      <span className="text-text-muted">Nhóm:</span>{" "}
+                      <span className="font-medium">{category?.name ?? "—"}</span>
                     </div>
-                  )}
-                  {canDelete && (
-                    <div className="flex items-center min-h-[44px] md:min-h-0">
-                      <button
-                        onClick={() => setDeleteTarget(entry)}
-                        className="text-danger hover:text-danger-active font-medium text-sm"
-                      >
-                        Xoá hẳn
-                      </button>
+                    <div>
+                      <span className="text-text-muted">Bên:</span>{" "}
+                      <span className="font-medium">{category ? KIND_LABEL[category.kind] : "—"}</span>
                     </div>
-                  )}
+                    <div>
+                      <span className="text-text-muted">Cách trả:</span>{" "}
+                      <span className="font-medium">{PAYMENT_METHOD_LABEL[entry.payment_method]}</span>
+                    </div>
+                    <div>
+                      <span className="text-text-muted">Tài khoản:</span>{" "}
+                      <span className="font-medium">{account?.name ?? "—"}</span>
+                    </div>
+                    <div>
+                      <span className="text-text-muted">Ghi chú:</span>{" "}
+                      <span className="font-medium">{display(entry.note)}</span>
+                    </div>
+                    <div>
+                      <span className="text-text-muted">Người tạo:</span>{" "}
+                      <span className="font-medium">{display(entry.created_by_name)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
+                    {!isCancelled && (
+                      <div className="flex items-center min-h-[44px]">
+                        <CashEntryForm entry={entry} categories={categories} accounts={accounts} />
+                      </div>
+                    )}
+                    {!isCancelled && (
+                      <div className="flex items-center min-h-[44px]">
+                        <button
+                          onClick={() => handleCancel(entry)}
+                          disabled={busyId === entry.id}
+                          className="text-text-secondary hover:text-text-primary font-medium text-sm disabled:opacity-50"
+                        >
+                          {busyId === entry.id ? "…" : "Huỷ"}
+                        </button>
+                      </div>
+                    )}
+                    {canDelete && (
+                      <div className="flex items-center min-h-[44px]">
+                        <button
+                          onClick={() => setDeleteTarget(entry)}
+                          className="text-danger hover:text-danger-active font-medium text-sm"
+                        >
+                          Xoá hẳn
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 

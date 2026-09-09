@@ -18,16 +18,7 @@ interface CashEntryFormProps {
 export function CashEntryForm({ entry, categories, accounts }: CashEntryFormProps) {
   const isEdit = !!entry;
   const formId = useId();
-  // useRouter() throws outside an App Router context. This form is rendered
-  // from CashEntriesList inside that render test (which does not mount one
-  // and does not mock next/navigation), so the fallback keeps the initial
-  // render safe there; router.refresh() only ever runs after a real write.
-  let router: ReturnType<typeof useRouter> | null;
-  try {
-    router = useRouter();
-  } catch {
-    router = null;
-  }
+  const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -69,7 +60,7 @@ export function CashEntryForm({ entry, categories, accounts }: CashEntryFormProp
       return;
     }
     setIsOpen(false);
-    router?.refresh();
+    router.refresh();
   }
 
   return (
