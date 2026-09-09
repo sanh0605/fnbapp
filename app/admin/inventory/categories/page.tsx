@@ -3,11 +3,16 @@ import { ItemCategoryForm, DeleteBtn } from "@/app/admin/inventory/components/In
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteItemCategory } from "@/app/admin/inventory/actions";
+import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
-  const categories = await findAll("Item_Categories");
+  const [categories, auth] = await Promise.all([findAll("Item_Categories"), resolveActor()]);
+  // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
+  // courtesy, the server-side requireOwner() in deleteItemCategory is what
+  // actually blocks it.
+  const canDelete = auth.ok && auth.actor.role === "ADMIN";
 
   const getTypeLabel = (type: string) => {
     switch(type) {
@@ -57,7 +62,7 @@ export default async function CategoriesPage() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">
                       <ItemCategoryForm initialData={c} />
-                      <DeleteBtn id={c.id} actionFn={deleteItemCategory} />
+                      {canDelete && <DeleteBtn id={c.id} actionFn={deleteItemCategory} />}
                     </div>
                   </td>
                 </tr>
@@ -91,7 +96,7 @@ export default async function CategoriesPage() {
                     <ItemCategoryForm initialData={c} />
                   </div>
                   <div className="flex items-center min-h-[44px]">
-                    <DeleteBtn id={c.id} actionFn={deleteItemCategory} />
+                    {canDelete && <DeleteBtn id={c.id} actionFn={deleteItemCategory} />}
                   </div>
                 </div>
               </div>

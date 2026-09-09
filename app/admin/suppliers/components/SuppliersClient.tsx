@@ -9,9 +9,11 @@ import type { DBSupplier } from "@/types/db";
 
 interface SuppliersClientProps {
   suppliers: DBSupplier[];
+  // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
+  canDelete: boolean;
 }
 
-export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
+export default function SuppliersClient({ suppliers, canDelete }: SuppliersClientProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
@@ -117,7 +119,7 @@ export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
                           Xem đơn nhập
                         </Link>
                         <SupplierForm initialData={s} />
-                        <DeleteSupplierButton id={s.id} />
+                        {canDelete && <DeleteSupplierButton id={s.id} />}
                       </div>
                     </td>
                   </tr>
@@ -178,7 +180,7 @@ export default function SuppliersClient({ suppliers }: SuppliersClientProps) {
                     <SupplierForm initialData={s} />
                   </div>
                   <div className="flex items-center min-h-[44px]">
-                    <DeleteSupplierButton id={s.id} />
+                    {canDelete && <DeleteSupplierButton id={s.id} />}
                   </div>
                 </div>
               </div>

@@ -2,7 +2,7 @@
 
 import { findAll } from "@/lib/db/tables";
 import { createEntity, updateEntity, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 
 const SHEET = "Brands";
 const PATH = "/admin/brands";
@@ -52,7 +52,8 @@ export async function editBrand(formData: FormData): Promise<ActionResponse> {
 }
 
 export async function deleteBrand(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return { error: auth.error };
 
   const id = formData.get("id") as string;

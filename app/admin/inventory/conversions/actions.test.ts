@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  // BR-ACCESS-003: deleteConversionAction now calls requireOwner(), not
+  // requireAdmin().
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findAllWhere: vi.fn(),
   insert: vi.fn(),
@@ -12,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), so this file's own assertions can never silently drift
@@ -45,6 +48,7 @@ describe("getConversionsData", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
   it("propagates the failure instead of returning a fabricated empty result", async () => {
@@ -70,6 +74,7 @@ describe("addConversion -- the unit lock", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.generateNewId.mockResolvedValue("QD-NEW");
   });
 
@@ -140,6 +145,7 @@ describe("updateConversion -- the unit lock", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
   it("refuses editing a conversion's base unit away from what the item's other history already agrees on", async () => {
@@ -205,6 +211,7 @@ describe("addConversion/updateConversion/deleteConversionAction -- revalidate sh
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.generateNewId.mockResolvedValue("QD-NEW");
     mocks.findAllWhere.mockResolvedValue([]);
     mocks.findAll.mockResolvedValue([]);

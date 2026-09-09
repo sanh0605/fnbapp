@@ -9,9 +9,11 @@ import type { DBUser } from "@/types/db";
 
 interface UsersClientProps {
   users: DBUser[];
+  // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
+  canDelete: boolean;
 }
 
-export default function UsersClient({ users }: UsersClientProps) {
+export default function UsersClient({ users, canDelete }: UsersClientProps) {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
 
@@ -90,7 +92,7 @@ export default function UsersClient({ users }: UsersClientProps) {
                 >
                   Sửa
                 </Link>
-                {user.username !== 'admin' && (
+                {canDelete && user.username !== 'admin' && (
                   <DeleteUserButton id={user.id} username={user.username} />
                 )}
               </div>
@@ -146,7 +148,7 @@ export default function UsersClient({ users }: UsersClientProps) {
                         >
                           Sửa
                         </Link>
-                        {user.username !== 'admin' && (
+                        {canDelete && user.username !== 'admin' && (
                           <DeleteUserButton id={user.id} username={user.username} />
                         )}
                       </div>

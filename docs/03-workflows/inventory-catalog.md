@@ -36,8 +36,11 @@ than waiting on a code change. The writes run through the server actions in
    `/admin/inventory/items` creates, edits, and (attempts to) delete a purchased
    item. The categories screen at `/admin/inventory/categories` and the units
    screen at `/admin/inventory/units` each add, edit, and delete their reference
-   rows. The conversions screen at `/admin/inventory/conversions` adds and edits
-   a conversion. A delete button that would strand referencing data must not
+   rows. The conversions screen at `/admin/inventory/conversions` adds, edits, and
+   deletes a conversion. Delete on all four screens is ADMIN-only per
+   `BR-ACCESS-003` (owner decision 2026-09-08, `requireOwner`): the button is
+   hidden for anyone else (`canDelete` computed from `resolveActor()` in each
+   `page.tsx`). A delete button that would strand referencing data must not
    succeed silently: deletion of a unit is checked first and refused with a
    plain-language reason when something still uses it
    (`lib/catalog/unit-delete-restriction.ts`).

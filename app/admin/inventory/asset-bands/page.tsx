@@ -4,6 +4,7 @@ import { AddBandForm } from "./components/AddBandForm";
 import { DeleteBandButton } from "./components/DeleteBandButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatBandRange } from "@/lib/assets/asset-depreciation";
+import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,11 @@ export const dynamic = "force-dynamic";
 // add/delete). Phone-first, phone-only for this batch (CLAUDE.md "Viết code",
 // owner 2026-08-17): one card per band, no horizontal table.
 export default async function AssetBandsPage() {
-  const bands = await getAssetBands();
+  const [bands, auth] = await Promise.all([getAssetBands(), resolveActor()]);
+  // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
+  // courtesy, the server-side requireOwner() in deleteAssetBand is what
+  // actually blocks it.
+  const canDelete = auth.ok && auth.actor.role === "ADMIN";
 
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
@@ -42,7 +47,7 @@ export default async function AssetBandsPage() {
               </div>
               <div className="flex justify-end items-center gap-4 pt-2 mt-1 border-t border-border">
                 <BandEditForm band={band} />
-                <DeleteBandButton band={band} />
+                {canDelete && <DeleteBandButton band={band} />}
               </div>
             </div>
           ))}

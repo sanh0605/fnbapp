@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  // BR-ACCESS-003: deletePurchasedItemAction now calls requireOwner(), not
+  // requireAdmin().
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findAllWhere: vi.fn(),
   insert: vi.fn(),
@@ -13,7 +16,7 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), not a re-typed stand-in -- the source under test and
@@ -43,6 +46,7 @@ describe("getItemsData -- the production incident this plan exists to fix", () =
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
   it("propagates the failure instead of returning a fabricated empty result", async () => {
@@ -71,6 +75,7 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findAll.mockResolvedValue([]); // no existing Purchased_Items -- no duplicate-name conflict
     mocks.generateNewId.mockResolvedValueOnce("SPM-999").mockResolvedValueOnce("QD-999");
   });
@@ -159,6 +164,7 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Purchased_Items") return Promise.resolve([]);
       if (sheet === "UOM_Conversions") return Promise.resolve([]);
@@ -224,6 +230,7 @@ describe("updatePurchasedItem -- the unit lock (2026-08-29, no database backstop
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Purchased_Items") return Promise.resolve([]);
       return Promise.resolve([]);
@@ -317,6 +324,7 @@ describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follo
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.generateNewId.mockResolvedValue("SPM-999");
   });
 
@@ -400,6 +408,7 @@ describe("addPurchasedItem/updatePurchasedItem/deletePurchasedItemAction -- reva
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findAll.mockResolvedValue([]);
     mocks.findAllWhere.mockResolvedValue([]);
     mocks.generateNewId.mockResolvedValue("SPM-999");

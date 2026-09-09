@@ -2,12 +2,17 @@ import { findAll } from "@/lib/db/tables";
 import { UnitForm, DeleteBtn } from "./UnitForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function UnitsPage() {
-  const allUnits = await findAll("Units");
-  
+  const [allUnits, auth] = await Promise.all([findAll("Units"), resolveActor()]);
+  // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
+  // courtesy, the server-side requireOwner() in deleteUnit is what actually
+  // blocks it.
+  const canDelete = auth.ok && auth.actor.role === "ADMIN";
+
   // Filter out softly deleted or we hard delete
   const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
 
@@ -48,7 +53,7 @@ export default async function UnitsPage() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
                         <UnitForm initialData={unit} />
-                        <DeleteBtn id={unit.id} />
+                        {canDelete && <DeleteBtn id={unit.id} />}
                       </div>
                     </td>
                   </tr>
@@ -80,7 +85,7 @@ export default async function UnitsPage() {
                     <UnitForm initialData={unit} />
                   </div>
                   <div className="flex items-center min-h-[44px]">
-                    <DeleteBtn id={unit.id} />
+                    {canDelete && <DeleteBtn id={unit.id} />}
                   </div>
                 </div>
               </div>

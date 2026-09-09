@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  // BR-ACCESS-003: deleteAssetBand now calls requireOwner(), not requireAdmin().
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   update: vi.fn(),
   insert: vi.fn(),
@@ -10,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   update: mocks.update,
@@ -28,6 +30,7 @@ describe("getAssetBands", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
   it("propagates the failure instead of returning a fabricated empty list", async () => {
@@ -61,6 +64,7 @@ describe("updateAssetBand", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findAll.mockResolvedValue(SEEDED);
   });
 
@@ -144,6 +148,7 @@ describe("createAssetBand", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.generateNewId.mockResolvedValue("KH-999");
   });
 
@@ -198,6 +203,7 @@ describe("deleteAssetBand", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
   it("refuses to delete the middle band of the three seeded bands -- it would open a gap", async () => {

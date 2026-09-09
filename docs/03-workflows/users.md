@@ -34,13 +34,17 @@ see SYSTEM-OVERVIEW for the naming trap.
 
 2. **Buttons per screen, and when to hide them.** `/login` presents the sign-in
    form only. `/admin/users` lists accounts and offers create, edit, and delete;
-   these actions require an administrator (`requireAdmin`), so the management
-   screen should not be reachable by a non-admin. `/admin/users/edit/[id]` saves a
-   changed role and, optionally, a new password. `/settings/password` offers a
-   single change-password action for the signed-in person's own account. Delete is
-   a hard delete with no self-protection guard — an administrator can remove any
-   account, including the last one, so this button warrants care rather than being
-   hidden.
+   create and edit require an administrator or manager (`requireAdmin`), so the
+   management screen should not be reachable below that. Delete is tighter still:
+   per `BR-ACCESS-003` (owner decision 2026-09-08), only `ADMIN` may destroy an
+   account for good (`requireOwner`), so the delete button is hidden for anyone
+   else (`canDelete` computed from `resolveActor()` in `page.tsx`) and refused
+   server-side regardless. `/admin/users/edit/[id]` saves a changed role and,
+   optionally, a new password. `/settings/password` offers a single
+   change-password action for the signed-in person's own account. Delete is a
+   hard delete with no self-protection guard — an admin can remove any account,
+   including the last one, so this button warrants care rather than being hidden
+   for that reason.
 
 3. **What each list contains, and what is excluded.** `/admin/users` lists every
    account row in the `Users` table, one row per account. It shows the username and

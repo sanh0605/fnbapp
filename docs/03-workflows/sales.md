@@ -48,9 +48,12 @@ and they run through the `void_order_atomic` database function called from
    brand picker drives the sale. `/admin/orders` lists past orders and offers void
    and edit on a live order; void and edit should not be offered on a row that is
    already `SUPERSEDED` or already voided, since acting on a stale version would
-   fork the order's history. `/admin/promotions` creates, edits, and deactivates
-   promotions; a promotion already referenced by historical orders is deactivated,
-   not hard-deleted, so past orders keep explaining their own totals.
+   fork the order's history. `/admin/promotions` creates, edits, deactivates, and
+   deletes promotions; a promotion already referenced by historical orders is
+   deactivated, not hard-deleted, so past orders keep explaining their own
+   totals. Delete is ADMIN-only per `BR-ACCESS-003` (owner decision 2026-09-08,
+   `requireOwner`), with the button hidden for anyone else (`canDelete` computed
+   from `resolveActor()` in `page.tsx`).
 3. **What each list contains, and what is excluded.** `/admin/orders` shows
    orders; revenue and audit views over it must filter to the live version only —
    `status = 'COMPLETED'` **and** `superseded_by` empty — or the same sale is

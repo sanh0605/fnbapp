@@ -39,8 +39,11 @@ write no business table.
    log reflects events that already happened, and the cache tool only clears
    cached data on demand.
 2. **Buttons per screen, and when to hide them.** The outlets screen at
-   `/admin/outlets` and the brands screen at `/admin/brands` each offer create
-   and edit for their records. The pos-sync screen at `/admin/pos-sync` lists
+   `/admin/outlets` offers create and edit only — an outlet is never hard-deleted.
+   The brands screen at `/admin/brands` offers create, edit, and delete; delete is
+   ADMIN-only per `BR-ACCESS-003` (owner decision 2026-09-08, `requireOwner`),
+   with the button hidden for anyone else (`canDelete` computed from
+   `resolveActor()` in `page.tsx`). The pos-sync screen at `/admin/pos-sync` lists
    recorded failures for review; its actions concern acknowledging or retrying a
    failed sync rather than editing sales data. The clear-cache screen at
    `/admin/clear-cache` offers a single action to clear cached data — a

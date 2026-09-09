@@ -14,9 +14,11 @@ interface ConversionsClientProps {
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
+  // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
+  canDelete: boolean;
 }
 
-export default function ConversionsClient({ items, conversions, units }: ConversionsClientProps) {
+export default function ConversionsClient({ items, conversions, units, canDelete }: ConversionsClientProps) {
   const [search, setSearch] = useState("");
 
   const unitMap = useMemo(() => {
@@ -121,7 +123,9 @@ export default function ConversionsClient({ items, conversions, units }: Convers
                           conversions={conversions}
                           units={units}
                         />
-                        <DeleteConversionButton id={conv.id} itemName={itemMap[conv.purchased_item_id] || ""} />
+                        {canDelete && (
+                          <DeleteConversionButton id={conv.id} itemName={itemMap[conv.purchased_item_id] || ""} />
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -184,7 +188,9 @@ export default function ConversionsClient({ items, conversions, units }: Convers
                     />
                   </div>
                   <div className="flex items-center min-h-[44px]">
-                    <DeleteConversionButton id={conv.id} itemName={itemMap[conv.purchased_item_id] || ""} />
+                    {canDelete && (
+                      <DeleteConversionButton id={conv.id} itemName={itemMap[conv.purchased_item_id] || ""} />
+                    )}
                   </div>
                 </div>
               </div>

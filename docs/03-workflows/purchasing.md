@@ -57,7 +57,10 @@ when an existing order is edited — see question 5.
    save as draft or save as completed; the "save as completed" path should not be
    offered until a supplier, a source, and at least one line are present, since
    the action rejects a completed order missing any of them. The suppliers screen
-   at `/admin/suppliers` offers add, edit, and deactivate for a supplier.
+   at `/admin/suppliers` offers add, edit (including deactivating a supplier via
+   its status field), and delete. Delete is ADMIN-only per `BR-ACCESS-003` (owner
+   decision 2026-09-08, `requireOwner`), with the button hidden for anyone else
+   (`canDelete` computed from `resolveActor()` in `page.tsx`).
 3. **What each list contains, and what is excluded.** The purchase-order list
    shows purchase orders (both drafts and completed orders). The suppliers list
    shows suppliers; deactivated suppliers are marked inactive rather than removed,

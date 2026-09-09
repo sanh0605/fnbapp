@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  // BR-ACCESS-003: deleteUnit/deleteItemCategory now call requireOwner(),
+  // not requireAdmin(); the other actions here are unaffected.
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findAllWhere: vi.fn(),
   insert: vi.fn(),
@@ -12,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
   // importActual), so this file's own assertions can never silently drift
@@ -69,6 +72,7 @@ describe("Units/Item_Categories actions -- revalidate the table tag, not just th
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findAll.mockResolvedValue([]);
     mocks.findAllWhere.mockResolvedValue([]);
     mocks.generateNewId.mockResolvedValue("U-999");

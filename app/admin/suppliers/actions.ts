@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBSupplier } from "@/types/db";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import {
   findDuplicateActiveName,
   duplicateNameErrorMessage,
@@ -169,7 +169,8 @@ export async function editSupplier(formData: FormData): Promise<ActionResponse> 
 }
 
 export async function deleteSupplierAction(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;

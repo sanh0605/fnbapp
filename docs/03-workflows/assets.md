@@ -45,7 +45,10 @@ table of its own.
    `/admin/inventory/asset-bands` offers add, edit, and delete for bands — a
    flexible thing the owner controls without a code change (`CLAUDE.md` "Viết code"). An
    edit or delete that would leave a gap, an overlap, or an uncovered price range
-   is refused, so those actions fail rather than hide.
+   is refused, so those actions fail rather than hide. Delete is additionally
+   ADMIN-only per `BR-ACCESS-003` (owner decision 2026-09-08, `requireOwner`):
+   the button is hidden for anyone else (`canDelete` computed from
+   `resolveActor()` in `page.tsx`), on top of the gap/overlap refusal above.
 3. **What each list contains, and what is excluded.** The asset list shows every
    owned asset, one row per purchase line (eight identical pumps bought together
    are one row with quantity 8, not eight rows). Rows flagged `INACTIVE` are

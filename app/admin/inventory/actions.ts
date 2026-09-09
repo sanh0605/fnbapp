@@ -4,7 +4,7 @@ import { findAll, findAllNoCache, findAllWhere, insert, update, remove, generate
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import {
   approveStockAdjustmentAtomic,
   submitStockAdjustmentAtomic,
@@ -63,7 +63,8 @@ export async function updateItemCategory(formData: FormData): Promise<ActionResp
 }
 
 export async function deleteItemCategory(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;
@@ -210,7 +211,8 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
 }
 
 export async function deletePurchasedItem(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;
@@ -294,7 +296,8 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
 }
 
 export async function deleteConversion(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;
@@ -426,7 +429,8 @@ async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding
 }
 
 export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;

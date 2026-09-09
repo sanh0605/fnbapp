@@ -5,7 +5,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { wouldLeaveNoCountableConversion } from "@/lib/stock/conversion-countability";
 import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/catalog/unit-lock";
 
@@ -229,7 +229,8 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
 }
 
 export async function deleteConversionAction(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 
 const SHEET = "Promotions";
 const PATH = "/admin/promotions";
@@ -153,7 +153,8 @@ export async function savePromotion(promoData: Record<string, any>): Promise<Act
 // --- COPY deletePromotion EXACTLY ---
 // PRESERVE: hard delete (remove), revalidation of both paths
 export async function deletePromotionAction(promoId: string): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   try {

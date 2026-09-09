@@ -3,12 +3,17 @@ import { BrandForm, DeleteBrandButton } from "./components/BrandForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import type { DBBrand } from "@/types/db";
+import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function BrandsPage() {
-  const allBrands = await findAll("Brands");
+  const [allBrands, auth] = await Promise.all([findAll("Brands"), resolveActor()]);
   const brands = allBrands.filter((b: DBBrand) => b.status !== "DELETED");
+  // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
+  // courtesy, the server-side requireOwner() in deleteBrand is what actually
+  // blocks it.
+  const canDelete = auth.ok && auth.actor.role === "ADMIN";
 
   return (
     <div className="space-y-6">
@@ -53,7 +58,7 @@ export default async function BrandsPage() {
                     <td className="px-6 py-4 text-sm text-right">
                       <div className="flex justify-end items-center">
                         <BrandForm initialData={brand} />
-                        <DeleteBrandButton id={brand.id} />
+                        {canDelete && <DeleteBrandButton id={brand.id} />}
                       </div>
                     </td>
                   </tr>
@@ -93,7 +98,7 @@ export default async function BrandsPage() {
                     <BrandForm initialData={brand} />
                   </div>
                   <div className="flex items-center min-h-[44px]">
-                    <DeleteBrandButton id={brand.id} />
+                    {canDelete && <DeleteBrandButton id={brand.id} />}
                   </div>
                 </div>
               </div>

@@ -17,6 +17,8 @@ interface PromotionsClientProps {
   products: DBProduct[];
   variants: DBProductVariant[];
   categories: DBProductCategory[];
+  // ADMIN only (BR-ACCESS-003) -- everyone else may add, edit and cancel.
+  canDelete: boolean;
 }
 
 export default function PromotionsClient({
@@ -25,6 +27,7 @@ export default function PromotionsClient({
   products,
   variants,
   categories,
+  canDelete,
 }: PromotionsClientProps) {
   const router = useRouter();
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
@@ -288,12 +291,14 @@ export default function PromotionsClient({
                 >
                   Sửa
                 </button>
-                <button
-                  onClick={() => setDeleteConfirmId(promo.id)}
-                  className="px-3.5 py-1.5 min-h-[44px] bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger font-bold text-xs rounded-lg transition active:scale-95"
-                >
-                  Xóa
-                </button>
+                {canDelete && (
+                  <button
+                    onClick={() => setDeleteConfirmId(promo.id)}
+                    className="px-3.5 py-1.5 min-h-[44px] bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger font-bold text-xs rounded-lg transition active:scale-95"
+                  >
+                    Xóa
+                  </button>
+                )}
               </div>
             </div>
           );

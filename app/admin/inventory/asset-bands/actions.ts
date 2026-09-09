@@ -4,7 +4,7 @@ import { findAll, update, insert, remove, generateNewId } from "@/lib/db/tables"
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { validateBands, type Band } from "@/lib/assets/asset-depreciation";
 import type { DBAssetDepreciationBand } from "@/types/db";
 
@@ -114,7 +114,8 @@ export async function createAssetBand(formData: FormData): Promise<ActionRespons
 // deleting the band that would leave the lowest or highest price
 // uncovered, not only a gap in the middle.
 export async function deleteAssetBand(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;

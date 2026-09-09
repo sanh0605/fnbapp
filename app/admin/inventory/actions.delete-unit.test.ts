@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  // BR-ACCESS-003: deleteUnit now calls requireOwner(), not requireAdmin().
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findAllWhere: vi.fn(),
   findAllNoCache: vi.fn(),
@@ -13,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", async () => {
   const actual = await vi.importActual<typeof import("@/lib/db/tables")>("@/lib/db/tables");
   return {
@@ -50,6 +52,7 @@ describe("deleteUnit -- names what is blocking it, and still blocks it", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
   it("A7's exact case: refuses, naming the unit and the item, via a conversion row", async () => {

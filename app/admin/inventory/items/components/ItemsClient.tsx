@@ -20,9 +20,11 @@ interface ItemsClientProps {
   conversions: DBUOMConversion[];
   units: DBUnit[];
   unitLockedItemIds: string[];
+  // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
+  canDelete: boolean;
 }
 
-export default function ItemsClient({ categories, items, conversions, units, unitLockedItemIds }: ItemsClientProps) {
+export default function ItemsClient({ categories, items, conversions, units, unitLockedItemIds, canDelete }: ItemsClientProps) {
   const unitLockedSet = useMemo(() => new Set(unitLockedItemIds), [unitLockedItemIds]);
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
     q: "",
@@ -154,7 +156,7 @@ export default function ItemsClient({ categories, items, conversions, units, uni
                             units={units}
                             isUnitLocked={unitLockedSet.has(item.id)}
                           />
-                          <DeleteItemButton id={item.id} name={item.name} />
+                          {canDelete && <DeleteItemButton id={item.id} name={item.name} />}
                         </div>
                       </td>
                     </tr>
@@ -215,7 +217,7 @@ export default function ItemsClient({ categories, items, conversions, units, uni
                       />
                     </div>
                     <div className="flex items-center">
-                      <DeleteItemButton id={item.id} name={item.name} />
+                      {canDelete && <DeleteItemButton id={item.id} name={item.name} />}
                     </div>
                   </div>
                 </div>
