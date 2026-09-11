@@ -47,8 +47,9 @@ the two settings screens where they still apply.
    on `entry_date`, both `ACTIVE` and `CANCELLED` rows shown — a cancelled
    row stays visible with a badge, it just drops out of the totals), newest
    `entry_date` first, then newest id. A hand-edited range in the URL that is
-   not two `YYYY-MM-DD` dates in order falls back to "Tháng này"
-   (`app/admin/finance/resolve-date-range.ts`). The two
+   not two real calendar dates written `YYYY-MM-DD`, in order, falls back to
+   "Tháng này" (`app/admin/finance/resolve-date-range.ts`; `2026-02-30` counts
+   as not real). The two
    settings screens show every row of their own table regardless of status;
    only the ledger's own add/edit form narrows their pickers to `ACTIVE`
    rows (plus the row's own category/account if it has since been retired,
