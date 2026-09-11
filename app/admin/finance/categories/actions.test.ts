@@ -300,3 +300,65 @@ describe('"Dùng lại" re-checks the duplicate-name guard (M3)', () => {
     expect(mocks.update).toHaveBeenCalled();
   });
 });
+
+describe("sales-revenue flag (BR-CASH-006)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("saves the flag on a new income category that counts in profit and loss", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([]);
+    mocks.generateNewId.mockResolvedValue("CFC-007");
+
+    const result = await addCashCategory(formData({
+      name: "Doanh thu ghi tay 2", kind: "INCOME", affects_pnl: "on", is_sales_revenue: "on",
+    }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.insert).toHaveBeenCalledWith(
+      "Cash_Categories",
+      expect.objectContaining({ id: "CFC-007", is_sales_revenue: true }),
+    );
+  });
+
+  it("refuses the flag on an expense category, before touching the database", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+
+    const result = await addCashCategory(formData({
+      name: "Vận hành 2", kind: "EXPENSE", affects_pnl: "on", is_sales_revenue: "on",
+    }));
+
+    expect(result.error).toBe("Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng.");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("refuses the flag when an edit takes the category out of profit and loss", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+
+    const result = await updateCashCategory(formData({
+      id: "CFC-006", name: "Doanh thu ghi tay", kind: "INCOME", is_sales_revenue: "on",
+    }));
+
+    expect(result.error).toBe("Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng.");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("an edit with the box unticked writes false", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "CFC-006", name: "Doanh thu ghi tay", kind: "INCOME", affects_pnl: true, is_sales_revenue: true, status: "ACTIVE" },
+    ]);
+
+    const result = await updateCashCategory(formData({
+      id: "CFC-006", name: "Doanh thu ghi tay", kind: "INCOME", affects_pnl: "on",
+    }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith(
+      "Cash_Categories",
+      "CFC-006",
+      expect.objectContaining({ is_sales_revenue: false }),
+    );
+  });
+});

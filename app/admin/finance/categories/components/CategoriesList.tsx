@@ -28,6 +28,13 @@ const STATUS_LABEL: Record<DBCashCategory["status"], string> = {
   INACTIVE: "Ngừng dùng",
 };
 
+// BR-CASH-006: a category counted into profit and loss can also be marked
+// sales revenue; the list names all three treatments a category can have.
+export function pnlTreatmentLabel(category: Pick<DBCashCategory, "affects_pnl" | "is_sales_revenue">): string {
+  if (!category.affects_pnl) return "Không";
+  return category.is_sales_revenue === true ? "Có — doanh thu bán hàng" : "Có";
+}
+
 function StatusBadge({ status }: { status: DBCashCategory["status"] }) {
   return (
     <span
@@ -121,7 +128,7 @@ export function CategoriesList({ categories, canDelete, usedCategoryIds }: Categ
               <tr key={category.id} className="hover:bg-page/40">
                 <td className="px-4 py-3 font-medium text-text-primary">{category.name}</td>
                 <td className="px-4 py-3 text-text-secondary">{KIND_LABEL[category.kind]}</td>
-                <td className="px-4 py-3 text-text-secondary">{category.affects_pnl ? "Có" : "Không"}</td>
+                <td className="px-4 py-3 text-text-secondary">{pnlTreatmentLabel(category)}</td>
                 <td className="px-4 py-3">
                   <StatusBadge status={category.status} />
                 </td>
@@ -167,7 +174,7 @@ export function CategoriesList({ categories, canDelete, usedCategoryIds }: Categ
               </div>
               <div>
                 <span className="text-text-muted">Tính vào lãi lỗ:</span>{" "}
-                <span className="font-medium">{category.affects_pnl ? "Có" : "Không"}</span>
+                <span className="font-medium">{pnlTreatmentLabel(category)}</span>
               </div>
             </div>
 

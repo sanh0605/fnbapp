@@ -7,6 +7,7 @@ import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { creationAudit, updateAudit } from "@/lib/finance/audit-columns";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
+import { parseSalesRevenueFlag } from "@/lib/finance/cash-entry-rules";
 import type { DBCashCategory } from "@/types/db";
 
 const SHEET = "Cash_Categories";
@@ -26,6 +27,8 @@ export async function addCashCategory(formData: FormData): Promise<ActionRespons
   if (!name) return fail("Nhập tên nhóm");
   const kind = formData.get("kind") === "INCOME" ? "INCOME" : "EXPENSE";
   const affects_pnl = formData.get("affects_pnl") === "on";
+  const salesRevenue = parseSalesRevenueFlag(kind, affects_pnl, formData.get("is_sales_revenue") === "on");
+  if (!salesRevenue.ok) return fail(salesRevenue.error);
 
   try {
     // Ruling 6 -- level 1 only (an outright refusal): the owner keeps about
@@ -44,7 +47,7 @@ export async function addCashCategory(formData: FormData): Promise<ActionRespons
 
     const id = await generateNewId(SHEET, "CFC");
     await insert(SHEET, {
-      id, name, kind, affects_pnl, status: "ACTIVE", ...creationAudit(auth.actor),
+      id, name, kind, affects_pnl, is_sales_revenue: salesRevenue.value, status: "ACTIVE", ...creationAudit(auth.actor),
     });
     revalidatePath(PATH);
     return ok();
@@ -63,6 +66,8 @@ export async function updateCashCategory(formData: FormData): Promise<ActionResp
   if (!name) return fail("Nhập tên nhóm");
   const kind = formData.get("kind") === "INCOME" ? "INCOME" : "EXPENSE";
   const affects_pnl = formData.get("affects_pnl") === "on";
+  const salesRevenue = parseSalesRevenueFlag(kind, affects_pnl, formData.get("is_sales_revenue") === "on");
+  if (!salesRevenue.ok) return fail(salesRevenue.error);
 
   try {
     const categories = (await findAll(SHEET)) as DBCashCategory[];
@@ -86,7 +91,7 @@ export async function updateCashCategory(formData: FormData): Promise<ActionResp
       }
     }
 
-    await update(SHEET, id, { name, kind, affects_pnl, ...updateAudit(auth.actor) });
+    await update(SHEET, id, { name, kind, affects_pnl, is_sales_revenue: salesRevenue.value, ...updateAudit(auth.actor) });
     revalidatePath(PATH);
     return ok();
   } catch (error) {

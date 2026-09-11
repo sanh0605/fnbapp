@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCashEntry, summariseEntries } from "./cash-entry-rules";
+import { parseCashEntry, summariseEntries, parseSalesRevenueFlag, SALES_REVENUE_FLAG_ERROR } from "./cash-entry-rules";
 import type { DBCashCategory, DBCashEntry } from "@/types/db";
 
 const valid = {
@@ -140,5 +140,29 @@ describe("summariseEntries", () => {
     expect(s.totalExpense).toBe(0);
     expect(s.totalIncome).toBe(0);
     expect(s.unknownCategoryIds).toEqual(["CFC-999"]);
+  });
+});
+
+describe("parseSalesRevenueFlag (BR-CASH-006)", () => {
+  it("accepts the flag on an income category that counts in profit and loss", () => {
+    expect(parseSalesRevenueFlag("INCOME", true, true)).toEqual({ ok: true, value: true });
+  });
+
+  it("refuses it on an expense category", () => {
+    expect(parseSalesRevenueFlag("EXPENSE", true, true)).toEqual({ ok: false, error: SALES_REVENUE_FLAG_ERROR });
+  });
+
+  it("refuses it on an income category kept out of profit and loss (capital)", () => {
+    expect(parseSalesRevenueFlag("INCOME", false, true)).toEqual({ ok: false, error: SALES_REVENUE_FLAG_ERROR });
+  });
+
+  it("an unticked box is always fine and saves false", () => {
+    expect(parseSalesRevenueFlag("EXPENSE", false, false)).toEqual({ ok: true, value: false });
+  });
+
+  it("says why in Vietnamese", () => {
+    expect(SALES_REVENUE_FLAG_ERROR).toBe(
+      "Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng.",
+    );
   });
 });

@@ -45,6 +45,12 @@ export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [affectsPnl, setAffectsPnl] = useState(category ? category.affects_pnl : true);
+  const [kind, setKind] = useState<"EXPENSE" | "INCOME">(category?.kind ?? "EXPENSE");
+  const [isSalesRevenue, setIsSalesRevenue] = useState(category?.is_sales_revenue === true);
+  // BR-CASH-006: only an income category that counts in profit and loss can
+  // be sales revenue. Hidden otherwise, and cleared the moment either
+  // condition goes away, so a hidden box can never submit "on".
+  const canBeSalesRevenue = kind === "INCOME" && affectsPnl;
 
   function handleClose() {
     setIsOpen(false);
@@ -55,7 +61,10 @@ export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
     setError(null);
 
     if (category) {
-      if (shouldConfirmAffectsPnlChange(isKindLocked, category.affects_pnl, affectsPnl)) {
+      const pnlTreatmentChanged =
+        shouldConfirmAffectsPnlChange(isKindLocked, category.affects_pnl, affectsPnl) ||
+        shouldConfirmAffectsPnlChange(isKindLocked, category.is_sales_revenue === true, isSalesRevenue);
+      if (pnlTreatmentChanged) {
         const approved = await confirm({
           title: "Đổi cách tính lãi lỗ",
           message: AFFECTS_PNL_CHANGE_WARNING,
@@ -146,7 +155,12 @@ export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
               id={`${formId}-kind`}
               name={isKindLocked ? undefined : "kind"}
               disabled={isKindLocked}
-              defaultValue={category?.kind ?? "EXPENSE"}
+              value={kind}
+              onChange={(e) => {
+                const next = e.target.value as "EXPENSE" | "INCOME";
+                setKind(next);
+                if (next !== "INCOME") setIsSalesRevenue(false);
+              }}
               className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary disabled:opacity-60"
             >
               <option value="EXPENSE">Chi</option>
@@ -165,11 +179,32 @@ export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
               type="checkbox"
               name="affects_pnl"
               checked={affectsPnl}
-              onChange={(e) => setAffectsPnl(e.target.checked)}
+              onChange={(e) => {
+                setAffectsPnl(e.target.checked);
+                if (!e.target.checked) setIsSalesRevenue(false);
+              }}
               className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
             />
             Tính vào lãi lỗ
           </label>
+
+          {canBeSalesRevenue && (
+            <div>
+              <label className="flex items-center gap-2 text-sm text-text-primary">
+                <input
+                  type="checkbox"
+                  name="is_sales_revenue"
+                  checked={isSalesRevenue}
+                  onChange={(e) => setIsSalesRevenue(e.target.checked)}
+                  className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
+                />
+                Tính là doanh thu bán hàng
+              </label>
+              <p className="mt-1 text-xs text-text-muted">
+                Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Lãi lỗ cộng vào dòng Doanh thu thay vì Thu khác.
+              </p>
+            </div>
+          )}
         </form>
       </FormModal>
     </>

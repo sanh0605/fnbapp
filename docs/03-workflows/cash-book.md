@@ -4,7 +4,7 @@
 routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance
 files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts
 tables: Cash_Categories, Bank_Accounts, Cash_Entries
-brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005
+brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006
 ```
 
 This doc covers all three cash-book screens: the cash-category (nhóm thu chi)
@@ -72,8 +72,11 @@ the two settings screens where they still apply.
    once any entry uses the category (`BR-CASH-004`): `updateCashCategory`
    refuses and the form shows the select disabled. "Tính vào lãi lỗ" stays
    editable, behind an in-page confirm that says every past row is
-   re-classified (`BR-CASH-003`). Names go through the shared duplicate-name
-   guard on add, rename and reinstate.
+   re-classified (`BR-CASH-003`). The category form also carries "Tính là
+   doanh thu bán hàng", shown only when the category is Thu and counts in
+   profit and loss, cleared the moment either stops holding (`BR-CASH-006`).
+   Names go through the shared duplicate-name guard on add, rename and
+   reinstate.
 
 5. **Which data it serves, and which it deliberately does not.** The ledger
    serves money the owner physically paid out (chi), other money he

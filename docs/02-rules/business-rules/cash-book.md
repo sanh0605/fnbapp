@@ -86,3 +86,13 @@ anything else with a message saying why.
 This replaces the first version of 2026-09-11, where the box accepted a typed
 `150.000` as text and only refused bad input on save. The server check was
 added after a review found `150.000` saved as 150đ; it stays as the backstop.
+
+### BR-CASH-006 — A category can be marked as sales revenue
+
+**Status:** `APPROVED` — owner decision 2026-09-11 (P&L design, `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md`).
+
+An income category that counts in profit and loss can carry a second flag, "Tính là doanh thu bán hàng" (`cash_categories.is_sales_revenue`). Its rows then count as sales revenue on the P&L, on the "· trong đó ghi tay" line under Doanh thu (`BR-PNL-003`), instead of under Thu khác. Owner, 2026-09-11, on the two lost-revenue rows: "Tính vào doanh thu".
+
+- **Only an income category that counts in profit and loss** can carry it. The form hides the box otherwise and clears it when the category switches to Chi or stops counting in profit and loss; the server refuses it ("Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng."); a database check refuses it a third time (migration `0102`).
+- **It sits on the category, not on each row**, like `affects_pnl` (`BR-CASH-003`). Changing it moves every past month of that category, so on a category that already has rows the form asks before saving.
+- **Only the owner sets it.** The migration adds the column as false everywhere; after release the owner ticks it on "Doanh thu ghi tay" (`CFC-006`) himself. Until then that category's two rows show under Thu khác, and April's revenue reads 8.411.868đ short while net profit is unchanged.

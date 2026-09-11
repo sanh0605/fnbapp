@@ -311,6 +311,8 @@ export interface DBCashCategory {
   name: string;
   kind: "EXPENSE" | "INCOME";
   affects_pnl: boolean;
+  // BR-CASH-006: only an income category that counts in profit and loss may be true.
+  is_sales_revenue: boolean;
   status: "ACTIVE" | "INACTIVE";
   created_at: string;
   created_by_id: string | null;

@@ -141,3 +141,19 @@ export function summariseEntries(
     unknownCategoryIds: [...unknown],
   };
 }
+
+export const SALES_REVENUE_FLAG_ERROR =
+  "Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng.";
+
+// BR-CASH-006: only an income category that counts in profit and loss can
+// be sales revenue. The form hides the box otherwise; this is the server's
+// own check, and migration 0102's check constraint is the third.
+export function parseSalesRevenueFlag(
+  kind: DBCashCategory["kind"],
+  affectsPnl: boolean,
+  requested: boolean,
+): ParseResult<boolean> {
+  if (!requested) return { ok: true, value: false };
+  if (kind !== "INCOME" || !affectsPnl) return { ok: false, error: SALES_REVENUE_FLAG_ERROR };
+  return { ok: true, value: true };
+}

@@ -99,3 +99,44 @@ describe("shouldConfirmAffectsPnlChange (I3)", () => {
     expect(shouldConfirmAffectsPnlChange(false, true, false)).toBe(false);
   });
 });
+
+const MANUAL_REVENUE: DBCashCategory = {
+  id: "CFC-006",
+  name: "Doanh thu ghi tay",
+  kind: "INCOME",
+  affects_pnl: true,
+  is_sales_revenue: true,
+  status: "ACTIVE",
+} as DBCashCategory;
+
+describe("CategoryForm sales-revenue box (BR-CASH-006)", () => {
+  function open(ui: React.ReactElement) {
+    render(ui);
+    fireEvent.click(screen.getByRole("button", { name: /Sửa|Thêm nhóm/ }));
+  }
+
+  it("shows the box, ticked, on an income category already marked", () => {
+    open(<CategoryForm category={MANUAL_REVENUE} hasEntries />);
+    expect((screen.getByLabelText("Tính là doanh thu bán hàng") as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("hides the box on an expense category", () => {
+    open(<CategoryForm category={CATEGORY} />);
+    expect(screen.queryByLabelText("Tính là doanh thu bán hàng")).toBeNull();
+  });
+
+  it("shows the box on a new form once Thu is chosen", () => {
+    open(<CategoryForm />);
+    expect(screen.queryByLabelText("Tính là doanh thu bán hàng")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Bên"), { target: { value: "INCOME" } });
+    expect(screen.getByLabelText("Tính là doanh thu bán hàng")).toBeTruthy();
+  });
+
+  it("clears the box when 'Tính vào lãi lỗ' is unticked, and does not re-tick it", () => {
+    open(<CategoryForm category={MANUAL_REVENUE} hasEntries />);
+    fireEvent.click(screen.getByLabelText("Tính vào lãi lỗ"));
+    expect(screen.queryByLabelText("Tính là doanh thu bán hàng")).toBeNull();
+    fireEvent.click(screen.getByLabelText("Tính vào lãi lỗ"));
+    expect((screen.getByLabelText("Tính là doanh thu bán hàng") as HTMLInputElement).checked).toBe(false);
+  });
+});
