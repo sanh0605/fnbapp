@@ -1,22 +1,23 @@
-# Reports flow (dashboard and three reports)
+# Reports flow (dashboard and four reports)
 
 ```flow-decl
-routes: /admin, /admin/reports/daily, /admin/reports/sales, /admin/reports/issued
+routes: /admin, /admin/reports/daily, /admin/reports/sales, /admin/reports/issued, /admin/reports/pnl
 files:
 tables:
-brCodes: BR-COGS-005, BR-COGS-007
+brCodes: BR-COGS-005, BR-COGS-007, BR-PNL-001, BR-PNL-002, BR-PNL-003, BR-PNL-004
 ```
 
-This flow is **read-only**: the dashboard and the three reports display figures
+This flow is **read-only**: the dashboard and the four reports display figures
 derived from data other flows already wrote. Nothing here writes to the database,
 so the `flow-decl` block declares no `files` and no `tables` — the empty value
 lists are intentional, not an omission. Because no file is declared, this flow
-contributes nothing to the map-drift check; it is verified only by its four routes
+contributes nothing to the map-drift check; it is verified only by its five routes
 existing.
 
 The screens are the dashboard at `/admin` (a revenue and orders summary), the
 daily report at `/admin/reports/daily`, the sales report at `/admin/reports/sales`,
-and the issued-goods (cost) report at `/admin/reports/issued`.
+the issued-goods (cost) report at `/admin/reports/issued`, and the monthly
+profit and loss at `/admin/reports/pnl`.
 
 ## Five-question current-state description
 
@@ -71,5 +72,30 @@ This is why the issued-goods report keeps the two `source` values on separate li
 and why `BR-COGS-007` treats direct-material issue cost and stocktake shrinkage as
 distinct lines with the shrinkage having its own precondition (a period is only
 counted as loss if it had issue slips to measure against).
+
+## The profit and loss page
+
+`/admin/reports/pnl` shows one year of monthly profit and loss for the whole
+shop (`BR-PNL-001`), months as columns (`BR-PNL-002`), for `ADMIN` and
+`MANAGER` (`BR-PNL-004`). Design:
+`docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md`.
+
+- **Reads, never writes.** `getProfitAndLossReport`
+  (`app/admin/reports/pnl/actions.ts`) loads source rows and recomputes every
+  figure on every open (`lib/reports/profit-and-loss.ts`);
+  `lib/reports/profit-and-loss-table.ts` rounds for display (`BR-DATA-005`).
+  Nothing is stored and no month is locked.
+- **One control: the year**, as `?year=YYYY`. A malformed year, or a year with
+  no data, falls back to the newest year with data, without an error.
+- **Cells open their sources.** On a computer, clicking a month cell lists the
+  rows behind it under the table: POS order count and hand-recorded revenue
+  (`BR-PNL-003`), cash-book rows, purchase lines, stocktakes and issue slips,
+  assets; a profit cell shows its sum. The Tổng column does not open. On a
+  phone there is no wide table: a year card, then one card per month, newest
+  first.
+- **Checked against the older report.** `scripts/verify-pnl-monthly.ts`
+  confirms that every month's POS revenue, and Giá vốn plus Hao hụt, equal
+  `getPnLDataV2` for the same month, and that every line's sources add up to
+  the line.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md

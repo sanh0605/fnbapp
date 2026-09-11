@@ -1,6 +1,6 @@
 # Profit and loss rules
 
-The monthly profit-and-loss page is designed, not built. Design:
+The monthly profit-and-loss page is `/admin/reports/pnl` (menu Báo cáo → Lãi lỗ). Design:
 `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md`. The rules below
 are the owner's decisions for it; how each line is computed is in the design
 and in `BR-COGS-007`, `BR-COGS-008`, `BR-CASH-001` and `BR-CASH-003`.
