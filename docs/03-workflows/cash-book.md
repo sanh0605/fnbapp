@@ -4,7 +4,7 @@
 routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance
 files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts
 tables: Cash_Categories, Bank_Accounts, Cash_Entries
-brCodes: BR-ACCESS-003
+brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005
 ```
 
 This doc covers all three cash-book screens: the cash-category (nhóm thu chi)
@@ -35,12 +35,20 @@ the two settings screens where they still apply.
    refuses with "Dòng đã huỷ, không sửa được"); delete stays available on a
    cancelled row too, so ADMIN can still remove a mistaken entry outright.
    The two settings screens offer add, edit, retire/reinstate
-   (`requireAdmin`) and the same ADMIN-only permanent delete.
+   (`requireAdmin`) and the same ADMIN-only permanent delete. Deleting a
+   category or account that any entry uses (cancelled entries included) is
+   refused before the database is touched, with a Vietnamese sentence naming
+   it and pointing to "Ngừng dùng"; the `RESTRICT` foreign key stays as the
+   backstop. Reinstating a retired row is refused when an active row already
+   carries the same name.
 
 3. **What each list contains, and what is excluded.** The ledger reads one
    date range at a time (`getCashEntries(start, end)`, filtered server-side
    on `entry_date`, both `ACTIVE` and `CANCELLED` rows shown — a cancelled
-   row stays visible with a badge, it just drops out of the totals). The two
+   row stays visible with a badge, it just drops out of the totals), newest
+   `entry_date` first, then newest id. A hand-edited range in the URL that is
+   not two `YYYY-MM-DD` dates in order falls back to "Tháng này"
+   (`app/admin/finance/resolve-date-range.ts`). The two
    settings screens show every row of their own table regardless of status;
    only the ledger's own add/edit form narrows their pickers to `ACTIVE`
    rows (plus the row's own category/account if it has since been retired,
@@ -49,12 +57,21 @@ the two settings screens where they still apply.
 4. **Valid inputs, and what happens outside the range.** The ledger's six
    fields go through one shared rule, `parseCashEntry`
    (`lib/finance/cash-entry-rules.ts`): `entry_date` and `category_id`
-   required; `amount` must be a positive whole number of đồng (no minor
-   unit — "1500.5" is refused, not rounded); `payment_method` is `CASH` or
+   required (the add form defaults the date to today in Asia/Saigon);
+   `amount` must be a positive whole number of đồng, typed as plain digits
+   (`150000`) or dot-grouped thousands (`150.000`) — anything else ("1500.5",
+   "150,000", "1e6", a minus sign) is refused, never rounded, and so is a value
+   beyond `Number.MAX_SAFE_INTEGER` (`BR-CASH-005`). The amount box is a text
+   input with a numeric keypad, so the browser cannot turn "150.000" into 150
+   before the server sees it. `payment_method` is `CASH` or
    `BANK_TRANSFER`; `bank_account_id` is required when `BANK_TRANSFER` and
    forced to `null` for `CASH` even if a stale value arrives from the form;
-   `note` is optional. The two settings screens' input rules are unchanged
-   from tasks 4 and 5 (see their own history for the duplicate-name guard).
+   `note` is optional. On the category screen, the Thu/Chi side cannot change
+   once any entry uses the category (`BR-CASH-004`): `updateCashCategory`
+   refuses and the form shows the select disabled. "Tính vào lãi lỗ" stays
+   editable, behind an in-page confirm that says every past row is
+   re-classified (`BR-CASH-003`). Names go through the shared duplicate-name
+   guard on add, rename and reinstate.
 
 5. **Which data it serves, and which it deliberately does not.** The ledger
    serves money the owner physically paid out (chi), other money he
@@ -65,7 +82,12 @@ the two settings screens where they still apply.
    (capital contributions and similar `affects_pnl: false` income) —
    deliberately three separate numbers, never netted into one, so the
    screen never implies a false "extra profit" figure by adding money that
-   is not revenue.
+   is not revenue. `incomeOutsidePnl` shows as a line inside the income
+   total, not as a third card. Under the totals, one line per category gives
+   its amount for the range; an entry whose category is missing from the
+   list shows as a warning line instead of vanishing. The one dated
+   exception to "never a sale" is the owner's lost-revenue rows of
+   2026-09-02 (`BR-CASH-001`).
 
 ## Where it writes
 
@@ -80,4 +102,4 @@ does not know who is acting; `addCashEntry`/`updateCashEntry`/`cancelCashEntry`
 spread these in themselves, since the generic `createEntity`/`updateEntity`
 helpers in `lib/db/shared-actions.ts` only stamp `created_at`.
 
-> Measured against source: 2026-09-09.
+> Measured against source: 2026-09-11.

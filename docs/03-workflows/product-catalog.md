@@ -4,7 +4,7 @@
 routes: /admin/products, /admin/products/categories, /admin/products/modifiers, /admin/products/toppings
 files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
 tables: Products, products, Product_Variants, product_variants, product_price_history, recipes, Product_Categories, Modifiers
-brCodes: BR-CATALOG-001, BR-CATALOG-003
+brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
 ```
 
 **A topping with no standalone món can grow one, 2026-09-08 (`BR-CATALOG-003`,
@@ -72,7 +72,9 @@ product (`MOD-009` today) updates only itself.
    set by an active flag on its row; hiding keeps it out of the POS without
    removing it. A **never-sold** product can additionally be **erased for real**
    through `lib/products/product-erase-transaction.ts`, which deletes its price history,
-   then its variants, then the product itself, atomically. Whether a product has
+   then its variants, then the product itself, atomically. Only ADMIN may erase:
+   `eraseProduct` checks `requireOwner()` first (`BR-ACCESS-003`), and the page
+   hides the button for every other role. Whether a product has
    ever been sold is decided by Postgres RESTRICT foreign keys, not by
    application code: a product referenced by any order line cannot be deleted, so
    a **once-sold** product can only be hidden. Attempting to erase a sold product

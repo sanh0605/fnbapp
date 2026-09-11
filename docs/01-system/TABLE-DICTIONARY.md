@@ -5,14 +5,16 @@ Việt dùng trong `docs/02-rules/GLOSSARY.md` và `docs/02-rules/business-rules
 Mở file này khi thấy một tên bảng trong log lỗi, trong mã nguồn, hay trong một
 báo cáo kỹ thuật, và cần biết nó nói về cái gì trong thực tế quán.
 
-**Số bảng đang sống: 41, không phải 47.** Lịch sử migration từng tạo 47 bảng,
-nhưng 6 bảng đã bị `DROP TABLE` thật sự và không còn tồn tại: `stock_ledger`,
+**Số bảng đang sống: 44, không phải 50** (đếm theo file migration, 2026-09-11). Lịch sử migration từng tạo 50 bảng
+(ba bảng cuối là sổ thu chi, migration `0101`: `cash_categories`,
+`bank_accounts`, `cash_entries`), nhưng 6 bảng đã bị `DROP TABLE` thật sự và
+không còn tồn tại: `stock_ledger`,
 `inventory_balances` (migration `0096`, Phase D — sổ kho cũ, thay bằng
 `stock_issues`), `base_ingredients` (migration `0090` — nhóm nguyên liệu bậc
 hai, chủ quán quyết định xoá 2026-09-01), và `backdated_ledger_events`,
 `backdated_recipe_events`, `audit_baseline_locks` (migration `0054` — bộ máy
 soát lùi ngày, chưa từng chạy thật, chủ quán duyệt gỡ 2026-08-05). Bảng dưới
-đây chỉ liệt kê 41 bảng đang sống, xác nhận bằng cách đọc từng file migration,
+đây chỉ liệt kê 44 bảng đang sống, xác nhận bằng cách đọc từng file migration,
 không đọc theo số liệu trong bất cứ tài liệu nào khác.
 
 Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh doanh) ghi
@@ -23,7 +25,10 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `asset_depreciation_bands` | Bảng khấu hao tài sản | Đơn giá tài sản trong khoảng nào thì phân bổ chi phí trong bao nhiêu tháng; chủ quán tự sửa bảng này |
 | `asset_disposals` | Thanh lý tài sản | Ghi một tài sản được bán/cho/bỏ; chỉ thêm dòng mới, không sửa lịch sử cũ |
 | `assets` | Tài sản/dụng cụ | Một dòng cho mỗi lần mua tài sản, không phải mỗi cái vật lý; giữ giá vốn phân bổ và thời hạn khấu hao |
+| `bank_accounts` | Tài khoản ngân hàng | Tài khoản nhận/chi tiền chuyển khoản; dòng sổ thu chi chuyển khoản phải chỉ vào một tài khoản ở đây |
 | `brands` | Thương hiệu | Nhãn gắn với điểm bán, ví dụ Phin Đi, Uchako |
+| `cash_categories` | Nhóm thu chi | Nhóm của sổ thu chi, ví dụ Vận hành, Marketing; mỗi nhóm thuộc bên Thu hoặc Chi và có cờ tính vào lãi lỗ hay không |
+| `cash_entries` | Sổ thu chi | Một khoản tiền ra/vào ngoài bán hàng và mua hàng: ngày, nhóm, số tiền, tiền mặt hay chuyển khoản |
 | `data_migration_runs` | hạ tầng/kỹ thuật | Nhật ký một lần chạy chuyển đổi dữ liệu lịch sử, khoá lại để không chạy lặp hai lần |
 | `data_recovery_changes` | hạ tầng/kỹ thuật | Nhật ký từng trường dữ liệu được sửa khi khôi phục lịch sử, phục vụ hoàn tác nếu cần |
 | `issue_slips` | Phiếu xuất kho | Chứng từ nhân viên lập khi cho nguyên liệu ra khỏi kho ngoài việc bán |
