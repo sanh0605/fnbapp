@@ -123,6 +123,7 @@ export function BankAccountForm({ account }: BankAccountFormProps) {
             <input
               id={`${formId}-account_number`}
               type="text"
+              inputMode="numeric"
               name="account_number"
               defaultValue={account?.account_number ?? ""}
               className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
