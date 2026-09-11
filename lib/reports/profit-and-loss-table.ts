@@ -41,8 +41,24 @@ export interface PnlRow {
   shareOfRevenue: number | null;
 }
 
-export interface PnlMonthColumn { month: string; label: string; shortLabel: string }
+export interface PnlMonthColumn {
+  month: string;         // "YYYY-MM"
+  label: string;         // unchanged: "09/2026 (đến 11/09)"
+  shortLabel: string;    // unchanged: "09"
+  title: string;         // "09/2026"
+  head: string;          // "09/26"
+  until: string | null;  // "11/09" for the month still running, else null
+  notes: number[];       // numbers of the footnotes whose `months` include this month, ascending
+}
 export interface PnlSummaryMonth { month: string; label: string; netProfit: number }
+
+export interface PnlFootnote {
+  key: string;
+  number: number;        // 1-based position in `footnotes`
+  months: string[];      // "YYYY-MM" months the note is about; [] for the rounding note
+  text: string;          // unchanged wording, except the stocktake tail below
+  strong: string[];      // substrings of `text` to show in bold, e.g. "8.411.868đ"
+}
 
 export interface PnlTable {
   year: number;
@@ -56,8 +72,8 @@ export interface PnlTable {
     bestMonth: PnlSummaryMonth | null;   // highest net profit above 0
     worstMonth: PnlSummaryMonth | null;  // lowest net profit below 0
   };
-  chart: Array<{ month: string; shortLabel: string; netProfit: number; cumulative: number }>;
-  footnotes: Array<{ key: string; text: string }>;
+  chart: Array<{ month: string; shortLabel: string; head: string; partial: boolean; netProfit: number; cumulative: number }>;
+  footnotes: PnlFootnote[];
 }
 
 // Decimals kept on a percentage: two, owner decision 2026-09-11 (BR-DATA-005).
@@ -68,6 +84,9 @@ const MINUS = "−"; // U+2212, the operator in a formula; a negative number kee
 
 const ROUNDING_NOTE =
   "Mỗi ô làm tròn riêng về đồng từ số thật của nó (luật ngày 11/09/2026). Ô Tổng và các ô lợi nhuận cũng làm tròn từ số thật, không cộng từ các ô đã làm tròn, nên cộng tay có thể lệch một, hai đồng.";
+
+const STOCKTAKE_TAIL =
+  "Các tháng trước đó vì vậy có giá vốn thấp hơn thực tế; nhìn dòng Luỹ kế mới thấy đúng bức tranh.";
 
 const PERCENT_FORMATTER = new Intl.NumberFormat("vi-VN", {
   minimumFractionDigits: PERCENT_DECIMALS,
@@ -198,14 +217,14 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
     shareOfRevenue: null,
   });
   rows.push({
-    key: "cumulative", label: "Cộng dồn từ đầu năm", kind: "cumulative", unit: "money",
+    key: "cumulative", label: "Luỹ kế", kind: "cumulative", unit: "money",
     cells: months.map((m, i) => ({
       month: m.month,
       value: displayMoney(cumulative[i]),
       sources: [],
       formula: i === 0
         ? `Tháng đầu tiên có số của năm: bằng lợi nhuận ròng tháng này ${money(exact[0].net)}`
-        : `Cộng dồn tháng trước ${money(cumulative[i - 1])} + lợi nhuận ròng tháng này ${money(exact[i].net)} = ${money(cumulative[i])}`,
+        : `Luỹ kế tháng trước ${money(cumulative[i - 1])} + lợi nhuận ròng tháng này ${money(exact[i].net)} = ${money(cumulative[i])}`,
     })),
     total: null,
     shareOfRevenue: null,
@@ -222,35 +241,44 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
     if (i > 0 && cum[i - 1] + net[i] !== cum[i]) roundingGap = true;
   });
 
-  const footnotes: Array<{ key: string; text: string }> = [];
+  type RawFootnote = { key: string; months: string[]; text: string; strong: string[] };
+  const rawFootnotes: RawFootnote[] = [];
   for (const m of months) {
     if (Math.abs(m.manualRevenue) > NEAR_ZERO) {
-      footnotes.push({
+      const amount = `${money(m.manualRevenue)}đ`;
+      rawFootnotes.push({
         key: `manual-${m.month}`,
-        text: `Doanh thu tháng ${monthLabel(m.month)} có ${money(m.manualRevenue)}đ ghi tay trong sổ thu chi, không qua máy bán hàng.`,
+        months: [m.month],
+        text: `Doanh thu tháng ${monthLabel(m.month)} có ${amount} ghi tay trong sổ thu chi, không qua máy bán hàng.`,
+        strong: [amount],
       });
     }
   }
+  const firstMonth = months[0]?.month ?? null;
   for (const m of months) {
     for (const s of m.sources.cogs) {
       if (s.kind !== "STOCKTAKE") continue;
-      footnotes.push({
-        key: `stocktake-${s.id}-${m.month}`,
-        text: `Giá vốn tháng ${monthLabel(m.month)} có ${money(s.amountExact)}đ từ lần kiểm kho ngày ${dateLabel(s.date)}: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt.`,
-      });
+      const amount = `${money(s.amountExact)}đ`;
+      let text = `Giá vốn tháng ${monthLabel(m.month)} có ${amount} từ lần kiểm kho ngày ${dateLabel(s.date)}: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt.`;
+      if (m.month !== firstMonth) text += ` ${STOCKTAKE_TAIL}`;
+      rawFootnotes.push({ key: `stocktake-${s.id}-${m.month}`, months: [m.month], text, strong: [amount] });
     }
   }
   // BR-SALE-005: before the first payment record, revenue can only be checked against itself.
-  const unchecked = months.filter(m => Math.abs(m.posRevenueBeforePayments) > NEAR_ZERO).map(m => monthLabel(m.month));
-  if (unchecked.length > 0) {
-    footnotes.push({
+  const uncheckedMonths = months.filter(m => Math.abs(m.posRevenueBeforePayments) > NEAR_ZERO).map(m => m.month);
+  if (uncheckedMonths.length > 0) {
+    const uncheckedLabels = uncheckedMonths.map(monthLabel).join(", ");
+    rawFootnotes.push({
       key: "before-payments",
+      months: uncheckedMonths,
       text: figures.firstPaymentDate
-        ? `Doanh thu tháng ${unchecked.join(", ")} có phần bán trước ngày ${dateLabel(figures.firstPaymentDate)}, ngày bắt đầu có sổ tiền nhận, nên phần đó không có sổ tiền để đối chiếu.`
-        : `Chưa có sổ tiền nhận nào, nên doanh thu tháng ${unchecked.join(", ")} chưa đối chiếu được với tiền đã nhận.`,
+        ? `Doanh thu tháng ${uncheckedLabels} có phần bán trước ngày ${dateLabel(figures.firstPaymentDate)}, ngày bắt đầu có sổ tiền nhận, nên phần đó không có sổ tiền để đối chiếu.`
+        : `Chưa có sổ tiền nhận nào, nên doanh thu tháng ${uncheckedLabels} chưa đối chiếu được với tiền đã nhận.`,
+      strong: [],
     });
   }
-  if (roundingGap) footnotes.push({ key: "rounding", text: ROUNDING_NOTE });
+  if (roundingGap) rawFootnotes.push({ key: "rounding", months: [], text: ROUNDING_NOTE, strong: [] });
+  const footnotes: PnlFootnote[] = rawFootnotes.map((f, i) => ({ ...f, number: i + 1 }));
 
   const netByMonth = months.map((m, i) => ({ month: m.month, label: monthLabel(m.month), exact: exact[i].net }));
   const best = netByMonth.filter(x => x.exact > NEAR_ZERO).sort((a, b) => b.exact - a.exact)[0];
@@ -260,13 +288,18 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
 
   return {
     year: figures.year,
-    months: months.map(m => ({
-      month: m.month,
-      label: m.month === currentMonth
-        ? `${monthLabel(m.month)} (đến ${today.slice(8, 10)}/${today.slice(5, 7)})`
-        : monthLabel(m.month),
-      shortLabel: m.month.slice(5, 7),
-    })),
+    months: months.map(m => {
+      const until = m.month === currentMonth ? `${today.slice(8, 10)}/${today.slice(5, 7)}` : null;
+      return {
+        month: m.month,
+        label: until ? `${monthLabel(m.month)} (đến ${until})` : monthLabel(m.month),
+        shortLabel: m.month.slice(5, 7),
+        title: monthLabel(m.month),
+        head: `${m.month.slice(5, 7)}/${m.month.slice(2, 4)}`,
+        until,
+        notes: footnotes.filter(f => f.months.includes(m.month)).map(f => f.number),
+      };
+    }),
     periodLabel: figures.year < Number(today.slice(0, 4)) ? "cả năm" : "từ đầu năm",
     rows,
     summary: {
@@ -279,6 +312,8 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
     chart: months.map((m, i) => ({
       month: m.month,
       shortLabel: m.month.slice(5, 7),
+      head: `${m.month.slice(5, 7)}/${m.month.slice(2, 4)}`,
+      partial: m.month === currentMonth,
       netProfit: displayMoney(exact[i].net),
       cumulative: displayMoney(cumulative[i]),
     })),

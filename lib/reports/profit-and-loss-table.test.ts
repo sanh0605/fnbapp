@@ -69,7 +69,9 @@ const augustTable = () => buildPnlTable(figures([august()], { expenseCategories:
 describe("August 2026, real figures", () => {
   it("rounds each cell from its own exact value and computes profit from exact values", () => {
     const t = augustTable();
-    expect(t.months).toEqual([{ month: "2026-08", label: "08/2026", shortLabel: "08" }]);
+    expect(t.months).toEqual([
+      { month: "2026-08", label: "08/2026", shortLabel: "08", title: "08/2026", head: "08/26", until: null, notes: [1] },
+    ]);
     expect(values(t, "revenue")).toEqual([17_682_000]);
     expect(values(t, "cogs")).toEqual([46_418_990]);
     expect(values(t, "nonInventory")).toEqual([1_760_000]);
@@ -94,6 +96,7 @@ describe("August 2026, real figures", () => {
     expect(row(t, "cumulative").cells[0].formula).toBe(
       "Tháng đầu tiên có số của năm: bằng lợi nhuận ròng tháng này -32.372.964",
     );
+    expect(row(t, "cumulative").label).toBe("Luỹ kế");
     expect(row(t, "netProfit").cells[0].sources).toEqual([]);
   });
 
@@ -126,9 +129,26 @@ describe("August 2026, real figures", () => {
     expect(augustTable().footnotes).toEqual([
       {
         key: "stocktake-STK-001-2026-08",
+        number: 1,
+        months: ["2026-08"],
         text: "Giá vốn tháng 08/2026 có 34.864.627đ từ lần kiểm kho ngày 09/08/2026: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt.",
+        strong: ["34.864.627đ"],
       },
     ]);
+  });
+
+  it("adds the Luỹ kế tail sentence only when the stocktake month is not the table's first month", () => {
+    const first = buildPnlTable(figures([august()], { expenseCategories: CATEGORIES }), "2026-09-11");
+    expect(first.footnotes[0].text).not.toContain("Luỹ kế mới thấy đúng bức tranh");
+
+    const second = buildPnlTable(
+      figures([monthFigures("2026-07", { posRevenue: 1 }), august()], { expenseCategories: CATEGORIES }),
+      "2026-09-11",
+    );
+    const stocktakeNote = second.footnotes.find(f => f.key === "stocktake-STK-001-2026-08")!;
+    expect(stocktakeNote.text).toBe(
+      "Giá vốn tháng 08/2026 có 34.864.627đ từ lần kiểm kho ngày 09/08/2026: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt. Các tháng trước đó vì vậy có giá vốn thấp hơn thực tế; nhìn dòng Luỹ kế mới thấy đúng bức tranh.",
+    );
   });
 });
 
@@ -142,10 +162,11 @@ describe("rounding (BR-DATA-005)", () => {
     expect(row(t, "netProfit").total).toBe(-301);
     expect(values(t, "cumulative")).toEqual([-100, -201, -301]);
     expect(row(t, "cumulative").cells[1].formula).toBe(
-      "Cộng dồn tháng trước -100 + lợi nhuận ròng tháng này -100 = -201",
+      "Luỹ kế tháng trước -100 + lợi nhuận ròng tháng này -100 = -201",
     );
-    expect(t.footnotes.map(f => f.key)).toEqual(["rounding"]);
-    expect(t.footnotes[0].text).toContain("luật ngày 11/09/2026");
+    expect(t.footnotes).toEqual([
+      { key: "rounding", number: 1, months: [], text: expect.stringContaining("luật ngày 11/09/2026"), strong: [] },
+    ]);
   });
 
   it("shows a percentage with two decimals (owner, 11/09/2026)", () => {
@@ -193,7 +214,10 @@ describe("which rows show", () => {
     );
     expect(t.footnotes).toContainEqual({
       key: "manual-2026-04",
+      number: 1,
+      months: ["2026-04"],
       text: "Doanh thu tháng 04/2026 có 8.411.868đ ghi tay trong sổ thu chi, không qua máy bán hàng.",
+      strong: ["8.411.868đ"],
     });
   });
 });
@@ -203,6 +227,11 @@ describe("month labels", () => {
     const september = monthFigures("2026-09", { posRevenue: 5_054_000, posOrderCount: 213 });
     const t = buildPnlTable(figures([august(), september], { expenseCategories: CATEGORIES }), "2026-09-11");
     expect(t.months.map(m => m.label)).toEqual(["08/2026", "09/2026 (đến 11/09)"]);
+    const currentMonth = t.months.find(m => m.month === "2026-09")!;
+    expect(currentMonth.title).toBe("09/2026");
+    expect(currentMonth.head).toBe("09/26");
+    expect(currentMonth.until).toBe("11/09");
+    expect(t.months.find(m => m.month === "2026-08")!.until).toBeNull();
     expect(t.periodLabel).toBe("từ đầu năm");
     const past = buildPnlTable(figures([monthFigures("2025-12", { depreciationExact: 1 })], { year: 2025 }), "2026-09-11");
     expect(past.periodLabel).toBe("cả năm");
@@ -222,9 +251,9 @@ describe("summary and chart", () => {
     expect(t.summary.bestMonth).toEqual({ month: "2026-05", label: "05/2026", netProfit: 7_675_000 });
     expect(t.summary.worstMonth).toEqual({ month: "2026-08", label: "08/2026", netProfit: -32_372_964 });
     expect(t.chart).toEqual([
-      { month: "2026-05", shortLabel: "05", netProfit: 7_675_000, cumulative: 7_675_000 },
-      { month: "2026-08", shortLabel: "08", netProfit: -32_372_964, cumulative: -24_697_964 },
-      { month: "2026-09", shortLabel: "09", netProfit: 5_054_000, cumulative: -19_643_964 },
+      { month: "2026-05", shortLabel: "05", head: "05/26", partial: false, netProfit: 7_675_000, cumulative: 7_675_000 },
+      { month: "2026-08", shortLabel: "08", head: "08/26", partial: false, netProfit: -32_372_964, cumulative: -24_697_964 },
+      { month: "2026-09", shortLabel: "09", head: "09/26", partial: true, netProfit: 5_054_000, cumulative: -19_643_964 },
     ]);
   });
 
@@ -260,7 +289,12 @@ describe("BR-SALE-005 footnote", () => {
     ]), "2026-09-11");
     expect(t.footnotes).toContainEqual({
       key: "before-payments",
+      number: 1,
+      months: ["2026-06", "2026-07"],
       text: "Doanh thu tháng 06/2026, 07/2026 có phần bán trước ngày 20/07/2026, ngày bắt đầu có sổ tiền nhận, nên phần đó không có sổ tiền để đối chiếu.",
+      strong: [],
     });
+    expect(t.months.find(m => m.month === "2026-06")!.notes).toEqual([1]);
+    expect(t.months.find(m => m.month === "2026-08")!.notes).toEqual([]);
   });
 });
