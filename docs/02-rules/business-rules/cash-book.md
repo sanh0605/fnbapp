@@ -21,6 +21,15 @@ count. Owner, 2026-09-11: "Là khoản doanh thu bị mất dữ liệu từ lú
 xây dựng lại app, nạp vào bình thường." The exception covers these two rows
 only; it is not a route for future sales.
 
+**What this took out of the first import (owner, 2026-09-11).** The owner's
+sheet held 54 rows; 38 were imported. Six rows of tắc and chanh (529.000đ) were
+already entered as purchase orders, matched amount for amount, so importing them
+would have counted them twice. Ten rows of đá viên and túi đựng khoai
+(2.967.000đ) are catalogued purchased items with no purchase order yet; the
+owner chose to record them as purchase orders himself ("Chuyển sang đơn
+nhập"). The rule that follows: anything bought that is in the purchased-item
+catalogue goes through a purchase order, never through the cash book.
+
 ### BR-CASH-002 — Cancelled rows leave every total; income and expense are never netted
 
 **Status:** `APPROVED` — owner decision 2026-09-08.
