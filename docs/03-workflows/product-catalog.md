@@ -9,7 +9,7 @@ brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
 
 **A topping with no standalone món can grow one, 2026-09-08 (`BR-CATALOG-003`,
 plan `docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md`, migration
-`0100`, not yet run against production).** The Topping & Tuỳ chọn screen's
+`0100`, applied on the server — `supabase migration list`, 2026-09-11).** The Topping & Tuỳ chọn screen's
 "Bán độc lập" switch used to only toggle an *already-linked* product's
 active flag. On a modifier with no linked product yet (`MOD-009` today), the
 same switch now asks for confirmation and, if confirmed, creates the
@@ -57,7 +57,7 @@ Toppings are themselves stored as products, which is why
 `app/admin/products/toppings/actions.ts` writes the `Products` table too.
 
 **A topping's price has one edit point (`BR-CATALOG-003`, added 2026-09-07,
-migration `0098`, not yet run against production).** A topping is sold two
+migration `0098`, applied on the server — `supabase migration list`, 2026-09-11).** A topping is sold two
 ways — as an add-on (`modifiers.price`) and, if linked, standalone as a
 `CAT-007` product's own variant (`product_variants.price`). Editing the
 price on the Topping & Tuỳ chọn screen now writes both, plus a
