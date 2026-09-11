@@ -13,13 +13,14 @@ Sales live in the POS, purchases in purchase orders. The cash book takes
 everything else: running costs, other income, capital put in. Recording a
 sale or a purchase here counts it twice.
 
-**Exception.** Two rows under "Thu khác" (1.728.578đ by transfer, 6.683.290đ
-in cash, 8.411.868đ together) are sales revenue whose order data was lost
-while the app was being set up and rebuilt. The import dated them 2026-09-02,
-the day the owner wrote them into his sheet; on 2026-09-11 the owner moved both
-in the app himself, first to 2026-05-01 and then to 2026-04-30 (measured the
-same day: `CE-033`, `CE-034`, last edited by `admin`), so every monthly total
-counts them in April 2026.
+**Exception.** Two rows (1.728.578đ by transfer, 6.683.290đ in cash,
+8.411.868đ together) are sales revenue whose order data was lost while the app
+was being set up and rebuilt. The import put them under "Thu khác" and dated
+them 2026-09-02, the day the owner wrote them into his sheet. On 2026-09-11 the
+owner changed both in the app himself: the date first to 2026-05-01 and then to
+2026-04-30, so every monthly total counts them in April 2026, and the category
+to a new income category he created, "Doanh thu ghi tay" (measured the same
+day: `CE-033`, `CE-034` under `CFC-006`, which counts toward profit and loss).
 
 **In profit and loss they are sales revenue** (owner, 2026-09-11: "Tính vào
 doanh thu"). The P&L adds them to that month's revenue on a line of their own,

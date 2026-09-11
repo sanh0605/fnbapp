@@ -26,6 +26,7 @@ When a rule changes, preserve the old decision in Git/audit evidence and record 
 | [`docs/02-rules/business-rules/inventory.md`](inventory.md) | Inventory, purchasing, and production rules | `BR-INV-*` |
 | [`docs/02-rules/business-rules/catalog.md`](catalog.md) | Catalogue rules | `BR-CATALOG-*` |
 | [`docs/02-rules/business-rules/cash-book.md`](cash-book.md) | Cash book (sổ thu chi) rules | `BR-CASH-*` |
+| [`docs/02-rules/business-rules/profit-and-loss.md`](profit-and-loss.md) | Monthly profit and loss rules | `BR-PNL-*` |
 | [`docs/02-rules/business-rules/data-integrity.md`](data-integrity.md) | Backdated, audit/recovery, and backup rules | `BR-BACKDATE-*`, `BR-DATA-*`, `BR-BACKUP-*` |
 | [`docs/02-rules/business-rules/access.md`](access.md) | Access and security rules | `BR-ACCESS-*` |
 | [`docs/02-rules/business-rules/unresolved.md`](unresolved.md) | Unresolved items awaiting a decision | `BR-U-*` |
