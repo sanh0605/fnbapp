@@ -66,4 +66,18 @@ describe("getProfitAndLossReport", () => {
     });
     await expect(getProfitAndLossReport(2026)).rejects.toThrow("CE-777");
   });
+
+  it("returns the brand names for the header, ordered by code", async () => {
+    (findAll as any).mockImplementation(async (sheet: string) =>
+      sheet === "Brands"
+        ? [
+            { id: "BR-002", code: "B2", name: "Uchako", start_date: "", status: "ACTIVE", created_at: "" },
+            { id: "BR-001", code: "B1", name: "Phin Đi", start_date: "", status: "ACTIVE", created_at: "" },
+          ]
+        : []);
+
+    const report = await getProfitAndLossReport(2026);
+
+    expect(report.brandNames).toEqual(["Phin Đi", "Uchako"]);
+  });
 });

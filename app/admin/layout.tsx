@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // deleted -- app/admin/reports/stock stays on disk, reachable by
         // URL, so restoring this link is a one-line change if ever needed.
         { name: "Giá trị hàng đã xuất", href: "/admin/reports/issued" },
-        { name: "Lãi lỗ", href: "/admin/reports/pnl" },
+        { name: "Báo cáo tài chính", href: "/admin/reports/pnl" },
       ]
     },
     {

@@ -201,7 +201,7 @@ export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
                 Tính là doanh thu bán hàng
               </label>
               <p className="mt-1 text-xs text-text-muted">
-                Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Lãi lỗ cộng vào dòng Doanh thu thay vì Thu khác.
+                Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Báo cáo tài chính cộng vào dòng Doanh thu thay vì Thu khác.
               </p>
             </div>
           )}

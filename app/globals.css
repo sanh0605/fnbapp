@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Owner decision 2026-09-12: the approved report sample's heading font,
+     applied system-wide. Outfit has no Vietnamese glyphs (latin/latin-ext
+     only, checked 2026-09-12), so a Vietnamese heading falls back to Plus
+     Jakarta Sans letter by letter -- the same thing the sample does. */
+  h1, h2, h3 { font-family: 'Outfit', 'Plus Jakarta Sans', Arial, Helvetica, sans-serif; }
+}
+
 :root {
   --background: #F6F5F0;
   --foreground: #1D2A24;
@@ -27,6 +35,9 @@
   --color-danger: #9C4430;
   --color-processing: #2D6E77;
   --color-focus-ring: #9C6418;
+  /* Chart bars for a profit month (Bản thử, owner notes 2026-09-11): lighter
+     than --color-success so the luỹ kế line still reads as its own series. */
+  --color-chart-profit: #6B9E80;
 }
 
 body {

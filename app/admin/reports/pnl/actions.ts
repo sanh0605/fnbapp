@@ -6,11 +6,13 @@ import { ORDER_STATUS } from "@/lib/sales/order-types";
 import { saigonBucketKeys, toSaigonUtcRange } from "@/lib/shared/report-time";
 import { computeProfitAndLoss, listAvailableYears, type PnlFigures } from "@/lib/reports/profit-and-loss";
 import { buildPnlTable, type PnlTable } from "@/lib/reports/profit-and-loss-table";
+import type { DBBrand } from "@/types/db";
 
 export interface ProfitAndLossReport {
   availableYears: number[];
   figures: PnlFigures;
   table: PnlTable;
+  brandNames: string[]; // for the page's header subtitle, ordered by code
 }
 
 // BR-PNL-004: ADMIN and MANAGER, the same guard as every other report.
@@ -29,7 +31,7 @@ export async function getProfitAndLossReport(year?: number): Promise<ProfitAndLo
   // the way getPnLDataV2 reads them.
   const [
     firstOrders, firstPayments, cashEntries, cashCategories, purchaseOrders, purchaseOrderLines,
-    purchasedItems, itemCategories, stockIssues, stocktakeSessions, assets, assetDisposals,
+    purchasedItems, itemCategories, stockIssues, stocktakeSessions, assets, assetDisposals, brands,
   ] = await Promise.all([
     findAllWhere("Orders_V2", { eq: { status: ORDER_STATUS.COMPLETED }, order: { column: "created_at", ascending: true }, limit: 1 }),
     findAllWhere("Order_Payments", { order: { column: "created_at", ascending: true }, limit: 1 }),
@@ -43,7 +45,13 @@ export async function getProfitAndLossReport(year?: number): Promise<ProfitAndLo
     findAllNoCache("stocktake_sessions"),
     findAllNoCache("assets"),
     findAllNoCache("asset_disposals"),
+    findAll("Brands"),
   ]);
+
+  const brandNames = (brands as DBBrand[])
+    .slice()
+    .sort((a, b) => a.code.localeCompare(b.code))
+    .map(b => b.name);
 
   const availableYears = listAvailableYears(
     [
@@ -82,5 +90,5 @@ export async function getProfitAndLossReport(year?: number): Promise<ProfitAndLo
     firstPaymentAt: (firstPayments[0] as any)?.created_at ?? null,
   });
 
-  return { availableYears, figures, table: buildPnlTable(figures, today) };
+  return { availableYears, figures, table: buildPnlTable(figures, today), brandNames };
 }

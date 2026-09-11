@@ -34,10 +34,17 @@ const config: Config = {
         danger: "var(--color-danger)",
         processing: "var(--color-processing)",
         "focus-ring": "var(--color-focus-ring)",
+        "chart-profit": "var(--color-chart-profit)",
+      },
+      fontFamily: {
+        display: ["Outfit", "Plus Jakarta Sans", "Arial", "sans-serif"],
       },
       borderRadius: {
         card: "12px",
         button: "8px",
+      },
+      boxShadow: {
+        panel: "0 1px 2px rgba(29,42,36,.06), 0 6px 24px rgba(29,42,36,.05)",
       },
     },
   },

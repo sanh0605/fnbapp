@@ -1,11 +1,8 @@
 // Chart money, shortened to "k" (thousand) or "tr" (million).
 // Owner decision 2026-09-12 (BR-DATA-005, docs/02-rules/business-rules/
 // data-integrity.md): "hiển thị có đơn vị là k, triệu thì đơn vị là tr".
-// One chart uses one unit for every figure it draws.
-//
-// orphan-allow: built in Mục 1 of
-// docs/superpowers/plans/2026-09-12-bao-cao-tai-chinh-giao-dien.md; PnlChart.tsx
-// (Mục 2, a separate reviewed step) is the first caller.
+// One chart uses one unit for every figure it draws. First (and only)
+// caller: app/admin/reports/pnl/components/PnlChart.tsx.
 
 export type CompactUnit = "k" | "tr";
 
