@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toMoneyDigits, groupThousands, caretAfterFormat } from "./money-digits";
+import { toMoneyDigits, groupThousands, caretAfterFormat, removeDigitAcrossDot } from "./money-digits";
 
 describe("BR-CASH-005 toMoneyDigits", () => {
   it("keeps only digits, dropping letters, dots, commas, dashes and spaces", () => {
@@ -63,5 +63,40 @@ describe("BR-CASH-005 caretAfterFormat", () => {
 
   it("returns 0 when no digits are left of the caret", () => {
     expect(caretAfterFormat(0, "150.000")).toBe(0);
+  });
+});
+
+describe("BR-CASH-005 fix round 1 (item 3) removeDigitAcrossDot", () => {
+  // "1.500.000" (digits "1500000"), caret right after the first dot
+  // (position 2 -- 1 digit, "1", is left of it): Backspace would otherwise
+  // delete only the dot. It must remove the "1" instead.
+  it("Backspace over a dot removes the digit to its left", () => {
+    const result = removeDigitAcrossDot("1500000", 1, "backward");
+    expect(result.digits).toBe("500000");
+    expect(result.digitsLeftOfCaret).toBe(0);
+    expect(groupThousands(result.digits)).toBe("500.000");
+    expect(caretAfterFormat(result.digitsLeftOfCaret, groupThousands(result.digits))).toBe(0);
+  });
+
+  // Same box, caret right before the second dot (position 5 -- 4 digits,
+  // "1500", are left of it): Delete would otherwise delete only the dot. It
+  // must remove the digit to its right (the first "0" of the last group)
+  // instead.
+  it("Delete over a dot removes the digit to its right", () => {
+    const result = removeDigitAcrossDot("1500000", 4, "forward");
+    expect(result.digits).toBe("150000");
+    expect(result.digitsLeftOfCaret).toBe(4);
+    expect(groupThousands(result.digits)).toBe("150.000");
+    // Reported to the coordinator: the digit removed was to the right of
+    // the caret, so the digit count left of the caret is unchanged (still
+    // 4) -- caretAfterFormat then lands at 5, not 3. Regrouping the
+    // shortened digit string moves the second dot, so "4 digits in" no
+    // longer sits right at a dot boundary the way it used to.
+    expect(caretAfterFormat(result.digitsLeftOfCaret, groupThousands(result.digits))).toBe(5);
+  });
+
+  it("does nothing at the start (Backspace) or end (Delete) of the digits", () => {
+    expect(removeDigitAcrossDot("150", 0, "backward")).toEqual({ digits: "150", digitsLeftOfCaret: 0 });
+    expect(removeDigitAcrossDot("150", 3, "forward")).toEqual({ digits: "150", digitsLeftOfCaret: 3 });
   });
 });

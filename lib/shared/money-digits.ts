@@ -5,13 +5,20 @@
  * work, never Number(), avoids float precision loss at that size.
  */
 
+// Digits only, no leading zeros, NOT capped at 15 -- used by the caller to
+// tell a keystroke that would push the box over the cap (which must be
+// rejected outright, never truncated -- fix round 1, item 1) from one that
+// fits.
+export function toMoneyDigitsUncapped(raw: string): string {
+  const digitsOnly = raw.replace(/\D/g, "");
+  return digitsOnly.replace(/^0+/, "");
+}
+
 // Digits only, no leading zeros, capped at 15 digits. "0" alone strips down
 // to "" -- the box is empty, not showing a zero -- because the owner types
 // an amount, he never means to enter zero đồng.
 export function toMoneyDigits(raw: string): string {
-  const digitsOnly = raw.replace(/\D/g, "");
-  const noLeadingZeros = digitsOnly.replace(/^0+/, "");
-  return noLeadingZeros.slice(0, 15);
+  return toMoneyDigitsUncapped(raw).slice(0, 15);
 }
 
 // Dot every 3 digits from the right. String work only (no Intl, no Number)
@@ -41,4 +48,37 @@ export function caretAfterFormat(digitsLeftOfCaret: number, formatted: string): 
     }
   }
   return formatted.length;
+}
+
+export type DotDeleteDirection = "backward" | "forward";
+
+export interface DotDeleteResult {
+  digits: string;
+  digitsLeftOfCaret: number;
+}
+
+// Backspace with the caret right after a dot, or Delete with it right
+// before one, would otherwise delete only the dot -- the digits are
+// unchanged and the key looks dead. The dot carries no value of its own, so
+// remove the neighbouring digit instead: the one to the left for Backspace,
+// the one to the right for Delete. `digitsLeftOfCaret` is counted the same
+// way as everywhere else in this module (digits before the caret, ignoring
+// dots); the returned `digitsLeftOfCaret` is where the caret should sit in
+// the new digit string, ready for caretAfterFormat once it is reformatted.
+export function removeDigitAcrossDot(
+  digits: string,
+  digitsLeftOfCaret: number,
+  direction: DotDeleteDirection,
+): DotDeleteResult {
+  if (direction === "backward") {
+    if (digitsLeftOfCaret <= 0) return { digits, digitsLeftOfCaret };
+    const removeIndex = digitsLeftOfCaret - 1;
+    const newDigits = digits.slice(0, removeIndex) + digits.slice(removeIndex + 1);
+    return { digits: newDigits, digitsLeftOfCaret: removeIndex };
+  }
+  // forward: the digit immediately to the right of the caret sits at index
+  // `digitsLeftOfCaret` in the digit string.
+  if (digitsLeftOfCaret >= digits.length) return { digits, digitsLeftOfCaret };
+  const newDigits = digits.slice(0, digitsLeftOfCaret) + digits.slice(digitsLeftOfCaret + 1);
+  return { digits: newDigits, digitsLeftOfCaret };
 }

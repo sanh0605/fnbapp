@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { caretAfterFormat, groupThousands, toMoneyDigits } from "@/lib/shared/money-digits";
+import {
+  caretAfterFormat,
+  groupThousands,
+  removeDigitAcrossDot,
+  toMoneyDigits,
+  toMoneyDigitsUncapped,
+} from "@/lib/shared/money-digits";
 
 interface MoneyInputProps {
   id: string;
@@ -63,23 +69,64 @@ export function MoneyInput({
     const raw = e.target.value;
     const selStart = e.target.selectionStart ?? raw.length;
     const digitsLeftOfCaret = countDigits(raw.slice(0, selStart));
-    const newDigits = toMoneyDigits(raw);
-    const newFormatted = groupThousands(newDigits);
 
-    if (newDigits === digits) {
-      // Nothing actually changed (a non-digit char, or a digit past the
-      // 15-digit cap) -- the browser may already have written the rejected
-      // character into the DOM value before this handler ran, so put the
-      // last valid display back rather than waiting on a state update that
-      // React would otherwise skip (same value in, same value out).
-      e.target.value = newFormatted;
-      const caret = caretAfterFormat(digitsLeftOfCaret, newFormatted);
+    // Fix round 1, item 1: a keystroke (or a paste) that would push the box
+    // over the 15-digit cap is rejected whole, never truncated from the
+    // tail -- slicing would silently keep a different number. Reject by
+    // restoring the digits exactly as they were, with the caret back where
+    // it was before this keystroke: the keystroke inserted however many
+    // more digits `uncapped` now holds than the box held before.
+    const uncapped = toMoneyDigitsUncapped(raw);
+    if (uncapped.length > 15) {
+      const oldFormatted = groupThousands(digits);
+      const insertedDigits = uncapped.length - digits.length;
+      const caretBefore = Math.max(0, digitsLeftOfCaret - insertedDigits);
+      e.target.value = oldFormatted;
+      const caret = caretAfterFormat(caretBefore, oldFormatted);
       e.target.setSelectionRange(caret, caret);
       return;
     }
 
-    pendingCaretRef.current = caretAfterFormat(digitsLeftOfCaret, newFormatted);
-    setDigits(newDigits);
+    const newDigits = toMoneyDigits(raw);
+
+    if (newDigits !== digits) {
+      const newFormatted = groupThousands(newDigits);
+      pendingCaretRef.current = caretAfterFormat(digitsLeftOfCaret, newFormatted);
+      setDigits(newDigits);
+      return;
+    }
+
+    // Nothing changed by plain digit extraction. Two possible causes:
+    // - Fix round 1, item 3: Backspace/Delete landed on a dot, which
+    //   carries no digit of its own, so it looks like the key did nothing.
+    //   Remove the neighbouring digit instead.
+    // - A non-digit character was typed or pasted (dropped, as always).
+    const inputType = (e.nativeEvent as InputEvent).inputType;
+    const direction =
+      inputType === "deleteContentBackward" ? "backward" :
+      inputType === "deleteContentForward" ? "forward" :
+      null;
+
+    if (direction) {
+      const result = removeDigitAcrossDot(digits, digitsLeftOfCaret, direction);
+      if (result.digits !== digits) {
+        const resultFormatted = groupThousands(result.digits);
+        pendingCaretRef.current = caretAfterFormat(result.digitsLeftOfCaret, resultFormatted);
+        setDigits(result.digits);
+        return;
+      }
+    }
+
+    // A rejected non-digit character, or (an old browser with no
+    // inputType) a delete over a dot kept as today's no-op behaviour -- the
+    // browser may already have written it into the DOM value before this
+    // handler ran, so put the last valid display back rather than waiting
+    // on a state update that React would otherwise skip (same value in,
+    // same value out).
+    const formatted = groupThousands(digits);
+    e.target.value = formatted;
+    const caret = caretAfterFormat(digitsLeftOfCaret, formatted);
+    e.target.setSelectionRange(caret, caret);
   }
 
   return (

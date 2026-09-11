@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { MoneyInput } from "./MoneyInput";
 
 afterEach(cleanup);
@@ -108,5 +108,99 @@ describe("BR-CASH-005 MoneyInput", () => {
     fireEvent.reset(form);
     expect(visible.value).toBe("");
     expect(getHidden("amount").value).toBe("");
+  });
+
+  it("shows a string defaultValue grouped, with hidden plain digits", () => {
+    render(<MoneyInput id="amount" name="amount" defaultValue="1728578" />);
+    expect(getVisible().value).toBe("1.728.578");
+    expect(getHidden("amount").value).toBe("1728578");
+  });
+});
+
+describe("BR-CASH-005 fix round 1", () => {
+  // Item 1: a keystroke that would push a full 15-digit box over the cap
+  // must be rejected whole, never truncated from the tail (which used to
+  // silently change the number).
+  it("rejects a mid-string insert that would push a full box over the 15-digit cap", () => {
+    const full = "123456789012345"; // already at the 15-digit cap
+    render(<MoneyInput id="amount" name="amount" defaultValue={full} />);
+    const visible = getVisible();
+    expect(visible.value).toBe("123.456.789.012.345");
+
+    const setSelectionRangeSpy = vi.spyOn(HTMLInputElement.prototype, "setSelectionRange");
+    // Caret right after the first dot (3 digits in), typing "9" there --
+    // the browser inserts it and puts the caret right after it (index 5)
+    // before firing change.
+    Object.defineProperty(visible, "selectionStart", { value: 5, configurable: true });
+    fireEvent.change(visible, { target: { value: "123.9456.789.012.345" } });
+
+    expect(visible.value).toBe("123.456.789.012.345");
+    expect(getHidden("amount").value).toBe(full);
+    // Caret goes back to where it was before the rejected keystroke: 3
+    // digits in.
+    expect(setSelectionRangeSpy).toHaveBeenCalledWith(3, 3);
+    setSelectionRangeSpy.mockRestore();
+  });
+
+  it("rejects a paste that would exceed the cap, rather than cutting it to 15 digits", () => {
+    render(<MoneyInput id="amount" name="amount" />);
+    const visible = getVisible();
+    fireEvent.change(visible, { target: { value: "1234567890123456" } }); // 16 digits pasted at once
+    expect(visible.value).toBe("");
+    expect(getHidden("amount").value).toBe("");
+  });
+
+  // Item 2: caret wiring at integration level, the brief's own example --
+  // "150.000", caret between "1" and "5", type "9" -> "1.950.000", caret 3.
+  it("restores the caret after a mid-string insert (150.000 + 9 between 1 and 5)", () => {
+    render(<MoneyInput id="amount" name="amount" defaultValue={150000} />);
+    const visible = getVisible();
+    expect(visible.value).toBe("150.000");
+
+    const setSelectionRangeSpy = vi.spyOn(HTMLInputElement.prototype, "setSelectionRange");
+    // The browser has already inserted "9" and moved the caret to just
+    // after it (index 2) before firing change.
+    Object.defineProperty(visible, "selectionStart", { value: 2, configurable: true });
+    fireEvent.change(visible, { target: { value: "1950.000" } });
+
+    expect(visible.value).toBe("1.950.000");
+    expect(setSelectionRangeSpy).toHaveBeenCalledWith(3, 3);
+    setSelectionRangeSpy.mockRestore();
+  });
+
+  // Item 3: Backspace/Delete landing on a dot must remove the neighbouring
+  // digit, not silently do nothing.
+  it("Backspace right after a dot removes the digit to its left", () => {
+    render(<MoneyInput id="amount" name="amount" defaultValue={1500000} />);
+    const visible = getVisible();
+    expect(visible.value).toBe("1.500.000");
+
+    // Caret right after the first dot; native Backspace deletes the dot
+    // itself, landing the caret where the dot used to be (index 1).
+    Object.defineProperty(visible, "selectionStart", { value: 1, configurable: true });
+    fireEvent.input(visible, {
+      target: { value: "1500.000" },
+      inputType: "deleteContentBackward",
+    });
+
+    expect(visible.value).toBe("500.000");
+    expect(getHidden("amount").value).toBe("500000");
+  });
+
+  it("Delete right before a dot removes the digit to its right", () => {
+    render(<MoneyInput id="amount" name="amount" defaultValue={1500000} />);
+    const visible = getVisible();
+    expect(visible.value).toBe("1.500.000");
+
+    // Caret right before the second dot; native Delete deletes the dot
+    // itself, and Delete never moves the caret (stays at index 5).
+    Object.defineProperty(visible, "selectionStart", { value: 5, configurable: true });
+    fireEvent.input(visible, {
+      target: { value: "1.500000" },
+      inputType: "deleteContentForward",
+    });
+
+    expect(visible.value).toBe("150.000");
+    expect(getHidden("amount").value).toBe("150000");
   });
 });
