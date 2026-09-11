@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildRows, monthlyTotals } from "./import-cash-entries";
+import { buildRows, monthlyTotals, buildCategoryIdMap } from "./import-cash-entries";
 
 const fixture = JSON.parse(
   readFileSync(resolve(process.cwd(), "scripts/fixtures/cash-entries-2026.json"), "utf8"),
@@ -100,5 +100,34 @@ describe("cash entry import", () => {
 
   it("refuses to guess a bank account for the BANK_TRANSFER row when none is given", () => {
     expect(() => buildRows(fixture, CATEGORY_IDS, ADMIN, null)).toThrow(/1\.728\.578/);
+  });
+});
+
+// M11 (final-review.md): categoryIds[c.name] = c.id mapped INACTIVE
+// categories too, last one wins. If the owner retires a seeded category and
+// creates a new one with the same name before running this import, the rows
+// silently land on whichever id sorted last -- filter to ACTIVE only.
+describe("buildCategoryIdMap (M11)", () => {
+  it("maps only ACTIVE categories by name", () => {
+    const map = buildCategoryIdMap([
+      { id: "CFC-001", name: "Vận hành", status: "ACTIVE" },
+      { id: "CFC-002", name: "Marketing", status: "ACTIVE" },
+    ]);
+    expect(map).toEqual({ "Vận hành": "CFC-001", "Marketing": "CFC-002" });
+  });
+
+  it("excludes an INACTIVE category entirely, even when its name is unique", () => {
+    const map = buildCategoryIdMap([
+      { id: "CFC-009", name: "Nhóm cũ đã ngừng", status: "INACTIVE" },
+    ]);
+    expect(map).toEqual({});
+  });
+
+  it("prefers the ACTIVE row when a retired category shares a name with a new ACTIVE one", () => {
+    const map = buildCategoryIdMap([
+      { id: "CFC-001", name: "Marketing", status: "INACTIVE" },
+      { id: "CFC-010", name: "Marketing", status: "ACTIVE" },
+    ]);
+    expect(map).toEqual({ "Marketing": "CFC-010" });
   });
 });

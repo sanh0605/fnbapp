@@ -140,6 +140,21 @@ export function monthlyTotals(rows: CashEntryRow[]): Record<string, Record<strin
   return out;
 }
 
+// M11 (final-review.md): mapping every category by name, INACTIVE included,
+// let a retired category and its ACTIVE replacement race on the same name --
+// whichever sorted last in the table won. Filter to ACTIVE so a row always
+// lands on the category the owner can currently see and edit.
+export function buildCategoryIdMap(
+  categories: Array<{ id: string; name: string; status: string }>,
+): Record<string, string> {
+  const categoryIds: Record<string, string> = {};
+  for (const c of categories) {
+    if (c.status !== "ACTIVE") continue;
+    categoryIds[c.name] = c.id;
+  }
+  return categoryIds;
+}
+
 // Vietnamese hint line naming the ACTIVE accounts to choose from, or saying
 // there are none yet -- shown on both "flag missing" and "name not found".
 function bankAccountHint(activeAccounts: Array<{ name: string }>): string {
@@ -159,9 +174,8 @@ async function main(): Promise<void> {
 
   // 1. Load cash_categories, build name -> id. Stop loudly if a name the
   // sheet uses is not seeded.
-  const categories = await findAllNoCache("Cash_Categories") as Array<{ id: string; name: string }>;
-  const categoryIds: Record<string, string> = {};
-  for (const c of categories) categoryIds[c.name] = c.id;
+  const categories = await findAllNoCache("Cash_Categories") as Array<{ id: string; name: string; status: string }>;
+  const categoryIds = buildCategoryIdMap(categories);
 
   const neededNames = [...new Set(sheet.map((r) => r.category))];
   const missingNames = neededNames.filter((name) => !(name in categoryIds));
