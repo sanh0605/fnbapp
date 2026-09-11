@@ -11,9 +11,9 @@ import {
 import { extractTables } from "@/scripts/system-map/extract-tables";
 
 describe("Google Drive backup core", () => {
-  it("pins the complete 41-table snapshot policy", () => {
-    expect(BACKUP_TABLES).toHaveLength(41);
-    expect(new Set(BACKUP_TABLES).size).toBe(41);
+  it("pins the complete 44-table snapshot policy", () => {
+    expect(BACKUP_TABLES).toHaveLength(44);
+    expect(new Set(BACKUP_TABLES).size).toBe(44);
     expect(BACKUP_TABLES).toContain("orders_v2");
     expect(BACKUP_TABLES).toContain("users");
     expect(BACKUP_TABLES).toContain("sync_state");
@@ -66,6 +66,28 @@ describe("Google Drive backup core", () => {
     expect(droppedButStillListed).toEqual([]);
   });
 
+  it("every live table is backed up", () => {
+    // The other direction of the regression above: a table created by a
+    // migration but never added to BACKUP_TABLES silently never reaches the
+    // nightly Drive backup (found 2026-09-08 for the cash-book tables added
+    // by migration 0101, before this test existed).
+    //
+    // Named, reviewed exemptions only -- nothing today belongs here. Do not
+    // add a table to this list without owner sign-off on why it should never
+    // be backed up.
+    const DELIBERATELY_NOT_BACKED_UP: string[] = [];
+
+    const migrationsDir = join(process.cwd(), "supabase/migrations");
+    const migrationFiles = readdirSync(migrationsDir).filter(name => name.endsWith(".sql")).sort();
+    const sqlSources = migrationFiles.map(name => readFileSync(join(migrationsDir, name), "utf8"));
+    const liveTableNames = extractTables(sqlSources).map(table => table.name);
+
+    const missingFromBackup = liveTableNames.filter(
+      table => !(BACKUP_TABLES as readonly string[]).includes(table) && !DELIBERATELY_NOT_BACKED_UP.includes(table),
+    );
+    expect(missingFromBackup).toEqual([]);
+  });
+
   it("builds the schema-versioned recovery bundle with counts", () => {
     const bundle = buildBackupBundle(
       "2026-07-16T19:30:00.000Z",
@@ -91,12 +113,26 @@ describe("Google Drive backup core", () => {
       .toBe("fnbapp-backup-2026-07-17.json");
   });
 
-  it("rejects a snapshot missing any of the 41 required table keys", () => {
+  it("rejects a snapshot missing any of the 44 required table keys", () => {
     const rows = new Map(BACKUP_TABLES.map(table => [table, []]));
     const complete = buildBackupBundle("2026-07-16T00:00:00.000Z", rows);
-    expect(validateBackupBundle(complete)).toEqual({ tableCount: 41, totalRowCount: 0 });
+    expect(validateBackupBundle(complete)).toEqual({ tableCount: 44, totalRowCount: 0 });
 
     delete complete.tables.users;
     expect(() => validateBackupBundle(complete)).toThrow(/missing.*users/i);
+  });
+
+  it("keeps the Apps Script EXPECTED_TABLES list in sync with BACKUP_TABLES", () => {
+    // Regression test for half of the 2026-09-01 outage: BACKUP_TABLES (this
+    // file) and EXPECTED_TABLES (the Apps Script side, which cannot import
+    // this module -- it runs on Google's servers, not Deno) are two
+    // hand-maintained copies of the same list. They had drifted before.
+    const gsPath = join(process.cwd(), "scripts/apps-script/backup-to-drive.gs");
+    const gsSource = readFileSync(gsPath, "utf8");
+    const match = /const EXPECTED_TABLES\s*=\s*\[([\s\S]*?)\];/.exec(gsSource);
+    if (!match) throw new Error("Could not find EXPECTED_TABLES array in backup-to-drive.gs");
+    const expectedTables = [...match[1].matchAll(/"([^"]+)"/g)].map(m => m[1]);
+
+    expect(expectedTables).toEqual([...BACKUP_TABLES]);
   });
 });

@@ -8,7 +8,8 @@ const EXPECTED_TABLES = [
   "production_items", "pos_drafts", "users", "sync_state", "data_migration_runs",
   "data_recovery_changes", "order_payments", "shifts", "shift_stock_checks",
   "stocktake_sessions", "stocktake_lines", "issue_slips", "stock_issues",
-  "purchase_order_edits", "pos_sync_failures",
+  "purchase_order_edits", "pos_sync_failures", "cash_categories",
+  "bank_accounts", "cash_entries",
 ];
 const DAILY_RETENTION_COUNT = 180;
 const DAILY_PREFIX = "fnbapp-backup-";

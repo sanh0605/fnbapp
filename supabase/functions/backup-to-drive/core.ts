@@ -53,6 +53,17 @@ export const BACKUP_TABLES = [
   // inventory_balances and stock_ledger are dropped tables (migration 0096,
   // 2026-09-02); base_ingredients is dropped (migration 0090, 2026-09-01).
   // None exist any more, so none are listed.
+  "cash_categories",
+  "bank_accounts",
+  // References cash_categories (category_id) and bank_accounts
+  // (bank_account_id), so it must come after both for
+  // lib/db/backup-restore.ts's parent-first restore order to resolve. See
+  // supabase/migrations/0101_cash_book.sql lines 60 and 64.
+  //
+  // Added 2026-09-11. WARNING: this function must not be deployed until
+  // migration 0101 is live -- dumpTable throws on a 404, and one missing
+  // table kills the whole night's backup.
+  "cash_entries",
 ] as const;
 
 export const PAGE_SIZE = 1000;
