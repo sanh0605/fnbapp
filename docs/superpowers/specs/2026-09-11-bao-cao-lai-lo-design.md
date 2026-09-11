@@ -232,13 +232,16 @@ cũng là cách `BR-COGS-006` đã chọn: không lưu giá vốn đã tính.
 - **Khấu hao.** Cộng `chargeForMonth` của `buildAssetSchedule` từng dụng cụ.
   Tháng thanh lý mang phần giá trị còn lại (`BR-COGS-008`). Tháng đang chạy
   tính trọn tháng, giống Sheet của chủ quán.
-- **Làm tròn.** Theo luật của chủ quán ngày 2026-07-30 (`displayMoney`):
-  - Mỗi ô chi phí làm tròn lên từ số chính xác của chính nó.
+- **Làm tròn.** Theo luật của chủ quán ngày 2026-09-11 (`BR-DATA-005`, thay
+  luật làm tròn lên của 2026-07-30):
+  - Mọi số tính chính xác, không làm tròn giữa chừng.
+  - Mỗi ô chỉ làm tròn khi hiện ra, về đồng gần nhất, không số lẻ.
   - Ô Tổng làm tròn từ tổng chính xác, không cộng các ô đã làm tròn.
-  - Lợi nhuận tính từ số chính xác (`BR-COGS-007`, mục làm tròn).
+  - Lợi nhuận tính từ số chính xác.
 
-  Nên cộng tay các ô tháng có thể lệch ô Tổng vài đồng. Kế hoạch phải có phép
-  kiểm cho chuyện này. Ghi chú dưới bảng nói rõ lý do khi có lệch.
+  Nên cộng tay các ô tháng có thể lệch ô Tổng một, hai đồng (ba tháng 100,4đ
+  hiện 100, 100, 100, Tổng 301). Kế hoạch phải có phép kiểm cho chuyện này.
+  Ghi chú dưới bảng nói rõ lý do khi có lệch.
 
 ## Cờ "Tính là doanh thu bán hàng"
 

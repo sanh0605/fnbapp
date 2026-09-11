@@ -46,6 +46,25 @@ Rows protected by `audit_baseline_locks` reject ordinary mutation. Any escape pa
 
 If a post-apply invariant fails, stop further writes and compare against the approved cohort before deciding whether rollback is necessary. A broad live audit that changes population is not by itself proof that the approved cohort failed.
 
+### BR-DATA-005 — Compute exactly, round only on screen, store inputs rather than results
+
+**Status:** `APPROVED` — owner decision 2026-09-11. Withdraws the directional display rounding of 2026-07-30 (cost rounded up, stock rounded down, "never flatter the business"). **Not yet implemented:** until `docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md` Mục 0 lands, `lib/reports/display-rounding.ts` still rounds directionally and `lib/assets/asset-depreciation.ts` still rounds each month's charge.
+
+*"Tất cả mọi thứ đều phải được tính chính xác. Đối với hiển thị trên hệ thống thì làm tròn đến chữ số hàng đơn vị và không có số thập phân. Đối với dữ liệu lưu trữ thì nên lưu số để backend tính toán chứ không nên lưu kết quả."*
+
+- **No calculation rounds an intermediate figure.** 200.000đ depreciated over 6 months is 33.333,33…đ every month, and the six add to 200.000đ — not five months of 33.333đ and a sixth of 33.335đ.
+- **Rounding happens only where a number is shown:** to the nearest whole đồng, or whole base unit for a quantity, halves away from zero, no decimals.
+- **A shown total is the rounded exact total, never a sum of rounded cells.** A row of months can therefore differ from its total by a đồng or two — three months of 100,4đ show 100 each and a total of 301. The screen says so where it happens; no cell is nudged to hide it.
+- **Store the numbers a figure comes from, not the figure.** Reports read source rows and recompute on every read.
+- **Money that really changed hands stays whole đồng:** an order's total, a discount on a bill, what was paid to a supplier. Those record what happened; nobody pays half a đồng.
+
+Whether percentages and quantities shown in a larger unit ("1,5 hộp") keep a decimal was put to the owner on 2026-09-11; until answered they keep today's one or two decimals.
+
+**Where the code does not follow this yet** (measured 2026-09-11, each under 1đ per line). These follow the P&L as their own plan, because the first two need a migration on `assets`:
+- `lib/costing/purchase-order-cost-allocation.ts` rounds each purchase line's share of shipping and discounts to a whole đồng (`BR-COGS-006`).
+- `assets.total_cost` and `assets.unit_cost` (bigint), and `purchase_order_lines.unit_price` (bigint, `round(subtotal ÷ quantity)`), store results. The depreciation band is looked up from the rounded `unit_cost`.
+- `lib/sales/order-math.ts` rounds each item's and topping's share of an order discount for the sales report.
+
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots
