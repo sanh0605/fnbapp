@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, insert, update, remove, generateNewId } from "@/lib/db/tables";
+import { findAll, findAllWhere, findById, insert, update, remove, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
@@ -83,6 +83,18 @@ export async function setBankAccountStatus(formData: FormData): Promise<ActionRe
   const status = formData.get("status") === "ACTIVE" ? "ACTIVE" : "INACTIVE";
 
   try {
+    // M3 -- "Dùng lại" (reactivate) can bring a name back into collision:
+    // another account may have taken it ACTIVE while this one was retired.
+    // Re-run the same ruling-4 guard used on add/rename.
+    if (status === "ACTIVE") {
+      const accounts = (await findAll(SHEET)) as DBBankAccount[];
+      const current = accounts.find((a) => a.id === id);
+      if (current) {
+        const conflict = findDuplicateActiveName(accounts, current.name, id);
+        if (conflict) return fail(duplicateNameErrorMessage(conflict));
+      }
+    }
+
     await update(SHEET, id, { status, ...updateAudit(auth.actor) });
     revalidatePath(PATH);
     return ok();
@@ -102,6 +114,21 @@ export async function deleteBankAccount(formData: FormData): Promise<ActionRespo
   if (!id) return fail("Thiếu mã tài khoản");
 
   try {
+    // I5 -- the RESTRICT FK already refuses this delete, but Postgres's
+    // violation message is ASCII English, and describeActionError replaces
+    // any all-ASCII error with the generic fallback, telling the owner
+    // nothing. Checked here first, in Vietnamese, naming the account --
+    // same shape as lib/catalog/unit-delete-restriction.ts. The FK stays as
+    // the backstop for a race between two concurrent requests.
+    const linked = await findAllWhere("Cash_Entries", { eq: { bank_account_id: id }, limit: 1 });
+    if (linked.length > 0) {
+      const account = (await findById(SHEET, id)) as DBBankAccount | null;
+      const name = account?.name ?? id;
+      return fail(
+        `Tài khoản "${name}" đã có dòng sổ nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn tài khoản này.`,
+      );
+    }
+
     await remove(SHEET, id);
     revalidatePath(PATH);
     return ok();

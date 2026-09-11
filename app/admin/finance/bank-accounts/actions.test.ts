@@ -47,6 +47,8 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   requireOwner: vi.fn(),
   findAll: vi.fn(),
+  findAllWhere: vi.fn(),
+  findById: vi.fn(),
   insert: vi.fn(),
   update: vi.fn(),
   remove: vi.fn(),
@@ -59,6 +61,8 @@ vi.mock("@/lib/auth/auth", () => ({
 }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findAllWhere: mocks.findAllWhere,
+  findById: mocks.findById,
   insert: mocks.insert,
   update: mocks.update,
   remove: mocks.remove,
@@ -66,7 +70,7 @@ vi.mock("@/lib/db/tables", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { addBankAccount, updateBankAccount } from "./actions";
+import { addBankAccount, updateBankAccount, deleteBankAccount, setBankAccountStatus } from "./actions";
 
 const ADMIN = {
   ok: true as const,
@@ -145,5 +149,84 @@ describe("duplicate name rejection (ruling 4)", () => {
 
     expect(result.error).toBeTruthy();
     expect(mocks.insert).not.toHaveBeenCalled();
+  });
+});
+
+// I5 -- the RESTRICT FK already refuses this delete, but Postgres's message
+// is ASCII English and describeActionError genericizes it, telling the
+// owner nothing. Checked here first, in Vietnamese, naming the account.
+describe("permanent delete refuses an account with entries, in Vietnamese (I5)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('refuses and names the account, pointing to "Ngừng dùng"', async () => {
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+    mocks.findAllWhere.mockResolvedValue([{ id: "CE-001" }]);
+    mocks.findById.mockResolvedValue({ id: "BA-003", name: "Vietcombank Sanh" });
+
+    const result = await deleteBankAccount(formData({ id: "BA-003" }));
+
+    expect(result.error).toBe(
+      'Tài khoản "Vietcombank Sanh" đã có dòng sổ nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn tài khoản này.',
+    );
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("deletes an account with no entries", async () => {
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+    mocks.findAllWhere.mockResolvedValue([]);
+
+    const result = await deleteBankAccount(formData({ id: "BA-004" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.remove).toHaveBeenCalledWith("Bank_Accounts", "BA-004");
+  });
+});
+
+// M3 -- "Dùng lại" (reactivate) must re-check findDuplicateActiveName: another
+// ACTIVE account may have taken this name while this one was retired.
+describe('"Dùng lại" re-checks the duplicate-name guard (M3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("refuses to reactivate an account whose name now collides with an ACTIVE one", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "BA-001", name: "Vietcombank Sanh", status: "INACTIVE" },
+      { id: "BA-002", name: "Vietcombank Sanh", status: "ACTIVE" },
+    ]);
+
+    const result = await setBankAccountStatus(formData({ id: "BA-001", status: "ACTIVE" }));
+
+    expect(result.error).toBeTruthy();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("reactivates an account whose name is free", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "BA-001", name: "Vietcombank Sanh", status: "INACTIVE" },
+    ]);
+
+    const result = await setBankAccountStatus(formData({ id: "BA-001", status: "ACTIVE" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith(
+      "Bank_Accounts",
+      "BA-001",
+      expect.objectContaining({ status: "ACTIVE" }),
+    );
+  });
+
+  it("retiring (INACTIVE) never checks for duplicate names", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+
+    const result = await setBankAccountStatus(formData({ id: "BA-001", status: "INACTIVE" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.update).toHaveBeenCalled();
   });
 });

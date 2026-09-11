@@ -47,6 +47,8 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   requireOwner: vi.fn(),
   findAll: vi.fn(),
+  findAllWhere: vi.fn(),
+  findById: vi.fn(),
   insert: vi.fn(),
   update: vi.fn(),
   remove: vi.fn(),
@@ -59,6 +61,8 @@ vi.mock("@/lib/auth/auth", () => ({
 }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findAllWhere: mocks.findAllWhere,
+  findById: mocks.findById,
   insert: mocks.insert,
   update: mocks.update,
   remove: mocks.remove,
@@ -66,7 +70,7 @@ vi.mock("@/lib/db/tables", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { addCashCategory, updateCashCategory } from "./actions";
+import { addCashCategory, updateCashCategory, deleteCashCategory, setCashCategoryStatus } from "./actions";
 
 const ADMIN = {
   ok: true as const,
@@ -113,7 +117,7 @@ describe("duplicate name rejection (ruling 6)", () => {
   it("lets a rename keep its own current name (excludes itself from the duplicate check)", async () => {
     mocks.requireAdmin.mockResolvedValue(ADMIN);
     mocks.findAll.mockResolvedValue([
-      { id: "CFC-001", name: "Vận hành", status: "ACTIVE" },
+      { id: "CFC-001", name: "Vận hành", kind: "EXPENSE", status: "ACTIVE" },
     ]);
 
     const result = await updateCashCategory(formData({ id: "CFC-001", name: "Vận hành", kind: "EXPENSE" }));
@@ -152,5 +156,147 @@ describe("duplicate name rejection (ruling 6)", () => {
 
     expect(result.error).toBeTruthy();
     expect(mocks.insert).not.toHaveBeenCalled();
+  });
+});
+
+// I3 -- owner decision 2026-09-11 ("Khoá, tạo nhóm mới"): a category's
+// Thu/Chi side locks the moment any cash_entries row references it, even a
+// cancelled one -- it is still history. affects_pnl stays editable even
+// then; the form warns instead of refusing.
+describe("kind is locked once a category has entries (I3)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("refuses a kind change when an entry (including a cancelled one) references the category", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "CFC-001", name: "Vận hành", kind: "EXPENSE", status: "ACTIVE" },
+    ]);
+    mocks.findAllWhere.mockResolvedValue([{ id: "CE-030" }]);
+
+    const result = await updateCashCategory(formData({ id: "CFC-001", name: "Vận hành", kind: "INCOME" }));
+
+    expect(result.error).toBe(
+      "Nhóm này đã có dòng sổ nên không đổi được bên Thu/Chi. Muốn ghi bên kia thì tạo nhóm mới.",
+    );
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.findAllWhere).toHaveBeenCalledWith(
+      "Cash_Entries",
+      expect.objectContaining({ eq: { category_id: "CFC-001" } }),
+    );
+  });
+
+  it("allows a kind change when no entry references the category", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "CFC-001", name: "Vận hành", kind: "EXPENSE", status: "ACTIVE" },
+    ]);
+    mocks.findAllWhere.mockResolvedValue([]);
+
+    const result = await updateCashCategory(formData({ id: "CFC-001", name: "Vận hành", kind: "INCOME" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith(
+      "Cash_Categories",
+      "CFC-001",
+      expect.objectContaining({ kind: "INCOME" }),
+    );
+  });
+
+  it("allows an affects_pnl change even when entries are present, without checking cash_entries", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "CFC-001", name: "Vận hành", kind: "EXPENSE", status: "ACTIVE" },
+    ]);
+
+    const result = await updateCashCategory(formData({ id: "CFC-001", name: "Vận hành", kind: "EXPENSE", affects_pnl: "on" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.findAllWhere).not.toHaveBeenCalled();
+    expect(mocks.update).toHaveBeenCalledWith(
+      "Cash_Categories",
+      "CFC-001",
+      expect.objectContaining({ affects_pnl: true }),
+    );
+  });
+});
+
+// I5 -- the RESTRICT FK already refuses this delete, but Postgres's message
+// is ASCII English and describeActionError genericizes it, telling the
+// owner nothing. Checked here first, in Vietnamese, naming the category.
+describe("permanent delete refuses a category with entries, in Vietnamese (I5)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('refuses and names the category, pointing to "Ngừng dùng"', async () => {
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+    mocks.findAllWhere.mockResolvedValue([{ id: "CE-001" }]);
+    mocks.findById.mockResolvedValue({ id: "CFC-003", name: "Marketing" });
+
+    const result = await deleteCashCategory(formData({ id: "CFC-003" }));
+
+    expect(result.error).toBe(
+      'Nhóm "Marketing" đã có dòng sổ nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn nhóm này.',
+    );
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("deletes a category with no entries", async () => {
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+    mocks.findAllWhere.mockResolvedValue([]);
+
+    const result = await deleteCashCategory(formData({ id: "CFC-004" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.remove).toHaveBeenCalledWith("Cash_Categories", "CFC-004");
+  });
+});
+
+// M3 -- "Dùng lại" (reactivate) must re-check findDuplicateActiveName: another
+// ACTIVE category may have taken this name while this one was retired.
+describe('"Dùng lại" re-checks the duplicate-name guard (M3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("refuses to reactivate a category whose name now collides with an ACTIVE one", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "CFC-001", name: "Marketing", status: "INACTIVE" },
+      { id: "CFC-002", name: "Marketing", status: "ACTIVE" },
+    ]);
+
+    const result = await setCashCategoryStatus(formData({ id: "CFC-001", status: "ACTIVE" }));
+
+    expect(result.error).toBeTruthy();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("reactivates a category whose name is free", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "CFC-001", name: "Marketing", status: "INACTIVE" },
+    ]);
+
+    const result = await setCashCategoryStatus(formData({ id: "CFC-001", status: "ACTIVE" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith(
+      "Cash_Categories",
+      "CFC-001",
+      expect.objectContaining({ status: "ACTIVE" }),
+    );
+  });
+
+  it("retiring (INACTIVE) never checks for duplicate names", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+
+    const result = await setCashCategoryStatus(formData({ id: "CFC-001", status: "INACTIVE" }));
+
+    expect(result.error).toBeUndefined();
+    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.update).toHaveBeenCalled();
   });
 });
