@@ -1,14 +1,16 @@
 import { formatNumber } from "@/lib/shared/format";
-import { formatPercent, type PnlRow, type PnlTable } from "@/lib/reports/profit-and-loss-table";
+import type { PnlRow, PnlTable } from "@/lib/reports/profit-and-loss-table";
+import { cellText, cellTone, isCostRow, NoteMarks } from "./pnl-display";
 import { PnlSourceList } from "./PnlSourceList";
+import { PnlNotes } from "./PnlNotes";
 
 // Phone layout (.claude/rules/ui-devices.md): no wide table. A card for the
 // year, then one card per month, newest first. Native <details>, so no
 // client component. A line opens only if it has sources or a formula (the
-// same rule as the computer table).
+// same rule as the computer table). Card look and cost-row minus signs
+// follow the sample the owner approved 2026-09-11 (plan Mục 3).
 
-const show = (row: PnlRow, value: number | null) => (row.unit === "percent" ? formatPercent(value) : formatNumber(value));
-const tone = (value: number | null) => (value !== null && value < 0 ? "text-danger" : "text-text-primary");
+const netTone = (value: number | null) => (value !== null && value < 0 ? "text-danger" : "text-success");
 const strong = (row: PnlRow) => row.kind === "revenue" || row.kind === "subtotal" || row.kind === "net";
 
 function LineText({ row, value }: { row: PnlRow; value: number | null }) {
@@ -17,20 +19,28 @@ function LineText({ row, value }: { row: PnlRow; value: number | null }) {
       <span className={`min-w-0 ${row.kind === "detail" ? "pl-3 text-xs text-text-secondary" : "text-text-primary"} ${strong(row) ? "font-bold" : ""}`}>
         {row.label}
       </span>
-      <span className={`shrink-0 tabular-nums ${tone(value)} ${strong(row) ? "font-bold" : ""}`}>{show(row, value)}</span>
+      <span className={`shrink-0 tabular-nums ${cellTone(row, value)} ${strong(row) ? "font-bold" : ""}`}>{cellText(row, value)}</span>
     </>
   );
 }
 
 function YearCard({ table }: { table: PnlTable }) {
   const net = table.rows.find(r => r.key === "netProfit")!;
+  const revenue = table.rows.find(r => r.key === "revenue")!;
   const lines = table.rows.filter(r => r.total !== null);
-  const title = table.periodLabel === "cả năm" ? `Cả năm ${table.year}` : "Từ đầu năm";
+  const eyebrow = table.periodLabel === "cả năm" ? `CẢ NĂM ${table.year}` : "TỪ ĐẦU NĂM";
   return (
-    <details data-testid="pnl-year" open className="rounded-xl border border-border bg-surface-card">
-      <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-3 px-4 py-3">
-        <span className="font-bold text-text-primary">{title}</span>
-        <span className={`font-bold tabular-nums ${tone(net.total)}`}>{formatNumber(net.total)}</span>
+    <details data-testid="pnl-year" className="rounded-xl bg-surface-secondary">
+      <summary className="flex min-h-[44px] cursor-pointer flex-col gap-1 px-4 py-3">
+        <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-text-muted">{eyebrow}</span>
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="font-display font-semibold text-text-primary">Lợi nhuận ròng</span>
+          <span className={`font-display text-xl font-semibold tabular-nums ${netTone(net.total)}`}>{formatNumber(net.total)}</span>
+        </span>
+        <span className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
+          <span>Doanh thu</span>
+          <span className="tabular-nums">{formatNumber(revenue.total)}</span>
+        </span>
       </summary>
       <div className="divide-y divide-border border-t border-border px-4">
         {lines.map(row => (
@@ -49,12 +59,18 @@ function MonthCard({ table, index }: { table: PnlTable; index: number }) {
   const revenue = table.rows.find(r => r.key === "revenue")!.cells[index];
   return (
     <details data-testid={`pnl-month-${column.month}`} className="rounded-xl border border-border bg-surface-card">
-      <summary className="flex min-h-[44px] cursor-pointer items-center justify-between gap-3 px-4 py-3">
-        <span className="min-w-0">
-          <span className="block font-bold text-text-primary">{column.label}</span>
-          <span className="block text-xs text-text-secondary">Doanh thu {formatNumber(revenue.value)}</span>
+      <summary className="flex min-h-[44px] cursor-pointer flex-col gap-1 px-4 py-3">
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="min-w-0 font-bold text-text-primary">
+            {column.title}
+            <NoteMarks numbers={column.notes} />
+          </span>
+          <span className={`font-display text-xl font-semibold tabular-nums ${netTone(net.value)}`}>{formatNumber(net.value)}</span>
         </span>
-        <span className={`font-bold tabular-nums ${tone(net.value)}`}>{formatNumber(net.value)}</span>
+        <span className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
+          <span>Doanh thu{column.until ? ` · đến ${column.until}` : ""}</span>
+          <span className="tabular-nums">{formatNumber(revenue.value)}</span>
+        </span>
       </summary>
       <div className="divide-y divide-border border-t border-border px-4">
         {table.rows.map(row => {
@@ -74,7 +90,7 @@ function MonthCard({ table, index }: { table: PnlTable; index: number }) {
               </summary>
               <div className="space-y-2 pb-2 pl-3">
                 {cell.formula && <p className="text-xs text-text-secondary">{cell.formula}</p>}
-                {cell.sources.length > 0 && <PnlSourceList sources={cell.sources} />}
+                {cell.sources.length > 0 && <PnlSourceList sources={cell.sources} negate={isCostRow(row)} />}
               </div>
             </details>
           );
@@ -88,11 +104,12 @@ export function PnlMonthCards({ table }: { table: PnlTable }) {
   const newestFirst = table.months.map((_, i) => i).reverse();
   return (
     <section aria-label="Từng tháng" className="space-y-3 md:hidden">
-      <p className="text-xs text-text-secondary">Đơn vị: đồng. Bấm vào một tháng để xem từng khoản.</p>
+      <p className="text-xs text-text-secondary">Bấm vào một tháng để xem từng khoản.</p>
       <YearCard table={table} />
       {newestFirst.map(i => (
         <MonthCard key={table.months[i].month} table={table} index={i} />
       ))}
+      <PnlNotes footnotes={table.footnotes} />
     </section>
   );
 }

@@ -5,7 +5,6 @@ import { PnlSummary } from "./components/PnlSummary";
 import { PnlChart } from "./components/PnlChart";
 import { PnlTableView } from "./components/PnlTableView";
 import { PnlMonthCards } from "./components/PnlMonthCards";
-import { PnlFootnotes } from "./components/PnlFootnotes";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +43,6 @@ export default async function ProfitAndLossPage({ searchParams }: { searchParams
           <PnlChart table={table} />
           <PnlTableView table={table} />
           <PnlMonthCards table={table} />
-          <PnlFootnotes footnotes={table.footnotes} />
         </>
       )}
     </div>
