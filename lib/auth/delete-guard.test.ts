@@ -68,20 +68,135 @@ function listActionsFiles(repoRoot: string): string[] {
   return files;
 }
 
-// A match sitting right after "function " is the declaration itself
-// (e.g. "export async function eraseProduct(" also matches the
-// erase-prefixed-call pattern on its own name) -- skip it, the real call
-// inside the function body is what identifies the enclosing function.
+// A match sitting right after "function " or "const " is the declaration
+// itself (e.g. "export async function eraseProduct(" also matches the
+// erase-prefixed-call pattern on its own name, and a hypothetical
+// "const eraseFoo(" would too) -- skip it, the real call inside the unit's
+// body is what identifies the enclosing unit.
 function isFunctionDeclarationSelfMatch(source: string, matchIndex: number): boolean {
   const before = source.slice(Math.max(0, matchIndex - 30), matchIndex);
-  return /function\s*$/.test(before);
+  return /(?:function|const)\s*$/.test(before);
 }
 
-function findEnclosingExportedFunction(source: string, matchIndex: number): string | null {
-  const before = source.slice(0, matchIndex);
-  const fnMatches = Array.from(before.matchAll(/export (?:async )?function (\w+)/g));
-  if (fnMatches.length === 0) return null;
-  return fnMatches[fnMatches.length - 1][1];
+// A unit is any of: function name(, async function name(, const name = (,
+// const name = async (, each optionally exported.
+const UNIT_DECLARATION_PATTERN =
+  /(export\s+)?(?:async\s+)?function\s+(\w+)\s*\(|(export\s+)?const\s+(\w+)\s*=\s*(?:async\s*)?\(/g;
+
+// The const-form of UNIT_DECLARATION_PATTERN also matches an ordinary
+// parenthesised expression that is not a function at all, e.g.
+// `const id = ((formData.get("id") as string) || "").trim();` -- the "("
+// right after "=" opens a grouping, not a parameter list. Caught against the
+// real tree: without this check, that line's "(" became the nearest "unit"
+// and the real deleteCashEntry call two lines later was misattributed to a
+// unit named "id" instead. Walk the parens from the opening one to their
+// balanced close and check what follows is "=>" (skipping an optional
+// return-type annotation) -- stays textual, no AST, per
+// residuals-fix-brief.md item 2's ruling.
+function isArrowFunctionAssignment(source: string, openParenIndex: number): boolean {
+  let depth = 0;
+  for (let i = openParenIndex; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === "(") depth++;
+    else if (ch === ")") {
+      depth--;
+      if (depth === 0) {
+        const after = source.slice(i + 1, i + 200);
+        return /^\s*(?::[^={]+)?\s*=>/.test(after);
+      }
+    }
+  }
+  return false;
+}
+
+type Unit = { name: string; exported: boolean; index: number };
+
+// All real units in a file, in source order, so a given match can be
+// attributed to the nearest one preceding it. Fixes two ways the old
+// `export (async )?function name` regex failed open (reviewer repros,
+// residuals-fix-brief.md item 2):
+//  (a) an arrow export -- `export const deleteFoo = async (fd) => {...}` --
+//      never matched the old regex at all, so its calls were credited to
+//      nothing and skipped outright (`if (!fn) continue`).
+//  (b) a non-exported helper declared after a listed export was invisible
+//      too, so a call inside it got credited to that earlier export by
+//      textual proximity instead of to the helper.
+function findUnitDeclarations(source: string): Unit[] {
+  const units: Unit[] = [];
+  for (const m of source.matchAll(UNIT_DECLARATION_PATTERN)) {
+    const index = m.index as number;
+    if (m[2] !== undefined) {
+      units.push({ name: m[2], exported: Boolean(m[1]), index });
+    } else if (m[4] !== undefined) {
+      const openParenIndex = index + m[0].length - 1;
+      if (isArrowFunctionAssignment(source, openParenIndex)) {
+        units.push({ name: m[4], exported: Boolean(m[3]), index });
+      }
+    }
+  }
+  return units;
+}
+
+function findEnclosingUnit(units: Unit[], matchIndex: number): { name: string; exported: boolean } | null {
+  let found: Unit | null = null;
+  for (const u of units) {
+    if (u.index >= matchIndex) break;
+    found = u;
+  }
+  return found ? { name: found.name, exported: found.exported } : null;
+}
+
+// Non-exported helpers that a listed hard-delete action calls into. Each
+// entry's `callers` must list every function in the same file that calls
+// `helperName(`, and every one of those callers must itself be a
+// requireOwner()-checked HARD_DELETE_ACTIONS entry -- otherwise an
+// unlisted, unguarded export could reach the same helper unnoticed (repro b
+// above). Empty on today's tree: the scan below confirms no hard-delete
+// call site currently sits inside a non-exported unit.
+const DELETE_HELPERS: Array<[file: string, helperName: string, callers: string[]]> = [];
+
+function findCallersOf(source: string, helperName: string): string[] {
+  const units = findUnitDeclarations(source);
+  const pattern = new RegExp(`\\b${helperName}\\(`, "g");
+  const callers = new Set<string>();
+  for (const match of source.matchAll(pattern)) {
+    const matchIndex = match.index as number;
+    if (isFunctionDeclarationSelfMatch(source, matchIndex)) continue;
+    const unit = findEnclosingUnit(units, matchIndex);
+    if (unit && unit.name !== helperName) callers.add(unit.name);
+  }
+  return Array.from(callers);
+}
+
+// The scan itself, factored to take (file, source) pairs so a test can feed
+// it synthetic source instead of always reading the real tree off disk.
+function scanForUnlistedHardDeletes(files: Array<[string, string]>): string[] {
+  const allowed = new Set(HARD_DELETE_ACTIONS.map(([file, fn]) => `${file}::${fn}`));
+  const exempt = new Set(EXEMPTIONS.map(([file, fn]) => `${file}::${fn}`));
+  const helpers = new Set(DELETE_HELPERS.map(([file, fn]) => `${file}::${fn}`));
+  const unlisted: string[] = [];
+
+  for (const [file, source] of files) {
+    const units = findUnitDeclarations(source);
+    for (const match of source.matchAll(HARD_DELETE_CALL_PATTERN)) {
+      const matchIndex = match.index as number;
+      if (isFunctionDeclarationSelfMatch(source, matchIndex)) continue;
+
+      const unit = findEnclosingUnit(units, matchIndex);
+      // Fail closed: a match with no enclosing unit is still reported, never
+      // skipped -- the old `if (!fn) continue` was one of the two ways this
+      // scan failed open.
+      const key = unit ? `${file}::${unit.name}` : `${file}::<top-level>`;
+      const isKnown = unit
+        ? unit.exported
+          ? allowed.has(key) || exempt.has(key)
+          : helpers.has(key)
+        : false;
+
+      if (!isKnown && !unlisted.includes(key)) unlisted.push(key);
+    }
+  }
+  return unlisted;
 }
 
 const read = (f: string) => readFileSync(resolve(process.cwd(), f), "utf8");
@@ -121,31 +236,62 @@ describe("permanent deletion is ADMIN only", () => {
 // named EXEMPTIONS entry. Anything else is a hard delete nobody decided on.
 describe("every hard-delete call site is accounted for (I2 completeness scan)", () => {
   it("finds no unlisted, unexempted hard-delete site under app/**/actions.ts", () => {
-    const allowed = new Set(HARD_DELETE_ACTIONS.map(([file, fn]) => `${file}::${fn}`));
-    const exempt = new Set(EXEMPTIONS.map(([file, fn]) => `${file}::${fn}`));
-    const unlisted: string[] = [];
-
-    for (const file of listActionsFiles(process.cwd())) {
-      const source = read(file);
-      for (const match of source.matchAll(HARD_DELETE_CALL_PATTERN)) {
-        const matchIndex = match.index as number;
-        if (isFunctionDeclarationSelfMatch(source, matchIndex)) continue;
-
-        const fn = findEnclosingExportedFunction(source, matchIndex);
-        if (!fn) continue;
-        const key = `${file}::${fn}`;
-        if (!allowed.has(key) && !exempt.has(key) && !unlisted.includes(key)) {
-          unlisted.push(key);
-        }
-      }
-    }
-
-    expect(unlisted).toEqual([]);
+    const files = listActionsFiles(process.cwd()).map((file): [string, string] => [file, read(file)]);
+    expect(scanForUnlistedHardDeletes(files)).toEqual([]);
   });
 
   it("every HARD_DELETE_ACTIONS and EXEMPTIONS entry still points at a real file and function", () => {
     for (const [file, fn] of [...HARD_DELETE_ACTIONS, ...EXEMPTIONS.map(([f, n]) => [f, n] as [string, string])]) {
       expect(read(file)).toContain(`function ${fn}(`);
     }
+  });
+
+  it.each(DELETE_HELPERS)(
+    "%s :: %s -- every in-file caller is listed and requireOwner-checked",
+    (file, helperName, callers) => {
+      const source = read(file);
+      const actualCallers = findCallersOf(source, helperName);
+      for (const caller of actualCallers) {
+        expect(callers, `${helperName} is called by ${caller}, missing from its callers list`).toContain(caller);
+      }
+      const allowed = new Set(HARD_DELETE_ACTIONS.map(([f, fn]) => `${f}::${fn}`));
+      for (const caller of callers) {
+        expect(
+          allowed.has(`${file}::${caller}`),
+          `${caller} calls ${helperName} but is not a requireOwner()-checked HARD_DELETE_ACTIONS entry`,
+        ).toBe(true);
+      }
+    },
+  );
+
+  // Reviewer repros (residuals-fix-brief.md item 2) fed as synthetic source,
+  // proving the scan itself catches both failure modes rather than relying
+  // on today's tree happening to contain one.
+  it("reports an arrow-function export's hard-delete call (repro a: arrow export was invisible)", () => {
+    const file = "fake/arrow-export.ts";
+    const source = `export const deleteFoo = async (fd) => { await requireAdmin(); await remove("Foo", id); };`;
+    expect(scanForUnlistedHardDeletes([[file, source]])).toContain(`${file}::deleteFoo`);
+  });
+
+  it("attributes a non-exported helper's call to the helper, not to an earlier listed export (repro b: textual attribution)", () => {
+    const file = "app/admin/finance/actions.ts"; // already listed for deleteCashEntry
+    const source = `
+export async function deleteCashEntry(formData) {
+  await requireOwner();
+  await remove("Cash_Entries", id);
+}
+
+function removeX(id) {
+  return remove("Foo", id);
+}
+
+export async function deleteBar(formData) {
+  await requireAdmin();
+  return removeX(id);
+}
+`;
+    const unlisted = scanForUnlistedHardDeletes([[file, source]]);
+    expect(unlisted).toContain(`${file}::removeX`);
+    expect(unlisted).not.toContain(`${file}::deleteCashEntry`);
   });
 });
