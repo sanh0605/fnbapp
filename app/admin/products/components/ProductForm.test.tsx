@@ -76,8 +76,10 @@ async function flush() {
 
 const CATEGORIES = [{ id: "CAT-007", name: "Topping" }];
 
-async function openEditForm(product: any) {
-  const container = await renderTracked(<ProductForm categories={CATEGORIES} initialData={product} />);
+async function openEditForm(product: any, canDelete?: boolean) {
+  const container = await renderTracked(
+    <ProductForm categories={CATEGORIES} initialData={product} canDelete={canDelete} />,
+  );
   const editButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Sửa")!;
   await fireClick(editButton);
   await flush();
@@ -104,5 +106,32 @@ describe("ProductForm -- price field for a topping linked to an ACTIVE modifier"
     });
 
     expect(priceInput.readOnly).toBe(false);
+  });
+});
+
+// I2 (final-fix-brief.md, BR-ACCESS-003): eraseProduct is now requireOwner()
+// server-side; canDelete hides the "Xoá vĩnh viễn" button as a courtesy for
+// a role that would be refused anyway, same pattern as commit e41968d.
+describe("ProductForm -- erase button gated by canDelete (I2)", () => {
+  const NEVER_SOLD_PRODUCT = {
+    id: "PROD-050", name: "Món chưa bán", category_id: "CAT-001", status: "ACTIVE",
+    neverSold: true, variants: [{ id: "VAR-050", size_name: "Mặc định", price: 10000 }],
+    isLinkedTopping: false,
+  };
+
+  it('shows "Xoá vĩnh viễn" for a never-sold product when canDelete is true', async () => {
+    const container = await renderTracked(
+      <ProductForm categories={CATEGORIES} initialData={NEVER_SOLD_PRODUCT} canDelete={true} />,
+    );
+    const eraseButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Xoá vĩnh viễn");
+    expect(eraseButton).toBeTruthy();
+  });
+
+  it('hides "Xoá vĩnh viễn" for a never-sold product when canDelete is false, even though the button would otherwise show', async () => {
+    const container = await renderTracked(
+      <ProductForm categories={CATEGORIES} initialData={NEVER_SOLD_PRODUCT} canDelete={false} />,
+    );
+    const eraseButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Xoá vĩnh viễn");
+    expect(eraseButton).toBeUndefined();
   });
 });

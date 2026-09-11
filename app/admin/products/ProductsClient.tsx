@@ -38,11 +38,15 @@ const STATUS_LABELS: Record<string, string> = {
 export default function ProductsClient({
   enhancedProducts,
   activeCategories,
-  categories
+  categories,
+  canDelete,
 }: {
   enhancedProducts: Product[];
   activeCategories: Category[];
   categories: Category[];
+  // BR-ACCESS-003 (I2, final-fix-brief.md) -- ADMIN only; everyone else
+  // may add and edit. Server-computed in page.tsx via resolveActor().
+  canDelete: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -220,6 +224,7 @@ export default function ProductsClient({
                             <ProductForm
                               categories={categories}
                               initialData={product}
+                              canDelete={canDelete}
                             />
                           </div>
                         </td>
@@ -288,6 +293,7 @@ export default function ProductsClient({
                         <ProductForm
                           categories={categories}
                           initialData={product}
+                          canDelete={canDelete}
                         />
                       </div>
                     </div>

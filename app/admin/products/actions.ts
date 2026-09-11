@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { saveProductAtomic } from "@/lib/products/product-save-transaction";
 import { eraseProductAtomic } from "@/lib/products/product-erase-transaction";
 import { planRecipeSave, findLatestActiveRecipe } from "@/lib/products/recipe-selection";
@@ -273,8 +273,10 @@ export async function resumeProduct(formData: FormData): Promise<ActionResponse>
   }
 }
 
+// BR-ACCESS-003 -- a never-sold product is erased for good, price history
+// included, so only ADMIN may do it, checked here with requireOwner().
 export async function eraseProduct(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = String(formData.get("id") || "");

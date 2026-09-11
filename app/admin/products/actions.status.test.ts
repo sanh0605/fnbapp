@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   update: vi.fn(),
   eraseProductAtomic: vi.fn(),
@@ -9,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   update: mocks.update,
@@ -128,7 +129,10 @@ describe("pauseProduct / resumeProduct -- section 5.1", () => {
 describe("eraseProduct -- section 5.3/3, refusal tested with the Test1 fixture shape (1 sale, 1 price history)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.requireAdmin.mockResolvedValue({
+    // I2 (final-fix-brief.md, BR-ACCESS-003): eraseProduct is a permanent
+    // delete -- requireOwner(), not requireAdmin() (MANAGER could erase a
+    // product before this fix).
+    mocks.requireOwner.mockResolvedValue({
       ok: true,
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
     });
@@ -173,8 +177,8 @@ describe("eraseProduct -- section 5.3/3, refusal tested with the Test1 fixture s
     expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 
-  it("refuses without admin auth", async () => {
-    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
+  it("refuses without owner auth", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: false, error: "Không có quyền" });
 
     const res = await eraseProduct(formDataWithId("PROD-037"));
 

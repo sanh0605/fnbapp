@@ -1,4 +1,5 @@
 import { findAll, findOrderLineProductAndVariantIds } from "@/lib/db/tables";
+import { resolveActor } from "@/lib/auth/auth";
 import ProductsClient from "./ProductsClient";
 
 export const dynamic = "force-dynamic";
@@ -10,14 +11,19 @@ interface PriceHistory {
 }
 
 export default async function ProductsPage() {
-  const [categories, products, variants, allPriceHistory, modifiers, orderLineIds]: [any[], any[], any[], PriceHistory[], any[], { productIds: string[]; variantIds: string[]; modifierIds: string[] }] = await Promise.all([
+  const [categories, products, variants, allPriceHistory, modifiers, orderLineIds, auth]: [any[], any[], any[], PriceHistory[], any[], { productIds: string[]; variantIds: string[]; modifierIds: string[] }, Awaited<ReturnType<typeof resolveActor>>] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Product_Price_History"),
     findAll("Modifiers"),
     findOrderLineProductAndVariantIds(),
+    resolveActor(),
   ]);
+  // BR-ACCESS-003 -- permanent deletion (eraseProduct) is ADMIN only.
+  // Hiding the button is courtesy; requireOwner() in eraseProduct is what
+  // actually blocks it. Same pattern as commit e41968d's other screens.
+  const canDelete = auth.ok && auth.actor.role === "ADMIN";
 
   const activeCategories = categories.filter(c => c.status !== "DELETED");
   // Owner decision 2026-08-29: no third state, no archive -- the status
@@ -93,6 +99,7 @@ export default async function ProductsPage() {
         enhancedProducts={enhancedProducts}
         activeCategories={activeCategories}
         categories={activeCategories} // Passing for the form inside ProductsClient
+        canDelete={canDelete}
       />
     </div>
   );

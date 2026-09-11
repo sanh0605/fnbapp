@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Plus, X } from "lucide-react";
 import { alert, confirm } from "@/lib/shared/dialog";
 
-export default function ProductForm({ categories, initialData }: any) {
+export default function ProductForm({ categories, initialData, canDelete }: any) {
   const isEdit = !!initialData;
   // docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 2:
   // BR-CATALOG-003's price sync (migration 0098) makes the Topping & Tuỳ
@@ -148,7 +148,7 @@ export default function ProductForm({ categories, initialData }: any) {
           ) : (
             <Button variant="ghost" size="sm" onClick={handleResume} loading={statusLoading}>Bán lại</Button>
           )}
-          {initialData.neverSold && (
+          {initialData.neverSold && canDelete && (
             <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => setIsEraseOpen(true)}>Xoá vĩnh viễn</Button>
           )}
         </div>
