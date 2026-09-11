@@ -88,8 +88,8 @@ the two settings screens where they still apply.
    total, not as a third card. Under the totals, one line per category gives
    its amount for the range; an entry whose category is missing from the
    list shows as a warning line instead of vanishing. The one dated
-   exception to "never a sale" is the owner's lost-revenue rows of
-   2026-09-02 (`BR-CASH-001`).
+   exception to "never a sale" is the owner's two lost-revenue rows, dated
+   2026-05-01 since the owner moved them on 2026-09-11 (`BR-CASH-001`).
 
 ## Where it writes
 

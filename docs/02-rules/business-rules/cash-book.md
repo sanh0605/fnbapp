@@ -13,9 +13,12 @@ Sales live in the POS, purchases in purchase orders. The cash book takes
 everything else: running costs, other income, capital put in. Recording a
 sale or a purchase here counts it twice.
 
-**Exception.** Two rows dated 2026-09-02 under "Thu khác" (1.728.578đ by
-transfer, 6.683.290đ in cash, 8.411.868đ together) are sales revenue whose
-order data was lost while the app was being set up and rebuilt. The POS does
+**Exception.** Two rows under "Thu khác" (1.728.578đ by transfer, 6.683.290đ
+in cash, 8.411.868đ together) are sales revenue whose order data was lost
+while the app was being set up and rebuilt. The import dated them 2026-09-02,
+the day the owner wrote them into his sheet; on 2026-09-11 the owner moved both
+to 2026-05-01 in the app himself (measured the same day: `CE-033`, `CE-034`,
+last edited by `admin`), so every monthly total counts them in May 2026. The POS does
 not have them, so recording them here is the only record and does not double
 count. Owner, 2026-09-11: "Là khoản doanh thu bị mất dữ liệu từ lúc lập app và
 xây dựng lại app, nạp vào bình thường." The exception covers these two rows
