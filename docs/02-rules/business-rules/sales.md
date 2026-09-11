@@ -32,6 +32,8 @@ Reports and audits apply status/supersede filters to decide which orders count. 
 
 The system records payments in `order_payments`, and **that table begins 2026-07-19**. Before that date no independent record of money received exists: the feature did not exist. Revenue for that period can only ever be checked against itself.
 
+**The date is UTC.** The first `order_payments` row is at 2026-07-19 23:34 UTC, which is 06:34 on 20/07/2026 in Saigon, where every report buckets its days (measured 2026-09-11). A screen that names the date, such as the note under the profit-and-loss table, shows 20/07/2026.
+
 **What was checked, and passed, across all completed orders:** `net_total` equals `gross_total` minus promotions, item discounts and order discount, with zero mismatches; `net_total` equals the sum of its own order lines, with zero mismatches; no counted order is also a superseded version of another. From 2026-07-19 onward, revenue and recorded payments agree exactly — **13.603.000đ on both sides across 513 orders, difference 0đ** at the time of the audit.
 
 **What that leaves.** **44.229.000đ across 1.573 orders, April to mid-July 2026, has nothing to reconcile against.** Asked on 2026-08-14 whether external records — bank statements, a cash book — could close the gap, the owner confirmed **none exist**.
