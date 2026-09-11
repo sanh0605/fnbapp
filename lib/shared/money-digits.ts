@@ -70,15 +70,30 @@ export function removeDigitAcrossDot(
   digitsLeftOfCaret: number,
   direction: DotDeleteDirection,
 ): DotDeleteResult {
+  let newDigits: string;
+  let newDigitsLeftOfCaret: number;
+
   if (direction === "backward") {
     if (digitsLeftOfCaret <= 0) return { digits, digitsLeftOfCaret };
     const removeIndex = digitsLeftOfCaret - 1;
-    const newDigits = digits.slice(0, removeIndex) + digits.slice(removeIndex + 1);
-    return { digits: newDigits, digitsLeftOfCaret: removeIndex };
+    newDigits = digits.slice(0, removeIndex) + digits.slice(removeIndex + 1);
+    newDigitsLeftOfCaret = removeIndex;
+  } else {
+    // forward: the digit immediately to the right of the caret sits at
+    // index `digitsLeftOfCaret` in the digit string.
+    if (digitsLeftOfCaret >= digits.length) return { digits, digitsLeftOfCaret };
+    newDigits = digits.slice(0, digitsLeftOfCaret) + digits.slice(digitsLeftOfCaret + 1);
+    newDigitsLeftOfCaret = digitsLeftOfCaret;
   }
-  // forward: the digit immediately to the right of the caret sits at index
-  // `digitsLeftOfCaret` in the digit string.
-  if (digitsLeftOfCaret >= digits.length) return { digits, digitsLeftOfCaret };
-  const newDigits = digits.slice(0, digitsLeftOfCaret) + digits.slice(digitsLeftOfCaret + 1);
-  return { digits: newDigits, digitsLeftOfCaret };
+
+  // Removing the digit next to the dot can leave a leading zero, or all
+  // zeros -- e.g. "1.000.000" minus the leading "1" is "000000", not "0".
+  // Strip it the same way toMoneyDigits does (fix round 2), and pull the
+  // caret back by however many zeros were stripped, never past the start.
+  const stripped = newDigits.replace(/^0+/, "");
+  const zerosStripped = newDigits.length - stripped.length;
+  return {
+    digits: stripped,
+    digitsLeftOfCaret: Math.max(0, newDigitsLeftOfCaret - zerosStripped),
+  };
 }

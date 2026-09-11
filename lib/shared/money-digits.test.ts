@@ -100,3 +100,24 @@ describe("BR-CASH-005 fix round 1 (item 3) removeDigitAcrossDot", () => {
     expect(removeDigitAcrossDot("150", 3, "forward")).toEqual({ digits: "150", digitsLeftOfCaret: 3 });
   });
 });
+
+describe("BR-CASH-005 fix round 2: removeDigitAcrossDot strips leading zeros", () => {
+  // "1.000.000" (digits "1000000"), caret right after the first dot
+  // (1 digit, "1", left of it): Backspace removes the "1", leaving
+  // "000000" -- which must normalise down to "", not display as "000.000".
+  it("removing the leading digit down to all zeros empties the box", () => {
+    const result = removeDigitAcrossDot("1000000", 1, "backward");
+    expect(result.digits).toBe("");
+    expect(result.digitsLeftOfCaret).toBe(0);
+    expect(groupThousands(result.digits)).toBe("");
+  });
+
+  // "1.050.000" (digits "1050000"), same caret: Backspace removes the "1",
+  // leaving "050000" -- one leading zero must be stripped down to "50000".
+  it("removing the leading digit down to one leading zero strips it", () => {
+    const result = removeDigitAcrossDot("1050000", 1, "backward");
+    expect(result.digits).toBe("50000");
+    expect(result.digitsLeftOfCaret).toBe(0);
+    expect(groupThousands(result.digits)).toBe("50.000");
+  });
+});

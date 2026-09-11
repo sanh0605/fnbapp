@@ -204,3 +204,22 @@ describe("BR-CASH-005 fix round 1", () => {
     expect(getHidden("amount").value).toBe("150000");
   });
 });
+
+describe("BR-CASH-005 fix round 2", () => {
+  // "1.000.000", caret right after the first dot: Backspace removes the
+  // "1", leaving "000000" -- must empty the box, not show "000.000".
+  it("Backspace across a dot down to all zeros empties the box", () => {
+    render(<MoneyInput id="amount" name="amount" defaultValue={1000000} />);
+    const visible = getVisible();
+    expect(visible.value).toBe("1.000.000");
+
+    Object.defineProperty(visible, "selectionStart", { value: 1, configurable: true });
+    fireEvent.input(visible, {
+      target: { value: "1000.000" },
+      inputType: "deleteContentBackward",
+    });
+
+    expect(visible.value).toBe("");
+    expect(getHidden("amount").value).toBe("");
+  });
+});
