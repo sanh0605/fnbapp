@@ -89,7 +89,7 @@ the two settings screens where they still apply.
    its amount for the range; an entry whose category is missing from the
    list shows as a warning line instead of vanishing. The one dated
    exception to "never a sale" is the owner's two lost-revenue rows, dated
-   2026-05-01 since the owner moved them on 2026-09-11 (`BR-CASH-001`).
+   2026-04-30 since the owner moved them on 2026-09-11 (`BR-CASH-001`).
 
 ## Where it writes
 

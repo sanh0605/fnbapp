@@ -17,8 +17,15 @@ sale or a purchase here counts it twice.
 in cash, 8.411.868đ together) are sales revenue whose order data was lost
 while the app was being set up and rebuilt. The import dated them 2026-09-02,
 the day the owner wrote them into his sheet; on 2026-09-11 the owner moved both
-to 2026-05-01 in the app himself (measured the same day: `CE-033`, `CE-034`,
-last edited by `admin`), so every monthly total counts them in May 2026. The POS does
+in the app himself, first to 2026-05-01 and then to 2026-04-30 (measured the
+same day: `CE-033`, `CE-034`, last edited by `admin`), so every monthly total
+counts them in April 2026.
+
+**In profit and loss they are sales revenue** (owner, 2026-09-11: "Tính vào
+doanh thu"). The P&L adds them to that month's revenue on a line of their own,
+"Doanh thu ghi tay", so they stay distinguishable from revenue the POS
+recorded; the tax-free revenue ceiling counts them too. His own sheet had left
+them out of its P&L and counted them only as cash received. The POS does
 not have them, so recording them here is the only record and does not double
 count. Owner, 2026-09-11: "Là khoản doanh thu bị mất dữ liệu từ lúc lập app và
 xây dựng lại app, nạp vào bình thường." The exception covers these two rows
