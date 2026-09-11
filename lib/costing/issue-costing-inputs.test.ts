@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterOutEquipmentIssues, buildClassifiedIssues } from "./issue-costing-inputs";
+import { filterOutEquipmentIssues, buildClassifiedIssues, isNonInventoryItem, selectCostedIssues } from "./issue-costing-inputs";
 
 // section
 // 4: the costing-engine block has its own test, not dependent on the
@@ -93,5 +93,45 @@ describe("buildClassifiedIssues", () => {
     const rows = [{ purchased_item_id: "SPM-X", issued_at: "2026-09-01T00:00:00Z", base_quantity: 4, source: "STOCKTAKE", session_id: "STK-100" }];
     const result = buildClassifiedIssues(rows, sessionsNullField);
     expect(result[0].isShrinkage).toBe(true);
+  });
+});
+
+describe("isNonInventoryItem", () => {
+  it("reads the item's own flag, as a boolean or the legacy 'TRUE' string", () => {
+    expect(isNonInventoryItem({ is_non_inventory: true })).toBe(true);
+    expect(isNonInventoryItem({ is_non_inventory: "TRUE" })).toBe(true);
+    expect(isNonInventoryItem({ is_non_inventory: false })).toBe(false);
+    expect(isNonInventoryItem({ is_non_inventory: null })).toBe(false);
+    expect(isNonInventoryItem({})).toBe(false);
+  });
+});
+
+// Real shape, 2026-09-11: Khăn lau đa năng (SPM-057) carries is_non_inventory
+// and was issued +1 then -1 on 02/09/2026 (ISS-00120, ISS-00121).
+describe("selectCostedIssues", () => {
+  const categories = [
+    { id: "NHH-001", system_type: "RAW" },
+    { id: "NHH-002", system_type: "CONSUMABLE" },
+    { id: "NHH-003", system_type: "EQUIPMENT" },
+  ];
+  const items = [
+    { id: "SPM-001", item_category_id: "NHH-001", is_non_inventory: false },
+    { id: "SPM-057", item_category_id: "NHH-002", is_non_inventory: true },
+    { id: "SPM-090", item_category_id: "NHH-003", is_non_inventory: false },
+  ];
+
+  it("drops issues of items bought for immediate use and of equipment, keeps stocked goods", () => {
+    const issues = [
+      { id: "ISS-00001", purchased_item_id: "SPM-001" },
+      { id: "ISS-00120", purchased_item_id: "SPM-057" },
+      { id: "ISS-00121", purchased_item_id: "SPM-057" },
+      { id: "ISS-00200", purchased_item_id: "SPM-090" },
+    ];
+    expect(selectCostedIssues(issues, items, categories).map(r => r.id)).toEqual(["ISS-00001"]);
+  });
+
+  it("keeps an issue whose item is missing from the list -- unknown is not assumed bought-for-use", () => {
+    const issues = [{ id: "ISS-00300", purchased_item_id: "SPM-999" }];
+    expect(selectCostedIssues(issues, items, categories).map(r => r.id)).toEqual(["ISS-00300"]);
   });
 });

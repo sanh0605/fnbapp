@@ -121,3 +121,31 @@ export function filterOutEquipmentIssues(
   );
   return stockIssues.filter(row => !equipmentItemIds.has(row.purchased_item_id));
 }
+
+// BR-COGS-007, 2026-09-11 (docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md
+// Mục 1). The item's own flag is the one test since 2026-09-01 -- the
+// stocktake and issue-slip screens read nothing else. The legacy "TRUE"
+// string is still accepted, same as both of those screens.
+export function isNonInventoryItem(item: { is_non_inventory?: unknown }): boolean {
+  return item.is_non_inventory === true || item.is_non_inventory === "TRUE";
+}
+
+// Every reader of cost of goods goes through this one function, so they can
+// only ever agree. Two kinds of row never become cost of goods:
+//   - equipment: it depreciates through the asset register (section 3.2);
+//   - an item bought for immediate use: its money is counted once, when
+//     bought, on the "Nguyên liệu mua dùng ngay" line -- an issue slip for
+//     it would count it a second time.
+// An issue whose item is not in purchasedItems is kept: unknown is not
+// assumed to be either kind.
+export function selectCostedIssues(
+  stockIssues: any[],
+  purchasedItems: any[],
+  itemCategories: any[],
+): any[] {
+  const nonInventoryItemIds = new Set(
+    purchasedItems.filter(isNonInventoryItem).map(p => p.id),
+  );
+  return filterOutEquipmentIssues(stockIssues, purchasedItems, itemCategories)
+    .filter(row => !nonInventoryItemIds.has(row.purchased_item_id));
+}

@@ -2,7 +2,7 @@
 
 import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { requireAdmin } from "@/lib/auth/auth";
-import { buildIssueCostingPurchases, buildIssueCostingIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
 import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/reports/issued-value-report";
 import { displayMoney } from "@/lib/reports/display-rounding";
 
@@ -57,11 +57,12 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
   ]);
 
   const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
-  // section 3.2: same exclusion as getPnLDataV2 (app/admin/reports/actions.ts)
-  // -- this report reuses the same issue-costing engine, so it inherited
-  // the same gap and gets the same fix, from the one shared function.
-  const nonEquipmentIssues = filterOutEquipmentIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
-  const allIssues = buildIssueCostingIssues(nonEquipmentIssues);
+  // section 3.2, widened by BR-COGS-007 (2026-09-11): same exclusion as
+  // getPnLDataV2 (app/admin/reports/actions.ts) -- this report reuses the
+  // same issue-costing engine, so it inherited the same gap and gets the
+  // same fix, from the one shared function.
+  const costedIssues = selectCostedIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
+  const allIssues = buildIssueCostingIssues(costedIssues);
 
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
@@ -96,7 +97,11 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
 
   const grandTotal = displayMoney(itemFigures.reduce((sum, f) => sum + f.issuedValueExact, 0));
 
-  const eventFigures = computeIssuedEventFigures(stockIssues as any[], purchases);
+  // BR-COGS-007 (2026-09-11): this "Theo lần xuất" tab used to pass the
+  // unfiltered stockIssues here, so an equipment or bought-for-immediate-use
+  // issue slip would still show up in the by-event list even though it is
+  // excluded everywhere else on this page.
+  const eventFigures = computeIssuedEventFigures(costedIssues, purchases);
   const events: IssuedEventRow[] = eventFigures.map(f => ({
     key: f.key,
     kind: f.kind,

@@ -75,6 +75,35 @@ describe("getPnLDataV2", () => {
     await expect(getPnLDataV2({ startDate: "2026-06-19", endDate: "2026-06-19" })).rejects.toThrow("db down");
   });
 
+  // BR-COGS-007, 2026-09-11 (docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md
+  // Mục 1). Real shape: Khăn lau đa năng (SPM-057, is_non_inventory) issued
+  // +1 on 02/09/2026 (ISS-00120).
+  it("leaves an issue of an item bought for immediate use out of totalCOGS (BR-COGS-007)", async () => {
+    (findAllNoCache as any).mockImplementation(async (sheet: string) => {
+      if (sheet === "Purchase_Orders") return [{
+        id: "PO-900", status: "COMPLETED", transaction_date: "2026-09-01T00:00:00Z", created_at: "2026-09-01T00:00:00Z",
+        shipping_fee: 0, tax_amount: 0, voucher_amount: 0, discount_amount: 0,
+      }];
+      if (sheet === "Purchase_Order_Lines") return [
+        { id: "POL-900", purchase_order_id: "PO-900", purchased_item_id: "SPM-057", base_quantity: 10, subtotal: 10_000 },
+      ];
+      if (sheet === "Stock_Issues") return [
+        { id: "ISS-00120", purchased_item_id: "SPM-057", issued_at: "2026-09-01T19:24:00Z", base_quantity: 1, source: "MANUAL", issue_slip_id: "ISL-00042" },
+      ];
+      return [];
+    });
+    (findAll as any).mockImplementation(async (sheet: string) => {
+      if (sheet === "Purchased_Items") return [{ id: "SPM-057", item_category_id: "NHH-002", is_non_inventory: true }];
+      if (sheet === "Item_Categories") return [{ id: "NHH-002", system_type: "CONSUMABLE" }];
+      return [];
+    });
+
+    const result = await getPnLDataV2({ startDate: "2026-09-01", endDate: "2026-09-30" });
+
+    expect(result.totalCOGS).toBe(0);
+    expect(result.manualIssueSlipCount).toBe(0);
+  });
+
   it("loads order lines only for the server-filtered report orders", async () => {
     const fixture = makeSuaDauStandaloneOrder();
     (findAllWhere as any).mockResolvedValue([fixture.order]);

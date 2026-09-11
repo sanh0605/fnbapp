@@ -186,13 +186,21 @@ export function buildChallengerPurchases(
 
 export function buildChallengerIssues(
   stockIssues: readonly { purchased_item_id: string; issued_at: string; base_quantity: number; source: "MANUAL" | "STOCKTAKE" }[],
-  purchasedItems: readonly { id: string; item_category_id: string }[],
+  purchasedItems: readonly { id: string; item_category_id: string; is_non_inventory?: unknown }[],
   itemCategories: readonly { id: string; system_type: string }[],
 ): ChallengerIssue[] {
   const equipmentCategoryIds = new Set(itemCategories.filter(c => c.system_type === "EQUIPMENT").map(c => c.id));
-  const equipmentItemIds = new Set(purchasedItems.filter(p => equipmentCategoryIds.has(p.item_category_id)).map(p => p.id));
+  const excludedItemIds = new Set(
+    purchasedItems
+      .filter(p =>
+        equipmentCategoryIds.has(p.item_category_id) ||
+        // BR-COGS-007, 2026-09-11: bought for immediate use, counted when
+        // bought. Written out again here on purpose -- see the header.
+        p.is_non_inventory === true || p.is_non_inventory === "TRUE")
+      .map(p => p.id),
+  );
   return stockIssues
-    .filter(row => !equipmentItemIds.has(row.purchased_item_id))
+    .filter(row => !excludedItemIds.has(row.purchased_item_id))
     .map(row => ({
       purchased_item_id: row.purchased_item_id,
       at: row.issued_at,

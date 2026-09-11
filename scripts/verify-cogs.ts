@@ -42,8 +42,8 @@ async function main(): Promise<void> {
   const { findAllNoCache } = await import("@/lib/db/tables");
   const { getPnLDataV2 } = await import("@/app/admin/reports/actions");
   // Not a lib/costing import (the independence Gate 2 requires) -- this is
-  // the owner's fixed display-rounding rule (round cost UP, never flatter),
-  // applied identically to both sides so the comparison is against what
+  // the owner's display-rounding rule (BR-DATA-005: nearest đồng), applied
+  // identically to both sides so the comparison is against what
   // getPnLDataV2 actually returns (already rounded by this same function),
   // not against an unrounded raw sum.
   const { displayMoney } = await import("@/lib/reports/display-rounding");

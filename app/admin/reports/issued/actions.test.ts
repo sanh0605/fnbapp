@@ -141,3 +141,43 @@ describe("getIssuedValueReport", () => {
     expect(august!.value).toBe(35_616_236);
   });
 });
+
+// BR-COGS-007, 2026-09-11 (docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md
+// Mục 1). Independent of the 2026-08-13 live snapshot, whose data predates
+// both a non-inventory issue and an equipment issue in the same period.
+describe("getIssuedValueReport leaves out equipment and items bought for immediate use", () => {
+  it("in the grand total, the item list and the by-event list alike", async () => {
+    (findAllNoCache as any).mockImplementation(async (sheet: string) => {
+      if (sheet === "Purchase_Orders") return [{
+        id: "PO-900", status: "COMPLETED", transaction_date: "2026-09-01T00:00:00Z", created_at: "2026-09-01T00:00:00Z",
+        shipping_fee: 0, tax_amount: 0, voucher_amount: 0, discount_amount: 0,
+      }];
+      if (sheet === "Purchase_Order_Lines") return [
+        { id: "POL-900", purchase_order_id: "PO-900", purchased_item_id: "SPM-057", base_quantity: 10, subtotal: 10_000 },
+        { id: "POL-901", purchase_order_id: "PO-900", purchased_item_id: "SPM-090", base_quantity: 1, subtotal: 500_000 },
+      ];
+      if (sheet === "Stock_Issues") return [
+        { id: "ISS-00120", purchased_item_id: "SPM-057", issued_at: "2026-09-01T19:24:00Z", base_quantity: 1, source: "MANUAL", issue_slip_id: "ISL-00042" },
+        { id: "ISS-00400", purchased_item_id: "SPM-090", issued_at: "2026-09-02T03:00:00Z", base_quantity: 1, source: "MANUAL", issue_slip_id: "ISL-00050" },
+      ];
+      throw new Error(`unexpected findAllNoCache sheet: ${sheet}`);
+    });
+    (findAll as any).mockImplementation(async (sheet: string) => {
+      if (sheet === "Purchased_Items") return [
+        { id: "SPM-057", name: "Khăn lau đa năng", item_category_id: "NHH-002", is_non_inventory: true },
+        { id: "SPM-090", name: "Máy xay", item_category_id: "NHH-003", is_non_inventory: false },
+      ];
+      if (sheet === "Item_Categories") return [
+        { id: "NHH-002", system_type: "CONSUMABLE" },
+        { id: "NHH-003", system_type: "EQUIPMENT" },
+      ];
+      return [];
+    });
+
+    const report = await getIssuedValueReport();
+
+    expect(report.grandTotal).toBe(0);
+    expect(report.items).toEqual([]);
+    expect(report.events).toEqual([]);
+  });
+});

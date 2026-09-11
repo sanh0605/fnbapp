@@ -83,6 +83,22 @@ describe("buildChallengerPurchases / buildChallengerIssues (Gate 2 inputs)", () 
 
     expect(result).toEqual([{ purchased_item_id: "NNL-001", at: "2026-01-05", base_quantity: 2, source: "MANUAL" }]);
   });
+
+  it("excludes an issue of an item bought for immediate use (BR-COGS-007, 2026-09-11)", () => {
+    const issues = [
+      { purchased_item_id: "SPM-057", issued_at: "2026-09-01T19:24:00Z", base_quantity: 1, source: "MANUAL" as const },
+      { purchased_item_id: "NNL-001", issued_at: "2026-09-01T19:24:00Z", base_quantity: 2, source: "MANUAL" as const },
+    ];
+    const purchasedItems = [
+      { id: "SPM-057", item_category_id: "CAT-CON", is_non_inventory: true },
+      { id: "NNL-001", item_category_id: "CAT-RAW", is_non_inventory: false },
+    ];
+    const itemCategories = [{ id: "CAT-CON", system_type: "CONSUMABLE" }, { id: "CAT-RAW", system_type: "RAW" }];
+
+    const result = buildChallengerIssues(issues, purchasedItems, itemCategories);
+
+    expect(result).toEqual([{ purchased_item_id: "NNL-001", at: "2026-09-01T19:24:00Z", base_quantity: 2, source: "MANUAL" }]);
+  });
 });
 
 describe("computeWeightedAverageIssuedValue (Gate 2 core)", () => {

@@ -16,7 +16,7 @@ import {
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { computePeriodIssuedValue, computePeriodIssuedValueSplit } from "@/lib/costing/issue-costing";
-import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, filterOutEquipmentIssues } from "@/lib/costing/issue-costing-inputs";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
 import { buildStandaloneToppingProductLinks } from "@/lib/products/standalone-topping-links";
 import { requireAdmin } from "@/lib/auth/auth";
 
@@ -184,11 +184,13 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // stock_issues do. See computePeriodIssuedValue in lib/costing/issue-costing.ts
     // for why this is two full replays and a subtraction, not a single pass.
     const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
-    // section 3.2: an issue slip line naming equipment must never enter
-    // COGS -- it already depreciates through the asset register, and
-    // counting it here too would charge its full price twice.
-    const nonEquipmentIssues = filterOutEquipmentIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
-    const allIssues = buildIssueCostingIssues(nonEquipmentIssues);
+    // section 3.2, widened by BR-COGS-007 (2026-09-11): an issue slip line
+    // must never enter COGS if it names equipment (already depreciates
+    // through the asset register) or an item bought for immediate use
+    // (already counted on the Nguyên liệu mua dùng ngay line) -- either way
+    // counting it here too would charge its money twice.
+    const costedIssues = selectCostedIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
+    const allIssues = buildIssueCostingIssues(costedIssues);
     const totalCOGS = computePeriodIssuedValue(
       purchases,
       allIssues,
@@ -201,7 +203,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // the weighted-average pool for every later event and answer a
     // different question (see lib/costing/issue-costing.ts). totalCOGS
     // above stays the combined figure; this is the additive split.
-    const classifiedIssues = buildClassifiedIssues(nonEquipmentIssues, stocktakeSessions as any[]);
+    const classifiedIssues = buildClassifiedIssues(costedIssues, stocktakeSessions as any[]);
     const issuedValueSplit = computePeriodIssuedValueSplit(
       purchases,
       classifiedIssues,
@@ -215,7 +217,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // issue_slip_id the same way computeIssuedEventFigures groups MANUAL
     // rows (lib/reports/issued-value-report.ts), falling back to the row's
     // own id if a slip somehow carries none.
-    const manualIssuesInPeriod = nonEquipmentIssues.filter((row: any) => {
+    const manualIssuesInPeriod = costedIssues.filter((row: any) => {
       if (row.source !== "MANUAL") return false;
       const at = new Date(row.issued_at);
       if (dateRange?.startUtc && at < dateRange.startUtc) return false;
@@ -303,10 +305,11 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       revenue: r.revenue,
     }));
 
-    // Round at the render boundary only, owner rule 2026-07-30 (lib/display-
-    // rounding.ts): cost is rounded UP, from each figure's own exact value --
-    // never by summing already-rounded parts. Sorting above already happened
-    // on exact grossProfit, so display rounding here does not affect order.
+    // Round at the render boundary only, BR-DATA-005
+    // (lib/reports/display-rounding.ts): rounded to the nearest đồng, from
+    // each figure's own exact value -- never by summing already-rounded
+    // parts. Sorting above already happened on exact grossProfit, so
+    // display rounding here does not affect order.
     const displayedTotalCOGS = displayMoney(totalCOGS);
     const displayedGrossProfit = totalRevenue - displayedTotalCOGS;
     const displayedMargin = totalRevenue > 0 ? (displayedGrossProfit / totalRevenue) * 100 : 0;

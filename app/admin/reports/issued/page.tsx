@@ -157,7 +157,7 @@ export default async function IssuedValueReportPage({
           <EmptyState title="Chưa có lần xuất nào." />
         ) : (
           <div className="flex flex-col gap-3">
-            {/* Owner rule 2026-07-30 (lib/reports/display-rounding.ts): each card is
+            {/* BR-DATA-005 (lib/reports/display-rounding.ts): each card is
                 rounded from its own exact value, not summed from rounded
                 parts -- cộng các thẻ dưới đây có thể lệch vài đồng so với
                 tổng ở trên, đó không phải là lỗi tính toán. */}
