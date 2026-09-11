@@ -48,6 +48,9 @@ describe("getProfitAndLossReport", () => {
       gte: { created_at: new Date("2024-12-31T17:00:00.000Z") },
       lte: { created_at: new Date("2025-12-31T16:59:59.999Z") },
     });
+    expect(report.table.year).toBe(2025);
+    expect(report.table.periodLabel).toBe("cả năm");
+    expect(report.table.months.map(m => m.month)).toEqual(["2025-11", "2025-12"]);
   });
 
   it("falls back to the newest year when the asked-for year has no data", async () => {

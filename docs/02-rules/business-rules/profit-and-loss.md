@@ -5,6 +5,13 @@ The monthly profit-and-loss page is designed, not built. Design:
 are the owner's decisions for it; how each line is computed is in the design
 and in `BR-COGS-007`, `BR-COGS-008`, `BR-CASH-001` and `BR-CASH-003`.
 
+**Rounding.** Every figure is computed exactly and rounded only where it is
+shown (`BR-DATA-005`), in `lib/reports/profit-and-loss-table.ts`: each month's
+cell, each total and each profit from its own exact value. Adding a row by hand
+can therefore miss its total by a đồng or two; when it does, the page says so
+under the table. Percentages show two decimals (`PERCENT_DECIMALS`, owner
+decision 2026-09-11).
+
 ### BR-PNL-001 — One profit and loss for the whole shop
 
 **Status:** `APPROVED` — owner decision 2026-09-11.

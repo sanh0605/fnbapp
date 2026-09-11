@@ -5,10 +5,12 @@ import { requireAdmin } from "@/lib/auth/auth";
 import { ORDER_STATUS } from "@/lib/sales/order-types";
 import { saigonBucketKeys, toSaigonUtcRange } from "@/lib/shared/report-time";
 import { computeProfitAndLoss, listAvailableYears, type PnlFigures } from "@/lib/reports/profit-and-loss";
+import { buildPnlTable, type PnlTable } from "@/lib/reports/profit-and-loss-table";
 
 export interface ProfitAndLossReport {
   availableYears: number[];
   figures: PnlFigures;
+  table: PnlTable;
 }
 
 // BR-PNL-004: ADMIN and MANAGER, the same guard as every other report.
@@ -80,5 +82,5 @@ export async function getProfitAndLossReport(year?: number): Promise<ProfitAndLo
     firstPaymentAt: (firstPayments[0] as any)?.created_at ?? null,
   });
 
-  return { availableYears, figures };
+  return { availableYears, figures, table: buildPnlTable(figures, today) };
 }
