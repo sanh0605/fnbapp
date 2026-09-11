@@ -1,5 +1,9 @@
 export const BACKUP_TABLES = [
   "brands",
+  // References brands, and orders_v2/pos_drafts reference outlets, so it
+  // must come before both for lib/db/backup-restore.ts's parent-first
+  // restore order to resolve.
+  "outlets",
   "product_categories",
   "item_categories",
   "units",
@@ -10,15 +14,18 @@ export const BACKUP_TABLES = [
   "modifiers",
   "recipes",
   "promotions",
-  "base_ingredients",
   "semi_products",
   "purchased_items",
+  "asset_depreciation_bands",
+  // References purchased_items, so it must come after it.
+  "assets",
+  // References assets, so it must come after it.
+  "asset_disposals",
   "uom_conversions",
   "product_price_history",
   "orders_v2",
   "order_lines_v2",
   "order_events",
-  "stock_ledger",
   "purchase_orders",
   "purchase_order_lines",
   "stock_adjustments",
@@ -34,14 +41,18 @@ export const BACKUP_TABLES = [
   "shift_stock_checks",
   "stocktake_sessions",
   "stocktake_lines",
-  // References purchased_items and stocktake_sessions, so it must come after
-  // both for lib/db/backup-restore.ts's parent-first restore order to resolve.
+  // References stock_issues below only in reverse (stock_issues.issue_slip_id
+  // points here), so issue_slips must come before stock_issues.
+  "issue_slips",
+  // References purchased_items, stocktake_sessions, and issue_slips, so it
+  // must come after all three for lib/db/backup-restore.ts's parent-first
+  // restore order to resolve.
   "stock_issues",
   "purchase_order_edits",
   "pos_sync_failures",
-  // inventory_balances is deliberately excluded: it is derived from
-  // stock_ledger and rebuilt on demand by rebuild_inventory_balances(),
-  // never a primary source of truth.
+  // inventory_balances and stock_ledger are dropped tables (migration 0096,
+  // 2026-09-02); base_ingredients is dropped (migration 0090, 2026-09-01).
+  // None exist any more, so none are listed.
 ] as const;
 
 export const PAGE_SIZE = 1000;

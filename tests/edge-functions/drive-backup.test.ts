@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   BACKUP_TABLES,
@@ -6,13 +8,13 @@ import {
   buildBackupFileName,
   validateBackupBundle,
 } from "../../supabase/functions/backup-to-drive/core";
+import { extractTables } from "@/scripts/system-map/extract-tables";
 
 describe("Google Drive backup core", () => {
-  it("pins the complete 38-table snapshot policy", () => {
-    expect(BACKUP_TABLES).toHaveLength(38);
-    expect(new Set(BACKUP_TABLES).size).toBe(38);
+  it("pins the complete 41-table snapshot policy", () => {
+    expect(BACKUP_TABLES).toHaveLength(41);
+    expect(new Set(BACKUP_TABLES).size).toBe(41);
     expect(BACKUP_TABLES).toContain("orders_v2");
-    expect(BACKUP_TABLES).toContain("stock_ledger");
     expect(BACKUP_TABLES).toContain("users");
     expect(BACKUP_TABLES).toContain("sync_state");
     expect(BACKUP_TABLES).toContain("data_migration_runs");
@@ -33,6 +35,11 @@ describe("Google Drive backup core", () => {
       "stock_issues",
       "purchase_order_edits",
       "pos_sync_failures",
+      "outlets",
+      "asset_depreciation_bands",
+      "assets",
+      "asset_disposals",
+      "issue_slips",
     ]) {
       expect(BACKUP_TABLES).toContain(table);
     }
@@ -40,6 +47,23 @@ describe("Google Drive backup core", () => {
 
   it("excludes inventory_balances, which is derived and rebuilt from stock_ledger", () => {
     expect(BACKUP_TABLES).not.toContain("inventory_balances");
+  });
+
+  it("never lists a table that has since been dropped by a migration", () => {
+    // Regression test for the 2026-09-01..09-02 outage: base_ingredients and
+    // stock_ledger stayed in BACKUP_TABLES after being dropped (migrations
+    // 0090 and 0096), so the nightly backup 404'd on the first dumpTable call
+    // and never wrote another file. extractTables replays every migration's
+    // CREATE/ALTER/DROP in file order, so a table dropped anywhere no longer
+    // appears here even though its original CREATE TABLE line still exists
+    // in an old migration file.
+    const migrationsDir = join(process.cwd(), "supabase/migrations");
+    const migrationFiles = readdirSync(migrationsDir).filter(name => name.endsWith(".sql")).sort();
+    const sqlSources = migrationFiles.map(name => readFileSync(join(migrationsDir, name), "utf8"));
+    const liveTableNames = new Set(extractTables(sqlSources).map(table => table.name));
+
+    const droppedButStillListed = BACKUP_TABLES.filter(table => !liveTableNames.has(table));
+    expect(droppedButStillListed).toEqual([]);
   });
 
   it("builds the schema-versioned recovery bundle with counts", () => {
@@ -67,10 +91,10 @@ describe("Google Drive backup core", () => {
       .toBe("fnbapp-backup-2026-07-17.json");
   });
 
-  it("rejects a snapshot missing any of the 38 required table keys", () => {
+  it("rejects a snapshot missing any of the 41 required table keys", () => {
     const rows = new Map(BACKUP_TABLES.map(table => [table, []]));
     const complete = buildBackupBundle("2026-07-16T00:00:00.000Z", rows);
-    expect(validateBackupBundle(complete)).toEqual({ tableCount: 38, totalRowCount: 0 });
+    expect(validateBackupBundle(complete)).toEqual({ tableCount: 41, totalRowCount: 0 });
 
     delete complete.tables.users;
     expect(() => validateBackupBundle(complete)).toThrow(/missing.*users/i);
