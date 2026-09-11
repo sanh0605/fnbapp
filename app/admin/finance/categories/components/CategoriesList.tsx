@@ -13,6 +13,9 @@ interface CategoriesListProps {
   categories: DBCashCategory[];
   // ADMIN only (BR-ACCESS-003) -- everyone else may add, edit and retire.
   canDelete: boolean;
+  // I3 -- ids of every category any Cash_Entries row references (any
+  // status), computed server-side in page.tsx.
+  usedCategoryIds: string[];
 }
 
 const KIND_LABEL: Record<DBCashCategory["kind"], string> = {
@@ -41,8 +44,9 @@ function StatusBadge({ status }: { status: DBCashCategory["status"] }) {
 
 // Extracted out of page.tsx so it is directly render-testable -- same
 // reason as app/admin/outlets/components/OutletsList.tsx.
-export function CategoriesList({ categories, canDelete }: CategoriesListProps) {
+export function CategoriesList({ categories, canDelete, usedCategoryIds }: CategoriesListProps) {
   const router = useRouter();
+  const usedIds = new Set(usedCategoryIds);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DBCashCategory | null>(null);
 
@@ -123,7 +127,7 @@ export function CategoriesList({ categories, canDelete }: CategoriesListProps) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end items-center gap-4">
-                    <CategoryForm category={category} />
+                    <CategoryForm category={category} hasEntries={usedIds.has(category.id)} />
                     <button
                       onClick={() => handleToggleStatus(category)}
                       disabled={busyId === category.id}
@@ -169,7 +173,7 @@ export function CategoriesList({ categories, canDelete }: CategoriesListProps) {
 
             <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
               <div className="flex items-center min-h-[44px]">
-                <CategoryForm category={category} />
+                <CategoryForm category={category} hasEntries={usedIds.has(category.id)} />
               </div>
               <div className="flex items-center min-h-[44px]">
                 <button
