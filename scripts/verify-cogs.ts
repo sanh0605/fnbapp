@@ -216,8 +216,8 @@ async function main(): Promise<void> {
         `2026-09-08 (docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md): getPnLDataV2 now also returns ` +
         `shrinkageValue and manualIssueSlipCount, computed by a tagged single-replay split ` +
         `(computePeriodIssuedValueSplit in lib/costing/issue-costing.ts), not by re-reading Issue.source in the ` +
-        `original engine, which still ignores it. No screen reads those two fields yet -- there is no P&L page ` +
-        `(folded into the future financial-reports work, owner decision 2026-09-08); this script does not gate them.`,
+        `original engine, which still ignores it. This script does not gate them; ` +
+        `scripts/verify-pnl-monthly.ts checks the split month by month against the P&L.`,
       );
     }
   }
