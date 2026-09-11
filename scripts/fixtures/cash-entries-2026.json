@@ -63,13 +63,6 @@
     "note": "2 tờ QR chuyển khoản - Uchako"
   },
   {
-    "entry_date": "2026-06-02",
-    "category": "Vận hành",
-    "amount": 28000,
-    "payment_method": "CASH",
-    "note": "Túi đựng khoai"
-  },
-  {
     "entry_date": "2026-06-15",
     "category": "Điện, nước, gas",
     "amount": 250000,
@@ -85,31 +78,10 @@
   },
   {
     "entry_date": "2026-06-25",
-    "category": "Vận hành",
-    "amount": 560000,
-    "payment_method": "CASH",
-    "note": "Uchako - Mua đá viên"
-  },
-  {
-    "entry_date": "2026-06-25",
-    "category": "Vận hành",
-    "amount": 375000,
-    "payment_method": "CASH",
-    "note": "Phin Đi - Mua đá viên"
-  },
-  {
-    "entry_date": "2026-06-25",
     "category": "Điện, nước, gas",
     "amount": 70000,
     "payment_method": "CASH",
     "note": "Tiền nước sinh hoạt"
-  },
-  {
-    "entry_date": "2026-06-25",
-    "category": "Vận hành",
-    "amount": 30000,
-    "payment_method": "CASH",
-    "note": "Túi đựng khoai"
   },
   {
     "entry_date": "2026-06-30",
@@ -117,20 +89,6 @@
     "amount": 105000,
     "payment_method": "CASH",
     "note": "Phin Đi - Gửi xe"
-  },
-  {
-    "entry_date": "2026-06-30",
-    "category": "Vận hành",
-    "amount": 247000,
-    "payment_method": "CASH",
-    "note": "12kg Tắc"
-  },
-  {
-    "entry_date": "2026-06-30",
-    "category": "Vận hành",
-    "amount": 40000,
-    "payment_method": "CASH",
-    "note": "Chanh"
   },
   {
     "entry_date": "2026-06-30",
@@ -161,13 +119,6 @@
     "note": "Tiền gas"
   },
   {
-    "entry_date": "2026-07-19",
-    "category": "Vận hành",
-    "amount": 54000,
-    "payment_method": "CASH",
-    "note": "Túi đựng khoai"
-  },
-  {
     "entry_date": "2026-07-22",
     "category": "Marketing",
     "amount": 150000,
@@ -180,20 +131,6 @@
     "amount": 150000,
     "payment_method": "CASH",
     "note": "Tiền điện"
-  },
-  {
-    "entry_date": "2026-07-25",
-    "category": "Vận hành",
-    "amount": 500000,
-    "payment_method": "CASH",
-    "note": "Uchako - Mua đá viên"
-  },
-  {
-    "entry_date": "2026-07-25",
-    "category": "Vận hành",
-    "amount": 400000,
-    "payment_method": "CASH",
-    "note": "Phin Đi - Mua đá viên"
   },
   {
     "entry_date": "2026-07-25",
@@ -212,13 +149,6 @@
   {
     "entry_date": "2026-07-31",
     "category": "Vận hành",
-    "amount": 142000,
-    "payment_method": "CASH",
-    "note": "7kg Tắc"
-  },
-  {
-    "entry_date": "2026-07-31",
-    "category": "Vận hành",
     "amount": 150000,
     "payment_method": "CASH",
     "note": "Uchako - Gửi xe"
@@ -229,27 +159,6 @@
     "amount": 300000,
     "payment_method": "CASH",
     "note": "Dán lại xe Phin Đi"
-  },
-  {
-    "entry_date": "2026-08-10",
-    "category": "Vận hành",
-    "amount": 40000,
-    "payment_method": "CASH",
-    "note": "2kg tắc"
-  },
-  {
-    "entry_date": "2026-08-20",
-    "category": "Vận hành",
-    "amount": 20000,
-    "payment_method": "CASH",
-    "note": "1kg tắc"
-  },
-  {
-    "entry_date": "2026-08-23",
-    "category": "Vận hành",
-    "amount": 30000,
-    "payment_method": "CASH",
-    "note": "Túi đựng khoai"
   },
   {
     "entry_date": "2026-08-26",
@@ -296,20 +205,6 @@
   {
     "entry_date": "2026-08-31",
     "category": "Vận hành",
-    "amount": 520000,
-    "payment_method": "CASH",
-    "note": "Phin Đi - Mua đá viên"
-  },
-  {
-    "entry_date": "2026-08-31",
-    "category": "Vận hành",
-    "amount": 470000,
-    "payment_method": "CASH",
-    "note": "Uchako - Mua đá viên"
-  },
-  {
-    "entry_date": "2026-08-31",
-    "category": "Vận hành",
     "amount": 150000,
     "payment_method": "CASH",
     "note": "Uchako - Gửi xe"
@@ -341,13 +236,6 @@
     "amount": 6683290,
     "payment_method": "CASH",
     "note": "Thu khác"
-  },
-  {
-    "entry_date": "2026-09-04",
-    "category": "Vận hành",
-    "amount": 40000,
-    "payment_method": "CASH",
-    "note": "2kg tắc"
   },
   {
     "entry_date": "2026-09-30",

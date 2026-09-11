@@ -7,11 +7,17 @@ import { resolve } from "node:path";
 import { normalizeNameForComparison } from "@/lib/shared/duplicate-name-guard";
 
 /**
- * One-time backfill of the 54 cash-book rows the owner kept by hand in a
+ * One-time backfill of the 38 cash-book rows the owner kept by hand in a
  * Google Sheet before this app had a cash book at all.
  *
+ * 16 rows are left out under BR-CASH-001 (owner decision 2026-09-11): the
+ * cash book never holds purchase money. Tắc and chanh (6 rows) are already
+ * entered as purchase orders PO-156, PO-160 .. PO-164. Đá viên and túi đựng
+ * khoai (10 rows) are catalogued purchased items (SPM-005, SPM-146) the
+ * owner chose to enter as purchase orders himself.
+ *
  * See scripts/fixtures/cash-entries-2026.json for the extracted rows and
- * their provenance (why 54 of 123, and the distribution across categories),
+ * their provenance (why 38 of 123, and the distribution across categories),
  * and docs/superpowers/specs/2026-09-08-so-thu-chi-design.md for the cash
  * book design.
  *

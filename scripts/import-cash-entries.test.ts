@@ -19,15 +19,15 @@ const ADMIN = { id: "USR-001", name: "Sanh" };
 const BANK_ACCOUNT_ID = "BA-001";
 
 describe("cash entry import", () => {
-  it("carries exactly the 54 rows the app does not already have", () => {
-    expect(fixture.length).toBe(54);
+  it("carries the 38 rows that are neither sales the POS has nor purchases", () => {
+    expect(fixture.length).toBe(38);
   });
 
   it("splits across the five categories the way the sheet does", () => {
     const counts: Record<string, number> = {};
     for (const r of fixture) counts[r.category] = (counts[r.category] ?? 0) + 1;
     expect(counts).toEqual({
-      "Vận hành": 33,
+      "Vận hành": 17,
       "Điện, nước, gas": 12,
       "Marketing": 5,
       "Thu khác": 2,
@@ -37,7 +37,7 @@ describe("cash entry import", () => {
 
   it("maps every row onto a real category id and a positive whole amount", () => {
     const rows = buildRows(fixture, CATEGORY_IDS, ADMIN, BANK_ACCOUNT_ID);
-    expect(rows.length).toBe(54);
+    expect(rows.length).toBe(38);
     for (const r of rows) {
       expect(Object.values(CATEGORY_IDS)).toContain(r.category_id);
       expect(Number.isInteger(r.amount) && r.amount > 0).toBe(true);
@@ -51,7 +51,7 @@ describe("cash entry import", () => {
   it("numbers the rows in date order, with no gaps", () => {
     const rows = buildRows(fixture, CATEGORY_IDS, ADMIN, BANK_ACCOUNT_ID);
     expect(rows[0].id).toBe("CE-001");
-    expect(rows[53].id).toBe("CE-054");
+    expect(rows[37].id).toBe("CE-038");
     for (let i = 1; i < rows.length; i++) {
       expect(rows[i].entry_date >= rows[i - 1].entry_date).toBe(true);
     }
@@ -60,9 +60,9 @@ describe("cash entry import", () => {
   it("reproduces the July 2026 figures the owner will check on screen", () => {
     const july = monthlyTotals(buildRows(fixture, CATEGORY_IDS, ADMIN, BANK_ACCOUNT_ID))["2026-07"];
     expect(july["CFC-002"]).toBe(470000);   // Điện, nước, gas
-    expect(july["CFC-001"]).toBe(1371000);  // Vận hành
+    expect(july["CFC-001"]).toBe(275000);   // Vận hành
     expect(july["CFC-003"]).toBe(330000);   // Marketing
-    expect(july.EXPENSE_TOTAL).toBe(2171000);
+    expect(july.EXPENSE_TOTAL).toBe(1075000);
     expect(july.INCOME_TOTAL).toBe(0);
   });
 
@@ -95,11 +95,18 @@ describe("cash entry import", () => {
     expect(withAccount[0].entry_date).toBe("2026-09-02");
     expect(withAccount[0].amount).toBe(1728578);
     const withoutAccount = rows.filter((r) => r.bank_account_id === null);
-    expect(withoutAccount.length).toBe(53);
+    expect(withoutAccount.length).toBe(37);
   });
 
   it("refuses to guess a bank account for the BANK_TRANSFER row when none is given", () => {
     expect(() => buildRows(fixture, CATEGORY_IDS, ADMIN, null)).toThrow(/1\.728\.578/);
+  });
+
+  it("never carries a purchase row (BR-CASH-001) -- tắc, chanh, đá viên, túi đựng khoai are POs, not cash-book rows", () => {
+    const purchaseNote = /tắc|chanh|đá viên|túi đựng khoai/i;
+    for (const r of fixture as { note: string }[]) {
+      expect(r.note).not.toMatch(purchaseNote);
+    }
   });
 });
 
