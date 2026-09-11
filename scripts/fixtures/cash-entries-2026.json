@@ -1,0 +1,380 @@
+[
+  {
+    "entry_date": "2026-03-27",
+    "category": "Vốn góp",
+    "amount": 32066807,
+    "payment_method": "CASH",
+    "note": "Đầu tư ban đầu"
+  },
+  {
+    "entry_date": "2026-04-01",
+    "category": "Vận hành",
+    "amount": 40000,
+    "payment_method": "CASH",
+    "note": "4 tờ QR chuyển khoản - Phin Đi"
+  },
+  {
+    "entry_date": "2026-04-16",
+    "category": "Vận hành",
+    "amount": 500000,
+    "payment_method": "CASH",
+    "note": "Ngoại giao - CAKV"
+  },
+  {
+    "entry_date": "2026-05-27",
+    "category": "Marketing",
+    "amount": 240000,
+    "payment_method": "CASH",
+    "note": "In 5 hộp phiếu tích điểm Uchako + 5 hộp phiếu tích điểm Phin Đi"
+  },
+  {
+    "entry_date": "2026-05-30",
+    "category": "Marketing",
+    "amount": 180000,
+    "payment_method": "CASH",
+    "note": "2 Standee \"Đồng giá 15k\""
+  },
+  {
+    "entry_date": "2026-06-01",
+    "category": "Vận hành",
+    "amount": 35000,
+    "payment_method": "CASH",
+    "note": "Photo giấy bán khoai trứng"
+  },
+  {
+    "entry_date": "2026-06-01",
+    "category": "Vận hành",
+    "amount": 120000,
+    "payment_method": "CASH",
+    "note": "1 Menu Phin Đi"
+  },
+  {
+    "entry_date": "2026-06-01",
+    "category": "Vận hành",
+    "amount": 30000,
+    "payment_method": "CASH",
+    "note": "4 Menu Uchako"
+  },
+  {
+    "entry_date": "2026-06-01",
+    "category": "Vận hành",
+    "amount": 30000,
+    "payment_method": "CASH",
+    "note": "2 tờ QR chuyển khoản - Uchako"
+  },
+  {
+    "entry_date": "2026-06-02",
+    "category": "Vận hành",
+    "amount": 28000,
+    "payment_method": "CASH",
+    "note": "Túi đựng khoai"
+  },
+  {
+    "entry_date": "2026-06-15",
+    "category": "Điện, nước, gas",
+    "amount": 250000,
+    "payment_method": "CASH",
+    "note": "Tiền gas"
+  },
+  {
+    "entry_date": "2026-06-25",
+    "category": "Điện, nước, gas",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Tiền điện"
+  },
+  {
+    "entry_date": "2026-06-25",
+    "category": "Vận hành",
+    "amount": 560000,
+    "payment_method": "CASH",
+    "note": "Uchako - Mua đá viên"
+  },
+  {
+    "entry_date": "2026-06-25",
+    "category": "Vận hành",
+    "amount": 375000,
+    "payment_method": "CASH",
+    "note": "Phin Đi - Mua đá viên"
+  },
+  {
+    "entry_date": "2026-06-25",
+    "category": "Điện, nước, gas",
+    "amount": 70000,
+    "payment_method": "CASH",
+    "note": "Tiền nước sinh hoạt"
+  },
+  {
+    "entry_date": "2026-06-25",
+    "category": "Vận hành",
+    "amount": 30000,
+    "payment_method": "CASH",
+    "note": "Túi đựng khoai"
+  },
+  {
+    "entry_date": "2026-06-30",
+    "category": "Vận hành",
+    "amount": 105000,
+    "payment_method": "CASH",
+    "note": "Phin Đi - Gửi xe"
+  },
+  {
+    "entry_date": "2026-06-30",
+    "category": "Vận hành",
+    "amount": 247000,
+    "payment_method": "CASH",
+    "note": "12kg Tắc"
+  },
+  {
+    "entry_date": "2026-06-30",
+    "category": "Vận hành",
+    "amount": 40000,
+    "payment_method": "CASH",
+    "note": "Chanh"
+  },
+  {
+    "entry_date": "2026-06-30",
+    "category": "Vận hành",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Uchako - Gửi xe"
+  },
+  {
+    "entry_date": "2026-07-01",
+    "category": "Marketing",
+    "amount": 90000,
+    "payment_method": "CASH",
+    "note": "Standee"
+  },
+  {
+    "entry_date": "2026-07-07",
+    "category": "Marketing",
+    "amount": 90000,
+    "payment_method": "CASH",
+    "note": "Standee"
+  },
+  {
+    "entry_date": "2026-07-15",
+    "category": "Điện, nước, gas",
+    "amount": 250000,
+    "payment_method": "CASH",
+    "note": "Tiền gas"
+  },
+  {
+    "entry_date": "2026-07-19",
+    "category": "Vận hành",
+    "amount": 54000,
+    "payment_method": "CASH",
+    "note": "Túi đựng khoai"
+  },
+  {
+    "entry_date": "2026-07-22",
+    "category": "Marketing",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Standee \"Giảm 10k\""
+  },
+  {
+    "entry_date": "2026-07-25",
+    "category": "Điện, nước, gas",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Tiền điện"
+  },
+  {
+    "entry_date": "2026-07-25",
+    "category": "Vận hành",
+    "amount": 500000,
+    "payment_method": "CASH",
+    "note": "Uchako - Mua đá viên"
+  },
+  {
+    "entry_date": "2026-07-25",
+    "category": "Vận hành",
+    "amount": 400000,
+    "payment_method": "CASH",
+    "note": "Phin Đi - Mua đá viên"
+  },
+  {
+    "entry_date": "2026-07-25",
+    "category": "Điện, nước, gas",
+    "amount": 70000,
+    "payment_method": "CASH",
+    "note": "Tiền nước sinh hoạt"
+  },
+  {
+    "entry_date": "2026-07-31",
+    "category": "Vận hành",
+    "amount": 125000,
+    "payment_method": "CASH",
+    "note": "Phin Đi - Gửi xe"
+  },
+  {
+    "entry_date": "2026-07-31",
+    "category": "Vận hành",
+    "amount": 142000,
+    "payment_method": "CASH",
+    "note": "7kg Tắc"
+  },
+  {
+    "entry_date": "2026-07-31",
+    "category": "Vận hành",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Uchako - Gửi xe"
+  },
+  {
+    "entry_date": "2026-08-02",
+    "category": "Vận hành",
+    "amount": 300000,
+    "payment_method": "CASH",
+    "note": "Dán lại xe Phin Đi"
+  },
+  {
+    "entry_date": "2026-08-10",
+    "category": "Vận hành",
+    "amount": 40000,
+    "payment_method": "CASH",
+    "note": "2kg tắc"
+  },
+  {
+    "entry_date": "2026-08-20",
+    "category": "Vận hành",
+    "amount": 20000,
+    "payment_method": "CASH",
+    "note": "1kg tắc"
+  },
+  {
+    "entry_date": "2026-08-23",
+    "category": "Vận hành",
+    "amount": 30000,
+    "payment_method": "CASH",
+    "note": "Túi đựng khoai"
+  },
+  {
+    "entry_date": "2026-08-26",
+    "category": "Vốn góp",
+    "amount": 1472000,
+    "payment_method": "CASH",
+    "note": "Mua nguyên liệu"
+  },
+  {
+    "entry_date": "2026-08-26",
+    "category": "Vận hành",
+    "amount": 35000,
+    "payment_method": "CASH",
+    "note": "Photo giấy bán khoai trứng"
+  },
+  {
+    "entry_date": "2026-08-31",
+    "category": "Điện, nước, gas",
+    "amount": 250000,
+    "payment_method": "CASH",
+    "note": "Tiền gas"
+  },
+  {
+    "entry_date": "2026-08-31",
+    "category": "Điện, nước, gas",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Tiền điện"
+  },
+  {
+    "entry_date": "2026-08-31",
+    "category": "Điện, nước, gas",
+    "amount": 70000,
+    "payment_method": "CASH",
+    "note": "Tiền nước sinh hoạt"
+  },
+  {
+    "entry_date": "2026-08-31",
+    "category": "Vận hành",
+    "amount": 130000,
+    "payment_method": "CASH",
+    "note": "Phin Đi - Gửi xe"
+  },
+  {
+    "entry_date": "2026-08-31",
+    "category": "Vận hành",
+    "amount": 520000,
+    "payment_method": "CASH",
+    "note": "Phin Đi - Mua đá viên"
+  },
+  {
+    "entry_date": "2026-08-31",
+    "category": "Vận hành",
+    "amount": 470000,
+    "payment_method": "CASH",
+    "note": "Uchako - Mua đá viên"
+  },
+  {
+    "entry_date": "2026-08-31",
+    "category": "Vận hành",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Uchako - Gửi xe"
+  },
+  {
+    "entry_date": "2026-09-02",
+    "category": "Vận hành",
+    "amount": 407000,
+    "payment_method": "CASH",
+    "note": "Ngoại giao - CAKV"
+  },
+  {
+    "entry_date": "2026-09-02",
+    "category": "Vận hành",
+    "amount": 500000,
+    "payment_method": "CASH",
+    "note": "Ngoại giao - CAKV"
+  },
+  {
+    "entry_date": "2026-09-02",
+    "category": "Thu khác",
+    "amount": 1728578,
+    "payment_method": "BANK_TRANSFER",
+    "note": "Thu khác"
+  },
+  {
+    "entry_date": "2026-09-02",
+    "category": "Thu khác",
+    "amount": 6683290,
+    "payment_method": "CASH",
+    "note": "Thu khác"
+  },
+  {
+    "entry_date": "2026-09-04",
+    "category": "Vận hành",
+    "amount": 40000,
+    "payment_method": "CASH",
+    "note": "2kg tắc"
+  },
+  {
+    "entry_date": "2026-09-30",
+    "category": "Vận hành",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Uchako - Gửi xe"
+  },
+  {
+    "entry_date": "2026-09-30",
+    "category": "Điện, nước, gas",
+    "amount": 150000,
+    "payment_method": "CASH",
+    "note": "Tiền điện"
+  },
+  {
+    "entry_date": "2026-09-30",
+    "category": "Điện, nước, gas",
+    "amount": 70000,
+    "payment_method": "CASH",
+    "note": "Tiền nước sinh hoạt"
+  },
+  {
+    "entry_date": "2026-09-30",
+    "category": "Điện, nước, gas",
+    "amount": 250000,
+    "payment_method": "CASH",
+    "note": "Tiền gas"
+  }
+]
