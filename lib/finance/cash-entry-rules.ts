@@ -20,6 +20,44 @@ export interface CashEntryFields {
 
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
+const AMOUNT_FORMAT_ERROR =
+  "Số tiền chỉ gồm chữ số; dấu chấm chỉ dùng để chia hàng nghìn (ví dụ 150.000)";
+const AMOUNT_NOT_POSITIVE_ERROR = "Số tiền phải lớn hơn 0";
+const AMOUNT_TOO_LARGE_ERROR = "Số tiền quá lớn";
+
+// Built with an explicit char code rather than a literal character sitting
+// in this source file -- an invisible NBSP here would be exactly the hazard
+// lib/shared/duplicate-name-guard.ts avoids the same way.
+const NBSP = String.fromCharCode(160);
+
+// I1 (final-review.md): Vietnamese users write thousands with a dot --
+// "150.000" means one hundred fifty thousand, not one hundred fifty point
+// zero. Plain Number(raw) read "150.000" as 150, a 1000x understatement
+// with no warning, and also silently accepted "1e6" and "0x10" as valid
+// amounts. Only two shapes are legal now: digits only, or dot-separated
+// groups of exactly three digits (the dots are then stripped before
+// parsing). Anything else -- a decimal point, a comma, scientific or hex
+// notation, a malformed grouping like "1.50.000" -- is a format error, not
+// a "too small" one.
+function parseAmountVn(raw: string): ParseResult<number> {
+  if (!raw) return { ok: false, error: AMOUNT_NOT_POSITIVE_ERROR };
+
+  const noSpaces = raw.split(" ").join("").split(NBSP).join("");
+  let digits: string;
+  if (/^\d+$/.test(noSpaces)) {
+    digits = noSpaces;
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(noSpaces)) {
+    digits = noSpaces.replace(/\./g, "");
+  } else {
+    return { ok: false, error: AMOUNT_FORMAT_ERROR };
+  }
+
+  const amount = Number(digits);
+  if (amount <= 0) return { ok: false, error: AMOUNT_NOT_POSITIVE_ERROR };
+  if (!Number.isSafeInteger(amount)) return { ok: false, error: AMOUNT_TOO_LARGE_ERROR };
+  return { ok: true, value: amount };
+}
+
 export function parseCashEntry(input: CashEntryInput): ParseResult<CashEntryFields> {
   const entry_date = (input.entry_date || "").trim();
   if (!entry_date) return { ok: false, error: "Chọn ngày ghi sổ" };
@@ -27,13 +65,10 @@ export function parseCashEntry(input: CashEntryInput): ParseResult<CashEntryFiel
   const category_id = (input.category_id || "").trim();
   if (!category_id) return { ok: false, error: "Chọn nhóm thu chi" };
 
-  // Dong has no minor unit, so "1500.5" is not a rounding problem -- it is a
-  // number this ledger cannot represent. Reject rather than round.
   const raw = (input.amount || "").trim();
-  const amount = Number(raw);
-  if (!raw || !Number.isInteger(amount) || amount <= 0) {
-    return { ok: false, error: "Số tiền phải lớn hơn 0" };
-  }
+  const parsedAmount = parseAmountVn(raw);
+  if (parsedAmount.ok === false) return { ok: false, error: parsedAmount.error };
+  const amount = parsedAmount.value;
 
   const payment_method = input.payment_method === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH";
   const chosen = (input.bank_account_id || "").trim();
