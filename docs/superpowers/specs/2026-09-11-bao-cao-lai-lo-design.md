@@ -49,8 +49,17 @@ tháng chi tiết hơn B02-DNSN. Cộng dồn các dòng của bảng ra đúng 
   tháng 8 là 46.418.990đ, trong đó 34.864.627đ là lần kiểm kho `STK-001` còn
   11.554.363đ là 37 phiếu xuất. Hao hụt bằng 0 ở mọi tháng.
 - Nguyên liệu mua dùng ngay: đơn nhập đã hoàn tất, dòng hàng có
-  `purchased_items.is_non_inventory = true`. 15 món có cờ này. Tính theo giá đã
-  trả (`BR-COGS-006`). Tháng 8 là 1.760.000đ:
+  `purchased_items.is_non_inventory = true`. Chủ quán tự đặt cờ này cho từng
+  món bằng ô "Không quản lý tồn kho" trên form nguyên liệu và vật tư tiêu hao.
+  Món thuộc nhóm Dụng cụ không có ô này. 15 món đang có cờ:
+  - Nguyên liệu: Đá viên, Khoai lang, Trái tắc, Trái chanh, Tiêu trắng, Muối.
+  - Vật tư tiêu hao: Túi đựng rác, Túi chữ T, Túi PE 1 ly seal, Túi xốp 1 ly,
+    Túi PE 2 ly seal, Túi đựng khoai, Túi đựng muối tiêu, Muỗng nhựa đen, Khăn
+    lau đa năng.
+
+  Ly, nắp và ống hút không có cờ. Chúng được đếm tồn kho và vào giá vốn qua
+  phiếu xuất. Mọi số tiền tính theo giá đã trả (`BR-COGS-006`). Tháng 8 là
+  1.760.000đ:
   - Đá viên 990.000đ;
   - Khoai lang 680.000đ;
   - Trái tắc 60.000đ;
@@ -253,8 +262,11 @@ bảng. Chúng vẫn cộng vào lợi nhuận ròng, nhưng Doanh thu tháng 4 
 ## Ví dụ bằng số thật
 
 Đo 2026-09-11 bằng script đọc, chưa phải bằng hàm của trang. Giả định nhóm
-"Doanh thu ghi tay" đã được đánh dấu cờ. Số sẽ đổi khi dữ liệu đổi,
-ví dụ khi chủ quán tạo đơn đá viên tháng 6 (935.000đ, đang chờ xác nhận).
+"Doanh thu ghi tay" đã được đánh dấu cờ. Số sẽ đổi khi dữ liệu đổi. Ngay sau
+lần đo, chủ quán đã tạo đơn đá viên tháng 6 (`PO-176`, ngày 30/06, 980.000đ),
+nên tháng 6 thật sự là: Nguyên liệu mua dùng ngay 3.418.727đ, lợi nhuận ròng
+17.199.796đ. Cộng dồn từ tháng 6 trở đi cũng giảm 980.000đ. Kế hoạch phải đo
+lại toàn bảng trước khi dùng.
 
 | Khoản | 04 | 06 | 07 | 08 | 09 (đến 11/09) | Tổng năm |
 |---|---:|---:|---:|---:|---:|---:|
