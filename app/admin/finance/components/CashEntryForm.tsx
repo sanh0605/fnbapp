@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { addCashEntry, updateCashEntry } from "../actions";
 import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
+import { MoneyInput } from "@/components/ui/MoneyInput";
 import type { DBBankAccount, DBCashCategory, DBCashEntry } from "@/types/db";
 
 interface CashEntryFormProps {
@@ -147,15 +148,10 @@ export function CashEntryForm({ entry, categories, accounts, today }: CashEntryF
             <label htmlFor={`${formId}-amount`} className="block text-sm font-medium text-text-secondary mb-1">
               Số tiền (đồng)
             </label>
-            <input
+            <MoneyInput
               id={`${formId}-amount`}
-              // I1: kept as text, not number -- a number input treats
-              // "150.000" as the float 150 and submits it as 150, so the
-              // server never even sees the Vietnamese thousands-dot format
-              // it needs to reject. inputMode="numeric" still gives the
-              // numeric keypad on phone.
-              type="text"
-              inputMode="numeric"
+              // BR-CASH-005: digits-only box that groups thousands itself
+              // as the owner types -- see components/ui/MoneyInput.tsx.
               name="amount"
               required
               defaultValue={entry?.amount}

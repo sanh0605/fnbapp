@@ -60,11 +60,18 @@ past row, and every past month's totals, to the other side.
 
 ### BR-CASH-005 — Amounts are whole đồng, and a dot separates thousands
 
-**Status:** `APPROVED` — whole đồng: owner decision 2026-09-08. The dot rule
-is a reviewed invariant added 2026-09-11 after a review found `150.000` saved
-as 150đ; it is not an owner decision.
+**Status:** `APPROVED` — whole đồng: owner decision 2026-09-08. How the box
+behaves: owner decision 2026-09-11.
 
-An amount is a positive whole number of đồng. The screen accepts plain digits
-(`150000`) or digits grouped by dots (`150.000`); anything else — a comma, a
-decimal part, a minus sign — is refused with a message saying why. It is never
-rounded.
+An amount is a positive whole number of đồng. The amount box takes digits only
+and puts the dots in itself as the owner types: he types `150000`, the box
+shows `150.000`. A letter, dot, comma or minus sign typed or pasted into it is
+dropped, so nobody can add a mark of their own. Owner, 2026-09-11: "máy sẽ tự
+động thêm dấu chấm cứ mỗi 3 số … và máy chỉ cho phép nhập số để đảm bảo không
+có ai tự ý thêm bấy kỳ dấu gì." The server still checks the amount again and
+never rounds it: it accepts plain digits or dot-grouped digits and refuses
+anything else with a message saying why.
+
+This replaces the first version of 2026-09-11, where the box accepted a typed
+`150.000` as text and only refused bad input on save. The server check was
+added after a review found `150.000` saved as 150đ; it stays as the backstop.

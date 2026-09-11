@@ -62,9 +62,10 @@ the two settings screens where they still apply.
    `amount` must be a positive whole number of đồng, typed as plain digits
    (`150000`) or dot-grouped thousands (`150.000`) — anything else ("1500.5",
    "150,000", "1e6", a minus sign) is refused, never rounded, and so is a value
-   beyond `Number.MAX_SAFE_INTEGER` (`BR-CASH-005`). The amount box is a text
-   input with a numeric keypad, so the browser cannot turn "150.000" into 150
-   before the server sees it. `payment_method` is `CASH` or
+   beyond `Number.MAX_SAFE_INTEGER` (`BR-CASH-005`). That server check is the
+   backstop: the amount box itself (`components/ui/MoneyInput.tsx`) takes
+   digits only, drops anything else typed or pasted, shows the dots as the
+   owner types (`150000` → `150.000`), and submits plain digits. `payment_method` is `CASH` or
    `BANK_TRANSFER`; `bank_account_id` is required when `BANK_TRANSFER` and
    forced to `null` for `CASH` even if a stale value arrives from the form;
    `note` is optional. On the category screen, the Thu/Chi side cannot change

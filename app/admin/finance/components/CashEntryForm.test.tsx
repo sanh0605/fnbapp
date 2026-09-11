@@ -16,16 +16,23 @@ afterEach(cleanup);
 
 const CATEGORIES = [{ id: "CFC-001", name: "Vận hành", kind: "EXPENSE", affects_pnl: true, status: "ACTIVE" }] as any;
 
-describe("CashEntryForm amount field (I1)", () => {
-  // A number input treats "150.000" as the float 150 and submits 150 --
-  // the server never even sees the string it needs to validate. Text with
-  // inputMode="numeric" still gives the numeric keypad on phone.
-  it("is a text input, not a number input, so the browser never reinterprets a Vietnamese thousands-dot amount", () => {
+describe("CashEntryForm amount field (BR-CASH-005)", () => {
+  // BR-CASH-005: the amount box is MoneyInput -- a digits-only visible input
+  // (no name, so the browser's numeric keypad shows but never submits a
+  // dotted display value) plus a hidden input named "amount" carrying plain
+  // digits for the server.
+  it("gives a numeric keypad and submits plain digits, not the dotted display value", () => {
     render(<CashEntryForm categories={CATEGORIES} accounts={[]} />);
     fireEvent.click(screen.getByText("+ Ghi khoản mới"));
-    const amountInput = document.querySelector('input[name="amount"]') as HTMLInputElement;
-    expect(amountInput.type).toBe("text");
-    expect(amountInput.getAttribute("inputMode")).toBe("numeric");
+    const visible = screen.getByPlaceholderText("VD: 150.000") as HTMLInputElement;
+    expect(visible.getAttribute("name")).toBeNull();
+    expect(visible.getAttribute("inputMode")).toBe("numeric");
+
+    fireEvent.change(visible, { target: { value: "150000" } });
+    expect(visible.value).toBe("150.000");
+
+    const hidden = document.querySelector('input[type="hidden"][name="amount"]') as HTMLInputElement;
+    expect(hidden.value).toBe("150000");
   });
 });
 
