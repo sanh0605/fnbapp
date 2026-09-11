@@ -15,6 +15,22 @@ function parsePresetParam(value: string | undefined): DateRangePresetKey {
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+// M1 residuals (residuals-fix-brief.md item 1): the shape check above alone
+// let a calendar-invalid date like 2026-02-30 through, which Date's own
+// constructor would silently roll into March 2 -- so it is never used here
+// on its own. Instead the three parts are built with Date.UTC and the
+// round-trip must give back the exact year, month and day that went in.
+function isValidCalendarDate(value: string): boolean {
+  if (!ISO_DATE_PATTERN.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const asDate = new Date(Date.UTC(year, month - 1, day));
+  return (
+    asDate.getUTCFullYear() === year &&
+    asDate.getUTCMonth() === month - 1 &&
+    asDate.getUTCDate() === day
+  );
+}
+
 // M1 (final-review.md): a hand-edited URL like ?preset=CUSTOM&start=abc&end=x
 // used to reach findAllWhere with an unparsable date and throw the page;
 // start > end returned an empty list with no explanation. Both fall back to
@@ -29,8 +45,8 @@ export function resolveDateRange(
 
   const validCustomRange =
     preset === "CUSTOM" &&
-    !!startParam && ISO_DATE_PATTERN.test(startParam) &&
-    !!endParam && ISO_DATE_PATTERN.test(endParam) &&
+    !!startParam && isValidCalendarDate(startParam) &&
+    !!endParam && isValidCalendarDate(endParam) &&
     startParam <= endParam;
 
   if (validCustomRange) {

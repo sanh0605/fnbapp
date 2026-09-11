@@ -46,4 +46,39 @@ describe("resolveDateRange", () => {
     const r = resolveDateRange("NOT_A_PRESET", undefined, undefined, today);
     expect(r.preset).toBe("THIS_MONTH");
   });
+
+  // M1 residuals (residuals-fix-brief.md item 1): the old check was a regex
+  // on digit shape only, so a calendar-invalid date like 2026-02-30 passed
+  // it and reached findAllWhere as a Postgres `date` filter, throwing the
+  // page. A date now counts as valid only if it round-trips through
+  // Date.UTC unchanged.
+  it("falls back to THIS_MONTH for 2026-02-30 -- February never has 30 days", () => {
+    const r = resolveDateRange("CUSTOM", "2026-02-30", "2026-03-01", today);
+    expect(r.preset).toBe("THIS_MONTH");
+  });
+
+  it("falls back to THIS_MONTH for 2026-13-01 -- there is no month 13", () => {
+    const r = resolveDateRange("CUSTOM", "2026-13-01", "2026-12-31", today);
+    expect(r.preset).toBe("THIS_MONTH");
+  });
+
+  it("falls back to THIS_MONTH for 2026-00-10 -- there is no month 0", () => {
+    const r = resolveDateRange("CUSTOM", "2026-00-10", "2026-01-10", today);
+    expect(r.preset).toBe("THIS_MONTH");
+  });
+
+  it("falls back to THIS_MONTH for 2026-02-29 -- 2026 is not a leap year", () => {
+    const r = resolveDateRange("CUSTOM", "2026-02-01", "2026-02-29", today);
+    expect(r.preset).toBe("THIS_MONTH");
+  });
+
+  it("accepts 2028-02-29 -- 2028 is a leap year", () => {
+    const r = resolveDateRange("CUSTOM", "2028-02-29", "2028-03-01", today);
+    expect(r).toEqual({ preset: "CUSTOM", start: "2028-02-29", end: "2028-03-01" });
+  });
+
+  it("accepts 2026-09-30 -- September has 30 days", () => {
+    const r = resolveDateRange("CUSTOM", "2026-09-01", "2026-09-30", today);
+    expect(r).toEqual({ preset: "CUSTOM", start: "2026-09-01", end: "2026-09-30" });
+  });
 });
