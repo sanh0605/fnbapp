@@ -70,4 +70,77 @@ describe("CashEntriesList", () => {
     render(<CashEntriesList {...props} entries={[]} />);
     expect(screen.getByText("Chưa có khoản nào trong khoảng này")).toBeTruthy();
   });
+
+  // M8 (final-review.md): "Thu ngoài lãi lỗ" reads as a third bucket when it
+  // sits as a peer card next to Tổng thu/Tổng chi -- it is a sub-line of
+  // Tổng thu, not a bucket of its own.
+  it("shows only two summary cards, with the outside-P&L figure nested inside Tổng thu", () => {
+    render(<CashEntriesList {...props} />);
+    expect(screen.getByTestId("total-expense")).toBeTruthy();
+    expect(screen.getByTestId("total-income")).toBeTruthy();
+    const outside = screen.getByTestId("income-outside-pnl");
+    expect(outside).toHaveTextContent("5.000.000");
+    expect(screen.getByTestId("total-income").contains(outside)).toBe(true);
+  });
+});
+
+// M2 (final-review.md): entries were listed in id order, not date order, so
+// a backdated row landed in the wrong place on screen.
+describe("CashEntriesList sort order", () => {
+  const unsorted = [
+    { id: "CE-001", entry_date: "2026-07-15", category_id: "CFC-001", amount: 1000,
+      payment_method: "CASH", bank_account_id: null, note: null, status: "ACTIVE",
+      created_by_name: "Sanh" },
+    { id: "CE-060", entry_date: "2026-09-03", category_id: "CFC-001", amount: 2000,
+      payment_method: "CASH", bank_account_id: null, note: null, status: "ACTIVE",
+      created_by_name: "Sanh" },
+    { id: "CE-030", entry_date: "2026-09-03", category_id: "CFC-001", amount: 3000,
+      payment_method: "CASH", bank_account_id: null, note: null, status: "ACTIVE",
+      created_by_name: "Sanh" },
+  ] as DBCashEntry[];
+
+  it("lists rows newest entry_date first, then id descending within the same date, on the desktop table", () => {
+    render(<CashEntriesList entries={unsorted} categories={categories} accounts={[]} canDelete={false} />);
+    const table = within(screen.getByRole("table"));
+    const amounts = table.getAllByText(/^\d[\d.]*đ$/).map((el) => el.textContent);
+    // Same entry_date (2026-09-03) for CE-060 and CE-030 -- id descending
+    // puts the lexicographically larger id ("CE-060") first.
+    expect(amounts).toEqual(["2.000đ", "3.000đ", "1.000đ"]);
+  });
+
+  it("lists rows in the same order on the phone cards", () => {
+    render(<CashEntriesList entries={unsorted} categories={categories} accounts={[]} canDelete={false} />);
+    const phone = within(screen.getByTestId("cash-entries-phone"));
+    const amounts = phone.getAllByText(/^\d[\d.]*đ$/).map((el) => el.textContent);
+    // Same entry_date (2026-09-03) for CE-060 and CE-030 -- id descending
+    // puts the lexicographically larger id ("CE-060") first.
+    expect(amounts).toEqual(["2.000đ", "3.000đ", "1.000đ"]);
+  });
+});
+
+// M4 (final-review.md): byCategory and unknownCategoryIds were computed but
+// never rendered -- the screen gave only the grand total, so the owner
+// could not read off the July acceptance figures by category.
+describe("CashEntriesList by-category breakdown", () => {
+  it("shows one line per category with its Vietnamese name and amount", () => {
+    render(<CashEntriesList {...props} />);
+    const byCategory = screen.getByTestId("by-category");
+    expect(byCategory).toHaveTextContent("Vận hành");
+    expect(byCategory).toHaveTextContent("1.371.000");
+    expect(byCategory).toHaveTextContent("Vốn góp");
+    expect(byCategory).toHaveTextContent("5.000.000");
+  });
+
+  it("names an entry whose category is missing from the list, instead of dropping it silently", () => {
+    const withUnknown = [
+      ...entries,
+      { id: "CE-004", entry_date: "2026-07-18", category_id: "CFC-999", amount: 1000,
+        payment_method: "CASH", bank_account_id: null, note: null, status: "ACTIVE",
+        created_by_name: "Sanh" } as DBCashEntry,
+    ];
+    render(<CashEntriesList entries={withUnknown} categories={categories} accounts={[]} canDelete={false} />);
+    expect(screen.getByTestId("by-category")).toHaveTextContent(
+      "Có dòng thuộc nhóm không còn trong danh sách",
+    );
+  });
 });

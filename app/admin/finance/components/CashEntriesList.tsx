@@ -68,6 +68,14 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const accountById = new Map(accounts.map((a) => [a.id, a]));
 
+  // M2 (final-review.md): findAllWhere orders by id, not by date, so a
+  // backdated row landed wherever its id happened to sort. Newest date
+  // first, id descending within the same date, in both layouts.
+  const sortedEntries = [...entries].sort((a, b) => {
+    if (a.entry_date !== b.entry_date) return a.entry_date < b.entry_date ? 1 : -1;
+    return a.id < b.id ? 1 : a.id > b.id ? -1 : 0;
+  });
+
   async function handleCancel(entry: DBCashEntry) {
     const approved = await confirm({
       title: "Huỷ dòng sổ",
@@ -105,26 +113,47 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm">
           <div className="text-sm text-text-muted">Tổng chi</div>
           <div data-testid="total-expense" className="text-xl font-bold text-danger mt-1">
             {money(summary.totalExpense)}
           </div>
         </div>
-        <div className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm">
+        <div data-testid="total-income" className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm">
           <div className="text-sm text-text-muted">Tổng thu</div>
-          <div data-testid="total-income" className="text-xl font-bold text-success mt-1">
+          <div className="text-xl font-bold text-success mt-1">
             {money(summary.totalIncome)}
           </div>
-        </div>
-        <div className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm">
-          <div className="text-sm text-text-muted">Thu ngoài lãi lỗ (vốn góp, ...)</div>
-          <div data-testid="income-outside-pnl" className="text-xl font-bold text-text-primary mt-1">
-            {money(summary.incomeOutsidePnl)}
+          {/* M8: a sub-line of Tổng thu, not a third peer card -- it is part
+              of income, not a bucket of its own. */}
+          <div className="text-xs text-text-muted mt-2 pt-2 border-t border-border">
+            Trong đó thu ngoài lãi lỗ (vốn góp, ...):{" "}
+            <span data-testid="income-outside-pnl" className="font-medium text-text-primary">
+              {money(summary.incomeOutsidePnl)}
+            </span>
           </div>
         </div>
       </div>
+
+      {/* M4: byCategory was computed but never shown -- render it so the
+          owner can read off the acceptance figures by category himself. */}
+      {(summary.byCategory.length > 0 || summary.unknownCategoryIds.length > 0) && (
+        <div data-testid="by-category" className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm">
+          <div className="text-sm text-text-muted mb-2">Theo nhóm</div>
+          <div className="space-y-1 text-sm">
+            {summary.byCategory.map((c) => (
+              <div key={c.categoryId} className="flex justify-between text-text-primary">
+                <span>{c.name}</span>
+                <span className="font-medium">{money(c.total)}</span>
+              </div>
+            ))}
+            {summary.unknownCategoryIds.length > 0 && (
+              <div className="text-danger">Có dòng thuộc nhóm không còn trong danh sách</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <div className="bg-surface-card rounded-2xl shadow-sm border border-border">
@@ -154,7 +183,7 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {entries.map((entry) => {
+                {sortedEntries.map((entry) => {
                   const category = categoryById.get(entry.category_id);
                   const account = entry.bank_account_id ? accountById.get(entry.bank_account_id) : undefined;
                   const isCancelled = entry.status === "CANCELLED";
@@ -203,8 +232,8 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
           </div>
 
           {/* Phone: one vertical card per line, no horizontal table (.claude/rules/ui-devices.md) */}
-          <div className="md:hidden flex flex-col gap-3 p-4">
-            {entries.map((entry) => {
+          <div data-testid="cash-entries-phone" className="md:hidden flex flex-col gap-3 p-4">
+            {sortedEntries.map((entry) => {
               const category = categoryById.get(entry.category_id);
               const account = entry.bank_account_id ? accountById.get(entry.bank_account_id) : undefined;
               const isCancelled = entry.status === "CANCELLED";
