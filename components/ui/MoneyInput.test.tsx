@@ -223,3 +223,18 @@ describe("BR-CASH-005 fix round 2", () => {
     expect(getHidden("amount").value).toBe("");
   });
 });
+
+describe("BR-CASH-005 rollout to other screens", () => {
+  // Deferred until after the financial-reports project (owner decision,
+  // 2026-09-11). Candidate call sites for a future round, each its own
+  // click-through:
+  // - app/admin/products/components/ProductForm.tsx (variant price)
+  // - app/admin/products/modifiers/components/ModifierForm.tsx
+  // - app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx (money fields only, not quantities)
+  // - app/admin/promotions/components/PromotionForm.tsx (fixed-amount fields only, not percentages)
+  // - app/admin/inventory/assets/components/DisposeAssetForm.tsx
+  // POS (app/pos/) is out of scope.
+  it.todo(
+    "Gắn ô tiền tự thêm dấu chấm vào các màn khác: giá món, giá tuỳ chọn món, đơn nhập hàng, khuyến mãi, thanh lý tài sản — làm sau báo cáo tài chính (chủ quán chốt 11/09/2026)",
+  );
+});
