@@ -13,9 +13,13 @@ interface CashEntryFormProps {
   entry?: DBCashEntry;
   categories: DBCashCategory[];
   accounts: DBBankAccount[];
+  // M7: today in Asia/Saigon, the same value the page already computes for
+  // DateRangeFilter -- only used to default the add form's date. The edit
+  // form always keeps the entry's own date.
+  today?: string;
 }
 
-export function CashEntryForm({ entry, categories, accounts }: CashEntryFormProps) {
+export function CashEntryForm({ entry, categories, accounts, today }: CashEntryFormProps) {
   const isEdit = !!entry;
   const formId = useId();
   const router = useRouter();
@@ -116,7 +120,7 @@ export function CashEntryForm({ entry, categories, accounts }: CashEntryFormProp
               type="date"
               name="entry_date"
               required
-              defaultValue={entry?.entry_date}
+              defaultValue={entry?.entry_date ?? today}
               className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             />
           </div>
@@ -145,15 +149,18 @@ export function CashEntryForm({ entry, categories, accounts }: CashEntryFormProp
             </label>
             <input
               id={`${formId}-amount`}
-              type="number"
+              // I1: kept as text, not number -- a number input treats
+              // "150.000" as the float 150 and submits it as 150, so the
+              // server never even sees the Vietnamese thousands-dot format
+              // it needs to reject. inputMode="numeric" still gives the
+              // numeric keypad on phone.
+              type="text"
               inputMode="numeric"
               name="amount"
               required
-              min={1}
-              step={1}
               defaultValue={entry?.amount}
               className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-              placeholder="VD: 1371000"
+              placeholder="VD: 150.000"
             />
           </div>
 
