@@ -44,7 +44,7 @@ export function PnlTableView({ table }: { table: PnlTable }) {
         <table className="min-w-full text-sm tabular-nums">
           <thead className="bg-surface-secondary text-xs text-text-secondary">
             <tr>
-              <th scope="col" className="sticky left-0 bg-surface-secondary px-3 py-2 text-left font-medium">Khoản</th>
+              <th scope="col" className="sticky left-0 z-10 bg-surface-secondary px-3 py-2 text-left font-medium">Khoản</th>
               {table.months.map(m => (
                 <th key={m.month} scope="col" aria-label={m.label} className="whitespace-nowrap px-3 py-2 text-right font-medium">
                   {m.head}
@@ -52,8 +52,8 @@ export function PnlTableView({ table }: { table: PnlTable }) {
                   {m.until && <span className="block text-[11.5px] font-normal text-text-secondary">đến {m.until}</span>}
                 </th>
               ))}
-              <th scope="col" className="sticky right-24 border-l-2 border-border bg-surface-secondary px-3 py-2 text-right font-medium">Tổng</th>
-              <th scope="col" className="sticky right-0 w-24 min-w-[6rem] whitespace-nowrap bg-surface-secondary px-3 py-2 text-right font-medium">% doanh thu</th>
+              <th scope="col" className="sticky right-24 z-10 border-l-2 border-border bg-surface-secondary px-3 py-2 text-right font-medium">Tổng</th>
+              <th scope="col" className="sticky right-0 z-10 w-24 min-w-[6rem] whitespace-nowrap bg-surface-secondary px-3 py-2 text-right font-medium">% doanh thu</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -64,7 +64,7 @@ export function PnlTableView({ table }: { table: PnlTable }) {
                 <tr key={row.key} className={ROW_STYLE[row.kind]}>
                   <th
                     scope="row"
-                    className={`sticky left-0 whitespace-nowrap px-3 py-2 text-left [font-weight:inherit] ${rowBg} ${row.kind === "detail" ? "pl-6" : ""}`}
+                    className={`sticky left-0 z-10 whitespace-nowrap px-3 py-2 text-left [font-weight:inherit] ${rowBg} ${row.kind === "detail" ? "pl-6" : ""}`}
                   >
                     {row.label}
                   </th>
@@ -90,10 +90,10 @@ export function PnlTableView({ table }: { table: PnlTable }) {
                       </td>
                     );
                   })}
-                  <td className={`sticky right-24 border-l-2 border-border px-3 py-2 text-right font-semibold ${rowBg} ${cellTone(row, row.total)}`}>
+                  <td className={`sticky right-24 z-10 border-l-2 border-border px-3 py-2 text-right font-semibold ${rowBg} ${cellTone(row, row.total)}`}>
                     {row.total === null ? "" : cellText(row, row.total)}
                   </td>
-                  <td className={`sticky right-0 w-24 min-w-[6rem] px-3 py-2 text-right text-text-secondary ${rowBg}`}>
+                  <td className={`sticky right-0 z-10 w-24 min-w-[6rem] px-3 py-2 text-right text-text-secondary ${rowBg}`}>
                     {row.shareOfRevenue === null ? "" : formatPercent(row.shareOfRevenue)}
                   </td>
                 </tr>

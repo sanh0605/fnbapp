@@ -72,4 +72,13 @@ describe("PnlTableView", () => {
     expect(screen.queryByRole("button", { name: /Tổng/ })).toBeNull();
     expect(screen.getByText(/Bấm vào một ô để xem số đó từ đâu ra/)).toBeTruthy();
   });
+
+  it("every sticky cell has a z-index, so scrolled columns (and their note superscripts) pass underneath it", () => {
+    const { container } = render(<PnlTableView table={table()} />);
+    const stickyCells = container.querySelectorAll(".sticky");
+    expect(stickyCells.length).toBeGreaterThan(0);
+    stickyCells.forEach(cell => {
+      expect(cell.className).toMatch(/\bz-10\b/);
+    });
+  });
 });
