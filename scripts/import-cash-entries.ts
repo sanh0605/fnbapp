@@ -4,6 +4,7 @@ process.env.CLI_MODE = "true";
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { normalizeNameForComparison } from "@/lib/shared/duplicate-name-guard";
 
 /**
  * One-time backfill of the 54 cash-book rows the owner kept by hand in a
@@ -16,8 +17,13 @@ import { resolve } from "node:path";
  *
  * Dry run by default; --apply writes. See main() below for the exact steps.
  *
- * Run: npx vite-node scripts/import-cash-entries.ts
- *      npx vite-node scripts/import-cash-entries.ts --apply
+ * Run: npx vite-node scripts/import-cash-entries.ts --bank-account=<tên tài khoản>
+ *      npx vite-node scripts/import-cash-entries.ts --bank-account=<tên tài khoản> --apply
+ *
+ * --bank-account names the account the sheet's one BANK_TRANSFER row lands
+ * in (2026-09-02, 1.728.578đ) -- that account is created on
+ * /admin/finance/bank-accounts after migration 0101 ships, so its name is
+ * only known at run time, never hardcoded here.
  */
 
 export interface SheetRow {
@@ -51,10 +57,17 @@ export interface CashEntryRow {
   updated_by_name: string;
 }
 
+// "2026-09-02" -> "02/09/2026", for a Vietnamese-readable error message.
+function formatDateVn(entryDate: string): string {
+  const [y, m, d] = entryDate.split("-");
+  return `${d}/${m}/${y}`;
+}
+
 export function buildRows(
   sheet: SheetRow[],
   categoryIds: Record<string, string>,
   actor: { id: string; name: string },
+  bankAccountId: string | null,
 ): CashEntryRow[] {
   const sorted = [...sheet].sort((a, b) => (a.entry_date < b.entry_date ? -1 : a.entry_date > b.entry_date ? 1 : 0));
 
@@ -66,15 +79,25 @@ export function buildRows(
       );
     }
 
+    let bank_account_id: string | null = null;
+    if (row.payment_method === "BANK_TRANSFER") {
+      if (!bankAccountId) {
+        const amountVn = row.amount.toLocaleString("vi-VN");
+        throw new Error(
+          `Dòng chuyển khoản ${formatDateVn(row.entry_date)} — ${amountVn}đ chưa biết vào tài khoản nào. ` +
+          `Chạy lại kèm --bank-account=<tên tài khoản>.`,
+        );
+      }
+      bank_account_id = bankAccountId;
+    }
+
     return {
       id: `CE-${String(index + 1).padStart(3, "0")}`,
       entry_date: row.entry_date,
       category_id,
       amount: row.amount,
       payment_method: row.payment_method,
-      // The sheet carries no bank account for its one BANK_TRANSFER row --
-      // that mapping is not part of this backfill's input, so it stays null.
-      bank_account_id: null,
+      bank_account_id,
       payer: null,
       note: row.note || null,
       status: "ACTIVE",
@@ -117,8 +140,17 @@ export function monthlyTotals(rows: CashEntryRow[]): Record<string, Record<strin
   return out;
 }
 
+// Vietnamese hint line naming the ACTIVE accounts to choose from, or saying
+// there are none yet -- shown on both "flag missing" and "name not found".
+function bankAccountHint(activeAccounts: Array<{ name: string }>): string {
+  if (activeAccounts.length === 0) return "Chưa có tài khoản ngân hàng nào đang hoạt động.";
+  return `Các tài khoản đang hoạt động: ${activeAccounts.map((a) => a.name).join(", ")}.`;
+}
+
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
+  const bankAccountArg = process.argv.find((a) => a.startsWith("--bank-account="));
+  const bankAccountName = bankAccountArg ? bankAccountArg.slice("--bank-account=".length) : null;
 
   const { findAllNoCache, insertMany } = await import("@/lib/db/tables");
 
@@ -149,7 +181,40 @@ async function main(): Promise<void> {
     return;
   }
 
-  // 3. Actor for the audit columns: the account, not a hardcoded id.
+  // 3. Resolve the bank account the sheet's one BANK_TRANSFER row lands in,
+  // BEFORE anything is printed -- the owner must see it, not guess it. Name
+  // matching goes through the same normaliser the app uses for duplicate
+  // names, so spacing/NBSP/case differences never cause a false "not found".
+  let bankAccountId: string | null = null;
+  let resolvedBankAccountName: string | null = null;
+  const hasBankTransfer = sheet.some((r) => r.payment_method === "BANK_TRANSFER");
+  if (hasBankTransfer) {
+    const bankAccounts = await findAllNoCache("Bank_Accounts") as Array<{ id: string; name: string; status: string }>;
+    const activeAccounts = bankAccounts.filter((a) => a.status === "ACTIVE");
+
+    if (!bankAccountName) {
+      console.error(
+        `Có dòng chuyển khoản trong dữ liệu nhưng chưa chọn tài khoản. ` +
+        `Chạy lại kèm --bank-account=<tên tài khoản>. ${bankAccountHint(activeAccounts)}`,
+      );
+      process.exitCode = 1;
+      return;
+    }
+
+    const target = normalizeNameForComparison(bankAccountName);
+    const match = activeAccounts.find((a) => normalizeNameForComparison(a.name) === target);
+    if (!match) {
+      console.error(
+        `Không tìm thấy tài khoản "${bankAccountName}" đang hoạt động. ${bankAccountHint(activeAccounts)}`,
+      );
+      process.exitCode = 1;
+      return;
+    }
+    bankAccountId = match.id;
+    resolvedBankAccountName = match.name;
+  }
+
+  // 4. Actor for the audit columns: the account, not a hardcoded id.
   const users = await findAllNoCache("Users") as Array<{ id: string; name: string | null; username: string; role: string; status: string }>;
   const admin = users.find((u) => u.role === "ADMIN" && u.status === "ACTIVE");
   if (!admin) {
@@ -159,14 +224,17 @@ async function main(): Promise<void> {
   }
   const actor = { id: admin.id, name: admin.name || admin.username };
 
-  // 4. Build rows and print everything before writing anything.
-  const rows = buildRows(sheet, categoryIds, actor);
+  // 5. Build rows and print everything before writing anything.
+  const rows = buildRows(sheet, categoryIds, actor, bankAccountId);
   const nameById = new Map(categories.map((c) => [c.id, c.name]));
 
   console.log(`\n${rows.length} dòng sẽ nạp vào cash_entries (người ghi: ${actor.name}):\n`);
   for (const r of rows) {
     const amountVn = r.amount.toLocaleString("vi-VN");
-    console.log(`  ${r.entry_date}  ${nameById.get(r.category_id)}  ${amountVn}đ  ${r.note ?? ""}`);
+    const methodLabel = r.payment_method === "CASH"
+      ? "Tiền mặt"
+      : `Chuyển khoản -> ${resolvedBankAccountName}`;
+    console.log(`  ${r.entry_date}  ${nameById.get(r.category_id)}  ${amountVn}đ  [${methodLabel}]  ${r.note ?? ""}`);
   }
 
   const totals = monthlyTotals(rows);
@@ -179,7 +247,7 @@ async function main(): Promise<void> {
   const totalAmount = rows.reduce((sum, r) => sum + r.amount, 0);
   console.log(`\nTổng cộng: ${rows.length} dòng, ${totalAmount.toLocaleString("vi-VN")}đ.`);
 
-  // 5 / 6. Dry run stops here; --apply writes.
+  // 6 / 7. Dry run stops here; --apply writes.
   if (!apply) {
     console.log("\nCHẠY THỬ -- chưa ghi gì. Thêm --apply để ghi thật.");
     return;
