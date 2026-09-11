@@ -2305,7 +2305,7 @@ tròn từ số chính xác của chính nó, không cộng các ô đã làm tr
 - Đưa ra cho mục sau, đúng tên:
 
 ```ts
-export const PERCENT_DECIMALS = 1;
+export const PERCENT_DECIMALS = 2;
 
 export type PnlRowKind =
   | "revenue" | "detail" | "cost" | "subtotal" | "expense" | "income" | "net" | "margin" | "cumulative";
@@ -2455,7 +2455,7 @@ describe("August 2026, real figures", () => {
     expect(values(t, "expense:CFC-002")).toEqual([470_000]);
     expect(values(t, "depreciation")).toEqual([790_974]);
     expect(values(t, "netProfit")).toEqual([-32_372_964]);
-    expect(values(t, "margin")).toEqual([-183.1]);
+    expect(values(t, "margin")).toEqual([-183.08]);
     expect(values(t, "cumulative")).toEqual([-32_372_964]);
   });
 
@@ -2492,9 +2492,9 @@ describe("August 2026, real figures", () => {
   it("totals and share of revenue come from exact values", () => {
     const t = augustTable();
     expect(row(t, "cogs").total).toBe(46_418_990);
-    expect(row(t, "cogs").shareOfRevenue).toBe(262.5); // 46.418.989,77 ÷ 17.682.000 = 262,52%
+    expect(row(t, "cogs").shareOfRevenue).toBe(262.52); // 46.418.989,77 ÷ 17.682.000 = 262,521%
     expect(row(t, "revenue").shareOfRevenue).toBe(100);
-    expect(row(t, "margin").total).toBe(-183.1);
+    expect(row(t, "margin").total).toBe(-183.08);
     expect(row(t, "margin").shareOfRevenue).toBeNull();
     expect(row(t, "cumulative").total).toBeNull();
   });
@@ -2525,10 +2525,11 @@ describe("rounding (BR-DATA-005)", () => {
     expect(t.footnotes[0].text).toContain("luật ngày 11/09/2026");
   });
 
-  it("keeps PERCENT_DECIMALS decimals on a percentage", () => {
-    expect(PERCENT_DECIMALS).toBe(1);
-    expect(formatPercent(-183.1)).toBe("-183,1%");
-    expect(formatPercent(100)).toBe("100,0%");
+  it("shows a percentage with two decimals (owner, 11/09/2026)", () => {
+    expect(PERCENT_DECIMALS).toBe(2);
+    expect(formatPercent(-183.08)).toBe("-183,08%");
+    expect(formatPercent(13.8)).toBe("13,80%");
+    expect(formatPercent(100)).toBe("100,00%");
     expect(formatPercent(null)).toBe("---");
   });
 });
@@ -2665,9 +2666,8 @@ import type { PnlFigures, PnlSource, PnlSourceKind } from "./profit-and-loss";
 // rounded cells -- so a hand-added row can differ from its total by a đồng
 // or two, and the page then says so in a footnote.
 
-// Decimals kept on a percentage. Put to the owner on 2026-09-11 (BR-DATA-005);
-// until answered, one decimal. Changing the answer is this one line.
-export const PERCENT_DECIMALS = 1;
+// Decimals kept on a percentage: two, owner decision 2026-09-11 (BR-DATA-005).
+export const PERCENT_DECIMALS = 2;
 
 const NEAR_ZERO = 0.005;
 const MINUS = "−"; // U+2212, the operator in a formula; a negative number keeps formatNumber's "-"
@@ -2932,8 +2932,8 @@ Chạy lại, thấy xanh.
 shown (`BR-DATA-005`), in `lib/reports/profit-and-loss-table.ts`: each month's
 cell, each total and each profit from its own exact value. Adding a row by hand
 can therefore miss its total by a đồng or two; when it does, the page says so
-under the table. Percentages keep one decimal (`PERCENT_DECIMALS`) until the
-owner answers the question put to him on 2026-09-11.
+under the table. Percentages show two decimals (`PERCENT_DECIMALS`, owner
+decision 2026-09-11).
 ```
 
 - [ ] **Bước 8: Kiểm toàn bộ và lưu**
@@ -3069,7 +3069,7 @@ Số tính sẵn từ fixture này, với hôm nay là 2026-09-11 (test dưới 
 | Lợi nhuận ròng | -49.226 | -32.372.964 | 697.353 | -31.724.837 |
 | Cộng dồn | -49.226 | -32.422.190 | -31.724.837 | |
 
-Biên lợi nhuận cả ba tháng: -139,5%. Tháng lời nhất 09/2026 (697.353), tháng lỗ nhất
+Biên lợi nhuận cả ba tháng: -139,54%. Tháng lời nhất 09/2026 (697.353), tháng lỗ nhất
 08/2026 (-32.372.964). Không có ô nào lệch khi cộng tay, nên không có ghi chú làm tròn.
 
 - [ ] **Bước 2: Test đỏ cho bảng và bốn ô số**
@@ -3149,7 +3149,7 @@ describe("PnlSummary", () => {
     expect(text).toContain("22.736.000");
     expect(text).toContain("Lợi nhuận ròng từ đầu năm");
     expect(text).toContain("-31.724.837");
-    expect(text).toContain("Biên lợi nhuận -139,5%");
+    expect(text).toContain("Biên lợi nhuận -139,54%");
     expect(text).toContain("Tháng lời nhất");
     expect(text).toContain("697.353");
     expect(text).toContain("Tháng lỗ nhất");
@@ -3886,7 +3886,7 @@ thu tháng 4 còn 2.190.000.
 | Marketing | 0 | 0 | 420.000 | 0 | 330.000 | 0 | 0 | 750.000 |
 | Khấu hao | 49.226 | 319.593 | 573.470 | 598.475 | 982.045 | 790.974 | 790.974 | 4.104.757 |
 | **Lợi nhuận ròng** | -49.226 | 9.235.678 | 6.465.470 | 17.199.798 | 13.663.541 | -32.372.964 | 697.353 | 14.839.650 |
-| Biên lợi nhuận | --- | 87,1% | 84,2% | 77,6% | 73,2% | -183,1% | 13,8% | 18,1% |
+| Biên lợi nhuận | --- | 87,11% | 84,24% | 77,63% | 73,22% | -183,08% | 13,80% | 18,13% |
 | Cộng dồn từ đầu năm | -49.226 | 9.186.452 | 15.651.922 | 32.851.720 | 46.515.261 | 14.142.297 | 14.839.650 | |
 
 - Không có dòng Hao hụt và Thu khác: cả năm đều 0.
@@ -3897,7 +3897,7 @@ thu tháng 4 còn 2.190.000.
 - Giá vốn tháng 9 chính xác là 1.678.673,40; hiện 1.678.673.
 
 **Bốn ô tóm tắt:** Doanh thu từ đầu năm 81.830.868 · Lợi nhuận ròng từ đầu năm
-14.839.650, biên 18,1% · Tháng lời nhất 06/2026, 17.199.798 · Tháng lỗ nhất 08/2026,
+14.839.650, biên 18,13% · Tháng lời nhất 06/2026, 17.199.798 · Tháng lỗ nhất 08/2026,
 -32.372.964.
 
 **Bấm ô Vận hành, tháng 08/2026 (615.000):** bốn dòng sổ thu chi.

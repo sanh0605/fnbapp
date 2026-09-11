@@ -53,17 +53,17 @@ If a post-apply invariant fails, stop further writes and compare against the app
 *"Tất cả mọi thứ đều phải được tính chính xác. Đối với hiển thị trên hệ thống thì làm tròn đến chữ số hàng đơn vị và không có số thập phân. Đối với dữ liệu lưu trữ thì nên lưu số để backend tính toán chứ không nên lưu kết quả."*
 
 - **No calculation rounds an intermediate figure.** 200.000đ depreciated over 6 months is 33.333,33…đ every month, and the six add to 200.000đ — not five months of 33.333đ and a sixth of 33.335đ.
-- **Rounding happens only where a number is shown:** to the nearest whole đồng, or whole base unit for a quantity, halves away from zero, no decimals.
+- **Rounding happens only where a number is shown:** to the nearest whole đồng, or whole base unit for a quantity, halves away from zero, no decimals (percentages and larger units: last point).
 - **A shown total is the rounded exact total, never a sum of rounded cells.** A row of months can therefore differ from its total by a đồng or two — three months of 100,4đ show 100 each and a total of 301. The screen says so where it happens; no cell is nudged to hide it.
 - **Store the numbers a figure comes from, not the figure.** Reports read source rows and recompute on every read.
 - **Money that really changed hands stays whole đồng:** an order's total, a discount on a bill, what was paid to a supplier. Those record what happened; nobody pays half a đồng.
+- **Percentages and larger-unit quantities keep decimals** (owner decision 2026-09-11, the same day: *"% thì nên hiện 2 số thập phân"*): a percentage shows exactly two decimals ("18,13%"); a quantity shown in a larger unit keeps up to two ("1,5 hộp", "20,62 cây", the 2026-08-30 rule in `lib/stock/issue-slip-onhand-display.ts`). Only money and quantities in the base unit are whole.
 
-Whether percentages and quantities shown in a larger unit ("1,5 hộp") keep a decimal was put to the owner on 2026-09-11; until answered they keep today's one or two decimals.
-
-**Where the code does not follow this yet** (measured 2026-09-11, each under 1đ per line). These follow the P&L as their own plan, because the first two need a migration on `assets`:
+**Where the code does not follow this yet** (measured 2026-09-11; the money items each under 1đ per line). These follow the P&L as their own plan, because the first two need a migration on `assets`:
 - `lib/costing/purchase-order-cost-allocation.ts` rounds each purchase line's share of shipping and discounts to a whole đồng (`BR-COGS-006`).
 - `assets.total_cost` and `assets.unit_cost` (bigint), and `purchase_order_lines.unit_price` (bigint, `round(subtotal ÷ quantity)`), store results. The depreciation band is looked up from the rounded `unit_cost`.
 - `lib/sales/order-math.ts` rounds each item's and topping's share of an order discount for the sales report.
+- Three percentages show one decimal instead of two: the outlet share in the sales report (`lib/reports/outlet-breakdown-table.ts`), and the change against the previous period on the dashboard (`app/admin/page.tsx`) and the daily report (`app/admin/reports/daily/page.tsx`). The last two also print a dot, not the Vietnamese comma ("12.5%").
 
 ## Backup and retention rules
 
