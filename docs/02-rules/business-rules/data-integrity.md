@@ -48,7 +48,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 
 ### BR-DATA-005 — Compute exactly, round only on screen, store inputs rather than results
 
-**Status:** `APPROVED` — owner decision 2026-09-11. Withdraws the directional display rounding of 2026-07-30 (cost rounded up, stock rounded down, "never flatter the business"). **Not yet implemented:** until `docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md` Mục 0 lands, `lib/reports/display-rounding.ts` still rounds directionally and `lib/assets/asset-depreciation.ts` still rounds each month's charge.
+**Status:** `APPROVED` — owner decision 2026-09-11. Withdraws the directional display rounding of 2026-07-30 (cost rounded up, stock rounded down, "never flatter the business"). **Implemented 2026-09-11 for display and depreciation** (`lib/reports/display-rounding.ts`, `lib/assets/asset-depreciation.ts`). The items under "Where the code does not follow this yet" below are still open.
 
 *"Tất cả mọi thứ đều phải được tính chính xác. Đối với hiển thị trên hệ thống thì làm tròn đến chữ số hàng đơn vị và không có số thập phân. Đối với dữ liệu lưu trữ thì nên lưu số để backend tính toán chứ không nên lưu kết quả."*
 

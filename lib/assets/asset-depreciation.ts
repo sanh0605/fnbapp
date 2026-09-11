@@ -176,18 +176,19 @@ export function validateBands(bands: Band[]): { ok: true } | { ok: false; error:
 // (in date order) plus, if anything is left over, one cohort that survives
 // to the final month of the term. Each cohort's OWN total cost is its
 // proportional share of the asset's total_cost (2026-08-23 fix, section 3),
-// with the LAST cohort built absorbing whatever the earlier cohorts'
-// rounding left over -- the same "last one absorbs the remainder" device
-// used one level down for a cohort's own months, applied once more so the
-// cohorts' totals sum to total_cost exactly rather than to
-// quantity * round(total_cost / quantity). Each cohort is then settled
-// independently within itself: it accrues the ideal (rounded) monthly rate
-// for every month except its own settlement month, and its settlement
-// month absorbs whatever remains so that cohort's own total sums exactly
-// to its share. Summing independently-exact cohorts guarantees the whole
-// schedule is exact regardless of how many disposals happen on one asset
-// -- there is no running total that could accidentally let one cohort's
-// rounding eat into another's.
+// with the LAST cohort built absorbing whatever the earlier cohorts left
+// over -- the same "last one absorbs the remainder" device used one level
+// down for a cohort's own months, applied once more so the cohorts' totals
+// sum to total_cost exactly rather than to quantity * (total_cost /
+// quantity) rounded early. Each cohort is then settled independently
+// within itself: it accrues the exact monthly rate (BR-DATA-005, owner
+// 2026-09-11 -- no month rounds its own charge; only display rounds) for
+// every month except its own settlement month, and its settlement month
+// absorbs whatever remains so that cohort's own total sums exactly to its
+// share. Summing independently-exact cohorts guarantees the whole schedule
+// is exact regardless of how many disposals happen on one asset -- there
+// is no running total that could accidentally let one cohort's floating-
+// point remainder eat into another's.
 export function buildAssetSchedule(asset: AssetInput, disposals: DisposalInput[]): MonthlyCharge[] {
   const { total_cost, quantity, term_months } = asset;
   if (quantity <= 0) throw new Error("asset has no quantity to depreciate");
@@ -232,7 +233,7 @@ export function buildAssetSchedule(asset: AssetInput, disposals: DisposalInput[]
     const isLastCohort = i === cohorts.length - 1;
     const cohortTotal = isLastCohort
       ? total_cost - chargedAcrossCohorts
-      : Math.round((total_cost * cohort.qty) / quantity);
+      : (total_cost * cohort.qty) / quantity;
     cohortTotals.push(cohortTotal);
     chargedAcrossCohorts += cohortTotal;
   });
@@ -245,7 +246,7 @@ export function buildAssetSchedule(asset: AssetInput, disposals: DisposalInput[]
       const isSettlementMonth = m === cohort.settledAtMonth;
       const charge = isSettlementMonth
         ? cohortTotalCost - chargedSoFar
-        : Math.round(cohortTotalCost / term_months);
+        : cohortTotalCost / term_months;
       chargedSoFar += charge;
       perMonth[m] += charge;
     }

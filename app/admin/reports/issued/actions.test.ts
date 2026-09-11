@@ -73,13 +73,14 @@ describe("getIssuedValueReport", () => {
     const report = await getIssuedValueReport();
     const [largest] = report.items;
     expect(largest.name).toBe("Bột cà phê MR.PHIN Robusta Dak Mil");
-    // Rounded UP at the display boundary (owner rule 2026-07-30,
-    // lib/reports/display-rounding.ts) -- one đồng above the plan's own figures
-    // (6.179.657 / 2.101.083), which were computed with plain rounding
-    // rather than the project's ceiling rule. Verified 2026-08-13: the
-    // grand total matches either way, only the per-item split differs.
+    // Rounded to the nearest đồng at the display boundary (BR-DATA-005,
+    // owner 2026-09-11, lib/reports/display-rounding.ts) -- matching the
+    // plan's own plain-rounding figures (6.179.657 / 2.101.083) exactly,
+    // unlike the old round-up-always rule which showed 2.101.084 here.
+    // Verified 2026-08-13: the grand total matches either way, only the
+    // per-item split differs.
     expect(largest.issuedValue).toBe(6_179_657);
-    expect(largest.closingValue).toBe(2_101_084);
+    expect(largest.closingValue).toBe(2_101_083);
   });
 
   it("no item has a negative issued or closing value", async () => {

@@ -24,7 +24,7 @@ const SEEDED_BANDS: Band[] = [
 
 // Batch 3 plan section 4, worked example 1: the ordinary case, real numbers.
 describe("buildAssetSchedule -- worked example 1 (Bình nhựa có bơm 1000ml, no disposal)", () => {
-  it("8 units, 761.200d total over 12 months sums exactly to 761.200d, final month absorbs the rounding remainder", () => {
+  it("8 units, 761.200d over 12 months charges 63.433,33…d every month and sums to 761.200d", () => {
     const schedule = buildAssetSchedule(
       { acquired_date: "2026-01-15", total_cost: 761_200, quantity: 8, term_months: 12 },
       [],
@@ -32,20 +32,27 @@ describe("buildAssetSchedule -- worked example 1 (Bình nhựa có bơm 1000ml, 
 
     expect(schedule).toHaveLength(12);
     expect(totalScheduledCharge(schedule)).toBe(761_200);
-    // 761200 / 12 = 63433.33... -- eleven months round down to 63433,
-    // the twelfth absorbs what those eleven left unaccounted for (63437,
-    // not 63433 -- the plan's own prose names 63.433d for every month,
-    // which is the ideal, unrounded-in-the-details figure; this is the
-    // literal per-month schedule the "final month absorbs the remainder"
-    // rule actually produces).
+    // BR-DATA-005: no month rounds its own charge anymore -- every month
+    // (including the settlement month) charges the exact 761.200 / 12.
     for (let i = 0; i < 11; i++) {
-      expect(schedule[i].charge).toBe(63_433);
+      expect(schedule[i].charge).toBeCloseTo(761_200 / 12, 6);
       expect(schedule[i].unitsHeld).toBe(8);
     }
-    expect(schedule[11].charge).toBe(63_437);
+    expect(schedule[11].charge).toBeCloseTo(761_200 / 12, 6);
     expect(schedule[11].unitsHeld).toBe(8);
     expect(schedule[0].month).toBe("2026-01");
     expect(schedule[11].month).toBe("2026-12");
+  });
+
+  // BR-DATA-005 (owner, 2026-09-11): "200.000 / 6 sẽ ra kết quả không bao giờ chia hết"
+  it("200.000đ over 6 months charges 33.333,33...đ every month, not 33.333 five times and 33.335 once", () => {
+    const schedule = buildAssetSchedule(
+      { acquired_date: "2026-03-15", total_cost: 200_000, quantity: 1, term_months: 6 },
+      [],
+    );
+    for (const m of schedule) expect(m.charge).toBeCloseTo(200_000 / 6, 6);
+    expect(schedule[0].charge).not.toBe(33_333);
+    expect(totalScheduledCharge(schedule)).toBeCloseTo(200_000, 6);
   });
 });
 
@@ -73,7 +80,7 @@ describe("buildAssetSchedule -- worked example 2 (ca đong, disposed mid-term)",
 
 // Worked example 3: the one long-term asset.
 describe("buildAssetSchedule -- worked example 3 (Xe cà phê lưu động, 36 months)", () => {
-  it("2.100.000d over 36 months sums exactly, final month absorbs the remainder", () => {
+  it("2.100.000d over 36 months charges 58.333,33...d every month and sums exactly", () => {
     const schedule = buildAssetSchedule(
       { acquired_date: "2026-01-01", total_cost: 2_100_000, quantity: 1, term_months: 36 },
       [],
@@ -81,10 +88,11 @@ describe("buildAssetSchedule -- worked example 3 (Xe cà phê lưu động, 36 m
 
     expect(schedule).toHaveLength(36);
     expect(totalScheduledCharge(schedule)).toBe(2_100_000);
+    // BR-DATA-005: no month rounds its own charge anymore.
     for (let i = 0; i < 35; i++) {
-      expect(schedule[i].charge).toBe(58_333);
+      expect(schedule[i].charge).toBeCloseTo(2_100_000 / 36, 6);
     }
-    expect(schedule[35].charge).toBe(58_345);
+    expect(schedule[35].charge).toBeCloseTo(2_100_000 / 36, 6);
   });
 });
 

@@ -98,7 +98,7 @@ describe("getPnLDataV2", () => {
     expect(result.totalCOGS).toBe(fixture.lines[0].cost_at_sale);
   });
 
-  it("rounds totalCOGS UP at the display boundary, from the issue-costing engine's exact value (owner rule 2026-07-30)", async () => {
+  it("rounds totalCOGS to the nearest đồng at the display boundary, from the issue-costing engine's exact value (BR-DATA-005, owner 2026-09-11)", async () => {
     const fixture = makeSuaDauStandaloneOrder();
     (findAllWhere as any).mockResolvedValue([fixture.order]);
     (findAllWhereInBatches as any).mockResolvedValue(fixture.lines);
@@ -121,9 +121,10 @@ describe("getPnLDataV2", () => {
       endDate: "2026-06-30",
     });
 
-    // 14998 / 3 = 4999.333...; issuing 1 -> Math.ceil(4999.333...) = 5000, not Math.round's 4999.
-    expect(result.totalCOGS).toBe(5000);
-    expect(result.grossProfit).toBe(result.totalRevenue - 5000);
+    // 14998 / 3 = 4999.333...; nearest whole đồng is 4999 (BR-DATA-005), not
+    // the old round-up-always rule's 5000.
+    expect(result.totalCOGS).toBe(4999);
+    expect(result.grossProfit).toBe(result.totalRevenue - 4999);
     // Per-product cost is retired by design (spec section 9) -- issue-based
     // costing cannot attribute a purchased item's cost to one drink, so the
     // row carries revenue and quantity only, never a share of totalCOGS.

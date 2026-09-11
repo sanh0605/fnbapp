@@ -84,7 +84,7 @@ Confirmed 2026-09-08 by worked example before the decision was recorded: a count
 
 **Carried as data, not as an id in code.** Which counts are shrinkage lives on the stocktake session row, with `STK-001` set to "not shrinkage" by migration — an `if (id === 'STK-001')` in TypeScript would be the same fact in the one place nobody can correct it. There is no screen for the flag yet, because nothing today can set it wrongly; if a future count ever needs marking, that is a small addition and not this change.
 
-**Rounding across the split.** Each line rounds up from its own exact value (owner rule 2026-07-30), and gross profit is computed from the exact total, never by summing already-rounded lines. Measured 2026-09-08 the two paths agree — 13.020.449 + 34.864.627 = 47.885.076 exactly — but only because `ceil(a) + ceil(b)` happened to equal `ceil(a+b)` for these fractions. That is a coincidence, not a guarantee, and the report must not be built as if it were one.
+**Rounding across the split.** Each line is shown rounded to the nearest đồng from its own exact value (`BR-DATA-005`, 2026-09-11, which replaced the round-up rule of 2026-07-30), and gross profit is computed from the exact total, never by summing already-rounded lines. The two paths can differ by a đồng — `round(a) + round(b)` is not always `round(a + b)` — and the report must not be built as if they could not.
 
 ### BR-COGS-006 — A purchase is valued at what was paid, shipping and discounts included
 
