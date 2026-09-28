@@ -289,13 +289,48 @@ bảng 7 ngày do anh chọn theo món (mục 5.9), không cần loại.
 - Xoá một loại đang có nhóm dùng thì máy từ chối và nói nhóm nào đang dùng.
 - Thay cho ý "ba loại cố định" ở mục 5.10 — ý đó bị bác.
 
+### 5.12 Anh bổ sung, 2026-09-28 — menu trên điện thoại, bảng màu, máy bán hàng
+
+Nguyên văn: *"Sidebar hiện chỉ phù hợp với bản desktop, laptop, tab hay ipad. Nhưng
+đối với điện thoại thì không phù hợp cần lên kế hoạch cho nó. Cách phối màu cũng
+đang chưa tốt và anh chỉ cần 1 vài màu để áp dụng cho toàn bộ hệ thống. Hiện đối
+với POS màu sắc đang bị khác biệt so với phần còn lại của hệ thống."*
+
+**Đo được (2026-09-28):**
+- Menu: màn rộng từ 768px trở lên (máy tính, iPad) thì menu dọc bên trái luôn hiện. Màn
+  hẹp hơn (điện thoại) thì menu giấu, bấm nút ba gạch trên đầu mới trượt ra, che
+  gần hết màn hình (`app/admin/layout.tsx`).
+- Bảng màu khai báo một chỗ (`app/globals.css`) nhưng có tới khoảng 7 sắc: nâu
+  (nút chính), xanh ngọc, xanh rêu đậm (menu), be (nền), xanh lá (thành công), cam
+  (cảnh báo), đỏ gạch (lỗi), cộng một xanh lá nhạt cho biểu đồ. Biểu đồ tròn ở báo
+  cáo doanh số còn 10 mã màu viết thẳng trong code.
+- Máy bán hàng dùng chung bộ màu với phần quản trị: không trang nào dùng màu
+  ngoài bộ màu chung (0 chỗ trên 161 file giao diện). Chỗ khác nhau anh thấy nằm ở
+  **cách phối**: trang quản trị có menu xanh rêu đậm bên trái, còn máy bán hàng không
+  có menu, nền be, thanh trên trắng mờ, chữ "POS" màu nâu.
+- Chữ: đang dùng hai kiểu, Plus Jakarta Sans cho chữ thường và Outfit cho tiêu đề.
+  Outfit thiếu dấu tiếng Việt (việc đổi font đã nằm trong danh sách việc chưa xong,
+  từ 12/09/2026).
+
+**Đề xuất gộp vào phần B (khuôn trang chung):**
+- Bảng màu thu lại còn 4 vai trò: một màu nền, một màu chữ, một màu chính cho nút
+  và chỗ đang chọn, một màu đỏ cho lỗi hoặc cảnh báo. Xanh lá "thành công" chỉ dùng
+  khi thật cần. Máy bán hàng và phần quản trị dùng đúng một bộ.
+- Menu điện thoại là bố cục riêng (theo `.claude/rules/ui-devices.md`), không phải menu
+  máy tính thu nhỏ. Hướng đề xuất: một thanh cố định dưới đáy màn hình với 4 trang
+  anh hay dùng nhất, cộng nút "Thêm" mở ra đủ 7 nhóm. Bốn trang đó do anh chọn
+  (Q7).
+- Bản mẫu cho anh bấm thử có đủ ba màn: máy tính, điện thoại, máy bán hàng, cùng
+  một bảng màu. Anh chọn màu trên bản mẫu, không chọn trên giấy.
+- Màu có cần là thứ anh tự đổi trong Cài đặt hay không: Q8.
+
 ## 6. Chia phần làm — đề xuất thứ tự, chờ anh duyệt (Q3)
 
 | Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
 |---|---|---|---|
 | 1 | F — Gỡ 10 bảng bỏ hoang | Đã xong phần code; còn đưa lên, mỗi bước anh duyệt | Làm xong việc dở trước khi mở việc mới |
 | 2 | A — Menu 7 nhóm | Gom nhóm, đổi tên theo mục 5.3–5.6 | Rẻ, thấy ngay, không đổi dữ liệu |
-| 3 | B — Khuôn trang chung | Font, trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên, 20 phiếu một trang), trang chi tiết phiếu; bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này |
+| 3 | B — Khuôn trang chung | Font, bảng màu 4 vai trò dùng chung cả máy bán hàng, menu riêng cho điện thoại (mục 5.12), trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên, 20 phiếu một trang), trang chi tiết phiếu; bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này |
 | 4 | C — Các trang phiếu theo khuôn | Phiếu nhập, Phiếu xuất, Kiểm kê (gồm `BR-INV-012`), Sổ thu chi | Kiểm kê là việc anh cần nhất |
 | 5 | D — Tổng quan mới | Báo động, bảng 7 ngày, loại món, khoản chi hằng tháng, Cài đặt → Tổng quan | Cần khuôn B và loại món |
 | 6 | E — Chức năng còn thiếu | Tồn kho, Lưu chuyển tiền tệ | Cần khuôn B |
@@ -319,4 +354,5 @@ bảng 7 ngày do anh chọn theo món (mục 5.9), không cần loại.
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
-| Q7 | Trên điện thoại, những trang nào anh thật sự dùng | chờ |
+| Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | **đang hỏi** 2026-09-28 |
+| Q8 | Bảng màu: chọn trên bản mẫu; có cần tự đổi màu trong Cài đặt không (mục 5.12) | chờ, hỏi khi có bản mẫu |
