@@ -136,6 +136,34 @@ Bảy nhóm, không nhóm nào vừa để nhập vừa để xem.
 | Sổ thu chi | Báo cáo | Nhóm Thu chi riêng |
 | Nhập hàng | Đang cân nhắc tách | Tách |
 
+### 5.5 Anh trả lời Q1b, 2026-09-28 — và một nguyên tắc
+
+Nguyên văn: *"Nhóm thu chi và Tài khoản ngân hàng nên để trong cùng mục với Sổ
+thu chi. Thương hiệu và điểm bán để ở Bán Hàng. Đơn vị tính và Phân loại hàng để
+ở Kho. Trang cài đặt là trang chỉ dành để cài đặt cho nguyên hệ thống, không
+phải chỉ dành cho 1 chức năng nào đó."*
+
+**Nguyên tắc rút ra (áp cho mọi mục về sau):** thứ gì chỉ phục vụ một chức năng
+thì nằm cùng nhóm với chức năng đó. Cài đặt chỉ chứa thứ dùng chung cho cả hệ
+thống.
+
+Áp nguyên tắc đó, Opus tự xếp thêm: **Thời hạn khấu hao** chỉ phục vụ Tài sản →
+về **Kho**, cạnh Tài sản.
+
+### 5.6 Menu hiện tại sau các câu trả lời — bản làm việc
+
+| Nhóm | Gồm | Còn mở |
+|---|---|---|
+| Tổng quan | Cảnh báo cần xử lý | Q2 |
+| Bán hàng | Đơn hàng, Món, Nhóm món, Topping & tuỳ chọn, Khuyến mãi, Thương hiệu, Điểm bán | |
+| Nhập hàng | Phiếu nhập, Nhà cung cấp | tách riêng hay nằm trong Kho: Q1c |
+| Kho | Tồn kho, Phiếu xuất, Kiểm kê, Hàng hoá, Tài sản, Thời hạn khấu hao, Đơn vị tính, Phân loại hàng | |
+| Thu chi | Sổ thu chi, Nhóm thu chi, Tài khoản ngân hàng | nhóm riêng hay nằm trong Báo cáo: Q1c |
+| Báo cáo | Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | |
+| Cài đặt | Nhân viên & quyền, Nhật ký hoạt động | |
+
+Tên mục theo mục 5.3; anh chưa phản đối cách đặt tên.
+
 ## 6. Chia phần làm — nháp, chờ anh duyệt thứ tự
 
 | # | Phần | Vì sao đứng ở vị trí này |
@@ -152,7 +180,8 @@ Bảy nhóm, không nhóm nào vừa để nhập vừa để xem.
 | # | Vấn đề | Trạng thái |
 |---|---|---|
 | Q1 | Xếp các mục anh chưa nhắc tới vào nhóm nào (mục 5) | anh đã trả lời 2026-09-28 (mục 5.1) |
-| Q1b | Chọn giữa bản của anh và bản của Opus ở 4 chỗ khác nhau (mục 5.4), và cách đặt tên (5.3) | **đang hỏi** 2026-09-28 |
+| Q1b | Chọn giữa bản của anh và bản của Opus ở 4 chỗ khác nhau (mục 5.4), và cách đặt tên (5.3) | anh đã trả lời 2026-09-28 (mục 5.5) |
+| Q1c | Thu chi là nhóm riêng hay trong Báo cáo; Nhập hàng tách riêng hay trong Kho (mục 5.6) | **đang hỏi** 2026-09-28 |
 | Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | chờ |
 | Q3 | Thứ tự các phần A–F | chờ |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
