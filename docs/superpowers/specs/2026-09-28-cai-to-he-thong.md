@@ -360,6 +360,13 @@ xem ở cuối, bấm vào bất kỳ đâu trong cùng dòng với mã đơn th
 tiết của đơn đó."* Bỏ cột "Xem"; cả dòng (máy tính) hoặc cả thẻ (điện thoại) là chỗ bấm
 để mở phiếu.
 
+*"Không cần hiển thị đơn đó mua sản phẩm gì trên màn hình danh sách đơn, ưu tiên hiển
+thị cái khác."* (bình luận, 2026-09-29). Bỏ mặt hàng khỏi danh sách; ô tìm kiếm vẫn tìm
+được theo tên mặt hàng. Opus tạm đặt vào chỗ đó hai thứ đo được ngày 29/09: **nguồn
+mua** (Shopee, Lazada, Mua ngoài; 190/191 phiếu có) và **số hoá đơn** của nhà cung cấp
+(62/191 phiếu có). Người lập phiếu không đáng hiện: cả 20 phiếu gần nhất đều là "admin".
+Trạng thái giữ lại dù hiện 0 phiếu nháp. Chờ anh xác nhận (Q11).
+
 **Thấy khi đo để dựng bản mẫu (chưa hỏi anh):**
 - "Mới nhất ở trên" phải chọn theo ngày nào. Phiếu nhập có ngày ghi trên phiếu
   (ngày nhập) và ngày tạo trên máy. Hai ngày này lệch nhau: PO-178 ghi ngày 30/05/2026
@@ -422,4 +429,5 @@ Có, bằng hai đường:
 | Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | chốt 2026-09-28 (mục 5.13) |
 | Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14); có cần tự đổi màu trong Cài đặt không (mục 5.12) | **đang hỏi** 2026-09-29 |
 | Q10 | Ngày tháng: hiện `dd/mm/yyyy`, lọc chỉ theo ngày (`BR-DATA-006`); còn hỏi có kèm giờ `dd/mm/yyyy HH:mm` ở chỗ cần giờ không | chốt phần ngày 2026-09-29 qua bình luận; phần giờ **đang hỏi** trên bản mẫu |
+| Q11 | Danh sách phiếu nhập hiện gì thay cho mặt hàng (mục 5.14) | **đang hỏi** 2026-09-29 |
 | Q9 | Danh sách phiếu "mới nhất ở trên" xếp theo ngày nhập hay ngày tạo (mục 5.14) | chốt 2026-09-29 qua bình luận trên bản mẫu: *"Hiển thị ngày nhập thực tế, không phải là ngày phiếu được nhập vào"*. Đo: 191/191 phiếu có ngày nhập, 164 phiếu lệch ngày tạo |
