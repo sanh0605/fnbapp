@@ -238,12 +238,38 @@ xóa. Tuyệt đối không áp dụng hardcode 100% vào tất cả mọi thứ
 | Số ngày "phiếu mở dở" | 2 | Anh đổi được, mặc định 2 | Cài đặt → Tổng quan |
 | Ngày bắt đầu nhắc chi phí | 25 | Anh đổi được, mặc định 25 | Cài đặt → Tổng quan |
 | Cột đồ ăn trong bảng 7 ngày | cố định Trứng luộc, Khoai lang (1b) | Anh chọn món nào thành cột, mặc định hai món này | Cài đặt → Tổng quan |
-| Nhóm nào tính là "ly" | Cà phê, Giải trí, Trà, Yogurt | Mỗi nhóm món có ô "tính là ly" | Bán hàng → Nhóm món |
+| Nhóm nào tính là "ly" | Cà phê, Giải trí, Trà, Yogurt | Thay bằng trường "loại" của nhóm món (mục 5.10) | Bán hàng → Nhóm món |
 | Khoản chi hằng tháng | — | Anh tự thêm, sửa, xoá | Thu chi |
 
 Vì sao các ngưỡng về Cài đặt dù anh đặt nguyên tắc "Cài đặt chỉ cho cả hệ
 thống": trang Tổng quan gom báo động của mọi nhóm, nên phần chỉnh của nó là thứ
 dùng chung. Còn "tính là ly" chỉ thuộc về món, nên nằm ở Bán hàng.
+
+### 5.10 Anh trả lời Q2f — và đề xuất "loại món", 2026-09-28
+
+Nguyên văn: *"1 được. 2 được. 3. Anh nghĩ cần có thêm 1 trường dữ liệu là Thức
+uống hoặc Thức ăn để xác định rõ hơn. Thức uống sẽ mặc định tính là li.
+Toppings có nên cùng level với cái này không nhỉ?"*
+
+- Bảng chỗ đặt ở mục 5.9: **được**. Cột đồ ăn trong bảng 7 ngày: anh chọn món,
+  mặc định Trứng luộc, Khoai lang: **được**.
+- **Anh đề xuất thay ô "tính là ly" bằng trường "loại":** Thức uống / Thức ăn.
+  Thức uống thì tính là ly.
+
+**Ý kiến Opus (Q2g, chờ anh duyệt):**
+- Topping **nên cùng cấp**, thành loại thứ ba. Đo 2026-09-28: topping đang tồn
+  tại hai dạng — tuỳ chọn gọi kèm trên ly (bảng `modifiers`, trang "Topping &
+  tuỳ chọn") và món bán riêng trong nhóm Topping (ví dụ Hộp sữa chua, Kem muối).
+  Loại "Topping" đánh dấu dạng bán riêng, để máy không đếm nó là ly và không cộng
+  nó vào giá trị trung bình mỗi ly (mục 5.8).
+- Đặt loại trên **Nhóm món**, không trên từng món: mọi món trong nhóm Cà phê
+  đều là thức uống, anh chỉ chọn 6 lần thay vì 45 lần. Món mới vào nhóm nào thì
+  tự mang loại của nhóm đó.
+- Ba loại này **cố định**, là ngoại lệ có lý do của luật "không nhét cứng": máy
+  tính số ly và giá trị mỗi ly theo nghĩa của từng loại. Thêm loại thứ tư thì
+  máy không biết tính nó vào đâu. Anh vẫn tự chọn loại cho từng nhóm.
+- Với nhóm hiện có: Cà phê, Giải trí, Trà, Yogurt → Thức uống; Thức ăn → Thức
+  ăn; Topping → Topping.
 
 ## 6. Chia phần làm — nháp, chờ anh duyệt thứ tự
 
@@ -267,7 +293,8 @@ dùng chung. Còn "tính là ly" chỉ thuộc về món, nên nằm ở Bán h�
 | Q2b | "Ly" gồm nhóm nào; trứng, khoai là cột cố định hay theo nhóm Thức ăn; giá trị trung bình mỗi ly tính trên tiền nào | chốt 2026-09-28 (mục 5.8) |
 | Q2c | Nhắc chi phí tháng: những khoản nào, hạn ngày nào, khi nào coi là đã nhập | chốt 2026-09-28 (mục 5.8) |
 | Q2e | Qua hết tháng M mà chưa nhập thì sao | chốt 2026-09-28: vẫn nhắc |
-| Q2f | Chỗ đặt các thứ chỉnh được của Tổng quan (mục 5.9) | **đang hỏi** 2026-09-28 |
+| Q2f | Chỗ đặt các thứ chỉnh được của Tổng quan (mục 5.9) | chốt 2026-09-28 |
+| Q2g | Loại món: 3 loại cố định (Thức uống, Thức ăn, Topping), đặt trên nhóm món (mục 5.10) | **đang hỏi** 2026-09-28 |
 | Q2d | Ngưỡng "lâu chưa kiểm kê" | chốt 2026-09-28: 30 ngày, anh đổi được |
 | Q3 | Thứ tự các phần A–F | chờ |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
