@@ -3,7 +3,7 @@
 ```flow-decl
 routes: /admin/products, /admin/products/categories, /admin/products/modifiers, /admin/products/toppings
 files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
-tables: Products, products, Product_Variants, product_variants, product_price_history, recipes, Product_Categories, Modifiers
+tables: Products, products, Product_Variants, product_variants, product_price_history, Product_Categories, Modifiers
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
 ```
 
@@ -50,11 +50,18 @@ their own screen and server action. Names must be unique among live rows, with a
 near-match warning rather than a hard refusal (`BR-CATALOG-001`).
 
 Saving a product is not a single-table write. The save transaction writes the
-product row and its variants, and as a side effect it also writes the product's
-**recipe snapshot** (`recipes`) and a new **price-history** row
-(`product_price_history`) so the price in force at each moment is preserved.
-Toppings are themselves stored as products, which is why
+product row and its variants, and as a side effect it also writes a new
+**price-history** row (`product_price_history`) so the price in force at each
+moment is preserved. Toppings are themselves stored as products, which is why
 `app/admin/products/toppings/actions.ts` writes the `Products` table too.
+
+**Reviewed, no behaviour change to the save path's own inputs/outputs beyond
+this — 2026-09-28 (migration 0105):** `recipes` was dropped along with 9
+other abandoned tables (owner decision 2026-09-28,
+`docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`). Every new size
+was still silently writing an empty recipe row (recipe *editing* had already
+been removed from the UI on 2026-08-27); `save_product_atomic` no longer
+touches `recipes` at all, and `recipe_count` is gone from its return.
 
 **A topping's price has one edit point (`BR-CATALOG-003`, added 2026-09-07,
 migration `0098`, applied on the server — `supabase migration list`, 2026-09-11).** A topping is sold two
@@ -124,7 +131,7 @@ product (`MOD-009` today) updates only itself.
 
 Per the generated map, the eight declared files write: `Products` and
 `Product_Variants` (`app/admin/products/actions.ts`); `products`,
-`product_variants`, `product_price_history`, and `recipes`
+`product_variants`, and `product_price_history`
 (`lib/products/product-save-transaction.ts`); `products`, `product_variants`, and
 `product_price_history` (`lib/products/product-erase-transaction.ts`);
 `Product_Categories` (`app/admin/products/categories/actions.ts`); `Modifiers`

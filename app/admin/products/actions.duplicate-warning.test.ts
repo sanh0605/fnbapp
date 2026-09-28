@@ -66,7 +66,6 @@ describe("saveProduct -- level 2, diacritic-stripped warning (Batch 1 follow-up)
       productId: "PROD-100",
       variantCount: 1,
       priceHistoryCount: 1,
-      recipeCount: 1,
       removedVariantCount: 0,
     });
 

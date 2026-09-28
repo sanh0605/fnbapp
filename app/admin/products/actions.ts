@@ -3,7 +3,6 @@
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { saveProductAtomic } from "@/lib/products/product-save-transaction";
 import { eraseProductAtomic } from "@/lib/products/product-erase-transaction";
-import { planRecipeSave, findLatestActiveRecipe } from "@/lib/products/recipe-selection";
 import { fail, ok, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { findAll, update } from "@/lib/db/tables";
@@ -17,7 +16,6 @@ import {
 
 const PRODUCT_SHEET = "Products";
 const VARIANT_SHEET = "Product_Variants";
-const RECIPE_SHEET = "Recipes";
 const PATH = "/admin/products";
 
 type VariantFormInput = {
@@ -48,9 +46,8 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     }
     const variants = parsedVariants as VariantFormInput[];
     const isEdit = Boolean(id);
-    const [allVariants, allRecipes, allProducts] = await Promise.all([
+    const [allVariants, allProducts] = await Promise.all([
       isEdit ? findAll(VARIANT_SHEET) : Promise.resolve([]),
-      findAll(RECIPE_SHEET),
       findAll(PRODUCT_SHEET),
     ]);
 
@@ -77,9 +74,8 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       : new Date().toISOString();
 
     let expectedPriceHistoryCount = 0;
-    let expectedRecipeCount = 0;
     const keepVariantIds: string[] = [];
-    const variantPlans = variants.map((variant, index) => {
+    const variantPlans = variants.map((variant) => {
       const variantId = typeof variant.id === "string" && variant.id
         ? variant.id
         : null;
@@ -96,42 +92,11 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       if (!sizeName || !Number.isFinite(price) || price < 0) {
         throw new Error("Dữ liệu biến thể không hợp lệ");
       }
-      // The product editor no longer offers a recipe/ingredient picker
-      // (Phase 2)
-      // -- the form never sends ingredients. save_product_atomic still
-      // requires a valid recipe_decision per variant, so feed planRecipeSave
-      // the variant's own current active-recipe ingredients back as a
-      // no-op: this always resolves to UNCHANGED for an existing variant
-      // (never creating a new recipe version or touching recipes table
-      // content on an unrelated name/price/size edit) and to CREATE_INITIAL
-      // with an empty recipe for a brand-new variant, matching what an
-      // empty picker already produced before this change.
-      const recipeTargetId = variantId || `__NEW_VARIANT_${index}`;
-      const existingRecipe = variantId
-        ? findLatestActiveRecipe(allRecipes, "PRODUCT_VARIANT", variantId)
-        : null;
-      const ingredients = existingRecipe
-        ? JSON.parse(existingRecipe.ingredients_json || "[]")
-        : [];
-      const recipePlan = planRecipeSave(
-        allRecipes,
-        "PRODUCT_VARIANT",
-        recipeTargetId,
-        ingredients,
-      );
-      if (recipePlan.decision !== "UNCHANGED") expectedRecipeCount += 1;
       if (!existing || Number(existing.price) !== price) {
         expectedPriceHistoryCount += 1;
       }
 
-      return {
-        id: variantId,
-        size_name: sizeName,
-        price,
-        recipe_decision: recipePlan.decision,
-        active_recipe_id: recipePlan.activeRecipe?.id || null,
-        ingredients_json: ingredients,
-      };
+      return { id: variantId, size_name: sizeName, price };
     });
     const removedVariantIds = isEdit
       ? existingVariants
@@ -155,7 +120,6 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       removedVariantIds,
       effectiveAt,
       expectedPriceHistoryCount,
-      expectedRecipeCount,
     });
 
     // A separate, small write rather than plumbing this through the atomic

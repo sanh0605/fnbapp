@@ -30,16 +30,13 @@ describe("saveProduct atomic persistence", () => {
     });
     mocks.findAll.mockImplementation(async (sheet: string) => {
       if (sheet === "Product_Variants") return [];
-      if (sheet === "Recipes") return [];
       return [];
     });
   });
 
-  it("creates product, variant, and initial price history through one RPC; the recipe stays empty", async () => {
-    // The product editor no longer offers a recipe/ingredient picker (Phase 2)
-    // -- a brand-new variant has no existing active recipe to feed back as a
-    // no-op, so ingredients_json stays [] and save_product_atomic still gets
-    // a valid CREATE_INITIAL decision (its own hard requirement, unchanged).
+  it("creates product, variant, and initial price history through one RPC; no recipe fields are sent", async () => {
+    // Recipes were removed (owner 2026-08-27; table dropped by 0105):
+    // saveProduct no longer plans or sends any recipe field.
     mocks.saveProductAtomic.mockResolvedValue(makeRpcResult());
 
     await expect(saveProduct(makeCreateFormData())).resolves.toEqual({ success: true });
@@ -58,14 +55,10 @@ describe("saveProduct atomic persistence", () => {
         id: null,
         size_name: "M",
         price: 30_000,
-        recipe_decision: "CREATE_INITIAL",
-        active_recipe_id: null,
-        ingredients_json: [],
       }],
       removedVariantIds: [],
       effectiveAt: "2026-07-19T00:00:00.000Z",
       expectedPriceHistoryCount: 1,
-      expectedRecipeCount: 1,
     });
     // section 3:
     // revalidatePath alone only refreshes /admin/products -- POS reads the
@@ -108,24 +101,14 @@ describe("saveProduct atomic persistence", () => {
     const input = mocks.saveProductAtomic.mock.calls[0][0];
     expect(input.isEdit).toBe(true);
     expect(input.expectedPriceHistoryCount).toBe(1);
-    expect(input.expectedRecipeCount).toBe(0);
     expect(input.removedVariantIds).toEqual(["VAR-REMOVED"]);
     expect(input.variants[0]).toMatchObject({
       id: "VAR-EXISTING",
       price: 30_000,
-      recipe_decision: "UNCHANGED",
-      active_recipe_id: "REC-EXISTING",
     });
   });
 
-  it("never creates a new recipe version -- the editor no longer offers a picker, so an edit is always a no-op against the variant's own current recipe", async () => {
-    // Phase 2 
-    // removed the ingredient picker; saveProduct no longer reads client-
-    // submitted ingredients at all. Even a stale/forged payload that still
-    // carries a different ingredientId (as a pre-Phase-2 client might) must
-    // not move the variant's real recipe -- an unrelated name/price/size
-    // edit must never silently mutate or version master data it no longer
-    // lets anyone see.
+  it("an edit that only changes name/price/size sends no recipe field -- the editor no longer offers a recipe picker", async () => {
     seedExisting();
     mocks.saveProductAtomic.mockResolvedValue({
       ...makeRpcResult(),
@@ -136,10 +119,10 @@ describe("saveProduct atomic persistence", () => {
     await expect(saveProduct(makeEditFormData({ ingredientId: "ING-002" }))).resolves.toEqual({
       success: true,
     });
-    expect(mocks.saveProductAtomic.mock.calls[0][0].variants[0]).toMatchObject({
-      recipe_decision: "UNCHANGED",
-      active_recipe_id: "REC-EXISTING",
-      ingredients_json: [makeIngredient("ING-001")],
+    expect(mocks.saveProductAtomic.mock.calls[0][0].variants[0]).toEqual({
+      id: "VAR-EXISTING",
+      size_name: "M",
+      price: 25_000,
     });
   });
 
@@ -163,16 +146,6 @@ describe("saveProduct atomic persistence", () => {
           }] : []),
         ];
       }
-      if (sheet === "Recipes") {
-        return [{
-          id: "REC-EXISTING",
-          target_type: "PRODUCT_VARIANT",
-          target_id: "VAR-EXISTING",
-          ingredients_json: JSON.stringify([makeIngredient("ING-001")]),
-          created_at: "2026-07-01T00:00:00.000Z",
-          end_date: null,
-        }];
-      }
       return [];
     });
   }
@@ -183,7 +156,6 @@ function makeRpcResult() {
     productId: "PROD-001",
     variantCount: 1,
     priceHistoryCount: 1,
-    recipeCount: 1,
     removedVariantCount: 0,
   };
 }

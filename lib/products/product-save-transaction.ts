@@ -8,13 +8,11 @@ export async function saveProductAtomic(
     removedVariantIds: string[];
     effectiveAt: string;
     expectedPriceHistoryCount: number;
-    expectedRecipeCount: number;
   },
 ): Promise<{
   productId: string;
   variantCount: number;
   priceHistoryCount: number;
-  recipeCount: number;
   removedVariantCount: number;
 }> {
   const { data, error } = await getSupabaseClient().rpc("save_product_atomic", {
@@ -31,7 +29,6 @@ export async function saveProductAtomic(
     product_id?: string;
     variant_count?: number;
     price_history_count?: number;
-    recipe_count?: number;
     removed_variant_count?: number;
   } | null;
   if (!result?.product_id) {
@@ -39,12 +36,10 @@ export async function saveProductAtomic(
   }
   const variantCount = Number(result.variant_count) || 0;
   const priceHistoryCount = Number(result.price_history_count) || 0;
-  const recipeCount = Number(result.recipe_count) || 0;
   const removedVariantCount = Number(result.removed_variant_count) || 0;
   if (
     variantCount !== input.variants.length ||
     priceHistoryCount !== input.expectedPriceHistoryCount ||
-    recipeCount !== input.expectedRecipeCount ||
     removedVariantCount !== input.removedVariantIds.length
   ) {
     throw new Error("save_product_atomic persisted row count mismatch");
@@ -53,7 +48,6 @@ export async function saveProductAtomic(
     productId: result.product_id,
     variantCount,
     priceHistoryCount,
-    recipeCount,
     removedVariantCount,
   };
 }
