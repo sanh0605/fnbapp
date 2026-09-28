@@ -336,8 +336,9 @@ POS"** nằm riêng trên đầu menu (`app/admin/layout.tsx`). Bấm nút này,
 đặt.
 
 **Chốt:**
-- **Điện thoại:** thanh cố định dưới đáy gồm Tổng quan, Phiếu nhập, Phiếu xuất, Mở máy
-  bán hàng, và nút "Thêm" mở đủ 7 nhóm. Thay cho nút ba gạch hiện nay.
+- **Điện thoại:** thanh cố định dưới đáy gồm Tổng quan, Phiếu nhập, Phiếu xuất, nút
+  "Thêm" mở đủ 7 nhóm, và Mở máy bán hàng ngoài cùng bên phải (thứ tự anh sửa ngày
+  2026-09-28, mục 5.14). Thay cho nút ba gạch hiện nay.
 - **Máy tính, iPad:** menu bên trái có nút thu gọn và mở lại. Opus chọn kiểu thu gọn
   thành một cột hẹp chỉ còn biểu tượng, rê chuột vào thì hiện tên, thay vì giấu hẳn: vẫn
   bấm được mà không phải mở ra. Máy nhớ lựa chọn trên từng máy. Anh xem trên bản mẫu,
@@ -372,6 +373,15 @@ thoại, 2026-09-28). Nút mở máy bán hàng đổi sang màu chữ (nâu đe
 (nâu) của nút "Tạo phiếu": trên điện thoại là nút tròn nhô lên giữa thanh dưới, trên
 máy tính là nút đầu menu. Dùng lại màu có sẵn, bảng màu vẫn 4 vai trò. Anh muốn một
 màu riêng hẳn thì trả lời trong bình luận đó.
+
+*"Nên để máy bán hàng ở sau cả nút 'Thêm'"* (bình luận, 2026-09-28). Thứ tự thanh dưới
+đáy điện thoại đổi thành: Tổng quan, Phiếu nhập, Phiếu xuất, Thêm, **Máy bán hàng**
+(ngoài cùng bên phải). Thay thứ tự ghi ở mục 5.13.
+
+*"Thiếu tabs bán chạy"* (bình luận trên khung máy bán hàng, 2026-09-28). Bản mẫu sót;
+máy thật có tab "Bán chạy" đứng đầu và được chọn sẵn khi mở máy
+(`app/pos/components/POSScreen.tsx`), rồi "Tất cả món", rồi các nhóm món. Làm lại giao
+diện giữ nguyên thứ tự và cách chọn sẵn này.
 
 **Anh chốt Q8, 2026-09-29:** *"Theo em khuyên chọn"* — bảng màu **Cà phê** (nền
 #F7F5F0, chữ #1F1B16, màu chính #8A5A1F, đỏ #B3261E) và kiểu chữ **Be Vietnam Pro**
