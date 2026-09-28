@@ -34,7 +34,8 @@ function looksLikePath(token: string): boolean {
   return /^[A-Za-z][A-Za-z0-9._-]*\.md$/.test(token);
 }
 
-const RETIRED_AGENTS = ["Codex", "Antigravity", "GLM", "Gemini"];
+// Gemini (via the agy CLI) returned for UI work, owner 2026-09-28.
+const RETIRED_AGENTS = ["Codex", "GLM"];
 
 function backtickedTokens(text: string): string[] {
   return Array.from(text.matchAll(/`([^`\n]+)`/g)).map(match => match[1]);

@@ -42,15 +42,6 @@ Gọi trước khi làm, không phải sau khi làm hỏng. Tên dưới đây �
 | Sửa hook hoặc quyền trong `.claude/settings.json` | `update-config` |
 | Viết hoặc sửa một skill | `superpowers:writing-skills` |
 
-## Vai trò
-
-- Opus: đặc tả, thiết kế, kế hoạch, review. Không tự viết code.
-- Sonnet: viết code, script, migration.
-- Sonnet phản biện kế hoạch trước khi code; soát mà sạch thì phải nói rõ là đã soát.
-- Không ai tự duyệt việc của chính mình.
-- Hai agent sửa cùng một file tài liệu: chạy `git status` trước khi lưu, tránh ghi đè việc đang dở của agent kia.
-- Agent nói với nhau bằng tiếng Anh. Mọi thứ chủ quán đọc, kể cả chữ trong app, bằng tiếng Việt.
-
 ## Quy trình
 
 Bốn bước: đặc tả → thiết kế → kế hoạch → code.
@@ -93,7 +84,7 @@ không nhờ phiên khác chạy.
 
 - Không xoá nguyên liệu, món, đơn, nhà cung cấp. Đánh dấu ngừng dùng. Khoá ngoại đặt `RESTRICT` nên máy tự từ chối; dịch lời từ chối sang tiếng Việt.
 - Ngoại lệ: công thức và bán thành phẩm được xoá hẳn. Món chưa bán lần nào được xoá hẳn kèm lịch sử giá; món đã bán chỉ được ẩn.
-- Chỗ nào xoá hẳn được thì chỉ vai `ADMIN` xoá, chặn bằng `requireOwner()` ở máy chủ, không phải giấu nút. Vai khác chỉ thêm, sửa, huỷ. Ngoại lệ duy nhất: đơn nháp máy bán hàng.
+- Chỗ nào xoá hẳn được thì chỉ vai `ADMIN` xoá, chặn bằng `requireOwner()` ở máy chủ, không phải giấu nút. Vai khác chỉ thêm, sửa, huỷ. Ngoại lệ: đơn nháp máy bán hàng; phiên kiểm kê chưa xác nhận (chủ quán và quản lý huỷ là xoá hẳn, `BR-INV-010`).
 - Migration đổi kiểu trả về của một hàm phải lên cùng lúc với code đọc hàm đó. Không bao giờ chạy migration trước.
 - Sửa dữ liệu hàng loạt: dùng skill `fnbapp-bulk-data-change`.
 - Đổi một quy tắc kinh doanh: sửa luật và sửa test của nó trong cùng một lần lưu.
@@ -126,6 +117,18 @@ Chủ quán là người kinh doanh, nghiệm thu bằng cách bấm thử, khô
 - Cảnh báo ảnh hưởng chéo mà không đợi được hỏi.
 - Nói trước cái giá: việc có thể làm máy bán hàng ngừng nhận đơn phải báo trước.
 - Giao việc xong phải nói rõ chỗ nào cần chủ quán mở ra xem tận mắt.
+
+## Ai viết code
+
+Chủ quán chốt 2026-09-28, áp dụng mọi phiên:
+
+| Phần việc | Ai làm |
+|---|---|
+| Giao diện, frontend, UI/UX: màn hình, component, bố cục, menu, kiểu dáng | Gemini, chạy qua `agy` (`agy -p "<việc>"`) |
+| Backend: `lib/`, server action, `supabase/`, `scripts/`, test của chúng | Sonnet (công cụ Agent, model `sonnet`) |
+| Đặc tả, kế hoạch, giao việc, soát lại, tài liệu | Opus |
+
+Việc có cả hai phần thì tách thành hai phiếu giao việc. Opus soát lại trước khi báo xong.
 
 ## Viết code
 

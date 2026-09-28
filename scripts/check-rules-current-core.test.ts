@@ -92,6 +92,11 @@ describe("check 2: no retired agent is named as current", () => {
     write("docs/OPEN-ITEMS.md", "Việc này từng giao cho Codex, agent đã ngừng."); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
     expect(resultFor("no-retired-agents", ["docs/OPEN-ITEMS.md"]).ok).toBe(true); // docs-ref-allow: test fixture, path is written into a tmp dir not the repo
   });
+
+  it("passes when CLAUDE.md names Gemini through agy (owner 2026-09-28)", () => {
+    write("CLAUDE.md", "Giao diện: Gemini, chạy qua `agy` (Antigravity CLI). Backend: Sonnet.");
+    expect(resultFor("no-retired-agents", ["CLAUDE.md"]).ok).toBe(true);
+  });
 });
 
 describe("check 3: a declared test link points at a test that exists", () => {
