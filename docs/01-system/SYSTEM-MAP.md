@@ -25,7 +25,6 @@ app/admin/finance/categories/actions.ts -> Cash_Categories (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/actions.ts -> Purchased_Items (write)
-app/admin/inventory/actions.ts -> Stock_Adjustments (write)
 app/admin/inventory/actions.ts -> Units (write)
 app/admin/inventory/actions.ts -> UOM_Conversions (write)
 app/admin/inventory/asset-bands/actions.ts -> asset_depreciation_bands (write)
@@ -67,7 +66,6 @@ lib/products/create-standalone-topping.ts -> product_variants (write)
 lib/products/create-standalone-topping.ts -> products (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
-lib/stock/stock-adjustment-transaction.ts -> stock_adjustments (write)
 lib/stock/stocktake-transaction.ts -> stock_issues (write)
 lib/stock/stocktake-transaction.ts -> stocktake_lines (write)
 lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
@@ -87,10 +85,8 @@ writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 writes `assets`, `purchase_order_edits`, and `Purchase_Sources`.
 `app/admin/suppliers/actions.ts` writes `Suppliers`.
 
-**Stock issue and adjustment.** `lib/stock/manual-issue-transaction.ts` writes
-`issue_slips` and `stock_issues`. `lib/stock/stock-adjustment-transaction.ts` writes
-`stock_adjustments`. `app/admin/inventory/actions.ts` also
-writes `Stock_Adjustments` (this file spans inventory-catalog and stock-issue).
+**Stock issue.** `lib/stock/manual-issue-transaction.ts` writes
+`issue_slips` and `stock_issues`.
 
 **Stocktake.** `lib/stock/stocktake-transaction.ts` writes `stocktake_sessions`,
 `stocktake_lines`, and `stock_issues` (a closed count books its shortfall as an
@@ -173,7 +169,7 @@ lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
 | POS | `app/pos` | Cart, pricing, checkout, drafts, order submission |
 | Orders | `app/admin/orders` | Order review, edit, void, snapshots, event history |
 | Catalog | `app/admin/products`, `app/admin/brands`, `app/admin/promotions` | Products, variants, modifiers, pricing, promotions |
-| Purchasing and inventory | `app/admin/inventory` | Purchase orders, stock adjustments, current stock |
+| Purchasing and inventory | `app/admin/inventory` | Purchase orders, issue slips, stocktake, current stock |
 | Reports | `app/admin/reports` | Revenue, COGS, profit, consistency checks |
 | Users | `app/admin/users` | User lifecycle and role data |
 | Backup | Edge Function, Apps Script, Drive | Full snapshots, validation, retention, restore inputs |

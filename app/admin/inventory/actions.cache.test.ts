@@ -37,10 +37,6 @@ vi.mock("@/lib/db/tables", async () => {
     getCacheTag: actual.getCacheTag,
   };
 });
-vi.mock("@/lib/stock/stock-adjustment-transaction", () => ({
-  submitStockAdjustmentAtomic: vi.fn(),
-  approveStockAdjustmentAtomic: vi.fn(),
-}));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import { addUnit, updateUnit, deleteUnit, addItemCategory, updateItemCategory, deleteItemCategory } from "./actions";

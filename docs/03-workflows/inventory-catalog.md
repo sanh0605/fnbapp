@@ -82,16 +82,15 @@ The declared files write `Purchased_Items` (the catalogue rows),
 declared files.
 
 **Cross-flow note:** `app/admin/inventory/actions.ts` also writes
-`Stock_Adjustments` and `Purchase_Order_Lines`. Those belong to the stock-issue
-and purchasing flows respectively and are documented there; they are not part of
-this catalog flow's declared tables. Editing a conversion with history update
+`Purchase_Order_Lines`. That belongs to the purchasing flow and is documented
+there; it is not one of this catalog flow's declared tables. Editing a conversion with history update
 also rewrites the affected `Purchase_Order_Lines` units so past purchases stay
 consistent with the corrected conversion (`app/admin/inventory/actions.ts`).
 
-**Deletion is protected, not free.** Foreign keys into `products` and
-`product_variants` are set to RESTRICT, so an ingredient a recipe still uses
-cannot be deleted out from under that recipe — the database refuses, and the
-owner is shown why. The intended pattern is to mark an item `INACTIVE` rather
+**Deletion is protected, not free.** Foreign keys from `uom_conversions`,
+`purchase_order_lines` and `stock_issues` into `purchased_items` are set to
+RESTRICT, so an item that a purchase or an issue still uses cannot be deleted out
+from under it — the database refuses, and the owner is shown why. The intended pattern is to mark an item `INACTIVE` rather
 than delete it.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md

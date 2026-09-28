@@ -33,7 +33,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: <Truck size={20} />,
       children: [
         { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
-        { name: "Điều chỉnh Tồn kho", href: "/admin/inventory/stock-adjustments" },
         { name: "Kiểm Kê Định Kỳ", href: "/admin/inventory/stocktake" },
         { name: "Phiếu Xuất Kho", href: "/admin/inventory/issue-slips" },
         { name: "Sổ Tài Sản", href: "/admin/inventory/assets" },

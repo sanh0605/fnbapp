@@ -5,10 +5,6 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
-import {
-  approveStockAdjustmentAtomic,
-  submitStockAdjustmentAtomic,
-} from "@/lib/stock/stock-adjustment-transaction";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 import { buildUnitDeleteRestrictionMessage, type UnitBlockerFinding } from "@/lib/catalog/unit-delete-restriction";
 
@@ -444,86 +440,3 @@ export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// --- STOCK (Tồn kho) ---
-export async function submitStockAdjustment(data: any, _clientRole?: string, _clientUsername?: string): Promise<ActionResponse> {
-  try {
-    // Claude code — Phase 4.3: adjustment reason required for audit traceability.
-    if (!data?.reason || String(data.reason).trim().length === 0) {
-      return fail("Lý do điều chỉnh là bắt buộc");
-    }
-    // Ignore client-supplied identity and enforce the owner-approved ADMIN policy.
-    // Client params remain in the signature for backward compatibility.
-    const auth = await requireAdmin();
-    if (!auth.ok) return fail(auth.error);
-    const username = auth.actor.name;
-
-    const nowIso = new Date().toISOString();
-    await submitStockAdjustmentAtomic({
-      item_reference: data.item_id,
-      theoretical_qty: data.theoretical_qty,
-      actual_qty: data.actual_qty,
-      difference: data.difference,
-      reason: data.reason || "",
-      status: "APPROVED",
-      created_by_name: username,
-      created_by_id: auth.actor.id,
-      created_at: nowIso,
-      approved_by: username,
-      approved_at: nowIso
-    });
-
-    revalidatePath("/admin/inventory/stock");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
-export async function approveStockAdjustment(adjustmentId: string, _clientAdminUsername?: string): Promise<ActionResponse> {
-  try {
-    // Claude code — CODE-22: require ADMIN server-side; ignore client username.
-    const auth = await requireAdmin();
-    if (!auth.ok) return fail(auth.error);
-    const adminUsername = auth.actor.name;
-
-    const nowIso = new Date().toISOString();
-    await approveStockAdjustmentAtomic({
-      adjustmentId,
-      approvedBy: adminUsername,
-      approvedAt: nowIso,
-    });
-
-    revalidatePath("/admin/inventory/stock");
-    revalidatePath("/admin/inventory/stock-adjustments");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
-export async function rejectStockAdjustment(adjustmentId: string): Promise<ActionResponse> {
-  try {
-    const auth = await requireAdmin();
-    if (!auth.ok) return fail(auth.error);
-    const adminUsername = auth.actor.name;
-
-    const adjustments = await findAll("Stock_Adjustments");
-    const adj = adjustments.find((a:any) => a.id === adjustmentId);
-    if (!adj) return fail("Không tìm thấy phiếu điều chỉnh");
-    if (adj.status !== "PENDING") return fail("Phiếu không ở trạng thái chờ duyệt");
-
-    const nowIso = new Date().toISOString();
-    
-    await update("Stock_Adjustments", adjustmentId, {
-      status: "REJECTED",
-      approved_by: adminUsername,
-      approved_at: nowIso
-    });
-
-    revalidatePath("/admin/inventory/stock");
-    revalidatePath("/admin/inventory/stock-adjustments");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}

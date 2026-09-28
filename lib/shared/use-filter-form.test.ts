@@ -77,14 +77,14 @@ describe("replaceFilterUrlInHistory", () => {
 
     replaceFilterUrlInHistory(
       { replaceState },
-      "/admin/inventory/stock-adjustments",
+      "/admin/inventory/issue-slips",
       new URLSearchParams(),
     );
 
     expect(replaceState).toHaveBeenCalledWith(
       null,
       "",
-      "/admin/inventory/stock-adjustments",
+      "/admin/inventory/issue-slips",
     );
   });
 });
