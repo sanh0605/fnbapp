@@ -357,6 +357,27 @@ POS"** nằm riêng trên đầu menu (`app/admin/layout.tsx`). Bấm nút này,
 | 5 | D — Tổng quan mới | Báo động, bảng 7 ngày, loại món, khoản chi hằng tháng, Cài đặt → Tổng quan | Cần khuôn B và loại món |
 | 6 | E — Chức năng còn thiếu | Tồn kho, Lưu chuyển tiền tệ | Cần khuôn B |
 | suốt quá trình | G — Sắp xếp file, gọn code | Làm ở từng phần khi đụng tới | Không làm một đợt lớn riêng: đợt lớn không ai kiểm nổi |
+| 7 | H — Dọn phần sót | Những chỗ không bước nào đụng tới: máy bán hàng (`app/pos/components/POSScreen.tsx` 1.143 dòng, `app/pos/components/CartPanel.tsx` 689 dòng), báo cáo (`app/admin/reports/actions.ts` 898 dòng), đơn hàng (`app/admin/orders/actions.ts` 613 dòng), `lib/db/tables.ts` còn nhắc bảng đã xoá | Chỉ "đụng đâu dọn đó" thì những chỗ này không bao giờ được dọn |
+
+**Anh hỏi, 2026-09-29:** *"Nếu anh đồng ý bước này thì các việc như tối giản code,
+tối ưu logic, cải thiện database, sắp xếp thư mục sao cho dễ sửa có được làm không?"*
+
+Có, bằng hai đường:
+- **Trong từng bước (G):** bước nào đụng trang nào thì dọn trang đó cùng lúc. Ví dụ
+  bước 4 làm Kiểm kê và Phiếu xuất thì hai file lớn nhất của chúng
+  (`app/admin/inventory/stocktake/components/StocktakeClient.tsx` 602 dòng,
+  `app/admin/inventory/issue-slips/components/IssueSlipClient.tsx` 573 dòng) được tách gọn.
+  Chỗ logic rời rạc lớn nhất đã biết (hao hụt kiểm kê bị ghi lẫn thành phiếu xuất
+  "Khác", `docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`) cũng được xử lý ở
+  bước này theo `BR-INV-012`.
+- **Bước 7 (H):** dọn phần không bước nào đụng tới. Danh sách lập sẵn từ đầu, mỗi bước
+  gạch dần, không để quên.
+- **Database:** sau bước 1 còn 34 bảng, đo ngày 28/09 thì cả 34 đều đang dùng. Không
+  còn bảng dư đã biết; bảng mới chỉ sinh ra khi có việc cần (loại món, khoản chi hằng
+  tháng, cài đặt Tổng quan).
+- **Cách bảo đảm "gọn mà không đổi cách tính":** mỗi lần dọn, toàn bộ phép kiểm tự
+  động phải xanh, và giá vốn tính lại phải ra đúng số cũ (49.943.622đ đo ngày 28/09,
+  đo lại trước khi dùng).
 
 ## 7. Câu hỏi còn mở — hỏi lần lượt, mỗi lượt một vấn đề
 
