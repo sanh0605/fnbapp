@@ -346,7 +346,7 @@ POS"** nằm riêng trên đầu menu (`app/admin/layout.tsx`). Bấm nút này,
 - **Trong màn máy bán hàng không hiện thanh dưới đáy:** màn bán hàng cần hết chỗ cho
   món và giỏ hàng. Quay về bằng mũi tên trên đầu như hiện nay.
 
-## 6. Chia phần làm — đề xuất thứ tự, chờ anh duyệt (Q3)
+## 6. Chia phần làm — thứ tự đã chốt 2026-09-29 (Q3: "Theo em khuyến nghị")
 
 | Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
 |---|---|---|---|
@@ -393,7 +393,7 @@ Có, bằng hai đường:
 | Q2f | Chỗ đặt các thứ chỉnh được của Tổng quan (mục 5.9) | chốt 2026-09-28 |
 | Q2g | Loại món: 3 loại cố định (Thức uống, Thức ăn, Topping), đặt trên nhóm món (mục 5.10) | chốt 2026-09-28: loại do anh tự quản, có ô "là thức uống" (mục 5.11) |
 | Q2d | Ngưỡng "lâu chưa kiểm kê" | chốt 2026-09-28: 30 ngày, anh đổi được |
-| Q3 | Thứ tự các phần (mục 6) | **đang hỏi** 2026-09-28 |
+| Q3 | Thứ tự các phần (mục 6) | chốt 2026-09-29: 7 bước như mục 6 |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
