@@ -35,7 +35,7 @@ than waiting on a code change. The writes run through the server actions in
 1. **States, and how each is set.** A purchased item carries a `status` of
    `ACTIVE` or `INACTIVE` (`lib/shared/duplicate-name-guard.ts`). A new item is
    created `ACTIVE`; an item taken out of use is set `INACTIVE` rather than
-   removed, so historical purchases and recipes that reference it still resolve.
+   removed, so historical purchases and issues that reference it still resolve.
    A UOM conversion carries a `status` too and is set to `INACTIVE` when it is
    superseded rather than deleted (`app/admin/inventory/items/actions.ts`).
    Categories and units are plain reference rows with no lifecycle state — they
@@ -71,7 +71,7 @@ than waiting on a code change. The writes run through the server actions in
    unit conversions. It deliberately does not serve stock movement or cost —
    those live in the purchasing, stock-issue, and stocktake flows. The purchased
    item is never hard-removed while referenced; it is marked `INACTIVE`, because
-   old purchase orders and recipes still need it to explain their own numbers.
+   old purchase orders and stock issues still need it to explain their own numbers.
 
 ## Where it writes
 

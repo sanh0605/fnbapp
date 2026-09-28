@@ -7,4 +7,4 @@
 - **Không phiên nào ở máy này truy vấn thẳng được Postgres.** PostgREST không đọc `pg_catalog`, schema không có hàm chạy SQL tuỳ ý, `supabase db dump --linked` cần Docker (không chạy), và không có `psql`. Nên phần liệt kê trigger trong đầu file migration phải ghi đúng nguồn: suy ra từ chữ migration (grep toàn bộ `create trigger`/`drop trigger`), **không được viết "đã kiểm trực tiếp trên máy chủ"**. Mẫu đúng: `0062`, và `0099` (đã sửa lại 2026-09-08). `0097` và `0098` còn câu ghi nguồn sai nhưng đã chạy rồi nên không sửa — nội dung trigger của chúng vẫn đúng, chỉ câu ghi nguồn là không có căn cứ.
 - Chạy migration lên máy chủ thật: chủ quán duyệt **từng lần**, tách khỏi duyệt push.
 - Test đọc chữ migration nằm ở `tests/migrations/`; test edge function ở `tests/edge-functions/`. Không đặt test trong thư mục này.
-- `functions/`: chạy trên Deno, import qua URL, `tsc` của dự án không kiểm; `backup-to-sheets` có `node_modules` riêng, không mở.
+- `functions/`: chạy trên Deno, import qua URL, `tsc` của dự án không kiểm.

@@ -45,7 +45,7 @@ có cột nào phân theo điểm bán hay chi nhánh. Đây là phần `BR-U-00
 tài liệu này chỉ liệt kê nơi phải sửa nếu sau này chốt làm, **không đề xuất
 cách sửa**.
 
-Sáu bảng sau được kiểm lại từng câu lệnh tạo bảng và mọi câu lệnh sửa bảng
+Năm bảng sau được kiểm lại từng câu lệnh tạo bảng và mọi câu lệnh sửa bảng
 trong `supabase/migrations/`: không bảng nào có cột `outlet_id`.
 
 | Bảng | Tạo ở | Vai trò |
@@ -54,14 +54,13 @@ trong `supabase/migrations/`: không bảng nào có cột `outlet_id`.
 | `purchased_items` | `supabase/migrations/0001_init_schema.sql` | Dòng hàng đã mua |
 | `stocktake_sessions` | `supabase/migrations/0036_stocktake_sessions.sql` | Kỳ kiểm kê |
 | `stocktake_lines` | `supabase/migrations/0036_stocktake_sessions.sql` | Dòng kiểm kê từng nguyên liệu |
-| `stock_adjustments` | `supabase/migrations/0001_init_schema.sql` | Điều chỉnh tồn kho |
 | `issue_slips` | `supabase/migrations/0060_issue_slip_multiline.sql` | Phiếu xuất nhiều dòng |
 
 Hai file tính giá vốn cũng không biết tới khái niệm điểm bán/chi nhánh —
 `lib/costing/issue-costing.ts` và `lib/costing/issue-costing-inputs.ts` tính bình quân gia
 quyền trên toàn bộ kho, không lọc theo nơi bán.
 
-Muốn tách kho theo chi nhánh, sáu bảng trên và hai file tính giá vốn này đều
+Muốn tách kho theo chi nhánh, năm bảng trên và hai file tính giá vốn này đều
 cần thêm một chiều "thuộc chi nhánh nào" — cộng với việc xem lại chính câu
 chính sách "kho dùng chung" đang nêu ở `docs/01-system/SYSTEM-OVERVIEW.md` (mục
 "Kho dùng chung"). Đây đúng là quy mô của `BR-U-002`, không phải một việc sửa

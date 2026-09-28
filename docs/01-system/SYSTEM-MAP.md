@@ -58,7 +58,6 @@ lib/products/product-erase-transaction.ts -> products (write)
 lib/products/product-save-transaction.ts -> product_price_history (write)
 lib/products/product-save-transaction.ts -> product_variants (write)
 lib/products/product-save-transaction.ts -> products (write)
-lib/products/product-save-transaction.ts -> recipes (write)
 lib/products/topping-price-sync.ts -> modifiers (write)
 lib/products/topping-price-sync.ts -> product_price_history (write)
 lib/products/topping-price-sync.ts -> product_variants (write)
@@ -99,7 +98,7 @@ issue).
 
 **Products.** `app/admin/products/actions.ts` writes `Products` and
 `Product_Variants`. `lib/products/product-save-transaction.ts` writes `products`,
-`product_variants`, `product_price_history`, and `recipes`.
+`product_variants`, and `product_price_history`.
 `lib/products/product-erase-transaction.ts` writes `products`, `product_variants`, and
 `product_price_history`. `app/admin/products/categories/actions.ts` writes
 `Product_Categories`; `app/admin/products/modifiers/actions.ts` writes
@@ -173,7 +172,7 @@ lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
 | Authentication | `app/login`, `app/api/auth`, `lib/auth/auth.ts` | Credentials login, sessions, technical-role propagation |
 | POS | `app/pos` | Cart, pricing, checkout, drafts, order submission |
 | Orders | `app/admin/orders` | Order review, edit, void, snapshots, event history |
-| Catalog | `app/admin/products`, `app/admin/brands`, `app/admin/promotions` | Products, variants, modifiers, recipes, pricing, promotions |
+| Catalog | `app/admin/products`, `app/admin/brands`, `app/admin/promotions` | Products, variants, modifiers, pricing, promotions |
 | Purchasing and inventory | `app/admin/inventory` | Purchase orders, stock adjustments, current stock |
 | Reports | `app/admin/reports` | Revenue, COGS, profit, consistency checks |
 | Users | `app/admin/users` | User lifecycle and role data |

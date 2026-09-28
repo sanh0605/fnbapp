@@ -59,6 +59,8 @@ Hai bảng trống nhưng vẫn phải giữ:
 
 ## Nhóm C — bỏ hoang, đề xuất gỡ (10 bảng)
 
+**Chủ quán duyệt gỡ 2026-09-28** ("Ok gỡ"). Cách làm: `docs/superpowers/plans/2026-09-28-go-10-bang-bo-hoang.md`, migration `0105`.
+
 | Bảng | Là gì ngoài đời | Số dòng | Vì sao coi là bỏ hoang |
 |---|---|---|---|
 | `recipes` | Công thức món | 1 | Chủ quán đã quyết gỡ công thức và bán thành phẩm (2026-08-27). Màn hình đã gỡ. Dòng còn lại là một công thức rỗng, tạo 31/08. Code chỉ còn đọc chứ không có chỗ nào nhập. |

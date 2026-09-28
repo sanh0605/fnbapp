@@ -26,7 +26,7 @@ Superseded by `BR-INV-006` (owner decision 2026-08-05). Plan C Task 5 applied th
 
 **Status:** `APPROVED` — owner decision 2026-08-05
 
-Semi-products are things the shop makes rather than buys — syrups, brewed tea, boiled sweet potato. They are no longer tracked as stock, hold no value, and no screen records making a batch. Their recipes stay, as the record of how something is made.
+Semi-products are things the shop makes rather than buys — syrups, brewed tea, boiled sweet potato. They are no longer tracked as stock, hold no value, and no screen records making a batch. Nothing about them is kept any more: the owner decided on 2026-08-27 to remove recipes, and the semi-product list itself, with its batch tables, is dropped by migration `0105` (owner-approved 2026-09-28, `docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`).
 
 **Why the cost does not vanish with the tracking.** The ingredients were already expensed the moment they left stock. A pot of brewed tea is not a new asset; it is goods already paid for, in a different shape. Recording it as stock with a value of its own would count the same money twice.
 

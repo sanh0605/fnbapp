@@ -24,7 +24,7 @@ Tra toàn bộ tên bảng dữ liệu (kể cả bảng chưa có mặt ở đ�
 | Kiểm kê (`stocktake_sessions`, `stocktake_lines`) | Đợt đếm hàng thực tế trong kho rồi so với số máy tính ra. Chỉ đếm gói còn nguyên, gói đã bóc không đếm. Một đợt gồm phiên đếm và các dòng đếm từng mặt hàng. | Màn hình Kiểm kê |
 | Thanh lý tài sản (`asset_disposals`) | Ghi nhận một dụng cụ, thiết bị được bán, cho, hoặc bỏ đi. Chỉ ghi thêm dòng thanh lý, không sửa lùi giá trị cũ. | Màn hình Tài sản |
 | Bảng khấu hao (`asset_depreciation_bands`) | Bảng quy định: tài sản trong khoảng giá nào thì phân bổ chi phí trong bao nhiêu tháng. Chủ quán tự sửa được bảng này. | Màn hình Bảng khấu hao tài sản |
-| BTP — bán thành phẩm (`semi_products`) | Thứ tự làm ra rồi dùng làm nguyên liệu cho món bán (ví dụ cốt trà ủ sẵn, siro tự nấu). Không bán trực tiếp cho khách. | Công thức món, tồn kho |
+| BTP — bán thành phẩm | Thứ tự làm ra rồi dùng làm nguyên liệu cho món bán (ví dụ cốt trà ủ sẵn, siro tự nấu). Không bán trực tiếp cho khách. Hệ thống không theo dõi BTP (`BR-INV-006`); danh sách BTP gỡ hẳn ngày 2026-09-28. | Không màn hình nào |
 | Điểm bán / outlet (`outlets`) | Một chỗ bán hàng thực tế. Quán có hai điểm bán, mã `001` và `002`. Kho dùng chung, không tách theo điểm bán. | Màn hình Điểm bán, mã đơn hàng |
 | Thương hiệu / brand (`brands`) | Nhãn gắn với điểm bán (Phin Đi, Uchako). Mỗi điểm bán thuộc một thương hiệu. | Màn hình Thương hiệu, món và khuyến mãi |
 | sheets_db (`lib/db/tables.ts`) | Lớp phần mềm trung gian để đọc/ghi dữ liệu. Tên có chữ "sheets" gợi nhớ Google Sheets thời đầu, nhưng thực chất giờ nói chuyện với cơ sở dữ liệu Supabase. Chỉ là chuyện đặt tên cũ còn giữ lại. | Bên trong mã nguồn |

@@ -42,7 +42,7 @@ cách này nằm trong `docs/02-rules/business-rules/`; các bước thao tác t
 
 **Bẫy — một bảng, hai lối viết hoa.** Trong bản đồ hệ thống, cùng một bảng dữ
 liệu có thể hiện ra dưới hai kiểu viết hoa khác nhau, ví dụ `Products` và
-`products`, hay `Stock_Adjustments` và `stock_adjustments`. Đó **vẫn là một
+`products`, hay `Orders_V2` và `orders_v2`. Đó **vẫn là một
 bảng** — một lối viết đến từ lời gọi qua `lib/db/tables.ts`, lối kia đến từ thân
 một hàm RPC. Đừng đếm chúng thành hai bảng.
 
@@ -65,7 +65,7 @@ nguồn, nên dựng lại hay đổi chỗ chạy là dễ mất — cần nh�
 
 ## Thành phần chạy ngoài luồng màn hình
 
-Ba Supabase Edge Function và bốn route API của Next.js không thuộc một màn
+Hai Supabase Edge Function và bốn route API của Next.js không thuộc một màn
 hình nào — chạy nền hoặc phục vụ máy khác gọi tới. Liệt kê ở đây cho đủ, đọc
 mã nguồn trực tiếp nếu cần chi tiết.
 
@@ -74,9 +74,6 @@ mã nguồn trực tiếp nếu cần chi tiết.
 - `backup-to-drive` — dựng một bản chụp toàn bộ dữ liệu (theo danh sách bảng
   cho phép) khi có request kèm token đúng, dùng cho sao lưu định kỳ lên Google
   Drive. Chi tiết vận hành: `docs/04-operations/INCIDENT-RESPONSE.md`.
-- `backup-to-sheets` — mỗi ngày đồng bộ một chiều `orders_v2` +
-  `order_lines_v2` sang Google Sheets để xem/đối chiếu bằng mắt, chạy tiếp từ
-  mốc đã lưu trong `sync_state`.
 - `user-admin` — tạo/sửa/xoá tài khoản đăng nhập, cầu nối giữa Supabase Auth
   và bảng `users`; chỉ vai trò `owner` gọi được, trừ nhánh `/migrate` một lần
   dùng khoá service-role để đưa tài khoản cũ sang Supabase Auth.
