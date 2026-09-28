@@ -76,7 +76,13 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - **Every date on screen is `dd/mm/yyyy`**, with a leading zero: 05/03/2026, never 5/3/2026, never 2026-03-05, never the month first. This includes date pickers, whose look otherwise follows the phone or computer's own language setting.
 - **Every date filter chooses whole days.** "Từ 01/09/2026 đến 30/09/2026" covers both days completely, in Saigon time. No filter asks for an hour or minute.
 - **A slip list shows and sorts by the date written on the slip** (for a purchase order, the day the goods arrived), newest first — not the day the slip was typed into the machine (owner 2026-09-29, same mockup). Measured 2026-09-29: 191 of 191 purchase orders carry that date; 164 of them differ from the day they were created.
-- **Still open:** whether a time of day is shown next to the date where the moment matters, as `dd/mm/yyyy HH:mm` (an order's time at the till, the activity log). Asked on the mockup 2026-09-29.
+- **Outside filters, a date shows its time to the second: `dd/mm/yyyy HH:mm:ss`** (owner 2026-09-29: *"Chỉ có bộ lọc thì hiển thị theo ngày, các chỗ khác có thể hiển thị thêm giờ và nên cụ thể đến đơn vị giây"*).
+- **Measured 2026-09-29, where no time was ever recorded:**
+  - Four fields store a day with no time at all: a brand's start date, an asset's purchase date, an asset's disposal date, and a cash-book entry's date.
+  - On purchase orders, 164 of 191 slip dates sit at exactly 00:00:00 Saigon time, because the form asks only for the day.
+  - All 74 of 74 issue slips have :00 seconds, because the form asks only to the minute.
+  - Sales orders do carry real seconds: 3.010 of 3.079 completed orders have non-zero seconds.
+- **Still open:** what to show where no time was recorded. Showing "28/09/2026 00:00:00" presents a time nobody entered. Asked 2026-09-29.
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots
