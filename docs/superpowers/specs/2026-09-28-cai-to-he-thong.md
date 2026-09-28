@@ -416,4 +416,5 @@ Có, bằng hai đường:
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
 | Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | chốt 2026-09-28 (mục 5.13) |
 | Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14); có cần tự đổi màu trong Cài đặt không (mục 5.12) | **đang hỏi** 2026-09-29 |
+| Q10 | Ngày tháng: hiện `dd/mm/yyyy`, lọc chỉ theo ngày (`BR-DATA-006`); còn hỏi có kèm giờ `dd/mm/yyyy HH:mm` ở chỗ cần giờ không | chốt phần ngày 2026-09-29 qua bình luận; phần giờ **đang hỏi** trên bản mẫu |
 | Q9 | Danh sách phiếu "mới nhất ở trên" xếp theo ngày nhập hay ngày tạo (mục 5.14) | chốt 2026-09-29 qua bình luận trên bản mẫu: *"Hiển thị ngày nhập thực tế, không phải là ngày phiếu được nhập vào"*. Đo: 191/191 phiếu có ngày nhập, 164 phiếu lệch ngày tạo |

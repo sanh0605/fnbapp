@@ -66,6 +66,17 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - `lib/sales/order-math.ts` rounds each item's and topping's share of an order discount for the sales report.
 - Three percentages show one decimal instead of two: the outlet share in the sales report (`lib/reports/outlet-breakdown-table.ts`), and the change against the previous period on the dashboard (`app/admin/page.tsx`) and the daily report (`app/admin/reports/daily/page.tsx`). The last two also print a dot, not the Vietnamese comma ("12.5%").
 
+
+### BR-DATA-006 — Dates show as dd/mm/yyyy; date filters pick a day, never a time
+
+**Status:** `APPROVED` — owner decision 2026-09-29, written as a comment on the step 2–3 mockup (`docs/superpowers/specs/2026-09-28-cai-to-he-thong.md`, section 5.14). Not built yet; applied screen by screen in steps 3–7 of that overhaul.
+
+*"Tất cả thời gian chỉ lọc theo ngày mà không cần chính xác giờ giấc. Ngoài ra, định dạng của tất cả ngày giờ đều phải theo dạng dd/mm/yyyy."*
+
+- **Every date on screen is `dd/mm/yyyy`**, with a leading zero: 05/03/2026, never 5/3/2026, never 2026-03-05, never the month first. This includes date pickers, whose look otherwise follows the phone or computer's own language setting.
+- **Every date filter chooses whole days.** "Từ 01/09/2026 đến 30/09/2026" covers both days completely, in Saigon time. No filter asks for an hour or minute.
+- **A slip list shows and sorts by the date written on the slip** (for a purchase order, the day the goods arrived), newest first — not the day the slip was typed into the machine (owner 2026-09-29, same mockup). Measured 2026-09-29: 191 of 191 purchase orders carry that date; 164 of them differ from the day they were created.
+- **Still open:** whether a time of day is shown next to the date where the moment matters, as `dd/mm/yyyy HH:mm` (an order's time at the till, the activity log). Asked on the mockup 2026-09-29.
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots
