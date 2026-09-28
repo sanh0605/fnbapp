@@ -355,6 +355,11 @@ chỉnh để đổi qua lại 3 bảng màu (Cà phê, Xanh rêu, Xanh dương)
 Vietnam Pro, Lexend). Số liệu trong bản mẫu là 20 phiếu nhập thật mới nhất, đo ngày
 29/09.
 
+**Anh góp ý trên bản mẫu, 2026-09-29 (áp cho mọi danh sách phiếu):** *"Không cần nút
+xem ở cuối, bấm vào bất kỳ đâu trong cùng dòng với mã đơn thì sẽ chuyển sang trang chi
+tiết của đơn đó."* Bỏ cột "Xem"; cả dòng (máy tính) hoặc cả thẻ (điện thoại) là chỗ bấm
+để mở phiếu.
+
 **Thấy khi đo để dựng bản mẫu (chưa hỏi anh):**
 - "Mới nhất ở trên" phải chọn theo ngày nào. Phiếu nhập có ngày ghi trên phiếu
   (ngày nhập) và ngày tạo trên máy. Hai ngày này lệch nhau: PO-178 ghi ngày 30/05/2026
