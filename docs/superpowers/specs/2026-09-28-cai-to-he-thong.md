@@ -168,6 +168,36 @@ nhóm dưới đây là bản chốt; chỉ còn nội dung trang Tổng quan (Q
 
 Tên mục theo mục 5.3; anh chưa phản đối cách đặt tên.
 
+### 5.7 Trang Tổng quan — anh trả lời Q2, 2026-09-28
+
+Nguyên văn: *"1. a,b,c và thêm các lời nhắc nhập chi phí hàng tháng. 2. Chỉ cần
+một bảng cho thấy tình hình bán ra của 7 ngày gần nhất bao gồm doanh thu, giá
+trị trung bình / ly, số ly bán ra, số trứng bán ra, số khoai bán ra."*
+
+**Báo động:**
+- Máy bán hàng gửi đơn bị lỗi (đang có).
+- Hàng trên sổ bị âm (`BR-INV-004`).
+- Lâu chưa kiểm kê, hoặc có phiếu kiểm kê mở dở. Ngưỡng "lâu": chưa hỏi.
+- **Mới:** nhắc nhập các khoản chi phí hàng tháng vào Sổ thu chi. Hiện chưa có gì
+  để biết khoản nào là khoản hằng tháng — phải thêm (Q2c).
+- Không chọn: giá nhập tăng mạnh, hàng sắp hết. Nên không cần đặt mức tối thiểu
+  cho từng mặt hàng.
+
+**Bảng 7 ngày** (bỏ biểu đồ và 5 món bán chạy): mỗi ngày một dòng — doanh thu,
+giá trị trung bình mỗi ly, số ly, số trứng, số khoai.
+
+**Đo trên dữ liệu thật 2026-09-28** (bảng `product_categories`, `products`):
+- Nhóm món đang dùng: Cà phê, Giải trí (chứa Matcha, Cacao, Sữa dâu sấy giòn),
+  Trà, Yogurt, Thức ăn, Topping. Nhóm Cacao đã xoá.
+- Nhóm Thức ăn có đúng hai món: Khoai lang, Trứng luộc.
+- "Ly" chưa được định nghĩa ở đâu trong hệ thống. Cách hiểu tự nhiên: mọi món
+  thuộc Cà phê, Giải trí, Trà, Yogurt.
+- Món "Test11" đang ở trạng thái bán trong nhóm Cà phê — sẽ bị đếm là ly nếu
+  không ẩn.
+- Nhóm thu chi đang có: Vận hành, Điện nước gas, Marketing (chi); Thu khác, Vốn
+  góp, Doanh thu ghi tay (thu). Nhóm quá rộng để dùng làm dấu "đã nhập khoản
+  này tháng này" — "Vận hành" gồm nhiều khoản khác nhau.
+
 ## 6. Chia phần làm — nháp, chờ anh duyệt thứ tự
 
 | # | Phần | Vì sao đứng ở vị trí này |
@@ -186,7 +216,10 @@ Tên mục theo mục 5.3; anh chưa phản đối cách đặt tên.
 | Q1 | Xếp các mục anh chưa nhắc tới vào nhóm nào (mục 5) | anh đã trả lời 2026-09-28 (mục 5.1) |
 | Q1b | Chọn giữa bản của anh và bản của Opus ở 4 chỗ khác nhau (mục 5.4), và cách đặt tên (5.3) | anh đã trả lời 2026-09-28 (mục 5.5) |
 | Q1c | Thu chi là nhóm riêng hay trong Báo cáo; Nhập hàng tách riêng hay trong Kho (mục 5.6) | chốt 2026-09-28: cả hai tách riêng |
-| Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | **đang hỏi** 2026-09-28 |
+| Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | anh đã trả lời 2026-09-28 (mục 5.7) |
+| Q2b | "Ly" gồm nhóm nào; trứng, khoai là cột cố định hay theo nhóm Thức ăn; giá trị trung bình mỗi ly tính trên tiền nào | **đang hỏi** 2026-09-28 |
+| Q2c | Nhắc chi phí tháng: những khoản nào, hạn ngày nào, khi nào coi là đã nhập | **đang hỏi** 2026-09-28 |
+| Q2d | Ngưỡng "lâu chưa kiểm kê" | chờ |
 | Q3 | Thứ tự các phần A–F | chờ |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
