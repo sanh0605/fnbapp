@@ -125,3 +125,5 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 **The price, stated to the owner before the decision:** counting work abandoned by a cancel is gone with no trace. STK-003 had 11 items counted over 15/09–27/09 before it was cancelled; under this rule nothing of it would remain. The two cancelled sessions already stored (STK-002, STK-003) are deleted by the same migration.
 
+**One-time exception to `BR-INV-009`, 2026-09-28: STK-004 erased, not reversed.** The owner asked to delete the 2026-09-27 count and everything linked to it. It had 32 of 68 items counted — not a real count — and its only effect was one found-goods row (Bột cacao DK Harvest, +500g) with nothing recorded after it for that item, so erasing moves no other figure. September's cost rises by the value of those 500g. The owner chose "only STK-004": later confirmed counts are still undone with Hoàn tác, as `BR-INV-009` says.
+

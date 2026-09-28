@@ -40,6 +40,20 @@ describe("0103: cancelling a stocktake session deletes it", () => {
     expect(migration).toContain("delete from public.stocktake_sessions where status = 'CANCELLED';");
   });
 
+  // One-time exception to BR-INV-009 (owner, 2026-09-28): STK-004 erased
+  // with its stock_issues row, guarded against rows that depend on it.
+  it("erases STK-004 and its stock_issues row, after guarding", () => {
+    const migration = readMigration();
+    const guardAt = migration.indexOf("'STK-004 expected exactly 1 stock_issues row, found %'");
+    const issuesAt = migration.indexOf("delete from public.stock_issues where session_id = 'STK-004';");
+    const sessionAt = migration.indexOf("delete from public.stocktake_sessions where id = 'STK-004';");
+    expect(guardAt).toBeGreaterThan(-1);
+    expect(issuesAt).toBeGreaterThan(guardAt);
+    expect(sessionAt).toBeGreaterThan(issuesAt);
+    expect(migration).toContain("'A stock_issues row reverses STK-004; not erasing'");
+    expect(migration).toContain("'Later stock_issues exist for an item STK-004 touched; not erasing'");
+  });
+
   it("drops CANCELLED from the allowed statuses, after the delete", () => {
     const migration = readMigration();
     const deleteAt = migration.indexOf("delete from public.stocktake_sessions where status = 'CANCELLED';");
