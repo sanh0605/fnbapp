@@ -324,13 +324,35 @@ với POS màu sắc đang bị khác biệt so với phần còn lại của h�
   một bảng màu. Anh chọn màu trên bản mẫu, không chọn trên giấy.
 - Màu có cần là thứ anh tự đổi trong Cài đặt hay không: Q8.
 
+### 5.13 Anh trả lời Q7, 2026-09-28 — thanh dưới đáy, nút mở máy bán hàng, menu thu gọn
+
+Nguyên văn: *"Tổng quan, phiếu nhập, phiếu xuất và mở pos. Nãy giờ chưa thấy đề cập
+đến việc mở pos nhỉ? Anh muốn sidebar có thể ẩn/mở."*
+
+**Sót của Opus:** mục 4.1 và 5.6 chỉ đếm các mục trong nhóm, bỏ qua nút **"MỞ MÁY
+POS"** nằm riêng trên đầu menu (`app/admin/layout.tsx`). Bấm nút này, máy hỏi mở ở
+điểm bán nào; điểm bán đang ngoài giờ mở cửa thì hỏi lại cho chắc
+(`app/admin/components/PosOutletPicker.tsx`). Nút này giữ nguyên cách chạy, chỉ đổi chỗ
+đặt.
+
+**Chốt:**
+- **Điện thoại:** thanh cố định dưới đáy gồm Tổng quan, Phiếu nhập, Phiếu xuất, Mở máy
+  bán hàng, và nút "Thêm" mở đủ 7 nhóm. Thay cho nút ba gạch hiện nay.
+- **Máy tính, iPad:** menu bên trái có nút thu gọn và mở lại. Opus chọn kiểu thu gọn
+  thành một cột hẹp chỉ còn biểu tượng, rê chuột vào thì hiện tên, thay vì giấu hẳn: vẫn
+  bấm được mà không phải mở ra. Máy nhớ lựa chọn trên từng máy. Anh xem trên bản mẫu,
+  không vừa ý thì đổi.
+- Nút "Mở máy bán hàng" luôn nằm trên cùng menu, kể cả khi thu gọn (còn biểu tượng).
+- **Trong màn máy bán hàng không hiện thanh dưới đáy:** màn bán hàng cần hết chỗ cho
+  món và giỏ hàng. Quay về bằng mũi tên trên đầu như hiện nay.
+
 ## 6. Chia phần làm — đề xuất thứ tự, chờ anh duyệt (Q3)
 
 | Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
 |---|---|---|---|
 | 1 | F — Gỡ 10 bảng bỏ hoang | Đã xong phần code; còn đưa lên, mỗi bước anh duyệt | Làm xong việc dở trước khi mở việc mới |
 | 2 | A — Menu 7 nhóm | Gom nhóm, đổi tên theo mục 5.3–5.6 | Rẻ, thấy ngay, không đổi dữ liệu |
-| 3 | B — Khuôn trang chung | Font, bảng màu 4 vai trò dùng chung cả máy bán hàng, menu riêng cho điện thoại (mục 5.12), trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên, 20 phiếu một trang), trang chi tiết phiếu; bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này |
+| 3 | B — Khuôn trang chung | Font, bảng màu 4 vai trò dùng chung cả máy bán hàng, menu riêng cho điện thoại và menu thu gọn trên máy tính (mục 5.12, 5.13), trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên, 20 phiếu một trang), trang chi tiết phiếu; bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này |
 | 4 | C — Các trang phiếu theo khuôn | Phiếu nhập, Phiếu xuất, Kiểm kê (gồm `BR-INV-012`), Sổ thu chi | Kiểm kê là việc anh cần nhất |
 | 5 | D — Tổng quan mới | Báo động, bảng 7 ngày, loại món, khoản chi hằng tháng, Cài đặt → Tổng quan | Cần khuôn B và loại món |
 | 6 | E — Chức năng còn thiếu | Tồn kho, Lưu chuyển tiền tệ | Cần khuôn B |
@@ -354,5 +376,5 @@ với POS màu sắc đang bị khác biệt so với phần còn lại của h�
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
-| Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | **đang hỏi** 2026-09-28 |
+| Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | chốt 2026-09-28 (mục 5.13) |
 | Q8 | Bảng màu: chọn trên bản mẫu; có cần tự đổi màu trong Cài đặt không (mục 5.12) | chờ, hỏi khi có bản mẫu |
