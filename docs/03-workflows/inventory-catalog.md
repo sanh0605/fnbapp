@@ -7,6 +7,10 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
 ```
 
+**Behaviour change — 2026-09-28:** `deleteUnit`'s in-use check no longer queries
+`Base_Ingredients`, a table dropped by migration `0090` on 2026-09-01. Since then,
+deleting a unit that no conversion or purchased item uses failed with a
+missing-table error; it now deletes. Found by the review of the 0105 plan.
 **Reviewed, no behaviour change — 2026-09-28:** `app/admin/inventory/actions.ts`'s
 `deleteUnit` unit-in-use check stopped querying `Semi_Products` and
 `Production_Items` (Task 3, `docs/superpowers/plans/2026-09-28-go-10-bang-bo-hoang.md`

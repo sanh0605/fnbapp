@@ -109,28 +109,11 @@ describe("deleteUnit -- names what is blocking it, and still blocks it", () => {
     );
   });
 
-  it("refuses via base_ingredients.base_unit, naming the ingredient group", async () => {
-    mocks.findAllWhere.mockImplementation((sheet: string, filters: any) => {
-      if (sheet === "Units") return Promise.resolve([{ id: "U-009", name: "trái" }]);
-      if (sheet === "UOM_Conversions") return Promise.resolve([]);
-      if (sheet === "Purchased_Items") return Promise.resolve([]);
-      if (sheet === "Base_Ingredients" && filters.eq.base_unit === "U-009") {
-        return Promise.resolve([{ name: "Trứng gà" }]);
-      }
-      return Promise.resolve([]);
-    });
-
-    const res = await deleteUnit(formData({ id: "U-009" }));
-
-    expect(res.error).toContain("nhóm nguyên liệu Trứng gà");
-  });
-
   it("refuses via purchase_order_lines with the frozen-history hint, not an actionable one", async () => {
     mocks.findAllWhere.mockImplementation((sheet: string, filters: any) => {
       if (sheet === "Units") return Promise.resolve([{ id: "UNT-099", name: "Thùng" }]);
       if (sheet === "UOM_Conversions") return Promise.resolve([]);
       if (sheet === "Purchased_Items" && filters.eq.default_unit_id) return Promise.resolve([]);
-      if (sheet === "Base_Ingredients") return Promise.resolve([]);
       if (sheet === "Purchase_Order_Lines" && filters.eq.base_unit === "UNT-099") {
         return Promise.resolve([{ purchased_item_id: "SPM-050" }, { purchased_item_id: "SPM-050" }]);
       }
@@ -162,7 +145,10 @@ describe("deleteUnit -- names what is blocking it, and still blocks it", () => {
 
   // 2026-09-28: semi_products and production_items were dropped (migration
   // 0105) -- the unit-in-use check must no longer query either table.
-  it("no longer queries Semi_Products or Production_Items when checking whether a unit is in use", async () => {
+  // base_ingredients was dropped earlier (migration 0090) -- the check
+  // still queried it (bug found 2026-09-28), so it belongs in this same
+  // list now.
+  it("no longer queries Semi_Products, Production_Items, or Base_Ingredients when checking whether a unit is in use", async () => {
     mocks.findAllWhere.mockImplementation((sheet: string) => {
       if (sheet === "Units") return Promise.resolve([{ id: "UNT-002", name: "Bộ" }]);
       return Promise.resolve([]);
@@ -173,5 +159,29 @@ describe("deleteUnit -- names what is blocking it, and still blocks it", () => {
     const queriedSheets = mocks.findAllWhere.mock.calls.map((call: any[]) => call[0]);
     expect(queriedSheets).not.toContain("Semi_Products");
     expect(queriedSheets).not.toContain("Production_Items");
+    expect(queriedSheets).not.toContain("Base_Ingredients");
+  });
+
+  // Bug found 2026-09-28: base_ingredients was dropped by migration 0090,
+  // but findUnitDeleteBlocker still queried "Base_Ingredients" -- deleting
+  // an otherwise-unused unit reached this dead branch and errored with
+  // "relation does not exist" instead of succeeding. Simulates that real
+  // failure mode directly (reject, not an empty array) so the test cannot
+  // pass by accident the way an unconditional `[]` fallback would.
+  it("deletes an unused unit even if Base_Ingredients would error as a non-existent relation", async () => {
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "Units") return Promise.resolve([{ id: "UNT-002", name: "Bộ" }]);
+      if (sheet === "Base_Ingredients") {
+        return Promise.reject(
+          new Error('findAllWhere(Base_Ingredients): relation "public.base_ingredients" does not exist'),
+        );
+      }
+      return Promise.resolve([]);
+    });
+
+    const res = await deleteUnit(formData({ id: "UNT-002" }));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.remove).toHaveBeenCalledWith("Units", "UNT-002");
   });
 });

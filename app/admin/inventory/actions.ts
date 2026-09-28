@@ -366,7 +366,10 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
 // purchase_order_lines is checked last -- historical rows are the least
 // likely real-world cause. semi_products and production_items were dropped
 // with their tables (migration 0105, 2026-09-28); their checks were removed
-// here in step.
+// here in step. base_ingredients was dropped earlier (migration 0090,
+// 2026-09-01) but this check still queried it until 2026-09-28 -- deleting
+// an otherwise-unused unit reached the dead branch and errored with
+// "relation does not exist" instead of succeeding; removed here too.
 async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding | null> {
   const conversionsByPurchasedUnit = await findAllWhere<{ purchased_item_id: string }>(
     "UOM_Conversions", { eq: { purchased_unit: unitId }, limit: 1 },
@@ -389,13 +392,6 @@ async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding
   );
   if (purchasedItems[0]) {
     return { kind: "purchased_items", count: 1, ownerName: purchasedItems[0].name };
-  }
-
-  const baseIngredients = await findAllWhere<{ name: string }>(
-    "Base_Ingredients", { eq: { base_unit: unitId }, limit: 1 },
-  );
-  if (baseIngredients[0]) {
-    return { kind: "base_ingredients", count: 1, ownerName: baseIngredients[0].name };
   }
 
   const poLines = await findAllWhere<{ purchased_item_id: string }>(

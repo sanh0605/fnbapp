@@ -35,17 +35,6 @@ describe("buildUnitDeleteRestrictionMessage", () => {
     );
   });
 
-  it("names the ingredient group for base_ingredients.base_unit", () => {
-    const message = buildUnitDeleteRestrictionMessage("gram", {
-      kind: "base_ingredients",
-      count: 1,
-      ownerName: "Sữa tươi",
-    });
-    expect(message).toBe(
-      "Không xoá được đơn vị gram vì đang được dùng trong nhóm nguyên liệu Sữa tươi. Đổi đơn vị gốc của nhóm nguyên liệu đó trước.",
-    );
-  });
-
   it("frames purchase_order_lines as frozen history with no fix-it hint", () => {
     const message = buildUnitDeleteRestrictionMessage("Can", {
       kind: "purchase_order_lines",

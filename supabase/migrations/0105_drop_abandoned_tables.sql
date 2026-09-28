@@ -1,6 +1,8 @@
 -- Owner decision 2026-09-28 ("Ok gỡ"): drop the 10 abandoned tables mapped in
 -- docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md, and every live
--- function that still touched them. Plan:
+-- function that still touched them. Also unschedules the optional
+-- 'backup-to-sheets-daily' pg_cron job documented in 0003_sync_state.sql
+-- (guarded: nobody can confirm it was ever scheduled on any server). Plan:
 -- docs/superpowers/plans/2026-09-28-go-10-bang-bo-hoang.md.
 --
 -- Release order: the app code that stops sending recipe fields ships FIRST,
@@ -343,9 +345,16 @@ alter table public.purchased_items drop column if exists semi_product_id;
 -- already dropped above in section 2). No code anywhere (app/, lib/,
 -- scripts/, supabase/functions/) calls any of these three. Argument lists
 -- copied verbatim from each function's last create-or-replace.
+--
+-- prune_data_recovery_changes() is dropped separately, AFTER the table
+-- drops below, not here: prune_data_recovery_changes_trigger (0045:46-49)
+-- on public.data_recovery_changes still depends on it at this point, and
+-- Postgres refuses to drop a function while a trigger depends on it (the
+-- whole migration would roll back). Dropping the table removes the
+-- trigger with it (it is defined ON that table), so only then is the
+-- function safe to drop.
 drop function if exists public.apply_full_history_recovery(text, text, jsonb, boolean);
 drop function if exists public.remove_audit_baseline_lock(text, text, text);
-drop function if exists public.prune_data_recovery_changes();
 
 -- Child-first order.
 drop table if exists public.production_items;
@@ -358,3 +367,22 @@ drop table if exists public.semi_products;
 drop table if exists public.data_recovery_changes;
 drop table if exists public.data_migration_runs;
 drop table if exists public.sync_state;
+
+-- data_recovery_changes (and prune_data_recovery_changes_trigger with it)
+-- is gone now -- the function is unreferenced and safe to drop.
+drop function if exists public.prune_data_recovery_changes();
+
+-- sync_state backed the optional 'backup-to-sheets-daily' pg_cron job
+-- (0003_sync_state.sql), which called the backup-to-sheets edge function
+-- (being deleted). That job was documented only as a manual, optional
+-- dashboard step and was never confirmed applied on any server (same
+-- point made in 0045), so guard the unschedule: only run it if the
+-- pg_cron extension is installed, and only touch the job if it exists.
+-- Style follows the existing project convention for a guarded do block
+-- (0105's own guard above, and 0045's rationale comment).
+do $$
+begin
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    perform cron.unschedule(jobid) from cron.job where jobname = 'backup-to-sheets-daily';
+  end if;
+end $$;

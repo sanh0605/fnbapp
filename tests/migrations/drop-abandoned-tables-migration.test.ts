@@ -146,4 +146,40 @@ describe("0105: drop the abandoned tables", () => {
       expect(indices[i]).toBeGreaterThan(indices[i - 1]);
     }
   });
+
+  // Fix 1 (critical): prune_data_recovery_changes_trigger (0045:46-49) on
+  // public.data_recovery_changes depends on public.prune_data_recovery_
+  // changes(). Postgres refuses to drop a function while a trigger still
+  // depends on it (the whole migration would roll back). Dropping the
+  // TABLE first removes the trigger with it (it is defined ON that table),
+  // so the function drop must come after the table drop, not before.
+  it("drops prune_data_recovery_changes() after dropping data_recovery_changes, not before", () => {
+    const migration = readMigration();
+    const functionDropIndex = migration.indexOf(
+      "drop function if exists public.prune_data_recovery_changes();",
+    );
+    const tableDropIndex = migration.indexOf(
+      "drop table if exists public.data_recovery_changes",
+    );
+    expect(functionDropIndex).toBeGreaterThan(-1);
+    expect(tableDropIndex).toBeGreaterThan(-1);
+    expect(functionDropIndex).toBeGreaterThan(tableDropIndex);
+  });
+
+  // Fix 2: 0003_sync_state.sql documents an optional, never-confirmed
+  // pg_cron job 'backup-to-sheets-daily' that calls the backup-to-sheets
+  // edge function (being deleted). Nobody can tell whether it was ever
+  // scheduled on any server, so the unschedule must be guarded: only run
+  // if pg_cron is installed, and only touch the job if it exists.
+  it("guards the backup-to-sheets-daily cron unschedule behind a pg_cron existence check", () => {
+    const migration = readMigration();
+    const guardIndex = migration.indexOf(
+      "select 1 from pg_extension where extname = 'pg_cron'",
+    );
+    expect(guardIndex).toBeGreaterThan(-1);
+    const unscheduleIndex = migration.indexOf(
+      "cron.unschedule(jobid) from cron.job where jobname = 'backup-to-sheets-daily'",
+    );
+    expect(unscheduleIndex).toBeGreaterThan(guardIndex);
+  });
 });

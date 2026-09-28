@@ -137,8 +137,18 @@ const JSON_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
 };
 
 // base_ingredients (its own boolean entry) was dropped 2026-09-01 (migration
-// 0090). No live table currently has a boolean column; the next one to get
-// one adds its own entry here, driven by its own test.
+// 0090). Three live tables do have a boolean column today --
+// purchased_items.is_non_inventory (0068), uom_conversions.purchase_only
+// (0064), stocktake_sessions.is_shrinkage (0099) -- but none is registered
+// here. Supabase already returns/accepts these as real JS booleans, and
+// every reader and writer of them (app/admin/inventory/items/actions.ts,
+// app/admin/inventory/conversions/actions.ts, lib/costing/issue-costing-
+// inputs.ts, lib/reports/profit-and-loss.ts) works with `true`/`false`
+// directly, not the legacy Sheets-era "TRUE"/"FALSE" string this map's
+// serializeRow/deserializeRow round-trip exists for. is_non_inventory's own
+// readers additionally accept the string "TRUE" as a defensive fallback for
+// old Sheets-era data, without this map. Register a column here only when a
+// caller actually needs that string round-trip, driven by its own test.
 const BOOLEAN_COLUMNS_BY_TABLE: Record<string, Set<string>> = {};
 
 function getJsonColumns(tableName: string): Set<string> {

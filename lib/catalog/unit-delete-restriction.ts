@@ -11,12 +11,14 @@
 // base_ingredients, semi_products, purchase_order_lines, production_items.
 // semi_products and production_items were dropped with their tables
 // (migration 0105, 2026-09-28 owner decision); their kinds were removed here
-// in step.
+// in step. base_ingredients was dropped earlier (migration 0090,
+// 2026-09-01), but its check in app/admin/inventory/actions.ts was left in
+// by mistake until 2026-09-28 (bug: it queried a table that no longer
+// exists); its kind is removed here in the same step as that fix.
 
 export type UnitBlockerKind =
   | "uom_conversions"
   | "purchased_items"
-  | "base_ingredients"
   | "purchase_order_lines";
 
 export type UnitBlockerFinding = {
@@ -34,8 +36,6 @@ function clauseFor(finding: UnitBlockerFinding): string {
       return `${count} dòng quy đổi của ${ownerName}`;
     case "purchased_items":
       return `mặt hàng mua ${ownerName}`;
-    case "base_ingredients":
-      return `nhóm nguyên liệu ${ownerName}`;
     case "purchase_order_lines":
       return `${count} dòng đơn nhập lịch sử của ${ownerName}`;
   }
@@ -47,8 +47,6 @@ function hintFor(finding: UnitBlockerFinding): string {
       return finding.count === 1 ? "Xoá dòng quy đổi đó trước." : "Xoá các dòng quy đổi đó trước.";
     case "purchased_items":
       return "Đổi đơn vị mặc định của mặt hàng đó trước.";
-    case "base_ingredients":
-      return "Đổi đơn vị gốc của nhóm nguyên liệu đó trước.";
     case "purchase_order_lines":
       // Unlike the other sources, this one is never freeable -- a purchase
       // order line's unit is frozen history (same reasoning as
