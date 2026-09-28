@@ -398,6 +398,48 @@ hay chỉ tiêu đề" nay đã có lời đáp: đổi cả hai). Còn treo: m�
 - 80 trên 191 phiếu nhập có nhà cung cấp là "Không rõ" hoặc để trống. Bộ lọc theo
   nhà cung cấp vì thế ít tác dụng với các phiếu đó. Chỉ ghi lại, chưa đề xuất sửa.
 
+### 5.15 Anh trả lời Q11, 2026-09-29 — mã vận đơn, và câu hỏi tách phiếu nhập kho
+
+Nguyên văn: *"Anh cần mã vận đơn. Vì nếu đúng logic thì mỗi phiếu nhập hàng sẽ ảnh
+hưởng đến tồn kho. Nên để tồn kho tăng thì đáng lẽ mỗi phiếu nhập hàng sẽ có thể tạo ra
+1 phiếu nhập kho rồi phiếu nhập kho mới là cái cho thấy số lượng tồn tăng chứ không phải
+nhập hàng cho thấy số lượng tồn tăng, đúng không? Hay đây là hệ thống đơn giản nên theo
+cách em khuyến nghị sẽ phù hợp hơn?"*
+
+**Hệ thống hiện nay (đã tra `docs/03-workflows/purchasing.md`):** một phiếu nhập hàng làm
+cả hai việc. Lưu ở trạng thái "Hoàn thành" là hàng tính vào kho ngay, giá mua vào giá
+vốn ngay. Không có bước "đã nhận hàng" riêng. Có trạng thái nháp, nhưng đo 29/09 có 0
+phiếu nháp.
+
+**Đo ngày 29/09 (chỉ đọc):**
+- Phiếu nhập không có ô mã vận đơn. Ô đang hiện là "Số hoá đơn" (`supplier_invoice_code`).
+- 45 trên 52 phiếu Shopee có ô đó ghi **mã đơn hàng Shopee** (dạng `2603278FH1PQE0`:
+  6 số đầu là ngày đặt 27/03/26), không phải mã vận đơn của bên giao hàng. 138 phiếu
+  mua ngoài có 17 phiếu ghi số hoá đơn (dạng `HD004106`). Ô ghi chú trống ở cả 52 phiếu
+  Shopee.
+- Ngày ghi trên 45 phiếu Shopee đó so với ngày đặt trong mã: sớm hơn 1 ngày ×11,
+  cùng ngày ×17, trễ 1 ngày ×14, trễ 2 ngày ×3. Nghĩa là ngày trên phiếu gần như là
+  ngày đặt, nên kho tăng quanh ngày đặt chứ không đợi hàng về. **Truy vấn không cho
+  biết ngày hàng thật sự về:** hệ thống chưa bao giờ ghi ngày đó. 11 phiếu ghi sớm hơn
+  ngày đặt một ngày chưa rõ vì sao. Có thể do múi giờ của Shopee, có thể do nhập tay,
+  chưa kiểm.
+- Vì vậy dòng trong `BR-DATA-006` nói ngày trên phiếu là "ngày hàng về" chưa chắc
+  đúng. Chờ anh xác nhận rồi sửa.
+
+**Nhận định của Opus:**
+- Anh nói đúng về nguyên tắc: đặt hàng và nhập kho là hai việc.
+- Gộp làm một chỉ ổn khi phiếu được tạo lúc hàng đã về đủ.
+- Tách ra đáng làm khi có một trong ba chuyện: đặt rồi chờ hàng vài ngày, hàng về
+  thiếu hoặc hỏng, hàng về nhiều đợt.
+- Tách là việc lớn, là khái niệm mới (bảng mới), phải đi đủ bốn bước. Việc này chạm
+  giá vốn, tồn kho, kiểm kê, sổ thu chi (tiền trả lúc đặt, hàng vào lúc về) và báo cáo.
+- Việc này thuộc bước 4 (Phiếu nhập), không chặn bước 2–3. Bước 2–3 chỉ cần biết danh
+  sách hiện cột mã nào.
+
+**Câu hỏi (Q12), hỏi 2026-09-29:**
+1. Mã anh cần là mã đơn Shopee (đã có) hay mã vận đơn của bên giao (chưa có chỗ ghi)?
+2. Anh tạo phiếu lúc đặt hay lúc hàng về? Có hay gặp hàng về thiếu, hỏng, về nhiều đợt?
+
 ## 6. Chia phần làm — thứ tự đã chốt 2026-09-29 (Q3: "Theo em khuyến nghị")
 
 | Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
@@ -453,5 +495,6 @@ Có, bằng hai đường:
 | Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14) | Đã chốt 2026-09-29: Cà phê, Be Vietnam Pro |
 | Q8b | Màu có cần là thứ anh tự đổi trong Cài đặt không (mục 5.12) | Đã chốt 2026-09-29 ("Theo em khuyên"): **không**. Màu cố định một chỗ trong code, anh nhắn là đổi. Đây là ngoại lệ anh tự chọn cho luật "không nhét cứng vào code": lý do là cho chọn màu tuỳ ý dễ ra chữ nhạt trên nền nhạt, đứng quầy khó đọc |
 | Q10 | Ngày tháng: hiện `dd/mm/yyyy`, lọc chỉ theo ngày (`BR-DATA-006`); còn hỏi có kèm giờ `dd/mm/yyyy HH:mm` ở chỗ cần giờ không | chốt phần ngày 2026-09-29 qua bình luận; phần giờ **đang hỏi** trên bản mẫu |
-| Q11 | Danh sách phiếu nhập hiện gì thay cho mặt hàng (mục 5.14) | **đang hỏi** 2026-09-29 |
+| Q11 | Danh sách phiếu nhập hiện gì thay cho mặt hàng (mục 5.14) | Anh trả lời 2026-09-29: "mã vận đơn" — còn phải rõ là mã nào (Q12) |
+| Q12 | Mã đơn Shopee hay mã vận đơn; tạo phiếu lúc đặt hay lúc hàng về (mục 5.15) | **đang hỏi** 2026-09-29 |
 | Q9 | Danh sách phiếu "mới nhất ở trên" xếp theo ngày nhập hay ngày tạo (mục 5.14) | chốt 2026-09-29 qua bình luận trên bản mẫu: *"Hiển thị ngày nhập thực tế, không phải là ngày phiếu được nhập vào"*. Đo: 191/191 phiếu có ngày nhập, 164 phiếu lệch ngày tạo |
