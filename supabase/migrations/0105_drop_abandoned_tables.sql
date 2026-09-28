@@ -233,3 +233,14 @@ revoke all on function public.save_product_atomic(
 grant execute on function public.save_product_atomic(
   boolean, jsonb, jsonb, jsonb, timestamptz
 ) to service_role;
+
+-- 2. Stock adjustment screen ("Điều chỉnh Tồn kho") removed: there was
+-- never a way to create an adjustment (only a "Duyệt" button on an
+-- always-empty list). stock_adjustments has 0 rows in production. UI
+-- removal (Gemini) ships before this migration -- see plan Release order.
+-- Argument lists copied verbatim from each function's last create-or-
+-- replace: 0083 (submit_stock_adjustment_atomic) and 0084
+-- (approve_stock_adjustment_atomic).
+
+drop function if exists public.submit_stock_adjustment_atomic(jsonb);
+drop function if exists public.approve_stock_adjustment_atomic(text, text, timestamp with time zone);

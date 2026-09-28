@@ -37,4 +37,17 @@ describe("0105: drop the abandoned tables", () => {
     expect(body).toContain("'price_history_count', v_price_history_count");
     expect(body).toContain("'removed_variant_count', v_removed_variant_count");
   });
+
+  // Task 2: the stock-adjustment screen (never able to create an
+  // adjustment) is removed with it. Argument lists copied verbatim from
+  // each function's last definition: 0083 (submit) and 0084 (approve).
+  it("drops the two stock-adjustment functions with their exact argument lists from 0083/0084", () => {
+    const migration = readMigration();
+    expect(migration).toContain(
+      "drop function if exists public.submit_stock_adjustment_atomic(jsonb);",
+    );
+    expect(migration).toContain(
+      "drop function if exists public.approve_stock_adjustment_atomic(text, text, timestamp with time zone);",
+    );
+  });
 });
