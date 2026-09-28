@@ -115,6 +115,12 @@ A manual issue slip entered by mistake is never deleted and never edited. It is 
 
 Implemented `supabase/migrations/0062_reverse_confirmed_stocktake_and_issue_slip.sql`; full case list in the plan's §5 "Undoing a confirmed count or a whole issue slip" (U1-U13).
 
+### BR-INV-011 — A blank line is not counted; a count covers only the items given a number
+
+**Status:** `APPROVED` — owner decision 2026-09-28, confirming what `apply_stocktake_session_atomic` already does (it skips lines with no counted quantity).
+
+A session may be confirmed with lines left blank. A blank line means **not checked this time**, never zero: its book quantity stays as it is and no shortfall or found row is written for it. The count is a count of the items that were given a number, and only those. Owner's words: *"Các món bỏ trống mặc định là chưa kiểm và xem như lần kiểm đó chỉ kiểm các món có nhập số lượng."* Someone who finds an item gone must type 0 for it; leaving it blank records nothing.
+
 ### BR-INV-010 — Cancelling a stocktake session keeps nothing
 
 **Status:** `APPROVED` — owner decision 2026-09-28. **Implemented** `supabase/migrations/0103_stocktake_cancel_deletes_session.sql`.

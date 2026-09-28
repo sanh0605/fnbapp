@@ -4,7 +4,7 @@
 routes: /admin/inventory/stocktake
 files: lib/stock/stocktake-transaction.ts
 tables: stocktake_sessions, stocktake_lines, stock_issues
-brCodes: BR-INV-007, BR-COGS-007, BR-INV-010
+brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011
 ```
 
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
@@ -48,7 +48,9 @@ function called from `lib/stock/stocktake-transaction.ts`.
 
 4. **Valid inputs, and what happens outside the range.** Each count line accepts a
    non-negative counted quantity for its material. Zero is valid (nothing sealed
-   left on the shelf). The closing step compares the counted figure against the
+   left on the shelf). A line left blank is not zero: it means the item was not
+   checked, and closing the session leaves that item's book quantity untouched
+   (`BR-INV-011`). The closing step compares the counted figure against the
    expected on-hand figure; a count lower than expected is a shortfall and is booked
    as cost, while a count higher than expected means sealed stock thought consumed
    has reappeared and reduces the recognised shortfall.
